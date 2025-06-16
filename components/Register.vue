@@ -74,7 +74,13 @@
 </template>
 
 <script setup lang="ts">
+const toast = useToast()
 const { data, signIn, signOut } = useAuth()
+toast.success({
+  message: 'Hello World!',
+  balloon: true,
+  drag: true,
+})
 const form = ref({ username: '', password: '' })
 const error = ref('')
 const mode = ref<'login' | 'register'>('login')

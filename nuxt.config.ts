@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     '@unocss/nuxt',
     '@vueuse/nuxt',
     '@sidebase/nuxt-auth',
+    'nuxt-toast',
   ],
   imports: {
     presets: [zod],
