@@ -67,7 +67,6 @@
             {{ validation.errors.password[0] }}
           </p>
         </div>
-        <p v-if="error" class="text-red-500 text-sm">{{ error }}</p>
         <button
           type="submit"
           class="px-4 py-2 bg-blue-500 text-white rounded w-full"
@@ -80,31 +79,37 @@
 </template>
 
 <script setup lang="ts">
-const toast = useToast()
+import { useDebounceFn } from '@vueuse/core'
 const { data, signIn, signOut } = useAuth()
+const toast = useToast()
+
 const form = ref({ username: '', password: '' })
-const error = ref('')
 const mode = ref<'login' | 'register'>('login')
 
-const validation = computed(() => {
+const validation = ref({
+  isValid: true,
+  errors: {} as Record<string, string[]>,
+})
+
+const validate = useDebounceFn(() => {
   const result = signInSchema.safeParse(form.value)
-  return {
+  validation.value = {
     isValid: result.success,
     errors: result.success ? {} : result.error.flatten().fieldErrors,
   }
-})
+}, 300)
+
+watch(form, validate, { deep: true })
 const submit = async () => {
-  error.value = ''
   try {
     if (mode.value === 'register') {
       const res = await $fetch('/api/auth/register', {
         method: 'POST',
         body: form.value,
       })
-      if (res) {
-        toast.success({ message: 'Úspěšná registrace' })
-      } else {
+      if (!res) {
         toast.error({ message: 'Neúspěšná registrace' })
+        return
       }
     }
 
@@ -115,12 +120,13 @@ const submit = async () => {
     })
 
     if (result?.error) {
-      error.value = result.error
+      toast.error({ message: result.error })
     } else {
+      toast.success({ message: 'Přihlášení bylo úspěšné' })
       form.value = { username: '', password: '' }
     }
   } catch (e: any) {
-    error.value = e.data?.message || 'Something went wrong'
+    toast.error({ message: e.data?.message || 'Something went wrong' })
   }
 }
 
