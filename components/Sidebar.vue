@@ -1,0 +1,64 @@
+<template>
+  <transition name="slide">
+    <div
+      v-if="isMobile || isOpen"
+      :class="[
+        'fixed z-40 bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4',
+        isMobile ? 'left-0 w-64' : 'left-8 w-14 ml-2 rounded-md h-48',
+      ]"
+    >
+      <button
+        class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-gray-200 transition-colors"
+        @click="tasksOpen = true"
+      >
+        <Icon name="mdi:check-circle-outline" class="w-6 h-6 text-black" />
+      </button>
+      <button
+        class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-gray-200 transition-colors"
+        @click="tagsOpen = true"
+      >
+        <Icon name="mdi:tag-outline" class="w-6 h-6 text-black" />
+      </button>
+      <button
+        class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-gray-200 transition-colors"
+        @click="$emit('close')"
+      >
+        <Icon name="mdi:chart-bar" class="w-6 h-6 text-black" />
+      </button>
+    </div>
+  </transition>
+
+  <div
+    v-if="isMobile && isOpen"
+    class="fixed inset-0 z-30 bg-black/40"
+    @click="$emit('close')"
+  />
+
+  <TransitionRoot :show="tasksOpen" as="template">
+    <Tasks @close="tasksOpen = false" />
+  </TransitionRoot>
+  <TransitionRoot :show="tagsOpen" as="template">
+    <Tags @close="tagsOpen = false" />
+  </TransitionRoot>
+</template>
+
+<script setup lang="ts">
+import { TransitionRoot } from '@headlessui/vue'
+defineProps<{ isOpen: boolean }>()
+defineEmits(['close'])
+
+const isMobile = computed(() => window.innerWidth < 768)
+const tasksOpen = ref(false)
+const tagsOpen = ref(false)
+</script>
+
+<style scoped>
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(-100%);
+}
+</style>
