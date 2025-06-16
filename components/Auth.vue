@@ -48,6 +48,9 @@
             minlength="3"
             maxlength="50"
           />
+          <p v-if="validation.errors.username" class="text-red-500 text-sm">
+            {{ validation.errors.username[0] }}
+          </p>
         </div>
         <div>
           <label for="password" class="block text-sm">Password</label>
@@ -60,6 +63,9 @@
             minlength="4"
             maxlength="124"
           />
+          <p v-if="validation.errors.password" class="text-red-500 text-sm">
+            {{ validation.errors.password[0] }}
+          </p>
         </div>
         <p v-if="error" class="text-red-500 text-sm">{{ error }}</p>
         <button
@@ -76,23 +82,30 @@
 <script setup lang="ts">
 const toast = useToast()
 const { data, signIn, signOut } = useAuth()
-toast.success({
-  message: 'Hello World!',
-  balloon: true,
-  drag: true,
-})
 const form = ref({ username: '', password: '' })
 const error = ref('')
 const mode = ref<'login' | 'register'>('login')
 
+const validation = computed(() => {
+  const result = signInSchema.safeParse(form.value)
+  return {
+    isValid: result.success,
+    errors: result.success ? {} : result.error.flatten().fieldErrors,
+  }
+})
 const submit = async () => {
   error.value = ''
   try {
     if (mode.value === 'register') {
-      await $fetch('/api/auth/register', {
+      const res = await $fetch('/api/auth/register', {
         method: 'POST',
         body: form.value,
       })
+      if (res) {
+        toast.success({ message: 'Úspěšná registrace' })
+      } else {
+        toast.error({ message: 'Neúspěšná registrace' })
+      }
     }
 
     const result = await signIn('credentials', {
@@ -111,7 +124,9 @@ const submit = async () => {
   }
 }
 
-const handleLogout = () => {
-  signOut({ redirect: false })
+const handleLogout = async () => {
+  return (await signOut({ redirect: false }))
+    ? toast.success({ message: 'Úspěšně odhlášeno' })
+    : toast.error({ message: 'Nepodařilo se vás odhlásit' })
 }
 </script>

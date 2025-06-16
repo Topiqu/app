@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   ],
   imports: {
     presets: [zod],
-    dirs: ['shared/zod/models'],
+    dirs: ['shared/zod/models', 'utils'],
   },
   auth: {
     provider: { type: 'authjs' },

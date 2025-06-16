@@ -1,5 +1,5 @@
 import argon from 'argon2'
-import { signInSchema } from '../../utils/schemas/auth'
+import { signInSchema } from '../../../utils/auth'
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { username, password } = signInSchema.parse(body)
