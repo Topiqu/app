@@ -26,8 +26,8 @@ enum UserRole {
 
 model Article {
     id        String        @id @default(uuid())
-    slug      String        @unique @length(1, 100, "Slug musí mít 1–100 znaků")
-    title     String        @length(1, 255, "Titulek musí mít 1–255 znaků")
+    slug      String        @unique @length(1, 100, "Slug musí mít 1-100 znaků")
+    title     String        @length(1, 255, "Titulek musí mít 1-255 znaků")
     content   String
     tags      Json
     status    ArticleStatus @default(draft)
@@ -38,8 +38,8 @@ model Article {
 
 model User {
     id        String    @id @default(uuid())
-    username  String    @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
-    password  String    @length(4, 124, "Heslo musí mít 4–124 znaků")
+    username  String    @unique @length(3, 50, "Uživatelské jméno musí mít 3-50 znaků")
+    password  String    @length(4, 124, "Heslo musí mít 4-124 znaků")
     role      UserRole?
     createdAt DateTime  @default(now())
     articles  Article[]
