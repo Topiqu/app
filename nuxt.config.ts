@@ -31,7 +31,7 @@ export default defineNuxtConfig({
     preset: 'bun',
     imports: {
       presets: [zod],
-      dirs: ['shared/zod/models'],
+      dirs: ['shared/zod/models', 'server/utils'],
     },
   },
   runtimeConfig: {
