@@ -40,7 +40,11 @@
                 v-model="newArticle.title"
                 placeholder="Název článku"
                 class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+                @input="updateSlug"
               />
+              <span class="text-sm text-gray-500"
+                >URL Titulek: {{ newArticle.slug }}</span
+              >
             </label>
             <label class="flex flex-col gap-3">
               <span
@@ -94,6 +98,8 @@ import {
   DialogTitle,
   TransitionChild,
 } from '@headlessui/vue'
+import slugify from 'slugify'
+const toast = useToast()
 const { data } = useAuth()
 defineEmits(['close'])
 
@@ -104,24 +110,42 @@ const { data: articles, refresh } = await useFetch('/api/articles', {
 const newArticle = ref({
   title: '',
   content: '',
+  slug: '',
   userId: data.value?.user.id,
 })
 
+const updateSlug = () => {
+  newArticle.value.slug = slugify(newArticle.value.title, {
+    lower: true,
+    strict: true,
+    trim: true,
+  })
+}
+
 const createArticle = async () => {
   if (!newArticle.value.title) return
-  await $fetch('/api/articles', {
-    method: 'POST',
-    body: {
-      title: newArticle.value.title,
-      content: newArticle.value.content || undefined,
-      userId: data.value?.user.id,
-    },
-  })
-  newArticle.value = {
-    title: '',
-    content: '',
-    userId: data.value?.user.id,
+  try {
+    await $fetch('/api/articles', {
+      method: 'POST',
+      body: {
+        title: newArticle.value.title,
+        content: newArticle.value.content || undefined,
+        slug: newArticle.value.slug,
+        userId: newArticle.value.userId,
+      },
+    })
+    toast.success({ message: 'Článek byl úspěšně přidán' })
+    newArticle.value = {
+      title: '',
+      content: '',
+      slug: '',
+      userId: newArticle.value.userId,
+    }
+    refresh()
+  } catch (error: any) {
+    toast.error({
+      message: error.data?.message || 'Nepodařilo se přidat článek',
+    })
   }
-  refresh()
 }
 </script>

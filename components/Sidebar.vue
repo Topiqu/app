@@ -9,9 +9,9 @@
     >
       <button
         class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-gray-200 transition-colors"
-        @click="tasksOpen = true"
+        @click="articleCreateOpen = true"
       >
-        <Icon name="mdi:check-circle-outline" class="w-6 h-6 text-black" />
+        <Icon name="mdi:pencil" class="w-6 h-6 text-black" />
       </button>
       <button
         class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-gray-200 transition-colors"
@@ -34,8 +34,8 @@
     @click="$emit('close')"
   />
 
-  <TransitionRoot :show="tasksOpen" as="template">
-    <Tasks @close="tasksOpen = false" />
+  <TransitionRoot :show="articleCreateOpen" as="template">
+    <ArticleCreate @close="articleCreateOpen = false" />
   </TransitionRoot>
   <TransitionRoot :show="tagsOpen" as="template">
     <Tags @close="tagsOpen = false" />
@@ -48,7 +48,7 @@ defineProps<{ isOpen: boolean }>()
 defineEmits(['close'])
 
 const isMobile = computed(() => window.innerWidth < 768)
-const tasksOpen = ref(false)
+const articleCreateOpen = ref(false)
 const tagsOpen = ref(false)
 </script>
 
