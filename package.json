@@ -30,6 +30,7 @@
     "@nuxt/test-utils": "3.18.0",
     "@prisma/client": "^6.9.0",
     "@sidebase/nuxt-auth": "^0.6.7",
+    "@tanstack/vue-table": "^8.21.3",
     "@unhead/vue": "^2.0.10",
     "@vueuse/nuxt": "^13.3.0",
     "argon2": "^0.43.0",

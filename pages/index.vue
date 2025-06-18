@@ -1,6 +1,7 @@
 <template>
   <div>
     <Auth />
+    <ArticleTable />
   </div>
 </template>
 

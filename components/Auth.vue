@@ -2,13 +2,13 @@
   <div class="max-w-md mx-auto mt-10">
     <div v-if="data?.user" class="space-y-4 text-center">
       <p class="text-green-600">
-        Welcome, {{ data.user?.name || data.user?.email }}!
+        Vítej, {{ data.user?.name || data.user?.email }}!
       </p>
       <button
         class="px-4 py-2 bg-red-500 text-white rounded"
         @click="handleLogout"
       >
-        Logout
+        Odhlásit se
       </button>
     </div>
 
@@ -22,7 +22,7 @@
           }"
           @click="mode = 'login'"
         >
-          Login
+          Přihlásit se
         </button>
         <button
           class="px-3 py-1 rounded"
@@ -32,13 +32,13 @@
           }"
           @click="mode = 'register'"
         >
-          Register
+          Registrace
         </button>
       </div>
 
       <form class="space-y-4" @submit.prevent="submit">
         <div>
-          <label for="username" class="block text-sm">Username</label>
+          <label for="username" class="block text-sm">Uživatelské jméno</label>
           <input
             id="username"
             v-model="form.username"
@@ -53,7 +53,7 @@
           </p>
         </div>
         <div>
-          <label for="password" class="block text-sm">Password</label>
+          <label for="password" class="block text-sm">Heslo</label>
           <input
             id="password"
             v-model="form.password"
@@ -71,7 +71,7 @@
           type="submit"
           class="px-4 py-2 bg-blue-500 text-white rounded w-full"
         >
-          {{ mode === 'register' ? 'Register' : 'Login' }}
+          {{ mode === 'register' ? 'Registrace' : 'Přihlásit se' }}
         </button>
       </form>
     </div>
@@ -120,13 +120,13 @@ const submit = async () => {
     })
 
     if (result?.error) {
-      toast.error({ message: result.error })
+      toast.error({ message: 'Nepodařilo se vás přihlásit' })
     } else {
       toast.success({ message: 'Přihlášení bylo úspěšné' })
       form.value = { username: '', password: '' }
     }
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Something went wrong' })
+    toast.error({ message: e.data?.message || 'Něco se pokazilo' })
   }
 }
 
