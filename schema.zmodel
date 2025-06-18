@@ -28,7 +28,7 @@ model Article {
     id        String        @id @default(uuid())
     slug      String        @unique @length(1, 100, "Slug musí mít 1-100 znaků")
     title     String        @length(1, 255, "Titulek musí mít 1-255 znaků")
-    content   String
+    content   String        @length(1, 2048, "Článek překročil délku znaků (2048)")
     tags      Json
     status    ArticleStatus @default(draft)
     createdAt DateTime      @default(now())
