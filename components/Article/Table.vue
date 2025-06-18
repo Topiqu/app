@@ -67,34 +67,12 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table'
+import type { Article } from '@zenstackhq/runtime/models'
+import { format } from 'date-fns'
 
-type Article = {
-  id: number
-  title: string
-  status: string
-  createdAt: string
-}
-
-const data = ref<Article[]>([
-  {
-    id: 1,
-    title: 'Placeholder Article 1',
-    status: 'Draft',
-    createdAt: '2025-06-15',
-  },
-  {
-    id: 2,
-    title: 'Placeholder Article 2',
-    status: 'Published',
-    createdAt: '2025-06-14',
-  },
-  {
-    id: 3,
-    title: 'Placeholder Article 3',
-    status: 'Pending',
-    createdAt: '2025-06-13',
-  },
-])
+const { data: articles } = await useFetch<Article[]>('/api/articles', {
+  default: () => [],
+})
 
 const globalFilter = ref('')
 
@@ -111,6 +89,8 @@ const columns = ref<ColumnDef<Article>[]>([
   {
     header: 'Datum',
     accessorKey: 'createdAt',
+    cell: (info) =>
+      format(new Date(info.getValue() as string), 'dd. MM. yyyy, HH:mm'),
   },
   {
     header: 'Akce',
@@ -120,7 +100,7 @@ const columns = ref<ColumnDef<Article>[]>([
 
 const table = useVueTable({
   get data() {
-    return data.value
+    return articles.value || []
   },
   get columns() {
     return columns.value
