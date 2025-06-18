@@ -55,18 +55,6 @@
                 class="p-4 rounded-2xl text-base resize-none border-b-2 focus:outline-none focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
               />
             </label>
-            <label class="flex flex-col gap-3">
-              <span
-                class="text-sm font-medium uppercase tracking-wide opacity-80"
-              >
-                Slug
-              </span>
-              <input
-                v-model="newArticle.slug"
-                placeholder="Slug článku"
-                class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-              />
-            </label>
           </div>
           <div
             v-if="articles.length"
@@ -86,7 +74,7 @@
               Zavřít
             </button>
             <button
-              :disabled="!newArticle.title || !newArticle.slug"
+              :disabled="!newArticle.title"
               class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               @click="createArticle"
             >
@@ -116,25 +104,22 @@ const { data: articles, refresh } = await useFetch('/api/articles', {
 const newArticle = ref({
   title: '',
   content: '',
-  slug: '',
   userId: data.value?.user.id,
 })
 
 const createArticle = async () => {
-  if (!newArticle.value.title || !newArticle.value.slug) return
+  if (!newArticle.value.title) return
   await $fetch('/api/articles', {
     method: 'POST',
     body: {
       title: newArticle.value.title,
       content: newArticle.value.content || undefined,
-      slug: newArticle.value.slug,
       userId: data.value?.user.id,
     },
   })
   newArticle.value = {
     title: '',
     content: '',
-    slug: '',
     userId: data.value?.user.id,
   }
   refresh()

@@ -1,10 +1,15 @@
+import slugify from 'slugify'
+
 export default defineEventHandler(async (event) => {
-  const body = await readValidatedBody(event, ArticleCreateSchema.parse)
+  const body = await readValidatedBody(event, (data) =>
+    ArticleCreateSchema.parse(data),
+  )
+  const slug = slugify(body.title, { lower: true, strict: true, trim: true })
   const article = await prisma.article.create({
     data: {
       title: body.title,
       content: body.content,
-      slug: body.slug,
+      slug,
       userId: body.userId,
       createdAt: new Date(),
       tags: body.tags || [],
