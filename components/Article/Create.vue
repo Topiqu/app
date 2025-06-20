@@ -26,16 +26,15 @@
         <DialogPanel
           class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm"
         >
-          <DialogTitle class="text-xl font-bold text-gray-900">
-            Správa článků
-          </DialogTitle>
+          <DialogTitle class="text-xl font-bold text-gray-900"
+            >Správa článků</DialogTitle
+          >
           <div class="flex flex-col gap-6">
             <label class="flex flex-col gap-3">
               <span
                 class="text-sm font-medium uppercase tracking-wide opacity-80"
+                >Název článku</span
               >
-                Název článku
-              </span>
               <input
                 v-model="newArticle.title"
                 placeholder="Název článku"
@@ -49,15 +48,9 @@
             <label class="flex flex-col gap-3">
               <span
                 class="text-sm font-medium uppercase tracking-wide opacity-80"
+                >Obsah (volitelné)</span
               >
-                Obsah (volitelné)
-              </span>
-              <textarea
-                v-model="newArticle.content"
-                placeholder="Obsah (volitelné)"
-                rows="5"
-                class="p-4 rounded-2xl text-base resize-none border-b-2 focus:outline-none focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-              />
+              <TiptapEditor v-model="newArticle.content" edit />
             </label>
           </div>
           <div

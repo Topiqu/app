@@ -87,6 +87,10 @@ const columns = ref<ColumnDef<Article>[]>([
     accessorKey: 'status',
   },
   {
+    header: 'Obsah',
+    accessorKey: 'content',
+  },
+  {
     header: 'Datum',
     accessorKey: 'createdAt',
     cell: (info) =>
