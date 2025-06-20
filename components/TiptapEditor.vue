@@ -272,7 +272,13 @@
           </span>
         </div>
       </div>
-      <EditorContent :editor :class="{ 'rounded-lg shadow-sm': edit }" />
+      <EditorContent
+        :editor
+        :class="{
+          'rounded-lg shadow-sm': edit,
+          'h-64 p-4 bg-white border border-gray-300 overflow-y-auto': true,
+        }"
+      />
     </template>
     <div v-else class="tiptap" v-html="content ? content : fallback" />
   </div>
