@@ -3,6 +3,7 @@ import { getServerSession } from '#auth'
 import { sanitizeHtml } from '~/server/utils/sanitize'
 
 export default defineEventHandler(async (event) => {
+  const id = getRouterParam(event, 'id')
   const user = (await getServerSession(event))?.user
 
   if (!user) throw createError({ status: 401 })
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
   const article = await prisma.article.update({
     where: {
-      id: body.id,
+      id,
     },
     data: {
       title: body.title,

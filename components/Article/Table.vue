@@ -46,7 +46,12 @@
               :key="cell.id"
               class="px-4 py-2"
             >
+              <div
+                v-if="cell.column.id === 'content'"
+                v-html="cell.getValue() as string"
+              ></div>
               <FlexRender
+                v-else
                 :render="cell.column.columnDef.cell"
                 :props="cell.getContext()"
               />
@@ -98,7 +103,11 @@ const globalFilter = ref('')
 const columns = ref<ColumnDef<Article>[]>([
   { header: 'Název', accessorKey: 'title', cell: (i) => i.getValue() },
   { header: 'Stav', accessorKey: 'status' },
-  { header: 'Obsah', accessorKey: 'content' },
+  {
+    header: 'Obsah',
+    accessorKey: 'content',
+    cell: (info) => info.getValue(),
+  },
   {
     header: 'Datum',
     accessorKey: 'createdAt',
