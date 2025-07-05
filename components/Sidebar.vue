@@ -21,18 +21,13 @@
       </button>
       <button
         class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-gray-200 transition-colors"
-        @click="$emit('close')"
       >
         <Icon name="mdi:chart-bar" class="w-6 h-6 text-black" />
       </button>
     </div>
   </transition>
 
-  <div
-    v-if="isMobile && isOpen"
-    class="fixed inset-0 z-30 bg-black/40"
-    @click="$emit('close')"
-  />
+  <div v-if="isMobile && isOpen" class="fixed inset-0 z-30 bg-black/40" />
 
   <TransitionRoot :show="articleCreateOpen" as="template">
     <ArticleCreate @close="articleCreateOpen = false" />
@@ -45,7 +40,6 @@
 <script setup lang="ts">
 import { TransitionRoot } from '@headlessui/vue'
 defineProps<{ isOpen: boolean }>()
-defineEmits(['close'])
 
 const isMobile = computed(() => window.innerWidth < 768)
 const articleCreateOpen = ref(false)

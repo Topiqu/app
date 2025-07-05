@@ -51,7 +51,13 @@
                 :props="cell.getContext()"
               />
             </td>
-            <td class="px-4 py-2">
+            <td class="px-4 py-2 flex gap-2">
+              <button
+                class="text-blue-500"
+                @click="editingArticle = row.original"
+              >
+                ✏️
+              </button>
               <button class="text-red-500" @click="del(row.original.id)">
                 🗑️
               </button>
@@ -61,9 +67,13 @@
       </table>
     </div>
   </div>
+  <TransitionRoot :show="!!editingArticle" as="template">
+    <ArticleEdit :article="editingArticle!" @close="editingArticle = null" />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
+import { TransitionRoot } from '@headlessui/vue'
 import {
   type ColumnDef,
   FlexRender,
@@ -79,6 +89,7 @@ const { data: articles, refresh } = await useFetch<Article[]>('/api/articles', {
   default: () => [],
 })
 
+const editingArticle = ref<Article | null>(null)
 const globalFilter = ref('')
 const columns = ref<ColumnDef<Article>[]>([
   { header: 'Název', accessorKey: 'title', cell: (i) => i.getValue() },
