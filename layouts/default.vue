@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen max-w-screen bg-gray-100 flex">
     <div class="hidden md:flex flex-shrink-0 items-center min-h-screen">
-      <Sidebar :is-open="true" />
+      <Sidebar v-if="data?.user" is-open />
     </div>
     <div class="flex-1 flex flex-col">
       <div
@@ -14,10 +14,10 @@
 
       <slot />
     </div>
-    <Sidebar :is-open="sidebarOpen" @close="sidebarOpen = false" />
   </div>
 </template>
 
 <script setup lang="ts">
+const { data } = useAuth()
 const sidebarOpen = ref(false)
 </script>

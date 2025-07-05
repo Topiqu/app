@@ -4,13 +4,17 @@ import { sanitizeHtml } from '~/server/utils/sanitize'
 
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
+
   if (!user) throw createError({ status: 401 })
 
-  const body = await readValidatedBody(event, ArticleCreateSchema.parse)
-  const article = await prisma.article.create({
+  const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
+  const article = await prisma.article.update({
+    where: {
+      id: body.id,
+    },
     data: {
       title: body.title,
-      content: sanitizeHtml(body.content),
+      content: sanitizeHtml(body.content!),
       slug: body.slug,
       userId: body.userId,
       createdAt: new Date(),
