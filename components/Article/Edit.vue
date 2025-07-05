@@ -27,8 +27,9 @@
           class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm"
         >
           <DialogTitle class="text-xl font-bold text-gray-900"
-            >Správa článků</DialogTitle
+            >Úprava článku</DialogTitle
           >
+
           <div class="flex flex-col gap-6">
             <label class="flex flex-col gap-3">
               <span
@@ -36,33 +37,24 @@
                 >Název článku</span
               >
               <input
-                v-model="newArticle.title"
-                placeholder="Název článku"
+                v-model="editedArticle.title"
                 class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
                 @input="updateSlug"
               />
               <span class="text-sm text-gray-500"
-                >URL Titulek: {{ newArticle.slug }}</span
+                >URL Titulek: {{ editedArticle.slug }}</span
               >
             </label>
+
             <label class="flex flex-col gap-3">
               <span
                 class="text-sm font-medium uppercase tracking-wide opacity-80"
-                >Obsah (volitelné)</span
+                >Obsah</span
               >
-              <TiptapEditor v-model="newArticle.content" edit />
+              <TiptapEditor v-model="editedArticle.content" edit />
             </label>
           </div>
-          <div
-            v-if="articles.length"
-            class="flex flex-col gap-2 max-h-48 overflow-y-auto"
-          >
-            <div v-for="a in articles" :key="a.id" class="text-gray-600">
-              {{ a.title }}
-              {{ a.status === 'published' ? '(Publikováno)' : '' }}
-            </div>
-          </div>
-          <p v-else class="text-gray-600">Žádné články.</p>
+
           <div class="flex gap-4 justify-end">
             <button
               class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
@@ -71,11 +63,11 @@
               Zavřít
             </button>
             <button
-              :disabled="!newArticle.title"
+              :disabled="!editedArticle.title"
               class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="createArticle"
+              @click="saveEdit"
             >
-              Přidat článek
+              Uložit změny
             </button>
           </div>
         </DialogPanel>
@@ -91,53 +83,42 @@ import {
   DialogTitle,
   TransitionChild,
 } from '@headlessui/vue'
+import type { Article } from '@zenstackhq/runtime/models'
 import slugify from 'slugify'
+import TiptapEditor from '@/components/TiptapEditor.vue'
+
 const toast = useToast()
-const { data } = useAuth()
-defineEmits(['close'])
+const emit = defineEmits(['close', 'saved'])
+const props = defineProps<{ article: Article }>()
 
-const { data: articles, refresh } = await useFetch('/api/articles', {
-  default: () => [],
-})
-
-const newArticle = ref({
-  title: '',
-  content: '',
-  slug: '',
-  userId: data.value?.user.id,
-})
+const editedArticle = ref({ ...props.article })
 
 const updateSlug = () => {
-  newArticle.value.slug = slugify(newArticle.value.title, {
+  editedArticle.value.slug = slugify(editedArticle.value.title, {
     lower: true,
     strict: true,
     trim: true,
   })
 }
 
-const createArticle = async () => {
-  if (!newArticle.value.title) return
+const saveEdit = async () => {
   try {
-    await $fetch('/api/articles', {
-      method: 'POST',
+    await $fetch(`/api/articles/${editedArticle.value.id}`, {
+      method: 'PATCH',
       body: {
-        title: newArticle.value.title,
-        content: newArticle.value.content || undefined,
-        slug: newArticle.value.slug,
-        userId: newArticle.value.userId,
+        id: editedArticle.value.id,
+        title: editedArticle.value.title,
+        content: editedArticle.value.content,
+        slug: editedArticle.value.slug,
+        userId: editedArticle.value.userId,
       },
     })
-    toast.success({ message: 'Článek byl úspěšně přidán' })
-    newArticle.value = {
-      title: '',
-      content: '',
-      slug: '',
-      userId: newArticle.value.userId,
-    }
-    refresh()
+    toast.success({ message: 'Článek byl úspěšně upraven' })
+    emit('close')
+    emit('saved')
   } catch (error: any) {
     toast.error({
-      message: error.data?.message || 'Nepodařilo se přidat článek',
+      message: error.data?.message || 'Úprava článku selhala',
     })
   }
 }

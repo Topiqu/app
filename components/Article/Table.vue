@@ -68,7 +68,11 @@
     </div>
   </div>
   <TransitionRoot :show="!!editingArticle" as="template">
-    <ArticleEdit :article="editingArticle!" @close="editingArticle = null" />
+    <ArticleEdit
+      :article="editingArticle!"
+      @close="editingArticle = null"
+      @saved="refresh"
+    />
   </TransitionRoot>
 </template>
 
