@@ -4,8 +4,8 @@
       <div class="relative w-full max-w-xl">
         <span
           class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none"
-          >🔍</span
-        >
+          ><Icon name="material-symbols:search-rounded"
+        /></span>
         <input
           v-model="globalFilter"
           type="text"
