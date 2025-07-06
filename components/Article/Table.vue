@@ -1,12 +1,19 @@
 <template>
   <div class="space-y-4">
-    <input
-      v-model="globalFilter"
-      type="text"
-      placeholder="🔍 Hledat články..."
-      class="w-full rounded border px-3 py-2 shadow-sm focus:outline-none focus:ring"
-    />
-
+    <div class="flex justify-center">
+      <div class="relative w-full max-w-xl">
+        <span
+          class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none"
+          >🔍</span
+        >
+        <input
+          v-model="globalFilter"
+          type="text"
+          placeholder="Hledat články..."
+          class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+        />
+      </div>
+    </div>
     <div class="overflow-x-auto rounded border border-gray-300">
       <table class="min-w-full divide-y divide-gray-200 text-sm">
         <thead class="bg-gray-100 text-left font-semibold text-gray-600">
@@ -106,7 +113,10 @@ const columns = ref<ColumnDef<Article>[]>([
   {
     header: 'Obsah',
     accessorKey: 'content',
-    cell: (info) => info.getValue(),
+    cell: (info) => {
+      const value = info.getValue() as string
+      return value.replace(/<[^>]+>/g, '').slice(0, 256)
+    },
   },
   {
     header: 'Datum',
