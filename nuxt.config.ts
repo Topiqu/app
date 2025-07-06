@@ -1,4 +1,4 @@
-const zod = { from: 'zod', imports: [{ name: 'z', as: 'z' }] }
+const zod = { from: 'zod', imports: [{ name: 'z' }] }
 
 export default defineNuxtConfig({
   ssr: false,
@@ -23,9 +23,7 @@ export default defineNuxtConfig({
   },
   auth: {
     provider: { type: 'authjs' },
-    baseURL: process.env.AUTH_ORIGIN
-      ? `${process.env.AUTH_ORIGIN}`
-      : 'http://localhost:3000/api/auth',
+    baseURL: process.env.AUTH_ORIGIN,
     originEnvKey: 'AUTH_ORIGIN',
   },
   nitro: {
@@ -36,6 +34,6 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    authSecret: process.env.AUTH_SECRET || 'placeholder',
+    authSecret: process.env.AUTH_SECRET,
   },
 })
