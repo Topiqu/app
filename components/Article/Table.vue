@@ -35,10 +35,12 @@
                   :render="header.column.columnDef.header"
                   :props="header.getContext()"
                 />
-                <span v-if="header.column.getIsSorted() === 'asc'">🔼</span>
+                <span v-if="header.column.getIsSorted() === 'asc'"
+                  ><Icon name="mdi:arrow-up"
+                /></span>
                 <span v-else-if="header.column.getIsSorted() === 'desc'"
-                  >🔽</span
-                >
+                  ><Icon name="mdi:arrow-down"
+                /></span>
               </span>
             </th>
           </tr>
@@ -74,10 +76,10 @@
                 class="text-blue-500"
                 @click="editingArticle = row.original"
               >
-                ✏️
+                <Icon name="mdi:pencil" />
               </button>
               <button class="text-red-500" @click="del(row.original.id)">
-                🗑️
+                <Icon name="mdi:delete" />
               </button>
             </td>
           </tr>
@@ -130,12 +132,6 @@ const columns = ref<ColumnDef<Article>[]>([
         row,
         onUpdate: (id: string, status: ArticleStatus) => setStatus(id, status),
       }),
-  },
-  {
-    header: 'Obsah',
-    accessorKey: 'content',
-    cell: (info) =>
-      (info.getValue() as string).replace(/<[^>]+>/g, '').slice(0, 256),
   },
   {
     header: 'Datum',
