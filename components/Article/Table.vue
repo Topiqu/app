@@ -50,11 +50,13 @@
             v-for="row in table.getRowModel().rows"
             :key="row.id"
             :class="[
-              'transition-colors duration-200 hover:bg-gray-100',
+              'transition-colors duration-200 hover:bg-gray-100 cursor-pointer group',
               row.original.status === 'published'
                 ? 'bg-green-50 border-l-4 border-green-400'
                 : 'bg-white border-l-4 border-yellow-400',
+              'hover:underline hover:text-blue-600',
             ]"
+            @click="() => router.push(`/articles/${row.original.slug}`)"
           >
             <td
               v-for="cell in row.getVisibleCells()"
@@ -108,7 +110,9 @@ import {
 } from '@tanstack/vue-table'
 import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
+import { useRouter } from 'vue-router'
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
+const router = useRouter()
 const toast = useToast()
 
 const { data: articles, refresh } = await useFetch<Article[]>('/api/articles', {
