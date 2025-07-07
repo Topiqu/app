@@ -177,13 +177,13 @@ async function setStatus(id: string, status: ArticleStatus) {
       body: { status },
     })
 
-    const art = articles.value.find((a) => a.id === id)
-    if (art) art.status = status
+    await refresh()
+
+    articles.value = [...articles.value]
 
     toast.success({
       message: `Stav změněn na ${status === 'draft' ? 'drafted' : 'published'}`,
     })
-    refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Změna stavu selhala' })
   }

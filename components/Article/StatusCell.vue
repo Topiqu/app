@@ -17,7 +17,12 @@ const emit = defineEmits<{
   (e: 'update', id: string, newStatus: ArticleStatus): void
 }>()
 
-const localStatus = ref<ArticleStatus>(props.row.original.status)
+const localStatus = computed({
+  get: () => props.row.original.status,
+  set: (val: ArticleStatus) => {
+    emit('update', props.row.original.id, val)
+  },
+})
 
 function onChange(e: Event) {
   const newStatus = (e.target as HTMLSelectElement).value as ArticleStatus
