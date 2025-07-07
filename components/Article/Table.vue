@@ -47,7 +47,12 @@
           <tr
             v-for="row in table.getRowModel().rows"
             :key="row.id"
-            class="hover:bg-gray-50"
+            :class="[
+              'transition-colors duration-200 hover:bg-gray-100',
+              row.original.status === 'published'
+                ? 'bg-green-50 border-l-4 border-green-400'
+                : 'bg-white border-l-4 border-yellow-400',
+            ]"
           >
             <td
               v-for="cell in row.getVisibleCells()"
