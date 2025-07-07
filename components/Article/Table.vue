@@ -4,8 +4,9 @@
       <div class="relative w-full max-w-xl">
         <span
           class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none"
-          ><Icon name="material-symbols:search-rounded"
-        /></span>
+        >
+          <Icon name="material-symbols:search-rounded" />
+        </span>
         <input
           v-model="globalFilter"
           type="text"
@@ -98,30 +99,44 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table'
-import type { Article } from '@zenstackhq/runtime/models'
+import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
+import ArticleStatusCell from '~/components/Article/StatusCell.vue'
 const toast = useToast()
+
 const { data: articles, refresh } = await useFetch<Article[]>('/api/articles', {
   default: () => [],
 })
 
 const editingArticle = ref<Article | null>(null)
 const globalFilter = ref('')
+
 const columns = ref<ColumnDef<Article>[]>([
-  { header: 'Název', accessorKey: 'title', cell: (i) => i.getValue() },
-  { header: 'Stav', accessorKey: 'status' },
+  {
+    header: 'Název',
+    accessorKey: 'title',
+    cell: (info) => info.getValue(),
+  },
+  {
+    header: 'Stav',
+    accessorKey: 'status',
+    cell: ({ row }) =>
+      h(ArticleStatusCell, {
+        row,
+        onUpdate: (id: string, status: ArticleStatus) => setStatus(id, status),
+      }),
+  },
   {
     header: 'Obsah',
     accessorKey: 'content',
-    cell: (info) => {
-      const value = info.getValue() as string
-      return value.replace(/<[^>]+>/g, '').slice(0, 256)
-    },
+    cell: (info) =>
+      (info.getValue() as string).replace(/<[^>]+>/g, '').slice(0, 256),
   },
   {
     header: 'Datum',
     accessorKey: 'createdAt',
-    cell: (i) => format(new Date(i.getValue() as string), 'dd.MM.yyyy,HH:mm'),
+    cell: (info) =>
+      format(new Date(info.getValue() as string), 'dd.MM.yyyy,HH:mm'),
   },
 ])
 
@@ -152,6 +167,25 @@ async function del(id: string) {
     refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Smazání selhalo' })
+  }
+}
+
+async function setStatus(id: string, status: ArticleStatus) {
+  try {
+    await $fetch(`/api/articles/${id}/status`, {
+      method: 'PATCH',
+      body: { status },
+    })
+
+    const art = articles.value.find((a) => a.id === id)
+    if (art) art.status = status
+
+    toast.success({
+      message: `Stav změněn na ${status === 'draft' ? 'drafted' : 'published'}`,
+    })
+    refresh()
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Změna stavu selhala' })
   }
 }
 </script>
