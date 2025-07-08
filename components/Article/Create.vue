@@ -13,6 +13,7 @@
         class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity"
       />
     </TransitionChild>
+
     <div class="fixed inset-0 flex items-center justify-center p-6">
       <TransitionChild
         as="template"
@@ -29,6 +30,7 @@
           <DialogTitle class="text-xl font-bold text-gray-900"
             >Přidat článek</DialogTitle
           >
+
           <div class="flex flex-col gap-6">
             <label class="flex flex-col gap-3">
               <span
@@ -45,6 +47,7 @@
                 >URL Titulek: {{ newArticle.slug }}</span
               >
             </label>
+
             <label class="flex flex-col gap-3">
               <span
                 class="text-sm font-medium uppercase tracking-wide opacity-80"
@@ -52,7 +55,19 @@
               >
               <TiptapEditor v-model="newArticle.content" edit />
             </label>
+
+            <label class="flex flex-col gap-3">
+              <span
+                class="text-sm font-medium uppercase tracking-wide opacity-80"
+                >Obrázek</span
+              >
+              <FileUploader @upload="handleUpload" />
+              <span v-if="newArticle.imageUrl" class="text-sm text-gray-500">
+                Obrázek: {{ newArticle.imageUrl }}
+              </span>
+            </label>
           </div>
+
           <div
             v-if="articles.length"
             class="flex flex-col gap-2 max-h-48 overflow-y-auto"
@@ -63,6 +78,7 @@
             </div>
           </div>
           <p v-else class="text-gray-600">Žádné články.</p>
+
           <div class="flex gap-4 justify-end">
             <button
               class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
@@ -105,6 +121,7 @@ const newArticle = ref({
   content: '',
   slug: '',
   userId: data.value?.user.id,
+  imageUrl: '',
 })
 
 const updateSlug = () => {
@@ -113,6 +130,10 @@ const updateSlug = () => {
     strict: true,
     trim: true,
   })
+}
+
+const handleUpload = (file: { url: string }) => {
+  newArticle.value.imageUrl = file.url
 }
 
 const createArticle = async () => {
@@ -133,6 +154,7 @@ const createArticle = async () => {
       content: '',
       slug: '',
       userId: newArticle.value.userId,
+      imageUrl: '',
     }
     refresh()
   } catch (error: any) {
