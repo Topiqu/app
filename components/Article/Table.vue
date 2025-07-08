@@ -50,13 +50,11 @@
             v-for="row in table.getRowModel().rows"
             :key="row.id"
             :class="[
-              'transition-colors duration-200 hover:bg-gray-100 cursor-pointer group',
+              'transition-colors duration-200 hover:bg-gray-100 group',
               row.original.status === 'published'
                 ? 'bg-green-50 border-l-4 border-green-400'
                 : 'bg-white border-l-4 border-yellow-400',
-              'hover:underline hover:text-blue-600',
             ]"
-            @click="() => router.push(`/articles/${row.original.slug}`)"
           >
             <td
               v-for="cell in row.getVisibleCells()"
@@ -73,15 +71,24 @@
                 :props="cell.getContext()"
               />
             </td>
-            <td class="px-4 py-2 flex gap-2">
+            <td class="px-4 py-2 flex gap-4">
               <button
-                class="text-blue-500"
+                class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 text-gray-800 rounded-full hover:from-green-300 hover:to-green-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+                @click="router.push(`/articles/${row.original.slug}`)"
+              >
+                <Icon name="mdi:eye" class="w-5 h-5" />
+              </button>
+              <button
+                class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="editingArticle = row.original"
               >
-                <Icon name="mdi:pencil" />
+                <Icon name="mdi:pencil" class="w-5 h-5" />
               </button>
-              <button class="text-red-500" @click="del(row.original.id)">
-                <Icon name="mdi:delete" />
+              <button
+                class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+                @click="del(row.original.id)"
+              >
+                <Icon name="mdi:delete" class="w-5 h-5" />
               </button>
             </td>
           </tr>
