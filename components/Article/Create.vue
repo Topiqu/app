@@ -150,9 +150,12 @@ const createArticle = async () => {
         content: newArticle.value.content || undefined,
         slug: newArticle.value.slug,
         userId: newArticle.value.userId,
+        imageUrl: newArticle.value.imageUrl,
       },
     })
+
     toast.success({ message: 'Článek byl úspěšně přidán' })
+
     newArticle.value = {
       title: '',
       content: '',
@@ -160,6 +163,7 @@ const createArticle = async () => {
       userId: newArticle.value.userId,
       imageUrl: '',
     }
+
     refresh()
   } catch (error: any) {
     toast.error({

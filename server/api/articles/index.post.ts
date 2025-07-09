@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
       userId: body.userId,
       createdAt: new Date(),
       tags: body.tags || [],
+      imageUrl: body.imageUrl,
     },
   })
   return article
