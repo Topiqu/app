@@ -94,9 +94,21 @@
 </template>
 
 <script lang="ts" setup>
-import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
+import type { ArticleStatus } from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
 import { useRoute } from 'vue-router'
+
+type Article = {
+  slug: string
+  id: string
+  title: string
+  content: string
+  imageUrl: string | null
+  status: ArticleStatus
+  createdAt: Date
+  userId: string
+  tags?: string[]
+}
 
 const route = useRoute()
 const { data: user } = useAuth()
