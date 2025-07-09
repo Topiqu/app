@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-4">
     <div v-if="previewUrl">
-      <img
+      <NuxtImg
         :src="previewUrl"
         class="w-20 h-20 object-cover rounded-md shadow-md"
         alt="Preview"
