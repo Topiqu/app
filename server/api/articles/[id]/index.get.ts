@@ -11,7 +11,14 @@ export default defineEventHandler(async (event) => {
 
   const article = await prisma.article.findUnique({
     where: { slug },
-    include: { user: true },
+    include: {
+      user: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
+    },
   })
 
   if (!article)

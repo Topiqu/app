@@ -13,7 +13,6 @@ export default defineEventHandler(async (event) => {
       slug: body.slug,
       userId: body.userId,
       createdAt: new Date(),
-      tags: body.tags || [],
       imageUrl: body.imageUrl,
     },
   })
