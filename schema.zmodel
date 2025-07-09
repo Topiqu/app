@@ -29,12 +29,29 @@ model Article {
     slug      String        @unique @length(1, 100, "Slug musí mít 1-100 znaků")
     title     String        @length(1, 255, "Titulek musí mít 1-255 znaků")
     content   String        @length(1, 2048, "Článek překročil délku znaků (2048)")
-    tags      Json
     imageUrl  String?       @length(0, 255, "URL obrázku musí mít maximálně 255 znaků")
     status    ArticleStatus @default(draft)
     createdAt DateTime      @default(now())
     user      User          @relation(fields: [userId], references: [id])
     userId    String
+    tags      ArticleTag[]
+}
+
+model Tag {
+    id        String       @id @default(uuid())
+    createdAt DateTime     @default(now())
+    updatedAt DateTime     @updatedAt
+    name      String       @unique @length(1, 64, "Název tagu musí mít mezi 1 a 64 znaky")
+    articles  ArticleTag[]
+}
+
+model ArticleTag {
+    articleId String
+    tagId     String
+    article   Article @relation(fields: [articleId], references: [id])
+    tag       Tag     @relation(fields: [tagId], references: [id])
+
+    @@id([articleId, tagId])
 }
 
 model User {
