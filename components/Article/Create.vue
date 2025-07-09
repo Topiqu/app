@@ -25,61 +25,65 @@
         leave-to="opacity-0 scale-90"
       >
         <DialogPanel
-          class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm"
+          class="w-full max-w-lg bg-white p-6 rounded-3xl shadow-2xl border backdrop-blur-sm flex flex-col max-h-[80vh]"
         >
-          <DialogTitle class="text-xl font-bold text-gray-900"
-            >Přidat článek</DialogTitle
-          >
+          <div class="flex-1 overflow-y-auto pr-4">
+            <DialogTitle class="text-xl font-bold text-gray-900 mb-6">
+              Přidat článek
+            </DialogTitle>
 
-          <div class="flex flex-col gap-6">
-            <label class="flex flex-col gap-3">
-              <span
-                class="text-sm font-medium uppercase tracking-wide opacity-80"
-                >Název článku</span
-              >
-              <input
-                v-model="newArticle.title"
-                placeholder="Název článku"
-                class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-                @input="updateSlug"
-              />
-              <span class="text-sm text-gray-500"
-                >URL Titulek: {{ newArticle.slug }}</span
-              >
-            </label>
+            <div class="flex flex-col gap-6">
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                >
+                  Název článku
+                </span>
+                <input
+                  v-model="newArticle.title"
+                  placeholder="Název článku"
+                  class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+                  @input="updateSlug"
+                />
+                <span class="text-sm text-gray-500"
+                  >URL Titulek: {{ newArticle.slug }}</span
+                >
+              </label>
 
-            <label class="flex flex-col gap-3">
-              <span
-                class="text-sm font-medium uppercase tracking-wide opacity-80"
-                >Obsah (volitelné)</span
-              >
-              <TiptapEditor v-model="newArticle.content" edit />
-            </label>
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                >
+                  Obsah (volitelné)
+                </span>
+                <TiptapEditor v-model="newArticle.content" edit />
+              </label>
 
-            <label class="flex flex-col gap-3">
-              <span
-                class="text-sm font-medium uppercase tracking-wide opacity-80"
-                >Obrázek</span
-              >
-              <FileUploader @upload="handleUpload" />
-              <span v-if="newArticle.imageUrl" class="text-sm text-gray-500">
-                Obrázek: {{ newArticle.imageUrl }}
-              </span>
-            </label>
-          </div>
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                >
+                  Titulní Obrázek
+                </span>
+                <FileUploader @upload="handleUpload" />
+                <span v-if="newArticle.imageUrl" class="text-sm text-gray-500">
+                  Obrázek: {{ newArticle.imageUrl }}
+                </span>
+              </label>
 
-          <div
-            v-if="articles.length"
-            class="flex flex-col gap-2 max-h-48 overflow-y-auto"
-          >
-            <div v-for="a in articles" :key="a.id" class="text-gray-600">
-              {{ a.title }}
-              {{ a.status === 'published' ? '(Publikováno)' : '' }}
+              <div
+                v-if="articles.length"
+                class="flex flex-col gap-2 max-h-48 overflow-y-auto"
+              >
+                <div v-for="a in articles" :key="a.id" class="text-gray-600">
+                  {{ a.title }}
+                  {{ a.status === 'published' ? '(Publikováno)' : '' }}
+                </div>
+              </div>
+              <p v-else class="text-gray-600">Žádné články.</p>
             </div>
           </div>
-          <p v-else class="text-gray-600">Žádné články.</p>
-
-          <div class="flex gap-4 justify-end">
+          <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
             <button
               class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
               @click="$emit('close')"
