@@ -4,7 +4,7 @@ export default defineEventHandler(async (event: H3Event) => {
   const { id: articleId } = event.context.params!
   const body = await readValidatedBody(
     event,
-    ArticleTagCreateScalarSchema.parse,
+    z.object({ tagId: z.string() }).parse,
   )
 
   return await prisma.articleTag.create({
