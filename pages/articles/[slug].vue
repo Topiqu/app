@@ -3,7 +3,7 @@
     v-if="data"
     class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 transition-all duration-500 ease-out"
   >
-    <div class="max-w-4xl mx-auto flex flex-col gap-8">
+    <div class="max-w-3xl mx-auto flex flex-col gap-6 px-2 sm:px-0">
       <NuxtLink
         to="/"
         class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 ease-in-out"
@@ -30,35 +30,44 @@
         quality="80"
         width="672"
         height="336"
-        class="max-w-3xl rounded-2xl shadow-lg border border-gray-100 object-cover w-full h-auto max-h-[336px] transition-transform duration-500 hover:scale-[1.01]"
+        class="rounded-xl shadow-md border border-gray-100 object-cover w-full h-auto max-h-[320px] transition-transform duration-500 hover:scale-[1.005]"
         aria-describedby="image-caption"
       />
       <span id="image-caption" class="sr-only">Titulní obrázek článku</span>
 
-      <div v-if="hasTags" class="mt-6">
+      <div v-if="hasTags" class="mt-4">
         <div class="flex flex-wrap gap-2.5">
           <span
             v-for="t in data.tags"
             :key="t.tagId"
-            class="inline-flex items-center px-3.5 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 text-base font-medium text-blue-800 border border-blue-200 shadow-sm hover:shadow-md hover:bg-gradient-to-r hover:from-blue-100 hover:to-blue-200 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 cursor-pointer"
+            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all"
           >
-            <Icon name="mdi:tag" class="w-4 h-4 mr-1 text-blue-500" />
+            <Icon name="mdi:tag" class="w-4 h-4 text-gray-500" />
             {{ t.tag.name }}
           </span>
         </div>
       </div>
-      <div class="flex items-center gap-4 text-lg text-gray-600 flex-wrap">
-        <span v-if="user">
-          <span class="font-medium">Stav:</span>
-          <ArticleStatusCell :onUpdate="setStatus" :row="{ original: data }" />
-        </span>
-        <span v-else class="font-medium">
-          {{ data.status === 'draft' ? 'Návrh' : 'Publikováno' }}
-        </span>
-        <span class="text-gray-300">|</span>
-        <span class="font-medium">
-          {{ formatDate(data.createdAt.toString()) }}
-        </span>
+
+      <div
+        class="flex items-center justify-between text-lg text-gray-600 flex-wrap gap-3"
+      >
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
+            <span class="font-medium">Stav:</span>
+            <ArticleStatusCell
+              v-if="user"
+              :onUpdate="setStatus"
+              :row="{ original: data }"
+            />
+            <span v-else class="font-medium">
+              {{ data.status === 'draft' ? 'Návrh' : 'Publikováno' }}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-gray-500">
+            <Icon name="mdi:calendar" class="w-4 h-4" />
+            <span>{{ formatDate(data.createdAt.toString()) }}</span>
+          </div>
+        </div>
         <div v-if="user" class="flex items-center gap-2">
           <button
             class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
@@ -71,7 +80,7 @@
       </div>
 
       <div
-        class="prose max-w-none bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 transition-all duration-500 hover:shadow-xl hover:border-gray-200 text-lg leading-relaxed"
+        class="max-w-none bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-base md:text-lg leading-7 text-gray-800 tracking-normal space-y-5 prose prose-gray prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6"
         v-html="data.content"
       />
     </div>
@@ -202,31 +211,3 @@ const refresh = async () => {
   data.value = newData.value
 }
 </script>
-
-<style scoped>
-.prose :deep(p) {
-  margin: 0.75rem 0;
-  line-height: 1.75;
-  color: #4a5568;
-}
-
-.prose :deep(h2) {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 1rem 0;
-  color: #2d3748;
-}
-
-.animate-spin {
-  animation: spin 1.5s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>
