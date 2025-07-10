@@ -9,9 +9,7 @@
       leave-from="opacity-100"
       leave-to="opacity-0"
     >
-      <div
-        class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity"
-      />
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" />
     </TransitionChild>
 
     <div class="fixed inset-0 flex items-center justify-center p-6">
@@ -25,38 +23,37 @@
         leave-to="opacity-0 scale-90"
       >
         <DialogPanel
-          class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm"
+          class="w-full max-w-xl bg-white p-8 rounded-2xl shadow-xl flex flex-col gap-6 border border-gray-200"
         >
-          <DialogTitle class="text-xl font-bold text-gray-900"
-            >Správa tagů</DialogTitle
-          >
+          <DialogTitle class="text-2xl font-semibold text-gray-900">
+            Tagy článku
+          </DialogTitle>
 
-          <div v-if="tags.length" class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2">
             <div
               v-for="t in tags"
               :key="t.tagId"
-              class="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm"
+              class="flex items-center gap-2 px-4 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium"
             >
               {{ t.tag.name }}
               <button
-                class="text-blue-700 hover:text-red-600"
+                class="text-blue-700 hover:text-red-500 focus:outline-none"
                 @click="removeTag(t.tagId)"
               >
                 ×
               </button>
             </div>
           </div>
-          <p v-else class="text-gray-600">Žádné tagy.</p>
 
-          <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-4 mt-4">
             <div class="flex gap-2">
               <input
                 v-model="newTag"
-                placeholder="Vlastní tag"
-                class="flex-1 p-3 rounded-xl border focus:outline-none focus:ring-2"
+                placeholder="Přidat vlastní tag"
+                class="flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
               <button
-                class="px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition"
+                class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
                 @click="addCustomTag"
               >
                 Přidat
@@ -66,7 +63,7 @@
             <div class="flex gap-2">
               <select
                 v-model="selectedTagId"
-                class="flex-1 p-3 rounded-xl border focus:outline-none focus:ring-2"
+                class="flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="">Vyber existující tag</option>
                 <option v-for="t in availableTags" :key="t.id" :value="t.id">
@@ -74,7 +71,7 @@
                 </option>
               </select>
               <button
-                class="px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition"
+                class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
                 @click="addExistingTag"
               >
                 Přidat
@@ -82,9 +79,9 @@
             </div>
           </div>
 
-          <div class="flex gap-4 justify-end">
+          <div class="flex justify-end mt-6">
             <button
-              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+              class="px-6 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium transition"
               @click="$emit('close')"
             >
               Zavřít
@@ -107,10 +104,7 @@ import {
 type Tag = { id: string; name: string; createdAt: string; updatedAt: string }
 type ArticleTag = { tagId: string; tag: { name: string } }
 
-const props = defineProps<{
-  articleId: string
-}>()
-
+const props = defineProps<{ articleId: string }>()
 defineEmits(['close'])
 
 const newTag = ref('')
@@ -128,17 +122,14 @@ const { data: availableTags, refresh: refreshAvailableTags } = await useFetch<
 
 const addCustomTag = async () => {
   if (!newTag.value.trim()) return
-
   const tag = await $fetch('/api/tags', {
     method: 'POST',
     body: { name: newTag.value.trim() },
   })
-
   await $fetch(`/api/articles/${props.articleId}/tags`, {
     method: 'POST',
     body: { tagId: tag.id },
   })
-
   await Promise.all([refreshTags(), refreshAvailableTags()])
   tags.value = articleTags.value ?? []
   newTag.value = ''
@@ -146,12 +137,10 @@ const addCustomTag = async () => {
 
 const addExistingTag = async () => {
   if (!selectedTagId.value) return
-
   await $fetch(`/api/articles/${props.articleId}/tags`, {
     method: 'POST',
     body: { tagId: selectedTagId.value },
   })
-
   await Promise.all([refreshTags(), refreshAvailableTags()])
   tags.value = articleTags.value ?? []
   selectedTagId.value = ''
@@ -161,7 +150,6 @@ const removeTag = async (tagId: string) => {
   await $fetch(`/api/articles/${props.articleId}/tags/${tagId}`, {
     method: 'DELETE',
   })
-
   await Promise.all([refreshTags(), refreshAvailableTags()])
   tags.value = articleTags.value ?? []
 }

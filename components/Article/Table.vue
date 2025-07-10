@@ -85,6 +85,12 @@
                 <Icon name="mdi:pencil" class="w-5 h-5" />
               </button>
               <button
+                class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 text-gray-800 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+                @click="editingTags = row.original.id"
+              >
+                <Icon name="mdi:tag" class="w-5 h-5" />
+              </button>
+              <button
                 class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="del(row.original.id)"
               >
@@ -103,6 +109,9 @@
       @saved="refresh"
     />
   </TransitionRoot>
+  <TransitionRoot :show="!!editingTags" as="template">
+    <ArticleTag :article-id="editingTags!" @close="editingTags = null" />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
@@ -119,6 +128,8 @@ import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
 import { useRouter } from 'vue-router'
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
+import ArticleTag from '~/components/Article/Tag.vue'
+
 const router = useRouter()
 const toast = useToast()
 
@@ -127,6 +138,7 @@ const { data: articles, refresh } = await useFetch<Article[]>('/api/articles', {
 })
 
 const editingArticle = ref<Article | null>(null)
+const editingTags = ref<string | null>(null)
 const globalFilter = ref('')
 
 const columns = ref<ColumnDef<Article>[]>([
