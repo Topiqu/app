@@ -33,7 +33,7 @@
     <ArticleCreate @close="articleCreateOpen = false" />
   </TransitionRoot>
   <TransitionRoot :show="tagsOpen" as="template">
-    <Tags @close="tagsOpen = false" />
+    <TagsCreate @close="tagsOpen = false" />
   </TransitionRoot>
 </template>
 
