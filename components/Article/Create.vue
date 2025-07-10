@@ -70,7 +70,7 @@
                   Obrázek: {{ newArticle.imageUrl }}
                 </span>
               </label>
-
+              <TagsManager v-model:tags="articleTags" />
               <div
                 v-if="articles.length"
                 class="flex flex-col gap-2 max-h-48 overflow-y-auto"
@@ -111,7 +111,9 @@ import {
   DialogTitle,
   TransitionChild,
 } from '@headlessui/vue'
+import type { ArticleStatus } from '@zenstackhq/runtime/models'
 import slugify from 'slugify'
+
 const toast = useToast()
 const { data } = useAuth()
 defineEmits(['close'])
@@ -126,7 +128,10 @@ const newArticle = ref({
   slug: '',
   userId: data.value?.user.id,
   imageUrl: '',
+  status: 'draft' as ArticleStatus,
 })
+
+const articleTags = ref<string[]>([])
 
 const updateSlug = () => {
   newArticle.value.slug = slugify(newArticle.value.title, {
@@ -143,7 +148,7 @@ const handleUpload = (file: { url: string }) => {
 const createArticle = async () => {
   if (!newArticle.value.title) return
   try {
-    await $fetch('/api/articles', {
+    const { id } = await $fetch('/api/articles', {
       method: 'POST',
       body: {
         title: newArticle.value.title,
@@ -151,8 +156,16 @@ const createArticle = async () => {
         slug: newArticle.value.slug,
         userId: newArticle.value.userId,
         imageUrl: newArticle.value.imageUrl,
+        status: newArticle.value.status,
       },
     })
+
+    for (const tagId of articleTags.value) {
+      await $fetch(`/api/articles/${id}/tags`, {
+        method: 'POST',
+        body: { tagId },
+      })
+    }
 
     toast.success({ message: 'Článek byl úspěšně přidán' })
 
@@ -162,7 +175,9 @@ const createArticle = async () => {
       slug: '',
       userId: newArticle.value.userId,
       imageUrl: '',
+      status: 'draft' as ArticleStatus,
     }
+    articleTags.value = []
 
     refresh()
   } catch (error: any) {
