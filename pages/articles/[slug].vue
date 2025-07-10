@@ -1,22 +1,23 @@
 <template>
   <div
     v-if="data"
-    class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-50 p-8 transition-all duration-500 ease-out"
+    class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 transition-all duration-500 ease-out"
   >
-    <div class="max-w-5xl mx-auto flex flex-col gap-8">
+    <div class="max-w-4xl mx-auto flex flex-col gap-8">
       <NuxtLink
         to="/"
-        class="group inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-all duration-300 ease-in-out"
+        class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 ease-in-out"
+        aria-label="Zpět na seznam článků"
       >
         <Icon
           name="mdi:arrow-left"
-          class="w-5 h-5 mr-2 transition-transform duration-300 group-hover:-translate-x-1"
+          class="w-6 h-6 mr-2 transition-transform duration-300 group-hover:-translate-x-1.5"
         />
         Zpět na seznam
       </NuxtLink>
 
       <h1
-        class="text-5xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-blue-600 to-purple-700 bg-clip-text text-transparent tracking-tight"
+        class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent tracking-tight leading-tight"
       >
         {{ data.title }}
       </h1>
@@ -26,27 +27,29 @@
         :src="data.imageUrl"
         :alt="`Titulní obrázek k článku: ${data.title}`"
         format="webp"
-        quality="85"
-        width="900"
-        height="450"
-        class="rounded-3xl shadow-2xl border border-gray-100 object-cover w-full h-auto max-h-[450px] transition-transform duration-500 hover:scale-[1.02]"
+        quality="80"
+        width="672"
+        height="336"
+        class="max-w-3xl rounded-2xl shadow-lg border border-gray-100 object-cover w-full h-auto max-h-[336px] transition-transform duration-500 hover:scale-[1.01]"
+        aria-describedby="image-caption"
       />
-      <div v-if="hasTags" class="mt-8">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Tagy</h3>
-        <div class="flex flex-wrap gap-3">
+      <span id="image-caption" class="sr-only">Titulní obrázek článku</span>
+
+      <div v-if="hasTags" class="mt-6">
+        <div class="flex flex-wrap gap-2.5">
           <span
             v-for="t in data.tags"
             :key="t.tagId"
-            class="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 text-sm font-medium text-blue-900 border border-blue-200 shadow-sm hover:shadow-lg hover:bg-gradient-to-r hover:from-blue-100 hover:to-blue-200 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5"
+            class="inline-flex items-center px-3.5 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 text-base font-medium text-blue-800 border border-blue-200 shadow-sm hover:shadow-md hover:bg-gradient-to-r hover:from-blue-100 hover:to-blue-200 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 cursor-pointer"
           >
-            <Icon name="mdi:tag" class="w-4 h-4 mr-1.5 text-blue-600" />
+            <Icon name="mdi:tag" class="w-4 h-4 mr-1 text-blue-500" />
             {{ t.tag.name }}
           </span>
         </div>
       </div>
-      <div class="flex items-center gap-6 text-sm text-gray-600">
-        <span class="font-medium">Stav:</span>
+      <div class="flex items-center gap-4 text-lg text-gray-600 flex-wrap">
         <span v-if="user">
+          <span class="font-medium">Stav:</span>
           <ArticleStatusCell :onUpdate="setStatus" :row="{ original: data }" />
         </span>
         <span v-else class="font-medium">
@@ -54,34 +57,55 @@
         </span>
         <span class="text-gray-300">|</span>
         <span class="font-medium">
-          Datum: {{ formatDate(data.createdAt.toString()) }}
+          {{ formatDate(data.createdAt.toString()) }}
         </span>
+        <div v-if="user" class="flex items-center gap-2">
+          <button
+            class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+            aria-label="Upravit článek"
+            @click="editingArticle = data"
+          >
+            <Icon name="mdi:pencil" class="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       <div
-        class="prose max-w-none bg-white p-8 rounded-3xl shadow-xl border border-gray-100 transition-all duration-500 hover:shadow-2xl hover:border-gray-200"
+        class="prose max-w-none bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 transition-all duration-500 hover:shadow-xl hover:border-gray-200 text-lg leading-relaxed"
         v-html="data.content"
       />
     </div>
+
+    <TransitionRoot :show="!!editingArticle" as="template">
+      <ArticleEdit
+        :article="editingArticle!"
+        @close="editingArticle = null"
+        @saved="refresh"
+      />
+    </TransitionRoot>
   </div>
 
   <div
     v-else-if="error"
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-50"
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100"
   >
     <div
-      class="text-center p-8 bg-white rounded-3xl shadow-xl border border-gray-100"
+      class="text-center p-6 md:p-8 bg-white rounded-2xl shadow-lg border border-gray-100"
     >
       <Icon
         name="mdi:alert-circle"
-        class="w-20 h-20 text-red-500 mx-auto mb-6 animate-pulse"
+        class="w-16 h-16 text-red-500 mx-auto mb-4 animate-pulse"
+        aria-hidden="true"
       />
-      <p class="text-xl text-gray-700 font-medium">{{ errorMessage }}</p>
+      <p class="text-lg md:text-xl text-gray-700 font-medium">
+        {{ errorMessage }}
+      </p>
       <NuxtLink
         to="/"
-        class="mt-6 inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-all duration-300 hover:underline decoration-2 underline-offset-4"
+        class="mt-4 inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 hover:underline decoration-2 underline-offset-4"
+        aria-label="Zpět na seznam článků"
       >
-        <Icon name="mdi:arrow-left" class="w-5 h-5 mr-2" />
+        <Icon name="mdi:arrow-left" class="w-6 h-6 mr-2" />
         Zpět na seznam
       </NuxtLink>
     </div>
@@ -89,13 +113,14 @@
 
   <div
     v-else
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-50"
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100"
   >
-    <Icon name="mdi:loading" class="w-16 h-16 text-blue-600 animate-spin" />
+    <Icon name="mdi:loading" class="w-14 h-14 text-blue-600 animate-spin" />
   </div>
 </template>
 
 <script lang="ts" setup>
+import { TransitionRoot } from '@headlessui/vue'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
 import { useRoute } from 'vue-router'
@@ -115,6 +140,7 @@ type Article = {
 const route = useRoute()
 const { data: user } = useAuth()
 const toast = useToast()
+const editingArticle = ref<Article | null>(null)
 
 const slug = computed(() => route.params.slug)
 
@@ -124,6 +150,20 @@ const { data, error } = await useFetch<Article | null>(
     default: () => null,
   },
 )
+
+useSeoMeta({
+  title: () => data.value?.title || 'Článek',
+  description: () =>
+    data.value?.content
+      ? data.value.content.replace(/<[^>]+>/g, '').slice(0, 160)
+      : 'Přečtěte si tento článek na našem webu.',
+  ogTitle: () => data.value?.title || 'Článek',
+  ogDescription: () =>
+    data.value?.content
+      ? data.value.content.replace(/<[^>]+>/g, '').slice(0, 160)
+      : 'Přečtěte si tento článek na našem webu.',
+  ogImage: () => data.value?.imageUrl || '',
+})
 
 const errorMessage = computed(() =>
   error.value
