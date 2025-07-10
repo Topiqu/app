@@ -37,14 +37,15 @@
 
       <div v-if="hasTags" class="mt-4">
         <div class="flex flex-wrap gap-2.5">
-          <span
+          <NuxtLink
             v-for="t in data.tags"
             :key="t.tagId"
+            :to="`/tags/${t.tagId}`"
             class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all"
           >
             <Icon name="mdi:tag" class="w-4 h-4 text-gray-500" />
             {{ t.tag.name }}
-          </span>
+          </NuxtLink>
         </div>
       </div>
 
