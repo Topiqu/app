@@ -13,6 +13,7 @@
         class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity"
       />
     </TransitionChild>
+
     <div class="fixed inset-0 flex items-center justify-center p-6">
       <TransitionChild
         as="template"
@@ -26,44 +27,62 @@
         <DialogPanel
           class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm"
         >
-          <DialogTitle class="text-xl font-bold text-gray-900"
-            >Správa tagů</DialogTitle
-          >
+          <DialogTitle class="text-xl font-bold text-gray-900">
+            Správa tagů
+          </DialogTitle>
+
           <div class="flex flex-col gap-6">
             <label class="flex flex-col gap-3">
               <span
                 class="text-sm font-medium uppercase tracking-wide opacity-80"
-                >Název tagu</span
               >
+                Název tagu
+              </span>
               <input
                 v-model="newTag.name"
                 placeholder="Název tagu"
                 class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
               />
             </label>
-          </div>
-          <div
-            v-if="tags.length"
-            class="flex flex-col gap-2 max-h-48 overflow-y-auto"
-          >
-            <div v-for="t in tags" :key="t.id" class="text-gray-600">
-              {{ t.name }}
-            </div>
-          </div>
-          <p v-else class="text-gray-600">Žádné tagy.</p>
-          <div class="flex gap-4 justify-end">
-            <button
-              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
-              @click="$emit('close')"
-            >
-              Zavřít
-            </button>
             <button
               :disabled="!newTag.name"
-              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="self-end px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               @click="createTag"
             >
               Přidat tag
+            </button>
+          </div>
+
+          <div class="flex flex-col gap-4 max-h-64 overflow-y-auto">
+            <div
+              v-if="tags.length"
+              class="flex flex-col divide-y divide-gray-200"
+            >
+              <div
+                v-for="t in tags"
+                :key="t.id"
+                class="flex items-center justify-between py-2 group"
+              >
+                <span class="text-gray-800 text-sm font-medium">
+                  {{ t.name }}
+                </span>
+                <button
+                  class="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  @click="deleteTag(t.id)"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <p v-else class="text-gray-600 text-sm">Žádné tagy.</p>
+          </div>
+
+          <div class="flex gap-4 justify-end">
+            <button
+              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm"
+              @click="$emit('close')"
+            >
+              Zavřít
             </button>
           </div>
         </DialogPanel>
@@ -80,6 +99,8 @@ import {
   TransitionChild,
 } from '@headlessui/vue'
 
+const toast = useToast()
+
 defineEmits(['close'])
 
 const { data: tags, refresh } = await useFetch('/api/tags', {
@@ -90,13 +111,28 @@ const newTag = ref({ name: '' })
 
 const createTag = async () => {
   if (!newTag.value.name) return
-  await $fetch('/api/tags', {
-    method: 'POST',
-    body: {
-      name: newTag.value.name,
-    },
-  })
-  newTag.value = { name: '' }
-  refresh()
+  try {
+    await $fetch('/api/tags', {
+      method: 'POST',
+      body: {
+        name: newTag.value.name,
+      },
+    })
+    newTag.value = { name: '' }
+    await refresh()
+    toast.success({ message: 'Tag byl úspěšně vytvořen.' })
+  } catch (error: any) {
+    toast.error({ message: `Chyba při vytváření tagu: ${error.message}` })
+  }
+}
+
+const deleteTag = async (id: string) => {
+  try {
+    await $fetch(`/api/tags/${id}`, { method: 'DELETE' })
+    await refresh()
+    toast.success({ message: 'Tag byl úspěšně smazán.' })
+  } catch (error: any) {
+    toast.error({ message: `Chyba při mazání tagu: ${error.message}` })
+  }
 }
 </script>
