@@ -13,6 +13,7 @@
         class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity"
       />
     </TransitionChild>
+
     <div class="fixed inset-0 flex items-center justify-center p-6">
       <TransitionChild
         as="template"
@@ -29,66 +30,58 @@
           <DialogTitle class="text-xl font-bold text-gray-900"
             >Správa tagů</DialogTitle
           >
-          <div class="flex flex-col gap-6">
-            <label class="flex flex-col gap-3">
-              <span
-                class="text-sm font-medium uppercase tracking-wide opacity-80"
-                >Název tagu</span
-              >
-              <input
-                v-model="newTag"
-                placeholder="Název tagu"
-                class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-              />
-            </label>
-            <div class="flex gap-4">
-              <button
-                class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="!newTag"
-                @click="addCustomTag"
-              >
-                Přidat vlastní tag
-              </button>
-              <select
-                v-model="selectedTagId"
-                class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-                @change="addExistingTag"
-              >
-                <option value="" disabled>Vybrat existující tag</option>
-                <option
-                  v-for="tag in availableTags"
-                  :key="tag.id"
-                  :value="tag.id"
-                >
-                  {{ tag.name }}
-                </option>
-              </select>
-            </div>
-          </div>
-          <Icon
-            v-if="status === 'pending'"
-            name="mdi:loading"
-            class="animate-spin"
-          />
-          <div
-            v-else-if="tags.length"
-            class="flex flex-col gap-2 max-h-48 overflow-y-auto"
-          >
+
+          <div v-if="tags.length" class="flex flex-wrap gap-2">
             <div
-              v-for="tag in tags"
-              :key="tag.tagId"
-              class="flex justify-between items-center text-gray-600"
+              v-for="t in tags"
+              :key="t.tagId"
+              class="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm"
             >
-              <span>{{ tag.tag.name }}</span>
+              {{ t.tag.name }}
               <button
-                class="text-red-500 hover:text-red-700 font-medium hover:underline"
-                @click="removeTag(tag.tagId)"
+                class="text-blue-700 hover:text-red-600"
+                @click="removeTag(t.tagId)"
               >
-                Odstranit
+                ×
               </button>
             </div>
           </div>
           <p v-else class="text-gray-600">Žádné tagy.</p>
+
+          <div class="flex flex-col gap-4">
+            <div class="flex gap-2">
+              <input
+                v-model="newTag"
+                placeholder="Vlastní tag"
+                class="flex-1 p-3 rounded-xl border focus:outline-none focus:ring-2"
+              />
+              <button
+                class="px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition"
+                @click="addCustomTag"
+              >
+                Přidat
+              </button>
+            </div>
+
+            <div class="flex gap-2">
+              <select
+                v-model="selectedTagId"
+                class="flex-1 p-3 rounded-xl border focus:outline-none focus:ring-2"
+              >
+                <option value="">Vyber existující tag</option>
+                <option v-for="t in availableTags" :key="t.id" :value="t.id">
+                  {{ t.name }}
+                </option>
+              </select>
+              <button
+                class="px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition"
+                @click="addExistingTag"
+              >
+                Přidat
+              </button>
+            </div>
+          </div>
+
           <div class="flex gap-4 justify-end">
             <button
               class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
@@ -112,64 +105,64 @@ import {
 } from '@headlessui/vue'
 
 type Tag = { id: string; name: string; createdAt: string; updatedAt: string }
-type TaskTag = { tagId: string; tag: { name: string } }
+type ArticleTag = { tagId: string; tag: { name: string } }
 
 const props = defineProps<{
-  taskId: string
-  tags: { tagId: string; tag: { name: string } }[]
+  articleId: string
 }>()
-defineEmits<{ (e: 'close'): void }>()
+
+defineEmits(['close'])
 
 const newTag = ref('')
 const selectedTagId = ref('')
-const tags = ref(props.tags)
+const tags = ref<ArticleTag[]>([])
 
-const { data: taskTags, refresh: refreshTaskTags } = await useFetch<TaskTag[]>(
-  `/api/tasks/${props.taskId}/tags`,
-  { default: () => [] },
-)
-const {
-  data: availableTags,
-  status,
-  refresh: refreshAvailableTags,
-} = await useFetch<Tag[]>(`/api/tasks/${props.taskId}/available-tags`, {
-  default: () => [],
-})
+const { data: articleTags, refresh: refreshTags } = await useFetch<
+  ArticleTag[]
+>(`/api/articles/${props.articleId}/tags`, { default: () => [] })
+tags.value = articleTags.value ?? []
 
-tags.value = taskTags.value ?? []
+const { data: availableTags, refresh: refreshAvailableTags } = await useFetch<
+  Tag[]
+>(`/api/articles/${props.articleId}/available-tags`, { default: () => [] })
 
 const addCustomTag = async () => {
-  if (newTag.value.trim()) {
-    try {
-      const tag = await $fetch('/api/tags', {
-        method: 'POST',
-        body: { name: newTag.value.trim() },
-      })
-      await $fetch(`/api/tasks/${props.taskId}/tags`, {
-        method: 'POST',
-        body: { taskId: props.taskId, tagId: tag.id },
-      })
-      await Promise.all([refreshTaskTags(), refreshAvailableTags()])
-      newTag.value = ''
-    } catch (e) {
-      console.error(e)
-    }
-  }
+  if (!newTag.value.trim()) return
+
+  const tag = await $fetch('/api/tags', {
+    method: 'POST',
+    body: { name: newTag.value.trim() },
+  })
+
+  await $fetch(`/api/articles/${props.articleId}/tags`, {
+    method: 'POST',
+    body: { tagId: tag.id },
+  })
+
+  await Promise.all([refreshTags(), refreshAvailableTags()])
+  tags.value = articleTags.value ?? []
+  newTag.value = ''
 }
 
 const addExistingTag = async () => {
-  if (selectedTagId.value) {
-    await $fetch(`/api/tasks/${props.taskId}/tags`, {
-      method: 'POST',
-      body: { tagId: selectedTagId.value },
-    })
-    await Promise.all([refreshTaskTags(), refreshAvailableTags()])
-    selectedTagId.value = ''
-  }
+  if (!selectedTagId.value) return
+
+  await $fetch(`/api/articles/${props.articleId}/tags`, {
+    method: 'POST',
+    body: { tagId: selectedTagId.value },
+  })
+
+  await Promise.all([refreshTags(), refreshAvailableTags()])
+  tags.value = articleTags.value ?? []
+  selectedTagId.value = ''
 }
 
 const removeTag = async (tagId: string) => {
-  await $fetch(`/api/tasks/${props.taskId}/tags/${tagId}`, { method: 'DELETE' })
-  await Promise.all([refreshTaskTags(), refreshAvailableTags()])
+  await $fetch(`/api/articles/${props.articleId}/tags/${tagId}`, {
+    method: 'DELETE',
+  })
+
+  await Promise.all([refreshTags(), refreshAvailableTags()])
+  tags.value = articleTags.value ?? []
 }
 </script>
