@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
       content: sanitizeHtml(body.content!),
       slug: body.slug,
       userId: body.userId,
-      tags: body.tags || [],
+      imageUrl: body.imageUrl,
     },
   })
   return article

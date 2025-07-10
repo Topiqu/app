@@ -24,38 +24,49 @@
         leave-to="opacity-0 scale-90"
       >
         <DialogPanel
-          class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm"
+          class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm max-h-[80vh]"
         >
           <DialogTitle class="text-xl font-bold text-gray-900"
             >Úprava článku</DialogTitle
           >
-
-          <div class="flex flex-col gap-6">
-            <label class="flex flex-col gap-3">
-              <span
-                class="text-sm font-medium uppercase tracking-wide opacity-80"
-                >Název článku</span
-              >
-              <input
-                v-model="editedArticle.title"
-                class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-                @input="updateSlug"
-              />
-              <span class="text-sm text-gray-500"
-                >URL Titulek: {{ editedArticle.slug }}</span
-              >
-            </label>
-
-            <label class="flex flex-col gap-3">
-              <span
-                class="text-sm font-medium uppercase tracking-wide opacity-80"
-                >Obsah</span
-              >
-              <TiptapEditor v-model="editedArticle.content" edit />
-            </label>
+          <div class="flex-1 overflow-y-auto pr-4">
+            <div class="flex flex-col gap-6">
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                  >Název článku</span
+                >
+                <input
+                  v-model="editedArticle.title"
+                  class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+                  @input="updateSlug"
+                />
+                <span class="text-sm text-gray-500"
+                  >URL Titulek: {{ editedArticle.slug }}</span
+                >
+              </label>
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                  >Obsah</span
+                >
+                <TiptapEditor v-model="editedArticle.content" edit />
+              </label>
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                  >Titulní Obrázek</span
+                >
+                <FileUploader @upload="handleUpload" />
+                <span
+                  v-if="editedArticle.imageUrl"
+                  class="text-sm text-gray-500"
+                  >Obrázek: {{ editedArticle.imageUrl }}</span
+                >
+              </label>
+            </div>
           </div>
-
-          <div class="flex gap-4 justify-end">
+          <div class="flex gap-4 justify-end flex-shrink-0">
             <button
               class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
               @click="$emit('close')"
@@ -85,7 +96,6 @@ import {
 } from '@headlessui/vue'
 import type { Article } from '@zenstackhq/runtime/models'
 import slugify from 'slugify'
-import TiptapEditor from '@/components/TiptapEditor.vue'
 
 const toast = useToast()
 const emit = defineEmits(['close', 'saved'])
@@ -101,6 +111,10 @@ const updateSlug = () => {
   })
 }
 
+const handleUpload = (file: { url: string }) => {
+  editedArticle.value.imageUrl = file.url
+}
+
 const saveEdit = async () => {
   try {
     await $fetch(`/api/articles/${editedArticle.value.id}`, {
@@ -111,15 +125,14 @@ const saveEdit = async () => {
         content: editedArticle.value.content,
         slug: editedArticle.value.slug,
         userId: editedArticle.value.userId,
+        imageUrl: editedArticle.value.imageUrl,
       },
     })
     toast.success({ message: 'Článek byl úspěšně upraven' })
     emit('close')
     emit('saved')
   } catch (error: any) {
-    toast.error({
-      message: error.data?.message || 'Úprava článku selhala',
-    })
+    toast.error({ message: error.data?.message || 'Úprava článku selhala' })
   }
 }
 </script>
