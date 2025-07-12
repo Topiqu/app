@@ -41,11 +41,11 @@
           <div
             v-for="a in filteredArticles"
             :key="a.id"
-            class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all duration-300"
+            class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
           >
             <NuxtLink
               :to="`/articles/${a.slug}`"
-              class="flex flex-col gap-4 sm:flex-row sm:items-start no-underline"
+              class="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 p-6 no-underline group"
             >
               <NuxtImg
                 v-if="a.imageUrl"
@@ -54,46 +54,47 @@
                 format="webp"
                 quality="80"
                 width="160"
-                height="90"
-                class="rounded-xl border border-gray-100 shadow-sm object-cover w-full sm:w-40 h-auto max-h-[90px]"
+                height="100"
+                class="rounded-xl border border-gray-100 shadow-sm object-cover w-full sm:w-48 h-[120px]"
               />
-              <div class="flex flex-col gap-2">
-                <h2
-                  class="text-xl font-semibold text-gray-900 hover:text-blue-600 transition"
-                >
-                  {{ a.title }}
-                </h2>
-                <div
-                  class="flex flex-wrap items-center gap-3 text-sm text-gray-600"
-                >
-                  <span
-                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-medium"
+              <div class="flex flex-col justify-between gap-3 flex-1">
+                <div class="flex flex-col gap-1">
+                  <h2
+                    class="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition"
                   >
-                    <Icon
-                      :name="
-                        a.status === 'draft'
-                          ? 'mdi:pencil-outline'
-                          : 'mdi:check-circle-outline'
-                      "
-                      class="w-4 h-4"
-                    />
-                    {{ a.status === 'draft' ? 'Návrh' : 'Publikováno' }}
-                  </span>
-                  <span>•</span>
-                  <span>
-                    <Icon
-                      name="mdi:calendar"
-                      class="w-4 h-4 inline mr-1 text-gray-500"
-                    />
-                    {{ formatDate(a.createdAt.toString()) }}
-                  </span>
-                  <span>•</span>
-                  <span
-                    class="inline-flex items-center gap-1 text-blue-500 font-medium"
+                    {{ a.title }}
+                  </h2>
+                  <div
+                    class="flex flex-wrap items-center gap-3 text-sm text-gray-600"
                   >
-                    <Icon name="mdi:account-outline" class="w-4 h-4" />
-                    {{ a.user.username }}
-                  </span>
+                    <template v-if="data?.user">
+                      <span
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-medium"
+                      >
+                        <Icon
+                          :name="
+                            a.status === 'draft'
+                              ? 'mdi:pencil-outline'
+                              : 'mdi:check-circle-outline'
+                          "
+                          class="w-4 h-4"
+                        />
+                        {{ a.status === 'draft' ? 'Návrh' : 'Publikováno' }}
+                      </span>
+                      <span>•</span>
+                    </template>
+                    <span class="inline-flex items-center gap-1">
+                      <Icon name="mdi:calendar" class="w-4 h-4 text-gray-400" />
+                      {{ formatDate(a.createdAt.toString()) }}
+                    </span>
+                    <span>•</span>
+                    <span
+                      class="inline-flex items-center gap-1 text-blue-500 font-medium"
+                    >
+                      <Icon name="mdi:account-outline" class="w-4 h-4" />
+                      {{ a.user.username }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </NuxtLink>
@@ -112,6 +113,8 @@
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
 import { useRoute } from 'vue-router'
+
+const { data } = useAuth()
 
 type Article = {
   slug: string
