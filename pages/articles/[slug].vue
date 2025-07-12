@@ -6,7 +6,7 @@
     <div class="max-w-3xl mx-auto flex flex-col gap-6 px-2 sm:px-0">
       <NuxtLink
         to="/"
-        class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 ease-in-out"
+        class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 ease-in-out no-underline"
         aria-label="Zpět na seznam článků"
       >
         <Icon
@@ -21,6 +21,12 @@
       >
         {{ data.title }}
       </h1>
+
+      <div class="flex items-center gap-3 text-sm text-gray-600 mt-[-8px]">
+        <Icon name="mdi:account" class="w-4 h-4 text-blue-500" />
+        <span class="font-medium text-gray-800">{{ data.user.username }}</span>
+        <span class="italic text-gray-400">• Autor článku</span>
+      </div>
 
       <NuxtImg
         v-if="data.imageUrl"
@@ -50,7 +56,7 @@
       </div>
 
       <div
-        class="flex items-center justify-between text-lg text-gray-600 flex-wrap gap-3"
+        class="flex items-center justify-between text-lg text-gray-600 flex-wrap gap-3 mt-4"
       >
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-3">
@@ -60,9 +66,6 @@
               :onUpdate="setStatus"
               :row="{ original: data }"
             />
-            <span v-else class="font-medium">
-              {{ data.status === 'draft' ? 'Návrh' : 'Publikováno' }}
-            </span>
           </div>
           <div class="flex items-center gap-2 text-gray-500">
             <Icon name="mdi:calendar" class="w-4 h-4" />
@@ -81,9 +84,45 @@
       </div>
 
       <div
-        class="max-w-none bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-base md:text-lg leading-7 text-gray-800 tracking-normal space-y-5 prose prose-gray prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6"
+        class="max-w-none bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-base md:text-lg leading-7 text-gray-800 tracking-normal space-y-5 prose prose-gray prose-a:text-blue-600 prose-a:no-underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6"
         v-html="data.content"
       />
+      <section v-if="relatedArticles.length" class="mt-20">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8 tracking-tight">
+          Související články
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <NuxtLink
+            v-for="article in relatedArticles"
+            :key="article.id"
+            :to="`/articles/${article.slug}`"
+            class="flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-transform duration-300 no-underline"
+          >
+            <NuxtImg
+              v-if="article.imageUrl"
+              :src="article.imageUrl"
+              :alt="`Titulní obrázek k článku: ${article.title}`"
+              format="webp"
+              quality="80"
+              width="320"
+              height="160"
+              class="w-full h-[120px] object-cover rounded-t-2xl border-b border-gray-100"
+            />
+            <div class="p-4 flex flex-col gap-2 flex-grow">
+              <h3 class="text-base font-semibold text-gray-900 line-clamp-2">
+                {{ article.title }}
+              </h3>
+              <div class="text-xs text-gray-500 flex items-center gap-2">
+                <Icon name="mdi:calendar" class="w-4 h-4 text-gray-400" />
+                {{ formatDate(article.createdAt.toString()) }}
+                <span class="mx-1">•</span>
+                <Icon name="mdi:account" class="w-4 h-4 text-gray-400" />
+                <span class="truncate">{{ article.user.username }}</span>
+              </div>
+            </div>
+          </NuxtLink>
+        </div>
+      </section>
     </div>
 
     <TransitionRoot :show="!!editingArticle" as="template">
@@ -112,7 +151,7 @@
       </p>
       <NuxtLink
         to="/"
-        class="mt-4 inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 hover:underline decoration-2 underline-offset-4"
+        class="mt-4 inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 no-underline hover:underline decoration-2 underline-offset-4"
         aria-label="Zpět na seznam článků"
       >
         <Icon name="mdi:arrow-left" class="w-6 h-6 mr-2" />
@@ -133,7 +172,6 @@
 import { TransitionRoot } from '@headlessui/vue'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
-import { useRoute } from 'vue-router'
 
 type Article = {
   slug: string
@@ -144,6 +182,7 @@ type Article = {
   status: ArticleStatus
   createdAt: Date
   userId: string
+  user: { username: string }
   tags?: { tagId: string; tag: { name: string } }[]
 }
 
@@ -211,4 +250,24 @@ const refresh = async () => {
   )
   data.value = newData.value
 }
+
+const relatedArticles = ref<Article[]>([])
+
+const fetchRelatedArticles = async () => {
+  if (!data.value?.tags?.length) {
+    relatedArticles.value = []
+    return
+  }
+  const tagId = data.value.tags[0].tagId
+  const res = await $fetch<Article[]>(`/api/articles/${tagId}/bytag?limit=4`)
+  relatedArticles.value = res.filter((a) => a.id !== data.value!.id)
+}
+
+watch(
+  () => data.value,
+  (val) => {
+    if (val) fetchRelatedArticles()
+  },
+  { immediate: true },
+)
 </script>

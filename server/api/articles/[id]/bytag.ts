@@ -1,6 +1,8 @@
 export default defineEventHandler(async (event) => {
   const tagId = event.context.params!.id
 
+  const { take, skip } = await getPagination(event)
+
   const articles = await prisma.article.findMany({
     where: {
       tags: {
@@ -24,6 +26,8 @@ export default defineEventHandler(async (event) => {
     orderBy: {
       createdAt: 'desc',
     },
+    take,
+    skip,
   })
 
   return articles
