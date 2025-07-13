@@ -19,29 +19,31 @@ enum ArticleStatus {
     published
 }
 
-enum UserRole {
-    user
-    admin
-}
-
 model Article {
-    id        String        @id @default(uuid())
-    slug      String        @unique @length(1, 100, "Slug musí mít 1-100 znaků")
-    title     String        @length(1, 255, "Titulek musí mít 1-255 znaků")
-    content   String        @length(1, 2048, "Článek překročil délku znaků (2048)")
-    imageUrl  String?       @length(0, 255, "URL obrázku musí mít maximálně 255 znaků")
-    status    ArticleStatus @default(draft)
-    createdAt DateTime      @default(now())
-    user      User          @relation(fields: [userId], references: [id])
-    userId    String
-    tags      ArticleTag[]
+    id          String        @id @default(uuid())
+    slug        String        @unique @length(1, 100, "Slug musí mít 1–100 znaků")
+    title       String        @length(1, 255, "Titulek musí mít 1–255 znaků")
+    content     String        @length(1, 2048, "Článek překročil délku znaků (2048)")
+    imageUrl    String?       @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    status      ArticleStatus @default(draft)
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+    publishedAt DateTime?
+    deletedAt   DateTime?
+    views       Int           @default(0)
+    readingTime Int?
+
+    user        User          @relation(fields: [userId], references: [id])
+    userId      String
+    tags        ArticleTag[]
 }
 
 model Tag {
     id        String       @id @default(uuid())
+    slug      String       @unique @length(1, 64, "Slug tagu musí mít 1–64 znaků")
+    name      String       @unique @length(1, 64, "Název tagu musí mít 1–64 znaků")
     createdAt DateTime     @default(now())
     updatedAt DateTime     @updatedAt
-    name      String       @unique @length(1, 64, "Název tagu musí mít mezi 1 a 64 znaky")
     articles  ArticleTag[]
 }
 
@@ -57,9 +59,9 @@ model ArticleTag {
 
 model User {
     id        String    @id @default(uuid())
-    username  String    @unique @length(3, 50, "Uživatelské jméno musí mít 3-50 znaků")
-    password  String    @length(4, 124, "Heslo musí mít 4-124 znaků")
-    role      UserRole?
+    username  String    @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
+    password  String    @length(4, 124, "Heslo musí mít 4–124 znaků")
+    bio       String?   @length(0, 300, "Bio autora může mít max. 300 znaků")
     createdAt DateTime  @default(now())
     articles  Article[]
 }
