@@ -1,75 +1,106 @@
 <template>
-  <div class="max-w-md mx-auto mt-10">
-    <div v-if="data?.user" class="space-y-4 text-center">
-      <p class="text-green-600">
+  <div class="max-w-xs mx-auto mt-16 px-4">
+    <div
+      v-if="data?.user"
+      class="bg-white px-3 py-6 rounded-xl shadow text-center space-y-4 border border-gray-100"
+    >
+      <p class="text-green-600 text-base font-medium">
         Vítej, {{ data.user?.name || data.user?.email }}!
       </p>
       <button
-        class="px-4 py-2 bg-red-500 text-white rounded"
+        class="w-full py-2 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition"
         @click="handleLogout"
       >
         Odhlásit se
       </button>
     </div>
 
-    <div v-else>
-      <div class="flex justify-center mb-4 space-x-2">
+    <div
+      v-else
+      class="bg-white px-3 py-6 rounded-xl shadow border border-gray-100 space-y-5"
+    >
+      <div class="flex justify-center gap-2 text-sm font-medium">
         <button
-          class="px-3 py-1 rounded"
-          :class="{
-            'bg-blue-500 text-white': mode === 'login',
-            'bg-gray-200 text-black': mode !== 'login',
-          }"
+          :class="[
+            'px-2 py-1.5 rounded-md transition',
+            mode === 'login'
+              ? 'bg-blue-500 text-white shadow-sm'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+          ]"
           @click="mode = 'login'"
         >
-          Přihlásit se
+          Přihlásit
         </button>
         <button
-          class="px-3 py-1 rounded"
-          :class="{
-            'bg-blue-500 text-white': mode === 'register',
-            'bg-gray-200 text-black': mode !== 'register',
-          }"
+          :class="[
+            'px-2 py-1.5 rounded-md transition',
+            mode === 'register'
+              ? 'bg-blue-500 text-white shadow-sm'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+          ]"
           @click="mode = 'register'"
         >
           Registrace
         </button>
       </div>
 
-      <form class="space-y-4" @submit.prevent="submit">
-        <div>
-          <label for="username" class="block text-sm">Uživatelské jméno</label>
-          <input
-            id="username"
-            v-model="form.username"
-            type="text"
-            class="w-full border rounded px-2 py-1"
-            required
-            minlength="3"
-            maxlength="50"
-          />
-          <p v-if="validation.errors.username" class="text-red-500 text-sm">
+      <form class="space-y-4 text-sm" @submit.prevent="submit">
+        <div class="space-y-1">
+          <label for="username" class="block font-medium"
+            >Uživatelské jméno</label
+          >
+          <div class="relative">
+            <Icon
+              name="mdi:account"
+              class="absolute left-2 top-2.5 w-5 h-5 text-gray-400"
+            />
+            <input
+              id="username"
+              v-model="form.username"
+              type="text"
+              class="w-3/4 pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
+              required
+              minlength="3"
+              maxlength="50"
+              autocomplete="username"
+            />
+          </div>
+          <p
+            v-if="validation.errors.username"
+            class="text-red-500 text-xs mt-1"
+          >
             {{ validation.errors.username[0] }}
           </p>
         </div>
-        <div>
-          <label for="password" class="block text-sm">Heslo</label>
-          <input
-            id="password"
-            v-model="form.password"
-            type="password"
-            class="w-full border rounded px-2 py-1"
-            required
-            minlength="4"
-            maxlength="124"
-          />
-          <p v-if="validation.errors.password" class="text-red-500 text-sm">
+
+        <div class="space-y-1">
+          <label for="password" class="block font-medium">Heslo</label>
+          <div class="relative">
+            <Icon
+              name="mdi:lock"
+              class="absolute left-2 top-2.5 w-5 h-5 text-gray-400"
+            />
+            <input
+              id="password"
+              v-model="form.password"
+              type="password"
+              class="w-3/4 pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
+              required
+              minlength="4"
+              maxlength="124"
+              autocomplete="current-password"
+            />
+          </div>
+          <p
+            v-if="validation.errors.password"
+            class="text-red-500 text-xs mt-1"
+          >
             {{ validation.errors.password[0] }}
           </p>
         </div>
         <button
           type="submit"
-          class="px-4 py-2 bg-blue-500 text-white rounded w-full"
+          class="w-full py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition"
         >
           {{ mode === 'register' ? 'Registrace' : 'Přihlásit se' }}
         </button>

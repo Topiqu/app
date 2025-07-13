@@ -206,6 +206,7 @@ const slug = computed(() => route.params.slug)
 const { data, error } = await useFetch<Article | null>(
   `/api/articles/${slug.value}`,
   {
+    key: `clanek-${slug.value}`,
     default: () => null,
   },
 )
@@ -232,11 +233,7 @@ const errorMessage = computed(() =>
 
 const formatDate = (date: string) => format(new Date(date), 'dd.MM.yyyy, HH:mm')
 
-const hasTags = computed(() => {
-  if (!data.value?.tags) return false
-  if (Array.isArray(data.value.tags)) return data.value.tags.length > 0
-  return Object.keys(data.value.tags).length > 0
-})
+const hasTags = computed(() => !!data.value?.tags?.length)
 
 async function setStatus(id: string, status: ArticleStatus) {
   try {
