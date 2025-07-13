@@ -98,27 +98,38 @@ import {
   DialogTitle,
   TransitionChild,
 } from '@headlessui/vue'
+import slugify from 'slugify'
 
 const toast = useToast()
-
 defineEmits(['close'])
 
 const { data: tags, refresh } = await useFetch('/api/tags', {
   default: () => [],
 })
 
-const newTag = ref({ name: '' })
+const newTag = ref({ name: '', slug: '' })
+
+const updateSlug = () => {
+  newTag.value.slug = slugify(newTag.value.name, {
+    lower: true,
+    strict: true,
+    trim: true,
+  })
+}
 
 const createTag = async () => {
   if (!newTag.value.name) return
+  updateSlug()
+  console.log('Creating tag:', newTag.value)
   try {
     await $fetch('/api/tags', {
       method: 'POST',
       body: {
         name: newTag.value.name,
+        slug: newTag.value.slug,
       },
     })
-    newTag.value = { name: '' }
+    newTag.value = { name: '', slug: '' }
     await refresh()
     toast.success({ message: 'Tag byl úspěšně vytvořen.' })
   } catch (error: any) {

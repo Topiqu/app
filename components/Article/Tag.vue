@@ -48,9 +48,10 @@
           <div class="flex flex-col gap-4 mt-6">
             <div class="flex gap-2">
               <input
-                v-model="newTag"
+                v-model="newTag.name"
                 placeholder="Přidat vlastní tag"
                 class="flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                @input="updateSlug"
               />
               <button
                 class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition font-medium"
@@ -100,6 +101,7 @@ import {
   DialogTitle,
   TransitionChild,
 } from '@headlessui/vue'
+import slugify from 'slugify'
 
 const toast = useToast()
 
@@ -109,7 +111,7 @@ type ArticleTag = { tagId: string; tag: { name: string } }
 const props = defineProps<{ articleId: string }>()
 defineEmits(['close'])
 
-const newTag = ref('')
+const newTag = ref<{ name: string; slug: string }>({ name: '', slug: '' })
 const selectedTagId = ref('')
 const tags = ref<ArticleTag[]>([])
 
@@ -122,12 +124,21 @@ const { data: availableTags, refresh: refreshAvailableTags } = await useFetch<
   Tag[]
 >(`/api/articles/${props.articleId}/available-tags`, { default: () => [] })
 
+const updateSlug = () => {
+  newTag.value.slug = slugify(newTag.value.name, {
+    lower: true,
+    strict: true,
+    trim: true,
+  })
+}
+
 const addCustomTag = async () => {
-  if (!newTag.value.trim()) return
+  if (!newTag.value.name.trim()) return
+  updateSlug()
   try {
     const tag = await $fetch('/api/tags', {
       method: 'POST',
-      body: { name: newTag.value.trim() },
+      body: { name: newTag.value.name.trim(), slug: newTag.value.slug },
     })
     await $fetch(`/api/articles/${props.articleId}/tags`, {
       method: 'POST',
@@ -135,7 +146,7 @@ const addCustomTag = async () => {
     })
     await Promise.all([refreshTags(), refreshAvailableTags()])
     tags.value = articleTags.value ?? []
-    newTag.value = ''
+    newTag.value = { name: '', slug: '' }
     toast.success({ message: 'Tag přidán' })
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Přidání tagu selhalo' })

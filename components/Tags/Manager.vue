@@ -24,6 +24,7 @@
           v-model="newTag.name"
           placeholder="Název nového tagu"
           class="flex-1 p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+          @input="updateSlug"
           @keyup.enter="createAndAddTag"
         />
         <button
@@ -61,6 +62,7 @@
 
 <script lang="ts" setup>
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
+import slugify from 'slugify'
 
 type Tag = { id: string; name: string }
 type Article = {
@@ -85,11 +87,19 @@ const props = defineProps<{
 const { data: tags, refresh } = await useFetch<Tag[]>('/api/tags', {
   default: () => [],
 })
-const newTag = ref<{ name: string }>({ name: '' })
+const newTag = ref<{ name: string; slug: string }>({ name: '', slug: '' })
 const selectedTagId = ref('')
 const tagBuffer = ref<Tag[]>(
   props.article?.tags?.map((t) => ({ id: t.tagId, name: t.tag.name })) || [],
 )
+
+const updateSlug = () => {
+  newTag.value.slug = slugify(newTag.value.name, {
+    lower: true,
+    strict: true,
+    trim: true,
+  })
+}
 
 const addTagToBuffer = () => {
   if (!selectedTagId.value) return
@@ -106,17 +116,18 @@ const addTagToBuffer = () => {
 
 const createAndAddTag = async () => {
   if (!newTag.value.name) return
+  updateSlug()
   try {
     const { id, name } = await $fetch('/api/tags', {
       method: 'POST',
-      body: { name: newTag.value.name },
+      body: { name: newTag.value.name, slug: newTag.value.slug },
     })
     tagBuffer.value.push({ id, name })
     emit(
       'update:tags',
       tagBuffer.value.map((t: Tag) => t.id),
     )
-    newTag.value = { name: '' }
+    newTag.value = { name: '', slug: '' }
     await refresh()
     toast.success({ message: 'Tag vytvořen a přidán.' })
   } catch (e: any) {

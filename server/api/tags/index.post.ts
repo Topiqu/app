@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
   const tag = await prisma.tag.create({
     data: {
       name: body.name,
+      slug: body.slug,
     },
   })
 
