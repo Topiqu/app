@@ -94,14 +94,14 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <NuxtLink
             v-for="article in relatedArticles"
-            :key="article.id"
-            :to="`/articles/${article.slug}`"
+            :key="article.articleId"
+            :to="`/articles/${article.article.slug}`"
             class="flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-transform duration-300 no-underline"
           >
             <NuxtImg
-              v-if="article.imageUrl"
-              :src="article.imageUrl"
-              :alt="`Titulní obrázek k článku: ${article.title}`"
+              v-if="article.article.imageUrl"
+              :src="article.article.imageUrl"
+              :alt="`Titulní obrázek k článku: ${article.article.title}`"
               format="webp"
               quality="80"
               width="320"
@@ -110,14 +110,16 @@
             />
             <div class="p-4 flex flex-col gap-2 flex-grow">
               <h3 class="text-base font-semibold text-gray-900 line-clamp-2">
-                {{ article.title }}
+                {{ article.article.title }}
               </h3>
               <div class="text-xs text-gray-500 flex items-center gap-2">
                 <Icon name="mdi:calendar" class="w-4 h-4 text-gray-400" />
-                {{ formatDate(article.createdAt.toString()) }}
+                {{ formatDate(article.article.createdAt.toString()) }}
                 <span class="mx-1">•</span>
                 <Icon name="mdi:account" class="w-4 h-4 text-gray-400" />
-                <span class="truncate">{{ article.user.username }}</span>
+                <span class="truncate">{{
+                  article.article.user.username
+                }}</span>
               </div>
             </div>
           </NuxtLink>
@@ -170,26 +172,30 @@
 
 <script lang="ts" setup>
 import { TransitionRoot } from '@headlessui/vue'
-import type { ArticleStatus } from '@zenstackhq/runtime/models'
+import type {
+  ArticleStatus,
+  Article as _Article,
+} from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
 
-type Article = {
-  slug: string
-  id: string
-  title: string
-  content: string
-  imageUrl: string | null
-  status: ArticleStatus
-  createdAt: Date
-  updatedAt: Date
-  publishedAt: Date | null
-  deletedAt: Date | null
-  views: number
-  readingTime: number | null
-  userId: string
+type Article = _Article & {
   user: { username: string }
   tags?: { tag: { name: string; slug: string } }[]
 }
+
+type RelatedArticle = {
+  articleId: string
+  tagId: string
+  article: _Article & {
+    user: { username: string }
+    tags: {
+      articleId: string
+      tagId: string
+      tag: { name: string; slug: string }
+    }[]
+  }
+}
+
 const route = useRoute()
 const { data: user } = useAuth()
 const toast = useToast()
@@ -255,7 +261,7 @@ const refresh = async () => {
   data.value = newData.value
 }
 
-const relatedArticles = ref<Article[]>([])
+const relatedArticles = ref<RelatedArticle[]>([])
 
 const fetchRelatedArticles = async () => {
   if (!data.value?.tags?.length) {
@@ -263,8 +269,12 @@ const fetchRelatedArticles = async () => {
     return
   }
   const tagSlug = data.value.tags[0].tag.slug
-  const res = await $fetch<Article[]>(`/api/articles/${tagSlug}/bytag?limit=4`)
-  relatedArticles.value = res.filter((a) => a.id !== data.value!.id)
+  const res = await $fetch<{ articles: RelatedArticle[] }>(
+    `/api/tags/slug/${tagSlug}?limit=4`,
+  )
+  relatedArticles.value = res.articles.filter(
+    (a) => a.articleId !== data.value!.id,
+  )
 }
 
 watch(
