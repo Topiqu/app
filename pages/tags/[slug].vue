@@ -124,12 +124,17 @@ type Article = {
   imageUrl: string | null
   status: ArticleStatus
   createdAt: Date
+  updatedAt: Date
+  publishedAt: Date | null
+  deletedAt: Date | null
+  views: number
+  readingTime: number | null
   userId: string
   user: { username: string }
-  tags: { tagId: string; tag: { name: string } }[]
+  tags: { tagId: string; tag: { name: string; slug: string } }[]
 }
 
-type TagResponse = { name: string } | { success: boolean }
+type TagResponse = { id: string; name: string; slug: string }
 
 const route = useRoute()
 const tagId = computed(() => route.params.tagId as string)
@@ -137,11 +142,9 @@ const search = ref('')
 const sort = ref('createdAt:desc')
 
 const { data: tag } = await useFetch<TagResponse>(`/api/tags/${tagId.value}`, {
-  default: () => ({ name: 'Neznámý tag' }),
+  default: () => ({ id: '', name: 'Neznámý tag', slug: '' }),
 })
-const tagName = computed(() =>
-  'name' in tag.value ? tag.value.name : 'Neznámý tag',
-)
+const tagName = computed(() => tag.value.name)
 
 const { data: articles } = await useFetch<Article[]>(
   `/api/articles/${tagId.value}/bytag`,

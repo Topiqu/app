@@ -45,8 +45,8 @@
         <div class="flex flex-wrap gap-2.5">
           <NuxtLink
             v-for="t in data.tags"
-            :key="t.tagId"
-            :to="`/tags/${t.tagId}`"
+            :key="t.tag.slug"
+            :to="`/tags/${t.tag.slug}`"
             class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all"
           >
             <Icon name="mdi:tag" class="w-4 h-4 text-gray-500" />
@@ -181,11 +181,15 @@ type Article = {
   imageUrl: string | null
   status: ArticleStatus
   createdAt: Date
+  updatedAt: Date
+  publishedAt: Date | null
+  deletedAt: Date | null
+  views: number
+  readingTime: number | null
   userId: string
   user: { username: string }
-  tags?: { tagId: string; tag: { name: string } }[]
+  tags?: { tag: { name: string; slug: string } }[]
 }
-
 const route = useRoute()
 const { data: user } = useAuth()
 const toast = useToast()
@@ -258,8 +262,8 @@ const fetchRelatedArticles = async () => {
     relatedArticles.value = []
     return
   }
-  const tagId = data.value.tags[0].tagId
-  const res = await $fetch<Article[]>(`/api/articles/${tagId}/bytag?limit=4`)
+  const tagSlug = data.value.tags[0].tag.slug
+  const res = await $fetch<Article[]>(`/api/articles/${tagSlug}/bytag?limit=4`)
   relatedArticles.value = res.filter((a) => a.id !== data.value!.id)
 }
 
