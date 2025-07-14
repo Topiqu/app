@@ -10,7 +10,7 @@
         aria-label="Zpět na seznam článků"
       >
         <Icon
-          name="mdi:arrow-left"
+          name="mdi:arrow"
           class="w-6 h-6 mr-2 transition-transform duration-300 group-hover:-translate-x-1.5"
         />
         Zpět na seznam
@@ -83,8 +83,12 @@
           </div>
         </div>
 
-        <div v-if="user" class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 text-gray-500">
+            <span>{{ data.views }}x zhlédnutí</span>
+          </div>
           <button
+            v-if="user"
             class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
             aria-label="Upravit článek"
             @click="editingArticle = data"
@@ -331,11 +335,23 @@ const fetchRelatedArticles = async () => {
     (a) => a.articleId !== data.value!.id,
   )
 }
-
 watch(
   () => data.value,
-  (val) => {
-    if (val) fetchRelatedArticles()
+  async (val) => {
+    if (!val?.id) return
+
+    try {
+      await $fetch(`/api/articles/${val.id}/view-update`, {
+        method: 'PATCH',
+        body: {
+          views: val.views + 1,
+        },
+      })
+    } catch (err) {
+      console.error('Error updating article views:', err)
+    }
+
+    await fetchRelatedArticles()
   },
   { immediate: true },
 )
