@@ -56,7 +56,7 @@
       </div>
 
       <div
-        class="flex items-center justify-between text-lg text-gray-600 flex-wrap gap-3 mt-4"
+        class="flex items-center justify-between text-md text-gray-600 flex-wrap gap-3 mt-4"
       >
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-3">
@@ -71,6 +71,10 @@
             <Icon name="mdi:calendar" class="w-4 h-4" />
             <span>{{ formatDate(data.createdAt.toString()) }}</span>
           </div>
+          <div class="flex items-center gap-2 text-gray-500">
+            <Icon name="mdi:clock-outline" class="w-4 h-4" />
+            <span>{{ data.readingTime }} min čtení</span>
+          </div>
         </div>
         <div v-if="user" class="flex items-center gap-2">
           <button
@@ -81,6 +85,32 @@
             <Icon name="mdi:pencil" class="w-5 h-5" />
           </button>
         </div>
+      </div>
+
+      <div class="flex justify-end gap-4 mt-10">
+        <button
+          aria-label="Zkopírovat odkaz"
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+          @click="copyLink"
+        >
+          <Icon name="mdi:link-variant" class="w-5 h-5" />
+        </button>
+        <NuxtLink
+          :to="`https://twitter.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
+          target="_blank"
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+          aria-label="Sdílet na Twitteru"
+        >
+          <Icon name="mdi:twitter" class="w-5 h-5" />
+        </NuxtLink>
+        <NuxtLink
+          :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
+          target="_blank"
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+          aria-label="Sdílet na LinkedIn"
+        >
+          <Icon name="mdi:linkedin" class="w-5 h-5" />
+        </NuxtLink>
       </div>
 
       <div
@@ -210,6 +240,11 @@ const { data, error } = await useFetch<Article | null>(
     default: () => null,
   },
 )
+const fullUrl = computed(() => window.location.href)
+function copyLink() {
+  navigator.clipboard.writeText(fullUrl.value)
+  toast.success({ message: 'Odkaz zkopírován do schránky!' })
+}
 
 useSeoMeta({
   title: () => data.value?.title || 'Článek',
