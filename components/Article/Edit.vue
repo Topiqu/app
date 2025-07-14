@@ -120,7 +120,6 @@ const saveEdit = async () => {
     await $fetch(`/api/articles/${editedArticle.value.id}`, {
       method: 'PATCH',
       body: {
-        id: editedArticle.value.id,
         title: editedArticle.value.title,
         content: editedArticle.value.content,
         slug: editedArticle.value.slug,

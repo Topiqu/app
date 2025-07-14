@@ -67,15 +67,22 @@
               :row="{ original: data }"
             />
           </div>
+
+          <span class="text-gray-400">|</span>
+
           <div class="flex items-center gap-2 text-gray-500">
             <Icon name="mdi:calendar" class="w-4 h-4" />
             <span>{{ formatDate(data.createdAt.toString()) }}</span>
           </div>
+
+          <span class="text-gray-400">|</span>
+
           <div class="flex items-center gap-2 text-gray-500">
             <Icon name="mdi:clock-outline" class="w-4 h-4" />
             <span>{{ data.readingTime }} min čtení</span>
           </div>
         </div>
+
         <div v-if="user" class="flex items-center gap-2">
           <button
             class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
@@ -236,7 +243,6 @@ const slug = computed(() => route.params.slug)
 const { data, error } = await useFetch<Article | null>(
   `/api/articles/${slug.value}`,
   {
-    key: `clanek-${slug.value}`,
     default: () => null,
   },
 )
@@ -266,6 +272,23 @@ const errorMessage = computed(() =>
     : '',
 )
 
+onMounted(async () => {
+  if (!data.value) return
+  try {
+    await $fetch(`/api/articles/${data.value.id}`, {
+      method: 'PATCH',
+      body: {
+        id: data.value.id,
+        views: data.value.views + 1,
+        content: data.value.content,
+      },
+    })
+  } catch (err) {
+    console.error('Error updating article:', err)
+    // optionally log error
+  }
+})
+
 const formatDate = (date: string) => format(new Date(date), 'dd.MM.yyyy, HH:mm')
 
 const hasTags = computed(() => !!data.value?.tags?.length)
@@ -288,7 +311,7 @@ async function setStatus(id: string, status: ArticleStatus) {
 const refresh = async () => {
   const { data: newData } = await useFetch<Article | null>(
     `/api/articles/${slug.value}`,
-    { default: () => null, key: `article-${slug.value}` },
+    { default: () => null },
   )
   data.value = newData.value
 }

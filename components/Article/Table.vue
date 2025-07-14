@@ -88,7 +88,7 @@
                 class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 text-gray-800 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="editingTags = row.original.id"
               >
-                <Icon name="mdi:tag" class="w-5 h-5" />
+                <Icon name="mdi:tag-outline" class="w-5 h-5" />
               </button>
               <button
                 class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
