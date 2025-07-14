@@ -250,7 +250,7 @@ const { data, error } = await useFetch<Article | null>(
     default: () => null,
   },
 )
-const fullUrl = computed(() => window.location.href)
+const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
 function copyLink() {
   navigator.clipboard.writeText(fullUrl.value)
   toast.success({ message: 'Odkaz zkopírován do schránky!' })

@@ -41,7 +41,7 @@
 import { TransitionRoot } from '@headlessui/vue'
 defineProps<{ isOpen: boolean }>()
 
-const isMobile = computed(() => window.innerWidth < 768)
+const isMobile = computed(() => import.meta.client && window.innerWidth < 768)
 const articleCreateOpen = ref(false)
 const tagsOpen = ref(false)
 </script>
