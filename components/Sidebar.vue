@@ -2,10 +2,8 @@
   <transition name="slide">
     <div
       v-if="isMobile || isOpen"
-      :class="[
-        'fixed top-72 z-[1000] bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4',
-        isMobile ? 'left-0 w-64' : 'left-8 w-14 rounded-md h-48',
-      ]"
+      class="sidebar fixed top-72 left-8 w-14 h-48 z-[1000] bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4 rounded-md"
+      :class="isMobile ? 'left-0 w-64' : ''"
     >
       <button
         class="w-10 h-10 flex items-center justify-center rounded-md hover:bg-gray-200 transition-colors"
@@ -46,7 +44,7 @@ const articleCreateOpen = ref(false)
 const tagsOpen = ref(false)
 </script>
 
-<style scoped>
+<style>
 .slide-enter-active,
 .slide-leave-active {
   transition: all 0.3s ease;
@@ -54,5 +52,12 @@ const tagsOpen = ref(false)
 .slide-enter-from,
 .slide-leave-to {
   transform: translateX(-100%);
+}
+
+.sidebar {
+  transition: opacity 0.3s ease;
+}
+.sidebar:hover {
+  opacity: 0.6;
 }
 </style>
