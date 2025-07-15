@@ -3,8 +3,8 @@
     <div
       v-if="isMobile || isOpen"
       :class="[
-        'fixed z-40 bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4',
-        isMobile ? 'left-0 w-64' : 'left-8 w-14 ml-2 rounded-md h-48',
+        'fixed top-72 z-[1000] bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4',
+        isMobile ? 'left-0 w-64' : 'left-8 w-14 rounded-md h-48',
       ]"
     >
       <button
