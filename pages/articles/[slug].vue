@@ -36,7 +36,7 @@
         quality="80"
         width="672"
         height="336"
-        class="rounded-xl shadow-md border border-gray-100 object-cover w-full h-auto max-h-[320px] transition-transform duration-500 hover:scale-[1.005]"
+        class="rounded-xl shadow-md border border-gray-100 object-cover object-center w-full h-auto max-h-[320px] transition-transform duration-500 hover:scale-[1.005]"
         aria-describedby="image-caption"
       />
       <span id="image-caption" class="sr-only">Titulní obrázek článku</span>
