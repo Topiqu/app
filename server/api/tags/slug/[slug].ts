@@ -1,10 +1,4 @@
-import { getServerSession } from '#auth'
-
 export default defineEventHandler(async (event) => {
-  const user = (await getServerSession(event))?.user
-  if (!user)
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
-
   const slug = getRouterParam(event, 'slug')
   if (!slug)
     throw createError({ statusCode: 400, statusMessage: 'Slug je povinný' })
