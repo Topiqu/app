@@ -59,16 +59,14 @@
         class="flex items-center justify-between text-md text-gray-600 flex-wrap gap-3 mt-4"
       >
         <div class="flex items-center gap-4">
-          <div class="flex items-center gap-3">
+          <div v-if="user" class="flex items-center gap-3">
             <span class="font-medium">Stav:</span>
             <ArticleStatusCell
-              v-if="user"
               :onUpdate="setStatus"
               :row="{ original: data }"
             />
+            <span class="text-gray-400">|</span>
           </div>
-
-          <span class="text-gray-400">|</span>
 
           <div class="flex items-center gap-2 text-gray-500">
             <Icon name="mdi:calendar" class="w-4 h-4" />
