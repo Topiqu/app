@@ -22,7 +22,7 @@
       <button class="icon-btn" @click="tagsOpen = true">
         <Icon name="mdi:tag-outline" class="w-6 h-6 text-black" />
       </button>
-      <button class="icon-btn">
+      <button class="icon-btn" @click="statsOpen = true">
         <Icon name="mdi:chart-bar" class="w-6 h-6 text-black" />
       </button>
     </div>
@@ -49,11 +49,13 @@
   <TransitionRoot :show="tagsOpen" as="template">
     <TagsCreate @close="tagsOpen = false" />
   </TransitionRoot>
+  <TransitionRoot :show="statsOpen" as="template">
+    <StatsDialog @close="statsOpen = false" />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
 import { TransitionRoot } from '@headlessui/vue'
-
 defineProps<{ isOpen: boolean }>()
 const emit = defineEmits(['update:isOpen'])
 
@@ -80,6 +82,7 @@ watch(
 
 const articleCreateOpen = ref(false)
 const tagsOpen = ref(false)
+const statsOpen = ref(false)
 </script>
 
 <style scoped>
