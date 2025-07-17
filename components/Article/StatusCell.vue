@@ -1,9 +1,5 @@
 <template>
-  <select
-    class="border rounded px-2 py-1"
-    :value="localStatus"
-    @change="onChange"
-  >
+  <select v-model="status" class="border rounded px-2 py-1" @change="onChange">
     <option value="draft">Návrh</option>
     <option value="published">Publikováno</option>
   </select>
@@ -17,15 +13,9 @@ const emit = defineEmits<{
   (e: 'update', id: string, newStatus: ArticleStatus): void
 }>()
 
-const localStatus = computed({
-  get: () => props.row.original.status,
-  set: (val: ArticleStatus) => {
-    emit('update', props.row.original.id, val)
-  },
-})
+const status = ref(props.row.original.status)
 
-function onChange(e: Event) {
-  const newStatus = (e.target as HTMLSelectElement).value as ArticleStatus
-  emit('update', props.row.original.id, newStatus)
+function onChange() {
+  emit('update', props.row.original.id, status.value as ArticleStatus)
 }
 </script>
