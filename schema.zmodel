@@ -19,32 +19,106 @@ enum ArticleStatus {
     published
 }
 
-model Article {
-    id          String        @id @default(uuid())
-    slug        String        @unique @length(1, 100, "Slug musí mít 1–100 znaků")
-    title       String        @length(1, 255, "Titulek musí mít 1–255 znaků")
-    content     String        @length(1, 2048, "Článek překročil délku znaků (2048)")
-    imageUrl    String?       @length(0, 255, "URL obrázku musí mít max. 255 znaků")
-    status      ArticleStatus @default(draft)
-    createdAt   DateTime      @default(now())
-    updatedAt   DateTime      @updatedAt
-    publishedAt DateTime?
-    deletedAt   DateTime?
-    views       Int           @default(0)
-    readingTime Int?
+enum Role {
+    admin
+    superadmin
+}
 
-    user        User          @relation(fields: [userId], references: [id])
-    userId      String
-    tags        ArticleTag[]
+enum GenerationFrequency {
+    NONE
+    DAILY
+    WEEKLY
+}
+
+model User {
+    id           String      @id @default(uuid())
+    username     String      @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
+    password     String      @length(4, 124, "Heslo musí mít 4–124 znaků")
+    bio          String?     @length(0, 300, "Bio může mít max. 300 znaků")
+    role         Role        @default(admin)
+    createdAt    DateTime    @default(now())
+
+    articles     Article[]
+    clientSiteId String?
+    clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id])
+
+    @@allow('all', auth().role == 'superadmin')
+    @@allow('read', true)
+}
+
+model ClientSite {
+    id                  String              @id @default(uuid())
+    name                String
+    subdomain           String              @unique
+    customDomain        String?             @unique
+
+    topic               String
+    focus               String?
+    keywords            Json?
+
+    plan                String
+    tokenLimit          Int
+    tokenRemaining      Int
+    generationFrequency GenerationFrequency @default(NONE)
+    lastGeneratedAt     DateTime?
+
+    users               User[]
+    articles            Article[]
+    tags                Tag[]
+
+    @@allow('all', auth().role == 'superadmin')
+    @@allow('read', true)
+}
+
+model Article {
+    id           String        @id @default(uuid())
+    slug         String        @unique @length(1, 100, "Slug musí mít 1–100 znaků")
+    title        String        @length(1, 255, "Titulek musí mít 1–255 znaků")
+    content      String        @length(1, 16384, "Článek překročil délku znaků")
+    imageUrl     String?       @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    status       ArticleStatus @default(draft)
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    publishedAt  DateTime?
+    deletedAt    DateTime?
+    views        Int           @default(0)
+    readingTime  Int?
+
+    userId       String
+    user         User          @relation(fields: [userId], references: [id])
+
+    clientSiteId String
+    clientSite   ClientSite    @relation(fields: [clientSiteId], references: [id])
+
+    tags         ArticleTag[]
+
+    @@allow('all', auth().role == 'admin')
+    @@allow('create', true)
+    @@allow('read', true)
+    @@allow('update', auth().role == 'admin')
+    @@allow('delete', auth().role == 'admin')
 }
 
 model Tag {
-    id        String       @id @default(uuid())
-    slug      String       @unique @length(1, 64, "Slug tagu musí mít 1–64 znaků")
-    name      String       @unique @length(1, 64, "Název tagu musí mít 1–64 znaků")
-    createdAt DateTime     @default(now())
-    updatedAt DateTime     @updatedAt
-    articles  ArticleTag[]
+    id           String       @id @default(uuid())
+    slug         String       @length(1, 64)
+    name         String       @length(1, 64)
+    createdAt    DateTime     @default(now())
+    updatedAt    DateTime     @updatedAt
+
+    clientSiteId String
+    clientSite   ClientSite   @relation(fields: [clientSiteId], references: [id])
+
+    articles     ArticleTag[]
+
+    @@unique([slug, clientSiteId])
+    @@unique([name, clientSiteId])
+
+    @@allow('all', auth().role == 'admin')
+    @@allow('create', true)
+    @@allow('read', true)
+    @@allow('update', auth().role == 'admin')
+    @@allow('delete', auth().role == 'admin')
 }
 
 model ArticleTag {
@@ -55,13 +129,10 @@ model ArticleTag {
     tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
     @@id([articleId, tagId])
-}
 
-model User {
-    id        String    @id @default(uuid())
-    username  String    @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
-    password  String    @length(4, 124, "Heslo musí mít 4–124 znaků")
-    bio       String?   @length(0, 300, "Bio autora může mít max. 300 znaků")
-    createdAt DateTime  @default(now())
-    articles  Article[]
+    @@allow('all', auth().role == 'admin')
+    @@allow('create', true)
+    @@allow('read', true)
+    @@allow('update', auth().role == 'admin')
+    @@allow('delete', auth().role == 'admin')
 }

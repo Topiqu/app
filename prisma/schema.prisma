@@ -17,31 +17,79 @@ enum ArticleStatus {
   published
 }
 
+enum Role {
+  admin
+  superadmin
+}
+
+enum GenerationFrequency {
+  NONE
+  DAILY
+  WEEKLY
+}
+
+model User {
+  id           String      @id() @default(uuid())
+  username     String      @unique()
+  password     String
+  bio          String?
+  role         Role        @default(admin)
+  createdAt    DateTime    @default(now())
+  articles     Article[]
+  clientSiteId String?
+  clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id])
+}
+
+model ClientSite {
+  id                  String              @id() @default(uuid())
+  name                String
+  subdomain           String              @unique()
+  customDomain        String?             @unique()
+  topic               String
+  focus               String?
+  keywords            Json?
+  plan                String
+  tokenLimit          Int
+  tokenRemaining      Int
+  generationFrequency GenerationFrequency @default(NONE)
+  lastGeneratedAt     DateTime?
+  users               User[]
+  articles            Article[]
+  tags                Tag[]
+}
+
 model Article {
-  id          String        @id() @default(uuid())
-  slug        String        @unique()
-  title       String
-  content     String
-  imageUrl    String?
-  status      ArticleStatus @default(draft)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt()
-  publishedAt DateTime?
-  deletedAt   DateTime?
-  views       Int           @default(0)
-  readingTime Int?
-  user        User          @relation(fields: [userId], references: [id])
-  userId      String
-  tags        ArticleTag[]
+  id           String        @id() @default(uuid())
+  slug         String        @unique()
+  title        String
+  content      String
+  imageUrl     String?
+  status       ArticleStatus @default(draft)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt()
+  publishedAt  DateTime?
+  deletedAt    DateTime?
+  views        Int           @default(0)
+  readingTime  Int?
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  clientSiteId String
+  clientSite   ClientSite    @relation(fields: [clientSiteId], references: [id])
+  tags         ArticleTag[]
 }
 
 model Tag {
-  id        String       @id() @default(uuid())
-  slug      String       @unique()
-  name      String       @unique()
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt()
-  articles  ArticleTag[]
+  id           String       @id() @default(uuid())
+  slug         String
+  name         String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt()
+  clientSiteId String
+  clientSite   ClientSite   @relation(fields: [clientSiteId], references: [id])
+  articles     ArticleTag[]
+
+  @@unique([slug, clientSiteId])
+  @@unique([name, clientSiteId])
 }
 
 model ArticleTag {
@@ -51,13 +99,4 @@ model ArticleTag {
   tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([articleId, tagId])
-}
-
-model User {
-  id        String    @id() @default(uuid())
-  username  String    @unique()
-  password  String
-  bio       String?
-  createdAt DateTime  @default(now())
-  articles  Article[]
 }
