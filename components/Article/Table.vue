@@ -25,7 +25,7 @@
             <th
               v-for="header in headerGroup.headers"
               :key="header.id"
-              class="cursor-pointer px-4 py-2 select-none"
+              class="px-4 py-2 text-center select-none cursor-pointer"
               @click="
                 (event) => header.column.getToggleSortingHandler()?.(event)
               "
@@ -59,7 +59,7 @@
             <td
               v-for="cell in row.getVisibleCells()"
               :key="cell.id"
-              class="px-4 py-2 break-words max-w-[180px] sm:max-w-none"
+              class="px-4 py-2 break-words max-w-[180px] sm:max-w-none text-center"
             >
               <div
                 v-if="cell.column.id === 'content'"
@@ -71,7 +71,9 @@
                 :props="cell.getContext()"
               />
             </td>
-            <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4">
+            <td
+              class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center"
+            >
               <button
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 text-gray-800 rounded-full hover:from-green-300 hover:to-green-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="router.push(`/articles/${row.original.slug}`)"
@@ -102,6 +104,7 @@
       </table>
     </div>
   </div>
+
   <TransitionRoot :show="!!editingArticle" as="template">
     <ArticleEdit
       :article="editingArticle!"
