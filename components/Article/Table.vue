@@ -129,6 +129,7 @@ import {
 } from '@tanstack/vue-table'
 import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
+import Swal from 'sweetalert2'
 import { useRouter } from 'vue-router'
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
 import ArticleTag from '~/components/Article/Tag.vue'
@@ -187,6 +188,18 @@ const table = useVueTable({
 })
 
 async function del(id: string) {
+  const confirm = await Swal.fire({
+    title: 'Opravdu smazat?',
+    text: 'Tuto akci nelze vrátit zpět.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Smazat',
+    cancelButtonText: 'Zrušit',
+    confirmButtonColor: '#ef4444',
+  })
+
+  if (!confirm.isConfirmed) return
+
   try {
     await $fetch(`/api/articles/${id}`, { method: 'DELETE' })
     articles.value = articles.value.filter((a) => a.id !== id)

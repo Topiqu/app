@@ -98,8 +98,8 @@ import {
   TransitionChild,
 } from '@headlessui/vue'
 import slugify from 'slugify'
+import Swal from 'sweetalert2'
 
-const { $swal } = useNuxtApp()
 const toast = useToast()
 defineEmits(['close'])
 
@@ -137,7 +137,7 @@ const createTag = async () => {
 }
 
 async function confirmDelete(name: string) {
-  const result = await $swal.fire({
+  const result = await Swal.fire({
     title: `Smazat "${name}"?`,
     text: `Tímto vymažete štítek "${name}".`,
     icon: 'warning',
