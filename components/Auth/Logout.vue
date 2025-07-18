@@ -1,6 +1,6 @@
 <template>
   <button
-    class="flex items-center justify-center w-9 h-9 rounded-full text-red-500 hover:text-red-700 hover:bg-red-100 transition active:scale-95"
+    class="border border-red-300 text-red-500 bg-red-100 hover:bg-red-200 hover:text-red-600 transition active:scale-95"
     title="Odhlásit se"
     @click="logout"
   >
