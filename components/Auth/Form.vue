@@ -7,12 +7,6 @@
       <p class="text-green-600 text-base font-medium">
         Vítej, {{ data.user?.name }}!
       </p>
-      <button
-        class="w-full py-2 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition"
-        @click="handleLogout"
-      >
-        Odhlásit se
-      </button>
     </div>
 
     <div
@@ -111,7 +105,7 @@
 
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core'
-const { data, signIn, signOut } = useAuth()
+const { data, signIn } = useAuth()
 const toast = useToast()
 
 const form = ref({ username: '', password: '' })
@@ -160,11 +154,5 @@ const submit = async () => {
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Něco se pokazilo' })
   }
-}
-
-const handleLogout = async () => {
-  return (await signOut({ redirect: false }))
-    ? toast.success({ message: 'Úspěšně odhlášeno' })
-    : toast.error({ message: 'Nepodařilo se vás odhlásit' })
 }
 </script>

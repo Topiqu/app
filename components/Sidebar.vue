@@ -25,6 +25,7 @@
       <button class="icon-btn" @click="statsOpen = true">
         <Icon name="mdi:chart-bar" class="w-6 h-6 text-black" />
       </button>
+      <AuthLogout />
     </div>
   </transition>
 

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Auth />
+    <AuthForm />
     <ArticleTable />
   </div>
 </template>
