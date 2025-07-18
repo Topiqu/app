@@ -154,7 +154,7 @@ const submit = async () => {
       toast.error({ message: 'Nepodařilo se vás přihlásit' })
     } else {
       toast.success({ message: 'Přihlášení bylo úspěšné' })
-      if (data.value?.user?.role === 'superadmin') navigateTo('/superadmin')
+      if (data.value?.user?.role === 'superadmin') navigateTo('/master')
       form.value = { username: '', password: '' }
     }
   } catch (e: any) {
