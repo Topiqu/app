@@ -5,7 +5,7 @@
       class="bg-white px-3 py-6 rounded-xl shadow text-center space-y-4 border border-gray-100"
     >
       <p class="text-green-600 text-base font-medium">
-        Vítej, {{ data.user?.name || data.user?.email }}!
+        Vítej, {{ data.user?.name }}!
       </p>
       <button
         class="w-full py-2 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition"

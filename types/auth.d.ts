@@ -4,6 +4,7 @@ declare module 'next-auth' {
   interface User extends DefaultUser {
     id: string
     name: string
+    role: 'admin' | 'superadmin'
   }
 
   interface Session {
@@ -15,5 +16,6 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string
     name: string
+    role: 'admin' | 'superadmin'
   }
 }
