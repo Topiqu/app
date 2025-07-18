@@ -19,9 +19,14 @@ enum ArticleStatus {
     published
 }
 
+enum UserRole {
+    admin
+    superadmin
+}
+
 model Article {
     id          String        @id @default(uuid())
-    slug        String        @unique @length(1, 100, "Slug musí mít 1–100 znaků")
+    slug        String        @unique @length(1, 100, "Slug musí mít 1–100 znaků a nesmí obsahovat mezery")
     title       String        @length(1, 255, "Titulek musí mít 1–255 znaků")
     content     String        @length(1, 2048, "Článek překročil délku znaků (2048)")
     imageUrl    String?       @length(0, 255, "URL obrázku musí mít max. 255 znaků")
@@ -62,6 +67,7 @@ model User {
     username  String    @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
     password  String    @length(4, 124, "Heslo musí mít 4–124 znaků")
     bio       String?   @length(0, 300, "Bio autora může mít max. 300 znaků")
+    role      UserRole  @default(admin)
     createdAt DateTime  @default(now())
     articles  Article[]
 }

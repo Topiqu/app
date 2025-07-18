@@ -17,6 +17,11 @@ enum ArticleStatus {
   published
 }
 
+enum UserRole {
+  admin
+  superadmin
+}
+
 model Article {
   id          String        @id() @default(uuid())
   slug        String        @unique()
@@ -58,6 +63,7 @@ model User {
   username  String    @unique()
   password  String
   bio       String?
+  role      UserRole  @default(admin)
   createdAt DateTime  @default(now())
   articles  Article[]
 }
