@@ -22,17 +22,23 @@ enum UserRole {
   superadmin
 }
 
+enum GenerationFrequency {
+  NONE
+  DAILY
+  WEEKLY
+}
+
 model Article {
   id          String        @id() @default(uuid())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?     @updatedAt()
+  deletedAt   DateTime?
   slug        String        @unique()
   title       String
   content     String
   imageUrl    String?
   status      ArticleStatus @default(draft)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt()
   publishedAt DateTime?
-  deletedAt   DateTime?
   views       Int           @default(0)
   readingTime Int?
   user        User          @relation(fields: [userId], references: [id])
@@ -42,10 +48,11 @@ model Article {
 
 model Tag {
   id        String       @id() @default(uuid())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime?    @updatedAt()
+  deletedAt DateTime?
   slug      String       @unique()
   name      String       @unique()
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt()
   articles  ArticleTag[]
 }
 
@@ -60,10 +67,21 @@ model ArticleTag {
 
 model User {
   id        String    @id() @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
   username  String    @unique()
   password  String
   bio       String?
   role      UserRole  @default(admin)
-  createdAt DateTime  @default(now())
   articles  Article[]
+}
+
+model ClientSite {
+  id        String    @id() @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
+  name      String
+  subdomain String    @unique()
 }
