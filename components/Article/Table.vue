@@ -127,6 +127,7 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table'
+import { useDebounceFn } from '@vueuse/core'
 import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 import { format } from 'date-fns'
 import Swal from 'sweetalert2'
@@ -210,19 +211,25 @@ async function del(id: string) {
   }
 }
 
-async function setStatus(id: string, status: ArticleStatus) {
-  try {
-    await $fetch(`/api/articles/${id}/status`, {
-      method: 'PATCH',
-      body: { status },
-    })
+const debouncedSetStatus = useDebounceFn(
+  async (id: string, status: ArticleStatus) => {
+    try {
+      await $fetch(`/api/articles/${id}/status`, {
+        method: 'PATCH',
+        body: { status },
+      })
+      await refresh()
+      toast.success({
+        message: `Stav změněn na ${status === 'draft' ? 'návrh' : 'publikováno'}`,
+      })
+    } catch (e: any) {
+      toast.error({ message: e.data?.message || 'Změna stavu selhala' })
+    }
+  },
+  100,
+)
 
-    await refresh()
-    toast.success({
-      message: `Stav změněn na ${status === 'draft' ? 'drafted' : 'published'}`,
-    })
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Změna stavu selhala' })
-  }
+async function setStatus(id: string, status: ArticleStatus) {
+  debouncedSetStatus(id, status)
 }
 </script>
