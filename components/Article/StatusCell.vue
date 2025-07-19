@@ -1,9 +1,5 @@
 <template>
-  <select
-    :value="props.row.original.status"
-    class="border rounded px-2 py-1"
-    @change="onChange"
-  >
+  <select v-model="model" class="border rounded px-2 py-1" @change="onChange">
     <option value="draft">Návrh</option>
     <option value="published">Publikováno</option>
   </select>
@@ -16,6 +12,13 @@ const props = defineProps<{ row: { original: Article } }>()
 const emit = defineEmits<{
   (e: 'update', id: string, newStatus: ArticleStatus): void
 }>()
+
+const model = computed({
+  get: () => props.row.original.status,
+  set: (val: ArticleStatus) => {
+    emit('update', props.row.original.id, val)
+  },
+})
 
 function onChange(event: Event) {
   const value = (event.target as HTMLSelectElement).value as ArticleStatus

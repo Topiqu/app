@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <AuthForm />
-  </div>
+  <div></div>
 </template>
 
 <script lang="ts" setup></script>

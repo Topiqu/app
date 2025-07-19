@@ -218,9 +218,6 @@ async function setStatus(id: string, status: ArticleStatus) {
     })
 
     await refresh()
-
-    articles.value = [...articles.value]
-
     toast.success({
       message: `Stav změněn na ${status === 'draft' ? 'drafted' : 'published'}`,
     })
