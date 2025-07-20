@@ -1,5 +1,3 @@
-import { getServerSession } from '#auth'
-
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const user = (await getServerSession(event))?.user

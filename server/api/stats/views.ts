@@ -1,4 +1,3 @@
-import { getServerSession } from '#auth'
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user)

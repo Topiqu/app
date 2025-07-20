@@ -1,5 +1,4 @@
 const zod = { from: 'zod', imports: [{ name: 'z' }] }
-
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
@@ -18,7 +17,7 @@ export default defineNuxtConfig({
   ],
   imports: {
     presets: [zod],
-    dirs: ['shared/zod/models', 'utils'],
+    dirs: ['shared/zod/models', 'utils', '#auth'],
   },
   auth: {
     provider: { type: 'authjs' },
@@ -28,8 +27,14 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'bun',
     imports: {
-      presets: [zod],
-      dirs: ['shared/zod/models', 'server/utils'],
+      presets: [
+        zod,
+        {
+          from: '#auth',
+          imports: ['getServerSession'],
+        },
+      ],
+      dirs: ['shared/zod/models', 'server/utils', '#auth'],
     },
   },
   runtimeConfig: {

@@ -1,4 +1,3 @@
-import { getServerSession } from '#auth'
 import { ArticleStatusSchema } from '~/shared/zod/enums'
 
 const BodySchema = z.object({

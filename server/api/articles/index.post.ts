@@ -1,5 +1,4 @@
 import { createError } from 'h3'
-import { getServerSession } from '#auth'
 
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
