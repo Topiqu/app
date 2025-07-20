@@ -59,12 +59,23 @@
         class="flex items-center justify-between text-md text-gray-600 flex-wrap gap-3 mt-4"
       >
         <div class="flex items-center gap-4">
-          <div v-if="user" class="flex items-center gap-3">
+          <div
+            v-if="session?.user.role === 'admin'"
+            class="flex items-center gap-3"
+          >
             <span class="font-medium">Stav:</span>
             <ArticleStatusCell
               :onUpdate="setStatus"
               :row="{ original: data }"
             />
+            <span
+              v-if="
+                session?.user.role === 'admin' && data.status === 'published'
+              "
+              class="w-2 h-2 bg-green-500 rounded-full ml-2 animate-pulse-slow"
+              title="Publikován (admin pohled)"
+              aria-label="Článek je publikován"
+            ></span>
             <span class="text-gray-400">|</span>
           </div>
 
@@ -86,7 +97,7 @@
             <span>{{ data.views }}x zhlédnutí</span>
           </div>
           <button
-            v-if="user"
+            v-if="session?.user.role === 'admin'"
             class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
             aria-label="Upravit článek"
             @click="editingArticle = data"
@@ -211,6 +222,7 @@
 
 <script lang="ts" setup>
 import { TransitionRoot } from '@headlessui/vue'
+import { useDebounceFn } from '@vueuse/core'
 import type {
   ArticleStatus,
   Article as _Article,
@@ -236,7 +248,7 @@ type RelatedArticle = {
 }
 
 const route = useRoute()
-const { data: user } = useAuth()
+const { data: session } = useAuth()
 const toast = useToast()
 const editingArticle = ref<Article | null>(null)
 
@@ -295,19 +307,25 @@ const formatDate = (date: string) => format(new Date(date), 'dd.MM.yyyy, HH:mm')
 
 const hasTags = computed(() => !!data.value?.tags?.length)
 
+const debouncedSetStatus = useDebounceFn(
+  async (id: string, status: ArticleStatus) => {
+    try {
+      await $fetch(`/api/articles/${id}/status`, {
+        method: 'PATCH',
+        body: { status },
+      })
+      await refresh()
+      toast.success({
+        message: `Stav změněn na ${status === 'draft' ? 'návrh' : 'publikováno'}`,
+      })
+    } catch (e: any) {
+      toast.error({ message: e.data?.message || 'Změna stavu selhala' })
+    }
+  },
+  100,
+)
 async function setStatus(id: string, status: ArticleStatus) {
-  try {
-    await $fetch(`/api/articles/${id}/status`, {
-      method: 'PATCH',
-      body: { status },
-    })
-    await refresh()
-    toast.success({
-      message: `Stav změněn na ${status === 'draft' ? 'Návrh' : 'Publikováno'}`,
-    })
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Změna stavu selhala' })
-  }
+  debouncedSetStatus(id, status)
 }
 
 const refresh = async () => {
