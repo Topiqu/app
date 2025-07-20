@@ -49,6 +49,16 @@
           <button
             type="button"
             class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+            title="Underline"
+            :disabled="!editor.can().chain().focus().toggleUnderline().run()"
+            :class="{ 'bg-gray-200': editor.isActive('underline') }"
+            @click="editor.chain().focus().toggleUnderline().run()"
+          >
+            <Icon name="mdi-format-underline" />
+          </button>
+          <button
+            type="button"
+            class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
             title="Link"
             :class="{ 'bg-gray-200': editor.isActive('link') }"
             @click="setLink"
@@ -290,6 +300,7 @@ import { Image } from '@tiptap/extension-image'
 import { Link } from '@tiptap/extension-link'
 import { TextAlign } from '@tiptap/extension-text-align'
 import { Typography } from '@tiptap/extension-typography'
+import { Underline } from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
 import { BubbleMenu, EditorContent, useEditor } from '@tiptap/vue-3'
 import { useVModel } from '@vueuse/core'
@@ -330,6 +341,7 @@ const editor = ref(
     extensions: [
       StarterKit,
       Image,
+      Underline.configure({ HTMLAttributes: { class: 'underline' } }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Typography,
       CharacterCount.configure({ limit }),
