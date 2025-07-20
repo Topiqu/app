@@ -1,6 +1,6 @@
 const zod = { from: 'zod', imports: [{ name: 'z' }] }
 export default defineNuxtConfig({
-  compatibilityDate: '2024-11-01',
+  compatibilityDate: '2025-07-20',
   devtools: { enabled: true },
   modules: [
     '@nuxt/content',
@@ -38,6 +38,9 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
+    public: {
+      appVersion: '1.0.0 beta',
+    },
     authSecret: process.env.AUTH_SECRET,
   },
 })
