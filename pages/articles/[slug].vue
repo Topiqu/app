@@ -351,24 +351,27 @@ const fetchRelatedArticles = async () => {
     (a) => a.articleId !== data.value!.id,
   )
 }
-watch(
-  () => data.value,
-  async (val) => {
-    if (!val?.id) return
+onMounted(async () => {
+  if (!data.value?.id) return
 
+  const viewedKey = `viewed-${data.value.id}`
+  const lastViewed = sessionStorage.getItem(viewedKey)
+  const now = Date.now()
+
+  if (!lastViewed || now - Number(lastViewed) > 1000) {
     try {
-      await $fetch(`/api/articles/${val.id}/view-update`, {
+      await $fetch(`/api/articles/${data.value.id}/view-update`, {
         method: 'PATCH',
         body: {
-          views: val.views + 1,
+          views: data.value.views + 1,
         },
       })
+      sessionStorage.setItem(viewedKey, now.toString())
     } catch (err) {
       console.error('Error updating article views:', err)
     }
+  }
 
-    await fetchRelatedArticles()
-  },
-  { immediate: true },
-)
+  await fetchRelatedArticles()
+})
 </script>
