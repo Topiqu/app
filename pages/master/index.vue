@@ -5,12 +5,14 @@
         v-model="form.name"
         type="text"
         placeholder="Název"
+        required
         class="w-full border px-3 py-2 rounded"
       />
       <input
         v-model="form.subdomain"
         type="text"
         placeholder="Subdoména"
+        required
         class="w-full border px-3 py-2 rounded"
       />
       <button

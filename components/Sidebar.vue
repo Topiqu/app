@@ -16,15 +16,23 @@
           : 'top-72 left-8 w-14 h-48 p-2 gap-4'
       "
     >
-      <button class="icon-btn" @click="articleCreateOpen = true">
-        <Icon name="mdi:pencil" class="w-6 h-6 text-black" />
-      </button>
-      <button class="icon-btn" @click="tagsOpen = true">
-        <Icon name="mdi:tag-outline" class="w-6 h-6 text-black" />
-      </button>
-      <button class="icon-btn" @click="statsOpen = true">
-        <Icon name="mdi:chart-bar" class="w-6 h-6 text-black" />
-      </button>
+      <div v-if="data?.user?.role === 'admin'" class="flex flex-col gap-4">
+        <button class="icon-btn" @click="articleCreateOpen = true">
+          <Icon name="mdi:pencil" class="w-6 h-6 text-black" />
+        </button>
+        <button class="icon-btn" @click="tagsOpen = true">
+          <Icon name="mdi:tag-outline" class="w-6 h-6 text-black" />
+        </button>
+        <button class="icon-btn" @click="statsOpen = true">
+          <Icon name="mdi:chart-bar" class="w-6 h-6 text-black" />
+        </button>
+      </div>
+
+      <div v-if="data?.user?.role === 'superadmin'" class="flex flex-col gap-4">
+        <button class="icon-btn" @click="clientCreateOpen = true">
+          <Icon name="mdi:account-plus" class="w-6 h-6 text-black" />
+        </button>
+      </div>
       <AuthLogout />
     </div>
   </transition>
@@ -59,7 +67,7 @@
 import { TransitionRoot } from '@headlessui/vue'
 defineProps<{ isOpen: boolean }>()
 const emit = defineEmits(['update:isOpen'])
-
+const { data } = useAuth()
 const isMobile = ref(false)
 
 const updateIsMobile = () => {
@@ -84,6 +92,7 @@ watch(
 const articleCreateOpen = ref(false)
 const tagsOpen = ref(false)
 const statsOpen = ref(false)
+const clientCreateOpen = ref(false)
 </script>
 
 <style scoped>

@@ -10,14 +10,8 @@
 
 <script setup lang="ts">
 const { signOut } = useAuth()
-const toast = useToast()
 
 const logout = async () => {
-  const res = await signOut({ redirect: false })
-  if (res) {
-    toast.success({ message: 'Odhlášení bylo úspěšné' })
-  } else {
-    toast.error({ message: 'Odhlášení selhalo' })
-  }
+  await signOut({ redirect: true, callbackUrl: '/' })
 }
 </script>
