@@ -90,14 +90,8 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table'
+import type { ClientSite } from '@zenstackhq/runtime/models'
 const toast = useToast()
-
-type ClientSite = {
-  id: string
-  name: string
-  subdomain: string
-  createdAt: string
-}
 
 const globalFilter = ref('')
 const { data: clients, refresh } = await useFetch<ClientSite[]>(

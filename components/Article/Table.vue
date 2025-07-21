@@ -158,7 +158,8 @@ const columns = ref<ColumnDef<Article>[]>([
     cell: ({ row }) =>
       h(ArticleStatusCell, {
         row,
-        onUpdate: (id: string, status: ArticleStatus) => setStatus(id, status),
+        onUpdate: (id: string, status: ArticleStatus) =>
+          debouncedSetStatus(id, status),
       }),
   },
   {
@@ -228,8 +229,4 @@ const debouncedSetStatus = useDebounceFn(
   },
   100,
 )
-
-async function setStatus(id: string, status: ArticleStatus) {
-  debouncedSetStatus(id, status)
-}
 </script>

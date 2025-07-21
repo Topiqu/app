@@ -65,7 +65,7 @@
           >
             <span class="font-medium">Stav:</span>
             <ArticleStatusCell
-              :onUpdate="setStatus"
+              :onUpdate="debouncedSetStatus"
               :row="{ original: data }"
             />
             <span
@@ -289,9 +289,6 @@ const debouncedSetStatus = useDebounceFn(
   },
   100,
 )
-async function setStatus(id: string, status: ArticleStatus) {
-  debouncedSetStatus(id, status)
-}
 
 const refresh = async () => {
   const { data: newData } = await useFetch<Article | null>(
