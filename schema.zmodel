@@ -30,6 +30,13 @@ enum GenerationFrequency {
     WEEKLY
 }
 
+enum ClientPlan {
+    BASIC
+    PRO
+    PREMIUM
+    CUSTOM
+}
+
 abstract model Base {
     id        String    @id @default(uuid())
     createdAt DateTime  @default(now())
@@ -77,6 +84,12 @@ model User extends Base {
 }
 
 model ClientSite extends Base {
-    name      String @length(1, 255, "Název musí mít 1–255 znaků")
-    subdomain String @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
+    name                String              @length(1, 255, "Název musí mít 1–255 znaků")
+    subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
+
+    plan                ClientPlan          @default(BASIC)
+    generationFrequency GenerationFrequency @default(NONE)
+
+    tokenLimit          Int                 @default(0)
+    tokenRemaining      Int                 @default(0)
 }

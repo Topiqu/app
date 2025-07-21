@@ -28,6 +28,13 @@ enum GenerationFrequency {
   WEEKLY
 }
 
+enum ClientPlan {
+  BASIC
+  PRO
+  PREMIUM
+  CUSTOM
+}
+
 model Article {
   id          String        @id() @default(uuid())
   createdAt   DateTime      @default(now())
@@ -78,10 +85,14 @@ model User {
 }
 
 model ClientSite {
-  id        String    @id() @default(uuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt()
-  deletedAt DateTime?
-  name      String
-  subdomain String    @unique()
+  id                  String              @id() @default(uuid())
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime?           @updatedAt()
+  deletedAt           DateTime?
+  name                String
+  subdomain           String              @unique()
+  plan                ClientPlan          @default(BASIC)
+  generationFrequency GenerationFrequency @default(NONE)
+  tokenLimit          Int                 @default(0)
+  tokenRemaining      Int                 @default(0)
 }
