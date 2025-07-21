@@ -24,6 +24,6 @@ const { data } = useAuth()
 const sidebarOpen = ref(true)
 
 const isAdmin = computed(() => {
-  return ['admin', 'superadmin'].includes(data?.value?.user.role ?? '')
+  return ['admin'].includes(data?.value?.user.role ?? '')
 })
 </script>

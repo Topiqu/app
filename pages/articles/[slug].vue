@@ -5,7 +5,7 @@
   >
     <div class="max-w-3xl mx-auto flex flex-col gap-6 px-2 sm:px-0">
       <NuxtLink
-        to="/"
+        to="/admin"
         class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 ease-in-out no-underline"
         aria-label="Zpět na seznam článků"
       >
