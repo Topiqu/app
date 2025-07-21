@@ -61,6 +61,9 @@
   <TransitionRoot :show="statsOpen" as="template">
     <StatsDialog @close="statsOpen = false" />
   </TransitionRoot>
+  <TransitionRoot :show="clientCreateOpen" as="template">
+    <ClientCreate @close="clientCreateOpen = false" />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
