@@ -73,7 +73,6 @@
                 session?.user.role === 'admin' && data.status === 'published'
               "
               class="w-2 h-2 bg-green-500 rounded-full ml-2 animate-pulse-slow"
-              title="Publikován (admin pohled)"
               aria-label="Článek je publikován"
             ></span>
             <span class="text-gray-400">|</span>
@@ -110,7 +109,8 @@
       <div class="flex justify-end gap-4 mt-10">
         <button
           aria-label="Zkopírovat odkaz"
-          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:cursor-pointer hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+          title="Zkopírovat odkaz"
           @click="copyLink"
         >
           <Icon name="mdi:link-variant" class="w-5 h-5" />
@@ -119,6 +119,7 @@
           :to="`https://twitter.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
           target="_blank"
           class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+          title="Sdílet na Twitteru"
           aria-label="Sdílet na Twitteru"
         >
           <Icon name="mdi:twitter" class="w-5 h-5" />
@@ -127,6 +128,7 @@
           :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
           target="_blank"
           class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+          title="Sdílet na LinkedIn"
           aria-label="Sdílet na LinkedIn"
         >
           <Icon name="mdi:linkedin" class="w-5 h-5" />
