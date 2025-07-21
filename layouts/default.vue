@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen max-w-screen bg-gray-100 flex">
     <Sidebar
-      v-if="data?.user"
+      v-if="data?.user && isAdmin"
       :isOpen="sidebarOpen"
       @update:isOpen="sidebarOpen = $event"
     />
@@ -14,6 +14,7 @@
         </button>
       </div>
       <slot />
+      <ClientVersion v-if="isAdmin" />
     </div>
   </div>
 </template>
@@ -21,4 +22,8 @@
 <script setup lang="ts">
 const { data } = useAuth()
 const sidebarOpen = ref(true)
+
+const isAdmin = computed(() => {
+  return ['admin', 'superadmin'].includes(data?.value?.user.role ?? '')
+})
 </script>
