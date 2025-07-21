@@ -81,6 +81,12 @@
                 </div>
               </div>
               <p v-else class="text-gray-600">Žádné články.</p>
+              <button
+                class="px-6 py-3 rounded-xl text-base font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 shadow-sm"
+                @click="generateAIContent"
+              >
+                Generovat AI obsah
+              </button>
             </div>
           </div>
           <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
@@ -184,6 +190,27 @@ const createArticle = async () => {
     toast.error({
       message: error.data?.message || 'Nepodařilo se přidat článek',
     })
+  }
+}
+
+const generateAIContent = async () => {
+  try {
+    const { data } = await useFetch('/api/articles/ai-gen', {
+      method: 'POST',
+      body: { prompt: 'Vygeneruj krátký článek na téma CP77...' },
+    })
+    if (data.value?.content) {
+      newArticle.value.content = data.value.content
+      toast.success({ message: 'AI obsah úspěšně vygenerován' })
+      console.log('AI Content:', data.value.content)
+    } else {
+      throw new Error('Neplatná odpověď od API')
+    }
+  } catch (error: any) {
+    toast.error({
+      message: error.data?.message || 'Nepodařilo se vygenerovat obsah',
+    })
+    console.error('Error:', error)
   }
 }
 </script>
