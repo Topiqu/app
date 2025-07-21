@@ -93,6 +93,6 @@ model ClientSite {
   subdomain           String              @unique()
   plan                ClientPlan          @default(BASIC)
   generationFrequency GenerationFrequency @default(NONE)
-  tokenLimit          Int                 @default(0)
-  tokenRemaining      Int                 @default(0)
+  tokenLimit          Int?                @default(0)
+  tokenRemaining      Int?                @default(0)
 }
