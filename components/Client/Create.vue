@@ -107,7 +107,6 @@
               Zavřít
             </button>
             <button
-              :disabled="!newClient.name"
               class="px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               @click="createClient"
             >
