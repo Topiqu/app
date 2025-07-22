@@ -73,15 +73,18 @@ model ArticleTag {
 }
 
 model User {
-  id        String    @id() @default(uuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt()
-  deletedAt DateTime?
-  username  String    @unique()
-  password  String
-  bio       String?
-  role      UserRole  @default(admin)
-  articles  Article[]
+  id           String      @id() @default(uuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime?   @updatedAt()
+  deletedAt    DateTime?
+  username     String      @unique()
+  email        String      @unique()
+  password     String
+  bio          String?
+  role         UserRole    @default(admin)
+  articles     Article[]
+  clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id])
+  clientSiteId String?
 }
 
 model ClientSite {
@@ -95,4 +98,5 @@ model ClientSite {
   generationFrequency GenerationFrequency @default(NONE)
   tokenLimit          Int?                @default(0)
   tokenRemaining      Int?                @default(0)
+  users               User[]
 }
