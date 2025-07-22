@@ -6,7 +6,18 @@
 </template>
 
 <script lang="ts" setup>
-import ClientVersion from '~/components/Client/Version.vue'
+const { data } = useAuth()
+
+const { data: client } = useFetch(
+  `/api/clients/${data.value?.user.clientSiteId}`,
+  {
+    key: `client-${data.value?.user.clientSiteId}`,
+  },
+)
+console.log('Client data:', client.value)
+useSeoMeta({
+  title: `${client.value?.name} - Administrace`,
+})
 </script>
 
 <style></style>

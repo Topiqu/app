@@ -263,15 +263,15 @@ const debouncedSetStatus = useDebounceFn(
 const relatedArticles = ref<RelatedArticle[]>([])
 
 watch(
-  () => data,
-  async (newData) => {
-    if (newData?.value && newData.value.id && newData.value.tags?.length) {
-      const t = newData.value.tags[0].tag.slug
+  () => data.value,
+  async (article) => {
+    if (article?.id && article.tags?.length) {
+      const t = article.tags[0].tag.slug
       const res = await $fetch<{ articles: RelatedArticle[] }>(
         `/api/tags/slug/${t}?limit=4`,
       )
       relatedArticles.value = res.articles.filter(
-        (a) => newData?.value && a.article.id !== newData.value.id,
+        (a) => a.article.id !== article.id,
       )
     } else {
       relatedArticles.value = []
