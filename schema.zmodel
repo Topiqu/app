@@ -82,7 +82,7 @@ model User extends Base {
     bio          String?     @length(0, 300, "Bio autora může mít max. 300 znaků")
     role         UserRole    @default(admin)
     articles     Article[]
-    clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id])
+    clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     clientSiteId String?
 }
 

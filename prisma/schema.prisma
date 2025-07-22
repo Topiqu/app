@@ -83,7 +83,7 @@ model User {
   bio          String?
   role         UserRole    @default(admin)
   articles     Article[]
-  clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id])
+  clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   clientSiteId String?
 }
 
