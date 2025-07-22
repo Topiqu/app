@@ -133,7 +133,6 @@ import { format } from 'date-fns'
 import Swal from 'sweetalert2'
 import { useRouter } from 'vue-router'
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
-import ArticleTag from '~/components/Article/Tag.vue'
 
 const router = useRouter()
 const toast = useToast()
