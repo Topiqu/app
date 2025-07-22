@@ -66,7 +66,13 @@
                 :props="cell.getContext()"
               />
             </td>
-            <td class="px-4 py-2 text-center">
+            <td class="px-4 py-2 text-center flex gap-4 justify-center">
+              <button
+                class="text-blue-500 hover:text-blue-700 transition"
+                @click="editingClient = row.original"
+              >
+                <Icon name="mdi:pencil" class="w-5 h-5" />
+              </button>
               <button
                 class="text-red-500 hover:text-red-700 transition"
                 @click="del(row.original.id)"
@@ -79,9 +85,18 @@
       </table>
     </div>
   </div>
+
+  <TransitionRoot :show="!!editingClient" as="template">
+    <ClientEdit
+      :client="editingClient!"
+      @close="editingClient = null"
+      @saved="refresh"
+    />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
+import { TransitionRoot } from '@headlessui/vue'
 import {
   type ColumnDef,
   FlexRender,
@@ -94,6 +109,8 @@ import type { ClientSite } from '@zenstackhq/runtime/models'
 const toast = useToast()
 
 const globalFilter = ref('')
+const editingClient = ref<ClientSite | null>(null)
+
 const { data: clients, refresh } = await useFetch<ClientSite[]>(
   '/api/clients',
   {
