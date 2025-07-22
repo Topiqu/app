@@ -66,7 +66,25 @@
             {{ validation.errors.username[0] }}
           </p>
         </div>
-
+        <div class="space-y-1">
+          <label for="email" class="block font-medium">Email</label>
+          <div class="relative">
+            <Icon
+              name="mdi:envelope"
+              class="absolute left-2 top-2.5 w-5 h-5 text-gray-400"
+            />
+            <input
+              id="email"
+              v-model="form.email"
+              type="email"
+              class="w-3/4 pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
+              autocomplete="current-email"
+            />
+          </div>
+          <p v-if="validation.errors.email" class="text-red-500 text-xs mt-1">
+            {{ validation.errors.email[0] }}
+          </p>
+        </div>
         <div class="space-y-1">
           <label for="password" class="block font-medium">Heslo</label>
           <div class="relative">
@@ -108,7 +126,7 @@ import { useDebounceFn } from '@vueuse/core'
 const { data, signIn } = useAuth()
 const toast = useToast()
 
-const form = ref({ username: '', password: '' })
+const form = ref({ username: '', password: '', email: '' })
 const mode = ref<'login' | 'register'>('login')
 
 const validation = ref({
@@ -153,7 +171,7 @@ const submit = async () => {
       } else {
         navigateTo('/admin')
       }
-      form.value = { username: '', password: '' }
+      form.value = { username: '', password: '', email: '' }
     }
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Něco se pokazilo' })

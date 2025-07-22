@@ -47,6 +47,41 @@
               <label class="flex flex-col gap-3">
                 <span
                   class="text-sm font-medium uppercase tracking-wide opacity-80"
+                  >Email</span
+                >
+                <input
+                  v-model="newClient.email"
+                  placeholder="Email"
+                  type="email"
+                  class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+                />
+              </label>
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                  >Uživatelské jméno</span
+                >
+                <input
+                  v-model="newClient.username"
+                  placeholder="Uživatelské jméno"
+                  class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+                />
+              </label>
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                  >Heslo</span
+                >
+                <input
+                  v-model="newClient.password"
+                  placeholder="Heslo (nechte prázdné pro automatické generování)"
+                  type="password"
+                  class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+                />
+              </label>
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
                   >Subdoména</span
                 >
                 <input
@@ -156,6 +191,9 @@ defineEmits(['close'])
 
 const newClient = {
   name: '',
+  email: '',
+  username: '',
+  password: '',
   subdomain: '',
   plan: 'BASIC',
   generationFrequency: 'NONE',
@@ -168,7 +206,7 @@ const { data: fetchedClients, refresh } = useFetch('/api/clients', {
 })
 
 const createClient = async () => {
-  if (!newClient.name || !newClient.subdomain) return
+  if (!newClient.name || !newClient.subdomain || !newClient.email) return
   try {
     await useFetch('/api/clients', {
       method: 'POST',
@@ -176,6 +214,9 @@ const createClient = async () => {
     })
     toast.success({ message: 'Klient byl úspěšně přidán' })
     newClient.name = ''
+    newClient.email = ''
+    newClient.username = ''
+    newClient.password = ''
     newClient.subdomain = ''
     newClient.plan = 'BASIC'
     newClient.generationFrequency = 'NONE'

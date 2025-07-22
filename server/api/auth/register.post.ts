@@ -1,9 +1,9 @@
 import argon from 'argon2'
 import { signInSchema } from '../../../utils/auth'
 export default defineEventHandler(async (event) => {
-  const user = (await getServerSession(event))?.user
-  if (!user)
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  // const user = (await getServerSession(event))?.user
+  // if (!user)
+  //   throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
   const body = await readBody(event)
   const { username, password } = signInSchema.parse(body)
 
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
 
   const hash = await argon.hash(password)
   return await prisma.user.create({
-    data: { username, password: hash },
+    data: { username, password: hash, email: body.email },
     select: { id: true, username: true },
   })
 })
