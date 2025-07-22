@@ -5,6 +5,7 @@ declare module 'next-auth' {
     id: string
     name: string
     role: 'admin' | 'superadmin'
+    clientSiteId: string
   }
 
   interface Session {
@@ -17,5 +18,6 @@ declare module 'next-auth/jwt' {
     id: string
     name: string
     role: 'admin' | 'superadmin'
+    clientSiteId: string
   }
 }

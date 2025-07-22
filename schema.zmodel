@@ -94,4 +94,6 @@ model ClientSite extends Base {
     tokenLimit          Int?                @default(0)
     tokenRemaining      Int?                @default(0)
     users               User[]
+    focus               String?
+    keywords            Json?
 }

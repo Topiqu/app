@@ -20,11 +20,22 @@ export default NuxtAuthHandler({
         const { username, password } = signInSchema.parse(credentials)
         const user = await prisma.user.findFirst({
           where: { username },
-          select: { id: true, username: true, role: true, password: true },
+          select: {
+            id: true,
+            username: true,
+            role: true,
+            password: true,
+            clientSiteId: true,
+          },
         })
         if (!user || !user.id || typeof user.id !== 'string') return null
         if (!(await argon.verify(user.password, password))) return null
-        return { id: user.id, name: user.username, role: user.role }
+        return {
+          id: user.id,
+          name: user.username,
+          role: user.role,
+          clientSiteId: user.clientSiteId ?? '',
+        }
       },
     }),
   ],
@@ -35,12 +46,18 @@ export default NuxtAuthHandler({
         token.id = user.id
         token.name = user.name
         token.role = user.role
+        token.clientSiteId = user.clientSiteId
       }
       return token
     },
     async session({ session, token }) {
       if (token.id && token.name) {
-        session.user = { id: token.id, name: token.name, role: token.role }
+        session.user = {
+          id: token.id,
+          name: token.name,
+          role: token.role,
+          clientSiteId: token.clientSiteId,
+        }
       }
       return session
     },
