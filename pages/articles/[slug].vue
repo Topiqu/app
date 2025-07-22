@@ -164,7 +164,7 @@
         aria-hidden="true"
       />
       <p class="text-lg md:text-xl text-gray-700 font-medium">
-        {{ errorMessage }}
+        {{ errorMsg }}
       </p>
       <NuxtLink
         to="/"
@@ -198,17 +198,9 @@ type Article = _Article & {
   user: { username: string }
   tags?: { tag: { name: string; slug: string } }[]
 }
-
 type RelatedArticle = {
-  articleId: string
-  tagId: string
   article: _Article & {
     user: { username: string }
-    tags: {
-      articleId: string
-      tagId: string
-      tag: { name: string; slug: string }
-    }[]
   }
 }
 
@@ -216,15 +208,15 @@ const route = useRoute()
 const { data: session } = useAuth()
 const toast = useToast()
 const editingArticle = ref<Article | null>(null)
+const slug = computed(() => route.params.slug as string)
 
-const slug = computed(() => route.params.slug)
-
-const { data, error } = await useFetch<Article | null>(
-  `/api/articles/${slug.value}`,
-  {
-    default: () => null,
-  },
-)
+const {
+  data,
+  execute: refresh,
+  error,
+} = useFetch<Article | null>(`/api/articles/${slug.value}`, {
+  default: () => null,
+})
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
 function copyLink() {
   navigator.clipboard.writeText(fullUrl.value)
@@ -234,106 +226,75 @@ function copyLink() {
 useSeoMeta({
   title: () => data.value?.title || 'Článek',
   description: () =>
-    data.value?.content
-      ? data.value.content.replace(/<[^>]+>/g, '').slice(0, 160)
-      : 'Přečtěte si tento článek na našem webu.',
+    data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
+    'Přečtěte si článek...',
   ogTitle: () => data.value?.title || 'Článek',
   ogDescription: () =>
-    data.value?.content
-      ? data.value.content.replace(/<[^>]+>/g, '').slice(0, 160)
-      : 'Přečtěte si tento článek na našem webu.',
+    data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
+    'Přečtěte si článek...',
   ogImage: () => data.value?.imageUrl || '',
 })
 
-const errorMessage = computed(() =>
-  error.value
-    ? `Nepodařilo se načíst článek. ${error.value.message || 'Zkuste to znovu.'}`
-    : '',
+const errorMsg = computed(() =>
+  error.value ? `Chyba: ${error.value.message || 'Zkuste znovu'}` : '',
 )
 
-onMounted(async () => {
-  if (!data.value) return
-  try {
-    await $fetch(`/api/articles/${data.value.id}`, {
-      method: 'PATCH',
-      body: {
-        id: data.value.id,
-        views: data.value.views + 1,
-        content: data.value.content,
-      },
-    })
-  } catch (err) {
-    console.error('Error updating article:', err)
-    // optionally log error
-  }
-})
-
-const formatDate = (date: string) => format(new Date(date), 'dd.MM.yyyy, HH:mm')
-
+const formatDate = (d: string) => format(new Date(d), 'dd.MM.yyyy, HH:mm')
 const hasTags = computed(() => !!data.value?.tags?.length)
 
 const debouncedSetStatus = useDebounceFn(
-  async (id: string, status: ArticleStatus) => {
+  async (id: string, s: ArticleStatus) => {
     try {
       await $fetch(`/api/articles/${id}/status`, {
         method: 'PATCH',
-        body: { status },
+        body: { status: s },
       })
       await refresh()
       toast.success({
-        message: `Stav změněn na ${status === 'draft' ? 'návrh' : 'publikováno'}`,
+        message: `Stav na ${s === 'draft' ? 'návrh' : 'publikováno'}`,
       })
     } catch (e: any) {
-      toast.error({ message: e.data?.message || 'Změna stavu selhala' })
+      toast.error({ message: e.message || 'Změna selhala' })
     }
   },
   100,
 )
 
-const refresh = async () => {
-  const { data: newData } = await useFetch<Article | null>(
-    `/api/articles/${slug.value}`,
-    { default: () => null },
-  )
-  data.value = newData.value
-}
-
 const relatedArticles = ref<RelatedArticle[]>([])
 
-const fetchRelatedArticles = async () => {
-  if (!data.value?.tags?.length) {
-    relatedArticles.value = []
-    return
-  }
-  const tagSlug = data.value.tags[0].tag.slug
-  const res = await $fetch<{ articles: RelatedArticle[] }>(
-    `/api/tags/slug/${tagSlug}?limit=4`,
-  )
-  relatedArticles.value = res.articles.filter(
-    (a) => a.articleId !== data.value!.id,
-  )
-}
+watch(
+  () => data,
+  async (newData) => {
+    if (newData?.value && newData.value.id && newData.value.tags?.length) {
+      const t = newData.value.tags[0].tag.slug
+      const res = await $fetch<{ articles: RelatedArticle[] }>(
+        `/api/tags/slug/${t}?limit=4`,
+      )
+      relatedArticles.value = res.articles.filter(
+        (a) => newData?.value && a.article.id !== newData.value.id,
+      )
+    } else {
+      relatedArticles.value = []
+    }
+  },
+  { immediate: true },
+)
+
 onMounted(async () => {
   if (!data.value?.id) return
-
-  const viewedKey = `viewed-${data.value.id}`
-  const lastViewed = sessionStorage.getItem(viewedKey)
+  const key = `viewed-${data.value.id}`
+  const lastView = sessionStorage.getItem(key)
   const now = Date.now()
-
-  if (!lastViewed || now - Number(lastViewed) > 1000) {
+  if (!lastView || now - Number(lastView) > 1000) {
     try {
       await $fetch(`/api/articles/${data.value.id}/view-update`, {
         method: 'PATCH',
-        body: {
-          views: data.value.views + 1,
-        },
+        body: { views: data.value.views + 1 },
       })
-      sessionStorage.setItem(viewedKey, now.toString())
-    } catch (err) {
-      console.error('Error updating article views:', err)
+      sessionStorage.setItem(key, now.toString())
+    } catch {
+      //
     }
   }
-
-  await fetchRelatedArticles()
 })
 </script>

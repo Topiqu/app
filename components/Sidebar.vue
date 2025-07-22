@@ -13,10 +13,13 @@
       :class="
         isMobile
           ? 'top-0 left-0 w-28 max-w-[90%] h-full p-1 gap-2'
-          : 'top-72 left-8 w-14 h-48 p-2 gap-4'
+          : 'top-72 left-8 w-14 p-2 gap-4'
       "
     >
       <div v-if="data?.user?.role === 'admin'" class="flex flex-col gap-4">
+        <button class="icon-btn" @click="$router.push('/admin')">
+          <Icon name="mdi:shield-account" class="w-6 h-6 text-black" />
+        </button>
         <button class="icon-btn" @click="articleCreateOpen = true">
           <Icon name="mdi:pencil" class="w-6 h-6 text-black" />
         </button>
@@ -29,6 +32,9 @@
       </div>
 
       <div v-if="data?.user?.role === 'superadmin'" class="flex flex-col gap-4">
+        <button class="icon-btn" @click="$router.push('/master')">
+          <Icon name="mdi:shield-account" class="w-6 h-6 text-black" />
+        </button>
         <button class="icon-btn" @click="clientCreateOpen = true">
           <Icon name="mdi:account-plus" class="w-6 h-6 text-black" />
         </button>
