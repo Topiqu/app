@@ -27,7 +27,7 @@ onMounted(() => {
   tocbot.init({
     tocSelector: '#toc, #toc-mobile',
     contentSelector: '.prose',
-    headingSelector: 'h2, h3',
+    headingSelector: 'h2',
     scrollSmooth: true,
     scrollSmoothOffset: -80,
     headingsOffset: 80,
