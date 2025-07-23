@@ -8,7 +8,7 @@
 <script lang="ts" setup>
 const { data } = useAuth()
 
-const { data: client } = useFetch(
+const { data: client } = await useFetch(
   `/api/clients/${data.value?.user.clientSiteId}`,
   {
     key: `client-${data.value?.user.clientSiteId}`,
