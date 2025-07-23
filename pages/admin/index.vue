@@ -14,7 +14,7 @@ const { data: client } = await useFetch(
     key: `client-${data.value?.user.clientSiteId}`,
   },
 )
-console.log('Client data:', client.value)
+
 useSeoMeta({
   title: `${client.value?.name} - Administrace`,
 })

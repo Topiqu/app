@@ -60,7 +60,9 @@
       >
         <div class="flex items-center gap-4">
           <div
-            v-if="session?.user.role === 'admin'"
+            v-if="
+              session?.user.role === 'admin' && session.user.id === data.user.id
+            "
             class="flex items-center gap-3"
           >
             <span class="font-medium">Stav:</span>
@@ -96,7 +98,9 @@
             <span>{{ data.views }}x zhlédnutí</span>
           </div>
           <button
-            v-if="session?.user.role === 'admin'"
+            v-if="
+              session?.user.role === 'admin' && session.user.id === data.user.id
+            "
             class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
             aria-label="Upravit článek"
             @click="editingArticle = data"
@@ -140,8 +144,8 @@
         v-html="data.content"
       />
       <ArticleRelated :articles="relatedArticles" />
+      <ArticleTOC :content="data.content" />
     </div>
-
     <TransitionRoot :show="!!editingArticle" as="template">
       <ArticleEdit
         :article="editingArticle!"
@@ -195,7 +199,7 @@ import type {
 import { format } from 'date-fns'
 
 type Article = _Article & {
-  user: { username: string }
+  user: { username: string; id: string }
   tags?: { tag: { name: string; slug: string } }[]
 }
 type RelatedArticle = {
