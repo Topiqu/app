@@ -308,7 +308,7 @@ import { useVModel } from '@vueuse/core'
 const {
   edit,
   fallback = 'No content available',
-  limit = 2048,
+  limit = 4096,
   ...props
 } = defineProps<{
   modelValue: string | null
