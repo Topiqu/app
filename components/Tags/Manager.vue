@@ -61,28 +61,21 @@
 </template>
 
 <script lang="ts" setup>
-import type { ArticleStatus } from '@zenstackhq/runtime/models'
+import type { Article } from '@zenstackhq/runtime/models'
 import slugify from 'slugify'
 
 type Tag = { id: string; name: string }
-type Article = {
-  slug: string
-  id: string
-  title: string
-  content: string
-  imageUrl: string | null
-  status: ArticleStatus
-  createdAt: Date
-  userId: string
-  tags?: { tagId: string; tag: { name: string } }[]
-}
-
-const emit = defineEmits(['update:tags'])
+const emit = defineEmits(['update:tags', 'delete:tag'])
 const toast = useToast()
 
 const props = defineProps<{
   article?: Article
 }>()
+
+const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
+  default: () => [],
+  key: `article-tags-${props.article?.id}`,
+})
 
 const { data: tags, refresh } = await useFetch<Tag[]>('/api/tags', {
   default: () => [],
@@ -90,7 +83,9 @@ const { data: tags, refresh } = await useFetch<Tag[]>('/api/tags', {
 const newTag = ref<{ name: string; slug: string }>({ name: '', slug: '' })
 const selectedTagId = ref('')
 const tagBuffer = ref<Tag[]>(
-  props.article?.tags?.map((t) => ({ id: t.tagId, name: t.tag.name })) || [],
+  props.article?.id && artTags.value?.length
+    ? [...artTags.value.map((t) => ({ id: t.tagId, name: t.tag.name }))]
+    : [],
 )
 
 const updateSlug = () => {
@@ -108,7 +103,7 @@ const addTagToBuffer = () => {
     tagBuffer.value.push({ id: tag.id, name: tag.name })
     emit(
       'update:tags',
-      tagBuffer.value.map((t: Tag) => t.id),
+      tagBuffer.value.map((t) => t.id),
     )
   }
   selectedTagId.value = ''
@@ -125,11 +120,10 @@ const createAndAddTag = async () => {
     tagBuffer.value.push({ id, name })
     emit(
       'update:tags',
-      tagBuffer.value.map((t: Tag) => t.id),
+      tagBuffer.value.map((t) => t.id),
     )
     newTag.value = { name: '', slug: '' }
     await refresh()
-    toast.success({ message: 'Tag vytvořen a přidán.' })
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Chyba při vytváření tagu.' })
   }
@@ -137,9 +131,13 @@ const createAndAddTag = async () => {
 
 const removeTagFromBuffer = (id: string) => {
   tagBuffer.value = tagBuffer.value.filter((t: Tag) => t.id !== id)
-  emit(
-    'update:tags',
-    tagBuffer.value.map((t: Tag) => t.id),
-  )
+  if (props.article?.id) {
+    emit('delete:tag', id)
+  } else {
+    emit(
+      'update:tags',
+      tagBuffer.value.map((t) => t.id),
+    )
+  }
 }
 </script>

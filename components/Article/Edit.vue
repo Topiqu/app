@@ -61,9 +61,15 @@
                 <span
                   v-if="editedArticle.imageUrl"
                   class="text-sm text-gray-500"
-                  >Obrázek: {{ editedArticle.imageUrl }}</span
                 >
+                  Obrázek: {{ editedArticle.imageUrl }}
+                </span>
               </label>
+              <TagsManager
+                :article="editedArticle"
+                @update:tags="updateTags"
+                @delete:tag="deleteTag"
+              />
             </div>
           </div>
           <div class="flex gap-4 justify-end flex-shrink-0">
@@ -102,6 +108,10 @@ const emit = defineEmits(['close', 'saved'])
 const props = defineProps<{ article: Article }>()
 
 const editedArticle = ref({ ...props.article })
+const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
+  default: () => [],
+  key: `article-tags-${props.article?.id}`,
+})
 
 const updateSlug = () => {
   editedArticle.value.slug = slugify(editedArticle.value.title, {
@@ -113,6 +123,31 @@ const updateSlug = () => {
 
 const handleUpload = (file: { url: string }) => {
   editedArticle.value.imageUrl = file.url
+}
+
+const updateTags = async (tagIds: string[]) => {
+  const currentTags = (artTags.value || []).map((t) => t.tagId)
+  const tagsToAdd = tagIds.filter((id) => !currentTags.includes(id))
+  await Promise.all(
+    tagsToAdd.map((tagId) =>
+      $fetch(`/api/articles/${editedArticle.value.id}/tags`, {
+        method: 'POST',
+        body: { tagId },
+      }).catch((e) => console.error('POST error:', e)),
+    ),
+  )
+  toast.success({ message: 'Tag přidán.' })
+}
+
+const deleteTag = async (tagId: string) => {
+  try {
+    await $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, {
+      method: 'DELETE',
+    })
+    toast.success({ message: 'Tag odebrán.' })
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Chyba při odebírání tagu.' })
+  }
 }
 
 const saveEdit = async () => {
