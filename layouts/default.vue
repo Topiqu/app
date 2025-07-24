@@ -14,7 +14,7 @@
         </button>
       </div>
       <slot />
-      <ClientVersion v-if="isAdmin" />
+      <ClientVersion v-if="isAdmin" :userId="data?.user.id!" />
     </div>
   </div>
 </template>

@@ -1,7 +1,6 @@
 <template>
   <div>
     <ArticleTable />
-    <ClientVersion />
   </div>
 </template>
 
