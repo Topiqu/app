@@ -17,25 +17,43 @@
       "
     >
       <div v-if="data?.user?.role === 'admin'" class="flex flex-col gap-4">
-        <button class="icon-btn" @click="$router.push('/admin')">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="$router.push('/admin')"
+        >
           <Icon name="mdi:shield-account" class="w-6 h-6 text-black" />
         </button>
-        <button class="icon-btn" @click="articleCreateOpen = true">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="articleCreateOpen = true"
+        >
           <Icon name="mdi:pencil" class="w-6 h-6 text-black" />
         </button>
-        <button class="icon-btn" @click="tagsOpen = true">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="tagsOpen = true"
+        >
           <Icon name="mdi:tag-outline" class="w-6 h-6 text-black" />
         </button>
-        <button class="icon-btn" @click="statsOpen = true">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="statsOpen = true"
+        >
           <Icon name="mdi:chart-bar" class="w-6 h-6 text-black" />
         </button>
       </div>
 
       <div v-if="data?.user?.role === 'superadmin'" class="flex flex-col gap-4">
-        <button class="icon-btn" @click="$router.push('/master')">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="$router.push('/master')"
+        >
           <Icon name="mdi:shield-account" class="w-6 h-6 text-black" />
         </button>
-        <button class="icon-btn" @click="clientCreateOpen = true">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="clientCreateOpen = true"
+        >
           <Icon name="mdi:account-plus" class="w-6 h-6 text-black" />
         </button>
       </div>
@@ -103,17 +121,3 @@ const tagsOpen = ref(false)
 const statsOpen = ref(false)
 const clientCreateOpen = ref(false)
 </script>
-
-<style scoped>
-.sidebar {
-  transition:
-    opacity 0.3s ease,
-    width 0.3s ease;
-}
-.sidebar:hover {
-  opacity: 0.5;
-}
-.icon-btn {
-  @apply w-10 h-10 flex items-center justify-center rounded-md hover:bg-gray-200 transition-colors;
-}
-</style>

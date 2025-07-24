@@ -1,10 +1,10 @@
 <template>
   <button
-    class="border border-red-300 text-red-500 bg-red-100 hover:bg-red-200 hover:text-red-600 transition active:scale-95"
+    class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 border border-red-400 text-red-600 bg-red-50 hover:bg-red-100 hover:shadow-sm transition-all duration-150"
     title="Odhlásit se"
     @click="logout"
   >
-    <Icon name="mdi:logout" class="w-5 h-5" />
+    <Icon name="mdi:logout" class="w-6 h-6 text-red-600" />
   </button>
 </template>
 
