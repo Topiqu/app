@@ -10,10 +10,11 @@
         :class="{
           'text-green-600': site?.plan === 'BASIC',
           'text-blue-600': site?.plan === 'PRO',
-          'text-purple-600': site?.plan === 'PREMIUM',
-          'text-orange-600': site?.plan === 'CUSTOM',
+          'text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded':
+            site?.plan === 'PREMIUM',
+          'text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded font-bold':
+            site?.plan === 'CUSTOM',
           'font-semibold': true,
-          underline: site?.plan === 'PREMIUM' || site?.plan === 'CUSTOM',
         }"
       >
         {{ site?.plan ?? 'Není přiřazen' }}
