@@ -35,6 +35,7 @@
         "dompurify": "^3.2.6",
         "eslint": "^9.31.0",
         "jsdom": "^26.1.0",
+        "lucide-vue-next": "^0.525.0",
         "next-auth": "4.21.1",
         "nuxt": "3.17.3",
         "nuxt-toast": "^1.1.4",
@@ -1794,6 +1795,8 @@
     "lowlight": ["lowlight@1.17.0", "", { "dependencies": { "fault": "^1.0.0", "highlight.js": "~10.4.0" } }, "sha512-vmtBgYKD+QVNy7tIa7ulz5d//Il9R4MooOVh4nkOf9R9Cb/Dk5TXMSTieg/vDulkBkIWj59/BIlyFQxT9X1oAQ=="],
 
     "lru-cache": ["lru-cache@10.4.3", "", {}, "sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ=="],
+
+    "lucide-vue-next": ["lucide-vue-next@0.525.0", "", { "peerDependencies": { "vue": ">=3.0.1" } }, "sha512-Xf8+x8B2DrnGDV/rxylS+KBp2FIe6ljwDn2JsGTZZvXIfhmm/q+nv8RuGO1OyoMjOVkkz7CqtUqJfwtFPRbB2w=="],
 
     "luxon": ["luxon@3.6.1", "", {}, "sha512-tJLxrKJhO2ukZ5z0gyjY1zPh3Rh88Ej9P7jNrZiHMUXHae1yvI2imgOZtL1TO8TW6biMMKfTtAOoEJANgtWBMQ=="],
 
