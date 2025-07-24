@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     '@sidebase/nuxt-auth',
     'nuxt-toast',
   ],
+  css: ['~/assets/styles/base.scss'],
   imports: {
     presets: [zod],
     dirs: ['shared/zod/models', 'utils', '#auth'],

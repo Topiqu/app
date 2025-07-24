@@ -69,6 +69,7 @@
     "@unocss/nuxt": "^66.3.3",
     "@zenstackhq/runtime": "^2.17.0",
     "prisma": "^6.12.0",
+    "sass-embedded": "^1.89.2",
     "unocss": "^66.3.3",
     "zenstack": "^2.17.0"
   },
