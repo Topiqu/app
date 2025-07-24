@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     const maxLength = 50
     text = text.length > maxLength ? text.slice(0, maxLength) : text
 
-    let baseId = slugify(text, { lower: true, strict: true })
+    const baseId = slugify(text, { lower: true, strict: true })
     let id = baseId
     let counter = 1
 
