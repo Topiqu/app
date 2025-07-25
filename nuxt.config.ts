@@ -13,9 +13,19 @@ export default defineNuxtConfig({
     '@unocss/nuxt',
     '@vueuse/nuxt',
     '@sidebase/nuxt-auth',
+    'nuxt-nodemailer',
     'nuxt-toast',
   ],
   css: ['~/assets/styles/base.scss'],
+  // nodemailer: {
+  //   from: `"Portfolio" ${process.env.NUXT_MAIL_USER}`,
+  //   service: 'gmail',
+  //   secure: true,
+  //   auth: {
+  //     user: process.env.NUXT_MAIL_USER,
+  //     pass: process.env.NUXT_MAIL_PASS,
+  //   },
+  // },
   imports: {
     presets: [zod],
     dirs: ['shared/zod/models', 'utils', '#auth'],

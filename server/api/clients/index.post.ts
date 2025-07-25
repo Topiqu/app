@@ -2,10 +2,9 @@ import { randomBytes } from 'crypto'
 import argon from 'argon2'
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  const user = session?.user
+  const session = (await getServerSession(event))?.user
 
-  if (!user || user.role !== 'superadmin') {
+  if (!session || session.role !== 'superadmin') {
     throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
   }
 
@@ -66,6 +65,7 @@ export default defineEventHandler(async (event) => {
         username: generatedUsername,
         password: hashedPassword,
         clientSiteId: clientSite.id,
+        role: 'admin',
       },
       select: {
         id: true,
