@@ -1,9 +1,9 @@
 <template>
   <div
     v-if="data"
-    class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 transition-all duration-500 ease-out"
+    class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8 md:p-12 transition-all duration-500 ease-out"
   >
-    <div class="max-w-3xl mx-auto flex flex-col gap-6 px-2 sm:px-0">
+    <div class="max-w-3xl mx-auto flex flex-col gap-8 px-4 sm:px-0">
       <NuxtLink
         to="/admin"
         class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 ease-in-out no-underline"
@@ -36,7 +36,7 @@
         quality="80"
         width="672"
         height="336"
-        class="rounded-xl shadow-md border border-gray-100 object-cover object-center w-full h-auto max-h-[320px] transition-transform duration-500 hover:scale-[1.005]"
+        class="rounded-xl shadow-md border border-gray-100 object-contain object-center w-full aspect-video max-h-[336px] transition-transform duration-500 hover:scale-[1.005]"
         aria-describedby="image-caption"
       />
       <span id="image-caption" class="sr-only">Titulní obrázek článku</span>
@@ -113,7 +113,7 @@
       <div class="flex justify-end gap-4 mt-10">
         <button
           aria-label="Zkopírovat odkaz"
-          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:cursor-pointer hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
           title="Zkopírovat odkaz"
           @click="copyLink"
         >
@@ -140,13 +140,15 @@
       </div>
 
       <div
-        class="max-w-none bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-base md:text-lg leading-7 text-gray-800 tracking-normal space-y-5 prose prose-gray prose-a:text-blue-600 prose-a:no-underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6"
+        class="max-w-none bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-[17px] md:text-lg leading-[1.8] text-gray-800 tracking-normal space-y-6 prose prose-gray prose-a:text-blue-600 prose-a:no-underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6"
         v-html="data.content"
       />
+
       <ArticleRelated :articles="relatedArticles" />
       <CommentSection :article-id="data.id" />
       <ArticleTOC :content="data.content" />
     </div>
+
     <TransitionRoot :show="!!editingArticle" as="template">
       <ArticleEdit
         :article="editingArticle!"
@@ -161,7 +163,7 @@
     class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100"
   >
     <div
-      class="text-center p-6 md:p-8 bg-white rounded-2xl shadow-lg border border-gray-100"
+      class="text-center p-8 md:p-10 bg-white rounded-2xl shadow-lg border border-gray-100"
     >
       <Icon
         name="mdi:alert-circle"

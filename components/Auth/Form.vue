@@ -7,6 +7,7 @@
       <p class="text-green-600 text-base font-medium">
         Vítej, {{ data.user?.name }}!
       </p>
+      <AuthLogout />
     </div>
 
     <div

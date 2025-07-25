@@ -179,7 +179,7 @@ const comments = computed(() => props.comments || commentsData.value || [])
 const topLevelComments = computed(() =>
   comments.value.filter((comment) => !comment.parentId),
 )
-
+console.log('Top-level comments:', topLevelComments.value)
 const formatDate = (d: string) => format(new Date(d), 'dd.MM.yyyy, HH:mm')
 
 const submitComment = async () => {

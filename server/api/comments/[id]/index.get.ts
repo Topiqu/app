@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
       content: true,
       createdAt: true,
       userId: true,
+      parentId: true,
       user: {
         select: {
           id: true,
