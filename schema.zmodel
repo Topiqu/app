@@ -57,7 +57,7 @@ model Article extends Base {
     user        User          @relation(fields: [userId], references: [id])
     userId      String
     tags        ArticleTag[]
-    // comments    Comment[]
+    comments    Comment[]
 }
 
 model Tag extends Base {
@@ -83,7 +83,7 @@ model User extends Base {
     articles      Article[]
     clientSite    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     clientSiteId  String?
-    // comments      Comment[]
+    comments      Comment[]
     verification  VerificationCode?
     // oauthProvider String?           @length(0, 50)
     // oauthId       String?           @length(0, 255)
@@ -102,16 +102,16 @@ model ClientSite extends Base {
     keywords            Json?
 }
 
-// model Comment extends Base {
-//     content   String    @length(1, 1000, "Komentář musí mít 1–1000 znaků")
-//     article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
-//     articleId String
-//     user      User      @relation(fields: [userId], references: [id])
-//     userId    String
-//     parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-//     parentId  String?
-//     replies   Comment[] @relation("CommentReplies")
-// }
+model Comment extends Base {
+    content   String    @length(1, 1000, "Komentář musí mít 1–1000 znaků")
+    article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    articleId String
+    user      User      @relation(fields: [userId], references: [id])
+    userId    String
+    parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+    parentId  String?
+    replies   Comment[] @relation("CommentReplies")
+}
 
 model VerificationCode extends Base {
     code      String   @length(6, 6, "Kód musí mít přesně 6 znaků")
