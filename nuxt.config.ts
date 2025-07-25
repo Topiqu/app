@@ -17,15 +17,14 @@ export default defineNuxtConfig({
     'nuxt-toast',
   ],
   css: ['~/assets/styles/base.scss'],
-  // nodemailer: {
-  //   from: `"Portfolio" ${process.env.NUXT_MAIL_USER}`,
-  //   service: 'gmail',
-  //   secure: true,
-  //   auth: {
-  //     user: process.env.NUXT_MAIL_USER,
-  //     pass: process.env.NUXT_MAIL_PASS,
-  //   },
-  // },
+  nodemailer: {
+    from: `"RASG BLOG" ${process.env.NUXT_MAIL_USER}`,
+    service: 'gmail',
+    auth: {
+      user: process.env.NUXT_MAIL_USER,
+      pass: process.env.NUXT_MAIL_PASS,
+    },
+  },
   imports: {
     presets: [zod],
     dirs: ['shared/zod/models', 'utils', '#auth'],

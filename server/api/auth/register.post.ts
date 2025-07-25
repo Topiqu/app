@@ -1,18 +1,47 @@
+import { randomBytes } from 'crypto'
 import argon from 'argon2'
-import { signInSchema } from '../../../utils/auth'
-export default defineEventHandler(async (event) => {
-  // const user = (await getServerSession(event))?.user
-  // if (!user)
-  //   throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
-  const body = await readBody(event)
-  const { username, password } = signInSchema.parse(body)
+import { signInSchema } from '~/utils/auth'
 
-  const exists = await prisma.user.findFirst({ where: { username } })
-  if (exists) throw createError({ statusCode: 400, message: 'Username taken' })
+export default defineEventHandler(async (e) => {
+  const body = await readValidatedBody(e, signInSchema.parse)
+  const { username, email, password } = body
 
-  const hash = await argon.hash(password)
-  return await prisma.user.create({
-    data: { username, password: hash, email: body.email },
-    select: { id: true, username: true },
+  const exists = await prisma.user.findFirst({
+    where: { OR: [{ username }, { email }] },
   })
+  if (exists)
+    throw createError({
+      statusCode: 400,
+      message:
+        exists.username === username
+          ? 'Uživatelské jméno je zabrané'
+          : 'Email už existuje',
+    })
+
+  const code = randomBytes(4).toString('hex')
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+  const hash = await argon.hash(password)
+
+  const user = await prisma.user.create({
+    data: {
+      username: '',
+      email,
+      password: hash,
+      role: 'reader',
+      emailVerified: false,
+      verification: { create: { code, expiresAt: expires } },
+    },
+    select: { id: true, username: true, email: true },
+  })
+
+  const t = useNodeMailer()
+  await t.sendMail({
+    from: useRuntimeConfig().defaultFrom,
+    to: email,
+    subject: 'Ověření registrace',
+    text: `Váš ověřovací kód: ${code}`,
+    html: `<p>Váš ověřovací kód: <b>${code}</b></p><p>Kód je platný 24 hodin.</p>`,
+  })
+
+  return user
 })

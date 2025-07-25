@@ -13,7 +13,10 @@
       v-else
       class="bg-white px-3 py-6 rounded-xl shadow border border-gray-100 space-y-5"
     >
-      <div class="flex justify-center gap-2 text-sm font-medium">
+      <div
+        v-if="!verifyMode"
+        class="flex justify-center gap-2 text-sm font-medium"
+      >
         <button
           :class="[
             'px-2 py-1.5 rounded-md transition',
@@ -38,8 +41,29 @@
         </button>
       </div>
 
-      <form class="space-y-4 text-sm" @submit.prevent="submit">
+      <form
+        v-if="!verifyMode"
+        class="space-y-4 text-sm"
+        @submit.prevent="submit"
+      >
         <div class="space-y-1">
+          <label for="email" class="block font-medium">Email</label>
+          <div class="relative">
+            <Icon
+              name="mdi:envelope"
+              class="absolute left-2 top-2.5 w-5 h-5 text-gray-400"
+            />
+            <input
+              id="email"
+              v-model="form.email"
+              type="email"
+              class="w-full pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
+              required
+              autocomplete="email"
+            />
+          </div>
+        </div>
+        <div v-if="mode === 'register'" class="space-y-1">
           <label for="username" class="block font-medium"
             >Uživatelské jméno</label
           >
@@ -52,38 +76,13 @@
               id="username"
               v-model="form.username"
               type="text"
-              class="w-3/4 pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
+              class="w-full pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
               required
               minlength="3"
               maxlength="50"
               autocomplete="username"
             />
           </div>
-          <p
-            v-if="validation.errors.username"
-            class="text-red-500 text-xs mt-1"
-          >
-            {{ validation.errors.username[0] }}
-          </p>
-        </div>
-        <div class="space-y-1">
-          <label for="email" class="block font-medium">Email</label>
-          <div class="relative">
-            <Icon
-              name="mdi:envelope"
-              class="absolute left-2 top-2.5 w-5 h-5 text-gray-400"
-            />
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              class="w-3/4 pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
-              autocomplete="current-email"
-            />
-          </div>
-          <p v-if="validation.errors.email" class="text-red-500 text-xs mt-1">
-            {{ validation.errors.email[0] }}
-          </p>
         </div>
         <div class="space-y-1">
           <label for="password" class="block font-medium">Heslo</label>
@@ -96,25 +95,50 @@
               id="password"
               v-model="form.password"
               type="password"
-              class="w-3/4 pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
+              class="w-full pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
               required
               minlength="4"
               maxlength="124"
               autocomplete="current-password"
             />
           </div>
-          <p
-            v-if="validation.errors.password"
-            class="text-red-500 text-xs mt-1"
-          >
-            {{ validation.errors.password[0] }}
-          </p>
         </div>
         <button
           type="submit"
           class="w-full py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition"
         >
-          {{ mode === 'register' ? 'Registrace' : 'Přihlásit se' }}
+          {{ mode === 'register' ? 'Registrovat' : 'Přihlásit se' }}
+        </button>
+      </form>
+
+      <form v-else class="space-y-4 text-sm" @submit.prevent="verify">
+        <p class="text-gray-600">
+          Zadejte ověřovací kód odeslaný na {{ form.email }}
+        </p>
+        <div class="space-y-1">
+          <label for="code" class="block font-medium">Ověřovací kód</label>
+          <div class="relative">
+            <Icon
+              name="mdi:shield-check"
+              class="absolute left-2 top-2.5 w-5 h-5 text-gray-400"
+            />
+            <input
+              id="code"
+              v-model="form.code"
+              type="text"
+              class="w-full pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
+              required
+              minlength="8"
+              maxlength="8"
+              placeholder="8místný kód"
+            />
+          </div>
+        </div>
+        <button
+          type="submit"
+          class="w-full py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition"
+        >
+          Ověřit
         </button>
       </form>
     </div>
@@ -122,59 +146,62 @@
 </template>
 
 <script setup lang="ts">
-import { useDebounceFn } from '@vueuse/core'
 const { data, signIn } = useAuth()
 const toast = useToast()
 
-const form = ref({ username: '', password: '', email: '' })
+const form = ref({ email: '', username: '', password: '', code: '' })
 const mode = ref<'login' | 'register'>('login')
+const verifyMode = ref(false)
 
-const validation = ref({
-  isValid: true,
-  errors: {} as Record<string, string[]>,
-})
-
-const validate = useDebounceFn(() => {
-  const result = signInSchema.safeParse(form.value)
-  validation.value = {
-    isValid: result.success,
-    errors: result.success ? {} : result.error.flatten().fieldErrors,
-  }
-}, 300)
-
-watch(form, validate, { deep: true })
 const submit = async () => {
   try {
     if (mode.value === 'register') {
       const res = await $fetch('/api/auth/register', {
         method: 'POST',
-        body: form.value,
+        body: {
+          username: form.value.username,
+          email: form.value.email,
+          password: form.value.password,
+        },
       })
-      if (!res) {
-        toast.error({ message: 'Neúspěšná registrace' })
-        return
+      if (res) {
+        verifyMode.value = true
+        toast.success({ message: 'Ověřovací kód byl odeslán na váš e-mail' })
       }
-    }
-
-    const result = await signIn('credentials', {
-      username: form.value.username,
-      password: form.value.password,
-      redirect: false,
-    })
-
-    if (result?.error) {
-      toast.error({ message: 'Nepodařilo se vás přihlásit' })
     } else {
-      toast.success({ message: 'Přihlášení bylo úspěšné' })
-      if (data.value?.user?.role === 'superadmin') {
-        navigateTo('/master')
+      const result = await signIn('credentials', {
+        email: form.value.email,
+        password: form.value.password,
+        redirect: false,
+      })
+      if (result?.error) {
+        toast.error({ message: 'Nepodařilo se vás přihlásit' })
       } else {
-        navigateTo('/admin')
+        toast.success({ message: 'Přihlášení bylo úspěšné' })
+        if (data.value?.user?.role === 'superadmin') {
+          navigateTo('/master')
+        } else if (data.value?.user?.role === 'admin') {
+          navigateTo('/admin')
+        }
+        form.value = { email: '', username: '', password: '', code: '' }
       }
-      form.value = { username: '', password: '', email: '' }
     }
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Něco se pokazilo' })
+  }
+}
+
+const verify = async () => {
+  if (!form.value.code) return
+  try {
+    await $fetch('/api/auth/verify', {
+      method: 'POST',
+      body: { email: form.value.email, code: form.value.code },
+    })
+    toast.success({ message: 'E-mail byl ověřen.' })
+    navigateTo('/')
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Ověření selhalo' })
   }
 }
 </script>

@@ -13,13 +13,13 @@ export default NuxtAuthHandler({
   providers: [
     Credentials({
       credentials: {
-        username: { label: 'Username', type: 'text' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Heslo', type: 'password' },
       },
       async authorize(credentials) {
-        const { username, password } = signInSchema.parse(credentials)
+        const { email, password } = signInSchema.parse(credentials)
         const user = await prisma.user.findFirst({
-          where: { username },
+          where: { email },
           select: {
             id: true,
             username: true,
@@ -28,7 +28,7 @@ export default NuxtAuthHandler({
             clientSiteId: true,
           },
         })
-        if (!user || !user.id || typeof user.id !== 'string') return null
+        if (!user || !user.password) return null
         if (!(await argon.verify(user.password, password))) return null
         return {
           id: user.id,
