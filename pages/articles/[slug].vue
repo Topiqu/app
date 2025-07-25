@@ -144,6 +144,7 @@
         v-html="data.content"
       />
       <ArticleRelated :articles="relatedArticles" />
+      <CommentSection :article-id="data.id" />
       <ArticleTOC :content="data.content" />
     </div>
     <TransitionRoot :show="!!editingArticle" as="template">
