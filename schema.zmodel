@@ -22,7 +22,7 @@ enum ArticleStatus {
 enum UserRole {
     admin
     superadmin
-    // reader
+    reader
 }
 
 enum GenerationFrequency {
@@ -75,19 +75,19 @@ model ArticleTag {
 }
 
 model User extends Base {
-    username     String      @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
-    email        String      @unique @length(3, 255, "Email musí mít 3–255 znaků")
-    password     String?     @length(4, 124, "Heslo musí mít 4–124 znaků")
-    bio          String?     @length(0, 300, "Bio autora může mít max. 300 znaků")
-    role         UserRole    @default(admin)
-    articles     Article[]
-    clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-    clientSiteId String?
+    username      String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
+    email         String            @unique @length(3, 255, "Email musí mít 3–255 znaků")
+    password      String?           @length(4, 124, "Heslo musí mít 4–124 znaků")
+    bio           String?           @length(0, 300, "Bio autora může mít max. 300 znaků")
+    role          UserRole          @default(admin)
+    articles      Article[]
+    clientSite    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    clientSiteId  String?
     // comments      Comment[]
-    // verification VerificationCode?
+    verification  VerificationCode?
     // oauthProvider String?           @length(0, 50)
     // oauthId       String?           @length(0, 255)
-    // emailVerified Boolean           @default(false)
+    emailVerified Boolean           @default(false)
 }
 
 model ClientSite extends Base {
@@ -113,9 +113,9 @@ model ClientSite extends Base {
 //     replies   Comment[] @relation("CommentReplies")
 // }
 
-// model VerificationCode extends Base {
-//     code      String   @length(6, 6, "Kód musí mít přesně 6 znaků")
-//     user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-//     userId    String   @unique
-//     expiresAt DateTime
-// }
+model VerificationCode extends Base {
+    code      String   @length(6, 6, "Kód musí mít přesně 6 znaků")
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String   @unique
+    expiresAt DateTime
+}

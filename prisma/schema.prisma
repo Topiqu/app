@@ -20,6 +20,7 @@ enum ArticleStatus {
 enum UserRole {
   admin
   superadmin
+  reader
 }
 
 enum GenerationFrequency {
@@ -73,18 +74,20 @@ model ArticleTag {
 }
 
 model User {
-  id           String      @id() @default(uuid())
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime?   @updatedAt()
-  deletedAt    DateTime?
-  username     String      @unique()
-  email        String      @unique()
-  password     String
-  bio          String?
-  role         UserRole    @default(admin)
-  articles     Article[]
-  clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-  clientSiteId String?
+  id            String            @id() @default(uuid())
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime?         @updatedAt()
+  deletedAt     DateTime?
+  username      String            @unique()
+  email         String            @unique()
+  password      String?
+  bio           String?
+  role          UserRole          @default(admin)
+  articles      Article[]
+  clientSite    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  clientSiteId  String?
+  verification  VerificationCode?
+  emailVerified Boolean           @default(false)
 }
 
 model ClientSite {
@@ -101,4 +104,15 @@ model ClientSite {
   users               User[]
   focus               String?
   keywords            Json?
+}
+
+model VerificationCode {
+  id        String    @id() @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
+  code      String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String    @unique()
+  expiresAt DateTime
 }

@@ -67,6 +67,7 @@ export default defineEventHandler(async (event) => {
         username: generatedUsername,
         password: hashedPassword,
         clientSiteId: clientSite.id,
+        emailVerified: true,
         role: 'admin',
       },
       select: {
