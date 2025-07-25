@@ -132,6 +132,28 @@
                   min="0"
                 />
               </label>
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                  >Focus firmy</span
+                >
+                <input
+                  v-model="newClient.focus"
+                  placeholder="Focus firmy (např. technologie, marketing)"
+                  class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+                />
+              </label>
+              <label class="flex flex-col gap-3">
+                <span
+                  class="text-sm font-medium uppercase tracking-wide opacity-80"
+                  >Klíčová slova</span
+                >
+                <textarea
+                  v-model="newClient.keywords"
+                  placeholder="Klíčová slova (oddělená čárkou, např. seo, marketing, tech)"
+                  class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+                />
+              </label>
             </div>
           </div>
           <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
@@ -159,9 +181,24 @@
                 :key="c.id"
                 class="flex items-center justify-between py-2 group"
               >
-                <span class="text-gray-800 text-sm font-medium">{{
-                  c.name
-                }}</span>
+                <div class="flex flex-col">
+                  <span class="text-gray-800 text-sm font-medium">{{
+                    c.name
+                  }}</span>
+                  <span v-if="c.focus" class="text-gray-600 text-xs"
+                    >Focus: {{ c.focus }}</span
+                  >
+                  <span v-if="c.keywords" class="text-gray-600 text-xs"
+                    >Klíčová slova:
+                    {{
+                      Array.isArray(c.keywords)
+                        ? c.keywords.join(', ')
+                        : typeof c.keywords === 'string'
+                          ? c.keywords
+                          : ''
+                    }}</span
+                  >
+                </div>
                 <button
                   class="flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-500 transition-all duration-300 hover:bg-red-100 hover:text-red-700 active:scale-90"
                   @click="deleteClient(c.id, c.name)"
@@ -187,9 +224,9 @@ import {
 } from '@headlessui/vue'
 import Swal from 'sweetalert2'
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
 
-const newClient = {
+const newClient = ref({
   name: '',
   email: '',
   username: '',
@@ -198,7 +235,9 @@ const newClient = {
   plan: 'BASIC',
   generationFrequency: 'NONE',
   tokenLimit: 0,
-}
+  focus: '',
+  keywords: '',
+})
 
 const toast = useToast()
 const { data: fetchedClients, refresh } = useFetch('/api/clients', {
@@ -206,31 +245,29 @@ const { data: fetchedClients, refresh } = useFetch('/api/clients', {
 })
 
 const createClient = async () => {
-  if (!newClient.name || !newClient.subdomain || !newClient.email) return
+  if (
+    !newClient.value.name ||
+    !newClient.value.subdomain ||
+    !newClient.value.email
+  )
+    return
   try {
     await useFetch('/api/clients', {
       method: 'POST',
-      body: newClient,
+      body: newClient.value,
     })
     toast.success({ message: 'Klient byl úspěšně přidán' })
-    newClient.name = ''
-    newClient.email = ''
-    newClient.username = ''
-    newClient.password = ''
-    newClient.subdomain = ''
-    newClient.plan = 'BASIC'
-    newClient.generationFrequency = 'NONE'
-    newClient.tokenLimit = 0
     await refresh()
-  } catch (error: any) {
+    emit('close')
+  } catch (e: any) {
     toast.error({
-      message: error.data?.message || 'Nepodařilo se přidat klienta',
+      message: e.data?.message || 'Nepodařilo se přidat klienta',
     })
   }
 }
 
 async function confirmDelete(name: string) {
-  const result = await Swal.fire({
+  const r = await Swal.fire({
     title: `Smazat "${name}"?`,
     text: `Tímto vymažete klienta "${name}".`,
     icon: 'warning',
@@ -241,20 +278,18 @@ async function confirmDelete(name: string) {
     confirmButtonColor: '#ef4444',
     cancelButtonColor: '#6b7280',
   })
-  return result.isConfirmed
+  return r.isConfirmed
 }
 
 const deleteClient = async (id: string, name: string) => {
-  const confirmed = await confirmDelete(name)
-  if (!confirmed) return
-
+  if (!(await confirmDelete(name))) return
   try {
     await useFetch(`/api/clients/${id}`, { method: 'DELETE' })
     toast.success({ message: 'Klient byl úspěšně smazán' })
     await refresh()
-  } catch (error: any) {
+  } catch (e: any) {
     toast.error({
-      message: error.data?.message || 'Nepodařilo se smazat klienta',
+      message: e.data?.message || 'Nepodařilo se smazat klienta',
     })
   }
 }

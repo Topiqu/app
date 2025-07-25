@@ -55,6 +55,8 @@ export default defineEventHandler(async (event) => {
         plan,
         generationFrequency,
         tokenLimit,
+        keywords: body.keywords || [],
+        focus: body.focus || '',
         tokenRemaining: tokenLimit,
       },
     })
