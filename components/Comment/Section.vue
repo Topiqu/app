@@ -8,7 +8,6 @@
         Komentáře
       </h2>
     </div>
-
     <div
       v-if="session?.user"
       class="mb-14 bg-white p-8 rounded-3xl shadow-xl border border-gray-200"
@@ -38,18 +37,17 @@
             />
           </div>
         </div>
-
         <div
           v-if="replyingTo"
           class="flex items-center gap-3 text-sm text-gray-700 bg-blue-50/60 p-3 rounded-xl border border-blue-200"
         >
           <Icon name="mdi:reply" class="w-4 h-4 text-gray-500" />
-          <span>
-            Odpovídáte na:
+          <span
+            >Odpovídáte na:
             <strong>{{
               replyingTo.user?.username || 'Není k dispozici'
-            }}</strong>
-          </span>
+            }}</strong></span
+          >
           <button
             type="button"
             class="ml-auto text-red-500 hover:text-red-600 bg-white border border-red-100 hover:border-red-300 rounded-full p-1.5 transition duration-150 focus:outline-none focus:ring-2 focus:ring-red-300 cursor-pointer"
@@ -59,11 +57,10 @@
             <Icon name="mdi:close" class="w-4 h-4" />
           </button>
         </div>
-
         <button
           type="submit"
           class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all duration-150 flex items-center gap-2 shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-          :disabled="isSubmitting"
+          :disabled="isSubmitting || !!(replyingTo && replyingTo.deletedAt)"
         >
           <Icon
             v-if="isSubmitting"
@@ -74,21 +71,17 @@
         </button>
       </form>
     </div>
-
     <p v-else class="text-gray-600 mb-14 text-base text-center">
       <NuxtLink
         to="/login"
         class="text-blue-600 hover:underline font-medium cursor-pointer"
+        >Přihlaste se</NuxtLink
       >
-        Přihlaste se
-      </NuxtLink>
       pro přidání komentáře.
     </p>
-
     <div v-if="isLoading" class="flex justify-center mb-10">
       <Icon name="mdi:loading" class="w-8 h-8 text-blue-600 animate-spin" />
     </div>
-
     <div
       v-else-if="error"
       class="text-center p-6 bg-red-50 rounded-2xl shadow border border-red-200"
@@ -98,12 +91,12 @@
         Nepodařilo se načíst komentáře: {{ error.message }}
       </p>
     </div>
-
     <div v-else-if="topLevelComments.length" class="space-y-6">
       <Comment
         v-for="comment in topLevelComments"
         :key="comment.id"
         :comment="comment"
+        :depth="1"
         :is-replying="!!replyingTo"
         @reply="handleReply"
         @delete="handleDelete"
@@ -111,7 +104,6 @@
         @dislike="handleDislike"
       />
     </div>
-
     <p v-else class="text-gray-600 text-center text-base">
       Zatím žádné komentáře.
     </p>
@@ -142,8 +134,14 @@ const {
 })
 
 const topLevelComments = computed(() => commentsData.value || [])
+
 const submitComment = async () => {
-  if (!newComment.value.trim() || isSubmitting.value) return
+  if (
+    !newComment.value.trim() ||
+    isSubmitting.value ||
+    (replyingTo.value && replyingTo.value.deletedAt)
+  )
+    return
   isSubmitting.value = true
   try {
     await $fetch('/api/comments', {
@@ -152,7 +150,7 @@ const submitComment = async () => {
         articleId: props.articleId,
         content: newComment.value,
         parentId: replyingTo.value?.id,
-        userId: session.value?.user?.id || null,
+        userId: session?.value?.user?.id,
       },
     })
     toast.success({
@@ -169,6 +167,7 @@ const submitComment = async () => {
 }
 
 const handleReply = (comment: CommentWithReplies) => {
+  if (comment.deletedAt) return
   replyingTo.value = comment
 }
 
@@ -184,7 +183,7 @@ const handleDelete = async (comment: CommentWithReplies) => {
 }
 
 const handleLike = async (comment: CommentWithReplies) => {
-  if (!session?.value?.user) return
+  if (!session?.value?.user || comment.deletedAt) return
   try {
     await $fetch('/api/comments/reaction', {
       method: 'POST',
@@ -197,7 +196,7 @@ const handleLike = async (comment: CommentWithReplies) => {
 }
 
 const handleDislike = async (comment: CommentWithReplies) => {
-  if (!session?.value?.user) return
+  if (!session?.value?.user || comment.deletedAt) return
   try {
     await $fetch('/api/comments/reaction', {
       method: 'POST',
