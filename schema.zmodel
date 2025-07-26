@@ -152,4 +152,5 @@ model Notification extends Base {
     article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
     articleId String?
     type      NotificationType
+    isRead    Boolean          @default(false)
 }
