@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
 
   const article = await prisma.article.findUnique({
     where: { id: body.articleId },
+    select: { id: true, userId: true },
   })
   if (!article)
     throw createError({ statusCode: 404, statusMessage: 'Článek nenalezen' })
@@ -47,6 +48,17 @@ export default defineEventHandler(async (event) => {
       parentId: true,
     },
   })
+
+  if (article.userId !== user.id) {
+    await prisma.notification.create({
+      data: {
+        message: `Uživatel ${user.name} okomentoval váš článek.`,
+        userId: article.userId,
+        articleId: article.id,
+        type: 'COMMENT',
+      },
+    })
+  }
 
   return comment
 })
