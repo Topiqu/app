@@ -12,7 +12,7 @@
             class="w-6 h-6 text-blue-500"
           />
           <span class="font-semibold text-gray-800">{{
-            comment.user.username
+            comment.user?.username || 'Není k dispozici'
           }}</span>
           <span class="text-gray-400 text-sm"
             >• {{ formatDate(comment.createdAt) }}</span
@@ -60,8 +60,9 @@ interface Comment {
   id: string
   content: string
   createdAt: string
-  user: { username: string }
+  user: { id: string; username: string } | null
   userId: string
+  parentId: string | null
   replies?: Comment[]
 }
 

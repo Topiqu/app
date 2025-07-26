@@ -13,23 +13,28 @@ export default defineEventHandler(async (event) => {
   if (!article)
     throw createError({ statusCode: 404, statusMessage: 'Článek nenalezen' })
 
+  let content = body.content
   if (body.parentId) {
     const parentComment = await prisma.comment.findUnique({
       where: { id: body.parentId },
+      select: {
+        user: { select: { username: true } },
+      },
     })
     if (!parentComment)
       throw createError({
         statusCode: 404,
         statusMessage: 'Rodičovský komentář nenalezen',
       })
+    content = `@${parentComment.user.username} ${content}`
   }
 
   const comment = await prisma.comment.create({
     data: {
-      content: body.content,
+      content,
       articleId: body.articleId,
       userId: user.id,
-      parentId: body.parentId,
+      parentId: body.parentId || null,
     },
     select: {
       id: true,
@@ -37,9 +42,11 @@ export default defineEventHandler(async (event) => {
       createdAt: true,
       user: {
         select: {
+          id: true,
           username: true,
         },
       },
+      parentId: true,
     },
   })
 
