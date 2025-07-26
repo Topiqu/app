@@ -199,6 +199,11 @@ const verify = async () => {
       method: 'POST',
       body: { email: form.value.email, code: form.value.code },
     })
+    await signIn('credentials', {
+      email: form.value.email,
+      password: form.value.password,
+      redirect: true,
+    })
     toast.success({ message: 'E-mail byl ověřen.' })
     navigateTo('/')
   } catch (e: any) {
