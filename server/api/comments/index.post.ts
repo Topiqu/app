@@ -1,5 +1,3 @@
-import { CommentCreateSchema } from '~/shared/zod/models'
-
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user)

@@ -1,89 +1,72 @@
 export default defineEventHandler(async (event) => {
+  const articleId = getRouterParam(event, 'id')
+  if (!articleId)
+    throw createError({ statusCode: 400, statusMessage: 'Chybí ID článku' })
+
+  const allComments = await prisma.comment.findMany({
+    where: {
+      articleId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      content: true,
+      createdAt: true,
+      userId: true,
+      parentId: true,
+      user: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+      reactions: {
+        select: { type: true },
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  })
+
   type CommentWithReplies = {
     id: string
     content: string
     createdAt: Date
     userId: string
     parentId: string | null
-    user: {
-      id: string
-      username: string
-    }
+    user: { id: string; username: string }
     replies: CommentWithReplies[]
+    likes: number
+    dislikes: number
   }
-  const articleId = getRouterParam(event, 'id')
-  if (!articleId)
-    throw createError({ statusCode: 400, statusMessage: 'Chybí ID článku' })
 
-  const comments = await prisma.comment.findMany({
-    where: {
-      articleId,
-      deletedAt: null,
-      parentId: null,
-    },
-    select: {
-      id: true,
-      content: true,
-      createdAt: true,
-      userId: true,
-      parentId: true,
-      user: {
-        select: {
-          id: true,
-          username: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'asc',
-    },
-  })
+  const commentMap = new Map<string, CommentWithReplies>()
 
-  const allReplies = await prisma.comment.findMany({
-    where: {
-      articleId,
-      deletedAt: null,
-      parentId: { not: null },
-    },
-    select: {
-      id: true,
-      content: true,
-      createdAt: true,
-      userId: true,
-      parentId: true,
-      user: {
-        select: {
-          id: true,
-          username: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'asc',
-    },
-  })
+  for (const c of allComments) {
+    commentMap.set(c.id, {
+      id: c.id,
+      content: c.content,
+      createdAt: c.createdAt,
+      userId: c.userId,
+      parentId: c.parentId,
+      user: c.user,
+      likes: c.reactions.filter((r) => r.type === 'LIKE').length,
+      dislikes: c.reactions.filter((r) => r.type === 'DISLIKE').length,
+      replies: [],
+    })
+  }
 
-  const commentMap = new Map<string, CommentWithReplies>(
-    comments.map((c) => [c.id, { ...c, replies: [] }]),
-  )
+  const roots: CommentWithReplies[] = []
 
-  const findParent = (commentId: string): string | null => {
-    let current = allReplies.find((r) => r.id === commentId)
-    while (current && current.parentId) {
-      const parent =
-        commentMap.get(current.parentId) ||
-        allReplies.find((r) => r.id === current?.parentId)
-      if (!parent || !parent.parentId) return current.parentId
-      current = parent
+  for (const comment of commentMap.values()) {
+    if (comment.parentId) {
+      const parent = commentMap.get(comment.parentId)
+      if (parent) parent.replies.push(comment)
+    } else {
+      roots.push(comment)
     }
-    return null
   }
 
-  allReplies.forEach((reply) => {
-    const topLevelParentId = findParent(reply.id)
-    const parent = commentMap.get(topLevelParentId ?? '')
-    if (parent) parent.replies.push({ ...reply, replies: [] })
-  })
-
-  return Array.from(commentMap.values())
+  return roots
 })
