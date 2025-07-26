@@ -71,13 +71,15 @@ model Article {
 }
 
 model Tag {
-  id        String       @id() @default(uuid())
-  createdAt DateTime     @default(now())
-  updatedAt DateTime?    @updatedAt()
-  deletedAt DateTime?
-  slug      String       @unique()
-  name      String       @unique()
-  articles  ArticleTag[]
+  id           String       @id() @default(uuid())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime?    @updatedAt()
+  deletedAt    DateTime?
+  slug         String
+  name         String
+  clientSiteId String?
+  clientSite   ClientSite?  @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  articles     ArticleTag[]
 }
 
 model ArticleTag {
@@ -121,6 +123,7 @@ model ClientSite {
   tokenLimit          Int?                @default(0)
   tokenRemaining      Int?                @default(0)
   users               User[]
+  tags                Tag[]
   focus               String?
   keywords            Json?
 }

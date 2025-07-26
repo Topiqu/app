@@ -73,12 +73,17 @@ model Article extends Base {
     tags          ArticleTag[]
     comments      Comment[]
     notifications Notification[] @relation("ArticleNotifications")
+
+    @@allow('create', auth().role =='admin')
 }
 
 model Tag extends Base {
-    slug     String       @unique @length(1, 64, "Slug tagu musí mít 1–64 znaků")
-    name     String       @unique @length(1, 64, "Název tagu musí mít 1–64 znaků")
-    articles ArticleTag[]
+    slug         String       @length(1, 64, "Slug tagu musí mít 1–64 znaků")
+    name         String       @length(1, 64, "Název tagu musí mít 1–64 znaků")
+    clientSiteId String?
+    clientSite   ClientSite?  @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    articles     ArticleTag[]
+    @@allow('create', auth().role == 'admin')
 }
 
 model ArticleTag {
@@ -106,13 +111,14 @@ model User extends Base {
 }
 
 model ClientSite extends Base {
-    name                String              @length(1, 255, "client site musí mít 1–255 znaků")
+    name                String              @length(1, 255, "Název klienta musí mít 1–255 znaků")
     subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
     plan                ClientPlan          @default(BASIC)
     generationFrequency GenerationFrequency @default(NONE)
     tokenLimit          Int?                @default(0)
     tokenRemaining      Int?                @default(0)
     users               User[]
+    tags                Tag[]
     focus               String?
     keywords            Json?
 }
