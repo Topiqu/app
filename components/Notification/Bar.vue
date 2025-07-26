@@ -13,42 +13,61 @@
         {{ unreadCount }}
       </span>
 
-      <div
-        v-if="showNotifications"
-        ref="notifDropdown"
-        class="absolute right-0 mt-3 w-80 max-w-[90vw] max-h-96 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto z-50 p-4"
+      <Transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
       >
-        <div v-if="notifications.length" class="space-y-3">
-          <div
-            v-for="notification in notifications"
-            :key="notification.id"
-            class="p-2 rounded-lg transition bg-opacity-50"
-            :class="notification.isRead ? 'bg-gray-50' : 'bg-blue-50'"
-          >
-            <p class="text-sm text-gray-800">{{ notification.message }}</p>
-            <p class="text-xs text-gray-400">
-              {{ formatDate(notification.createdAt) }}
-            </p>
-            <NuxtLink
-              v-if="notification.article"
-              :to="`/articles/${notification.article.slug}`"
-              class="text-xs text-blue-600 hover:underline font-medium"
+        <div
+          v-if="showNotifications"
+          ref="notifDropdown"
+          class="absolute right-0 mt-3 w-96 max-w-[95vw] max-h-[28rem] bg-white border border-gray-200 rounded-xl shadow-xl overflow-y-auto z-50 p-4 space-y-4"
+        >
+          <div v-if="notifications.length" class="space-y-3">
+            <div
+              v-for="notification in notifications"
+              :key="notification.id"
+              class="relative p-3 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow transition"
+              :class="notification.isRead ? 'opacity-80' : 'bg-blue-50'"
             >
-              {{ notification.article.title }}
-            </NuxtLink>
+              <button
+                type="button"
+                class="absolute top-2 right-2 text-red-400 hover:text-red-600 p-0.5 rounded-full transition"
+                @click.stop="deleteNotification(notification.id)"
+              >
+                <Icon name="mdi:close-circle" class="w-4 h-4" />
+              </button>
+
+              <div class="pr-6">
+                <p class="text-sm text-gray-800">{{ notification.message }}</p>
+                <p class="text-xs text-gray-400 mt-1">
+                  {{ formatDate(notification.createdAt) }}
+                </p>
+                <NuxtLink
+                  v-if="notification.article"
+                  :to="`/articles/${notification.article.slug}`"
+                  class="inline-block text-xs text-blue-600 hover:underline font-medium mt-1"
+                >
+                  {{ notification.article.title }}
+                </NuxtLink>
+              </div>
+            </div>
           </div>
+          <p v-else class="text-sm text-gray-600 text-center">
+            Žádné nové notifikace.
+          </p>
         </div>
-        <p v-else class="text-sm text-gray-600 text-center">
-          Žádné nové notifikace.
-        </p>
-      </div>
+      </Transition>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { format } from 'date-fns'
-
+const toast = useToast()
 const { data: auth } = useAuth()
 const showNotifications = ref(false)
 
@@ -71,6 +90,19 @@ const toggleNotifications = () => {
 }
 
 const formatDate = (d: string) => format(new Date(d), 'dd.MM.yyyy, HH:mm')
+
+const deleteNotification = async (id: string) => {
+  try {
+    await $fetch(`/api/notifications/${id}`, {
+      method: 'DELETE',
+    })
+    await refresh()
+  } catch (err: any) {
+    toast.error({
+      message: 'Chyba při mazání notifikace.' + err?.value?.message,
+    })
+  }
+}
 
 const notifDropdown = ref(null)
 onClickOutside(notifDropdown, () => {
