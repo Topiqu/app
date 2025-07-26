@@ -3,8 +3,12 @@ export default defineEventHandler(async (event) => {
   if (!slug)
     throw createError({ statusCode: 400, statusMessage: 'Slug je povinný' })
 
-  const tag = await prisma.tag.findUnique({
-    where: { slug },
+  const user = (await getServerSession(event))?.user
+  if (!user)
+    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+
+  const tag = await prisma.tag.findFirst({
+    where: { slug, clientSiteId: user.clientSiteId },
     include: {
       articles: {
         include: {

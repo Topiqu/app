@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
   for (const comment of commentMap.values()) {
     if (comment.parentId) {
       const parent = commentMap.get(comment.parentId)
-      if (parent) parent.replies.push(comment)
+      parent?.replies.push(comment)
     } else {
       roots.push(comment)
     }

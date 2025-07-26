@@ -21,7 +21,10 @@ export default defineEventHandler(async (event) => {
   const usedTagIds = article.tags.map((t) => t.tagId)
 
   const availableTags = await prisma.tag.findMany({
-    where: { id: { notIn: usedTagIds } },
+    where: {
+      id: { notIn: usedTagIds },
+      clientSiteId: user.clientSiteId,
+    },
     select: { id: true, name: true, createdAt: true, updatedAt: true },
   })
 
