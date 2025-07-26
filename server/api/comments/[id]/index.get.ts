@@ -1,7 +1,11 @@
+import type { CommentWithReplies } from '~/types/comment'
+
 export default defineEventHandler(async (event) => {
   const articleId = getRouterParam(event, 'id')
   if (!articleId)
     throw createError({ statusCode: 400, statusMessage: 'Chybí ID článku' })
+
+  const user = (await getServerSession(event))?.user
 
   const allComments = await prisma.comment.findMany({
     where: {
@@ -21,25 +25,13 @@ export default defineEventHandler(async (event) => {
         },
       },
       reactions: {
-        select: { type: true },
+        select: { type: true, userId: true },
       },
     },
     orderBy: {
       createdAt: 'asc',
     },
   })
-
-  type CommentWithReplies = {
-    id: string
-    content: string
-    createdAt: Date
-    userId: string
-    parentId: string | null
-    user: { id: string; username: string }
-    replies: CommentWithReplies[]
-    likes: number
-    dislikes: number
-  }
 
   const commentMap = new Map<string, CommentWithReplies>()
 
@@ -54,6 +46,11 @@ export default defineEventHandler(async (event) => {
       likes: c.reactions.filter((r) => r.type === 'LIKE').length,
       dislikes: c.reactions.filter((r) => r.type === 'DISLIKE').length,
       replies: [],
+      userReaction: user
+        ? c.reactions.find((r) => r.userId === user.id)
+          ? { type: c.reactions.find((r) => r.userId === user.id)!.type }
+          : null
+        : null,
     })
   }
 

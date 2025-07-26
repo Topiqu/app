@@ -2,10 +2,13 @@
   <div class="w-full max-w-[90%] xl:max-w-[1280px] mx-auto mt-14 px-4 sm:px-8">
     <div class="flex items-center gap-3 mb-10">
       <Icon name="mdi:comment-multiple-outline" class="w-8 h-8 text-blue-600" />
-      <h2 class="text-4xl font-extrabold text-gray-900 tracking-tight">
+      <h2
+        class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight"
+      >
         Komentáře
       </h2>
     </div>
+
     <div
       v-if="session?.user"
       class="mb-14 bg-white p-8 rounded-3xl shadow-xl border border-gray-200"
@@ -22,7 +25,7 @@
           <div class="relative">
             <Icon
               name="mdi:comment-outline"
-              class="absolute left-3 top-3 w-6 h-6 text-gray-400"
+              class="absolute left-4 top-4 w-5 h-5 text-gray-400 pointer-events-none"
             />
             <textarea
               id="comment"
@@ -35,28 +38,31 @@
             />
           </div>
         </div>
+
         <div
           v-if="replyingTo"
-          class="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-200"
+          class="flex items-center gap-3 text-sm text-gray-700 bg-blue-50/60 p-3 rounded-xl border border-blue-200"
         >
           <Icon name="mdi:reply" class="w-4 h-4 text-gray-500" />
-          <span
-            >Odpovídáte na:
+          <span>
+            Odpovídáte na:
             <strong>{{
               replyingTo.user?.username || 'Není k dispozici'
-            }}</strong></span
-          >
+            }}</strong>
+          </span>
           <button
             type="button"
-            class="ml-auto text-red-500 hover:text-red-700 font-semibold"
+            class="ml-auto text-red-500 hover:text-red-600 bg-white border border-red-100 hover:border-red-300 rounded-full p-1.5 transition duration-150 focus:outline-none focus:ring-2 focus:ring-red-300 cursor-pointer"
+            title="Zrušit odpověď"
             @click="replyingTo = null"
           >
-            <Icon name="mdi:close-circle" class="w-4 h-4" />
+            <Icon name="mdi:close" class="w-4 h-4" />
           </button>
         </div>
+
         <button
           type="submit"
-          class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition flex items-center gap-2"
+          class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all duration-150 flex items-center gap-2 shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
           :disabled="isSubmitting"
         >
           <Icon
@@ -68,24 +74,31 @@
         </button>
       </form>
     </div>
-    <p v-else class="text-gray-600 mb-14 text-base">
-      <NuxtLink to="/login" class="text-blue-600 hover:underline font-medium"
-        >Přihlaste se</NuxtLink
+
+    <p v-else class="text-gray-600 mb-14 text-base text-center">
+      <NuxtLink
+        to="/login"
+        class="text-blue-600 hover:underline font-medium cursor-pointer"
       >
+        Přihlaste se
+      </NuxtLink>
       pro přidání komentáře.
     </p>
+
     <div v-if="isLoading" class="flex justify-center mb-10">
       <Icon name="mdi:loading" class="w-8 h-8 text-blue-600 animate-spin" />
     </div>
+
     <div
       v-else-if="error"
-      class="text-center p-6 bg-white rounded-2xl shadow border border-red-200"
+      class="text-center p-6 bg-red-50 rounded-2xl shadow border border-red-200"
     >
       <Icon name="mdi:alert-circle" class="w-8 h-8 text-red-500 mx-auto mb-2" />
       <p class="text-gray-700">
         Nepodařilo se načíst komentáře: {{ error.message }}
       </p>
     </div>
+
     <div v-else-if="topLevelComments.length" class="space-y-6">
       <Comment
         v-for="comment in topLevelComments"
@@ -98,6 +111,7 @@
         @dislike="handleDislike"
       />
     </div>
+
     <p v-else class="text-gray-600 text-center text-base">
       Zatím žádné komentáře.
     </p>
@@ -105,27 +119,16 @@
 </template>
 
 <script lang="ts" setup>
+import type { CommentWithReplies } from '~/types/comment'
+
 const props = defineProps<{
   articleId: string
 }>()
 
-interface Comment {
-  id: string
-  content: string
-  createdAt: string
-  userId: string
-  parentId: string | null
-  user: { id: string; username: string } | null
-  replies: Comment[]
-  likes: number
-  dislikes: number
-  userReaction?: { type: 'LIKE' | 'DISLIKE' }
-}
-
 const { data: session } = useAuth()
 const toast = useToast()
 const newComment = ref('')
-const replyingTo = ref<Comment | null>(null)
+const replyingTo = ref<CommentWithReplies | null>(null)
 const isSubmitting = ref(false)
 
 const {
@@ -133,13 +136,12 @@ const {
   error,
   pending: isLoading,
   refresh,
-} = useFetch<Comment[]>(`/api/comments/${props.articleId}`, {
+} = useFetch<CommentWithReplies[]>(`/api/comments/${props.articleId}`, {
   default: () => [],
   immediate: true,
 })
 
 const topLevelComments = computed(() => commentsData.value || [])
-console.log(session.value)
 const submitComment = async () => {
   if (!newComment.value.trim() || isSubmitting.value) return
   isSubmitting.value = true
@@ -166,11 +168,11 @@ const submitComment = async () => {
   }
 }
 
-const handleReply = (comment: Comment) => {
+const handleReply = (comment: CommentWithReplies) => {
   replyingTo.value = comment
 }
 
-const handleDelete = async (comment: Comment) => {
+const handleDelete = async (comment: CommentWithReplies) => {
   if (!confirm('Opravdu chcete smazat tento komentář?')) return
   try {
     await $fetch(`/api/comments/${comment.id}`, { method: 'DELETE' })
@@ -181,7 +183,7 @@ const handleDelete = async (comment: Comment) => {
   }
 }
 
-const handleLike = async (comment: Comment) => {
+const handleLike = async (comment: CommentWithReplies) => {
   if (!session?.value?.user) return
   try {
     await $fetch('/api/comments/reaction', {
@@ -194,7 +196,7 @@ const handleLike = async (comment: Comment) => {
   }
 }
 
-const handleDislike = async (comment: Comment) => {
+const handleDislike = async (comment: CommentWithReplies) => {
   if (!session?.value?.user) return
   try {
     await $fetch('/api/comments/reaction', {
