@@ -8,6 +8,10 @@
 <script lang="ts" setup>
 const { data } = useAuth()
 
+definePageMeta({
+  middleware: 'admin',
+})
+
 const { data: client } = await useFetch(
   `/api/clients/${data.value?.user.clientSiteId}`,
   {
