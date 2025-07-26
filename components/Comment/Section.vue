@@ -87,55 +87,16 @@
       </p>
     </div>
     <div v-else-if="topLevelComments.length" class="space-y-6">
-      <div
+      <Comment
         v-for="comment in topLevelComments"
         :key="comment.id"
-        class="bg-white p-6 rounded-3xl shadow border border-gray-200"
-      >
-        <div class="flex items-start justify-between">
-          <div class="flex items-center gap-3">
-            <Icon
-              name="mdi:account-circle-outline"
-              class="w-6 h-6 text-blue-500"
-            />
-            <span class="font-semibold text-gray-800">{{
-              comment.user?.username || 'Není k dispozici'
-            }}</span>
-            <span class="text-gray-400 text-sm"
-              >• {{ formatDate(comment.createdAt) }}</span
-            >
-          </div>
-          <div class="flex items-center gap-2">
-            <button
-              v-if="session?.user && !replyingTo"
-              class="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 transition"
-              @click="replyingTo = comment"
-            >
-              <Icon name="mdi:reply" class="w-4 h-4" /> Odpovědět
-            </button>
-            <button
-              v-if="session?.user && session.user.id === comment.userId"
-              class="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition"
-              @click="deleteComment(comment.id)"
-            >
-              <Icon name="mdi:delete" class="w-4 h-4" /> Smazat
-            </button>
-          </div>
-        </div>
-        <p class="mt-4 text-gray-700 whitespace-pre-line">
-          {{ comment.content }}
-        </p>
-        <div
-          v-if="comment.replies?.length"
-          class="mt-6 ml-6 space-y-4 border-l-2 border-gray-200 pl-4"
-        >
-          <CommentReplies
-            :article-id="articleId"
-            :comments="comment.replies"
-            @reply="replyingTo = $event"
-          />
-        </div>
-      </div>
+        :comment="comment"
+        :is-replying="!!replyingTo"
+        @reply="handleReply"
+        @delete="handleDelete"
+        @like="handleLike"
+        @dislike="handleDislike"
+      />
     </div>
     <p v-else class="text-gray-600 text-center text-base">
       Zatím žádné komentáře.
@@ -144,22 +105,21 @@
 </template>
 
 <script lang="ts" setup>
-import { format } from 'date-fns'
-
 const props = defineProps<{
   articleId: string
-  comments?: Comment[]
-  isReply?: boolean
 }>()
 
 interface Comment {
   id: string
   content: string
   createdAt: string
-  user: { id: string; username: string } | null
   userId: string
   parentId: string | null
-  replies?: Comment[]
+  user: { id: string; username: string } | null
+  replies: Comment[]
+  likes: number
+  dislikes: number
+  userReaction?: { type: 'LIKE' | 'DISLIKE' }
 }
 
 const { data: session } = useAuth()
@@ -178,14 +138,8 @@ const {
   immediate: true,
 })
 
-const comments = computed(() => props.comments || commentsData.value || [])
-const topLevelComments = computed(() => {
-  const filtered = comments.value.filter((comment) => !comment.parentId)
-  return filtered
-})
-
-const formatDate = (d: string) => format(new Date(d), 'dd.MM.yyyy, HH:mm')
-
+const topLevelComments = computed(() => commentsData.value || [])
+console.log(session.value)
 const submitComment = async () => {
   if (!newComment.value.trim() || isSubmitting.value) return
   isSubmitting.value = true
@@ -196,7 +150,7 @@ const submitComment = async () => {
         articleId: props.articleId,
         content: newComment.value,
         parentId: replyingTo.value?.id,
-        userId: session?.value?.user?.id,
+        userId: session.value?.user?.id || null,
       },
     })
     toast.success({
@@ -212,16 +166,44 @@ const submitComment = async () => {
   }
 }
 
-const deleteComment = async (commentId: string) => {
+const handleReply = (comment: Comment) => {
+  replyingTo.value = comment
+}
+
+const handleDelete = async (comment: Comment) => {
   if (!confirm('Opravdu chcete smazat tento komentář?')) return
   try {
-    await $fetch(`/api/comments/${commentId}`, {
-      method: 'DELETE',
-    })
+    await $fetch(`/api/comments/${comment.id}`, { method: 'DELETE' })
     toast.success({ message: 'Komentář smazán' })
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nepodařilo se smazat komentář' })
+  }
+}
+
+const handleLike = async (comment: Comment) => {
+  if (!session?.value?.user) return
+  try {
+    await $fetch('/api/comments/reaction', {
+      method: 'POST',
+      body: { commentId: comment.id, type: 'LIKE' },
+    })
+    await refresh()
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Nepodařilo se přidat reakci' })
+  }
+}
+
+const handleDislike = async (comment: Comment) => {
+  if (!session?.value?.user) return
+  try {
+    await $fetch('/api/comments/reaction', {
+      method: 'POST',
+      body: { commentId: comment.id, type: 'DISLIKE' },
+    })
+    await refresh()
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Nepodařilo se přidat reakci' })
   }
 }
 </script>
