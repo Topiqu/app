@@ -10,7 +10,6 @@ export default defineEventHandler(async (event) => {
   const allComments = await prisma.comment.findMany({
     where: {
       articleId,
-      deletedAt: null,
     },
     select: {
       id: true,
@@ -18,6 +17,7 @@ export default defineEventHandler(async (event) => {
       createdAt: true,
       userId: true,
       parentId: true,
+      deletedAt: true,
       user: {
         select: {
           id: true,
@@ -42,6 +42,7 @@ export default defineEventHandler(async (event) => {
       createdAt: c.createdAt,
       userId: c.userId,
       parentId: c.parentId,
+      deletedAt: c.deletedAt,
       user: c.user,
       likes: c.reactions.filter((r) => r.type === 'LIKE').length,
       dislikes: c.reactions.filter((r) => r.type === 'DISLIKE').length,
