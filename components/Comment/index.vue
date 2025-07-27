@@ -8,13 +8,22 @@
       <div
         class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap"
       >
-        <Icon
-          name="mdi:account-circle-outline"
-          class="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 flex-shrink-0"
+        <UserCard
+          v-if="comment.user"
+          :user="{
+            id: comment.user.id,
+            username: comment.user.username,
+            email: comment.user.email!,
+            createdAt: comment.user.createdAt,
+            avatarUrl: comment.user.avatarUrl,
+            bio: comment.user.bio,
+            lastLogin: comment.user.lastLogin,
+            commentsCount: comment.user.commentsCount,
+            likesCount: comment.user.likesCount,
+            dislikesCount: comment.user.dislikesCount,
+          }"
         />
-        <span class="font-semibold text-gray-800">{{
-          comment.user?.username || 'Není k dispozici'
-        }}</span>
+        <span v-else class="font-semibold text-gray-800">Není k dispozici</span>
         <span class="text-gray-400">• {{ formatDate(comment.createdAt) }}</span>
       </div>
       <div v-if="!comment.deletedAt" class="flex items-center gap-2 sm:gap-3">
@@ -99,10 +108,9 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { format } from 'date-fns'
 import type { CommentWithReplies } from '~/types/comment'
-
 defineProps<{
   comment: CommentWithReplies
   isReplying: boolean
@@ -117,5 +125,6 @@ defineEmits<{
 }>()
 
 const { data: session } = useAuth()
-const formatDate = (d: string) => format(new Date(d), 'dd.MM.yyyy, HH:mm')
+const formatDate = (d?: string | Date) =>
+  d ? format(new Date(d), 'dd.MM.yyyy, HH:mm') : 'Nikdy'
 </script>
