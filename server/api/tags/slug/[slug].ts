@@ -8,9 +8,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
 
   const tag = await prisma.tag.findFirst({
-    where: { slug, clientSiteId: user.clientSiteId },
+    where: {
+      slug,
+      ...(user.role === 'admin' && { clientSiteId: user.clientSiteId }),
+    },
     include: {
       articles: {
+        where:
+          user.role === 'admin' ? {} : { article: { status: 'published' } },
         include: {
           article: {
             include: {
