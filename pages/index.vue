@@ -1,6 +1,7 @@
 <template>
   <div>
     <AuthForm />
+    <UserAccount />
   </div>
 </template>
 
