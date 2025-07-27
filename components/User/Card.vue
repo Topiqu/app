@@ -69,8 +69,8 @@
         <div
           class="border-t border-gray-200 dark:border-gray-700 pt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1"
         >
-          <p>Vytvořen: {{ formatDate(user.createdAt) }}</p>
-          <p>Poslední přihlášení: {{ formatDate(user.lastLogin) }}</p>
+          <p>Přidal(a) se k nám: {{ formatDate(user.createdAt) }}</p>
+          <p>Naposledy přihlášen: {{ formatDate(user.lastLogin) }}</p>
           <p>Komentáře: {{ user.commentsCount ?? 0 }}</p>
           <div class="flex items-center gap-2">
             <Icon name="mdi:thumb-up" class="w-4 h-4 text-green-500" />

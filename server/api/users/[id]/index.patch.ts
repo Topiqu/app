@@ -10,7 +10,6 @@ export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, UserUpdateScalarSchema.parse)
   return await prisma.user.update({
     where: { id },
-    data: { username: body.username, bio: body.bio },
-    select: { username: true, bio: true },
+    data: body,
   })
 })

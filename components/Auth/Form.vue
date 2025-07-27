@@ -178,6 +178,10 @@ const submit = async () => {
       if (result?.error) {
         toast.error({ message: 'Nepodařilo se vás přihlásit' })
       } else {
+        await $fetch(`/api/users/${data.value?.user.id}`, {
+          method: 'PATCH',
+          body: { lastLogin: Date.now() },
+        })
         toast.success({ message: 'Přihlášení bylo úspěšné' })
         if (data.value?.user?.role === 'superadmin') {
           navigateTo('/master')
