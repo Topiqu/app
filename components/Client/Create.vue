@@ -274,9 +274,7 @@ async function confirmDelete(name: string) {
     showCancelButton: true,
     confirmButtonText: 'Ano, smazat',
     cancelButtonText: 'Ne',
-    background: '#fff',
     confirmButtonColor: '#ef4444',
-    cancelButtonColor: '#6b7280',
   })
   return r.isConfirmed
 }

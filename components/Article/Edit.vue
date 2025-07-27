@@ -174,14 +174,12 @@ const saveEdit = async () => {
 const confirmClose = async () => {
   const r = await Swal.fire({
     title: 'Zavřít dialog?',
-    text: 'Přidávání článku bude zrušeno. Opravdu chcete pokračovat?',
+    text: 'Úprava článku bude zrušena. Opravdu chcete pokračovat?',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Ano, zavřít',
     cancelButtonText: 'Ne',
-    background: '#fff',
     confirmButtonColor: '#ef4444',
-    cancelButtonColor: '#6b7280',
   })
   if (r.isConfirmed) {
     emit('close')

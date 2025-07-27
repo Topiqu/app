@@ -202,9 +202,7 @@ const confirmClose = async () => {
     showCancelButton: true,
     confirmButtonText: 'Ano, zavřít',
     cancelButtonText: 'Ne',
-    background: '#fff',
     confirmButtonColor: '#ef4444',
-    cancelButtonColor: '#6b7280',
   })
   if (r.isConfirmed) {
     emit('close')
