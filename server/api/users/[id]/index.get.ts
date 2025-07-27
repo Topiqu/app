@@ -9,6 +9,5 @@ export default defineEventHandler(async (event) => {
 
   return await prisma.user.findUnique({
     where: { id },
-    select: { username: true, bio: true, email: true, role: true },
   })
 })
