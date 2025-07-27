@@ -29,12 +29,21 @@
             <textarea
               id="comment"
               v-model="newComment"
+              :maxlength="maxLength"
               class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm resize-y min-h-[100px] placeholder-gray-400"
               placeholder="Napište svůj komentář..."
               required
-              maxlength="1000"
               :disabled="isSubmitting"
             />
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>{{ characterCount }} / {{ maxLength }}</span>
+              <span
+                v-if="characterCount >= maxLength"
+                class="text-red-500 font-medium"
+              >
+                Dosáhli jste limitu!
+              </span>
+            </div>
           </div>
         </div>
         <div
@@ -133,6 +142,8 @@ const {
   immediate: true,
 })
 
+const maxLength = 1000
+const characterCount = computed(() => newComment.value.length)
 const topLevelComments = computed(() => commentsData.value || [])
 
 const submitComment = async () => {
