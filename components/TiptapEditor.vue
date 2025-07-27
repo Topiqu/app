@@ -1,89 +1,17 @@
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2" @click.capture="handleRootClick">
     <template v-if="editor">
       <div v-if="edit" class="flex items-center flex-wrap gap-x-2 gap-y-1">
         <BubbleMenu
           :editor="editor"
-          class="p-1 flex items-center gap-2 rounded-lg bg-transparent border border-gray-600"
-        >
-          <button
-            type="button"
-            class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-            title="Bold"
-            :disabled="!editor.can().chain().focus().toggleBold().run()"
-            :class="{ 'bg-gray-200': editor.isActive('bold') }"
-            @click="editor.chain().focus().toggleBold().run()"
-          >
-            <Icon name="mdi-format-bold" />
-          </button>
-          <button
-            type="button"
-            class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-            title="Italic"
-            :disabled="!editor.can().chain().focus().toggleItalic().run()"
-            :class="{ 'bg-gray-200': editor.isActive('italic') }"
-            @click="editor.chain().focus().toggleItalic().run()"
-          >
-            <Icon name="mdi-format-italic" />
-          </button>
-          <button
-            type="button"
-            class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-            title="Strike"
-            :disabled="!editor.can().chain().focus().toggleStrike().run()"
-            :class="{ 'bg-gray-200': editor.isActive('strike') }"
-            @click="editor.chain().focus().toggleStrike().run()"
-          >
-            <Icon name="mdi-format-strikethrough-variant" />
-          </button>
-          <button
-            type="button"
-            class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-            title="Code"
-            :disabled="!editor.can().chain().focus().toggleCode().run()"
-            :class="{ 'bg-gray-200': editor.isActive('code') }"
-            @click="editor.chain().focus().toggleCode().run()"
-          >
-            <Icon name="mdi-code-tags" />
-          </button>
-          <button
-            type="button"
-            class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-            title="Underline"
-            :disabled="!editor.can().chain().focus().toggleUnderline().run()"
-            :class="{ 'bg-gray-200': editor.isActive('underline') }"
-            @click="editor.chain().focus().toggleUnderline().run()"
-          >
-            <Icon name="mdi-format-underline" />
-          </button>
-          <button
-            type="button"
-            class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-            title="Link"
-            :class="{ 'bg-gray-200': editor.isActive('link') }"
-            @click="setLink"
-          >
-            <Icon name="mdi-link" />
-          </button>
-          <button
-            type="button"
-            class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-            title="Unlink"
-            :disabled="!editor.isActive('link')"
-            @click="editor.chain().focus().unsetLink().run()"
-          >
-            <Icon name="mdi-link-off" />
-          </button>
-          <button
-            type="button"
-            class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-            title="Clear"
-            @click="editor.chain().focus().unsetAllMarks().run()"
-          >
-            <Icon name="mdi-format-clear" />
-          </button>
-        </BubbleMenu>
-
+          :set-link="setLink"
+          :trigger-file-input="triggerFileInput"
+        />
+        <FileInput
+          ref="fileInputComponent"
+          :upload-image="uploadImage"
+          @close="onFileInputClose"
+        />
         <button
           type="button"
           class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
@@ -225,7 +153,7 @@
           title="Horizontal Rule"
           @click="editor.chain().focus().setHorizontalRule().run()"
         >
-          Horizontal Rule
+          <Icon name="mdi-minus" />
         </button>
         <button
           type="button"
@@ -288,6 +216,7 @@
           'rounded-lg shadow-sm': edit,
           'h-64 p-4 bg-white border border-gray-300 overflow-y-auto': true,
         }"
+        @click.stop.prevent="handleEditorClick"
       />
     </template>
     <div v-else class="tiptap" v-html="content ? content : fallback" />
@@ -302,8 +231,10 @@ import { TextAlign } from '@tiptap/extension-text-align'
 import { Typography } from '@tiptap/extension-typography'
 import { Underline } from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
-import { BubbleMenu, EditorContent, useEditor } from '@tiptap/vue-3'
+import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { useVModel } from '@vueuse/core'
+import BubbleMenu from './BubbleMenu.vue'
+import FileInput from './File/Input.vue'
 
 const {
   edit,
@@ -335,12 +266,59 @@ const percentage = computed(() =>
   ),
 )
 
+const fileInputComponent = ref<InstanceType<typeof FileInput> | null>(null)
+
+const triggerFileInput = () => {
+  console.log('triggerFileInput called')
+  fileInputComponent.value?.open()
+}
+
+const uploadImage = async (e: Event) => {
+  console.log('uploadImage called')
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    const { url, error } = await res.json()
+    if (error) {
+      alert(error)
+      return
+    }
+    editor.value?.commands.setImage({ src: url, alt: file.name })
+  } catch (err) {
+    alert('Chyba při nahrávání obrázku: ' + (err as Error).message)
+  }
+}
+
+const onFileInputClose = () => {
+  console.log('onFileInputClose called')
+  editor.value?.chain().focus().run()
+}
+
+const handleEditorClick = (e: Event) => {
+  console.log('EditorContent clicked', e.target, e.currentTarget)
+}
+
+const handleRootClick = (e: Event) => {
+  console.log('Root clicked', e.target, e.currentTarget)
+}
+
 const editor = ref(
   useEditor({
     content: content.value,
     extensions: [
       StarterKit,
-      Image,
+      Image.configure({
+        inline: true,
+        HTMLAttributes: { class: 'max-w-full h-auto rounded' },
+      }),
       Underline.configure({ HTMLAttributes: { class: 'underline' } }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Typography,
