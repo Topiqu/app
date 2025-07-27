@@ -5,7 +5,18 @@ export interface CommentWithReplies {
   userId: string
   parentId: string | null
   deletedAt: Date | null
-  user: { id: string; username: string } | null
+  user: {
+    id: string
+    username: string
+    email?: string
+    avatarUrl?: string
+    lastLogin?: string
+    bio?: string
+    createdAt: string
+    commentsCount: number
+    likesCount: number
+    dislikesCount: number
+  } | null
   replies: CommentWithReplies[]
   likes: number
   dislikes: number

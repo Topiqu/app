@@ -22,6 +22,19 @@ export default defineEventHandler(async (event) => {
         select: {
           id: true,
           username: true,
+          email: true,
+          avatarUrl: true,
+          lastLogin: true,
+          createdAt: true,
+          bio: true,
+          comments: {
+            select: {
+              id: true,
+              reactions: {
+                select: { type: true },
+              },
+            },
+          },
         },
       },
       reactions: {
@@ -36,6 +49,22 @@ export default defineEventHandler(async (event) => {
   const commentMap = new Map<string, CommentWithReplies>()
 
   for (const c of allComments) {
+    const userData = c.user
+    const likesCount = userData
+      ? userData.comments.reduce(
+          (sum, comment) =>
+            sum + comment.reactions.filter((r) => r.type === 'LIKE').length,
+          0,
+        )
+      : 0
+    const dislikesCount = userData
+      ? userData.comments.reduce(
+          (sum, comment) =>
+            sum + comment.reactions.filter((r) => r.type === 'DISLIKE').length,
+          0,
+        )
+      : 0
+
     commentMap.set(c.id, {
       id: c.id,
       content: c.content,
@@ -43,7 +72,22 @@ export default defineEventHandler(async (event) => {
       userId: c.userId,
       parentId: c.parentId,
       deletedAt: c.deletedAt,
-      user: c.user,
+      user: userData
+        ? {
+            id: userData.id,
+            username: userData.username,
+            email: userData.email,
+            avatarUrl: userData.avatarUrl ?? undefined,
+            bio: userData.bio ?? undefined,
+            createdAt: userData.createdAt.toISOString(),
+            lastLogin: userData.lastLogin
+              ? userData.lastLogin.toISOString()
+              : undefined,
+            commentsCount: userData.comments.length,
+            likesCount,
+            dislikesCount,
+          }
+        : null,
       likes: c.reactions.filter((r) => r.type === 'LIKE').length,
       dislikes: c.reactions.filter((r) => r.type === 'DISLIKE').length,
       replies: [],
