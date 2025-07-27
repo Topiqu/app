@@ -107,7 +107,6 @@ import { Save, Upload, UserIcon } from 'lucide-vue-next'
 
 const { data: session } = useAuth()
 const toast = useToast()
-const router = useRouter()
 const avatarFile = ref<File | null>(null)
 const avatarError = ref<string | null>(null)
 const avatarSuccess = ref<string | null>(null)
@@ -191,12 +190,4 @@ async function changeNotifs() {
     toast.error({ message: `Chyba: ${err.message}` })
   }
 }
-
-onMounted(() => {
-  if (session.value?.user?.role === 'superadmin') {
-    router.push('/admin/clients')
-  } else {
-    refresh()
-  }
-})
 </script>

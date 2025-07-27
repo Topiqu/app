@@ -79,6 +79,12 @@
               >
                 <Icon name="mdi:delete" class="w-5 h-5" />
               </button>
+              <button
+                class="text-green-500 hover:text-green-700 transition"
+                @click="clientId = row.original.id"
+              >
+                <Icon name="mdi:eye" class="w-5 h-5" />
+              </button>
             </td>
           </tr>
         </tbody>
@@ -93,6 +99,9 @@
       @saved="refresh"
     />
   </TransitionRoot>
+  <TransitionRoot :show="!!clientId" as="template">
+    <ClientUsers :client-id="clientId!" @close="clientId = null" />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
@@ -106,10 +115,12 @@ import {
   useVueTable,
 } from '@tanstack/vue-table'
 import type { ClientSite } from '@zenstackhq/runtime/models'
+import { ClientUsers } from '#components'
 const toast = useToast()
 
 const globalFilter = ref('')
 const editingClient = ref<ClientSite | null>(null)
+const clientId = ref<string | null>(null)
 
 const { data: clients, refresh } = await useFetch<ClientSite[]>(
   '/api/clients',
