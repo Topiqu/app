@@ -9,19 +9,10 @@ export default defineEventHandler(async (event) => {
 
   const userData = await prisma.user.findUnique({
     where: { id },
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      bio: true,
-      avatarUrl: true,
-      lastLogin: true,
+    include: {
       comments: {
-        select: {
-          id: true,
-          reactions: {
-            select: { type: true },
-          },
+        include: {
+          reactions: { select: { type: true } },
         },
       },
     },
@@ -48,6 +39,10 @@ export default defineEventHandler(async (event) => {
     bio: userData.bio,
     avatarUrl: userData.avatarUrl,
     lastLogin: userData.lastLogin,
+    allowNotifs: userData.allowNotifs,
+    role: userData.role,
+    emailVerified: userData.emailVerified,
+    clientSiteId: userData.clientSiteId,
     commentsCount: userData.comments.length,
     likesCount,
     dislikesCount,
