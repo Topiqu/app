@@ -109,6 +109,9 @@ model User {
   reactions     CommentReaction[]
   emailVerified Boolean           @default(false)
   notifications Notification[]    @relation("UserNotifications")
+  avatarUrl     String?
+  allowNotifs   Boolean           @default(true)
+  lastLogin     DateTime?         @default(now())
 }
 
 model ClientSite {
