@@ -203,7 +203,7 @@ import { format } from 'date-fns'
 
 type Article = _Article & {
   user: { username: string; id: string }
-  tags?: { tag: { name: string; slug: string } }[]
+  tags?: { tag: { name: string; slug: string; id: string } }[]
 }
 type RelatedArticle = {
   article: _Article & {
@@ -273,9 +273,9 @@ watch(
   () => data.value,
   async (article) => {
     if (article?.id && article.tags?.length) {
-      const t = article.tags[0].tag.slug
+      const t = article.tags[0].tag.id
       const res = await $fetch<{ articles: RelatedArticle[] }>(
-        `/api/tags/slug/${t}?limit=4`,
+        `/api/tags/${t}?limit=4`,
       )
       relatedArticles.value = res.articles.filter(
         (a) => a.article.id !== article.id,

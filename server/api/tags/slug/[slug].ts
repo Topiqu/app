@@ -4,18 +4,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Slug je povinný' })
 
   const user = (await getServerSession(event))?.user
-  if (!user)
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
 
   const tag = await prisma.tag.findFirst({
     where: {
       slug,
-      ...(user.role === 'admin' && { clientSiteId: user.clientSiteId }),
     },
     include: {
       articles: {
         where:
-          user.role === 'admin' ? {} : { article: { status: 'published' } },
+          user?.role === 'admin' ? {} : { article: { status: 'published' } },
         include: {
           article: {
             include: {

@@ -1,5 +1,5 @@
 <template>
-  <Dialog as="div" class="relative z-[1000]" @close="$emit('close')">
+  <Dialog as="div" class="relative z-[1000]" @close="confirmClose">
     <TransitionChild
       as="template"
       enter="ease-out duration-300"
@@ -102,6 +102,7 @@ import {
 } from '@headlessui/vue'
 import type { Article } from '@zenstackhq/runtime/models'
 import slugify from 'slugify'
+import Swal from 'sweetalert2'
 
 const toast = useToast()
 const emit = defineEmits(['close', 'saved'])
@@ -167,6 +168,23 @@ const saveEdit = async () => {
     emit('saved')
   } catch (error: any) {
     toast.error({ message: error.data?.message || 'Úprava článku selhala' })
+  }
+}
+
+const confirmClose = async () => {
+  const r = await Swal.fire({
+    title: 'Zavřít dialog?',
+    text: 'Přidávání článku bude zrušeno. Opravdu chcete pokračovat?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ano, zavřít',
+    cancelButtonText: 'Ne',
+    background: '#fff',
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
+  })
+  if (r.isConfirmed) {
+    emit('close')
   }
 }
 </script>
