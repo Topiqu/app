@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
 
   const body = await readValidatedBody(event, CommentCreateSchema.parse)
 
+  body.content = sanitizeHtml(body.content)
   const article = await prisma.article.findUnique({
     where: { id: body.articleId },
     select: { id: true, userId: true },
