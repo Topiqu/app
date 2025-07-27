@@ -51,6 +51,8 @@ export default defineNuxtConfig({
     public: {
       appVersion: '1.0.0 beta',
     },
+    openModeratorApiKey: process.env.OPENMODERATOR_API_KEY,
+    openAI: process.env.OPENAI_API_KEY,
     authSecret: process.env.AUTH_SECRET,
   },
 })
