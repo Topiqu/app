@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full max-w-[90%] xl:max-w-[1280px] mx-auto mt-14 px-4 sm:px-8">
+  <div class="w-full max-w-[100%] xl:max-w-[1280px] mx-auto mt-14 px-4 sm:px-8">
     <div class="flex items-center gap-3 mb-10">
       <Icon name="mdi:comment-multiple-outline" class="w-8 h-8 text-blue-600" />
       <h2

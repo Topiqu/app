@@ -3,7 +3,7 @@
     v-if="data"
     class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8 md:p-12 transition-all duration-500 ease-out"
   >
-    <div class="max-w-3xl mx-auto flex flex-col gap-8 px-4 sm:px-0">
+    <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4 sm:px-0">
       <NuxtLink
         to="/admin"
         class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 ease-in-out no-underline"
@@ -34,9 +34,9 @@
         :alt="`Titulní obrázek k článku: ${data.title}`"
         format="webp"
         quality="80"
-        width="672"
-        height="336"
-        class="rounded-xl shadow-md border border-gray-100 object-contain object-center w-full aspect-video max-h-[336px] transition-transform duration-500 hover:scale-[1.005]"
+        width="800"
+        height="400"
+        class="rounded-xl shadow-md border border-gray-100 object-contain object-center w-full aspect-video max-h-[400px] transition-transform duration-500 hover:scale-[1.005]"
         aria-describedby="image-caption"
       />
       <span id="image-caption" class="sr-only">Titulní obrázek článku</span>
@@ -140,7 +140,7 @@
       </div>
 
       <div
-        class="max-w-none bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-[17px] md:text-lg leading-[1.8] text-gray-800 tracking-normal space-y-6 prose prose-gray prose-a:text-blue-600 prose-a:no-underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6"
+        class="max-w-4xl bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-[17px] md:text-lg leading-[1.8] text-gray-800 tracking-normal space-y-6 prose prose-gray prose-a:text-blue-600 prose-a:no-underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6"
         v-html="data.content"
       />
 

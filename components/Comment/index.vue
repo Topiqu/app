@@ -1,6 +1,11 @@
 <template>
   <div
     class="bg-white p-4 sm:p-6 md:p-8 rounded-3xl shadow border border-gray-200 hover:bg-gray-50 transition-colors w-full"
+    :class="{
+      'ml-0': depth === 1,
+      'ml-4 sm:ml-6': depth === 2,
+      'ml-8 sm:ml-10': depth >= 3,
+    }"
   >
     <div
       class="flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-4"
@@ -84,21 +89,13 @@
         <span>{{ comment.dislikes || 0 }}</span>
       </button>
     </div>
-    <div
-      v-if="comment.replies?.length"
-      class="mt-4 sm:mt-6 space-y-4"
-      :class="
-        depth < 3
-          ? 'ml-4 sm:ml-6 border-l border-gray-200 pl-4 bg-neutral-50 rounded-lg py-4'
-          : 'ml-2 sm:ml-4 pl-2'
-      "
-    >
+    <div v-if="comment.replies?.length" class="mt-4 sm:mt-6 space-y-4">
       <Comment
         v-for="reply in comment.replies"
         :key="reply.id"
         :comment="reply"
-        :is-replying="isReplying"
-        :depth="depth < 3 ? depth + 1 : 3"
+        :isReplying="isReplying"
+        :depth="depth + 1"
         @reply="$emit('reply', $event)"
         @delete="$emit('delete', $event)"
         @like="$emit('like', $event)"
@@ -111,6 +108,7 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
 import type { CommentWithReplies } from '~/types/comment'
+
 defineProps<{
   comment: CommentWithReplies
   isReplying: boolean
@@ -125,6 +123,7 @@ defineEmits<{
 }>()
 
 const { data: session } = useAuth()
+
 const formatDate = (d?: string | Date) =>
   d ? format(new Date(d), 'dd.MM.yyyy, HH:mm') : 'Nikdy'
 </script>
