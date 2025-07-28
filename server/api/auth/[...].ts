@@ -19,7 +19,7 @@ export default NuxtAuthHandler({
       async authorize(credentials) {
         const { email, password } = signInSchema.parse(credentials)
         const user = await prisma.user.findFirst({
-          where: { email },
+          where: { email, deletedAt: null },
           select: {
             id: true,
             username: true,
