@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full max-w-[100%] xl:max-w-[1280px] mx-auto mt-14 px-4 sm:px-8">
+  <div class="w-full mx-auto mt-14 px-4 sm:px-8">
     <div class="flex items-center gap-3 mb-10">
       <Icon name="mdi:comment-multiple-outline" class="w-8 h-8 text-blue-600" />
       <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Komentáře</h2>
@@ -66,7 +66,7 @@
       <Icon name="mdi:alert-circle" class="w-8 h-8 text-red-500 mx-auto mb-2" />
       <p class="text-gray-700">Nepodařilo se načíst komentáře: {{ error.message }}</p>
     </div>
-    <div v-else-if="topLevelComments.length" class="space-y-6">
+    <div v-else-if="topLevelComments.length" class="w-full max-w-full p-0.25 space-y-6 overflow-x-auto">
       <Comment
         v-for="comment in topLevelComments"
         :key="comment.id"

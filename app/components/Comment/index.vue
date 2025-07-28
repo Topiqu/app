@@ -1,13 +1,8 @@
 <template>
   <div
-    class="bg-white p-4 sm:p-6 md:p-8 rounded-3xl shadow border border-gray-200 hover:bg-gray-50 transition-colors w-full"
-    :class="{
-      'ml-0': depth === 1,
-      'ml-4 sm:ml-6': depth === 2,
-      'ml-8 sm:ml-10': depth >= 3,
-    }"
+    class="w-full min-w-fit bg-white pt-2 pb-0.5 pl-2 pr-0.5 sm:pt-4 sm:pb-1 sm:pl-4 sm:pr-1 md:pt-6 md:pb-1.5 md:pl-6 md:pr-1.5 rounded-3xl shadow border border-gray-200 hover:bg-gray-50 transition-colors"
   >
-    <div class="flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 sm:pr-4 md:pr-6">
       <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
         <UserCard
           v-if="comment.user"
@@ -25,12 +20,11 @@
           }"
         />
         <span v-else class="font-semibold text-gray-800">Není k dispozici</span>
-        <span class="text-gray-400">• {{ formatDate(comment.createdAt) }}</span>
       </div>
-      <div v-if="!comment.deletedAt" class="flex items-center gap-2 sm:gap-3">
+      <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
         <button
           v-if="session?.user && !isReplying"
-          class="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer hover:scale-[1.02]"
+          class="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer hover:scale-[1.02]"
           aria-label="Odpovědět na komentář"
           @click="$emit('reply', comment)"
         >
@@ -39,7 +33,7 @@
         </button>
         <button
           v-if="session?.user && session.user.id === comment.userId"
-          class="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer hover:scale-[1.02]"
+          class="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer hover:scale-[1.02]"
           aria-label="Smazat komentář"
           @click="$emit('delete', comment)"
         >
@@ -48,16 +42,19 @@
         </button>
       </div>
     </div>
+    <div class="mt-4 sm:mt-6">
+      <span class="text-xs sm:text-sm md:text-base text-gray-400">• {{ formatDate(comment.createdAt) }}</span>
+    </div>
     <p
       class="mt-4 sm:mt-6 text-gray-700 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
       :class="{ 'text-gray-400 italic': comment.deletedAt }"
     >
       {{ comment.deletedAt ? '[Tento komentář byl smazán]' : comment.content }}
     </p>
-    <div v-if="!comment.deletedAt" class="mt-4 sm:mt-5 flex items-center gap-2 sm:gap-3 flex-wrap">
+    <div v-if="!comment.deletedAt" class="mt-4 sm:mt-5 flex items-center gap-2 sm:gap-3 flex-wrap pb-2 sm:pb-4 md:pb-6">
       <button
         v-if="session?.user"
-        class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+        class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
         :class="
           comment.userReaction?.type === 'LIKE'
             ? 'bg-green-100 text-green-600'
@@ -70,7 +67,7 @@
       </button>
       <button
         v-if="session?.user"
-        class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+        class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
         :class="
           comment.userReaction?.type === 'DISLIKE'
             ? 'bg-red-100 text-red-600'

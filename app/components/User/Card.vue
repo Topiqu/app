@@ -1,6 +1,7 @@
 <template>
   <div class="relative group w-full flex">
     <div
+      ref="card"
       class="bg-white dark:bg-neutral-900 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors flex items-center gap-4 w-full max-w-md"
     >
       <NuxtImg
@@ -23,7 +24,9 @@
     </div>
 
     <div
-      class="absolute z-10 hidden group-hover:flex flex-col bg-white dark:bg-neutral-900 p-5 rounded-xl shadow-xl border border-gray-200 dark:border-neutral-700 w-80 right-full -top-4 mr-6"
+      v-if="isHovered"
+      class="fixed w-80 z-10 hidden group-hover:flex flex-col bg-white dark:bg-neutral-900 p-5 rounded-xl shadow-xl border border-gray-200 dark:border-neutral-700"
+      :style="{ top: `${y}px`, left: `${x - 320 - 16}px` }"
     >
       <div class="flex items-center gap-4">
         <NuxtImg
@@ -85,6 +88,12 @@ defineProps<{
     dislikesCount: number
   }
 }>()
+
+const card = useTemplateRef('card')
+
+const isHovered = useElementHover(card)
+
+const { x, y } = useElementBounding(card)
 
 const formatDate = (d?: string) => (d ? format(new Date(d), 'dd.MM.yyyy, HH:mm') : 'Nikdy')
 </script>
