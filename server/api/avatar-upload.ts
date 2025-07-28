@@ -1,7 +1,7 @@
-import { mkdir, writeFile } from 'fs/promises'
+import sharp from 'sharp'
 import { join } from 'path'
 import { Filter } from 'content-checker'
-import sharp from 'sharp'
+import { mkdir, writeFile } from 'fs/promises'
 const { openModeratorApiKey } = useRuntimeConfig()
 
 export default defineEventHandler(async (event) => {
@@ -11,13 +11,9 @@ export default defineEventHandler(async (event) => {
   if (!file || !file.type?.startsWith('image/'))
     throw createError({ statusCode: 400, statusMessage: 'Neplatný soubor' })
 
-  if (file.data.length > 5 * 1024 * 1024)
-    throw createError({ statusCode: 400, statusMessage: 'Soubor příliš velký' })
+  if (file.data.length > 5 * 1024 * 1024) throw createError({ statusCode: 400, statusMessage: 'Soubor příliš velký' })
 
-  const resizedBuffer = await sharp(file.data)
-    .resize(300, 300)
-    .webp()
-    .toBuffer()
+  const resizedBuffer = await sharp(file.data).resize(300, 300).webp().toBuffer()
 
   const filter = new Filter({
     openModeratorAPIKey: openModeratorApiKey || '',
@@ -28,8 +24,7 @@ export default defineEventHandler(async (event) => {
   })
 
   const result = await filter.isImageNSFW(blob)
-  if (result.nsfw)
-    throw createError({ statusCode: 403, statusMessage: 'Nevhodný obsah' })
+  if (result.nsfw) throw createError({ statusCode: 403, statusMessage: 'Nevhodný obsah' })
 
   const avatarDir = join(process.cwd(), 'public/avatars')
   await mkdir(avatarDir, { recursive: true })

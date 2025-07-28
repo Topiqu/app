@@ -1,7 +1,6 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  if (!user)
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
 
   const { id } = getRouterParams(event)
 
@@ -15,6 +14,7 @@ export default defineEventHandler(async (event) => {
       username: true,
       email: true,
       role: true,
+      clientSiteId: true,
       createdAt: true,
       updatedAt: true,
       deletedAt: true,
@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
     username: u.username,
     email: u.email,
     role: u.role,
+    clientSiteId: u.clientSiteId,
     createdAt: u.createdAt,
     updatedAt: u.updatedAt,
     deletedAt: u.deletedAt,

@@ -1,75 +1,59 @@
-# Nuxt Minimal Starter
+<h1 align="center">
+  <a href="https://rasgblog.cz" target="_blank">
+    <img align="center" src="https://skillicons.dev/icons?i=nuxt,vue,vite,tailwind,ts" /><br/><br/>
+    <span>RASG Blog</span>
+  </a>
+</h1>
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+### **Welcome** to <a href="https://rasgblog.cz" target="_blank">**RASG Blog**</a>! 👋
 
-## Setup
+An innovative AI blog web-app
 
-Make sure to install dependencies:
+## 🛠️ Installation Instructions
+
+Requirements
+
+- 📦 Node Package Manager (<a href="https://bun.sh" target="_blank">bun</a> - recommended)
+
+**Install and run as dev**
 
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
 bun install
+
+bun zenstack:generate
+
+bun prisma:deploy
+
+bun dev
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+**Build project**
 
 ```bash
-# npm
-npm run dev
+# for static deployment
+bun generate
 
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
+# for server deployment
 bun run build
 ```
 
-Locally preview production build:
+## 🧹 Linting
+
+This project utilizes Prettier and ESLint for code formatting and style consistency
 
 ```bash
-# npm
-npm run preview
+# Check for linting errors and warnings
+bun lint
 
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+# Automatically fix linting errors and warnings
+bun lint:fix
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+---
+
+<p align="center">
+    <span>Made with ❤️ by</span>
+    <a href="https://github.com/bigjohnn1" target="_blank">@bigjohnn1</a>
+    <span>&</span>
+    <a href="https://github.com/germondai" target="_blank">@germondai</a>
+</p>

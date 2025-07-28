@@ -2,8 +2,7 @@ import argon from 'argon2'
 
 export default defineEventHandler(async (event) => {
   const session = (await getServerSession(event))?.user
-  if (!session || session.role !== 'superadmin')
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!session || session.role !== 'superadmin') throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
 
   const body = await readBody(event)
   const { username, email, password, role, clientSiteId } = body
@@ -24,8 +23,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Uživatel s tímto emailem nebo jménem již existuje',
     })
 
-  if (!existingClientSite)
-    throw createError({ statusCode: 404, statusMessage: 'Klient nenalezen' })
+  if (!existingClientSite) throw createError({ statusCode: 404, statusMessage: 'Klient nenalezen' })
 
   const hashedPassword = await argon.hash(password)
 
@@ -43,6 +41,9 @@ export default defineEventHandler(async (event) => {
       email: true,
       role: true,
       clientSiteId: true,
+      createdAt: true,
+      updatedAt: true,
+      deletedAt: true,
     },
   })
 

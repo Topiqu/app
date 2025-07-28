@@ -1,9 +1,8 @@
-import type { CommentWithReplies } from '~/types/comment'
+import type { CommentWithReplies } from '~~/types/comment'
 
 export default defineEventHandler(async (event) => {
   const articleId = getRouterParam(event, 'id')
-  if (!articleId)
-    throw createError({ statusCode: 400, statusMessage: 'Chybí ID článku' })
+  if (!articleId) throw createError({ statusCode: 400, statusMessage: 'Chybí ID článku' })
 
   const user = (await getServerSession(event))?.user
 
@@ -51,16 +50,11 @@ export default defineEventHandler(async (event) => {
   for (const c of allComments) {
     const userData = c.user
     const likesCount = userData
-      ? userData.comments.reduce(
-          (sum, comment) =>
-            sum + comment.reactions.filter((r) => r.type === 'LIKE').length,
-          0,
-        )
+      ? userData.comments.reduce((sum, comment) => sum + comment.reactions.filter((r) => r.type === 'LIKE').length, 0)
       : 0
     const dislikesCount = userData
       ? userData.comments.reduce(
-          (sum, comment) =>
-            sum + comment.reactions.filter((r) => r.type === 'DISLIKE').length,
+          (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'DISLIKE').length,
           0,
         )
       : 0
@@ -80,9 +74,7 @@ export default defineEventHandler(async (event) => {
             avatarUrl: userData.avatarUrl ?? undefined,
             bio: userData.bio ?? undefined,
             createdAt: userData.createdAt.toISOString(),
-            lastLogin: userData.lastLogin
-              ? userData.lastLogin.toISOString()
-              : undefined,
+            lastLogin: userData.lastLogin ? userData.lastLogin.toISOString() : undefined,
             commentsCount: userData.comments.length,
             likesCount,
             dislikesCount,

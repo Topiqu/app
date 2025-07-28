@@ -1,7 +1,6 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  if (!user)
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
 
   const body = await readValidatedBody(event, CommentCreateSchema.parse)
 
@@ -10,8 +9,7 @@ export default defineEventHandler(async (event) => {
     where: { id: body.articleId },
     select: { id: true, userId: true },
   })
-  if (!article)
-    throw createError({ statusCode: 404, statusMessage: 'Článek nenalezen' })
+  if (!article) throw createError({ statusCode: 404, statusMessage: 'Článek nenalezen' })
 
   let content = body.content
   if (body.parentId) {

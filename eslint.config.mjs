@@ -1,41 +1,24 @@
 // @ts-check
+import perfectionist from 'eslint-plugin-perfectionist'
+
 import withNuxt from './.nuxt/eslint.config.mjs'
 
 export default withNuxt({
+  plugins: { perfectionist },
   rules: {
     'vue/no-v-html': 'off',
     'vue/html-self-closing': 'off',
+    'vue/attribute-hyphenation': ['error', 'never'],
     'vue/v-on-event-hyphenation': ['error', 'never'],
     'object-shorthand': ['error', 'always'],
-    'import/order': [
-      'error',
-      {
-        groups: [
-          'builtin',
-          'external',
-          'internal',
-          ['sibling', 'parent'],
-          'index',
-          'unknown',
-        ],
-        'newlines-between': 'never',
-        alphabetize: {
-          order: 'asc',
-          caseInsensitive: true,
-        },
-      },
-    ],
-    'sort-imports': [
-      'error',
-      {
-        ignoreCase: false,
-        ignoreDeclarationSort: true,
-        ignoreMemberSort: false,
-        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-        allowSeparatedGroups: true,
-      },
-    ],
     'vue/multi-word-component-names': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    'perfectionist/sort-imports': 'error',
+  },
+  settings: {
+    perfectionist: {
+      type: 'line-length',
+      partitionByComment: true,
+    },
   },
 })

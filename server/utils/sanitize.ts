@@ -1,5 +1,5 @@
-import createDOMPurify from 'dompurify'
 import { JSDOM } from 'jsdom'
+import createDOMPurify from 'dompurify'
 
 const { window } = new JSDOM('')
 const DOMPurify = createDOMPurify(window as unknown as typeof globalThis)

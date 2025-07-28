@@ -1,7 +1,6 @@
 import argon from 'argon2'
-import CredentialsProvider from 'next-auth/providers/credentials'
-import { signInSchema } from '../../../utils/auth'
 import { NuxtAuthHandler } from '#auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
 
 const Credentials =
   import.meta.dev && 'default' in CredentialsProvider

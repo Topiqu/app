@@ -1,7 +1,6 @@
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
-  if (!slug)
-    throw createError({ statusCode: 400, statusMessage: 'Slug je povinný' })
+  if (!slug) throw createError({ statusCode: 400, statusMessage: 'Slug je povinný' })
 
   const user = (await getServerSession(event))?.user
 
@@ -11,8 +10,7 @@ export default defineEventHandler(async (event) => {
     },
     include: {
       articles: {
-        where:
-          user?.role === 'admin' ? {} : { article: { status: 'published' } },
+        where: user?.role === 'admin' ? {} : { article: { status: 'published' } },
         include: {
           article: {
             include: {
@@ -29,8 +27,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!tag)
-    throw createError({ statusCode: 404, statusMessage: 'Tag nenalezen' })
+  if (!tag) throw createError({ statusCode: 404, statusMessage: 'Tag nenalezen' })
 
   return tag
 })

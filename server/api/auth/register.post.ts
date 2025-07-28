@@ -1,6 +1,5 @@
-import { randomBytes } from 'crypto'
 import argon from 'argon2'
-import { signInSchema } from '~/utils/auth'
+import { randomBytes } from 'crypto'
 
 export default defineEventHandler(async (e) => {
   const body = await readValidatedBody(e, signInSchema.parse)
@@ -12,10 +11,7 @@ export default defineEventHandler(async (e) => {
   if (exists)
     throw createError({
       statusCode: 400,
-      message:
-        exists.username === username
-          ? 'Uživatelské jméno je zabrané'
-          : 'Email už existuje',
+      message: exists.username === username ? 'Uživatelské jméno je zabrané' : 'Email už existuje',
     })
 
   const code = randomBytes(4).toString('hex')

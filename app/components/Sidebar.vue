@@ -1,0 +1,115 @@
+<template>
+  <transition
+    enterActiveClass="transition transform duration-300 ease-out"
+    enterFromClass="-translate-x-full"
+    enterToClass="translate-x-0"
+    leaveActiveClass="transition transform duration-300 ease-in"
+    leaveFromClass="translate-x-0"
+    leaveToClass="-translate-x-full"
+  >
+    <div
+      v-show="isOpen"
+      class="sidebar fixed z-[1000] bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4 rounded-md"
+      :class="isMobile ? 'top-0 left-0 w-28 max-w-[90%] h-full p-1 gap-2' : 'top-72 left-8 w-14 p-2 gap-4'"
+    >
+      <div v-if="data?.user?.role === 'admin'" class="flex flex-col gap-4">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="$router.push('/admin')"
+        >
+          <Icon name="mdi:shield-account" class="w-6 h-6 text-black" />
+        </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="articleCreateOpen = true"
+        >
+          <Icon name="mdi:pencil" class="w-6 h-6 text-black" />
+        </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="tagsOpen = true"
+        >
+          <Icon name="mdi:tag-outline" class="w-6 h-6 text-black" />
+        </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="statsOpen = true"
+        >
+          <Icon name="mdi:chart-bar" class="w-6 h-6 text-black" />
+        </button>
+      </div>
+
+      <div v-if="data?.user?.role === 'superadmin'" class="flex flex-col gap-4">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="$router.push('/master')"
+        >
+          <Icon name="mdi:shield-account" class="w-6 h-6 text-black" />
+        </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="clientCreateOpen = true"
+        >
+          <Icon name="mdi:account-plus" class="w-6 h-6 text-black" />
+        </button>
+      </div>
+      <AuthLogout />
+    </div>
+  </transition>
+
+  <transition
+    enterActiveClass="transition-opacity duration-300 ease-out"
+    enterFromClass="opacity-0"
+    enterToClass="opacity-100"
+    leaveActiveClass="transition-opacity duration-300 ease-in"
+    leaveFromClass="opacity-100"
+    leaveToClass="opacity-0"
+  >
+    <div v-if="isMobile && isOpen" class="fixed inset-0 z-30 bg-black/40" @click="$emit('update:isOpen', false)" />
+  </transition>
+
+  <TransitionRoot :show="articleCreateOpen" as="template">
+    <ArticleCreate @close="articleCreateOpen = false" />
+  </TransitionRoot>
+  <TransitionRoot :show="tagsOpen" as="template">
+    <TagsCreate @close="tagsOpen = false" />
+  </TransitionRoot>
+  <TransitionRoot :show="statsOpen" as="template">
+    <StatsDialog @close="statsOpen = false" />
+  </TransitionRoot>
+  <TransitionRoot :show="clientCreateOpen" as="template">
+    <ClientCreate @close="clientCreateOpen = false" />
+  </TransitionRoot>
+</template>
+
+<script setup lang="ts">
+import { TransitionRoot } from '@headlessui/vue'
+defineProps<{ isOpen: boolean }>()
+const emit = defineEmits(['update:isOpen'])
+const { data } = useAuth()
+const isMobile = ref(false)
+
+const updateIsMobile = () => {
+  isMobile.value = window.innerWidth < 768
+}
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateIsMobile)
+})
+
+watch(
+  isMobile,
+  (mobile) => {
+    if (!mobile) emit('update:isOpen', true)
+  },
+  { immediate: true },
+)
+
+const articleCreateOpen = ref(false)
+const tagsOpen = ref(false)
+const statsOpen = ref(false)
+const clientCreateOpen = ref(false)
+</script>

@@ -1,5 +1,5 @@
-import { randomBytes } from 'crypto'
 import argon from 'argon2'
+import { randomBytes } from 'crypto'
 
 export default defineEventHandler(async (event) => {
   const session = (await getServerSession(event))?.user
@@ -9,16 +9,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const {
-    name,
-    email,
-    username,
-    password,
-    subdomain,
-    plan,
-    generationFrequency,
-    tokenLimit,
-  } = body
+  const { name, email, username, password, subdomain, plan, generationFrequency, tokenLimit } = body
 
   if (!name || !email || !subdomain) {
     throw createError({

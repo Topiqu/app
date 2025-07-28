@@ -1,4 +1,4 @@
-import { ArticleStatusSchema } from '~/shared/zod/enums'
+import { ArticleStatusSchema } from '~~/shared/zod/enums'
 
 const BodySchema = z.object({
   status: ArticleStatusSchema,
@@ -10,10 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ status: 401 })
 
   const body = await readValidatedBody(event, BodySchema.parse)
-  const updated = await prisma.article.update({
-    where: { id },
-    data: { status: body.status },
-  })
+  const updated = await prisma.article.update({ where: { id }, data: { status: body.status } })
 
   return updated
 })

@@ -13,10 +13,7 @@ const prismaClientSingleton = () =>
         },
         update({ args, query }) {
           const content = args.data.content
-          const value =
-            typeof content === 'object' && 'set' in content
-              ? content.set
-              : content
+          const value = typeof content === 'object' && 'set' in content ? content.set : content
 
           if (typeof value === 'string') {
             const words = value.trim().split(/\s+/).length

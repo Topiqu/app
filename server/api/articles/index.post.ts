@@ -1,10 +1,9 @@
-import * as cheerio from 'cheerio'
 import slugify from 'slugify'
+import * as cheerio from 'cheerio'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
-  if (!session || session.user.role !== 'admin')
-    throw createError({ status: 401 })
+  if (!session || session.user.role !== 'admin') throw createError({ status: 401 })
 
   const body = await readValidatedBody(event, ArticleCreateSchema.parse)
   const $ = cheerio.load(body.content)

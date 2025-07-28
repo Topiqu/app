@@ -1,7 +1,6 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  if (!user)
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
 
   const { id } = getRouterParams(event)
   if (user.id !== id && user.role !== 'superadmin')
@@ -18,17 +17,14 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!userData)
-    throw createError({ statusCode: 404, statusMessage: 'Uživatel nenalezen' })
+  if (!userData) throw createError({ statusCode: 404, statusMessage: 'Uživatel nenalezen' })
 
   const likesCount = userData.comments.reduce(
-    (sum, comment) =>
-      sum + comment.reactions.filter((r) => r.type === 'LIKE').length,
+    (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'LIKE').length,
     0,
   )
   const dislikesCount = userData.comments.reduce(
-    (sum, comment) =>
-      sum + comment.reactions.filter((r) => r.type === 'DISLIKE').length,
+    (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'DISLIKE').length,
     0,
   )
 

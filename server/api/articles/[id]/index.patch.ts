@@ -1,5 +1,5 @@
-import * as cheerio from 'cheerio'
 import slugify from 'slugify'
+import * as cheerio from 'cheerio'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')

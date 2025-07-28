@@ -1,7 +1,6 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  if (!user)
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
 
   const articleId = getRouterParam(event, 'id')
   if (!articleId)
@@ -15,8 +14,7 @@ export default defineEventHandler(async (event) => {
     include: { tags: { select: { tagId: true } } },
   })
 
-  if (!article)
-    throw createError({ statusCode: 404, statusMessage: 'Článek nenalezen' })
+  if (!article) throw createError({ statusCode: 404, statusMessage: 'Článek nenalezen' })
 
   const usedTagIds = article.tags.map((t) => t.tagId)
 

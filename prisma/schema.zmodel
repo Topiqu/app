@@ -1,0 +1,170 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+plugin prisma {
+    provider = '@core/prisma'
+    output   = './schema.prisma'
+}
+
+plugin zod {
+    provider  = "@core/zod"
+    output    = "../shared/zod"
+    modelOnly = true
+    compile   = false
+}
+
+enum ArticleStatus {
+    draft
+    published
+}
+
+enum UserRole {
+    admin
+    superadmin
+    reader
+}
+
+enum GenerationFrequency {
+    NONE
+    DAILY
+    WEEKLY
+}
+
+enum ClientPlan {
+    BASIC
+    PRO
+    PREMIUM
+    CUSTOM
+}
+
+enum ReactionType {
+    LIKE
+    DISLIKE
+}
+
+enum NotificationType {
+    COMMENT
+    LIKE
+    FOLLOW
+    MENTION
+    ARTICLE_PUBLISHED
+    SYSTEM
+}
+
+abstract model Base {
+    id        String    @id @default(uuid())
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+    deletedAt DateTime? @omit
+}
+
+model Article extends Base {
+    slug          String         @unique @length(1, 100, "Slug musí mít 1–100 znaků")
+    title         String         @length(1, 255, "Titulek musí mít 1–255 znaků")
+    content       String         @length(1, 16384, "Článek překročil délku znaků")
+    imageUrl      String?        @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    status        ArticleStatus  @default(draft)
+    publishedAt   DateTime?
+    views         Int            @default(0)
+    readingTime   Int?
+    user          User           @relation(fields: [userId], references: [id])
+    userId        String
+    tags          ArticleTag[]
+    comments      Comment[]
+    notifications Notification[] @relation("ArticleNotifications")
+
+    @@allow('create', auth().role =='admin')
+}
+
+model Tag extends Base {
+    slug         String       @length(1, 64, "Slug tagu musí mít 1–64 znaků")
+    name         String       @length(1, 64, "Název tagu musí mít 1–64 znaků")
+    clientSiteId String?
+    clientSite   ClientSite?  @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    articles     ArticleTag[]
+    @@allow('create', auth().role == 'admin')
+}
+
+model ArticleTag {
+    articleId String
+    tagId     String
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+    @@id([articleId, tagId])
+}
+
+model User extends Base {
+    username      String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
+    email         String            @unique @length(3, 255, "Email musí mít 3–255 znaků")
+    password      String?           @length(4, 124, "Heslo musí mít 4–124 znaků")
+    bio           String?           @length(0, 300, "Bio autora může mít max. 300 znaků")
+    role          UserRole          @default(admin)
+    articles      Article[]
+    clientSite    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    clientSiteId  String?
+    comments      Comment[]
+    verification  VerificationCode?
+    reactions     CommentReaction[]
+    emailVerified Boolean           @default(false)
+    notifications Notification[]    @relation("UserNotifications")
+    avatarUrl     String?
+    allowNotifs   Boolean           @default(true)
+    lastLogin     DateTime?         @default(now())
+}
+
+model ClientSite extends Base {
+    name                String              @length(1, 255, "Název klienta musí mít 1–255 znaků")
+    subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
+    plan                ClientPlan          @default(BASIC)
+    generationFrequency GenerationFrequency @default(NONE)
+    tokenLimit          Int?                @default(0)
+    tokenRemaining      Int?                @default(0)
+    users               User[]
+    tags                Tag[]
+    focus               String?
+    keywords            Json?
+}
+
+model Comment extends Base {
+    content   String            @length(1, 1000, "Komentář musí mít 1–1000 znaků")
+    article   Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    articleId String
+    user      User              @relation(fields: [userId], references: [id])
+    userId    String
+    parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+    parentId  String?
+    replies   Comment[]         @relation("CommentReplies")
+    reactions CommentReaction[]
+}
+
+model CommentReaction {
+    userId    String
+    commentId String
+    type      ReactionType
+    user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
+    @@id([userId, commentId])
+}
+
+model VerificationCode extends Base {
+    code      String   @length(8, 8, "Kód musí mít přesně 8 znaků")
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String   @unique
+    expiresAt DateTime
+}
+
+model Notification extends Base {
+    message   String           @length(1, 255, "Zpráva notifikace musí mít 1–255 znaků")
+    user      User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
+    articleId String?
+    type      NotificationType
+    isRead    Boolean          @default(false)
+}

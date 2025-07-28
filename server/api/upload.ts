@@ -1,12 +1,12 @@
-import { access, mkdir, writeFile } from 'fs/promises'
-import { join } from 'path'
 import sharp from 'sharp'
+import { join } from 'path'
+import { access, mkdir, writeFile } from 'fs/promises'
 
 export default defineEventHandler(async (event) => {
   const body = await readMultipartFormData(event)
   if (!body || !body.length) return { error: 'Žádný obrázek nebyl nahrán' }
 
-  const file = body[0]
+  const file = body[0]!
 
   if (!file.type?.startsWith('image/')) {
     return { error: 'Povoleny jsou pouze obrázky' }
