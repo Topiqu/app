@@ -82,13 +82,32 @@
         <span>{{ comment.dislikes || 0 }}</span>
       </button>
     </div>
-    <div v-if="comment.replies?.length" class="mt-4 sm:mt-6 space-y-4">
+    <div
+      v-if="comment.replies?.length && depth < 3"
+      class="mt-4 sm:mt-6 space-y-4"
+    >
       <Comment
         v-for="reply in comment.replies"
         :key="reply.id"
         :comment="reply"
         :isReplying="isReplying"
         :depth="depth + 1"
+        @reply="$emit('reply', $event)"
+        @delete="$emit('delete', $event)"
+        @like="$emit('like', $event)"
+        @dislike="$emit('dislike', $event)"
+      />
+    </div>
+    <div
+      v-if="comment.replies?.length && depth === 3"
+      class="mt-4 sm:mt-6 space-y-4"
+    >
+      <Comment
+        v-for="reply in comment.replies"
+        :key="reply.id"
+        :comment="reply"
+        :isReplying="isReplying"
+        :depth="depth"
         @reply="$emit('reply', $event)"
         @delete="$emit('delete', $event)"
         @like="$emit('like', $event)"

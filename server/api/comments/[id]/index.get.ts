@@ -7,9 +7,7 @@ export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
 
   const allComments = await prisma.comment.findMany({
-    where: {
-      articleId,
-    },
+    where: { articleId },
     select: {
       id: true,
       content: true,
@@ -29,20 +27,14 @@ export default defineEventHandler(async (event) => {
           comments: {
             select: {
               id: true,
-              reactions: {
-                select: { type: true },
-              },
+              reactions: { select: { type: true } },
             },
           },
         },
       },
-      reactions: {
-        select: { type: true, userId: true },
-      },
+      reactions: { select: { type: true, userId: true } },
     },
-    orderBy: {
-      createdAt: 'asc',
-    },
+    orderBy: { createdAt: 'asc' },
   })
 
   const commentMap = new Map<string, CommentWithReplies>()
@@ -58,6 +50,8 @@ export default defineEventHandler(async (event) => {
           0,
         )
       : 0
+
+    const userReaction = user ? (c.reactions.find((r) => r.userId === user.id) ?? null) : null
 
     commentMap.set(c.id, {
       id: c.id,
@@ -83,22 +77,33 @@ export default defineEventHandler(async (event) => {
       likes: c.reactions.filter((r) => r.type === 'LIKE').length,
       dislikes: c.reactions.filter((r) => r.type === 'DISLIKE').length,
       replies: [],
-      userReaction: user
-        ? c.reactions.find((r) => r.userId === user.id)
-          ? { type: c.reactions.find((r) => r.userId === user.id)!.type }
-          : null
-        : null,
+      userReaction: userReaction ? { type: userReaction.type } : null,
     })
   }
 
   const roots: CommentWithReplies[] = []
 
   for (const comment of commentMap.values()) {
-    if (comment.parentId) {
-      const parent = commentMap.get(comment.parentId)
-      parent?.replies.push(comment)
-    } else {
+    if (!comment.parentId) {
+      comment.depth = 1
       roots.push(comment)
+      continue
+    }
+
+    let depth = 1
+    let parent = commentMap.get(comment.parentId)
+    while (parent && parent.parentId) {
+      depth++
+      parent = commentMap.get(parent.parentId)
+    }
+
+    comment.depth = depth + 1
+
+    if (depth < 3) {
+      const directParent = commentMap.get(comment.parentId)
+      if (directParent) directParent.replies.push(comment)
+    } else if (parent) {
+      parent.replies.push(comment)
     }
   }
 

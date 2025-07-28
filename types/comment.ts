@@ -20,5 +20,6 @@ export interface CommentWithReplies {
   replies: CommentWithReplies[]
   likes: number
   dislikes: number
+  depth?: number
   userReaction: { type: 'LIKE' | 'DISLIKE' } | null
 }
