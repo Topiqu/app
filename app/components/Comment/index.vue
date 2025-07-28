@@ -85,7 +85,7 @@
         :key="reply.id"
         :comment="reply"
         :isReplying="isReplying"
-        :depth="depth + 1"
+        :depth="depth < 12 ? depth + 1 : depth"
         @reply="$emit('reply', $event)"
         @delete="$emit('delete', $event)"
         @like="$emit('like', $event)"
