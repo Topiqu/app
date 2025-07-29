@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
                   tag: true,
                 },
               },
-              user: true,
+              user: { omit: { password: true } },
             },
           },
         },

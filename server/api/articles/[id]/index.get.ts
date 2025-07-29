@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const article = await prisma.article.findUnique({
     where: { slug },
     include: {
-      user: true,
+      user: { omit: { password: true } },
       tags: {
         include: {
           tag: true,
