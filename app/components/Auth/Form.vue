@@ -74,6 +74,22 @@
             />
           </div>
         </div>
+        <div v-if="mode === 'register'" class="space-y-1">
+          <label for="passwordConfirm" class="block font-medium">Potvrzení hesla</label>
+          <div class="relative">
+            <Icon name="mdi:lock-check" class="absolute left-2 top-2.5 w-5 h-5 text-gray-400" />
+            <input
+              id="passwordConfirm"
+              v-model="form.passwordConfirm"
+              type="password"
+              class="w-full pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-sm"
+              required
+              minlength="4"
+              maxlength="124"
+              autocomplete="new-password"
+            />
+          </div>
+        </div>
         <button
           type="submit"
           class="w-full py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition"
@@ -115,13 +131,17 @@
 const { data, signIn } = useAuth()
 const toast = useToast()
 
-const form = ref({ email: '', username: '', password: '', code: '' })
+const form = ref({ email: '', username: '', password: '', passwordConfirm: '', code: '' })
 const mode = ref<'login' | 'register'>('login')
 const verifyMode = ref(false)
 
 const submit = async () => {
   try {
     if (mode.value === 'register') {
+      if (form.value.password !== form.value.passwordConfirm) {
+        toast.error({ message: 'Hesla se neshodují' })
+        return
+      }
       const res = await $fetch('/api/auth/register', {
         method: 'POST',
         body: {
@@ -153,7 +173,7 @@ const submit = async () => {
         } else if (data.value?.user?.role === 'admin') {
           navigateTo('/admin')
         }
-        form.value = { email: '', username: '', password: '', code: '' }
+        form.value = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
       }
     }
   } catch (e: any) {

@@ -174,7 +174,7 @@
                       class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                       @click="del(user.id)"
                     >
-                      <Icon name="mdi:delete" class="w-5 h-5" />
+                      <Icon name="mdi:lock" class="w-5 h-5" />
                     </button>
 
                     <button
@@ -225,7 +225,7 @@ const newUser = ref({
 const del = async (id: string) => {
   const r = await Swal.fire({
     title: 'Zablokovat uživatele?',
-    text: 'Tento uživatel bude trvale odstraněn.',
+    text: 'Tímto zablokujete uživatele.',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Ano, zablokovat',
