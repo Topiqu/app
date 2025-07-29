@@ -10,7 +10,9 @@
     <div
       v-show="isOpen"
       class="sidebar fixed z-[1000] bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4 rounded-md"
-      :class="isMobile ? 'top-0 left-0 w-28 max-w-[90%] h-full p-1 gap-2' : 'top-72 left-8 w-14 p-2 gap-4'"
+      :class="
+        isMobile ? 'top-0 left-0 w-28 max-w-[90%] h-full p-1 gap-2' : 'top-1/2 left-8 w-14 p-2 gap-4 -translate-y-1/2'
+      "
     >
       <div v-if="data?.user?.role === 'admin'" class="flex flex-col gap-4">
         <button
@@ -84,32 +86,24 @@
 
 <script setup lang="ts">
 import { TransitionRoot } from '@headlessui/vue'
+
 defineProps<{ isOpen: boolean }>()
+
 const emit = defineEmits(['update:isOpen'])
+
 const { data } = useAuth()
-const isMobile = ref(false)
 
-const updateIsMobile = () => {
-  isMobile.value = window.innerWidth < 768
-}
-onMounted(() => {
-  updateIsMobile()
-  window.addEventListener('resize', updateIsMobile)
-})
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateIsMobile)
-})
+const isMobile = shallowRef<boolean>(false)
 
-watch(
-  isMobile,
-  (mobile) => {
-    if (!mobile) emit('update:isOpen', true)
-  },
-  { immediate: true },
-)
+const updateIsMobile = () => (isMobile.value = window.innerWidth < 768)
 
-const articleCreateOpen = ref(false)
-const tagsOpen = ref(false)
-const statsOpen = ref(false)
-const clientCreateOpen = ref(false)
+onMounted(() => (updateIsMobile(), window.addEventListener('resize', updateIsMobile)))
+onBeforeUnmount(() => window.removeEventListener('resize', updateIsMobile))
+
+watch(isMobile, (mobile) => !mobile && emit('update:isOpen', true), { immediate: true })
+
+const articleCreateOpen = shallowRef<boolean>(false)
+const tagsOpen = shallowRef<boolean>(false)
+const statsOpen = shallowRef<boolean>(false)
+const clientCreateOpen = shallowRef<boolean>(false)
 </script>
