@@ -2,6 +2,7 @@
   <div class="fixed top-4 right-4 z-[1000]">
     <div class="relative">
       <Icon
+        ref="notifButton"
         name="mdi:bell-outline"
         class="w-6 h-6 text-gray-600 cursor-pointer hover:text-blue-600 transition"
         @click.stop="toggleNotifications"
@@ -93,7 +94,8 @@ const deleteNotification = async (id: string) => {
   }
 }
 
+const notifButton = useTemplateRef('notifButton')
 const notifDropdown = useTemplateRef('notifDropdown')
 
-onClickOutside(notifDropdown, () => (showNotifications.value = false))
+onClickOutside(notifDropdown, () => (showNotifications.value = false), { ignore: [notifButton] })
 </script>
