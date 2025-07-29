@@ -51,6 +51,8 @@ enum NotificationType {
 }
 
 model Article {
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   id            String         @id() @default(uuid())
   createdAt     DateTime       @default(now())
   updatedAt     DateTime?      @updatedAt()
@@ -60,11 +62,9 @@ model Article {
   content       String
   imageUrl      String?
   status        ArticleStatus  @default(draft)
-  publishedAt   DateTime?
   views         Int            @default(0)
   readingTime   Int?
-  user          User           @relation(fields: [userId], references: [id])
-  userId        String
+  publishedAt   DateTime?
   tags          ArticleTag[]
   comments      Comment[]
   notifications Notification[] @relation("ArticleNotifications")
@@ -84,8 +84,8 @@ model Tag {
 
 model ArticleTag {
   articleId String
-  tagId     String
   article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tagId     String
   tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([articleId, tagId])
@@ -100,18 +100,18 @@ model User {
   email         String            @unique()
   password      String?
   bio           String?
-  role          UserRole          @default(admin)
-  articles      Article[]
-  clientSite    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-  clientSiteId  String?
-  comments      Comment[]
-  verification  VerificationCode?
-  reactions     CommentReaction[]
-  emailVerified Boolean           @default(false)
-  notifications Notification[]    @relation("UserNotifications")
+  role          UserRole          @default(reader)
   avatarUrl     String?
+  verification  VerificationCode?
+  emailVerified Boolean           @default(false)
   allowNotifs   Boolean           @default(true)
   lastLogin     DateTime?         @default(now())
+  clientSiteId  String?
+  clientSite    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  articles      Article[]
+  comments      Comment[]
+  notifications Notification[]
+  reactions     CommentReaction[]
 }
 
 model ClientSite {
@@ -122,62 +122,64 @@ model ClientSite {
   name                String
   subdomain           String              @unique()
   plan                ClientPlan          @default(BASIC)
+  focus               String?
   generationFrequency GenerationFrequency @default(NONE)
   tokenLimit          Int?                @default(0)
   tokenRemaining      Int?                @default(0)
+  keywords            Json?
   users               User[]
   tags                Tag[]
-  focus               String?
-  keywords            Json?
 }
 
 model Comment {
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   id        String            @id() @default(uuid())
   createdAt DateTime          @default(now())
   updatedAt DateTime?         @updatedAt()
   deletedAt DateTime?
   content   String
-  article   Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
   articleId String
-  user      User              @relation(fields: [userId], references: [id])
-  userId    String
-  parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  article   Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
   parentId  String?
-  replies   Comment[]         @relation("CommentReplies")
+  parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   reactions CommentReaction[]
+  replies   Comment[]         @relation("CommentReplies")
 }
 
 model CommentReaction {
   userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   commentId String
   type      ReactionType
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@id([userId, commentId])
 }
 
 model VerificationCode {
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   id        String    @id() @default(uuid())
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt()
   deletedAt DateTime?
   code      String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String    @unique()
   expiresAt DateTime
+
+  @@unique([userId])
 }
 
 model Notification {
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   id        String           @id() @default(uuid())
   createdAt DateTime         @default(now())
   updatedAt DateTime?        @updatedAt()
   deletedAt DateTime?
   message   String
-  user      User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
-  articleId String?
-  type      NotificationType
   isRead    Boolean          @default(false)
+  type      NotificationType
+  articleId String?
+  article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
 }
