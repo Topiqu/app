@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-2xl mx-auto p-6">
-    <div v-if="session?.user?.role !== 'superadmin'" class="space-y-6">
+    <div class="space-y-6">
       <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700">
         <div class="flex items-center space-x-3 mb-6">
           <UserIcon class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
@@ -54,14 +54,14 @@
               :src="profileForm.avatarUrl"
               class="w-24 h-24 rounded-full mt-3 ring-2 ring-indigo-500 shadow"
             />
-            <p v-if="avatarError" class="text-sm text-red-600 mt-2">
-              {{ avatarError }}
+            <p v-if="avatar.error" class="text-sm text-red-600 mt-2">
+              {{ avatar.error }}
             </p>
-            <p v-if="avatarSuccess" class="text-sm text-green-600 mt-2">
-              {{ avatarSuccess }}
+            <p v-if="avatar.success" class="text-sm text-green-600 mt-2">
+              {{ avatar.success }}
             </p>
             <button
-              :disabled="!avatarFile || isLoading"
+              :disabled="!avatar.file || isLoading"
               class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
               @click="uploadAvatar"
             >
@@ -87,23 +87,22 @@
 import { Save, Upload, UserIcon } from 'lucide-vue-next'
 
 const { data: session } = useAuth()
-const toast = useToast()
-const avatarFile = ref<File | null>(null)
-const avatarError = ref<string | null>(null)
-const avatarSuccess = ref<string | null>(null)
-const isLoading = ref(false)
 
-const profileForm = ref({
-  username: '',
-  email: '',
-  bio: '',
-  avatarUrl: '',
-  allowNotifs: true,
-})
+const toast = useToast()
+
+const avatar = ref<{
+  file: File | null
+  error: string | null
+  success: string | null
+}>({ file: null, error: null, success: null })
+
+const isLoading = shallowRef<boolean>(false)
+
+const profileForm = ref({ username: '', email: '', bio: '', avatarUrl: '', allowNotifs: true })
 
 const { data: userData, refresh } = await useFetch(`/api/users/${session.value?.user?.id}`)
 
-if (userData.value) {
+if (userData.value)
   profileForm.value = {
     username: userData.value.username,
     email: userData.value.email,
@@ -111,29 +110,33 @@ if (userData.value) {
     avatarUrl: userData.value.avatarUrl || '',
     allowNotifs: userData.value.allowNotifs ?? true,
   }
-}
 
 function onAvatarChange(e: Event) {
   const target = e.target as HTMLInputElement
-  if (target?.files?.[0]) avatarFile.value = target.files[0]
+  if (target?.files?.[0]) avatar.value.file = target.files[0]
 }
 
 async function uploadAvatar() {
-  if (!avatarFile.value) return
+  if (!avatar.value.file) return
+
   const formData = new FormData()
-  formData.append('avatar', avatarFile.value)
+  formData.append('avatar', avatar.value.file)
+
   try {
     isLoading.value = true
+
     const res = await $fetch('/api/avatar-upload', {
       method: 'POST',
       body: formData,
     })
-    avatarSuccess.value = 'Avatar nahrán'
+
+    avatar.value.success = 'Avatar nahrán'
     profileForm.value.avatarUrl = res.url
-    avatarFile.value = null
+    avatar.value.file = null
+
     await refresh()
   } catch (err: any) {
-    avatarError.value = err.data?.message || 'Chyba při nahrávání'
+    avatar.value.error = err.data?.message || 'Chyba při nahrávání'
   } finally {
     isLoading.value = false
   }
@@ -142,6 +145,7 @@ async function uploadAvatar() {
 async function updateProfile() {
   try {
     isLoading.value = true
+
     await $fetch(`/api/users/${session.value?.user?.id}`, {
       method: 'PATCH',
       body: {
@@ -149,12 +153,12 @@ async function updateProfile() {
         bio: profileForm.value.bio,
       },
     })
+
     toast.success({ message: 'Profil aktualizován' })
+
     await refresh()
   } catch (err: any) {
-    if (err.statusCode === 429 && err.data?.message) {
-      toast.error({ message: err.data?.message })
-    }
+    if (err.statusCode === 429 && err.data?.message) toast.error({ message: err.data?.message })
   } finally {
     isLoading.value = false
   }
@@ -166,6 +170,7 @@ async function changeNotifs() {
       method: 'PATCH',
       body: { allowNotifs: profileForm.value.allowNotifs },
     })
+
     toast.success({ message: 'Nastavení notifikací uloženo' })
   } catch (err: any) {
     toast.error({ message: `Chyba: ${err.data?.message}` })
