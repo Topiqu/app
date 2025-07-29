@@ -31,11 +31,12 @@
 </template>
 
 <script setup lang="ts">
-const cfg = useRuntimeConfig()
-const props = defineProps<{
-  userId: string
-}>()
-const version = cfg.public.appVersion
+const config = useRuntimeConfig()
+
+const props = defineProps<{ userId: string }>()
+
+const version = computed(() => config.public.appVersion)
+
 const { data: site } = await useFetch(`/api/clients/${props.userId}/by-userid`)
 </script>
 
