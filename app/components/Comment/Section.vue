@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full mx-auto mt-14 px-4 sm:px-8">
+  <div class="w-full mx-auto mt-14">
     <div class="flex items-center gap-3 mb-10">
       <Icon name="mdi:comment-multiple-outline" class="w-8 h-8 text-blue-600" />
       <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Komentáře</h2>
@@ -86,33 +86,35 @@
 <script lang="ts" setup>
 import type { CommentWithReplies } from '~~/types/comment'
 
-const props = defineProps<{
-  articleId: string
-}>()
+const props = defineProps<{ articleId: string }>()
+
+const toast = useToast()
 
 const { data: session } = useAuth()
-const toast = useToast()
-const newComment = ref('')
+
+const newComment = shallowRef<string>('')
+
+const isSubmitting = shallowRef<boolean>(false)
+
 const replyingTo = ref<CommentWithReplies | null>(null)
-const isSubmitting = ref(false)
 
 const {
   data: commentsData,
   error,
   pending: isLoading,
   refresh,
-} = useFetch<CommentWithReplies[]>(`/api/comments/${props.articleId}`, {
-  default: () => [],
-  immediate: true,
-})
+} = await useFetch<CommentWithReplies[]>(`/api/comments/${props.articleId}`, { default: () => [] })
 
 const maxLength = 1000
+
 const characterCount = computed(() => newComment.value.length)
 const topLevelComments = computed(() => commentsData.value || [])
 
 const submitComment = async () => {
   if (!newComment.value.trim() || isSubmitting.value || (replyingTo.value && replyingTo.value.deletedAt)) return
+
   isSubmitting.value = true
+
   try {
     await $fetch('/api/comments', {
       method: 'POST',
@@ -123,11 +125,12 @@ const submitComment = async () => {
         userId: session?.value?.user?.id,
       },
     })
-    toast.success({
-      message: replyingTo.value ? 'Odpověď odeslána' : 'Komentář přidán',
-    })
+
+    toast.success({ message: replyingTo.value ? 'Odpověď odeslána' : 'Komentář přidán' })
+
     newComment.value = ''
     replyingTo.value = null
+
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nepodařilo se přidat komentář' })
@@ -143,9 +146,12 @@ const handleReply = (comment: CommentWithReplies) => {
 
 const handleDelete = async (comment: CommentWithReplies) => {
   if (!confirm('Opravdu chcete smazat tento komentář?')) return
+
   try {
     await $fetch(`/api/comments/${comment.id}`, { method: 'DELETE' })
+
     toast.success({ message: 'Komentář smazán' })
+
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nepodařilo se smazat komentář' })
@@ -154,11 +160,13 @@ const handleDelete = async (comment: CommentWithReplies) => {
 
 const handleLike = async (comment: CommentWithReplies) => {
   if (!session?.value?.user || comment.deletedAt) return
+
   try {
     await $fetch('/api/comments/reaction', {
       method: 'POST',
       body: { commentId: comment.id, type: 'LIKE' },
     })
+
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nepodařilo se přidat reakci' })
@@ -167,11 +175,13 @@ const handleLike = async (comment: CommentWithReplies) => {
 
 const handleDislike = async (comment: CommentWithReplies) => {
   if (!session?.value?.user || comment.deletedAt) return
+
   try {
     await $fetch('/api/comments/reaction', {
       method: 'POST',
       body: { commentId: comment.id, type: 'DISLIKE' },
     })
+
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nepodařilo se přidat reakci' })
