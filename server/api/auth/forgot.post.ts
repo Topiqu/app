@@ -1,0 +1,29 @@
+import { randomBytes } from 'crypto'
+
+export default defineEventHandler(async (event) => {
+  const { email } = await readBody(event)
+  if (!email) throw createError({ statusCode: 400, message: 'E-mail je povinný' })
+
+  const user = await prisma.user.findUnique({ where: { email } })
+  if (!user) throw createError({ statusCode: 404, message: 'Uživatel nenalezen' })
+
+  const code = randomBytes(4).toString('hex')
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+  await prisma.verificationCode.upsert({
+    where: { userId: user.id },
+    update: { code, expiresAt },
+    create: { code, expiresAt, userId: user.id },
+  })
+
+  const t = useNodeMailer()
+  await t.sendMail({
+    from: useRuntimeConfig().from,
+    to: user.email,
+    subject: 'Obnova hesla',
+    text: `Ahoj ${user.username},\npro obnovu hesla použij tento kód: " ${code} ".`,
+    html: `<p>Ahoj <b>${user.username}</b>,<br>pro obnovu hesla použij tento kód: <b>${code}</b>.</p>`,
+  })
+
+  return { message: 'Kód odeslán' }
+})
