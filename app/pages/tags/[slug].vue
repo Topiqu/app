@@ -19,7 +19,7 @@
           <input
             v-model="search"
             placeholder="Hledat články..."
-            class="w-full sm:max-w-md px-5 py-3 rounded-xl border border-gray-300 bg-white shadow focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+            class="w-full px-5 py-3 rounded-xl border border-gray-300 bg-white shadow focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
           />
           <select
             v-model="sort"
@@ -58,7 +58,7 @@
                     {{ a.article.title }}
                   </h2>
                   <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                    <template v-if="data?.user">
+                    <template v-if="auth">
                       <span
                         class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-medium"
                       >
@@ -117,32 +117,34 @@ type TagResponse = {
   articles: Article[]
 }
 
-const { data } = useAuth()
 const route = useRoute()
+
+const { data: auth } = useAuth()
+
 const tagSlug = computed(() => route.params.slug as string)
-const search = ref('')
-const sort = ref('createdAt:desc')
+
+const search = shallowRef<string>('')
+const sort = shallowRef<string>('createdAt:desc')
 
 const { data: tag } = await useFetch<TagResponse>(`/api/tags/slug/${tagSlug.value}`, {
   default: () => ({ id: '', name: 'Neznámý tag', slug: '', articles: [] }),
 })
+
 const tagName = computed(() => tag.value.name)
 
 const filteredArticles = computed(() => {
   const result = tag.value.articles.filter((a) => a.article.title.toLowerCase().includes(search.value.toLowerCase()))
 
   const [field, order] = sort.value.split(':')
-  result.sort((a, b) => {
-    if (field === 'createdAt') {
-      return order === 'asc'
+  result.sort((a, b) =>
+    field === 'createdAt'
+      ? order === 'asc'
         ? new Date(a.article.createdAt).getTime() - new Date(b.article.createdAt).getTime()
         : new Date(b.article.createdAt).getTime() - new Date(a.article.createdAt).getTime()
-    } else {
-      return order === 'asc'
+      : order === 'asc'
         ? a.article.title.localeCompare(b.article.title)
-        : b.article.title.localeCompare(a.article.title)
-    }
-  })
+        : b.article.title.localeCompare(a.article.title),
+  )
 
   return result
 })
