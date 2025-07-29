@@ -122,7 +122,7 @@ const apiCall = async (url: string, method: 'POST' | 'DELETE', body?: any) => {
     await Promise.all([refreshTags(), refreshAvailableTags()])
     toast.success({ message: method === 'POST' ? 'Tag přidán' : 'Tag odebrán' })
   } catch (e: any) {
-    toast.error({ message: e.message || 'Operace selhala' })
+    toast.error({ message: e.data?.message || 'Operace selhala' })
   }
 }
 

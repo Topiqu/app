@@ -111,7 +111,7 @@ const createTag = async () => {
     await refresh()
     toast.success({ message: 'Tag byl úspěšně vytvořen.' })
   } catch (error: any) {
-    toast.error({ message: `Chyba při vytváření tagu: ${error.message}` })
+    toast.error({ message: `Chyba při vytváření tagu: ${error.data?.message}` })
   }
 }
 
@@ -137,7 +137,7 @@ const deleteTag = async (id: string, name: string) => {
     await refresh()
     toast.success({ message: 'Tag byl úspěšně smazán.' })
   } catch (error: any) {
-    toast.error({ message: `Chyba při mazání tagu: ${error.message}` })
+    toast.error({ message: `Chyba při mazání tagu: ${error.data?.message}` })
   }
 }
 </script>

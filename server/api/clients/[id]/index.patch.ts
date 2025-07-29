@@ -1,45 +1,41 @@
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  const user = session?.user
+  const user = (await getServerSession(event))?.user
 
   if (!user || user.role !== 'superadmin') {
     throw createError({ statusCode: 401, message: 'Neautorizováno' })
   }
 
-  const clientSiteId = getRouterParam(event, 'id')
-  const body = await readBody(event)
-
-  const { name, subdomain, plan, generationFrequency, tokenLimit = 0 } = body
-
-  if (!name || !subdomain) {
-    throw createError({
-      statusCode: 400,
-      message: 'Chybí povinná pole: jméno nebo subdoména.',
-    })
+  const id = getRouterParam(event, 'id')
+  if (!id) {
+    throw createError({ statusCode: 400, message: 'ID nenalezeno' })
   }
 
-  const [clientSite, subdomainExists] = await Promise.all([
-    prisma.clientSite.findUnique({
-      where: { id: clientSiteId },
-    }),
-    prisma.clientSite.findUnique({
-      where: { subdomain },
-    }),
-  ])
+  const { name, subdomain, plan, generationFrequency, tokenLimit = 0, deletedAt } = await readBody(event)
 
+  const clientSite = await prisma.clientSite.findUnique({ where: { id } })
   if (!clientSite) {
     throw createError({ statusCode: 404, message: 'Klient nenalezen' })
   }
 
-  if (subdomainExists && subdomainExists.id !== clientSiteId) {
+  if (clientSite.deletedAt && deletedAt !== null) {
     throw createError({
-      statusCode: 409,
-      message: 'Subdoména již existuje',
+      statusCode: 400,
+      message: 'Nelze aktualizovat deaktivovaného klienta',
     })
   }
 
-  const updated = await prisma.clientSite.update({
-    where: { id: clientSiteId },
+  if (subdomain) {
+    const existing = await prisma.clientSite.findUnique({ where: { subdomain } })
+    if (existing && existing.id !== id) {
+      throw createError({
+        statusCode: 409,
+        message: 'Subdoména již existuje',
+      })
+    }
+  }
+
+  const updatedSite = await prisma.clientSite.update({
+    where: { id },
     data: {
       name,
       subdomain,
@@ -47,18 +43,19 @@ export default defineEventHandler(async (event) => {
       generationFrequency,
       tokenLimit,
       tokenRemaining: tokenLimit,
+      deletedAt: deletedAt === undefined ? clientSite.deletedAt : deletedAt === null ? null : new Date(),
     },
   })
 
   return {
     clientSite: {
-      id: updated.id,
-      name: updated.name,
-      subdomain: updated.subdomain,
-      plan: updated.plan,
-      generationFrequency: updated.generationFrequency,
-      tokenLimit: updated.tokenLimit,
+      id: updatedSite.id,
+      name: updatedSite.name,
+      subdomain: updatedSite.subdomain,
+      plan: updatedSite.plan,
+      generationFrequency: updatedSite.generationFrequency,
+      tokenLimit: updatedSite.tokenLimit,
+      deletedAt: updatedSite.deletedAt,
     },
-    message: 'Klient úspěšně aktualizován',
   }
 })

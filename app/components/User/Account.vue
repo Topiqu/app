@@ -153,9 +153,7 @@ async function updateProfile() {
     await refresh()
   } catch (err: any) {
     if (err.statusCode === 429 && err.data?.message) {
-      toast.error({ message: err.data.message })
-    } else {
-      toast.error({ message: `Chyba při aktualizaci: ${err.message}` })
+      toast.error({ message: err.data?.message })
     }
   } finally {
     isLoading.value = false
@@ -170,7 +168,7 @@ async function changeNotifs() {
     })
     toast.success({ message: 'Nastavení notifikací uloženo' })
   } catch (err: any) {
-    toast.error({ message: `Chyba: ${err.message}` })
+    toast.error({ message: `Chyba: ${err.data?.message}` })
   }
 }
 </script>

@@ -123,11 +123,12 @@ const saveEdit = async () => {
   if (!editedClient.value.name || !editedClient.value.subdomain) return
 
   try {
-    const response = await useFetch(`/api/clients/${editedClient.value.id}`, {
+    const response = await $fetch(`/api/clients/${editedClient.value.id}`, {
       method: 'PATCH',
       body: editedClient.value,
     })
-    if (response.data?.value) {
+
+    if (response?.clientSite) {
       toast.success({ message: 'Klient úspěšně aktualizován.' })
       emit('saved')
       emit('close')
@@ -136,7 +137,7 @@ const saveEdit = async () => {
     }
   } catch (error: any) {
     toast.error({
-      message: error.data?.message || 'Nepodařilo se aktualizovat klienta',
+      message: error?.data?.message || error.message || 'Nepodařilo se aktualizovat klienta',
     })
   }
 }

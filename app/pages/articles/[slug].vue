@@ -225,7 +225,7 @@ const debouncedSetStatus = useDebounceFn(async (id: string, s: ArticleStatus) =>
       message: `Stav na ${s === 'draft' ? 'návrh' : 'publikováno'}`,
     })
   } catch (e: any) {
-    toast.error({ message: e.message || 'Změna selhala' })
+    toast.error({ message: e.data?.message || 'Změna selhala' })
   }
 }, 100)
 

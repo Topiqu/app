@@ -42,7 +42,10 @@
           <tr
             v-for="row in table.getRowModel().rows"
             :key="row.id"
-            :class="['transition-colors duration-200 hover:bg-gray-100 group bg-white border-l-4 border-yellow-400']"
+            :class="[
+              'transition-colors duration-200 hover:bg-gray-100 group',
+              row.original.deletedAt ? 'bg-red-50 border-l-4 border-red-500' : 'bg-white border-l-4 border-yellow-400',
+            ]"
           >
             <td
               v-for="cell in row.getVisibleCells()"
@@ -50,6 +53,13 @@
               class="px-4 py-2 break-words max-w-[180px] sm:max-w-none text-center"
             >
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+              <div
+                v-if="cell.column.id === 'name'"
+                class="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
+                :class="row.original.deletedAt ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'"
+              >
+                {{ row.original.deletedAt ? 'Deaktivovaný' : 'Aktivní' }}
+              </div>
             </td>
             <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
               <button
@@ -65,10 +75,18 @@
                 <Icon name="mdi:pencil" class="w-5 h-5" />
               </button>
               <button
+                v-if="!row.original.deletedAt"
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="del(row.original.id)"
               >
-                <Icon name="mdi:delete" class="w-5 h-5" />
+                <Icon name="mdi:lock" class="w-5 h-5" />
+              </button>
+              <button
+                v-else
+                class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 text-gray-800 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+                @click="restore(row.original.id)"
+              >
+                <Icon name="mdi:lock-open" class="w-5 h-5" />
               </button>
             </td>
           </tr>
@@ -87,8 +105,7 @@
 
 <script setup lang="ts">
 import type { ClientSite } from '@zenstackhq/runtime/models'
-
-import { ClientUsers } from '#components'
+import Swal from 'sweetalert2'
 import { TransitionRoot } from '@headlessui/vue'
 import {
   type ColumnDef,
@@ -98,20 +115,22 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table'
-const toast = useToast()
 
+const toast = useToast()
 const globalFilter = ref('')
 const editingClient = ref<ClientSite | null>(null)
 const clientId = ref<string | null>(null)
 
 const { data: clients, refresh } = await useFetch<ClientSite[]>('/api/clients', {
   default: () => [],
+  query: { deleted: false },
 })
 
 const columns = ref<ColumnDef<ClientSite>[]>([
   {
     header: 'Název',
     accessorKey: 'name',
+    id: 'name',
     cell: (info) => info.getValue(),
   },
   {
@@ -147,12 +166,46 @@ const table = useVueTable({
 })
 
 const del = async (id: string) => {
-  try {
-    await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
-    toast.success({ message: 'Klient smazán' })
-    refresh()
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Smazání selhalo' })
+  const result = await Swal.fire({
+    title: 'Deaktivovat klienta?',
+    text: 'Klient bude deaktivován.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ano, deaktivovat',
+    cancelButtonText: 'Ne',
+    background: '#fff',
+    confirmButtonColor: '#ef4444',
+  })
+  if (result.isConfirmed) {
+    try {
+      await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
+      toast.success({ message: 'Klient deaktivován' })
+      refresh()
+    } catch (e: any) {
+      toast.error({ message: e.data?.message || 'Deaktivace selhala' })
+    }
+  }
+}
+
+const restore = async (id: string) => {
+  const result = await Swal.fire({
+    title: 'Aktivovat klienta?',
+    text: 'Klient bude aktivován.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Ano, aktivovat',
+    cancelButtonText: 'Ne',
+    background: '#fff',
+    confirmButtonColor: '#22c55e',
+  })
+  if (result.isConfirmed) {
+    try {
+      await $fetch(`/api/clients/${id}`, { method: 'PATCH', body: { deletedAt: null } })
+      toast.success({ message: 'Klient aktivován' })
+      refresh()
+    } catch (e: any) {
+      toast.error({ message: e.data?.message || 'Aktivace selhala' })
+    }
   }
 }
 </script>
