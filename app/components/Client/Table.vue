@@ -60,6 +60,18 @@
               >
                 {{ row.original.deletedAt ? 'Deaktivovaný' : 'Aktivní' }}
               </div>
+              <div
+                v-if="cell.column.id === 'plan'"
+                class="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
+                :class="{
+                  'bg-blue-200 text-blue-800': row.original.plan === 'BASIC',
+                  'bg-green-200 text-green-800': row.original.plan === 'PRO',
+                  'text-yellow-600 bg-yellow-50': row.original.plan === 'PREMIUM',
+                  'bg-yellow-200 text-yellow-800': row.original.plan === 'CUSTOM',
+                }"
+              >
+                {{ row.original.plan }}
+              </div>
             </td>
             <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
               <button
@@ -139,6 +151,11 @@ const columns = ref<ColumnDef<ClientSite>[]>([
     cell: (info) => info.getValue(),
   },
   {
+    header: 'Plán',
+    id: 'plan',
+    cell: (info) => info.getValue(),
+  },
+  {
     header: 'Vytvořeno',
     accessorKey: 'createdAt',
     cell: (info) => new Date(info.getValue() as string).toLocaleString('cs-CZ'),
@@ -175,6 +192,7 @@ const del = async (id: string) => {
     cancelButtonText: 'Ne',
     background: '#fff',
     confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
   })
   if (result.isConfirmed) {
     try {
@@ -197,6 +215,7 @@ const restore = async (id: string) => {
     cancelButtonText: 'Ne',
     background: '#fff',
     confirmButtonColor: '#22c55e',
+    cancelButtonColor: '#6b7280',
   })
   if (result.isConfirmed) {
     try {

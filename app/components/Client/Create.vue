@@ -197,7 +197,7 @@ const { data: fetchedClients, refresh } = useFetch('/api/clients', {
 const createClient = async () => {
   if (!newClient.value.name || !newClient.value.subdomain || !newClient.value.email) return
   try {
-    await useFetch('/api/clients', {
+    await $fetch('/api/clients', {
       method: 'POST',
       body: newClient.value,
     })
@@ -214,7 +214,7 @@ const createClient = async () => {
 async function confirmDelete(name: string) {
   const r = await Swal.fire({
     title: `Smazat "${name}"?`,
-    text: `Tímto vymažete klienta "${name}".`,
+    text: `Tímto vymažete klienta "${name}" trvale.`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Ano, smazat',
@@ -227,7 +227,7 @@ async function confirmDelete(name: string) {
 const deleteClient = async (id: string, name: string) => {
   if (!(await confirmDelete(name))) return
   try {
-    await useFetch(`/api/clients/${id}`, { method: 'DELETE' })
+    await $fetch(`/api/clients/${id}?hard=true`, { method: 'DELETE' })
     toast.success({ message: 'Klient byl úspěšně smazán' })
     await refresh()
   } catch (e: any) {
