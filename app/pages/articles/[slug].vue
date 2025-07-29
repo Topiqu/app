@@ -175,27 +175,28 @@ type Article = _Article & {
   user: { username: string; id: string }
   tags?: { tag: { name: string; slug: string; id: string } }[]
 }
-type RelatedArticle = {
-  article: _Article & {
-    user: { username: string }
-  }
-}
+
+type RelatedArticle = { article: _Article & { user: { username: string } } }
 
 const route = useRoute()
-const { data: session } = useAuth()
+
 const toast = useToast()
+
+const { data: session } = useAuth()
+
 const editingArticle = ref<Article | null>(null)
+
 const slug = computed(() => route.params.slug as string)
 
 const {
   data,
   execute: refresh,
   error,
-} = useFetch<Article | null>(`/api/articles/${slug.value}`, {
-  default: () => null,
-})
+} = await useFetch<Article | null>(`/api/articles/${slug.value}`, { default: () => null })
+
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
-function copyLink() {
+
+const copyLink = () => {
   navigator.clipboard.writeText(fullUrl.value)
   toast.success({ message: 'Odkaz zkopírován do schránky!' })
 }
@@ -212,16 +213,13 @@ const errorMsg = computed(() => (error.value ? `Chyba: ${error.value.message || 
 
 const hasTags = computed(() => !!data.value?.tags?.length)
 
-const debouncedSetStatus = useDebounceFn(async (id: string, s: ArticleStatus) => {
+const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
   try {
-    await $fetch(`/api/articles/${id}/status`, {
-      method: 'PATCH',
-      body: { status: s },
-    })
+    await $fetch(`/api/articles/${id}/status`, { method: 'PATCH', body: { status } })
+
     await refresh()
-    toast.success({
-      message: `Stav na ${s === 'draft' ? 'návrh' : 'publikováno'}`,
-    })
+
+    toast.success({ message: `Stav na ${status === 'draft' ? 'návrh' : 'publikováno'}` })
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Změna selhala' })
   }
@@ -233,31 +231,31 @@ watch(
   () => data.value,
   async (article) => {
     if (article?.id && article.tags?.length) {
-      const t = article.tags[0]?.tag.id
-      const res = await $fetch<{ articles: RelatedArticle[] }>(`/api/tags/${t}?limit=4`)
+      const res = await $fetch<{ articles: RelatedArticle[] }>(`/api/tags/${article.tags[0]?.tag.id}?limit=4`)
       relatedArticles.value = res.articles.filter((a) => a.article.id !== article.id)
-    } else {
-      relatedArticles.value = []
-    }
+    } else relatedArticles.value = []
   },
   { immediate: true },
 )
 
 onMounted(async () => {
   if (!data.value?.id) return
+
   const key = `viewed-${data.value.id}`
   const lastView = sessionStorage.getItem(key)
   const now = Date.now()
-  if (!lastView || now - Number(lastView) > 1000) {
-    try {
-      await $fetch(`/api/articles/${data.value.id}/view-update`, {
-        method: 'PATCH',
-        body: { views: data.value.views + 1 },
-      })
-      sessionStorage.setItem(key, now.toString())
-    } catch {
-      //
-    }
+
+  if (lastView && now - Number(lastView) <= 1000) return
+
+  try {
+    await $fetch(`/api/articles/${data.value.id}/view-update`, {
+      method: 'PATCH',
+      body: { views: data.value.views + 1 },
+    })
+
+    sessionStorage.setItem(key, now.toString())
+  } catch {
+    //
   }
 })
 </script>
