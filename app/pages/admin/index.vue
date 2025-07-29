@@ -1,24 +1,18 @@
 <template>
-  <div>
+  <main class="max-w-xl mx-auto mt-10 flex flex-col items-center gap-6">
     <NotificationBar />
     <ArticleTable />
-  </div>
+  </main>
 </template>
 
 <script lang="ts" setup>
-const { data } = useAuth()
+const { data: auth } = useAuth()
 
-definePageMeta({
-  middleware: 'admin',
+definePageMeta({ middleware: 'admin' })
+
+const { data: client } = await useFetch(`/api/clients/${auth.value?.user.clientSiteId}`, {
+  key: `client-${auth.value?.user.clientSiteId}`,
 })
 
-const { data: client } = await useFetch(`/api/clients/${data.value?.user.clientSiteId}`, {
-  key: `client-${data.value?.user.clientSiteId}`,
-})
-
-useSeoMeta({
-  title: `${client.value?.name} - Administrace`,
-})
+useSeoMeta({ title: `${client.value?.name} - Administrace` })
 </script>
-
-<style></style>
