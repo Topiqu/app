@@ -152,7 +152,11 @@ async function updateProfile() {
     toast.success({ message: 'Profil aktualizován' })
     await refresh()
   } catch (err: any) {
-    toast.error({ message: `Chyba při aktualizaci: ${err.message}` })
+    if (err.statusCode === 429 && err.data?.message) {
+      toast.error({ message: err.data.message })
+    } else {
+      toast.error({ message: `Chyba při aktualizaci: ${err.message}` })
+    }
   } finally {
     isLoading.value = false
   }
