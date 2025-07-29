@@ -2,7 +2,7 @@ import type { CommentWithReplies } from '~~/types/comment'
 
 export default defineEventHandler(async (event) => {
   const articleId = getRouterParam(event, 'id')
-  if (!articleId) throw createError({ statusCode: 400, statusMessage: 'Chybí ID článku' })
+  if (!articleId) throw createError({ statusCode: 400, message: 'Chybí ID článku' })
 
   const user = (await getServerSession(event))?.user
 

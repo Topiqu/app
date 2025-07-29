@@ -1,13 +1,13 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const body = await readValidatedBody(event, CommentReactionSchema.omit({ userId: true }).parse)
 
   const comment = await prisma.comment.findUnique({
     where: { id: body.commentId, deletedAt: null },
   })
-  if (!comment) throw createError({ statusCode: 404, statusMessage: 'Komentář nenalezen' })
+  if (!comment) throw createError({ statusCode: 404, message: 'Komentář nenalezen' })
 
   const existingReaction = await prisma.commentReaction.findUnique({
     where: { userId_commentId: { userId: user.id, commentId: body.commentId } },

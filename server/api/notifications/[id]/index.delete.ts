@@ -1,12 +1,12 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const id = getRouterParam(event, 'id')
   if (!id)
     throw createError({
       statusCode: 400,
-      statusMessage: 'Chybějící ID notifikace',
+      message: 'Chybějící ID notifikace',
     })
 
   const notification = await prisma.notification.findUnique({
@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   if (!notification || notification.userId !== user.id)
     throw createError({
       statusCode: 404,
-      statusMessage: 'Notifikace nenalezena',
+      message: 'Notifikace nenalezena',
     })
 
   await prisma.notification.update({

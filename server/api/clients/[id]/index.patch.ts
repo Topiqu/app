@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   const user = session?.user
 
   if (!user || user.role !== 'superadmin') {
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+    throw createError({ statusCode: 401, message: 'Neautorizováno' })
   }
 
   const clientSiteId = getRouterParam(event, 'id')
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   if (!name || !subdomain) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Chybí povinná pole: jméno nebo subdoména.',
+      message: 'Chybí povinná pole: jméno nebo subdoména.',
     })
   }
 
@@ -28,13 +28,13 @@ export default defineEventHandler(async (event) => {
   ])
 
   if (!clientSite) {
-    throw createError({ statusCode: 404, statusMessage: 'Klient nenalezen' })
+    throw createError({ statusCode: 404, message: 'Klient nenalezen' })
   }
 
   if (subdomainExists && subdomainExists.id !== clientSiteId) {
     throw createError({
       statusCode: 409,
-      statusMessage: 'Subdoména již existuje',
+      message: 'Subdoména již existuje',
     })
   }
 

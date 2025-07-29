@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const session = (await getServerSession(event))?.user
 
   if (!session || session.role !== 'superadmin') {
-    throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+    throw createError({ statusCode: 401, message: 'Neautorizováno' })
   }
 
   const body = await readBody(event)
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   if (!name || !email || !subdomain) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Chybí povinná pole: jméno, email nebo subdoména.',
+      message: 'Chybí povinná pole: jméno, email nebo subdoména.',
     })
   }
 
@@ -24,13 +24,13 @@ export default defineEventHandler(async (event) => {
   ])
 
   if (existingUser) {
-    throw createError({ statusCode: 409, statusMessage: 'Email již existuje.' })
+    throw createError({ statusCode: 409, message: 'Email již existuje.' })
   }
 
   if (existingSubdomain) {
     throw createError({
       statusCode: 409,
-      statusMessage: 'Subdoména již existuje.',
+      message: 'Subdoména již existuje.',
     })
   }
 

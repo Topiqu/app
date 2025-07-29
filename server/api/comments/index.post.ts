@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const body = await readValidatedBody(event, CommentCreateSchema.parse)
 
@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     where: { id: body.articleId },
     select: { id: true, userId: true, slug: true, user: { select: { clientSite: { select: { subdomain: true } } } } },
   })
-  if (!article) throw createError({ statusCode: 404, statusMessage: 'Článek nenalezen' })
+  if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
 
   let content = body.content
   if (body.parentId) {
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     if (!parentComment)
       throw createError({
         statusCode: 404,
-        statusMessage: 'Rodičovský komentář nenalezen',
+        message: 'Rodičovský komentář nenalezen',
       })
     content = `@${parentComment.user.username} ${content}`
     if (parentComment.user.allowNotifs) {

@@ -1,10 +1,10 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const { id } = getRouterParams(event)
   if (user.id !== id && user.role !== 'superadmin')
-    throw createError({ statusCode: 403, statusMessage: 'Nepovolený přístup' })
+    throw createError({ statusCode: 403, message: 'Nepovolený přístup' })
 
   const userData = await prisma.user.findUnique({
     where: { id },
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!userData) throw createError({ statusCode: 404, statusMessage: 'Uživatel nenalezen' })
+  if (!userData) throw createError({ statusCode: 404, message: 'Uživatel nenalezen' })
 
   const likesCount = userData.comments.reduce(
     (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'LIKE').length,

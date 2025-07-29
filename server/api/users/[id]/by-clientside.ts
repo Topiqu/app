@@ -1,11 +1,11 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const { id } = getRouterParams(event)
 
   if (user.role !== 'superadmin' && user.role !== 'admin')
-    throw createError({ statusCode: 403, statusMessage: 'Nepovolený přístup' })
+    throw createError({ statusCode: 403, message: 'Nepovolený přístup' })
 
   const users = await prisma.user.findMany({
     where: { clientSiteId: id },
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   if (!users.length)
     throw createError({
       statusCode: 404,
-      statusMessage: 'Uživatelé nenalezeni',
+      message: 'Uživatelé nenalezeni',
     })
 
   return users.map((u) => ({

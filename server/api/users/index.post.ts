@@ -2,13 +2,13 @@ import argon from 'argon2'
 
 export default defineEventHandler(async (event) => {
   const session = (await getServerSession(event))?.user
-  if (!session || session.role !== 'superadmin') throw createError({ statusCode: 401, statusMessage: 'Neautorizováno' })
+  if (!session || session.role !== 'superadmin') throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const body = await readBody(event)
   const { username, email, password, role, clientSiteId } = body
 
   if (!username || !email || !password || !role || !clientSiteId)
-    throw createError({ statusCode: 400, statusMessage: 'Chybí povinná pole' })
+    throw createError({ statusCode: 400, message: 'Chybí povinná pole' })
 
   const [existingUser, existingClientSite] = await Promise.all([
     prisma.user.findFirst({
@@ -20,10 +20,10 @@ export default defineEventHandler(async (event) => {
   if (existingUser)
     throw createError({
       statusCode: 409,
-      statusMessage: 'Uživatel s tímto emailem nebo jménem již existuje',
+      message: 'Uživatel s tímto emailem nebo jménem již existuje',
     })
 
-  if (!existingClientSite) throw createError({ statusCode: 404, statusMessage: 'Klient nenalezen' })
+  if (!existingClientSite) throw createError({ statusCode: 404, message: 'Klient nenalezen' })
 
   const hashedPassword = await argon.hash(password)
 
