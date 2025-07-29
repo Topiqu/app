@@ -37,9 +37,23 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@sidebase/nuxt-auth',
     'nuxt-nodemailer',
+    'nuxt-security',
     'nuxt-toast',
   ],
-
+  security: {
+    // rateLimiter: {
+    //   interval: 10 * 1000,
+    //   tokensPerInterval: 10,
+    // },
+    headers: {
+      contentSecurityPolicy: {
+        'img-src': ["'self'", 'data:', 'blob:'],
+      },
+    },
+    xssValidator: {
+      escapeHtml: true,
+    },
+  },
   eslint: { config: { typescript: true } },
 
   css: ['~/assets/styles/base.scss'],
