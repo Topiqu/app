@@ -78,8 +78,7 @@ model Article extends Base {
     tags          ArticleTag[]
     comments      Comment[]
     notifications Notification[] @relation("ArticleNotifications")
-
-    @@allow('create', auth().role =='admin')
+    @@allow('create,update,delete', auth().role == 'admin')
 }
 
 model Tag extends Base {
@@ -88,7 +87,7 @@ model Tag extends Base {
     clientSiteId String?
     clientSite   ClientSite?  @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     articles     ArticleTag[]
-    @@allow('create', auth().role == 'admin')
+    @@allow('create,update,delete', auth().role == 'admin')
 }
 
 model ArticleTag {
@@ -129,6 +128,7 @@ model ClientSite extends Base {
     tags                Tag[]
     focus               String?
     keywords            Json?
+    @@allow('create,update,delete', auth().role == 'superadmin')
 }
 
 model Comment extends Base {
