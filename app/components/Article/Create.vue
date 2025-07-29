@@ -97,12 +97,12 @@ import Swal from 'sweetalert2'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/vue'
 
 const toast = useToast()
+
 const { data } = useAuth()
+
 const emit = defineEmits(['close'])
 
-const { data: articles, refresh } = await useFetch('/api/articles', {
-  default: () => [],
-})
+const { data: articles, refresh } = await useFetch('/api/articles', { default: () => [] })
 
 const newArticle = ref({
   title: '',
@@ -115,20 +115,18 @@ const newArticle = ref({
 
 const articleTags = ref<string[]>([])
 
-const updateSlug = () => {
-  newArticle.value.slug = slugify(newArticle.value.title, {
+const updateSlug = () =>
+  (newArticle.value.slug = slugify(newArticle.value.title, {
     lower: true,
     strict: true,
     trim: true,
-  })
-}
+  }))
 
-const handleUpload = (file: { url: string }) => {
-  newArticle.value.imageUrl = file.url
-}
+const handleUpload = (file: { url: string }) => (newArticle.value.imageUrl = file.url)
 
 const createArticle = async () => {
-  if (!newArticle.value.title) return
+  if (!newArticle.value.title) return toast.error({ message: 'Název článku je povinný' })
+
   try {
     const { id } = await $fetch('/api/articles', {
       method: 'POST',
@@ -142,24 +140,26 @@ const createArticle = async () => {
       },
     })
 
-    for (const tagId of articleTags.value) {
-      await $fetch(`/api/articles/${id}/tags`, {
-        method: 'POST',
-        body: { tagId },
-      })
-    }
+    await Promise.all(
+      articleTags.value.map((tagId) => {
+        $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })
+      }),
+    )
 
     toast.success({ message: 'Článek byl úspěšně přidán' })
+
     refresh()
+
     emit('close')
   } catch (error: any) {
-    toast.error({
-      message: error.data?.message || 'Nepodařilo se přidat článek',
-    })
+    toast.error({ message: error.data?.message || 'Nepodařilo se přidat článek' })
   }
 }
 
 const confirmClose = async () => {
+  if (!newArticle.value.title.length && (!newArticle.value.content.length || newArticle.value.content === '<p></p>'))
+    return emit('close')
+
   const r = await Swal.fire({
     title: 'Zavřít dialog?',
     text: 'Přidávání článku bude zrušeno. Opravdu chcete pokračovat?',
@@ -169,9 +169,8 @@ const confirmClose = async () => {
     cancelButtonText: 'Ne',
     confirmButtonColor: '#ef4444',
   })
-  if (r.isConfirmed) {
-    emit('close')
-  }
+
+  if (r.isConfirmed) return emit('close')
 }
 
 // const generateAIContent = async () => {
@@ -180,13 +179,15 @@ const confirmClose = async () => {
 //       method: 'POST',
 //       body: { prompt: 'Vygeneruj krátký článek na téma CP77...' },
 //     })
+
 //     newArticle.value.content = data.value
+
 //     toast.success({ message: 'AI obsah úspěšně vygenerován' })
+
 //     console.log('AI Content:', data.value)
 //   } catch (error: any) {
-//     toast.error({
-//       message: error.data?.message || 'Nepodařilo se vygenerovat obsah',
-//     })
+//     toast.error({ message: error.data?.message || 'Nepodařilo se vygenerovat obsah' })
+
 //     console.error('Error:', error)
 //   }
 // }
