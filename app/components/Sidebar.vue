@@ -17,7 +17,7 @@
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
           @click="$router.push('/admin')"
         >
-          <Icon name="mdi:shield-account" class="w-6 h-6 text-black" />
+          <Icon name="mdi:home" class="w-6 h-6 text-black" />
         </button>
         <button
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
@@ -44,7 +44,7 @@
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
           @click="$router.push('/master')"
         >
-          <Icon name="mdi:shield-account" class="w-6 h-6 text-black" />
+          <Icon name="mdi:home" class="w-6 h-6 text-black" />
         </button>
         <button
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"

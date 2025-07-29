@@ -150,18 +150,8 @@ const createArticle = async () => {
     }
 
     toast.success({ message: 'Článek byl úspěšně přidán' })
-
-    newArticle.value = {
-      title: '',
-      content: '',
-      slug: '',
-      userId: newArticle.value.userId,
-      imageUrl: '',
-      status: 'draft' as ArticleStatus,
-    }
-    articleTags.value = []
-
     refresh()
+    emit('close')
   } catch (error: any) {
     toast.error({
       message: error.data?.message || 'Nepodařilo se přidat článek',

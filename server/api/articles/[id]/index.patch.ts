@@ -8,11 +8,10 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ status: 401 })
 
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
-  let content = body.content
+  const $ = cheerio.load(body.content || '')
 
-  const $ = cheerio.load(content || '')
   const usedIds = new Map()
-  $('h2').each((i, el) => {
+  $('h1, h2, h3').each((i, el) => {
     const $el = $(el)
     let text = $el.text().trim()
 
@@ -20,6 +19,7 @@ export default defineEventHandler(async (event) => {
       $el.attr('id', `heading-${i}`)
       return
     }
+
     const maxLength = 50
     text = text.length > maxLength ? text.slice(0, maxLength) : text
 
@@ -35,12 +35,10 @@ export default defineEventHandler(async (event) => {
     $el.attr('id', id)
   })
 
-  content = $.html()
+  const content = $.html()
 
   const article = await prisma.article.update({
-    where: {
-      id,
-    },
+    where: { id },
     data: {
       title: body.title,
       content: sanitizeHtml(content),

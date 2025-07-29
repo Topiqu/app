@@ -1,6 +1,5 @@
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
-
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
   if (!session || session.user.role !== 'admin') throw createError({ status: 401 })
@@ -9,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const $ = cheerio.load(body.content)
 
   const usedIds = new Map()
-  $('h2').each((i, el) => {
+  $('h1, h2, h3').each((i, el) => {
     const $el = $(el)
     let text = $el.text().trim()
 
@@ -17,6 +16,7 @@ export default defineEventHandler(async (event) => {
       $el.attr('id', `heading-${i}`)
       return
     }
+
     const maxLength = 50
     text = text.length > maxLength ? text.slice(0, maxLength) : text
 
