@@ -209,7 +209,7 @@ defineEmits(['close', 'edit'])
 const toast = useToast()
 const { data: session } = useAuth()
 
-const { data: clientData } = await useFetch(`/api/users/${props.clientId}/by-clientside`, {
+const { data: clientData, refresh } = await useFetch(`/api/users/${props.clientId}/by-clientside`, {
   default: () => null,
 })
 
@@ -224,11 +224,11 @@ const newUser = ref({
 
 const del = async (id: string) => {
   const r = await Swal.fire({
-    title: 'Smazat uživatele?',
+    title: 'Zablokovat uživatele?',
     text: 'Tento uživatel bude trvale odstraněn.',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Ano, smazat',
+    confirmButtonText: 'Ano, zablokovat',
     cancelButtonText: 'Ne',
     background: '#fff',
     confirmButtonColor: '#ef4444',
@@ -236,11 +236,12 @@ const del = async (id: string) => {
   })
   if (r.isConfirmed) {
     try {
-      await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
-      toast.success({ message: 'Uživatel smazán' })
-      users.value = users.value.filter((u) => u.id !== id)
+      await $fetch(`/api/users/${id}`, { method: 'DELETE' })
+      toast.success({ message: 'Uživatel zablokován' })
+      await refresh()
+      users.value = clientData.value || []
     } catch (e: any) {
-      toast.error({ message: e.data?.message || 'Smazání selhalo' })
+      toast.error({ message: e.data?.message || 'Zablokování selhalo' })
     }
   }
 }

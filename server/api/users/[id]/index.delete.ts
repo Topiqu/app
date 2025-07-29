@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   if (user.role !== 'superadmin')
     throw createError({
       statusCode: 403,
-      statusMessage: 'Nemáte oprávnění smazat uživatele',
+      statusMessage: 'Nemáte oprávnění zablokovat uživatele',
     })
 
   const userId = getRouterParam(event, 'id')
@@ -21,5 +21,5 @@ export default defineEventHandler(async (event) => {
     data: { deletedAt: new Date() },
   })
 
-  return { message: 'Uživatel smazán' }
+  return { message: 'Uživatel zablokován' }
 })
