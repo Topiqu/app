@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-sm mx-auto mt-24 px-6">
+  <div class="max-w-sm px-6">
     <div
       v-if="data?.user"
       class="bg-white px-6 py-8 rounded-2xl shadow-md text-center space-y-5 border border-gray-200"
@@ -152,19 +152,22 @@
 
 <script setup lang="ts">
 const { data, signIn } = useAuth()
+
 const toast = useToast()
 
-const form = ref({ email: '', username: '', password: '', passwordConfirm: '', code: '' })
-const mode = ref<'login' | 'register' | 'forgot' | 'reset'>('login')
-const verifyMode = ref(false)
+const init = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
+
+const form = ref<typeof init>(init)
+
+const mode = shallowRef<'login' | 'register' | 'forgot' | 'reset'>('login')
+
+const verifyMode = shallowRef<boolean>(false)
 
 const submit = async () => {
   try {
     if (mode.value === 'register') {
-      if (form.value.password !== form.value.passwordConfirm) {
-        toast.error({ message: 'Hesla se neshodují' })
-        return
-      }
+      if (form.value.password !== form.value.passwordConfirm) return toast.error({ message: 'Hesla se neshodují' })
+
       const res = await $fetch('/api/auth/register', {
         method: 'POST',
         body: {
@@ -173,31 +176,31 @@ const submit = async () => {
           password: form.value.password,
         },
       })
-      if (res) {
-        verifyMode.value = true
-        toast.success({ message: 'Ověřovací kód byl odeslán na váš e-mail' })
-      }
+      if (!res) return toast.error({ message: 'Registrace selhala' })
+
+      verifyMode.value = true
+
+      toast.success({ message: 'Ověřovací kód byl odeslán na váš e-mail' })
     } else {
       const result = await signIn('credentials', {
         email: form.value.email,
         password: form.value.password,
         redirect: false,
       })
-      if (result?.error) {
-        toast.error({ message: 'Nepodařilo se vás přihlásit' })
-      } else {
-        await $fetch(`/api/users/${data.value?.user.id}`, {
-          method: 'PATCH',
-          body: { lastLogin: Date.now() },
-        })
-        toast.success({ message: 'Přihlášení bylo úspěšné' })
-        if (data.value?.user?.role === 'superadmin') {
-          navigateTo('/master')
-        } else if (data.value?.user?.role === 'admin') {
-          navigateTo('/admin')
-        }
-        form.value = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
-      }
+
+      if (result?.error) return toast.error({ message: 'Nepodařilo se vás přihlásit' })
+
+      await $fetch(`/api/users/${data.value?.user.id}`, {
+        method: 'PATCH',
+        body: { lastLogin: Date.now() },
+      })
+
+      toast.success({ message: 'Přihlášení bylo úspěšné' })
+
+      if (data.value?.user?.role === 'superadmin') navigateTo('/master')
+      else if (data.value?.user?.role === 'admin') navigateTo('/admin')
+
+      form.value = init
     }
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Něco se pokazilo' })
@@ -206,17 +209,21 @@ const submit = async () => {
 
 const verify = async () => {
   if (!form.value.code) return
+
   try {
     await $fetch('/api/auth/verify', {
       method: 'POST',
       body: { email: form.value.email, code: form.value.code },
     })
+
     await signIn('credentials', {
       email: form.value.email,
       password: form.value.password,
       redirect: true,
     })
+
     toast.success({ message: 'E-mail byl ověřen.' })
+
     navigateTo('/')
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Ověření selhalo' })
