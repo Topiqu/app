@@ -1,7 +1,7 @@
 <template>
-  <div class="space-y-6 max-w-xl mx-auto mt-10">
+  <main class="max-w-xl mx-auto mt-10 flex flex-col items-center gap-6">
     <ClientTable />
-  </div>
+  </main>
 </template>
 
 <script lang="ts" setup></script>

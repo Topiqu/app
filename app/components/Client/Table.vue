@@ -24,15 +24,12 @@
               class="px-4 py-2 text-center select-none cursor-pointer"
               @click="(event) => header.column.getToggleSortingHandler()?.(event)"
             >
-              <span v-if="!header.isPlaceholder">
+              <template v-if="!header.isPlaceholder">
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-                <span v-if="header.column.getIsSorted() === 'asc'">
-                  <Icon name="mdi:arrow-up" />
-                </span>
-                <span v-else-if="header.column.getIsSorted() === 'desc'">
-                  <Icon name="mdi:arrow-down" />
-                </span>
-              </span>
+
+                <Icon v-if="header.column.getIsSorted() === 'asc'" name="mdi:arrow-up" />
+                <Icon v-else-if="header.column.getIsSorted() === 'desc'" name="mdi:arrow-down" />
+              </template>
             </th>
             <th class="px-4 py-2 text-center">Akce</th>
           </tr>
@@ -117,6 +114,7 @@
 
 <script setup lang="ts">
 import type { ClientSite } from '@zenstackhq/runtime/models'
+
 import Swal from 'sweetalert2'
 import { TransitionRoot } from '@headlessui/vue'
 import {
@@ -129,6 +127,7 @@ import {
 } from '@tanstack/vue-table'
 
 const toast = useToast()
+
 const globalFilter = ref('')
 const editingClient = ref<ClientSite | null>(null)
 const clientId = ref<string | null>(null)
@@ -174,9 +173,7 @@ const table = useVueTable({
       return globalFilter.value
     },
   },
-  onGlobalFilterChange: (val) => {
-    globalFilter.value = typeof val === 'function' ? val(globalFilter.value) : val
-  },
+  onGlobalFilterChange: (val) => (globalFilter.value = typeof val === 'function' ? val(globalFilter.value) : val),
   getCoreRowModel: getCoreRowModel(),
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
@@ -194,14 +191,16 @@ const del = async (id: string) => {
     confirmButtonColor: '#ef4444',
     cancelButtonColor: '#6b7280',
   })
-  if (result.isConfirmed) {
-    try {
-      await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
-      toast.success({ message: 'Klient deaktivován' })
-      refresh()
-    } catch (e: any) {
-      toast.error({ message: e.data?.message || 'Deaktivace selhala' })
-    }
+  if (!result.isConfirmed) return
+
+  try {
+    await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
+
+    toast.success({ message: 'Klient deaktivován' })
+
+    refresh()
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Deaktivace selhala' })
   }
 }
 
@@ -217,14 +216,16 @@ const restore = async (id: string) => {
     confirmButtonColor: '#22c55e',
     cancelButtonColor: '#6b7280',
   })
-  if (result.isConfirmed) {
-    try {
-      await $fetch(`/api/clients/${id}`, { method: 'PATCH', body: { deletedAt: null } })
-      toast.success({ message: 'Klient aktivován' })
-      refresh()
-    } catch (e: any) {
-      toast.error({ message: e.data?.message || 'Aktivace selhala' })
-    }
+  if (!result.isConfirmed) return
+
+  try {
+    await $fetch(`/api/clients/${id}`, { method: 'PATCH', body: { deletedAt: null } })
+
+    toast.success({ message: 'Klient aktivován' })
+
+    refresh()
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Aktivace selhala' })
   }
 }
 </script>
