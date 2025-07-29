@@ -12,7 +12,6 @@
 
 <script lang="ts" setup>
 import tocbot from 'tocbot'
-import { nextTick } from 'vue'
 import { LucideList } from 'lucide-vue-next'
 
 defineProps<{ content: string }>()
@@ -25,16 +24,25 @@ const updateActiveLink = (hash: string) => {
 }
 
 onMounted(async () => {
+  const headings = document.querySelectorAll('.prose h1, .prose h2, .prose h3')
+  if (!headings.length) {
+    document.querySelector('#toc')!.innerHTML = '<p class="text-sm text-gray-500">Žádný obsah k zobrazení</p>'
+    return
+  }
+
   tocbot.init({
     tocSelector: '#toc',
     contentSelector: '.prose',
-    headingSelector: 'h2',
+    headingSelector: 'h1, h2, h3',
     scrollSmooth: true,
     scrollSmoothOffset: -80,
     headingsOffset: 80,
     activeLinkClass: '',
     linkClass:
-      'text-gray-700 hover:text-blue-800 text-sm block py-1 px-2 rounded-md transition-all duration-200 hover:bg-gray-200',
+      'toc-link text-gray-700 hover:text-blue-800 text-sm block py-1 px-2 rounded-md transition-all duration-200 hover:bg-gray-200',
+    extraLinkClasses: 'h3-link',
+    collapseDepth: 0,
+    orderedList: false,
     hasInnerContainers: true,
   })
 
@@ -57,7 +65,7 @@ onMounted(async () => {
       },
     )
 
-    document.querySelectorAll('.prose h2').forEach((section) => {
+    document.querySelectorAll('.prose h1, .prose h2, .prose h3').forEach((section) => {
       if (section.getAttribute('id')) {
         observer.observe(section)
       }
@@ -80,7 +88,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
 .font-inter {
@@ -90,23 +98,57 @@ onUnmounted(() => {
 .sidebar::-webkit-scrollbar {
   width: 6px;
 }
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
 .sidebar::-webkit-scrollbar-thumb {
   background-color: #cbd5e0;
   border-radius: 3px;
+  transition: background-color 0.2s ease;
 }
-</style>
+.sidebar:hover::-webkit-scrollbar-thumb {
+  background-color: #94a3b8;
+}
 
-<style>
+#toc a {
+  display: block;
+  font-size: 0.875rem;
+  color: #374151;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+  position: relative;
+}
+
+#toc a:hover {
+  background-color: #e5e7eb;
+  color: #1d4ed8;
+}
+
+#toc a.h3-link {
+  padding-left: 1.5rem !important;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
 #toc a.active-current {
-  font-weight: 600 !important;
-  color: #1e40af !important;
-  background-color: #dbeafe !important;
-  padding-left: 0.75rem !important;
-  padding-top: 0.25rem !important;
-  padding-bottom: 0.25rem !important;
-  border-radius: 0.375rem !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-  transform: scale(1.02) !important;
-  transition: all 0.2s !important;
+  font-weight: 600;
+  color: #1e40af;
+  background-color: #dbeafe;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transform: scale(1.02);
+}
+
+#toc a.active-current::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60%;
+  background-color: #2563eb;
+  border-radius: 2px;
 }
 </style>
