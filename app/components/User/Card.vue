@@ -72,8 +72,6 @@
 </template>
 
 <script setup lang="ts">
-import { format } from 'date-fns'
-
 defineProps<{
   user: {
     id: string
@@ -94,6 +92,4 @@ const card = useTemplateRef('card')
 const isHovered = useElementHover(card)
 
 const { x, y } = useElementBounding(card)
-
-const formatDate = (d?: string) => (d ? format(new Date(d), 'dd.MM.yyyy, HH:mm') : 'Nikdy')
 </script>

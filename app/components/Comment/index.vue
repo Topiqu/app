@@ -98,8 +98,6 @@
 <script setup lang="ts">
 import type { CommentWithReplies } from '~~/types/comment'
 
-import { format } from 'date-fns'
-
 defineProps<{
   comment: CommentWithReplies
   isReplying: boolean
@@ -111,6 +109,4 @@ defineEmits<{
 }>()
 
 const { data: session } = useAuth()
-
-const formatDate = (d?: string | Date) => (d ? format(new Date(d), 'dd.MM.yyyy, HH:mm') : 'Nikdy')
 </script>

@@ -64,10 +64,11 @@
 </template>
 
 <script lang="ts" setup>
-import { format } from 'date-fns'
 const toast = useToast()
+
 const { data: auth } = useAuth()
-const showNotifications = ref(false)
+
+const showNotifications = shallowRef<boolean>(false)
 
 const { data: notificationsData, refresh } = await useFetch('/api/notifications', {
   default: () => ({ notifications: [], count: 0, unreadCount: 0 }),
@@ -82,23 +83,17 @@ const toggleNotifications = () => {
   if (showNotifications.value) refresh()
 }
 
-const formatDate = (d: string) => format(new Date(d), 'dd.MM.yyyy, HH:mm')
-
 const deleteNotification = async (id: string) => {
   try {
-    await $fetch(`/api/notifications/${id}`, {
-      method: 'DELETE',
-    })
+    await $fetch(`/api/notifications/${id}`, { method: 'DELETE' })
+
     await refresh()
   } catch (err: any) {
-    toast.error({
-      message: 'Chyba při mazání notifikace.' + err?.value?.message,
-    })
+    toast.error({ message: 'Chyba při mazání notifikace.' + err?.value?.message })
   }
 }
 
-const notifDropdown = ref(null)
-onClickOutside(notifDropdown, () => {
-  showNotifications.value = false
-})
+const notifDropdown = useTemplateRef('notifDropdown')
+
+onClickOutside(notifDropdown, () => (showNotifications.value = false))
 </script>

@@ -168,7 +168,6 @@
 <script lang="ts" setup>
 import type { ArticleStatus, Article as _Article } from '@zenstackhq/runtime/models'
 
-import { format } from 'date-fns'
 import { useDebounceFn } from '@vueuse/core'
 import { TransitionRoot } from '@headlessui/vue'
 
@@ -211,7 +210,6 @@ useSeoMeta({
 
 const errorMsg = computed(() => (error.value ? `Chyba: ${error.value.message || 'Zkuste znovu'}` : ''))
 
-const formatDate = (d: string) => format(new Date(d), 'dd.MM.yyyy, HH:mm')
 const hasTags = computed(() => !!data.value?.tags?.length)
 
 const debouncedSetStatus = useDebounceFn(async (id: string, s: ArticleStatus) => {

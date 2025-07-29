@@ -95,7 +95,6 @@
 <script lang="ts" setup>
 import type { Article as _Article } from '@zenstackhq/runtime/models'
 
-import { format } from 'date-fns'
 import { useRoute } from 'vue-router'
 
 type Article = {
@@ -147,8 +146,6 @@ const filteredArticles = computed(() => {
 
   return result
 })
-
-const formatDate = (date: string) => format(new Date(date), 'dd.MM.yyyy, HH:mm')
 
 useSeoMeta({
   title: () => `Články s tagem: ${tagName.value}`,

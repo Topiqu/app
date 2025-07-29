@@ -38,16 +38,7 @@
 <script setup lang="ts">
 import type { Article as _Article } from '@zenstackhq/runtime/models'
 
-import { format } from 'date-fns'
+type RelatedArticle = { article: _Article & { user: { username: string } } }
 
-type RelatedArticle = {
-  article: _Article & {
-    user: { username: string }
-  }
-}
-defineProps<{
-  articles: RelatedArticle[]
-}>()
-
-const formatDate = (d: string) => format(new Date(d), 'dd.MM.yyyy, HH:mm')
+defineProps<{ articles: RelatedArticle[] }>()
 </script>
