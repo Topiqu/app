@@ -1,10 +1,10 @@
+<script lang="ts" setup>
+const { data: auth } = useAuth()
+</script>
+
 <template>
-  <div>
-    <AuthForm />
-    <UserAccount />
-  </div>
+  <main class="flex items-center justify-center">
+    <UserAccount v-if="auth" />
+    <AuthForm v-else />
+  </main>
 </template>
-
-<script lang="ts" setup></script>
-
-<style></style>
