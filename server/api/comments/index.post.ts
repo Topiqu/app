@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   body.content = sanitizeHtml(body.content)
   const article = await prisma.article.findUnique({
     where: { id: body.articleId },
-    select: { id: true, userId: true },
+    select: { id: true, userId: true, slug: true, user: { select: { clientSite: { select: { subdomain: true } } } } },
   })
   if (!article) throw createError({ statusCode: 404, statusMessage: 'Článek nenalezen' })
 
@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     const parentComment = await prisma.comment.findUnique({
       where: { id: body.parentId },
       select: {
-        user: { select: { username: true } },
+        user: { select: { id: true, username: true, email: true, allowNotifs: true } },
       },
     })
     if (!parentComment)
@@ -25,6 +25,17 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Rodičovský komentář nenalezen',
       })
     content = `@${parentComment.user.username} ${content}`
+    if (parentComment.user.allowNotifs) {
+      // const t = useNodeMailer()
+      // const subdomain = article.user.clientSite?.subdomain || 'localhost:3000'
+      // await t.sendMail({
+      //   from: useRuntimeConfig().from,
+      //   to: parentComment.user.email,
+      //   subject: 'Nová odpověď na váš komentář',
+      //   text: `Ahoj ${parentComment.user.username},\nuživatel ${user.name} odpověděl na váš komentář: "${body.content.substring(0, 50)}...".\nPodívej se na něj: http://localhost:3000/articles/${article.slug}#${body.parentId}`,
+      //   html: `<p>Ahoj <b>${parentComment.user.username}</b>,<br>uživatel <b>${user.name}</b> odpověděl na váš komentář: "<i>${body.content.substring(0, 50)}...</i>".</p><p><a href="http://localhost:3000/articles/${article.slug}#${body.parentId}">Zobrazit odpověď</a></p>`,
+      // })
+    }
   }
 
   const comment = await prisma.comment.create({
@@ -45,6 +56,11 @@ export default defineEventHandler(async (event) => {
         },
       },
       parentId: true,
+      article: {
+        select: {
+          slug: true,
+        },
+      },
     },
   })
 

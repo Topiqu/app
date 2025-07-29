@@ -32,7 +32,7 @@ export default defineEventHandler(async (e) => {
 
   const t = useNodeMailer()
   await t.sendMail({
-    from: useRuntimeConfig().defaultFrom,
+    from: useRuntimeConfig().from,
     to: email,
     subject: 'Ověření registrace',
     text: `Váš ověřovací kód: ${code}`,
