@@ -14,10 +14,8 @@ const paginationSchema = z.object({
 
 export const getPagination = async (event: H3Event): Promise<Pagination> => {
   const query = await getValidatedQuery(event, paginationSchema.parse)
-
   const page = query.page ?? 1
   const limit = query.limit ?? 10
-
   return {
     page,
     limit,
