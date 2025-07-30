@@ -5,6 +5,8 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const user = (await getServerSession(event))?.user
 
+  const db = await getEnhancedPrisma(user)
+
   if (!user) throw createError({ status: 401 })
 
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
@@ -37,7 +39,7 @@ export default defineEventHandler(async (event) => {
 
   const content = $.html()
 
-  const article = await prisma.article.update({
+  const article = await db.article.update({
     where: { id },
     data: {
       title: body.title,

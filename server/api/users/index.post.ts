@@ -1,8 +1,9 @@
 import argon from 'argon2'
 
 export default defineEventHandler(async (event) => {
-  const session = (await getServerSession(event))?.user
-  if (!session || session.role !== 'superadmin') throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  const user = (await getServerSession(event))?.user
+  const db = await getEnhancedPrisma(user)
+  if (!user || user.role !== 'superadmin') throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const body = await readBody(event)
   const { username, email, password, role, clientSiteId } = body
@@ -11,10 +12,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Chybí povinná pole' })
 
   const [existingUser, existingClientSite] = await Promise.all([
-    prisma.user.findFirst({
+    db.user.findFirst({
       where: { OR: [{ email }, { username }], deletedAt: null },
     }),
-    prisma.clientSite.findUnique({ where: { id: clientSiteId } }),
+    db.clientSite.findUnique({ where: { id: clientSiteId } }),
   ])
 
   if (existingUser)
@@ -27,7 +28,7 @@ export default defineEventHandler(async (event) => {
 
   const hashedPassword = await argon.hash(password)
 
-  const newUser = await prisma.user.create({
+  const newUser = await db.user.create({
     data: {
       username,
       email,

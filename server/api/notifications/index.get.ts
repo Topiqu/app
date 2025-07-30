@@ -1,8 +1,10 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
+  const db = await getEnhancedPrisma(user)
+
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
-  const notifications = await prisma.notification.findMany({
+  const notifications = await db.notification.findMany({
     where: {
       userId: user.id,
       deletedAt: null,
@@ -26,14 +28,14 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  const count = await prisma.notification.count({
+  const count = await db.notification.count({
     where: {
       userId: user.id,
       deletedAt: null,
     },
   })
 
-  const unreadCount = await prisma.notification.count({
+  const unreadCount = await db.notification.count({
     where: {
       userId: user.id,
       deletedAt: null,

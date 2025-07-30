@@ -1,11 +1,13 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
+  const db = await getEnhancedPrisma(user)
+
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const commentId = getRouterParam(event, 'id')
   if (!commentId) throw createError({ statusCode: 400, message: 'Chybí ID komentáře' })
 
-  const comment = await prisma.comment.findUnique({
+  const comment = await db.comment.findUnique({
     where: { id: commentId },
   })
   if (!comment) throw createError({ statusCode: 404, message: 'Komentář nenalezen' })
@@ -16,7 +18,7 @@ export default defineEventHandler(async (event) => {
       message: 'Nemáte oprávnění smazat tento komentář',
     })
 
-  await prisma.comment.update({
+  await db.comment.update({
     where: { id: commentId },
     data: { deletedAt: new Date() },
   })

@@ -1,5 +1,7 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
+  const db = await getEnhancedPrisma(user)
+
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const id = getRouterParam(event, 'id')
@@ -9,7 +11,7 @@ export default defineEventHandler(async (event) => {
       message: 'Chybějící ID notifikace',
     })
 
-  const notification = await prisma.notification.findUnique({
+  const notification = await db.notification.findUnique({
     where: { id },
   })
 
@@ -19,10 +21,9 @@ export default defineEventHandler(async (event) => {
       message: 'Notifikace nenalezena',
     })
 
-  await prisma.notification.update({
+  await db.notification.update({
     where: { id },
     data: { deletedAt: new Date() },
   })
-
   return { success: true }
 })

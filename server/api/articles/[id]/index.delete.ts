@@ -1,9 +1,10 @@
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  const user = session?.user
+  const user = (await getServerSession(event))?.user
+  const db = await getEnhancedPrisma(user)
+
   if (!user) throw createError({ status: 401 })
   const id = event.context.params?.id
 
-  await prisma.article.delete({ where: { id } })
+  await db.article.delete({ where: { id } })
   return { success: true }
 })

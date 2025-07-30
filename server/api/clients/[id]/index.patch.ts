@@ -1,6 +1,7 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
 
+  const db = await getEnhancedPrisma(user)
   if (!user || user.role !== 'superadmin') {
     throw createError({ statusCode: 401, message: 'Neautorizováno' })
   }
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
   const { name, subdomain, plan, generationFrequency, tokenLimit = 0, deletedAt } = await readBody(event)
 
-  const clientSite = await prisma.clientSite.findUnique({ where: { id } })
+  const clientSite = await db.clientSite.findUnique({ where: { id } })
   if (!clientSite) {
     throw createError({ statusCode: 404, message: 'Klient nenalezen' })
   }
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (subdomain) {
-    const existing = await prisma.clientSite.findUnique({ where: { subdomain } })
+    const existing = await db.clientSite.findUnique({ where: { subdomain } })
     if (existing && existing.id !== id) {
       throw createError({
         statusCode: 409,
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const updatedSite = await prisma.clientSite.update({
+  const updatedSite = await db.clientSite.update({
     where: { id },
     data: {
       name,

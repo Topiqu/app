@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
   if (!session || session.role !== 'superadmin') {
     throw createError({ statusCode: 401, message: 'Neautorizováno' })
   }
+  const db = await getEnhancedPrisma(session)
 
   const body = await readBody(event)
   const { name, email, username, password, subdomain, plan, generationFrequency, tokenLimit } = body
@@ -19,8 +20,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const [existingUser, existingSubdomain] = await Promise.all([
-    prisma.user.findUnique({ where: { email } }),
-    prisma.clientSite.findUnique({ where: { subdomain } }),
+    db.user.findUnique({ where: { email } }),
+    db.clientSite.findUnique({ where: { subdomain } }),
   ])
 
   if (existingUser) {

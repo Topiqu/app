@@ -85,8 +85,8 @@ model Article extends Base, Ownable {
     tags          ArticleTag[]
     comments      Comment[]
     notifications Notification[] @relation("ArticleNotifications")
-
-    @@allow('create, update, delete', auth().role == 'admin')
+    @@allow('read', true)
+    @@allow('all', auth().role == 'admin')
 }
 
 model Tag extends Base {
@@ -97,8 +97,8 @@ model Tag extends Base {
     clientSite   ClientSite?  @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
 
     articles     ArticleTag[]
-
-    @@allow('create, update, delete', auth().role == 'admin')
+    @@allow('read', true)
+    @@allow('all', auth().role == 'admin')
 }
 
 model ArticleTag {
@@ -132,6 +132,10 @@ model User extends Base {
     comments      Comment[]
     notifications Notification[]
     reactions     CommentReaction[]
+    @@allow('read', true)
+    @@allow('create', true)
+    @@allow('update', auth().id == id || auth().role == 'superadmin')
+    @@allow('all', auth().role == 'admin')
 }
 
 model ClientSite extends Base {
@@ -150,20 +154,20 @@ model ClientSite extends Base {
     users               User[]
     tags                Tag[]
 
-    @@allow('create, update, delete', auth().role == 'superadmin')
+    @@allow('all', auth().role == 'superadmin')
 }
 
 model Comment extends Base, Ownable {
     content   String            @length(1, 1000, "Komentář musí mít 1–1000 znaků")
-
     articleId String
     article   Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
-
     parentId  String?
     parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-
     reactions CommentReaction[]
     replies   Comment[]         @relation("CommentReplies")
+    @@allow('read', true)
+    @@allow('create', auth() != null)
+    @@allow('update, delete', auth().id == userId || auth().role == 'admin')
 }
 
 model CommentReaction extends Ownable {
@@ -174,6 +178,10 @@ model CommentReaction extends Ownable {
     comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
     @@id([userId, commentId])
+    @@allow('create', auth().id != null)
+    @@allow('update', auth().id == userId)
+    @@allow('delete', auth().id == userId || auth().role == 'admin')
+    @@allow('read', true)
 }
 
 model VerificationCode extends Base, Ownable {
@@ -182,6 +190,7 @@ model VerificationCode extends Base, Ownable {
     expiresAt DateTime
 
     @@unique([userId])
+    @@allow('all', true)
 }
 
 model Notification extends Base, Ownable {
@@ -193,4 +202,6 @@ model Notification extends Base, Ownable {
 
     articleId String?
     article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
+    @@allow('read, delete, update', auth().id == userId)
+    @@allow('create', auth() != null)
 }

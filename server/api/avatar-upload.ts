@@ -5,6 +5,8 @@ import { mkdir, writeFile } from 'fs/promises'
 const { openModeratorApiKey } = useRuntimeConfig()
 
 export default defineEventHandler(async (event) => {
+  const user = (await getServerSession(event))?.user
+  const db = await getEnhancedPrisma(user)
   const form = await readMultipartFormData(event)
   const file = form?.find((f) => f.name === 'avatar')
   console.log('KEY:', process.env.OPENMODERATOR_API_KEY)
@@ -32,9 +34,8 @@ export default defineEventHandler(async (event) => {
   const path = join(avatarDir, filename)
   await writeFile(path, resizedBuffer)
 
-  const user = (await getServerSession(event))?.user
   if (user) {
-    await prisma.user.update({
+    await db.user.update({
       where: { id: user.id },
       data: { avatarUrl: `/avatars/${filename}` },
     })

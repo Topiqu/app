@@ -1,8 +1,10 @@
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  if (!session || session.user.role !== 'admin') throw createError({ status: 401 })
+  const user = (await getServerSession(event))?.user
+
+  if (!user || user.role !== 'admin') throw createError({ status: 401 })
+  const db = await getEnhancedPrisma(user)
 
   const body = await readValidatedBody(event, ArticleCreateSchema.parse)
   const $ = cheerio.load(body.content)
@@ -34,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
   const contentWithIds = $.html()
 
-  const article = await prisma.article.create({
+  const article = await db.article.create({
     data: {
       title: body.title,
       content: sanitizeHtml(contentWithIds),
