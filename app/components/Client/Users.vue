@@ -263,7 +263,7 @@ const createUser = async () => {
 
 const restore = async (id: string) => {
   try {
-    await $fetch(`/api/users/${id}` as `/api/users/:id`, {
+    await $fetch(`/api/users/${id}`, {
       method: 'PATCH',
       body: { deletedAt: null },
     })

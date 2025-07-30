@@ -54,6 +54,12 @@
         >
           <Icon name="mdi:account-plus" class="w-6 h-6 text-black" />
         </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="userListOpen = true"
+        >
+          <Icon name="mdi:account-group" class="w-6 h-6 text-black" />
+        </button>
       </div>
       <AuthLogout />
     </div>
@@ -82,6 +88,9 @@
   <TransitionRoot :show="clientCreateOpen" as="template">
     <ClientCreate @close="clientCreateOpen = false" />
   </TransitionRoot>
+  <TransitionRoot :show="userListOpen" as="template">
+    <UserList @close="userListOpen = false" />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
@@ -106,4 +115,5 @@ const articleCreateOpen = shallowRef<boolean>(false)
 const tagsOpen = shallowRef<boolean>(false)
 const statsOpen = shallowRef<boolean>(false)
 const clientCreateOpen = shallowRef<boolean>(false)
+const userListOpen = shallowRef<boolean>(false)
 </script>

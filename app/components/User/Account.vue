@@ -5,6 +5,7 @@
         <div class="flex items-center space-x-3 mb-6">
           <UserIcon class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Můj účet</h2>
+          <AuthLogout />
         </div>
         <div class="space-y-6">
           <div>
