@@ -5,6 +5,7 @@ export interface CommentWithReplies {
   userId: string
   parentId: string | null
   deletedAt: Date | null
+  articleId?: string
   user: {
     id: string
     username: string
@@ -22,4 +23,5 @@ export interface CommentWithReplies {
   dislikes: number
   depth?: number
   userReaction: { type: 'LIKE' | 'DISLIKE' } | null
+  emojiReactions?: { emojiId: string; count: number; emoji: { imageUrl: string; shortcode: string } }[]
 }

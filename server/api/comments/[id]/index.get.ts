@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       parentId: true,
       deletedAt: true,
+      articleId: true,
       user: {
         select: {
           id: true,
@@ -33,6 +34,9 @@ export default defineEventHandler(async (event) => {
         },
       },
       reactions: { select: { type: true, userId: true } },
+      emojiReactions: {
+        select: { emojiId: true, emoji: { select: { imageUrl: true, shortcode: true } } },
+      },
     },
     orderBy: { createdAt: 'asc' },
   })
@@ -53,6 +57,23 @@ export default defineEventHandler(async (event) => {
 
     const userReaction = user ? (c.reactions.find((r) => r.userId === user.id) ?? null) : null
 
+    const emojiReactions = Object.entries(
+      c.emojiReactions.reduce(
+        (acc, r) => {
+          acc[r.emojiId] = {
+            count: (acc[r.emojiId]?.count || 0) + 1,
+            emoji: r.emoji,
+          }
+          return acc
+        },
+        {} as Record<string, { count: number; emoji: { imageUrl: string; shortcode: string } }>,
+      ),
+    ).map(([emojiId, { count, emoji }]) => ({
+      emojiId,
+      count,
+      emoji,
+    }))
+
     commentMap.set(c.id, {
       id: c.id,
       content: c.content,
@@ -60,11 +81,12 @@ export default defineEventHandler(async (event) => {
       userId: c.userId,
       parentId: c.parentId,
       deletedAt: c.deletedAt,
+      articleId: c.articleId,
       user: userData
         ? {
             id: userData.id,
             username: userData.username,
-            email: userData.email,
+            email: userData.email ?? undefined,
             avatarUrl: userData.avatarUrl ?? undefined,
             bio: userData.bio ?? undefined,
             createdAt: userData.createdAt.toISOString(),
@@ -78,6 +100,7 @@ export default defineEventHandler(async (event) => {
       dislikes: c.reactions.filter((r) => r.type === 'DISLIKE').length,
       replies: [],
       userReaction: userReaction ? { type: userReaction.type } : null,
+      emojiReactions,
     })
   }
 
