@@ -77,6 +77,9 @@ model Article extends Base, Ownable {
 
     status        ArticleStatus  @default(draft)
 
+    clientSiteId  String
+    clientSite    ClientSite     @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
     views         Int            @default(0)
     readingTime   Int?
 
@@ -85,7 +88,7 @@ model Article extends Base, Ownable {
     tags          ArticleTag[]
     comments      Comment[]
     notifications Notification[] @relation("ArticleNotifications")
-    @@allow('read', true)
+    @@allow('read', (status == 'published') || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin')
 }
 
@@ -153,7 +156,7 @@ model ClientSite extends Base {
 
     users               User[]
     tags                Tag[]
-
+    articles            Article[]
     @@allow('all', auth().role == 'superadmin')
 }
 

@@ -62,6 +62,8 @@ model Article {
   content       String
   imageUrl      String?
   status        ArticleStatus  @default(draft)
+  clientSiteId  String
+  clientSite    ClientSite     @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   views         Int            @default(0)
   readingTime   Int?
   publishedAt   DateTime?
@@ -129,6 +131,7 @@ model ClientSite {
   keywords            Json?
   users               User[]
   tags                Tag[]
+  articles            Article[]
 }
 
 model Comment {
