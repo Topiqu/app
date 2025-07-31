@@ -1,5 +1,6 @@
 <template>
   <div
+    :id="`comment-${comment.id}`"
     class="w-full min-w-fit bg-white pt-2 pb-0.5 pl-2 pr-0.5 sm:pt-4 sm:pb-1 sm:pl-4 sm:pr-1 md:pt-6 md:pb-1.5 md:pl-6 md:pr-1.5 rounded-3xl shadow border border-gray-200 hover:bg-gray-50 transition-colors"
   >
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 sm:pr-4 md:pr-6">
