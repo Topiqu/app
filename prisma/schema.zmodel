@@ -74,17 +74,12 @@ model Article extends Base, Ownable {
     title         String         @length(1, 255, "Titulek musí mít 1–255 znaků")
     content       String         @length(1, 16384, "Článek překročil délku znaků")
     imageUrl      String?        @length(0, 255, "URL obrázku musí mít max. 255 znaků")
-
     status        ArticleStatus  @default(draft)
-
     clientSiteId  String
     clientSite    ClientSite     @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-
     views         Int            @default(0)
     readingTime   Int?
-
     publishedAt   DateTime?
-
     tags          ArticleTag[]
     comments      Comment[]
     notifications Notification[] @relation("ArticleNotifications")
@@ -95,10 +90,8 @@ model Article extends Base, Ownable {
 model Tag extends Base {
     slug         String       @length(1, 64, "Slug tagu musí mít 1–64 znaků")
     name         String       @length(1, 64, "Název tagu musí mít 1–64 znaků")
-
     clientSiteId String?
     clientSite   ClientSite?  @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-
     articles     ArticleTag[]
     @@allow('read', true)
     @@allow('all', auth().role == 'admin')
@@ -107,35 +100,30 @@ model Tag extends Base {
 model ArticleTag {
     articleId String
     article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-
     tagId     String
     tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
     @@id([articleId, tagId])
     @@allow('read', true)
 }
 
 model User extends Base {
-    username      String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
-    email         String            @unique @length(3, 255, "Email musí mít 3–255 znaků")
-    password      String?           @omit @length(4, 124, "Heslo musí mít 4–124 znaků")
-    bio           String?           @length(0, 300, "Bio autora může mít max. 300 znaků")
-    role          UserRole          @default(reader)
-    avatarUrl     String?
-
-    verification  VerificationCode?
-    emailVerified Boolean           @default(false)
-    allowNotifs   Boolean           @default(true)
-
-    lastLogin     DateTime?         @default(now())
-
-    clientSiteId  String?
-    clientSite    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-
-    articles      Article[]
-    comments      Comment[]
-    notifications Notification[]
-    reactions     CommentReaction[]
+    username       String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
+    email          String            @unique @length(3, 255, "Email musí mít 3–255 znaků")
+    password       String?           @omit @length(4, 124, "Heslo musí mít 4–124 znaků")
+    bio            String?           @length(0, 300, "Bio autora může mít max. 300 znaků")
+    role           UserRole          @default(reader)
+    avatarUrl      String?
+    verification   VerificationCode?
+    emailVerified  Boolean           @default(false)
+    allowNotifs    Boolean           @default(true)
+    lastLogin      DateTime?         @default(now())
+    clientSiteId   String?
+    clientSite     ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    articles       Article[]
+    comments       Comment[]
+    notifications  Notification[]
+    reactions      CommentReaction[]
+    emojiReactions EmojiReaction[]
     @@allow('read', true)
     @@allow('create', true)
     @@allow('update', auth().id == id || auth().role == 'superadmin')
@@ -147,28 +135,26 @@ model ClientSite extends Base {
     subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
     plan                ClientPlan          @default(BASIC)
     focus               String?
-
     generationFrequency GenerationFrequency @default(NONE)
-
     tokenLimit          Int?                @default(0)
     tokenRemaining      Int?                @default(0)
-
     keywords            Json?
-
     users               User[]
     tags                Tag[]
     articles            Article[]
+    emojis              Emoji[]
     @@allow('all', auth().role == 'superadmin')
 }
 
 model Comment extends Base, Ownable {
-    content   String            @length(1, 1000, "Komentář musí mít 1–1000 znaků")
-    articleId String
-    article   Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
-    parentId  String?
-    parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-    reactions CommentReaction[]
-    replies   Comment[]         @relation("CommentReplies")
+    content        String            @length(1, 1000, "Komentář musí mít 1–1000 znaků")
+    articleId      String
+    article        Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    parentId       String?
+    parent         Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+    reactions      CommentReaction[]
+    emojiReactions EmojiReaction[]
+    replies        Comment[]         @relation("CommentReplies")
     @@allow('read', true)
     @@allow('create', auth() != null)
     @@allow('update, delete', auth().id == userId || auth().role == 'admin')
@@ -176,11 +162,8 @@ model Comment extends Base, Ownable {
 
 model CommentReaction extends Ownable {
     commentId String
-
     type      ReactionType
-
     comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
-
     @@id([userId, commentId])
     @@allow('create', auth().id != null)
     @@allow('update', auth().id == userId)
@@ -188,22 +171,38 @@ model CommentReaction extends Ownable {
     @@allow('read', true)
 }
 
+model Emoji extends Base {
+    shortcode      String          @unique @length(1, 50, "Shortcode musí mít 1–50 znaků")
+    imageUrl       String          @length(1, 255, "URL obrázku musí mít 1–255 znaků")
+    clientSiteId   String
+    clientSite     ClientSite      @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    emojiReactions EmojiReaction[]
+    @@allow('read', true)
+    @@allow('create, update, delete', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+}
+
+model EmojiReaction extends Ownable {
+    commentId String
+    emojiId   String
+    comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+    emoji     Emoji   @relation(fields: [emojiId], references: [id], onDelete: Cascade)
+    @@id([userId, commentId, emojiId])
+    @@allow('create', auth().id != null)
+    @@allow('delete', auth().id == userId || auth().role == 'admin')
+    @@allow('read', true)
+}
+
 model VerificationCode extends Base, Ownable {
     code      String   @length(8, 8, "Kód musí mít přesně 8 znaků")
-
     expiresAt DateTime
-
     @@unique([userId])
     @@allow('all', true)
 }
 
 model Notification extends Base, Ownable {
     message   String           @length(1, 255, "Zpráva notifikace musí mít 1–255 znaků")
-
     isRead    Boolean          @default(false)
-
     type      NotificationType
-
     articleId String?
     article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
     @@allow('read, delete, update', auth().id == userId)

@@ -94,26 +94,27 @@ model ArticleTag {
 }
 
 model User {
-  id            String            @id() @default(uuid())
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime?         @updatedAt()
-  deletedAt     DateTime?
-  username      String            @unique()
-  email         String            @unique()
-  password      String?
-  bio           String?
-  role          UserRole          @default(reader)
-  avatarUrl     String?
-  verification  VerificationCode?
-  emailVerified Boolean           @default(false)
-  allowNotifs   Boolean           @default(true)
-  lastLogin     DateTime?         @default(now())
-  clientSiteId  String?
-  clientSite    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-  articles      Article[]
-  comments      Comment[]
-  notifications Notification[]
-  reactions     CommentReaction[]
+  id             String            @id() @default(uuid())
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime?         @updatedAt()
+  deletedAt      DateTime?
+  username       String            @unique()
+  email          String            @unique()
+  password       String?
+  bio            String?
+  role           UserRole          @default(reader)
+  avatarUrl      String?
+  verification   VerificationCode?
+  emailVerified  Boolean           @default(false)
+  allowNotifs    Boolean           @default(true)
+  lastLogin      DateTime?         @default(now())
+  clientSiteId   String?
+  clientSite     ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  articles       Article[]
+  comments       Comment[]
+  notifications  Notification[]
+  reactions      CommentReaction[]
+  emojiReactions EmojiReaction[]
 }
 
 model ClientSite {
@@ -132,22 +133,24 @@ model ClientSite {
   users               User[]
   tags                Tag[]
   articles            Article[]
+  emojis              Emoji[]
 }
 
 model Comment {
-  userId    String
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  id        String            @id() @default(uuid())
-  createdAt DateTime          @default(now())
-  updatedAt DateTime?         @updatedAt()
-  deletedAt DateTime?
-  content   String
-  articleId String
-  article   Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  parentId  String?
-  parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  reactions CommentReaction[]
-  replies   Comment[]         @relation("CommentReplies")
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String            @id() @default(uuid())
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime?         @updatedAt()
+  deletedAt      DateTime?
+  content        String
+  articleId      String
+  article        Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  parentId       String?
+  parent         Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  reactions      CommentReaction[]
+  emojiReactions EmojiReaction[]
+  replies        Comment[]         @relation("CommentReplies")
 }
 
 model CommentReaction {
@@ -158,6 +161,29 @@ model CommentReaction {
   comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@id([userId, commentId])
+}
+
+model Emoji {
+  id             String          @id() @default(uuid())
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime?       @updatedAt()
+  deletedAt      DateTime?
+  shortcode      String          @unique()
+  imageUrl       String
+  clientSiteId   String
+  clientSite     ClientSite      @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  emojiReactions EmojiReaction[]
+}
+
+model EmojiReaction {
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId String
+  emojiId   String
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  emoji     Emoji   @relation(fields: [emojiId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId, emojiId])
 }
 
 model VerificationCode {
