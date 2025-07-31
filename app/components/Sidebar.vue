@@ -35,6 +35,12 @@
         </button>
         <button
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="emojiCreateOpen = true"
+        >
+          <Icon name="mdi:emoticon" class="w-6 h-6 text-black" />
+        </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
           @click="statsOpen = true"
         >
           <Icon name="mdi:chart-bar" class="w-6 h-6 text-black" />
@@ -91,11 +97,13 @@
   <TransitionRoot :show="userListOpen" as="template">
     <UserList @close="userListOpen = false" />
   </TransitionRoot>
+  <TransitionRoot :show="emojiCreateOpen" as="template">
+    <EmojiCreate @close="emojiCreateOpen = false" />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
 import { TransitionRoot } from '@headlessui/vue'
-
 defineProps<{ isOpen: boolean }>()
 
 const emit = defineEmits(['update:isOpen'])
@@ -116,4 +124,5 @@ const tagsOpen = shallowRef<boolean>(false)
 const statsOpen = shallowRef<boolean>(false)
 const clientCreateOpen = shallowRef<boolean>(false)
 const userListOpen = shallowRef<boolean>(false)
+const emojiCreateOpen = shallowRef<boolean>(false)
 </script>
