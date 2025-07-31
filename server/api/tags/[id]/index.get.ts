@@ -1,4 +1,5 @@
 export default defineEventHandler(async (event) => {
+  const user = (await getServerSession(event))?.user
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'ID je povinné' })
   const { take, skip } = await getPagination(event)
@@ -9,14 +10,11 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!tag) throw createError({ statusCode: 404, message: 'Tag nenalezen' })
+  const db = await getEnhancedPrisma(user)
 
-  const articles = await prisma.articleTag.findMany({
+  const articles = await db.articleTag.findMany({
     where: {
       tagId: id,
-      article: {
-        status: 'published',
-        user: { clientSiteId: tag.clientSiteId },
-      },
     },
     take,
     skip,
@@ -29,6 +27,5 @@ export default defineEventHandler(async (event) => {
       },
     },
   })
-
   return { ...tag, articles }
 })

@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   if (!user || user.role !== 'admin') throw createError({ status: 401 })
   const db = await getEnhancedPrisma(user)
 
-  const body = await readValidatedBody(event, ArticleCreateSchema.parse)
+  const body = await readBody(event)
   const $ = cheerio.load(body.content)
 
   const usedIds = new Map()
@@ -42,6 +42,7 @@ export default defineEventHandler(async (event) => {
       content: sanitizeHtml(contentWithIds),
       slug: body.slug,
       userId: body.userId,
+      clientSiteId: user.clientSiteId,
       createdAt: new Date(),
       imageUrl: body.imageUrl,
     },

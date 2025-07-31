@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
   const $ = cheerio.load(body.content || '')
-
+  if (body.clientSiteId !== user.clientSiteId) throw createError('Tento článek nemůžete upravovat.')
   const usedIds = new Map()
   $('h1, h2, h3').each((i, el) => {
     const $el = $(el)
