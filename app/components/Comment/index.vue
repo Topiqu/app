@@ -41,7 +41,7 @@
           <Icon name="mdi:delete" class="w-4 h-4 text-inherit" />
           <span>Smazat</span>
         </button>
-        <EmojiPopover :commentId="comment.id" :articleId="comment.articleId!" />
+        <EmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="$emit('refresh')" />
       </div>
     </div>
     <div class="mt-4 sm:mt-6">
@@ -102,6 +102,7 @@
         @delete="$emit('delete', $event)"
         @like="$emit('like', $event)"
         @dislike="$emit('dislike', $event)"
+        @refresh="$emit('refresh')"
       />
     </div>
   </div>
@@ -118,6 +119,7 @@ defineProps<{
 
 defineEmits<{
   (e: 'reply' | 'delete' | 'like' | 'dislike', comment: CommentWithReplies): void
+  (e: 'refresh'): void
 }>()
 
 const { data: session } = useAuth()

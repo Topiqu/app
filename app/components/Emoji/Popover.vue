@@ -40,6 +40,7 @@
 import { Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 
 const props = defineProps<{ commentId: string; articleId: string }>()
+const emit = defineEmits<{ (e: 'reaction'): void }>()
 
 const toast = useToast()
 const { data: session } = useAuth()
@@ -62,6 +63,7 @@ const toggleEmoji = async (emojiId: string, close: () => void) => {
   close()
   if (res.success && res.created != null) {
     toast.success({ message: res.created ? 'Emoji přidáno' : 'Emoji odebráno' })
+    emit('reaction')
   } else {
     toast.error({ message: 'Nepodařilo se přidat/odebrat emoji' })
   }

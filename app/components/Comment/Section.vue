@@ -77,6 +77,7 @@
         @delete="handleDelete"
         @like="handleLike"
         @dislike="handleDislike"
+        @refresh="refresh()"
       />
     </div>
     <p v-else class="text-gray-600 text-center text-base">Zatím žádné komentáře.</p>
