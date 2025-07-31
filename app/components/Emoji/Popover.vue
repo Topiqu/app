@@ -26,6 +26,7 @@
             <button
               v-for="emoji in emojis"
               :key="emoji.id"
+              v-tippy="{ content: emoji.shortcode, placement: 'top' }"
               class="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
               @click="toggleEmoji(emoji.id, close)"
             >
@@ -39,7 +40,9 @@
 </template>
 
 <script setup lang="ts">
+import { directive as vTippy } from 'vue-tippy'
 import { Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import 'tippy.js/dist/tippy.css'
 
 const props = defineProps<{ commentId: string; articleId: string }>()
 const emit = defineEmits<{ (e: 'reaction'): void }>()

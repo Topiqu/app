@@ -87,6 +87,7 @@
           <div
             v-for="reaction in comment.emojiReactions"
             :key="reaction.emojiId"
+            v-tippy="{ content: reaction.emoji.shortcode, placement: 'top' }"
             class="flex items-center gap-1 px-2 py-1 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100 text-gray-600"
           >
             <img :src="reaction.emoji.imageUrl" :alt="reaction.emoji.shortcode" class="w-4 h-4" />
@@ -98,7 +99,6 @@
         <EmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="$emit('refresh')" />
       </div>
     </div>
-
     <div v-if="comment.replies?.length" class="mt-4 sm:mt-6 space-y-4">
       <Comment
         v-for="reply in comment.replies"
@@ -118,6 +118,9 @@
 
 <script setup lang="ts">
 import type { CommentWithReplies } from '~~/types/comment'
+
+import { directive as vTippy } from 'vue-tippy'
+import 'tippy.js/dist/tippy.css'
 
 defineProps<{
   comment: CommentWithReplies
