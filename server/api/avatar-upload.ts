@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const form = await readMultipartFormData(event)
   const file = form?.find((f) => f.name === 'avatar')
-  console.log('KEY:', process.env.OPENMODERATOR_API_KEY)
+
   if (!file || !file.type?.startsWith('image/')) throw createError({ statusCode: 400, message: 'Neplatný soubor' })
 
   if (file.data.length > 5 * 1024 * 1024) throw createError({ statusCode: 400, message: 'Soubor příliš velký' })
