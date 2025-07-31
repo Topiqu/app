@@ -256,12 +256,10 @@ const percentage = computed(() => Math.round((100 / limit) * (editor.value?.stor
 const fileInputComponent = ref<InstanceType<typeof FileInput> | null>(null)
 
 const triggerFileInput = () => {
-  console.log('triggerFileInput called')
   fileInputComponent.value?.open()
 }
 
 const uploadImage = async (e: Event) => {
-  console.log('uploadImage called')
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
 
@@ -285,7 +283,6 @@ const uploadImage = async (e: Event) => {
 }
 
 const onFileInputClose = () => {
-  console.log('onFileInputClose called')
   editor.value?.chain().focus().run()
 }
 

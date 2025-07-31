@@ -25,7 +25,7 @@
       <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
         <button
           v-if="session?.user && !isReplying"
-          class="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer hover:scale-[1.02]"
+          class="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer hover:scale-[1.02]"
           aria-label="Odpovědět na komentář"
           @click="$emit('reply', comment)"
         >
@@ -34,13 +34,14 @@
         </button>
         <button
           v-if="session?.user && session.user.id === comment.userId"
-          class="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer hover:scale-[1.02]"
+          class="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer hover:scale-[1.02]"
           aria-label="Smazat komentář"
           @click="$emit('delete', comment)"
         >
           <Icon name="mdi:delete" class="w-4 h-4 text-inherit" />
           <span>Smazat</span>
         </button>
+        <EmojiPopover :commentId="comment.id" :articleId="comment.articleId!" />
       </div>
     </div>
     <div class="mt-4 sm:mt-6">
@@ -55,7 +56,7 @@
     <div v-if="!comment.deletedAt" class="mt-4 sm:mt-5 flex items-center gap-2 sm:gap-3 flex-wrap pb-2 sm:pb-4 md:pb-6">
       <button
         v-if="session?.user"
-        class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+        class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
         :class="
           comment.userReaction?.type === 'LIKE'
             ? 'bg-green-100 text-green-600'
@@ -68,7 +69,7 @@
       </button>
       <button
         v-if="session?.user"
-        class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+        class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
         :class="
           comment.userReaction?.type === 'DISLIKE'
             ? 'bg-red-100 text-red-600'
@@ -79,6 +80,16 @@
         <Icon name="mdi:thumb-down-outline" class="w-4 h-4 text-inherit" />
         <span>{{ comment.dislikes || 0 }}</span>
       </button>
+      <div v-if="comment.emojiReactions?.length" class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <div
+          v-for="reaction in comment.emojiReactions"
+          :key="reaction.emojiId"
+          class="flex items-center gap-1 px-2 py-1 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100 text-gray-600"
+        >
+          <img :src="reaction.emoji.imageUrl" :alt="reaction.emoji.shortcode" class="w-4 h-4" />
+          <span>{{ reaction.count }}</span>
+        </div>
+      </div>
     </div>
     <div v-if="comment.replies?.length" class="mt-4 sm:mt-6 space-y-4">
       <Comment
