@@ -153,13 +153,13 @@ const submit = async () => {
   formData.append('shortcode', shortcode.value)
   formData.append('image', fileInput.value.files[0])
 
-  const { data, error } = await useFetch('/api/emojis', {
+  const res = await $fetch('/api/emojis', {
     method: 'POST',
     body: formData,
   })
 
-  if (data.value?.success && data.value.emoji) {
-    toast.success({ message: `Emoji ${data.value.emoji.shortcode} přidáno` })
+  if (res.success && res.emoji) {
+    toast.success({ message: `Emoji ${res.emoji.shortcode} přidáno` })
     shortcode.value = ''
     fileInput.value.value = ''
     await refresh()
@@ -170,8 +170,8 @@ const submit = async () => {
 }
 
 const deleteEmoji = async (id: string) => {
-  const { data, error } = await useFetch(`/api/emojis/${id}`, { method: 'DELETE' })
-  if (data.value?.success) {
+  const res = await $fetch(`/api/emojis/${id}`, { method: 'DELETE' })
+  if (res.success) {
     toast.success({ message: `Emoji smazáno` })
     await refresh()
   } else {

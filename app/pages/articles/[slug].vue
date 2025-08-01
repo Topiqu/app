@@ -186,7 +186,7 @@ const { data: session } = useAuth()
 
 const editingArticle = ref<Article | null>(null)
 
-const slug = computed(() => route.params.slug as string)
+const slug = computed(() => route.params.slug)
 
 const {
   data,

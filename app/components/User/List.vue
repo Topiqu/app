@@ -100,8 +100,6 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '@zenstackhq/runtime/models'
-
 import Swal from 'sweetalert2'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/vue'
@@ -117,7 +115,7 @@ const {
   pending: loading,
   error,
   refresh,
-} = useFetch<User[]>('/api/users', {
+} = useFetch('/api/users', {
   immediate: true,
   server: false,
 })
