@@ -3,51 +3,120 @@
     <TransitionChild
       as="template"
       enter="ease-out duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
+      enter-from="opacity-0"
+      enter-to="opacity-100"
+      leave="ease-in duration-200"
+      leave-from="opacity-100"
+      leave-to="opacity-0"
     >
-      <div class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity" />
+      <div class="fixed inset-0 bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-md" />
     </TransitionChild>
 
-    <div class="fixed inset-0 flex items-center justify-center p-6">
+    <div class="fixed inset-0 flex items-center justify-center p-4 sm:p-6">
       <TransitionChild
         as="template"
         enter="ease-out duration-300"
-        enterFrom="opacity-0 scale-90"
-        enterTo="opacity-100 scale-100"
-        leave="ease-in duration-100"
-        leaveFrom="opacity-100 scale-100"
-        leaveTo="opacity-0 scale-90"
+        enter-from="opacity-0 translate-y-10"
+        enter-to="opacity-100 translate-y-0"
+        leave="ease-in duration-200"
+        leave-from="opacity-100 translate-y-0"
+        leave-to="opacity-0 translate-y-10"
       >
         <DialogPanel
-          class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm"
+          class="w-full max-w-xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col gap-6 border border-gray-200/70"
         >
-          <DialogTitle class="text-xl font-bold text-gray-900"> Statistiky blogu </DialogTitle>
-
-          <div v-if="loading" class="text-gray-600">Načítání...</div>
-          <div v-else class="flex flex-col gap-4">
-            <div class="text-gray-600"><span class="font-medium">Celkem zobrazení: </span>{{ stats.totalViews }}</div>
-            <div class="text-gray-600"><span class="font-medium">Celkem článků: </span>{{ stats.articleCount }}</div>
-            <div class="text-gray-600">
-              <span class="font-medium">Nejčtenější článek: </span>
-              {{ stats.topArticle?.title || 'Žádný článek' }} ({{ stats.topArticle?.views || 0 }}
-              zobrazení)
-            </div>
-            <div class="text-gray-600">
-              <span class="font-medium">Nejpopulárnější tag: </span>
-              {{ stats.topTags[0]?.name || 'Žádný tag' }} ({{ stats.topTags[0]?.views || 0 }}
-              zobrazení)
-            </div>
+          <div class="flex justify-between items-center">
+            <DialogTitle
+              class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"
+            >
+              Statistiky blogu
+            </DialogTitle>
+            <button class="p-2 rounded-full hover:bg-gray-100 transition-colors" @click="$emit('close')">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
-          <Charts :chartData="chartData" />
+          <div v-if="loading" class="text-center text-gray-500 py-8">Načítání dat...</div>
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div
+              class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+            >
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+                <Icon name="mdi:eye" class="w-5 h-5 text-blue-600" />
+                Celkem zobrazení
+              </div>
+              <p class="text-2xl font-bold text-blue-600">{{ stats.totalViews }}</p>
+            </div>
 
-          <div class="flex gap-4 justify-end">
+            <div
+              class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+            >
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+                <Icon name="mdi:file-document" class="w-5 h-5 text-indigo-600" />
+                Počet článků
+              </div>
+              <p class="text-2xl font-bold text-indigo-600">{{ stats.articleCount }}</p>
+            </div>
+
+            <div
+              class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+            >
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+                <Icon name="mdi:star" class="w-5 h-5 text-amber-500" />
+                Nejčtenější článek
+              </div>
+              <p class="text-lg font-medium text-gray-900 truncate">
+                {{ stats.topArticle?.title || 'Žádný článek' }}
+              </p>
+              <p class="text-sm text-gray-500">{{ stats.topArticle?.views || 0 }} zobrazení</p>
+            </div>
+
+            <div
+              class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+            >
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+                <Icon name="mdi:tag" class="w-5 h-5 text-emerald-600" />
+                Nejpopulárnější tag
+              </div>
+              <p class="text-lg font-medium text-gray-900">
+                {{ stats.topTags[0]?.name || 'Žádný tag' }}
+              </p>
+              <p class="text-sm text-gray-500">{{ stats.topTags[0]?.views || 0 }} zobrazení</p>
+            </div>
+
+            <div
+              class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+            >
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+                <Icon name="mdi:heart" class="w-5 h-5 text-red-500" />
+                Nejlajkovanější článek
+              </div>
+              <p class="text-lg font-medium text-gray-900 truncate">
+                {{ stats.topLikedArticle?.title || 'Žádný článek' }}
+              </p>
+              <p class="text-sm text-gray-500">{{ stats.topLikedArticle?.likes || 0 }} lajků</p>
+            </div>
+
+            <div
+              class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+            >
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+                <Icon name="mdi:comment-text" class="w-5 h-5 text-purple-600" />
+                Článek s nejvíce komentáři
+              </div>
+              <p class="text-lg font-medium text-gray-900 truncate">
+                {{ stats.topCommentedArticle?.title || 'Žádný článek' }}
+              </p>
+              <p class="text-sm text-gray-500">{{ stats.topCommentedArticle?.comments || 0 }} komentářů</p>
+            </div>
+          </div>
+          <Charts :chart-data="chartData" />
+
+          <div class="flex justify-end">
             <button
-              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm"
+              class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
               @click="$emit('close')"
             >
               Zavřít
@@ -68,20 +137,17 @@ const stats = ref({
   totalViews: 0,
   articleCount: 0,
   topArticle: null as { id: string; title: string; views: number } | null,
-  topTags: [] as {
-    id: string
-    name: string
-    views: number
-    articleCount: number
-  }[],
+  topTags: [] as { id: string; name: string; views: number; articleCount: number }[],
+  topLikedArticle: null as { id: string; title: string; likes: number } | null,
+  topCommentedArticle: null as { id: string; title: string; comments: number } | null,
 })
 const loading = ref(false)
 const chartData = ref({
-  labels: ['1.7.', '2.7.', '3.7.', '4.7.', '5.7.', '6.7.', '7.7.'],
+  labels: [] as string[],
   datasets: [
     {
       label: 'Zobrazení článků',
-      data: [0, 0, 0, 0, 0, 0, 0],
+      data: [] as number[],
       backgroundColor: '#3b82f6',
       borderColor: '#3b82f6',
       fill: false,
@@ -92,25 +158,29 @@ const chartData = ref({
 async function loadStats() {
   loading.value = true
   try {
-    const [views, topArticle, articleCount, topTags, viewsHistory] = await Promise.all([
+    const [views, topArticle, articleCount, topTags, viewsHistory, topLiked, topCommented] = await Promise.all([
       $fetch('/api/stats/views'),
       $fetch('/api/stats/top-article'),
       $fetch('/api/stats/article-count'),
       $fetch('/api/stats/top-tags?limit=1'),
       $fetch('/api/stats/views-history'),
+      $fetch('/api/stats/top-liked'),
+      $fetch('/api/stats/top-commented'),
     ])
     stats.value = {
       totalViews: views.totalViews,
       articleCount: articleCount.articleCount,
       topArticle,
       topTags,
+      topLikedArticle: topLiked,
+      topCommentedArticle: topCommented,
     }
     chartData.value = {
-      labels: viewsHistory.map((v) => v.date),
+      labels: viewsHistory.map((v: any) => v.date),
       datasets: [
         {
           label: 'Zobrazení článků',
-          data: viewsHistory.map((v) => v.views),
+          data: viewsHistory.map((v: any) => v.views),
           backgroundColor: '#3b82f6',
           borderColor: '#3b82f6',
           fill: false,
