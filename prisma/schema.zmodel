@@ -70,19 +70,20 @@ abstract model Ownable {
 }
 
 model Article extends Base, Ownable {
-    slug          String         @unique @length(1, 100, "Slug musí mít 1–100 znaků")
-    title         String         @length(1, 255, "Titulek musí mít 1–255 znaků")
-    content       String         @length(1, 16384, "Článek překročil délku znaků")
-    imageUrl      String?        @length(0, 255, "URL obrázku musí mít max. 255 znaků")
-    status        ArticleStatus  @default(draft)
+    slug          String            @unique @length(1, 100, "Slug musí mít 1–100 znaků")
+    title         String            @length(1, 255, "Titulek musí mít 1–255 znaků")
+    content       String            @length(1, 16384, "Článek překročil délku znaků")
+    imageUrl      String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    status        ArticleStatus     @default(draft)
     clientSiteId  String
-    clientSite    ClientSite     @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-    views         Int            @default(0)
+    clientSite    ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    views         Int               @default(0)
     readingTime   Int?
     publishedAt   DateTime?
     tags          ArticleTag[]
     comments      Comment[]
-    notifications Notification[] @relation("ArticleNotifications")
+    reactions     ArticleReaction[]
+    notifications Notification[]    @relation("ArticleNotifications")
     @@allow('read', (status == 'published') || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin')
 }
@@ -107,23 +108,24 @@ model ArticleTag {
 }
 
 model User extends Base {
-    username       String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
-    email          String            @unique @length(3, 255, "Email musí mít 3–255 znaků")
-    password       String?           @omit @length(4, 124, "Heslo musí mít 4–124 znaků")
-    bio            String?           @length(0, 300, "Bio autora může mít max. 300 znaků")
-    role           UserRole          @default(reader)
-    avatarUrl      String?
-    verification   VerificationCode?
-    emailVerified  Boolean           @default(false)
-    allowNotifs    Boolean           @default(true)
-    lastLogin      DateTime?         @default(now())
-    clientSiteId   String?
-    clientSite     ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-    articles       Article[]
-    comments       Comment[]
-    notifications  Notification[]
-    reactions      CommentReaction[]
-    emojiReactions EmojiReaction[]
+    username         String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
+    email            String            @unique @length(3, 255, "Email musí mít 3–255 znaků")
+    password         String?           @omit @length(4, 124, "Heslo musí mít 4–124 znaků")
+    bio              String?           @length(0, 300, "Bio autora může mít max. 300 znaků")
+    role             UserRole          @default(reader)
+    avatarUrl        String?
+    verification     VerificationCode?
+    emailVerified    Boolean           @default(false)
+    allowNotifs      Boolean           @default(true)
+    lastLogin        DateTime?         @default(now())
+    clientSiteId     String?
+    clientSite       ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    articles         Article[]
+    comments         Comment[]
+    notifications    Notification[]
+    reactions        CommentReaction[]
+    emojiReactions   EmojiReaction[]
+    articleReactions ArticleReaction[]
     @@allow('read', true)
     @@allow('create', true)
     @@allow('update', auth().id == id || auth().role == 'superadmin')
@@ -190,6 +192,18 @@ model EmojiReaction extends Ownable {
     @@allow('create', auth().id != null)
     @@allow('delete', auth().id == userId || auth().role == 'admin')
     @@allow('read', true)
+}
+
+model ArticleReaction extends Base {
+    articleId String
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    userId    String?
+    user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    sessionId String?
+    @@unique([articleId, userId, sessionId])
+    @@allow('create', true)
+    @@allow('read', true)
+    @@allow('delete', auth().id == userId || auth().role == 'admin')
 }
 
 model VerificationCode extends Base, Ownable {
