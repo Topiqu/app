@@ -10,38 +10,41 @@
         Zpět na seznam
       </NuxtLink>
 
-      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900">
-        Články se štítkem: <span class="text-blue-500">{{ tagName }}</span>
+      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900 text-center">
+        Články se štítkem:
+        <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+          {{ tagName }}
+        </span>
       </h1>
 
-      <div class="flex flex-col gap-6">
-        <div class="flex flex-col sm:flex-row gap-4">
-          <input
-            v-model="search"
-            placeholder="Hledat články..."
-            class="w-full px-5 py-3 rounded-xl border border-gray-300 bg-white shadow focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-          />
-          <select
-            v-model="sort"
-            class="px-5 py-3 rounded-xl border border-gray-300 bg-white shadow focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-          >
-            <option value="createdAt:desc">Nejnovější</option>
-            <option value="createdAt:asc">Nejstarší</option>
-            <option value="title:asc">Název A-Z</option>
-            <option value="title:desc">Název Z-A</option>
-          </select>
-        </div>
+      <div class="flex flex-col gap-4 pb-4 border-b border-gray-200 sm:flex-row sm:justify-between sm:items-center">
+        <input
+          v-model="search"
+          placeholder="Hledat články..."
+          class="w-full px-5 py-3 rounded-xl border border-gray-300 bg-gray-50 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+        />
+        <select
+          v-model="sort"
+          class="px-5 py-3 rounded-xl border border-gray-300 bg-gray-50 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+        >
+          <option value="createdAt:desc">Nejnovější</option>
+          <option value="createdAt:asc">Nejstarší</option>
+          <option value="title:asc">Název A-Z</option>
+          <option value="title:desc">Název Z-A</option>
+        </select>
+      </div>
 
-        <div v-if="filteredArticles.length" class="grid gap-6">
-          <div
-            v-for="a in filteredArticles"
-            :key="a.articleId"
-            class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
+      <div v-if="filteredArticles.length" class="grid gap-6">
+        <div
+          v-for="a in filteredArticles"
+          :key="a.articleId"
+          class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+        >
+          <NuxtLink
+            :to="`/articles/${a.article.slug}`"
+            class="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 p-6 no-underline group"
           >
-            <NuxtLink
-              :to="`/articles/${a.article.slug}`"
-              class="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 p-6 no-underline group"
-            >
+            <div class="relative">
               <NuxtImg
                 v-if="a.article.imageUrl"
                 :src="a.article.imageUrl"
@@ -50,44 +53,62 @@
                 quality="80"
                 width="160"
                 height="100"
-                class="rounded-xl border border-gray-100 shadow-sm object-cover w-full sm:w-48 h-[120px]"
+                class="rounded-xl border border-gray-100 shadow-sm object-cover w-full sm:w-48 h-[120px] group-hover:brightness-105 transition"
               />
-              <div class="flex flex-col justify-between gap-3 flex-1">
-                <div class="flex flex-col gap-1">
-                  <h2 class="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition">
-                    {{ a.article.title }}
-                  </h2>
-                  <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                    <template v-if="auth">
-                      <span
-                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-medium"
-                      >
-                        <Icon
-                          :name="a.article.status === 'draft' ? 'mdi:pencil-outline' : 'mdi:check-circle-outline'"
-                          class="w-4 h-4"
-                        />
-                        {{ a.article.status === 'draft' ? 'Návrh' : 'Publikováno' }}
-                      </span>
-                      <span>•</span>
-                    </template>
-                    <span class="inline-flex items-center gap-1">
-                      <Icon name="mdi:calendar" class="w-4 h-4 text-gray-400" />
-                      {{ formatDate(a.article.createdAt.toString()) }}
+              <div
+                v-if="!a.article.imageUrl"
+                class="w-full sm:w-48 h-[120px] rounded-xl border border-gray-100 flex items-center justify-center bg-gray-50 text-gray-400"
+              >
+                <Icon name="mdi:image-off" class="w-8 h-8" />
+              </div>
+            </div>
+
+            <div class="flex flex-col justify-between gap-3 flex-1">
+              <div class="flex flex-col gap-2">
+                <h2 class="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition tracking-tight">
+                  {{ a.article.title }}
+                </h2>
+
+                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600 pt-1">
+                  <div v-if="auth?.user.role === 'admin' || auth?.user.role === 'superadmin'">
+                    <span
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-medium"
+                    >
+                      <Icon
+                        :name="a.article.status === 'draft' ? 'mdi:pencil-outline' : 'mdi:check-circle-outline'"
+                        class="w-4 h-4"
+                      />
+                      {{ a.article.status === 'draft' ? 'Návrh' : 'Publikováno' }}
                     </span>
                     <span>•</span>
-                    <span class="inline-flex items-center gap-1 text-blue-500 font-medium">
-                      <Icon name="mdi:account-outline" class="w-4 h-4" />
-                      {{ a.article.user.username }}
-                    </span>
                   </div>
+
+                  <span class="inline-flex items-center gap-1">
+                    <Icon name="mdi:calendar" class="w-4 h-4 text-gray-400" />
+                    {{ formatDate(a.article.createdAt.toString()) }}
+                  </span>
+                  <span>•</span>
+                  <span class="inline-flex items-center gap-1 text-blue-500 font-medium">
+                    <Icon name="mdi:account-outline" class="w-4 h-4" />
+                    {{ a.article.user.username }}
+                  </span>
+                  <span>•</span>
+                  <span class="inline-flex items-center gap-1">
+                    <Icon name="mdi:eye" class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition" />
+                    {{ a.article.views }} zhlédnutí
+                  </span>
+                  <span>•</span>
+                  <span class="inline-flex items-center gap-1 group-hover:text-red-500 transition">
+                    <Icon name="mdi:heart" class="w-4 h-4 text-gray-400 group-hover:scale-110 transition" />
+                    {{ a.article.likes }}
+                  </span>
                 </div>
               </div>
-            </NuxtLink>
-          </div>
+            </div>
+          </NuxtLink>
         </div>
-
-        <p v-else class="text-gray-500 italic text-center py-8">Žádné články s tímto tagem nebyly nalezeny.</p>
       </div>
+      <p v-else class="text-gray-500 italic text-center py-8 text-lg">Žádné články s tímto tagem nebyly nalezeny.</p>
     </div>
   </div>
 </template>
@@ -107,6 +128,8 @@ type Article = {
       tagId: string
       tag: { name: string; slug: string }
     }[]
+    views: number
+    likes: number
   }
 }
 
@@ -118,10 +141,8 @@ type TagResponse = {
 }
 
 const route = useRoute()
-
 const { data: auth } = useAuth()
-
-const tagSlug = computed(() => route.params.slug as string)
+const tagSlug = computed(() => route.params.slug)
 
 const search = shallowRef<string>('')
 const sort = shallowRef<string>('createdAt:desc')
@@ -134,7 +155,6 @@ const tagName = computed(() => tag.value.name)
 
 const filteredArticles = computed(() => {
   const result = tag.value.articles.filter((a) => a.article.title.toLowerCase().includes(search.value.toLowerCase()))
-
   const [field, order] = sort.value.split(':')
   result.sort((a, b) =>
     field === 'createdAt'
@@ -145,7 +165,6 @@ const filteredArticles = computed(() => {
         ? a.article.title.localeCompare(b.article.title)
         : b.article.title.localeCompare(a.article.title),
   )
-
   return result
 })
 
