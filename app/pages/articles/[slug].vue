@@ -251,7 +251,7 @@ const hasTags = computed(() => !!data.value?.tags?.length)
 
 const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
   try {
-    await $fetch(`/api/articles/${id}/status`, { method: 'PATCH', body: { status } })
+    await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
     await refresh()
     toast.success({ message: `Stav na ${status === 'draft' ? 'návrh' : 'publikováno'}` })
   } catch (e: any) {
@@ -282,7 +282,7 @@ onMounted(async () => {
   if (lastView && now - Number(lastView) <= 1000) return
 
   try {
-    await $fetch(`/api/articles/${data.value.id}/view-update`, {
+    await $fetch(`/api/articles/${data.value.id}`, {
       method: 'PATCH',
       body: { views: data.value.views + 1 },
     })

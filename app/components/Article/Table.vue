@@ -189,7 +189,7 @@ async function del(id: string) {
 
 const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
   try {
-    await $fetch(`/api/articles/${id}/status`, {
+    await $fetch(`/api/articles/${id}`, {
       method: 'PATCH',
       body: { status },
     })
