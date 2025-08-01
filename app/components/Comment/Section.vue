@@ -2,7 +2,9 @@
   <div class="w-full mx-auto mt-14">
     <div class="flex items-center gap-3 mb-10">
       <Icon name="mdi:comment-multiple-outline" class="w-8 h-8 text-blue-600" />
-      <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Komentáře</h2>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+        Komentáře <span class="text-xl text-gray-500">({{ props.commCount }})</span>
+      </h2>
     </div>
     <div v-if="session?.user" class="mb-14 bg-white p-8 rounded-3xl shadow-xl border border-gray-200">
       <form class="space-y-6" @submit.prevent="submitComment">
@@ -87,7 +89,7 @@
 <script lang="ts" setup>
 import type { CommentWithReplies } from '~~/types/comment'
 
-const props = defineProps<{ articleId: string }>()
+const props = defineProps<{ articleId: string; commCount: number }>()
 
 const toast = useToast()
 

@@ -131,7 +131,7 @@
       />
 
       <ArticleRelated :articles="relatedArticles" />
-      <CommentSection :articleId="data.id" />
+      <CommentSection :articleId="data.id" :commCount="data.commentCount || 0" />
       <ArticleTOC :content="data.content" />
     </div>
 
@@ -174,6 +174,7 @@ import { TransitionRoot } from '@headlessui/vue'
 type Article = _Article & {
   user: { username: string; id: string }
   tags?: { tag: { name: string; slug: string; id: string } }[]
+  commentCount?: number
 }
 
 type RelatedArticle = { article: _Article & { user: { username: string } } }
