@@ -1,3 +1,4 @@
+```html
 <template>
   <div
     v-if="data"
@@ -85,6 +86,10 @@
           <div class="flex items-center gap-2 text-gray-500">
             <span>{{ data.views }}x zhlédnutí</span>
           </div>
+          <div class="flex items-center gap-2 text-gray-500">
+            <Icon name="mdi:heart" class="w-4 h-4" :class="{ 'text-red-500': data.likedByUser }" />
+            <span>{{ data.likes }}x</span>
+          </div>
           <button
             v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
             class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
@@ -97,6 +102,14 @@
       </div>
 
       <div class="flex justify-end gap-4 mt-10">
+        <button
+          aria-label="Lajknout článek"
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+          title="Lajknout článek"
+          @click="toggleLike"
+        >
+          <Icon name="mdi:heart" class="w-5 h-5" :class="{ 'text-red-500': data.likedByUser }" />
+        </button>
         <button
           aria-label="Zkopírovat odkaz"
           class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
@@ -175,18 +188,16 @@ type Article = _Article & {
   user: { username: string; id: string }
   tags?: { tag: { name: string; slug: string; id: string } }[]
   commentCount?: number
+  likes: number
+  likedByUser: boolean
 }
 
 type RelatedArticle = { article: _Article & { user: { username: string } } }
 
 const route = useRoute()
-
 const toast = useToast()
-
 const { data: session } = useAuth()
-
 const editingArticle = ref<Article | null>(null)
-
 const slug = computed(() => route.params.slug)
 
 const {
@@ -200,6 +211,30 @@ const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
 const copyLink = () => {
   navigator.clipboard.writeText(fullUrl.value)
   toast.success({ message: 'Odkaz zkopírován do schránky!' })
+}
+
+const toggleLike = async () => {
+  if (!data.value?.slug) return
+
+  const key = `liked-${data.value.slug}`
+  const hasLiked = sessionStorage.getItem(key)
+
+  if (hasLiked && !session.value?.user.id) {
+    data.value.likedByUser = false
+    data.value.likes -= 1
+    sessionStorage.removeItem(key)
+    return
+  }
+
+  try {
+    const res = await $fetch(`/api/articles/${data.value.id}/reaction`, { method: 'POST' })
+    data.value.likedByUser = res.liked
+    data.value.likes = res.likes
+    if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
+    await refresh()
+  } catch {
+    toast.error({ message: 'Lajkování selhalo' })
+  }
 }
 
 useSeoMeta({
@@ -217,9 +252,7 @@ const hasTags = computed(() => !!data.value?.tags?.length)
 const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
   try {
     await $fetch(`/api/articles/${id}/status`, { method: 'PATCH', body: { status } })
-
     await refresh()
-
     toast.success({ message: `Stav na ${status === 'draft' ? 'návrh' : 'publikováno'}` })
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Změna selhala' })
@@ -253,7 +286,6 @@ onMounted(async () => {
       method: 'PATCH',
       body: { views: data.value.views + 1 },
     })
-
     sessionStorage.setItem(key, now.toString())
   } catch {
     //
