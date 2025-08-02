@@ -24,6 +24,11 @@ enum ArticleStatus {
     published
 }
 
+enum ThemeOption {
+    light
+    dark
+}
+
 enum UserRole {
     admin
     superadmin
@@ -111,7 +116,7 @@ model User extends Base {
     username         String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
     email            String            @unique @length(3, 255, "Email musí mít 3–255 znaků")
     password         String?           @omit @length(4, 124, "Heslo musí mít 4–124 znaků")
-    bio              String?           @length(0, 300, "Bio autora může mít max. 300 znaků")
+    bio              String?           @length(0, 300, "Bio může mít max. 300 znaků")
     role             UserRole          @default(reader)
     avatarUrl        String?
     verification     VerificationCode?
@@ -119,6 +124,7 @@ model User extends Base {
     allowNotifs      Boolean           @default(true)
     lastLogin        DateTime?         @default(now())
     clientSiteId     String?
+    theme            ThemeOption       @default(light)
     clientSite       ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     articles         Article[]
     comments         Comment[]

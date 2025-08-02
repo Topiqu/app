@@ -17,6 +17,11 @@ enum ArticleStatus {
   published
 }
 
+enum ThemeOption {
+  light
+  dark
+}
+
 enum UserRole {
   admin
   superadmin
@@ -110,6 +115,7 @@ model User {
   allowNotifs      Boolean           @default(true)
   lastLogin        DateTime?         @default(now())
   clientSiteId     String?
+  theme            ThemeOption       @default(light)
   clientSite       ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   articles         Article[]
   comments         Comment[]
