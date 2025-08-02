@@ -1,15 +1,15 @@
 <template>
-  <div
-    v-if="data"
-    class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8 md:p-12 transition-all duration-500 ease-out"
-  >
+  <div v-if="data" class="min-h-screen p-8 md:p-12 transition-all duration-500 ease-out">
     <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4 sm:px-0">
       <NuxtLink
         to="/admin"
         class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 ease-in-out no-underline"
         aria-label="Zpět na seznam článků"
       >
-        <Icon name="mdi:arrow" class="w-6 h-6 mr-2 transition-transform duration-300 group-hover:-translate-x-1.5" />
+        <Icon
+          name="mdi:arrow"
+          class="w-6 h-6 mr-2 transition-transform duration-300 group-hover:-translate-x-1.5 text-blue-700"
+        />
         Zpět na seznam
       </NuxtLink>
       <ThemeToggle />
@@ -21,7 +21,7 @@
 
       <div class="flex items-center gap-3 text-sm text-gray-600 mt-[-8px]">
         <Icon name="mdi:account" class="w-4 h-4 text-blue-500" />
-        <span class="font-medium text-gray-800">{{ data.user.username }}</span>
+        <span class="font-medium">{{ data.user.username }}</span>
         <span class="italic text-gray-400">• Autor článku</span>
       </div>
 
@@ -95,7 +95,7 @@
             aria-label="Upravit článek"
             @click="editingArticle = data"
           >
-            <Icon name="mdi:pencil" class="w-5 h-5" />
+            <Icon name="mdi:pencil" class="w-5 h-5 text-gray-800" />
           </button>
         </div>
       </div>
@@ -115,7 +115,7 @@
           title="Zkopírovat odkaz"
           @click="copyLink"
         >
-          <Icon name="mdi:link-variant" class="w-5 h-5" />
+          <Icon name="mdi:link-variant" class="w-5 h-5 text-gray-500" />
         </button>
         <NuxtLink
           :to="`https://twitter.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
@@ -124,7 +124,7 @@
           title="Sdílet na Twitteru"
           aria-label="Sdílet na Twitteru"
         >
-          <Icon name="mdi:twitter" class="w-5 h-5" />
+          <Icon name="mdi:twitter" class="w-5 h-5 text-gray-500" />
         </NuxtLink>
         <NuxtLink
           :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
@@ -133,7 +133,7 @@
           title="Sdílet na LinkedIn"
           aria-label="Sdílet na LinkedIn"
         >
-          <Icon name="mdi:linkedin" class="w-5 h-5" />
+          <Icon name="mdi:linkedin" class="w-5 h-5 text-gray-500" />
         </NuxtLink>
       </div>
 
@@ -152,10 +152,7 @@
     </TransitionRoot>
   </div>
 
-  <div
-    v-else-if="error"
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100"
-  >
+  <div v-else-if="error" class="min-h-screen flex items-center justify-center">
     <div class="text-center p-8 md:p-10 bg-white rounded-2xl shadow-lg border border-gray-100">
       <Icon name="mdi:alert-circle" class="w-16 h-16 text-red-500 mx-auto mb-4 animate-pulse" aria-hidden="true" />
       <p class="text-lg md:text-xl text-gray-700 font-medium">
@@ -166,13 +163,13 @@
         class="mt-4 inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 no-underline hover:underline decoration-2 underline-offset-4"
         aria-label="Zpět na seznam článků"
       >
-        <Icon name="mdi:arrow-left" class="w-6 h-6 mr-2" />
+        <Icon name="mdi:arrow-left" class="w-6 h-6 mr-2 text-blue-700" />
         Zpět na seznam
       </NuxtLink>
     </div>
   </div>
 
-  <div v-else class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+  <div v-else class="min-h-screen flex items-center justify-center">
     <Icon name="mdi:loading" class="w-14 h-14 text-blue-600 animate-spin" />
   </div>
 </template>

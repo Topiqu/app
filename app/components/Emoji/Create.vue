@@ -23,43 +23,39 @@
         leaveTo="opacity-0 scale-95"
       >
         <DialogPanel
-          class="w-full max-w-xl bg-white p-8 sm:p-10 rounded-3xl shadow-2xl border border-gray-100 backdrop-blur-sm flex flex-col max-h-[90vh] overflow-hidden"
+          class="w-full max-w-xl p-8 sm:p-10 rounded-3xl shadow-2xl border flex flex-col max-h-[90vh] overflow-hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
         >
           <div class="flex-1 overflow-y-auto pr-2 sm:pr-4">
-            <DialogTitle class="text-2xl font-semibold text-gray-900">Vytvořit emoji</DialogTitle>
+            <DialogTitle class="text-2xl font-semibold">Vytvořit emoji</DialogTitle>
 
             <form class="mt-6 flex flex-col gap-6" @submit.prevent="submit">
               <label class="flex flex-col gap-2">
-                <span class="text-sm font-semibold uppercase tracking-wide text-gray-600">Shortcode</span>
+                <span class="text-sm font-semibold uppercase tracking-wide">Shortcode</span>
                 <input
                   v-model="shortcode"
                   placeholder="např. smile"
-                  class="p-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-inner"
+                  class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                   required
                 />
               </label>
 
               <label class="flex flex-col gap-2">
-                <span class="text-sm font-semibold uppercase tracking-wide text-gray-600">Obrázek</span>
+                <span class="text-sm font-semibold uppercase tracking-wide">Obrázek</span>
                 <input
                   ref="fileInput"
                   type="file"
                   accept="image/*"
-                  class="p-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-inner"
+                  class="p-3 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                   required
                 />
               </label>
             </form>
 
             <div class="mt-8">
-              <DialogTitle class="text-lg font-semibold text-gray-900 mb-2">Seznam emoji</DialogTitle>
-              <div v-if="loading && !emojis?.length" class="text-gray-600 text-sm">Načítání...</div>
-              <div v-else-if="error" class="text-red-600 text-sm">{{ error }}</div>
-              <div
-                v-else
-                ref="scrollParent"
-                class="overflow-y-auto h-64 rounded-xl border border-gray-200 shadow-inner bg-white/50"
-              >
+              <DialogTitle class="text-lg font-semibold mb-2">Seznam emoji</DialogTitle>
+              <div v-if="loading && !emojis?.length" class="text-sm">Načítání...</div>
+              <div v-else-if="error" class="text-sm">{{ error }}</div>
+              <div v-else ref="scrollParent" class="overflow-y-auto h-64 rounded-xl border shadow-inner">
                 <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
                   <div
                     v-for="virtualRow in virtualizer.getVirtualItems()"
@@ -71,7 +67,7 @@
                       width: '100%',
                       height: `${virtualRow.size}px`,
                     }"
-                    class="text-gray-700 border-b border-gray-100 py-2 px-3 flex justify-between items-center hover:bg-gray-50 transition"
+                    class="py-2 px-3 flex justify-between items-center transition border-b"
                   >
                     <div class="flex items-center gap-3">
                       <img
@@ -79,32 +75,30 @@
                         :alt="emojis![virtualRow.index]?.shortcode"
                         class="w-6 h-6 rounded"
                       />
-                      <span class="text-sm font-medium text-gray-800">{{ emojis![virtualRow.index]?.shortcode }}</span>
+                      <span class="text-sm font-medium">{{ emojis![virtualRow.index]?.shortcode }}</span>
                     </div>
                     <button
-                      class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-all duration-200"
+                      class="w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200"
                       @click="deleteEmoji(emojis![virtualRow.index]?.id!)"
                     >
-                      <Icon name="mdi:delete" class="w-5 h-5" />
+                      <Icon name="mdi:delete" class="text-red-500 w-4 h-4" />
                     </button>
                   </div>
                 </div>
-                <div v-if="!emojis?.length" class="text-gray-600 px-2 py-4 text-sm text-center">
-                  Žádná emoji nenalezena.
-                </div>
+                <div v-if="!emojis?.length" class="px-2 py-4 text-sm text-center">Žádná emoji nenalezena.</div>
               </div>
             </div>
           </div>
 
-          <div class="flex gap-4 justify-end mt-6 flex-shrink-0 border-t border-gray-100 pt-4">
+          <div class="flex gap-4 justify-end mt-6 flex-shrink-0 pt-4 border-t">
             <button
-              class="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition transform hover:scale-105 shadow-sm"
+              class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-sm"
               @click="confirmClose"
             >
               Zrušit
             </button>
             <button
-              class="px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               @click="submit"
             >
               Vytvořit

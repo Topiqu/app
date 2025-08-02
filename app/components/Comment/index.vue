@@ -1,7 +1,7 @@
 <template>
   <div
     :id="`comment-${comment.id}`"
-    class="w-full min-w-fit bg-white pt-2 pb-0.5 pl-2 pr-0.5 sm:pt-4 sm:pb-1 sm:pl-4 sm:pr-1 md:pt-6 md:pb-1.5 md:pl-6 md:pr-1.5 rounded-3xl shadow border border-gray-200 hover:bg-gray-50 transition-colors"
+    class="w-full min-w-fit bg-white pt-2 pb-0.5 pl-2 pr-0.5 sm:pt-4 sm:pb-1 sm:pl-4 sm:pr-1 md:pt-6 md:pb-1.5 md:pl-6 md:pr-1.5 rounded-3xl shadow border border-gray-200"
   >
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 sm:pr-4 md:pr-6">
       <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
@@ -25,7 +25,7 @@
       <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
         <button
           v-if="session?.user && !isReplying"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition hover:scale-[1.02] cursor-pointer"
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
           aria-label="Odpovědět"
           @click="$emit('reply', comment)"
         >
@@ -34,7 +34,7 @@
         </button>
         <button
           v-if="session?.user && session.user.id === comment.userId"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition hover:scale-[1.02] cursor-pointer"
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
           aria-label="Smazat komentář"
           @click="$emit('delete', comment)"
         >
@@ -47,7 +47,7 @@
       <span class="text-xs sm:text-sm md:text-base text-gray-400">• {{ formatDate(comment.createdAt) }}</span>
     </div>
     <p
-      class="mt-4 sm:mt-6 text-gray-700 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
+      class="mt-4 sm:mt-6 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
       :class="{ 'text-gray-400 italic': comment.deletedAt }"
     >
       {{ comment.deletedAt ? '[Tento komentář byl smazán]' : comment.content }}
@@ -59,12 +59,8 @@
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
         <button
           v-if="session?.user"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer"
-          :class="
-            comment.userReaction?.type === 'LIKE'
-              ? 'bg-green-100 text-green-600'
-              : 'bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-600'
-          "
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100"
+          :class="comment.userReaction?.type === 'LIKE' ? 'bg-green-100 text-green-600' : 'text-gray-600'"
           @click="$emit('like', comment)"
         >
           <Icon name="mdi:thumb-up-outline" class="w-4 h-4" />
@@ -72,12 +68,8 @@
         </button>
         <button
           v-if="session?.user"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer"
-          :class="
-            comment.userReaction?.type === 'DISLIKE'
-              ? 'bg-red-100 text-red-600'
-              : 'bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600'
-          "
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100"
+          :class="comment.userReaction?.type === 'DISLIKE' ? 'bg-red-100 text-red-600' : 'text-gray-600'"
           @click="$emit('dislike', comment)"
         >
           <Icon name="mdi:thumb-down-outline" class="w-4 h-4" />

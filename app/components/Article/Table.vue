@@ -15,15 +15,15 @@
     </div>
     <div class="overflow-x-auto rounded border border-gray-300">
       <table class="min-w-full table-fixed text-sm divide-y divide-gray-200">
-        <thead class="bg-gray-100 text-left font-semibold text-gray-600">
+        <thead class="bg-gray-100 text-left font-semibold text-black">
           <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <th
               v-for="header in headerGroup.headers"
               :key="header.id"
-              class="px-4 py-2 text-center select-none cursor-pointer"
+              class="px-4 py-2 text-center select-none cursor-pointer text-black"
               @click="(event) => header.column.getToggleSortingHandler()?.(event)"
             >
-              <span v-if="!header.isPlaceholder">
+              <span v-if="!header.isPlaceholder" class="text-black">
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
                 <span v-if="header.column.getIsSorted() === 'asc'">
                   <Icon name="mdi:arrow-up" />
@@ -59,25 +59,25 @@
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 text-gray-800 rounded-full hover:from-green-300 hover:to-green-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="router.push(`/articles/${row.original.slug}`)"
               >
-                <Icon name="mdi:eye" class="w-5 h-5" />
+                <Icon name="mdi:eye" class="w-5 h-5 text-black" />
               </button>
               <button
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="editingArticle = row.original"
               >
-                <Icon name="mdi:pencil" class="w-5 h-5" />
+                <Icon name="mdi:pencil" class="w-5 h-5 text-black" />
               </button>
               <button
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 text-gray-800 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="editingTags = row.original.id"
               >
-                <Icon name="mdi:tag-outline" class="w-5 h-5" />
+                <Icon name="mdi:tag-outline" class="w-5 h-5 text-black" />
               </button>
               <button
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="del(row.original.id)"
               >
-                <Icon name="mdi:delete" class="w-5 h-5" />
+                <Icon name="mdi:delete" class="w-5 h-5 text-black" />
               </button>
             </td>
           </tr>

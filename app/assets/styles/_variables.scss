@@ -1,0 +1,22 @@
+:root,
+html[class="light"] {
+  --dialog-bg: #ffffff;
+  --dialog-text: #1f2937;
+  --input-bg: #f9fafb;
+  --input-text: #1f2937;
+  --border-color: #d1d5db;
+}
+
+html[class="dark"] {
+  --dialog-bg: #1f2937;
+  --dialog-text: #e5e7eb;
+  --input-bg: #374151;
+  --input-text: #e5e7eb;
+  --border-color: #4b5563;
+}
+
+$dialog-bg: var(--dialog-bg);
+$dialog-text: var(--dialog-text);
+$input-bg: var(--input-bg);
+$input-text: var(--input-text);
+$border-color: var(--border-color);

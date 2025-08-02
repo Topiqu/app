@@ -25,7 +25,7 @@
         <DialogPanel
           class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm"
         >
-          <DialogTitle class="text-xl font-bold text-gray-900"> Správa tagů </DialogTitle>
+          <DialogTitle class="text-xl font-bold"> Správa tagů </DialogTitle>
 
           <div class="flex flex-col gap-6">
             <label class="flex flex-col gap-3">
@@ -48,12 +48,12 @@
           <div class="flex flex-col gap-4 max-h-64 overflow-y-auto">
             <div v-if="tags.length" class="flex flex-col divide-y divide-gray-200">
               <div v-for="t in tags" :key="t.id" class="flex items-center justify-between py-2 group">
-                <span class="text-gray-800 text-sm font-medium">{{ t.name }}</span>
+                <span class="text-sm font-medium">{{ t.name }}</span>
                 <button
                   class="flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-500 transition-all duration-300 hover:bg-red-100 hover:text-red-700 active:scale-90"
                   @click="deleteTag(t.id, t.name)"
                 >
-                  <Icon name="mdi:delete" class="w-5 h-5" />
+                  <Icon name="mdi:delete" class="w-5 h-5 text-red-500" />
                 </button>
               </div>
             </div>

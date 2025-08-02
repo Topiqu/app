@@ -1,3 +1,5 @@
+@use '_variables.scss' as *;
+
 * {
   margin: 0;
   padding: 0;
@@ -8,4 +10,47 @@
 
 main {
   flex-grow: 1;
+}
+
+h1, h2, h3, h4, p, span, label {
+  color: $input-text;
+}
+
+input {
+  background-color: $input-bg !important;
+  color: $input-text !important;
+  border: 1px solid $border-color !important;
+  border-radius: 6px !important;
+}
+
+html.dark div {
+  background-color: #1f2937;
+}
+
+html.dark button {
+  background-color: #374151;
+  color: $dialog-text;
+  border-color: #4b5563;
+}
+
+button:hover {
+  background-color: #f1f3f5; 
+}
+
+html.dark button:hover {
+  background-color: #2f3b4c;
+}
+
+[role="tooltip"] {
+  background-color: $input-bg;
+  color: $dialog-text !important;
+  border: 1px solid $border-color;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+html.dark [role="tooltip"] {
+  background-color: #374151;
+  color: $input-text !important;
+  border-color: #4b5563;
 }
