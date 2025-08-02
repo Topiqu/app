@@ -1,11 +1,8 @@
 <template>
-  <div class="bg-white rounded-lg shadow p-6 mt-6">
+  <div class="rounded-lg shadow p-6 mt-6">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">Zobrazení za poslední týden</h2>
-      <button
-        class="px-3 py-1.5 rounded border text-sm font-medium hover:bg-gray-100 transition bg-white border-coolGray"
-        @click="toggleType"
-      >
+      <button class="px-3 py-1.5 rounded border text-sm font-medium hover:bg-gray-100 transition" @click="toggleType">
         Přepnout na {{ chartType === 'bar' ? 'čárový' : 'sloupcový' }}
       </button>
     </div>

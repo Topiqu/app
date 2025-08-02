@@ -27,7 +27,7 @@
         >
           <div class="flex justify-between items-center">
             <DialogTitle
-              class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"
+              class="text-3xl font-bold bg-gradient-to-r from-gray-600 to-gray-400 bg-clip-text text-transparent"
             >
               Statistiky blogu
             </DialogTitle>
