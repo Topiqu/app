@@ -110,6 +110,20 @@ html.dark button:hover {
   background-color: #2f3b4c;
 }
 
+.tippy-box {
+  background-color: $input-bg !important;
+  color: $dialog-text !important;
+  border: 1px solid $border-color !important;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+html.dark .tippy-box {
+  background-color: #374151 !important;
+  color: $input-text !important;
+  border-color: #4b5563 !important;
+}
+
 [role="tooltip"] {
   background-color: $input-bg;
   color: $dialog-text !important;
