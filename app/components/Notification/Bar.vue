@@ -43,7 +43,7 @@
               </button>
 
               <div class="pr-6">
-                <p class="text-sm text-gray-800">{{ notification.message }}</p>
+                <p class="text-sm">{{ notification.message }}</p>
                 <p class="text-xs text-gray-400 mt-1">
                   {{ formatDate(notification.createdAt) }}
                 </p>

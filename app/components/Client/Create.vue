@@ -26,7 +26,7 @@
           class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl border backdrop-blur-sm flex flex-col max-h-[80vh]"
         >
           <div class="flex-1 overflow-y-auto pr-4">
-            <DialogTitle class="text-xl font-bold text-gray-900"> Správa klientů </DialogTitle>
+            <DialogTitle class="text-xl font-bold"> Správa klientů </DialogTitle>
 
             <div class="flex flex-col gap-6">
               <label class="flex flex-col gap-3">
@@ -141,9 +141,9 @@
             <div v-if="fetchedClients?.length" class="flex flex-col divide-y divide-gray-200">
               <div v-for="c in fetchedClients" :key="c.id" class="flex items-center justify-between py-2 group">
                 <div class="flex flex-col">
-                  <span class="text-gray-800 text-sm font-medium">{{ c.name }}</span>
-                  <span v-if="c.focus" class="text-gray-600 text-xs">Focus: {{ c.focus }}</span>
-                  <span v-if="c.keywords" class="text-gray-600 text-xs"
+                  <span class="text-sm font-medium">{{ c.name }}</span>
+                  <span v-if="c.focus" class="text-gray-400 text-xs">Focus: {{ c.focus }}</span>
+                  <span v-if="c.keywords" class="text-gray-400 text-xs"
                     >Klíčová slova:
                     {{
                       Array.isArray(c.keywords)
@@ -158,7 +158,7 @@
                   class="flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-500 transition-all duration-300 hover:bg-red-100 hover:text-red-700 active:scale-90"
                   @click="deleteClient(c.id, c.name)"
                 >
-                  <Icon name="mdi:delete" class="w-5 h-5" />
+                  <Icon name="mdi:delete" class="w-5 h-5 text-red-500" />
                 </button>
               </div>
             </div>

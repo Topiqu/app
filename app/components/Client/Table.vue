@@ -50,14 +50,14 @@
               class="px-4 py-2 break-words max-w-[180px] sm:max-w-none text-center"
             >
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-              <div
+              <p
                 v-if="cell.column.id === 'name'"
                 class="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
                 :class="row.original.deletedAt ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'"
               >
                 {{ row.original.deletedAt ? 'Deaktivovaný' : 'Aktivní' }}
-              </div>
-              <div
+              </p>
+              <p
                 v-if="cell.column.id === 'plan'"
                 class="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
                 :class="{
@@ -68,34 +68,34 @@
                 }"
               >
                 {{ row.original.plan }}
-              </div>
+              </p>
             </td>
             <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
               <button
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 text-gray-800 rounded-full hover:from-green-300 hover:to-green-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="clientId = row.original.id"
               >
-                <Icon name="mdi:eye" class="w-5 h-5" />
+                <Icon name="mdi:eye" class="w-5 h-5 text-black" />
               </button>
               <button
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="editingClient = row.original"
               >
-                <Icon name="mdi:pencil" class="w-5 h-5" />
+                <Icon name="mdi:pencil" class="w-5 h-5 text-black" />
               </button>
               <button
                 v-if="!row.original.deletedAt"
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="del(row.original.id)"
               >
-                <Icon name="mdi:lock" class="w-5 h-5" />
+                <Icon name="mdi:lock" class="w-5 h-5 text-black" />
               </button>
               <button
                 v-else
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 text-gray-800 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="restore(row.original.id)"
               >
-                <Icon name="mdi:lock-open" class="w-5 h-5" />
+                <Icon name="mdi:lock-open" class="w-5 h-5 text-black" />
               </button>
             </td>
           </tr>
@@ -152,6 +152,7 @@ const columns = ref<ColumnDef<ClientSite>[]>([
   {
     header: 'Plán',
     id: 'plan',
+    accessorKey: 'plan',
     cell: (info) => info.getValue(),
   },
   {

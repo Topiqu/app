@@ -26,7 +26,7 @@
           class="w-full max-w-lg bg-white p-6 rounded-3xl shadow-2xl border backdrop-blur-sm flex flex-col max-h-[80vh]"
         >
           <div class="flex-1 overflow-y-auto pr-4">
-            <DialogTitle class="text-xl font-bold text-gray-900 mb-6"> Přidat článek </DialogTitle>
+            <DialogTitle class="text-xl font-bold mb-6"> Přidat článek </DialogTitle>
 
             <div class="flex flex-col gap-6">
               <label class="flex flex-col gap-3">
@@ -54,10 +54,10 @@
               </label>
               <TagsManager v-model:tags="articleTags" />
               <div v-if="articles.length" class="flex flex-col gap-2 max-h-48 overflow-y-auto">
-                <div v-for="a in articles" :key="a.id" class="text-gray-600">
+                <p v-for="a in articles" :key="a.id">
                   {{ a.title }}
                   {{ a.status === 'published' ? '(Publikováno)' : '' }}
-                </div>
+                </p>
               </div>
               <p v-else class="text-gray-600">Žádné články.</p>
               <!-- <button

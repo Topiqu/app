@@ -12,7 +12,7 @@ main {
   flex-grow: 1;
 }
 
-h1, h2, h3, h4, p, span, label {
+h1, h2, h3, h4, p, span, label, textarea {
   color: $input-text;
 }
 
@@ -23,8 +23,77 @@ input {
   border-radius: 6px !important;
 }
 
-html.dark div {
+html.dark div:not(.iziToast, .iziToast-capsule, .iziToast-wrapper *, [role="dialog"], [role="dialog"] *) {
   background-color: #1f2937;
+}
+
+.iziToast-wrapper {
+  background-color: transparent !important;
+}
+
+.iziToast-capsule {
+  background-color: transparent;
+}
+
+.iziToast {
+  background-color: transparent;
+  color: #000000;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+}
+
+.iziToast-color-green {
+  border-left-color: #4caf50;
+}
+
+html.dark .iziToast {
+  color: #e5e7eb;
+  border: 1px solid #4b5563;
+}
+
+html.dark .iziToast-color-green {
+  border-left-color: #66bb6a;
+}
+
+[role="dialog"] {
+  background-color: transparent !important;
+}
+
+[role="dialog"] [id^="headlessui-dialog-panel"] {
+  background-color: $input-bg !important;
+  color: $input-text !important;
+}
+
+html.dark [role="dialog"] [id^="headlessui-dialog-panel"] {
+  background-color: #374151 !important;
+  color: $input-text !important;
+}
+
+.swal2-popup {
+  background-color: $input-bg !important;
+  color: $dialog-text !important;
+  border-radius: 0.5rem !important;
+}
+
+html.dark .swal2-popup {
+  background-color: #374151 !important;
+  color: $input-text !important;
+}
+
+html.dark .swal2-styled {
+  background-color: #4b5563 !important;
+  color: $input-text !important;
+}
+
+html.dark .swal2-title,
+html.dark .swal2-html-container,
+html.dark .swal2-actions,
+html.dark .swal2-icon-content {
+  color: $input-text !important;
+}
+
+.swal2-container {
+  background-color: transparent !important;
 }
 
 html.dark button {
@@ -34,7 +103,7 @@ html.dark button {
 }
 
 button:hover {
-  background-color: #f1f3f5; 
+  background-color: #f1f3f5;
 }
 
 html.dark button:hover {

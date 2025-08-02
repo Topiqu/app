@@ -25,7 +25,7 @@
         <DialogPanel
           class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm max-h-[80vh]"
         >
-          <DialogTitle class="text-xl font-bold text-gray-900">Seznam uživatelů</DialogTitle>
+          <DialogTitle class="text-xl font-bold">Seznam uživatelů</DialogTitle>
 
           <input
             v-model="searchQuery"
@@ -48,7 +48,7 @@
                   width: '100%',
                   height: `${virtualRow.size}px`,
                 }"
-                class="text-gray-600 border-b py-2 px-1 flex justify-between items-center"
+                class="border-b py-2 px-1 flex justify-between items-center text-gray"
               >
                 <div>
                   <div>
@@ -67,17 +67,17 @@
                 <div v-if="session?.user?.role === 'superadmin'" class="flex gap-2">
                   <button
                     v-if="filteredUsers[virtualRow.index]?.deletedAt === null"
-                    class="w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+                    class="w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                     @click="del(filteredUsers[virtualRow.index]?.id)"
                   >
-                    <Icon name="mdi:lock" class="w-5 h-5" />
+                    <Icon name="mdi:lock" class="w-5 h-5 text-black" />
                   </button>
                   <button
                     v-else
-                    class="w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 text-gray-800 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+                    class="w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
                     @click="restore(filteredUsers[virtualRow.index]?.id)"
                   >
-                    <Icon name="mdi:lock-open" class="w-5 h-5" />
+                    <Icon name="mdi:lock-open" class="w-5 h-5 text-black" />
                   </button>
                 </div>
               </div>

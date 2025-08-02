@@ -6,7 +6,7 @@
         Komentáře <span class="text-xl text-gray-500">({{ props.commCount }})</span>
       </h2>
     </div>
-    <div v-if="session?.user" class="mb-14 bg-white p-8 rounded-3xl shadow-xl border border-gray-200">
+    <div v-if="session?.user" class="mb-14 p-8 rounded-3xl shadow-xl border border-gray-200">
       <form class="space-y-6" @submit.prevent="submitComment">
         <div class="space-y-2">
           <label for="comment" class="block text-base font-semibold flex items-center gap-2">
