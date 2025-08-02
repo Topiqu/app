@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-2" @click.capture="handleRootClick">
+  <div class="flex flex-col gap-2">
     <template v-if="editor">
       <div v-if="edit" class="flex items-center flex-wrap gap-x-2 gap-y-1">
         <BubbleMenu :editor="editor" :setLink="setLink" :triggerFileInput="triggerFileInput" />
@@ -88,20 +88,29 @@
         <button
           type="button"
           class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-          title="Code Block"
-          :class="{ 'bg-gray-200': editor.isActive('codeBlock') }"
-          @click="editor.chain().focus().toggleCodeBlock().run()"
+          title="Set Blockquote"
+          :disabled="!editor.can().setBlockquote()"
+          @click="setBlockquote"
         >
-          <Icon name="mdi-code-block-tags" />
+          <Icon name="mdi-format-quote-open" />
         </button>
         <button
           type="button"
           class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-          title="Blockquote"
-          :class="{ 'bg-gray-200': editor.isActive('blockquote') }"
-          @click="editor.chain().focus().toggleBlockquote().run()"
+          title="Unset Blockquote"
+          :disabled="!editor.can().unsetBlockquote()"
+          @click="unsetBlockquote"
         >
-          <Icon name="mdi-format-quote-open" />
+          <Icon name="mdi-format-quote-close" />
+        </button>
+        <button
+          type="button"
+          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+          title="Underline"
+          :class="{ 'bg-gray-200': editor.isActive('underline') }"
+          @click="editor.chain().focus().toggleUnderline().run()"
+        >
+          <Icon name="mdi-format-underline" />
         </button>
         <button
           type="button"
@@ -193,7 +202,7 @@
             />
             <circle r="6" cx="20" cy="20" fill="white" />
           </svg>
-          <span class="text-gray-500">
+          <span>
             {{ editor.storage.characterCount.characters() }} / {{ limit }} characters
             <br />
             {{ editor.storage.characterCount.words() }} words
@@ -204,12 +213,12 @@
         :editor
         :class="{
           'rounded-lg shadow-sm': edit,
-          'h-64 p-4 bg-white border border-gray-300 overflow-y-auto': true,
+          'h-96 p-4 bg-white border border-gray-300 overflow-y-auto': true,
         }"
         @click.stop.prevent="handleEditorClick"
       />
     </template>
-    <div v-else class="tiptap" v-html="content ? content : fallback" />
+    <div v-else class="text-black" v-html="content ? content : fallback" />
   </div>
 </template>
 
@@ -222,10 +231,17 @@ import { Underline } from '@tiptap/extension-underline'
 import { TextAlign } from '@tiptap/extension-text-align'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { Typography } from '@tiptap/extension-typography'
+import { Blockquote } from '@tiptap/extension-blockquote'
 import { CharacterCount } from '@tiptap/extension-character-count'
 
 import FileInput from './File/Input.vue'
 import BubbleMenu from './BubbleMenu.vue'
+
+const CustomBlockquote = Blockquote.extend({
+  renderHTML({ HTMLAttributes }) {
+    return ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0]
+  },
+})
 
 const {
   edit,
@@ -245,10 +261,10 @@ const emit = defineEmits<{
 }>()
 
 const content = useVModel(props, 'modelValue', emit) as Ref<string | null>
-if (!content.value) content.value = fallback
+if (!content.value) content.value = '<p></p>'
 
 watch(content, (newVal) => {
-  if (!newVal) content.value = fallback
+  if (!newVal) content.value = '<p></p>'
 })
 
 const percentage = computed(() => Math.round((100 / limit) * (editor.value?.storage.characterCount.characters() || 0)))
@@ -262,15 +278,10 @@ const triggerFileInput = () => {
 const uploadImage = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
-
   const formData = new FormData()
   formData.append('file', file)
-
   try {
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    })
+    const res = await fetch('/api/upload', { method: 'POST', body: formData })
     const { url, error } = await res.json()
     if (error) {
       alert(error)
@@ -286,19 +297,39 @@ const onFileInputClose = () => {
   editor.value?.chain().focus().run()
 }
 
-const handleEditorClick = (e: Event) => {
-  console.log('EditorContent clicked', e.target, e.currentTarget)
+const handleEditorClick = () => {
+  if (!edit) emit('update:edit', true)
+  editor.value?.chain().focus().setParagraph().run()
 }
 
-const handleRootClick = (e: Event) => {
-  console.log('Root clicked', e.target, e.currentTarget)
+const setBlockquote = () => {
+  console.log('SetBlockquote clicked')
+  console.log('Can setBlockquote:', editor.value?.can().setBlockquote())
+  console.log('HTML before:', editor.value?.getHTML())
+  editor.value?.chain().focus().setParagraph().setBlockquote().run()
+  console.log('Is blockquote active:', editor.value?.isActive('blockquote'))
+  console.log('HTML after:', editor.value?.getHTML())
+}
+
+const unsetBlockquote = () => {
+  console.log('UnsetBlockquote clicked')
+  console.log('Can unsetBlockquote:', editor.value?.can().unsetBlockquote())
+  console.log('HTML before:', editor.value?.getHTML())
+  editor.value?.chain().focus().unsetBlockquote().run()
+  console.log('Is blockquote active:', editor.value?.isActive('blockquote'))
+  console.log('HTML after:', editor.value?.getHTML())
 }
 
 const editor = ref(
   useEditor({
     content: content.value,
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        blockquote: false,
+      }),
+      CustomBlockquote.configure({
+        HTMLAttributes: { class: 'blockquote' },
+      }),
       Image.configure({
         inline: true,
         HTMLAttributes: { class: 'max-w-full h-auto rounded' },
@@ -320,11 +351,8 @@ const editor = ref(
 const setLink = () => {
   const previousUrl = editor.value?.getAttributes('link').href
   const url = window.prompt('URL', previousUrl)
-
   if (url === null) return
-
   if (url === '') return editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
-
   if (url && !previousUrl) return editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
 }
 
@@ -332,3 +360,23 @@ watchEffect(() => editor.value?.setEditable(edit))
 
 onBeforeUnmount(() => editor.value?.destroy())
 </script>
+<style>
+.ProseMirror p,
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  color: #000;
+}
+.ProseMirror blockquote {
+  border-left: 4px solid #3b82f6;
+  background-color: #f9fafb;
+  padding: 12px 16px;
+  margin: 16px 0;
+  color: #1f2937;
+  font-style: italic;
+  border-radius: 4px;
+}
+</style>

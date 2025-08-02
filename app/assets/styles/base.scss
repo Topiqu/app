@@ -8,11 +8,37 @@
   scroll-behavior: smooth;
 }
 
+blockquote {
+  margin: revert;
+  padding: revert;
+  border: revert;
+}
+
+blockquote.blockquote {
+  border-left: 4px solid #3b82f6;
+  background-color: #f9fafb;
+  padding: 12px 16px;
+  margin: 16px 0;
+  color: #1f2937;
+  font-style: italic;
+  border-radius: 4px;
+}
+
+html.dark blockquote.blockquote {
+  background-color: #374151;
+  color: #e5e7eb;
+  border-left: 4px solid #60a5fa;
+}
+
 main {
   flex-grow: 1;
 }
 
 h1, h2, h3, h4, p, span, label, textarea {
+  color: $input-text;
+}
+
+a {
   color: $input-text;
 }
 
