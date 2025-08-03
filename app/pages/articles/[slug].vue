@@ -12,7 +12,6 @@
         />
         Zpět na seznam
       </NuxtLink>
-      <ThemeToggle />
       <h1
         class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent tracking-tight leading-tight"
       >

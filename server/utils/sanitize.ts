@@ -4,6 +4,13 @@ import createDOMPurify from 'dompurify'
 const { window } = new JSDOM('')
 const DOMPurify = createDOMPurify(window as unknown as typeof globalThis)
 
+DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
+  if (node.nodeName === 'IFRAME' && data.attrName === 'src') {
+    const allowed = /^https?:\/\/(?:www\.)?(youtube\.com|youtu\.be)\//.test(data.attrValue)
+    if (!allowed) data.keepAttr = false
+  }
+})
+
 export const sanitizeHtml = (dirty: string) => {
   return DOMPurify.sanitize(dirty, {
     USE_PROFILES: { html: true },
@@ -28,6 +35,5 @@ export const sanitizeHtml = (dirty: string) => {
       'data-youtube-video',
       'alt',
     ],
-    ALLOWED_URI_REGEXP: /^(?:(?:(?:https?):)?\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be|[\w-]+\.[\w-]+)?\/.+$/,
   })
 }
