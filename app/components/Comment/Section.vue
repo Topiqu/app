@@ -145,6 +145,13 @@ const submitComment = async () => {
 const handleReply = (comment: CommentWithReplies) => {
   if (comment.deletedAt) return
   replyingTo.value = comment
+  nextTick(() => {
+    const textarea = document.getElementById('comment')
+    if (textarea) {
+      textarea.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      textarea.focus()
+    }
+  })
 }
 
 const handleDelete = async (comment: CommentWithReplies) => {
