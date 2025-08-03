@@ -106,6 +106,14 @@
         <button
           type="button"
           class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+          title="Insert YouTube Video"
+          @click="insertYoutube"
+        >
+          <Icon name="mdi-youtube" />
+        </button>
+        <button
+          type="button"
+          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
           title="Underline"
           :class="{ 'bg-gray-200': editor.isActive('underline') }"
           @click="editor.chain().focus().toggleUnderline().run()"
@@ -227,6 +235,7 @@ import { useVModel } from '@vueuse/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
 import { Image } from '@tiptap/extension-image'
+import { Youtube } from '@tiptap/extension-youtube'
 import { Underline } from '@tiptap/extension-underline'
 import { TextAlign } from '@tiptap/extension-text-align'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
@@ -235,7 +244,6 @@ import { Blockquote } from '@tiptap/extension-blockquote'
 import { CharacterCount } from '@tiptap/extension-character-count'
 
 import FileInput from './File/Input.vue'
-import BubbleMenu from './BubbleMenu.vue'
 
 const CustomBlockquote = Blockquote.extend({
   renderHTML({ HTMLAttributes }) {
@@ -303,21 +311,21 @@ const handleEditorClick = () => {
 }
 
 const setBlockquote = () => {
-  console.log('SetBlockquote clicked')
-  console.log('Can setBlockquote:', editor.value?.can().setBlockquote())
-  console.log('HTML before:', editor.value?.getHTML())
   editor.value?.chain().focus().setParagraph().setBlockquote().run()
-  console.log('Is blockquote active:', editor.value?.isActive('blockquote'))
-  console.log('HTML after:', editor.value?.getHTML())
 }
 
 const unsetBlockquote = () => {
-  console.log('UnsetBlockquote clicked')
-  console.log('Can unsetBlockquote:', editor.value?.can().unsetBlockquote())
-  console.log('HTML before:', editor.value?.getHTML())
   editor.value?.chain().focus().unsetBlockquote().run()
-  console.log('Is blockquote active:', editor.value?.isActive('blockquote'))
-  console.log('HTML after:', editor.value?.getHTML())
+}
+
+const insertYoutube = () => {
+  const url = window.prompt('Zadejte URL YouTube videa:')
+  if (url) {
+    console.log('Inserting YouTube video:', url)
+    editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
+    console.log('HTML after video insert:', editor.value?.getHTML())
+    console.log('YouTube elements:', document.querySelectorAll('.ProseMirror iframe.youtube-video').length)
+  }
 }
 
 const editor = ref(
@@ -342,6 +350,12 @@ const editor = ref(
         openOnClick: false,
         defaultProtocol: 'https',
       }),
+      Youtube.configure({
+        HTMLAttributes: { class: 'youtube-video' },
+        inline: false,
+        allowFullscreen: true,
+        ccLanguage: 'cs',
+      }),
     ],
     editable: edit,
     onUpdate: (value) => value && (content.value = value.editor.getHTML()),
@@ -360,6 +374,7 @@ watchEffect(() => editor.value?.setEditable(edit))
 
 onBeforeUnmount(() => editor.value?.destroy())
 </script>
+
 <style>
 .ProseMirror p,
 .ProseMirror h1,
@@ -370,7 +385,7 @@ onBeforeUnmount(() => editor.value?.destroy())
 .ProseMirror h6 {
   color: #000;
 }
-.ProseMirror blockquote {
+.ProseMirror blockquote.blockquote {
   border-left: 4px solid #3b82f6;
   background-color: #f9fafb;
   padding: 12px 16px;
@@ -378,5 +393,20 @@ onBeforeUnmount(() => editor.value?.destroy())
   color: #1f2937;
   font-style: italic;
   border-radius: 4px;
+}
+html.dark .ProseMirror blockquote.blockquote {
+  background-color: #374151;
+  color: #e5e7eb;
+  border-left: 4px solid #60a5fa;
+}
+.ProseMirror iframe.youtube-video {
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+html.dark .ProseMirror iframe.youtube-video {
+  background-color: #374151;
 }
 </style>
