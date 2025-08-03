@@ -17,7 +17,7 @@
         <button
           :class="[
             'px-4 py-2 rounded-lg transition font-semibold',
-            mode === 'login' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+            mode === 'login' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-500 hover:bg-gray-200',
           ]"
           @click="mode = 'login'"
         >
@@ -26,7 +26,7 @@
         <button
           :class="[
             'px-4 py-2 rounded-lg transition font-semibold',
-            mode === 'register' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+            mode === 'register' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-500 hover:bg-gray-200',
           ]"
           @click="mode = 'register'"
         >
@@ -36,7 +36,7 @@
 
       <form v-if="!verifyMode" class="space-y-5 text-sm" @submit.prevent="submit">
         <div class="space-y-1.5">
-          <label for="email" class="block text-sm font-semibold text-gray-700">Email</label>
+          <label for="email" class="block text-sm font-semibold text-gray-500">Email</label>
           <div class="relative">
             <Icon name="mdi:envelope" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
             <input
@@ -51,7 +51,7 @@
         </div>
 
         <div v-if="mode === 'register'" class="space-y-1.5">
-          <label for="username" class="block text-sm font-semibold text-gray-700">Uživatelské jméno</label>
+          <label for="username" class="block text-sm font-semibold text-gray-500">Uživatelské jméno</label>
           <div class="relative">
             <Icon name="mdi:account" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
             <input
@@ -68,7 +68,7 @@
         </div>
 
         <div class="space-y-1.5">
-          <label for="password" class="block text-sm font-semibold text-gray-700">Heslo</label>
+          <label for="password" class="block text-sm font-semibold text-gray-500">Heslo</label>
           <div class="relative">
             <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
             <input
@@ -85,7 +85,7 @@
         </div>
 
         <div v-if="mode === 'register'" class="space-y-1.5">
-          <label for="passwordConfirm" class="block text-sm font-semibold text-gray-700">Potvrzení hesla</label>
+          <label for="passwordConfirm" class="block text-sm font-semibold text-gray-500">Potvrzení hesla</label>
           <div class="relative">
             <Icon name="mdi:lock-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
             <input
@@ -120,11 +120,11 @@
       </form>
 
       <form v-if="verifyMode" class="space-y-5 text-sm" @submit.prevent="verify">
-        <p class="text-gray-700 text-sm">
+        <p class="text-gray-500 text-sm">
           Zadejte ověřovací kód odeslaný na <span class="font-medium">{{ form.email }}</span>
         </p>
         <div class="space-y-1.5">
-          <label for="code" class="block text-sm font-semibold text-gray-700">Ověřovací kód</label>
+          <label for="code" class="block text-sm font-semibold text-gray-500">Ověřovací kód</label>
           <div class="relative">
             <Icon name="mdi:shield-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
             <input

@@ -155,7 +155,7 @@
   <div v-else-if="error" class="min-h-screen flex items-center justify-center">
     <div class="text-center p-8 md:p-10 bg-white rounded-2xl shadow-lg border border-gray-100">
       <Icon name="mdi:alert-circle" class="w-16 h-16 text-red-500 mx-auto mb-4 animate-pulse" aria-hidden="true" />
-      <p class="text-lg md:text-xl text-gray-700 font-medium">
+      <p class="text-lg md:text-xl text-gray-500 font-medium">
         {{ errorMsg }}
       </p>
       <NuxtLink

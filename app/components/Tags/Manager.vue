@@ -35,7 +35,7 @@
     <div v-if="tagBuffer.length" class="flex flex-col gap-4 max-h-64 overflow-y-auto">
       <div class="flex flex-col divide-y divide-gray-200">
         <div v-for="t in tagBuffer" :key="t.id" class="flex items-center justify-between py-2 group">
-          <span class="text-gray-800 text-sm font-medium">{{ t.name }}</span>
+          <span class="text-sm font-medium">{{ t.name }}</span>
           <button
             class="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             @click="removeTagFromBuffer(t.id)"
@@ -45,7 +45,7 @@
         </div>
       </div>
     </div>
-    <p v-else class="text-gray-600 text-sm">Žádné tagy nevybrány.</p>
+    <p v-else class="text-sm">Žádné tagy nevybrány.</p>
   </div>
 </template>
 

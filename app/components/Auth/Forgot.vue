@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white px-6 py-8 rounded-2xl shadow-md border border-gray-200 space-y-6">
     <form v-if="mode === 'forgot'" class="space-y-5 text-sm" @submit.prevent="forgot">
-      <p class="text-gray-700 text-sm">Zadejte e-mail pro obnovu hesla</p>
+      <p class="text-gray-500 text-sm">Zadejte e-mail pro obnovu hesla</p>
       <div class="space-y-1.5">
         <label for="email" class="block font-semibold text-gray-700">Email</label>
         <div class="relative">
@@ -32,9 +32,9 @@
     </form>
 
     <form v-if="mode === 'reset'" class="space-y-5 text-sm" @submit.prevent="reset">
-      <p class="text-gray-700 text-sm">Zadejte ověřovací kód a nové heslo</p>
+      <p class="text-gray-500 text-sm">Zadejte ověřovací kód a nové heslo</p>
       <div class="space-y-1.5">
-        <label for="code" class="block font-semibold text-gray-700">Ověřovací kód</label>
+        <label for="code" class="block font-semibold text-gray-500">Ověřovací kód</label>
         <div class="relative">
           <Icon name="mdi:shield-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
           <input
@@ -51,7 +51,7 @@
       </div>
 
       <div class="space-y-1.5">
-        <label for="password" class="block font-semibold text-gray-700">Nové heslo</label>
+        <label for="password" class="block font-semibold text-gray-500">Nové heslo</label>
         <div class="relative">
           <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
           <input
