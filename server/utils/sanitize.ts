@@ -26,7 +26,8 @@ export const sanitizeHtml = (dirty: string) => {
       'rel',
       'start',
       'data-youtube-video',
+      'alt',
     ],
-    ALLOWED_URI_REGEXP: /^(?:(?:(?:https?):)?\/\/)(?:www\.)?(?:youtube\.com|youtu\.be)\/.+$/,
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:https?):)?\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be|[\w-]+\.[\w-]+)?\/.+$/,
   })
 }
