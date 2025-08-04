@@ -53,6 +53,7 @@
     "eslint": "^9.32.0",
     "jsdom": "^26.1.0",
     "lucide-vue-next": "^0.532.0",
+    "mitt": "^3.0.1",
     "next-auth": "4.21.1",
     "nuxt": "^3.18.0",
     "nuxt-nodemailer": "^1.1.2",
