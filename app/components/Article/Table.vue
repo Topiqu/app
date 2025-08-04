@@ -102,6 +102,7 @@ import { format } from 'date-fns'
 import { useRouter } from 'vue-router'
 import { useDebounceFn } from '@vueuse/core'
 import { TransitionRoot } from '@headlessui/vue'
+import useArticleEvents from '~~/composables/article-event'
 import {
   type ColumnDef,
   FlexRender,
@@ -115,7 +116,7 @@ import ArticleStatusCell from '~/components/Article/StatusCell.vue'
 
 const router = useRouter()
 const toast = useToast()
-
+const { onArticleCreated } = useArticleEvents()
 const { data: articles, refresh } = await useFetch<Article[]>('/api/articles', {
   default: () => [],
 })
@@ -163,7 +164,7 @@ const table = useVueTable({
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
 })
-
+onArticleCreated(() => refresh())
 async function del(id: string) {
   const confirm = await Swal.fire({
     title: 'Opravdu smazat?',

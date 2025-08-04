@@ -94,15 +94,16 @@ import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
+import useArticleEvents from '~~/composables/article-event'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/vue'
 
 const toast = useToast()
 
 const { data } = useAuth()
-
+const { emitArticleCreated } = useArticleEvents()
 const emit = defineEmits(['close'])
 
-const { data: articles, refresh } = await useFetch('/api/articles', { default: () => [] })
+const { data: articles } = await useFetch('/api/articles', { default: () => [] })
 
 const newArticle = ref({
   title: '',
@@ -147,9 +148,7 @@ const createArticle = async () => {
     )
 
     toast.success({ message: 'Článek byl úspěšně přidán' })
-
-    refresh()
-
+    emitArticleCreated()
     emit('close')
   } catch (error: any) {
     toast.error({ message: error.data?.message || 'Nepodařilo se přidat článek' })
