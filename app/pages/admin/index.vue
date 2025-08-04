@@ -1,5 +1,5 @@
 <template>
-  <main class="max-w-xl mx-auto mt-10 flex flex-col items-center gap-6">
+  <main class="w-full max-w-screen-2xl mx-auto mt-10 px-4 sm:px-6 lg:px-8 flex flex-col gap-6">
     <NotificationBar />
     <ArticleTable />
   </main>
