@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
 
   const db = await getEnhancedPrisma(user)
-  if (!user || user.role !== 'superadmin') {
+  if (!user || (user.role !== 'superadmin' && user.role !== 'admin')) {
     throw createError({ statusCode: 401, message: 'Neautorizováno' })
   }
 
@@ -10,8 +10,18 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({ statusCode: 400, message: 'ID nenalezeno' })
   }
-
-  const { name, subdomain, plan, generationFrequency, tokenLimit = 0, deletedAt } = await readBody(event)
+  console.log(id)
+  const {
+    name,
+    subdomain,
+    plan,
+    generationFrequency,
+    tokenLimit = 0,
+    deletedAt,
+    keywords,
+    audience,
+    focus,
+  } = await readBody(event)
 
   const clientSite = await db.clientSite.findUnique({ where: { id } })
   if (!clientSite) {
@@ -43,6 +53,9 @@ export default defineEventHandler(async (event) => {
       plan,
       generationFrequency,
       tokenLimit,
+      keywords,
+      audience,
+      focus,
       tokenRemaining: tokenLimit,
       deletedAt: deletedAt === undefined ? clientSite.deletedAt : deletedAt === null ? null : new Date(),
     },
@@ -57,6 +70,9 @@ export default defineEventHandler(async (event) => {
       generationFrequency: updatedSite.generationFrequency,
       tokenLimit: updatedSite.tokenLimit,
       deletedAt: updatedSite.deletedAt,
+      keywords: updatedSite.keywords,
+      audience: updatedSite.audience,
+      focus: updatedSite.focus,
     },
   }
 })

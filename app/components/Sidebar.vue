@@ -45,6 +45,12 @@
         >
           <Icon name="mdi:chart-bar" class="w-6 h-6" />
         </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+          @click="clientPreferencesOpen = true"
+        >
+          <Icon name="mdi:cog" class="w-6 h-6" />
+        </button>
       </div>
 
       <div v-if="data?.user?.role === 'superadmin'" class="flex flex-col gap-4">
@@ -100,6 +106,9 @@
   <TransitionRoot :show="emojiCreateOpen" as="template">
     <EmojiCreate @close="emojiCreateOpen = false" />
   </TransitionRoot>
+  <TransitionRoot :show="clientPreferencesOpen" as="template">
+    <ClientPreferences @close="clientPreferencesOpen = false" />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
@@ -123,6 +132,7 @@ const articleCreateOpen = shallowRef<boolean>(false)
 const tagsOpen = shallowRef<boolean>(false)
 const statsOpen = shallowRef<boolean>(false)
 const clientCreateOpen = shallowRef<boolean>(false)
+const clientPreferencesOpen = shallowRef<boolean>(false)
 const userListOpen = shallowRef<boolean>(false)
 const emojiCreateOpen = shallowRef<boolean>(false)
 </script>
