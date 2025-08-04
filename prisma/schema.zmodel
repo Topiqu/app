@@ -153,6 +153,8 @@ model ClientSite extends Base {
     tags                Tag[]
     articles            Article[]
     emojis              Emoji[]
+    @@allow('read', true)
+    @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')
 }
 
