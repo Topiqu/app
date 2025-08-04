@@ -147,6 +147,8 @@ model ClientSite extends Base {
     tokenLimit          Int?                @default(0)
     tokenRemaining      Int?                @default(0)
     keywords            Json?
+    audience            String?
+    lastGeneratedAt     DateTime?
     users               User[]
     tags                Tag[]
     articles            Article[]
