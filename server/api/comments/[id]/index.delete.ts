@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       content: true,
       articleId: true,
-      user: { select: { email: true, username: true } },
+      user: { select: { email: true, username: true, allowNotifs: true } },
       article: { select: { clientSiteId: true } },
     },
   })
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     data: { deletedAt: new Date() },
   })
 
-  if (comment.user.email && user.role === 'admin' && comment.userId !== user.id) {
+  if (comment.user.email && user.role === 'admin' && comment.userId !== user.id && comment.user.allowNotifs) {
     const t = useNodeMailer()
     await t.sendMail({
       from: useRuntimeConfig().from,
