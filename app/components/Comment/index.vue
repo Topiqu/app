@@ -1,8 +1,20 @@
 <template>
   <div
     :id="`comment-${comment.id}`"
-    class="w-full min-w-fit bg-white pt-2 pb-0.5 pl-2 pr-0.5 sm:pt-4 sm:pb-1 sm:pl-4 sm:pr-1 md:pt-6 md:pb-1.5 md:pl-6 md:pr-1.5 rounded-3xl shadow border border-gray-200"
+    class="relative w-full min-w-fit bg-white pt-2 pb-0.5 pl-2 pr-0.5 sm:pt-4 sm:pb-1 sm:pl-4 sm:pr-1 md:pt-6 md:pb-1.5 md:pl-6 md:pr-1.5 rounded-3xl shadow border border-gray-200"
   >
+    <button
+      v-if="session?.user && comment.deletedAt === null"
+      class="absolute top-2 right-2 sm:top-3 sm:right-3 p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none"
+      aria-label="Nahlásit komentář"
+      @click="report(comment)"
+    >
+      <Icon
+        name="mdi:flag-outline"
+        class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 dark:text-gray-500 hover:text-yellow-500 dark:hover:text-yellow-400 cursor-pointer"
+      />
+    </button>
+
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 sm:pr-4 md:pr-6">
       <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
         <UserCard
@@ -22,6 +34,7 @@
         />
         <span v-else class="font-semibold text-gray-800">Není k dispozici</span>
       </div>
+
       <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
         <button
           v-if="session?.user && !isReplying"
@@ -50,26 +63,20 @@
           <Icon name="mdi:delete" class="w-4 h-4 text-red-500" />
           <span class="hidden sm:inline">Smazat (admin)</span>
         </button>
-        <button
-          v-if="session?.user"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          aria-label="Nahlásit komentář"
-          @click="report(comment)"
-        >
-          <Icon name="mdi:alert" class="w-4 h-4 text-yellow-500" />
-          <span class="hidden sm:inline">Nahlásit</span>
-        </button>
       </div>
     </div>
+
     <div class="mt-4 sm:mt-6">
       <span class="text-xs sm:text-sm md:text-base text-gray-400">• {{ formatDate(comment.createdAt) }}</span>
     </div>
+
     <p
       class="mt-4 sm:mt-6 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
       :class="{ 'text-gray-400 italic': comment.deletedAt }"
     >
       {{ comment.deletedAt ? '[Tento komentář byl smazán]' : comment.content }}
     </p>
+
     <div
       v-if="!comment.deletedAt"
       class="mt-4 sm:mt-5 flex items-center justify-between flex-wrap gap-3 pb-2 sm:pb-4 md:pb-6"
@@ -93,6 +100,7 @@
           <Icon name="mdi:thumb-down-outline" class="w-4 h-4" />
           <span>{{ comment.dislikes || 0 }}</span>
         </button>
+
         <div v-if="comment.emojiReactions?.length" class="flex items-center gap-2 sm:gap-3 flex-wrap">
           <div
             v-for="reaction in comment.emojiReactions"
@@ -109,6 +117,7 @@
         <EmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="$emit('refresh')" />
       </div>
     </div>
+
     <div v-if="comment.replies?.length" class="mt-4 sm:mt-6 space-y-4">
       <Comment
         v-for="reply in comment.replies"
@@ -123,6 +132,7 @@
         @refresh="$emit('refresh')"
       />
     </div>
+
     <div
       v-if="showModal && selectedComment?.id === comment.id"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"

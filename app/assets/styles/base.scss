@@ -12,9 +12,6 @@ blockquote {
   margin: revert;
   padding: revert;
   border: revert;
-}
-
-blockquote.blockquote {
   border-left: 4px solid #3b82f6;
   background-color: #f9fafb;
   padding: 12px 16px;
@@ -24,7 +21,7 @@ blockquote.blockquote {
   border-radius: 4px;
 }
 
-html.dark blockquote.blockquote {
+html.dark blockquote {
   background-color: #374151;
   color: #e5e7eb;
   border-left: 4px solid #60a5fa;
@@ -125,7 +122,6 @@ html.dark .swal2-icon-content {
 html.dark button {
   background-color: #374151;
   color: $dialog-text;
-  border-color: #4b5563;
 }
 
 button:hover {

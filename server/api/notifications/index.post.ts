@@ -23,15 +23,6 @@ export default defineEventHandler(async (event) => {
   })
   if (!admin) throw createError({ statusCode: 404, message: 'Admin nenalezen' })
 
-  const url = `http://localhost:3000/articles/${comment.article.slug}#comment-${comment.id}`
-  await useNodeMailer().sendMail({
-    from: useRuntimeConfig().from,
-    to: admin.email,
-    subject: `Nahlášený komentář – ${comment.article.title}`,
-    text: `Ahoj ${admin.username}, ${user.name} nahlásil: "${comment.content.slice(0, 50)}...".\nPodívej se: ${url}`,
-    html: `<p>Ahoj <b>${admin.username}</b>,</p><p><b>${user.name}</b> nahlásil: "<i>${comment.content.slice(0, 50)}...</i>"</p><p><a href="${url}" style="color:#2563eb;text-decoration:none;">➡️ Zobrazit</a></p>`,
-  })
-
   await prisma.notification.create({
     data: {
       message: `${user.name} nahlásil komentář k článku: ${comment.article.title}`,
