@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
-  const db = await getEnhancedPrisma(user)
+  // const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
   if (!body.commentId) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
 

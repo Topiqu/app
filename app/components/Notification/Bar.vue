@@ -31,18 +31,42 @@
             <div
               v-for="notification in notifications"
               :key="notification.id"
-              class="relative p-3 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow transition"
-              :class="notification.isRead ? 'opacity-80' : 'bg-blue-50'"
+              class="relative p-3 rounded-lg shadow-sm hover:shadow transition border flex items-start gap-2"
+              :class="[
+                notification.isRead ? 'opacity-80' : '',
+                {
+                  'bg-blue-50 border-blue-200': notification.type === 'COMMENT',
+                  'bg-green-50 border-green-200': notification.type === 'LIKE',
+                  'bg-pink-50 border-pink-200': notification.type === 'FOLLOW',
+                  'bg-purple-50 border-purple-200': notification.type === 'MENTION',
+                  'bg-yellow-50 border-yellow-200': notification.type === 'ARTICLE_PUBLISHED',
+                  'bg-gray-100 border-gray-300': notification.type === 'SYSTEM',
+                },
+              ]"
             >
-              <button
-                type="button"
-                class="absolute top-2 right-2 text-red-400 hover:text-red-600 p-0.5 rounded-full transition"
-                @click.stop="deleteNotification(notification.id)"
-              >
-                <Icon name="mdi:close-circle" class="w-4 h-4" />
-              </button>
+              <Icon
+                :name="
+                  {
+                    COMMENT: 'mdi:comment-outline',
+                    LIKE: 'mdi:thumb-up-outline',
+                    FOLLOW: 'mdi:account-plus-outline',
+                    MENTION: 'mdi:at',
+                    ARTICLE_PUBLISHED: 'mdi:post-outline',
+                    SYSTEM: 'mdi:alert-circle-outline',
+                  }[notification.type]
+                "
+                class="w-5 h-5 mt-0.5 shrink-0 text-gray-500"
+              />
 
-              <div class="pr-6">
+              <div class="pr-6 w-full">
+                <button
+                  type="button"
+                  class="absolute top-2 right-2 text-red-400 hover:text-red-600 p-0.5 rounded-full transition"
+                  @click.stop="deleteNotification(notification.id)"
+                >
+                  <Icon name="mdi:close-circle" class="w-4 h-4" />
+                </button>
+
                 <p class="text-sm">{{ notification.message }}</p>
                 <p class="text-xs text-gray-400 mt-1">
                   {{ formatDate(notification.createdAt) }}
@@ -66,10 +90,8 @@
 
 <script lang="ts" setup>
 const toast = useToast()
-
 const { data: auth } = useAuth()
-
-const showNotifications = shallowRef<boolean>(false)
+const showNotifications = shallowRef(false)
 
 const { data: notificationsData, refresh } = await useFetch('/api/notifications', {
   default: () => ({ notifications: [], count: 0, unreadCount: 0 }),
@@ -87,7 +109,6 @@ const toggleNotifications = () => {
 const deleteNotification = async (id: string) => {
   try {
     await $fetch(`/api/notifications/${id}`, { method: 'DELETE' })
-
     await refresh()
   } catch (err: any) {
     toast.error({ message: 'Chyba při mazání notifikace.' + err?.value?.message })
@@ -97,5 +118,7 @@ const deleteNotification = async (id: string) => {
 const notifButton = useTemplateRef('notifButton')
 const notifDropdown = useTemplateRef('notifDropdown')
 
-onClickOutside(notifDropdown, () => (showNotifications.value = false), { ignore: [notifButton] })
+onClickOutside(notifDropdown, () => (showNotifications.value = false), {
+  ignore: [notifButton],
+})
 </script>

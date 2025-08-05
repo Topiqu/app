@@ -22,9 +22,27 @@ export default defineEventHandler(async (event) => {
     return { liked: false, likes: count }
   }
 
+  const article = await db.article.findUnique({
+    where: { id },
+    select: { userId: true },
+  })
+
+  if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
+
   await db.articleReaction.create({
     data: { articleId: id, userId: user?.id || null, sessionId: user?.id ? null : sessionId },
   })
+
+  if (article.userId && article.userId !== user?.id) {
+    await prisma.notification.create({
+      data: {
+        message: `${user?.name || 'Někdo'} dal like vašemu článku.`,
+        userId: article.userId,
+        articleId: id,
+        type: 'LIKE',
+      },
+    })
+  }
 
   const count = await db.articleReaction.count({ where: { articleId: id } })
   return { liked: true, likes: count }
