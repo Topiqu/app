@@ -7,7 +7,6 @@ export interface CommentWithReplies {
   deletedAt: Date | null
   articleId?: string
   user: {
-    id: string
     username: string
     email?: string
     avatarUrl?: string
@@ -18,6 +17,10 @@ export interface CommentWithReplies {
     likesCount: number
     dislikesCount: number
   } | null
+  article: {
+    clientSiteId: string
+    userId: string
+  }
   replies: CommentWithReplies[]
   likes: number
   dislikes: number

@@ -8,7 +8,7 @@
         <UserCard
           v-if="comment.user"
           :user="{
-            id: comment.user.id,
+            id: comment.userId,
             username: comment.user.username,
             email: comment.user.email!,
             createdAt: comment.user.createdAt,
@@ -36,10 +36,19 @@
           v-if="session?.user && session.user.id === comment.userId"
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
           aria-label="Smazat komentář"
-          @click="$emit('delete', comment)"
+          @click="$emit('delete', comment, null)"
         >
           <Icon name="mdi:delete" class="w-4 h-4 text-red-500" />
           <span class="hidden sm:inline">Smazat</span>
+        </button>
+        <button
+          v-else-if="session?.user && session.user.role === 'admin' && session.user.id === comment.article?.userId"
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
+          aria-label="Smazat komentář (admin)"
+          @click="showDeleteModal(comment)"
+        >
+          <Icon name="mdi:delete" class="w-4 h-4 text-red-500" />
+          <span class="hidden sm:inline">Smazat (admin)</span>
         </button>
         <button
           v-if="session?.user"
@@ -108,11 +117,42 @@
         :isReplying="isReplying"
         :depth="depth < 12 ? depth + 1 : depth"
         @reply="$emit('reply', $event)"
-        @delete="$emit('delete', $event)"
+        @delete="(comment, reason) => $emit('delete', comment, reason)"
         @like="$emit('like', $event)"
         @dislike="$emit('dislike', $event)"
         @refresh="$emit('refresh')"
       />
+    </div>
+    <div
+      v-if="showModal && selectedComment?.id === comment.id"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white p-6 rounded-xl shadow-xl border border-gray-200 w-full max-w-md">
+        <h3 class="text-lg font-semibold mb-4">Smazat komentář</h3>
+        <p class="text-sm text-gray-600 mb-4">Zadejte důvod smazání (bude odeslán autorovi):</p>
+        <textarea
+          v-model="deleteReason"
+          class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm resize-y min-h-[100px]"
+          placeholder="Důvod smazání..."
+          maxlength="255"
+          required
+        />
+        <div class="flex justify-end gap-3 mt-4">
+          <button
+            class="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200"
+            @click="((showModal = false), (deleteReason = ''))"
+          >
+            Zrušit
+          </button>
+          <button
+            class="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
+            :disabled="!deleteReason.trim()"
+            @click="emitDelete(comment, deleteReason)"
+          >
+            Smazat
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -129,13 +169,17 @@ defineProps<{
   depth: number
 }>()
 
-defineEmits<{
-  (e: 'reply' | 'delete' | 'like' | 'dislike', comment: CommentWithReplies): void
+const emit = defineEmits<{
+  (e: 'reply' | 'like' | 'dislike', comment: CommentWithReplies): void
+  (e: 'delete', comment: CommentWithReplies, reason: string | null): void
   (e: 'refresh'): void
 }>()
 
 const { data: session } = useAuth()
 const toast = useToast()
+const showModal = ref(false)
+const selectedComment = ref<CommentWithReplies | null>(null)
+const deleteReason = ref('')
 
 const report = async (c: CommentWithReplies) => {
   try {
@@ -147,5 +191,14 @@ const report = async (c: CommentWithReplies) => {
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nahlášení selhalo' })
   }
+}
+
+const showDeleteModal = (c: CommentWithReplies) => {
+  selectedComment.value = c
+  showModal.value = true
+}
+
+const emitDelete = (comment: CommentWithReplies, reason: string) => {
+  emit('delete', comment, reason)
 }
 </script>

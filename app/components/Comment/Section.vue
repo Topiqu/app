@@ -27,7 +27,7 @@
             />
             <div class="flex justify-between text-xs text-gray-500 mt-1">
               <span>{{ characterCount }} / {{ maxLength }}</span>
-              <span v-if="characterCount >= maxLength" class="text-red-500 font-medium"> Dosáhli jste limitu! </span>
+              <span v-if="characterCount >= maxLength" class="text-red-500 font-medium">Dosáhli jste limitu!</span>
             </div>
           </div>
         </div>
@@ -80,7 +80,7 @@
         @delete="handleDelete"
         @like="handleLike"
         @dislike="handleDislike"
-        @refresh="refresh()"
+        @refresh="refresh"
       />
     </div>
     <p v-else class="text-gray-600 text-center text-base">Zatím žádné komentáře.</p>
@@ -91,15 +91,12 @@
 import type { CommentWithReplies } from '~~/types/comment'
 
 const props = defineProps<{ articleId: string; commCount: number }>()
-
 const toast = useToast()
 const { data: session } = useAuth()
-
-const newComment = shallowRef<string>('')
-const isSubmitting = shallowRef<boolean>(false)
+const newComment = shallowRef('')
+const isSubmitting = shallowRef(false)
 const replyingTo = ref<CommentWithReplies | null>(null)
 const textarea = useTemplateRef<HTMLElement>('comment')
-
 const {
   data: commentsData,
   error,
@@ -111,22 +108,10 @@ const maxLength = 1000
 const characterCount = computed(() => newComment.value.length)
 const topLevelComments = computed(() => commentsData.value || [])
 
-watch(textarea, (val) => {
-  console.log('Textarea ref changed', val)
-})
-
 onClickOutside(
   textarea,
   (event) => {
-    console.log('Click outside triggered', {
-      textarea: textarea.value,
-      replyingTo: replyingTo.value,
-      target: event.target,
-      targetIsTextarea: textarea.value?.contains(event.target as Node),
-      session: session.value,
-    })
     if (replyingTo.value && textarea.value && !textarea.value.contains(event.target as Node)) {
-      console.log('Cancelling reply mode')
       replyingTo.value = null
     }
   },
@@ -161,20 +146,20 @@ const handleReply = (comment: CommentWithReplies) => {
   if (comment.deletedAt) return
   replyingTo.value = comment
   nextTick(() => {
-    console.log('handleReply: textarea ref', textarea.value)
     if (textarea.value) {
       textarea.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
       textarea.value.focus()
-    } else {
-      console.error('handleReply: Textarea not found')
     }
   })
 }
 
-const handleDelete = async (comment: CommentWithReplies) => {
+const handleDelete = async (comment: CommentWithReplies, reason: string | null) => {
   if (!confirm('Opravdu chcete smazat tento komentář?')) return
   try {
-    await $fetch(`/api/comments/${comment.id}`, { method: 'DELETE' })
+    await $fetch(`/api/comments/${comment.id}`, {
+      method: 'DELETE',
+      body: { reason },
+    })
     toast.success({ message: 'Komentář smazán' })
     await refresh()
   } catch (e: any) {

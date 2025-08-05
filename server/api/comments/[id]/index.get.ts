@@ -16,9 +16,9 @@ export default defineEventHandler(async (event) => {
       parentId: true,
       deletedAt: true,
       articleId: true,
+      article: { select: { clientSiteId: true, userId: true } },
       user: {
         select: {
-          id: true,
           username: true,
           email: true,
           avatarUrl: true,
@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
           comments: {
             select: {
               id: true,
+              userId: true,
               reactions: { select: { type: true } },
             },
           },
@@ -45,6 +46,7 @@ export default defineEventHandler(async (event) => {
 
   for (const c of allComments) {
     const userData = c.user
+    const articleData = c.article
     const likesCount = userData
       ? userData.comments.reduce((sum, comment) => sum + comment.reactions.filter((r) => r.type === 'LIKE').length, 0)
       : 0
@@ -84,7 +86,6 @@ export default defineEventHandler(async (event) => {
       articleId: c.articleId,
       user: userData
         ? {
-            id: userData.id,
             username: userData.username,
             email: userData.email ?? undefined,
             avatarUrl: userData.avatarUrl ?? undefined,
@@ -96,6 +97,7 @@ export default defineEventHandler(async (event) => {
             dislikesCount,
           }
         : null,
+      article: { clientSiteId: articleData.clientSiteId, userId: articleData.userId },
       likes: c.reactions.filter((r) => r.type === 'LIKE').length,
       dislikes: c.reactions.filter((r) => r.type === 'DISLIKE').length,
       replies: [],
