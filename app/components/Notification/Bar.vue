@@ -15,7 +15,7 @@
       </span>
 
       <Transition
-        enterActiveClass="transition ease-out duration-200"
+        enterActivClass="transition ease-out duration-200"
         enterFromClass="opacity-0 scale-95"
         enterToClass="opacity-100 scale-100"
         leaveActiveClass="transition ease-in duration-150"
@@ -25,63 +25,89 @@
         <div
           v-if="showNotifications"
           ref="notifDropdown"
-          class="absolute right-0 mt-3 w-96 max-w-[95vw] max-h-[28rem] bg-white border border-gray-200 rounded-xl shadow-xl overflow-y-auto z-50 p-4 space-y-4"
+          class="absolute right-0 mt-3 w-96 max-w-[95vw] max-h-[28rem] bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-0 overflow-hidden flex flex-col"
         >
-          <div v-if="notifications.length" class="space-y-3">
-            <div
-              v-for="notification in notifications"
-              :key="notification.id"
-              class="relative p-3 rounded-lg shadow-sm hover:shadow transition border flex items-start gap-2"
-              :class="[
-                notification.isRead ? 'opacity-80' : '',
-                {
-                  'bg-blue-50 border-blue-200': notification.type === 'COMMENT',
-                  'bg-green-50 border-green-200': notification.type === 'LIKE',
-                  'bg-pink-50 border-pink-200': notification.type === 'FOLLOW',
-                  'bg-purple-50 border-purple-200': notification.type === 'MENTION',
-                  'bg-yellow-50 border-yellow-200': notification.type === 'ARTICLE_PUBLISHED',
-                  'bg-gray-100 border-gray-300': notification.type === 'SYSTEM',
-                },
-              ]"
-            >
-              <Icon
-                :name="
+          <div
+            v-if="virtualNotifications.length"
+            ref="scrollParent"
+            class="relative overflow-y-auto flex-1"
+            :style="{ height: '28rem' }"
+          >
+            <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
+              <div
+                v-for="virtualRow in virtualizer.getVirtualItems()"
+                :key="String(virtualRow.key)"
+                :style="{
+                  position: 'absolute',
+                  top: `${virtualRow.start}px`,
+                  left: 0,
+                  width: '100%',
+                  height: `${virtualRow.size}px`,
+                }"
+                class="rounded-lg shadow-sm hover:shadow transition border mx-3 my-1.5 px-3 py-2.5 flex items-start gap-2 text-sm break-words whitespace-normal"
+                :class="[
                   {
-                    COMMENT: 'mdi:comment-outline',
-                    LIKE: 'mdi:thumb-up-outline',
-                    FOLLOW: 'mdi:account-plus-outline',
-                    MENTION: 'mdi:at',
-                    ARTICLE_PUBLISHED: 'mdi:post-outline',
-                    SYSTEM: 'mdi:alert-circle-outline',
-                  }[notification.type]
-                "
-                class="w-5 h-5 mt-0.5 shrink-0 text-gray-500"
-              />
+                    'bg-blue-50 border-blue-200': virtualNotifications[virtualRow.index]?.type === 'COMMENT',
+                    'bg-green-50 border-green-200': virtualNotifications[virtualRow.index]?.type === 'LIKE',
+                    'bg-pink-50 border-pink-200': virtualNotifications[virtualRow.index]?.type === 'FOLLOW',
+                    'bg-purple-50 border-purple-200': virtualNotifications[virtualRow.index]?.type === 'MENTION',
+                    'bg-yellow-50 border-yellow-200':
+                      virtualNotifications[virtualRow.index]?.type === 'ARTICLE_PUBLISHED',
+                    'bg-gray-100 border-gray-300': virtualNotifications[virtualRow.index]?.type === 'SYSTEM',
+                  },
+                  virtualNotifications[virtualRow.index]?.isRead ? 'opacity-80' : 'ring-1 ring-inset ring-blue-200',
+                ]"
+              >
+                <Icon
+                  :name="
+                    {
+                      COMMENT: 'mdi:comment-outline',
+                      LIKE: 'mdi:thumb-up-outline',
+                      FOLLOW: 'mdi:account-plus-outline',
+                      MENTION: 'mdi:at',
+                      ARTICLE_PUBLISHED: 'mdi:post-outline',
+                      SYSTEM: 'mdi:alert-circle-outline',
+                    }[virtualNotifications[virtualRow.index]!.type]
+                  "
+                  class="w-5 h-5 mt-0.5 shrink-0 text-gray-500"
+                />
 
-              <div class="pr-6 w-full">
-                <button
-                  type="button"
-                  class="absolute top-2 right-2 text-red-400 hover:text-red-600 p-0.5 rounded-full transition"
-                  @click.stop="deleteNotification(notification.id)"
-                >
-                  <Icon name="mdi:close-circle" class="w-4 h-4" />
-                </button>
+                <div class="w-full relative">
+                  <button
+                    type="button"
+                    class="absolute top-4 right-1 text-gray-300 hover:text-red-500 p-0.5 rounded-full transition"
+                    @click.stop="deleteNotification(virtualNotifications[virtualRow.index]!.id)"
+                  >
+                    <Icon name="mdi:close-circle" class="w-4 h-4" />
+                  </button>
 
-                <p class="text-sm">{{ notification.message }}</p>
-                <p class="text-xs text-gray-400 mt-1">
-                  {{ formatDate(notification.createdAt) }}
-                </p>
-                <NuxtLink
-                  v-if="notification.article"
-                  :to="`/articles/${notification.article.slug}`"
-                  class="inline-block text-xs text-blue-600 hover:underline font-medium mt-1"
-                >
-                  {{ notification.article.title }}
-                </NuxtLink>
+                  <p class="text-xs text-gray-800 leading-snug">
+                    {{ virtualNotifications[virtualRow.index]!.message }}
+                    <span
+                      v-if="virtualNotifications[virtualRow.index]!.count > 1"
+                      class="ml-1 text-red-500 text-[10px] font-bold"
+                    >
+                      ×{{ virtualNotifications[virtualRow.index]!.count }}
+                    </span>
+                  </p>
+
+                  <p class="text-[11px] text-gray-400 mt-1">
+                    {{ formatDate(virtualNotifications[virtualRow.index]!.createdAt) }}
+                  </p>
+
+                  <NuxtLink
+                    v-if="virtualNotifications[virtualRow.index]?.article"
+                    :to="`/articles/${virtualNotifications[virtualRow.index]!.article?.slug}`"
+                    class="inline-block text-xs text-blue-600 hover:underline font-medium mt-1"
+                  >
+                    {{ virtualNotifications[virtualRow.index]!.article?.title }}
+                  </NuxtLink>
+                </div>
               </div>
             </div>
           </div>
-          <p v-else class="text-sm text-gray-600 text-center">Žádné nové notifikace.</p>
+
+          <p v-else class="text-sm text-gray-600 text-center py-6">Žádné nové notifikace.</p>
         </div>
       </Transition>
     </div>
@@ -89,6 +115,19 @@
 </template>
 
 <script lang="ts" setup>
+import { useVirtualizer } from '@tanstack/vue-virtual'
+
+type Notification = {
+  id: string
+  type: string
+  message: string
+  isRead: boolean
+  createdAt: string
+  articleId: string | null
+  article?: { slug: string; title: string } | null
+  count: number
+}
+
 const toast = useToast()
 const { data: auth } = useAuth()
 const showNotifications = shallowRef(false)
@@ -101,6 +140,30 @@ const { data: notificationsData, refresh } = await useFetch('/api/notifications'
 const notifications = computed(() => notificationsData.value?.notifications || [])
 const unreadCount = computed(() => notificationsData.value?.unreadCount || 0)
 
+const dedupNotifications = computed(() => {
+  const map = new Map<string, Notification>()
+
+  for (const n of notifications.value) {
+    const key = [n.type, n.message, n.article?.slug ?? ''].join('|')
+
+    if (map.has(key)) {
+      const existing = map.get(key)!
+      existing.count++
+      if (new Date(n.createdAt) > new Date(existing.createdAt)) {
+        existing.createdAt = n.createdAt
+        existing.id = n.id
+        existing.isRead = n.isRead
+      }
+    } else {
+      map.set(key, { ...n, count: 1 })
+    }
+  }
+
+  return Array.from(map.values())
+})
+
+const virtualNotifications = dedupNotifications
+
 const toggleNotifications = () => {
   showNotifications.value = !showNotifications.value
   if (showNotifications.value) refresh()
@@ -111,14 +174,22 @@ const deleteNotification = async (id: string) => {
     await $fetch(`/api/notifications/${id}`, { method: 'DELETE' })
     await refresh()
   } catch (err: any) {
-    toast.error({ message: 'Chyba při mazání notifikace.' + err?.value?.message })
+    toast.error({ message: `Chyba při mazání notifikace: ${err?.value?.message || 'Neznámá chyba'}` })
   }
 }
 
 const notifButton = useTemplateRef('notifButton')
 const notifDropdown = useTemplateRef('notifDropdown')
+const scrollParent = ref<Element>()
 
 onClickOutside(notifDropdown, () => (showNotifications.value = false), {
   ignore: [notifButton],
+})
+
+const virtualizer = useVirtualizer({
+  count: virtualNotifications.value.length,
+  getScrollElement: () => scrollParent.value,
+  estimateSize: () => 100,
+  overscan: 5,
 })
 </script>
