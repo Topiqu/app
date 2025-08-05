@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-
   const db = await getEnhancedPrisma(user)
+
   if (!user || (user.role !== 'superadmin' && user.role !== 'admin')) {
     throw createError({ statusCode: 401, message: 'Neautorizováno' })
   }
@@ -10,18 +10,9 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({ statusCode: 400, message: 'ID nenalezeno' })
   }
-  console.log(id)
-  const {
-    name,
-    subdomain,
-    plan,
-    generationFrequency,
-    tokenLimit = 0,
-    deletedAt,
-    keywords,
-    audience,
-    focus,
-  } = await readBody(event)
+
+  const body = await readBody(event)
+  const { name, subdomain, plan, generationFrequency, tokenLimit, deletedAt, keywords, audience, focus } = body
 
   const clientSite = await db.clientSite.findUnique({ where: { id } })
   if (!clientSite) {
@@ -45,20 +36,25 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  const data: any = {}
+  if (name !== undefined) data.name = name
+  if (subdomain !== undefined) data.subdomain = subdomain
+  if (plan !== undefined) data.plan = plan
+  if (generationFrequency !== undefined) data.generationFrequency = generationFrequency
+  if (tokenLimit !== undefined) {
+    data.tokenLimit = tokenLimit
+    data.tokenRemaining = tokenLimit
+  }
+  if (keywords !== undefined) data.keywords = keywords
+  if (audience !== undefined) data.audience = audience
+  if (focus !== undefined) data.focus = focus
+  if (deletedAt !== undefined) {
+    data.deletedAt = deletedAt === null ? null : new Date()
+  }
+
   const updatedSite = await db.clientSite.update({
     where: { id },
-    data: {
-      name,
-      subdomain,
-      plan,
-      generationFrequency,
-      tokenLimit,
-      keywords,
-      audience,
-      focus,
-      tokenRemaining: tokenLimit,
-      deletedAt: deletedAt === undefined ? clientSite.deletedAt : deletedAt === null ? null : new Date(),
-    },
+    data,
   })
 
   return {
