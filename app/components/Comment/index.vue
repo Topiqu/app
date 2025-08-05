@@ -41,6 +41,15 @@
           <Icon name="mdi:delete" class="w-4 h-4 text-red-500" />
           <span class="hidden sm:inline">Smazat</span>
         </button>
+        <button
+          v-if="session?.user"
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
+          aria-label="Nahlásit komentář"
+          @click="report(comment)"
+        >
+          <Icon name="mdi:alert" class="w-4 h-4 text-yellow-500" />
+          <span class="hidden sm:inline">Nahlásit</span>
+        </button>
       </div>
     </div>
     <div class="mt-4 sm:mt-6">
@@ -126,4 +135,17 @@ defineEmits<{
 }>()
 
 const { data: session } = useAuth()
+const toast = useToast()
+
+const report = async (c: CommentWithReplies) => {
+  try {
+    await $fetch('/api/notifications', {
+      method: 'POST',
+      body: { commentId: c.id },
+    })
+    toast.success({ message: 'Komentář nahlášen' })
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Nahlášení selhalo' })
+  }
+}
 </script>
