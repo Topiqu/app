@@ -23,9 +23,11 @@ export default defineEventHandler(async (event) => {
   })
   if (!admin) throw createError({ statusCode: 404, message: 'Admin nenalezen' })
 
+  const url = (id: string) => `http://localhost:3000/articles/${comment.article.slug}#comment-${id}`
+
   await prisma.notification.create({
     data: {
-      message: `${user.name} nahlásil komentář k článku: ${comment.article.title}`,
+      message: `${user.name} nahlásil komentář k článku: ${comment.article.title} [Zobrazit komentář](${url(comment.id)})`,
       userId: admin.id,
       articleId: comment.articleId,
       type: 'SYSTEM',

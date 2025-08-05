@@ -1,3 +1,4 @@
+```vue
 <template>
   <div class="fixed top-4 right-4 z-[1000]">
     <div class="relative">
@@ -42,7 +43,6 @@
                   top: `${virtualRow.start}px`,
                   left: 0,
                   width: '100%',
-                  height: `${virtualRow.size}px`,
                 }"
                 class="relative border-l-4 pl-3 pr-4 py-3 my-1.5 mx-2 rounded-md flex items-start gap-3 text-sm bg-white dark:bg-neutral-800 dark:text-white shadow-sm hover:shadow transition"
                 :class="[
@@ -84,7 +84,14 @@
                   </button>
 
                   <p class="text-[13px] leading-snug text-neutral-800 dark:text-neutral-200">
-                    {{ virtualNotifications[virtualRow.index]!.message }}
+                    <span>{{ parseMessage(virtualNotifications[virtualRow.index]!.message).text }}</span>
+                    <NuxtLink
+                      v-if="parseMessage(virtualNotifications[virtualRow.index]!.message).url"
+                      :to="parseMessage(virtualNotifications[virtualRow.index]!.message).url"
+                      class="inline-block text-blue-600 dark:text-blue-400 hover:underline ml-1"
+                    >
+                      {{ parseMessage(virtualNotifications[virtualRow.index]!.message).linkText }}
+                    </NuxtLink>
                     <span
                       v-if="virtualNotifications[virtualRow.index]!.count > 1"
                       class="ml-1 text-red-500 text-[10px] font-bold"
@@ -179,6 +186,21 @@ const deleteNotification = async (id: string) => {
   }
 }
 
+const parseMessage = (message: string) => {
+  const regex = /(.*?)\[(.+?)\]\((https?:\/\/[^\s)]+)\)(.*)?/
+  const match = message.match(regex)
+
+  if (match) {
+    return {
+      text: match[1].trim(),
+      linkText: match[2].trim(),
+      url: match[3].trim(),
+      suffix: match[4]?.trim() || '',
+    }
+  }
+
+  return { text: message, linkText: '', url: '', suffix: '' }
+}
 const notifButton = useTemplateRef('notifButton')
 const notifDropdown = useTemplateRef('notifDropdown')
 const scrollParent = ref<Element>()
@@ -191,6 +213,7 @@ const virtualizer = useVirtualizer({
   count: virtualNotifications.value.length,
   getScrollElement: () => scrollParent.value,
   estimateSize: () => 100,
+  measureElement: (el) => el?.getBoundingClientRect().height ?? 100,
   overscan: 5,
 })
 </script>
