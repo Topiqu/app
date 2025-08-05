@@ -23,7 +23,7 @@
               class="px-4 py-2 text-center select-none cursor-pointer"
               @click="(event) => header.column.getToggleSortingHandler()?.(event)"
             >
-              <span v-if="!header.isPlaceholder">
+              <span v-if="!header.isPlaceholder" class="text-black">
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
                 <span v-if="header.column.getIsSorted() === 'asc'">
                   <Icon name="mdi:arrow-up" />

@@ -4,18 +4,18 @@
       <Icon
         ref="notifButton"
         name="mdi:bell-outline"
-        class="w-6 h-6 text-gray-600 cursor-pointer hover:text-blue-600 transition"
+        class="w-6 h-6 text-gray-700 dark:text-gray-300 cursor-pointer hover:text-blue-600 transition"
         @click.stop="toggleNotifications"
       />
       <span
         v-if="unreadCount > 0"
-        class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center ring-2 ring-white shadow-sm"
+        class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-semibold rounded-full h-5 w-5 flex items-center justify-center ring-2 ring-white dark:ring-neutral-900 shadow-sm"
       >
         {{ unreadCount }}
       </span>
 
       <Transition
-        enterActivClass="transition ease-out duration-200"
+        enterActiveClass="transition ease-out duration-200"
         enterFromClass="opacity-0 scale-95"
         enterToClass="opacity-100 scale-100"
         leaveActiveClass="transition ease-in duration-150"
@@ -25,7 +25,7 @@
         <div
           v-if="showNotifications"
           ref="notifDropdown"
-          class="absolute right-0 mt-3 w-96 max-w-[95vw] max-h-[28rem] bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-0 overflow-hidden flex flex-col"
+          class="absolute right-0 mt-3 w-[26rem] max-w-[95vw] max-h-[28rem] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl z-50 p-0 overflow-hidden flex flex-col"
         >
           <div
             v-if="virtualNotifications.length"
@@ -44,18 +44,17 @@
                   width: '100%',
                   height: `${virtualRow.size}px`,
                 }"
-                class="rounded-lg shadow-sm hover:shadow transition border mx-3 my-1.5 px-3 py-2.5 flex items-start gap-2 text-sm break-words whitespace-normal"
+                class="relative border-l-4 pl-3 pr-4 py-3 my-1.5 mx-2 rounded-md flex items-start gap-3 text-sm bg-white dark:bg-neutral-800 dark:text-white shadow-sm hover:shadow transition"
                 :class="[
                   {
-                    'bg-blue-50 border-blue-200': virtualNotifications[virtualRow.index]?.type === 'COMMENT',
-                    'bg-green-50 border-green-200': virtualNotifications[virtualRow.index]?.type === 'LIKE',
-                    'bg-pink-50 border-pink-200': virtualNotifications[virtualRow.index]?.type === 'FOLLOW',
-                    'bg-purple-50 border-purple-200': virtualNotifications[virtualRow.index]?.type === 'MENTION',
-                    'bg-yellow-50 border-yellow-200':
-                      virtualNotifications[virtualRow.index]?.type === 'ARTICLE_PUBLISHED',
-                    'bg-gray-100 border-gray-300': virtualNotifications[virtualRow.index]?.type === 'SYSTEM',
+                    'border-blue-500': virtualNotifications[virtualRow.index]?.type === 'COMMENT',
+                    'border-green-500': virtualNotifications[virtualRow.index]?.type === 'LIKE',
+                    'border-pink-500': virtualNotifications[virtualRow.index]?.type === 'FOLLOW',
+                    'border-purple-500': virtualNotifications[virtualRow.index]?.type === 'MENTION',
+                    'border-yellow-500': virtualNotifications[virtualRow.index]?.type === 'ARTICLE_PUBLISHED',
+                    'border-gray-500': virtualNotifications[virtualRow.index]?.type === 'SYSTEM',
                   },
-                  virtualNotifications[virtualRow.index]?.isRead ? 'opacity-80' : 'ring-1 ring-inset ring-blue-200',
+                  virtualNotifications[virtualRow.index]?.isRead ? 'opacity-80' : '',
                 ]"
               >
                 <Icon
@@ -69,19 +68,22 @@
                       SYSTEM: 'mdi:alert-circle-outline',
                     }[virtualNotifications[virtualRow.index]!.type]
                   "
-                  class="w-5 h-5 mt-0.5 shrink-0 text-gray-500"
+                  class="w-5 h-5 mt-0.5 shrink-0 text-neutral-500 dark:text-neutral-300"
                 />
 
-                <div class="w-full relative">
+                <div class="w-full dark:bg-transparent">
                   <button
                     type="button"
-                    class="absolute top-4 right-1 text-gray-300 hover:text-red-500 p-0.5 rounded-full transition"
+                    class="absolute top-3 right-2 p-0 m-0 bg-transparent border-none outline-none hover:bg-transparent"
                     @click.stop="deleteNotification(virtualNotifications[virtualRow.index]!.id)"
                   >
-                    <Icon name="mdi:close-circle" class="w-4 h-4" />
+                    <Icon
+                      name="mdi:close-circle"
+                      class="w-4 h-4 text-neutral-300 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 cursor-pointer"
+                    />
                   </button>
 
-                  <p class="text-xs text-gray-800 leading-snug">
+                  <p class="text-[13px] leading-snug text-neutral-800 dark:text-neutral-200">
                     {{ virtualNotifications[virtualRow.index]!.message }}
                     <span
                       v-if="virtualNotifications[virtualRow.index]!.count > 1"
@@ -91,7 +93,7 @@
                     </span>
                   </p>
 
-                  <p class="text-[11px] text-gray-400 mt-1">
+                  <p class="text-[11px] text-neutral-400 mt-1">
                     {{ formatDate(virtualNotifications[virtualRow.index]!.createdAt) }}
                   </p>
 
@@ -106,8 +108,7 @@
               </div>
             </div>
           </div>
-
-          <p v-else class="text-sm text-gray-600 text-center py-6">Žádné nové notifikace.</p>
+          <p v-else class="text-sm text-neutral-600 dark:text-neutral-300 text-center py-6">Žádné nové notifikace.</p>
         </div>
       </Transition>
     </div>
