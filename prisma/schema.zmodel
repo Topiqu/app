@@ -75,20 +75,21 @@ abstract model Ownable {
 }
 
 model Article extends Base, Ownable {
-    slug          String            @unique @length(1, 100, "Slug musí mít 1–100 znaků")
-    title         String            @length(1, 255, "Titulek musí mít 1–255 znaků")
-    content       String            @length(1, 16384, "Článek překročil délku znaků")
-    imageUrl      String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
-    status        ArticleStatus     @default(draft)
-    clientSiteId  String
-    clientSite    ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-    views         Int               @default(0)
-    readingTime   Int?
-    publishedAt   DateTime?
-    tags          ArticleTag[]
-    comments      Comment[]
-    reactions     ArticleReaction[]
-    notifications Notification[]    @relation("ArticleNotifications")
+    slug            String            @unique @length(1, 100, "Slug musí mít 1–100 znaků")
+    title           String            @length(1, 255, "Titulek musí mít 1–255 znaků")
+    content         String            @length(1, 16384, "Článek překročil délku znaků")
+    imageUrl        String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    status          ArticleStatus     @default(draft)
+    clientSiteId    String
+    clientSite      ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    views           Int               @default(0)
+    readingTime     Int?
+    publishedAt     DateTime?
+    allowedComments Boolean           @default(true)
+    tags            ArticleTag[]
+    comments        Comment[]
+    reactions       ArticleReaction[]
+    notifications   Notification[]    @relation("ArticleNotifications")
     @@allow('read', (status == 'published') || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin')
 }
@@ -228,6 +229,7 @@ model Notification extends Base, Ownable {
     isRead    Boolean          @default(false)
     type      NotificationType
     articleId String?
+    link      String?
     article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
     @@allow('read, delete, update', auth().id == userId)
     @@allow('create', auth() != null)
