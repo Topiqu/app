@@ -77,7 +77,7 @@ abstract model Ownable {
 model Article extends Base, Ownable {
     slug            String            @unique @length(1, 100, "Slug musí mít 1–100 znaků")
     title           String            @length(1, 255, "Titulek musí mít 1–255 znaků")
-    content         String            @length(1, 16384, "Článek překročil délku znaků")
+    content         String            @length(1, 50000, "Článek překročil délku znaků")
     imageUrl        String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
     status          ArticleStatus     @default(draft)
     clientSiteId    String

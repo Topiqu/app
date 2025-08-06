@@ -254,7 +254,7 @@ const CustomBlockquote = Blockquote.extend({
 const {
   edit,
   fallback = 'No content available',
-  limit = 4096,
+  limit = 8192,
   ...props
 } = defineProps<{
   modelValue: string | null
