@@ -1,4 +1,3 @@
-```vue
 <template>
   <div class="fixed top-4 right-4 z-[1000]">
     <div class="relative">
@@ -84,13 +83,13 @@
                   </button>
 
                   <p class="text-[13px] leading-snug text-neutral-800 dark:text-neutral-200">
-                    <span>{{ parseMessage(virtualNotifications[virtualRow.index]!.message).text }}</span>
+                    {{ virtualNotifications[virtualRow.index]!.message }}
                     <NuxtLink
-                      v-if="parseMessage(virtualNotifications[virtualRow.index]!.message).url"
-                      :to="parseMessage(virtualNotifications[virtualRow.index]!.message).url"
+                      v-if="virtualNotifications[virtualRow.index]!.link"
+                      :to="virtualNotifications[virtualRow.index]!.link"
                       class="inline-block text-blue-600 dark:text-blue-400 hover:underline ml-1"
                     >
-                      {{ parseMessage(virtualNotifications[virtualRow.index]!.message).linkText }}
+                      Zobrazit komentář
                     </NuxtLink>
                     <span
                       v-if="virtualNotifications[virtualRow.index]!.count > 1"
@@ -134,6 +133,7 @@ type Notification = {
   articleId: string | null
   article?: { slug: string; title: string } | null
   count: number
+  link?: string | null
 }
 
 const toast = useToast()
@@ -152,7 +152,7 @@ const dedupNotifications = computed(() => {
   const map = new Map<string, Notification>()
 
   for (const n of notifications.value) {
-    const key = [n.type, n.message, n.article?.slug ?? ''].join('|')
+    const key = [n.type, n.message, n.article?.slug ?? '', n.link ?? ''].join('|')
 
     if (map.has(key)) {
       const existing = map.get(key)!
@@ -186,21 +186,6 @@ const deleteNotification = async (id: string) => {
   }
 }
 
-const parseMessage = (message: string) => {
-  const regex = /(.*?)\[(.+?)\]\((https?:\/\/[^\s)]+)\)(.*)?/
-  const match = message.match(regex)
-
-  if (match) {
-    return {
-      text: match[1].trim(),
-      linkText: match[2].trim(),
-      url: match[3].trim(),
-      suffix: match[4]?.trim() || '',
-    }
-  }
-
-  return { text: message, linkText: '', url: '', suffix: '' }
-}
 const notifButton = useTemplateRef('notifButton')
 const notifDropdown = useTemplateRef('notifDropdown')
 const scrollParent = ref<Element>()
