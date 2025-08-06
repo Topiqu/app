@@ -65,6 +65,28 @@
               aria-label="Článek je publikován"
             ></span>
             <span class="text-gray-400">|</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Komentáře</span>
+              <button
+                role="switch"
+                :class="[
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+                  data.allowedComments ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600',
+                ]"
+                @click="
+                  () => {
+                    ;((data!.allowedComments = !data?.allowedComments), toggleComments())
+                  }
+                "
+              >
+                <span
+                  :class="[
+                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                    data.allowedComments ? 'translate-x-6' : 'translate-x-1',
+                  ]"
+                />
+              </button>
+            </div>
           </div>
 
           <div class="flex items-center gap-2 text-gray-500">
@@ -143,7 +165,7 @@
       />
 
       <ArticleRelated :articles="relatedArticles" />
-      <CommentSection :articleId="data.id" :commCount="data.commentCount || 0" />
+      <CommentSection :articleId="data.id" :commCount="data.commentCount || 0" :allowComments="data.allowedComments" />
       <ArticleTOC :content="data.content" />
     </div>
 
@@ -177,7 +199,6 @@
 <script lang="ts" setup>
 import type { ArticleStatus, Article as _Article } from '@zenstackhq/runtime/models'
 
-import { useDebounceFn } from '@vueuse/core'
 import { TransitionRoot } from '@headlessui/vue'
 
 type Article = _Article & {
@@ -186,6 +207,7 @@ type Article = _Article & {
   commentCount?: number
   likes: number
   likedByUser: boolean
+  allowedComments: boolean
 }
 
 type RelatedArticle = { article: _Article & { user: { username: string } } }
@@ -230,6 +252,21 @@ const toggleLike = async () => {
     await refresh()
   } catch {
     toast.error({ message: 'Lajkování selhalo' })
+  }
+}
+
+const toggleComments = async () => {
+  if (!data.value?.id) return
+  try {
+    await $fetch(`/api/articles/${data.value.id}`, {
+      method: 'PATCH',
+      body: { allowedComments: data.value.allowedComments },
+    })
+    toast.success({ message: `Komentáře ${data.value.allowedComments ? 'povoleny' : 'zakázány'}` })
+    await refresh()
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Změna selhala' })
+    data.value.allowedComments = !data.value.allowedComments
   }
 }
 

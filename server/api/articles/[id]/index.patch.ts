@@ -48,6 +48,7 @@ export default defineEventHandler(async (event) => {
       imageUrl: body.imageUrl,
       status: body.status,
       views: body.views,
+      allowedComments: body.allowedComments,
     },
   })
 

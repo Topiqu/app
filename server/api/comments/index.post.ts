@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       slug: true,
       title: true,
+      allowedComments: true,
       user: { select: { email: true, allowNotifs: true } },
     },
   })
@@ -42,40 +43,40 @@ export default defineEventHandler(async (event) => {
       })
     }
   }
+  if (article.allowedComments) {
+    const comment = await prisma.comment.create({
+      data: { content, articleId: body.articleId, userId: user.id, parentId: body.parentId || null },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        user: { select: { id: true, username: true } },
+        parentId: true,
+      },
+    })
 
-  const comment = await prisma.comment.create({
-    data: { content, articleId: body.articleId, userId: user.id, parentId: body.parentId || null },
-    select: {
-      id: true,
-      content: true,
-      createdAt: true,
-      user: { select: { id: true, username: true } },
-      parentId: true,
-    },
-  })
-
-  if (article.userId !== user.id && article.user.allowNotifs) {
-    await useNodeMailer().sendMail({
-      from: useRuntimeConfig().from,
-      to: article.user.email,
-      subject: `Nový komentář – ${article.title}`,
-      text: `Ahoj, ${user.name} okomentoval tvůj článek: "${body.content.slice(0, 50)}...".\nPodívej se zde: ${url(comment.id)}`,
-      html: `
+    if (article.userId !== user.id && article.user.allowNotifs) {
+      await useNodeMailer().sendMail({
+        from: useRuntimeConfig().from,
+        to: article.user.email,
+        subject: `Nový komentář – ${article.title}`,
+        text: `Ahoj, ${user.name} okomentoval tvůj článek: "${body.content.slice(0, 50)}...".\nPodívej se zde: ${url(comment.id)}`,
+        html: `
       <p>Ahoj,</p>
       <p><b>${user.name}</b> okomentoval tvůj článek: "<i>${body.content.slice(0, 50)}...</i>"</p>
       <p><a href="${url(comment.id)}" style="color:#2563eb;text-decoration:none;">➡️ Zobrazit komentář</a></p>
     `,
-    })
+      })
 
-    await prisma.notification.create({
-      data: {
-        message: `${user.name} okomentoval váš článek.`,
-        userId: article.userId,
-        articleId: article.id,
-        type: 'COMMENT',
-      },
-    })
-  }
-
-  return comment
+      await prisma.notification.create({
+        data: {
+          message: `${user.name} okomentoval váš článek.`,
+          userId: article.userId,
+          articleId: article.id,
+          type: 'COMMENT',
+        },
+      })
+    }
+    return comment
+  } else throw createError('Psaní komentářů není povoleno.')
 })

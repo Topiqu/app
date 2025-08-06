@@ -6,7 +6,7 @@
         Komentáře <span class="text-xl text-gray-500">({{ props.commCount }})</span>
       </h2>
     </div>
-    <div v-if="session?.user" class="mb-14 p-8 rounded-3xl shadow-xl border border-gray-200">
+    <div v-if="session?.user && props.allowComments" class="mb-14 p-8 rounded-3xl shadow-xl border border-gray-200">
       <form class="space-y-6" @submit.prevent="submitComment">
         <div class="space-y-2">
           <label for="comment" class="block text-base font-semibold flex items-center gap-2">
@@ -58,6 +58,9 @@
         </button>
       </form>
     </div>
+    <p v-else-if="session?.user && !props.allowComments" class="text-gray-600 mb-14 text-base text-center">
+      Komentování tohoto článku není povoleno.
+    </p>
     <p v-else class="text-gray-600 mb-14 text-base text-center">
       <NuxtLink to="/login" class="text-blue-600 hover:underline font-medium cursor-pointer">Přihlaste se</NuxtLink>
       pro přidání komentáře.
@@ -90,7 +93,11 @@
 <script lang="ts" setup>
 import type { CommentWithReplies } from '~~/types/comment'
 
-const props = defineProps<{ articleId: string; commCount: number }>()
+const props = defineProps<{
+  articleId: string
+  commCount: number
+  allowComments: boolean
+}>()
 const toast = useToast()
 const { data: session } = useAuth()
 const newComment = shallowRef('')
