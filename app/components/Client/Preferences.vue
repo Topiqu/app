@@ -3,11 +3,11 @@
     <TransitionChild
       as="template"
       enter="ease-out duration-300"
-      enter-from="opacity-0"
-      enter-to="opacity-100"
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
       leave="ease-in duration-200"
-      leave-from="opacity-100"
-      leave-to="opacity-0"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
     >
       <div class="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity" />
     </TransitionChild>
@@ -15,17 +15,26 @@
       <TransitionChild
         as="template"
         enter="ease-out duration-300"
-        enter-from="opacity-0 scale-95"
-        enter-to="opacity-100 scale-100"
+        enterFrom="opacity-0 scale-95"
+        enterTo="opacity-100 scale-100"
         leave="ease-in duration-150"
-        leave-from="opacity-100 scale-100"
-        leave-to="opacity-0 scale-95"
+        leaveFrom="opacity-100 scale-100"
+        leaveTo="opacity-0 scale-95"
       >
         <DialogPanel
           class="w-full max-w-xl p-8 sm:p-10 rounded-3xl shadow-2xl border flex flex-col max-h-[90vh] overflow-hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
         >
           <div class="flex-1 overflow-y-auto pr-2 sm:pr-4">
-            <DialogTitle class="text-2xl font-semibold">Vaše preference</DialogTitle>
+            <div class="flex items-center justify-between">
+              <DialogTitle class="text-2xl font-semibold">Vaše preference</DialogTitle>
+              <button
+                class="p-2 rounded-full bg-transparent hover:bg-transparent border-none outline-none cursor-pointer"
+                title="Vysvětlení preferencí"
+                @click="clientHintOpen = true"
+              >
+                <Icon name="mdi:information-outline" class="w-6 h-6" />
+              </button>
+            </div>
             <div v-if="pending" class="text-center text-gray-500 dark:text-gray-400 py-8">Načítání dat...</div>
             <div v-else class="flex flex-col gap-6 mt-6">
               <label class="flex flex-col gap-2">
@@ -70,7 +79,7 @@
               Zrušit
             </button>
             <button
-              class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-md bg-blue-600 dark:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 text-white dark:text-black shadow-md bg-blue-600 dark:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               @click="savePreferences"
             >
               Uložit
@@ -80,11 +89,14 @@
       </TransitionChild>
     </div>
   </Dialog>
+  <TransitionRoot :show="clientHintOpen" as="template">
+    <ClientHint @close="clientHintOpen = false" />
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
 import Swal from 'sweetalert2'
-import { Dialog, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/vue'
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 
 const emit = defineEmits(['close'])
 const toast = useToast()
@@ -93,6 +105,7 @@ const { data: auth } = useAuth()
 const init = { focus: '', audience: '', keywords: [] as string[] }
 const form = ref<typeof init>(init)
 const keywordsInput = ref('')
+const clientHintOpen = shallowRef(false)
 
 const {
   data: client,
