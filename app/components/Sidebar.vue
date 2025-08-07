@@ -34,6 +34,7 @@
           <Icon name="mdi:tag-outline" class="w-6 h-6" />
         </button>
         <button
+          v-if="data?.user?.plan !== 'BASIC'"
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
           @click="emojiCreateOpen = true"
         >
@@ -46,6 +47,7 @@
           <Icon name="mdi:chart-bar" class="w-6 h-6" />
         </button>
         <button
+          v-if="data?.user?.plan !== 'BASIC'"
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
           @click="clientPreferencesOpen = true"
         >
