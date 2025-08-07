@@ -5,6 +5,16 @@
       <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
         Komentáře <span class="text-xl text-gray-500">({{ props.commCount }})</span>
       </h2>
+      <div class="ml-auto flex items-center gap-2">
+        <select
+          v-model="sort"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+        >
+          <option value="createdAt:desc">Nejnovější</option>
+          <option value="createdAt:asc">Nejstarší</option>
+          <option value="likes:desc">Nejzajímavější</option>
+        </select>
+      </div>
     </div>
     <div v-if="session?.user && props.allowComments" class="mb-14 p-8 rounded-3xl shadow-xl border border-gray-200">
       <form class="space-y-6" @submit.prevent="submitComment">
@@ -72,9 +82,9 @@
       <Icon name="mdi:alert-circle" class="w-8 h-8 text-red-500 mx-auto mb-2" />
       <p class="text-gray-700">Nepodařilo se načíst komentáře: {{ error.message }}</p>
     </div>
-    <div v-else-if="topLevelComments.length" class="w-full max-w-full p-0.25 space-y-6 overflow-x-auto">
+    <div v-else-if="filteredComments.length" class="w-full max-w-full p-0.25 space-y-6 overflow-x-auto">
       <Comment
-        v-for="comment in topLevelComments"
+        v-for="comment in filteredComments"
         :key="comment.id"
         :comment="comment"
         :depth="1"
@@ -104,6 +114,7 @@ const newComment = shallowRef('')
 const isSubmitting = shallowRef(false)
 const replyingTo = ref<CommentWithReplies | null>(null)
 const textarea = useTemplateRef<HTMLElement>('comment')
+const sort = ref('createdAt:desc')
 const {
   data: commentsData,
   error,
@@ -113,7 +124,20 @@ const {
 
 const maxLength = 1000
 const characterCount = computed(() => newComment.value.length)
-const topLevelComments = computed(() => commentsData.value || [])
+const filteredComments = computed(() => {
+  const result = [...(commentsData.value || [])]
+  const [field, order] = sort.value.split(':')
+  result.sort((a, b) =>
+    field === 'createdAt'
+      ? order === 'asc'
+        ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      : order === 'asc'
+        ? (a.likes || 0) - (b.likes || 0)
+        : (b.likes || 0) - (a.likes || 0),
+  )
+  return result
+})
 
 onClickOutside(
   textarea,
