@@ -18,19 +18,19 @@ export default defineEventHandler(async (event) => {
       articleId: true,
       article: { select: { clientSiteId: true, userId: true } },
       user: {
-        select: {
-          username: true,
-          email: true,
-          avatarUrl: true,
-          lastLogin: true,
-          createdAt: true,
-          bio: true,
+        include: {
           comments: {
             select: {
               id: true,
               userId: true,
               reactions: { select: { type: true } },
             },
+          },
+          followers: {
+            select: { followerId: true },
+          },
+          following: {
+            select: { followedId: true },
           },
         },
       },
@@ -56,6 +56,8 @@ export default defineEventHandler(async (event) => {
           0,
         )
       : 0
+    const followersCount = userData ? userData.followers.length : 0
+    const followingCount = userData ? userData.following.length : 0
 
     const userReaction = user ? (c.reactions.find((r) => r.userId === user.id) ?? null) : null
 
@@ -95,6 +97,8 @@ export default defineEventHandler(async (event) => {
             commentsCount: userData.comments.length,
             likesCount,
             dislikesCount,
+            followers: followersCount,
+            following: followingCount,
           }
         : null,
       article: { clientSiteId: articleData.clientSiteId, userId: articleData.userId },

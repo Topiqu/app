@@ -30,6 +30,8 @@
             commentsCount: comment.user.commentsCount,
             likesCount: comment.user.likesCount,
             dislikesCount: comment.user.dislikesCount,
+            followers: comment.user.followers,
+            following: comment.user.following,
           }"
         />
         <span v-else class="font-semibold text-gray-800">Není k dispozici</span>

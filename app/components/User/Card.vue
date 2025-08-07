@@ -60,6 +60,8 @@
         <p>Přidal(a) se: {{ formatDate(user.createdAt) }}</p>
         <p>Naposledy přihlášen: {{ formatDate(user.lastLogin) }}</p>
         <p>Komentáře: {{ user.commentsCount ?? 0 }}</p>
+        <p>Sleduje: {{ user.followers ?? 0 }}</p>
+        <p v-if="user.following > 0">Sledující: {{ user.following ?? 0 }}</p>
         <div class="flex items-center gap-2 dark:bg-neutral-900">
           <Icon name="mdi:thumb-up" class="w-4 h-4 text-green-500 dark:text-green-400" />
           <span>{{ user.likesCount ?? 0 }}</span>
@@ -84,12 +86,12 @@ defineProps<{
     commentsCount: number
     likesCount: number
     dislikesCount: number
+    followers: number
+    following: number
   }
 }>()
 
 const card = useTemplateRef('card')
-
 const isHovered = useElementHover(card)
-
 const { x, y } = useElementBounding(card)
 </script>
