@@ -5,7 +5,7 @@
   >
     <button
       v-if="session?.user && comment.deletedAt === null"
-      class="absolute top-2 right-2 sm:top-3 sm:right-3 p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none"
+      class="absolute top-2 right-2 sm:top-3 sm:right-3 p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none z-10"
       aria-label="Nahlásit komentář"
       @click="report(comment)"
     >
@@ -32,6 +32,7 @@
             dislikesCount: comment.user.dislikesCount,
             followers: comment.user.followers,
             following: comment.user.following,
+            role: comment.user.role,
           }"
         />
         <span v-else class="font-semibold text-gray-800">Není k dispozici</span>

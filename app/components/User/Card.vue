@@ -2,7 +2,7 @@
   <div class="relative group w-full flex dark:bg-neutral-900">
     <div
       ref="card"
-      class="p-4 shadow-sm border border-gray-200 dark:border-neutral-700 flex items-center gap-4 w-full max-w-md"
+      class="p-4 shadow-sm border border-gray-200 dark:border-neutral-700 flex items-center gap-4 w-full max-w-md sm:max-w-full"
     >
       <NuxtImg
         v-if="user.avatarUrl"
@@ -13,10 +13,23 @@
         height="48"
       />
       <Icon v-else name="mdi:account-circle-outline" class="w-12 h-12 text-gray-400 dark:text-gray-600 flex-shrink-0" />
-      <div class="flex flex-col overflow-hidden">
-        <span class="font-semibold text-base truncate">
-          {{ user.username }}
-        </span>
+      <div class="flex flex-col overflow-hidden min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-base truncate">
+            {{ user.username }}
+          </span>
+          <span
+            v-if="user.role === 'admin' || user.role === 'superadmin'"
+            :class="[
+              'text-xs font-medium px-2 py-0.5 rounded',
+              user.role === 'admin'
+                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+            ]"
+          >
+            {{ user.role === 'superadmin' ? 'Superadmin' : 'Admin' }}
+          </span>
+        </div>
         <p class="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[200px]">
           {{ user.bio || 'Žádné bio' }}
         </p>
@@ -25,8 +38,11 @@
 
     <div
       v-if="isHovered"
-      class="fixed w-80 z-10 hidden group-hover:flex flex-col bg-white dark:bg-neutral-900 p-5 rounded-xl shadow-xl border border-gray-200 dark:border-neutral-700"
-      :style="{ top: `${y}px`, left: `${x - 320 - 16}px` }"
+      class="absolute sm:fixed w-[90vw] sm:w-80 z-10 hidden group-hover:flex flex-col bg-white dark:bg-neutral-900 p-5 rounded-xl shadow-xl border border-gray-200 dark:border-neutral-700"
+      :style="{
+        top: `${y}px`,
+        left: `${Math.max(x - 320 - 16, 8)}px`,
+      }"
     >
       <div class="flex items-center gap-4 dark:bg-neutral-900">
         <NuxtImg
@@ -38,10 +54,23 @@
           height="56"
         />
         <Icon v-else name="mdi:account-circle-outline" class="w-14 h-14 text-gray-400 dark:text-gray-600" />
-        <div class="dark:bg-neutral-900">
-          <span class="font-semibold text-gray-900 dark:text-white text-lg">
-            {{ user.username }}
-          </span>
+        <div class="flex flex-col min-w-0 dark:bg-neutral-900">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-gray-900 dark:text-white text-lg truncate">
+              {{ user.username }}
+            </span>
+            <span
+              v-if="user.role === 'admin' || user.role === 'superadmin'"
+              :class="[
+                'text-xs font-medium px-2 py-0.5 rounded',
+                user.role === 'admin'
+                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                  : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+              ]"
+            >
+              {{ user.role === 'superadmin' ? 'Superadmin' : 'Admin' }}
+            </span>
+          </div>
           <p class="text-gray-500 dark:text-gray-400 text-sm break-all">
             {{ user.email }}
           </p>
@@ -88,6 +117,7 @@ defineProps<{
     dislikesCount: number
     followers: number
     following: number
+    role: string
   }
 }>()
 
