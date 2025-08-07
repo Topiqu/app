@@ -51,5 +51,6 @@ export default defineEventHandler(async (event) => {
     dislikesCount,
     followers: userData.followers.length,
     following: userData.following.length,
+    theme: userData.theme,
   }
 })

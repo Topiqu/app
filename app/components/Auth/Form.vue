@@ -151,16 +151,14 @@
 </template>
 
 <script setup lang="ts">
+import { useThemeStore } from '~~/stores/theme'
+const theme = useThemeStore()
 const { data, signIn } = useAuth()
-
 const toast = useToast()
 
 const init = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
-
 const form = ref<typeof init>(init)
-
 const mode = shallowRef<'login' | 'register' | 'forgot' | 'reset'>('login')
-
 const verifyMode = shallowRef<boolean>(false)
 
 const submit = async () => {
@@ -179,7 +177,6 @@ const submit = async () => {
       if (!res) return toast.error({ message: 'Registrace selhala' })
 
       verifyMode.value = true
-
       toast.success({ message: 'Ověřovací kód byl odeslán na váš e-mail' })
     } else {
       const result = await signIn('credentials', {
@@ -194,7 +191,8 @@ const submit = async () => {
         method: 'PATCH',
         body: { lastLogin: Date.now() },
       })
-
+      const user = await $fetch(`/api/users/${data.value?.user.id}`)
+      theme.mode = user.theme // Nastavení tématu z uživatelských dat
       toast.success({ message: 'Přihlášení bylo úspěšné' })
 
       if (data.value?.user?.role === 'superadmin') navigateTo('/master')
@@ -223,7 +221,6 @@ const verify = async () => {
     })
 
     toast.success({ message: 'E-mail byl ověřen.' })
-
     navigateTo('/')
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Ověření selhalo' })
