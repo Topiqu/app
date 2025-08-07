@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  await db.notification.create({
+  await prisma.notification.create({
     data: {
       userId: body.followedId,
       message: `Uživatel ${user.name} vás začal sledovat!`,
