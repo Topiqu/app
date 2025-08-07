@@ -24,7 +24,7 @@
         <DialogPanel
           class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm max-h-[80vh]"
         >
-          <DialogTitle class="text-xl font-bold text-gray-900"> Úprava klienta </DialogTitle>
+          <DialogTitle class="text-xl font-bold"> Úprava klienta </DialogTitle>
           <div class="flex-1 overflow-y-auto pr-4">
             <div class="flex flex-col gap-6">
               <label class="flex flex-col gap-3">

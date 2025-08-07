@@ -27,8 +27,8 @@
               <template v-if="!header.isPlaceholder">
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
 
-                <Icon v-if="header.column.getIsSorted() === 'asc'" name="mdi:arrow-up" />
-                <Icon v-else-if="header.column.getIsSorted() === 'desc'" name="mdi:arrow-down" />
+                <Icon class="text-black" v-if="header.column.getIsSorted() === 'asc'" name="mdi:arrow-up" />
+                <Icon class="text-black" v-else-if="header.column.getIsSorted() === 'desc'" name="mdi:arrow-down" />
               </template>
             </th>
             <th class="px-4 py-2 text-center">Akce</th>
@@ -56,18 +56,6 @@
                 :class="row.original.deletedAt ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'"
               >
                 {{ row.original.deletedAt ? 'Deaktivovaný' : 'Aktivní' }}
-              </p>
-              <p
-                v-if="cell.column.id === 'plan'"
-                class="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
-                :class="{
-                  'bg-blue-200 text-blue-800': row.original.plan === 'BASIC',
-                  'bg-green-200 text-green-800': row.original.plan === 'PRO',
-                  'text-yellow-600 bg-yellow-50': row.original.plan === 'PREMIUM',
-                  'bg-yellow-200 text-yellow-800': row.original.plan === 'CUSTOM',
-                }"
-              >
-                {{ row.original.plan }}
               </p>
             </td>
             <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
