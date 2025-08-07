@@ -133,10 +133,24 @@ model User extends Base {
     reactions        CommentReaction[]
     emojiReactions   EmojiReaction[]
     articleReactions ArticleReaction[]
+    followers        Follow[]          @relation("Follower")
+    following        Follow[]          @relation("Followed")
     @@allow('read', true)
     @@allow('create', true)
     @@allow('update', auth().id == id || auth().role == 'superadmin')
     @@allow('all', auth().role == 'admin' || auth().role == 'superadmin')
+}
+
+model Follow {
+    followerId String
+    followedId String
+    follower   User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+    followed   User     @relation("Followed", fields: [followedId], references: [id], onDelete: Cascade)
+    createdAt  DateTime @default(now())
+    @@id([followerId, followedId])
+    @@allow('create', auth().id == followerId)
+    @@allow('delete', auth().id == followerId || auth().role == 'admin')
+    @@allow('read', true)
 }
 
 model ClientSite extends Base {

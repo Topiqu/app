@@ -124,6 +124,18 @@ model User {
   reactions        CommentReaction[]
   emojiReactions   EmojiReaction[]
   articleReactions ArticleReaction[]
+  followers        Follow[]          @relation("Follower")
+  following        Follow[]          @relation("Followed")
+}
+
+model Follow {
+  followerId String
+  followedId String
+  follower   User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followed   User     @relation("Followed", fields: [followedId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([followerId, followedId])
 }
 
 model ClientSite {
