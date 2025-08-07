@@ -14,6 +14,12 @@ export default defineEventHandler(async (event) => {
           reactions: { select: { type: true } },
         },
       },
+      followers: {
+        select: { followerId: true },
+      },
+      following: {
+        select: { followedId: true },
+      },
     },
   })
 
@@ -34,7 +40,8 @@ export default defineEventHandler(async (event) => {
     email: userData.email,
     bio: userData.bio,
     avatarUrl: userData.avatarUrl,
-    lastLogin: userData.lastLogin,
+    createdAt: userData.createdAt.toISOString(),
+    lastLogin: userData.lastLogin ? userData.lastLogin.toISOString() : null,
     allowNotifs: userData.allowNotifs,
     role: userData.role,
     emailVerified: userData.emailVerified,
@@ -42,5 +49,7 @@ export default defineEventHandler(async (event) => {
     commentsCount: userData.comments.length,
     likesCount,
     dislikesCount,
+    followers: userData.followers.length,
+    following: userData.following.length,
   }
 })
