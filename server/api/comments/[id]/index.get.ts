@@ -99,6 +99,7 @@ export default defineEventHandler(async (event) => {
             dislikesCount,
             followers: followersCount,
             following: followingCount,
+            role: userData.role,
           }
         : null,
       article: { clientSiteId: articleData.clientSiteId, userId: articleData.userId },

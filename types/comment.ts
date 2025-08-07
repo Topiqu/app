@@ -18,6 +18,7 @@ export interface CommentWithReplies {
     dislikesCount: number
     followers: number
     following: number
+    role: string
   } | null
   article: {
     clientSiteId: string
