@@ -4,7 +4,8 @@ export default defineEventHandler(async (event) => {
 
   const body = await readValidatedBody(event, TagCreateSchema.parse)
 
-  const existingTag = await prisma.tag.findFirst({
+  const db = await getEnhancedPrisma(user)
+  const existingTag = await db.tag.findFirst({
     where: { name: body.name, clientSiteId: user.clientSiteId },
   })
 
@@ -13,8 +14,7 @@ export default defineEventHandler(async (event) => {
       statusCode: 409,
       message: 'Tag s tímto názvem už existuje.',
     })
-
-  const tag = await prisma.tag.create({
+  const tag = await db.tag.create({
     data: {
       name: body.name,
       slug: body.slug,
