@@ -22,7 +22,7 @@
         leaveTo="opacity-0 scale-95"
       >
         <DialogPanel class="w-full max-w-xl bg-white p-6 sm:p-8 rounded-2xl shadow-2xl border border-gray-200">
-          <DialogTitle class="text-2xl font-bold text-gray-900">Tagy článku</DialogTitle>
+          <DialogTitle class="text-2xl font-bold">Tagy článku</DialogTitle>
           <div class="flex flex-wrap gap-2 mt-4">
             <div
               v-for="t in articleTags"

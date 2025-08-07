@@ -57,7 +57,7 @@
                 </button>
               </div>
             </div>
-            <p v-else class="text-gray-600 text-sm">Žádné tagy.</p>
+            <p v-else class="text-sm">Žádné tagy.</p>
           </div>
 
           <div class="flex gap-4 justify-end">
