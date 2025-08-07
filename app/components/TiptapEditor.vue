@@ -114,6 +114,15 @@
         <button
           type="button"
           class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+          title="Insert Link"
+          :class="{ 'bg-gray-200': editor.isActive('link') }"
+          @click="setLink"
+        >
+          <Icon name="mdi-link" />
+        </button>
+        <button
+          type="button"
+          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
           title="Underline"
           :class="{ 'bg-gray-200': editor.isActive('underline') }"
           @click="editor.chain().focus().toggleUnderline().run()"
@@ -321,10 +330,7 @@ const unsetBlockquote = () => {
 const insertYoutube = () => {
   const url = window.prompt('Zadejte URL YouTube videa:')
   if (url) {
-    console.log('Inserting YouTube video:', url)
     editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
-    console.log('HTML after video insert:', editor.value?.getHTML())
-    console.log('YouTube elements:', document.querySelectorAll('.ProseMirror iframe.youtube-video').length)
   }
 }
 
