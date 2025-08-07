@@ -29,11 +29,22 @@ export default NuxtAuthHandler({
         })
         if (!user || !user.password) return null
         if (!(await argon.verify(user.password, password))) return null
+
+        let plan = 'default' // Fallback hodnota pro plan
+        if (user.clientSiteId) {
+          const clientSite = await prisma.clientSite.findFirst({
+            where: { id: user.clientSiteId },
+            select: { plan: true },
+          })
+          plan = clientSite?.plan ?? 'default'
+        }
+
         return {
           id: user.id,
           name: user.username,
           role: user.role,
           clientSiteId: user.clientSiteId ?? '',
+          plan,
         }
       },
     }),
@@ -46,6 +57,7 @@ export default NuxtAuthHandler({
         token.name = user.name
         token.role = user.role
         token.clientSiteId = user.clientSiteId
+        token.plan = user.plan
       }
       return token
     },
@@ -56,6 +68,7 @@ export default NuxtAuthHandler({
           name: token.name,
           role: token.role,
           clientSiteId: token.clientSiteId,
+          plan: token.plan,
         }
       }
       return session
