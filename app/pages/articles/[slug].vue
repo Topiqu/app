@@ -22,6 +22,19 @@
         <Icon name="mdi:account" class="w-4 h-4 text-blue-500" />
         <span class="font-medium">{{ data.user.username }}</span>
         <span class="italic text-gray-400">• Autor článku</span>
+        <button
+          v-if="session?.user && session.user.id !== data.user.id"
+          @click="toggleFollow"
+          class="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-200 hover:shadow-md transform hover:scale-105 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-500"
+          :aria-label="isFollowing ? 'Přestat sledovat autora' : 'Sledovat autora'"
+        >
+          <Icon
+            :name="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
+            class="w-4 h-4"
+            :class="isFollowing ? 'text-green-500' : 'text-gray-500'"
+          />
+          {{ isFollowing ? 'Sledování' : 'Sledovat' }}
+        </button>
       </div>
 
       <NuxtImg
@@ -197,8 +210,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ArticleStatus, Article as _Article } from '@zenstackhq/runtime/models'
-
+import type { ArticleStatus, Article as _Article, User } from '@zenstackhq/runtime/models'
 import { TransitionRoot } from '@headlessui/vue'
 
 type Article = _Article & {
@@ -217,6 +229,7 @@ const toast = useToast()
 const { data: session } = useAuth()
 const editingArticle = ref<Article | null>(null)
 const slug = computed(() => route.params.slug)
+const isFollowing = ref(false)
 
 const {
   data,
@@ -224,7 +237,55 @@ const {
   error,
 } = await useFetch<Article | null>(`/api/articles/${slug.value}`, { default: () => null })
 
+const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
+isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || false
+
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
+
+watch(
+  () => data.value,
+  async (article) => {
+    if (article?.id && article.tags?.length) {
+      const res = await $fetch<{ articles: RelatedArticle[] }>(`/api/tags/${article.tags[0]?.tag.id}?limit=4`)
+      relatedArticles.value = res.articles.filter((a) => a.article.id !== article.id)
+    } else {
+      relatedArticles.value = []
+    }
+  },
+  { immediate: true },
+)
+
+const toggleFollow = async () => {
+  if (!session.value?.user || !data.value?.user.id) {
+    toast.error({ message: 'Musíte být přihlášeni' })
+    return
+  }
+  try {
+    if (isFollowing.value) {
+      await $fetch(`/api/follows/${data.value.user.id}`, {
+        method: 'DELETE',
+      })
+      isFollowing.value = false
+      toast.success({ message: `Přestali jste sledovat ${data.value.user.username}` })
+    } else {
+      await $fetch(`/api/follows/`, {
+        method: 'POST',
+        body: { followedId: data.value.user.id },
+      })
+      isFollowing.value = true
+      toast.success({ message: `Nyní sledujete ${data.value.user.username}` })
+    }
+    await refreshFollows()
+  } catch (e: any) {
+    if (e.data?.statusCode === 409) {
+      isFollowing.value = true
+    } else {
+      toast.error({
+        message: e.data?.message || (isFollowing.value ? 'Přestání sledování selhalo' : 'Sledování selhalo'),
+      })
+    }
+  }
+}
 
 const copyLink = () => {
   navigator.clipboard.writeText(fullUrl.value)
@@ -293,17 +354,6 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
 }, 100)
 
 const relatedArticles = ref<RelatedArticle[]>([])
-
-watch(
-  () => data.value,
-  async (article) => {
-    if (article?.id && article.tags?.length) {
-      const res = await $fetch<{ articles: RelatedArticle[] }>(`/api/tags/${article.tags[0]?.tag.id}?limit=4`)
-      relatedArticles.value = res.articles.filter((a) => a.article.id !== article.id)
-    } else relatedArticles.value = []
-  },
-  { immediate: true },
-)
 
 onMounted(async () => {
   if (!data.value?.id) return
