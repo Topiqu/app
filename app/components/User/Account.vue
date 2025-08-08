@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <TransitionRoot :show="true" enter="transition-opacity duration-500" enter-from="opacity-0" enter-to="opacity-100">
+    <TransitionRoot :show="true" enter="transition-opacity duration-500" enterFrom="opacity-0" enterTo="opacity-100">
       <div class="space-y-10">
         <div
           class="bg-white dark:bg-neutral-800 p-6 sm:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700"
@@ -152,8 +152,8 @@
 </template>
 
 <script setup lang="ts">
-import { Save, Upload, UserIcon } from 'lucide-vue-next'
 import { TransitionRoot } from '@headlessui/vue'
+import { Save, Upload, UserIcon } from 'lucide-vue-next'
 
 const { data: session } = useAuth()
 const toast = useToast()
