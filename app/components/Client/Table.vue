@@ -105,6 +105,7 @@ import type { ClientSite } from '@zenstackhq/runtime/models'
 
 import Swal from 'sweetalert2'
 import { TransitionRoot } from '@headlessui/vue'
+import useClientEvents from '~~/composables/client-event'
 import {
   type ColumnDef,
   FlexRender,
@@ -113,6 +114,8 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table'
+
+const { onClientCreated } = useClientEvents()
 
 const toast = useToast()
 
@@ -192,7 +195,7 @@ const del = async (id: string) => {
     toast.error({ message: e.data?.message || 'Deaktivace selhala' })
   }
 }
-
+onClientCreated(() => refresh())
 const restore = async (id: string) => {
   const result = await Swal.fire({
     title: 'Aktivovat klienta?',

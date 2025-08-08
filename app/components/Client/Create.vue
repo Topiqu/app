@@ -172,7 +172,10 @@
 
 <script setup lang="ts">
 import Swal from 'sweetalert2'
+import useClientEvents from '~~/composables/client-event'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/vue'
+
+const { emitClientCreated } = useClientEvents()
 
 const emit = defineEmits(['close'])
 
@@ -202,7 +205,7 @@ const createClient = async () => {
       body: newClient.value,
     })
     toast.success({ message: 'Klient byl úspěšně přidán' })
-    await refresh()
+    emitClientCreated()
     emit('close')
   } catch (e: any) {
     toast.error({
