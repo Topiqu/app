@@ -24,9 +24,9 @@
         <span class="italic text-gray-400">• Autor článku</span>
         <button
           v-if="session?.user && session.user.id !== data.user.id"
-          @click="toggleFollow"
           class="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-200 hover:shadow-md transform hover:scale-105 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-500"
           :aria-label="isFollowing ? 'Přestat sledovat autora' : 'Sledovat autora'"
+          @click="toggleFollow"
         >
           <Icon
             :name="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
@@ -55,7 +55,7 @@
           <NuxtLink
             v-for="t in data.tags"
             :key="t.tag.slug"
-            :to="`/tags/${t.tag.slug}`"
+            :to="`/stitky/${t.tag.slug}`"
             class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
           >
             <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -211,6 +211,7 @@
 
 <script lang="ts" setup>
 import type { ArticleStatus, Article as _Article, User } from '@zenstackhq/runtime/models'
+
 import { TransitionRoot } from '@headlessui/vue'
 
 type Article = _Article & {

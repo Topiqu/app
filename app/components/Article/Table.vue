@@ -57,7 +57,7 @@
             <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
               <button
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 rounded-full hover:from-green-300 hover:to-green-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                @click="router.push(`/articles/${row.original.slug}`)"
+                @click="router.push(`/clanky/${row.original.slug}`)"
               >
                 <Icon name="mdi:eye" class="w-5 h-5 text-black" />
               </button>
