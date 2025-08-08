@@ -11,8 +11,6 @@ export default defineEventHandler(async (event) => {
   if (body.clientSiteId && body.clientSiteId !== user.clientSiteId)
     throw createError({ status: 403, message: 'Tento článek nemůžete upravovat' })
 
-  const db = await getEnhancedPrisma(user)
-
   let content = body.content
   if (content) {
     const $ = cheerio.load(content)
@@ -38,7 +36,7 @@ export default defineEventHandler(async (event) => {
     content = $.html()
   }
 
-  const article = await db.article.update({
+  const article = await prisma.article.update({
     where: { id },
     data: {
       title: body.title,

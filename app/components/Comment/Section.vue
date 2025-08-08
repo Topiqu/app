@@ -16,7 +16,11 @@
         </select>
       </div>
     </div>
-    <div v-if="session?.user && props.allowComments" class="mb-14 p-8 rounded-3xl shadow-xl border border-gray-200">
+    <div
+      v-if="session?.user && props.allowComments"
+      ref="commentForm"
+      class="mb-14 p-8 rounded-3xl shadow-xl border border-gray-200"
+    >
       <form class="space-y-6" @submit.prevent="submitComment">
         <div class="space-y-2">
           <label for="comment" class="block text-base font-semibold flex items-center gap-2">
@@ -114,6 +118,7 @@ const newComment = shallowRef('')
 const isSubmitting = shallowRef(false)
 const replyingTo = ref<CommentWithReplies | null>(null)
 const textarea = useTemplateRef<HTMLElement>('comment')
+const commentForm = useTemplateRef<HTMLElement>('commentForm')
 const sort = ref('createdAt:desc')
 const {
   data: commentsData,
@@ -140,9 +145,9 @@ const filteredComments = computed(() => {
 })
 
 onClickOutside(
-  textarea,
+  commentForm,
   (event) => {
-    if (replyingTo.value && textarea.value && !textarea.value.contains(event.target as Node)) {
+    if (replyingTo.value && commentForm.value && !commentForm.value.contains(event.target as Node)) {
       replyingTo.value = null
     }
   },
