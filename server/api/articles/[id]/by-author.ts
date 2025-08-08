@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   const username = getRouterParam(event, 'id')
-  console.log(username)
+
   if (!username) {
     throw createError({ statusCode: 400, message: 'Uživatelské jméno je povinné' })
   }

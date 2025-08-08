@@ -20,7 +20,9 @@
 
       <div class="flex items-center gap-3 text-sm text-gray-600 mt-[-8px]">
         <Icon name="mdi:account" class="w-4 h-4 text-blue-500" />
-        <span class="font-medium">{{ data.user.username }}</span>
+        <NuxtLink :to="`/autor/${data.user.username}`" class="font-medium text-blue-600 hover:text-blue-800 transition">
+          {{ data.user.username }}
+        </NuxtLink>
         <span class="italic text-gray-400">• Autor článku</span>
         <button
           v-if="session?.user && session.user.id !== data.user.id"

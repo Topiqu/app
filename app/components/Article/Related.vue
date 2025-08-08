@@ -5,7 +5,7 @@
       <NuxtLink
         v-for="{ article: a } in articles"
         :key="a.id"
-        :to="`/articles/${a.slug}`"
+        :to="`/clanky/${a.slug}`"
         class="flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-transform duration-300 no-underline"
       >
         <NuxtImg
