@@ -15,14 +15,16 @@
 
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
             <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105"
+              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
+              @click="openDialog('followed')"
             >
               <Icon name="mdi:account-multiple" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
               <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Sledování</p>
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.followers ?? 0 }}</p>
             </div>
             <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105"
+              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
+              @click="openDialog('followers')"
             >
               <Icon name="mdi:account-multiple" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
               <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Sledující</p>
@@ -148,6 +150,9 @@
         </div>
       </div>
     </TransitionRoot>
+    <TransitionRoot :show="showDialog" as="template">
+      <UserFollowDialog :type="dialogType" @close="showDialog = false" />
+    </TransitionRoot>
   </div>
 </template>
 
@@ -165,6 +170,8 @@ const avatar = ref<{
 }>({ file: null, error: null, success: null })
 
 const isLoading = shallowRef<boolean>(false)
+const showDialog = shallowRef<boolean>(false)
+const dialogType = shallowRef<'followers' | 'followed'>('followers')
 
 const profileForm = ref({
   username: '',
@@ -196,6 +203,11 @@ if (userData.value)
     likesCount: userData.value.likesCount || 0,
     dislikesCount: userData.value.dislikesCount || 0,
   }
+
+function openDialog(type: 'followers' | 'followed') {
+  dialogType.value = type
+  showDialog.value = true
+}
 
 function onAvatarChange(e: Event) {
   const target = e.target as HTMLInputElement
