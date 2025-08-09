@@ -20,6 +20,20 @@ export default defineEventHandler(async (event) => {
       following: {
         select: { followedId: true },
       },
+      articleReactions: {
+        where: { userId: id },
+        include: {
+          article: {
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              imageUrl: true,
+              publishedAt: true,
+            },
+          },
+        },
+      },
     },
   })
 
@@ -52,5 +66,14 @@ export default defineEventHandler(async (event) => {
     followers: userData.followers.length,
     following: userData.following.length,
     theme: userData.theme,
+    likedArticles: userData.articleReactions
+      .filter((reaction) => reaction.userId === id)
+      .map((reaction) => ({
+        id: reaction.article.id,
+        slug: reaction.article.slug,
+        title: reaction.article.title,
+        imageUrl: reaction.article.imageUrl,
+        publishedAt: reaction.article.publishedAt?.toISOString() || null,
+      })),
   }
 })
