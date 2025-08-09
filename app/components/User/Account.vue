@@ -32,14 +32,6 @@
             </div>
             <div
               class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
-              @click="activeTab = 'comments'"
-            >
-              <Icon name="mdi:comment-multiple-outline" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Komentáře</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.commentsCount ?? 0 }}</p>
-            </div>
-            <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
               @click="activeTab = 'likedArticles'"
             >
               <Icon name="mdi:heart" class="w-6 h-6 mx-auto text-red-500 dark:text-red-400" />
@@ -47,6 +39,14 @@
               <p class="text-lg font-semibold text-gray-900 dark:text-white">
                 {{ profileForm.likedArticles?.length ?? 0 }}
               </p>
+            </div>
+            <div
+              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
+              @click="activeTab = 'comments'"
+            >
+              <Icon name="mdi:comment-multiple-outline" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Komentáře</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.commentsCount ?? 0 }}</p>
             </div>
             <div
               class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105"
@@ -202,6 +202,9 @@ const profileForm = ref({
     title: string
     imageUrl: string | null
     publishedAt: string | null
+    authorUsername: string
+    views: number
+    tags: string[]
     likesCount: number
   }>,
   comments: [] as Array<{
@@ -209,6 +212,9 @@ const profileForm = ref({
     content: string
     articleSlug: string
     articleTitle: string
+    authorUsername: string
+    views: number
+    tags: string[]
     createdAt: string
     likesCount: number
     dislikesCount: number

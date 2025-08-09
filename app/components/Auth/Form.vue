@@ -192,7 +192,7 @@ const submit = async () => {
         body: { lastLogin: Date.now() },
       })
       const user = await $fetch(`/api/users/${data.value?.user.id}`)
-      theme.mode = user.theme // Nastavení tématu z uživatelských dat
+      theme.mode = user.theme
       toast.success({ message: 'Přihlášení bylo úspěšné' })
 
       if (data.value?.user?.role === 'superadmin') navigateTo('/master')

@@ -5,14 +5,23 @@ export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
   if (user.id !== id && user.role !== 'superadmin')
     throw createError({ statusCode: 403, message: 'Nepovolený přístup' })
+  const db = await getEnhancedPrisma(user)
 
-  const userData = await prisma.user.findUnique({
+  const userData = await db.user.findUnique({
     where: { id },
     include: {
       comments: {
         include: {
           reactions: { select: { type: true } },
-          article: { select: { slug: true, title: true } },
+          article: {
+            select: {
+              slug: true,
+              title: true,
+              user: { select: { username: true } },
+              views: true,
+              tags: { select: { tag: { select: { name: true } } } },
+            },
+          },
         },
       },
       followers: {
@@ -31,6 +40,9 @@ export default defineEventHandler(async (event) => {
               title: true,
               imageUrl: true,
               publishedAt: true,
+              user: { select: { username: true } },
+              views: true,
+              tags: { select: { tag: { select: { name: true } } } },
               reactions: { select: { id: true } },
             },
           },
@@ -74,6 +86,9 @@ export default defineEventHandler(async (event) => {
       title: reaction.article.title,
       imageUrl: reaction.article.imageUrl,
       publishedAt: reaction.article.publishedAt?.toISOString() || null,
+      authorUsername: reaction.article.user?.username || 'Anonym',
+      views: reaction.article.views,
+      tags: reaction.article.tags.map((t) => t.tag.name),
       likesCount: reaction.article.reactions.length,
     })),
     comments: userData.comments.map((comment) => ({
@@ -81,6 +96,9 @@ export default defineEventHandler(async (event) => {
       content: comment.content,
       articleSlug: comment.article?.slug || '',
       articleTitle: comment.article?.title || '',
+      authorUsername: comment.article?.user?.username || 'Anonym',
+      views: comment.article?.views || 0,
+      tags: comment.article?.tags.map((t) => t.tag.name) || [],
       createdAt: comment.createdAt.toISOString(),
       likesCount: comment.reactions.filter((r) => r.type === 'LIKE').length,
       dislikesCount: comment.reactions.filter((r) => r.type === 'DISLIKE').length,
