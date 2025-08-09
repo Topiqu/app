@@ -31,11 +31,22 @@
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.following ?? 0 }}</p>
             </div>
             <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105"
+              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
+              @click="activeTab = 'comments'"
             >
               <Icon name="mdi:comment-multiple-outline" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
               <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Komentáře</p>
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.commentsCount ?? 0 }}</p>
+            </div>
+            <div
+              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
+              @click="activeTab = 'likedArticles'"
+            >
+              <Icon name="mdi:heart" class="w-6 h-6 mx-auto text-red-500 dark:text-red-400" />
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Lajknuté články</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{ profileForm.likedArticles?.length ?? 0 }}
+              </p>
             </div>
             <div
               class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105"
@@ -43,13 +54,6 @@
               <Icon name="mdi:thumb-up" class="w-6 h-6 mx-auto text-green-500 dark:text-green-400" />
               <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Lajky</p>
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.likesCount ?? 0 }}</p>
-            </div>
-            <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105"
-            >
-              <Icon name="mdi:thumb-down" class="w-6 h-6 mx-auto text-red-500 dark:text-red-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Disliky</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.dislikesCount ?? 0 }}</p>
             </div>
           </div>
 
@@ -147,6 +151,12 @@
             <Save class="w-5 h-5 mr-2" />
             Uložit změny
           </button>
+          <UserActivity
+            v-model:activeTab="activeTab"
+            :profile="profileForm"
+            :pending="userDataPending"
+            :error="userDataError"
+          />
         </div>
       </div>
     </TransitionRoot>
@@ -172,6 +182,7 @@ const avatar = ref<{
 const isLoading = shallowRef<boolean>(false)
 const showDialog = shallowRef<boolean>(false)
 const dialogType = shallowRef<'followers' | 'followed'>('followers')
+const activeTab = ref<'likedArticles' | 'comments'>('likedArticles')
 
 const profileForm = ref({
   username: '',
@@ -185,9 +196,31 @@ const profileForm = ref({
   commentsCount: 0,
   likesCount: 0,
   dislikesCount: 0,
+  likedArticles: [] as Array<{
+    id: string
+    slug: string
+    title: string
+    imageUrl: string | null
+    publishedAt: string | null
+    likesCount: number
+  }>,
+  comments: [] as Array<{
+    id: string
+    content: string
+    articleSlug: string
+    articleTitle: string
+    createdAt: string
+    likesCount: number
+    dislikesCount: number
+  }>,
 })
 
-const { data: userData, refresh } = await useFetch(`/api/users/${session.value?.user?.id}`)
+const {
+  data: userData,
+  pending: userDataPending,
+  error: userDataError,
+  refresh,
+} = await useFetch(`/api/users/${session.value?.user?.id}`)
 
 if (userData.value)
   profileForm.value = {
@@ -202,6 +235,8 @@ if (userData.value)
     commentsCount: userData.value.commentsCount || 0,
     likesCount: userData.value.likesCount || 0,
     dislikesCount: userData.value.dislikesCount || 0,
+    likedArticles: userData.value.likedArticles || [],
+    comments: userData.value.comments || [],
   }
 
 function openDialog(type: 'followers' | 'followed') {
