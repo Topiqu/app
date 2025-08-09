@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
 
   let content = body.content
-  const url = (id: string) => `http://localhost:3000/articles/${article.slug}#comment-${id}`
+  const url = (id: string) => `http://localhost:3000/clanky/${article.slug}#comment-${id}`
 
   if (body.parentId) {
     const parent = await prisma.comment.findUnique({

@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
   })
   if (!admin) throw createError({ statusCode: 404, message: 'Admin nenalezen' })
 
-  const url = `http://localhost:3000/articles/${comment.article.slug}#comment-${comment.id}`
+  const url = `http://localhost:3000/clanky/${comment.article.slug}#comment-${comment.id}`
 
   await prisma.notification.create({
     data: {
