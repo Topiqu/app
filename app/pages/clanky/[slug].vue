@@ -19,8 +19,21 @@
       </h1>
 
       <div class="flex items-center gap-3 text-sm text-gray-600 mt-[-8px]">
-        <Icon name="mdi:account" class="w-4 h-4 text-blue-500" />
-        <NuxtLink :to="`/autor/${data.user.username}`" class="font-medium text-blue-600 hover:text-blue-800 transition">
+        <NuxtImg
+          v-if="data.user.avatarUrl"
+          :src="data.user.avatarUrl"
+          :alt="`Avatar autora: ${data.user.username}`"
+          format="webp"
+          quality="80"
+          width="24"
+          height="24"
+          class="w-6 h-6 rounded-full object-cover"
+        />
+        <Icon v-else name="mdi:account" class="w-6 h-6 text-blue-500" />
+        <NuxtLink
+          :to="`/autor/${data.user.username}`"
+          class="font-medium text-[17px] text-blue-600 hover:text-blue-800 transition"
+        >
           {{ data.user.username }}
         </NuxtLink>
         <span class="italic text-gray-400">• Autor článku</span>
@@ -217,7 +230,7 @@ import type { ArticleStatus, Article as _Article, User } from '@zenstackhq/runti
 import { TransitionRoot } from '@headlessui/vue'
 
 type Article = _Article & {
-  user: { username: string; id: string }
+  user: { username: string; id: string; avatarUrl: string }
   tags?: { tag: { name: string; slug: string; id: string } }[]
   commentCount?: number
   likes: number

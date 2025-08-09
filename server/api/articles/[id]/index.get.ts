@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const article = await db.article.findUnique({
     where: { slug },
     include: {
-      user: { select: { username: true, id: true } },
+      user: { select: { username: true, id: true, avatarUrl: true } },
       tags: { include: { tag: true } },
       reactions: true,
       _count: {
