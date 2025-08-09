@@ -2,7 +2,7 @@
   <div class="relative group w-full flex dark:bg-neutral-900">
     <div
       ref="card"
-      class="p-4 shadow-sm border border-gray-200 dark:border-neutral-700 flex items-center gap-4 w-full max-w-md sm:max-w-full"
+      class="p-4 shadow-sm border border-gray-200 dark:border-neutral-700 flex items-center gap-4 w-full max-w-md sm:max-w-full transition-all"
     >
       <NuxtImg
         v-if="user.avatarUrl"
@@ -19,15 +19,24 @@
             {{ user.username }}
           </span>
           <span
-            v-if="user.role === 'admin' || user.role === 'superadmin'"
+            v-if="user.role === 'admin'"
             :class="[
-              'text-xs font-medium px-2 py-0.5 rounded',
-              user.role === 'admin'
-                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+              'text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1',
+              data?.plan === 'PREMIUM'
+                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md'
+                : data?.plan === 'PRO'
+                  ? 'bg-gradient-to-r from-indigo-400 to-indigo-600 text-white shadow-md'
+                  : data?.plan === 'CUSTOM'
+                    ? 'bg-gradient-to-r from-pink-400 to-pink-600 text-white shadow-md'
+                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
             ]"
           >
-            {{ user.role === 'superadmin' ? 'Superadmin' : 'Admin' }}
+            <Icon
+              v-if="['PREMIUM', 'PRO', 'CUSTOM'].includes(data?.plan)"
+              :name="data?.plan === 'PREMIUM' ? 'mdi:crown' : data?.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
+              class="w-4 h-4"
+            />
+            Admin
           </span>
         </div>
         <p class="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[200px]">
@@ -38,13 +47,10 @@
 
     <div
       v-if="isHovered"
-      class="absolute sm:fixed w-[90vw] sm:w-80 z-10 hidden group-hover:flex flex-col bg-white dark:bg-neutral-900 p-5 rounded-xl shadow-xl border border-gray-200 dark:border-neutral-700"
-      :style="{
-        top: `${y}px`,
-        left: `${Math.max(x - 320 - 16, 8)}px`,
-      }"
+      class="absolute sm:fixed w-[90vw] sm:w-80 z-10 hidden group-hover:flex flex-col bg-white dark:bg-neutral-900 p-5 rounded-xl shadow-xl"
+      :style="{ top: `${y}px`, left: `${Math.max(x - 320 - 16, 8)}px` }"
     >
-      <div class="flex items-center gap-4 dark:bg-neutral-900">
+      <div class="flex items-center gap-4">
         <NuxtImg
           v-if="user.avatarUrl"
           :src="user.avatarUrl"
@@ -54,21 +60,30 @@
           height="56"
         />
         <Icon v-else name="mdi:account-circle-outline" class="w-14 h-14 text-gray-400 dark:text-gray-600" />
-        <div class="flex flex-col min-w-0 dark:bg-neutral-900">
+        <div class="flex flex-col min-w-0">
           <div class="flex items-center gap-2">
             <span class="font-semibold text-gray-900 dark:text-white text-lg truncate">
               {{ user.username }}
             </span>
             <span
-              v-if="user.role === 'admin' || user.role === 'superadmin'"
+              v-if="user.role === 'admin'"
               :class="[
-                'text-xs font-medium px-2 py-0.5 rounded',
-                user.role === 'admin'
-                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                  : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+                'text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1',
+                data?.plan === 'PREMIUM'
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md'
+                  : data?.plan === 'PRO'
+                    ? 'bg-gradient-to-r from-indigo-400 to-indigo-600 text-white shadow-md'
+                    : data?.plan === 'CUSTOM'
+                      ? 'bg-gradient-to-r from-pink-400 to-pink-600 text-white shadow-md'
+                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
               ]"
             >
-              {{ user.role === 'superadmin' ? 'Superadmin' : 'Admin' }}
+              <Icon
+                v-if="['PREMIUM', 'PRO', 'CUSTOM'].includes(data?.plan)"
+                :name="data?.plan === 'PREMIUM' ? 'mdi:crown' : data?.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
+                class="w-4 h-4"
+              />
+              Admin
             </span>
           </div>
           <p class="text-gray-500 dark:text-gray-400 text-sm break-all">
@@ -77,21 +92,22 @@
         </div>
       </div>
 
-      <div class="mt-3 text-sm text-gray-700 dark:text-gray-300 dark:bg-neutral-900">
+      <div class="mt-3 text-sm text-gray-700 dark:text-gray-300">
         <p class="whitespace-pre-wrap break-words">
           {{ user.bio || 'Žádné bio' }}
         </p>
       </div>
 
       <div
-        class="border-t border-gray-200 dark:border-gray-700 mt-3 pt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1 dark:bg-neutral-900"
+        class="mt-3 pt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1 border-t border-gray-200 dark:border-gray-700"
       >
+        <p v-if="user.role === 'admin'">Administrátor ve: {{ data?.name || 'Není přiřazen' }}</p>
         <p>Přidal(a) se: {{ formatDate(user.createdAt) }}</p>
         <p>Naposledy přihlášen: {{ formatDate(user.lastLogin) }}</p>
         <p>Komentáře: {{ user.commentsCount ?? 0 }}</p>
         <p>Sleduje: {{ user.followers ?? 0 }}</p>
         <p v-if="user.following > 0">Sledující: {{ user.following ?? 0 }}</p>
-        <div class="flex items-center gap-2 dark:bg-neutral-900">
+        <div class="flex items-center gap-2">
           <Icon name="mdi:thumb-up" class="w-4 h-4 text-green-500 dark:text-green-400" />
           <span>{{ user.likesCount ?? 0 }}</span>
           <Icon name="mdi:thumb-down" class="w-4 h-4 text-red-500 dark:text-red-400" />
@@ -103,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   user: {
     id: string
     username: string
@@ -121,6 +137,7 @@ defineProps<{
   }
 }>()
 
+const { data } = await useFetch(`/api/clients/${props.user.id}/by-userid`)
 const card = useTemplateRef('card')
 const isHovered = useElementHover(card)
 const { x, y } = useElementBounding(card)
