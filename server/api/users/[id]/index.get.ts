@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
       comments: {
         include: {
           reactions: { select: { type: true } },
+          article: { select: { slug: true, title: true } },
         },
       },
       followers: {
@@ -30,6 +31,7 @@ export default defineEventHandler(async (event) => {
               title: true,
               imageUrl: true,
               publishedAt: true,
+              reactions: { select: { id: true } },
             },
           },
         },
@@ -66,14 +68,22 @@ export default defineEventHandler(async (event) => {
     followers: userData.followers.length,
     following: userData.following.length,
     theme: userData.theme,
-    likedArticles: userData.articleReactions
-      .filter((reaction) => reaction.userId === id)
-      .map((reaction) => ({
-        id: reaction.article.id,
-        slug: reaction.article.slug,
-        title: reaction.article.title,
-        imageUrl: reaction.article.imageUrl,
-        publishedAt: reaction.article.publishedAt?.toISOString() || null,
-      })),
+    likedArticles: userData.articleReactions.map((reaction) => ({
+      id: reaction.article.id,
+      slug: reaction.article.slug,
+      title: reaction.article.title,
+      imageUrl: reaction.article.imageUrl,
+      publishedAt: reaction.article.publishedAt?.toISOString() || null,
+      likesCount: reaction.article.reactions.length,
+    })),
+    comments: userData.comments.map((comment) => ({
+      id: comment.id,
+      content: comment.content,
+      articleSlug: comment.article?.slug || '',
+      articleTitle: comment.article?.title || '',
+      createdAt: comment.createdAt.toISOString(),
+      likesCount: comment.reactions.filter((r) => r.type === 'LIKE').length,
+      dislikesCount: comment.reactions.filter((r) => r.type === 'DISLIKE').length,
+    })),
   }
 })
