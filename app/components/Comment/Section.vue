@@ -117,7 +117,6 @@ const { data: session } = useAuth()
 const newComment = shallowRef('')
 const isSubmitting = shallowRef(false)
 const replyingTo = ref<CommentWithReplies | null>(null)
-const textarea = useTemplateRef<HTMLElement>('comment')
 const commentForm = useTemplateRef<HTMLElement>('commentForm')
 const sort = ref('createdAt:desc')
 const {
@@ -182,9 +181,9 @@ const handleReply = (comment: CommentWithReplies) => {
   if (comment.deletedAt) return
   replyingTo.value = comment
   nextTick(() => {
-    if (textarea.value) {
-      textarea.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      textarea.value.focus()
+    if (commentForm.value) {
+      commentForm.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      commentForm.value.focus()
     }
   })
 }
