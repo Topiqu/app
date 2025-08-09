@@ -27,7 +27,7 @@
           quality="80"
           width="24"
           height="24"
-          class="w-6 h-6 rounded-full object-cover"
+          class="w-8 h-8 rounded-full object-cover"
         />
         <Icon v-else name="mdi:account" class="w-6 h-6 text-blue-500" />
         <NuxtLink
