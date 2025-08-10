@@ -1,3 +1,5 @@
+import type { NotificationType } from '@prisma/client'
+
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
 
@@ -36,6 +38,11 @@ export default defineEventHandler(async (event) => {
     content = $.html()
   }
 
+  const previousArticle = await prisma.article.findUnique({
+    where: { id },
+    select: { status: true },
+  })
+
   const article = await prisma.article.update({
     where: { id },
     data: {
@@ -49,6 +56,31 @@ export default defineEventHandler(async (event) => {
       allowedComments: body.allowedComments,
     },
   })
+
+  if (article.status === 'published' && previousArticle?.status === 'draft') {
+    const followers = await prisma.follow.findMany({
+      where: { followedId: article.userId },
+      select: { followerId: true },
+    })
+
+    const notifications = followers.map((follower) => ({
+      message: `${user.name} vydal nový článek: ${article.title}`,
+      userId: follower.followerId,
+      articleId: article.id,
+      type: 'ARTICLE_PUBLISHED' as NotificationType,
+    }))
+
+    await prisma.$transaction(async (tx) => {
+      const BATCH_SIZE = 100
+      for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
+        const batch = notifications.slice(i, i + BATCH_SIZE)
+        await tx.notification.createMany({
+          data: batch,
+          skipDuplicates: true,
+        })
+      }
+    })
+  }
 
   return article
 })

@@ -246,6 +246,7 @@ const { data: session } = useAuth()
 const editingArticle = ref<Article | null>(null)
 const slug = computed(() => route.params.slug)
 const isFollowing = ref(false)
+const relatedArticles = ref<RelatedArticle[]>([])
 
 const {
   data,
@@ -368,8 +369,6 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
     toast.error({ message: e.data?.message || 'Změna selhala' })
   }
 }, 100)
-
-const relatedArticles = ref<RelatedArticle[]>([])
 
 onMounted(async () => {
   if (!data.value?.id) return

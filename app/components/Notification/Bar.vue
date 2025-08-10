@@ -72,7 +72,7 @@
                     v-if="n.link"
                     :to="n.link"
                     class="inline-block text-blue-600 dark:text-blue-400 hover:underline ml-1"
-                    >Zobrazit komentář</NuxtLink
+                    >Zobrazit</NuxtLink
                   >
                   <span v-if="n.count > 1" class="ml-1 text-red-500 text-[10px] font-bold">×{{ n.count }}</span>
                 </p>
