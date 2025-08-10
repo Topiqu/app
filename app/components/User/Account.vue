@@ -82,7 +82,7 @@
             Administrátor ve: {{ clientData?.name || 'Není přiřazen' }}
           </p>
           <p>Přidal(a) se: {{ formatDate(userData?.createdAt) }}</p>
-          <NuxtLink :to="`/uzivatel/${userData?.id}`" class="text-blue-600 dark:text-blue-400 hover:underline">
+          <NuxtLink :to="`/uzivatel`" class="text-blue-600 dark:text-blue-400 hover:underline">
             Zobrazit profil
           </NuxtLink>
         </div>
