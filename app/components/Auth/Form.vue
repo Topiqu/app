@@ -197,6 +197,7 @@ const submit = async () => {
 
       if (data.value?.user?.role === 'superadmin') navigateTo('/master')
       else if (data.value?.user?.role === 'admin') navigateTo('/admin')
+      else navigateTo('uzivatel/')
 
       form.value = init
     }
