@@ -67,7 +67,15 @@
                   {{ article.title }}
                 </NuxtLink>
                 <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                  <Icon name="mdi:account-outline" class="w-3.5 h-3.5" />
+                  <NuxtImg
+                    v-if="article.authorPfp"
+                    :src="article.authorPfp"
+                    :alt="`Profilový obrázek ${article.authorUsername}`"
+                    class="w-5 h-5 rounded-full object-cover ring-1 ring-gray-200 dark:ring-neutral-700"
+                    width="20"
+                    height="20"
+                  />
+                  <Icon v-else name="mdi:account-outline" class="w-3.5 h-3.5" />
                   <span>{{ article.authorUsername }}</span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -107,6 +115,18 @@
               :key="comment.id"
               class="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 hover:shadow-md transition-all"
             >
+              <div class="flex items-center gap-2 mb-2">
+                <NuxtImg
+                  v-if="comment.authorPfp"
+                  :src="comment.authorPfp"
+                  :alt="`Profilový obrázek ${comment.authorUsername}`"
+                  class="w-8 h-8 rounded-full object-cover ring-1 ring-gray-200 dark:ring-neutral-700"
+                  width="32"
+                  height="32"
+                />
+                <Icon v-else name="mdi:account-circle-outline" class="w-8 h-8 text-gray-400 dark:text-gray-600" />
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ comment.authorUsername }}</span>
+              </div>
               <p class="text-sm text-gray-700 dark:text-gray-300 mb-1">{{ comment.content }}</p>
               <NuxtLink
                 :to="`/clanky/${comment.articleSlug}#comment-${comment.id}`"
@@ -115,10 +135,6 @@
                 <Icon name="mdi:file-document-outline" class="w-3.5 h-3.5" />
                 Článek: {{ comment.articleTitle }}
               </NuxtLink>
-              <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                <Icon name="mdi:account-outline" class="w-3.5 h-3.5" />
-                <span>{{ comment.authorUsername }}</span>
-              </div>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Vytvořeno: {{ formatDate(comment.createdAt) }}
               </p>
@@ -130,10 +146,6 @@
                 <div class="flex items-center gap-1">
                   <Icon name="mdi:thumb-down-outline" class="w-3.5 h-3.5" />
                   <span>{{ comment.dislikesCount }}</span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <Icon name="mdi:eye-outline" class="w-3.5 h-3.5" />
-                  <span>{{ comment.views }}</span>
                 </div>
               </div>
               <div v-if="comment.tags.length" class="flex flex-wrap gap-1 mt-1">
@@ -163,6 +175,7 @@ defineProps<{
       imageUrl: string | null
       publishedAt: string | null
       authorUsername: string
+      authorPfp: string | null
       views: number
       tags: string[]
       likesCount: number
@@ -173,7 +186,7 @@ defineProps<{
       articleSlug: string
       articleTitle: string
       authorUsername: string
-      views: number
+      authorPfp: string | null
       tags: string[]
       createdAt: string
       likesCount: number

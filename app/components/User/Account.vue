@@ -213,7 +213,7 @@ const profileForm = ref({
     articleSlug: string
     articleTitle: string
     authorUsername: string
-    views: number
+    authorPfp: string | null
     tags: string[]
     createdAt: string
     likesCount: number
