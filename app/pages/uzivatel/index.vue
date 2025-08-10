@@ -226,7 +226,7 @@ const {
   pending: userDataPending,
   error: userDataError,
   refresh,
-} = await useFetch(`/api/users/${session.value?.user?.id}`)
+} = await useFetch(`/api/users/${session.value?.user?.id}/account`)
 
 if (userData.value)
   profileForm.value = {
