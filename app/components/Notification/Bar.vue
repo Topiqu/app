@@ -1,15 +1,15 @@
 <template>
-  <div class="fixed top-4 right-4 z-[1000]">
+  <div class="fixed top-4 right-4 z-50">
     <div class="relative">
       <Icon
         ref="btn"
         name="mdi:bell-outline"
-        class="w-6 h-6 text-gray-700 dark:text-gray-300 cursor-pointer hover:text-blue-600 transition"
+        class="w-6 h-6 rounded-full text-gray-700 dark:text-gray-300 cursor-pointer hover:text-blue-600 transition-colors duration-300 shadow-sm"
         @click.stop="toggle"
       />
       <span
         v-if="unreadCount > 0"
-        class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-semibold rounded-full h-5 w-5 flex items-center justify-center ring-2 ring-white dark:ring-neutral-900 shadow-sm"
+        class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-semibold rounded-full h-4 w-4 flex items-center justify-center ring-1 ring-white dark:ring-neutral-900"
         >{{ unreadCount }}</span
       >
       <Transition
@@ -23,7 +23,7 @@
         <div
           v-if="show"
           ref="dropdown"
-          class="absolute right-0 mt-3 w-[26rem] max-w-[95vw] max-h-[30rem] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col"
+          class="absolute right-0 mt-3 w-[26rem] max-w-[95vw] max-h-[30rem] bg-white dark:bg-neutral-900 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col"
         >
           <div v-if="notifications.length" ref="scroll" class="relative overflow-y-auto flex-1 min-h-[100px]">
             <div
@@ -53,17 +53,17 @@
                     SYSTEM: 'mdi:alert-circle-outline',
                   }[n.type]
                 "
-                class="w-5 h-5 mt-0.5 shrink-0 text-neutral-500 dark:text-neutral-300"
+                class="w-6 h-6 mt-0.5 shrink-0 text-neutral-500 dark:text-neutral-300"
               />
-              <div class="w-full dark:bg-transparent">
+              <div class="w-full">
                 <button
                   type="button"
-                  class="absolute top-3 right-2 p-0 bg-transparent border-none outline-none hover:bg-transparent"
+                  class="absolute top-3 right-2 p-0 bg-transparent border-none outline-none"
                   @click.stop="del(n.id)"
                 >
                   <Icon
                     name="mdi:close-circle"
-                    class="w-4 h-4 text-neutral-300 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 cursor-pointer"
+                    class="w-6 h-6 text-neutral-300 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 cursor-pointer"
                   />
                 </button>
                 <p class="text-[13px] leading-snug text-neutral-800 dark:text-neutral-200">
