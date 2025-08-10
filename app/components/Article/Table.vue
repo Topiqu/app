@@ -100,7 +100,6 @@ import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 import Swal from 'sweetalert2'
 import { format } from 'date-fns'
 import { useRouter } from 'vue-router'
-import { useDebounceFn } from '@vueuse/core'
 import { TransitionRoot } from '@headlessui/vue'
 import useArticleEvents from '~~/composables/article-event'
 import {

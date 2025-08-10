@@ -3,6 +3,9 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const db = await getEnhancedPrisma(user)
+  const { skip, take } = await getPagination(event)
+  const max = 75
+  const adjustedTake = Math.min(take, max - skip)
 
   const notifications = await db.notification.findMany({
     where: {
@@ -20,6 +23,15 @@ export default defineEventHandler(async (event) => {
     orderBy: {
       createdAt: 'desc',
     },
+    skip,
+    take: adjustedTake,
+  })
+
+  const totalCount = await db.notification.count({
+    where: {
+      userId: user.id,
+      deletedAt: null,
+    },
   })
 
   const unreadCount = await db.notification.count({
@@ -32,7 +44,7 @@ export default defineEventHandler(async (event) => {
 
   return {
     notifications,
-    count: notifications.length,
     unreadCount,
+    hasMore: skip + notifications.length < Math.min(totalCount, max),
   }
 })
