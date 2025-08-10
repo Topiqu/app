@@ -18,7 +18,6 @@
 </template>
 
 <script setup lang="ts">
-import ThemeToggle from '~/components/ThemeToggle.vue'
 const { data: auth } = useAuth()
 const sidebarOpen = shallowRef(true)
 const isAdmin = computed(() => ['admin', 'superadmin'].includes(auth?.value?.user.role || ''))

@@ -1,8 +1,6 @@
 import type { H3Event } from 'h3'
 
 interface Pagination {
-  page: number
-  limit: number
   skip: number
   take: number
 }
@@ -17,8 +15,6 @@ export const getPagination = async (event: H3Event): Promise<Pagination> => {
   const page = query.page ?? 1
   const limit = query.limit ?? 10
   return {
-    page,
-    limit,
     skip: (page - 1) * limit,
     take: limit,
   }
