@@ -1,9 +1,32 @@
 <template>
   <div v-if="data" class="min-h-screen p-8 md:p-12 transition-all duration-500 ease-out">
+    <div
+      class="fixed top-0 left-0 w-full bg-white dark:bg-neutral-900 shadow-md z-10 opacity-0 translate-y-[-100%] transition-all duration-300 ease-in-out"
+      :class="{ 'opacity-100 translate-y-0': isSticky }"
+    >
+      <div class="max-w-4xl mx-auto flex items-center justify-between px-4 py-4">
+        <NuxtLink
+          to="/admin"
+          class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 no-underline"
+          aria-label="Zpět na seznam článků"
+        >
+          <Icon
+            name="mdi:arrow"
+            class="w-6 h-6 mr-2 transition-transform duration-300 group-hover:-translate-x-1.5 text-blue-700"
+          />
+          Zpět na seznam
+        </NuxtLink>
+        <h1
+          class="text-xl font-extrabold text-gray-900 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent tracking-tight leading-tight"
+        >
+          {{ data.title }}
+        </h1>
+      </div>
+    </div>
     <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4 sm:px-0">
       <NuxtLink
         to="/admin"
-        class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 ease-in-out no-underline"
+        class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 no-underline"
         aria-label="Zpět na seznam článků"
       >
         <Icon
@@ -17,7 +40,6 @@
       >
         {{ data.title }}
       </h1>
-
       <div class="flex items-center gap-3 text-sm text-gray-600 mt-[-8px]">
         <NuxtImg
           v-if="data.user.avatarUrl"
@@ -33,9 +55,8 @@
         <NuxtLink
           :to="`/autor/${data.user.username}`"
           class="font-medium text-[17px] text-blue-600 hover:text-blue-800 transition"
+          >{{ data.user.username }}</NuxtLink
         >
-          {{ data.user.username }}
-        </NuxtLink>
         <span class="italic text-gray-400">• Autor článku</span>
         <button
           v-if="session?.user && session.user.id !== data.user.id"
@@ -51,7 +72,6 @@
           {{ isFollowing ? 'Sledování' : 'Sledovat' }}
         </button>
       </div>
-
       <NuxtImg
         v-if="data.imageUrl"
         :src="data.imageUrl"
@@ -64,7 +84,6 @@
         aria-describedby="image-caption"
       />
       <span id="image-caption" class="sr-only">Titulní obrázek článku</span>
-
       <div v-if="hasTags" class="mt-4">
         <div class="flex flex-wrap gap-2.5">
           <NuxtLink
@@ -78,7 +97,6 @@
           </NuxtLink>
         </div>
       </div>
-
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-md text-gray-600 mt-4">
         <div class="flex flex-wrap items-center gap-4">
           <div
@@ -112,20 +130,16 @@
               </button>
             </div>
           </div>
-
           <div class="flex items-center gap-2 text-gray-500">
             <Icon name="mdi:calendar" class="w-4 h-4" />
             <span>{{ formatDate(data.createdAt.toString()) }}</span>
           </div>
-
           <span class="text-gray-400 hidden sm:inline">|</span>
-
           <div class="flex items-center gap-2 text-gray-500">
             <Icon name="mdi:clock-outline" class="w-4 h-4" />
             <span>{{ data.readingTime }} min čtení</span>
           </div>
         </div>
-
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-2 text-gray-500">
             <span>{{ data.views }}x zhlédnutí</span>
@@ -144,7 +158,6 @@
           </button>
         </div>
       </div>
-
       <div class="flex justify-end gap-4 mt-10">
         <button
           aria-label="Lajknout článek"
@@ -171,7 +184,6 @@
         >
           <Icon name="mdi:twitter" class="w-5 h-5" />
         </NuxtLink>
-
         <NuxtLink
           :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
           target="_blank"
@@ -182,28 +194,22 @@
           <Icon name="mdi:linkedin" class="w-5 h-5" />
         </NuxtLink>
       </div>
-
       <div
         class="max-w-4xl bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-[17px] md:text-lg leading-[1.8] text-gray-800 tracking-normal space-y-6 prose prose-gray prose-a:text-blue-600 prose-a:no-underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:hover:border-gray-600 dark:prose-invert dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600"
         v-html="data.content"
       />
-
       <ArticleRelated :articles="relatedArticles" />
       <CommentSection :articleId="data.id" :commCount="data.commentCount || 0" :allowComments="data.allowedComments" />
       <ArticleTOC :content="data.content" />
     </div>
-
     <TransitionRoot :show="!!editingArticle" as="template">
       <ArticleEdit :article="editingArticle!" @close="editingArticle = null" @saved="refresh" />
     </TransitionRoot>
   </div>
-
   <div v-else-if="error" class="min-h-screen flex items-center justify-center">
     <div class="text-center p-8 md:p-10 bg-white rounded-2xl shadow-lg border border-gray-100">
       <Icon name="mdi:alert-circle" class="w-16 h-16 text-red-500 mx-auto mb-4 animate-pulse" aria-hidden="true" />
-      <p class="text-lg md:text-xl text-gray-500 font-medium">
-        {{ errorMsg }}
-      </p>
+      <p class="text-lg md:text-xl text-gray-500 font-medium">{{ errorMsg }}</p>
       <NuxtLink
         to="/"
         class="mt-4 inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 no-underline hover:underline decoration-2 underline-offset-4"
@@ -214,7 +220,6 @@
       </NuxtLink>
     </div>
   </div>
-
   <div v-else class="min-h-screen flex items-center justify-center">
     <Icon name="mdi:loading" class="w-14 h-14 text-blue-600 animate-spin" />
   </div>
@@ -243,13 +248,13 @@ const editingArticle = ref<Article | null>(null)
 const slug = computed(() => route.params.slug)
 const isFollowing = ref(false)
 const relatedArticles = ref<RelatedArticle[]>([])
+const isSticky = ref(false)
 
 const {
   data,
   execute: refresh,
   error,
 } = await useFetch<Article | null>(`/api/articles/${slug.value}`, { default: () => null })
-
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || false
 
@@ -275,16 +280,11 @@ const toggleFollow = async () => {
   }
   try {
     if (isFollowing.value) {
-      await $fetch(`/api/follows/${data.value.user.id}`, {
-        method: 'DELETE',
-      })
+      await $fetch(`/api/follows/${data.value.user.id}`, { method: 'DELETE' })
       isFollowing.value = false
       toast.success({ message: `Přestali jste sledovat ${data.value.user.username}` })
     } else {
-      await $fetch(`/api/follows/`, {
-        method: 'POST',
-        body: { followedId: data.value.user.id },
-      })
+      await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
       isFollowing.value = true
       toast.success({ message: `Nyní sledujete ${data.value.user.username}` })
     }
@@ -307,17 +307,14 @@ const copyLink = () => {
 
 const toggleLike = async () => {
   if (!data.value?.slug) return
-
   const key = `liked-${data.value.slug}`
   const hasLiked = sessionStorage.getItem(key)
-
   if (hasLiked && !session.value?.user.id) {
     data.value.likedByUser = false
     data.value.likes -= 1
     sessionStorage.removeItem(key)
     return
   }
-
   try {
     const res = await $fetch(`/api/articles/${data.value.id}/reaction`, { method: 'POST' })
     data.value.likedByUser = res.liked
@@ -367,19 +364,19 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
 }, 100)
 
 onMounted(async () => {
-  if (!data.value?.id) return
+  const onScroll = () => {
+    isSticky.value = window.scrollY > 100
+  }
+  window.addEventListener('scroll', onScroll)
+  onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
+  if (!data.value?.id) return
   const key = `viewed-${data.value.id}`
   const lastView = sessionStorage.getItem(key)
   const now = Date.now()
-
   if (lastView && now - Number(lastView) <= 1000) return
-
   try {
-    await $fetch(`/api/articles/${data.value.id}`, {
-      method: 'PATCH',
-      body: { views: data.value.views + 1 },
-    })
+    await $fetch(`/api/articles/${data.value.id}`, { method: 'PATCH', body: { views: data.value.views + 1 } })
     sessionStorage.setItem(key, now.toString())
   } catch {
     //
