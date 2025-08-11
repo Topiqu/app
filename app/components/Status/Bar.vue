@@ -16,18 +16,13 @@
 const isOnline = useOnline()
 const showBar = ref(false)
 
-const verifyConnection = async () => {
-  await $fetch('/api/ping', { method: 'HEAD', timeout: 5000 })
-  showTemporaryBar()
-}
-
 const showTemporaryBar = () => {
   showBar.value = true
   setTimeout(() => (showBar.value = false), 3000)
 }
 
 watch(isOnline, (online, prev) => {
-  if (online && prev === false) verifyConnection()
+  if (online && prev === false) showTemporaryBar()
   if (!online) showTemporaryBar()
 })
 </script>

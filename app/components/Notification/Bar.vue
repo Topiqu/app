@@ -51,7 +51,7 @@
                     MENTION: 'mdi:at',
                     ARTICLE_PUBLISHED: 'mdi:post-outline',
                     SYSTEM: 'mdi:alert-circle-outline',
-                  }[n.type]
+                  }[n.type]!
                 "
                 class="w-6 h-6 mt-0.5 shrink-0 text-neutral-500 dark:text-neutral-300"
               />

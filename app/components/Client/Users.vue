@@ -23,7 +23,7 @@
         leaveTo="opacity-0 scale-95"
       >
         <DialogPanel class="bg-white p-6 rounded-2xl shadow-lg max-w-xl w-full max-h-[80vh] overflow-y-auto">
-          <DialogTitle class="text-xl font-bold text-gray-900 mb-4"> Uživatelé klienta </DialogTitle>
+          <DialogTitle class="text-xl font-bold mb-4"> Uživatelé klienta </DialogTitle>
 
           <div class="flex justify-end mb-4">
             <button
