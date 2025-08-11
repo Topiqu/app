@@ -79,33 +79,29 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-between text-md text-gray-600 flex-wrap gap-3 mt-4">
-        <div class="flex items-center gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-md text-gray-600 mt-4">
+        <div class="flex flex-wrap items-center gap-4">
           <div
             v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
-            class="flex items-center gap-3"
+            class="flex items-center gap-3 flex-wrap"
           >
-            <span class="font-medium">Stav:</span>
+            <span class="font-medium whitespace-nowrap">Stav:</span>
             <ArticleStatusCell :onUpdate="debouncedSetStatus" :row="{ original: data }" />
             <span
               v-if="session?.user.role === 'admin' && data.status === 'published'"
               class="w-2 h-2 bg-green-500 rounded-full ml-2 animate-pulse-slow"
               aria-label="Článek je publikován"
             ></span>
-            <span class="text-gray-400">|</span>
+            <span class="text-gray-400 hidden sm:inline">|</span>
             <div class="flex items-center gap-2">
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Komentáře</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Komentáře</span>
               <button
                 role="switch"
                 :class="[
                   'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
                   data.allowedComments ? 'bg-blue-600' : 'bg-gray-500 dark:bg-gray-600',
                 ]"
-                @click="
-                  () => {
-                    ;((data!.allowedComments = !data?.allowedComments), toggleComments())
-                  }
-                "
+                @click="((data.allowedComments = !data.allowedComments), toggleComments())"
               >
                 <span
                   :class="[
@@ -122,7 +118,7 @@
             <span>{{ formatDate(data.createdAt.toString()) }}</span>
           </div>
 
-          <span class="text-gray-400">|</span>
+          <span class="text-gray-400 hidden sm:inline">|</span>
 
           <div class="flex items-center gap-2 text-gray-500">
             <Icon name="mdi:clock-outline" class="w-4 h-4" />
