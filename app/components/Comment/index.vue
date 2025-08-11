@@ -7,6 +7,7 @@
       v-if="session?.user && comment.deletedAt === null"
       class="absolute top-2 right-2 sm:top-3 sm:right-3 p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none z-10"
       aria-label="Nahlásit komentář"
+      title="Nahlásit komentář"
       @click="report(comment)"
     >
       <Icon
