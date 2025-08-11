@@ -117,7 +117,7 @@
         </div>
       </div>
       <div>
-        <EmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="$emit('refresh')" />
+        <LazyEmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="$emit('refresh')" />
       </div>
     </div>
 

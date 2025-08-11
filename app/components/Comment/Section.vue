@@ -79,14 +79,14 @@
       <NuxtLink to="/login" class="text-blue-600 hover:underline font-medium cursor-pointer">Přihlaste se</NuxtLink>
       pro přidání komentáře.
     </p>
-    <div v-if="isLoading" class="flex justify-center mb-10">
+    <div v-if="isLoading && !commentsData.comments?.length" class="flex justify-center mb-10">
       <Icon name="mdi:loading" class="w-8 h-8 text-blue-600 animate-spin" />
     </div>
     <div v-else-if="error" class="text-center p-6 bg-red-50 rounded-2xl shadow border border-red-200">
       <Icon name="mdi:alert-circle" class="w-8 h-8 text-red-500 mx-auto mb-2" />
       <p class="text-gray-700">Nepodařilo se načíst komentáře: {{ error.message }}</p>
     </div>
-    <div v-else-if="filteredComments.length" class="w-full max-w-full p-0.25 space-y-6 overflow-x-auto">
+    <div v-else-if="filteredComments.length" ref="scroll" class="w-full max-w-full p-0.25 space-y-6 overflow-x-auto">
       <Comment
         v-for="comment in filteredComments"
         :key="comment.id"
@@ -99,6 +99,14 @@
         @dislike="handleDislike"
         @refresh="refresh"
       />
+      <div ref="sentinel" class="h-1"></div>
+      <div v-if="isLoading" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">Načítání...</div>
+      <div
+        v-if="!hasMore && commentsData.comments?.length"
+        class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm"
+      >
+        Žádné další komentáře
+      </div>
     </div>
     <p v-else class="text-gray-600 text-center text-base">Zatím žádné komentáře.</p>
   </div>
@@ -118,18 +126,28 @@ const newComment = shallowRef('')
 const isSubmitting = shallowRef(false)
 const replyingTo = ref<CommentWithReplies | null>(null)
 const commentForm = useTemplateRef<HTMLElement>('commentForm')
+const scroll = useTemplateRef('scroll')
+const sentinel = useTemplateRef('sentinel')
 const sort = ref('createdAt:desc')
+const page = ref(1)
+const limit = 25
+const max = 75
+const hasMore = ref(true)
+const url = computed(() => `/api/comments/${props.articleId}?page=${page.value}&limit=${limit}&sort=${sort.value}`)
 const {
   data: commentsData,
   error,
   pending: isLoading,
   refresh,
-} = await useFetch<CommentWithReplies[]>(`/api/comments/${props.articleId}`, { default: () => [] })
+} = await useFetch<{
+  comments: CommentWithReplies[]
+  hasMore: boolean
+}>(url, { default: () => ({ comments: [], hasMore: true }) })
 
 const maxLength = 1000
 const characterCount = computed(() => newComment.value.length)
 const filteredComments = computed(() => {
-  const result = [...(commentsData.value || [])]
+  const result = [...(commentsData.value?.comments || [])]
   const [field, order] = sort.value.split(':')
   result.sort((a, b) =>
     field === 'createdAt'
@@ -141,6 +159,49 @@ const filteredComments = computed(() => {
         : (b.likes || 0) - (a.likes || 0),
   )
   return result
+})
+
+watch(
+  commentsData,
+  async (v) => {
+    if (!v) return
+    hasMore.value = v.hasMore && v.comments.length === limit && v.comments.length < max
+    if (v.comments.length >= max) hasMore.value = false
+    if (scroll.value && v.comments.length) await nextTick()
+  },
+  { immediate: true },
+)
+
+watch(error, (e) => {
+  if (e) toast.error({ message: `Chyba při načítání: ${e.message || 'Neznámá chyba'}` })
+})
+
+watch(
+  [sentinel, sort],
+  async ([sent]) => {
+    if (sent && scroll.value) {
+      const o = new IntersectionObserver(
+        async (e) => {
+          if (e[0]?.isIntersecting && !isLoading.value && hasMore.value) {
+            page.value++
+            await refresh()
+            await nextTick()
+          }
+        },
+        { root: scroll.value, threshold: 0.01 },
+      )
+      o.observe(sent)
+      return () => o.disconnect()
+    }
+  },
+  { immediate: true },
+)
+
+watch(sort, () => {
+  page.value = 1
+  commentsData.value = { comments: [], hasMore: true }
+  hasMore.value = true
+  refresh()
 })
 
 onClickOutside(
@@ -169,6 +230,7 @@ const submitComment = async () => {
     toast.success({ message: replyingTo.value ? 'Odpověď odeslána' : 'Komentář přidán' })
     newComment.value = ''
     replyingTo.value = null
+    page.value = 1
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nepodařilo se přidat komentář' })
