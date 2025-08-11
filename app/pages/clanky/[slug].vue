@@ -1,7 +1,7 @@
 <template>
   <div v-if="data" class="min-h-screen p-8 md:p-12 transition-all duration-500 ease-out">
     <div
-      class="fixed top-0 hidden sm:block left-0 w-full bg-white dark:bg-neutral-900 shadow-md z-10 opacity-0 translate-y-[-100%] transition-all duration-300 ease-in-out"
+      class="fixed top-0 hidden sm:block left-0 w-full bg-white dark:bg-neutral-900 shadow-md z-15 opacity-0 translate-y-[-100%] transition-all duration-300 ease-in-out"
       :class="{ 'opacity-100 translate-y-0': isSticky }"
     >
       <div class="max-w-4xl mx-auto flex items-center justify-between px-4 py-4">
