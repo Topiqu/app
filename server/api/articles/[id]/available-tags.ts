@@ -8,8 +8,8 @@ export default defineEventHandler(async (event) => {
       statusCode: 400,
       message: 'ID článku je povinné',
     })
-
-  const article = await prisma.article.findUnique({
+  const db = await getEnhancedPrisma(user)
+  const article = await db.article.findUnique({
     where: { id: articleId },
     include: { tags: { select: { tagId: true } } },
   })
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
   const usedTagIds = article.tags.map((t) => t.tagId)
 
-  const availableTags = await prisma.tag.findMany({
+  const availableTags = await db.tag.findMany({
     where: {
       id: { notIn: usedTagIds },
       clientSiteId: user.clientSiteId,

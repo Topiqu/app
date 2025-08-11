@@ -8,7 +8,7 @@
         @change="addTagToBuffer"
       >
         <option value="" disabled>Vyber tag</option>
-        <option v-for="t in tags" :key="t.id" :value="t.id">
+        <option v-for="t in tags.filter((t) => !tagBuffer.some((b) => b.id === t.id))" :key="t.id" :value="t.id">
           {{ t.name }}
         </option>
       </select>
