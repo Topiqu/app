@@ -54,7 +54,6 @@
           <Icon name="mdi:cog" class="w-6 h-6" />
         </button>
       </div>
-
       <div v-if="data?.user?.role === 'superadmin'" class="flex flex-col gap-4">
         <button
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
@@ -78,7 +77,6 @@
       <AuthLogout />
     </div>
   </transition>
-
   <transition
     enterActiveClass="transition-opacity duration-300 ease-out"
     enterFromClass="opacity-0"
@@ -87,9 +85,13 @@
     leaveFromClass="opacity-100"
     leaveToClass="opacity-0"
   >
-    <div v-if="isMobile && isOpen" class="fixed inset-0 z-30 bg-black/40" @click="$emit('update:isOpen', false)" />
+    <div
+      v-if="isMobile && isOpen"
+      class="fixed inset-0 z-30 bg-black/40"
+      :style="{ backgroundColor: theme.mode === 'dark' ? 'rgba(0,0,0,0.5) !important' : undefined }"
+      @click="$emit('update:isOpen', false)"
+    />
   </transition>
-
   <TransitionRoot :show="articleCreateOpen" as="template">
     <ArticleCreate @close="articleCreateOpen = false" />
   </TransitionRoot>
@@ -114,19 +116,22 @@
 </template>
 
 <script setup lang="ts">
+import { useThemeStore } from '~~/stores/theme'
 import { TransitionRoot } from '@headlessui/vue'
+
 defineProps<{ isOpen: boolean }>()
-
 const emit = defineEmits(['update:isOpen'])
-
 const { data } = useAuth()
-
+const theme = useThemeStore()
 const isMobile = shallowRef<boolean>(false)
 
 const updateIsMobile = () => (isMobile.value = window.innerWidth < 768)
 
-onMounted(() => (updateIsMobile(), window.addEventListener('resize', updateIsMobile)))
-onBeforeUnmount(() => window.removeEventListener('resize', updateIsMobile))
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+  onBeforeUnmount(() => window.removeEventListener('resize', updateIsMobile))
+})
 
 watch(isMobile, (mobile) => !mobile && emit('update:isOpen', true), { immediate: true })
 
