@@ -2,7 +2,10 @@
   <transition name="slide">
     <div
       v-if="showBar"
-      :class="[isOnline ? 'bg-green-500' : 'bg-red-500', 'fixed bottom-0 left-0 right-0 text-white p-2 text-center']"
+      :class="[
+        isOnline ? 'bg-green-500' : 'bg-red-500',
+        'fixed bottom-0 left-0 right-0 text-white p-2 text-center z-1000',
+      ]"
     >
       {{ isOnline ? 'Jste zpět online' : 'Jste offline' }}
     </div>
