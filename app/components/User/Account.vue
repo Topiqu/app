@@ -19,7 +19,7 @@
         name="mdi:account-circle-outline"
         class="w-9 h-9 text-gray-400 dark:text-gray-600 transition-colors duration-200"
       />
-      <div class="flex flex-col min-w-0 bg-transparent dark:bg-transparent">
+      <div class="hidden sm:flex flex-col min-w-0 bg-transparent dark:bg-transparent">
         <div class="flex items-center gap-2 bg-transparent">
           <span class="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">
             {{ userData?.username }}
@@ -62,31 +62,33 @@
     >
       <div
         v-if="show || isHovered"
-        class="absolute right-0 mt-2 w-80 rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-5 border border-gray-100 dark:border-neutral-800 bg-transparent dark:bg-transparent backdrop-blur-md"
+        class="absolute right-0 top-full mt-2 w-[95vw] max-w-[20rem] sm:max-w-[22rem] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-transparent dark:bg-transparent backdrop-blur-md"
       >
-        <div class="flex items-center gap-4 bg-transparent dark:bg-transparent">
+        <div class="flex items-center gap-3 sm:gap-4 bg-transparent dark:bg-transparent">
           <NuxtImg
             v-if="userData?.avatarUrl"
             :src="userData.avatarUrl"
             alt="Profilový obrázek"
-            class="w-16 h-16 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-500 transition-all duration-200"
+            class="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-500 transition-all duration-200"
             width="64"
             height="64"
           />
           <Icon
             v-else
             name="mdi:account-circle-outline"
-            class="w-16 h-16 text-gray-400 dark:text-gray-600 transition-colors duration-200"
+            class="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 dark:text-gray-600 transition-colors duration-200"
           />
           <div class="flex flex-col min-w-0 bg-transparent">
             <div class="flex items-center gap-2 bg-transparent">
-              <span class="font-semibold text-gray-900 dark:text-white text-lg truncate">
+              <span
+                class="font-semibold text-base sm:text-lg text-gray-900 dark:text-white truncate max-w-[150px] sm:max-w-[180px]"
+              >
                 {{ userData?.username }}
               </span>
               <span
                 v-if="userData?.role === 'admin' || userData?.role === 'superadmin'"
                 :class="[
-                  'text-[11px] font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm backdrop-blur-sm',
+                  'text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 sm:px-2.5 sm:py-0.5 rounded-full flex items-center gap-1 shadow-sm backdrop-blur-sm',
                   clientData?.plan === 'PREMIUM'
                     ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
                     : clientData?.plan === 'PRO'
@@ -105,22 +107,22 @@
                         ? 'mdi:star'
                         : 'mdi:diamond'
                   "
-                  class="w-3.5 h-3.5"
+                  class="w-3 h-3 sm:w-3.5 sm:h-3.5"
                 />
                 {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
               </span>
               <AuthLogout class="ml-auto" />
             </div>
-            <span class="text-sm text-gray-500 dark:text-gray-400 break-all">
+            <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 break-all">
               {{ userData?.email }}
             </span>
           </div>
         </div>
-        <div class="mt-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+        <div class="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
           <p class="whitespace-pre-wrap break-words">{{ userData?.bio || 'Žádné bio' }}</p>
         </div>
         <div
-          class="mt-4 pt-3 text-xs text-gray-500 dark:text-gray-400 space-y-1 border-t border-gray-200 dark:border-gray-700"
+          class="mt-3 sm:mt-4 pt-2 sm:pt-3 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 space-y-1 border-t border-gray-200 dark:border-gray-700"
         >
           <p v-if="userData?.role === 'admin' || userData?.role === 'superadmin'">
             Administrátor ve: <span class="font-medium">{{ clientData?.name || 'Není přiřazen' }}</span>
