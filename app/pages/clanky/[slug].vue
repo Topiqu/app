@@ -278,7 +278,7 @@ const extractImages = () => {
   if (!content.value) return
   const imgElements = content.value.querySelectorAll('img')
   images.value = Array.from(imgElements).map((img) => ({
-    src: new URL(img.src, window.location.origin).href,
+    src: img.src,
     alt: img.alt || '',
   }))
 }
@@ -287,7 +287,7 @@ const handleImageClick = (e: Event) => {
   const target = e.target as HTMLElement
   if (target.tagName === 'IMG') {
     const img = target as HTMLImageElement
-    const src = new URL(img.src, window.location.origin).href
+    const src = img.src
     const index = images.value.findIndex((i) => i.src === src)
     if (index !== -1) {
       currentImageIndex.value = index
@@ -305,7 +305,7 @@ watch(
     } else {
       relatedArticles.value = []
     }
-    setTimeout(extractImages, 0)
+    setTimeout(extractImages, 100)
   },
   { immediate: true },
 )
