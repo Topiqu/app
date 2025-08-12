@@ -97,26 +97,25 @@
           </NuxtLink>
         </div>
       </div>
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-md text-gray-600 mt-4">
+      <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 mt-4">
         <div class="flex flex-wrap items-center gap-4">
-          <div
-            v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
-            class="flex items-center gap-3 flex-wrap"
-          >
-            <span class="font-medium whitespace-nowrap">Stav:</span>
-            <ArticleStatusCell :onUpdate="debouncedSetStatus" :row="{ original: data }" />
-            <span
-              v-if="session?.user.role === 'admin' && data.status === 'published'"
-              class="w-2 h-2 bg-green-500 rounded-full ml-2 animate-pulse-slow"
-              aria-label="Článek je publikován"
-            ></span>
-            <span class="text-gray-400 hidden sm:inline">|</span>
+          <template v-if="session?.user.role === 'admin' && session.user.id === data.user.id">
             <div class="flex items-center gap-2">
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Komentáře</span>
+              <span class="font-medium">Stav:</span>
+              <ArticleStatusCell :onUpdate="debouncedSetStatus" :row="{ original: data }" />
+              <span
+                v-if="data.status === 'published'"
+                class="w-2 h-2 bg-green-500 rounded-full animate-pulse-slow"
+                aria-label="Článek je publikován"
+              />
+            </div>
+            <span class="text-gray-300">|</span>
+            <div class="flex items-center gap-2">
+              <span>Komentáře</span>
               <button
                 role="switch"
                 :class="[
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+                  'relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
                   data.allowedComments ? 'bg-blue-600' : 'bg-gray-500 dark:bg-gray-600',
                 ]"
                 @click="((data.allowedComments = !data.allowedComments), toggleComments())"
@@ -124,37 +123,48 @@
                 <span
                   :class="[
                     'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                    data.allowedComments ? 'translate-x-6' : 'translate-x-1',
+                    data.allowedComments ? 'translate-x-5' : 'translate-x-1',
                   ]"
                 />
               </button>
             </div>
-          </div>
-          <div class="flex items-center gap-2 text-gray-500">
+            <span class="text-gray-300">|</span>
+          </template>
+
+          <div class="flex items-center gap-2">
             <Icon name="mdi:calendar" class="w-4 h-4" />
             <span>{{ formatDate(data.createdAt.toString()) }}</span>
           </div>
-          <span class="text-gray-400 hidden sm:inline">|</span>
-          <div class="flex items-center gap-2 text-gray-500">
+
+          <span class="text-gray-300">|</span>
+
+          <div class="flex items-center gap-2">
             <Icon name="mdi:clock-outline" class="w-4 h-4" />
             <span>{{ data.readingTime }} min čtení</span>
           </div>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2 text-gray-500">
-            <span>{{ data.views }}x zhlédnutí</span>
+
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-1">
+            <span>{{ formatNumber(data.views) }}x zhlédnutí</span>
           </div>
-          <div class="flex items-center gap-2 text-gray-500">
-            <Icon name="mdi:heart" class="w-4 h-4" :class="{ 'text-red-500': data.likedByUser }" />
-            <span>{{ data.likes }}x</span>
+
+          <div class="flex items-center gap-1">
+            <Icon
+              name="mdi:heart"
+              class="w-4 h-4"
+              :class="{ 'text-red-500': data.likedByUser, 'text-gray-500': !data.likedByUser }"
+            />
+            <span>{{ formatNumber(data.likes) }}</span>
           </div>
+
           <button
             v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
-            class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+            class="flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
             aria-label="Upravit článek"
             @click="editingArticle = data"
           >
-            <Icon name="mdi:pencil" class="w-5 h-5 text-gray-800" />
+            <Icon name="mdi:pencil" class="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -335,6 +345,12 @@ const toggleFollow = async () => {
       })
     }
   }
+}
+
+const formatNumber = (n: number) => {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M'
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'k'
+  return n.toString()
 }
 
 const copyLink = () => {
