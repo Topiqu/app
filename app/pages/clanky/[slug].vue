@@ -195,8 +195,15 @@
         </NuxtLink>
       </div>
       <div
+        ref="content"
         class="max-w-4xl bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-[17px] md:text-lg leading-[1.8] text-gray-800 tracking-normal space-y-6 prose prose-gray prose-a:text-blue-600 prose-a:no-underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:hover:border-gray-600 dark:prose-invert dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600"
         v-html="data.content"
+      />
+      <VueEasyLightbox
+        :visible="lightboxVisible"
+        :imgs="images"
+        :index="currentImageIndex"
+        @hide="lightboxVisible = false"
       />
       <ArticleRelated :articles="relatedArticles" />
       <CommentSection :articleId="data.id" :commCount="data.commentCount || 0" :allowComments="data.allowedComments" />
@@ -228,6 +235,7 @@
 <script lang="ts" setup>
 import type { ArticleStatus, Article as _Article, User } from '@zenstackhq/runtime/models'
 
+import VueEasyLightbox from 'vue-easy-lightbox'
 import { TransitionRoot } from '@headlessui/vue'
 
 type Article = _Article & {
@@ -241,6 +249,8 @@ type Article = _Article & {
 
 type RelatedArticle = { article: _Article & { user: { username: string } } }
 
+type Image = { src: string; alt?: string }
+
 const route = useRoute()
 const toast = useToast()
 const { data: session } = useAuth()
@@ -249,6 +259,10 @@ const slug = computed(() => route.params.slug)
 const isFollowing = ref(false)
 const relatedArticles = ref<RelatedArticle[]>([])
 const isSticky = ref(false)
+const content = ref<HTMLElement | null>(null)
+const images = ref<Image[]>([])
+const lightboxVisible = ref(false)
+const currentImageIndex = ref(0)
 
 const {
   data,
@@ -260,6 +274,28 @@ isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || f
 
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
 
+const extractImages = () => {
+  if (!content.value) return
+  const imgElements = content.value.querySelectorAll('img')
+  images.value = Array.from(imgElements).map((img) => ({
+    src: new URL(img.src, window.location.origin).href,
+    alt: img.alt || '',
+  }))
+}
+
+const handleImageClick = (e: Event) => {
+  const target = e.target as HTMLElement
+  if (target.tagName === 'IMG') {
+    const img = target as HTMLImageElement
+    const src = new URL(img.src, window.location.origin).href
+    const index = images.value.findIndex((i) => i.src === src)
+    if (index !== -1) {
+      currentImageIndex.value = index
+      lightboxVisible.value = true
+    }
+  }
+}
+
 watch(
   () => data.value,
   async (article) => {
@@ -269,6 +305,7 @@ watch(
     } else {
       relatedArticles.value = []
     }
+    setTimeout(extractImages, 0)
   },
   { immediate: true },
 )
@@ -363,22 +400,36 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
   }
 }, 100)
 
-onMounted(async () => {
+onMounted(() => {
   const onScroll = () => {
     isSticky.value = window.scrollY > 100
   }
   window.addEventListener('scroll', onScroll)
-  onUnmounted(() => window.removeEventListener('scroll', onScroll))
+  content.value?.addEventListener('click', handleImageClick)
+  onUnmounted(() => {
+    window.removeEventListener('scroll', onScroll)
+    content.value?.removeEventListener('click', handleImageClick)
+  })
   if (!data.value?.id) return
   const key = `viewed-${data.value.id}`
   const lastView = sessionStorage.getItem(key)
   const now = Date.now()
   if (lastView && now - Number(lastView) <= 1000) return
   try {
-    await $fetch(`/api/articles/${data.value.id}`, { method: 'PATCH', body: { views: data.value.views + 1 } })
+    $fetch(`/api/articles/${data.value.id}`, { method: 'PATCH', body: { views: data.value.views + 1 } })
     sessionStorage.setItem(key, now.toString())
   } catch {
     //
   }
 })
 </script>
+
+<style>
+.vue-easy-lightbox {
+  z-index: 1000;
+}
+.vue-easy-lightbox img {
+  max-height: 90vh;
+  object-fit: contain;
+}
+</style>
