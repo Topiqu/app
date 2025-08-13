@@ -1,17 +1,15 @@
 import type { CommentWithReplies } from '~~/types/comment'
-
 export default defineEventHandler(async (event) => {
   const articleId = getRouterParam(event, 'id')
   if (!articleId) throw createError({ statusCode: 400, message: 'Chybí ID článku' })
 
   const user = (await getServerSession(event))?.user
   const query = getQuery(event)
-  const page = Number(query.page) || 1
-  const limit = Number(query.limit) || 25
   const sort = typeof query.sort === 'string' ? query.sort : 'createdAt:desc'
   const [sortField, sortOrder] = sort.split(':') as ['createdAt' | 'likes', 'asc' | 'desc']
-  const skip = (page - 1) * limit
-  const take = Math.min(limit, 75 - skip)
+  const { skip, take } = await getPagination(event)
+  const max = 75
+  const adjustedTake = Math.min(take, max - skip)
 
   const allComments = await prisma.comment.findMany({
     where: { articleId, parentId: null, deletedAt: null },
@@ -33,12 +31,8 @@ export default defineEventHandler(async (event) => {
               reactions: { select: { type: true } },
             },
           },
-          followers: {
-            select: { followerId: true },
-          },
-          following: {
-            select: { followedId: true },
-          },
+          followers: { select: { followerId: true } },
+          following: { select: { followedId: true } },
         },
       },
       reactions: { select: { type: true, userId: true } },
@@ -64,12 +58,8 @@ export default defineEventHandler(async (event) => {
                   reactions: { select: { type: true } },
                 },
               },
-              followers: {
-                select: { followerId: true },
-              },
-              following: {
-                select: { followedId: true },
-              },
+              followers: { select: { followerId: true } },
+              following: { select: { followedId: true } },
             },
           },
           reactions: { select: { type: true, userId: true } },
@@ -82,7 +72,7 @@ export default defineEventHandler(async (event) => {
     },
     orderBy: sortField === 'likes' ? { reactions: { _count: sortOrder } } : { createdAt: sortOrder },
     skip,
-    take,
+    take: adjustedTake,
   })
 
   const totalCount = await prisma.comment.count({
