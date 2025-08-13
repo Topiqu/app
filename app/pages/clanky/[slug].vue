@@ -82,6 +82,8 @@
         height="400"
         class="rounded-xl shadow-md border border-gray-100 object-contain object-center w-full aspect-video max-h-[400px] transition-transform duration-500 hover:scale-[1.005]"
         aria-describedby="image-caption"
+        loading="lazy"
+        placeholder
       />
       <span id="image-caption" class="sr-only">Titulní obrázek článku</span>
       <div v-if="hasTags" class="mt-4">
@@ -441,11 +443,18 @@ onMounted(() => {
 </script>
 
 <style>
+.prose p img {
+  cursor: pointer !important;
+}
 .vue-easy-lightbox {
   z-index: 1000;
 }
 .vue-easy-lightbox img {
   max-height: 90vh;
+  max-width: 90vw;
   object-fit: contain;
+}
+.prose p img {
+  animation: fade-in 0.5s ease-out forwards;
 }
 </style>
