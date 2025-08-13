@@ -19,7 +19,7 @@
         name="mdi:account-circle-outline"
         class="w-9 h-9 text-gray-400 dark:text-gray-600 transition-colors duration-200"
       />
-      <div class="hidden sm:flex flex-col min-w-0 bg-transparent dark:bg-transparent">
+      <div class="hidden min-[1565px]:flex flex-col min-w-0 bg-transparent dark:bg-transparent">
         <div class="flex items-center gap-2 bg-transparent">
           <span class="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">
             {{ userData?.username }}
