@@ -31,7 +31,6 @@
             <Icon name="mdi:comment-outline" class="absolute left-4 top-4 w-5 h-5 text-gray-400 pointer-events-none" />
             <textarea
               id="comment"
-              ref="comment"
               v-model="newComment"
               :maxlength="maxLength"
               class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm resize-y min-h-[100px]"
@@ -79,14 +78,19 @@
       <NuxtLink to="/login" class="text-blue-600 hover:underline font-medium cursor-pointer">Přihlaste se</NuxtLink>
       pro přidání komentáře.
     </p>
-    <div v-if="isLoading && !commentsData.comments?.length" class="flex justify-center mb-10">
+    <div v-if="loading && !comments.length" class="flex justify-center mb-10">
       <Icon name="mdi:loading" class="w-8 h-8 text-blue-600 animate-spin" />
     </div>
-    <div v-else-if="error" class="text-center p-6 bg-red-50 rounded-2xl shadow border border-red-200">
+    <div v-else-if="error" class="text-center p-6 bg-red-50 rounded-2xl shadow border border-gray-200">
       <Icon name="mdi:alert-circle" class="w-8 h-8 text-red-500 mx-auto mb-2" />
       <p class="text-gray-700">Nepodařilo se načíst komentáře: {{ error.message }}</p>
     </div>
-    <div v-else-if="filteredComments.length" ref="scroll" class="w-full max-w-full p-0.25 space-y-6 overflow-x-auto">
+    <div
+      v-else-if="filteredComments.length"
+      ref="scroll"
+      class="w-full max-w-full p-0.25 space-y-6 overflow-y-auto fixed-height"
+      :style="{ minHeight: '50vh', maxHeight: '80vh', height: '80vh' }"
+    >
       <Comment
         v-for="comment in filteredComments"
         :key="comment.id"
@@ -99,12 +103,9 @@
         @dislike="handleDislike"
         @refresh="refresh"
       />
-      <div ref="sentinel" class="h-1"></div>
-      <div v-if="isLoading" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">Načítání...</div>
-      <div
-        v-if="!hasMore && commentsData.comments?.length"
-        class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm"
-      >
+      <div ref="sentinel" class="h-4"></div>
+      <div v-if="loading" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">Načítání...</div>
+      <div v-if="!hasMore && comments.length" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
         Žádné další komentáře
       </div>
     </div>
@@ -115,104 +116,80 @@
 <script lang="ts" setup>
 import type { CommentWithReplies } from '~~/types/comment'
 
-const props = defineProps<{
-  articleId: string
-  commCount: number
-  allowComments: boolean
-}>()
+const props = defineProps<{ articleId: string; commCount: number; allowComments: boolean }>()
 const toast = useToast()
 const { data: session } = useAuth()
+
 const newComment = shallowRef('')
 const isSubmitting = shallowRef(false)
 const replyingTo = ref<CommentWithReplies | null>(null)
 const commentForm = useTemplateRef<HTMLElement>('commentForm')
 const scroll = useTemplateRef('scroll')
 const sentinel = useTemplateRef('sentinel')
-const sort = ref('createdAt:desc')
-const page = ref(1)
-const limit = 25
+
+const sort = shallowRef('createdAt:desc')
+const page = shallowRef(1)
+const limit = 20
 const max = 75
-const hasMore = ref(true)
-const url = computed(() => `/api/comments/${props.articleId}?page=${page.value}&limit=${limit}&sort=${sort.value}`)
+const hasMore = shallowRef(true)
+const loading = shallowRef(false)
+const comments = shallowRef<CommentWithReplies[]>([])
+const maxLength = 1000
+const characterCount = computed(() => newComment.value.length)
+const url = computed(() => `/api/comments/${props.articleId}?page=${page.value}&limit=${limit}`)
+
 const {
   data: commentsData,
   error,
-  pending: isLoading,
   refresh,
-} = await useFetch<{
-  comments: CommentWithReplies[]
-  hasMore: boolean
-}>(url, { default: () => ({ comments: [], hasMore: true }) })
+} = await useFetch<{ comments: CommentWithReplies[]; hasMore: boolean }>(url, {
+  default: () => ({ comments: [], hasMore: true }),
+})
 
-const maxLength = 1000
-const characterCount = computed(() => newComment.value.length)
 const filteredComments = computed(() => {
-  const result = [...(commentsData.value?.comments || [])]
   const [field, order] = sort.value.split(':')
-  result.sort((a, b) =>
-    field === 'createdAt'
-      ? order === 'asc'
-        ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      : order === 'asc'
-        ? (a.likes || 0) - (b.likes || 0)
-        : (b.likes || 0) - (a.likes || 0),
-  )
-  return result
+  return [...comments.value].sort((a, b) => {
+    const av = field === 'createdAt' ? new Date(a.createdAt).getTime() : a.likes || 0
+    const bv = field === 'createdAt' ? new Date(b.createdAt).getTime() : b.likes || 0
+    return order === 'asc' ? av - bv : bv - av
+  })
 })
 
 watch(
   commentsData,
-  async (v) => {
+  (v) => {
     if (!v) return
-    hasMore.value = v.hasMore && v.comments.length === limit && v.comments.length < max
-    if (v.comments.length >= max) hasMore.value = false
-    if (scroll.value && v.comments.length) await nextTick()
+    comments.value = page.value === 1 ? v.comments : [...comments.value, ...v.comments]
+    hasMore.value = v.hasMore && comments.value.length < max
   },
   { immediate: true },
 )
 
-watch(error, (e) => {
-  if (e) toast.error({ message: `Chyba při načítání: ${e.message || 'Neznámá chyba'}` })
+watch(error, (e) => e && toast.error({ message: `Chyba při načítání: ${e.message || 'Neznámá chyba'}` }))
+
+watch(sort, () => nextTick(() => scroll.value && (scroll.value.scrollTop = 0)))
+
+const initObserver = () => {
+  if (!sentinel.value || !scroll.value) return
+  const obs = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting && !loading.value && hasMore.value) {
+        loading.value = true
+        page.value++
+        refresh().finally(() => (loading.value = false))
+      }
+    },
+    { root: scroll.value, threshold: 0.1 },
+  )
+  obs.observe(sentinel.value)
+  onUnmounted(() => obs.disconnect())
+}
+
+onMounted(initObserver)
+
+onClickOutside(commentForm, (e) => {
+  if (replyingTo.value && commentForm.value && !commentForm.value.contains(e.target as Node)) replyingTo.value = null
 })
-
-watch(
-  [sentinel, sort],
-  async ([sent]) => {
-    if (sent && scroll.value) {
-      const o = new IntersectionObserver(
-        async (e) => {
-          if (e[0]?.isIntersecting && !isLoading.value && hasMore.value) {
-            page.value++
-            await refresh()
-            await nextTick()
-          }
-        },
-        { root: scroll.value, threshold: 0.01 },
-      )
-      o.observe(sent)
-      return () => o.disconnect()
-    }
-  },
-  { immediate: true },
-)
-
-watch(sort, () => {
-  page.value = 1
-  commentsData.value = { comments: [], hasMore: true }
-  hasMore.value = true
-  refresh()
-})
-
-onClickOutside(
-  commentForm,
-  (event) => {
-    if (replyingTo.value && commentForm.value && !commentForm.value.contains(event.target as Node)) {
-      replyingTo.value = null
-    }
-  },
-  { ignore: [] },
-)
 
 const submitComment = async () => {
   if (!newComment.value.trim() || isSubmitting.value || (replyingTo.value && replyingTo.value.deletedAt)) return
@@ -231,7 +208,9 @@ const submitComment = async () => {
     newComment.value = ''
     replyingTo.value = null
     page.value = 1
+    comments.value = []
     await refresh()
+    nextTick(initObserver)
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nepodařilo se přidat komentář' })
   } finally {
@@ -239,54 +218,42 @@ const submitComment = async () => {
   }
 }
 
-const handleReply = (comment: CommentWithReplies) => {
-  if (comment.deletedAt) return
-  replyingTo.value = comment
-  nextTick(() => {
-    if (commentForm.value) {
-      commentForm.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      commentForm.value.focus()
-    }
-  })
+const handleReply = (c: CommentWithReplies) => {
+  if (c.deletedAt) return
+  replyingTo.value = c
+  nextTick(() => commentForm.value?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
 }
 
-const handleDelete = async (comment: CommentWithReplies, reason: string | null) => {
+const handleDelete = async (c: CommentWithReplies, reason: string | null) => {
   if (!confirm('Opravdu chcete smazat tento komentář?')) return
   try {
-    await $fetch(`/api/comments/${comment.id}`, {
-      method: 'DELETE',
-      body: { reason },
-    })
+    await $fetch(`/api/comments/${c.id}`, { method: 'DELETE', body: { reason } })
     toast.success({ message: 'Komentář smazán' })
     await refresh()
+    nextTick(initObserver)
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nepodařilo se smazat komentář' })
   }
 }
 
-const handleLike = async (comment: CommentWithReplies) => {
-  if (!session?.value?.user || comment.deletedAt) return
+const react = async (c: CommentWithReplies, type: 'LIKE' | 'DISLIKE') => {
+  if (!session?.value?.user || c.deletedAt) return
   try {
-    await $fetch('/api/comments/reaction', {
-      method: 'POST',
-      body: { commentId: comment.id, type: 'LIKE' },
-    })
+    await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: c.id, type } })
     await refresh()
+    nextTick(initObserver)
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Nepodařilo se přidat reakci' })
   }
 }
 
-const handleDislike = async (comment: CommentWithReplies) => {
-  if (!session?.value?.user || comment.deletedAt) return
-  try {
-    await $fetch('/api/comments/reaction', {
-      method: 'POST',
-      body: { commentId: comment.id, type: 'DISLIKE' },
-    })
-    await refresh()
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Nepodařilo se přidat reakci' })
-  }
-}
+const handleLike = (c: CommentWithReplies) => react(c, 'LIKE')
+const handleDislike = (c: CommentWithReplies) => react(c, 'DISLIKE')
 </script>
+
+<style scoped>
+.fixed-height {
+  max-height: 80vh !important;
+  height: 80vh !important;
+}
+</style>
