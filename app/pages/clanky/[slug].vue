@@ -286,42 +286,6 @@ isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || f
 
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
 
-const extractImages = () => {
-  if (!content.value) return
-  const imgElements = content.value.querySelectorAll('img')
-  images.value = Array.from(imgElements).map((img) => ({
-    src: img.src,
-    alt: img.alt || '',
-  }))
-}
-
-const handleImageClick = (e: Event) => {
-  const target = e.target as HTMLElement
-  if (target.tagName === 'IMG') {
-    const img = target as HTMLImageElement
-    const src = img.src
-    const index = images.value.findIndex((i) => i.src === src)
-    if (index !== -1) {
-      currentImageIndex.value = index
-      lightboxVisible.value = true
-    }
-  }
-}
-
-watch(
-  () => data.value,
-  async (article) => {
-    if (article?.id && article.tags?.length) {
-      const res = await $fetch<{ articles: RelatedArticle[] }>(`/api/tags/${article.tags[0]?.tag.id}?limit=4`)
-      relatedArticles.value = res.articles.filter((a) => a.article.id !== article.id)
-    } else {
-      relatedArticles.value = []
-    }
-    setTimeout(extractImages, 100)
-  },
-  { immediate: true },
-)
-
 const toggleFollow = async () => {
   if (!session.value?.user || !data.value?.user.id) {
     toast.error({ message: 'Musíte být přihlášeni' })
@@ -422,8 +386,29 @@ onMounted(() => {
   const onScroll = () => {
     isSticky.value = window.scrollY > 100
   }
+  const extractImages = () => {
+    if (!content.value) return
+    const imgElements = content.value.querySelectorAll('img')
+    images.value = Array.from(imgElements).map((img) => ({
+      src: img.src,
+      alt: img.alt || '',
+    }))
+  }
+  const handleImageClick = (e: Event) => {
+    const target = e.target as HTMLElement
+    if (target.tagName === 'IMG') {
+      const img = target as HTMLImageElement
+      const src = img.src
+      const index = images.value.findIndex((i) => i.src === src)
+      if (index !== -1) {
+        currentImageIndex.value = index
+        lightboxVisible.value = true
+      }
+    }
+  }
   window.addEventListener('scroll', onScroll)
   content.value?.addEventListener('click', handleImageClick)
+  setTimeout(extractImages, 100)
   onUnmounted(() => {
     window.removeEventListener('scroll', onScroll)
     content.value?.removeEventListener('click', handleImageClick)
@@ -440,6 +425,19 @@ onMounted(() => {
     //
   }
 })
+
+watch(
+  () => data.value,
+  async (article) => {
+    if (article?.id && article.tags?.length) {
+      const res = await $fetch<{ articles: RelatedArticle[] }>(`/api/tags/${article.tags[0]?.tag.id}?limit=4`)
+      relatedArticles.value = res.articles.filter((a) => a.article.id !== article.id)
+    } else {
+      relatedArticles.value = []
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <style>
