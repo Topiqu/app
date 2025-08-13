@@ -9,9 +9,27 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const userData = await db.user.findUnique({
     where: { id },
+    include: {
+      _count: {
+        select: {
+          comments: true,
+          followers: true,
+          following: true,
+        },
+      },
+      reactions: true,
+    },
   })
 
   if (!userData) throw createError({ statusCode: 404, message: 'Uživatel nenalezen' })
+
+  const likesCount = await db.commentReaction.count({
+    where: { userId: id, type: 'LIKE' },
+  })
+
+  const dislikesCount = await db.commentReaction.count({
+    where: { userId: id, type: 'DISLIKE' },
+  })
 
   return {
     id: userData.id,
@@ -25,5 +43,10 @@ export default defineEventHandler(async (event) => {
     role: userData.role,
     emailVerified: userData.emailVerified,
     theme: userData.theme,
+    commentsCount: userData._count.comments,
+    followers: userData._count.followers,
+    following: userData._count.following,
+    likesCount,
+    dislikesCount,
   }
 })
