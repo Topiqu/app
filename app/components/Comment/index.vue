@@ -19,7 +19,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 sm:pr-4 md:pr-6">
       <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
         <UserCard
-          v-if="comment.user"
+          v-if="comment.user && !comment.user.isBanned"
           :user="{
             id: comment.userId,
             username: comment.user.username,
@@ -36,10 +36,18 @@
             role: comment.user.role,
           }"
         />
+        <span v-else-if="comment.user?.isBanned" class="font-semibold text-red-500">
+          Zabanovaný uživatel
+          <span v-if="comment.user.banDetails?.reason && session?.user.role == 'admin'"
+            >({{ comment.user.banDetails.reason }})</span
+          >
+          <span v-if="comment.user.banDetails?.expiresAt && session?.user.role == 'admin'">
+            do {{ new Date(comment.user.banDetails.expiresAt).toLocaleString() }}
+          </span>
+        </span>
         <span v-else class="font-semibold text-gray-800">Není k dispozici</span>
       </div>
-
-      <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
+      <div v-if="!comment.deletedAt && !comment.user?.isBanned" class="flex flex-col gap-1 sm:gap-2">
         <button
           v-if="session?.user && !isReplying"
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
@@ -67,6 +75,20 @@
           <Icon name="mdi:delete" class="w-4 h-4 text-red-500" />
           <span class="hidden sm:inline">Smazat (admin)</span>
         </button>
+        <button
+          v-if="
+            session?.user &&
+            session.user.role === 'admin' &&
+            session.user.clientSiteId === comment.article?.clientSiteId &&
+            session.user.id !== comment.userId
+          "
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
+          aria-label="Zabanovat uživatele"
+          @click="openBanModal(comment)"
+        >
+          <Icon name="mdi:account-cancel" class="w-4 h-4 text-orange-500" />
+          <span class="hidden sm:inline">Zabanovat</span>
+        </button>
       </div>
     </div>
 
@@ -76,13 +98,19 @@
 
     <p
       class="mt-4 sm:mt-6 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
-      :class="{ 'text-gray-400 italic': comment.deletedAt }"
+      :class="{ 'text-gray-400 italic': comment.deletedAt || comment.user?.isBanned }"
     >
-      {{ comment.deletedAt ? '[Tento komentář byl smazán]' : comment.content }}
+      {{
+        comment.deletedAt
+          ? '[Tento komentář byl smazán]'
+          : comment.user?.isBanned
+            ? '[Komentář od zabanovaného uživatele]'
+            : comment.content
+      }}
     </p>
 
     <div
-      v-if="!comment.deletedAt"
+      v-if="!comment.deletedAt && !comment.user?.isBanned"
       class="mt-4 sm:mt-5 flex items-center justify-between flex-wrap gap-3 pb-2 sm:pb-4 md:pb-6"
     >
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -168,6 +196,47 @@
         </div>
       </div>
     </div>
+
+    <div
+      v-if="showBanModal && selectedComment?.id === comment.id"
+      ref="banModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white p-6 rounded-xl shadow-xl border border-gray-200 w-full max-w-md">
+        <h3 class="text-lg font-semibold mb-4">Zabanovat uživatele</h3>
+        <p class="text-sm text-gray-600 mb-4">Zadejte důvod banu (bude odeslán uživateli):</p>
+        <textarea
+          v-model="banReason"
+          class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-y min-h-[100px]"
+          placeholder="Důvod banu..."
+          maxlength="255"
+          required
+        />
+        <div class="mt-4">
+          <label class="text-sm text-gray-600">Expirace banu (nepovinné):</label>
+          <input
+            v-model="banExpiresAt"
+            type="datetime-local"
+            class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mt-2"
+          />
+        </div>
+        <div class="flex justify-end gap-3 mt-4">
+          <button
+            class="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200"
+            @click="((showBanModal = false), (banReason = ''), (banExpiresAt = ''))"
+          >
+            Zrušit
+          </button>
+          <button
+            class="px-4 py-2 rounded-xl bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700"
+            :disabled="!banReason.trim()"
+            @click="banUser(comment)"
+          >
+            Zabanovat
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -191,9 +260,13 @@ const emit = defineEmits<{
 
 const { data: session } = useAuth()
 const toast = useToast()
-const showModal = ref(false)
-const selectedComment = ref<CommentWithReplies | null>(null)
-const deleteReason = ref('')
+const showModal = shallowRef(false)
+const showBanModal = shallowRef(false)
+const selectedComment = shallowRef<CommentWithReplies | null>(null)
+const deleteReason = shallowRef('')
+const banReason = shallowRef('')
+const banExpiresAt = shallowRef('')
+const banModal = ref<HTMLElement | null>(null)
 
 const report = async (c: CommentWithReplies) => {
   try {
@@ -212,7 +285,39 @@ const showDeleteModal = (c: CommentWithReplies) => {
   showModal.value = true
 }
 
+const openBanModal = (c: CommentWithReplies) => {
+  selectedComment.value = c
+  showBanModal.value = true
+}
+
 const emitDelete = (comment: CommentWithReplies, reason: string) => {
   emit('delete', comment, reason)
+  showModal.value = false
+  deleteReason.value = ''
 }
+
+const banUser = async (comment: CommentWithReplies) => {
+  if (!banReason.value.trim()) return
+  try {
+    await $fetch(`/api/bans/${comment.id}`, {
+      method: 'POST',
+      body: {
+        reason: banReason.value,
+        expiresAt: banExpiresAt.value || null,
+      },
+    })
+    toast.success({ message: 'Uživatel zabanován' })
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Banování selhalo' })
+  }
+  showBanModal.value = false
+  banReason.value = ''
+  banExpiresAt.value = ''
+}
+
+onClickOutside(banModal, () => {
+  showBanModal.value = false
+  banReason.value = ''
+  banExpiresAt.value = ''
+})
 </script>
