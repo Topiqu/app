@@ -33,6 +33,16 @@ export default defineEventHandler(async (event) => {
           },
           followers: { select: { followerId: true } },
           following: { select: { followedId: true } },
+          bans: {
+            select: {
+              reason: true,
+              expiresAt: true,
+              clientSiteId: true,
+            },
+            where: {
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+            },
+          },
         },
       },
       reactions: { select: { type: true, userId: true } },
@@ -60,6 +70,16 @@ export default defineEventHandler(async (event) => {
               },
               followers: { select: { followerId: true } },
               following: { select: { followedId: true } },
+              bans: {
+                select: {
+                  reason: true,
+                  expiresAt: true,
+                  clientSiteId: true,
+                },
+                where: {
+                  OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+                },
+              },
             },
           },
           reactions: { select: { type: true, userId: true } },
@@ -84,6 +104,17 @@ export default defineEventHandler(async (event) => {
   for (const c of allComments) {
     const userData = c.user
     const articleData = c.article
+    const clientSiteId = articleData.clientSiteId
+
+    const relevantBans = userData ? userData.bans.filter((ban) => ban.clientSiteId === clientSiteId) : []
+    const isBanned = relevantBans.length > 0
+    const banDetails = isBanned
+      ? {
+          reason: relevantBans[0]?.reason ?? undefined,
+          expiresAt: relevantBans[0]?.expiresAt?.toISOString() ?? undefined,
+        }
+      : undefined
+
     const likesCount = userData
       ? userData.comments.reduce((sum, comment) => sum + comment.reactions.filter((r) => r.type === 'LIKE').length, 0)
       : 0
@@ -136,6 +167,8 @@ export default defineEventHandler(async (event) => {
             followers: followersCount,
             following: followingCount,
             role: userData.role,
+            isBanned,
+            banDetails,
           }
         : null,
       article: { clientSiteId: articleData.clientSiteId, userId: articleData.userId },
@@ -143,6 +176,15 @@ export default defineEventHandler(async (event) => {
       dislikes: c.reactions.filter((r) => r.type === 'DISLIKE').length,
       replies: c.replies.map((r) => {
         const rUserData = r.user
+        const rRelevantBans = rUserData ? rUserData.bans.filter((ban) => ban.clientSiteId === clientSiteId) : []
+        const rIsBanned = rRelevantBans.length > 0
+        const rBanDetails = rIsBanned
+          ? {
+              reason: rRelevantBans[0]?.reason ?? undefined,
+              expiresAt: rRelevantBans[0]?.expiresAt?.toISOString() ?? undefined,
+            }
+          : undefined
+
         const rLikesCount = rUserData
           ? rUserData.comments.reduce(
               (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'LIKE').length,
@@ -198,6 +240,8 @@ export default defineEventHandler(async (event) => {
                 followers: rFollowersCount,
                 following: rFollowingCount,
                 role: rUserData.role,
+                isBanned: rIsBanned,
+                banDetails: rBanDetails,
               }
             : null,
           article: { clientSiteId: articleData.clientSiteId, userId: articleData.userId },
