@@ -4,7 +4,7 @@
     class="relative w-full min-w-fit bg-white pt-2 pb-0.5 pl-2 pr-0.5 sm:pt-4 sm:pb-1 sm:pl-4 sm:pr-1 md:pt-6 md:pb-1.5 md:pl-6 md:pr-1.5 rounded-3xl shadow border border-gray-200"
   >
     <button
-      v-if="session?.user && comment.deletedAt === null"
+      v-if="session?.user && comment.deletedAt === null && !comment.user?.isBanned"
       class="absolute top-2 right-2 sm:top-3 sm:right-3 p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none z-10"
       aria-label="Nahlásit komentář"
       title="Nahlásit komentář"
