@@ -3,18 +3,38 @@
     :id="`comment-${comment.id}`"
     class="relative w-full min-w-fit bg-white pt-2 pb-0.5 pl-2 pr-0.5 sm:pt-4 sm:pb-1 sm:pl-4 sm:pr-1 md:pt-6 md:pb-1.5 md:pl-6 md:pr-1.5 rounded-3xl shadow border border-gray-200"
   >
-    <button
-      v-if="session?.user && comment.deletedAt === null && !comment.user?.isBanned"
-      class="absolute top-2 right-2 sm:top-3 sm:right-3 p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none z-10"
-      aria-label="Nahlásit komentář"
-      title="Nahlásit komentář"
-      @click="report(comment)"
-    >
-      <Icon
-        name="mdi:flag-outline"
-        class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 dark:text-gray-500 hover:text-yellow-500 dark:hover:text-yellow-400 cursor-pointer"
-      />
-    </button>
+    <div class="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-2 z-10">
+      <button
+        v-if="session?.user && comment.deletedAt === null && !comment.user?.isBanned"
+        class="p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none"
+        aria-label="Nahlásit komentář"
+        title="Nahlásit komentář"
+        @click="report(comment)"
+      >
+        <Icon
+          name="mdi:flag-outline"
+          class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 dark:text-gray-500 hover:text-yellow-500 dark:hover:text-yellow-400 cursor-pointer"
+        />
+      </button>
+      <button
+        v-if="
+          session?.user &&
+          session.user.role === 'admin' &&
+          session.user.clientSiteId === comment.article?.clientSiteId &&
+          session.user.id !== comment.userId &&
+          !comment.user?.isBanned
+        "
+        class="p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none"
+        aria-label="Zabanovat uživatele"
+        title="Zabanovat uživatele"
+        @click="openBanModal(comment)"
+      >
+        <Icon
+          name="mdi:account-cancel"
+          class="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 hover:text-orange-600 cursor-pointer"
+        />
+      </button>
+    </div>
 
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 sm:pr-4 md:pr-6">
       <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
@@ -86,21 +106,6 @@
             session.user.role === 'admin' &&
             session.user.clientSiteId === comment.article?.clientSiteId &&
             session.user.id !== comment.userId &&
-            !comment.user?.isBanned
-          "
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          aria-label="Zabanovat uživatele"
-          @click="openBanModal(comment)"
-        >
-          <Icon name="mdi:account-cancel" class="w-4 h-4 text-orange-500" />
-          <span class="hidden sm:inline">Zabanovat</span>
-        </button>
-        <button
-          v-if="
-            session?.user &&
-            session.user.role === 'admin' &&
-            session.user.clientSiteId === comment.article?.clientSiteId &&
-            session.user.id !== comment.userId &&
             comment.user?.isBanned
           "
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
@@ -111,10 +116,6 @@
           <span class="hidden sm:inline">Odbanovat</span>
         </button>
       </div>
-    </div>
-
-    <div class="mt-4 sm:mt-6">
-      <span class="text-xs sm:text-sm md:text-base text-gray-400">• {{ formatDate(comment.createdAt) }}</span>
     </div>
     <p
       class="mt-4 sm:mt-6 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
@@ -131,7 +132,7 @@
 
     <div
       v-if="!comment.deletedAt && !comment.user?.isBanned"
-      class="mt-4 sm:mt-5 flex items-center justify-between flex-wrap gap-3 pb-2 sm:pb-4 md:pb-6"
+      class="mt-4 sm:mt-5 flex items-center justify-between flex-wrap gap-2 sm:gap-3 pb-2 sm:pb-4 md:pb-6"
     >
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
         <button
@@ -140,7 +141,7 @@
           :class="comment.userReaction?.type === 'LIKE' ? 'bg-green-100 text-green-600' : 'text-gray-600'"
           @click="$emit('like', comment)"
         >
-          <Icon name="mdi:thumb-up-outline" class="w-4 h-4" />
+          <Icon name="mdi:thumb-up-outline" class="w-4 h-4 sm:w-5 sm:h-5" />
           <span>{{ comment.likes || 0 }}</span>
         </button>
         <button
@@ -149,7 +150,7 @@
           :class="comment.userReaction?.type === 'DISLIKE' ? 'bg-red-100 text-red-600' : 'text-gray-600'"
           @click="$emit('dislike', comment)"
         >
-          <Icon name="mdi:thumb-down-outline" class="w-4 h-4" />
+          <Icon name="mdi:thumb-down-outline" class="w-4 h-4 sm:w-5 sm:h-5" />
           <span>{{ comment.dislikes || 0 }}</span>
         </button>
 
@@ -158,15 +159,34 @@
             v-for="reaction in comment.emojiReactions"
             :key="reaction.emojiId"
             v-tippy="{ content: reaction.emoji.shortcode, placement: 'top' }"
-            class="flex items-center gap-1 px-2 py-1 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100 text-gray-600"
+            class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100 text-gray-600"
           >
-            <img :src="reaction.emoji.imageUrl" :alt="reaction.emoji.shortcode" class="w-4 h-4" />
+            <img :src="reaction.emoji.imageUrl" :alt="reaction.emoji.shortcode" class="w-4 h-4 sm:w-5 sm:h-5" />
             <span>{{ reaction.count }}</span>
           </div>
         </div>
       </div>
-      <div>
+      <div class="flex items-center gap-2 sm:gap-3">
         <LazyEmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="$emit('refresh')" />
+        <div
+          v-if="comment.isLikedByAuthor"
+          v-tippy="{ content: `Líbí se autorovi (${authorData?.username || 'Autor'})`, placement: 'top' }"
+          class="flex items-center gap-1"
+        >
+          <Icon name="mdi:heart" class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+          <img
+            v-if="authorData?.avatarUrl"
+            :src="authorData.avatarUrl"
+            :alt="authorData.username"
+            class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-gray-200"
+          />
+          <span
+            v-else
+            class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-gray-200 bg-gray-100 flex items-center justify-center text-xs sm:text-sm text-gray-600 font-semibold"
+          >
+            {{ authorData?.username?.charAt(0) || 'A' }}
+          </span>
+        </div>
       </div>
     </div>
 
@@ -266,7 +286,7 @@ import type { CommentWithReplies } from '~~/types/comment'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 
-defineProps<{
+const props = defineProps<{
   comment: CommentWithReplies
   isReplying: boolean
   depth: number
@@ -287,7 +307,15 @@ const deleteReason = shallowRef('')
 const banReason = shallowRef('')
 const banExpiresAt = shallowRef('')
 const banModal = ref<HTMLElement | null>(null)
-
+console.log('isLikedByAuthor:', props.comment.isLikedByAuthor)
+const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}`, {
+  key: `author-${props.comment.article.userId}`,
+  default: () => ({
+    username: 'Autor',
+    avatarUrl: null,
+  }),
+})
+console.log('authorData:', authorData.value)
 const report = async (c: CommentWithReplies) => {
   try {
     await $fetch('/api/notifications', {
@@ -331,8 +359,6 @@ const banUser = async (comment: CommentWithReplies) => {
     toast.error({ message: e.data?.message || 'Banování selhalo' })
   }
   showBanModal.value = false
-  banReason.value = ''
-  banExpiresAt.value = ''
 }
 
 const unbanUser = async (comment: CommentWithReplies) => {
