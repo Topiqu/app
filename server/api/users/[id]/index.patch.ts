@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
 
   const body = await readValidatedBody(event, UserUpdateScalarSchema.parse)
 
-  if (user.role === 'reader' || user.role === 'admin') {
+  if (user.role !== 'superadmin') {
     if (body.role && body.role !== user.role)
       throw createError({ statusCode: 403, message: 'Změna role není povolena' })
   }
