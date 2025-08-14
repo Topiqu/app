@@ -1,4 +1,5 @@
 import type { CommentWithReplies } from '~~/types/comment'
+
 export default defineEventHandler(async (event) => {
   const articleId = getRouterParam(event, 'id')
   if (!articleId) throw createError({ statusCode: 400, message: 'Chybí ID článku' })
@@ -15,8 +16,9 @@ export default defineEventHandler(async (event) => {
     select: { userId: true, clientSiteId: true },
   })
   if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
+
   const allComments = await prisma.comment.findMany({
-    where: { articleId, parentId: null },
+    where: { articleId },
     select: {
       id: true,
       content: true,
@@ -55,66 +57,27 @@ export default defineEventHandler(async (event) => {
       emojiReactions: {
         select: { emojiId: true, emoji: { select: { imageUrl: true, shortcode: true } } },
       },
-      replies: {
-        select: {
-          id: true,
-          content: true,
-          createdAt: true,
-          userId: true,
-          parentId: true,
-          deletedAt: true,
-          articleId: true,
-          article: { select: { clientSiteId: true, userId: true } },
-          user: {
-            include: {
-              comments: {
-                select: {
-                  id: true,
-                  userId: true,
-                  reactions: { select: { type: true } },
-                },
-              },
-              followers: { select: { followerId: true } },
-              following: { select: { followedId: true } },
-              bans: {
-                select: {
-                  reason: true,
-                  expiresAt: true,
-                  clientSiteId: true,
-                  deletedAt: true,
-                },
-                where: {
-                  deletedAt: null,
-                  OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-                },
-              },
-            },
-          },
-          reactions: { select: { type: true, userId: true } },
-          emojiReactions: {
-            select: { emojiId: true, emoji: { select: { imageUrl: true, shortcode: true } } },
-          },
-        },
-        orderBy: { createdAt: 'asc' },
-      },
     },
-    orderBy: sortField === 'likes' ? { reactions: { _count: sortOrder } } : { createdAt: sortOrder },
-    skip,
-    take: adjustedTake,
+    orderBy: { createdAt: 'asc' },
   })
+
+  const topLevelComments = allComments.filter((c) => c.parentId === null)
+  const allReplies = allComments.filter((c) => c.parentId !== null)
 
   const totalCount = await prisma.comment.count({
     where: { articleId, parentId: null },
   })
 
-  const commentMap = new Map<string, CommentWithReplies>()
+  const buildCommentTree = (
+    comment: any,
+    allReplies: any[],
+    currentDepth: number = 1,
+    clientSiteId: string,
+  ): CommentWithReplies => {
+    const userData = comment.user
+    const articleData = comment.article
 
-  for (const c of allComments) {
-    const userData = c.user
-    const articleData = c.article
-    const clientSiteId = articleData.clientSiteId
-
-    const relevantBans = userData ? userData.bans.filter((ban) => ban.clientSiteId === clientSiteId) : []
+    const relevantBans = userData ? userData.bans.filter((ban: any) => ban.clientSiteId === clientSiteId) : []
     const isBanned = relevantBans.length > 0
     const banDetails = isBanned
       ? {
@@ -124,22 +87,25 @@ export default defineEventHandler(async (event) => {
       : undefined
 
     const likesCount = userData
-      ? userData.comments.reduce((sum, comment) => sum + comment.reactions.filter((r) => r.type === 'LIKE').length, 0)
+      ? userData.comments.reduce(
+          (sum: number, comment: any) => sum + comment.reactions.filter((r: any) => r.type === 'LIKE').length,
+          0,
+        )
       : 0
     const dislikesCount = userData
       ? userData.comments.reduce(
-          (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'DISLIKE').length,
+          (sum: number, comment: any) => sum + comment.reactions.filter((r: any) => r.type === 'DISLIKE').length,
           0,
         )
       : 0
     const followersCount = userData ? userData.followers.length : 0
     const followingCount = userData ? userData.following.length : 0
-    const userReaction = user ? (c.reactions.find((r) => r.userId === user.id) ?? null) : null
-    const isLikedByAuthor = c.reactions.some((r) => r.userId === article.userId && r.type === 'LIKE')
+    const userReaction = user ? (comment.reactions.find((r: any) => r.userId === user.id) ?? null) : null
+    const isLikedByAuthor = comment.reactions.some((r: any) => r.userId === article.userId && r.type === 'LIKE')
 
     const emojiReactions = Object.entries(
-      c.emojiReactions.reduce(
-        (acc, r) => {
+      comment.emojiReactions.reduce(
+        (acc: any, r: any) => {
           acc[r.emojiId] = {
             count: (acc[r.emojiId]?.count || 0) + 1,
             emoji: r.emoji,
@@ -148,20 +114,26 @@ export default defineEventHandler(async (event) => {
         },
         {} as Record<string, { count: number; emoji: { imageUrl: string; shortcode: string } }>,
       ),
-    ).map(([emojiId, { count, emoji }]) => ({
+    ).map(([emojiId, data]: [string, any]) => ({
       emojiId,
-      count,
-      emoji,
+      count: data.count,
+      emoji: data.emoji,
     }))
 
-    commentMap.set(c.id, {
-      id: c.id,
-      content: c.content,
-      createdAt: c.createdAt,
-      userId: c.userId,
-      parentId: c.parentId,
-      deletedAt: c.deletedAt,
-      articleId: c.articleId,
+    const directReplies = allReplies.filter((reply) => reply.parentId === comment.id)
+
+    const processedReplies = directReplies.map((reply) =>
+      buildCommentTree(reply, allReplies, currentDepth + 1, clientSiteId),
+    )
+
+    return {
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      userId: comment.userId,
+      parentId: comment.parentId,
+      deletedAt: comment.deletedAt,
+      articleId: comment.articleId,
       user: userData
         ? {
             username: userData.username,
@@ -181,98 +153,36 @@ export default defineEventHandler(async (event) => {
           }
         : null,
       article: { clientSiteId: articleData.clientSiteId, userId: articleData.userId },
-      likes: c.reactions.filter((r) => r.type === 'LIKE').length,
-      dislikes: c.reactions.filter((r) => r.type === 'DISLIKE').length,
-      replies: c.replies.map((r) => {
-        const rUserData = r.user
-        const rRelevantBans = rUserData ? rUserData.bans.filter((ban) => ban.clientSiteId === clientSiteId) : []
-        const rIsBanned = rRelevantBans.length > 0
-        const rBanDetails = rIsBanned
-          ? {
-              reason: rRelevantBans[0]?.reason ?? undefined,
-              expiresAt: rRelevantBans[0]?.expiresAt?.toISOString() ?? undefined,
-            }
-          : undefined
-
-        const rLikesCount = rUserData
-          ? rUserData.comments.reduce(
-              (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'LIKE').length,
-              0,
-            )
-          : 0
-        const rDislikesCount = rUserData
-          ? rUserData.comments.reduce(
-              (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'DISLIKE').length,
-              0,
-            )
-          : 0
-        const rFollowersCount = rUserData ? rUserData.followers.length : 0
-        const rFollowingCount = rUserData ? rUserData.following.length : 0
-        const rUserReaction = user ? (r.reactions.find((r) => r.userId === user.id) ?? null) : null
-        const rIsLikedByAuthor = r.reactions.some((r) => r.userId === article.userId && r.type === 'LIKE')
-
-        const rEmojiReactions = Object.entries(
-          r.emojiReactions.reduce(
-            (acc, r) => {
-              acc[r.emojiId] = {
-                count: (acc[r.emojiId]?.count || 0) + 1,
-                emoji: r.emoji,
-              }
-              return acc
-            },
-            {} as Record<string, { count: number; emoji: { imageUrl: string; shortcode: string } }>,
-          ),
-        ).map(([emojiId, { count, emoji }]) => ({
-          emojiId,
-          count,
-          emoji,
-        }))
-
-        return {
-          id: r.id,
-          content: r.content,
-          createdAt: r.createdAt,
-          userId: r.userId,
-          parentId: r.parentId,
-          deletedAt: r.deletedAt,
-          articleId: r.articleId,
-          user: rUserData
-            ? {
-                username: rUserData.username,
-                email: rUserData.email ?? undefined,
-                avatarUrl: rUserData.avatarUrl ?? undefined,
-                bio: rUserData.bio ?? undefined,
-                createdAt: rUserData.createdAt.toISOString(),
-                lastLogin: rUserData.lastLogin ? rUserData.lastLogin.toISOString() : undefined,
-                commentsCount: rUserData.comments.length,
-                likesCount: rLikesCount,
-                dislikesCount: rDislikesCount,
-                followers: rFollowersCount,
-                following: rFollowingCount,
-                role: rUserData.role,
-                isBanned: rIsBanned,
-                banDetails: rBanDetails,
-              }
-            : null,
-          article: { clientSiteId: articleData.clientSiteId, userId: articleData.userId },
-          likes: r.reactions.filter((r) => r.type === 'LIKE').length,
-          dislikes: r.reactions.filter((r) => r.type === 'DISLIKE').length,
-          replies: [],
-          userReaction: rUserReaction ? { type: rUserReaction.type } : null,
-          emojiReactions: rEmojiReactions,
-          depth: 2,
-          isLikedByAuthor: rIsLikedByAuthor,
-        }
-      }),
+      likes: comment.reactions.filter((r: any) => r.type === 'LIKE').length,
+      dislikes: comment.reactions.filter((r: any) => r.type === 'DISLIKE').length,
+      replies: processedReplies,
       userReaction: userReaction ? { type: userReaction.type } : null,
       emojiReactions,
-      depth: 1,
+      depth: currentDepth,
       isLikedByAuthor,
-    })
+    }
   }
 
+  const sortedTopLevel = topLevelComments.sort((a, b) => {
+    if (sortField === 'likes') {
+      const aLikes = a.reactions.filter((r) => r.type === 'LIKE').length
+      const bLikes = b.reactions.filter((r) => r.type === 'LIKE').length
+      return sortOrder === 'desc' ? bLikes - aLikes : aLikes - bLikes
+    } else {
+      return sortOrder === 'desc'
+        ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    }
+  })
+
+  const paginatedTopLevel = sortedTopLevel.slice(skip, skip + adjustedTake)
+
+  const processedComments = paginatedTopLevel.map((comment) =>
+    buildCommentTree(comment, allReplies, 1, comment.article.clientSiteId),
+  )
+
   return {
-    comments: [...commentMap.values()],
-    hasMore: skip + allComments.length < totalCount,
+    comments: processedComments,
+    hasMore: skip + paginatedTopLevel.length < totalCount,
   }
 })
