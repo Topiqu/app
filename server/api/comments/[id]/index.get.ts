@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const adjustedTake = Math.min(take, max - skip)
 
   const allComments = await prisma.comment.findMany({
-    where: { articleId, parentId: null, deletedAt: null },
+    where: { articleId, parentId: null },
     select: {
       id: true,
       content: true,
@@ -38,8 +38,10 @@ export default defineEventHandler(async (event) => {
               reason: true,
               expiresAt: true,
               clientSiteId: true,
+              deletedAt: true,
             },
             where: {
+              deletedAt: null,
               OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
             },
           },
@@ -50,7 +52,6 @@ export default defineEventHandler(async (event) => {
         select: { emojiId: true, emoji: { select: { imageUrl: true, shortcode: true } } },
       },
       replies: {
-        where: { deletedAt: null },
         select: {
           id: true,
           content: true,
@@ -75,8 +76,10 @@ export default defineEventHandler(async (event) => {
                   reason: true,
                   expiresAt: true,
                   clientSiteId: true,
+                  deletedAt: true,
                 },
                 where: {
+                  deletedAt: null,
                   OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
                 },
               },
@@ -96,7 +99,7 @@ export default defineEventHandler(async (event) => {
   })
 
   const totalCount = await prisma.comment.count({
-    where: { articleId, parentId: null, deletedAt: null },
+    where: { articleId, parentId: null },
   })
 
   const commentMap = new Map<string, CommentWithReplies>()

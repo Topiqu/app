@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
     where: {
       userId: user.id,
       clientSiteId: article.clientSiteId,
+      deletedAt: null,
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
   })

@@ -47,9 +47,9 @@
         </span>
         <span v-else class="font-semibold text-gray-800">Není k dispozici</span>
       </div>
-      <div v-if="!comment.deletedAt && !comment.user?.isBanned" class="flex flex-col gap-1 sm:gap-2">
+      <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
         <button
-          v-if="session?.user && !isReplying"
+          v-if="session?.user && !isReplying && !comment.user?.isBanned"
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
           aria-label="Odpovědět"
           @click="$emit('reply', comment)"
@@ -67,7 +67,12 @@
           <span class="hidden sm:inline">Smazat</span>
         </button>
         <button
-          v-else-if="session?.user && session.user.role === 'admin' && session.user.id === comment.article?.userId"
+          v-else-if="
+            session?.user &&
+            session.user.role === 'admin' &&
+            session.user.id === comment.article?.userId &&
+            !comment.user?.isBanned
+          "
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
           aria-label="Smazat komentář (admin)"
           @click="showDeleteModal(comment)"
@@ -80,7 +85,8 @@
             session?.user &&
             session.user.role === 'admin' &&
             session.user.clientSiteId === comment.article?.clientSiteId &&
-            session.user.id !== comment.userId
+            session.user.id !== comment.userId &&
+            !comment.user?.isBanned
           "
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
           aria-label="Zabanovat uživatele"
@@ -89,13 +95,27 @@
           <Icon name="mdi:account-cancel" class="w-4 h-4 text-orange-500" />
           <span class="hidden sm:inline">Zabanovat</span>
         </button>
+        <button
+          v-if="
+            session?.user &&
+            session.user.role === 'admin' &&
+            session.user.clientSiteId === comment.article?.clientSiteId &&
+            session.user.id !== comment.userId &&
+            comment.user?.isBanned
+          "
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
+          aria-label="Odbanovat uživatele"
+          @click="unbanUser(comment)"
+        >
+          <Icon name="mdi:account-check" class="w-4 h-4 text-green-500" />
+          <span class="hidden sm:inline">Odbanovat</span>
+        </button>
       </div>
     </div>
 
     <div class="mt-4 sm:mt-6">
       <span class="text-xs sm:text-sm md:text-base text-gray-400">• {{ formatDate(comment.createdAt) }}</span>
     </div>
-
     <p
       class="mt-4 sm:mt-6 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
       :class="{ 'text-gray-400 italic': comment.deletedAt || comment.user?.isBanned }"
@@ -313,6 +333,18 @@ const banUser = async (comment: CommentWithReplies) => {
   showBanModal.value = false
   banReason.value = ''
   banExpiresAt.value = ''
+}
+
+const unbanUser = async (comment: CommentWithReplies) => {
+  try {
+    await $fetch(`/api/bans/${comment.id}`, {
+      method: 'DELETE',
+    })
+    toast.success({ message: 'Uživatel odbanován' })
+    emit('refresh')
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Odbanování selhalo' })
+  }
 }
 
 onClickOutside(banModal, () => {
