@@ -28,15 +28,48 @@ export default defineEventHandler(async (event) => {
   const { reason, expiresAt } = await readBody(event)
   if (!reason?.trim()) throw createError({ statusCode: 400, message: 'Důvod banu je povinný' })
 
-  await db.userBan.create({
-    data: {
+  const existingBan = await db.userBan.findFirst({
+    where: {
       userId: comment.userId,
       clientSiteId: comment.article.clientSiteId,
-      reason: reason.trim(),
-      bannedById: user.id,
-      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      deletedAt: null,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
   })
+
+  if (existingBan) {
+    throw createError({ statusCode: 409, message: 'Uživatel je již zabanován na této subdoméně' })
+  }
+
+  const softDeletedBan = await db.userBan.findFirst({
+    where: {
+      userId: comment.userId,
+      clientSiteId: comment.article.clientSiteId,
+      deletedAt: { not: null },
+    },
+  })
+
+  if (softDeletedBan) {
+    await db.userBan.update({
+      where: { id: softDeletedBan.id },
+      data: {
+        reason: reason.trim(),
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        deletedAt: null,
+        bannedById: user.id,
+      },
+    })
+  } else {
+    await db.userBan.create({
+      data: {
+        userId: comment.userId,
+        clientSiteId: comment.article.clientSiteId,
+        reason: reason.trim(),
+        bannedById: user.id,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+      },
+    })
+  }
 
   if (comment.user.email && comment.user.allowNotifs) {
     const t = useNodeMailer()
