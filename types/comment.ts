@@ -19,6 +19,11 @@ export interface CommentWithReplies {
     followers: number
     following: number
     role: string
+    isBanned?: boolean
+    banDetails?: {
+      reason?: string
+      expiresAt?: string
+    }
   } | null
   article: {
     clientSiteId: string
