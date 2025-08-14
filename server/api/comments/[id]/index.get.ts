@@ -10,7 +10,11 @@ export default defineEventHandler(async (event) => {
   const { skip, take } = await getPagination(event)
   const max = 75
   const adjustedTake = Math.min(take, max - skip)
-
+  const article = await prisma.article.findUnique({
+    where: { id: articleId },
+    select: { userId: true, clientSiteId: true },
+  })
+  if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
   const allComments = await prisma.comment.findMany({
     where: { articleId, parentId: null },
     select: {
@@ -60,6 +64,7 @@ export default defineEventHandler(async (event) => {
           parentId: true,
           deletedAt: true,
           articleId: true,
+          article: { select: { clientSiteId: true, userId: true } },
           user: {
             include: {
               comments: {
@@ -130,6 +135,7 @@ export default defineEventHandler(async (event) => {
     const followersCount = userData ? userData.followers.length : 0
     const followingCount = userData ? userData.following.length : 0
     const userReaction = user ? (c.reactions.find((r) => r.userId === user.id) ?? null) : null
+    const isLikedByAuthor = c.reactions.some((r) => r.userId === article.userId && r.type === 'LIKE')
 
     const emojiReactions = Object.entries(
       c.emojiReactions.reduce(
@@ -203,6 +209,7 @@ export default defineEventHandler(async (event) => {
         const rFollowersCount = rUserData ? rUserData.followers.length : 0
         const rFollowingCount = rUserData ? rUserData.following.length : 0
         const rUserReaction = user ? (r.reactions.find((r) => r.userId === user.id) ?? null) : null
+        const rIsLikedByAuthor = r.reactions.some((r) => r.userId === article.userId && r.type === 'LIKE')
 
         const rEmojiReactions = Object.entries(
           r.emojiReactions.reduce(
@@ -254,11 +261,13 @@ export default defineEventHandler(async (event) => {
           userReaction: rUserReaction ? { type: rUserReaction.type } : null,
           emojiReactions: rEmojiReactions,
           depth: 2,
+          isLikedByAuthor: rIsLikedByAuthor,
         }
       }),
       userReaction: userReaction ? { type: userReaction.type } : null,
       emojiReactions,
       depth: 1,
+      isLikedByAuthor,
     })
   }
 
