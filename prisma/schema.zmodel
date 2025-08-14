@@ -135,6 +135,8 @@ model User extends Base {
     articleReactions ArticleReaction[]
     followers        Follow[]          @relation("Follower")
     following        Follow[]          @relation("Followed")
+    bans             UserBan[]         @relation("BannedUser")
+    bansIssued       UserBan[]         @relation("BannedBy")
     @@allow('read', true)
     @@allow('create', true)
     @@allow('update', auth().id == id || auth().role == 'superadmin')
@@ -168,6 +170,7 @@ model ClientSite extends Base {
     tags                Tag[]
     articles            Article[]
     emojis              Emoji[]
+    userBans            UserBan[]
     @@allow('read', true)
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')
@@ -247,4 +250,18 @@ model Notification extends Base, Ownable {
     article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
     @@allow('read, delete, update', auth().id == userId)
     @@allow('create', auth() != null)
+}
+
+model UserBan extends Base {
+    userId       String
+    user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    reason       String?    @length(0, 255, "Důvod banu může mít max. 255 znaků")
+    bannedById   String
+    bannedBy     User       @relation("BannedBy", fields: [bannedById], references: [id], onDelete: Cascade)
+    expiresAt    DateTime?
+    @@allow('read', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@allow('create, update, delete', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@allow('all', auth().role == 'superadmin')
 }
