@@ -162,6 +162,21 @@ model ClientSite {
   userBans            UserBan[]
 }
 
+model UserBan {
+  id           String     @id() @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt()
+  deletedAt    DateTime?
+  userId       String
+  user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
+  clientSiteId String
+  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  reason       String?
+  bannedById   String
+  bannedBy     User       @relation("BannedBy", fields: [bannedById], references: [id], onDelete: Cascade)
+  expiresAt    DateTime?
+}
+
 model Comment {
   userId         String
   user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -252,19 +267,4 @@ model Notification {
   articleId String?
   link      String?
   article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
-}
-
-model UserBan {
-  id           String     @id() @default(uuid())
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime?  @updatedAt()
-  deletedAt    DateTime?
-  userId       String
-  user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
-  clientSiteId String
-  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-  reason       String?
-  bannedById   String
-  bannedBy     User       @relation("BannedBy", fields: [bannedById], references: [id], onDelete: Cascade)
-  expiresAt    DateTime?
 }
