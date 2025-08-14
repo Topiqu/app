@@ -176,6 +176,20 @@ model ClientSite extends Base {
     @@allow('all', auth().role == 'superadmin')
 }
 
+model UserBan extends Base {
+    userId       String
+    user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    reason       String?    @length(0, 255, "Důvod banu může mít max. 255 znaků")
+    bannedById   String
+    bannedBy     User       @relation("BannedBy", fields: [bannedById], references: [id], onDelete: Cascade)
+    expiresAt    DateTime?
+    @@allow('read', true)
+    @@allow('create, update, delete', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@allow('all', auth().role == 'superadmin')
+}
+
 model Comment extends Base, Ownable {
     content        String            @length(1, 1000, "Komentář musí mít 1–1000 znaků")
     articleId      String
@@ -250,18 +264,4 @@ model Notification extends Base, Ownable {
     article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
     @@allow('read, delete, update', auth().id == userId)
     @@allow('create', auth() != null)
-}
-
-model UserBan extends Base {
-    userId       String
-    user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
-    clientSiteId String
-    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-    reason       String?    @length(0, 255, "Důvod banu může mít max. 255 znaků")
-    bannedById   String
-    bannedBy     User       @relation("BannedBy", fields: [bannedById], references: [id], onDelete: Cascade)
-    expiresAt    DateTime?
-    @@allow('read', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
-    @@allow('create, update, delete', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
-    @@allow('all', auth().role == 'superadmin')
 }
