@@ -3,9 +3,6 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const { id } = getRouterParams(event)
-  if (user.id !== id && user.role !== 'superadmin')
-    throw createError({ statusCode: 403, message: 'Nepovolený přístup' })
-
   const db = await getEnhancedPrisma(user)
   const userData = await db.user.findUnique({
     where: { id },
