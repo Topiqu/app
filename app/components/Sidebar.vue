@@ -40,12 +40,14 @@
         >
           <Icon name="mdi:emoticon" class="w-6 h-6" />
         </button>
-        <button
-          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
-          @click="statsOpen = true"
-        >
-          <Icon name="mdi:chart-bar" class="w-6 h-6" />
-        </button>
+        <LazyStatsDialog v-model="statsOpen" hydrateOnInteraction="click" @hydrated="statsOpen = true">
+          <button
+            class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+            @click="statsOpen = true"
+          >
+            <Icon name="mdi:chart-bar" class="w-6 h-6" />
+          </button>
+        </LazyStatsDialog>
         <button
           v-if="data?.user?.plan !== 'BASIC'"
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
@@ -97,9 +99,6 @@
   </TransitionRoot>
   <TransitionRoot :show="tagsOpen" as="template">
     <TagsCreate @close="tagsOpen = false" />
-  </TransitionRoot>
-  <TransitionRoot :show="statsOpen" as="template">
-    <StatsDialog @close="statsOpen = false" />
   </TransitionRoot>
   <TransitionRoot :show="clientCreateOpen" as="template">
     <ClientCreate @close="clientCreateOpen = false" />
