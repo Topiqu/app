@@ -4,7 +4,7 @@ import { createOpenAI } from '@ai-sdk/openai'
 const system = `You are a helpful assistant that generates articles based on user prompts.`
 
 export default defineLazyEventHandler(async () => {
-  const apiKey = useRuntimeConfig().openAI
+  const { apiKey } = useRuntimeConfig().openai
 
   const OpenAI = createOpenAI({ apiKey })
 

@@ -1,13 +1,17 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-20',
+
   devtools: { enabled: true },
+
   future: { compatibilityVersion: 4 },
+
   runtimeConfig: {
     public: { appVersion: '1.0.0 beta' },
     openModeratorApiKey: process.env.OPENMODERATOR_API_KEY,
-    openAI: process.env.OPENAI_API_KEY,
+    openai: { apiKey: process.env.OPENAI_API_KEY },
     authSecret: process.env.AUTH_SECRET,
   },
+
   nitro: {
     preset: 'bun',
     imports: {
@@ -18,10 +22,12 @@ export default defineNuxtConfig({
       dirs: ['shared/zod/models', 'server/utils', '#auth'],
     },
   },
+
   imports: {
     presets: [{ from: 'zod', imports: [{ name: 'z' }] }],
     dirs: ['shared/zod/models', 'utils', '#auth'],
   },
+
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',
@@ -37,6 +43,7 @@ export default defineNuxtConfig({
     'nuxt-security',
     'nuxt-toast',
   ],
+
   security: {
     rateLimiter: {
       interval: 10 * 1000,
@@ -51,13 +58,17 @@ export default defineNuxtConfig({
     },
     xssValidator: false,
   },
+
   eslint: { config: { typescript: true } },
+
   css: ['~/assets/styles/base.scss'],
+
   auth: {
     provider: { type: 'authjs' },
     baseURL: process.env.AUTH_ORIGIN,
     originEnvKey: 'AUTH_ORIGIN',
   },
+
   nodemailer: {
     from: `"RASG BLOG" ${process.env.NUXT_MAIL_USER}`,
     service: 'gmail',
