@@ -31,7 +31,13 @@ main {
   flex-grow: 1;
 }
 
-h1, h2, h3, h4, p, span, label {
+h1,
+h2,
+h3,
+h4,
+p,
+span,
+label {
   color: $input-text;
 }
 
@@ -46,7 +52,16 @@ input {
   border-radius: 6px !important;
 }
 
-html.dark div:not(.iziToast, .iziToast-capsule, .iziToast-wrapper *, [role="dialog"], [role="dialog"] *, [data-youtube-video], [data-youtube-video] *) {
+html.dark
+  div:not(
+    .iziToast,
+    .iziToast-capsule,
+    .iziToast-wrapper *,
+    [role='dialog'],
+    [role='dialog'] *,
+    [data-youtube-video],
+    [data-youtube-video] *
+  ) {
   background-color: #1f2937;
 }
 
@@ -78,16 +93,16 @@ html.dark .iziToast-color-green {
   border-left-color: #66bb6a;
 }
 
-[role="dialog"] {
+[role='dialog'] {
   background-color: transparent !important;
 }
 
-[role="dialog"] [id^="headlessui-dialog-panel"] {
+[role='dialog'] [id^='headlessui-dialog-panel'] {
   background-color: $input-bg !important;
   color: $input-text !important;
 }
 
-html.dark [role="dialog"] [id^="headlessui-dialog-panel"] {
+html.dark [role='dialog'] [id^='headlessui-dialog-panel'] {
   background-color: #374151 !important;
   color: $input-text !important;
 }
@@ -146,7 +161,7 @@ html.dark .tippy-box {
   border-color: #4b5563 !important;
 }
 
-[role="tooltip"] {
+[role='tooltip'] {
   background-color: $input-bg;
   color: $dialog-text !important;
   border: 1px solid $border-color;
@@ -154,7 +169,7 @@ html.dark .tippy-box {
   padding: 0.25rem 0.5rem;
 }
 
-html.dark [role="tooltip"] {
+html.dark [role='tooltip'] {
   background-color: #374151;
   color: $input-text !important;
   border-color: #4b5563;

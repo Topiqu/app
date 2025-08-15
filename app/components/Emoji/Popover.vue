@@ -10,11 +10,11 @@
     <TransitionRoot appear>
       <TransitionChild
         enter="transition ease-out duration-200"
-        enter-from="opacity-0 -translate-y-2"
-        enter-to="opacity-100 translate-y-0"
+        enterFrom="opacity-0 -translate-y-2"
+        enterTo="opacity-100 translate-y-0"
         leave="transition ease-in duration-150"
-        leave-from="opacity-100 translate-y-0"
-        leave-to="opacity-0 -translate-y-2"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 -translate-y-2"
       >
         <PopoverPanel
           class="absolute bottom-full right-0 z-20 mb-2 w-52 p-3 bg-white rounded-2xl shadow-2xl border border-gray-200"

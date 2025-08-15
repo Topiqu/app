@@ -3,11 +3,11 @@
     <TransitionChild
       as="template"
       enter="ease-out duration-300"
-      enter-from="opacity-0"
-      enter-to="opacity-100"
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
       leave="ease-in duration-200"
-      leave-from="opacity-100"
-      leave-to="opacity-0"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
     >
       <div class="fixed inset-0 bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-md" />
     </TransitionChild>
@@ -16,11 +16,11 @@
       <TransitionChild
         as="template"
         enter="ease-out duration-300"
-        enter-from="opacity-0 translate-y-10"
-        enter-to="opacity-100 translate-y-0"
+        enterFrom="opacity-0 translate-y-10"
+        enterTo="opacity-100 translate-y-0"
         leave="ease-in duration-200"
-        leave-from="opacity-100 translate-y-0"
-        leave-to="opacity-0 translate-y-10"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 translate-y-10"
       >
         <DialogPanel
           class="w-full max-w-xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col gap-6 border border-gray-200/70"
@@ -150,7 +150,7 @@
             </div>
           </div>
 
-          <Charts v-if="!loading && stats.articleCount > 0" :chart-data="chartData" />
+          <Charts v-if="!loading && stats.articleCount > 0" :chartData="chartData" />
 
           <div class="flex justify-end">
             <button

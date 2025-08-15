@@ -27,8 +27,8 @@
               <template v-if="!header.isPlaceholder">
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
 
-                <Icon class="text-black" v-if="header.column.getIsSorted() === 'asc'" name="mdi:arrow-up" />
-                <Icon class="text-black" v-else-if="header.column.getIsSorted() === 'desc'" name="mdi:arrow-down" />
+                <Icon v-if="header.column.getIsSorted() === 'asc'" class="text-black" name="mdi:arrow-up" />
+                <Icon v-else-if="header.column.getIsSorted() === 'desc'" class="text-black" name="mdi:arrow-down" />
               </template>
             </th>
             <th class="px-4 py-2 text-center">Akce</th>
