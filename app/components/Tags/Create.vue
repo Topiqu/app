@@ -1,104 +1,79 @@
 <template>
-  <Dialog as="div" class="relative z-[1000]" @close="$emit('close')">
-    <TransitionChild
-      as="template"
-      enter="ease-out duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity" />
-    </TransitionChild>
+  <Modal v-model="open" title="Správa tagů">
+    <template #default="actions">
+      <slot v-bind="actions" />
+    </template>
 
-    <div class="fixed inset-0 flex items-center justify-center p-6">
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-300"
-        enterFrom="opacity-0 scale-90"
-        enterTo="opacity-100 scale-100"
-        leave="ease-in duration-100"
-        leaveFrom="opacity-100 scale-100"
-        leaveTo="opacity-0 scale-90"
-      >
-        <DialogPanel
-          class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm"
+    <template #content>
+      <div class="flex flex-col gap-6">
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Název tagu</span>
+          <input
+            v-model="newTag.name"
+            placeholder="Název tagu"
+            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+          />
+        </label>
+        <button
+          :disabled="!newTag.name"
+          class="self-end px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="createTag"
         >
-          <DialogTitle class="text-xl font-bold"> Správa tagů </DialogTitle>
+          Přidat tag
+        </button>
+      </div>
 
-          <div class="flex flex-col gap-6">
-            <label class="flex flex-col gap-3">
-              <span class="text-sm font-medium uppercase tracking-wide opacity-80">Název tagu</span>
-              <input
-                v-model="newTag.name"
-                placeholder="Název tagu"
-                class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-              />
-            </label>
+      <div class="flex flex-col gap-4 max-h-64 overflow-y-auto">
+        <div v-if="tags.length" class="flex flex-col divide-y divide-gray-200">
+          <div v-for="t in tags" :key="t.id" class="flex items-center justify-between py-2 group">
+            <span class="text-sm font-medium">{{ t.name }}</span>
             <button
-              :disabled="!newTag.name"
-              class="self-end px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="createTag"
+              class="flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-500 transition-all duration-300 hover:bg-red-100 hover:text-red-700 active:scale-90"
+              @click="deleteTag(t.id, t.name)"
             >
-              Přidat tag
+              <Icon name="mdi:delete" class="w-5 h-5 text-red-500" />
             </button>
           </div>
+        </div>
+        <p v-else class="text-sm">Žádné tagy.</p>
+      </div>
+    </template>
 
-          <div class="flex flex-col gap-4 max-h-64 overflow-y-auto">
-            <div v-if="tags.length" class="flex flex-col divide-y divide-gray-200">
-              <div v-for="t in tags" :key="t.id" class="flex items-center justify-between py-2 group">
-                <span class="text-sm font-medium">{{ t.name }}</span>
-                <button
-                  class="flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-500 transition-all duration-300 hover:bg-red-100 hover:text-red-700 active:scale-90"
-                  @click="deleteTag(t.id, t.name)"
-                >
-                  <Icon name="mdi:delete" class="w-5 h-5 text-red-500" />
-                </button>
-              </div>
-            </div>
-            <p v-else class="text-sm">Žádné tagy.</p>
-          </div>
-
-          <div class="flex gap-4 justify-end">
-            <button
-              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm"
-              @click="$emit('close')"
-            >
-              Zavřít
-            </button>
-          </div>
-        </DialogPanel>
-      </TransitionChild>
-    </div>
-  </Dialog>
+    <template #footer="{ close }">
+      <button
+        class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm"
+        @click="close"
+      >
+        Zavřít
+      </button>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
-import { Dialog, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/vue'
 
 const toast = useToast()
-defineEmits(['close'])
 
-const { data: tags, refresh } = await useFetch('/api/tags', {
-  default: () => [],
-})
+const open = defineModel<boolean>()
+
+const { data: tags, refresh } = await useFetch('/api/tags', { default: () => [] })
 
 const newTag = ref({ name: '', slug: '' })
 
-const updateSlug = () => {
-  newTag.value.slug = slugify(newTag.value.name, {
+const updateSlug = () =>
+  (newTag.value.slug = slugify(newTag.value.name, {
     lower: true,
     strict: true,
     trim: true,
-  })
-}
+  }))
 
 const createTag = async () => {
   if (!newTag.value.name) return
+
   updateSlug()
+
   try {
     await $fetch('/api/tags', {
       method: 'POST',
@@ -107,8 +82,11 @@ const createTag = async () => {
         slug: newTag.value.slug,
       },
     })
+
     newTag.value = { name: '', slug: '' }
+
     await refresh()
+
     toast.success({ message: 'Tag byl úspěšně vytvořen.' })
   } catch (error: any) {
     toast.error({ message: `Chyba při vytváření tagu: ${error.data?.message}` })
