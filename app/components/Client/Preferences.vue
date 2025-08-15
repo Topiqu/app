@@ -1,111 +1,89 @@
 <template>
-  <Dialog as="div" class="relative z-[1000]" @close="confirmClose">
-    <TransitionChild
-      as="template"
-      enter="ease-out duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in duration-200"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity" />
-    </TransitionChild>
-    <div class="fixed inset-0 flex items-center justify-center p-4 sm:p-6">
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-300"
-        enterFrom="opacity-0 scale-95"
-        enterTo="opacity-100 scale-100"
-        leave="ease-in duration-150"
-        leaveFrom="opacity-100 scale-100"
-        leaveTo="opacity-0 scale-95"
-      >
-        <DialogPanel
-          class="w-full max-w-xl p-8 sm:p-10 rounded-3xl shadow-2xl border flex flex-col max-h-[90vh] overflow-hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
+  <Modal v-model="open" title="Vaše preference" :onClose="confirmClose">
+    <template #default="actions">
+      <slot v-bind="actions" />
+    </template>
+
+    <template #close>
+      <LazyClientHint v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
+        <button
+          class="p-2 rounded-full bg-transparent hover:bg-transparent border-none outline-none cursor-pointer"
+          title="Vysvětlení preferencí"
+          @click="clientHintOpen.value = true"
         >
-          <div class="flex-1 overflow-y-auto pr-2 sm:pr-4">
-            <div class="flex items-center justify-between">
-              <DialogTitle class="text-2xl font-semibold">Vaše preference</DialogTitle>
-              <button
-                class="p-2 rounded-full bg-transparent hover:bg-transparent border-none outline-none cursor-pointer"
-                title="Vysvětlení preferencí"
-                @click="clientHintOpen = true"
-              >
-                <Icon name="mdi:information-outline" class="w-6 h-6" />
-              </button>
-            </div>
-            <div v-if="pending" class="text-center text-gray-500 dark:text-gray-400 py-8">Načítání dat...</div>
-            <div v-else class="flex flex-col gap-6 mt-6">
-              <label class="flex flex-col gap-2">
-                <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
-                  >Fokus</span
-                >
-                <input
-                  v-model="form.focus"
-                  placeholder="Fokus (např. objektivní žurnalistika v gamingu, důraz na unreal engine)"
-                  class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
-                />
-              </label>
-              <label class="flex flex-col gap-2">
-                <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
-                  >Cílová skupina</span
-                >
-                <input
-                  v-model="form.audience"
-                  placeholder="Cílová skupina (např. mladí dospělí, profesionálové)"
-                  class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
-                />
-              </label>
-              <label class="flex flex-col gap-2">
-                <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
-                  >Klíčová slova</span
-                >
-                <input
-                  v-model="keywordsInput"
-                  placeholder="Klíčová slova (oddělená čárkami)"
-                  class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
-                  @input="updateKeywords"
-                />
-                <span class="text-sm text-gray-500 dark:text-gray-400">Slova: {{ form.keywords.length }}</span>
-              </label>
-            </div>
-          </div>
-          <div class="flex gap-4 justify-end mt-6 flex-shrink-0 pt-4 border-t border-gray-300 dark:border-gray-600">
-            <button
-              class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
-              @click="confirmClose"
-            >
-              Zrušit
-            </button>
-            <button
-              class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 text-white dark:text-black shadow-md bg-blue-600 dark:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="savePreferences"
-            >
-              Uložit
-            </button>
-          </div>
-        </DialogPanel>
-      </TransitionChild>
-    </div>
-  </Dialog>
-  <TransitionRoot :show="clientHintOpen" as="template">
-    <ClientHint @close="clientHintOpen = false" />
-  </TransitionRoot>
+          <Icon name="mdi:information-outline" class="w-6 h-6" />
+        </button>
+      </LazyClientHint>
+    </template>
+
+    <template #content>
+      <div v-if="pending" class="text-center text-gray-500 dark:text-gray-400 py-8">Načítání dat...</div>
+      <div v-else class="flex flex-col gap-6 mt-6">
+        <label class="flex flex-col gap-2">
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Fokus</span>
+          <input
+            v-model="form.focus"
+            placeholder="Fokus (např. objektivní žurnalistika v gamingu, důraz na unreal engine)"
+            class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
+          />
+        </label>
+        <label class="flex flex-col gap-2">
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
+            >Cílová skupina</span
+          >
+          <input
+            v-model="form.audience"
+            placeholder="Cílová skupina (např. mladí dospělí, profesionálové)"
+            class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
+          />
+        </label>
+        <label class="flex flex-col gap-2">
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
+            >Klíčová slova</span
+          >
+          <input
+            v-model="keywordsInput"
+            placeholder="Klíčová slova (oddělená čárkami)"
+            class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
+            @input="updateKeywords"
+          />
+          <span class="text-sm text-gray-500 dark:text-gray-400">Slova: {{ form.keywords.length }}</span>
+        </label>
+      </div>
+    </template>
+
+    <template #footer="{ close }">
+      <div class="flex gap-4 justify-end mt-6 flex-shrink-0 pt-4 border-t border-gray-300 dark:border-gray-600">
+        <button
+          class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+          @click="close"
+        >
+          Zrušit
+        </button>
+        <button
+          class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 text-white dark:text-black shadow-md bg-blue-600 dark:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="savePreferences"
+        >
+          Uložit
+        </button>
+      </div>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
 import Swal from 'sweetalert2'
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 
-const emit = defineEmits(['close'])
 const toast = useToast()
+
 const { data: auth } = useAuth()
+
+const open = defineModel<boolean>()
 
 const init = { focus: '', audience: '', keywords: [] as string[] }
 const form = ref<typeof init>(init)
-const keywordsInput = ref('')
-const clientHintOpen = shallowRef(false)
+
+const keywordsInput = shallowRef<string>('')
 
 const {
   data: client,
@@ -122,15 +100,15 @@ if (client.value) {
   keywordsInput.value = form.value.keywords.join(', ')
 }
 
-const updateKeywords = () => {
-  form.value.keywords = keywordsInput.value
+const updateKeywords = () =>
+  (form.value.keywords = keywordsInput.value
     .split(',')
     .map((k) => k.trim())
-    .filter((k) => k.length > 0)
-}
+    .filter((k) => k.length > 0))
 
 const savePreferences = async () => {
   if (!auth.value?.user.clientSiteId) return toast.error({ message: 'Chybí ID klienta' })
+
   try {
     await $fetch(`/api/clients/${auth.value.user.clientSiteId}`, {
       method: 'PATCH',
@@ -140,9 +118,12 @@ const savePreferences = async () => {
         keywords: form.value.keywords.length ? form.value.keywords : undefined,
       },
     })
+
     toast.success({ message: 'Nastavení uloženo' })
+
     await refresh()
-    emit('close')
+
+    open.value = false
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Uložení selhalo' })
   }
@@ -163,9 +144,10 @@ const confirmClose = async () => {
       cancelButtonText: 'Ne',
       confirmButtonColor: '#ef4444',
     })
-    if (r.isConfirmed) emit('close')
+
+    if (r.isConfirmed) open.value = false
   } else {
-    emit('close')
+    open.value = false
   }
 }
 </script>
