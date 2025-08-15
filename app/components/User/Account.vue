@@ -62,7 +62,9 @@
     >
       <div
         v-if="show || isHovered"
+        ref="dropdown"
         class="absolute right-0 top-full mt-2 w-[95vw] max-w-[20rem] sm:max-w-[22rem] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-transparent dark:bg-transparent backdrop-blur-md"
+        @click.stop="show = true"
       >
         <div class="flex items-center gap-4 bg-transparent dark:bg-transparent">
           <NuxtImg
@@ -153,6 +155,31 @@ const { data: userData } = await useFetch(`/api/users/${useAuth().data.value?.us
 const { data: clientData } = await useFetch(`/api/clients/${useAuth().data.value?.user.id}/by-userid`)
 const show = shallowRef(false)
 const btn = useTemplateRef('btn')
-const isHovered = useElementHover(btn)
-onClickOutside(btn, () => (show.value = false))
+const dropdown = useTemplateRef('dropdown')
+
+const isBtnHovered = useElementHover(btn)
+const isDropdownHovered = useElementHover(dropdown)
+const isHovered = computed(() => isBtnHovered.value || isDropdownHovered.value)
+
+const hideDropdown = useDebounceFn(() => {
+  if (!isDropdownHovered.value) {
+    show.value = false
+  }
+}, 500)
+
+watch(isBtnHovered, (hovered, wasHovered) => {
+  if (hovered && !show.value) {
+    show.value = true
+  } else if (!hovered && wasHovered && !show.value) {
+    hideDropdown()
+  }
+})
+
+onClickOutside(
+  dropdown,
+  () => {
+    show.value = false
+  },
+  { ignore: [btn] },
+)
 </script>
