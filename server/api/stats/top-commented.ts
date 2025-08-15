@@ -21,12 +21,11 @@ export default defineEventHandler(async (event) => {
     },
     take: 1,
   })
+  if (!topCommented) throw createError({ statusCode: 404, message: 'Žádné články nenalezeny' })
 
-  return topCommented
-    ? {
-        id: topCommented.id,
-        title: topCommented.title,
-        comments: topCommented._count.comments,
-      }
-    : null
+  return {
+    id: topCommented.id,
+    title: topCommented.title,
+    comments: topCommented._count.comments,
+  }
 })

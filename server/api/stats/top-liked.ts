@@ -21,12 +21,11 @@ export default defineEventHandler(async (event) => {
     },
     take: 1,
   })
+  if (!topLiked) throw createError({ statusCode: 404, message: 'Žádné články nenalezeny' })
 
-  return topLiked
-    ? {
-        id: topLiked.id,
-        title: topLiked.title,
-        likes: topLiked._count.reactions,
-      }
-    : null
+  return {
+    id: topLiked.id,
+    title: topLiked.title,
+    likes: topLiked._count.reactions,
+  }
 })
