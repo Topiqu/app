@@ -2,8 +2,8 @@
   <div class="rounded-lg shadow p-6 mt-6">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">Zobrazení za poslední týden</h2>
-      <button class="px-3 py-1.5 rounded border text-sm font-medium hover:bg-gray-100 transition" @click="toggleType">
-        Přepnout na {{ chartType === 'bar' ? 'čárový' : 'sloupcový' }}
+      <button class="p-2 flex items-center gap-2 rounded-full border-none bg-transparent" @click="toggleType">
+        <Icon :name="chartType === 'bar' ? 'mdi:chart-line' : 'mdi:chart-bar'" class="w-6 h-6" />
       </button>
     </div>
     <div class="relative h-64">
