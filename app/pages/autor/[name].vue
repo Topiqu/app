@@ -173,7 +173,6 @@ const { data: author } = await useFetch<AuthorResponse>(`/api/articles/${usernam
 })
 
 const authorName = computed(() => author.value.username)
-console.log(username.value)
 
 const filteredArticles = computed(() => {
   const result = author.value.articles.filter((a) => a.article.title.toLowerCase().includes(search.value.toLowerCase()))

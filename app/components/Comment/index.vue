@@ -307,7 +307,6 @@ const deleteReason = shallowRef('')
 const banReason = shallowRef('')
 const banExpiresAt = shallowRef('')
 const banModal = ref<HTMLElement | null>(null)
-console.log('isLikedByAuthor:', props.comment.isLikedByAuthor)
 const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}`, {
   key: `author-${props.comment.article.userId}`,
   default: () => ({
@@ -315,7 +314,6 @@ const { data: authorData } = await useFetch(`/api/users/${props.comment.article.
     avatarUrl: null,
   }),
 })
-console.log('authorData:', authorData.value)
 const report = async (c: CommentWithReplies) => {
   try {
     await $fetch('/api/notifications', {
