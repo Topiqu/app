@@ -156,7 +156,7 @@ model Follow {
 }
 
 model ClientSite extends Base {
-    name                String              @length(1, 255, "Název klienta musí mít 1–255 znaků")
+    name                String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
     subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
     plan                ClientPlan          @default(BASIC)
     focus               String?
