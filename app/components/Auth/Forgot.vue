@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white px-6 py-8 rounded-2xl shadow-md border border-gray-200 space-y-6">
     <form v-if="mode === 'forgot'" class="space-y-5 text-sm" @submit.prevent="forgot">
-      <p class="text-gray-500 text-sm">Zadejte e-mail pro obnovu hesla</p>
+      <p class="text-gray-500 text-center text-sm">Zadejte e-mail pro obnovu hesla</p>
       <div class="space-y-1.5">
         <label for="email" class="block font-semibold text-gray-700">Email</label>
         <div class="relative">
@@ -11,8 +11,9 @@
             v-model="form.email"
             type="email"
             class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            required
+            placeholder="example@domain.tld"
             autocomplete="email"
+            required
           />
         </div>
       </div>
@@ -22,13 +23,15 @@
       >
         Odeslat kód
       </button>
-      <button
-        type="button"
-        class="w-full mt-2 inline-flex items-center justify-center px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium transition"
-        @click="emit('update:mode', 'login')"
-      >
-        Zpět na přihlášení
-      </button>
+      <div class="text-center">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent hover:bg-black/5 border-none text-blue-600 hover:text-blue-700 text-sm font-medium transition"
+          @click="emit('update:mode', 'login')"
+        >
+          Zpět na přihlášení
+        </button>
+      </div>
     </form>
 
     <form v-if="mode === 'reset'" class="space-y-5 text-sm" @submit.prevent="reset">

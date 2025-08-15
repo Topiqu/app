@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-sm px-6">
+  <div class="w-xs sm:w-sm md:w-md px-6">
     <div
       v-if="data?.user"
       class="bg-white px-6 py-8 rounded-2xl shadow-md text-center space-y-5 border border-gray-200"
@@ -13,10 +13,10 @@
     </div>
 
     <div v-else class="bg-white px-6 py-8 rounded-2xl shadow-md border border-gray-200 space-y-6">
-      <div class="flex justify-center gap-3 text-sm font-medium">
+      <div class="flex justify-between items-center gap-2 text-sm font-medium">
         <button
           :class="[
-            'px-4 py-2 rounded-lg transition font-semibold',
+            'w-full px-4 py-2 rounded-lg transition font-semibold',
             mode === 'login' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-500 hover:bg-gray-200',
           ]"
           @click="mode = 'login'"
@@ -25,7 +25,7 @@
         </button>
         <button
           :class="[
-            'px-4 py-2 rounded-lg transition font-semibold',
+            'w-full px-4 py-2 rounded-lg transition font-semibold',
             mode === 'register' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-500 hover:bg-gray-200',
           ]"
           @click="mode = 'register'"
@@ -44,8 +44,9 @@
               v-model="form.email"
               type="email"
               class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              required
+              placeholder="example@domain.tld"
               autocomplete="email"
+              required
             />
           </div>
         </div>
@@ -59,10 +60,11 @@
               v-model="form.username"
               type="text"
               class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              required
-              minlength="3"
-              maxlength="50"
               autocomplete="username"
+              placeholder="Joe Doe"
+              maxlength="50"
+              minlength="3"
+              required
             />
           </div>
         </div>
@@ -76,10 +78,11 @@
               v-model="form.password"
               type="password"
               class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              required
-              minlength="4"
-              maxlength="124"
               autocomplete="current-password"
+              placeholder="********"
+              maxlength="124"
+              minlength="4"
+              required
             />
           </div>
         </div>
@@ -93,10 +96,11 @@
               v-model="form.passwordConfirm"
               type="password"
               class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              required
-              minlength="4"
-              maxlength="124"
               autocomplete="new-password"
+              placeholder="********"
+              maxlength="124"
+              minlength="4"
+              required
             />
           </div>
         </div>
@@ -111,7 +115,7 @@
         <div v-if="mode === 'login'" class="text-center">
           <button
             type="button"
-            class="inline-flex items-center justify-center px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium transition"
+            class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent hover:bg-black/5 border-none text-blue-600 hover:text-blue-700 text-sm font-medium transition"
             @click="mode = 'forgot'"
           >
             Zapomenuté heslo?
