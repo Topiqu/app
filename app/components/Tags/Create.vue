@@ -23,7 +23,7 @@
         </button>
       </div>
 
-      <div class="flex flex-col gap-4 max-h-64 overflow-y-auto">
+      <div class="flex flex-col gap-4">
         <div v-if="tags.length" class="flex flex-col divide-y divide-gray-200">
           <div v-for="t in tags" :key="t.id" class="flex items-center justify-between py-2 group">
             <span class="text-sm font-medium">{{ t.name }}</span>

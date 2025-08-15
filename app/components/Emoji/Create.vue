@@ -31,7 +31,7 @@
       <div class="mt-8">
         <div v-if="loading && !emojis?.length" class="text-sm">Načítání...</div>
         <div v-else-if="error" class="text-sm">{{ error }}</div>
-        <div v-else ref="scrollParent" class="overflow-y-auto h-64 rounded-xl border shadow-inner">
+        <div v-else ref="scrollParent" class="rounded-xl border shadow-inner">
           <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
             <div
               v-for="virtualRow in virtualizer.getVirtualItems()"

@@ -99,7 +99,7 @@
         </label>
       </div>
 
-      <div class="flex flex-col gap-4 max-h-64 overflow-y-auto mt-6">
+      <div class="flex flex-col gap-4 mt-6">
         <div v-if="fetchedClients?.length" class="flex flex-col divide-y divide-gray-200">
           <div v-for="c in fetchedClients" :key="c.id" class="flex items-center justify-between py-2 group">
             <div class="flex flex-col">
