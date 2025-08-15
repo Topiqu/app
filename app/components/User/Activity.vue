@@ -205,5 +205,5 @@ defineEmits<{
 const tabs = [
   { id: 'likedArticles', label: 'Lajknuté články', icon: 'mdi:heart-outline' },
   { id: 'comments', label: 'Moje komentáře', icon: 'mdi:comment-outline' },
-]
+] as const
 </script>

@@ -154,9 +154,12 @@ const submit = async () => {
 
   if (res.success && res.emoji) {
     toast.success({ message: `Emoji ${res.emoji.shortcode} přidáno` })
+
     shortcode.value = ''
     fileInput.value.value = ''
+
     await refresh()
+
     emit('close')
   } else {
     toast.error({ message: error.value?.message || 'Nepodařilo se přidat emoji' })
@@ -164,9 +167,11 @@ const submit = async () => {
 }
 
 const deleteEmoji = async (id: string) => {
-  const res = await $fetch(`/api/emojis/${id}`, { method: 'DELETE' })
+  const res = await $fetch(`/api/emojis/${id}` as `/api/emojis/:id`, { method: 'DELETE' })
+
   if (res.success) {
     toast.success({ message: `Emoji smazáno` })
+
     await refresh()
   } else {
     toast.error({ message: error.value?.message || 'Nepodařilo se smazat emoji' })

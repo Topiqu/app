@@ -9,6 +9,7 @@ export default defineEventHandler(async () => {
         // tags: ['novinky', 'tech'],
         status: 'draft',
         userId: 'f88a0494-a11e-42c9-afd7-af1116c1b501',
+        clientSiteId: 'f88a0494-a11e-42c9-afd7-af1116c1b501',
         createdAt: new Date(),
       },
       {
@@ -19,6 +20,7 @@ export default defineEventHandler(async () => {
         // tags: ['tech', 'programování'],
         status: 'published',
         userId: 'f88a0494-a11e-42c9-afd7-af1116c1b501',
+        clientSiteId: 'f88a0494-a11e-42c9-afd7-af1116c1b501',
         createdAt: new Date(),
       },
     ],

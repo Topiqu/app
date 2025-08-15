@@ -203,6 +203,7 @@ const profileForm = ref({
     imageUrl: string | null
     publishedAt: string | null
     authorUsername: string
+    authorPfp: string | null
     views: number
     tags: string[]
     likesCount: number

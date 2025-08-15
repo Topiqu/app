@@ -32,8 +32,8 @@
             ]"
           >
             <Icon
-              v-if="['PREMIUM', 'PRO', 'CUSTOM'].includes(data?.plan)"
-              :name="data?.plan === 'PREMIUM' ? 'mdi:crown' : data?.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
+              v-if="data?.plan && ['PREMIUM', 'PRO', 'CUSTOM'].includes(data.plan)"
+              :name="data.plan === 'PREMIUM' ? 'mdi:crown' : data.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
               class="w-4 h-4"
             />
             Admin
@@ -79,8 +79,8 @@
               ]"
             >
               <Icon
-                v-if="['PREMIUM', 'PRO', 'CUSTOM'].includes(data?.plan)"
-                :name="data?.plan === 'PREMIUM' ? 'mdi:crown' : data?.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
+                v-if="data?.plan && ['PREMIUM', 'PRO', 'CUSTOM'].includes(data.plan)"
+                :name="data.plan === 'PREMIUM' ? 'mdi:crown' : data.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
                 class="w-4 h-4"
               />
               Admin
