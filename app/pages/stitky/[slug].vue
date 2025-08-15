@@ -128,36 +128,16 @@ import type { Article as _Article } from '@zenstackhq/runtime/models'
 
 import { useRoute } from 'vue-router'
 
-type Article = {
-  articleId: string
-  tagId: string
-  article: _Article & {
-    user: { username: string }
-    tags: {
-      articleId: string
-      tagId: string
-      tag: { name: string; slug: string }
-    }[]
-    views: number
-    likes: number
-  }
-}
-
-type TagResponse = {
-  id: string
-  name: string
-  slug: string
-  articles: Article[]
-}
-
 const route = useRoute()
+
 const { data: auth } = useAuth()
+
 const tagSlug = computed(() => route.params.slug)
 
 const search = shallowRef<string>('')
 const sort = shallowRef<string>('createdAt:desc')
 
-const { data: tag } = await useFetch<TagResponse>(`/api/tags/slug/${tagSlug.value}`, {
+const { data: tag } = await useFetch(`/api/tags/slug/${tagSlug.value}`, {
   default: () => ({ id: '', name: 'Neznámý tag', slug: '', articles: [] }),
 })
 
@@ -165,7 +145,9 @@ const tagName = computed(() => tag.value.name)
 
 const filteredArticles = computed(() => {
   const result = tag.value.articles.filter((a) => a.article.title.toLowerCase().includes(search.value.toLowerCase()))
+
   const [field, order] = sort.value.split(':')
+
   result.sort((a, b) =>
     field === 'createdAt'
       ? order === 'asc'
@@ -175,6 +157,7 @@ const filteredArticles = computed(() => {
         ? a.article.title.localeCompare(b.article.title)
         : b.article.title.localeCompare(a.article.title),
   )
+
   return result
 })
 

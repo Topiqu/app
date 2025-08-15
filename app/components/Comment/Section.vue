@@ -116,33 +116,35 @@
 <script lang="ts" setup>
 import type { CommentWithReplies } from '~~/types/comment'
 
-const props = defineProps<{ articleId: string; commCount: number; allowComments: boolean }>()
 const toast = useToast()
+
 const { data: session } = useAuth()
 
-const newComment = shallowRef('')
-const isSubmitting = shallowRef(false)
+const props = defineProps<{ articleId: string; commCount: number; allowComments: boolean }>()
+
+const newComment = shallowRef<string>('')
+const isSubmitting = shallowRef<boolean>(false)
 const replyingTo = ref<CommentWithReplies | null>(null)
 const commentForm = useTemplateRef<HTMLElement>('commentForm')
 const scroll = useTemplateRef('scroll')
 const sentinel = useTemplateRef('sentinel')
 
 const sort = shallowRef('createdAt:desc')
-const page = shallowRef(1)
+const page = shallowRef<number>(1)
 const limit = 20
 const max = 75
-const hasMore = shallowRef(true)
-const loading = shallowRef(false)
+const hasMore = shallowRef<boolean>(true)
+const loading = shallowRef<boolean>(false)
 const comments = shallowRef<CommentWithReplies[]>([])
 const maxLength = 1000
 const characterCount = computed(() => newComment.value.length)
-const url = computed(() => `/api/comments/${props.articleId}?page=${page.value}&limit=${limit}`)
 
 const {
   data: commentsData,
   error,
   refresh,
-} = await useFetch<{ comments: CommentWithReplies[]; hasMore: boolean }>(url, {
+} = await useFetch<{ comments: CommentWithReplies[]; hasMore: boolean }>(`/api/comments/${props.articleId}`, {
+  query: { page, limit },
   default: () => ({ comments: [], hasMore: true }),
 })
 

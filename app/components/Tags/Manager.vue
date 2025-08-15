@@ -67,9 +67,7 @@ const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
   key: `article-tags-${props.article?.id}`,
 })
 
-const { data: tags, refresh } = await useFetch<Tag[]>('/api/tags', {
-  default: () => [],
-})
+const { data: tags, refresh } = await useFetch('/api/tags', { default: () => [] })
 const newTag = ref<{ name: string; slug: string }>({ name: '', slug: '' })
 const selectedTagId = ref('')
 const tagBuffer = ref<Tag[]>(
