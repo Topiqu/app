@@ -145,7 +145,7 @@ model ClientSite {
   createdAt           DateTime            @default(now())
   updatedAt           DateTime?           @updatedAt()
   deletedAt           DateTime?
-  name                String
+  name                String              @unique()
   subdomain           String              @unique()
   plan                ClientPlan          @default(BASIC)
   focus               String?
