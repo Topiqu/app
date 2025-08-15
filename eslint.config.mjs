@@ -14,6 +14,7 @@ export default withNuxt({
     'vue/multi-word-component-names': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     'perfectionist/sort-imports': 'error',
+    'vue/require-default-prop': 'off',
   },
   settings: {
     perfectionist: {
