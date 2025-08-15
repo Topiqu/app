@@ -35,6 +35,16 @@
           </p>
         </div>
         <p v-else class="text-gray-600">Žádné články.</p>
+
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Vlastní AI Prompt</span>
+          <textarea
+            v-model="customPrompt"
+            placeholder="Zadejte vlastní pokyn pro generování článku..."
+            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+          ></textarea>
+        </label>
+
         <button
           class="px-6 py-3 rounded-xl text-base font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 shadow-sm"
           @click="generateAIContent"
@@ -71,13 +81,9 @@ import slugify from 'slugify'
 import Swal from 'sweetalert2'
 
 const toast = useToast()
-
 const { data: auth } = useAuth()
-
 const { emitArticleCreated } = useArticleEvent()
-
 const open = defineModel<boolean>()
-
 const { data: articles } = await useFetch('/api/articles', { default: () => [] })
 
 const newArticle = ref({
@@ -88,8 +94,8 @@ const newArticle = ref({
   imageUrl: '',
   status: 'draft' as ArticleStatus,
 })
-
 const articleTags = ref<string[]>([])
+const customPrompt = ref('')
 
 const updateSlug = () =>
   (newArticle.value.slug = slugify(newArticle.value.title, {
@@ -117,9 +123,7 @@ const createArticle = async () => {
     })
 
     await Promise.all(
-      articleTags.value.map((tagId) => {
-        $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })
-      }),
+      articleTags.value.map((tagId) => $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })),
     )
 
     toast.success({ message: 'Článek byl úspěšně přidán' })
@@ -151,12 +155,11 @@ const generateAIContent = async () => {
   try {
     const data = await $fetch('/api/articles/ai-gen', {
       method: 'POST',
-      body: { prompt: 'Vygeneruj krátký článek na téma CP77...' },
+      body: { prompt: customPrompt.value || 'Vygeneruj krátký článek na téma CP77...' },
     })
     if (!data) throw createError({ statusCode: 500, message: 'No content generated' })
 
     newArticle.value.content = data
-
     toast.success({ message: 'AI obsah úspěšně vygenerován' })
   } catch (error: any) {
     toast.error({ message: error.data?.message || 'Nepodařilo se vygenerovat obsah' })
