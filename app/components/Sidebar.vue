@@ -109,8 +109,6 @@
 </template>
 
 <script setup lang="ts">
-import { useThemeStore } from '~~/stores/theme'
-
 const isOpen = defineModel<boolean>('isOpen')
 
 const { data: auth } = useAuth()

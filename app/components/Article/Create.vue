@@ -69,13 +69,12 @@ import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
-import useArticleEvents from '~~/composables/article-event'
 
 const toast = useToast()
 
 const { data: auth } = useAuth()
 
-const { emitArticleCreated } = useArticleEvents()
+const { emitArticleCreated } = useArticleEvent()
 
 const open = defineModel<boolean>()
 

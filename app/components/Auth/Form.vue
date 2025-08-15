@@ -151,10 +151,11 @@
 </template>
 
 <script setup lang="ts">
-import { useThemeStore } from '~~/stores/theme'
-const theme = useThemeStore()
-const { data, signIn } = useAuth()
 const toast = useToast()
+
+const theme = useThemeStore()
+
+const { data, signIn } = useAuth()
 
 const init = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
 const form = ref<typeof init>(init)

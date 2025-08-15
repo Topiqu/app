@@ -103,7 +103,6 @@
 import type { ClientSite } from '@zenstackhq/runtime/models'
 
 import Swal from 'sweetalert2'
-import useClientEvents from '~~/composables/client-event'
 import {
   type ColumnDef,
   FlexRender,
@@ -113,7 +112,7 @@ import {
   useVueTable,
 } from '@tanstack/vue-table'
 
-const { onClientCreated } = useClientEvents()
+const { onClientCreated } = useClientEvent()
 
 const toast = useToast()
 

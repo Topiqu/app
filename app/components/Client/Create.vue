@@ -145,9 +145,8 @@
 
 <script setup lang="ts">
 import Swal from 'sweetalert2'
-import useClientEvents from '~~/composables/client-event'
 
-const { emitClientCreated } = useClientEvents()
+const { emitClientCreated } = useClientEvent()
 
 const open = defineModel<boolean>()
 

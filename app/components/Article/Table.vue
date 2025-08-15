@@ -97,7 +97,6 @@ import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 import Swal from 'sweetalert2'
 import { format } from 'date-fns'
 import { useRouter } from 'vue-router'
-import useArticleEvents from '~~/composables/article-event'
 import {
   type ColumnDef,
   FlexRender,
@@ -113,7 +112,7 @@ const router = useRouter()
 
 const toast = useToast()
 
-const { onArticleCreated } = useArticleEvents()
+const { onArticleCreated } = useArticleEvent()
 
 const { data: articles, refresh } = await useFetch<Article[]>('/api/articles', { default: () => [] })
 
