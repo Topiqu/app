@@ -21,12 +21,14 @@
         >
           <Icon name="mdi:home" class="w-6 h-6" />
         </button>
-        <button
-          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
-          @click="articleCreateOpen = true"
-        >
-          <Icon name="mdi:pencil" class="w-6 h-6" />
-        </button>
+        <LazyArticleCreate v-model="articleCreateOpen" hydrateOnInteraction>
+          <button
+            class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+            @click="articleCreateOpen = true"
+          >
+            <Icon name="mdi:pencil" class="w-6 h-6" />
+          </button>
+        </LazyArticleCreate>
         <button
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
           @click="tagsOpen = true"
@@ -40,7 +42,7 @@
         >
           <Icon name="mdi:emoticon" class="w-6 h-6" />
         </button>
-        <LazyStatsDialog v-model="statsOpen" hydrateOnInteraction="click" @hydrated="statsOpen = true">
+        <LazyStatsDialog v-model="statsOpen" hydrateOnInteraction>
           <button
             class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
             @click="statsOpen = true"
@@ -94,9 +96,6 @@
       @click="$emit('update:isOpen', false)"
     />
   </transition>
-  <TransitionRoot :show="articleCreateOpen" as="template">
-    <ArticleCreate @close="articleCreateOpen = false" />
-  </TransitionRoot>
   <TransitionRoot :show="tagsOpen" as="template">
     <TagsCreate @close="tagsOpen = false" />
   </TransitionRoot>

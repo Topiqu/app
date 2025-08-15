@@ -120,10 +120,10 @@
       <Charts v-if="!loading && stats.articleCount > 0" :chartData="chartData" />
     </template>
 
-    <template #footer>
+    <template #footer="{ close }">
       <button
         class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-        @click="open = false"
+        @click="close"
       >
         Zavřít
       </button>

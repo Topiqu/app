@@ -1,92 +1,67 @@
 <template>
-  <Dialog as="div" class="relative z-[1000]" @close="confirmClose">
-    <TransitionChild
-      as="template"
-      enter="ease-out duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity" />
-    </TransitionChild>
+  <Modal v-model="open" title="Přidat článek" :onClose="confirmClose">
+    <template #default>
+      <slot />
+    </template>
 
-    <div class="fixed inset-0 flex items-center justify-center p-6">
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-300"
-        enterFrom="opacity-0 scale-90"
-        enterTo="opacity-100 scale-100"
-        leave="ease-in duration-100"
-        leaveFrom="opacity-100 scale-100"
-        leaveTo="opacity-0 scale-90"
-      >
-        <DialogPanel
-          class="w-full max-w-lg bg-white p-6 rounded-3xl shadow-2xl border backdrop-blur-sm flex flex-col max-h-[80vh]"
+    <template #content>
+      <div class="flex flex-col gap-6">
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Název článku</span>
+          <input
+            v-model="newArticle.title"
+            placeholder="Název článku"
+            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+            @input="updateSlug"
+          />
+          <span class="text-sm text-gray-500">URL Titulek: {{ newArticle.slug }}</span>
+        </label>
+
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Obsah (volitelné)</span>
+          <TiptapEditor v-model="newArticle.content" edit />
+        </label>
+
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Titulní Obrázek</span>
+          <FileUploader @upload="handleUpload" />
+          <span v-if="newArticle.imageUrl" class="text-sm text-gray-500">Obrázek: {{ newArticle.imageUrl }}</span>
+        </label>
+        <TagsManager v-model:tags="articleTags" />
+        <div v-if="articles.length" class="flex flex-col gap-2 max-h-48 overflow-y-auto">
+          <p v-for="a in articles" :key="a.id">
+            {{ a.title }}
+            {{ a.status === 'published' ? '(Publikováno)' : '' }}
+          </p>
+        </div>
+        <p v-else class="text-gray-600">Žádné články.</p>
+        <!-- <button
+              class="px-6 py-3 rounded-xl text-base font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 shadow-sm"
+              @click="generateAIContent"
+            >
+              Generovat AI obsah
+            </button> -->
+      </div>
+    </template>
+
+    <template #footer="{ close }">
+      <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
+        <button
+          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+          @click="close"
         >
-          <div class="flex-1 overflow-y-auto pr-4">
-            <DialogTitle class="text-xl font-bold mb-6"> Přidat článek </DialogTitle>
-
-            <div class="flex flex-col gap-6">
-              <label class="flex flex-col gap-3">
-                <span class="text-sm font-medium uppercase tracking-wide opacity-80"> Název článku </span>
-                <input
-                  v-model="newArticle.title"
-                  placeholder="Název článku"
-                  class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-                  @input="updateSlug"
-                />
-                <span class="text-sm text-gray-500">URL Titulek: {{ newArticle.slug }}</span>
-              </label>
-
-              <label class="flex flex-col gap-3">
-                <span class="text-sm font-medium uppercase tracking-wide opacity-80"> Obsah (volitelné) </span>
-                <TiptapEditor v-model="newArticle.content" edit />
-              </label>
-
-              <label class="flex flex-col gap-3">
-                <span class="text-sm font-medium uppercase tracking-wide opacity-80"> Titulní Obrázek </span>
-                <FileUploader @upload="handleUpload" />
-                <span v-if="newArticle.imageUrl" class="text-sm text-gray-500">
-                  Obrázek: {{ newArticle.imageUrl }}
-                </span>
-              </label>
-              <TagsManager v-model:tags="articleTags" />
-              <div v-if="articles.length" class="flex flex-col gap-2 max-h-48 overflow-y-auto">
-                <p v-for="a in articles" :key="a.id">
-                  {{ a.title }}
-                  {{ a.status === 'published' ? '(Publikováno)' : '' }}
-                </p>
-              </div>
-              <p v-else class="text-gray-600">Žádné články.</p>
-              <!-- <button
-                class="px-6 py-3 rounded-xl text-base font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 shadow-sm"
-                @click="generateAIContent"
-              >
-                Generovat AI obsah
-              </button> -->
-            </div>
-          </div>
-          <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
-            <button
-              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
-              @click="$emit('close')"
-            >
-              Zavřít
-            </button>
-            <button
-              :disabled="!newArticle.title"
-              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="createArticle"
-            >
-              Přidat článek
-            </button>
-          </div>
-        </DialogPanel>
-      </TransitionChild>
-    </div>
-  </Dialog>
+          Zavřít
+        </button>
+        <button
+          :disabled="!newArticle.title"
+          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="createArticle"
+        >
+          Přidat článek
+        </button>
+      </div>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -95,13 +70,14 @@ import type { ArticleStatus } from '@zenstackhq/runtime/models'
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
 import useArticleEvents from '~~/composables/article-event'
-import { Dialog, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/vue'
 
 const toast = useToast()
 
-const { data } = useAuth()
+const { data: auth } = useAuth()
+
 const { emitArticleCreated } = useArticleEvents()
-const emit = defineEmits(['close'])
+
+const open = defineModel<boolean>()
 
 const { data: articles } = await useFetch('/api/articles', { default: () => [] })
 
@@ -109,7 +85,7 @@ const newArticle = ref({
   title: '',
   content: '',
   slug: '',
-  userId: data.value?.user.id,
+  userId: auth.value?.user.id,
   imageUrl: '',
   status: 'draft' as ArticleStatus,
 })
@@ -149,7 +125,7 @@ const createArticle = async () => {
 
     toast.success({ message: 'Článek byl úspěšně přidán' })
     emitArticleCreated()
-    emit('close')
+    open.value = false
   } catch (error: any) {
     toast.error({ message: error.data?.message || 'Nepodařilo se přidat článek' })
   }
@@ -157,7 +133,7 @@ const createArticle = async () => {
 
 const confirmClose = async () => {
   if (!newArticle.value.title.length && (!newArticle.value.content.length || newArticle.value.content === '<p></p>'))
-    return emit('close')
+    return (open.value = false)
 
   const r = await Swal.fire({
     title: 'Zavřít dialog?',
@@ -169,7 +145,7 @@ const confirmClose = async () => {
     confirmButtonColor: '#ef4444',
   })
 
-  if (r.isConfirmed) return emit('close')
+  if (r.isConfirmed) return (open.value = false)
 }
 
 // const generateAIContent = async () => {
@@ -179,11 +155,11 @@ const confirmClose = async () => {
 //       body: { prompt: 'Vygeneruj krátký článek na téma CP77...' },
 //     })
 
-//     newArticle.value.content = data.value
+//     newArticle.value.content = auth.value
 
 //     toast.success({ message: 'AI obsah úspěšně vygenerován' })
 
-//     console.log('AI Content:', data.value)
+//     console.log('AI Content:', auth.value)
 //   } catch (error: any) {
 //     toast.error({ message: error.data?.message || 'Nepodařilo se vygenerovat obsah' })
 
