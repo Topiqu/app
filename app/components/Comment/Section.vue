@@ -85,7 +85,12 @@
       <Icon name="mdi:alert-circle" class="w-8 h-8 text-red-500 mx-auto mb-2" />
       <p class="text-gray-700">Nepodařilo se načíst komentáře: {{ error.message }}</p>
     </div>
-    <div v-else-if="filteredComments.length" ref="scroll" class="w-full max-w-full p-0.25 space-y-6 overflow-y-auto">
+    <div
+      v-else-if="filteredComments.length"
+      ref="scroll"
+      class="w-full max-w-full p-0.25 space-y-6 overflow-y-auto fixed-height"
+      :style="{ minHeight: '50vh', maxHeight: '80vh', height: '80vh' }"
+    >
       <Comment
         v-for="comment in filteredComments"
         :key="comment.id"
@@ -247,3 +252,10 @@ const react = async (c: CommentWithReplies, type: 'LIKE' | 'DISLIKE') => {
 const handleLike = (c: CommentWithReplies) => react(c, 'LIKE')
 const handleDislike = (c: CommentWithReplies) => react(c, 'DISLIKE')
 </script>
+
+<style scoped>
+.fixed-height {
+  max-height: 80vh !important;
+  height: 80vh !important;
+}
+</style>
