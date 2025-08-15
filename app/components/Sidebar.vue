@@ -14,69 +14,79 @@
         isMobile ? 'top-0 left-0 w-28 max-w-[90%] h-full p-1 gap-2' : 'top-1/2 left-8 w-14 p-2 gap-4 -translate-y-1/2'
       "
     >
-      <div v-if="data?.user?.role === 'admin'" class="flex flex-col gap-4">
+      <div v-if="auth?.user?.role === 'admin'" class="flex flex-col gap-4">
         <button
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
           @click="$router.push('/admin')"
         >
           <Icon name="mdi:home" class="w-6 h-6" />
         </button>
-        <LazyArticleCreate v-model="articleCreateOpen" hydrateOnInteraction>
+        <LazyArticleCreate v-slot="{ open }" hydrateOnInteraction>
           <button
             class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
-            @click="articleCreateOpen = true"
+            @click="open.value = true"
           >
             <Icon name="mdi:pencil" class="w-6 h-6" />
           </button>
         </LazyArticleCreate>
-        <button
-          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
-          @click="tagsOpen = true"
-        >
-          <Icon name="mdi:tag-outline" class="w-6 h-6" />
-        </button>
-        <button
-          v-if="data?.user?.plan !== 'BASIC'"
-          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
-          @click="emojiCreateOpen = true"
-        >
-          <Icon name="mdi:emoticon" class="w-6 h-6" />
-        </button>
-        <LazyStatsDialog v-model="statsOpen" hydrateOnInteraction>
+        <LazyTagsCreate v-slot="{ open }" hydrateOnInteraction>
           <button
             class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
-            @click="statsOpen = true"
+            @click="open.value = true"
+          >
+            <Icon name="mdi:tag-outline" class="w-6 h-6" />
+          </button>
+        </LazyTagsCreate>
+        <LazyEmojiCreate v-slot="{ open }" hydrateOnInteraction>
+          <button
+            v-if="auth?.user?.plan !== 'BASIC'"
+            class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+            @click="open.value = true"
+          >
+            <Icon name="mdi:emoticon" class="w-6 h-6" />
+          </button>
+        </LazyEmojiCreate>
+        <LazyStatsDialog v-slot="{ open }" hydrateOnInteraction>
+          <button
+            class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+            @click="open.value = true"
           >
             <Icon name="mdi:chart-bar" class="w-6 h-6" />
           </button>
         </LazyStatsDialog>
-        <button
-          v-if="data?.user?.plan !== 'BASIC'"
-          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
-          @click="clientPreferencesOpen = true"
-        >
-          <Icon name="mdi:cog" class="w-6 h-6" />
-        </button>
+        <LazyClientPreferences v-slot="{ open }" hydrateOnInteraction>
+          <button
+            v-if="auth?.user?.plan !== 'BASIC'"
+            class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+            @click="open.value = true"
+          >
+            <Icon name="mdi:cog" class="w-6 h-6" />
+          </button>
+        </LazyClientPreferences>
       </div>
-      <div v-if="data?.user?.role === 'superadmin'" class="flex flex-col gap-4">
+      <div v-if="auth?.user?.role === 'superadmin'" class="flex flex-col gap-4">
         <button
           class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
           @click="$router.push('/master')"
         >
           <Icon name="mdi:home" class="w-6 h-6" />
         </button>
-        <button
-          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
-          @click="clientCreateOpen = true"
-        >
-          <Icon name="mdi:account-plus" class="w-6 h-6" />
-        </button>
-        <button
-          class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
-          @click="userListOpen = true"
-        >
-          <Icon name="mdi:account-group" class="w-6 h-6" />
-        </button>
+        <LazyClientCreate v-slot="{ open }" hydrateOnInteraction>
+          <button
+            class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+            @click="open.value = true"
+          >
+            <Icon name="mdi:account-plus" class="w-6 h-6" />
+          </button>
+        </LazyClientCreate>
+        <LazyUserList v-slot="{ open }" hydrateOnIdle>
+          <button
+            class="w-10 h-10 flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 hover:shadow-sm transition-all duration-150"
+            @click="open.value = true"
+          >
+            <Icon name="mdi:account-group" class="w-6 h-6" />
+          </button>
+        </LazyUserList>
       </div>
       <AuthLogout />
     </div>
@@ -93,34 +103,20 @@
       v-if="isMobile && isOpen"
       class="fixed inset-0 z-30 bg-black/40"
       :style="{ backgroundColor: theme.mode === 'dark' ? 'rgba(0,0,0,0.5) !important' : undefined }"
-      @click="$emit('update:isOpen', false)"
+      @click="isOpen = false"
     />
   </transition>
-  <TransitionRoot :show="tagsOpen" as="template">
-    <TagsCreate @close="tagsOpen = false" />
-  </TransitionRoot>
-  <TransitionRoot :show="clientCreateOpen" as="template">
-    <ClientCreate @close="clientCreateOpen = false" />
-  </TransitionRoot>
-  <TransitionRoot :show="userListOpen" as="template">
-    <UserList @close="userListOpen = false" />
-  </TransitionRoot>
-  <TransitionRoot :show="emojiCreateOpen" as="template">
-    <EmojiCreate @close="emojiCreateOpen = false" />
-  </TransitionRoot>
-  <TransitionRoot :show="clientPreferencesOpen" as="template">
-    <ClientPreferences @close="clientPreferencesOpen = false" />
-  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
 import { useThemeStore } from '~~/stores/theme'
-import { TransitionRoot } from '@headlessui/vue'
 
-defineProps<{ isOpen: boolean }>()
-const emit = defineEmits(['update:isOpen'])
-const { data } = useAuth()
+const isOpen = defineModel<boolean>('isOpen')
+
+const { data: auth } = useAuth()
+
 const theme = useThemeStore()
+
 const isMobile = shallowRef<boolean>(false)
 
 const updateIsMobile = () => (isMobile.value = window.innerWidth < 768)
@@ -131,13 +127,5 @@ onMounted(() => {
   onBeforeUnmount(() => window.removeEventListener('resize', updateIsMobile))
 })
 
-watch(isMobile, (mobile) => !mobile && emit('update:isOpen', true), { immediate: true })
-
-const articleCreateOpen = shallowRef<boolean>(false)
-const tagsOpen = shallowRef<boolean>(false)
-const statsOpen = shallowRef<boolean>(false)
-const clientCreateOpen = shallowRef<boolean>(false)
-const clientPreferencesOpen = shallowRef<boolean>(false)
-const userListOpen = shallowRef<boolean>(false)
-const emojiCreateOpen = shallowRef<boolean>(false)
+watch(isMobile, (mobile) => !mobile && (isOpen.value = true), { immediate: true })
 </script>
