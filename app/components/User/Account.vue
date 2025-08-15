@@ -47,7 +47,7 @@
             {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
           </span>
         </div>
-        <span class="text-xs text-gray-500 dark:text-gray-400 truncate">
+        <span class="text-left text-xs text-gray-500 dark:text-gray-400 truncate">
           {{ userData?.email }}
         </span>
       </div>
@@ -61,10 +61,10 @@
       leaveToClass="opacity-0 translate-y-1 scale-95"
     >
       <div
-        v-if="show || isHovered"
+        v-if="show || hoverShow"
         ref="dropdown"
         class="absolute right-0 top-full mt-2 w-[95vw] max-w-[20rem] sm:max-w-[22rem] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-transparent dark:bg-transparent backdrop-blur-md"
-        @click.stop="show = true"
+        @click.stop
       >
         <div class="flex items-center gap-4 bg-transparent dark:bg-transparent">
           <NuxtImg
@@ -76,7 +76,7 @@
             height="64"
           />
           <Icon v-else name="mdi:account-circle-outline" class="w-16 h-16 text-gray-400 dark:text-gray-600" />
-          <div class="flex flex-col min-w-0">
+          <div class="grow flex flex-col min-w-0">
             <div class="flex items-center gap-2">
               <span class="font-semibold text-lg text-gray-900 dark:text-white truncate max-w-[180px]">
                 {{ userData?.username }}
@@ -107,12 +107,12 @@
                 />
                 {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
               </span>
-              <AuthLogout class="ml-auto" />
             </div>
             <span class="text-sm text-gray-500 dark:text-gray-400 break-all">
               {{ userData?.email }}
             </span>
           </div>
+          <AuthLogout />
         </div>
         <div class="mt-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
           <p class="whitespace-pre-wrap break-words">{{ userData?.bio || 'Žádné bio' }}</p>
@@ -151,9 +151,14 @@
 </template>
 
 <script lang="ts" setup>
-const { data: userData } = await useFetch(`/api/users/${useAuth().data.value?.user.id}`)
-const { data: clientData } = await useFetch(`/api/clients/${useAuth().data.value?.user.id}/by-userid`)
-const show = shallowRef(false)
+const { data: auth } = useAuth()
+
+const { data: userData } = await useFetch(`/api/users/${auth.value?.user.id}`)
+const { data: clientData } = await useFetch(`/api/clients/${auth.value?.user.id}/by-userid`)
+
+const show = shallowRef<boolean>(false)
+const hoverShow = shallowRef<boolean>(false)
+
 const btn = useTemplateRef('btn')
 const dropdown = useTemplateRef('dropdown')
 
@@ -161,25 +166,15 @@ const isBtnHovered = useElementHover(btn)
 const isDropdownHovered = useElementHover(dropdown)
 const isHovered = computed(() => isBtnHovered.value || isDropdownHovered.value)
 
-const hideDropdown = useDebounceFn(() => {
-  if (!isDropdownHovered.value) {
-    show.value = false
-  }
-}, 500)
-
-watch(isBtnHovered, (hovered, wasHovered) => {
-  if (hovered && !show.value) {
-    show.value = true
-  } else if (!hovered && wasHovered && !show.value) {
-    hideDropdown()
-  }
+watch(show, (newValue) => {
+  if (newValue) hoverShow.value = true
+  else hoverShow.value = false
 })
 
-onClickOutside(
-  dropdown,
-  () => {
-    show.value = false
-  },
-  { ignore: [btn] },
-)
+watch(isHovered, (hovered) => {
+  if (hovered) hoverShow.value = true
+  else setTimeout(() => !isHovered.value && (hoverShow.value = false), 50)
+})
+
+onClickOutside(dropdown, () => (show.value = false), { ignore: [btn] })
 </script>
