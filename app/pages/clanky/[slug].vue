@@ -160,14 +160,21 @@
             <span>{{ formatNumber(data.likes) }}</span>
           </div>
 
-          <button
+          <LazyArticleEdit
             v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
-            class="flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
-            aria-label="Upravit článek"
-            @click="editingArticle = data"
+            v-slot="{ open }"
+            :article="data"
+            hydrateOnInteraction
+            @saved="refresh"
           >
-            <Icon name="mdi:pencil" class="w-5 h-5" />
-          </button>
+            <button
+              class="flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+              aria-label="Upravit článek"
+              @click="open.value = true"
+            >
+              <Icon name="mdi:pencil" class="w-5 h-5" />
+            </button>
+          </LazyArticleEdit>
         </div>
       </div>
       <div class="flex justify-end gap-4 mt-10">
@@ -221,9 +228,6 @@
       <CommentSection :articleId="data.id" :commCount="data.commentCount || 0" :allowComments="data.allowedComments" />
       <ArticleTOC :content="data.content" />
     </div>
-    <TransitionRoot :show="!!editingArticle" as="template">
-      <ArticleEdit :article="editingArticle!" @close="editingArticle = null" @saved="refresh" />
-    </TransitionRoot>
   </div>
   <div v-else-if="error" class="min-h-screen flex items-center justify-center">
     <div class="text-center p-8 md:p-10 bg-white rounded-2xl shadow-lg border border-gray-100">
@@ -248,7 +252,6 @@
 import type { ArticleStatus, Article as _Article, User } from '@zenstackhq/runtime/models'
 
 import VueEasyLightbox from 'vue-easy-lightbox'
-import { TransitionRoot } from '@headlessui/vue'
 
 type Article = _Article & {
   user: { username: string; id: string; avatarUrl: string }
@@ -266,7 +269,6 @@ type Image = { src: string; alt?: string }
 const route = useRoute()
 const toast = useToast()
 const { data: session } = useAuth()
-const editingArticle = ref<Article | null>(null)
 const slug = computed(() => route.params.slug)
 const isFollowing = ref(false)
 const relatedArticles = ref<RelatedArticle[]>([])

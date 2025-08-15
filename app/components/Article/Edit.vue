@@ -1,74 +1,55 @@
 <template>
-  <Dialog as="div" class="relative z-[1000]" @close="confirmClose">
-    <TransitionChild
-      as="template"
-      enter="ease-out duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div class="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity" />
-    </TransitionChild>
-    <div class="fixed inset-0 flex items-center justify-center p-6">
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-300"
-        enterFrom="opacity-0 scale-90"
-        enterTo="opacity-100 scale-100"
-        leave="ease-in duration-100"
-        leaveFrom="opacity-100 scale-100"
-        leaveTo="opacity-0 scale-90"
-      >
-        <DialogPanel
-          class="w-full max-w-lg bg-white p-10 rounded-3xl shadow-2xl flex flex-col gap-8 border backdrop-blur-sm max-h-[80vh]"
+  <Modal v-model="open" title="Úprava článku" :onClose="confirmClose">
+    <template #default="actions">
+      <slot v-bind="actions" />
+    </template>
+
+    <template #content>
+      <div class="flex-1 overflow-y-auto pr-4">
+        <div class="flex flex-col gap-6">
+          <label class="flex flex-col gap-3">
+            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Název článku</span>
+            <input
+              v-model="editedArticle.title"
+              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+              @input="updateSlug"
+            />
+            <span class="text-sm text-gray-500">URL Titulek: {{ editedArticle.slug }}</span>
+          </label>
+          <label class="flex flex-col gap-3">
+            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Obsah</span>
+            <TiptapEditor v-model="editedArticle.content" edit />
+          </label>
+          <label class="flex flex-col gap-3">
+            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Titulní Obrázek</span>
+            <FileUploader @upload="handleUpload" />
+            <span v-if="editedArticle.imageUrl" class="text-sm text-gray-500">
+              Obrázek: {{ editedArticle.imageUrl }}
+            </span>
+          </label>
+          <TagsManager :article="editedArticle" @update:tags="updateTags" @delete:tag="deleteTag" />
+        </div>
+      </div>
+    </template>
+
+    <template #footer="{ close }">
+      <div class="flex gap-4 justify-end flex-shrink-0">
+        <button
+          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+          @click="close"
         >
-          <DialogTitle class="text-xl font-bold">Úprava článku</DialogTitle>
-          <div class="flex-1 overflow-y-auto pr-4">
-            <div class="flex flex-col gap-6">
-              <label class="flex flex-col gap-3">
-                <span class="text-sm font-medium uppercase tracking-wide opacity-80">Název článku</span>
-                <input
-                  v-model="editedArticle.title"
-                  class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-                  @input="updateSlug"
-                />
-                <span class="text-sm text-gray-500">URL Titulek: {{ editedArticle.slug }}</span>
-              </label>
-              <label class="flex flex-col gap-3">
-                <span class="text-sm font-medium uppercase tracking-wide opacity-80">Obsah</span>
-                <TiptapEditor v-model="editedArticle.content" edit />
-              </label>
-              <label class="flex flex-col gap-3">
-                <span class="text-sm font-medium uppercase tracking-wide opacity-80">Titulní Obrázek</span>
-                <FileUploader @upload="handleUpload" />
-                <span v-if="editedArticle.imageUrl" class="text-sm text-gray-500">
-                  Obrázek: {{ editedArticle.imageUrl }}
-                </span>
-              </label>
-              <TagsManager :article="editedArticle" @update:tags="updateTags" @delete:tag="deleteTag" />
-            </div>
-          </div>
-          <div class="flex gap-4 justify-end flex-shrink-0">
-            <button
-              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
-              @click="$emit('close')"
-            >
-              Zavřít
-            </button>
-            <button
-              :disabled="!editedArticle.title"
-              class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="saveEdit"
-            >
-              Uložit změny
-            </button>
-          </div>
-        </DialogPanel>
-      </TransitionChild>
-    </div>
-  </Dialog>
+          Zavřít
+        </button>
+        <button
+          :disabled="!editedArticle.title"
+          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="saveEdit"
+        >
+          Uložit změny
+        </button>
+      </div>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -76,10 +57,10 @@ import type { Article } from '@zenstackhq/runtime/models'
 
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
-import { Dialog, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/vue'
 
 const toast = useToast()
-const emit = defineEmits(['close', 'saved'])
+const open = defineModel<boolean>()
+const emit = defineEmits(['saved'])
 const props = defineProps<{ article: Article }>()
 
 const editedArticle = ref({ ...props.article })
@@ -88,21 +69,19 @@ const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
   key: `article-tags-${props.article?.id}`,
 })
 
-const updateSlug = () => {
-  editedArticle.value.slug = slugify(editedArticle.value.title, {
+const updateSlug = () =>
+  (editedArticle.value.slug = slugify(editedArticle.value.title, {
     lower: true,
     strict: true,
     trim: true,
-  })
-}
+  }))
 
-const handleUpload = (file: { url: string }) => {
-  editedArticle.value.imageUrl = file.url
-}
+const handleUpload = (file: { url: string }) => (editedArticle.value.imageUrl = file.url)
 
 const updateTags = async (tagIds: string[]) => {
   const currentTags = (artTags.value || []).map((t) => t.tagId)
   const tagsToAdd = tagIds.filter((id) => !currentTags.includes(id))
+
   await Promise.all(
     tagsToAdd.map((tagId) =>
       $fetch(`/api/articles/${editedArticle.value.id}/tags`, {
@@ -111,14 +90,14 @@ const updateTags = async (tagIds: string[]) => {
       }).catch((e) => console.error('POST error:', e)),
     ),
   )
+
   toast.success({ message: 'Tag přidán.' })
 }
 
 const deleteTag = async (tagId: string) => {
   try {
-    await $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, {
-      method: 'DELETE',
-    })
+    await $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, { method: 'DELETE' })
+
     toast.success({ message: 'Tag odebrán.' })
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Chyba při odebírání tagu.' })
@@ -137,8 +116,10 @@ const saveEdit = async () => {
         imageUrl: editedArticle.value.imageUrl,
       },
     })
+
     toast.success({ message: 'Článek byl úspěšně upraven' })
-    emit('close')
+
+    open.value = false
     emit('saved')
   } catch (error: any) {
     toast.error({ message: error.data?.message || 'Úprava článku selhala' })
@@ -155,8 +136,7 @@ const confirmClose = async () => {
     cancelButtonText: 'Ne',
     confirmButtonColor: '#ef4444',
   })
-  if (r.isConfirmed) {
-    emit('close')
-  }
+
+  if (r.isConfirmed) open.value = false
 }
 </script>

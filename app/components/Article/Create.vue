@@ -1,7 +1,7 @@
 <template>
   <Modal v-model="open" title="Přidat článek" :onClose="confirmClose">
-    <template #default>
-      <slot />
+    <template #default="actions">
+      <slot v-bind="actions" />
     </template>
 
     <template #content>

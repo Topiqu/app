@@ -1,7 +1,7 @@
 <template>
   <Modal v-model="open" title="Statistiky blogu">
-    <template #default>
-      <slot />
+    <template #default="actions">
+      <slot v-bind="actions" />
     </template>
 
     <template #content>

@@ -1,7 +1,5 @@
 <template>
-  <slot v-bind="actions">
-    <button type="button" @click="open = true">Open dialog</button>
-  </slot>
+  <slot v-bind="actions" />
   <TransitionRoot appear :show="open" as="template">
     <Dialog as="div" class="relative z-[1000]" @close="close">
       <TransitionChild
