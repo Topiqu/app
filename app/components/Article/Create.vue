@@ -35,12 +35,12 @@
           </p>
         </div>
         <p v-else class="text-gray-600">Žádné články.</p>
-        <!-- <button
-              class="px-6 py-3 rounded-xl text-base font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 shadow-sm"
-              @click="generateAIContent"
-            >
-              Generovat AI obsah
-            </button> -->
+        <button
+          class="px-6 py-3 rounded-xl text-base font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 shadow-sm"
+          @click="generateAIContent"
+        >
+          Generovat AI obsah
+        </button>
       </div>
     </template>
 
@@ -147,22 +147,19 @@ const confirmClose = async () => {
   if (r.isConfirmed) return (open.value = false)
 }
 
-// const generateAIContent = async () => {
-//   try {
-//     const { data } = await useFetch('/api/articles/ai-gen', {
-//       method: 'POST',
-//       body: { prompt: 'Vygeneruj krátký článek na téma CP77...' },
-//     })
+const generateAIContent = async () => {
+  try {
+    const data = await $fetch('/api/articles/ai-gen', {
+      method: 'POST',
+      body: { prompt: 'Vygeneruj krátký článek na téma CP77...' },
+    })
+    if (!data) throw createError({ statusCode: 500, message: 'No content generated' })
 
-//     newArticle.value.content = auth.value
+    newArticle.value.content = data
 
-//     toast.success({ message: 'AI obsah úspěšně vygenerován' })
-
-//     console.log('AI Content:', auth.value)
-//   } catch (error: any) {
-//     toast.error({ message: error.data?.message || 'Nepodařilo se vygenerovat obsah' })
-
-//     console.error('Error:', error)
-//   }
-// }
+    toast.success({ message: 'AI obsah úspěšně vygenerován' })
+  } catch (error: any) {
+    toast.error({ message: error.data?.message || 'Nepodařilo se vygenerovat obsah' })
+  }
+}
 </script>

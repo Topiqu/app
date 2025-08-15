@@ -1,15 +1,23 @@
-// import OpenAI from 'openai'
-// const { openAI } = useRuntimeConfig()
+import { generateText } from 'ai'
+import { createOpenAI } from '@ai-sdk/openai'
 
-// const openai = new OpenAI({
-//   apiKey: openAI,
-// })
+const system = `You are a helpful assistant that generates articles based on user prompts.`
 
-// export default defineEventHandler(async (event) => {
-//   const { prompt } = await readBody(event)
-//   const completion = await openai.chat.completions.create({
-//     model: 'gpt-3.5-turbo',
-//     messages: [{ role: 'user', content: prompt as string }],
-//   })
-//   return completion.choices[0].message.content
-// })
+export default defineLazyEventHandler(async () => {
+  const apiKey = useRuntimeConfig().openAI
+
+  const OpenAI = createOpenAI({ apiKey })
+
+  const schema = z.object({ prompt: z.string().nonempty('Prompt is required') })
+
+  return defineEventHandler(async (event) => {
+    const user = (await getServerSession(event))?.user
+    if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+
+    const { prompt } = await readValidatedBody(event, schema.parse)
+
+    const { text } = await generateText({ maxOutputTokens: 10000, model: OpenAI('gpt-3.5-turbo'), system, prompt })
+
+    return text
+  })
+})
