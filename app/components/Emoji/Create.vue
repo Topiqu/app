@@ -29,7 +29,6 @@
       </form>
 
       <div class="mt-8">
-        <DialogTitle class="text-lg font-semibold mb-2">Seznam emoji</DialogTitle>
         <div v-if="loading && !emojis?.length" class="text-sm">Načítání...</div>
         <div v-else-if="error" class="text-sm">{{ error }}</div>
         <div v-else ref="scrollParent" class="overflow-y-auto h-64 rounded-xl border shadow-inner">

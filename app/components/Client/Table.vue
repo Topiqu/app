@@ -59,18 +59,24 @@
               </p>
             </td>
             <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
-              <button
-                class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 text-gray-800 rounded-full hover:from-green-300 hover:to-green-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
-                @click="clientId = row.original.id"
-              >
-                <Icon name="mdi:eye" class="w-5 h-5 text-black" />
-              </button>
-              <button
-                class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
-                @click="editingClient = row.original"
-              >
-                <Icon name="mdi:pencil" class="w-5 h-5 text-black" />
-              </button>
+              <LazyClientUsers v-slot="{ open }" :clientId="row.original.id" hydrateOnInteraction>
+                <button
+                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 text-gray-800 rounded-full hover:from-green-300 hover:to-green-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+                  @click="open.value = true"
+                >
+                  <Icon name="mdi:eye" class="w-5 h-5 text-black" />
+                </button>
+              </LazyClientUsers>
+
+              <LazyClientEdit v-slot="{ open }" :client="row.original" hydrateOnInteraction @saved="refresh">
+                <button
+                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+                  @click="open.value = true"
+                >
+                  <Icon name="mdi:pencil" class="w-5 h-5 text-black" />
+                </button>
+              </LazyClientEdit>
+
               <button
                 v-if="!row.original.deletedAt"
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
@@ -91,20 +97,12 @@
       </table>
     </div>
   </div>
-
-  <TransitionRoot :show="!!editingClient" as="template">
-    <ClientEdit :client="editingClient!" @close="editingClient = null" @saved="refresh" />
-  </TransitionRoot>
-  <TransitionRoot :show="!!clientId" as="template">
-    <ClientUsers :clientId="clientId!" @close="clientId = null" />
-  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
 import type { ClientSite } from '@zenstackhq/runtime/models'
 
 import Swal from 'sweetalert2'
-import { TransitionRoot } from '@headlessui/vue'
 import useClientEvents from '~~/composables/client-event'
 import {
   type ColumnDef,
@@ -119,9 +117,7 @@ const { onClientCreated } = useClientEvents()
 
 const toast = useToast()
 
-const globalFilter = ref('')
-const editingClient = ref<ClientSite | null>(null)
-const clientId = ref<string | null>(null)
+const globalFilter = shallowRef<string>('')
 
 const { data: clients, refresh } = await useFetch<ClientSite[]>('/api/clients', {
   default: () => [],

@@ -160,9 +160,8 @@
         </div>
       </div>
     </TransitionRoot>
-    <TransitionRoot :show="showDialog" as="template">
-      <UserFollowDialog :type="dialogType" @close="showDialog = false" />
-    </TransitionRoot>
+
+    <UserFollowDialog v-model="showDialog" :type="dialogType" />
   </div>
 </template>
 
