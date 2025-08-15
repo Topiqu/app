@@ -23,7 +23,7 @@
         leaveTo="opacity-0 translate-y-10"
       >
         <DialogPanel
-          class="w-full max-w-xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col gap-6 border border-gray-200/70"
+          class="h-11/12 w-full max-w-xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col gap-6 overflow-y-auto border border-gray-200/70"
         >
           <div class="flex justify-between items-center">
             <DialogTitle
@@ -31,10 +31,11 @@
             >
               Statistiky blogu
             </DialogTitle>
-            <button class="p-2 rounded-full hover:bg-gray-100 transition-colors" @click="$emit('close')">
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+            <button
+              class="flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+              @click="$emit('close')"
+            >
+              <Icon name="mdi:close" class="size-5" />
             </button>
           </div>
 
@@ -115,11 +116,11 @@
                 <Icon name="mdi:heart" class="w-5 h-5 text-red-500" />
                 Nejlajkovanější článek
               </div>
-              <template v-if="stats.topLikedArticle?.likes > 0">
-                <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topLikedArticle?.title">
-                  {{ stats.topLikedArticle?.title }}
+              <template v-if="stats.topLikedArticle && stats.topLikedArticle.likes > 0">
+                <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topLikedArticle.title">
+                  {{ stats.topLikedArticle.title }}
                 </p>
-                <p class="text-sm text-gray-500">{{ stats.topLikedArticle?.likes }} lajků</p>
+                <p class="text-sm text-gray-500">{{ stats.topLikedArticle.likes }} lajků</p>
               </template>
               <p v-else class="text-gray-500 italic">Žádný článek zatím nebyl lajkován</p>
             </div>
@@ -131,16 +132,16 @@
                 <Icon name="mdi:comment-text" class="w-5 h-5 text-purple-600" />
                 Článek s nejvíce komentáři
               </div>
-              <template v-if="stats.topCommentedArticle?.comments > 0">
-                <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topCommentedArticle?.title">
-                  {{ stats.topCommentedArticle?.title }}
+              <template v-if="stats.topCommentedArticle && stats.topCommentedArticle.comments > 0">
+                <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topCommentedArticle.title">
+                  {{ stats.topCommentedArticle.title }}
                 </p>
                 <p class="text-sm text-gray-500">
-                  {{ stats.topCommentedArticle?.comments }}
+                  {{ stats.topCommentedArticle.comments }}
                   {{
-                    stats.topCommentedArticle?.comments === 1
+                    stats.topCommentedArticle.comments === 1
                       ? 'komentář'
-                      : stats.topCommentedArticle?.comments < 5
+                      : stats.topCommentedArticle.comments < 5
                         ? 'komentáře'
                         : 'komentářů'
                   }}
@@ -171,66 +172,45 @@ import { Dialog, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/v
 
 defineEmits(['close'])
 
-const stats = ref({
-  totalViews: 0,
-  articleCount: 0,
-  topArticle: null as { id: string; title: string; views: number } | null,
-  topTags: [] as { id: string; name: string; views: number; articleCount: number }[],
-  topLikedArticle: null as { id: string; title: string; likes: number } | null,
-  topCommentedArticle: null as { id: string; title: string; comments: number } | null,
-})
-const loading = ref(false)
-const chartData = ref({
-  labels: [] as string[],
+const loading = shallowRef<boolean>(false)
+
+const [
+  { data: views },
+  { data: topArticle },
+  { data: articleCount },
+  { data: topTags },
+  { data: viewsHistory },
+  { data: topLiked },
+  { data: topCommented },
+] = await Promise.all([
+  useFetch('/api/stats/views', { lazy: true }),
+  useFetch('/api/stats/top-article', { lazy: true }),
+  useFetch('/api/stats/article-count', { lazy: true }),
+  useFetch('/api/stats/top-tags?limit=1', { lazy: true }),
+  useFetch('/api/stats/views-history', { lazy: true }),
+  useFetch('/api/stats/top-liked', { lazy: true }),
+  useFetch('/api/stats/top-commented', { lazy: true }),
+])
+
+const stats = computed(() => ({
+  totalViews: views.value?.totalViews || 0,
+  articleCount: articleCount.value?.articleCount || 0,
+  topArticle: topArticle.value,
+  topTags: topTags.value || [],
+  topLikedArticle: topLiked.value,
+  topCommentedArticle: topCommented.value,
+}))
+
+const chartData = computed(() => ({
+  labels: viewsHistory.value?.map((v: any) => v.date) || ([] as string[]),
   datasets: [
     {
       label: 'Zobrazení článků',
-      data: [] as number[],
+      data: viewsHistory.value?.map((v: any) => v.views) || ([] as number[]),
       backgroundColor: '#3b82f6',
       borderColor: '#3b82f6',
       fill: false,
     },
   ],
-})
-
-async function loadStats() {
-  loading.value = true
-  try {
-    const [views, topArticle, articleCount, topTags, viewsHistory, topLiked, topCommented] = await Promise.all([
-      $fetch('/api/stats/views'),
-      $fetch('/api/stats/top-article'),
-      $fetch('/api/stats/article-count'),
-      $fetch('/api/stats/top-tags?limit=1'),
-      $fetch('/api/stats/views-history'),
-      $fetch('/api/stats/top-liked'),
-      $fetch('/api/stats/top-commented'),
-    ])
-    stats.value = {
-      totalViews: views.totalViews,
-      articleCount: articleCount.articleCount,
-      topArticle,
-      topTags,
-      topLikedArticle: topLiked,
-      topCommentedArticle: topCommented,
-    }
-    chartData.value = {
-      labels: viewsHistory.map((v: any) => v.date),
-      datasets: [
-        {
-          label: 'Zobrazení článků',
-          data: viewsHistory.map((v: any) => v.views),
-          backgroundColor: '#3b82f6',
-          borderColor: '#3b82f6',
-          fill: false,
-        },
-      ],
-    }
-  } catch (e) {
-    console.error('Chyba při načítání statistik:', e)
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(loadStats)
+}))
 </script>
