@@ -9,7 +9,7 @@
     </div>
 
     <div
-      class="relative flex flex-col justify-center items-center border-2 border-dashed border-gray-300 p-3 rounded-xl text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all duration-200 dark:border-gray-600 dark:text-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+      class="relative flex flex-col justify-center items-center border-2 border-dashed border-gray-300 p-5 rounded-xl text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all duration-200 dark:border-gray-600 dark:text-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
       :class="{ 'bg-gray-100 border-blue-500 shadow-md dark:bg-gray-700 dark:border-blue-400': isDragging }"
       @dragover.prevent="onDragOver"
       @dragenter.prevent="onDragEnter"
@@ -32,6 +32,7 @@
 <script setup lang="ts">
 const emit = defineEmits(['upload'])
 const props = defineProps<{ imageUrl?: string | null }>()
+const toast = useToast()
 
 const previewUrl = shallowRef<string | null>(props.imageUrl || null)
 const fileInputRef = useTemplateRef('fileInputRef')
@@ -62,47 +63,36 @@ const onDragLeave = () => {
   isDragging.value = false
 }
 
+const uploadFile = async (file: File) => {
+  if (!file || !file.type.startsWith('image/')) {
+    toast.error({ message: 'Vyberte platný obrázek' })
+    return
+  }
+  previewUrl.value = URL.createObjectURL(file)
+  const formData = new FormData()
+  formData.append('file', file)
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    const data = await res.json()
+    if (data.url) emit('upload', { url: data.url })
+    else toast.error({ message: 'Chyba při nahrávání obrázku' })
+  } catch (e: any) {
+    toast.error({ message: `Chyba při nahrávání: ${e.message}` })
+  }
+}
+
 const onDrop = async (e: DragEvent) => {
   e.preventDefault()
   isDragging.value = false
   const file = e.dataTransfer?.files[0]
-  if (!file || !file.type.startsWith('image/')) return
-
-  previewUrl.value = URL.createObjectURL(file)
-
-  const formData = new FormData()
-  formData.append('file', file)
-
-  try {
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    })
-    const data = await res.json()
-    if (data.url) emit('upload', { url: data.url })
-  } catch (e: any) {
-    console.error('Upload error:', e)
-  }
+  if (file) await uploadFile(file)
 }
 
 const onFileChange = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
-  if (!file || !file.type.startsWith('image/')) return
-
-  previewUrl.value = URL.createObjectURL(file)
-
-  const formData = new FormData()
-  formData.append('file', file)
-
-  try {
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    })
-    const data = await res.json()
-    if (data.url) emit('upload', { url: data.url })
-  } catch (e: any) {
-    console.error('Upload error:', e)
-  }
+  if (file) await uploadFile(file)
 }
 </script>
