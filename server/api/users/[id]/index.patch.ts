@@ -1,3 +1,5 @@
+import argon from 'argon2'
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
@@ -14,8 +16,23 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, message: 'Změna role není povolena' })
   }
 
+  const data: any = {
+    username: body.username,
+    email: body.email,
+  }
+
+  if (body.password) {
+    data.password = await argon.hash(body.password)
+  }
+
   return await db.user.update({
     where: { id },
-    data: body,
+    data,
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+    },
   })
 })
