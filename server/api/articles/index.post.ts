@@ -1,15 +1,16 @@
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-
   if (!user || user.role !== 'admin') throw createError({ status: 401 })
+
   const db = await getEnhancedPrisma(user)
-
   const body = await readBody(event)
-  const $ = cheerio.load(body.content)
 
+  const $ = cheerio.load(body.content)
   const usedIds = new Map()
+
   $('h1, h2, h3').each((i, el) => {
     const $el = $(el)
     let text = $el.text().trim()
@@ -45,6 +46,18 @@ export default defineEventHandler(async (event) => {
       clientSiteId: user.clientSiteId,
       createdAt: new Date(),
       imageUrl: body.imageUrl,
+    },
+  })
+
+  await logAction({
+    action: 'ARTICLE_CREATED',
+    userId: user.id,
+    clientSiteId: user.clientSiteId,
+    ip: getRequestIP(event),
+    metadata: {
+      articleId: article.id,
+      title: article.title,
+      slug: article.slug,
     },
   })
 
