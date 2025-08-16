@@ -7,18 +7,18 @@
         class="p-4 rounded-xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
         @change="addTagToBuffer"
       >
-        <option value="" disabled>Vyber tag</option>
+        <option value="" disabled>Vyber štítek</option>
         <option v-for="t in tags.filter((t) => !tagBuffer.some((b) => b.id === t.id))" :key="t.id" :value="t.id">
           {{ t.name }}
         </option>
       </select>
     </label>
     <label class="flex flex-col gap-3">
-      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Nový tag</span>
+      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Nový štítek</span>
       <div class="flex gap-2">
         <input
           v-model="newTag.name"
-          placeholder="Název nového tagu"
+          placeholder="Např. zahradnictví"
           class="flex-1 p-4 rounded-xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
           @input="updateSlug"
           @keyup.enter="createAndAddTag"
@@ -44,7 +44,7 @@
           class="ml-1 w-5 h-5 flex items-center justify-center transition-colors duration-200 bg-transparent hover:bg-transparent border-none outline-none opacity-0 group-hover:opacity-100 dark:text-red-400 dark:hover:text-red-300"
           @click="removeTagFromBuffer(t.id)"
         >
-          <Icon name="mdi:close" class="w-4 h-4 text-red-500 hover:text-red-600" />
+          <Icon name="mdi:close" class="w-4 h-4 text-red-500 hover:text-red-600 cursor-pointer" />
         </button>
       </div>
     </div>

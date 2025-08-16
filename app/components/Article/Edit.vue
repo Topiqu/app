@@ -22,7 +22,7 @@
           </label>
           <label class="flex flex-col gap-3">
             <span class="text-sm font-medium uppercase tracking-wide opacity-80">Titulní Obrázek</span>
-            <FileUploader @upload="handleUpload" />
+            <FileUploader :imageUrl="editedArticle.imageUrl" @upload="handleUpload" />
             <span v-if="editedArticle.imageUrl" class="text-sm text-gray-500">
               Obrázek: {{ editedArticle.imageUrl }}
             </span>
