@@ -14,7 +14,7 @@
 
       <div v-if="loading && !users?.length" class="text-gray-600">Načítání...</div>
       <div v-else-if="error" class="text-red-600">{{ error }}</div>
-      <div v-else ref="scrollParent" class="overflow-y-auto h-64 relative">
+      <div v-else ref="scrollParent" class="relative">
         <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
           <div
             v-for="virtualRow in virtualizer.getVirtualItems()"
