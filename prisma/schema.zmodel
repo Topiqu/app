@@ -90,7 +90,9 @@ model Article extends Base, Ownable {
     comments        Comment[]
     reactions       ArticleReaction[]
     notifications   Notification[]    @relation("ArticleNotifications")
-    @@allow('read', (status == 'published') || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+    source          String?
+    prompt          String?           @length(0, 5000)
+    @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin')
 }
 
@@ -111,6 +113,23 @@ model ArticleTag {
     tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
     @@id([articleId, tagId])
     @@allow('read', true)
+}
+
+model Log {
+    id           String      @id @default(uuid())
+    action       String
+    userId       String
+    user         User        @relation(fields: [userId], references: [id], onDelete: Cascade, name: "LogToUser")
+    clientSiteId String?
+    clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade, name: "LogToClientSite")
+    metadata     Json?
+    createdAt    DateTime    @default(now())
+    ip           String?
+    previousHash String?
+    hash         String
+    @@allow('create', true)
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+    @@deny('update,delete', true)
 }
 
 model User extends Base {
@@ -137,6 +156,7 @@ model User extends Base {
     following        Follow[]          @relation("Followed")
     bans             UserBan[]         @relation("BannedUser")
     bansIssued       UserBan[]         @relation("BannedBy")
+    logs             Log[]             @relation("LogToUser")
     @@allow('read', true)
     @@allow('create', true)
     @@allow('update', auth().id == id || auth().role == 'superadmin')
@@ -171,6 +191,7 @@ model ClientSite extends Base {
     articles            Article[]
     emojis              Emoji[]
     userBans            UserBan[]
+    logs                Log[]               @relation("LogToClientSite")
     @@allow('read', true)
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')

@@ -77,6 +77,8 @@ model Article {
   comments        Comment[]
   reactions       ArticleReaction[]
   notifications   Notification[]    @relation("ArticleNotifications")
+  source          String?
+  prompt          String?
 }
 
 model Tag {
@@ -98,6 +100,20 @@ model ArticleTag {
   tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([articleId, tagId])
+}
+
+model Log {
+  id           String      @id() @default(uuid())
+  action       String
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade, name: "LogToUser")
+  clientSiteId String?
+  clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade, name: "LogToClientSite")
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+  ip           String?
+  previousHash String?
+  hash         String
 }
 
 model User {
@@ -128,6 +144,7 @@ model User {
   following        Follow[]          @relation("Followed")
   bans             UserBan[]         @relation("BannedUser")
   bansIssued       UserBan[]         @relation("BannedBy")
+  logs             Log[]             @relation("LogToUser")
 }
 
 model Follow {
@@ -160,6 +177,7 @@ model ClientSite {
   articles            Article[]
   emojis              Emoji[]
   userBans            UserBan[]
+  logs                Log[]               @relation("LogToClientSite")
 }
 
 model UserBan {
