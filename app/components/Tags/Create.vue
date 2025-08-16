@@ -16,7 +16,6 @@
           />
         </label>
         <button
-          :disabled="!newTag.name"
           class="self-end px-6 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800"
           @click="createTag"
         >
@@ -94,7 +93,6 @@ const updateSlug = () => {
 
 const createTag = async () => {
   if (!newTag.name) return
-  updateSlug()
   try {
     await $fetch('/api/tags', {
       method: 'POST',
@@ -104,6 +102,7 @@ const createTag = async () => {
       },
     })
     newTag = { name: '', slug: '' }
+    updateSlug()
     await refresh()
     toast.success({ message: 'Tag byl úspěšně vytvořen.' })
   } catch (error: any) {
