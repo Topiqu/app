@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col gap-6">
     <label class="flex flex-col gap-3">
-      <span class="text-sm font-medium uppercase tracking-wide opacity-80">Vybrat tagy</span>
+      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Vybrat tagy</span>
       <select
         v-model="selectedTagId"
-        class="p-4 rounded-2xl text-base border-b-2 focus:outline-none focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+        class="p-4 rounded-xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
         @change="addTagToBuffer"
       >
         <option value="" disabled>Vyber tag</option>
@@ -14,38 +14,41 @@
       </select>
     </label>
     <label class="flex flex-col gap-3">
-      <span class="text-sm font-medium uppercase tracking-wide opacity-80">Nový tag</span>
+      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Nový tag</span>
       <div class="flex gap-2">
         <input
           v-model="newTag.name"
           placeholder="Název nového tagu"
-          class="flex-1 p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+          class="flex-1 p-4 rounded-xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
           @input="updateSlug"
           @keyup.enter="createAndAddTag"
         />
         <button
           :disabled="!newTag.name"
-          class="px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-700"
           @click="createAndAddTag"
         >
           Přidat
         </button>
       </div>
     </label>
-    <div v-if="tagBuffer.length" class="flex flex-col gap-4">
-      <div class="flex flex-col divide-y divide-gray-200">
-        <div v-for="t in tagBuffer" :key="t.id" class="flex items-center justify-between py-2 group">
-          <span class="text-sm font-medium">{{ t.name }}</span>
-          <button
-            class="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            @click="removeTagFromBuffer(t.id)"
-          >
-            ✕
-          </button>
-        </div>
+    <div v-if="tagBuffer.length" class="flex flex-wrap gap-2">
+      <div
+        v-for="t in tagBuffer"
+        :key="t.id"
+        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-200 group dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+      >
+        <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+        {{ t.name }}
+        <button
+          class="ml-1 w-5 h-5 flex items-center justify-center transition-colors duration-200 bg-transparent hover:bg-transparent border-none outline-none opacity-0 group-hover:opacity-100 dark:text-red-400 dark:hover:text-red-300"
+          @click="removeTagFromBuffer(t.id)"
+        >
+          <Icon name="mdi:close" class="w-4 h-4 text-red-500 hover:text-red-600" />
+        </button>
       </div>
     </div>
-    <p v-else class="text-sm">Žádné tagy nevybrány.</p>
+    <p v-else class="text-sm text-gray-600 dark:text-gray-400">Žádné tagy nevybrány.</p>
   </div>
 </template>
 
