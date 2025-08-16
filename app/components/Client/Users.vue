@@ -41,7 +41,6 @@
                   ? 'bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 dark:border-green-400'
                   : 'bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400',
               ]"
-              @mouseover="console.log('Rendering user:', user.id)"
             >
               <td class="px-4 py-2 break-words max-w-[180px] text-center">
                 {{ user.username }}

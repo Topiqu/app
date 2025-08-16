@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "allowNotifs" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "avatarUrl" TEXT,
-ADD COLUMN     "lastLogin" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP;
