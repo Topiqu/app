@@ -126,6 +126,16 @@
           {{ mode === 'register' ? 'Registrovat' : 'Přihlásit se' }}
         </button>
 
+        <div class="text-center">
+          <button
+            type="button"
+            class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent hover:bg-black/5 border-none text-blue-600 hover:text-blue-700 text-sm font-medium transition"
+            @click="signInWithGoogle"
+          >
+            Přihlásit se přes Google
+          </button>
+        </div>
+
         <div v-if="mode === 'login'" class="text-center">
           <button
             type="button"
@@ -244,6 +254,29 @@ const verify = async () => {
     navigateTo('/')
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Ověření selhalo' })
+  }
+}
+
+const signInWithGoogle = async () => {
+  try {
+    const result = await signIn('google', { redirect: false })
+    if (result?.error) return toast.error({ message: 'Přihlášení přes Google selhalo' })
+
+    await $fetch(`/api/users/${data.value?.user.id}`, {
+      method: 'PATCH',
+      body: { lastLogin: Date.now() },
+    })
+    const user = await $fetch(`/api/users/${data.value?.user.id}`)
+    theme.mode = user.theme
+    toast.success({ message: 'Přihlášení přes Google bylo úspěšné' })
+
+    if (data.value?.user?.role === 'superadmin') navigateTo('/master')
+    else if (data.value?.user?.role === 'admin') navigateTo('/admin')
+    else navigateTo('uzivatel/')
+
+    form.value = init
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Něco se pokazilo' })
   }
 }
 </script>
