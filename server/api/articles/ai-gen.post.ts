@@ -3,7 +3,7 @@ import { createOpenAI } from '@ai-sdk/openai'
 
 export default defineLazyEventHandler(() => {
   const apiKey = useRuntimeConfig().openAI
-  const OpenAI = createOpenAI({ apiKey })
+  const OpenAI = createOpenAI(apiKey)
   const schema = z.object({ prompt: z.string().nonempty('Prompt is required') })
 
   return defineEventHandler(async (event) => {
@@ -30,7 +30,7 @@ export default defineLazyEventHandler(() => {
     Titulek (5–15 slov) musí být poutavý, obsahovat alespoň 2 klíčová slova. 
     Klíčová slova použij minimálně 5x v textu.
     Uživatelský prompt: ${prompt}`
-    // console.log(system)
+    console.log(system)
 
     const { text, usage } = await generateText({ model: OpenAI('gpt-3.5-turbo'), maxOutputTokens, system, prompt })
 
