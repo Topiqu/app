@@ -76,14 +76,21 @@
             <input
               id="password"
               v-model="form.password"
-              type="password"
-              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              :type="showPassword ? 'text' : 'password'"
+              class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               autocomplete="current-password"
               placeholder="********"
               maxlength="124"
               minlength="4"
               required
             />
+            <button
+              type="button"
+              class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-600"
+              @click="showPassword = !showPassword"
+            >
+              <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" />
+            </button>
           </div>
         </div>
 
@@ -94,14 +101,21 @@
             <input
               id="passwordConfirm"
               v-model="form.passwordConfirm"
-              type="password"
-              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              :type="showPasswordConfirm ? 'text' : 'password'"
+              class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               autocomplete="new-password"
               placeholder="********"
               maxlength="124"
               minlength="4"
               required
             />
+            <button
+              type="button"
+              class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-600"
+              @click="showPasswordConfirm = !showPasswordConfirm"
+            >
+              <Icon :name="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'" />
+            </button>
           </div>
         </div>
 
@@ -156,15 +170,15 @@
 
 <script setup lang="ts">
 const toast = useToast()
-
 const theme = useThemeStore()
-
 const { data, signIn } = useAuth()
 
 const init = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
 const form = ref<typeof init>(init)
 const mode = shallowRef<'login' | 'register' | 'forgot' | 'reset'>('login')
 const verifyMode = shallowRef<boolean>(false)
+const showPassword = shallowRef(false)
+const showPasswordConfirm = shallowRef(false)
 
 const submit = async () => {
   try {
