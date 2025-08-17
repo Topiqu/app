@@ -12,27 +12,44 @@ export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, UserUpdateScalarSchema.parse)
 
   if (user.role !== 'superadmin') {
+    if (body.password) throw createError({ statusCode: 403, message: 'Změna hesla povolena pouze superadminovi' })
     if (body.role && body.role !== user.role)
       throw createError({ statusCode: 403, message: 'Změna role není povolena' })
   }
 
-  const data: any = {
-    username: body.username,
-    email: body.email,
+  if (body.password) body.password = await argon.hash(body.password)
+
+  const ip = getIp(event)
+
+  if (body.role && body.role !== (await db.user.findUnique({ where: { id } }))?.role) {
+    await logAction({
+      action: 'ROLE_CHANGE',
+      userId: user.id,
+      clientSiteId: user.clientSiteId,
+      ip,
+      metadata: { userId: id, newRole: body.role },
+    })
   }
 
   if (body.password) {
-    data.password = await argon.hash(body.password)
+    await logAction({
+      action: 'PASSWORD_CHANGE',
+      userId: user.id,
+      clientSiteId: user.clientSiteId,
+      ip,
+      metadata: { userId: id },
+    })
   }
 
   return await db.user.update({
     where: { id },
-    data,
+    data: body,
     select: {
       id: true,
       username: true,
       email: true,
       role: true,
+      bio: true,
     },
   })
 })
