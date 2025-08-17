@@ -129,9 +129,14 @@
         <div class="text-center">
           <button
             type="button"
-            class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent hover:bg-black/5 border-none text-blue-600 hover:text-blue-700 text-sm font-medium transition"
+            class="inline-flex items-center justify-center w-full px-4 py-2 rounded-md bg-white border border-gray-200 text-black text-sm font-medium transition hover:bg-gray-50"
             @click="signInWithGoogle"
           >
+            <img
+              src="https://developers.google.com/identity/images/g-logo.png"
+              alt="Google logo"
+              class="w-5 h-5 mr-2"
+            />
             Přihlásit se přes Google
           </button>
         </div>
