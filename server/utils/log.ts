@@ -1,5 +1,16 @@
 import crypto from 'crypto'
 
+const canonicalize = (obj: any): any => {
+  if (obj === null || typeof obj !== 'object') return obj
+  if (Array.isArray(obj)) return obj.map(canonicalize)
+  return Object.keys(obj)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = canonicalize(obj[key])
+      return acc
+    }, {} as any)
+}
+
 export async function logAction(params: {
   action: string
   userId: string
@@ -12,8 +23,9 @@ export async function logAction(params: {
     select: { hash: true },
   })
 
-  const previousHash = prev?.hash ?? null
-  const raw = JSON.stringify({ ...params, previousHash, ts: Date.now() })
+  const previousHash = prev?.hash ?? 'GENESIS'
+  const payload = canonicalize({ ...params, previousHash, ts: Date.now() })
+  const raw = JSON.stringify(payload)
   const hash = crypto.createHash('sha256').update(raw).digest('hex')
 
   return prisma.log.create({
