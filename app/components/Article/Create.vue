@@ -110,13 +110,20 @@ const { emitArticleCreated } = useArticleEvent()
 const open = defineModel<boolean>()
 const { data: articles } = await useFetch('/api/articles', { default: () => [] })
 
-const newArticle = ref({
+const newArticle = ref<{
+  title: string
+  content: string
+  slug: string
+  userId: string | undefined
+  imageUrl: string
+  status: ArticleStatus
+}>({
   title: '',
   content: '',
   slug: '',
   userId: auth.value?.user.id,
   imageUrl: '',
-  status: 'draft' as ArticleStatus,
+  status: 'draft',
 })
 const articleTags = ref<string[]>([])
 const customPrompt = ref('')
@@ -127,14 +134,13 @@ const options: { value: 'manual' | 'ai'; label: string; icon: string }[] = [
   { value: 'ai', label: 'AI generování', icon: 'mdi:robot' },
 ]
 
-const updateSlug = () =>
-  (newArticle.value.slug = slugify(newArticle.value.title, {
-    lower: true,
-    strict: true,
-    trim: true,
-  }))
+const updateSlug = () => {
+  newArticle.value.slug = slugify(newArticle.value.title, { lower: true, strict: true, trim: true })
+}
 
-const handleUpload = (file: { url: string }) => (newArticle.value.imageUrl = file.url)
+const handleUpload = (file: { url: string }) => {
+  newArticle.value.imageUrl = file.url
+}
 
 const createArticle = async () => {
   if (!newArticle.value.title) return toast.error({ message: 'Název článku je povinný' })
@@ -154,6 +160,14 @@ const createArticle = async () => {
       articleTags.value.map((tagId) => $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })),
     )
     toast.success({ message: 'Článek byl úspěšně přidán' })
+    newArticle.value = {
+      title: '',
+      content: '',
+      slug: '',
+      userId: auth.value?.user.id,
+      imageUrl: '',
+      status: 'draft',
+    }
     emitArticleCreated()
     open.value = false
   } catch (error: any) {
@@ -173,7 +187,7 @@ const confirmClose = async () => {
     cancelButtonText: 'Ne',
     confirmButtonColor: '#ef4444',
   })
-  if (r.isConfirmed) return (open.value = false)
+  if (r.isConfirmed) open.value = false
 }
 
 const generateAIContent = async () => {
