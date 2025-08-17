@@ -4,9 +4,7 @@ export default defineEventHandler(async (event) => {
   if (!slug) throw createError({ statusCode: 400, message: 'Slug je povinný' })
 
   const sessionId = getCookie(event, 'anon_session')
-  const db = await getEnhancedPrisma(user)
-
-  const article = await db.article.findUnique({
+  const article = await prisma.article.findUnique({
     where: { slug },
     include: {
       user: { select: { username: true, id: true, avatarUrl: true } },
@@ -20,7 +18,6 @@ export default defineEventHandler(async (event) => {
       },
     },
   })
-
   if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
 
   if (article.status !== 'published' && user?.role !== 'admin')
