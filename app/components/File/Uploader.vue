@@ -37,6 +37,7 @@ const toast = useToast()
 const previewUrl = shallowRef<string | null>(props.imageUrl || null)
 const fileInputRef = useTemplateRef('fileInputRef')
 const isDragging = shallowRef(false)
+const isProcessing = shallowRef(false)
 
 watch(
   () => props.imageUrl,
@@ -45,8 +46,16 @@ watch(
   },
 )
 
-const openFileDialog = () => {
-  fileInputRef.value?.click()
+const openFileDialog = (e?: MouseEvent) => {
+  if (isProcessing.value || !fileInputRef.value) return
+  e?.stopPropagation()
+  e?.preventDefault()
+  isProcessing.value = true
+  fileInputRef.value.value = ''
+  fileInputRef.value.click()
+  setTimeout(() => {
+    isProcessing.value = false
+  }, 1000)
 }
 
 const onDragOver = (e: DragEvent) => {
@@ -66,6 +75,7 @@ const onDragLeave = () => {
 const uploadFile = async (file: File) => {
   if (!file || !file.type.startsWith('image/')) {
     toast.error({ message: 'Vyberte platný obrázek' })
+    isProcessing.value = false
     return
   }
   previewUrl.value = URL.createObjectURL(file)
@@ -77,10 +87,16 @@ const uploadFile = async (file: File) => {
       body: formData,
     })
     const data = await res.json()
-    if (data.url) emit('upload', { url: data.url })
-    else toast.error({ message: 'Chyba při nahrávání obrázku' })
+    if (data.url) {
+      emit('upload', { url: data.url })
+    } else {
+      toast.error({ message: 'Chyba při nahrávání obrázku' })
+    }
   } catch (e: any) {
     toast.error({ message: `Chyba při nahrávání: ${e.message}` })
+  } finally {
+    if (fileInputRef.value) fileInputRef.value.value = ''
+    isProcessing.value = false
   }
 }
 
@@ -92,7 +108,11 @@ const onDrop = async (e: DragEvent) => {
 }
 
 const onFileChange = async (e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (file) await uploadFile(file)
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (file && !isProcessing.value) {
+    await uploadFile(file)
+  }
+  if (input) input.value = ''
 }
 </script>
