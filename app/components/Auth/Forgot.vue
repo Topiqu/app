@@ -60,13 +60,20 @@
           <input
             id="password"
             v-model="form.password"
-            type="password"
-            class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            :type="showPassword ? 'text' : 'password'"
+            class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             required
             minlength="4"
             maxlength="124"
             autocomplete="new-password"
           />
+          <button
+            type="button"
+            class="absolute right-3 top-2.5 w-5 h-5 bg-transparent hover:bg-transparent border-none outline-none text-gray-400 hover:text-gray-600"
+            @click="showPassword = !showPassword"
+          >
+            <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" />
+          </button>
         </div>
       </div>
 
@@ -77,13 +84,20 @@
           <input
             id="passwordConfirm"
             v-model="form.passwordConfirm"
-            type="password"
-            class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            :type="showPasswordConfirm ? 'text' : 'password'"
+            class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             required
             minlength="4"
             maxlength="124"
             autocomplete="new-password"
           />
+          <button
+            type="button"
+            class="absolute right-3 top-2.5 w-5 h-5 bg-transparent hover:bg-transparent border-none outline-none text-gray-400 hover:text-gray-600"
+            @click="showPasswordConfirm = !showPasswordConfirm"
+          >
+            <Icon :name="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'" />
+          </button>
         </div>
       </div>
 
@@ -110,6 +124,8 @@ const emit = defineEmits<{ (e: 'update:mode', value: 'login' | 'reset'): void }>
 const toast = useToast()
 
 const form = ref({ email: '', password: '', passwordConfirm: '', code: '' })
+const showPassword = ref(false)
+const showPasswordConfirm = ref(false)
 
 const forgot = async () => {
   try {
