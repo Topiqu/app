@@ -11,8 +11,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'ID nenalezeno' })
   }
 
-  const body = await readBody(event)
-  const { name, subdomain, plan, generationFrequency, tokenLimit, deletedAt, keywords, audience, focus } = body
+  const {
+    name,
+    subdomain,
+    plan,
+    generationFrequency,
+    tokenLimit,
+    deletedAt,
+    keywords,
+    audience,
+    focus,
+    description,
+    logoUrl,
+  } = await readBody(event)
 
   const clientSite = await db.clientSite.findUnique({ where: { id } })
   if (!clientSite) {
@@ -20,19 +31,13 @@ export default defineEventHandler(async (event) => {
   }
 
   if (clientSite.deletedAt && deletedAt !== null) {
-    throw createError({
-      statusCode: 400,
-      message: 'Nelze aktualizovat deaktivovaného klienta',
-    })
+    throw createError({ statusCode: 400, message: 'Nelze aktualizovat deaktivovaného klienta' })
   }
 
   if (subdomain) {
     const existing = await db.clientSite.findUnique({ where: { subdomain } })
     if (existing && existing.id !== id) {
-      throw createError({
-        statusCode: 409,
-        message: 'Subdoména již existuje',
-      })
+      throw createError({ statusCode: 409, message: 'Subdoména již existuje' })
     }
   }
 
@@ -48,6 +53,8 @@ export default defineEventHandler(async (event) => {
   if (keywords !== undefined) data.keywords = keywords
   if (audience !== undefined) data.audience = audience
   if (focus !== undefined) data.focus = focus
+  if (description !== undefined) data.description = description ? sanitizeHtml(description) : null
+  if (logoUrl !== undefined) data.logoUrl = logoUrl
   if (deletedAt !== undefined) {
     data.deletedAt = deletedAt === null ? null : new Date()
   }
@@ -69,6 +76,8 @@ export default defineEventHandler(async (event) => {
       keywords: updatedSite.keywords,
       audience: updatedSite.audience,
       focus: updatedSite.focus,
+      description: updatedSite.description,
+      logoUrl: updatedSite.logoUrl,
     },
   }
 })
