@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 const emit = defineEmits(['upload'])
-const props = defineProps<{ imageUrl?: string | null }>()
+const props = defineProps<{ imageUrl?: string | null; type?: 'client-logo' | 'user-avatar' | 'article-image' }>()
 const toast = useToast()
 
 const previewUrl = shallowRef<string | null>(props.imageUrl || null)
@@ -81,19 +81,15 @@ const uploadFile = async (file: File) => {
   previewUrl.value = URL.createObjectURL(file)
   const formData = new FormData()
   formData.append('file', file)
+  formData.append('type', props.type || 'article-image')
   try {
-    const res = await fetch('/api/upload', {
+    const { url } = await $fetch('/api/upload', {
       method: 'POST',
       body: formData,
     })
-    const data = await res.json()
-    if (data.url) {
-      emit('upload', { url: data.url })
-    } else {
-      toast.error({ message: 'Chyba při nahrávání obrázku' })
-    }
+    emit('upload', { url })
   } catch (e: any) {
-    toast.error({ message: `Chyba při nahrávání: ${e.message}` })
+    toast.error({ message: e.data?.message || 'Chyba při nahrávání' })
   } finally {
     if (fileInputRef.value) fileInputRef.value.value = ''
     isProcessing.value = false

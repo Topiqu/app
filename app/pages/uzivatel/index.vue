@@ -99,30 +99,33 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Avatar</label>
                 <div class="flex flex-col sm:flex-row items-center gap-4 mt-2">
-                  <NuxtImg
-                    v-if="profileForm.avatarUrl"
-                    :src="profileForm.avatarUrl"
-                    alt="Profilový obrázek"
-                    class="w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-indigo-500 dark:ring-indigo-400 shadow-lg object-cover transition-transform hover:scale-105"
-                    width="128"
-                    height="128"
-                  />
-                  <Icon
-                    v-else
-                    name="mdi:account-circle-outline"
-                    class="w-28 h-28 sm:w-32 sm:h-32 text-gray-400 dark:text-gray-600"
-                  />
+                  <div class="cursor-pointer" @click="openFileDialog">
+                    <NuxtImg
+                      v-if="profileForm.avatarUrl"
+                      :src="profileForm.avatarUrl"
+                      alt="Profilový obrázek"
+                      class="w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-indigo-500 dark:ring-indigo-400 shadow-lg object-cover transition-transform hover:scale-105"
+                      width="128"
+                      height="128"
+                    />
+                    <Icon
+                      v-else
+                      name="mdi:account-circle-outline"
+                      class="w-28 h-28 sm:w-32 sm:h-32 text-gray-400 dark:text-gray-600"
+                    />
+                  </div>
                   <div class="flex flex-col gap-2 w-full sm:w-auto">
                     <input
+                      ref="fileInputRef"
                       type="file"
-                      accept="image/jpeg,image/png"
-                      class="text-sm text-gray-700 dark:text-gray-300"
-                      @change="onAvatarChange"
+                      accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                      class="text-sm text-gray-700 dark:text-gray-300 hidden"
+                      @change="uploadAvatar"
                     />
                     <button
-                      :disabled="!avatar.file || isLoading"
+                      :disabled="isLoading"
                       class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105"
-                      @click="uploadAvatar"
+                      @click="openFileDialog"
                     >
                       <Upload class="w-5 h-5 mr-2" />
                       Nahrát avatar
@@ -173,12 +176,12 @@ const { data: session } = useAuth()
 const toast = useToast()
 
 const avatar = ref<{
-  file: File | null
   error: string | null
   success: string | null
-}>({ file: null, error: null, success: null })
+}>({ error: null, success: null })
 
 const isLoading = shallowRef<boolean>(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 const showDialog = shallowRef<boolean>(false)
 const dialogType = shallowRef<'followers' | 'followed'>('followers')
 const activeTab = ref<'likedArticles' | 'comments'>('likedArticles')
@@ -250,31 +253,36 @@ function openDialog(type: 'followers' | 'followed') {
   showDialog.value = true
 }
 
-function onAvatarChange(e: Event) {
-  const target = e.target as HTMLInputElement
-  if (target?.files?.[0]) avatar.value.file = target.files[0]
+function openFileDialog() {
+  if (isLoading.value || !fileInputRef.value) return
+  fileInputRef.value.click()
 }
 
-async function uploadAvatar() {
-  if (!avatar.value.file) return
+async function uploadAvatar(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
 
   const formData = new FormData()
-  formData.append('avatar', avatar.value.file)
+  formData.append('file', file)
+  formData.append('type', 'user-avatar')
 
   try {
     isLoading.value = true
-    const res = await $fetch('/api/avatar-upload', {
+    const { url } = await $fetch('/api/upload', {
       method: 'POST',
       body: formData,
     })
     avatar.value.success = 'Avatar nahrán'
-    profileForm.value.avatarUrl = res.url
-    avatar.value.file = null
+    avatar.value.error = null
+    profileForm.value.avatarUrl = url
     await refresh()
   } catch (err: any) {
     avatar.value.error = err.data?.message || 'Chyba při nahrávání'
+    avatar.value.success = null
   } finally {
     isLoading.value = false
+    if (input) input.value = ''
   }
 }
 
@@ -286,12 +294,13 @@ async function updateProfile() {
       body: {
         username: profileForm.value.username,
         bio: profileForm.value.bio,
+        avatarUrl: profileForm.value.avatarUrl,
       },
     })
     toast.success({ message: 'Profil aktualizován' })
     await refresh()
   } catch (err: any) {
-    if (err.statusCode === 429 && err.data?.message) toast.error({ message: err.data?.message })
+    toast.error({ message: err.data?.message || 'Chyba při aktualizaci' })
   } finally {
     isLoading.value = false
   }
@@ -305,7 +314,7 @@ async function changeNotifs() {
     })
     toast.success({ message: 'Nastavení notifikací uloženo' })
   } catch (err: any) {
-    toast.error({ message: `Chyba: ${err.data?.message}` })
+    toast.error({ message: err.data?.message || 'Chyba při ukládání notifikací' })
   }
 }
 </script>
