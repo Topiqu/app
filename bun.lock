@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "rasg-blog",
+      "name": "topiqo-blog",
       "dependencies": {
         "@ai-sdk/openai": "^2.0.15",
         "@auth/core": "0.40.0",

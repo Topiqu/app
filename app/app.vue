@@ -8,9 +8,9 @@
 
 <script setup lang="ts">
 useSeoMeta({
-  title: 'RASG blog',
-  description: 'Vítejte v RASG blogu.',
-  keywords: 'blog, RASG, insights, stories, journey',
+  title: 'Topqio AI blog',
+  description: 'Vítejte v Topqio blogu.',
+  keywords: 'blog, Topqio, insights, stories, journey',
   author: 'Big John',
 })
 </script>

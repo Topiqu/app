@@ -1,11 +1,11 @@
 <h1 align="center">
   <a href="https://rasgblog.cz" target="_blank">
     <img align="center" src="https://skillicons.dev/icons?i=nuxt,vue,vite,tailwind,ts" /><br/><br/>
-    <span>RASG Blog</span>
+    <span>Topiqo AI Blog</span>
   </a>
 </h1>
 
-### **Welcome** to <a href="https://rasgblog.cz" target="_blank">**RASG Blog**</a>! 👋
+### **Welcome** to <a href="https://topiqoblog.cz" target="_blank">**Topiqo AI Blog**</a>! 👋
 
 An innovative AI blog web-app
 

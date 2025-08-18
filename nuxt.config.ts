@@ -70,7 +70,7 @@ export default defineNuxtConfig({
   },
 
   nodemailer: {
-    from: `"RASG BLOG" ${process.env.NUXT_MAIL_USER}`,
+    from: `"TOPIQO BLOG" ${process.env.NUXT_MAIL_USER}`,
     service: 'gmail',
     auth: {
       user: process.env.NUXT_MAIL_USER,
