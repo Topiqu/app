@@ -3,7 +3,7 @@
     <section
       class="relative bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-900 dark:from-gray-900 dark:via-gray-950 dark:to-black rounded-3xl py-16 px-6 sm:px-10 lg:px-12 text-center shadow-2xl overflow-hidden"
     >
-      <div class="absolute inset-0 bg-[url('/pattern.svg')] opacity-10 mix-blend-overlay animate-subtle-pulse"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/10 dark:to-white/5"></div>
       <h1 class="relative text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-xl">
         {{ clientSite?.name ?? 'GameDev' }}
       </h1>
@@ -96,10 +96,10 @@
           class="bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 transition w-full sm:w-auto"
         >
           <option value="">Všechny tagy</option>
-          <option v-for="tag in tags" :key="tag.tag.id" :value="tag.tag.name">{{ tag.tag.name }}</option>
+          <option v-for="tag in tags" :key="tag.id" :value="tag.name">{{ tag.name }}</option>
         </select>
       </div>
-      <div v-if="filteredArticles.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      <div v-if="filteredArticles.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         <NuxtLink
           v-for="article in filteredArticles"
           :key="article.id"
@@ -175,10 +175,10 @@
         <div class="flex flex-wrap gap-3">
           <NuxtLink
             v-for="tag in tags"
-            :key="tag.tag.id"
-            :to="`/stitky/${tag.tag.slug}`"
+            :key="tag.id"
+            :to="`/stitky/${tag.slug}`"
             class="text-sm bg-gray-100 dark:bg-gray-700/80 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 no-underline"
-            >{{ tag.tag.name }}</NuxtLink
+            >{{ tag.name }}</NuxtLink
           >
         </div>
       </div>
@@ -203,7 +203,16 @@ const featured = computed(() =>
 const recommended = computed(() =>
   articles.value.length ? articles.value.filter((a) => a.id !== featured.value?.id).slice(0, 2) : [],
 )
-const tags = computed(() => (articles.value.length ? Array.from(new Set(articles.value.flatMap((a) => a.tags))) : []))
+const tags = computed(() => {
+  if (!articles.value.length) return []
+  const tagMap = new Map()
+  articles.value
+    .flatMap((a) => a.tags)
+    .forEach((t) => {
+      if (!tagMap.has(t.tag.id)) tagMap.set(t.tag.id, { id: t.tag.id, name: t.tag.name, slug: t.tag.slug })
+    })
+  return Array.from(tagMap.values())
+})
 const topArticles = computed(() =>
   articles.value.length
     ? articles.value
@@ -213,11 +222,11 @@ const topArticles = computed(() =>
     : [],
 )
 const selectedTag = shallowRef('')
+
 const filteredArticles = computed(() => {
-  if (!selectedTag.value) return articles.value.filter((a) => a.id !== featured.value?.id).slice(2)
-  return articles.value
-    .filter((a) => a.id !== featured.value?.id && a.tags.some((t) => t.tag.name === selectedTag.value))
-    .slice(2)
+  const filtered = articles.value.filter((a) => a.id !== featured.value?.id)
+  if (!selectedTag.value) return filtered
+  return filtered.filter((a) => a.tags.some((t) => t.tag.name.toLowerCase() === selectedTag.value.toLowerCase()))
 })
 </script>
 
