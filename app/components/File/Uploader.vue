@@ -1,30 +1,38 @@
 <template>
   <div class="flex flex-col gap-4">
-    <div v-if="previewUrl">
+    <div v-if="previewUrl" class="flex justify-center items-center bg-gray-100 dark:bg-gray-700 p-4 rounded-xl">
       <NuxtImg
         :src="previewUrl"
-        class="w-24 h-24 object-cover rounded-xl shadow-md border border-gray-200 dark:border-gray-600 transition-all duration-200 hover:shadow-lg"
+        class="max-w-xs max-h-40 object-contain rounded-xl shadow-md border border-gray-200 dark:border-gray-500 transition-all duration-300 hover:scale-105"
         alt="Náhled obrázku"
       />
     </div>
 
-    <div
-      class="relative flex flex-col justify-center items-center border-2 border-dashed border-gray-300 p-5 rounded-xl text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all duration-200 dark:border-gray-600 dark:text-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-      :class="{ 'bg-gray-100 border-blue-500 shadow-md dark:bg-gray-700 dark:border-blue-400': isDragging }"
-      @dragover.prevent="onDragOver"
-      @dragenter.prevent="onDragEnter"
-      @dragleave="onDragLeave"
-      @drop.prevent="onDrop"
-      @click="openFileDialog"
-    >
-      <Icon
-        name="mdi:upload"
-        class="w-7 h-7 mb-2 text-gray-500 dark:text-gray-400 transition-colors duration-200"
-        :class="{ 'text-blue-500 dark:text-blue-400': isDragging }"
-      />
-      Vyber nebo přetáhni obrázek
+    <div class="flex gap-4 items-center">
+      <div
+        class="relative flex flex-col justify-center items-center border-2 border-dashed border-gray-300 p-6 rounded-xl text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all duration-200 dark:border-gray-500 dark:text-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+        :class="{ 'border-blue-500 dark:border-blue-400 shadow-md animate-pulse': isDragging }"
+        @dragover.prevent="onDragOver"
+        @dragenter.prevent="onDragEnter"
+        @dragleave="onDragLeave"
+        @drop.prevent="onDrop"
+        @click="openFileDialog"
+      >
+        <Icon
+          name="mdi:upload"
+          class="w-10 h-10 mb-2 text-gray-500 dark:text-gray-300 transition-all duration-200"
+          :class="{ 'text-blue-500 dark:text-blue-400 animate-bounce': isDragging }"
+        />
+        <span class="font-semibold">Vyber</span> nebo přetáhni obrázek
+      </div>
+      <button
+        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all duration-200"
+        :disabled="isProcessing"
+        @click="openFileDialog"
+      >
+        Nahrát obrázek
+      </button>
     </div>
-
     <input ref="fileInputRef" type="file" accept="image/*" class="hidden" @change="onFileChange" />
   </div>
 </template>

@@ -274,12 +274,10 @@ async function uploadAvatar(e: Event) {
       body: formData,
     })
     avatar.value.success = 'Avatar nahrán'
-    avatar.value.error = null
     profileForm.value.avatarUrl = url
     await refresh()
   } catch (err: any) {
     avatar.value.error = err.data?.message || 'Chyba při nahrávání'
-    avatar.value.success = null
   } finally {
     isLoading.value = false
     if (input) input.value = ''
