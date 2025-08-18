@@ -37,6 +37,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@unocss/nuxt',
     '@vueuse/nuxt',
+    '@vueuse/motion/nuxt',
     '@sidebase/nuxt-auth',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-nodemailer',
