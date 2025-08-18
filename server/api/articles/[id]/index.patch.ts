@@ -7,10 +7,12 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const user = (await getServerSession(event))?.user
   if (!id) throw createError({ status: 400, message: 'ID článku je povinné' })
-  if (!user) throw createError({ status: 401 })
 
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
-  if (body.clientSiteId && body.clientSiteId !== user.clientSiteId)
+  const isOnlyViews = Object.keys(body).length === 1 && 'views' in body
+
+  if (!isOnlyViews && !user) throw createError({ status: 401 })
+  if (!isOnlyViews && body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
     throw createError({ status: 403, message: 'Tento článek nemůžete upravovat' })
 
   let content = body.content
@@ -57,14 +59,14 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (article.status === 'published' && previousArticle?.status === 'draft') {
+  if (!isOnlyViews && article.status === 'published' && previousArticle?.status === 'draft') {
     const followers = await prisma.follow.findMany({
       where: { followedId: article.userId },
       select: { followerId: true },
     })
 
     const notifications = followers.map((follower) => ({
-      message: `${user.name} vydal nový článek: ${article.title}`,
+      message: `${user?.name} vydal nový článek: ${article.title}`,
       userId: follower.followerId,
       articleId: article.id,
       type: 'ARTICLE_PUBLISHED' as NotificationType,
@@ -82,5 +84,5 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return article
+  return { success: true }
 })
