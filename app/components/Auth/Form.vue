@@ -2,9 +2,9 @@
   <div class="w-xs sm:w-sm md:w-md px-6">
     <div
       v-if="data?.user"
-      class="bg-white px-6 py-8 rounded-2xl shadow-md text-center space-y-5 border border-gray-200"
+      class="bg-white dark:bg-gray-900 px-6 py-8 rounded-2xl shadow-md text-center space-y-5 border border-gray-200 dark:border-gray-700"
     >
-      <p class="text-green-600 text-lg font-semibold">Vítej, {{ data.user?.name }}!</p>
+      <p class="text-green-600 dark:text-green-400 text-lg font-semibold">Vítej, {{ data.user?.name }}!</p>
       <AuthLogout />
     </div>
 
@@ -12,12 +12,17 @@
       <AuthForgot :mode="mode" @update:mode="mode = $event" />
     </div>
 
-    <div v-else class="bg-white px-6 py-8 rounded-2xl shadow-md border border-gray-200 space-y-6">
+    <div
+      v-else
+      class="bg-white dark:bg-gray-900 px-6 py-8 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 space-y-6"
+    >
       <div class="flex justify-between items-center gap-2 text-sm font-medium">
         <button
           :class="[
             'w-full px-4 py-2 rounded-lg transition font-semibold',
-            mode === 'login' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-500 hover:bg-gray-200',
+            mode === 'login'
+              ? 'bg-blue-600 text-white shadow'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700',
           ]"
           @click="mode = 'login'"
         >
@@ -26,7 +31,9 @@
         <button
           :class="[
             'w-full px-4 py-2 rounded-lg transition font-semibold',
-            mode === 'register' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-500 hover:bg-gray-200',
+            mode === 'register'
+              ? 'bg-blue-600 text-white shadow'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700',
           ]"
           @click="mode = 'register'"
         >
@@ -36,14 +43,14 @@
 
       <form v-if="!verifyMode" class="space-y-5 text-sm" @submit.prevent="submit">
         <div class="space-y-1.5">
-          <label for="email" class="block text-sm font-semibold text-gray-500">Email</label>
+          <label for="email" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">Email</label>
           <div class="relative">
-            <Icon name="mdi:envelope" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+            <Icon name="mdi:envelope" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               id="email"
               v-model="form.email"
               type="email"
-              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               placeholder="example@domain.tld"
               autocomplete="email"
               required
@@ -52,14 +59,16 @@
         </div>
 
         <div v-if="mode === 'register'" class="space-y-1.5">
-          <label for="username" class="block text-sm font-semibold text-gray-500">Uživatelské jméno</label>
+          <label for="username" class="block text-sm font-semibold text-gray-500 dark:text-gray-400"
+            >Uživatelské jméno</label
+          >
           <div class="relative">
-            <Icon name="mdi:account" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+            <Icon name="mdi:account" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               id="username"
               v-model="form.username"
               type="text"
-              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               autocomplete="username"
               placeholder="Joe Doe"
               maxlength="50"
@@ -70,14 +79,14 @@
         </div>
 
         <div class="space-y-1.5">
-          <label for="password" class="block text-sm font-semibold text-gray-500">Heslo</label>
+          <label for="password" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">Heslo</label>
           <div class="relative">
-            <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+            <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               id="password"
               v-model="form.password"
               :type="showPassword ? 'text' : 'password'"
-              class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               autocomplete="current-password"
               placeholder="********"
               maxlength="124"
@@ -86,7 +95,7 @@
             />
             <button
               type="button"
-              class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-600"
+              class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-600 dark:hover:text-gray-400"
               @click="showPassword = !showPassword"
             >
               <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" />
@@ -95,14 +104,16 @@
         </div>
 
         <div v-if="mode === 'register'" class="space-y-1.5">
-          <label for="passwordConfirm" class="block text-sm font-semibold text-gray-500">Potvrzení hesla</label>
+          <label for="passwordConfirm" class="block text-sm font-semibold text-gray-500 dark:text-gray-400"
+            >Potvrzení hesla</label
+          >
           <div class="relative">
-            <Icon name="mdi:lock-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+            <Icon name="mdi:lock-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               id="passwordConfirm"
               v-model="form.passwordConfirm"
               :type="showPasswordConfirm ? 'text' : 'password'"
-              class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               autocomplete="new-password"
               placeholder="********"
               maxlength="124"
@@ -111,7 +122,7 @@
             />
             <button
               type="button"
-              class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-600"
+              class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-600 dark:hover:text-gray-400"
               @click="showPasswordConfirm = !showPasswordConfirm"
             >
               <Icon :name="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'" />
@@ -129,7 +140,7 @@
         <div class="text-center">
           <button
             type="button"
-            class="inline-flex items-center justify-center w-full px-4 py-2 rounded-md bg-white border border-gray-200 text-black text-sm font-medium transition hover:bg-gray-50"
+            class="inline-flex items-center justify-center w-full px-4 py-2 rounded-md bg-white dark:bg-[#131314] border border-[#747775] dark:border-[#8E918F] text-[#1F1F1F] dark:text-[#E3E3E3] text-sm font-roboto font-medium transition hover:bg-gray-50 dark:hover:bg-gray-800"
             @click="signInWithGoogle"
           >
             <img
@@ -144,7 +155,7 @@
         <div v-if="mode === 'login'" class="text-center">
           <button
             type="button"
-            class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent hover:bg-black/5 border-none text-blue-600 hover:text-blue-700 text-sm font-medium transition"
+            class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent hover:bg-black/5 dark:hover:bg-white/5 border-none text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 text-sm font-medium transition"
             @click="mode = 'forgot'"
           >
             Zapomenuté heslo?
@@ -153,18 +164,18 @@
       </form>
 
       <form v-if="verifyMode" class="space-y-5 text-sm" @submit.prevent="verify">
-        <p class="text-gray-500 text-sm">
+        <p class="text-gray-500 dark:text-gray-400 text-sm">
           Zadejte ověřovací kód odeslaný na <span class="font-medium">{{ form.email }}</span>
         </p>
         <div class="space-y-1.5">
-          <label for="code" class="block text-sm font-semibold text-gray-500">Ověřovací kód</label>
+          <label for="code" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">Ověřovací kód</label>
           <div class="relative">
-            <Icon name="mdi:shield-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+            <Icon name="mdi:shield-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               id="code"
               v-model="form.code"
               type="text"
-              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               required
               minlength="8"
               maxlength="8"
@@ -285,3 +296,12 @@ const signInWithGoogle = async () => {
   }
 }
 </script>
+
+<style>
+@font-face {
+  font-family: 'Roboto';
+  src: url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
+  font-weight: 500;
+  font-style: normal;
+}
+</style>
