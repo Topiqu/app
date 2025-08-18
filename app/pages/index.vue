@@ -4,10 +4,18 @@
       class="relative bg-gradient-to-r from-blue-600 to-indigo-900 dark:from-gray-900 dark:to-black rounded-3xl py-12 px-6 text-center shadow-xl overflow-hidden animate-gradient-x"
     >
       <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/10 dark:to-gray-900/10"></div>
+      <NuxtImg
+        v-if="clientSite?.logoUrl"
+        :src="clientSite.logoUrl"
+        class="w-16 h-16 mx-auto mb-4 rounded-full object-cover border border-white/20"
+        alt="Logo"
+      />
       <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white drop-shadow">
         {{ clientSite?.name ?? 'GameDev' }}
       </h1>
-      <p class="mt-4 text-lg sm:text-xl text-white/80 max-w-3xl mx-auto">Nejnovější trendy a tipy pro vývojáře her</p>
+      <p class="mt-4 text-lg sm:text-xl text-white/80 max-w-3xl mx-auto">
+        {{ clientSite?.description ?? 'Nejnovější trendy a tipy pro vývojáře her' }}
+      </p>
       <button
         class="mt-6 bg-white text-blue-700 dark:bg-blue-800 dark:text-gray-100 px-6 py-2 rounded-full font-semibold text-lg shadow-lg hover:scale-105 dark:hover:bg-blue-700 transition-all duration-300 animate-pulse border-2 dark:border-blue-600/30"
       >
@@ -257,14 +265,37 @@ import { Bell, MessageCircle, Heart } from 'lucide-vue-next'
 
 const slug = 'GameDev'
 const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`, {
-  default: () => ({ id: '', name: 'GameDev' }),
+  default: () => ({
+    id: '',
+    name: 'GameDev',
+    description: 'Nejnovější trendy a tipy pro vývojáře her',
+    logoUrl: null,
+    keywords: null,
+    audience: null,
+    focus: null,
+  }),
 })
 const { data: articles } = await useFetch(`/api/articles/by-clientsite/${slug}`, { default: () => [] })
+
+useSeoMeta({
+  title: clientSite.value?.name ?? 'GameDev',
+  description: clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojáře her',
+  keywords: Array.isArray(clientSite.value?.keywords)
+    ? (clientSite.value!.keywords as string[]).join(', ')
+    : 'gamedev, herní vývoj, trendy, tipy',
+  ogTitle: clientSite.value?.name ?? 'GameDev',
+  ogDescription: clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojáře her',
+  ogImage: clientSite.value?.logoUrl ?? '',
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+})
 
 const featured = computed(() =>
   articles.value.length
     ? articles.value.reduce((a, b) =>
-        a._count.reactions + a._count.comments > b._count.reactions + b._count.comments ? a : b,
+        (a._count?.reactions ?? 0) + (a._count?.comments ?? 0) > (b._count?.reactions ?? 0) + (b._count?.comments ?? 0)
+          ? a
+          : b,
       )
     : null,
 )
@@ -286,7 +317,7 @@ const topArticles = computed(() =>
   articles.value.length
     ? articles.value
         .slice()
-        .sort((a, b) => b._count.reactions - a._count.reactions)
+        .sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0))
         .slice(0, 3)
     : [],
 )
@@ -316,3 +347,4 @@ const filteredArticles = computed(() => {
   animation: gradient-x 15s ease-in-out infinite;
 }
 </style>
+```
