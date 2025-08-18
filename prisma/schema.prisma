@@ -166,6 +166,8 @@ model ClientSite {
   subdomain           String              @unique()
   plan                ClientPlan          @default(BASIC)
   focus               String?
+  description         String?
+  logoUrl             String?
   generationFrequency GenerationFrequency @default(NONE)
   tokenLimit          Int?                @default(0)
   tokenRemaining      Int?                @default(0)

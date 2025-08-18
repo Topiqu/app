@@ -180,6 +180,8 @@ model ClientSite extends Base {
     subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
     plan                ClientPlan          @default(BASIC)
     focus               String?
+    description         String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
+    logoUrl             String?             @length(0, 255, "URL loga musí mít max. 255 znaků")
     generationFrequency GenerationFrequency @default(NONE)
     tokenLimit          Int?                @default(0)
     tokenRemaining      Int?                @default(0)
@@ -196,7 +198,6 @@ model ClientSite extends Base {
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')
 }
-
 model UserBan extends Base {
     userId       String
     user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
