@@ -11,7 +11,9 @@ export const formatDate = (d?: string | Date) => {
   const daysDiff = differenceInDays(now, date)
   const weeksDiff = differenceInWeeks(now, date)
 
-  if (minutesDiff < 60) {
+  if (minutesDiff == 0 || minutesDiff == 1) {
+    return 'Právě teď'
+  } else if (minutesDiff < 60) {
     return `Před ${minutesDiff} minutami`
   } else if (hoursDiff < 24) {
     return `Před ${hoursDiff} hodinami`

@@ -80,7 +80,7 @@
           :initial="{ opacity: 0, y: 50 }"
           :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 500, delay: 100 * idx } }"
           :to="`/clanky/${rec.slug}`"
-          class="block bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 hover:shadow-xl transition duration-300 group no-underline relative"
+          class="block bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
         >
           <div
             class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
@@ -99,20 +99,27 @@
           >
             {{ rec.title }}
           </h3>
+          <div
+            class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300"
+            v-html="rec.content?.substring(0, 50) + (rec.content?.length > 50 ? '...' : '')"
+          ></div>
           <div class="mt-3 flex flex-col sm:flex-row justify-between text-sm gap-3 relative z-20">
-            <span>{{ formatDate(rec.createdAt ?? undefined) }}</span>
-            <span v-tippy="'Komentáře'"
-              ><MessageCircle class="w-4 h-4 inline mr-1" />{{ rec._count?.comments ?? 0 }}</span
-            >
+            <span>{{ formatDate(rec.createdAt ?? undefined) }} · {{ rec.readingTime ?? 5 }} min čtení</span>
+            <span v-tippy="'Komentáře'">
+              <MessageCircle class="w-4 h-4 inline mr-1" />{{ rec._count?.comments ?? 0 }}
+            </span>
           </div>
           <div class="mt-3 flex items-center gap-3 text-sm relative z-20">
             <NuxtImg
               v-if="rec.user?.avatarUrl"
               :src="rec.user.avatarUrl"
-              class="w-7 h-7 rounded-full object-cover border border-gray-200 dark:border-gray-700 relative z-20"
+              class="w-7 h-7 rounded-full object-cover border border-gray-200 dark:border-gray-700 transition duration-300 relative z-20"
               alt="Autor"
             />
-            <span class="font-medium">{{ rec.user?.username ?? 'Není uveden' }}</span>
+            <span
+              class="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200"
+              >{{ rec.user?.username ?? 'Není uveden' }}</span
+            >
           </div>
         </NuxtLink>
       </div>
