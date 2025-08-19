@@ -79,7 +79,7 @@
                   <span>{{ article.authorUsername }}</span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Publikováno: {{ formatDate(article.publishedAt || new Date().toISOString()) }}
+                  Publikováno: {{ formatDate(article.createdAt || new Date().toISOString()) }}
                 </p>
                 <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                   <div class="flex items-center gap-1">
@@ -173,7 +173,7 @@ defineProps<{
       slug: string
       title: string
       imageUrl: string | null
-      publishedAt: string | null
+      createdAt: string | null
       authorUsername: string
       authorPfp: string | null
       views: number

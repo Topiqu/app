@@ -203,7 +203,7 @@ const profileForm = ref({
     slug: string
     title: string
     imageUrl: string | null
-    publishedAt: string | null
+    createdAt: string | null
     authorUsername: string
     authorPfp: string | null
     views: number
