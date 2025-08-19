@@ -101,7 +101,7 @@
           </h3>
           <div
             class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300"
-            v-html="rec.content?.substring(0, 50) + (rec.content?.length > 50 ? '...' : '')"
+            v-html="rec.content?.substring(0, 50) + (rec.content?.length! > 50 ? '...' : '')"
           ></div>
           <div class="mt-3 flex flex-col sm:flex-row justify-between text-sm gap-3 relative z-20">
             <span>{{ formatDate(rec.createdAt ?? undefined) }} · {{ rec.readingTime ?? 5 }} min čtení</span>
@@ -230,6 +230,16 @@
         </NuxtLink>
       </div>
       <p v-else class="text-center text-lg">Žádné články</p>
+      <div v-if="hasMore" class="mt-8 text-center">
+        <button
+          :disabled="pending"
+          class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold text-lg hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700 transition duration-300 disabled:opacity-50"
+          @click="loadMore"
+        >
+          <span v-if="pending" class="animate-spin inline-block mr-2">↻</span>
+          Načíst další
+        </button>
+      </div>
     </section>
 
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
@@ -280,8 +290,7 @@
             v-for="tag in tags"
             :key="tag.id"
             :to="`/stitky/${tag.slug}`"
-            :style="{ fontSize: `${0.9 + (tag.count || 1) * 0.1}rem` }"
-            class="bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-95 transition duration-200 no-underline"
+            class="bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-95 transition duration-200 no-underline"
           >
             {{ tag.name }}
           </NuxtLink>
@@ -296,26 +305,55 @@ import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 import { Bell, MessageCircle, Heart } from 'lucide-vue-next'
 
+interface User {
+  id: string
+  username: string
+  email: string
+  avatarUrl: string | null
+}
+interface Tag {
+  id: string
+  name: string
+  slug: string
+}
+interface Article {
+  id: string
+  slug: string
+  title: string
+  content: string
+  imageUrl: string | null
+  createdAt: string
+  readingTime: number | null
+  user: User
+  tags: { tag: Tag }[]
+  _count: { comments: number; reactions: number }
+}
+interface ClientSite {
+  id: string
+  name: string
+  description: string | null
+  logoUrl: string | null
+  keywords: string[] | null
+}
+
 const slug = 'GameDev'
-const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`, {
-  default: () => ({
-    id: '',
-    name: 'GameDev',
-    description: 'Nejnovější trendy a tipy pro vývojáře her',
-    logoUrl: null,
-    keywords: null,
-    audience: null,
-    focus: null,
-  }),
-})
-const { data: articles } = await useFetch(`/api/articles/by-clientsite/${slug}`, { default: () => [] })
+const page = shallowRef(1),
+  limit = shallowRef(10),
+  hasMore = shallowRef(true),
+  selectedTag = shallowRef('')
+const allArticles = ref<Article[]>([])
+
+const articlesUrl = computed(
+  () =>
+    `/api/articles/by-clientsite/${slug}?page=${page.value}&limit=${limit.value}${selectedTag.value ? `&tag=${selectedTag.value}` : ''}`,
+)
+const { data: clientSite } = useFetch<ClientSite>(`/api/clients/slug/${slug}`)
+const { data: newArticles, refresh, pending } = useFetch<Article[]>(articlesUrl)
 
 useSeoMeta({
   title: clientSite.value?.name ?? 'GameDev',
   description: clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojáře her',
-  keywords: Array.isArray(clientSite.value?.keywords)
-    ? (clientSite.value!.keywords as string[]).join(', ')
-    : 'gamedev, herní vývoj, trendy, tipy',
+  keywords: clientSite.value?.keywords?.join(', ') ?? 'gamedev, herní vývoj, trendy, tipy',
   ogTitle: clientSite.value?.name ?? 'GameDev',
   ogDescription: clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojáře her',
   ogImage: clientSite.value?.logoUrl ?? '',
@@ -323,43 +361,49 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+watch(
+  newArticles,
+  (d) => {
+    const existing = new Set(allArticles.value.map((a) => a.id))
+    const unique = (d || []).filter((a) => !existing.has(a.id))
+    allArticles.value.push(...unique)
+    hasMore.value = (d?.length || 0) === limit.value
+  },
+  { immediate: true },
+)
+
+const loadMore = async () => {
+  page.value++
+  await refresh()
+}
+
 const featured = computed(() =>
-  articles.value.length
-    ? articles.value.reduce((a, b) =>
-        (a._count?.reactions ?? 0) + (a._count?.comments ?? 0) > (b._count?.reactions ?? 0) + (b._count?.comments ?? 0)
-          ? a
-          : b,
-      )
-    : null,
+  allArticles.value.reduce(
+    (a, b) => (a!._count.reactions + a!._count.comments > b._count.reactions + b._count.comments ? a : b),
+    allArticles.value[0],
+  ),
 )
-const recommended = computed(() =>
-  articles.value.length ? articles.value.filter((a) => a.id !== featured.value?.id).slice(0, 2) : [],
-)
+const recommended = computed(() => allArticles.value.filter((a) => a.id !== featured.value?.id).slice(0, 2))
 const tags = computed(() => {
-  if (!articles.value.length) return []
-  const t = new Map()
-  articles.value
+  const t = new Map<string, any>()
+  allArticles.value
     .flatMap((a) => a.tags)
     .forEach((x) => {
-      if (!t.has(x.tag.id)) t.set(x.tag.id, { id: x.tag.id, name: x.tag.name, slug: x.tag.slug, count: 0 })
-      t.get(x.tag.id).count += 1
+      if (!t.has(x.tag.id)) t.set(x.tag.id, { ...x.tag, count: 0 })
+      t.get(x.tag.id)!.count++
     })
-  return Array.from(t.values()).sort((a, b) => b.count - a.count)
+  return [...t.values()].sort((a, b) => b.count - a.count)
 })
 const topArticles = computed(() =>
-  articles.value.length
-    ? articles.value
-        .slice()
-        .sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0))
-        .slice(0, 3)
-    : [],
+  [...allArticles.value].sort((a, b) => b._count.reactions - a._count.reactions).slice(0, 3),
 )
-const selectedTag = shallowRef('')
 const filteredArticles = computed(() => {
-  const f = articles.value.filter((a) => a.id !== featured.value?.id)
+  const unique = [...new Map(allArticles.value.map((a) => [a.id, a])).values()].filter(
+    (a) => a.id !== featured.value?.id,
+  )
   return selectedTag.value
-    ? f.filter((a) => a.tags.some((t) => t.tag.name.toLowerCase() === selectedTag.value.toLowerCase()))
-    : f
+    ? unique.filter((a) => a.tags.some((t) => t.tag.name.toLowerCase() === selectedTag.value.toLowerCase()))
+    : unique
 })
 </script>
 
@@ -380,4 +424,3 @@ const filteredArticles = computed(() => {
   animation: gradient-x 15s ease-in-out infinite;
 }
 </style>
-```

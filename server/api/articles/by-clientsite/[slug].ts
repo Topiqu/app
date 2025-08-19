@@ -3,6 +3,8 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
   if (!slug) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
   const { take, skip } = await getPagination(event)
+  const query = getQuery(event)
+  const tag = query.tag as string | undefined
 
   const db = await getEnhancedPrisma(user)
   const clientSite = await db.clientSite.findUnique({
@@ -13,7 +15,21 @@ export default defineEventHandler(async (event) => {
   if (!clientSite) throw createError({ statusCode: 404, message: 'Blog nenalezen' })
 
   const articles = await db.article.findMany({
-    where: { clientSiteId: clientSite.id },
+    where: {
+      clientSiteId: clientSite.id,
+      ...(tag && {
+        tags: {
+          some: {
+            tag: {
+              name: {
+                equals: tag,
+                mode: 'insensitive',
+              },
+            },
+          },
+        },
+      }),
+    },
     take,
     skip,
     include: {
