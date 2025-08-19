@@ -1,10 +1,12 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  const username = getRouterParam(event, 'id')
+  let username = getRouterParam(event, 'id')
 
   if (!username) {
     throw createError({ statusCode: 400, message: 'Uživatelské jméno je povinné' })
   }
+  username = decodeURIComponent(username).trim()
+
   const db = await getEnhancedPrisma(user)
 
   const author = await db.user.findUnique({
@@ -13,7 +15,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!author) {
-    throw createError({ statusCode: 404, message: 'Autor nenalezen' })
+    throw createError({ statusCode: 404, message: `Autor nenalezen: ${username}` })
   }
 
   const articles = await db.article.findMany({
