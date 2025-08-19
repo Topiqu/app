@@ -8,8 +8,8 @@
       <AuthLogout />
     </div>
 
-    <div v-else-if="mode === 'forgot' || mode === 'reset'">
-      <AuthForgot :mode="mode" @update:mode="mode = $event" />
+    <div v-else-if="internalMode === 'forgot' || internalMode === 'reset'">
+      <AuthForgot :mode="internalMode" @update:mode="internalMode = $event" />
     </div>
 
     <div
@@ -20,22 +20,22 @@
         <button
           :class="[
             'w-full px-4 py-2 rounded-lg transition font-semibold',
-            mode === 'login'
+            internalMode === 'login'
               ? 'bg-blue-600 text-white shadow'
               : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700',
           ]"
-          @click="mode = 'login'"
+          @click="internalMode = 'login'"
         >
           Přihlásit
         </button>
         <button
           :class="[
             'w-full px-4 py-2 rounded-lg transition font-semibold',
-            mode === 'register'
+            internalMode === 'register'
               ? 'bg-blue-600 text-white shadow'
               : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700',
           ]"
-          @click="mode = 'register'"
+          @click="internalMode = 'register'"
         >
           Registrace
         </button>
@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <div v-if="mode === 'register'" class="space-y-1.5">
+        <div v-if="internalMode === 'register'" class="space-y-1.5">
           <label for="username" class="block text-sm font-semibold text-gray-500 dark:text-gray-400"
             >Uživatelské jméno</label
           >
@@ -101,18 +101,18 @@
               <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" />
             </button>
           </div>
-          <div v-if="mode === 'login'" class="inline-flex justify-end w-full">
+          <div v-if="internalMode === 'login'" class="inline-flex justify-end w-full">
             <button
               type="button"
               class="text-xs p-1 text-blue-600 dark:text-blue-400 underline cursor-pointer hover:text-blue-700 dark:hover:text-blue-500 transition"
-              @click="mode = 'forgot'"
+              @click="internalMode = 'forgot'"
             >
               Zapomenuté heslo?
             </button>
           </div>
         </div>
 
-        <div v-if="mode === 'register'" class="space-y-1.5">
+        <div v-if="internalMode === 'register'" class="space-y-1.5">
           <label for="passwordConfirm" class="block text-sm font-semibold text-gray-500 dark:text-gray-400"
             >Potvrzení hesla</label
           >
@@ -143,7 +143,7 @@
           type="submit"
           class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
         >
-          {{ mode === 'register' ? 'Registrovat' : 'Přihlásit se' }}
+          {{ internalMode === 'register' ? 'Registrovat' : 'Přihlásit se' }}
         </button>
 
         <div class="flex items-center my-4">
@@ -200,20 +200,34 @@
 </template>
 
 <script setup lang="ts">
+const props = defineProps<{
+  mode?: 'login' | 'register' | 'forgot' | 'reset'
+}>()
+
 const toast = useToast()
 const theme = useThemeStore()
 const { data, signIn } = useAuth()
 
 const init = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
 const form = ref<typeof init>(init)
-const mode = shallowRef<'login' | 'register' | 'forgot' | 'reset'>('login')
+const internalMode = shallowRef<'login' | 'register' | 'forgot' | 'reset'>('login')
 const verifyMode = shallowRef<boolean>(false)
 const showPassword = shallowRef(false)
 const showPasswordConfirm = shallowRef(false)
 
+watch(
+  () => props.mode,
+  (newMode) => {
+    if (newMode && ['login', 'register', 'forgot', 'reset'].includes(newMode)) {
+      internalMode.value = newMode
+    }
+  },
+  { immediate: true },
+)
+
 const submit = async () => {
   try {
-    if (mode.value === 'register') {
+    if (internalMode.value === 'register') {
       if (form.value.password !== form.value.passwordConfirm) return toast.error({ message: 'Hesla se neshodují' })
 
       const res = await $fetch('/api/auth/register', {
