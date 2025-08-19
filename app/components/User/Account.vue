@@ -214,10 +214,29 @@
 </template>
 
 <script lang="ts" setup>
-const { data: auth } = useAuth()
+interface User {
+  id: string
+  username: string
+  email: string
+  avatarUrl?: string
+  role: 'user' | 'admin' | 'superadmin'
+  bio?: string
+  createdAt: string
+  likesCount: number
+  dislikesCount: number
+  commentsCount: number
+}
 
-const { data: userData } = await useFetch(`/api/users/${auth.value?.user.id}`)
-const { data: clientData } = await useFetch(`/api/clients/${auth.value?.user.id}/by-userid`)
+interface Client {
+  name: string
+  plan?: 'PREMIUM' | 'PRO' | 'CUSTOM' | string
+}
+
+const { data: auth } = useAuth()
+const toast = useToast()
+
+const userData = ref<User | null>(null)
+const clientData = ref<Client | null>(null)
 
 const show = shallowRef<boolean>(false)
 const hoverShow = shallowRef<boolean>(false)
@@ -238,6 +257,29 @@ watch(isHovered, (hovered) => {
   if (hovered) hoverShow.value = true
   else setTimeout(() => !isHovered.value && (hoverShow.value = false), 50)
 })
+
+watch(
+  auth,
+  async (newAuth) => {
+    if (newAuth?.user?.id) {
+      try {
+        const [userResponse, clientResponse] = await Promise.all([
+          $fetch<User>(`/api/users/${newAuth.user.id}`),
+          $fetch<Client>(`/api/clients/${newAuth.user.id}/by-userid`),
+        ])
+        userData.value = userResponse
+        clientData.value = clientResponse
+      } catch (e: unknown) {
+        const error = e as { data?: { message?: string } }
+        toast.error({ message: error.data?.message || 'Chyba při načítání dat uživatele' })
+      }
+    } else {
+      userData.value = null
+      clientData.value = null
+    }
+  },
+  { immediate: true },
+)
 
 onClickOutside(dropdown, () => (show.value = false), { ignore: [btn] })
 </script>
