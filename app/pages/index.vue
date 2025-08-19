@@ -41,7 +41,7 @@
         <NuxtImg
           v-if="featured.imageUrl"
           :src="featured.imageUrl"
-          class="w-full h-64 lg:h-80 object-cover group-hover:scale-105 group-hover:rotate-1 transition duration-500 relative z-20"
+          class="w-full h-64 lg:h-80 object-cover group-hover:scale-[1.02] group-hover:rotate-1 transition duration-500 relative z-20"
           alt="Featured"
         />
         <div v-else class="w-full h-64 lg:h-80 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
