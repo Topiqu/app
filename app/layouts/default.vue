@@ -7,13 +7,13 @@
       </button>
     </div>
     <div class="fixed right-28 z-100">
-      <UserAccount v-if="auth" />
+      <UserAccount />
     </div>
     <div class="fixed top-2 right-16 z-50">
       <ThemeToggle />
     </div>
     <div class="fixed top-2 right-2 z-100">
-      <NotificationBar v-if="auth" />
+      <NotificationBar />
     </div>
     <slot />
     <ClientVersion v-if="isAdmin" :userId="auth?.user.id!" />
