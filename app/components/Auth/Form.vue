@@ -101,6 +101,15 @@
               <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" />
             </button>
           </div>
+          <div v-if="mode === 'login'" class="inline-flex justify-end w-full">
+            <button
+              type="button"
+              class="text-xs p-1 text-blue-600 dark:text-blue-400 underline cursor-pointer hover:text-blue-700 dark:hover:text-blue-500 transition"
+              @click="mode = 'forgot'"
+            >
+              Zapomenuté heslo?
+            </button>
+          </div>
         </div>
 
         <div v-if="mode === 'register'" class="space-y-1.5">
@@ -137,6 +146,12 @@
           {{ mode === 'register' ? 'Registrovat' : 'Přihlásit se' }}
         </button>
 
+        <div class="flex items-center my-4">
+          <hr class="flex-grow border-gray-300 dark:border-gray-700" />
+          <span class="mx-2 text-xs text-gray-400 dark:text-gray-500">NEBO</span>
+          <hr class="flex-grow border-gray-300 dark:border-gray-700" />
+        </div>
+
         <div class="text-center">
           <button
             type="button"
@@ -149,16 +164,6 @@
               class="w-5 h-5 mr-2"
             />
             Přihlásit se přes Google
-          </button>
-        </div>
-
-        <div v-if="mode === 'login'" class="text-center">
-          <button
-            type="button"
-            class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent hover:bg-black/5 dark:hover:bg-white/5 border-none text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 text-sm font-medium transition"
-            @click="mode = 'forgot'"
-          >
-            Zapomenuté heslo?
           </button>
         </div>
       </form>
