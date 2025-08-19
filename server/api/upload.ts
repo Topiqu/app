@@ -1,7 +1,7 @@
 import sharp from 'sharp'
 import { join } from 'path'
 import { Filter } from 'content-checker'
-import { mkdir, writeFile } from 'fs/promises'
+import { access, mkdir, writeFile } from 'fs/promises'
 const { openModeratorApiKey } = useRuntimeConfig()
 
 export default defineEventHandler(async (event) => {
@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
   const form = await readMultipartFormData(event)
   const file = form?.find((f) => f.name === 'file')
   const type = form?.find((f) => f.name === 'type')?.data.toString() || 'article-image'
+  const shortcode = form?.find((f) => f.name === 'shortcode')?.data.toString()
 
   if (
     !file ||
@@ -24,6 +25,7 @@ export default defineEventHandler(async (event) => {
   let outputDir = 'article-images'
   let filenamePrefix = 'article'
   let applyNsfwFilter = false
+  let filename = `${filenamePrefix}-${Date.now()}.webp`
 
   if (type === 'client-logo') {
     maxSize = 2 * 1024 * 1024
@@ -38,6 +40,13 @@ export default defineEventHandler(async (event) => {
   } else if (type === 'article-image') {
     outputDir = 'article-images'
     filenamePrefix = 'article'
+  } else if (type === 'emoji') {
+    if (!shortcode) throw createError({ statusCode: 400, message: 'Chybí shortcode' })
+    if (!user || user.role !== 'admin') throw createError({ statusCode: 403, message: 'Povoleno pouze pro adminy' })
+    maxSize = 1 * 1024 * 1024
+    minDimensions = [64, 64]
+    outputDir = 'emojis'
+    filename = `${shortcode}.webp`
   }
 
   if (file.data.length > maxSize) {
@@ -45,8 +54,7 @@ export default defineEventHandler(async (event) => {
   }
 
   let buffer = file.data
-  let filename = `${filenamePrefix}-${Date.now()}.webp`
-  if (file.type === 'image/svg+xml') {
+  if (file.type === 'image/svg+xml' && type !== 'emoji') {
     filename = `${filenamePrefix}-${Date.now()}.svg`
   } else if (minDimensions) {
     const img = await sharp(file.data)
@@ -80,6 +88,16 @@ export default defineEventHandler(async (event) => {
   const uploadDir = join(process.cwd(), `public/${outputDir}`)
   await mkdir(uploadDir, { recursive: true })
   const filePath = join(uploadDir, filename)
+
+  if (type === 'emoji') {
+    try {
+      await access(filePath)
+      throw createError({ statusCode: 409, message: 'Emoji s tímto shortcode již existuje' })
+    } catch {
+      // proceed
+    }
+  }
+
   await writeFile(filePath, buffer)
 
   if (type === 'client-logo' && user?.clientSiteId) {
@@ -94,5 +112,5 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return { url: `/${outputDir}/${filename}` }
+  return { success: true, url: `/${outputDir}/${filename}` }
 })

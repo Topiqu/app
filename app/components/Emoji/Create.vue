@@ -15,17 +15,7 @@
             required
           />
         </label>
-
-        <label class="flex flex-col gap-2">
-          <span class="text-sm font-semibold uppercase tracking-wide">Obrázek</span>
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/*"
-            class="p-3 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
-            required
-          />
-        </label>
+        <FileUploader type="emoji" :shortcode="shortcode" :disabled="!shortcode" @upload="onUpload" />
       </form>
 
       <div class="mt-8">
@@ -76,6 +66,7 @@
         </button>
         <button
           class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="!shortcode || !imageUrl"
           @click="submit"
         >
           Vytvořit
@@ -90,12 +81,9 @@ import Swal from 'sweetalert2'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 
 const toast = useToast()
-
 const open = defineModel<boolean>()
-
 const shortcode = shallowRef<string>('')
-
-const fileInput = useTemplateRef('fileInput')
+const imageUrl = shallowRef<string | null>(null)
 const scrollParent = useTemplateRef('scrollParent')
 
 const {
@@ -116,26 +104,21 @@ const virtualizer = useVirtualizer({
   overscan: 5,
 })
 
+const onUpload = ({ url }: { url: string }) => {
+  imageUrl.value = url
+}
+
 const submit = async () => {
-  if (!fileInput.value?.files?.[0]) return
-
-  const formData = new FormData()
-  formData.append('shortcode', shortcode.value)
-  formData.append('image', fileInput.value.files[0])
-
+  if (!shortcode.value || !imageUrl.value) return
   const res = await $fetch('/api/emojis', {
     method: 'POST',
-    body: formData,
+    body: { shortcode: shortcode.value, imageUrl: imageUrl.value },
   })
-
   if (res.success && res.emoji) {
     toast.success({ message: `Emoji ${res.emoji.shortcode} přidáno` })
-
     shortcode.value = ''
-    fileInput.value.value = ''
-
+    imageUrl.value = null
     await refresh()
-
     open.value = false
   } else {
     toast.error({ message: error.value?.message || 'Nepodařilo se přidat emoji' })
@@ -144,10 +127,8 @@ const submit = async () => {
 
 const deleteEmoji = async (id: string) => {
   const res = await $fetch(`/api/emojis/${id}` as `/api/emojis/:id`, { method: 'DELETE' })
-
   if (res.success) {
     toast.success({ message: `Emoji smazáno` })
-
     await refresh()
   } else {
     toast.error({ message: error.value?.message || 'Nepodařilo se smazat emoji' })
@@ -155,8 +136,7 @@ const deleteEmoji = async (id: string) => {
 }
 
 const confirmClose = async () => {
-  if (!shortcode.value && !fileInput.value?.files?.[0]) return (open.value = false)
-
+  if (!shortcode.value && !imageUrl.value) return (open.value = false)
   const r = await Swal.fire({
     title: 'Zavřít dialog?',
     text: 'Přidávání emoji bude zrušeno. Opravdu chcete pokračovat?',
@@ -166,7 +146,6 @@ const confirmClose = async () => {
     cancelButtonText: 'Ne',
     confirmButtonColor: '#ef4444',
   })
-
   if (r.isConfirmed) open.value = false
 }
 </script>
