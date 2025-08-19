@@ -75,7 +75,9 @@
       Komentování tohoto článku není povoleno.
     </p>
     <p v-else class="text-gray-600 mb-14 text-base text-center">
-      <NuxtLink to="/login" class="text-blue-600 hover:underline font-medium cursor-pointer">Přihlaste se</NuxtLink>
+      <NuxtLink to="/autorizace" class="text-blue-600 hover:underline font-medium cursor-pointer"
+        >Přihlaste se</NuxtLink
+      >
       pro přidání komentáře.
     </p>
     <div v-if="loading && !comments.length" class="flex justify-center mb-10">

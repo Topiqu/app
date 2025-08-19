@@ -1,6 +1,6 @@
 <template>
   <div class="relative group">
-    <div v-if="auth?.user">
+    <div v-if="auth">
       <button
         ref="btn"
         class="flex items-center gap-3 px-3 py-2 rounded-xl bg-transparent dark:bg-transparent border-none transition-all duration-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800"
