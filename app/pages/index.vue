@@ -55,7 +55,7 @@
           </h2>
           <div class="mt-3 line-clamp-3 text-base" v-html="featured.content"></div>
           <div class="mt-4 flex flex-col sm:flex-row justify-between text-sm gap-3">
-            <span>{{ formatDate(featured.createdAt ?? undefined) }} · {{ featured.readingTime ?? 5 }} min</span>
+            <span>{{ formatDate(featured.createdAt ?? undefined) }} · {{ featured.readingTime ?? 5 }} min čtení</span>
             <span v-tippy="'Komentáře a reakce'">
               <MessageCircle class="w-4 h-4 inline mr-1" />{{ featured._count?.comments ?? 0 }} ·
               <Heart class="w-4 h-4 inline mr-1" />{{ featured._count?.reactions ?? 0 }}
