@@ -75,8 +75,6 @@ export default defineEventHandler(async (event) => {
     clientSiteId: string,
   ): CommentWithReplies => {
     const userData = comment.user
-    const articleData = comment.article
-
     const relevantBans = userData ? userData.bans.filter((ban: any) => ban.clientSiteId === clientSiteId) : []
     const isBanned = relevantBans.length > 0
     const banDetails = isBanned
@@ -152,7 +150,7 @@ export default defineEventHandler(async (event) => {
             banDetails,
           }
         : null,
-      article: { clientSiteId: articleData.clientSiteId, userId: articleData.userId },
+      article: { clientSiteId: article.clientSiteId, userId: article.userId },
       likes: comment.reactions.filter((r: any) => r.type === 'LIKE').length,
       dislikes: comment.reactions.filter((r: any) => r.type === 'DISLIKE').length,
       replies: processedReplies,

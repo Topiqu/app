@@ -239,7 +239,7 @@ const handleDelete = async (c: CommentWithReplies, reason: string | null) => {
 }
 
 const react = async (c: CommentWithReplies, type: 'LIKE' | 'DISLIKE') => {
-  if (!session?.value?.user || c.deletedAt) return
+  if (c.deletedAt) return
   try {
     await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: c.id, type } })
     await refresh()

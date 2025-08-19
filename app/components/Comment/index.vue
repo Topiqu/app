@@ -136,8 +136,7 @@
     >
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
         <button
-          v-if="session?.user"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100"
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 cursor-pointer bg-gray-100"
           :class="comment.userReaction?.type === 'LIKE' ? 'bg-green-100 text-green-600' : 'text-gray-600'"
           @click="$emit('like', comment)"
         >
@@ -145,8 +144,7 @@
           <span>{{ comment.likes || 0 }}</span>
         </button>
         <button
-          v-if="session?.user"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100"
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 cursor-pointer bg-gray-100"
           :class="comment.userReaction?.type === 'DISLIKE' ? 'bg-red-100 text-red-600' : 'text-gray-600'"
           @click="$emit('dislike', comment)"
         >
@@ -307,12 +305,8 @@ const deleteReason = shallowRef('')
 const banReason = shallowRef('')
 const banExpiresAt = shallowRef('')
 const banModal = ref<HTMLElement | null>(null)
-const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}`, {
+const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}/author`, {
   key: `author-${props.comment.article.userId}`,
-  default: () => ({
-    username: 'Autor',
-    avatarUrl: null,
-  }),
 })
 const report = async (c: CommentWithReplies) => {
   try {
