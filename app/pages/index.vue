@@ -316,17 +316,20 @@ interface Tag {
   name: string
   slug: string
 }
+interface ArticleTag {
+  tag: Tag
+}
 interface Article {
   id: string
   slug: string
   title: string
-  content: string
+  content: string | null
   imageUrl: string | null
   createdAt: string
-  readingTime: number | null
-  user: User
-  tags: { tag: Tag }[]
-  _count: { comments: number; reactions: number }
+  readingTime: number
+  user: User | null
+  tags: ArticleTag[]
+  _count: { comments: number; reactions: number } | null
 }
 interface ClientSite {
   id: string
@@ -337,10 +340,10 @@ interface ClientSite {
 }
 
 const slug = 'GameDev'
-const page = shallowRef(1),
-  limit = shallowRef(10),
-  hasMore = shallowRef(true),
-  selectedTag = shallowRef('')
+const page = shallowRef(1)
+const limit = shallowRef(2)
+const hasMore = shallowRef(true)
+const selectedTag = shallowRef('')
 const allArticles = ref<Article[]>([])
 
 const articlesUrl = computed(
@@ -348,7 +351,15 @@ const articlesUrl = computed(
     `/api/articles/by-clientsite/${slug}?page=${page.value}&limit=${limit.value}${selectedTag.value ? `&tag=${selectedTag.value}` : ''}`,
 )
 const { data: clientSite } = useFetch<ClientSite>(`/api/clients/slug/${slug}`)
-const { data: newArticles, refresh, pending } = useFetch<Article[]>(articlesUrl)
+const { data: feat } = useFetch<{ featured: Article | null; recommended: Article[] }>(
+  `/api/articles/featured/${slug}`,
+  { default: () => ({ featured: null, recommended: [] }) },
+)
+const {
+  data: feed,
+  refresh,
+  pending,
+} = useFetch<{ items: Article[]; hasMore: boolean }>(articlesUrl, { default: () => ({ items: [], hasMore: true }) })
 
 useSeoMeta({
   title: clientSite.value?.name ?? 'GameDev',
@@ -362,40 +373,46 @@ useSeoMeta({
 })
 
 watch(
-  newArticles,
+  feed,
   (d) => {
     const existing = new Set(allArticles.value.map((a) => a.id))
-    const unique = (d || []).filter((a) => !existing.has(a.id))
-    allArticles.value.push(...unique)
-    hasMore.value = (d?.length || 0) === limit.value
+    const next = (d?.items ?? []).filter((a) => !existing.has(a.id))
+    allArticles.value = [...allArticles.value, ...next]
+    hasMore.value = !!d?.hasMore
   },
   { immediate: true },
 )
 
 const loadMore = async () => {
+  if (!hasMore.value) return
   page.value++
   await refresh()
 }
 
-const featured = computed(() =>
-  allArticles.value.reduce(
-    (a, b) => (a!._count.reactions + a!._count.comments > b._count.reactions + b._count.comments ? a : b),
-    allArticles.value[0],
-  ),
-)
-const recommended = computed(() => allArticles.value.filter((a) => a.id !== featured.value?.id).slice(0, 2))
+watch(selectedTag, () => {
+  page.value = 1
+  allArticles.value = []
+  hasMore.value = true
+  refresh()
+})
+
+const featured = computed(() => feat.value?.featured ?? null)
+const recommended = computed(() => feat.value?.recommended ?? [])
 const tags = computed(() => {
-  const t = new Map<string, any>()
+  if (!allArticles.value.length) return []
+  const t = new Map<string, { id: string; name: string; slug: string; count: number }>()
   allArticles.value
     .flatMap((a) => a.tags)
     .forEach((x) => {
-      if (!t.has(x.tag.id)) t.set(x.tag.id, { ...x.tag, count: 0 })
+      if (!t.has(x.tag.id)) t.set(x.tag.id, { id: x.tag.id, name: x.tag.name, slug: x.tag.slug, count: 0 })
       t.get(x.tag.id)!.count++
     })
   return [...t.values()].sort((a, b) => b.count - a.count)
 })
 const topArticles = computed(() =>
-  [...allArticles.value].sort((a, b) => b._count.reactions - a._count.reactions).slice(0, 3),
+  allArticles.value.length
+    ? [...allArticles.value].sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0)).slice(0, 3)
+    : [],
 )
 const filteredArticles = computed(() => {
   const unique = [...new Map(allArticles.value.map((a) => [a.id, a])).values()].filter(
