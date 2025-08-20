@@ -170,21 +170,29 @@ type Notif = {
   link?: string | null
 }
 type FetchResponse = { notifications: Notif[]; unreadCount: number; hasMore: boolean }
-const show = shallowRef(false),
-  page = shallowRef(1),
-  limit = 25,
-  max = 75,
-  loading = shallowRef(false),
-  hasMore = shallowRef(true),
-  data = ref<Notif[]>([]),
-  unreadCount = shallowRef(0)
-const btn = useTemplateRef('btn'),
-  dropdown = useTemplateRef('dropdown'),
-  scroll = useTemplateRef('scroll'),
-  sentinel = useTemplateRef('sentinel')
+
+const show = shallowRef(false)
+const page = shallowRef(1)
+const limit = 25
+const max = 75
+const loading = shallowRef(false)
+const hasMore = shallowRef(true)
+const data = ref<Notif[]>([])
+const unreadCount = shallowRef(0)
+const btn = useTemplateRef('btn')
+const dropdown = useTemplateRef('dropdown')
+const scroll = useTemplateRef('scroll')
+const sentinel = useTemplateRef('sentinel')
 const url = computed(() => `/api/notifications?page=${page.value}&limit=${limit}`)
 const { data: auth } = useAuth()
 const { data: fetchedData, error, refresh } = await useFetch<FetchResponse>(url)
+
+let eventSource: EventSource | null = null
+
+const sseUrl = computed(() => {
+  const base = import.meta.env.PROD ? `https://${window.location.host}` : 'http://localhost:3000'
+  return `${base}/api/notifications/sse`
+})
 
 watch(
   fetchedData,
@@ -198,9 +206,11 @@ watch(
   },
   { immediate: true },
 )
+
 watch(error, (e) => {
   if (e) useToast().error({ message: `Chyba při načítání: ${e.message || 'Neznámá chyba'}` })
 })
+
 const notifications = computed(() => {
   const map = new Map<string, Notif>()
   for (const n of data.value) {
@@ -214,6 +224,7 @@ const notifications = computed(() => {
   }
   return [...map.values()]
 })
+
 const toggle = () => {
   show.value = !show.value
   if (show.value && auth?.value?.user) {
@@ -221,6 +232,7 @@ const toggle = () => {
     refresh()
   }
 }
+
 const del = async (id: string) => {
   try {
     await $fetch(`/api/notifications/${id}`, { method: 'DELETE' })
@@ -230,6 +242,38 @@ const del = async (id: string) => {
     useToast().error({ message: `Chyba při mazání: ${e.message || 'Neznámá chyba'}` })
   }
 }
+
+watch(
+  () => auth?.value?.user,
+  (u) => {
+    if (u && import.meta.client) {
+      eventSource = new EventSource(sseUrl.value)
+      eventSource.onmessage = (event) => {
+        try {
+          const n = JSON.parse(event.data)
+          if (!n.id || !['COMMENT', 'LIKE', 'FOLLOW', 'MENTION', 'ARTICLE_PUBLISHED', 'SYSTEM'].includes(n.type)) {
+            return
+          }
+          data.value = [n as Notif, ...data.value]
+          unreadCount.value = data.value.filter((n) => !n.isRead).length
+          useToast().success({ message: `Nová notifikace: ${n.message}` })
+        } catch (err: any) {
+          useToast().error({ message: `Chyba při zpracování notifikace ${err.data.message || 'Neznámá chyba'}` })
+        }
+      }
+      eventSource.onerror = () => {
+        useToast().error({ message: 'Nepodařilo se připojit k notifikacím' })
+        eventSource?.close()
+        eventSource = null
+      }
+    } else {
+      eventSource?.close()
+      eventSource = null
+    }
+  },
+  { immediate: true },
+)
+
 watch(
   [show, sentinel],
   async ([s, sent]) => {
@@ -252,5 +296,7 @@ watch(
   },
   { immediate: true },
 )
+
 onClickOutside(dropdown, () => (show.value = false), { ignore: [btn] })
+onUnmounted(() => eventSource?.close())
 </script>
