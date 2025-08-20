@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (article.userId && article.userId !== user?.id) {
-    await prisma.notification.create({
+    const notification = await prisma.notification.create({
       data: {
         message: `${user?.name || 'Někdo'} dal like vašemu článku.`,
         userId: article.userId,
@@ -42,6 +42,10 @@ export default defineEventHandler(async (event) => {
         type: 'LIKE',
       },
     })
+    const eventStream = globalThis.eventStreams.get(`notifications:${article.userId}`)
+    if (eventStream) {
+      await eventStream.push(JSON.stringify({ ...notification, count: 1 }))
+    }
   }
 
   const count = await db.articleReaction.count({ where: { articleId: id } })
