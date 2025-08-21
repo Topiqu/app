@@ -134,19 +134,14 @@
       >
         <h2 class="text-3xl font-bold">Všechny články</h2>
         <div class="flex flex-wrap gap-2 w-full sm:w-auto" style="background-color: transparent !important">
-          <button
+          <NuxtLink
             v-for="tag in tags"
             :key="tag.id"
-            :class="[
-              'text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full font-medium transition duration-200 hover:scale-95',
-              selectedTag === tag.name
-                ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
-                : 'hover:bg-blue-200 dark:hover:bg-blue-800',
-            ]"
-            @click="selectedTag = tag.name"
+            :to="`/stitky/${tag.slug}`"
+            class="text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full font-medium transition duration-200 hover:scale-95 hover:bg-blue-200 dark:hover:bg-blue-800 no-underline"
           >
-            <span v-if="selectedTag === tag.name" class="mr-1">✓</span>{{ tag.name }}
-          </button>
+            {{ tag.name }}
+          </NuxtLink>
           <button
             :class="[
               'text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full font-medium transition duration-200 hover:scale-95',
@@ -341,7 +336,7 @@ interface ClientSite {
 
 const slug = 'GameDev'
 const page = shallowRef(1)
-const limit = shallowRef(2)
+const limit = shallowRef(5)
 const hasMore = shallowRef(true)
 const selectedTag = shallowRef('')
 const allArticles = ref<Article[]>([])
@@ -359,7 +354,9 @@ const {
   data: feed,
   refresh,
   pending,
-} = useFetch<{ items: Article[]; hasMore: boolean }>(articlesUrl, { default: () => ({ items: [], hasMore: true }) })
+} = useFetch<{ items: Article[]; hasMore: boolean; tags: { id: string; name: string; slug: string }[] }>(articlesUrl, {
+  default: () => ({ items: [], hasMore: true, tags: [] }),
+})
 
 useSeoMeta({
   title: clientSite.value?.name ?? 'GameDev',
@@ -398,17 +395,7 @@ watch(selectedTag, () => {
 
 const featured = computed(() => feat.value?.featured ?? null)
 const recommended = computed(() => feat.value?.recommended ?? [])
-const tags = computed(() => {
-  if (!allArticles.value.length) return []
-  const t = new Map<string, { id: string; name: string; slug: string; count: number }>()
-  allArticles.value
-    .flatMap((a) => a.tags)
-    .forEach((x) => {
-      if (!t.has(x.tag.id)) t.set(x.tag.id, { id: x.tag.id, name: x.tag.name, slug: x.tag.slug, count: 0 })
-      t.get(x.tag.id)!.count++
-    })
-  return [...t.values()].sort((a, b) => b.count - a.count)
-})
+const tags = computed(() => feed.value?.tags ?? [])
 const topArticles = computed(() =>
   allArticles.value.length
     ? [...allArticles.value].sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0)).slice(0, 3)
