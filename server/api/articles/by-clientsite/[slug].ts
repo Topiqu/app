@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
   const rows = await db.article.findMany({
     where: {
       clientSiteId: clientSite.id,
+      status: 'published',
       ...(tag && {
         tags: { some: { tag: { name: { equals: tag, mode: 'insensitive' } } } },
       }),
@@ -31,7 +32,23 @@ export default defineEventHandler(async (event) => {
     },
   })
 
+  const allTags = await db.article
+    .findMany({
+      where: {
+        clientSiteId: clientSite.id,
+        status: 'published',
+      },
+      include: {
+        tags: { include: { tag: true } },
+      },
+    })
+    .then((articles) => [
+      ...new Map(
+        articles.flatMap((a) => a.tags).map((t) => [t.tag.id, { id: t.tag.id, name: t.tag.name, slug: t.tag.slug }]),
+      ).values(),
+    ])
+
   const hasMore = rows.length > take
   const items = hasMore ? rows.slice(0, take) : rows
-  return { items, hasMore }
+  return { items, hasMore, tags: allTags }
 })
