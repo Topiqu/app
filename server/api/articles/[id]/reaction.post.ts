@@ -1,4 +1,12 @@
+import type { EventStream } from 'h3'
+
 import { randomUUID } from 'crypto'
+
+interface GlobalThis {
+  eventStreams?: Map<string, Set<EventStream>>
+}
+
+declare const globalThis: GlobalThis
 
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
@@ -42,9 +50,11 @@ export default defineEventHandler(async (event) => {
         type: 'LIKE',
       },
     })
-    const eventStream = globalThis.eventStreams.get(`notifications:${article.userId}`)
-    if (eventStream) {
-      await eventStream.push(JSON.stringify({ ...notification, count: 1 }))
+    const streamKey = `notifications:${article.userId}`
+    const streams = globalThis.eventStreams?.get(streamKey)
+    if (streams) {
+      const serialized = JSON.stringify({ ...notification, count: 1 })
+      streams.forEach((stream) => stream.push(serialized))
     }
   }
 
