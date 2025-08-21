@@ -28,100 +28,16 @@
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
     <section v-if="featured" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <NuxtLink
-        v-motion
-        :initial="{ opacity: 0, y: 50 }"
-        :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        :to="`/clanky/${featured.slug}`"
-        class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300 group no-underline relative"
-      >
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
-        ></div>
-        <NuxtImg
-          v-if="featured.imageUrl"
-          :src="featured.imageUrl"
-          class="w-full h-64 lg:h-80 object-cover group-hover:scale-[1.02] group-hover:rotate-1 transition duration-500 relative z-20"
-          alt="Featured"
-        />
-        <div v-else class="w-full h-64 lg:h-80 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-          <Icon name="image" class="w-16 h-16 text-gray-400" />
-        </div>
-        <div class="p-6 relative z-20">
-          <h2
-            class="text-xl lg:text-2xl font-bold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200"
-          >
-            {{ featured.title }}
-          </h2>
-          <div class="mt-3 line-clamp-3 text-base" v-html="featured.content"></div>
-          <div class="mt-4 flex flex-col sm:flex-row justify-between text-sm gap-3">
-            <span>{{ formatDate(featured.createdAt ?? undefined) }} · {{ featured.readingTime ?? 5 }} min čtení</span>
-            <span v-tippy="'Komentáře a reakce'">
-              <MessageCircle class="w-4 h-4 inline mr-1" />{{ featured._count?.comments ?? 0 }} ·
-              <Heart class="w-4 h-4 inline mr-1" />{{ featured._count?.reactions ?? 0 }}
-            </span>
-          </div>
-          <div class="mt-3 flex items-center gap-3 text-sm">
-            <NuxtImg
-              v-if="featured.user?.avatarUrl"
-              :src="featured.user.avatarUrl"
-              class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700 relative z-20"
-              alt="Autor"
-            />
-            <span class="font-medium">{{ featured.user?.username ?? 'Není uveden' }}</span>
-          </div>
-        </div>
-      </NuxtLink>
+      <ArticleSkeletonCard :pending="featPending" isFeatured :article="featured" :tags="featured.tags" />
       <div class="space-y-6">
-        <NuxtLink
+        <ArticleSkeletonCard
           v-for="(rec, idx) in recommended"
           :key="rec.id"
-          v-motion
-          :initial="{ opacity: 0, y: 50 }"
-          :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 500, delay: 100 * idx } }"
-          :to="`/clanky/${rec.slug}`"
-          class="block bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
-        >
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
-          ></div>
-          <NuxtImg
-            v-if="rec.imageUrl"
-            :src="rec.imageUrl"
-            class="w-full h-36 object-cover rounded-lg mb-4 group-hover:blur-[1px] transition duration-500 relative z-20"
-            alt="Doporučený"
-          />
-          <div v-else class="w-full h-36 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg mb-4">
-            <Icon name="image" class="w-12 h-12 text-gray-400" />
-          </div>
-          <h3
-            class="text-lg font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200 relative z-20"
-          >
-            {{ rec.title }}
-          </h3>
-          <div
-            class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300"
-            v-html="rec.content?.substring(0, 50) + (rec.content?.length! > 50 ? '...' : '')"
-          ></div>
-          <div class="mt-3 flex flex-col sm:flex-row justify-between text-sm gap-3 relative z-20">
-            <span>{{ formatDate(rec.createdAt ?? undefined) }} · {{ rec.readingTime ?? 5 }} min čtení</span>
-            <span v-tippy="'Komentáře'">
-              <MessageCircle class="w-4 h-4 inline mr-1" />{{ rec._count?.comments ?? 0 }}
-            </span>
-          </div>
-          <div class="mt-3 flex items-center gap-3 text-sm relative z-20">
-            <NuxtImg
-              v-if="rec.user?.avatarUrl"
-              :src="rec.user.avatarUrl"
-              class="w-7 h-7 rounded-full object-cover border border-gray-200 dark:border-gray-700 transition duration-300 relative z-20"
-              alt="Autor"
-            />
-            <span
-              class="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200"
-              >{{ rec.user?.username ?? 'Není uveden' }}</span
-            >
-          </div>
-        </NuxtLink>
+          :pending="featPending"
+          :article="rec"
+          :tags="rec.tags"
+          :index="idx"
+        />
       </div>
     </section>
 
@@ -167,62 +83,14 @@
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         style="background-color: transparent !important"
       >
-        <NuxtLink
+        <ArticleSkeletonCard
           v-for="(article, idx) in filteredArticles"
           :key="article.id"
-          v-motion
-          :initial="{ opacity: 0, y: 50 }"
-          :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 500, delay: 100 * idx } }"
-          :to="`/clanky/${article.slug}`"
-          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
-        >
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
-          ></div>
-          <NuxtImg
-            v-if="article.imageUrl"
-            :src="article.imageUrl"
-            class="w-full h-48 object-cover rounded-lg mb-4 transition duration-500 relative z-20"
-            alt="Náhled"
-          />
-          <div v-else class="w-full h-48 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg mb-4">
-            <Icon name="image" class="w-12 h-12 text-gray-400" />
-          </div>
-          <h3
-            class="text-lg font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200 relative z-20"
-          >
-            {{ article.title }}
-          </h3>
-          <div class="flex flex-wrap gap-2 mt-3 relative z-20">
-            <button
-              v-for="tag in article.tags.slice(0, 3)"
-              :key="tag.tag.id"
-              class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2 py-1 rounded-full font-medium hover:bg-blue-200 dark:hover:bg-blue-800 hover:scale-95 transition duration-200"
-              @click.stop="selectedTag = tag.tag.name"
-            >
-              {{ tag.tag.name }}
-            </button>
-            <span v-if="article.tags.length > 3" class="text-xs">...</span>
-          </div>
-          <div class="mt-3 flex flex-col sm:flex-row justify-between text-sm gap-3 relative z-20">
-            <span>{{ formatDate(article.createdAt ?? undefined) }}</span>
-            <span v-if="article.readingTime">{{ article.readingTime }} min</span>
-          </div>
-          <div class="mt-3 flex items-center justify-between text-sm relative z-20">
-            <div class="flex items-center gap-3">
-              <NuxtImg
-                v-if="article.user?.avatarUrl"
-                :src="article.user.avatarUrl"
-                class="w-7 h-7 rounded-full object-cover border border-gray-200 dark:border-gray-700 relative z-20"
-                alt="Autor"
-              />
-              <span class="font-medium">{{ article.user?.username ?? 'Není uveden' }}</span>
-            </div>
-            <span v-tippy="'Komentáře'"
-              ><MessageCircle class="w-4 h-4 inline mr-1" />{{ article._count?.comments ?? 0 }}</span
-            >
-          </div>
-        </NuxtLink>
+          :pending="pending"
+          :article="article"
+          :tags="article.tags"
+          :index="idx"
+        />
       </div>
       <p v-else class="text-center text-lg">Žádné články</p>
       <div v-if="hasMore" class="mt-8 text-center">
@@ -296,9 +164,9 @@
 </template>
 
 <script setup lang="ts">
+import { Bell } from 'lucide-vue-next'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
-import { Bell, MessageCircle, Heart } from 'lucide-vue-next'
 
 interface User {
   id: string
@@ -336,7 +204,7 @@ interface ClientSite {
 
 const slug = 'GameDev'
 const page = shallowRef(1)
-const limit = shallowRef(5)
+const limit = shallowRef(2)
 const hasMore = shallowRef(true)
 const selectedTag = shallowRef('')
 const allArticles = ref<Article[]>([])
@@ -346,7 +214,7 @@ const articlesUrl = computed(
     `/api/articles/by-clientsite/${slug}?page=${page.value}&limit=${limit.value}${selectedTag.value ? `&tag=${selectedTag.value}` : ''}`,
 )
 const { data: clientSite } = useFetch<ClientSite>(`/api/clients/slug/${slug}`)
-const { data: feat } = useFetch<{ featured: Article | null; recommended: Article[] }>(
+const { data: feat, pending: featPending } = useFetch<{ featured: Article | null; recommended: Article[] }>(
   `/api/articles/featured/${slug}`,
   { default: () => ({ featured: null, recommended: [] }) },
 )
