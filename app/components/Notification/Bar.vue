@@ -10,7 +10,7 @@
         />
         <span
           v-if="unreadCount > 0"
-          class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-semibold rounded-full h-4 w-4 flex items-center justify-center ring-1 ring-white dark:ring-neutral-900"
+          class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-semibold rounded-full h-4 w-4 flex items-center justify-center ring-1 ring-white dark:ring-neutral-900"
         >
           {{ unreadCount }}
         </span>
@@ -247,6 +247,7 @@ watch(
   () => auth?.value?.user,
   (u) => {
     if (u && import.meta.client) {
+      if (eventSource) return
       eventSource = new EventSource(sseUrl.value)
       eventSource.onmessage = (event) => {
         try {
