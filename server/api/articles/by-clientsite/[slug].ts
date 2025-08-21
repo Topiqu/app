@@ -17,7 +17,6 @@ export default defineEventHandler(async (event) => {
   const rows = await db.article.findMany({
     where: {
       clientSiteId: clientSite.id,
-      status: 'published',
       ...(tag && {
         tags: { some: { tag: { name: { equals: tag, mode: 'insensitive' } } } },
       }),
