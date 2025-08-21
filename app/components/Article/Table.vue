@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 px-4 sm:px-6 lg:px-8">
+  <div class="mb-10 space-y-4 px-4 sm:px-6 lg:px-8">
     <div class="flex justify-center">
       <div class="relative w-full max-w-xs sm:max-w-xl">
         <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
@@ -13,23 +13,29 @@
         />
       </div>
     </div>
-    <div class="overflow-x-auto rounded border border-gray-300">
+    <div class="overflow-x-auto rounded border border-gray-300 sm:block hidden">
       <table class="w-full table-auto text-sm divide-y divide-gray-200">
         <thead class="bg-gray-100 text-left font-semibold text-black">
           <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <th
               v-for="header in headerGroup.headers"
               :key="header.id"
-              class="px-4 py-2 text-center select-none cursor-pointer"
+              class="px-2 sm:px-4 py-2 text-center select-none cursor-pointer group relative"
               @click="(event) => header.column.getToggleSortingHandler()?.(event)"
             >
-              <span v-if="!header.isPlaceholder" class="text-black">
+              <span v-if="!header.isPlaceholder" class="text-black flex items-center justify-center gap-2">
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-                <span v-if="header.column.getIsSorted() === 'asc'">
-                  <Icon name="mdi:arrow-up" />
-                </span>
-                <span v-else-if="header.column.getIsSorted() === 'desc'">
-                  <Icon name="mdi:arrow-down" />
+                <span v-if="header.column.getCanSort()" class="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Icon
+                    :name="
+                      header.column.getIsSorted() === 'asc'
+                        ? 'mdi:arrow-up'
+                        : header.column.getIsSorted() === 'desc'
+                          ? 'mdi:arrow-down'
+                          : 'mdi:arrow-up-down'
+                    "
+                    class="w-4 h-4 text-blue-400"
+                  />
                 </span>
               </span>
             </th>
@@ -88,6 +94,75 @@
         </tbody>
       </table>
     </div>
+    <div class="sm:hidden space-y-4">
+      <div
+        v-for="row in table.getRowModel().rows"
+        :key="row.id"
+        :class="[
+          'p-4 rounded-lg border border-gray-300 shadow-sm transition-colors duration-200 hover:bg-gray-100',
+          row.original.status === 'published'
+            ? 'bg-green-50 border-l-4 border-green-400'
+            : 'bg-white border-l-4 border-yellow-400',
+        ]"
+      >
+        <div class="space-y-2">
+          <div v-for="cell in row.getVisibleCells()" :key="cell.id" class="text-gray-800">
+            <div class="font-semibold">{{ cell.column.columnDef.header }}</div>
+            <div v-if="cell.column.id === 'content'" v-html="cell.getValue() as string"></div>
+            <div v-else>
+              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+            </div>
+          </div>
+          <div :ref="(el) => setDropdownRef(row.id, el)" class="relative">
+            <button
+              class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full hover:from-gray-300 hover:to-gray-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
+              @click="toggleDropdown(row.id)"
+            >
+              <Icon name="mdi:dots-vertical" class="w-5 h-5 text-black" />
+            </button>
+            <div
+              v-if="openDropdown === row.id"
+              class="absolute z-10 right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
+            >
+              <div class="py-1">
+                <button
+                  class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-green-100"
+                  @click="router.push(`/clanky/${row.original.slug}`)"
+                >
+                  <Icon name="mdi:eye" class="w-5 h-5 mr-2" />
+                  Zobrazit
+                </button>
+                <LazyArticleEdit v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
+                  <button
+                    class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-blue-100"
+                    @click="open.value = true"
+                  >
+                    <Icon name="mdi:pencil" class="w-5 h-5 mr-2" />
+                    Upravit
+                  </button>
+                </LazyArticleEdit>
+                <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
+                  <button
+                    class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-yellow-100"
+                    @click="open.value = true"
+                  >
+                    <Icon name="mdi:tag-outline" class="w-5 h-5 mr-2" />
+                    Tagy
+                  </button>
+                </LazyArticleTag>
+                <button
+                  class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-red-100"
+                  @click="del(row.original.id)"
+                >
+                  <Icon name="mdi:delete" class="w-5 h-5 mr-2" />
+                  Smazat
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -108,20 +183,66 @@ import {
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
 
 const router = useRouter()
-
 const toast = useToast()
 const { onArticleCreated } = useArticleEvent()
 
 const { data: articles, refresh } = await useFetch<Article[]>('/api/articles', { default: () => [] })
 
-const globalFilter = shallowRef<string>('')
+const globalFilter = shallowRef('')
+const openDropdown = shallowRef<string | null>(null)
+const dropdownRef = ref<HTMLElement | null>(null)
 
-const columns = ref<ColumnDef<Article>[]>([
-  {
-    header: 'Název',
-    accessorKey: 'title',
-    cell: (info) => info.getValue(),
-  },
+function toDom(el: Element | ComponentPublicInstance | null): HTMLElement | null {
+  if (!el) return null
+  if (el instanceof HTMLElement) return el
+  const root = (el as any)?.$el
+  return root instanceof HTMLElement ? root : null
+}
+
+function setDropdownRef(id: string, el: Element | ComponentPublicInstance | null) {
+  const dom = toDom(el)
+  if (openDropdown.value === id) dropdownRef.value = dom
+}
+
+onClickOutside(dropdownRef, () => {
+  openDropdown.value = null
+  dropdownRef.value = null
+})
+
+const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
+  try {
+    await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
+    await refresh()
+    toast.success({ message: `Stav změněn na ${status === 'draft' ? 'návrh' : 'publikováno'}` })
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Změna stavu selhala' })
+  }
+}, 100)
+
+async function del(id: string) {
+  const confirm = await Swal.fire({
+    title: 'Opravdu smazat?',
+    text: 'Tuto akci nelze vrátit zpět.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Smazat',
+    cancelButtonText: 'Zrušit',
+    confirmButtonColor: '#ef4444',
+  })
+  if (!confirm.isConfirmed) return
+
+  try {
+    await $fetch(`/api/articles/${id}`, { method: 'DELETE' })
+    articles.value = articles.value.filter((a) => a.id !== id)
+    toast.success({ message: 'Článek smazán' })
+    refresh()
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Smazání selhalo' })
+  }
+}
+
+const columns: ColumnDef<Article>[] = [
+  { header: 'Název', accessorKey: 'title' },
   {
     header: 'Stav',
     accessorKey: 'status',
@@ -134,17 +255,15 @@ const columns = ref<ColumnDef<Article>[]>([
   {
     header: 'Datum',
     accessorKey: 'createdAt',
-    cell: (info) => format(new Date(info.getValue() as string), 'dd.MM.yyyy,HH:mm'),
+    cell: (info) => format(new Date(info.getValue() as string), 'dd.MM.yyyy, HH:mm'),
   },
-])
+]
 
 const table = useVueTable({
   get data() {
-    return articles.value || []
+    return articles.value
   },
-  get columns() {
-    return columns.value
-  },
+  columns,
   state: {
     get globalFilter() {
       return globalFilter.value
@@ -156,43 +275,31 @@ const table = useVueTable({
   getFilteredRowModel: getFilteredRowModel(),
 })
 
-onArticleCreated(() => refresh())
+onArticleCreated(refresh)
 
-async function del(id: string) {
-  const confirm = await Swal.fire({
-    title: 'Opravdu smazat?',
-    text: 'Tuto akci nelze vrátit zpět.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Smazat',
-    cancelButtonText: 'Zrušit',
-    confirmButtonColor: '#ef4444',
-  })
-
-  if (!confirm.isConfirmed) return
-
-  try {
-    await $fetch(`/api/articles/${id}`, { method: 'DELETE' })
-
-    articles.value = articles.value.filter((a) => a.id !== id)
-
-    toast.success({ message: 'Článek smazán' })
-
-    refresh()
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Smazání selhalo' })
+function toggleDropdown(id: string) {
+  if (openDropdown.value === id) {
+    openDropdown.value = null
+    dropdownRef.value = null
+  } else {
+    openDropdown.value = id
   }
 }
-
-const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
-  try {
-    await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
-
-    await refresh()
-
-    toast.success({ message: `Stav změněn na ${status === 'draft' ? 'návrh' : 'publikováno'}` })
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Změna stavu selhala' })
-  }
-}, 100)
 </script>
+
+<style>
+.animate-slide-in {
+  animation: slideIn 0.2s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
