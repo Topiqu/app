@@ -168,32 +168,8 @@ import { Bell } from 'lucide-vue-next'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 
-interface User {
-  id: string
-  username: string
-  email: string
-  avatarUrl: string | null
-}
-interface Tag {
-  id: string
-  name: string
-  slug: string
-}
-interface ArticleTag {
-  tag: Tag
-}
-interface Article {
-  id: string
-  slug: string
-  title: string
-  content: string | null
-  imageUrl: string | null
-  createdAt: string
-  readingTime: number
-  user: User | null
-  tags: ArticleTag[]
-  _count: { comments: number; reactions: number } | null
-}
+import type { ArticleWithDetails } from '../../types/article'
+
 interface ClientSite {
   id: string
   name: string
@@ -207,24 +183,27 @@ const page = shallowRef(1)
 const limit = shallowRef(10)
 const hasMore = shallowRef(true)
 const selectedTag = shallowRef('')
-const allArticles = ref<Article[]>([])
+const allArticles = ref<ArticleWithDetails[]>([])
 
 const articlesUrl = computed(
   () =>
     `/api/articles/by-clientsite/${slug}?page=${page.value}&limit=${limit.value}${selectedTag.value ? `&tag=${selectedTag.value}` : ''}`,
 )
 const { data: clientSite } = useFetch<ClientSite>(`/api/clients/slug/${slug}`)
-const { data: feat, pending: featPending } = useFetch<{ featured: Article | null; recommended: Article[] }>(
-  `/api/articles/featured/${slug}`,
-  { default: () => ({ featured: null, recommended: [] }) },
-)
+const { data: feat, pending: featPending } = useFetch<{
+  featured: ArticleWithDetails | null
+  recommended: ArticleWithDetails[]
+}>(`/api/articles/featured/${slug}`, { default: () => ({ featured: null, recommended: [] }) })
 const {
   data: feed,
   refresh,
   pending,
-} = useFetch<{ items: Article[]; hasMore: boolean; tags: { id: string; name: string; slug: string }[] }>(articlesUrl, {
-  default: () => ({ items: [], hasMore: true, tags: [] }),
-})
+} = useFetch<{ items: ArticleWithDetails[]; hasMore: boolean; tags: { id: string; name: string; slug: string }[] }>(
+  articlesUrl,
+  {
+    default: () => ({ items: [], hasMore: true, tags: [] }),
+  },
+)
 
 useSeoMeta({
   title: clientSite.value?.name ?? 'GameDev',

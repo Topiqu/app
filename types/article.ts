@@ -1,6 +1,6 @@
 import type { Article as _Article } from '@zenstackhq/runtime/models'
 
-export type Article = _Article & {
+export type ArticleBase = _Article & {
   user: { id: string; username: string; email: string; avatarUrl: string | null }
   tags?: { tag: { id: string; name: string; slug: string } }[]
   commentCount?: number
@@ -11,7 +11,7 @@ export type Article = _Article & {
   readingTime: number
 }
 
-export type RelatedArticle = {
+export type ArticleWithDetails = {
   id: string
   slug: string
   title: string

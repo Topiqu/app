@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import type { RelatedArticle } from '../../../types/article'
+import type { ArticleWithDetails } from '../../../types/article'
 
-defineProps<{ articles: RelatedArticle[] }>()
+defineProps<{ articles: ArticleWithDetails[] }>()
 </script>

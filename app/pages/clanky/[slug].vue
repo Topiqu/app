@@ -253,7 +253,7 @@ import type { ArticleStatus, User } from '@zenstackhq/runtime/models'
 
 import VueEasyLightbox from 'vue-easy-lightbox'
 
-import type { RelatedArticle, Article } from '../../../types/article'
+import type { ArticleWithDetails, ArticleBase } from '../../../types/article'
 
 type Image = { src: string; alt?: string }
 
@@ -262,7 +262,7 @@ const toast = useToast()
 const { data: session } = useAuth()
 const slug = computed(() => route.params.slug)
 const isFollowing = shallowRef(false)
-const relatedArticles = ref<RelatedArticle[]>([])
+const relatedArticles = ref<ArticleWithDetails[]>([])
 const isSticky = shallowRef(false)
 const content = ref<HTMLElement | null>(null)
 const images = ref<Image[]>([])
@@ -273,7 +273,7 @@ const {
   data,
   execute: refresh,
   error,
-} = await useFetch<Article | null>(`/api/articles/${slug.value}`, { default: () => null })
+} = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, { default: () => null })
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || false
 
@@ -423,7 +423,7 @@ watch(
   () => data.value,
   async (article) => {
     if (article?.id && article.tags?.length) {
-      const res = await $fetch<{ articles: RelatedArticle[] }>(`/api/tags/${article.tags[0]?.tag.id}?limit=4`)
+      const res = await $fetch<{ articles: ArticleWithDetails[] }>(`/api/tags/${article.tags[0]?.tag.id}?limit=4`)
       relatedArticles.value = res.articles.filter((a) => a.id !== article.id)
     } else {
       relatedArticles.value = []
