@@ -78,4 +78,9 @@ export default defineNuxtConfig({
       pass: process.env.NUXT_MAIL_PASS,
     },
   },
+
+  image: {
+    quality: 90,
+    formats: ['avif', 'webp', 'png'],
+  },
 })
