@@ -39,39 +39,46 @@
       class="group no-underline"
     >
       <div
-        class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
+        class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/10 opacity-0 group-hover:opacity-60 transition duration-300 z-10"
       ></div>
       <NuxtImg
         v-if="article?.imageUrl"
         :src="article?.imageUrl"
         :class="{
-          'w-full h-60 lg:h-80 object-cover group-hover:scale-[1.02] group-hover:rotate-1 transition duration-500 relative z-20':
+          'w-full h-60 lg:h-80 object-cover group-hover:scale-[1.03] group-hover:rotate-[0.5deg] transition duration-500 relative z-20':
             isFeatured,
-          'w-full h-48 object-cover rounded-lg mb-4 group-hover:blur-[1px] transition duration-500 relative z-20':
+          'w-full h-48 object-cover rounded-lg mb-4 group-hover:blur-[0.5px] transition duration-500 relative z-20':
             !isFeatured,
         }"
-        :alt="'Náhled'"
+        :alt="'Náhled článku'"
       />
       <div
         v-else
-        :class="{ 'w-full h-48 lg:h-64': isFeatured, 'w-full h-32': !isFeatured }"
-        class="bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg mb-4"
+        :class="{ 'w-full h-60 lg:h-80': isFeatured, 'w-full h-48': !isFeatured }"
+        class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center rounded-lg mb-4"
       >
         <Icon name="image" :class="{ 'w-16 h-16': isFeatured, 'w-12 h-12': !isFeatured }" class="text-gray-400" />
       </div>
       <div
         v-if="tags && tags.length"
-        :class="{ 'flex flex-wrap gap-2 text-lg mt-3 ml-6 relative z-20': isFeatured }"
-        class="flex flex-wrap gap-2 mt-2 ml-4 relative z-20"
+        :class="{
+          'flex flex-wrap gap-2 text-lg mt-4 ml-6 relative z-20': isFeatured,
+          'flex flex-wrap gap-2 mt-3 ml-4 relative z-20': !isFeatured,
+        }"
       >
         <button
           v-for="tag in tags.slice(0, 3)"
           :key="tag.tag.id"
-          class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2 py-1 rounded-full font-medium hover:bg-blue-200 dark:hover:bg-blue-800 hover:scale-95 transition duration-200"
+          class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2.5 py-1 rounded-full font-medium hover:bg-blue-200 dark:hover:bg-blue-800 hover:scale-95 transition duration-200"
         >
           {{ tag.tag.name }}
         </button>
-        <span v-if="tags.length > 3" class="text-xs">...</span>
+        <span
+          v-if="tags.length > 3"
+          class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2.5 py-1 rounded-full font-medium"
+        >
+          +{{ tags.length - 3 }}
+        </span>
       </div>
       <div :class="{ 'p-6': isFeatured, 'p-5': !isFeatured }" class="relative z-20">
         <h3
@@ -80,11 +87,15 @@
         >
           {{ article?.title }}
         </h3>
-        <div v-if="isFeatured" class="mt-12 line-clamp-3 text-lg" v-html="article?.content"></div>
+        <div
+          v-if="isFeatured"
+          class="mt-4 line-clamp-3 text-base text-gray-600 dark:text-gray-300"
+          v-html="article?.content"
+        ></div>
         <div
           v-else
-          class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300"
-          v-html="article?.content?.substring(0, 50) + (article?.content?.length! > 50 ? '...' : '')"
+          class="mt-2 line-clamp-2 text-sm text-gray-600 dark:text-gray-300"
+          v-html="article?.content?.substring(0, 100) + (article?.content?.length! > 100 ? '...' : '')"
         ></div>
         <div class="mt-4 flex flex-col sm:flex-row justify-between text-sm gap-3">
           <span>{{ formatDate(article?.createdAt ?? undefined) }} · {{ article?.readingTime ?? 5 }} min čtení</span>
@@ -120,6 +131,7 @@ import { defineProps } from 'vue'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 import { MessageCircle, Heart } from 'lucide-vue-next'
+
 defineProps<{
   pending: boolean
   isFeatured?: boolean
