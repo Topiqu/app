@@ -112,7 +112,7 @@
     >
       <h3 class="text-2xl font-bold">Přidejte se do diskuze</h3>
       <p class="mt-3 max-w-xl mx-auto text-lg">Zaregistrujte se a sdílejte své názory na herní trendy</p>
-      <div class="mt-6"><AuthForm /></div>
+      <div class="mt-6 flex justify-center"><AuthForm /></div>
     </section>
 
     <aside class="lg:col-span-1 lg:order-last space-y-8">
