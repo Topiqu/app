@@ -1,7 +1,7 @@
 <template>
   <div v-if="data" class="min-h-screen p-8 md:p-12 transition-all duration-500 ease-out">
     <div
-      class="fixed top-0 hidden sm:block left-0 w-full bg-white dark:bg-neutral-900 shadow-md z-15 opacity-0 translate-y-[-100%] transition-all duration-300 ease-in-out"
+      class="fixed top-0 hidden sm:block left-0 w-full bg-white dark:bg-neutral-900 shadow-md z-25 opacity-0 translate-y-[-100%] transition-all duration-300 ease-in-out"
       :class="{ 'opacity-100 translate-y-0': isSticky }"
     >
       <div class="max-w-4xl mx-auto flex items-center justify-between px-4 py-4">
@@ -249,20 +249,11 @@
 </template>
 
 <script lang="ts" setup>
-import type { ArticleStatus, Article as _Article, User } from '@zenstackhq/runtime/models'
+import type { ArticleStatus, User } from '@zenstackhq/runtime/models'
 
 import VueEasyLightbox from 'vue-easy-lightbox'
 
-type Article = _Article & {
-  user: { username: string; id: string; avatarUrl: string }
-  tags?: { tag: { name: string; slug: string; id: string } }[]
-  commentCount?: number
-  likes: number
-  likedByUser: boolean
-  allowedComments: boolean
-}
-
-type RelatedArticle = { article: _Article & { user: { username: string } } }
+import type { RelatedArticle, Article } from '../../../types/article'
 
 type Image = { src: string; alt?: string }
 
@@ -270,13 +261,13 @@ const route = useRoute()
 const toast = useToast()
 const { data: session } = useAuth()
 const slug = computed(() => route.params.slug)
-const isFollowing = ref(false)
+const isFollowing = shallowRef(false)
 const relatedArticles = ref<RelatedArticle[]>([])
-const isSticky = ref(false)
+const isSticky = shallowRef(false)
 const content = ref<HTMLElement | null>(null)
 const images = ref<Image[]>([])
-const lightboxVisible = ref(false)
-const currentImageIndex = ref(0)
+const lightboxVisible = shallowRef(false)
+const currentImageIndex = shallowRef(0)
 
 const {
   data,
@@ -433,7 +424,7 @@ watch(
   async (article) => {
     if (article?.id && article.tags?.length) {
       const res = await $fetch<{ articles: RelatedArticle[] }>(`/api/tags/${article.tags[0]?.tag.id}?limit=4`)
-      relatedArticles.value = res.articles.filter((a) => a.article.id !== article.id)
+      relatedArticles.value = res.articles.filter((a) => a.id !== article.id)
     } else {
       relatedArticles.value = []
     }
