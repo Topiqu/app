@@ -47,7 +47,7 @@
         :class="{
           'w-full h-60 lg:h-80 object-cover group-hover:scale-[1.03] group-hover:rotate-[0.5deg] transition duration-500 relative z-20':
             isFeatured,
-          'w-full h-48 object-cover rounded-lg mb-4 group-hover:blur-[0.5px] transition duration-500 relative z-20':
+          'w-full h-48 object-cover rounded-lg mb-4 group-hover:blur-[1px] transition duration-500 relative z-20':
             !isFeatured,
         }"
         :alt="'Náhled článku'"
