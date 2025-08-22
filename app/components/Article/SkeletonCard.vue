@@ -120,7 +120,6 @@ import { defineProps } from 'vue'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 import { MessageCircle, Heart } from 'lucide-vue-next'
-
 defineProps<{
   pending: boolean
   isFeatured?: boolean
@@ -132,7 +131,7 @@ defineProps<{
     imageUrl: string | null
     createdAt: string
     readingTime: number
-    user: { avatarUrl: string | null; username: string | null }
+    user: { id: string; username: string; email: string; avatarUrl: string | null } | null
     _count: { comments: number; reactions: number } | null
   }
   tags?: {
