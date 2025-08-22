@@ -204,7 +204,7 @@ interface ClientSite {
 
 const slug = 'GameDev'
 const page = shallowRef(1)
-const limit = shallowRef(2)
+const limit = shallowRef(10)
 const hasMore = shallowRef(true)
 const selectedTag = shallowRef('')
 const allArticles = ref<Article[]>([])
