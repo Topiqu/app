@@ -306,12 +306,6 @@ const toggleFollow = async () => {
   }
 }
 
-const formatNumber = (n: number) => {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M'
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'k'
-  return n.toString()
-}
-
 const copyLink = () => {
   navigator.clipboard.writeText(fullUrl.value)
   toast.success({ message: 'Odkaz zkopírován do schránky!' })
