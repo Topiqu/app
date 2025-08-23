@@ -125,6 +125,14 @@ onUnmounted(() => {
   background-color: #94a3b8;
 }
 
+#toc .toc-list .toc-list {
+  padding-left: 1rem;
+}
+
+#toc .toc-list .toc-list .toc-list {
+  padding-left: 1.5rem;
+}
+
 #toc a.toc-link {
   display: block;
   font-size: 0.875rem;
@@ -134,15 +142,12 @@ onUnmounted(() => {
   transition: all 0.2s;
   text-decoration: none;
 }
+
 #toc a.toc-link:hover {
   background-color: #e5e7eb;
   color: #1d4ed8;
 }
-#toc a.toc-link.h3-link {
-  padding-left: 1.25rem;
-  font-size: 0.8125rem;
-  color: #6b7280;
-}
+
 #toc a.toc-link.active-current {
   font-weight: 600;
   color: #1e40af;
@@ -151,6 +156,7 @@ onUnmounted(() => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transform: scale(1.02);
 }
+
 #toc a.toc-link.active-current::before {
   content: '';
   position: absolute;
