@@ -126,8 +126,6 @@
 <script lang="ts" setup>
 import type { Article as _Article } from '@zenstackhq/runtime/models'
 
-import { useRoute } from 'vue-router'
-
 const route = useRoute()
 
 const { data: auth } = useAuth()

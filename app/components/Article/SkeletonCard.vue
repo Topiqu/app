@@ -121,7 +121,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 import { MessageCircle, Heart } from 'lucide-vue-next'
