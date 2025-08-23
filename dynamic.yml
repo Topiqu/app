@@ -1,0 +1,13 @@
+http:
+  middlewares:
+    secure-headers:
+      headers:
+        forceSTSHeader: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        contentTypeNosniff: true
+        referrerPolicy: no-referrer-when-downgrade
+        frameDeny: true
+        permissionsPolicy: 'camera=(), microphone=(), geolocation=()'
+        browserXssFilter: true
