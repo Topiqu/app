@@ -9,6 +9,7 @@ export type ArticleBase = _Article & {
   allowedComments: boolean
   createdAt: string
   readingTime: number
+  followerCount: number
 }
 
 export type ArticleWithDetails = {
