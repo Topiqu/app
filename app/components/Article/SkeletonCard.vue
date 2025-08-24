@@ -87,10 +87,10 @@
         >
           {{ article?.title }}
         </h3>
-        <div v-if="isFeatured" class="mt-12 line-clamp-4 text-lg" v-html="article?.content"></div>
+        <div v-if="isFeatured" class="mt-12 line-clamp-4 text-base sm:text-lg" v-html="article?.content"></div>
         <div
           v-else
-          class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300"
+          class="mt-2 line-clamp-3 text-xs sm:text-sm text-gray-600 dark:text-gray-300"
           v-html="article?.content?.substring(0, 50) + (article?.content?.length! > 50 ? '...' : '')"
         ></div>
         <div class="mt-4 flex flex-col sm:flex-row justify-between text-sm gap-4">
@@ -99,18 +99,13 @@
             <span class="text-gray-400">·</span>
             {{ article?.readingTime ?? 5 }} min čtení
           </span>
-
           <span v-tippy="'Komentáře a lajky'" class="inline-flex items-center">
             <MessageCircle class="w-4 h-4 inline mr-1" aria-label="Komentáře" />
             <span class="sr-only">Počet komentářů:</span>{{ article?._count?.comments ?? 0 }}
-
             <span class="px-1 text-gray-400">·</span>
-
             <Heart class="w-4 h-4 inline mr-1" aria-label="Lajky" />
             <span class="sr-only">Počet lajků:</span>{{ article?._count?.reactions ?? 0 }}
-
             <span class="px-1 text-gray-400">·</span>
-
             <Eye class="w-4 h-4 inline mr-1 text-gray-500 dark:text-gray-400" aria-label="Zobrazení" />
             <span class="sr-only">Počet zobrazení:</span>
             <span class="text-gray-500 dark:text-gray-400">{{ article?.views ?? 0 }}</span>
