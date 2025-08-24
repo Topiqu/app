@@ -269,11 +269,9 @@ const images = ref<Image[]>([])
 const lightboxVisible = shallowRef(false)
 const currentImageIndex = shallowRef(0)
 
-const {
-  data,
-  execute: refresh,
-  error,
-} = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, { default: () => null })
+const { data, refresh, error } = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, {
+  default: () => null,
+})
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || false
 

@@ -9,6 +9,17 @@ declare const globalThis: GlobalThis
 const eventStreams = globalThis.eventStreams || new Map<string, Set<EventStream>>()
 globalThis.eventStreams = eventStreams
 
+setInterval(() => {
+  for (const [key, streams] of eventStreams) {
+    const toRemove = new Set<EventStream>()
+    streams.forEach((stream) => {
+      stream.push('ping').catch(() => toRemove.add(stream))
+    })
+    toRemove.forEach((stream) => streams.delete(stream))
+    if (streams.size === 0) eventStreams.delete(key)
+  }
+}, 30000)
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user?.id) throw createError({ statusCode: 401, message: 'Neautorizovaný přístup' })
@@ -20,22 +31,7 @@ export default defineEventHandler(async (event) => {
     streams.add(eventStream)
     eventStreams.set(streamKey, streams)
 
-    let closed = false
-    const heartbeat = setInterval(() => {
-      if (!closed) {
-        eventStream.send().catch(() => {
-          closed = true
-          clearInterval(heartbeat)
-          streams.delete(eventStream)
-          if (streams.size === 0) eventStreams.delete(streamKey)
-          eventStream.close()
-        })
-      }
-    }, 30000)
-
     eventStream.onClosed(() => {
-      closed = true
-      clearInterval(heartbeat)
       streams.delete(eventStream)
       if (streams.size === 0) eventStreams.delete(streamKey)
     })
