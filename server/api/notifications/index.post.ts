@@ -1,3 +1,11 @@
+import type { EventStream } from 'h3'
+
+interface GlobalThis {
+  eventStreams?: Map<string, Set<EventStream>>
+}
+
+declare const globalThis: GlobalThis
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
@@ -25,7 +33,7 @@ export default defineEventHandler(async (event) => {
 
   const url = `http://localhost:3000/clanky/${comment.article.slug}#comment-${comment.id}`
 
-  await prisma.notification.create({
+  const notification = await prisma.notification.create({
     data: {
       message: `${user.name} nahlásil komentář k článku: ${comment.article.title}`,
       link: url,
@@ -34,6 +42,13 @@ export default defineEventHandler(async (event) => {
       type: 'SYSTEM',
     },
   })
+
+  const streamKey = `notifications:${admin.id}`
+  const streams = globalThis.eventStreams?.get(streamKey)
+  if (streams) {
+    const serialized = JSON.stringify({ ...notification, count: 1 })
+    streams.forEach((stream: EventStream) => stream.push(serialized))
+  }
 
   return { message: 'Komentář nahlášen' }
 })
