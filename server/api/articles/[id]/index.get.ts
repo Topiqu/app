@@ -7,7 +7,14 @@ export default defineEventHandler(async (event) => {
   const article = await prisma.article.findUnique({
     where: { slug },
     include: {
-      user: { select: { username: true, id: true, avatarUrl: true } },
+      user: {
+        select: {
+          username: true,
+          id: true,
+          avatarUrl: true,
+          _count: { select: { following: true } },
+        },
+      },
       tags: { include: { tag: true } },
       reactions: true,
       _count: {
@@ -22,7 +29,7 @@ export default defineEventHandler(async (event) => {
 
   if (article.status !== 'published' && user?.role !== 'admin')
     throw createError({ statusCode: 403, message: 'Nedostupné' })
-
+  console.log(article.user?._count.following ?? 0)
   return {
     ...article,
     commentCount: article._count.comments,
@@ -32,5 +39,6 @@ export default defineEventHandler(async (event) => {
       : sessionId
         ? article.reactions.some((r) => r.sessionId === sessionId)
         : false,
+    followerCount: article.user?._count.following ?? 0,
   }
 })
