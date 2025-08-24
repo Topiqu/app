@@ -61,55 +61,77 @@
       </div>
       <div
         v-if="tags && tags.length"
-        :class="{ 'flex flex-wrap gap-2 text-lg mt-3 ml-6 relative z-20': isFeatured }"
+        :class="{ 'flex flex-wrap gap-2 mt-3 ml-6 relative z-20': isFeatured }"
         class="flex flex-wrap items-center gap-2 mt-2 ml-3 sm:ml-4 relative z-20"
       >
         <button
           v-for="tag in tags.slice(0, 3)"
           :key="tag.tag.id"
-          class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2 py-1 rounded-full font-medium hover:bg-blue-200 dark:hover:bg-blue-800 hover:scale-95 transition duration-200"
+          :class="{ 'px-3 py-1.5 text-sm': isFeatured, 'px-2 py-1 text-xs': !isFeatured }"
+          class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full font-medium hover:bg-blue-200 dark:hover:bg-blue-800 hover:scale-95 transition duration-200"
         >
           {{ tag.tag.name }}
         </button>
         <span
           v-if="tags.length > 3"
-          class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2.5 py-1 rounded-full font-medium"
+          :class="{ 'px-3 py-1.5 text-sm': isFeatured, 'px-2.5 py-1 text-xs': !isFeatured }"
+          class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full font-medium"
         >
           +{{ tags.length - 3 }}
         </span>
       </div>
       <div :class="{ 'p-6': isFeatured, 'p-4 sm:p-5': !isFeatured }" class="relative z-20">
         <h3
-          :class="{ 'text-2xl lg:text-3xl font-bold': isFeatured, 'text-lg font-semibold': !isFeatured }"
+          :class="{ 'text-3xl lg:text-4xl font-bold': isFeatured, 'text-lg font-semibold': !isFeatured }"
           class="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200"
         >
           {{ article?.title }}
         </h3>
-        <div v-if="isFeatured" class="mt-12 line-clamp-3 text-lg" v-html="article?.content"></div>
+        <div v-if="isFeatured" class="mt-12 line-clamp-4 text-lg" v-html="article?.content"></div>
         <div
           v-else
           class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300"
           v-html="article?.content?.substring(0, 50) + (article?.content?.length! > 50 ? '...' : '')"
         ></div>
-        <div class="mt-4 flex flex-col sm:flex-row justify-between text-sm gap-3">
-          <span>{{ formatDate(article?.createdAt ?? undefined) }} · {{ article?.readingTime ?? 5 }} min čtení</span>
-          <span v-tippy="isFeatured ? 'Komentáře a reakce' : 'Komentáře'">
-            <MessageCircle class="w-4 h-4 inline mr-1" />{{ article?._count?.comments ?? 0 }}
-            <template v-if="isFeatured">
-              · <Heart class="w-4 h-4 inline mr-1" />{{ article?._count?.reactions ?? 0 }}
-            </template>
+        <div class="mt-4 flex flex-col sm:flex-row justify-between text-sm gap-4">
+          <span>
+            {{ formatDate(article?.createdAt ?? undefined) }}
+            <span class="text-gray-400">·</span>
+            {{ article?.readingTime ?? 5 }} min čtení
+          </span>
+
+          <span v-tippy="'Komentáře a lajky'" class="inline-flex items-center">
+            <MessageCircle class="w-4 h-4 inline mr-1" aria-label="Komentáře" />
+            <span class="sr-only">Počet komentářů:</span>{{ article?._count?.comments ?? 0 }}
+
+            <span class="px-1 text-gray-400">·</span>
+
+            <Heart class="w-4 h-4 inline mr-1" aria-label="Lajky" />
+            <span class="sr-only">Počet lajků:</span>{{ article?._count?.reactions ?? 0 }}
+
+            <span class="px-1 text-gray-400">·</span>
+
+            <Eye class="w-4 h-4 inline mr-1 text-gray-500 dark:text-gray-400" aria-label="Zobrazení" />
+            <span class="sr-only">Počet zobrazení:</span>
+            <span class="text-gray-500 dark:text-gray-400">{{ article?.views ?? 0 }}</span>
           </span>
         </div>
-        <div class="mt-3 flex items-center gap-3 text-sm">
+        <div
+          :class="{
+            'flex flex-col items-start gap-2 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700': isFeatured,
+            'flex items-center gap-3 mt-3': !isFeatured,
+          }"
+          class="relative z-20"
+        >
           <NuxtImg
             v-if="article?.user?.avatarUrl"
             :src="article?.user.avatarUrl"
-            :class="{ 'w-10 h-10': isFeatured, 'w-7 h-7': !isFeatured }"
-            class="rounded-full object-cover border border-gray-200 dark:border-gray-700 transition duration-300 relative z-20"
+            :class="{ 'w-16 h-16': isFeatured, 'w-7 h-7': !isFeatured }"
+            class="rounded-full object-cover border border-gray-200 dark:border-gray-700 transition duration-300"
             alt="Autor"
           />
           <span
-            :class="{ 'text-base font-semibold': isFeatured, 'font-medium': !isFeatured }"
+            :class="{ 'text-lg font-semibold': isFeatured, 'font-medium': !isFeatured }"
             class="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200"
           >
             {{ article?.user?.username ?? 'Není uveden' }}
@@ -123,7 +145,7 @@
 <script setup lang="ts">
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
-import { MessageCircle, Heart } from 'lucide-vue-next'
+import { MessageCircle, Heart, Eye } from 'lucide-vue-next'
 defineProps<{
   pending: boolean
   isFeatured?: boolean
@@ -135,6 +157,7 @@ defineProps<{
     imageUrl: string | null
     createdAt: string
     readingTime: number
+    views: number
     user: { id: string; username: string; email: string; avatarUrl: string | null } | null
     _count: { comments: number; reactions: number } | null
   }
