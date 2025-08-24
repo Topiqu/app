@@ -19,6 +19,7 @@ export type ArticleWithDetails = {
   imageUrl: string | null
   createdAt: string
   readingTime: number
+  views: number
   user: { id: string; username: string; email: string; avatarUrl: string | null } | null
   tags: { tag: { id: string; name: string; slug: string } }[]
   _count: { comments: number; reactions: number } | null
