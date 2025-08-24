@@ -309,6 +309,7 @@ const { data: authorData } = await useFetch(`/api/users/${props.comment.article.
   key: `author-${props.comment.article.userId}`,
 })
 const report = async (c: CommentWithReplies) => {
+  if (!confirm('Opravdu chcete nahlásit tento komentář?')) return
   try {
     await $fetch('/api/notifications', {
       method: 'POST',
