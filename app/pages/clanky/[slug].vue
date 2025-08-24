@@ -40,37 +40,48 @@
       >
         {{ data.title }}
       </h1>
-      <div class="flex items-center gap-3 text-sm text-gray-600 mt-[-8px]">
+      <div class="flex items-center gap-3 text-gray-600 dark:text-gray-400">
         <NuxtImg
           v-if="data.user.avatarUrl"
           :src="data.user.avatarUrl"
           :alt="`Avatar autora: ${data.user.username}`"
-          format="webp"
-          quality="80"
-          width="24"
-          height="24"
-          class="w-8 h-8 rounded-full object-cover"
+          class="w-12 h-12 rounded-full object-cover"
         />
-        <Icon v-else name="mdi:account" class="w-6 h-6 text-blue-500" />
-        <NuxtLink
-          :to="`/autor/${data.user.username}`"
-          class="font-medium text-[17px] text-blue-600 hover:text-blue-800 transition"
-          >{{ data.user.username }}</NuxtLink
-        >
-        <span class="italic text-gray-400">• Autor článku</span>
-        <button
-          v-if="session?.user && session.user.id !== data.user.id"
-          class="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-200 hover:shadow-md transform hover:scale-105 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-500"
-          :aria-label="isFollowing ? 'Přestat sledovat autora' : 'Sledovat autora'"
-          @click="toggleFollow"
-        >
-          <Icon
-            :name="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
-            class="w-4 h-4"
-            :class="isFollowing ? 'text-green-500' : 'text-gray-500'"
-          />
-          {{ isFollowing ? 'Sledování' : 'Sledovat' }}
-        </button>
+        <Icon v-else name="mdi:account" class="w-12 h-12 text-blue-500 rounded-full bg-gray-100 p-2 dark:bg-gray-800" />
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <NuxtLink
+              :to="`/autor/${data.user.username}`"
+              class="font-medium text-[17px] text-blue-600 hover:text-blue-800 transition"
+            >
+              {{ data.user.username }}
+            </NuxtLink>
+            <span class="italic text-gray-400 text-sm">• Autor článku</span>
+          </div>
+
+          <div class="flex items-center gap-2 mt-1">
+            <span
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
+            >
+              <Icon name="mdi:account-group" class="w-3.5 h-3.5" />
+              {{ data.followerCount ?? 0 }} sledujících
+            </span>
+
+            <button
+              v-if="session?.user && session.user.id !== data.user.id"
+              class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full border text-xs cursor-pointer font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-200 hover:shadow-md transform hover:scale-105 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-500"
+              :aria-label="isFollowing ? 'Přestat sledovat autora' : 'Sledovat autora'"
+              @click="toggleFollow"
+            >
+              <Icon
+                :name="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
+                class="w-3.5 h-3.5"
+                :class="isFollowing ? 'text-green-500' : 'text-gray-500'"
+              />
+              {{ isFollowing ? 'Sledování' : 'Sledovat' }}
+            </button>
+          </div>
+        </div>
       </div>
       <NuxtImg
         v-if="data.imageUrl"
