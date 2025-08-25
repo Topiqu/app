@@ -245,9 +245,11 @@ const del = async (id: string) => {
 
 watch(
   () => auth?.value?.user,
-  (u) => {
+  async (u) => {
     if (u && import.meta.client) {
       if (eventSource) return
+      page.value = 1
+      await refresh()
       eventSource = new EventSource(sseUrl.value)
       eventSource.onmessage = (event) => {
         try {
@@ -270,6 +272,8 @@ watch(
     } else {
       eventSource?.close()
       eventSource = null
+      data.value = []
+      unreadCount.value = 0
     }
   },
   { immediate: true },
