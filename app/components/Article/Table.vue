@@ -58,9 +58,20 @@
               class="px-4 py-2 break-words max-w-[240px] sm:max-w-none text-center"
             >
               <div v-if="cell.column.id === 'content'" v-html="cell.getValue() as string"></div>
+              <div v-else-if="cell.column.id === 'imageUrl'" class="flex justify-center">
+                <NuxtImg
+                  v-if="cell.getValue()"
+                  :src="cell.getValue() as string"
+                  alt="Titulní obrázek"
+                  class="w-18 h-18 object-cover rounded"
+                />
+                <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
+              </div>
               <FlexRender v-else :render="cell.column.columnDef.cell" :props="cell.getContext()" />
             </td>
-            <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
+            <td
+              class="px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4 min-h-[72px]"
+            >
               <button
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 rounded-full hover:from-green-300 hover:to-green-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
                 @click="router.push(`/clanky/${row.original.slug}`)"
@@ -109,6 +120,15 @@
           <div v-for="cell in row.getVisibleCells()" :key="cell.id" class="text-gray-800">
             <div class="font-semibold">{{ cell.column.columnDef.header }}</div>
             <div v-if="cell.column.id === 'content'" v-html="cell.getValue() as string"></div>
+            <div v-else-if="cell.column.id === 'imageUrl'" class="flex justify-center">
+              <NuxtImg
+                v-if="cell.getValue()"
+                :src="cell.getValue() as string"
+                alt="Titulní obrázek"
+                class="w-24 h-24 object-cover rounded"
+              />
+              <Icon v-else name="mdi:image-off" class="w-24 h-24 text-gray-400" />
+            </div>
             <div v-else>
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
             </div>
@@ -242,6 +262,7 @@ async function del(id: string) {
 }
 
 const columns: ColumnDef<Article>[] = [
+  { header: 'Obrázek', accessorKey: 'imageUrl' },
   { header: 'Název', accessorKey: 'title' },
   {
     header: 'Stav',
