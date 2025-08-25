@@ -235,8 +235,18 @@ const toggle = () => {
 
 const del = async (id: string) => {
   try {
-    await $fetch(`/api/notifications/${id}`, { method: 'DELETE' })
-    data.value = data.value.filter((n) => n.id !== id)
+    const target = data.value.find((n) => n.id === id)
+    if (!target) return
+    const key = [target.type, target.message, target.article?.slug ?? '', target.link ?? ''].join('|')
+    const toDelete = data.value.filter((n) => {
+      const nKey = [n.type, n.message, n.article?.slug ?? '', n.link ?? ''].join('|')
+      return nKey === key
+    })
+    await Promise.all(toDelete.map((n) => $fetch(`/api/notifications/${n.id}`, { method: 'DELETE' })))
+    data.value = data.value.filter((n) => {
+      const nKey = [n.type, n.message, n.article?.slug ?? '', n.link ?? ''].join('|')
+      return nKey !== key
+    })
     unreadCount.value = data.value.filter((n) => !n.isRead).length
   } catch (e: any) {
     useToast().error({ message: `Chyba při mazání: ${e.message || 'Neznámá chyba'}` })
