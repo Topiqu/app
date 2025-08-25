@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     await logAction({
       action: 'PASSWORD_CHANGE',
       userId: user.id,
-      clientSiteId: user.clientSiteId,
+      clientSiteId: user.clientSiteId ? user.clientSiteId : undefined,
       ip,
       metadata: { userId: id },
     })
