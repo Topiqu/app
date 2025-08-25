@@ -164,7 +164,7 @@
       </div>
     </TransitionRoot>
 
-    <UserFollowDialog v-model="showDialog" :type="dialogType" />
+    <LazyUserFollowDialog v-model="showDialog" :type="dialogType" />
   </div>
 </template>
 

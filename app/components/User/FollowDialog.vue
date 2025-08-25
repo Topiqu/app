@@ -49,11 +49,9 @@
 
 <script lang="ts" setup>
 const open = defineModel<boolean>()
-
 const props = defineProps<{ type: 'followers' | 'followed' }>()
 
-const { data, pending, error } = useFetch(`/api/follows/${props.type}`, {
-  key: `follow-${props.type}`,
-  watch: [() => props.type],
-})
+const url = computed(() => `/api/follows/${props.type}`)
+
+const { data, pending, error } = useFetch(url, { immediate: true })
 </script>
