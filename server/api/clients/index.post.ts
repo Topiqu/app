@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(session)
 
   const body = await readBody(event)
-  const { name, email, username, password, subdomain, plan, generationFrequency, tokenLimit } = body
+  const { name, email, username, password, subdomain, plan, generationFrequency, tokenLimit, focus, keywords } = body
 
   if (!name || !email || !subdomain) {
     throw createError({
@@ -47,8 +47,11 @@ export default defineEventHandler(async (event) => {
         plan,
         generationFrequency,
         tokenLimit,
-        keywords: body.keywords || [],
-        focus: body.focus || '',
+        keywords:
+          Array.isArray(keywords) && keywords.every((k: any) => typeof k === 'string') && keywords.length
+            ? keywords
+            : undefined,
+        focus: focus || '',
         tokenRemaining: tokenLimit,
       },
     })
@@ -83,6 +86,8 @@ export default defineEventHandler(async (event) => {
       plan: result.clientSite.plan,
       generationFrequency: result.clientSite.generationFrequency,
       tokenLimit: result.clientSite.tokenLimit,
+      keywords: result.clientSite.keywords,
+      focus: result.clientSite.focus,
     },
     user: {
       ...result.newUser,

@@ -92,10 +92,12 @@
         <label class="flex flex-col gap-3">
           <span class="text-sm font-medium uppercase tracking-wide opacity-80">Klíčová slova</span>
           <textarea
-            v-model="newClient.keywords"
+            v-model="keywordsInput"
             placeholder="Klíčová slova (oddělená čárkou, např. seo, marketing, tech)"
             class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+            @input="updateKeywords"
           />
+          <span class="text-sm text-gray-500 dark:text-gray-400">Slova: {{ newClient.keywords.length }}</span>
         </label>
       </div>
 
@@ -106,10 +108,7 @@
               <span class="text-sm font-medium">{{ c.name }}</span>
               <span v-if="c.focus" class="text-gray-400 text-xs">Focus: {{ c.focus }}</span>
               <span v-if="c.keywords" class="text-gray-400 text-xs"
-                >Klíčová slova:
-                {{
-                  Array.isArray(c.keywords) ? c.keywords.join(', ') : typeof c.keywords === 'string' ? c.keywords : ''
-                }}</span
+                >Klíčová slova: {{ Array.isArray(c.keywords) ? c.keywords.join(', ') : '' }}</span
               >
             </div>
             <button
@@ -149,6 +148,7 @@ import Swal from 'sweetalert2'
 const { emitClientCreated } = useClientEvent()
 
 const open = defineModel<boolean>()
+const keywordsInput = shallowRef<string>('')
 
 const newClient = ref({
   name: '',
@@ -160,7 +160,7 @@ const newClient = ref({
   generationFrequency: 'NONE',
   tokenLimit: 0,
   focus: '',
-  keywords: '',
+  keywords: [] as string[],
 })
 
 const toast = useToast()
@@ -168,16 +168,36 @@ const { data: fetchedClients, refresh } = useFetch('/api/clients', {
   default: () => [],
 })
 
+const updateKeywords = () => {
+  newClient.value.keywords = keywordsInput.value
+    .split(',')
+    .map((k) => k.trim())
+    .filter((k) => k.length > 0)
+}
+
 const createClient = async () => {
   if (!newClient.value.name || !newClient.value.subdomain || !newClient.value.email) return
   try {
     await $fetch('/api/clients', {
       method: 'POST',
-      body: newClient.value,
+      body: { ...newClient.value, keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined },
     })
     toast.success({ message: 'Klient byl úspěšně přidán' })
     emitClientCreated()
     open.value = false
+    newClient.value = {
+      name: '',
+      email: '',
+      username: '',
+      password: '',
+      subdomain: '',
+      plan: 'BASIC',
+      generationFrequency: 'NONE',
+      tokenLimit: 0,
+      focus: '',
+      keywords: [],
+    }
+    keywordsInput.value = ''
   } catch (e: any) {
     toast.error({
       message: e.data?.message || 'Nepodařilo se přidat klienta',
