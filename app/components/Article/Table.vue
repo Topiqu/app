@@ -20,8 +20,7 @@
             <th
               v-for="header in headerGroup.headers"
               :key="header.id"
-              class="px-2 sm:px-4 py-2 text-center select-none cursor-pointer group relative"
-              @click="(event) => header.column.getToggleSortingHandler()?.(event)"
+              class="px-2 sm:px-4 py-2 text-center select-none cursor-pointer group relative min-h-[48px]"
             >
               <span v-if="!header.isPlaceholder" class="text-black flex items-center justify-center gap-2">
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
@@ -55,19 +54,21 @@
             <td
               v-for="cell in row.getVisibleCells()"
               :key="cell.id"
-              class="px-4 py-2 break-words max-w-[240px] sm:max-w-none text-center"
+              class="px-4 py-2 break-words max-w-[240px] sm:max-w-none text-center min-h-[72px]"
             >
-              <div v-if="cell.column.id === 'content'" v-html="cell.getValue() as string"></div>
-              <div v-else-if="cell.column.id === 'imageUrl'" class="flex justify-center">
+              <div v-if="cell.column.id === 'content'" v-html="cell.getValue() as string" class="line-clamp-3"></div>
+              <div v-else-if="cell.column.id === 'imageUrl'" class="flex items-center justify-center h-full">
                 <NuxtImg
                   v-if="cell.getValue()"
                   :src="cell.getValue() as string"
                   alt="Titulní obrázek"
-                  class="w-18 h-18 object-cover rounded"
+                  class="w-16 h-16 object-cover rounded"
                 />
                 <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
               </div>
-              <FlexRender v-else :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+              <div v-else class="flex items-center justify-center h-full">
+                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+              </div>
             </td>
             <td
               class="px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4 min-h-[72px]"
@@ -119,15 +120,15 @@
         <div class="space-y-2">
           <div v-for="cell in row.getVisibleCells()" :key="cell.id" class="text-gray-800">
             <div class="font-semibold">{{ cell.column.columnDef.header }}</div>
-            <div v-if="cell.column.id === 'content'" v-html="cell.getValue() as string"></div>
+            <div v-if="cell.column.id === 'content'" v-html="cell.getValue() as string" class="line-clamp-3"></div>
             <div v-else-if="cell.column.id === 'imageUrl'" class="flex justify-center">
               <NuxtImg
                 v-if="cell.getValue()"
                 :src="cell.getValue() as string"
                 alt="Titulní obrázek"
-                class="w-24 h-24 object-cover rounded"
+                class="w-16 h-16 object-cover rounded"
               />
-              <Icon v-else name="mdi:image-off" class="w-24 h-24 text-gray-400" />
+              <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
             </div>
             <div v-else>
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
@@ -185,7 +186,6 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 
