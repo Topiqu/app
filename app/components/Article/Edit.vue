@@ -5,52 +5,55 @@
     </template>
 
     <template #content>
-      <div class="flex-1 overflow-y-auto pr-4">
-        <div class="flex flex-col gap-6">
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Název článku</span>
-            <input
-              v-model="editedArticle.title"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-              @input="updateSlug"
-            />
-            <span class="text-sm text-gray-500">URL Titulek: {{ editedArticle.slug }}</span>
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Perex</span>
-            <textarea
-              v-model="editedArticle.excerpt"
-              placeholder="Zadejte krátký popis článku..."
-              class="p-4 rounded-2xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
-            ></textarea>
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Obsah</span>
-            <TiptapEditor v-model="editedArticle.content" edit />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Titulní Obrázek</span>
-            <FileUploader :imageUrl="editedArticle.imageUrl" @upload="handleUpload" />
-            <span v-if="editedArticle.imageUrl" class="text-sm text-gray-500">
-              Obrázek: {{ editedArticle.imageUrl }}
-            </span>
-          </label>
-          <TagsManager :article="editedArticle" @update:tags="updateTags" @delete:tag="deleteTag" />
-        </div>
+      <div class="flex flex-col gap-6">
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-semibold tracking-wide text-gray-700">Název článku</span>
+          <input
+            v-model="editedArticle.title"
+            placeholder="Název článku"
+            class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
+            @input="updateSlug"
+          />
+          <span class="text-sm text-gray-500">URL Titulek: {{ editedArticle.slug }}</span>
+        </label>
+
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-semibold tracking-wide text-gray-700">Perex</span>
+          <textarea
+            v-model="editedArticle.excerpt"
+            placeholder="Zadejte krátký popis článku..."
+            class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+          ></textarea>
+        </label>
+
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-semibold tracking-wide text-gray-700">Obsah</span>
+          <TiptapEditor v-model="editedArticle.content" edit />
+        </label>
+
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-semibold tracking-wide text-gray-700">Titulní Obrázek</span>
+          <FileUploader :imageUrl="editedArticle.imageUrl" @upload="handleUpload" />
+          <span v-if="editedArticle.imageUrl" class="text-sm text-gray-500">
+            Obrázek: {{ editedArticle.imageUrl }}
+          </span>
+        </label>
+
+        <TagsManager :article="editedArticle" @update:tags="updateTags" @delete:tag="deleteTag" />
       </div>
     </template>
 
     <template #footer="{ close }">
-      <div class="flex gap-4 justify-end flex-shrink-0">
+      <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
         <button
-          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+          class="px-6 py-3 rounded-xl text-base font-medium bg-gray-100 hover:bg-gray-200 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md"
           @click="close"
         >
           Zavřít
         </button>
         <button
           :disabled="!editedArticle.title"
-          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           @click="saveEdit"
         >
           Uložit změny
