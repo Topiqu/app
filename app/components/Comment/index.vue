@@ -215,7 +215,6 @@
           class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm resize-y min-h-[100px]"
           placeholder="Důvod smazání..."
           maxlength="255"
-          required
         />
         <div class="flex justify-end gap-3 mt-4">
           <button
@@ -226,7 +225,6 @@
           </button>
           <button
             class="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
-            :disabled="!deleteReason.trim()"
             @click="emitDelete(comment, deleteReason)"
           >
             Smazat
