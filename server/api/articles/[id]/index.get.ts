@@ -29,7 +29,6 @@ export default defineEventHandler(async (event) => {
 
   if (article.status !== 'published' && user?.role !== 'admin')
     throw createError({ statusCode: 403, message: 'Nedostupné' })
-  console.log(article.user?._count.following ?? 0)
   return {
     ...article,
     commentCount: article._count.comments,
