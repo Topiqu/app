@@ -37,7 +37,7 @@
             class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300 resize-none h-24"
           ></textarea>
         </label>
-        <label class="flex flex-col gap-2">
+        <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
           <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Fokus</span>
           <input
             v-model="form.focus"
@@ -45,7 +45,7 @@
             class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
           />
         </label>
-        <label class="flex flex-col gap-2">
+        <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
           <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
             >Cílová skupina</span
           >
@@ -55,7 +55,7 @@
             class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
           />
         </label>
-        <label class="flex flex-col gap-2">
+        <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
           <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
             >Klíčová slova</span
           >

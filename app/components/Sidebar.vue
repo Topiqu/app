@@ -56,7 +56,6 @@
         </LazyStatsDialog>
         <LazyClientPreferences v-slot="{ open }" hydrateOnInteraction>
           <button
-            v-if="auth?.user?.plan !== 'BASIC'"
             class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             @click="open.value = true"
           >
