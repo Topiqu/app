@@ -19,6 +19,7 @@ export type ArticleWithDetails = {
   content: string | null
   imageUrl: string | null
   createdAt: string
+  excerpt: string | null
   readingTime: number
   views: number
   user: { id: string; username: string; email: string; avatarUrl: string | null } | null

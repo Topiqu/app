@@ -87,11 +87,17 @@
         >
           {{ article?.title }}
         </h3>
-        <div v-if="isFeatured" class="mt-12 line-clamp-4 text-base sm:text-lg" v-html="article?.content"></div>
+        <div
+          v-if="isFeatured"
+          class="mt-4 text-base sm:text-lg line-clamp-4 text-gray-600 dark:text-gray-300"
+          v-html="article?.excerpt || article?.content || ''"
+        ></div>
         <div
           v-else
-          class="mt-2 line-clamp-3 text-xs sm:text-sm text-gray-600 dark:text-gray-300"
-          v-html="article?.content?.substring(0, 50) + (article?.content?.length! > 50 ? '...' : '')"
+          class="mt-2 text-sm line-clamp-3 text-gray-600 dark:text-gray-300"
+          v-html="
+            article?.excerpt || article?.content?.substring(0, 50) + (article?.content?.length! > 50 ? '...' : '')
+          "
         ></div>
         <div class="mt-4 flex flex-col sm:flex-row justify-between text-sm gap-4">
           <span>
@@ -149,6 +155,7 @@ defineProps<{
     slug: string
     title: string
     content: string | null
+    excerpt: string | null
     imageUrl: string | null
     createdAt: string
     readingTime: number
