@@ -83,6 +83,12 @@
           </div>
         </div>
       </div>
+      <p
+        v-if="data.excerpt"
+        class="text-lg md:text-xl italic text-gray-700 dark:text-gray-200 leading-relaxed border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4 mb-3 shadow-sm"
+      >
+        {{ data.excerpt }}
+      </p>
       <NuxtImg
         v-if="data.imageUrl"
         :src="data.imageUrl"
@@ -358,9 +364,15 @@ const toggleComments = async () => {
 
 useSeoMeta({
   title: () => data.value?.title || 'Článek',
-  description: () => data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) || 'Přečtěte si článek...',
+  description: () =>
+    data.value?.excerpt?.slice(0, 160) ||
+    data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
+    'Přečtěte si článek...',
   ogTitle: () => data.value?.title || 'Článek',
-  ogDescription: () => data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) || 'Přečtěte si článek...',
+  ogDescription: () =>
+    data.value?.excerpt?.slice(0, 160) ||
+    data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
+    'Přečtěte si článek...',
   ogImage: () => data.value?.imageUrl || '',
 })
 
