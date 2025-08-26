@@ -2,7 +2,13 @@
   <div
     class="fixed bottom-2 right-2 text-sm font-inter flex items-center gap-2 text-gray-500 dark:text-gray-400 bg-white/80 dark:bg-neutral-900/80 px-3 py-1 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 backdrop-blur-sm"
   >
-    <span>Topiqo AI Blog {{ version }}</span>
+    <span>
+      Topiqo AI Blog
+      <span v-if="site?.name" class="ml-1 text-gray-700 dark:text-gray-300 font-semibold italic">
+        {{ site.name }}
+      </span>
+      {{ version }}
+    </span>
     <span>|</span>
     <span>
       Současný plán:
