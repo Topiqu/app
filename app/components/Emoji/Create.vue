@@ -86,19 +86,14 @@ const shortcode = shallowRef<string>('')
 const imageUrl = shallowRef<string | null>(null)
 const scrollParent = useTemplateRef('scrollParent')
 
-const {
-  data: emojis,
-  pending: loading,
-  error,
-  refresh,
-} = await useFetch('/api/emojis', {
-  immediate: true,
-  server: false,
-  query: { clientSiteId: useRuntimeConfig().public.clientSiteId },
-})
+const { data: emojis, pending: loading, error, refresh } = await useFetch('/api/emojis')
+
+const count = computed(() => emojis.value?.length || 0)
 
 const virtualizer = useVirtualizer({
-  count: computed(() => emojis.value?.length || 0).value,
+  get count() {
+    return count.value
+  },
   getScrollElement: () => scrollParent.value,
   estimateSize: () => 60,
   overscan: 5,
@@ -110,28 +105,35 @@ const onUpload = ({ url }: { url: string }) => {
 
 const submit = async () => {
   if (!shortcode.value || !imageUrl.value) return
-  const res = await $fetch('/api/emojis', {
-    method: 'POST',
-    body: { shortcode: shortcode.value, imageUrl: imageUrl.value },
-  })
-  if (res.success && res.emoji) {
-    toast.success({ message: `Emoji ${res.emoji.shortcode} přidáno` })
-    shortcode.value = ''
-    imageUrl.value = null
-    await refresh()
-    open.value = false
-  } else {
-    toast.error({ message: error.value?.message || 'Nepodařilo se přidat emoji' })
+  try {
+    const res = await $fetch('/api/emojis', {
+      method: 'POST',
+      body: { shortcode: shortcode.value, imageUrl: imageUrl.value },
+    })
+    if (res.success && res.emoji) {
+      toast.success({ message: `Emoji ${res.emoji.shortcode} přidáno` })
+      shortcode.value = ''
+      imageUrl.value = null
+      await refresh()
+    } else {
+      toast.error({ message: error.value?.message || 'Nepodařilo se přidat emoji' })
+    }
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Nepodařilo se přidat emoji' })
   }
 }
 
 const deleteEmoji = async (id: string) => {
-  const res = await $fetch(`/api/emojis/${id}` as `/api/emojis/:id`, { method: 'DELETE' })
-  if (res.success) {
-    toast.success({ message: `Emoji smazáno` })
-    await refresh()
-  } else {
-    toast.error({ message: error.value?.message || 'Nepodařilo se smazat emoji' })
+  try {
+    const res = await $fetch(`/api/emojis/${id}` as `/api/emojis/:id`, { method: 'DELETE' })
+    if (res.success) {
+      toast.success({ message: `Emoji smazáno` })
+      await refresh()
+    } else {
+      toast.error({ message: error.value?.message || 'Nepodařilo se smazat emoji' })
+    }
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Nepodařilo se smazat emoji' })
   }
 }
 
