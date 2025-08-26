@@ -52,7 +52,14 @@ export default defineNuxtConfig({
     },
     headers: {
       contentSecurityPolicy: {
-        'img-src': ["'self'", 'data:', 'blob:', 'https://developers.google.com', 'https://lh3.googleusercontent.com'],
+        'img-src': [
+          "'self'",
+          'data:',
+          'blob:',
+          'https://developers.google.com',
+          'https://lh3.googleusercontent.com',
+          'https://avatars.githubusercontent.com',
+        ],
         'frame-src': ['https://www.youtube.com'],
         'connect-src': ["'self'", 'https:'],
       },
