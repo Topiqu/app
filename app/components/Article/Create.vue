@@ -68,7 +68,7 @@
         </label>
 
         <TagsManager v-model:tags="articleTags" />
-        <div v-if="articles.length" class="flex flex-col gap-2 max-h-48 overflow-y-auto">
+        <div v-if="articles?.length" class="flex flex-col gap-2 max-h-48 overflow-y-auto">
           <p v-for="a in articles" :key="a.id">
             {{ a.title }}
             {{ a.status === 'published' ? '(Publikováno)' : '' }}
@@ -108,7 +108,7 @@ const toast = useToast()
 const { data: auth } = useAuth()
 const { emitArticleCreated } = useArticleEvent()
 const open = defineModel<boolean>()
-const { data: articles } = await useFetch('/api/articles', { default: () => [] })
+const { data: articles, refresh } = await useFetch('/api/articles?limit=5')
 
 const newArticle = ref<{
   title: string
@@ -159,6 +159,7 @@ const createArticle = async () => {
     await Promise.all(
       articleTags.value.map((tagId) => $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })),
     )
+    await refresh()
     toast.success({ message: 'Článek byl úspěšně přidán' })
     newArticle.value = {
       title: '',
