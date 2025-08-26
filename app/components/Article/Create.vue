@@ -7,26 +7,37 @@
     <template #content>
       <div class="flex flex-col gap-6">
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Název článku</span>
+          <span class="text-sm font-semibold tracking-wide text-gray-700">Název článku</span>
           <input
             v-model="newArticle.title"
             placeholder="Název článku"
-            class="p-4 rounded-xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
+            class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
             @input="updateSlug"
           />
           <span class="text-sm text-gray-500">URL Titulek: {{ newArticle.slug }}</span>
         </label>
 
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-semibold tracking-wide text-gray-700">Perex</span>
+          <textarea
+            v-model="newArticle.excerpt"
+            placeholder="Zadejte krátký popis článku..."
+            class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+          ></textarea>
+        </label>
+
         <div
           v-if="auth?.user.plan !== 'basic'"
-          class="flex gap-2 rounded-xl bg-gray-50 p-1 border border-gray-200 w-fit"
+          class="flex gap-2 rounded-2xl bg-gray-100 p-2 border border-gray-300 w-fit"
         >
           <button
             v-for="option in options"
             :key="option.value"
             :class="[
-              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-              mode === option.value ? 'bg-white shadow-sm border border-gray-300' : 'text-gray-600',
+              'flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm',
+              mode === option.value
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md scale-105'
+                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200',
             ]"
             @click="mode = option.value"
           >
@@ -35,20 +46,20 @@
           </button>
         </div>
 
-        <div v-if="mode === 'ai'" class="flex flex-col gap-4 p-4 rounded-2xl border border-gray-200 bg-gray-50/60">
+        <div v-if="mode === 'ai'" class="flex flex-col gap-4 p-5 rounded-2xl border border-blue-200 bg-blue-50">
           <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium text-gray-700">Vlastní AI Prompt</span>
+            <span class="text-sm font-semibold text-gray-700">Vlastní AI Prompt</span>
             <div class="relative">
               <Icon name="mdi:chat-processing" class="absolute left-3 top-3 w-5 h-5 text-gray-400" />
               <textarea
                 v-model="customPrompt"
                 placeholder="Zadejte pokyn pro AI generování článku..."
-                class="pl-10 p-3 rounded-xl text-sm bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm w-full resize-y min-h-[100px]"
+                class="pl-10 p-3 rounded-xl text-sm bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm w-full resize-y min-h-[100px]"
               ></textarea>
             </div>
           </label>
           <button
-            class="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-101"
+            class="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md transform hover:scale-105"
             @click="generateAIContent"
           >
             <Icon name="mdi:lightning-bolt" class="w-5 h-5" />
@@ -57,24 +68,24 @@
         </div>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Obsah</span>
+          <span class="text-sm font-semibold tracking-wide text-gray-700">Obsah</span>
           <TiptapEditor v-model="newArticle.content" edit />
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Titulní Obrázek</span>
+          <span class="text-sm font-semibold tracking-wide text-gray-700">Titulní Obrázek</span>
           <FileUploader @upload="handleUpload" />
           <span v-if="newArticle.imageUrl" class="text-sm text-gray-500">Obrázek: {{ newArticle.imageUrl }}</span>
         </label>
 
         <TagsManager v-model:tags="articleTags" />
         <div v-if="articles?.length" class="flex flex-col gap-2 max-h-48 overflow-y-auto">
-          <p v-for="a in articles" :key="a.id">
+          <p v-for="a in articles" :key="a.id" class="text-sm text-gray-700">
             {{ a.title }}
-            {{ a.status === 'published' ? '(Publikováno)' : '' }}
+            <span v-if="a.status === 'published'" class="text-green-600 font-medium">(Publikováno)</span>
           </p>
         </div>
-        <p v-else class="text-gray-600">Žádné články.</p>
+        <p v-else class="text-gray-600 text-sm">Žádné články.</p>
       </div>
     </template>
 
@@ -88,7 +99,7 @@
         </button>
         <button
           :disabled="!newArticle.title"
-          class="px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           @click="createArticle"
         >
           Přidat článek
@@ -112,6 +123,7 @@ const { data: articles, refresh } = await useFetch('/api/articles?limit=5')
 
 const newArticle = ref<{
   title: string
+  excerpt: string
   content: string
   slug: string
   userId: string | undefined
@@ -119,6 +131,7 @@ const newArticle = ref<{
   status: ArticleStatus
 }>({
   title: '',
+  excerpt: '',
   content: '',
   slug: '',
   userId: auth.value?.user.id,
@@ -149,6 +162,7 @@ const createArticle = async () => {
       method: 'POST',
       body: {
         title: newArticle.value.title,
+        excerpt: newArticle.value.excerpt || undefined,
         content: newArticle.value.content || undefined,
         slug: newArticle.value.slug,
         userId: newArticle.value.userId,
@@ -163,6 +177,7 @@ const createArticle = async () => {
     toast.success({ message: 'Článek byl úspěšně přidán' })
     newArticle.value = {
       title: '',
+      excerpt: '',
       content: '',
       slug: '',
       userId: auth.value?.user.id,
