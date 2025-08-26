@@ -7,11 +7,9 @@
       <p class="text-green-600 dark:text-green-400 text-lg font-semibold">Vítej, {{ data.user?.name }}!</p>
       <AuthLogout />
     </div>
-
     <div v-else-if="internalMode === 'forgot' || internalMode === 'reset'">
       <AuthForgot :mode="internalMode" @update:mode="internalMode = $event" />
     </div>
-
     <div
       v-else
       class="bg-white dark:bg-gray-900 px-6 py-8 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 space-y-6"
@@ -40,7 +38,6 @@
           Registrace
         </button>
       </div>
-
       <form v-if="!verifyMode" class="space-y-5 text-sm" @submit.prevent="submit">
         <div class="space-y-1.5">
           <label for="email" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">Email</label>
@@ -57,7 +54,6 @@
             />
           </div>
         </div>
-
         <div v-if="internalMode === 'register'" class="space-y-1.5">
           <label for="username" class="block text-sm font-semibold text-gray-500 dark:text-gray-400"
             >Uživatelské jméno</label
@@ -77,7 +73,6 @@
             />
           </div>
         </div>
-
         <div class="space-y-1.5">
           <label for="password" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">Heslo</label>
           <div class="relative">
@@ -111,7 +106,6 @@
             </button>
           </div>
         </div>
-
         <div v-if="internalMode === 'register'" class="space-y-1.5">
           <label for="passwordConfirm" class="block text-sm font-semibold text-gray-500 dark:text-gray-400"
             >Potvrzení hesla</label
@@ -138,21 +132,18 @@
             </button>
           </div>
         </div>
-
         <button
           type="submit"
           class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
         >
           {{ internalMode === 'register' ? 'Registrovat' : 'Přihlásit se' }}
         </button>
-
         <div class="flex items-center my-4">
           <hr class="flex-grow border-gray-300 dark:border-gray-700" />
           <span class="mx-2 text-xs text-gray-400 dark:text-gray-500">NEBO</span>
           <hr class="flex-grow border-gray-300 dark:border-gray-700" />
         </div>
-
-        <div class="text-center">
+        <div class="space-y-3 text-center">
           <button
             type="button"
             class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-white dark:bg-[#131314] border border-[#747775] dark:border-[#8E918F] text-[#1F1F1F] dark:text-[#E3E3E3] text-sm font-roboto font-medium transition hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -165,9 +156,16 @@
             />
             Přihlásit se přes Google
           </button>
+          <button
+            type="button"
+            class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-[#24292e] dark:bg-[#24292e] border border-[#747775] dark:border-[#8E918F] text-white dark:text-white text-sm font-roboto font-medium transition hover:bg-[#2f363d] dark:hover:bg-[#2f363d]"
+            @click="signInWithGithub"
+          >
+            <img src="https://simpleicons.org/icons/github.svg" alt="GitHub logo" class="w-5 h-5 mr-2" />
+            Přihlásit se přes GitHub
+          </button>
         </div>
       </form>
-
       <form v-if="verifyMode" class="space-y-5 text-sm" @submit.prevent="verify">
         <p class="text-gray-500 dark:text-gray-400 text-sm">
           Zadejte ověřovací kód odeslaný na <span class="font-medium">{{ form.email }}</span>
@@ -229,7 +227,6 @@ const submit = async () => {
   try {
     if (internalMode.value === 'register') {
       if (form.value.password !== form.value.passwordConfirm) return toast.error({ message: 'Hesla se neshodují' })
-
       const res = await $fetch('/api/auth/register', {
         method: 'POST',
         body: {
@@ -239,7 +236,6 @@ const submit = async () => {
         },
       })
       if (!res) return toast.error({ message: 'Registrace selhala' })
-
       verifyMode.value = true
       toast.success({ message: 'Ověřovací kód byl odeslán na váš e-mail' })
     } else {
@@ -248,9 +244,7 @@ const submit = async () => {
         password: form.value.password,
         redirect: false,
       })
-
       if (result?.error) return toast.error({ message: 'Nepodařilo se vás přihlásit' })
-
       await $fetch(`/api/users/${data.value?.user.id}`, {
         method: 'PATCH',
         body: { lastLogin: Date.now() },
@@ -258,11 +252,9 @@ const submit = async () => {
       const user = await $fetch(`/api/users/${data.value?.user.id}`)
       theme.mode = user.theme
       toast.success({ message: 'Přihlášení bylo úspěšné' })
-
       if (data.value?.user?.role === 'superadmin') navigateTo('/master')
       else if (data.value?.user?.role === 'admin') navigateTo('/admin')
       else navigateTo('uzivatel/')
-
       form.value = init
     }
   } catch (e: any) {
@@ -272,19 +264,16 @@ const submit = async () => {
 
 const verify = async () => {
   if (!form.value.code) return
-
   try {
     await $fetch('/api/auth/verify', {
       method: 'POST',
       body: { email: form.value.email, code: form.value.code },
     })
-
     await signIn('credentials', {
       email: form.value.email,
       password: form.value.password,
       redirect: true,
     })
-
     toast.success({ message: 'E-mail byl ověřen.' })
     navigateTo('/')
   } catch (e: any) {
@@ -296,19 +285,34 @@ const signInWithGoogle = async () => {
   try {
     const result = await signIn('google', { redirect: false })
     if (result?.error) return toast.error({ message: 'Přihlášení přes Google selhalo' })
-
     await $fetch(`/api/users/${data.value?.user.id}`, {
       method: 'PATCH',
       body: { lastLogin: Date.now() },
     })
     const user = await $fetch(`/api/users/${data.value?.user.id}`)
     theme.mode = user.theme
-    toast.success({ message: 'Přihlášení přes Google bylo úspěšné' })
-
     if (data.value?.user?.role === 'superadmin') navigateTo('/master')
     else if (data.value?.user?.role === 'admin') navigateTo('/admin')
     else navigateTo('uzivatel/')
+    form.value = init
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || 'Něco se pokazilo' })
+  }
+}
 
+const signInWithGithub = async () => {
+  try {
+    const result = await signIn('github', { redirect: false })
+    if (result?.error) return toast.error({ message: 'Přihlášení přes GitHub selhalo' })
+    await $fetch(`/api/users/${data.value?.user.id}`, {
+      method: 'PATCH',
+      body: { lastLogin: Date.now() },
+    })
+    const user = await $fetch(`/api/users/${data.value?.user.id}`)
+    theme.mode = user.theme
+    if (data.value?.user?.role === 'superadmin') navigateTo('/master')
+    else if (data.value?.user?.role === 'admin') navigateTo('/admin')
+    else navigateTo('uzivatel/')
     form.value = init
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Něco se pokazilo' })
