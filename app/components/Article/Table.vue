@@ -204,7 +204,7 @@ import ArticleStatusCell from '~/components/Article/StatusCell.vue'
 
 const router = useRouter()
 const toast = useToast()
-const { onArticleCreated } = useArticleEvent()
+const { onArticleCreated, emitArticleDeleted } = useArticleEvent()
 
 const { data: articles, refresh } = await useFetch<Article[]>('/api/articles', { default: () => [] })
 
@@ -255,6 +255,7 @@ async function del(id: string) {
     await $fetch(`/api/articles/${id}`, { method: 'DELETE' })
     articles.value = articles.value.filter((a) => a.id !== id)
     toast.success({ message: 'Článek smazán' })
+    emitArticleDeleted()
     refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Smazání selhalo' })
