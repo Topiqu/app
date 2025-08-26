@@ -49,6 +49,7 @@ export default defineEventHandler(async (event) => {
     where: { id },
     data: {
       title: body.title,
+      excerpt: body.excerpt,
       content: content ? sanitizeHtml(content) : undefined,
       slug: body.slug,
       userId: body.userId,

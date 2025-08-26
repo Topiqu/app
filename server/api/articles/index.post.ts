@@ -41,6 +41,7 @@ export default defineEventHandler(async (event) => {
   const article = await db.article.create({
     data: {
       title: body.title,
+      excerpt: body.excerpt,
       content: sanitizeHtml(contentWithIds),
       slug: body.slug,
       userId: body.userId,
