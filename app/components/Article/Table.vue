@@ -21,10 +21,11 @@
               v-for="header in headerGroup.headers"
               :key="header.id"
               class="px-2 sm:px-4 py-2 text-center select-none cursor-pointer group relative min-h-[48px]"
+              @click="header.column.getCanSort() ? header.column.getToggleSortingHandler()?.($event) : undefined"
             >
               <span v-if="!header.isPlaceholder" class="text-black flex items-center justify-center gap-2">
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-                <span v-if="header.column.getCanSort()" class="opacity-0 group-hover:opacity-100 transition-opacity">
+                <span v-if="header.column.getCanSort()">
                   <Icon
                     :name="
                       header.column.getIsSorted() === 'asc'
@@ -186,6 +187,7 @@
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 
@@ -263,8 +265,15 @@ async function del(id: string) {
 }
 
 const columns: ColumnDef<Article>[] = [
-  { header: 'Obrázek', accessorKey: 'imageUrl' },
-  { header: 'Název', accessorKey: 'title' },
+  {
+    header: 'Obrázek',
+    accessorKey: 'imageUrl',
+    enableSorting: false,
+  },
+  {
+    header: 'Název',
+    accessorKey: 'title',
+  },
   {
     header: 'Stav',
     accessorKey: 'status',
@@ -278,6 +287,11 @@ const columns: ColumnDef<Article>[] = [
     header: 'Datum',
     accessorKey: 'createdAt',
     cell: (info) => format(new Date(info.getValue() as string), 'dd.MM.yyyy, HH:mm'),
+    sortingFn: (rowA, rowB, columnId) => {
+      const dateA = new Date(rowA.getValue(columnId) as string).getTime()
+      const dateB = new Date(rowB.getValue(columnId) as string).getTime()
+      return dateA - dateB
+    },
   },
 ]
 
