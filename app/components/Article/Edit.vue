@@ -17,6 +17,14 @@
             <span class="text-sm text-gray-500">URL Titulek: {{ editedArticle.slug }}</span>
           </label>
           <label class="flex flex-col gap-3">
+            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Perex</span>
+            <textarea
+              v-model="editedArticle.excerpt"
+              placeholder="Zadejte krátký popis článku..."
+              class="p-4 rounded-2xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+            ></textarea>
+          </label>
+          <label class="flex flex-col gap-3">
             <span class="text-sm font-medium uppercase tracking-wide opacity-80">Obsah</span>
             <TiptapEditor v-model="editedArticle.content" edit />
           </label>
@@ -63,7 +71,7 @@ const open = defineModel<boolean>()
 const emit = defineEmits(['saved'])
 const props = defineProps<{ article: Article }>()
 
-const editedArticle = ref({ ...props.article })
+const editedArticle = ref({ ...props.article, excerpt: props.article.excerpt || '' })
 const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
   default: () => [],
   key: `article-tags-${props.article?.id}`,
@@ -110,6 +118,7 @@ const saveEdit = async () => {
       method: 'PATCH',
       body: {
         title: editedArticle.value.title,
+        excerpt: editedArticle.value.excerpt || undefined,
         content: editedArticle.value.content,
         slug: editedArticle.value.slug,
         userId: editedArticle.value.userId,
