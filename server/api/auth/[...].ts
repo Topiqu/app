@@ -59,6 +59,7 @@ export default NuxtAuthHandler({
             role: true,
             password: true,
             clientSiteId: true,
+            email: true,
           },
         })
         if (!user || !user.password) return null
