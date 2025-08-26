@@ -64,6 +64,7 @@ model Article {
   deletedAt       DateTime?
   slug            String            @unique()
   title           String
+  excerpt         String?
   content         String
   imageUrl        String?
   status          ArticleStatus     @default(draft)
