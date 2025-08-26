@@ -133,17 +133,16 @@
 
 <script setup lang="ts">
 const open = defineModel<boolean>()
-
-const loading = shallowRef<boolean>(false)
+const { onArticleCreated, onArticleDeleted } = useArticleEvent()
 
 const [
-  { data: views },
-  { data: topArticle },
-  { data: articleCount },
-  { data: topTags },
-  { data: viewsHistory },
-  { data: topLiked },
-  { data: topCommented },
+  { data: views, pending: viewsPending, refresh: refreshViews },
+  { data: topArticle, pending: topArticlePending, refresh: refreshTopArticle },
+  { data: articleCount, pending: articleCountPending, refresh: refreshArticleCount },
+  { data: topTags, pending: topTagsPending, refresh: refreshTopTags },
+  { data: viewsHistory, pending: viewsHistoryPending, refresh: refreshViewsHistory },
+  { data: topLiked, pending: topLikedPending, refresh: refreshTopLiked },
+  { data: topCommented, pending: topCommentedPending, refresh: refreshTopCommented },
 ] = await Promise.all([
   useFetch('/api/stats/views', { lazy: true }),
   useFetch('/api/stats/top-article', { lazy: true }),
@@ -153,6 +152,18 @@ const [
   useFetch('/api/stats/top-liked', { lazy: true }),
   useFetch('/api/stats/top-commented', { lazy: true }),
 ])
+
+const loading = computed(() =>
+  [
+    viewsPending,
+    topArticlePending,
+    articleCountPending,
+    topTagsPending,
+    viewsHistoryPending,
+    topLikedPending,
+    topCommentedPending,
+  ].some((p) => p.value),
+)
 
 const stats = computed(() => ({
   totalViews: views.value?.totalViews || 0,
@@ -175,4 +186,17 @@ const chartData = computed(() => ({
     },
   ],
 }))
+
+const refreshAll = () => {
+  refreshViews()
+  refreshTopArticle()
+  refreshArticleCount()
+  refreshTopTags()
+  refreshViewsHistory()
+  refreshTopLiked()
+  refreshTopCommented()
+}
+
+onArticleCreated(refreshAll)
+onArticleDeleted(refreshAll)
 </script>
