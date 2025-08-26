@@ -136,7 +136,6 @@ onUnmounted(() => {
 #toc a.toc-link {
   display: block;
   font-size: 0.875rem;
-  color: #374151;
   padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
   transition: all 0.2s;
