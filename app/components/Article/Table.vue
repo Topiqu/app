@@ -46,19 +46,27 @@
             v-for="row in table.getRowModel().rows"
             :key="row.id"
             :class="[
-              'transition-colors duration-200 hover:bg-gray-100 group',
+              'transition-colors duration-200 light:hover:bg-gray-100 group',
               row.original.status === 'published'
-                ? 'bg-green-50 border-l-4 border-green-400'
-                : 'bg-white border-l-4 border-yellow-400',
+                ? 'light:bg-green-50 border-l-4 border-green-400'
+                : 'light:bg-white border-l-4 border-yellow-400',
             ]"
           >
             <td
               v-for="cell in row.getVisibleCells()"
               :key="cell.id"
-              class="px-4 py-2 break-words max-w-[240px] sm:max-w-none text-center min-h-[72px]"
+              class="px-4 py-2 break-words max-w-[240px] sm:max-w-none text-center min-h-[72px] dark:text-white"
+              :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
             >
-              <div v-if="cell.column.id === 'content'" v-html="cell.getValue() as string" class="line-clamp-3"></div>
-              <div v-else-if="cell.column.id === 'imageUrl'" class="flex items-center justify-center h-full">
+              <div
+                v-if="cell.column.id === 'content'"
+                class="line-clamp-3 dark:bg-transparent"
+                v-html="cell.getValue() as string"
+              ></div>
+              <div
+                v-else-if="cell.column.id === 'imageUrl'"
+                class="flex items-center justify-center h-full dark:bg-transparent"
+              >
                 <NuxtImg
                   v-if="cell.getValue()"
                   :src="cell.getValue() as string"
@@ -67,7 +75,14 @@
                 />
                 <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
               </div>
-              <div v-else class="flex items-center justify-center h-full">
+              <div
+                v-else-if="['status', 'title', 'date'].includes(cell.column.id)"
+                class="flex items-center justify-center h-full dark:bg-transparent"
+                :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
+              >
+                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+              </div>
+              <div v-else class="flex items-center justify-center h-full dark:bg-transparent">
                 <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
               </div>
             </td>
@@ -119,10 +134,19 @@
         ]"
       >
         <div class="space-y-2">
-          <div v-for="cell in row.getVisibleCells()" :key="cell.id" class="text-gray-800">
+          <div
+            v-for="cell in row.getVisibleCells()"
+            :key="cell.id"
+            class="text-gray-800"
+            :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
+          >
             <div class="font-semibold">{{ cell.column.columnDef.header }}</div>
-            <div v-if="cell.column.id === 'content'" v-html="cell.getValue() as string" class="line-clamp-3"></div>
-            <div v-else-if="cell.column.id === 'imageUrl'" class="flex justify-center">
+            <div
+              v-if="cell.column.id === 'content'"
+              class="line-clamp-3 dark:bg-transparent"
+              v-html="cell.getValue() as string"
+            ></div>
+            <div v-else-if="cell.column.id === 'imageUrl'" class="flex justify-center dark:bg-transparent">
               <NuxtImg
                 v-if="cell.getValue()"
                 :src="cell.getValue() as string"
@@ -131,7 +155,14 @@
               />
               <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
             </div>
-            <div v-else>
+            <div
+              v-else-if="['status', 'title', 'date'].includes(cell.column.id)"
+              class="dark:bg-transparent"
+              :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
+            >
+              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+            </div>
+            <div v-else class="dark:bg-transparent">
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
             </div>
           </div>
