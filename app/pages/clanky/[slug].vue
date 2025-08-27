@@ -24,7 +24,7 @@
       </div>
       <div
         v-if="isSticky"
-        class="h-1 bg-blue-500 transition-all duration-300 ease-in-out"
+        class="h-1 transition-all duration-300 ease-in-out"
         :style="{ width: `${progress}%` }"
         style="background-color: #3b82f6"
       ></div>

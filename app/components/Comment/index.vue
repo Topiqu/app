@@ -5,7 +5,9 @@
   >
     <div class="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-2 z-10">
       <button
-        v-if="session?.user && comment.deletedAt === null && !comment.user?.isBanned"
+        v-if="
+          session?.user && comment.deletedAt === null && !comment.user?.isBanned && session.user.id !== comment.userId
+        "
         class="p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none"
         aria-label="Nahlásit komentář"
         title="Nahlásit komentář"
@@ -117,8 +119,9 @@
         </button>
       </div>
     </div>
+    <div class="text-xs sm:text-sm text-gray-500 mt-2">{{ formatDate(comment.createdAt) }}</div>
     <p
-      class="mt-4 sm:mt-6 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
+      class="mt-2 sm:mt-3 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
       :class="{ 'text-gray-400 italic': comment.deletedAt || comment.user?.isBanned }"
     >
       {{
