@@ -26,7 +26,6 @@
             >
               <template v-if="!header.isPlaceholder">
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-
                 <Icon v-if="header.column.getIsSorted() === 'asc'" class="text-black" name="mdi:arrow-up" />
                 <Icon v-else-if="header.column.getIsSorted() === 'desc'" class="text-black" name="mdi:arrow-down" />
               </template>
@@ -112,7 +111,7 @@ import {
   useVueTable,
 } from '@tanstack/vue-table'
 
-const { onClientCreated } = useClientEvent()
+const { onClientCreated, onClientDeleted } = useClientEvent()
 
 const toast = useToast()
 
@@ -182,15 +181,16 @@ const del = async (id: string) => {
 
   try {
     await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
-
     toast.success({ message: 'Klient deaktivován' })
-
-    refresh()
+    onClientDeleted(() => refresh())
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Deaktivace selhala' })
   }
 }
+
 onClientCreated(() => refresh())
+onClientDeleted(() => refresh())
+
 const restore = async (id: string) => {
   const result = await Swal.fire({
     title: 'Aktivovat klienta?',
@@ -207,9 +207,7 @@ const restore = async (id: string) => {
 
   try {
     await $fetch(`/api/clients/${id}`, { method: 'PATCH', body: { deletedAt: null } })
-
     toast.success({ message: 'Klient aktivován' })
-
     refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Aktivace selhala' })

@@ -144,8 +144,7 @@
 
 <script setup lang="ts">
 import Swal from 'sweetalert2'
-
-const { emitClientCreated } = useClientEvent()
+const { emitClientCreated, emitClientDeleted } = useClientEvent()
 
 const open = defineModel<boolean>()
 const keywordsInput = shallowRef<string>('')
@@ -184,6 +183,7 @@ const createClient = async () => {
     })
     toast.success({ message: 'Klient byl úspěšně přidán' })
     emitClientCreated()
+    await refresh()
     open.value = false
     newClient.value = {
       name: '',
@@ -223,6 +223,7 @@ const deleteClient = async (id: string, name: string) => {
   try {
     await $fetch(`/api/clients/${id}?hard=true`, { method: 'DELETE' })
     toast.success({ message: 'Klient byl úspěšně smazán' })
+    emitClientDeleted()
     await refresh()
   } catch (e: any) {
     toast.error({
