@@ -28,7 +28,7 @@ export default defineLazyEventHandler(() => {
     Napiš článek (500–1000 slov) na téma spojené s těmito klíčovými slovy, cílený na ${audience || 'širokou veřejnost'}. 
     Použij h1, h2, h3, strong, blockquote, pro v-html na frontendu. 
     Titulek (5–15 slov) musí být poutavý, obsahovat alespoň 2 klíčová slova. 
-    Klíčová slova použij minimálně 5x v textu.
+    Klíčová slova použij párkrát v textu, i nepřímo, a s ohledem na kontext.
     Uživatelský prompt: ${prompt}`
     console.log(system)
 

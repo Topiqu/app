@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
     outputDir = 'client-logos'
     filenamePrefix = `logo-${user?.clientSiteId || 'unknown'}`
   } else if (type === 'user-avatar') {
-    minDimensions = [300, 300]
+    minDimensions = [100, 100]
     outputDir = 'avatars'
     filenamePrefix = `avatar-${user?.id || 'unknown'}`
     applyNsfwFilter = true
