@@ -42,12 +42,8 @@
             <th class="px-2 sm:px-4 py-2 text-center min-h-[48px]">Akce</th>
           </tr>
         </thead>
-        <tbody class="text-gray-800">
-          <tr
-            v-for="row in table.getRowModel().rows"
-            :key="row.id"
-            class="transition-colors duration-200 hover:bg-gray-100 group"
-          >
+        <tbody class="text-gray-800 dark:text-gray-200 divide-y divide-gray-200">
+          <tr v-for="row in table.getRowModel().rows" :key="row.id">
             <td
               v-for="cell in row.getVisibleCells()"
               :key="cell.id"
@@ -112,7 +108,7 @@
         ]"
       >
         <div class="space-y-2">
-          <div v-for="cell in row.getVisibleCells()" :key="cell.id" class="text-gray-800">
+          <div v-for="cell in row.getVisibleCells()" :key="cell.id">
             <div class="font-semibold">{{ cell.column.columnDef.header }}</div>
             <div class="flex items-center justify-center h-full">
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
