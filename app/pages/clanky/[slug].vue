@@ -1,5 +1,5 @@
 <template>
-  <div v-if="data" class="min-h-screen p-8 md:p-12 transition-all duration-500 ease-out">
+  <div v-if="data" class="min-h-screen p-8 md:p-12 transition-all duration-500 ease-out relative">
     <div
       class="fixed top-0 hidden sm:block left-0 w-full bg-white dark:bg-neutral-900 shadow-md z-25 opacity-0 translate-y-[-100%] transition-all duration-300 ease-in-out"
       :class="{ 'opacity-100 translate-y-0': isSticky }"
@@ -22,8 +22,13 @@
           {{ data.title }}
         </h1>
       </div>
+      <div
+        v-if="isSticky"
+        class="h-1 bg-blue-500 transition-all duration-300 ease-in-out"
+        :style="{ width: `${progress}%` }"
+      ></div>
     </div>
-    <div class="max-w-[1000px] mx-auto flex flex-col gap-8 px-4 sm:px-0">
+    <div ref="container" class="max-w-[1000px] mx-auto flex flex-col gap-8 px-4 sm:px-0">
       <NuxtLink
         to="/admin"
         class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 no-underline"
@@ -58,7 +63,6 @@
             </NuxtLink>
             <span class="italic text-gray-400 text-sm">• Autor článku</span>
           </div>
-
           <div class="flex items-center gap-2 mt-1">
             <span
               class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
@@ -66,7 +70,6 @@
               <Icon name="mdi:account-group" class="w-3.5 h-3.5" />
               {{ data.followerCount ?? 0 }} sledujících
             </span>
-
             <button
               v-if="session?.user && session.user.id !== data.user.id"
               class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full border text-xs cursor-pointer font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-200 hover:shadow-md transform hover:scale-105 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-500"
@@ -149,25 +152,20 @@
             </div>
             <span class="text-gray-300">|</span>
           </template>
-
           <div class="flex items-center gap-2">
             <Icon name="mdi:calendar" class="w-4 h-4" />
             <span>{{ formatDate(data.createdAt.toString()) }}</span>
           </div>
-
           <span class="text-gray-300">|</span>
-
           <div class="flex items-center gap-2">
             <Icon name="mdi:clock-outline" class="w-4 h-4" />
             <span>{{ data.readingTime }} min čtení</span>
           </div>
         </div>
-
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-1">
             <span>{{ formatNumber(data.views) }}x zhlédnutí</span>
           </div>
-
           <div class="flex items-center gap-1">
             <Icon
               name="mdi:heart"
@@ -176,7 +174,6 @@
             />
             <span>{{ formatNumber(data.likes) }}</span>
           </div>
-
           <LazyArticleEdit
             v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
             v-slot="{ open }"
@@ -282,9 +279,11 @@ const isFollowing = shallowRef(false)
 const relatedArticles = ref<ArticleWithDetails[]>([])
 const isSticky = shallowRef(false)
 const content = ref<HTMLElement | null>(null)
+const container = useTemplateRef('container')
 const images = ref<Image[]>([])
 const lightboxVisible = shallowRef(false)
 const currentImageIndex = shallowRef(0)
+const progress = shallowRef(0)
 
 const { data, refresh, error } = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, {
   default: () => null,
@@ -362,6 +361,22 @@ const toggleComments = async () => {
   }
 }
 
+const handleContentScroll = () => {
+  if (!content.value) return
+  const contentRect = content.value.getBoundingClientRect()
+  const contentTop = contentRect.top + window.scrollY
+  const contentHeight = contentRect.height
+  const windowScrollY = window.scrollY
+  const windowHeight = window.innerHeight
+  const scrollableDistance = contentHeight - windowHeight
+  if (scrollableDistance > 0) {
+    const scrollProgress = Math.max(0, windowScrollY - contentTop + windowHeight / 2)
+    progress.value = Math.min(100, (scrollProgress / scrollableDistance) * 100)
+  } else {
+    progress.value = 0
+  }
+}
+
 useSeoMeta({
   title: () => data.value?.title || 'Článek',
   description: () =>
@@ -392,7 +407,9 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
 
 onMounted(() => {
   const onScroll = () => {
+    if (!container.value || !content.value) return
     isSticky.value = window.scrollY > 100
+    handleContentScroll()
   }
   const extractImages = () => {
     if (!content.value) return
@@ -416,7 +433,9 @@ onMounted(() => {
   }
   window.addEventListener('scroll', onScroll)
   content.value?.addEventListener('click', handleImageClick)
-  setTimeout(extractImages, 100)
+  setTimeout(() => {
+    extractImages()
+  }, 100)
   onUnmounted(() => {
     window.removeEventListener('scroll', onScroll)
     content.value?.removeEventListener('click', handleImageClick)
@@ -430,7 +449,7 @@ onMounted(() => {
     $fetch(`/api/articles/${data.value.id}`, { method: 'PATCH', body: { views: data.value.views + 1 } })
     sessionStorage.setItem(key, now.toString())
   } catch {
-    //
+    console.log('Failed to update article views')
   }
 })
 
