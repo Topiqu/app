@@ -46,20 +46,25 @@
         </div>
         <div
           v-if="replyingTo"
-          class="flex items-center gap-3 text-sm text-gray-700 bg-blue-50/60 p-3 rounded-xl border border-blue-200"
+          class="flex flex-col gap-3 text-sm text-gray-700 bg-blue-50/60 p-3 rounded-xl border border-blue-200"
         >
-          <Icon name="mdi:reply" class="w-4 h-4 text-gray-500" />
-          <span
-            >Odpovídáte na: <strong>{{ replyingTo.user?.username || 'Není k dispozici' }}</strong></span
-          >
-          <button
-            type="button"
-            class="ml-auto text-red-500 hover:text-red-600 bg-white border border-red-100 hover:border-red-300 rounded-full p-1.5 transition duration-150 focus:outline-none focus:ring-2 focus:ring-red-300 cursor-pointer"
-            title="Zrušit odpověď"
-            @click="replyingTo = null"
-          >
-            <Icon name="mdi:close" class="w-4 h-4" />
-          </button>
+          <div class="flex items-center gap-3">
+            <Icon name="mdi:reply" class="w-4 h-4 text-gray-500" />
+            <span
+              >Odpovídáte na: <strong>{{ replyingTo.user?.username || 'Není k dispozici' }}</strong></span
+            >
+            <button
+              type="button"
+              class="ml-auto text-red-500 hover:text-red-600 bg-white border border-red-100 hover:border-red-300 rounded-full p-1.5 transition duration-150 focus:outline-none focus:ring-2 focus:ring-red-300 cursor-pointer"
+              title="Zrušit odpověď"
+              @click="replyingTo = null"
+            >
+              <Icon name="mdi:close" class="w-4 h-4" />
+            </button>
+          </div>
+          <div class="text-sm text-gray-600 italic bg-white p-2 rounded-lg border border-gray-100">
+            {{ replyingTo.content }}
+          </div>
         </div>
         <button
           type="submit"
@@ -134,7 +139,7 @@ const sentinel = useTemplateRef('sentinel')
 const sort = shallowRef('createdAt:desc')
 const page = shallowRef<number>(1)
 const limit = 20
-const max = 75
+const max = 100
 const hasMore = shallowRef<boolean>(true)
 const loading = shallowRef<boolean>(false)
 const comments = shallowRef<CommentWithReplies[]>([])
