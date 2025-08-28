@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  const name = getRouterParam(event, 'slug')
+  const name = decodeURIComponent(getRouterParam(event, 'slug')!).trim()
   if (!name) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
 
   const db = await getEnhancedPrisma(user)

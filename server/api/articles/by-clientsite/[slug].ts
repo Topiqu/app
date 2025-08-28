@@ -1,8 +1,7 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
-  const slug = getRouterParam(event, 'slug')
+  const slug = decodeURIComponent(getRouterParam(event, 'slug')!.trim())
   if (!slug) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
-
   const { take, skip } = await getPagination(event)
   const query = getQuery(event)
   const tag = query.tag as string | undefined
