@@ -101,7 +101,9 @@
         ></div>
         <div class="mt-4 flex flex-col sm:flex-row justify-between text-sm gap-4">
           <span>
-            {{ formatDate(article?.createdAt ?? undefined) }}
+            <span :class="{ 'text-red-500 font-semibold': isToday(article?.createdAt) }">
+              {{ formatDate(article?.createdAt ?? undefined) }}
+            </span>
             <span class="text-gray-400">·</span>
             {{ article?.readingTime ?? 5 }} min čtení
           </span>
@@ -147,6 +149,7 @@
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 import { MessageCircle, Heart, Eye } from 'lucide-vue-next'
+
 defineProps<{
   pending: boolean
   isFeatured?: boolean
@@ -169,4 +172,15 @@ defineProps<{
   index?: number
   selectedTag?: string
 }>()
+
+const isToday = (date?: string) => {
+  if (!date) return false
+  const today = new Date()
+  const created = new Date(date)
+  return (
+    today.getFullYear() === created.getFullYear() &&
+    today.getMonth() === created.getMonth() &&
+    today.getDate() === created.getDate()
+  )
+}
 </script>
