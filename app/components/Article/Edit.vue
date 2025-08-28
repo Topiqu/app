@@ -121,7 +121,7 @@ const saveEdit = async () => {
       method: 'PATCH',
       body: {
         title: editedArticle.value.title,
-        excerpt: editedArticle.value.excerpt || undefined,
+        excerpt: editedArticle.value.excerpt || '',
         content: editedArticle.value.content,
         slug: editedArticle.value.slug,
         userId: editedArticle.value.userId,
