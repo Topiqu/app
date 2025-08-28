@@ -56,7 +56,7 @@
         <NuxtLink
           v-for="tag in tags?.slice(0, 3)"
           :key="tag.tag.id"
-          :to="`/tagy/${tag.tag.slug}`"
+          :to="`/stitky/${tag.tag.slug}`"
           :class="{ 'px-3 py-1.5 text-sm': isFeatured, 'px-2 py-1 text-xs': !isFeatured }"
           class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full font-medium hover:bg-blue-200 dark:hover:bg-blue-800 hover:scale-95 transition duration-200 no-underline"
         >
@@ -81,8 +81,8 @@
         </NuxtLink>
         <div
           :class="{
-            'mt-4 text-base sm:text-lg line-clamp-4 text-gray-600 dark:text-gray-300': isFeatured,
-            'mt-2 text-sm line-clamp-3 text-gray-600 dark:text-gray-300': !isFeatured,
+            'mt-8 text-base sm:text-lg line-clamp-4 text-gray-600 dark:text-gray-300 leading-7': isFeatured,
+            'mt-2 text-sm line-clamp-3 text-gray-600 dark:text-gray-300 leading-5': !isFeatured,
           }"
         >
           {{ plainExcerpt }}
@@ -139,19 +139,24 @@
             'flex items-center gap-3 mt-3': !isFeatured,
           }"
         >
-          <NuxtImg
-            v-if="article?.user?.avatarUrl"
-            :src="article?.user.avatarUrl"
-            :class="{ 'w-16 h-16': isFeatured, 'w-7 h-7': !isFeatured }"
-            class="rounded-full object-cover border border-gray-200 dark:border-gray-700"
-            :alt="`Avatar autora ${article?.user?.username || 'Není uveden'}`"
-          />
-          <span
-            :class="{ 'text-lg font-semibold': isFeatured, 'font-medium': !isFeatured }"
-            class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
+          <NuxtLink
+            :to="`/autor/${article?.user?.username}`"
+            class="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900 rounded-lg p-2 transition duration-200"
           >
-            {{ article?.user?.username ?? 'Není uveden' }}
-          </span>
+            <NuxtImg
+              v-if="article?.user?.avatarUrl"
+              :src="article?.user.avatarUrl"
+              :class="{ 'w-16 h-16': isFeatured, 'w-7 h-7': !isFeatured }"
+              class="rounded-full object-cover border border-gray-200 dark:border-gray-700"
+              :alt="`Avatar autora ${article?.user?.username || 'Není uveden'}`"
+            />
+            <span
+              :class="{ 'text-lg font-semibold': isFeatured, 'font-medium': !isFeatured }"
+              class="text-blue-600 dark:text-blue-400 transition duration-200"
+            >
+              {{ article?.user?.username ?? 'Není uveden' }}
+            </span>
+          </NuxtLink>
         </div>
       </div>
     </div>
@@ -162,7 +167,7 @@
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 import { MessageCircle, Heart, Eye } from 'lucide-vue-next'
-
+// let pending = true
 const props = defineProps<{
   pending: boolean
   isFeatured?: boolean
@@ -200,8 +205,8 @@ const isToday = (date?: string) => {
 const plainExcerpt = computed(() => {
   const content = props.article?.excerpt || props.article?.content || ''
   return (
-    content.replace(/<[^>]+>/g, '').substring(0, props.isFeatured ? 200 : 100) +
-    (content.length > (props.isFeatured ? 200 : 100) ? '...' : '')
+    content.replace(/<[^>]+>/g, '').substring(0, props.isFeatured ? 275 : 100) +
+    (content.length > (props.isFeatured ? 275 : 100) ? '...' : '')
   )
 })
 </script>
