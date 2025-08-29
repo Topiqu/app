@@ -105,7 +105,7 @@
         >
           <span>
             <span :class="{ 'text-red-500 font-semibold': isToday(new Date(article!.createdAt)) }">
-              {{ formatDate(article?.createdAt ?? undefined) }}
+              {{ formatDate(article?.createdAt) }}
             </span>
             <span class="text-gray-400">·</span>
             {{ article?.readingTime ?? 5 }} min čtení
@@ -164,11 +164,11 @@
 </template>
 
 <script setup lang="ts">
-import { isToday } from 'date-fns'
 import { directive as vTippy } from 'vue-tippy'
+import { isToday, isYesterday, format } from 'date-fns'
 import 'tippy.js/dist/tippy.css'
 import { MessageCircle, Heart, Eye } from 'lucide-vue-next'
-
+// const pending = true
 const props = defineProps<{
   pending: boolean
   isFeatured?: boolean
@@ -179,7 +179,7 @@ const props = defineProps<{
     content: string | null
     excerpt: string | null
     imageUrl: string | null
-    createdAt: string
+    createdAt: Date
     readingTime: number
     views: number
     user: { id: string; username: string; email: string; avatarUrl: string | null } | null
@@ -191,6 +191,16 @@ const props = defineProps<{
   index?: number
   selectedTag?: string
 }>()
+
+const formatDate = (date?: string) => {
+  if (!date) return 'Nikdy'
+  const now = new Date()
+  if (isToday(date)) return `Dnes, ${format(date, 'HH:mm')}`
+  if (isYesterday(date)) return `Včera, ${format(date, 'HH:mm')}`
+  return now.getFullYear() === new Date(date).getFullYear()
+    ? format(date, 'dd.MM., HH:mm')
+    : format(date, 'dd.MM.yyyy, HH:mm')
+}
 
 const plainExcerpt = computed(() => {
   const content = props.article?.excerpt || props.article?.content || ''
