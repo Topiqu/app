@@ -104,7 +104,7 @@
           class="flex flex-col sm:flex-row justify-between gap-4"
         >
           <span>
-            <span :class="{ 'text-red-500 font-semibold': isToday(article?.createdAt) }">
+            <span :class="{ 'text-red-500 font-semibold': isToday(new Date(article!.createdAt)) }">
               {{ formatDate(article?.createdAt ?? undefined) }}
             </span>
             <span class="text-gray-400">·</span>
@@ -164,10 +164,11 @@
 </template>
 
 <script setup lang="ts">
+import { isToday } from 'date-fns'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 import { MessageCircle, Heart, Eye } from 'lucide-vue-next'
-// let pending = true
+
 const props = defineProps<{
   pending: boolean
   isFeatured?: boolean
@@ -190,17 +191,6 @@ const props = defineProps<{
   index?: number
   selectedTag?: string
 }>()
-
-const isToday = (date?: string) => {
-  if (!date) return false
-  const today = new Date()
-  const created = new Date(date)
-  return (
-    today.getFullYear() === created.getFullYear() &&
-    today.getMonth() === created.getMonth() &&
-    today.getDate() === created.getDate()
-  )
-}
 
 const plainExcerpt = computed(() => {
   const content = props.article?.excerpt || props.article?.content || ''
