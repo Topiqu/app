@@ -192,14 +192,12 @@ const props = defineProps<{
   selectedTag?: string
 }>()
 
-const formatDate = (date?: string) => {
+const formatDate = (date?: Date) => {
   if (!date) return 'Nikdy'
   const now = new Date()
   if (isToday(date)) return `Dnes, ${format(date, 'HH:mm')}`
   if (isYesterday(date)) return `Včera, ${format(date, 'HH:mm')}`
-  return now.getFullYear() === new Date(date).getFullYear()
-    ? format(date, 'dd.MM., HH:mm')
-    : format(date, 'dd.MM.yyyy, HH:mm')
+  return now.getFullYear() === new Date(date).getFullYear() ? format(date, 'dd.MM. ') : format(date, 'dd.MM.yyyy ')
 }
 
 const plainExcerpt = computed(() => {
