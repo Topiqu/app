@@ -14,5 +14,9 @@ export default defineEventHandler(async (event) => {
     where: { followerId_followedId: { followerId: user.id, followedId: id! } },
   })
 
-  return { success: true }
+  const followerCount = await db.follow.count({
+    where: { followedId: id },
+  })
+
+  return { success: true, followerCount }
 })
