@@ -7,7 +7,7 @@
     <template #content>
       <div class="flex flex-col gap-6">
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide text-gray-700">Název článku</span>
+          <span class="text-sm font-semibold tracking-wide">Název článku</span>
           <input
             v-model="editedArticle.title"
             placeholder="Název článku"
@@ -18,7 +18,7 @@
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide text-gray-700">Perex</span>
+          <span class="text-sm font-semibold tracking-wide">Perex</span>
           <textarea
             v-model="editedArticle.excerpt"
             placeholder="Zadejte krátký popis článku..."
@@ -27,12 +27,12 @@
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide text-gray-700">Obsah</span>
+          <span class="text-sm font-semibold tracking-wide">Obsah</span>
           <TiptapEditor v-model="editedArticle.content" edit />
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide text-gray-700">Titulní Obrázek</span>
+          <span class="text-sm font-semibold tracking-wide">Titulní Obrázek</span>
           <FileUploader :imageUrl="editedArticle.imageUrl" @upload="handleUpload" />
           <span v-if="editedArticle.imageUrl" class="text-sm text-gray-500">
             Obrázek: {{ editedArticle.imageUrl }}
