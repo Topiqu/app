@@ -1,6 +1,6 @@
 <template>
   <div
-    class="sidebar hidden sm:block fixed z-50 bg-gray-50 shadow-xl rounded-xl p-4 w-48 md:w-64 mr-12 mt-20 right-0 top-0 max-h-[40vh] overflow-y-auto"
+    class="hidden sm:block fixed z-50 bg-gray-50 shadow-xl rounded-xl p-4 w-48 md:w-64 mr-12 mt-20 right-0 top-0 min-h-[20vh]"
     aria-label="Table of contents"
   >
     <h2 class="text-base font-bold flex items-center gap-2 mb-4"><LucideList class="w-5 h-5 text-blue-600" /> Obsah</h2>
