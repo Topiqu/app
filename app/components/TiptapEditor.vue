@@ -316,7 +316,7 @@ const onFileInputClose = () => {
 
 const handleEditorClick = () => {
   if (!edit) emit('update:edit', true)
-  editor.value?.chain().focus().setParagraph().run()
+  editor.value?.chain().focus().run()
 }
 
 const setBlockquote = () => {
