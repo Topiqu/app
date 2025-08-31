@@ -177,11 +177,37 @@ const updateKeywords = () => {
 const createClient = async () => {
   if (!newClient.value.name || !newClient.value.subdomain || !newClient.value.email) return
   try {
-    await $fetch('/api/clients', {
+    const response = await $fetch('/api/clients', {
       method: 'POST',
       body: { ...newClient.value, keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined },
     })
-    toast.success({ message: 'Klient byl úspěšně přidán' })
+    const generatedPassword = response.user.password !== 'user submitted' ? response.user.password : null
+    if (generatedPassword) {
+      await Swal.fire({
+        title: 'Klient vytvořen',
+        html: `
+          <p>Klient byl úspěšně přidán.</p>
+          <p class="mt-2">Vygenerované heslo pro admina:</p>
+          <input id="generated-password" value="${generatedPassword}" readonly class="w-full p-2 mt-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-900" />
+          <button id="copy-password" class="mt-3 px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-all transform hover:scale-105">
+            Kopírovat heslo
+          </button>
+          <p class="mt-2 text-sm text-gray-500">Uložte heslo nebo ho pošlete adminovi.</p>
+        `,
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#22c55e',
+        didOpen: () => {
+          const copyButton = document.getElementById('copy-password')
+          copyButton?.addEventListener('click', () => {
+            navigator.clipboard.writeText(generatedPassword)
+            toast.success({ message: 'Heslo zkopírováno do schránky' })
+          })
+        },
+      })
+    } else {
+      toast.success({ message: 'Klient byl úspěšně přidán' })
+    }
     emitClientCreated()
     await refresh()
     open.value = false
