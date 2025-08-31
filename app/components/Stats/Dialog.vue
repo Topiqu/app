@@ -115,6 +115,44 @@
           </template>
           <p v-else class="text-gray-500 italic">Žádné články zatím nemají komentáře</p>
         </div>
+
+        <div
+          class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+        >
+          <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+            <Icon name="mdi:account-group" class="w-5 h-5 text-teal-600" />
+            Počet sledujících
+          </div>
+          <p class="text-2xl font-bold text-teal-600">{{ stats.followerCount }}</p>
+        </div>
+
+        <div
+          class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+        >
+          <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+            <Icon name="mdi:chart-line" class="w-5 h-5 text-pink-600" />
+            Míra angažovanosti
+          </div>
+          <p class="text-2xl font-bold text-pink-600">
+            {{ stats.engagementRate ? Math.round(stats.engagementRate * 100) + '%' : '0%' }}
+          </p>
+        </div>
+
+        <div
+          class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+        >
+          <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+            <Icon name="mdi:account-star" class="w-5 h-5 text-orange-600" />
+            Nejaktivnější autor
+          </div>
+          <template v-if="stats.topAuthor">
+            <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topAuthor.username">
+              {{ stats.topAuthor.username }}
+            </p>
+            <p class="text-sm text-gray-500">{{ stats.topAuthor.articleCount }} článků</p>
+          </template>
+          <p v-else class="text-gray-500 italic">Žádný autor zatím nepřispěl</p>
+        </div>
       </div>
 
       <Charts v-if="!loading && stats.articleCount > 0" :chartData="chartData" />
@@ -143,6 +181,9 @@ const [
   { data: viewsHistory, pending: viewsHistoryPending, refresh: refreshViewsHistory },
   { data: topLiked, pending: topLikedPending, refresh: refreshTopLiked },
   { data: topCommented, pending: topCommentedPending, refresh: refreshTopCommented },
+  { data: followerCount, pending: followerCountPending, refresh: refreshFollowerCount },
+  { data: engagementRate, pending: engagementRatePending, refresh: refreshEngagementRate },
+  { data: topAuthor, pending: topAuthorPending, refresh: refreshTopAuthor },
 ] = await Promise.all([
   useFetch('/api/stats/views', { lazy: true }),
   useFetch('/api/stats/top-article', { lazy: true }),
@@ -151,6 +192,9 @@ const [
   useFetch('/api/stats/views-history', { lazy: true }),
   useFetch('/api/stats/top-liked', { lazy: true }),
   useFetch('/api/stats/top-commented', { lazy: true }),
+  useFetch(`/api/stats/follower-count`, { lazy: true }),
+  useFetch(`/api/stats/engagement-rate`, { lazy: true }),
+  useFetch(`/api/stats/top-author`, { lazy: true }),
 ])
 
 const loading = computed(() =>
@@ -162,6 +206,9 @@ const loading = computed(() =>
     viewsHistoryPending,
     topLikedPending,
     topCommentedPending,
+    followerCountPending,
+    engagementRatePending,
+    topAuthorPending,
   ].some((p) => p.value),
 )
 
@@ -172,6 +219,9 @@ const stats = computed(() => ({
   topTags: topTags.value || [],
   topLikedArticle: topLiked.value,
   topCommentedArticle: topCommented.value,
+  followerCount: followerCount.value?.count || 0,
+  engagementRate: engagementRate.value?.engagementRate || 0,
+  topAuthor: topAuthor.value,
 }))
 
 const chartData = computed(() => ({
@@ -195,6 +245,9 @@ const refreshAll = () => {
   refreshViewsHistory()
   refreshTopLiked()
   refreshTopCommented()
+  refreshFollowerCount()
+  refreshEngagementRate()
+  refreshTopAuthor()
 }
 
 onArticleCreated(refreshAll)
