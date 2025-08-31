@@ -59,7 +59,7 @@
                 ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
                 : 'hover:bg-blue-200 dark:hover:bg-blue-800',
             ]"
-            @click="selectedTag = tag.name"
+            @click="selectedTag = selectedTag === tag.name ? '' : tag.name"
           >
             {{ tag.name }}
           </button>
