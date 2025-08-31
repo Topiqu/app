@@ -44,69 +44,97 @@
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
     <section class="bg-gray-100 dark:bg-gray-900 rounded-2xl py-8 px-6">
-      <div
-        class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4"
-        style="background-color: transparent !important"
-      >
-        <h2 class="text-3xl font-bold">Všechny články</h2>
-        <div class="flex flex-wrap gap-2 w-full sm:w-auto" style="background-color: transparent !important">
-          <button
-            v-for="tag in tags"
-            :key="tag.id"
-            :class="[
-              'text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full font-medium transition duration-200 hover:scale-95',
-              selectedTag === tag.name
-                ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
-                : 'hover:bg-blue-200 dark:hover:bg-blue-800',
-            ]"
-            @click="selectedTag = selectedTag === tag.name ? '' : tag.name"
-          >
-            {{ tag.name }}
-          </button>
-          <button
-            :class="[
-              'text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full font-medium transition duration-200 hover:scale-95',
-              selectedTag === ''
-                ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
-                : 'hover:bg-blue-200 dark:hover:bg-blue-800',
-            ]"
-            @click="selectedTag = ''"
-          >
-            <span v-if="selectedTag === ''" class="mr-1">✓</span>Všechny
-          </button>
-          <select
-            v-model="selectedTag"
-            class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-700 rounded-full px-4 py-1.5 text-sm font-medium transition w-full sm:w-auto sm:hidden"
-          >
-            <option value="">Všechny tagy</option>
-            <option v-for="tag in tags" :key="tag.id" :value="tag.name">{{ tag.name }}</option>
-          </select>
+      <div class="max-w-5xl mx-auto" style="background-color: transparent !important">
+        <div class="flex flex-col items-center mb-6 gap-4" style="background-color: transparent !important">
+          <h2 class="text-3xl font-bold">Všechny články</h2>
         </div>
-      </div>
-      <div
-        v-if="filteredArticles.length"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        style="background-color: transparent !important"
-      >
-        <ArticleSkeletonCard
-          v-for="(article, idx) in filteredArticles"
-          :key="article.id"
-          :pending="pending"
-          :article="article"
-          :tags="article.tags"
-          :index="idx"
-        />
-      </div>
-      <p v-else class="text-center text-lg">Žádné články</p>
-      <div v-if="hasMore" class="mt-8 text-center">
-        <button
-          :disabled="pending"
-          class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold text-lg hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700 transition duration-300 disabled:opacity-50"
-          @click="loadMore"
+
+        <div class="w-full mb-6" style="background-color: transparent !important">
+          <div class="flex flex-col items-center gap-4" style="background-color: transparent !important">
+            <div class="w-full max-w-3xl">
+              <label for="article-search" class="sr-only">Vyhledat články</label>
+              <div class="relative w-full group">
+                <span
+                  class="absolute inset-y-0 left-4 flex items-center text-gray-400 group-focus-within:text-blue-500 transition-colors"
+                >
+                  <Icon name="material-symbols:search-rounded" class="w-5 h-5" />
+                </span>
+                <input
+                  id="article-search"
+                  v-model="searchQuery"
+                  type="search"
+                  placeholder="Vyhledat články..."
+                  aria-label="Vyhledat články"
+                  class="w-full pl-12 pr-10 py-3 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-400/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:shadow-lg transition-all duration-200"
+                />
+                <button
+                  v-if="searchQuery"
+                  class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-red-500 transition-colors"
+                  aria-label="Vymazat hledání"
+                  @click="searchQuery = ''"
+                >
+                  <Icon name="material-symbols:close-rounded" class="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div class="w-full flex flex-wrap justify-center gap-2" style="background-color: transparent !important">
+              <button
+                :class="[
+                  'flex-shrink-0 text-sm px-3 py-1 rounded-full font-medium transition duration-150 sticky left-0 z-10',
+                  selectedTag === ''
+                    ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
+                    : 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700',
+                ]"
+                @click="selectedTag = ''"
+              >
+                Všechny
+              </button>
+              <button
+                v-for="tag in tags"
+                :key="tag.id"
+                :class="[
+                  'flex-shrink-0 text-sm px-3 py-1 rounded-full font-medium transition duration-150',
+                  selectedTag === tag.name
+                    ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
+                    : 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700',
+                ]"
+                role="listitem"
+                @click="selectedTag = selectedTag === tag.name ? '' : tag.name"
+              >
+                {{ tag.name }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="filteredArticles.length"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          style="background-color: transparent !important"
         >
-          <span v-if="pending" class="animate-spin inline-block mr-2">↻</span>
-          Načíst další
-        </button>
+          <ArticleSkeletonCard
+            v-for="(article, idx) in filteredArticles"
+            :key="article.id"
+            :pending="pending"
+            :article="article"
+            :tags="article.tags"
+            :index="idx"
+          />
+        </div>
+
+        <p v-else class="text-center text-lg">Žádné články</p>
+
+        <div v-if="hasMore" class="mt-8 text-center" style="background-color: transparent !important">
+          <button
+            :disabled="pending"
+            class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold text-lg hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700 transition duration-300 disabled:opacity-50"
+            @click="loadMore"
+          >
+            <span v-if="pending" class="animate-spin inline-block mr-2">↻</span>
+            Načíst další
+          </button>
+        </div>
       </div>
     </section>
 
@@ -116,7 +144,7 @@
       class="text-center bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-2xl py-12 shadow-lg"
     >
       <h3 class="text-2xl font-bold">Přidejte se do diskuze</h3>
-      <p class="mt-3 max-w-xl mx-auto text-lg">Zaregistrujte se a sdílejte své názory</p>
+      <p class="mt-3 max-w-xl mx-auto text-lg">Zaregistrujte se a sdílejte své názory na herní trendy</p>
       <div class="mt-6 flex justify-center"><AuthForm /></div>
     </section>
 
@@ -185,14 +213,22 @@ interface ClientSite {
 
 const slug = 'GameDev'
 const page = shallowRef(1)
-const limit = shallowRef(10)
+const limit = shallowRef(15)
 const hasMore = shallowRef(true)
 const selectedTag = shallowRef('')
+const searchQuery = shallowRef('')
 const allArticles = ref<ArticleWithDetails[]>([])
+
+const debouncedRefresh = useDebounceFn(() => {
+  page.value = 1
+  allArticles.value = []
+  hasMore.value = true
+  refresh()
+}, 400)
 
 const articlesUrl = computed(
   () =>
-    `/api/articles/by-clientsite/${slug}?page=${page.value}&limit=${limit.value}${selectedTag.value ? `&tag=${selectedTag.value}` : ''}`,
+    `/api/articles/by-clientsite/${slug}?page=${page.value}&limit=${limit.value}${selectedTag.value ? `&tag=${encodeURIComponent(selectedTag.value)}` : ''}${searchQuery.value ? `&query=${encodeURIComponent(searchQuery.value)}` : ''}`,
 )
 
 const { data: clientSite } = useFetch<ClientSite>(`/api/clients/slug/${slug}`)
@@ -208,6 +244,7 @@ const {
   articlesUrl,
   {
     default: () => ({ items: [], hasMore: true, tags: [] }),
+    watch: false,
   },
 )
 
@@ -216,7 +253,8 @@ useSeoMeta({
   description: clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojáře her',
   keywords: clientSite.value?.keywords?.join(', ') ?? 'gamedev, herní vývoj, trendy, tipy',
   ogTitle: clientSite.value?.name ?? 'GameDev',
-  ogDescription: clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojáře her',
+  ogDescription:
+    clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojá gardev, herní vývoj, trendy, tipy',
   ogImage: clientSite.value?.logoUrl ?? '',
   ogType: 'website',
   twitterCard: 'summary_large_image',
@@ -239,12 +277,7 @@ const loadMore = async () => {
   await refresh()
 }
 
-watch(selectedTag, () => {
-  page.value = 1
-  allArticles.value = []
-  hasMore.value = true
-  refresh()
-})
+watch([selectedTag, searchQuery], debouncedRefresh)
 
 const featured = computed(() => feat.value?.featured ?? null)
 const recommended = computed(() => feat.value?.recommended ?? [])
@@ -258,9 +291,7 @@ const filteredArticles = computed(() => {
   const unique = [...new Map(allArticles.value.map((a) => [a.id, a])).values()].filter(
     (a) => a.id !== featured.value?.id,
   )
-  return selectedTag.value
-    ? unique.filter((a) => a.tags.some((t) => t.tag.name.toLowerCase() === selectedTag.value.toLowerCase()))
-    : unique
+  return unique
 })
 </script>
 
