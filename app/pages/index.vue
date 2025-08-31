@@ -116,7 +116,7 @@
       class="text-center bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-2xl py-12 shadow-lg"
     >
       <h3 class="text-2xl font-bold">Přidejte se do diskuze</h3>
-      <p class="mt-3 max-w-xl mx-auto text-lg">Zaregistrujte se a sdílejte své názory na herní trendy</p>
+      <p class="mt-3 max-w-xl mx-auto text-lg">Zaregistrujte se a sdílejte své názory</p>
       <div class="mt-6 flex justify-center"><AuthForm /></div>
     </section>
 

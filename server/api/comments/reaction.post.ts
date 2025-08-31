@@ -1,49 +1,58 @@
+import type { EventStream } from 'h3'
+
+interface GlobalThis {
+  eventStreams?: Map<string, Set<EventStream>>
+}
+
+declare const globalThis: GlobalThis
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const body = await readValidatedBody(event, CommentReactionSchema.omit({ userId: true }).parse)
 
-  const comment = await prisma.comment.findUnique({
+  const db = await getEnhancedPrisma(user)
+  const comment = await db.comment.findUnique({
     where: { id: body.commentId, deletedAt: null },
+    select: { id: true, userId: true },
   })
   if (!comment) throw createError({ statusCode: 404, message: 'Komentář nenalezen' })
 
-  const existingReaction = await prisma.commentReaction.findUnique({
-    where: { userId_commentId: { userId: user.id, commentId: body.commentId } },
+  const where = { commentId: body.commentId, userId: user.id }
+
+  const exists = await db.commentReaction.findFirst({ where })
+
+  if (exists) {
+    await db.commentReaction.deleteMany({ where })
+    const count = await db.commentReaction.count({ where: { commentId: body.commentId } })
+    return { liked: false, likes: count }
+  }
+
+  await db.commentReaction.create({
+    data: {
+      commentId: body.commentId,
+      userId: user.id,
+      type: body.type,
+    },
   })
 
-  if (existingReaction) {
-    if (existingReaction.type === body.type) {
-      await prisma.commentReaction.delete({
-        where: {
-          userId_commentId: { userId: user.id, commentId: body.commentId },
-        },
-      })
-      return { message: 'Reakce odebrána' }
-    } else {
-      await prisma.commentReaction.update({
-        where: {
-          userId_commentId: { userId: user.id, commentId: body.commentId },
-        },
-        data: { type: body.type },
-      })
-      return { message: 'Reakce aktualizována' }
+  if (body.type === 'LIKE' && comment.userId && comment.userId !== user.id) {
+    const notification = await prisma.notification.create({
+      data: {
+        message: `${user.name || 'Někdo'} dal like vašemu komentáři.`,
+        userId: comment.userId,
+        type: 'LIKE',
+      },
+    })
+    const streamKey = `notifications:${comment.userId}`
+    const streams = globalThis.eventStreams?.get(streamKey)
+    if (streams) {
+      const serialized = JSON.stringify({ ...notification, count: 1 })
+      streams.forEach((stream) => stream.push(serialized))
     }
   }
 
-  const reaction = await prisma.commentReaction.create({
-    data: {
-      userId: user.id,
-      commentId: body.commentId,
-      type: body.type,
-    },
-    select: {
-      userId: true,
-      commentId: true,
-      type: true,
-    },
-  })
-
-  return reaction
+  const count = await db.commentReaction.count({ where: { commentId: body.commentId } })
+  return { liked: true, likes: count }
 })
