@@ -1,13 +1,17 @@
 <template>
-  <div class="fixed top-4 right-4 z-50">
+  <div class="fixed right-4 z-50">
     <div class="relative">
       <div v-if="auth?.user">
-        <Icon
-          ref="btn"
-          name="mdi:bell-outline"
-          class="w-6 h-6 rounded-full text-gray-700 dark:text-gray-300 cursor-pointer hover:text-blue-600 transition-colors duration-300 shadow-sm"
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 shadow-sm hover:shadow-md"
           @click.stop="toggle"
-        />
+        >
+          <Icon
+            ref="btn"
+            name="mdi:bell-outline"
+            class="w-6 h-6 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+          />
+        </button>
         <span
           v-if="unreadCount > 0"
           class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-semibold rounded-full h-4 w-4 flex items-center justify-center ring-1 ring-white dark:ring-neutral-900"
@@ -105,12 +109,16 @@
         </Transition>
       </div>
       <div v-else>
-        <Icon
-          ref="btn"
-          name="mdi:bell-outline"
-          class="w-6 h-6 rounded-full text-gray-700 dark:text-gray-300 cursor-pointer hover:text-blue-600 transition-colors duration-300 shadow-sm"
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 shadow-sm hover:shadow-md"
           @click.stop="toggle"
-        />
+        >
+          <Icon
+            ref="btn"
+            name="mdi:bell-outline"
+            class="w-6 h-6 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+          />
+        </button>
         <Transition
           enterActiveClass="transition ease-out duration-200"
           enterFromClass="opacity-0 scale-95"
