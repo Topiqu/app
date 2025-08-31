@@ -22,6 +22,7 @@
     "@ai-sdk/openai": "^2.0.23",
     "@auth/core": "0.40.0",
     "@auth/prisma-adapter": "^2.10.0",
+    "@formkit/auto-animate": "^0.8.4",
     "@headlessui/vue": "^1.7.23",
     "@iconify-json/mdi": "^1.2.3",
     "@nuxt/eslint": "1.8.0",
