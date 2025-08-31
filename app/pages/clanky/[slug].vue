@@ -155,7 +155,7 @@
           </template>
           <div class="flex items-center gap-2">
             <Icon name="mdi:calendar" class="w-4 h-4" />
-            <span>{{ formatDate(data.createdAt.toString()) }}</span>
+            <span>{{ formatDate(data.createdAt) }}</span>
           </div>
           <span class="text-gray-300">|</span>
           <div class="flex items-center gap-2">
@@ -290,6 +290,7 @@ const { data, refresh, error } = await useFetch<ArticleBase | null>(`/api/articl
   default: () => null,
 })
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
+
 isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || false
 
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
@@ -301,18 +302,22 @@ const toggleFollow = async () => {
   }
   try {
     if (isFollowing.value) {
-      await $fetch(`/api/follows/${data.value.user.id}`, { method: 'DELETE' })
+      const response = await $fetch(`/api/follows/${data.value.user.id}`, { method: 'DELETE' })
       isFollowing.value = false
+      data.value.followerCount = response.followerCount ?? 0
       toast.success({ message: `Přestali jste sledovat ${data.value.user.username}` })
     } else {
-      await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
+      const response = await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
       isFollowing.value = true
+      data.value.followerCount = response.followerCount ?? 0
       toast.success({ message: `Nyní sledujete ${data.value.user.username}` })
     }
     await refreshFollows()
   } catch (e: any) {
     if (e.data?.statusCode === 409) {
       isFollowing.value = true
+      const response = await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
+      data.value.followerCount = response.followerCount ?? 0
     } else {
       toast.error({
         message: e.data?.message || (isFollowing.value ? 'Přestání sledování selhalo' : 'Sledování selhalo'),
