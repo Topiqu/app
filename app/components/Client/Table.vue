@@ -278,7 +278,7 @@ const del = async (id: string) => {
   try {
     await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
     toast.success({ message: 'Klient deaktivován' })
-    onClientDeleted(() => refresh())
+    await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Deaktivace selhala' })
   }
