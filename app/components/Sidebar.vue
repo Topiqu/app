@@ -16,74 +16,77 @@
     >
       <div v-if="auth?.user?.role === 'admin'" class="flex flex-col gap-4">
         <button
-          class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           @click="$router.push('/admin')"
         >
-          <Icon name="mdi:home" class="w-6 h-6" />
+          <Icon
+            name="mdi:home"
+            class="w-6 h-6 transition-transform duration-200 group-hover:scale-105 hover:scale-105"
+          />
         </button>
         <LazyArticleCreate v-slot="{ open }" hydrateOnInteraction>
           <button
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             @click="open.value = true"
           >
-            <Icon name="mdi:pencil" class="w-6 h-6" />
+            <Icon name="mdi:pencil" class="w-6 h-6 transition-transform duration-200 hover:scale-105" />
           </button>
         </LazyArticleCreate>
         <LazyTagsCreate v-slot="{ open }" hydrateOnInteraction>
           <button
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             @click="open.value = true"
           >
-            <Icon name="mdi:tag-outline" class="w-6 h-6" />
+            <Icon name="mdi:tag-outline" class="w-6 h-6 transition-transform duration-200 hover:scale-105" />
           </button>
         </LazyTagsCreate>
         <LazyEmojiCreate v-slot="{ open }" hydrateOnInteraction>
           <button
             v-if="auth?.user?.plan !== 'BASIC'"
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             @click="open.value = true"
           >
-            <Icon name="mdi:emoticon" class="w-6 h-6" />
+            <Icon name="mdi:emoticon" class="w-6 h-6 transition-transform duration-200 hover:scale-105" />
           </button>
         </LazyEmojiCreate>
         <LazyStatsDialog v-slot="{ open }" hydrateOnInteraction>
           <button
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             @click="open.value = true"
           >
-            <Icon name="mdi:chart-bar" class="w-6 h-6" />
+            <Icon name="mdi:chart-bar" class="w-6 h-6 transition-transform duration-200 hover:scale-105" />
           </button>
         </LazyStatsDialog>
         <LazyClientPreferences v-slot="{ open }" hydrateOnInteraction>
           <button
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             @click="open.value = true"
           >
-            <Icon name="mdi:cog" class="w-6 h-6" />
+            <Icon name="mdi:cog" class="w-6 h-6 transition-transform duration-200 hover:scale-105" />
           </button>
         </LazyClientPreferences>
       </div>
       <div v-if="auth?.user?.role === 'superadmin'" class="flex flex-col gap-4">
         <button
-          class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           @click="$router.push('/master')"
         >
-          <Icon name="mdi:home" class="w-6 h-6" />
+          <Icon name="mdi:home" class="w-6 h-6 transition-transform duration-200 hover:scale-105" />
         </button>
         <LazyClientCreate v-slot="{ open }" hydrateOnInteraction>
           <button
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             @click="open.value = true"
           >
-            <Icon name="mdi:account-plus" class="w-6 h-6" />
+            <Icon name="mdi:account-plus" class="w-6 h-6 transition-transform duration-200 hover:scale-105" />
           </button>
         </LazyClientCreate>
         <LazyUserList v-slot="{ open }" hydrateOnIdle>
           <button
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-gray-600 border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] hover:text-gray-900 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             @click="open.value = true"
           >
-            <Icon name="mdi:account-group" class="w-6 h-6" />
+            <Icon name="mdi:account-group" class="w-6 h-6 transition-transform duration-200 hover:scale-105" />
           </button>
         </LazyUserList>
       </div>
