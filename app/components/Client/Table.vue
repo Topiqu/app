@@ -42,7 +42,7 @@
             <th class="px-2 sm:px-4 py-2 text-center min-h-[48px]">Akce</th>
           </tr>
         </thead>
-        <tbody class="text-gray-800 dark:text-gray-200 divide-y divide-gray-200">
+        <tbody v-auto-animate class="text-gray-800 dark:text-gray-200 divide-y divide-gray-200">
           <tr v-for="row in table.getRowModel().rows" :key="row.id">
             <td
               v-for="cell in row.getVisibleCells()"
@@ -180,6 +180,7 @@
 import type { ClientSite } from '@zenstackhq/runtime/models'
 
 import Swal from 'sweetalert2'
+import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
   type ColumnDef,
   FlexRender,
