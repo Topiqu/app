@@ -41,7 +41,7 @@
             </th>
           </tr>
         </thead>
-        <tbody class="text-gray-800">
+        <tbody v-auto-animate class="text-gray-800">
           <tr
             v-for="row in table.getRowModel().rows"
             :key="row.id"
@@ -224,6 +224,7 @@ import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
 
 import Swal from 'sweetalert2'
 import { format } from 'date-fns'
+import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
   type ColumnDef,
   FlexRender,
@@ -234,7 +235,6 @@ import {
 } from '@tanstack/vue-table'
 
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
-
 const router = useRouter()
 const toast = useToast()
 const { onArticleCreated, emitArticleDeleted } = useArticleEvent()

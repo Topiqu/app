@@ -1,15 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br">
     <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4">
-      <NuxtLink
-        to="/"
-        class="group inline-flex items-center text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 font-medium text-lg transition duration-300 no-underline"
-        aria-label="Zpět na seznam článků"
-      >
-        <Icon name="mdi:arrow-left" class="w-5 h-5 mr-2 transition-transform duration-300 group-hover:-translate-x-1" />
-        Zpět na seznam
-      </NuxtLink>
-
+      <Back />
       <div class="text-center">
         <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
           Články autora:
