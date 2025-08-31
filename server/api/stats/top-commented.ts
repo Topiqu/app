@@ -1,10 +1,11 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user.clientSiteId) throw createError({ statusCode: 403, message: 'Uživatel není přiřazen k žádnému ClientSite' })
 
   const topCommented = await prisma.article.findFirst({
     where: {
-      userId: user.id,
+      clientSiteId: user.clientSiteId,
       status: 'published',
     },
     select: {
@@ -21,7 +22,8 @@ export default defineEventHandler(async (event) => {
     },
     take: 1,
   })
-  if (!topCommented) throw createError({ statusCode: 404, message: 'Žádné články nenalezeny' })
+
+  if (!topCommented) return null
 
   return {
     id: topCommented.id,

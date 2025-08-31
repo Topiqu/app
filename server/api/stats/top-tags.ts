@@ -1,11 +1,12 @@
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user.clientSiteId) throw createError({ statusCode: 403, message: 'Uživatel není přiřazen k žádnému ClientSite' })
 
   const { take, skip } = await getPagination(event)
 
   const tags = await prisma.tag.findMany({
-    where: { articles: { some: { article: { userId: user.id } } } },
+    where: { clientSiteId: user.clientSiteId },
     select: {
       id: true,
       name: true,

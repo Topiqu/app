@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const topArticle = await prisma.article.findFirst({
-    where: { userId: user.id },
+    where: { clientSiteId: user.clientSiteId },
     select: { id: true, title: true, views: true },
     orderBy: { views: 'desc' },
     take: 1,

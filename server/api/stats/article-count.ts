@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const articleCount = await prisma.article.count({
-    where: { userId: user.id },
+    where: { clientSiteId: user.clientSiteId },
   })
 
   return { articleCount }
