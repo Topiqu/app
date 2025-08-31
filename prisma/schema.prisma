@@ -80,6 +80,10 @@ model Article {
   notifications   Notification[]    @relation("ArticleNotifications")
   source          String?
   prompt          String?
+
+  @@index([title])
+  @@index([excerpt])
+  @@index([content])
 }
 
 model Tag {

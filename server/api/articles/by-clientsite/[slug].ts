@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
   const { take, skip } = await getPagination(event)
   const query = getQuery(event)
   const tag = query.tag as string | undefined
+  const search = query.query as string | undefined
 
   const db = await getEnhancedPrisma(user)
   const clientSite = await db.clientSite.findUnique({
@@ -18,6 +19,13 @@ export default defineEventHandler(async (event) => {
       clientSiteId: clientSite.id,
       ...(tag && {
         tags: { some: { tag: { name: { equals: tag, mode: 'insensitive' } } } },
+      }),
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { excerpt: { contains: search, mode: 'insensitive' } },
+          { content: { contains: search, mode: 'insensitive' } },
+        ],
       }),
     },
     take: take + 1,
