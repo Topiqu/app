@@ -22,7 +22,7 @@
         <div v-if="loading && !emojis?.length" class="text-sm">Načítání...</div>
         <div v-else-if="error" class="text-sm">{{ error }}</div>
         <div v-else ref="scrollParent" class="rounded-xl border shadow-inner">
-          <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
+          <div v-auto-animate :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
             <div
               v-for="virtualRow in virtualizer.getVirtualItems()"
               :key="String(virtualRow.key)"
@@ -79,6 +79,7 @@
 <script setup lang="ts">
 import Swal from 'sweetalert2'
 import { useVirtualizer } from '@tanstack/vue-virtual'
+import { vAutoAnimate } from '@formkit/auto-animate/vue'
 
 const toast = useToast()
 const open = defineModel<boolean>()
