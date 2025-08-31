@@ -82,7 +82,7 @@
               <button
                 v-if="!row.original.deletedAt"
                 class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 rounded-full hover:from-red-300 hover:to-red-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                @click="del(row.original.id)"
+                @click="del(row.original.id, row.original.name)"
               >
                 <Icon name="mdi:lock" class="w-5 h-5 text-black" />
               </button>
@@ -154,10 +154,10 @@
                 <button
                   v-if="!row.original.deletedAt"
                   class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-red-100"
-                  @click="del(row.original.id)"
+                  @click="del(row.original.id, row.original.name)"
                 >
                   <Icon name="mdi:lock" class="w-5 h-5 mr-2" />
-                  Deaktivovat
+                  Smazat/Deaktivovat
                 </button>
                 <button
                   v-else
@@ -261,26 +261,38 @@ onClickOutside(dropdownRef, () => {
   dropdownRef.value = null
 })
 
-const del = async (id: string) => {
+const del = async (id: string, name: string) => {
   const result = await Swal.fire({
-    title: 'Deaktivovat klienta?',
-    text: 'Klient bude deaktivován.',
+    title: `Co chcete udělat s klientem "${name}"?`,
+    text: 'Vyberte, zda chcete klienta deaktivovat nebo trvale smazat.',
     icon: 'warning',
+    showDenyButton: true,
     showCancelButton: true,
-    confirmButtonText: 'Ano, deaktivovat',
-    cancelButtonText: 'Ne',
+    confirmButtonText: 'Trvale smazat',
+    denyButtonText: 'Deaktivovat',
+    cancelButtonText: 'Zrušit',
     background: '#fff',
     confirmButtonColor: '#ef4444',
+    denyButtonColor: '#f97316',
     cancelButtonColor: '#6b7280',
   })
-  if (!result.isConfirmed) return
 
-  try {
-    await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
-    toast.success({ message: 'Klient deaktivován' })
-    await refresh()
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Deaktivace selhala' })
+  if (result.isConfirmed) {
+    try {
+      await $fetch(`/api/clients/${id}?hard=true`, { method: 'DELETE' })
+      toast.success({ message: 'Klient trvale smazán' })
+      await refresh()
+    } catch (e: any) {
+      toast.error({ message: e.data?.message || 'Smazání selhalo' })
+    }
+  } else if (result.isDenied) {
+    try {
+      await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
+      toast.success({ message: 'Klient deaktivován' })
+      await refresh()
+    } catch (e: any) {
+      toast.error({ message: e.data?.message || 'Deaktivace selhala' })
+    }
   }
 }
 
@@ -304,7 +316,7 @@ const restore = async (id: string) => {
   try {
     await $fetch(`/api/clients/${id}`, { method: 'PATCH', body: { deletedAt: null } })
     toast.success({ message: 'Klient aktivován' })
-    refresh()
+    await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Aktivace selhala' })
   }
