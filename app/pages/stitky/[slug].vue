@@ -1,15 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br">
     <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4">
-      <NuxtLink
-        to="/"
-        class="group inline-flex items-center text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 font-medium text-lg transition duration-300 no-underline"
-        aria-label="Zpět na seznam článků"
-      >
-        <Icon name="mdi:arrow-left" class="w-5 h-5 mr-2 transition-transform duration-300 group-hover:-translate-x-1" />
-        Zpět na seznam
-      </NuxtLink>
-
+      <Back />
       <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white text-center">
         Články se štítkem:
         <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
@@ -89,7 +81,7 @@
 
                   <span class="inline-flex items-center gap-1">
                     <Icon name="mdi:calendar" class="w-4 h-4 text-gray-400" />
-                    {{ formatDate(a.article.createdAt.toString()) }}
+                    {{ formatDate(a.article.createdAt) }}
                   </span>
                   <span>•</span>
                   <span class="inline-flex items-center gap-1 text-blue-500 dark:text-blue-400 font-medium">
