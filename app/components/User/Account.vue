@@ -121,7 +121,7 @@
           <div
             class="mt-4 pt-3 text-xs text-gray-500 dark:text-gray-400 space-y-2 border-t border-gray-200 dark:border-gray-700"
           >
-            <p v-if="userData?.role === 'admin' || userData?.role === 'superadmin'">
+            <p v-if="userData?.role === 'admin'">
               Administrátor ve: <span class="font-medium">{{ clientData?.name || 'Není přiřazen' }}</span>
             </p>
             <p>Přidal(a) se: {{ formatDate(userData?.createdAt) }}</p>

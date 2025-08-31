@@ -50,14 +50,19 @@
       >
         <h2 class="text-3xl font-bold">Všechny články</h2>
         <div class="flex flex-wrap gap-2 w-full sm:w-auto" style="background-color: transparent !important">
-          <NuxtLink
+          <button
             v-for="tag in tags"
             :key="tag.id"
-            :to="`/stitky/${tag.slug}`"
-            class="text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full font-medium transition duration-200 hover:scale-95 hover:bg-blue-200 dark:hover:bg-blue-800 no-underline"
+            :class="[
+              'text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full font-medium transition duration-200 hover:scale-95',
+              selectedTag === tag.name
+                ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
+                : 'hover:bg-blue-200 dark:hover:bg-blue-800',
+            ]"
+            @click="selectedTag = tag.name"
           >
             {{ tag.name }}
-          </NuxtLink>
+          </button>
           <button
             :class="[
               'text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full font-medium transition duration-200 hover:scale-95',
@@ -189,6 +194,7 @@ const articlesUrl = computed(
   () =>
     `/api/articles/by-clientsite/${slug}?page=${page.value}&limit=${limit.value}${selectedTag.value ? `&tag=${selectedTag.value}` : ''}`,
 )
+
 const { data: clientSite } = useFetch<ClientSite>(`/api/clients/slug/${slug}`)
 const { data: feat, pending: featPending } = useFetch<{
   featured: ArticleWithDetails | null
