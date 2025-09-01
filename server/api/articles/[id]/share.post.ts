@@ -16,10 +16,8 @@ export default defineEventHandler(async (event) => {
       data: { shared: { increment: 1 } },
     })
 
-    await tx.articleShare.upsert({
-      where: { articleId_platform: { articleId: id, platform: body.platform } },
-      update: {},
-      create: { articleId: id, platform: body.platform },
+    await tx.articleShare.create({
+      data: { articleId: id, platform: body.platform },
     })
   })
 
