@@ -5,6 +5,7 @@ export type ArticleBase = _Article & {
   tags?: { tag: { id: string; name: string; slug: string } }[]
   commentCount?: number
   likes: number
+  views: number
   likedByUser: boolean
   allowedComments: boolean
   createdAt: Date
