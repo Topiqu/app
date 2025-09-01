@@ -289,5 +289,5 @@ model Notification extends Base, Ownable {
     link      String?
     article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
     @@allow('read, delete, update', auth().id == userId)
-    @@allow('create', auth() != null)
+    @@allow('create', auth() != null && user.allowNotifs == true)
 }

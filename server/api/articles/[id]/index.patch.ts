@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const user = (await getServerSession(event))?.user
   if (!id) throw createError({ status: 400, message: 'ID článku je povinné' })
-
+  const db = await getEnhancedPrisma(user)
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
   const isOnlyViews = Object.keys(body).length === 1 && 'views' in body
 
@@ -62,7 +62,10 @@ export default defineEventHandler(async (event) => {
 
   if (!isOnlyViews && article.status === 'published' && previousArticle?.status === 'draft') {
     const followers = await prisma.follow.findMany({
-      where: { followedId: article.userId },
+      where: {
+        followedId: article.userId,
+        follower: { allowNotifs: true },
+      },
       select: { followerId: true },
     })
 
@@ -73,16 +76,18 @@ export default defineEventHandler(async (event) => {
       type: 'ARTICLE_PUBLISHED' as NotificationType,
     }))
 
-    await prisma.$transaction(async (tx) => {
-      const BATCH_SIZE = 100
-      for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
-        const batch = notifications.slice(i, i + BATCH_SIZE)
-        await tx.notification.createMany({
-          data: batch,
-          skipDuplicates: true,
-        })
-      }
-    })
+    if (notifications.length > 0) {
+      await db.$transaction(async (tx) => {
+        const BATCH_SIZE = 100
+        for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
+          const batch = notifications.slice(i, i + BATCH_SIZE)
+          await tx.notification.createMany({
+            data: batch,
+            skipDuplicates: true,
+          })
+        }
+      })
+    }
   }
 
   return { success: true }
