@@ -84,14 +84,26 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notifikace</label>
-                <select
-                  v-model="profileForm.allowNotifs"
-                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-                  @change="changeNotifs"
-                >
-                  <option :value="true">Povolit</option>
-                  <option :value="false">Zakázat</option>
-                </select>
+                <div class="mt-2 space-y-4">
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model="profileForm.allowNotifs"
+                      type="checkbox"
+                      class="h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
+                      @change="updateNotifications"
+                    />
+                    <label class="text-sm text-gray-700 dark:text-gray-300">Povolit webové notifikace</label>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model="profileForm.allowEmail"
+                      type="checkbox"
+                      class="h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
+                      @change="updateNotifications"
+                    />
+                    <label class="text-sm text-gray-700 dark:text-gray-300">Povolit e-mailové notifikace</label>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -192,6 +204,7 @@ const profileForm = ref({
   bio: '',
   avatarUrl: '',
   allowNotifs: true,
+  allowEmail: true,
   createdAt: '',
   followers: 0,
   following: 0,
@@ -238,6 +251,7 @@ if (userData.value)
     bio: userData.value.bio || '',
     avatarUrl: userData.value.avatarUrl || '',
     allowNotifs: userData.value.allowNotifs ?? true,
+    allowEmail: userData.value.allowEmail ?? true,
     createdAt: userData.value.createdAt,
     followers: userData.value.followers || 0,
     following: userData.value.following || 0,
@@ -293,6 +307,8 @@ async function updateProfile() {
         username: profileForm.value.username,
         bio: profileForm.value.bio,
         avatarUrl: profileForm.value.avatarUrl,
+        allowNotifs: profileForm.value.allowNotifs,
+        allowEmail: profileForm.value.allowEmail,
       },
     })
     toast.success({ message: 'Profil aktualizován' })
@@ -304,11 +320,14 @@ async function updateProfile() {
   }
 }
 
-async function changeNotifs() {
+async function updateNotifications() {
   try {
     await $fetch(`/api/users/${session.value?.user?.id}`, {
       method: 'PATCH',
-      body: { allowNotifs: profileForm.value.allowNotifs },
+      body: {
+        allowNotifs: profileForm.value.allowNotifs,
+        allowEmail: profileForm.value.allowEmail,
+      },
     })
     toast.success({ message: 'Nastavení notifikací uloženo' })
   } catch (err: any) {

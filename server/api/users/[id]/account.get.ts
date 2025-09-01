@@ -71,6 +71,7 @@ export default defineEventHandler(async (event) => {
     createdAt: userData.createdAt.toISOString(),
     lastLogin: userData.lastLogin ? userData.lastLogin.toISOString() : null,
     allowNotifs: userData.allowNotifs,
+    allowEmail: userData.allowEmail,
     role: userData.role,
     emailVerified: userData.emailVerified,
     clientSiteId: userData.clientSiteId,
