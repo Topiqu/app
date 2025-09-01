@@ -113,7 +113,6 @@ model ArticleShare extends Base {
     articleId String
     article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
     platform  SharePlatform
-    @@unique([articleId, platform])
     @@allow('create', true)
     @@allow('read', true)
     @@allow('delete', auth().role == 'admin')
