@@ -55,6 +55,14 @@ enum NotificationType {
   SYSTEM
 }
 
+enum SharePlatform {
+  TWITTER
+  FACEBOOK
+  LINKEDIN
+  EMAIL
+  OTHER
+}
+
 model Article {
   userId          String
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -71,18 +79,32 @@ model Article {
   clientSiteId    String
   clientSite      ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   views           Int               @default(0)
+  shared          Int               @default(0)
   readingTime     Int?
   publishedAt     DateTime?
   allowedComments Boolean           @default(true)
   tags            ArticleTag[]
   comments        Comment[]
   reactions       ArticleReaction[]
+  shares          ArticleShare[]
   notifications   Notification[]    @relation("ArticleNotifications")
   source          String?
   prompt          String?
 
   @@index([title])
   @@index([excerpt])
+}
+
+model ArticleShare {
+  id        String        @id() @default(uuid())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime?     @updatedAt()
+  deletedAt DateTime?
+  articleId String
+  article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  platform  SharePlatform
+
+  @@unique([articleId, platform])
 }
 
 model Tag {

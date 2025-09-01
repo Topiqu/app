@@ -62,6 +62,14 @@ enum NotificationType {
     SYSTEM
 }
 
+enum SharePlatform {
+    TWITTER
+    FACEBOOK
+    LINKEDIN
+    EMAIL
+    OTHER
+}
+
 abstract model Base {
     id        String    @id @default(uuid())
     createdAt DateTime  @default(now())
@@ -84,12 +92,14 @@ model Article extends Base, Ownable {
     clientSiteId    String
     clientSite      ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     views           Int               @default(0)
+    shared          Int               @default(0)
     readingTime     Int?
     publishedAt     DateTime?
     allowedComments Boolean           @default(true)
     tags            ArticleTag[]
     comments        Comment[]
     reactions       ArticleReaction[]
+    shares          ArticleShare[]
     notifications   Notification[]    @relation("ArticleNotifications")
     source          String?
     prompt          String?           @length(0, 5000)
@@ -97,6 +107,16 @@ model Article extends Base, Ownable {
     @@allow('all', auth().role == 'admin')
     @@index([title])
     @@index([excerpt])
+}
+
+model ArticleShare extends Base {
+    articleId String
+    article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    platform  SharePlatform
+    @@unique([articleId, platform])
+    @@allow('create', true)
+    @@allow('read', true)
+    @@allow('delete', auth().role == 'admin')
 }
 
 model Tag extends Base {
@@ -202,6 +222,7 @@ model ClientSite extends Base {
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')
 }
+
 model UserBan extends Base {
     userId       String
     user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
