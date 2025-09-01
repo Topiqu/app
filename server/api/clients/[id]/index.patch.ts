@@ -1,3 +1,5 @@
+import type { SocialPlatform } from '@prisma/client'
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   const db = await getEnhancedPrisma(user)
@@ -23,9 +25,10 @@ export default defineEventHandler(async (event) => {
     focus,
     description,
     logoUrl,
+    socials,
   } = await readBody(event)
 
-  const clientSite = await db.clientSite.findUnique({ where: { id } })
+  const clientSite = await db.clientSite.findUnique({ where: { id }, include: { socials: true } })
   if (!clientSite) {
     throw createError({ statusCode: 404, message: 'Klient nenalezen' })
   }
@@ -59,9 +62,45 @@ export default defineEventHandler(async (event) => {
     data.deletedAt = deletedAt === null ? null : new Date()
   }
 
+  if (socials !== undefined) {
+    const existingSocials = clientSite.socials
+    const newSocials = socials as { platform: SocialPlatform; url: string }[]
+
+    const toDelete = existingSocials.filter((es) => !newSocials.some((ns) => ns.platform === es.platform))
+    const toUpdate = newSocials.filter((ns) => existingSocials.some((es) => es.platform === ns.platform))
+    const toCreate = newSocials.filter((ns) => !existingSocials.some((es) => es.platform === ns.platform))
+
+    if (toDelete.length > 0) {
+      await db.social.deleteMany({
+        where: {
+          clientSiteId: id,
+          platform: { in: toDelete.map((s) => s.platform) },
+        },
+      })
+    }
+
+    for (const social of toUpdate) {
+      await db.social.updateMany({
+        where: { clientSiteId: id, platform: social.platform },
+        data: { url: social.url },
+      })
+    }
+
+    if (toCreate.length > 0) {
+      await db.social.createMany({
+        data: toCreate.map((social) => ({
+          clientSiteId: id,
+          platform: social.platform,
+          url: social.url,
+        })),
+      })
+    }
+  }
+
   const updatedSite = await db.clientSite.update({
     where: { id },
     data,
+    include: { socials: true },
   })
 
   return {
@@ -78,6 +117,10 @@ export default defineEventHandler(async (event) => {
       focus: updatedSite.focus,
       description: updatedSite.description,
       logoUrl: updatedSite.logoUrl,
+      socials: updatedSite.socials.map((s) => ({
+        platform: s.platform,
+        url: s.url,
+      })),
     },
   }
 })
