@@ -84,24 +84,40 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notifikace</label>
-                <div class="mt-2 space-y-4">
-                  <div class="flex items-center gap-3">
+                <div class="mt-3 space-y-4">
+                  <div
+                    class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
+                  >
                     <input
                       v-model="profileForm.allowNotifs"
                       type="checkbox"
-                      class="h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
+                      class="mt-1 h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
                       @change="updateNotifications"
                     />
-                    <label class="text-sm text-gray-700 dark:text-gray-300">Povolit webové notifikace</label>
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <Icon name="mdi:web" class="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                        <span class="font-medium text-gray-900 dark:text-white">Webové notifikace</span>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">Zasílat zprávy přímo v prohlížeči</p>
+                    </div>
                   </div>
-                  <div class="flex items-center gap-3">
+                  <div
+                    class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
+                  >
                     <input
                       v-model="profileForm.allowEmail"
                       type="checkbox"
-                      class="h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
+                      class="mt-1 h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
                       @change="updateNotifications"
                     />
-                    <label class="text-sm text-gray-700 dark:text-gray-300">Povolit e-mailové notifikace</label>
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <Icon name="mdi:email-outline" class="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                        <span class="font-medium text-gray-900 dark:text-white">E-mailové notifikace</span>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">Dostávat zprávy na e-mail</p>
+                    </div>
                   </div>
                 </div>
               </div>
