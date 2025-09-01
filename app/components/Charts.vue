@@ -1,7 +1,7 @@
 <template>
   <div class="rounded-lg shadow p-6 mt-6">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold">Zobrazení za poslední týden</h2>
+      <h2 class="text-xl font-semibold">{{ title }}</h2>
       <button class="p-2 flex items-center gap-2 rounded-full border-none bg-transparent" @click="toggleType">
         <Icon
           :name="
@@ -63,6 +63,7 @@ defineProps<{
       fill?: boolean
     }[]
   }
+  title: string
 }>()
 
 const chartType = shallowRef<'bar' | 'line' | 'pie'>('bar')

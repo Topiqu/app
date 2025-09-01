@@ -208,13 +208,16 @@
           </div>
         </div>
 
-        <Charts v-if="!loading && stats.articleCount > 0 && data?.user.plan !== 'BASIC'" :chartData="chartData" />
+        <Charts
+          v-if="!loading && stats.articleCount > 0 && data?.user.plan !== 'BASIC'"
+          :chartData="chartData"
+          :title="'Zobrazení za poslední týden'"
+        />
         <div
           v-if="!loading && stats.articleCount > 0 && stats.totalShares > 0 && data?.user.plan !== 'BASIC'"
           class="mt-8"
         >
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Rozdělení sdílení podle platforem</h3>
-          <Charts :chartData="shareChartData" />
+          <Charts :chartData="shareChartData" :title="'Rozdělení sdílení podle platforem'" />
         </div>
       </div>
     </template>
