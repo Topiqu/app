@@ -5,7 +5,7 @@
     </template>
 
     <template #close>
-      <LazyClientHint v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
+      <LazyClientHint v-if="auth?.user?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
         <button
           class="p-2 rounded-full bg-transparent hover:bg-transparent border-none outline-none cursor-pointer"
           title="Vysvětlení preferencí"

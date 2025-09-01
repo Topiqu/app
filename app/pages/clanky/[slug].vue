@@ -175,6 +175,10 @@
             />
             <span>{{ formatNumber(data.likes) }}</span>
           </div>
+          <div class="flex items-center gap-1">
+            <Icon name="mdi:share-variant" class="w-4 h-4 text-gray-500" />
+            <span>{{ formatNumber(data.shared) }}</span>
+          </div>
           <LazyArticleEdit
             v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
             v-slot="{ open }"
@@ -215,6 +219,7 @@
           class="w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
           title="Sdílet na Twitteru"
           aria-label="Sdílet na Twitteru"
+          @click="share('TWITTER')"
         >
           <Icon name="mdi:twitter" class="w-5 h-5" />
         </NuxtLink>
@@ -224,6 +229,7 @@
           class="w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
           title="Sdílet na LinkedIn"
           aria-label="Sdílet na LinkedIn"
+          @click="share('LINKEDIN')"
         >
           <Icon name="mdi:linkedin" class="w-5 h-5" />
         </NuxtLink>
@@ -295,6 +301,19 @@ isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || f
 
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
 
+const share = async (platform: 'TWITTER' | 'LINKEDIN' | 'OTHER') => {
+  if (!data.value?.id) return
+  try {
+    await $fetch(`/api/articles/${data.value.id}/share`, {
+      method: 'POST',
+      body: { platform },
+    })
+    data.value.shared = (data.value.shared || 0) + 1
+  } catch (err: any) {
+    toast.error({ message: `Sdílení selhalo ${err.message}` })
+  }
+}
+
 const toggleFollow = async () => {
   if (!session.value?.user || !data.value?.user.id) {
     toast.error({ message: 'Musíte být přihlášeni' })
@@ -326,9 +345,10 @@ const toggleFollow = async () => {
   }
 }
 
-const copyLink = () => {
+const copyLink = async () => {
   navigator.clipboard.writeText(fullUrl.value)
   toast.success({ message: 'Odkaz zkopírován do schránky!' })
+  await share('OTHER')
 }
 
 const toggleLike = async () => {
