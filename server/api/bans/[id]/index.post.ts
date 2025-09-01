@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       content: true,
       article: { select: { clientSiteId: true } },
-      user: { select: { email: true, username: true, allowNotifs: true } },
+      user: { select: { email: true, username: true, allowEmail: true } },
     },
   })
   if (!comment) throw createError({ statusCode: 404, message: 'Komentář nenalezen' })
@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (comment.user.email && comment.user.allowNotifs) {
+  if (comment.user.email && comment.user.allowEmail) {
     const t = useNodeMailer()
     await t.sendMail({
       from: useRuntimeConfig().from,

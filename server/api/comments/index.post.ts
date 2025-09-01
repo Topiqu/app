@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
       slug: true,
       title: true,
       allowedComments: true,
-      user: { select: { email: true, allowNotifs: true } },
+      user: { select: { email: true, allowEmail: true } },
     },
   })
   if (!fullArticle) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
@@ -40,12 +40,12 @@ export default defineEventHandler(async (event) => {
   if (body.parentId) {
     const parent = await prisma.comment.findUnique({
       where: { id: body.parentId },
-      select: { user: { select: { username: true, email: true, allowNotifs: true } } },
+      select: { user: { select: { username: true, email: true, allowEmail: true } } },
     })
     if (!parent) throw createError({ statusCode: 404, message: 'Rodičovský komentář nenalezen' })
     content = `@${parent.user.username} ${content}`
 
-    if (parent.user.allowNotifs) {
+    if (parent.user.allowEmail) {
       await useNodeMailer().sendMail({
         from: useRuntimeConfig().from,
         to: parent.user.email,
@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    if (fullArticle.userId !== user.id && fullArticle.user.allowNotifs) {
+    if (fullArticle.userId !== user.id && fullArticle.user.allowEmail) {
       await useNodeMailer().sendMail({
         from: useRuntimeConfig().from,
         to: fullArticle.user.email,
