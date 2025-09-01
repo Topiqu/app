@@ -47,6 +47,18 @@
           class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
         >
           <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+            <Icon name="mdi:share-variant" class="w-5 h-5 text-teal-600" />
+            Celkem sdílení
+          </div>
+          <p class="text-2xl font-bold text-teal-600">
+            {{ stats.totalShares > 0 ? stats.totalShares.toLocaleString() : 'Zatím žádná sdílení' }}
+          </p>
+        </div>
+
+        <div
+          class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+        >
+          <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
             <Icon name="mdi:star" class="w-5 h-5 text-amber-500" />
             Nejčtenější článek
           </div>
@@ -170,6 +182,10 @@
       </div>
 
       <Charts v-if="!loading && stats.articleCount > 0" :chartData="chartData" />
+      <div v-if="!loading && stats.articleCount > 0 && stats.totalShares > 0" class="mt-8">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Rozdělení sdílení podle platforem</h3>
+        <Charts :chartData="shareChartData" />
+      </div>
     </template>
 
     <template #footer="{ close }">
@@ -198,6 +214,7 @@ const [
   { data: followerCount, pending: followerCountPending, refresh: refreshFollowerCount },
   { data: engagementRate, pending: engagementRatePending, refresh: refreshEngagementRate },
   { data: topAuthor, pending: topAuthorPending, refresh: refreshTopAuthor },
+  { data: shares, pending: sharesPending, refresh: refreshShares },
 ] = await Promise.all([
   useFetch('/api/stats/views', { lazy: true }),
   useFetch('/api/stats/top-article', { lazy: true }),
@@ -206,9 +223,10 @@ const [
   useFetch('/api/stats/views-history', { lazy: true }),
   useFetch('/api/stats/top-liked', { lazy: true }),
   useFetch('/api/stats/top-commented', { lazy: true }),
-  useFetch(`/api/stats/follower-count`, { lazy: true }),
-  useFetch(`/api/stats/engagement-rate`, { lazy: true }),
-  useFetch(`/api/stats/top-author`, { lazy: true }),
+  useFetch('/api/stats/follower-count', { lazy: true }),
+  useFetch('/api/stats/engagement-rate', { lazy: true }),
+  useFetch('/api/stats/top-author', { lazy: true }),
+  useFetch('/api/stats/shares', { lazy: true }),
 ])
 
 const loading = computed(() =>
@@ -223,12 +241,20 @@ const loading = computed(() =>
     followerCountPending,
     engagementRatePending,
     topAuthorPending,
+    sharesPending,
   ].some((p) => p.value),
 )
 
 const stats = computed(() => ({
   totalViews: views.value?.totalViews || 0,
   articleCount: articleCount.value?.articleCount || 0,
+  totalShares: shares.value?.totalShares || 0,
+  shareDistribution: shares.value?.distribution || {
+    TWITTER: 0,
+    LINKEDIN: 0,
+    EMAIL: 0,
+    OTHER: 0,
+  },
   topArticle: topArticle.value,
   topTags: topTags.value || [],
   topLikedArticle: topLiked.value,
@@ -251,6 +277,24 @@ const chartData = computed(() => ({
   ],
 }))
 
+const shareChartData = computed(() => ({
+  labels: ['Twitter', 'LinkedIn', 'Ostatní'],
+  datasets: [
+    {
+      label: 'Počet sdílení',
+      data: [
+        stats.value.shareDistribution.TWITTER || 0,
+        stats.value.shareDistribution.LINKEDIN || 0,
+        stats.value.shareDistribution.EMAIL || 0,
+        stats.value.shareDistribution.OTHER || 0,
+      ],
+      backgroundColor: ['#1DA1F2', '#0077B5', '#F4B400', '#6B7280'],
+      borderColor: '#ffffff',
+      fill: false,
+    },
+  ],
+}))
+
 const refreshAll = () => {
   refreshViews()
   refreshTopArticle()
@@ -262,6 +306,7 @@ const refreshAll = () => {
   refreshFollowerCount()
   refreshEngagementRate()
   refreshTopAuthor()
+  refreshShares()
 }
 
 onArticleCreated(refreshAll)
