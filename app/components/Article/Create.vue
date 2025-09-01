@@ -7,28 +7,27 @@
     <template #content>
       <div class="flex flex-col gap-6">
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide">Název článku</span>
+          <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">Název článku</span>
           <input
             v-model="newArticle.title"
             placeholder="Název článku"
-            class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
+            class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
             @input="updateSlug"
           />
-          <span class="text-sm text-gray-500">URL Titulek: {{ newArticle.slug }}</span>
+          <span class="text-sm text-gray-500 dark:text-gray-400">URL Titulek: {{ newArticle.slug }}</span>
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide">Perex</span>
+          <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">Perex</span>
           <textarea
             v-model="newArticle.excerpt"
             placeholder="Zadejte krátký popis článku..."
-            class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+            class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
           ></textarea>
         </label>
 
         <div
-          v-if="auth?.user.plan !== 'basic'"
-          class="flex gap-2 rounded-2xl bg-gray-100 p-2 border border-gray-300 w-fit"
+          class="flex gap-2 rounded-2xl bg-gray-100 dark:bg-gray-700 p-2 border border-gray-300 dark:border-gray-600 w-fit"
         >
           <button
             v-for="option in options"
@@ -36,8 +35,8 @@
             :class="[
               'flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm',
               mode === option.value
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md scale-105'
-                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200',
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105'
+                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600',
             ]"
             @click="mode = option.value"
           >
@@ -46,20 +45,42 @@
           </button>
         </div>
 
-        <div v-if="mode === 'ai'" class="flex flex-col gap-4 p-5 rounded-2xl border border-blue-200 bg-blue-50">
+        <div
+          v-if="mode === 'ai'"
+          class="flex flex-col gap-4 p-5 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/50"
+        >
           <label class="flex flex-col gap-2">
-            <span class="text-sm font-semibold">Vlastní AI Prompt</span>
+            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Vlastní AI Prompt</span>
             <div class="relative">
-              <Icon name="mdi:chat-processing" class="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+              <Icon name="mdi:chat-processing" class="absolute left-3 top-3 w-5 h-5 text-gray-400 dark:text-gray-500" />
               <textarea
                 v-model="customPrompt"
                 placeholder="Zadejte pokyn pro AI generování článku..."
-                class="pl-10 p-3 rounded-xl text-sm bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm w-full resize-y min-h-[100px]"
+                class="pl-10 p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm w-full resize-y min-h-[100px]"
               ></textarea>
             </div>
           </label>
+          <div
+            v-if="auth?.user.plan === 'BASIC'"
+            class="relative p-4 rounded-xl bg-white dark:bg-gray-800 border-t-4 border-gradient-to-r from-blue-500 to-indigo-600 shadow-sm hover:shadow-md transition-all duration-300"
+          >
+            <div class="flex items-center gap-3 pl-10">
+              <Icon name="mdi:lightning-bolt" class="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+              <div class="flex flex-col gap-1">
+                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">AI generování není dostupné.</p>
+                <NuxtLink
+                  to="/"
+                  class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline hover:underline-offset-4 transition-all duration-200 inline-flex items-center gap-1"
+                >
+                  Zjistit více
+                  <Icon name="mdi:arrow-right" class="w-4 h-4" />
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
           <button
-            class="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md transform hover:scale-105"
+            v-else
+            class="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-md transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             @click="generateAIContent"
           >
             <Icon name="mdi:lightning-bolt" class="w-5 h-5" />
@@ -68,38 +89,42 @@
         </div>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide">Obsah</span>
+          <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">Obsah</span>
           <TiptapEditor v-model="newArticle.content" edit />
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide">Titulní Obrázek</span>
+          <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">Titulní Obrázek</span>
           <FileUploader @upload="handleUpload" />
-          <span v-if="newArticle.imageUrl" class="text-sm text-gray-500">Obrázek: {{ newArticle.imageUrl }}</span>
+          <span v-if="newArticle.imageUrl" class="text-sm text-gray-500 dark:text-gray-400"
+            >Obrázek: {{ newArticle.imageUrl }}</span
+          >
         </label>
 
         <TagsManager v-model:tags="articleTags" />
         <div v-if="articles?.length" class="flex flex-col gap-2 max-h-48 overflow-y-auto">
           <p v-for="a in articles" :key="a.id">
             {{ a.title }}
-            <span v-if="a.status === 'published'" class="text-green-600 font-medium">(Publikováno)</span>
+            <span v-if="a.status === 'published'" class="text-green-600 dark:text-green-400 font-medium"
+              >(Publikováno)</span
+            >
           </p>
         </div>
-        <p v-else class="text-gray-600 text-sm">Žádné články.</p>
+        <p v-else class="text-gray-600 dark:text-gray-400 text-sm">Žádné články.</p>
       </div>
     </template>
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
         <button
-          class="px-6 py-3 rounded-xl text-base font-medium bg-gray-100 hover:bg-gray-200 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md"
+          class="px-6 py-3 rounded-xl text-base font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md"
           @click="close"
         >
           Zavřít
         </button>
         <button
           :disabled="!newArticle.title"
-          class="px-6 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           @click="createArticle"
         >
           Přidat článek
@@ -220,3 +245,18 @@ const generateAIContent = async () => {
   }
 }
 </script>
+
+<style scoped>
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+</style>
