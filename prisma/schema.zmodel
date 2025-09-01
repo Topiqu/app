@@ -97,7 +97,6 @@ model Article extends Base, Ownable {
     @@allow('all', auth().role == 'admin')
     @@index([title])
     @@index([excerpt])
-    @@index([content])
 }
 
 model Tag extends Base {
@@ -146,6 +145,7 @@ model User extends Base {
     verification     VerificationCode?
     emailVerified    Boolean           @default(false)
     allowNotifs      Boolean           @default(true)
+    allowEmail       Boolean           @default(true)
     lastLogin        DateTime?         @default(now())
     clientSiteId     String?
     theme            ThemeOption       @default(light)

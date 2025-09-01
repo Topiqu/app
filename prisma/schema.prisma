@@ -83,7 +83,6 @@ model Article {
 
   @@index([title])
   @@index([excerpt])
-  @@index([content])
 }
 
 model Tag {
@@ -135,6 +134,7 @@ model User {
   verification     VerificationCode?
   emailVerified    Boolean           @default(false)
   allowNotifs      Boolean           @default(true)
+  allowEmail       Boolean           @default(true)
   lastLogin        DateTime?         @default(now())
   clientSiteId     String?
   theme            ThemeOption       @default(light)
