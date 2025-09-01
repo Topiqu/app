@@ -26,10 +26,6 @@ function mapProfile({ id, sub, login, name, email, avatar_url, picture }: BaseOA
   }
 }
 
-function providerStyle(logo: string, bg: string, text: string) {
-  return { logo, bg, text, logoDark: logo, bgDark: bg, textDark: text }
-}
-
 function GoogleProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>): OAuthConfig<P> {
   return {
     id: 'google',
@@ -40,7 +36,6 @@ function GoogleProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>)
     idToken: true,
     checks: ['pkce', 'state'],
     profile: (profile) => mapProfile(profile),
-    style: providerStyle('/google.svg', '#fff', '#000'),
     ...options,
   }
 }
@@ -73,7 +68,6 @@ function GitHubProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>)
       request: async ({ tokens }) => fetchGitHubProfile(tokens),
     },
     profile: (profile) => mapProfile(profile),
-    style: providerStyle('/github.svg', '#24292e', '#fff'),
     ...options,
   }
 }
@@ -98,7 +92,7 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
     await prisma.user.update({
       where: { id: existingUser.id },
       data: {
-        avatarUrl: typeof avatarValue === 'string' ? avatarValue : existingUser.avatarUrl,
+        avatarUrl: existingUser.avatarUrl || (typeof avatarValue === 'string' ? avatarValue : null),
         lastLogin: new Date(),
       },
     })
