@@ -322,7 +322,6 @@ const shareChartData = computed(() => ({
       data: [
         stats.value.shareDistribution.TWITTER || 0,
         stats.value.shareDistribution.LINKEDIN || 0,
-        stats.value.shareDistribution.EMAIL || 0,
         stats.value.shareDistribution.OTHER || 0,
       ],
       backgroundColor: ['#1DA1F2', '#0077B5', '#F4B400', '#6B7280'],
