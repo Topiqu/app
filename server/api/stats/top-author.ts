@@ -6,8 +6,14 @@ export default defineEventHandler(async (event) => {
   const topAuthor = await prisma.user.findFirst({
     where: { articles: { some: { status: 'published', clientSiteId: user.clientSiteId } } },
     orderBy: { articles: { _count: 'desc' } },
-    select: { username: true, articles: { where: { status: 'published', clientSiteId: user.clientSiteId } } },
+    select: {
+      username: true,
+      avatarUrl: true,
+      articles: { where: { status: 'published', clientSiteId: user.clientSiteId } },
+    },
   })
 
-  return topAuthor ? { username: topAuthor.username, articleCount: topAuthor.articles.length } : null
+  return topAuthor
+    ? { username: topAuthor.username, avatarUrl: topAuthor.avatarUrl, articleCount: topAuthor.articles.length }
+    : null
 })

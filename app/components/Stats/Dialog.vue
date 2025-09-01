@@ -146,10 +146,24 @@
             Nejaktivnější autor
           </div>
           <template v-if="stats.topAuthor">
-            <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topAuthor.username">
-              {{ stats.topAuthor.username }}
-            </p>
-            <p class="text-sm text-gray-500">{{ stats.topAuthor.articleCount }} článků</p>
+            <div class="flex items-center gap-3">
+              <NuxtImg
+                v-if="stats.topAuthor.avatarUrl"
+                :src="stats.topAuthor.avatarUrl"
+                alt="Avatar autora"
+                class="w-10 h-10 rounded-full object-cover"
+                width="40"
+                height="40"
+                placeholder
+              />
+              <Icon v-else name="mdi:account-circle-outline" class="w-10 h-10 text-gray-400" />
+              <div>
+                <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topAuthor.username">
+                  {{ stats.topAuthor.username }}
+                </p>
+                <p class="text-sm text-gray-500">{{ stats.topAuthor.articleCount }} článků</p>
+              </div>
+            </div>
           </template>
           <p v-else class="text-gray-500 italic">Žádný autor zatím nepřispěl</p>
         </div>
