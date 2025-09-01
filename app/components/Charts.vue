@@ -3,7 +3,16 @@
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">Zobrazení za poslední týden</h2>
       <button class="p-2 flex items-center gap-2 rounded-full border-none bg-transparent" @click="toggleType">
-        <Icon :name="chartType === 'bar' ? 'mdi:chart-line' : 'mdi:chart-bar'" class="w-6 h-6" />
+        <Icon
+          :name="
+            chartType === 'bar'
+              ? 'mdi:chart-line'
+              : chartType === 'line' && data?.user.plan !== 'BASIC'
+                ? 'mdi:chart-pie'
+                : 'mdi:chart-bar'
+          "
+          class="w-6 h-6"
+        />
       </button>
     </div>
     <div class="relative h-64">
@@ -13,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { Bar, Line } from 'vue-chartjs'
+import { Bar, Line, Pie } from 'vue-chartjs'
 import {
   BarElement,
   CategoryScale,
@@ -24,9 +33,24 @@ import {
   PointElement,
   Title,
   Tooltip,
+  PieController,
+  ArcElement,
 } from 'chart.js'
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, LineElement, PointElement, CategoryScale, LinearScale)
+const { data } = useAuth()
+
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  PieController,
+  ArcElement,
+)
 
 defineProps<{
   chartData: {
@@ -34,21 +58,32 @@ defineProps<{
     datasets: {
       label: string
       data: number[]
-      backgroundColor: string
+      backgroundColor: string | string[]
       borderColor?: string
       fill?: boolean
     }[]
   }
 }>()
 
-const chartType = ref<'bar' | 'line'>('bar')
+const chartType = shallowRef<'bar' | 'line' | 'pie'>('bar')
 const toggleType = () => {
-  chartType.value = chartType.value === 'bar' ? 'line' : 'bar'
+  if (data?.value?.user.plan === 'BASIC') {
+    chartType.value = chartType.value === 'bar' ? 'line' : 'bar'
+  } else {
+    chartType.value = chartType.value === 'bar' ? 'line' : chartType.value === 'line' ? 'pie' : 'bar'
+  }
 }
-const currentChart = computed(() => (chartType.value === 'bar' ? Bar : Line))
+const currentChart = computed(() => {
+  if (chartType.value === 'bar') return Bar
+  if (chartType.value === 'line') return Line
+  return Pie
+})
 
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'top' as const },
+  },
 }
 </script>
