@@ -214,11 +214,11 @@
           <Icon name="mdi:link-variant" class="w-5 h-5" />
         </button>
         <NuxtLink
-          :to="`https://twitter.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
+          :to="`https://x.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
           target="_blank"
           class="w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
-          title="Sdílet na Twitteru"
-          aria-label="Sdílet na Twitteru"
+          title="Sdílet na X"
+          aria-label="Sdílet na X"
           @click="share('TWITTER')"
         >
           <Icon name="mdi:twitter" class="w-5 h-5" />
@@ -239,6 +239,9 @@
         class="max-w-[1000px] bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-[17px] md:text-lg leading-[1.8] text-gray-800 tracking-normal space-y-6 prose prose-gray prose-a:text-blue-600 prose-a:no-underline hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:hover:border-gray-600 dark:prose-invert dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600"
         v-html="data.content"
       />
+      <div class="w-full">
+        <ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-3 p-4" />
+      </div>
       <VueEasyLightbox
         :visible="lightboxVisible"
         :imgs="images"
