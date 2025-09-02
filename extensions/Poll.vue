@@ -40,40 +40,29 @@ const localOptions = ref([...(node.attrs.options?.length ? node.attrs.options : 
 const localId = ref(node.attrs.id || crypto.randomUUID())
 
 const syncQuestion = () => {
-  console.log('Syncing question:', localQuestion.value)
-  try {
-    const question = localQuestion.value.trim() || 'Zadej otázku'
-    updateAttributes({ question, id: localId.value, options: localOptions.value })
-  } catch (e) {
-    console.error('Chyba při aktualizaci otázky:', e)
-  }
+  const question = localQuestion.value.trim() || 'Zadej otázku'
+  const validOptions = localOptions.value.length ? localOptions.value : ['Možnost 1']
+  updateAttributes({ question, id: localId.value, options: validOptions })
 }
 
 const syncOptions = () => {
-  console.log('Syncing options:', localOptions.value)
-  try {
-    const validOptions = localOptions.value.length ? localOptions.value : ['Možnost 1']
-    localOptions.value = validOptions
-    updateAttributes({
-      question: localQuestion.value.trim() || 'Zadej otázku',
-      id: localId.value,
-      options: validOptions,
-    })
-  } catch (e) {
-    console.error('Chyba při aktualizaci možností:', e)
-  }
+  const validOptions = localOptions.value.length ? localOptions.value : ['Možnost 1']
+  localOptions.value = validOptions
+  updateAttributes({
+    question: localQuestion.value.trim() || 'Zadej otázku',
+    id: localId.value,
+    options: validOptions,
+  })
 }
 
 const add = () => {
   localOptions.value = [...localOptions.value, '']
-  console.log('Adding option:', localOptions.value)
   syncOptions()
 }
 
 const rm = (i) => {
   if (localOptions.value.length <= 1) return
   localOptions.value = localOptions.value.filter((_, idx) => idx !== i)
-  console.log('Removing option:', localOptions.value)
   syncOptions()
 }
 
@@ -82,15 +71,6 @@ watch(
   (newVal) => {
     localQuestion.value = newVal || 'Zadej otázku'
   },
-)
-
-watch(
-  () => node.attrs.options,
-  (newVal) => {
-    localOptions.value = [...(newVal?.length ? newVal : ['Možnost 1'])]
-    console.log('Watched options update:', localOptions.value)
-  },
-  { deep: true },
 )
 
 watch(
@@ -189,9 +169,11 @@ html.dark .poll-option {
     background-color 0.25s,
     transform 0.15s;
 }
+
 .remove-icon {
   color: red !important;
 }
+
 .remove-btn:hover {
   background-color: #fee2e2;
   transform: scale(1.05);

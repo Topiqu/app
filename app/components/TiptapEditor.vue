@@ -349,7 +349,7 @@ const insertPoll = () => {
     .focus()
     .insertContent({
       type: 'poll',
-      attrs: { question: 'Zadej otázku', options: ['Možnost 1', 'Možnost 2'] },
+      attrs: { id: crypto.randomUUID(), question: 'Zadej otázku', options: ['Možnost 1', 'Možnost 2'] },
     })
     .run()
 }
@@ -365,22 +365,38 @@ const setLink = () => {
 const validateContent = (html: string) => {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
-  const polls = doc.querySelectorAll('div[data-type="poll"]')
   let modified = false
-  polls.forEach((poll) => {
-    let question = poll.getAttribute('data-question') || 'Zadej otázku'
-    let options = JSON.parse(poll.getAttribute('data-options') || '[]')
-    if (!options.length || !options.every((opt: string) => opt.trim())) {
-      options = ['Možnost 1']
+
+  doc.querySelectorAll('div[data-type="poll"]').forEach((poll) => {
+    const rawQuestion = poll.getAttribute('data-question') ?? ''
+    const normalizedQuestion = String(rawQuestion).trim() || 'Zadej otázku'
+    if (normalizedQuestion !== rawQuestion) modified = true
+
+    const rawOptions = poll.getAttribute('data-options')
+    let parsed: unknown
+    try {
+      parsed = rawOptions ? JSON.parse(rawOptions) : []
+    } catch {
+      parsed = []
       modified = true
     }
-    if (!question.trim()) {
-      question = 'Zadej otázku'
-      modified = true
-    }
-    poll.setAttribute('data-question', question)
-    poll.setAttribute('data-options', JSON.stringify(options))
+
+    let options = Array.isArray(parsed) ? parsed : []
+    const before = JSON.stringify(options)
+    options =
+      options.length > 0
+        ? options.map((opt, i) => {
+            const s = String(opt ?? '').trim()
+            return s || `Možnost ${i + 1}`
+          })
+        : ['Možnost 1']
+    const after = JSON.stringify(options)
+    if (after !== before) modified = true
+
+    poll.setAttribute('data-question', normalizedQuestion)
+    poll.setAttribute('data-options', after)
   })
+
   return modified ? doc.body.innerHTML : html
 }
 

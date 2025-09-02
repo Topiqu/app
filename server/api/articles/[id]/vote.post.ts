@@ -45,7 +45,5 @@ export default defineEventHandler(async (event) => {
     {},
   )
 
-  console.log('Vote recorded:', { pollId, response, userId: user?.id, sessionId, voteCounts })
-
   return { pollResult: pollResult.response, voteCounts }
 })
