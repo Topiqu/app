@@ -51,6 +51,7 @@ export default defineNuxtConfig({
       tokensPerInterval: 70,
     },
     headers: {
+      referrerPolicy: 'origin',
       contentSecurityPolicy: {
         'img-src': [
           "'self'",
@@ -61,8 +62,9 @@ export default defineNuxtConfig({
           'https://avatars.githubusercontent.com',
           'https://simpleicons.org',
         ],
-        'frame-src': ['https://www.youtube.com'],
+        'frame-src': ['https://www.youtube.com', 'https://www.youtube-nocookie.com'],
         'connect-src': ["'self'", 'https:'],
+        'script-src': ["'self'", "'unsafe-inline'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
       },
     },
     xssValidator: false,
