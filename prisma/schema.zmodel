@@ -109,6 +109,7 @@ model Article extends Base, Ownable {
     comments        Comment[]
     reactions       ArticleReaction[]
     shares          ArticleShare[]
+    pollResults     PollResult[]
     notifications   Notification[]    @relation("ArticleNotifications")
     source          String?
     prompt          String?           @length(0, 5000)
@@ -240,6 +241,18 @@ model ClientSite extends Base {
     @@allow('read', true)
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')
+}
+
+model PollResult extends Base {
+    articleId String
+    userId    String?
+    pollId    String?
+    sessionId String?
+    response  String  @length(1, 255, "Odpověď musí mít 1–255 znaků")
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    @@allow('create, read', true)
+    @@allow('delete', auth().role == 'admin')
+    @@index([articleId, response])
 }
 
 model UserBan extends Base {
