@@ -143,11 +143,18 @@
 
           <div
             v-if="data?.user.plan !== 'BASIC'"
+            v-tippy="{
+              content:
+                'Míra angažovanosti ukazuje, jak aktivně čtenáři interagují s vašimi články. Vypočítá se jako průměr poměru interakcí (lajky, komentáře, sdílení) ku zobrazením pro každý článek. Vyšší hodnota znamená větší zapojení čtenářů.',
+              theme: 'light',
+              placement: 'top',
+            }"
             class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
           >
             <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
-              <Icon name="mdi:chart-line" class="w-5 h-5 text-pink-600" />
+              <Icon name="mdi:chart-line" class="w-5 h-5 text-Pink-600" />
               Míra angažovanosti
+              <Icon name="mdi:help-circle-outline" class="w-4 h-4 text-gray-400 cursor-help" />
             </div>
             <p class="text-2xl font-bold text-pink-600">
               {{ stats.engagementRate ? Math.round(stats.engagementRate * 100) + '%' : '0%' }}
@@ -234,6 +241,8 @@
 </template>
 
 <script setup lang="ts">
+import { directive as vTippy } from 'vue-tippy'
+
 const open = defineModel<boolean>()
 const { data } = useAuth()
 const { onArticleCreated, onArticleDeleted } = useArticleEvent()
