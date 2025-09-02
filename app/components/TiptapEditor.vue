@@ -114,6 +114,14 @@
         <button
           type="button"
           class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+          title="Insert Poll"
+          @click="insertPoll"
+        >
+          <Icon name="mdi-poll" />
+        </button>
+        <button
+          type="button"
+          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
           title="Insert Link"
           :class="{ 'bg-gray-200': editor.isActive('link') }"
           @click="setLink"
@@ -253,6 +261,7 @@ import { Blockquote } from '@tiptap/extension-blockquote'
 import { CharacterCount } from '@tiptap/extension-character-count'
 
 import FileInput from './File/Input.vue'
+import Poll from '../../extensions/poll'
 
 const CustomBlockquote = Blockquote.extend({
   renderHTML({ HTMLAttributes }) {
@@ -334,6 +343,25 @@ const insertYoutube = () => {
   }
 }
 
+const insertPoll = () => {
+  editor.value
+    ?.chain()
+    .focus()
+    .insertContent({
+      type: 'poll',
+      attrs: { question: 'Tvoje otázka?', options: ['Možnost 1', 'Možnost 2'] },
+    })
+    .run()
+}
+
+const setLink = () => {
+  const previousUrl = editor.value?.getAttributes('link').href
+  const url = window.prompt('URL', previousUrl)
+  if (url === null) return
+  if (url === '') return editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
+  if (url && !previousUrl) return editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+}
+
 const editor = ref(
   useEditor({
     content: content.value,
@@ -362,19 +390,12 @@ const editor = ref(
         allowFullscreen: true,
         ccLanguage: 'cs',
       }),
+      Poll,
     ],
     editable: edit,
     onUpdate: (value) => value && (content.value = value.editor.getHTML()),
   }),
 )
-
-const setLink = () => {
-  const previousUrl = editor.value?.getAttributes('link').href
-  const url = window.prompt('URL', previousUrl)
-  if (url === null) return
-  if (url === '') return editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
-  if (url && !previousUrl) return editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-}
 
 watchEffect(() => editor.value?.setEditable(edit))
 
@@ -414,5 +435,33 @@ html.dark .ProseMirror blockquote.blockquote {
 }
 html.dark .ProseMirror iframe.youtube-video {
   background-color: #374151;
+}
+.ProseMirror .poll-node {
+  border: 1px solid #ccc;
+  padding: 12px;
+  margin: 16px 0;
+  border-radius: 4px;
+  background-color: #f9fafb;
+}
+html.dark .ProseMirror .poll-node {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+.ProseMirror .poll-node input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+.ProseMirror .poll-node button {
+  padding: 4px 8px;
+  margin-left: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 4px;
+}
+html.dark .ProseMirror .poll-node button {
+  background-color: #60a5fa;
 }
 </style>
