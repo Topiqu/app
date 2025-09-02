@@ -349,7 +349,7 @@ const insertPoll = () => {
     .focus()
     .insertContent({
       type: 'poll',
-      attrs: { question: 'Tvoje otázka?', options: ['Možnost 1', 'Možnost 2'] },
+      attrs: { question: 'Zadej otázku', options: ['Možnost 1', 'Možnost 2'] },
     })
     .run()
 }
@@ -360,6 +360,28 @@ const setLink = () => {
   if (url === null) return
   if (url === '') return editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
   if (url && !previousUrl) return editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+}
+
+const validateContent = (html: string) => {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+  const polls = doc.querySelectorAll('div[data-type="poll"]')
+  let modified = false
+  polls.forEach((poll) => {
+    let question = poll.getAttribute('data-question') || 'Zadej otázku'
+    let options = JSON.parse(poll.getAttribute('data-options') || '[]')
+    if (!options.length || !options.every((opt: string) => opt.trim())) {
+      options = ['Možnost 1']
+      modified = true
+    }
+    if (!question.trim()) {
+      question = 'Zadej otázku'
+      modified = true
+    }
+    poll.setAttribute('data-question', question)
+    poll.setAttribute('data-options', JSON.stringify(options))
+  })
+  return modified ? doc.body.innerHTML : html
 }
 
 const editor = ref(
@@ -393,7 +415,10 @@ const editor = ref(
       Poll,
     ],
     editable: edit,
-    onUpdate: (value) => value && (content.value = value.editor.getHTML()),
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML()
+      content.value = validateContent(html)
+    },
   }),
 )
 
