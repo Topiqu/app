@@ -37,5 +37,5 @@ export default defineEventHandler(async (event) => {
     user?.id ? r.userId === user.id && r.sessionId === null : r.sessionId === sessionId && r.userId === null,
   )
 
-  return { pollResult: userVote, voteCounts }
+  return { pollResult: userVote ? userVote.response : null, voteCounts }
 })
