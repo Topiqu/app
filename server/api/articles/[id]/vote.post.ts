@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
   const { pollId, response } = await readBody(event)
 
-  if (!pollId || !id) {
+  if (!pollId || !id || !response) {
     throw createError({ statusCode: 400, statusMessage: 'Něco chybí' })
   }
 
@@ -19,30 +19,21 @@ export default defineEventHandler(async (event) => {
   }
 
   const sessionId = user?.id ? null : getCookie(event, 'anon_session') || randomUUID()
-  if (!user?.id) {
+  if (!user?.id && sessionId) {
     setCookie(event, 'anon_session', sessionId, { maxAge: 30 * 24 * 60 * 60 })
   }
 
-  let pollResult = null
-  if (response) {
-    const existingVote = await prisma.pollResult.findFirst({
-      where: {
-        pollId,
-        OR: [
-          { userId: user?.id, sessionId: null },
-          { userId: null, sessionId },
-        ],
-      },
-    })
+  const where = user?.id ? { pollId, userId: user.id, sessionId: null } : { pollId, userId: null, sessionId }
 
-    if (existingVote) {
-      throw createError({ statusCode: 409, statusMessage: 'Už jste hlasovali v této anketě' })
-    }
+  const existingVote = await prisma.pollResult.findFirst({ where })
 
-    pollResult = await prisma.pollResult.create({
-      data: { articleId: id, pollId, userId: user?.id, sessionId, response },
-    })
+  if (existingVote) {
+    throw createError({ statusCode: 409, statusMessage: 'Už jste hlasovali v této anketě' })
   }
+
+  const pollResult = await prisma.pollResult.create({
+    data: { articleId: id, pollId, userId: user?.id || null, sessionId, response },
+  })
 
   const results = await prisma.pollResult.findMany({
     where: { pollId },
@@ -54,9 +45,7 @@ export default defineEventHandler(async (event) => {
     {},
   )
 
-  const userVote = results.find((r) =>
-    user?.id ? r.userId === user.id && r.sessionId === null : r.sessionId === sessionId && r.userId === null,
-  )
+  console.log('Vote recorded:', { pollId, response, userId: user?.id, sessionId, voteCounts })
 
-  return { pollResult: userVote || pollResult, voteCounts }
+  return { pollResult: pollResult.response, voteCounts }
 })
