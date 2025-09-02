@@ -1,4 +1,3 @@
-```vue
 <template>
   <div>
     <div v-for="(node, i) in parsedContent" :key="i">
@@ -11,7 +10,10 @@
             :class="{ voted: selectedOptions[node.pollId] === opt }"
             @click="vote(node.pollId, opt)"
           >
-            {{ opt }} ({{ voteCounts[node.pollId]?.[opt] || 0 }} hlasů)
+            {{ opt }}
+            <span v-if="hasVoted[node.pollId]" class="vote-info">
+              ({{ voteCounts[node.pollId]?.[opt] || 0 }} hlasů, {{ getPercentage(node.pollId, opt) }}%)
+            </span>
           </button>
         </div>
       </div>
@@ -22,10 +24,10 @@
 
 <script setup lang="ts">
 const props = defineProps<{ content: string; articleId: string }>()
-const parsedContent = ref<any[]>([])
-const voteCounts = ref<Record<string, Record<string, number>>>({})
-const hasVoted = ref<Record<string, boolean>>({})
-const selectedOptions = ref<Record<string, string | null>>({})
+const parsedContent = reactive<any[]>([])
+const voteCounts = reactive<Record<string, Record<string, number>>>({})
+const hasVoted = reactive<Record<string, boolean>>({})
+const selectedOptions = reactive<Record<string, string | null>>({})
 const toast = useToast()
 
 const parse = () => {
@@ -33,57 +35,81 @@ const parse = () => {
   if (import.meta.client) {
     const p = new DOMParser()
     const d = p.parseFromString(props.content, 'text/html')
-    parsedContent.value = Array.from(d.body.childNodes).map((n) => {
-      const el = n as Element
-      if (el.nodeName === 'DIV' && el.getAttribute('data-type') === 'poll') {
-        return {
-          type: 'poll',
-          pollId: el.getAttribute('data-id') || crypto.randomUUID(),
-          question: el.getAttribute('data-question') || '',
-          options: JSON.parse(el.getAttribute('data-options') || '[]'),
+    parsedContent.splice(
+      0,
+      parsedContent.length,
+      ...Array.from(d.body.childNodes).map((n) => {
+        const el = n as Element
+        if (el.nodeName === 'DIV' && el.getAttribute('data-type') === 'poll') {
+          let options
+          try {
+            options = JSON.parse(el.getAttribute('data-options') || '[]')
+          } catch (e) {
+            console.error('Chyba při parsování options:', e)
+            options = ['Možnost 1']
+          }
+          return {
+            type: 'poll',
+            pollId: el.getAttribute('data-id') || crypto.randomUUID(),
+            question: el.getAttribute('data-question') || 'Zadej otázku',
+            options: options.length ? options : ['Možnost 1'],
+          }
         }
-      }
-      return { type: 'html', html: el.outerHTML }
-    })
-    parsedContent.value.forEach((node) => {
+        return { type: 'html', html: el.outerHTML }
+      }),
+    )
+    parsedContent.forEach((node) => {
       if (node.type === 'poll') {
-        if (!hasVoted.value[node.pollId]) hasVoted.value[node.pollId] = false
-        if (!selectedOptions.value[node.pollId]) selectedOptions.value[node.pollId] = null
-        if (!voteCounts.value[node.pollId]) voteCounts.value[node.pollId] = {}
+        if (!(node.pollId in hasVoted)) hasVoted[node.pollId] = false
+        if (!(node.pollId in selectedOptions)) selectedOptions[node.pollId] = null
+        if (!(node.pollId in voteCounts)) voteCounts[node.pollId] = {}
       }
     })
+    console.log('Parsed content:', parsedContent)
   }
 }
 
 const fetchResults = async () => {
   if (!props.articleId) return
   try {
-    const polls = parsedContent.value.filter((n) => n.type === 'poll')
+    const polls = parsedContent.filter((n) => n.type === 'poll')
     for (const poll of polls) {
-      const res = await $fetch<{ pollResult: string; voteCounts: Record<string, number> }>(
+      const res = await $fetch<{ pollResult: string | null; voteCounts: Record<string, number> }>(
         `/api/articles/${props.articleId}/vote?pollId=${poll.pollId}`,
       )
-      voteCounts.value[poll.pollId] = res.voteCounts || {}
-      if (res.pollResult) {
-        hasVoted.value[poll.pollId] = true
-        selectedOptions.value[poll.pollId] = res.pollResult
-      }
+      voteCounts[poll.pollId] = res.voteCounts || {}
+      hasVoted[poll.pollId] = !!res.pollResult
+      selectedOptions[poll.pollId] = res.pollResult ? String(res.pollResult) : null
+      console.log(`Poll ${poll.pollId} results:`, {
+        voteCounts: voteCounts[poll.pollId],
+        hasVoted: hasVoted[poll.pollId],
+        selected: selectedOptions[poll.pollId],
+        options: poll.options,
+      })
     }
   } catch (e) {
     console.error('Failed to fetch poll results:', e)
   }
 }
 
+const getPercentage = (pollId: string, option: string) => {
+  const counts = voteCounts[pollId] || {}
+  const totalVotes = Object.values(counts).reduce((sum, count) => sum + count, 0)
+  const optionVotes = counts[option] || 0
+  return totalVotes ? Math.round((optionVotes / totalVotes) * 100) : 0
+}
+
 const vote = async (pollId: string, option: string) => {
-  if (hasVoted.value[pollId]) return
+  if (hasVoted[pollId]) return
   try {
     const res = await $fetch(`/api/articles/${props.articleId}/vote`, {
       method: 'POST',
       body: { pollId, response: option },
     })
-    hasVoted.value[pollId] = true
-    selectedOptions.value[pollId] = option
-    voteCounts.value[pollId] = res.voteCounts
+    hasVoted[pollId] = true
+    selectedOptions[pollId] = option
+    voteCounts[pollId] = res.voteCounts
+    console.log(`Voted on poll ${pollId}:`, { option, voteCounts: res.voteCounts })
   } catch (e: any) {
     toast.error({ message: `Hlasování selhalo: ${e.message}` })
   }
@@ -108,29 +134,36 @@ watch(
   border: 1px solid #ccc;
   padding: 16px;
   margin: 16px 0;
-  border-radius: 4px;
+  border-radius: 8px;
   background-color: #f9fafb;
 }
 html.dark .poll-display {
   background-color: #374151;
   border-color: #4b5563;
 }
-.poll-display h3 {
+.poll-display h4 {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 12px;
   color: #1f2937;
 }
-html.dark .poll-display h3 {
+html.dark .poll-display h4 {
   color: #e5e7eb;
 }
 .poll-option .poll-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 25%;
   padding: 8px 16px;
-  margin: 4px;
+  margin: 4px 0;
   background-color: #3b82f6;
   color: white;
-  border-radius: 4px;
+  border: 2px solid transparent;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
 }
 .poll-option .poll-button:disabled {
   background-color: #6b7280;
@@ -138,6 +171,14 @@ html.dark .poll-display h3 {
 }
 .poll-option .voted {
   background-color: #10b981;
+  border-color: #059669;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.poll-option .vote-info {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  margin-left: 8px;
 }
 html.dark .poll-option .poll-button {
   background-color: #60a5fa;
@@ -146,6 +187,7 @@ html.dark .poll-option .poll-button:disabled {
   background-color: #4b5563;
 }
 html.dark .poll-option .voted {
-  background-color: #34d399;
+  background-color: #34d399 !important;
+  border-color: #10b981;
 }
 </style>
