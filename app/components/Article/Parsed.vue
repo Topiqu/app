@@ -3,7 +3,7 @@
   <div>
     <div v-for="(node, i) in parsedContent" :key="i">
       <div v-if="node.type === 'poll'" class="poll-display">
-        <h3>{{ node.question }}</h3>
+        <h4>{{ node.question }}</h4>
         <div v-for="(opt, j) in node.options" :key="j" class="poll-option">
           <button
             :disabled="hasVoted[node.pollId]"

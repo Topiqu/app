@@ -19,7 +19,7 @@
         @focus.stop
       />
       <button v-if="localOptions.length > 1" class="remove-btn" @click.stop="rm(i)">
-        <Icon name="mdi:minus" />
+        <Icon name="mdi:trash" class="remove-icon" />
       </button>
     </div>
     <button class="add-btn" @click.stop="add">
@@ -179,15 +179,19 @@ html.dark .poll-option {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
+  background-color: transparent !important;
+  border: none !important;
   border-radius: 0.5rem;
   padding: 0.45rem;
+  font-size: 1.5rem;
   cursor: pointer;
   transition:
     background-color 0.25s,
     transform 0.15s;
 }
-
+.remove-icon {
+  color: red !important;
+}
 .remove-btn:hover {
   background-color: #fee2e2;
   transform: scale(1.05);
