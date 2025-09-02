@@ -240,7 +240,11 @@ const platformStyles: Record<SocialPlatform, { bg: string; border: string; text:
   },
 }
 
-const { data: client, refresh } = await useFetch<ClientSite>(`/api/clients/${auth.value?.user.clientSiteId}`, {
+const {
+  data: client,
+  refresh,
+  pending,
+} = await useFetch<ClientSite>(`/api/clients/${auth.value?.user.clientSiteId}`, {
   default: () => ({
     id: '',
     name: '',
