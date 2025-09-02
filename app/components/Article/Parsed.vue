@@ -10,9 +10,15 @@
             :class="{ voted: selectedOptions[node.pollId] === opt }"
             @click="vote(node.pollId, opt)"
           >
-            {{ opt }}
-            <span v-if="hasVoted[node.pollId]" class="vote-info">
-              ({{ voteCounts[node.pollId]?.[opt] || 0 }} hlasů, {{ getPercentage(node.pollId, opt) }}%)
+            <span
+              class="poll-background"
+              :style="{ width: hasVoted[node.pollId] ? `${getPercentage(node.pollId, opt)}%` : '0%' }"
+            ></span>
+            <span class="poll-content">
+              {{ opt }}
+              <span v-if="hasVoted[node.pollId]" class="vote-info">
+                ({{ voteCounts[node.pollId]?.[opt] || 0 }} hlasů, {{ getPercentage(node.pollId, opt) }}%)
+              </span>
             </span>
           </button>
         </div>
@@ -65,7 +71,6 @@ const parse = () => {
         if (!(node.pollId in voteCounts)) voteCounts[node.pollId] = {}
       }
     })
-    console.log('Parsed content:', parsedContent)
   }
 }
 
@@ -80,12 +85,6 @@ const fetchResults = async () => {
       voteCounts[poll.pollId] = res.voteCounts || {}
       hasVoted[poll.pollId] = !!res.pollResult
       selectedOptions[poll.pollId] = res.pollResult ? String(res.pollResult) : null
-      console.log(`Poll ${poll.pollId} results:`, {
-        voteCounts: voteCounts[poll.pollId],
-        hasVoted: hasVoted[poll.pollId],
-        selected: selectedOptions[poll.pollId],
-        options: poll.options,
-      })
     }
   } catch (e) {
     console.error('Failed to fetch poll results:', e)
@@ -109,7 +108,6 @@ const vote = async (pollId: string, option: string) => {
     hasVoted[pollId] = true
     selectedOptions[pollId] = option
     voteCounts[pollId] = res.voteCounts
-    console.log(`Voted on poll ${pollId}:`, { option, voteCounts: res.voteCounts })
   } catch (e: any) {
     toast.error({ message: `Hlasování selhalo: ${e.message}` })
   }
@@ -151,29 +149,43 @@ html.dark .poll-display h4 {
   color: #e5e7eb;
 }
 .poll-option .poll-button {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 25%;
+  position: relative;
+  width: 100%;
   padding: 8px 16px;
   margin: 4px 0;
-  background-color: #3b82f6;
-  color: white;
+  background-color: #e5e7eb;
+  color: #1f2937;
   border: 2px solid transparent;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
-  transition: all 0.2s;
+  overflow: hidden;
+  text-align: left;
 }
 .poll-option .poll-button:disabled {
-  background-color: #6b7280;
   cursor: not-allowed;
 }
 .poll-option .voted {
-  background-color: #10b981;
-  border-color: #059669;
   font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.poll-option .poll-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: #bcc3ce;
+  transition: width 0.5s ease-in-out;
+  z-index: 0;
+}
+.poll-option .voted .poll-background {
+  background-color: #10b981;
+}
+.poll-option .poll-content {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1;
 }
 .poll-option .vote-info {
   font-size: 0.85rem;
@@ -181,13 +193,13 @@ html.dark .poll-display h4 {
   margin-left: 8px;
 }
 html.dark .poll-option .poll-button {
+  background-color: #4b5563;
+  color: #e5e7eb;
+}
+html.dark .poll-option .poll-background {
   background-color: #60a5fa;
 }
-html.dark .poll-option .poll-button:disabled {
-  background-color: #4b5563;
-}
-html.dark .poll-option .voted {
-  background-color: #34d399 !important;
-  border-color: #10b981;
+html.dark .poll-option .voted .poll-background {
+  background-color: #34d399;
 }
 </style>
