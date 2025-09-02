@@ -89,7 +89,7 @@
       </div>
       <p
         v-if="data.excerpt"
-        class="text-xl md:text-2xl font-light text-gray-800 dark:text-gray-200 leading-relaxed tracking-tight italic my-8"
+        class="text-lg md:text-xl italic text-gray-700 dark:text-gray-200 leading-relaxed border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4 mb-3 shadow-sm"
       >
         {{ data.excerpt }}
       </p>
