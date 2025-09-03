@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   nitro: {
     experimental: { tasks: true },
     scheduledTasks: {
-      '*/1 * * * *': ['publish:check'],
+      '*/1 * * * *': ['publish-check'],
     },
     preset: 'bun',
     imports: {

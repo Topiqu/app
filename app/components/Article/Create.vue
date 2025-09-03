@@ -104,7 +104,7 @@
         <label class="flex flex-col gap-3">
           <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">Datum vydání</span>
           <input
-            v-model="releaseAtFormatted"
+            v-model="newArticle.releaseAt"
             type="datetime-local"
             :min="new Date().toISOString().slice(0, 16)"
             class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
@@ -167,7 +167,7 @@ const newArticle = reactive<{
   userId: string | undefined
   imageUrl: string
   status: ArticleStatus
-  releaseAt?: Date | null
+  releaseAt?: string | null
 }>({
   title: '',
   excerpt: '',
@@ -181,7 +181,6 @@ const newArticle = reactive<{
 const articleTags = ref<string[]>([])
 const customPrompt = shallowRef('')
 const mode = shallowRef<'manual' | 'ai'>('manual')
-const releaseAtFormatted = shallowRef('')
 
 const options: { value: 'manual' | 'ai'; label: string; icon: string }[] = [
   { value: 'manual', label: 'Ruční psaní', icon: 'mdi:pencil' },
@@ -205,7 +204,7 @@ const createArticle = async () => {
         ...newArticle,
         excerpt: newArticle.excerpt || undefined,
         content: newArticle.content || undefined,
-        releaseAt: newArticle.releaseAt?.toISOString() || undefined,
+        releaseAt: newArticle.releaseAt || undefined,
       },
     })
     await Promise.all(
@@ -223,7 +222,6 @@ const createArticle = async () => {
       status: 'draft',
       releaseAt: null,
     })
-    releaseAtFormatted.value = ''
     emitArticleCreated()
     open.value = false
   } catch (error: any) {
