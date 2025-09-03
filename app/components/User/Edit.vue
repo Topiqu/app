@@ -41,7 +41,7 @@
               class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
             >
               <option value="admin">Admin</option>
-              <option value="user">Uživatel</option>
+              <option value="reader">Čtenář</option>
             </select>
           </label>
         </div>
