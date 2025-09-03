@@ -104,6 +104,7 @@ model Article extends Base, Ownable {
     shared          Int               @default(0)
     readingTime     Int?
     publishedAt     DateTime?
+    releaseAt       DateTime?
     allowedComments Boolean           @default(true)
     tags            ArticleTag[]
     comments        Comment[]
