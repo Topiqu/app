@@ -106,7 +106,8 @@
           <input
             v-model="newArticle.releaseAt"
             type="datetime-local"
-            :min="new Date().toISOString().slice(0, 16)"
+            :min="minDate"
+            :max="maxDate"
             class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
           />
           <span class="text-sm text-gray-500 dark:text-gray-400"
@@ -149,25 +150,18 @@ const { data: auth } = useAuth()
 const { emitArticleCreated } = useArticleEvent()
 const open = defineModel<boolean>()
 
-const newArticle = reactive<{
-  title: string
-  excerpt: string
-  content: string
-  slug: string
-  userId: string | undefined
-  imageUrl: string
-  status: ArticleStatus
-  releaseAt?: string | null
-}>({
+const init = () => ({
   title: '',
   excerpt: '',
   content: '',
   slug: '',
   userId: auth.value?.user.id,
   imageUrl: '',
-  status: 'draft',
-  releaseAt: null,
+  status: 'draft' as ArticleStatus,
+  releaseAt: null as string | null,
 })
+
+const newArticle = reactive(init())
 const articleTags = ref<string[]>([])
 const customPrompt = shallowRef('')
 const mode = shallowRef<'manual' | 'ai'>('manual')
@@ -176,6 +170,16 @@ const options: { value: 'manual' | 'ai'; label: string; icon: string }[] = [
   { value: 'manual', label: 'Ruční psaní', icon: 'mdi:pencil' },
   { value: 'ai', label: 'AI generování', icon: 'mdi:robot' },
 ]
+
+const currentDate = new Date()
+const minDate = currentDate.toISOString().slice(0, 16)
+const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59).toISOString().slice(0, 16)
+
+const isReleaseDateValid = computed(() => {
+  if (!newArticle.releaseAt) return true
+  const releaseDate = new Date(newArticle.releaseAt)
+  return releaseDate >= new Date(minDate) && releaseDate <= new Date(maxDate)
+})
 
 const updateSlug = () => {
   newArticle.slug = slugify(newArticle.title, { lower: true, strict: true, trim: true })
@@ -187,6 +191,9 @@ const handleUpload = (file: { url: string }) => {
 
 const createArticle = async () => {
   if (!newArticle.title) return toast.error({ message: 'Název článku je povinný' })
+  if (!isReleaseDateValid.value) {
+    return toast.error({ message: 'Datum vydání musí být mezi ' + minDate + ' a ' + maxDate })
+  }
   try {
     const { id } = await $fetch('/api/articles', {
       method: 'POST',
@@ -201,16 +208,7 @@ const createArticle = async () => {
       articleTags.value.map((tagId) => $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })),
     )
     toast.success({ message: 'Článek byl úspěšně přidán' })
-    Object.assign(newArticle, {
-      title: '',
-      excerpt: '',
-      content: '',
-      slug: '',
-      userId: auth.value?.user.id,
-      imageUrl: '',
-      status: 'draft',
-      releaseAt: null,
-    })
+    Object.assign(newArticle, init())
     emitArticleCreated()
     open.value = false
   } catch (error: any) {

@@ -1,7 +1,7 @@
 <template>
   <div
     v-tippy="
-      props.row.original.releaseAt
+      props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()
         ? `Plánováno na: ${format(new Date(props.row.original.releaseAt), 'dd.MM.yyyy, HH:mm')}`
         : ''
     "
@@ -11,7 +11,11 @@
       <option value="draft">Návrh</option>
       <option value="published">Publikováno</option>
     </select>
-    <Icon v-if="props.row.original.releaseAt" name="mdi:hourglass" class="w-4 h-4 ml-2 text-blue-400" />
+    <Icon
+      v-if="props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()"
+      name="mdi:hourglass"
+      class="w-4 h-4 ml-2 text-blue-400"
+    />
   </div>
 </template>
 
@@ -26,6 +30,7 @@ const emit = defineEmits<{
   (e: 'update', id: string, newStatus: ArticleStatus): void
 }>()
 
+const offset = new Date().getTimezoneOffset() * 60 * 1000
 const model = computed({
   get: () => props.row.original.status,
   set: (val: ArticleStatus) => emit('update', props.row.original.id, val),

@@ -1,3 +1,11 @@
+import type { EventStream } from 'h3'
+
+interface GlobalThis {
+  eventStreams?: Map<string, Set<EventStream>>
+}
+
+declare const globalThis: GlobalThis
+
 export default defineTask({
   meta: {
     name: 'publish-check',
@@ -15,7 +23,7 @@ export default defineTask({
       const articleIds = articles.map((a) => a.id)
       const update = await tx.article.updateMany({
         where: { id: { in: articleIds }, status: 'draft' },
-        data: { status: 'published' },
+        data: { status: 'published', releaseAt: null },
       })
 
       await Promise.all(
@@ -29,7 +37,7 @@ export default defineTask({
         ),
       )
 
-      await Promise.all(
+      const authorNotifications = await Promise.all(
         articles.map((a) =>
           tx.notification.create({
             data: {
@@ -41,6 +49,15 @@ export default defineTask({
           }),
         ),
       )
+
+      authorNotifications.forEach((notification) => {
+        const streamKey = `notifications:${notification.userId}`
+        const streams = globalThis.eventStreams?.get(streamKey)
+        if (streams) {
+          const serialized = JSON.stringify({ ...notification, count: 1 })
+          streams.forEach((stream) => stream.push(serialized))
+        }
+      })
 
       const notifications = []
       for (const a of articles) {
@@ -62,6 +79,14 @@ export default defineTask({
       for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
         const batch = notifications.slice(i, i + BATCH_SIZE)
         await tx.notification.createMany({ data: batch, skipDuplicates: true })
+        batch.forEach((notification) => {
+          const streamKey = `notifications:${notification.userId}`
+          const streams = globalThis.eventStreams?.get(streamKey)
+          if (streams) {
+            const serialized = JSON.stringify({ ...notification, count: 1 })
+            streams.forEach((stream) => stream.push(serialized))
+          }
+        })
       }
 
       return { result: { count: update.count, timestamp: now.toISOString() } }

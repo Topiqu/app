@@ -10,7 +10,6 @@ export default defineEventHandler(async (event) => {
 
   const $ = cheerio.load(body.content)
   const usedIds = new Map()
-  const ip = getIp(event)
 
   $('h1, h2, h3').each((i, el) => {
     const $el = $(el)
@@ -56,7 +55,7 @@ export default defineEventHandler(async (event) => {
     action: 'ARTICLE_CREATED',
     userId: user.id,
     clientSiteId: user.clientSiteId,
-    ip,
+    ip: getIp(event),
     metadata: {
       articleId: article.id,
       title: article.title,
