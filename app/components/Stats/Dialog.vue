@@ -145,7 +145,7 @@
             v-if="data?.user.plan !== 'BASIC'"
             v-tippy="{
               content:
-                'Míra angažovanosti ukazuje, jak aktivně čtenáři interagují s vašimi články. Vypočítá se jako průměr poměru interakcí (lajky, komentáře, sdílení) ku zobrazením pro každý článek. Vyšší hodnota znamená větší zapojení čtenářů.',
+                'Míra angažovanosti ukazuje, jak aktivně čtenáři interagují s vašimi články. Vypočítá se jako průměr poměru interakcí (lajky, komentáře, sdílení i hlasování v anketách) ku zobrazením pro každý článek. Vyšší hodnota znamená větší zapojení čtenářů.',
               theme: 'light',
               placement: 'top',
             }"

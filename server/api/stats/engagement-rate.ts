@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
           reactions: true,
           comments: true,
           shares: true,
+          pollResults: true,
         },
       },
       shares: {
@@ -24,7 +25,7 @@ export default defineEventHandler(async (event) => {
 
   const engagementRates = articles
     .filter((a) => a.views > 0)
-    .map((a) => (a._count.reactions + a._count.comments + a.shares.length) / a.views)
+    .map((a) => (a._count.reactions + a._count.comments + a.shares.length + a._count.pollResults) / a.views)
   const engagementRate =
     engagementRates.length > 0 ? engagementRates.reduce((sum, rate) => sum + rate, 0) / engagementRates.length : 0
 
