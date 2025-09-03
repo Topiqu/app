@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
       email: true,
       role: true,
       deletedAt: true,
+      clientSiteId: true,
     },
   })
 })

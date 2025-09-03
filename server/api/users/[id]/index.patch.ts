@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   if (user.id !== id && user.role !== 'superadmin')
     throw createError({ statusCode: 403, message: 'Nepovolený přístup' })
 
-  const body = await readValidatedBody(event, UserUpdateScalarSchema.parse)
+  const body = await readValidatedBody(event, UserUpdateSchema.parse)
 
   if (user.role !== 'superadmin') {
     if (body.password) throw createError({ statusCode: 403, message: 'Změna hesla povolena pouze superadminovi' })
