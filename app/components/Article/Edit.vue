@@ -39,6 +39,20 @@
           </span>
         </label>
 
+        <label v-if="showReleaseAt" class="flex flex-col gap-3">
+          <span class="text-sm font-semibold tracking-wide">Datum vydání</span>
+          <input
+            v-model="editedArticle.releaseAt"
+            type="datetime-local"
+            :min="minDate"
+            :max="maxDate"
+            class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
+          />
+          <span class="text-sm text-gray-500">
+            Slouží pro nastavení data a času publikace článku. Můžete nechat prázdné pro manuální vydání.
+          </span>
+        </label>
+
         <TagsManager :article="editedArticle" @update:tags="updateTags" @delete:tag="deleteTag" />
       </div>
     </template>
@@ -74,10 +88,27 @@ const open = defineModel<boolean>()
 const emit = defineEmits(['saved'])
 const props = defineProps<{ article: Article }>()
 
-const editedArticle = ref({ ...props.article, excerpt: props.article.excerpt || '' })
+const editedArticle = ref({
+  ...props.article,
+  excerpt: props.article.excerpt || '',
+  releaseAt: props.article.releaseAt ? new Date(props.article.releaseAt).toISOString().slice(0, 16) : null,
+})
 const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
   default: () => [],
   key: `article-tags-${props.article?.id}`,
+})
+
+const currentDate = new Date()
+const minDate = currentDate.toISOString().slice(0, 16)
+const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59).toISOString().slice(0, 16)
+
+const showReleaseAt = computed(() => {
+  if (editedArticle.value.status === 'published') return false
+  if (editedArticle.value.releaseAt) {
+    const releaseDate = new Date(editedArticle.value.releaseAt)
+    return releaseDate >= currentDate
+  }
+  return true
 })
 
 const updateSlug = () =>
@@ -108,7 +139,6 @@ const updateTags = async (tagIds: string[]) => {
 const deleteTag = async (tagId: string) => {
   try {
     await $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, { method: 'DELETE' })
-
     toast.success({ message: 'Tag odebrán.' })
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Chyba při odebírání tagu.' })
@@ -116,6 +146,14 @@ const deleteTag = async (tagId: string) => {
 }
 
 const saveEdit = async () => {
+  if (editedArticle.value.releaseAt) {
+    const releaseDate = new Date(editedArticle.value.releaseAt)
+    const minDateObj = new Date(minDate)
+    const maxDateObj = new Date(maxDate)
+    if (releaseDate < minDateObj || releaseDate > maxDateObj) {
+      return toast.error({ message: 'Datum vydání musí být od teď do ' + (currentDate.getFullYear() + 100) })
+    }
+  }
   try {
     await $fetch(`/api/articles/${editedArticle.value.id}`, {
       method: 'PATCH',
@@ -126,11 +164,10 @@ const saveEdit = async () => {
         slug: editedArticle.value.slug,
         userId: editedArticle.value.userId,
         imageUrl: editedArticle.value.imageUrl,
+        releaseAt: editedArticle.value.releaseAt || undefined,
       },
     })
-
     toast.success({ message: 'Článek byl úspěšně upraven' })
-
     open.value = false
     emit('saved')
   } catch (error: any) {
@@ -148,7 +185,6 @@ const confirmClose = async () => {
     cancelButtonText: 'Ne',
     confirmButtonColor: '#ef4444',
   })
-
   if (r.isConfirmed) open.value = false
 }
 </script>

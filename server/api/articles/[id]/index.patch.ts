@@ -7,13 +7,45 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const user = (await getServerSession(event))?.user
   if (!id) throw createError({ status: 400, message: 'ID článku je povinné' })
+  if (!user) throw createError({ status: 401 })
+
   const db = await getEnhancedPrisma(user)
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
   const isOnlyViews = Object.keys(body).length === 1 && 'views' in body
 
-  if (!isOnlyViews && !user) throw createError({ status: 401 })
   if (!isOnlyViews && body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
     throw createError({ status: 403, message: 'Tento článek nemůžete upravovat' })
+
+  const currentDate = new Date()
+  const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59)
+
+  if (body.releaseAt) {
+    const releaseDate = new Date(body.releaseAt)
+    if (isNaN(releaseDate.getTime()) || releaseDate < currentDate || releaseDate > maxDate) {
+      throw createError({
+        status: 400,
+        message: `Datum vydání musí být od teď (${currentDate.toISOString()}) do ${currentDate.getFullYear() + 100}`,
+      })
+    }
+  }
+
+  const previousArticle = await db.article.findUnique({
+    where: { id },
+    select: { status: true, releaseAt: true },
+  })
+
+  if (!previousArticle) throw createError({ status: 404, message: 'Článek nenalezen' })
+
+  if (
+    body.releaseAt &&
+    (previousArticle.status === 'published' ||
+      (previousArticle.releaseAt && new Date(previousArticle.releaseAt) < currentDate))
+  ) {
+    throw createError({
+      status: 403,
+      message: 'Nelze upravit datum vydání u publikovaného článku nebo článku s uplynulým datem vydání',
+    })
+  }
 
   let content = body.content
   if (content) {
@@ -40,12 +72,7 @@ export default defineEventHandler(async (event) => {
     content = $.html()
   }
 
-  const previousArticle = await prisma.article.findUnique({
-    where: { id },
-    select: { status: true },
-  })
-
-  const article = await prisma.article.update({
+  const article = await db.article.update({
     where: { id },
     data: {
       title: body.title,
@@ -57,11 +84,12 @@ export default defineEventHandler(async (event) => {
       status: body.status,
       views: body.views,
       allowedComments: body.allowedComments,
+      releaseAt: body.releaseAt ? new Date(body.releaseAt) : undefined,
     },
   })
 
   if (!isOnlyViews && article.status === 'published' && previousArticle?.status === 'draft') {
-    const followers = await prisma.follow.findMany({
+    const followers = await db.follow.findMany({
       where: {
         followedId: article.userId,
         follower: { allowNotifs: true },
