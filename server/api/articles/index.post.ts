@@ -48,6 +48,7 @@ export default defineEventHandler(async (event) => {
       clientSiteId: user.clientSiteId,
       createdAt: new Date(),
       imageUrl: body.imageUrl,
+      releaseAt: body.releaseAt,
     },
   })
 
