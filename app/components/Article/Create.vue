@@ -101,6 +101,19 @@
           >
         </label>
 
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">Datum vydání</span>
+          <input
+            v-model="releaseAtFormatted"
+            type="datetime-local"
+            :min="new Date().toISOString().slice(0, 16)"
+            class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
+          />
+          <span class="text-sm text-gray-500 dark:text-gray-400"
+            >Slouží pro nastavení data a času publikace článku. Můžete nechat prázdné pro manuální vydání.</span
+          >
+        </label>
+
         <TagsManager v-model:tags="articleTags" />
         <div v-if="articles?.length" class="flex flex-col gap-2 max-h-48 overflow-y-auto">
           <p v-for="a in articles" :key="a.id">
@@ -146,7 +159,7 @@ const { emitArticleCreated } = useArticleEvent()
 const open = defineModel<boolean>()
 const { data: articles, refresh } = await useFetch('/api/articles?limit=5')
 
-const newArticle = ref<{
+const newArticle = reactive<{
   title: string
   excerpt: string
   content: string
@@ -154,6 +167,7 @@ const newArticle = ref<{
   userId: string | undefined
   imageUrl: string
   status: ArticleStatus
+  releaseAt?: Date | null
 }>({
   title: '',
   excerpt: '',
@@ -162,10 +176,12 @@ const newArticle = ref<{
   userId: auth.value?.user.id,
   imageUrl: '',
   status: 'draft',
+  releaseAt: null,
 })
 const articleTags = ref<string[]>([])
-const customPrompt = ref('')
-const mode = ref<'manual' | 'ai'>('manual')
+const customPrompt = shallowRef('')
+const mode = shallowRef<'manual' | 'ai'>('manual')
+const releaseAtFormatted = shallowRef('')
 
 const options: { value: 'manual' | 'ai'; label: string; icon: string }[] = [
   { value: 'manual', label: 'Ruční psaní', icon: 'mdi:pencil' },
@@ -173,26 +189,23 @@ const options: { value: 'manual' | 'ai'; label: string; icon: string }[] = [
 ]
 
 const updateSlug = () => {
-  newArticle.value.slug = slugify(newArticle.value.title, { lower: true, strict: true, trim: true })
+  newArticle.slug = slugify(newArticle.title, { lower: true, strict: true, trim: true })
 }
 
 const handleUpload = (file: { url: string }) => {
-  newArticle.value.imageUrl = file.url
+  newArticle.imageUrl = file.url
 }
 
 const createArticle = async () => {
-  if (!newArticle.value.title) return toast.error({ message: 'Název článku je povinný' })
+  if (!newArticle.title) return toast.error({ message: 'Název článku je povinný' })
   try {
     const { id } = await $fetch('/api/articles', {
       method: 'POST',
       body: {
-        title: newArticle.value.title,
-        excerpt: newArticle.value.excerpt || undefined,
-        content: newArticle.value.content || undefined,
-        slug: newArticle.value.slug,
-        userId: newArticle.value.userId,
-        imageUrl: newArticle.value.imageUrl,
-        status: newArticle.value.status,
+        ...newArticle,
+        excerpt: newArticle.excerpt || undefined,
+        content: newArticle.content || undefined,
+        releaseAt: newArticle.releaseAt?.toISOString() || undefined,
       },
     })
     await Promise.all(
@@ -200,7 +213,7 @@ const createArticle = async () => {
     )
     await refresh()
     toast.success({ message: 'Článek byl úspěšně přidán' })
-    newArticle.value = {
+    Object.assign(newArticle, {
       title: '',
       excerpt: '',
       content: '',
@@ -208,7 +221,9 @@ const createArticle = async () => {
       userId: auth.value?.user.id,
       imageUrl: '',
       status: 'draft',
-    }
+      releaseAt: null,
+    })
+    releaseAtFormatted.value = ''
     emitArticleCreated()
     open.value = false
   } catch (error: any) {
@@ -217,7 +232,7 @@ const createArticle = async () => {
 }
 
 const confirmClose = async () => {
-  if (!newArticle.value.title.length && (!newArticle.value.content.length || newArticle.value.content === '<p></p>'))
+  if (!newArticle.title.length && (!newArticle.content.length || newArticle.content === '<p></p>'))
     return (open.value = false)
   const r = await Swal.fire({
     title: 'Zavřít dialog?',
@@ -238,7 +253,7 @@ const generateAIContent = async () => {
       body: { prompt: customPrompt.value || 'Vygeneruj krátký článek na téma CP77...' },
     })
     if (!data) throw createError({ statusCode: 500, message: 'No content generated' })
-    newArticle.value.content = data
+    newArticle.content = data
     toast.success({ message: 'AI obsah úspěšně vygenerován' })
   } catch (error: any) {
     toast.error({ message: error.data?.message || 'Nepodařilo se vygenerovat obsah' })
