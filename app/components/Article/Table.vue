@@ -76,7 +76,14 @@
                 <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
               </div>
               <div
-                v-else-if="['status', 'title', 'date'].includes(cell.column.id)"
+                v-else-if="cell.column.id === 'status'"
+                class="flex items-center justify-center h-full dark:bg-transparent"
+                :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
+              >
+                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+              </div>
+              <div
+                v-else-if="['title', 'date'].includes(cell.column.id)"
                 class="flex items-center justify-center h-full dark:bg-transparent"
                 :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
               >
@@ -156,7 +163,14 @@
               <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
             </div>
             <div
-              v-else-if="['status', 'title', 'date'].includes(cell.column.id)"
+              v-else-if="cell.column.id === 'status'"
+              class="dark:bg-transparent"
+              :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
+            >
+              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+            </div>
+            <div
+              v-else-if="['title', 'date'].includes(cell.column.id)"
               class="dark:bg-transparent"
               :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
             >
@@ -216,6 +230,27 @@
         </div>
       </div>
     </div>
+    <div class="flex items-center justify-between mt-6">
+      <button
+        :disabled="page <= 1"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-full border shadow-sm transition bg-white text-gray-700 border-gray-300 hover:bg-gray-50 active:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed dark:disabled:bg-gray-900 dark:disabled:text-gray-500"
+        @click="prevPage"
+      >
+        <Icon name="mdi:chevron-left" class="w-5 h-5" />
+        <span class="hidden sm:inline">Předchozí</span>
+      </button>
+
+      <span class="text-sm font-medium text-gray-700 dark:text-gray-300"> Stránka {{ page }} z {{ totalPages }} </span>
+
+      <button
+        :disabled="page >= totalPages"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-full shadow-sm transition bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
+        @click="nextPage"
+      >
+        <span class="hidden sm:inline">Další</span>
+        <Icon name="mdi:chevron-right" class="w-5 h-5" />
+      </button>
+    </div>
   </div>
 </template>
 
@@ -235,11 +270,38 @@ import {
 } from '@tanstack/vue-table'
 
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
+
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
 const { onArticleCreated, emitArticleDeleted } = useArticleEvent()
 
-const { data: articles, refresh } = await useFetch<Article[]>('/api/articles', { default: () => [] })
+const page = shallowRef(Number(route.query.page) || 1)
+const limit = 20
+
+const { data, refresh } = await useFetch<{ data: Article[]; total: number }>(
+  () => `/api/articles?page=${page.value}&limit=${limit}`,
+  {
+    default: () => ({ data: [], total: 0 }),
+    watch: [page],
+  },
+)
+
+const totalPages = computed(() => Math.ceil((data.value?.total || 0) / limit))
+
+const prevPage = () => {
+  if (page.value > 1) {
+    page.value--
+    router.push({ query: { ...route.query, page: page.value } })
+  }
+}
+
+const nextPage = () => {
+  if (page.value < totalPages.value) {
+    page.value++
+    router.push({ query: { ...route.query, page: page.value } })
+  }
+}
 
 const globalFilter = shallowRef('')
 const openDropdown = shallowRef<string | null>(null)
@@ -286,7 +348,6 @@ async function del(id: string) {
 
   try {
     await $fetch(`/api/articles/${id}`, { method: 'DELETE' })
-    articles.value = articles.value.filter((a) => a.id !== id)
     toast.success({ message: 'Článek smazán' })
     emitArticleDeleted()
     refresh()
@@ -328,7 +389,7 @@ const columns: ColumnDef<Article>[] = [
 
 const table = useVueTable({
   get data() {
-    return articles.value
+    return data.value?.data || []
   },
   columns,
   state: {
