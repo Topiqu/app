@@ -133,7 +133,7 @@ const newUser = ref({
   username: '',
   email: '',
   password: '',
-  role: 'user' as 'admin' | 'user',
+  role: 'reader' as 'admin' | 'reader',
 })
 
 const {
@@ -177,7 +177,7 @@ const createUser = async () => {
     emit('create')
     toast.success({ message: 'Uživatel vytvořen' })
     open.value = false
-    newUser.value = { username: '', email: '', password: '', role: 'user' }
+    newUser.value = { username: '', email: '', password: '', role: 'reader' }
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Vytvoření selhalo' })

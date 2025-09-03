@@ -214,12 +214,13 @@
 </template>
 
 <script lang="ts" setup>
+import type { UserRole } from '@prisma/client'
 interface User {
   id: string
   username: string
   email: string
   avatarUrl?: string
-  role: 'user' | 'admin' | 'superadmin'
+  role: UserRole
   bio?: string
   createdAt: string
   likesCount: number

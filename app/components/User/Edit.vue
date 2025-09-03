@@ -34,6 +34,16 @@
               class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
             />
           </label>
+          <label class="flex flex-col gap-3">
+            <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Role</span>
+            <select
+              v-model="editedUser.role"
+              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+            >
+              <option value="admin">Admin</option>
+              <option value="user">Uživatel</option>
+            </select>
+          </label>
         </div>
       </div>
     </template>
@@ -72,6 +82,7 @@ const editedUser = ref({
   username: props.user.username,
   email: props.user.email,
   password: '',
+  role: props.user.role || 'reader',
 })
 
 const saveEdit = async () => {
@@ -83,6 +94,7 @@ const saveEdit = async () => {
     const body: any = {
       username: editedUser.value.username,
       email: editedUser.value.email,
+      role: editedUser.value.role,
     }
     if (editedUser.value.password) body.password = editedUser.value.password
     await $fetch(`/api/users/${editedUser.value.id}`, {
@@ -98,7 +110,7 @@ const saveEdit = async () => {
 }
 
 const confirmClose = async () => {
-  if (!editedUser.value.username && !editedUser.value.email && !editedUser.value.password) {
+  if (!editedUser.value.username && !editedUser.value.email && !editedUser.value.password && !editedUser.value.role) {
     open.value = false
     return
   }

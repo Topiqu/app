@@ -20,8 +20,9 @@ export default defineEventHandler(async (event) => {
   if (body.password) body.password = await argon.hash(body.password)
 
   const ip = getIp(event)
+  const currentUser = await db.user.findUnique({ where: { id } })
 
-  if (body.role && body.role !== (await db.user.findUnique({ where: { id } }))?.role) {
+  if (body.role && body.role !== currentUser?.role) {
     await logAction({
       action: 'ROLE_CHANGE',
       userId: user.id,
@@ -29,6 +30,9 @@ export default defineEventHandler(async (event) => {
       ip,
       metadata: { userId: id, newRole: body.role },
     })
+    if (currentUser?.role === 'admin' && body.role === 'reader') {
+      body.clientSiteId = null
+    }
   }
 
   if (body.password) {
