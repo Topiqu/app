@@ -278,12 +278,14 @@ const { onArticleCreated, emitArticleDeleted } = useArticleEvent()
 
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
+const globalFilter = shallowRef((route.query.query as string) || '')
 
 const { data, refresh } = await useFetch<{ data: Article[]; total: number }>(
-  () => `/api/articles?page=${page.value}&limit=${limit}`,
+  () =>
+    `/api/articles/search?page=${page.value}&limit=${limit}${globalFilter.value ? `&query=${encodeURIComponent(globalFilter.value)}` : ''}`,
   {
     default: () => ({ data: [], total: 0 }),
-    watch: [page],
+    watch: [page, globalFilter],
   },
 )
 
@@ -292,18 +294,24 @@ const totalPages = computed(() => Math.ceil((data.value?.total || 0) / limit))
 const prevPage = () => {
   if (page.value > 1) {
     page.value--
-    router.push({ query: { ...route.query, page: page.value } })
+    router.push({ query: { ...route.query, page: page.value, query: globalFilter.value || undefined } })
   }
 }
 
 const nextPage = () => {
   if (page.value < totalPages.value) {
     page.value++
-    router.push({ query: { ...route.query, page: page.value } })
+    router.push({ query: { ...route.query, page: page.value, query: globalFilter.value || undefined } })
   }
 }
 
-const globalFilter = shallowRef('')
+const debouncedRefresh = useDebounceFn(() => {
+  page.value = 1
+  router.push({ query: { ...route.query, page: 1, query: globalFilter.value || undefined } })
+}, 400)
+
+watch(globalFilter, debouncedRefresh)
+
 const openDropdown = shallowRef<string | null>(null)
 const dropdownRef = ref<HTMLElement | null>(null)
 
