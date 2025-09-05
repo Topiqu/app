@@ -42,6 +42,7 @@
             >
               <option value="admin">Admin</option>
               <option value="reader">Čtenář</option>
+              <option value="ai">AI 🤖</option>
             </select>
           </label>
         </div>

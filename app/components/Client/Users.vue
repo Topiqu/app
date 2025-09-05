@@ -65,6 +65,7 @@
                     'bg-blue-200 text-blue-800 dark:bg-blue-600 dark:text-blue-100': user.role === 'admin',
                     'bg-purple-200 text-purple-800 dark:bg-purple-600 dark:text-purple-100': user.role === 'superadmin',
                     'bg-yellow-200 text-yellow-800 dark:bg-yellow-600 dark:text-yellow-100': user.role === 'reader',
+                    'bg-indigo-200 text-indigo-800 dark:bg-indigo-600 dark:text-indigo-100': user.role === 'ai',
                   }"
                 >
                   {{ user.role }}
