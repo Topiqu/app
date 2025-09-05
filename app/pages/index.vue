@@ -29,8 +29,8 @@
 
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
-    <section v-if="featured" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <ArticleSkeletonCard :pending="featPending" isFeatured :article="featured" :tags="featured.tags" />
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <ArticleSkeletonCard :pending="featPending" isFeatured :article="featured || undefined" :tags="featured?.tags" />
       <div class="space-y-6">
         <ArticleSkeletonCard
           v-for="(rec, idx) in recommended"
@@ -135,6 +135,7 @@
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
     <section
+      v-if="!auth"
       class="text-center bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-2xl py-12 shadow-lg"
     >
       <h3 class="text-2xl font-bold">Přidejte se do diskuze</h3>
@@ -198,7 +199,9 @@
 import 'tippy.js/dist/tippy.css'
 import { formatDate } from '~~/shared/utils'
 
-const slug = 'GameDev'
+const { data: auth } = useAuth()
+
+const slug = 'viky'
 
 const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`)
 
@@ -214,7 +217,7 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${slug}`)
+const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${slug}`, { lazy: true })
 
 const page = shallowRef<number>(1)
 const limit = shallowRef<number>(15)
