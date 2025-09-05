@@ -282,6 +282,7 @@
 <script setup lang="ts">
 import type { CommentWithReplies } from '~~/types/comment'
 
+import { formatDate } from '~~/shared/utils'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 

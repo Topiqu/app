@@ -1,4 +1,12 @@
-import { format, differenceInMinutes, differenceInHours, differenceInDays, differenceInWeeks } from 'date-fns'
+import { cs as locale } from 'date-fns/locale'
+import {
+  format,
+  differenceInMinutes,
+  differenceInHours,
+  differenceInDays,
+  differenceInWeeks,
+  isThisYear,
+} from 'date-fns'
 
 export const formatDate = (d?: string | Date) => {
   if (!d) return 'Nikdy'
@@ -18,12 +26,14 @@ export const formatDate = (d?: string | Date) => {
   } else if (hoursDiff < 24) {
     return `Před ${hoursDiff} hodinami`
   } else if (daysDiff === 1) {
-    return 'Včera'
+    return `Včera, ${format(date, 'HH:mm', { locale })}`
   } else if (daysDiff < 7) {
     return `Před ${daysDiff} dny`
   } else if (weeksDiff <= 2) {
     return `Před týdnem`
+  } else if (isThisYear(date)) {
+    return format(date, 'd. MMMM, HH:mm')
   } else {
-    return format(date, 'dd.MM.yyyy, HH:mm')
+    return format(date, 'd. MMMM yyyy, HH:mm', { locale })
   }
 }

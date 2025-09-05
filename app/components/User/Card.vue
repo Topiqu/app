@@ -119,6 +119,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate } from '~~/shared/utils'
+
 const props = defineProps<{
   user: {
     id: string
