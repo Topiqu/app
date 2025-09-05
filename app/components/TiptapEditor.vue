@@ -341,6 +341,10 @@ onBeforeUnmount(() => editor.value?.destroy())
 </script>
 
 <style>
+div.tiptap.ProseMirror {
+  width: 100%;
+  height: 100%;
+}
 .ProseMirror p,
 .ProseMirror h1,
 .ProseMirror h2,
