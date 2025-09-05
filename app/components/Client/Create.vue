@@ -15,36 +15,57 @@
           />
         </label>
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Email</span>
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Subdoména</span>
+          <input
+            v-model="newClient.subdomain"
+            placeholder="Subdoména"
+            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+          />
+        </label>
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Popis</span>
+          <textarea
+            v-model="newClient.description"
+            placeholder="Popis klienta (max. 255 znaků)"
+            maxlength="255"
+            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+          />
+        </label>
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Logo klienta</span>
+          <FileUploader :imageUrl="newClient.logoUrl" type="client-logo" @upload="newClient.logoUrl = $event.url" />
+        </label>
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Cílová skupina</span>
+          <input
+            v-model="newClient.audience"
+            placeholder="Cílová skupina (např. mladí profesionálové)"
+            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+          />
+        </label>
+        <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Email admina</span>
           <input
             v-model="newClient.email"
-            placeholder="Email"
+            placeholder="Email admina"
             type="email"
             class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
           />
         </label>
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Uživatelské jméno</span>
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Uživatelské jméno admina</span>
           <input
             v-model="newClient.username"
-            placeholder="Uživatelské jméno"
+            placeholder="Uživatelské jméno admina"
             class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
           />
         </label>
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Heslo</span>
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Heslo admina</span>
           <input
             v-model="newClient.password"
             placeholder="Heslo (nechte prázdné pro automatické generování)"
             type="password"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-          />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Subdoména</span>
-          <input
-            v-model="newClient.subdomain"
-            placeholder="Subdoména"
             class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
           />
         </label>
@@ -99,6 +120,45 @@
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">Slova: {{ newClient.keywords.length }}</span>
         </label>
+
+        <div
+          v-if="newClient.tokenLimit > 0"
+          class="flex flex-col gap-6 p-6 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
+        >
+          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+            <Icon name="mdi:robot" class="w-5 h-5" />
+            Nastavení AI autora
+          </h3>
+
+          <label class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Jméno AI</span>
+            <input
+              v-model="newClient.aiUser.name"
+              placeholder="Zadejte zde..."
+              class="p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm"
+            />
+          </label>
+
+          <label class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Avatar AI</span>
+            <FileUploader
+              :imageUrl="newClient.aiUser.avatarUrl"
+              type="user-avatar"
+              :isAiUser="true"
+              @upload="newClient.aiUser.avatarUrl = $event.url"
+            />
+          </label>
+
+          <label class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Popis AI</span>
+            <textarea
+              v-model="newClient.aiUser.bio"
+              placeholder="Popis AI autora (max. 300 znaků)"
+              maxlength="300"
+              class="p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm resize-y min-h-[100px]"
+            />
+          </label>
+        </div>
       </div>
 
       <div class="flex flex-col gap-4 mt-6">
@@ -110,6 +170,10 @@
               <span v-if="c.keywords" class="text-gray-400 text-xs"
                 >Klíčová slova: {{ Array.isArray(c.keywords) ? c.keywords.join(', ') : '' }}</span
               >
+              <span v-if="c.audience" class="text-gray-400 text-xs">Cílová skupina: {{ c.audience }}</span>
+              <span v-if="c.logoUrl" class="text-gray-400 text-xs"
+                >Logo: <NuxtImg :src="c.logoUrl" class="inline-block w-6 h-6"
+              /></span>
             </div>
             <button
               class="flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-500 transition-all duration-300 hover:bg-red-100 hover:text-red-700 active:scale-90"
@@ -133,6 +197,7 @@
         </button>
         <button
           class="px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="!isFormValid"
           @click="createClient"
         >
           Přidat klienta
@@ -148,23 +213,39 @@ const { emitClientCreated, emitClientDeleted } = useClientEvent()
 
 const open = defineModel<boolean>()
 const keywordsInput = shallowRef<string>('')
-
-const newClient = ref({
+const initClient = () => ({
   name: '',
   email: '',
   username: '',
   password: '',
   subdomain: '',
-  plan: 'BASIC',
-  generationFrequency: 'NONE',
+  plan: 'BASIC' as const,
+  generationFrequency: 'NONE' as const,
   tokenLimit: 0,
   focus: '',
   keywords: [] as string[],
+  description: '',
+  logoUrl: '',
+  audience: '',
+  aiUser: {
+    name: '',
+    bio: '',
+    avatarUrl: '',
+  },
 })
+
+const newClient = ref(initClient())
 
 const toast = useToast()
 const { data: fetchedClients, refresh } = useFetch('/api/clients', {
   default: () => [],
+})
+
+const isFormValid = computed(() => {
+  const { name, subdomain, email, tokenLimit, aiUser } = newClient.value
+  if (!name || !subdomain || !email) return false
+  if (tokenLimit > 0 && !aiUser.name) return false
+  return true
 })
 
 const updateKeywords = () => {
@@ -175,13 +256,27 @@ const updateKeywords = () => {
 }
 
 const createClient = async () => {
-  if (!newClient.value.name || !newClient.value.subdomain || !newClient.value.email) return
+  if (!isFormValid.value) return
   try {
-    const response = await $fetch('/api/clients', {
+    interface CreateClientResponse {
+      user: {
+        email: string
+        username: string
+        id: string
+        password?: string
+      }
+      [key: string]: any
+    }
+    const response = await $fetch<CreateClientResponse>('/api/clients', {
       method: 'POST',
-      body: { ...newClient.value, keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined },
+      body: {
+        ...newClient.value,
+        keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined,
+        aiUser: newClient.value.tokenLimit > 0 ? newClient.value.aiUser : undefined,
+      },
     })
-    const generatedPassword = response.user.password !== 'user submitted' ? response.user.password : null
+    const generatedPassword =
+      response.user.password && response.user.password !== 'user submitted' ? response.user.password : null
     if (generatedPassword) {
       await Swal.fire({
         title: 'Klient vytvořen',
@@ -211,18 +306,7 @@ const createClient = async () => {
     emitClientCreated()
     await refresh()
     open.value = false
-    newClient.value = {
-      name: '',
-      email: '',
-      username: '',
-      password: '',
-      subdomain: '',
-      plan: 'BASIC',
-      generationFrequency: 'NONE',
-      tokenLimit: 0,
-      focus: '',
-      keywords: [],
-    }
+    newClient.value = initClient()
     keywordsInput.value = ''
   } catch (e: any) {
     toast.error({
