@@ -22,14 +22,14 @@
           }
         : !$slots.default
           ? {
-              'w-8 h-8 rounded-lg': size === 'sm',
-              'w-10 h-10 rounded-xl': size === 'md',
-              'h-12 h-12 rounded-2xl': size === 'lg',
+              'w-8 h-8 gap-1 rounded-lg': size === 'sm',
+              'w-10 h-10 gap-1.5 rounded-xl': size === 'md',
+              'h-12 h-12 gap-2 rounded-2xl': size === 'lg',
             }
           : {
-              'h-8 px-2 py-1 rounded-lg': size === 'sm',
-              'h-10 px-4 py-2 rounded-xl': size === 'md',
-              'h-12 px-6 py-3 rounded-2xl': size === 'lg',
+              'h-8 px-2 py-1 gap-1 rounded-lg': size === 'sm',
+              'h-10 px-4 py-2 gap-1.5 rounded-xl': size === 'md',
+              'h-12 px-6 py-3 gap-2 rounded-2xl': size === 'lg',
             },
 
       active
