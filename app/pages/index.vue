@@ -16,12 +16,12 @@
         {{ clientSite?.description ?? 'Nejnovější trendy a tipy pro vývojáře her' }}
       </p>
       <div class="mt-6" style="background-color: transparent !important">
-        <button
-          v-tippy="'Zůstaňte v obraze s nejnovějšími články'"
-          class="bg-white text-blue-700 dark:bg-blue-800 dark:text-gray-100 px-6 py-2 rounded-full font-semibold text-lg shadow-lg hover:scale-105 dark:hover:bg-blue-700 transition-all duration-300 animate-pulse border-2 dark:border-blue-600/30"
+        <NuxtLink
+          href="#articles"
+          class="bg-white text-blue-700 dark:bg-blue-800 dark:text-gray-100 px-6 py-2 rounded-full font-semibold text-lg shadow-lg hover:scale-105 dark:hover:bg-blue-700 transition-all duration-300 animate-pulse border-2 dark:border-blue-600/30 no-underline"
         >
-          <Bell class="w-5 h-5 inline mr-2" />Odebírat
-        </button>
+          <Icon name="material-symbols:arrow-downward" class="w-5 h-5 inline mr-2" />Prozkoumat články
+        </NuxtLink>
       </div>
     </section>
 
@@ -43,7 +43,7 @@
 
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
-    <section class="bg-gray-100 dark:bg-gray-900 rounded-2xl py-8 px-6">
+    <section id="articles" class="bg-gray-100 dark:bg-gray-900 rounded-2xl py-8 px-6">
       <div class="max-w-5xl mx-auto" style="background-color: transparent !important">
         <div class="flex flex-col items-center mb-6 gap-4" style="background-color: transparent !important">
           <h2 class="text-3xl font-bold">Všechny články</h2>
@@ -155,7 +155,7 @@
           v-for="(top, idx) in topArticles"
           :key="top.id"
           :to="`/clanky/${top.slug}`"
-          class="block bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
+          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
         >
           <div
             class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
@@ -197,8 +197,6 @@
 </template>
 
 <script setup lang="ts">
-import { Bell } from 'lucide-vue-next'
-import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 
 import type { ArticleWithDetails } from '../../types/article'
