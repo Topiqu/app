@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
   const file = form?.find((f) => f.name === 'file')
   const type = form?.find((f) => f.name === 'type')?.data.toString() || 'article-image'
   const shortcode = form?.find((f) => f.name === 'shortcode')?.data.toString()
+  const isAiUser = form?.find((f) => f.name === 'isAiUser')?.data.toString() === 'true'
 
   if (
     !file ||
@@ -105,7 +106,7 @@ export default defineEventHandler(async (event) => {
       where: { id: user.clientSiteId },
       data: { logoUrl: `/${outputDir}/${filename}` },
     })
-  } else if (type === 'user-avatar' && user) {
+  } else if (type === 'user-avatar' && user && !isAiUser) {
     await db.user.update({
       where: { id: user.id },
       data: { avatarUrl: `/${outputDir}/${filename}` },
