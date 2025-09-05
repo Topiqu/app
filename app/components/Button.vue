@@ -32,14 +32,34 @@
               'h-12 px-6 py-3 rounded-2xl': size === 'lg',
             },
 
+      active
+        ? {
+            'bg-blue-400': variant === 'primary',
+            'bg-gray-400': variant === 'secondary',
+            'bg-red-400': variant === 'danger',
+            'bg-green-400': variant === 'success',
+            'bg-yellow-400': variant === 'warning',
+            'bg-teal-400': variant === 'info',
+            'bg-white/80': variant === 'neutral',
+          }
+        : {
+            'bg-blue-600': variant === 'primary',
+            'bg-gray-600': variant === 'secondary',
+            'bg-red-600': variant === 'danger',
+            'bg-green-600': variant === 'success',
+            'bg-yellow-600': variant === 'warning',
+            'bg-teal-600': variant === 'info',
+            'bg-white': variant === 'neutral',
+          },
+
       {
-        'text-white bg-blue-600': variant === 'primary',
-        'text-black bg-gray-600': variant === 'secondary',
-        'text-white bg-red-600': variant === 'danger',
-        'text-white bg-green-600': variant === 'success',
-        'text-black bg-yellow-600': variant === 'warning',
-        'text-white bg-teal-600': variant === 'info',
-        'text-gray-600 bg-white': variant === 'neutral',
+        'text-white hover:bg-blue-800': variant === 'primary',
+        'text-black hover:bg-gray-800': variant === 'secondary',
+        'text-white hover:bg-red-800': variant === 'danger',
+        'text-white hover:bg-green-800': variant === 'success',
+        'text-black hover:bg-yellow-800': variant === 'warning',
+        'text-white hover:bg-teal-800': variant === 'info',
+        'text-gray-600': variant === 'neutral',
       },
     ]"
     @click="!disabled && !loading && onClick?.($event)"
@@ -74,6 +94,7 @@ const {
   iconPosition = 'left',
   size = 'md',
   variant = 'primary',
+  active = false,
   disabled = false,
   loading = false,
   square = false,
@@ -86,6 +107,7 @@ const {
   size?: 'sm' | 'md' | 'lg'
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral'
   type?: 'button' | 'submit' | 'reset'
+  active?: boolean
   disabled?: boolean
   loading?: boolean
   square?: boolean
