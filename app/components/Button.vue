@@ -42,7 +42,7 @@
         'text-gray-600 bg-white': variant === 'neutral',
       },
     ]"
-    @click="!disabled && !loading && onClick"
+    @click="!disabled && !loading && onClick?.($event)"
   >
     <Icon
       v-if="icon"
