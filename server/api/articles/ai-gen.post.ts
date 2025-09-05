@@ -39,6 +39,14 @@ export default defineLazyEventHandler(() => {
       where: { id: user.clientSiteId },
     })
 
+    await logAction({
+      action: 'GENERATE_ARTICLE',
+      userId: user.id,
+      clientSiteId: user.clientSiteId,
+      metadata: { system, text },
+      ip: getIp(event),
+    })
+
     return text
   })
 })
