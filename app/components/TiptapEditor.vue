@@ -2,211 +2,121 @@
   <div class="flex flex-col gap-2">
     <template v-if="editor">
       <div v-if="edit" class="flex items-center flex-wrap gap-x-2 gap-y-1">
-        <BubbleMenu :editor="editor" :setLink="setLink" :triggerFileInput="triggerFileInput" />
-        <FileInput ref="fileInputComponent" :uploadImage="uploadImage" @close="onFileInputClose" />
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        <BubbleMenu :editor="editor" :setLink="setLink" />
+        <FileInput :uploadImage="uploadImage" @close="onFileInputClose" />
+        <Button
           title="Paragraph"
-          :class="{ 'bg-gray-200': editor.isActive('paragraph') }"
+          icon="mdi-format-paragraph"
+          :active="editor.isActive('paragraph')"
           @click="editor.chain().focus().setParagraph().run()"
-        >
-          <Icon name="mdi-format-paragraph" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Heading 1"
-          :class="{ 'bg-gray-200': editor.isActive('heading', { level: 1 }) }"
+          icon="mdi-format-header-1"
+          :active="editor.isActive('heading', { level: 1 })"
           @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-        >
-          <Icon name="mdi-format-header-1" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Heading 2"
-          :class="{ 'bg-gray-200': editor.isActive('heading', { level: 2 }) }"
+          icon="mdi-format-header-2"
+          :active="editor.isActive('heading', { level: 2 })"
           @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        >
-          <Icon name="mdi-format-header-2" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Heading 3"
-          :class="{ 'bg-gray-200': editor.isActive('heading', { level: 3 }) }"
+          icon="mdi-format-header-3"
+          :active="editor.isActive('heading', { level: 3 })"
           @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-        >
-          <Icon name="mdi-format-header-3" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Heading 4"
-          :class="{ 'bg-gray-200': editor.isActive('heading', { level: 4 }) }"
+          icon="mdi-format-header-4"
+          :active="editor.isActive('heading', { level: 4 })"
           @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
-        >
-          <Icon name="mdi-format-header-4" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Heading 5"
-          :class="{ 'bg-gray-200': editor.isActive('heading', { level: 5 }) }"
+          icon="mdi-format-header-5"
+          :active="editor.isActive('heading', { level: 5 })"
           @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
-        >
-          <Icon name="mdi-format-header-5" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Heading 6"
-          :class="{ 'bg-gray-200': editor.isActive('heading', { level: 6 }) }"
+          icon="mdi-format-header-6"
+          :active="editor.isActive('heading', { level: 6 })"
           @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
-        >
-          <Icon name="mdi-format-header-6" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Bullet List"
-          :class="{ 'bg-gray-200': editor.isActive('bulletList') }"
+          icon="mdi-format-list-bulleted"
+          :active="editor.isActive('bulletList')"
           @click="editor.chain().focus().toggleBulletList().run()"
-        >
-          <Icon name="mdi-format-list-bulleted" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Ordered List"
-          :class="{ 'bg-gray-200': editor.isActive('orderedList') }"
+          icon="mdi-format-list-numbered"
+          :active="editor.isActive('orderedList')"
           @click="editor.chain().focus().toggleOrderedList().run()"
-        >
-          <Icon name="mdi-format-list-numbered" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Set Blockquote"
+          icon="mdi-format-quote-open"
           :disabled="!editor.can().setBlockquote()"
           @click="setBlockquote"
-        >
-          <Icon name="mdi-format-quote-open" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Unset Blockquote"
+          icon="mdi-format-quote-close"
           :disabled="!editor.can().unsetBlockquote()"
           @click="unsetBlockquote"
-        >
-          <Icon name="mdi-format-quote-close" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-          title="Insert YouTube Video"
-          @click="insertYoutube"
-        >
-          <Icon name="mdi-youtube" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-          title="Insert Poll"
-          @click="insertPoll"
-        >
-          <Icon name="mdi-poll" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-          title="Insert Link"
-          :class="{ 'bg-gray-200': editor.isActive('link') }"
-          @click="setLink"
-        >
-          <Icon name="mdi-link" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button title="Insert YouTube Video" icon="mdi-youtube" @click="insertYoutube" />
+        <Button title="Insert Poll" icon="mdi-poll" @click="insertPoll" />
+        <Button title="Insert Link" icon="mdi-link" :active="editor.isActive('link')" @click="setLink" />
+        <Button
           title="Underline"
-          :class="{ 'bg-gray-200': editor.isActive('underline') }"
+          icon="mdi-format-underline"
+          :active="editor.isActive('underline')"
           @click="editor.chain().focus().toggleUnderline().run()"
-        >
-          <Icon name="mdi-format-underline" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Align Left"
-          :class="{ 'bg-gray-200': editor.isActive({ textAlign: 'left' }) }"
+          icon="mdi-format-align-left"
+          :active="editor.isActive({ textAlign: 'left' })"
           @click="editor.chain().focus().setTextAlign('left').run()"
-        >
-          <Icon name="mdi-format-align-left" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Align Center"
-          :class="{ 'bg-gray-200': editor.isActive({ textAlign: 'center' }) }"
+          icon="mdi-format-align-center"
+          :active="editor.isActive({ textAlign: 'center' })"
           @click="editor.chain().focus().setTextAlign('center').run()"
-        >
-          <Icon name="mdi-format-align-center" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Align Right"
-          :class="{ 'bg-gray-200': editor.isActive({ textAlign: 'right' }) }"
+          icon="mdi-format-align-right"
+          :active="editor.isActive({ textAlign: 'right' })"
           @click="editor.chain().focus().setTextAlign('right').run()"
-        >
-          <Icon name="mdi-format-align-right" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Align Justify"
-          :class="{ 'bg-gray-200': editor.isActive({ textAlign: 'justify' }) }"
+          icon="mdi-format-align-justify"
+          :active="editor.isActive({ textAlign: 'justify' })"
           @click="editor.chain().focus().setTextAlign('justify').run()"
-        >
-          <Icon name="mdi-format-align-justify" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-          title="Horizontal Rule"
-          @click="editor.chain().focus().setHorizontalRule().run()"
-        >
-          <Icon name="mdi-minus" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button title="Horizontal Rule" icon="mdi-minus" @click="editor.chain().focus().setHorizontalRule().run()" />
+        <Button
           title="Undo"
+          icon="mdi-undo"
           :disabled="!editor.can().chain().focus().undo().run()"
           @click="editor.chain().focus().undo().run()"
-        >
-          <Icon name="mdi-undo" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
+        />
+        <Button
           title="Redo"
+          icon="mdi-redo"
           :disabled="!editor.can().chain().focus().redo().run()"
           @click="editor.chain().focus().redo().run()"
-        >
-          <Icon name="mdi-redo" />
-        </button>
-        <button
-          type="button"
-          class="p-1 text-gray-800 hover:bg-gray-200 rounded inline-flex items-center justify-center"
-          title="Clear Nodes"
-          @click="editor.chain().focus().clearNodes().run()"
-        >
-          <Icon name="mdi-format-clear" />
-        </button>
+        />
+        <Button title="Clear Nodes" icon="mdi-format-clear" @click="editor.chain().focus().clearNodes().run()" />
         <div
           :class="{
             'flex items-center text-green-500 text-xs gap-2 ml-auto': true,
@@ -295,55 +205,43 @@ watch(content, (newVal) => {
 
 const percentage = computed(() => Math.round((100 / limit) * (editor.value?.storage.characterCount.characters() || 0)))
 
-const fileInputComponent = ref<InstanceType<typeof FileInput> | null>(null)
-
-const triggerFileInput = () => {
-  fileInputComponent.value?.open()
-}
-
-const uploadImage = async (e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0]
+const uploadImage = async (files: FileList | null) => {
+  const file = files?.item(0)
   if (!file) return
+
   const formData = new FormData()
   formData.append('file', file)
+
   try {
     const res = await fetch('/api/upload', { method: 'POST', body: formData })
+
     const { url, error } = await res.json()
-    if (error) {
-      alert(error)
-      return
-    }
+
+    if (error) return alert(error)
+
     editor.value?.commands.setImage({ src: url, alt: file.name })
   } catch (err) {
     alert('Chyba při nahrávání obrázku: ' + (err as Error).message)
   }
 }
 
-const onFileInputClose = () => {
-  editor.value?.chain().focus().run()
-}
+const onFileInputClose = () => editor.value?.chain().focus().run()
 
 const handleEditorClick = () => {
   if (!edit) emit('update:edit', true)
   editor.value?.chain().focus().run()
 }
 
-const setBlockquote = () => {
-  editor.value?.chain().focus().setParagraph().setBlockquote().run()
-}
+const setBlockquote = () => editor.value?.chain().focus().setParagraph().setBlockquote().run()
 
-const unsetBlockquote = () => {
-  editor.value?.chain().focus().unsetBlockquote().run()
-}
+const unsetBlockquote = () => editor.value?.chain().focus().unsetBlockquote().run()
 
 const insertYoutube = () => {
   const url = window.prompt('Zadejte URL YouTube videa:')
-  if (url) {
-    editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
-  }
+  if (url) editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
 }
 
-const insertPoll = () => {
+const insertPoll = () =>
   editor.value
     ?.chain()
     .focus()
@@ -352,7 +250,6 @@ const insertPoll = () => {
       attrs: { id: crypto.randomUUID(), question: 'Zadej otázku', options: ['Možnost 1', 'Možnost 2'] },
     })
     .run()
-}
 
 const setLink = () => {
   const previousUrl = editor.value?.getAttributes('link').href
