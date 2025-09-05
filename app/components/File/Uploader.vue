@@ -47,6 +47,7 @@ const props = defineProps<{
   type?: 'client-logo' | 'user-avatar' | 'article-image' | 'emoji'
   shortcode?: string
   disabled?: boolean
+  isAiUser?: boolean
 }>()
 const toast = useToast()
 
@@ -101,6 +102,7 @@ const uploadFile = async (file: File) => {
   formData.append('file', file)
   formData.append('type', props.type || 'article-image')
   if (props.shortcode && props.type === 'emoji') formData.append('shortcode', props.shortcode)
+  if (props.isAiUser) formData.append('isAiUser', 'true')
   try {
     const { url } = await $fetch('/api/upload', {
       method: 'POST',
