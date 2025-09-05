@@ -33,6 +33,7 @@ enum UserRole {
     admin
     superadmin
     reader
+    ai
 }
 
 enum GenerationFrequency {
