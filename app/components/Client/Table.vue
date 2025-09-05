@@ -97,6 +97,7 @@
           </tr>
         </tbody>
       </table>
+      <Pagination :page :totalPages :prevPage :nextPage class="mt-6" />
     </div>
     <div class="sm:hidden space-y-4">
       <div
@@ -192,14 +193,39 @@ import {
 
 const { onClientCreated, onClientDeleted } = useClientEvent()
 const toast = useToast()
-const globalFilter = shallowRef<string>('')
+const route = useRoute()
+const router = useRouter()
 const openDropdown = ref<string | null>(null)
 const dropdownRef = ref<HTMLElement | null>(null)
 
-const { data: clients, refresh } = await useFetch<ClientSite[]>('/api/clients', {
-  default: () => [],
-  query: { deleted: false },
-})
+const limit = 20
+const page = shallowRef(Number(route.query.page) || 1)
+const globalFilter = shallowRef((route.query.query as string) || '')
+
+const { data: clients, refresh } = await useFetch<{ data: ClientSite[]; total: number }>(
+  () =>
+    `/api/clients?page=${page.value}&limit=${limit}${globalFilter.value ? `&query=${encodeURIComponent(globalFilter.value)}` : ''}`,
+  {
+    default: () => ({ data: [], total: 0 }),
+    watch: [page, globalFilter],
+  },
+)
+
+const totalPages = computed(() => Math.ceil((clients.value?.total || 0) / limit))
+
+const prevPage = () => {
+  if (page.value > 1) {
+    page.value--
+    router.push({ query: { ...route.query, page: page.value, query: globalFilter.value || undefined } })
+  }
+}
+
+const nextPage = () => {
+  if (page.value < totalPages.value) {
+    page.value++
+    router.push({ query: { ...route.query, page: page.value, query: globalFilter.value || undefined } })
+  }
+}
 
 const columns = ref<ColumnDef<ClientSite>[]>([
   {
@@ -228,7 +254,7 @@ const columns = ref<ColumnDef<ClientSite>[]>([
 
 const table = useVueTable({
   get data() {
-    return clients.value || []
+    return clients.value.data || []
   },
   get columns() {
     return columns.value
