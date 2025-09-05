@@ -57,7 +57,7 @@
         'text-black hover:bg-gray-800': variant === 'secondary',
         'text-white hover:bg-red-800': variant === 'danger',
         'text-white hover:bg-green-800': variant === 'success',
-        'text-black hover:bg-yellow-800': variant === 'warning',
+        'text-white hover:bg-yellow-800': variant === 'warning',
         'text-white hover:bg-teal-800': variant === 'info',
         'text-gray-600': variant === 'neutral',
       },

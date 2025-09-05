@@ -96,34 +96,14 @@
             <td
               class="px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4 min-h-[72px]"
             >
-              <button
-                class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 rounded-full hover:from-green-300 hover:to-green-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                @click="router.push(`/clanky/${row.original.slug}`)"
-              >
-                <Icon name="mdi:eye" class="w-5 h-5 text-black" />
-              </button>
+              <Button icon="mdi:eye" variant="success" @click="router.push(`/clanky/${row.original.slug}`)" />
               <LazyArticleEdit v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
-                <button
-                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 rounded-full hover:from-blue-300 hover:to-blue-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                  @click="open.value = true"
-                >
-                  <Icon name="mdi:pencil" class="w-5 h-5 text-black" />
-                </button>
+                <Button icon="mdi:pencil" @click="open.value = true" />
               </LazyArticleEdit>
               <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
-                <button
-                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                  @click="open.value = true"
-                >
-                  <Icon name="mdi:tag-outline" class="w-5 h-5 text-black" />
-                </button>
+                <Button icon="mdi:tag-outline" variant="warning" @click="open.value = true" />
               </LazyArticleTag>
-              <button
-                class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 rounded-full hover:from-red-300 hover:to-red-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                @click="del(row.original.id)"
-              >
-                <Icon name="mdi:delete" class="w-5 h-5 text-black" />
-              </button>
+              <Button icon="mdi:delete" variant="danger" @click="del(row.original.id)" />
             </td>
           </tr>
         </tbody>
