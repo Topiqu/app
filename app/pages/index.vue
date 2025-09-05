@@ -67,14 +67,6 @@
                   aria-label="Vyhledat články"
                   class="w-full pl-12 pr-10 py-3 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-400/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:shadow-lg transition-all duration-200"
                 />
-                <button
-                  v-if="searchQuery"
-                  class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-red-500 transition-colors"
-                  aria-label="Vymazat hledání"
-                  @click="searchQuery = ''"
-                >
-                  <Icon name="material-symbols:close-rounded" class="w-5 h-5" />
-                </button>
               </div>
             </div>
 
