@@ -67,6 +67,44 @@
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">Slova: {{ form.keywords.length }}</span>
         </label>
+        <div
+          v-if="auth?.user?.plan !== 'BASIC' && client.tokenLimit && client.tokenLimit > 0"
+          class="flex flex-col gap-6 p-6 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
+        >
+          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+            <Icon name="mdi:robot" class="w-5 h-5" />
+            Nastavení AI autora
+          </h3>
+
+          <label class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Jméno AI</span>
+            <input
+              v-model="form.aiUser.username"
+              placeholder="Jméno AI"
+              class="p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm"
+            />
+          </label>
+
+          <label class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Avatar AI</span>
+            <FileUploader
+              :imageUrl="form.aiUser.avatarUrl"
+              type="user-avatar"
+              :isAiUser="true"
+              @upload="form.aiUser.avatarUrl = $event.url"
+            />
+          </label>
+
+          <label class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Popis AI</span>
+            <textarea
+              v-model="form.aiUser.bio"
+              placeholder="Popis AI uživatele (max. 300 znaků)"
+              maxlength="300"
+              class="p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm resize-y min-h-[100px]"
+            />
+          </label>
+        </div>
         <div class="flex flex-col gap-6">
           <div class="flex items-center justify-between">
             <span class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-200">
@@ -137,7 +175,7 @@
             </div>
           </div>
 
-          <span v-else class="text-sm text-gray-500 dark:text-gray-400">Žádné sociální sítě přidány</span>
+          <span v-else class="text-sm text-gray-500 dark:text-gray-400">Sociální sítě zatím nejsou přidány.</span>
         </div>
       </div>
     </template>
@@ -173,10 +211,11 @@ const socialPlatforms: SocialPlatform[] = ['FACEBOOK', 'TWITTER', 'INSTAGRAM', '
 const init = {
   focus: '',
   audience: '',
-  keywords: [],
+  keywords: [] as string[],
   description: '',
   logoUrl: '',
   socials: [] as { platform: SocialPlatform; url: string }[],
+  aiUser: { username: '', bio: '', avatarUrl: '' },
 }
 const form = ref<typeof init>({ ...init })
 const keywordsInput = shallowRef('')
@@ -196,6 +235,7 @@ interface ClientSite {
   tokenRemaining: number | null
   lastGeneratedAt: string | null
   socials: { platform: SocialPlatform; url: string }[]
+  aiUser?: { username: string; bio: string; avatarUrl: string }
 }
 
 const platformIcons: Record<SocialPlatform, string> = {
@@ -214,7 +254,7 @@ const platformStyles: Record<SocialPlatform, { bg: string; border: string; text:
     text: 'text-blue-600 dark:text-blue-500',
   },
   TWITTER: {
-    bg: 'bg-black hover:bg-gray-800 ',
+    bg: 'bg-black hover:bg-gray-800',
     border: 'border-black dark:border-gray-200',
     text: 'text-black dark:text-gray-200',
   },
@@ -260,17 +300,18 @@ const {
     tokenRemaining: null,
     lastGeneratedAt: null,
     socials: [],
+    aiUser: { username: '', bio: '', avatarUrl: '' },
   }),
 })
 
 const platformPlaceholders = computed(() => {
   return {
-    FACEBOOK: `https://facebook.com/${client.value.name}`,
-    TWITTER: `https://x.com/${client.value.name}`,
-    INSTAGRAM: `https://instagram.com/${client.value.name}`,
-    LINKEDIN: `https://linkedin.com/company/${client.value.name}`,
-    YOUTUBE: `https://youtube.com/@${client.value.name}`,
-    OTHER: `https://${client.value.subdomain}.cz`,
+    FACEBOOK: `https://facebook.com/${client.value?.name}`,
+    TWITTER: `https://x.com/${client.value?.name}`,
+    INSTAGRAM: `https://instagram.com/${client.value?.name}`,
+    LINKEDIN: `https://linkedin.com/company/${client.value?.name}`,
+    YOUTUBE: `https://youtube.com/@${client.value?.name}`,
+    OTHER: `https://${client.value?.subdomain}.cz`,
   }
 })
 
@@ -283,6 +324,7 @@ if (client.value) {
     description: client.value.description || '',
     logoUrl: client.value.logoUrl || '',
     socials: client.value.socials || [],
+    aiUser: client.value.aiUser || { username: '', bio: '', avatarUrl: '' },
   })
   keywordsInput.value = form.value.keywords.join(', ')
 }
@@ -314,6 +356,7 @@ const savePreferences = async () => {
         description: form.value.description || undefined,
         logoUrl: form.value.logoUrl || undefined,
         socials: form.value.socials.filter((s) => s.url.trim()),
+        aiUser: client.value.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
       },
     })
     toast.success({ message: 'Nastavení uloženo' })
@@ -333,7 +376,12 @@ const confirmClose = async () => {
     form.value.description !== (client.value?.description || '') ||
     form.value.logoUrl !== (client.value?.logoUrl || '') ||
     form.value.keywords.join(',') !== (client.value?.keywords || []).join(',') ||
-    diff(form.value.socials, client.value?.socials || [])
+    diff(form.value.socials, client.value?.socials || []) ||
+    (client.value.tokenLimit &&
+      client.value.tokenLimit > 0 &&
+      (form.value.aiUser.username !== (client.value.aiUser?.username || '') ||
+        form.value.aiUser.bio !== (client.value.aiUser?.bio || '') ||
+        form.value.aiUser.avatarUrl !== (client.value.aiUser?.avatarUrl || '')))
   if (changed) {
     const r = await Swal.fire({
       title: 'Zavřít dialog?',
