@@ -64,35 +64,18 @@
               class="px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4 min-h-[72px]"
             >
               <LazyClientUsers v-slot="{ open }" :clientId="row.original.id" hydrateOnInteraction>
-                <button
-                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 rounded-full hover:from-green-300 hover:to-green-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                  @click="open.value = true"
-                >
-                  <Icon name="mdi:eye" class="w-5 h-5 text-black" />
-                </button>
+                <Button icon="mdi:eye" variant="success" @click="open.value = true" />
               </LazyClientUsers>
               <LazyClientEdit v-slot="{ open }" :client="row.original" hydrateOnInteraction @saved="refresh">
-                <button
-                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 rounded-full hover:from-blue-300 hover:to-blue-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                  @click="open.value = true"
-                >
-                  <Icon name="mdi:pencil" class="w-5 h-5 text-black" />
-                </button>
+                <Button icon="mdi:pencil" variant="primary" @click="open.value = true" />
               </LazyClientEdit>
-              <button
+              <Button
                 v-if="!row.original.deletedAt"
-                class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 rounded-full hover:from-red-300 hover:to-red-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
+                icon="mdi:delete"
+                variant="danger"
                 @click="del(row.original.id, row.original.name)"
-              >
-                <Icon name="mdi:lock" class="w-5 h-5 text-black" />
-              </button>
-              <button
-                v-else
-                class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                @click="restore(row.original.id)"
-              >
-                <Icon name="mdi:lock-open" class="w-5 h-5 text-black" />
-              </button>
+              />
+              <Button v-else icon="mdi:lock-open" variant="warning" @click="restore(row.original.id)" />
             </td>
           </tr>
         </tbody>
@@ -123,51 +106,27 @@
             </div>
           </div>
           <div :ref="(el) => setDropdownRef(row.id, el)" class="relative">
-            <button
-              class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full hover:from-gray-300 hover:to-gray-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-              @click="toggleDropdown(row.id)"
-            >
-              <Icon name="mdi:dots-vertical" class="w-5 h-5 text-black" />
-            </button>
+            <Button icon="mdi:dots-vertical" @click="toggleDropdown(row.id)" />
             <div
               v-if="openDropdown === row.id"
               class="absolute z-10 right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
             >
               <div class="py-1">
                 <LazyClientUsers v-slot="{ open }" :clientId="row.original.id" hydrateOnInteraction>
-                  <button
-                    class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-green-100"
-                    @click="open.value = true"
-                  >
-                    <Icon name="mdi:eye" class="w-5 h-5 mr-2" />
-                    Zobrazit
-                  </button>
+                  <Button icon="mdi:eye" variant="success" @click="open.value = true" />
                 </LazyClientUsers>
                 <LazyClientEdit v-slot="{ open }" :client="row.original" hydrateOnInteraction @saved="refresh">
-                  <button
-                    class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-blue-100"
-                    @click="open.value = true"
-                  >
-                    <Icon name="mdi:pencil" class="w-5 h-5 mr-2" />
-                    Upravit
-                  </button>
+                  <Button icon="mdi:pencil" variant="primary" @click="open.value = true" />
                 </LazyClientEdit>
-                <button
+                <Button
                   v-if="!row.original.deletedAt"
-                  class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-red-100"
+                  icon="mdi:lock"
+                  variant="danger"
                   @click="del(row.original.id, row.original.name)"
                 >
-                  <Icon name="mdi:lock" class="w-5 h-5 mr-2" />
                   Smazat/Deaktivovat
-                </button>
-                <button
-                  v-else
-                  class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-yellow-100"
-                  @click="restore(row.original.id)"
-                >
-                  <Icon name="mdi:lock-open" class="w-5 h-5 mr-2" />
-                  Aktivovat
-                </button>
+                </Button>
+                <Button v-else icon="mdi:lock-open" @click="restore(row.original.id)">Aktivovat</Button>
               </div>
             </div>
           </div>
@@ -273,6 +232,7 @@ const table = useVueTable({
 function toDom(el: Element | ComponentPublicInstance | null): HTMLElement | null {
   if (!el) return null
   if (el instanceof HTMLElement) return el
+
   const root = (el as any)?.$el
   return root instanceof HTMLElement ? root : null
 }
@@ -306,7 +266,9 @@ const del = async (id: string, name: string) => {
   if (result.isConfirmed) {
     try {
       await $fetch(`/api/clients/${id}?hard=true`, { method: 'DELETE' })
+
       toast.success({ message: 'Klient trvale smazán' })
+
       await refresh()
     } catch (e: any) {
       toast.error({ message: e.data?.message || 'Smazání selhalo' })
@@ -314,7 +276,9 @@ const del = async (id: string, name: string) => {
   } else if (result.isDenied) {
     try {
       await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
+
       toast.success({ message: 'Klient deaktivován' })
+
       await refresh()
     } catch (e: any) {
       toast.error({ message: e.data?.message || 'Deaktivace selhala' })
@@ -322,8 +286,8 @@ const del = async (id: string, name: string) => {
   }
 }
 
-onClientCreated(() => refresh())
-onClientDeleted(() => refresh())
+onClientCreated(refresh)
+onClientDeleted(refresh)
 
 const restore = async (id: string) => {
   const result = await Swal.fire({
@@ -341,7 +305,9 @@ const restore = async (id: string) => {
 
   try {
     await $fetch(`/api/clients/${id}`, { method: 'PATCH', body: { deletedAt: null } })
+
     toast.success({ message: 'Klient aktivován' })
+
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Aktivace selhala' })
