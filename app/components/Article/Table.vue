@@ -240,7 +240,9 @@
         <span class="hidden sm:inline">Předchozí</span>
       </button>
 
-      <span class="text-sm font-medium text-gray-700 dark:text-gray-300"> Stránka {{ page }} z {{ totalPages }} </span>
+      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Stránka {{ page }} z {{ totalPages === 0 ? '1' : totalPages }}
+      </span>
 
       <button
         :disabled="page >= totalPages"
