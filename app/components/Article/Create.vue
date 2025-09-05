@@ -61,7 +61,7 @@
             </div>
           </label>
           <div
-            v-if="auth?.user.plan === 'BASIC'"
+            v-if="auth?.user.plan === 'BASIC' || client?.tokenRemaining === 0"
             class="relative p-4 rounded-xl bg-white dark:bg-gray-800 border-t-4 border-gradient-to-r from-blue-500 to-indigo-600 shadow-sm hover:shadow-md transition-all duration-300"
           >
             <div class="flex items-center gap-3 pl-10">
@@ -147,6 +147,7 @@ import Swal from 'sweetalert2'
 
 const toast = useToast()
 const { data: auth } = useAuth()
+const { data: client } = useFetch(`/api/clients/${auth.value?.user.clientSiteId}`)
 const { emitArticleCreated } = useArticleEvent()
 const open = defineModel<boolean>()
 
