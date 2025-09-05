@@ -164,6 +164,7 @@
 </template>
 
 <script setup lang="ts">
+import { cs } from 'date-fns/locale'
 import { directive as vTippy } from 'vue-tippy'
 import { isToday, isYesterday, format } from 'date-fns'
 import 'tippy.js/dist/tippy.css'
@@ -195,9 +196,11 @@ const props = defineProps<{
 const formatDate = (date?: Date) => {
   if (!date) return 'Nikdy'
   const now = new Date()
-  if (isToday(date)) return `Dnes, ${format(date, 'HH:mm')}`
-  if (isYesterday(date)) return `Včera, ${format(date, 'HH:mm')}`
-  return now.getFullYear() === new Date(date).getFullYear() ? format(date, 'dd.MM. ') : format(date, 'dd.MM.yyyy ')
+  if (isToday(date)) return `Dnes, ${format(date, 'HH:mm', { locale: cs })}`
+  if (isYesterday(date)) return `Včera, ${format(date, 'HH:mm', { locale: cs })}`
+  return now.getFullYear() === new Date(date).getFullYear()
+    ? format(date, 'd. MMMM', { locale: cs })
+    : format(date, 'd. MMMM yyyy', { locale: cs })
 }
 
 const plainExcerpt = computed(() => {
