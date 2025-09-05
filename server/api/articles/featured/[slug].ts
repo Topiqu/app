@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
     return bScore - aScore || b.createdAt.getTime() - a.createdAt.getTime()
   })
 
-  const [featured, ...recommended] = sortedArticles.length ? sortedArticles.slice(0, 3) : [null, []]
+  const [featured, ...recommended] = sortedArticles.length ? sortedArticles.slice(0, 3) : sortedArticles
 
   return { featured, recommended }
 })

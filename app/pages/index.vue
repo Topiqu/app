@@ -190,58 +190,16 @@
 
 <script setup lang="ts">
 import 'tippy.js/dist/tippy.css'
-
-import type { ArticleWithDetails } from '../../types/article'
-
-interface ClientSite {
-  id: string
-  name: string
-  description: string | null
-  logoUrl: string | null
-  keywords: string[] | null
-}
+import { formatDate } from '~~/shared/utils'
 
 const slug = 'GameDev'
-const page = shallowRef(1)
-const limit = shallowRef(15)
-const hasMore = shallowRef(true)
-const selectedTag = shallowRef('')
-const searchQuery = shallowRef('')
-const allArticles = ref<ArticleWithDetails[]>([])
 
-const debouncedRefresh = useDebounceFn(() => {
-  page.value = 1
-  allArticles.value = []
-  hasMore.value = true
-  refresh()
-}, 400)
-
-const articlesUrl = computed(
-  () =>
-    `/api/articles/by-clientsite/${slug}?page=${page.value}&limit=${limit.value}${selectedTag.value ? `&tag=${encodeURIComponent(selectedTag.value)}` : ''}${searchQuery.value ? `&query=${encodeURIComponent(searchQuery.value)}` : ''}`,
-)
-
-const { data: clientSite } = useFetch<ClientSite>(`/api/clients/slug/${slug}`)
-const { data: feat, pending: featPending } = useFetch<{
-  featured: ArticleWithDetails | null
-  recommended: ArticleWithDetails[]
-}>(`/api/articles/featured/${slug}`, { default: () => ({ featured: null, recommended: [] }) })
-const {
-  data: feed,
-  refresh,
-  pending,
-} = useFetch<{ items: ArticleWithDetails[]; hasMore: boolean; tags: { id: string; name: string; slug: string }[] }>(
-  articlesUrl,
-  {
-    default: () => ({ items: [], hasMore: true, tags: [] }),
-    watch: false,
-  },
-)
+const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`)
 
 useSeoMeta({
   title: clientSite.value?.name ?? 'GameDev',
   description: clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojáře her',
-  keywords: clientSite.value?.keywords?.join(', ') ?? 'gamedev, herní vývoj, trendy, tipy',
+  keywords: (clientSite.value?.keywords as string[])?.join(', ') ?? 'gamedev, herní vývoj, trendy, tipy',
   ogTitle: clientSite.value?.name ?? 'GameDev',
   ogDescription:
     clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojá gardev, herní vývoj, trendy, tipy',
@@ -249,6 +207,31 @@ useSeoMeta({
   ogType: 'website',
   twitterCard: 'summary_large_image',
 })
+
+const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${slug}`)
+
+const page = shallowRef<number>(1)
+const limit = shallowRef<number>(15)
+
+const selectedTag = shallowRef<string>('')
+const searchQuery = shallowRef<string>('')
+
+const {
+  data: feed,
+  refresh,
+  pending,
+} = await useFetch(`/api/articles/by-clientsite/${slug}`, {
+  query: {
+    page,
+    limit,
+    ...(selectedTag.value ? { tag: selectedTag.value } : {}),
+    ...(searchQuery.value ? { query: searchQuery.value } : {}),
+  },
+})
+
+const allArticles = ref<NonNullable<typeof feed.value>['items']>([])
+
+const hasMore = shallowRef<boolean>(true)
 
 watch(
   feed,
@@ -261,11 +244,12 @@ watch(
   { immediate: true },
 )
 
-const loadMore = async () => {
-  if (!hasMore.value) return
-  page.value++
-  await refresh()
-}
+const debouncedRefresh = useDebounceFn(() => {
+  page.value = 1
+  allArticles.value = []
+  hasMore.value = true
+  refresh()
+}, 400)
 
 watch([selectedTag, searchQuery], debouncedRefresh)
 
@@ -277,12 +261,15 @@ const topArticles = computed(() =>
     ? [...allArticles.value].sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0)).slice(0, 3)
     : [],
 )
-const filteredArticles = computed(() => {
-  const unique = [...new Map(allArticles.value.map((a) => [a.id, a])).values()].filter(
-    (a) => a.id !== featured.value?.id,
-  )
-  return unique
-})
+const filteredArticles = computed(() =>
+  [...new Map(allArticles.value.map((a) => [a.id, a])).values()].filter((a) => a.id !== featured.value?.id),
+)
+
+const loadMore = async () => {
+  if (!hasMore.value) return
+  page.value++
+  await refresh()
+}
 </script>
 
 <style scoped>
