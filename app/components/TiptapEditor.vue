@@ -139,12 +139,12 @@
       <BubbleMenu
         v-if="editor"
         :editor="editor"
-        class="flex flex-row bg-white border border-gray-200 rounded-lg shadow-xl p-2 gap-3 bg-opacity-95 backdrop-blur-md"
+        class="flex flex-row bg-white border border-gray-200 rounded-full shadow-xl p-2 gap-3 bg-opacity-95 backdrop-blur-md"
         :options="{ placement: 'top' }"
       >
         <button
           title="Bold"
-          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
           :class="{ 'bg-gray-200 text-blue-600': editor.isActive('bold') }"
           @click="editor.chain().focus().toggleBold().run()"
         >
@@ -152,7 +152,7 @@
         </button>
         <button
           title="Italic"
-          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
           :class="{ 'bg-gray-200 text-blue-600': editor.isActive('italic') }"
           @click="editor.chain().focus().toggleItalic().run()"
         >
@@ -160,7 +160,7 @@
         </button>
         <button
           title="Underline"
-          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
           :class="{ 'bg-gray-200 text-blue-600': editor.isActive('underline') }"
           @click="editor.chain().focus().toggleUnderline().run()"
         >
@@ -168,7 +168,7 @@
         </button>
         <button
           title="Strike"
-          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
           :class="{ 'bg-gray-200 text-blue-600': editor.isActive('strike') }"
           @click="editor.chain().focus().toggleStrike().run()"
         >
@@ -176,20 +176,33 @@
         </button>
         <button
           title="Insert Link"
-          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
           :class="{ 'bg-gray-200 text-blue-600': editor.isActive('link') }"
           @click="setLink"
         >
           <Icon name="mdi:link" />
         </button>
-        <button
-          title="Code"
-          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
-          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('code') }"
-          @click="editor.chain().focus().toggleCode().run()"
+        <select
+          class="p-1 rounded-full bg-white border border-gray-200 text-gray-800"
+          @mousedown.stop
+          @click.stop
+          @change="setFontFamily"
         >
-          <Icon name="mdi:code-tags" />
-        </button>
+          <option value="">Default</option>
+          <option value="Arial">Arial</option>
+          <option value="serif">Serif</option>
+          <option value="monospace">Monospace</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Times New Roman">Times New Roman</option>
+        </select>
+        <input
+          type="color"
+          class="w-8 h-8 cursor-pointer rounded-full"
+          :value="editor.getAttributes('textStyle').color || '#000000'"
+          @mousedown.stop
+          @click.stop
+          @input="setColor"
+        />
       </BubbleMenu>
       <EditorContent
         :editor="editor"
@@ -209,13 +222,16 @@ import { useVModel } from '@vueuse/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
 import { Image } from '@tiptap/extension-image'
+import { Color } from '@tiptap/extension-color'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import { Youtube } from '@tiptap/extension-youtube'
 import { Underline } from '@tiptap/extension-underline'
 import { TextAlign } from '@tiptap/extension-text-align'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
+import { TextStyle } from '@tiptap/extension-text-style'
 import { Typography } from '@tiptap/extension-typography'
 import { Blockquote } from '@tiptap/extension-blockquote'
+import { FontFamily } from '@tiptap/extension-font-family'
 import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import { CharacterCount } from '@tiptap/extension-character-count'
 
@@ -307,6 +323,29 @@ const setLink = () => {
   if (url && !previousUrl) return editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
 }
 
+const setColor = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  if (target && editor.value) {
+    editor.value
+      .chain()
+      .focus()
+      .setMark('textStyle', { color: target.value || '#000000' })
+      .run()
+  }
+}
+
+const setFontFamily = (e: Event) => {
+  const target = e.target as HTMLSelectElement
+  if (target && editor.value) {
+    const value = target.value
+    editor.value
+      .chain()
+      .focus()
+      .setMark('textStyle', { fontFamily: value || '' })
+      .run()
+  }
+}
+
 const validateContent = (html: string) => {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
@@ -358,13 +397,16 @@ const editor = useEditor({
       inline: true,
       HTMLAttributes: { class: 'max-w-full h-auto rounded' },
     }),
-    Underline.configure({ HTMLAttributes: { class: 'underline' } }),
-    TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    Underline,
+    TextAlign.configure({
+      types: ['heading', 'paragraph'],
+    }),
     Typography,
     CharacterCount.configure({ limit }),
     Link.configure({
       openOnClick: false,
       defaultProtocol: 'https',
+      HTMLAttributes: { class: 'link' },
     }),
     Youtube.configure({
       HTMLAttributes: { class: 'youtube-video' },
@@ -383,6 +425,9 @@ const editor = useEditor({
         )
       },
     }),
+    TextStyle,
+    Color.configure({ types: ['textStyle'] }),
+    FontFamily.configure({ types: ['textStyle'] }),
   ],
   editable: edit,
   onUpdate: ({ editor }) => {
