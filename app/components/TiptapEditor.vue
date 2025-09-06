@@ -109,6 +109,33 @@
           @click="editor.chain().focus().redo().run()"
         />
         <Button title="Clear Nodes" icon="mdi-format-clear" @click="editor.chain().focus().clearNodes().run()" />
+        <select
+          class="h-9 px-3 rounded-full border border-gray-300 bg-white text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          @mousedown.stop
+          @click.stop
+          @change="setFontFamily"
+        >
+          <option value="">Default</option>
+          <option value="Arial">Arial</option>
+          <option value="serif">Serif</option>
+          <option value="monospace">Monospace</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Times New Roman">Times New Roman</option>
+        </select>
+        <div class="relative w-9 h-9 inline-flex items-center justify-center flex-shrink-0">
+          <span
+            class="absolute inset-0 rounded-full border border-gray-300"
+            :style="{ backgroundColor: editor.getAttributes('textStyle').color || '#000000' }"
+          />
+          <input
+            type="color"
+            class="absolute inset-0 opacity-0 cursor-pointer"
+            :value="editor.getAttributes('textStyle').color || '#000000'"
+            @mousedown.stop
+            @click.stop
+            @input="setColor"
+          />
+        </div>
         <div
           :class="{
             'flex items-center text-green-500 text-xs gap-2 ml-auto': true,
@@ -139,70 +166,49 @@
       <BubbleMenu
         v-if="editor"
         :editor="editor"
-        class="flex flex-row bg-white border border-gray-200 rounded-full shadow-xl p-2 gap-3 bg-opacity-95 backdrop-blur-md"
-        :options="{ placement: 'top' }"
+        :options="{ placement: 'top', size: { padding: { top: 8, right: 12, bottom: 8, left: 12 } } }"
+        class="flex flex-row items-center flex-nowrap whitespace-nowrap bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-full bg-opacity-95 backdrop-blur-md space-x-3"
       >
         <button
           title="Bold"
-          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
-          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('bold') }"
+          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
+          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('bold') }"
           @click="editor.chain().focus().toggleBold().run()"
         >
-          <Icon name="mdi:format-bold" />
+          <Icon name="mdi:format-bold" class="w-5 h-5" />
         </button>
         <button
           title="Italic"
-          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
-          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('italic') }"
+          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
+          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('italic') }"
           @click="editor.chain().focus().toggleItalic().run()"
         >
-          <Icon name="mdi:format-italic" />
+          <Icon name="mdi:format-italic" class="w-5 h-5" />
         </button>
         <button
           title="Underline"
-          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
-          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('underline') }"
+          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
+          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('underline') }"
           @click="editor.chain().focus().toggleUnderline().run()"
         >
-          <Icon name="mdi:format-underline" />
+          <Icon name="mdi:format-underline" class="w-5 h-5" />
         </button>
         <button
           title="Strike"
-          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
-          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('strike') }"
+          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
+          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('strike') }"
           @click="editor.chain().focus().toggleStrike().run()"
         >
-          <Icon name="mdi:format-strikethrough" />
+          <Icon name="mdi:format-strikethrough" class="w-5 h-5" />
         </button>
         <button
           title="Insert Link"
-          class="p-2 text-lg rounded-full hover:bg-gray-100 text-gray-800 transition-colors duration-150"
-          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('link') }"
+          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
+          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('link') }"
           @click="setLink"
         >
-          <Icon name="mdi:link" />
+          <Icon name="mdi:link" class="w-5 h-5" />
         </button>
-        <select
-          class="p-1 rounded-full bg-white border border-gray-200 text-gray-800"
-          @mousedown.stop
-          @click.stop
-          @change="setFontFamily"
-        >
-          <option value="">Default</option>
-          <option value="Arial">Arial</option>
-          <option value="serif">Serif</option>
-          <option value="monospace">Monospace</option>
-          <option value="Georgia">Georgia</option>
-          <option value="Times New Roman">Times New Roman</option>
-        </select>
-        <input
-          type="color"
-          class="w-8 h-8 cursor-pointer rounded-full"
-          :value="editor.getAttributes('textStyle').color || '#000000'"
-          @mousedown.stop
-          @click.stop
-          @input="setColor"
-        />
       </BubbleMenu>
       <EditorContent
         :editor="editor"
@@ -329,7 +335,7 @@ const setColor = (e: Event) => {
     editor.value
       .chain()
       .focus()
-      .setMark('textStyle', { color: target.value || '#000000' })
+      .setColor(target.value || '#000000')
       .run()
   }
 }
@@ -341,7 +347,7 @@ const setFontFamily = (e: Event) => {
     editor.value
       .chain()
       .focus()
-      .setMark('textStyle', { fontFamily: value || '' })
+      .setFontFamily(value || '')
       .run()
   }
 }
@@ -506,5 +512,24 @@ html.dark .ProseMirror .poll-node {
 }
 html.dark .ProseMirror .poll-node button {
   background-color: #60a5fa;
+}
+.color-swatch {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.color-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 9999px;
+}
+.color-swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: 9999px;
+}
+.color-swatch::-moz-color-swatch {
+  border: none;
+  border-radius: 9999px;
 }
 </style>
