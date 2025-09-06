@@ -276,6 +276,7 @@
 <script lang="ts" setup>
 import type { ArticleStatus, User } from '@zenstackhq/runtime/models'
 
+import { formatDate } from '~~/shared/utils'
 import VueEasyLightbox from 'vue-easy-lightbox'
 
 import type { ArticleWithDetails, ArticleBase } from '../../../types/article'

@@ -59,19 +59,8 @@
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
-        <button
-          class="px-6 py-3 rounded-xl text-base font-medium bg-gray-100 hover:bg-gray-200 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md"
-          @click="close"
-        >
-          Zavřít
-        </button>
-        <button
-          :disabled="!editedArticle.title"
-          class="px-6 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-          @click="saveEdit"
-        >
-          Uložit změny
-        </button>
+        <Button variant="danger" @click="close"> Zavřít </Button>
+        <Button :disabled="!editedArticle.title" @click="saveEdit">Uložit změny</Button>
       </div>
     </template>
   </Modal>

@@ -1,5 +1,7 @@
 <template>
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+  <main
+    class="sm:min-w-md md:min-w-lg lg:min-w-xl xl:min-w-2xl max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12"
+  >
     <section
       class="relative bg-gradient-to-r from-blue-600 to-indigo-900 dark:from-gray-900 dark:to-black rounded-3xl py-12 px-6 text-center shadow-xl overflow-hidden animate-gradient-x [animation-duration:8s]"
     >
@@ -27,8 +29,8 @@
 
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
-    <section v-if="featured" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <ArticleSkeletonCard :pending="featPending" isFeatured :article="featured" :tags="featured.tags" />
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <ArticleSkeletonCard :pending="featPending" isFeatured :article="featured || undefined" :tags="featured?.tags" />
       <div class="space-y-6">
         <ArticleSkeletonCard
           v-for="(rec, idx) in recommended"
@@ -57,7 +59,7 @@
                 <span
                   class="absolute inset-y-0 left-4 flex items-center text-gray-400 group-focus-within:text-blue-500 transition-colors"
                 >
-                  <Icon name="material-symbols:search-rounded" class="w-5 h-5" />
+                  <Icon name="material-symbols:search-rounded" class="w-5 h-5 z-50" />
                 </span>
                 <input
                   id="article-search"
@@ -115,7 +117,7 @@
           />
         </div>
 
-        <p v-else class="text-center text-lg">Žádné články</p>
+        <p v-else class="text-center text-lg text-gray">Žádné články</p>
 
         <div v-if="hasMore" class="mt-8 text-center" style="background-color: transparent !important">
           <button
@@ -133,6 +135,7 @@
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
     <section
+      v-if="!auth"
       class="text-center bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-2xl py-12 shadow-lg"
     >
       <h3 class="text-2xl font-bold">Přidejte se do diskuze</h3>
@@ -143,37 +146,40 @@
     <aside class="lg:col-span-1 lg:order-last space-y-8">
       <div>
         <h3 class="text-xl font-bold mb-4">Nejčtenější</h3>
-        <NuxtLink
-          v-for="(top, idx) in topArticles"
-          :key="top.id"
-          :to="`/clanky/${top.slug}`"
-          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
-        >
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
-          ></div>
-          <NuxtImg
-            v-if="top.imageUrl"
-            :src="top.imageUrl"
-            class="w-16 h-16 object-cover rounded-lg group-hover:shadow-md transition duration-500 relative z-20"
-            alt="Nejčtenější"
-          />
-          <div v-else class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg">
-            <Icon name="image" class="w-8 h-8 text-gray-400" />
-          </div>
-          <div class="relative z-20">
-            <h4 class="text-base font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition duration-200">
-              #{{ idx + 1 }} {{ top.title }}
-            </h4>
-            <div class="mt-1 text-sm">
-              {{ formatDate(top.createdAt ?? undefined) }}
+        <template v-if="topArticles.length">
+          <NuxtLink
+            v-for="(top, idx) in topArticles"
+            :key="top.id"
+            :to="`/clanky/${top.slug}`"
+            class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
+            />
+            <NuxtImg
+              v-if="top.imageUrl"
+              :src="top.imageUrl"
+              class="w-16 h-16 object-cover rounded-lg group-hover:shadow-md transition duration-500 relative z-20"
+              alt="Nejčtenější"
+            />
+            <div v-else class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg">
+              <Icon name="image" class="w-8 h-8 text-gray-400" />
             </div>
-          </div>
-        </NuxtLink>
+            <div class="relative z-20">
+              <h4 class="text-base font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition duration-200">
+                #{{ idx + 1 }} {{ top.title }}
+              </h4>
+              <div class="mt-1 text-sm">
+                {{ formatDate(top.createdAt ?? undefined) }}
+              </div>
+            </div>
+          </NuxtLink>
+        </template>
+        <p v-else class="text-gray">Žádné články</p>
       </div>
       <div>
         <h3 class="text-xl font-bold mb-4">Tagy</h3>
-        <div class="flex flex-wrap gap-3">
+        <div v-if="tags.length" class="flex flex-wrap gap-3">
           <NuxtLink
             v-for="tag in tags"
             :key="tag.id"
@@ -183,6 +189,7 @@
             {{ tag.name }}
           </NuxtLink>
         </div>
+        <p v-else class="text-gray">Žádné tagy</p>
       </div>
     </aside>
   </main>
@@ -190,58 +197,18 @@
 
 <script setup lang="ts">
 import 'tippy.js/dist/tippy.css'
+import { formatDate } from '~~/shared/utils'
 
-import type { ArticleWithDetails } from '../../types/article'
+const { data: auth } = useAuth()
 
-interface ClientSite {
-  id: string
-  name: string
-  description: string | null
-  logoUrl: string | null
-  keywords: string[] | null
-}
+const slug = 'viky'
 
-const slug = 'GameDev'
-const page = shallowRef(1)
-const limit = shallowRef(15)
-const hasMore = shallowRef(true)
-const selectedTag = shallowRef('')
-const searchQuery = shallowRef('')
-const allArticles = ref<ArticleWithDetails[]>([])
-
-const debouncedRefresh = useDebounceFn(() => {
-  page.value = 1
-  allArticles.value = []
-  hasMore.value = true
-  refresh()
-}, 400)
-
-const articlesUrl = computed(
-  () =>
-    `/api/articles/by-clientsite/${slug}?page=${page.value}&limit=${limit.value}${selectedTag.value ? `&tag=${encodeURIComponent(selectedTag.value)}` : ''}${searchQuery.value ? `&query=${encodeURIComponent(searchQuery.value)}` : ''}`,
-)
-
-const { data: clientSite } = useFetch<ClientSite>(`/api/clients/slug/${slug}`)
-const { data: feat, pending: featPending } = useFetch<{
-  featured: ArticleWithDetails | null
-  recommended: ArticleWithDetails[]
-}>(`/api/articles/featured/${slug}`, { default: () => ({ featured: null, recommended: [] }) })
-const {
-  data: feed,
-  refresh,
-  pending,
-} = useFetch<{ items: ArticleWithDetails[]; hasMore: boolean; tags: { id: string; name: string; slug: string }[] }>(
-  articlesUrl,
-  {
-    default: () => ({ items: [], hasMore: true, tags: [] }),
-    watch: false,
-  },
-)
+const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`)
 
 useSeoMeta({
   title: clientSite.value?.name ?? 'GameDev',
   description: clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojáře her',
-  keywords: clientSite.value?.keywords?.join(', ') ?? 'gamedev, herní vývoj, trendy, tipy',
+  keywords: (clientSite.value?.keywords as string[])?.join(', ') ?? 'gamedev, herní vývoj, trendy, tipy',
   ogTitle: clientSite.value?.name ?? 'GameDev',
   ogDescription:
     clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojá gardev, herní vývoj, trendy, tipy',
@@ -249,6 +216,31 @@ useSeoMeta({
   ogType: 'website',
   twitterCard: 'summary_large_image',
 })
+
+const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${slug}`, { lazy: true })
+
+const page = shallowRef<number>(1)
+const limit = shallowRef<number>(15)
+
+const selectedTag = shallowRef<string>('')
+const searchQuery = shallowRef<string>('')
+
+const {
+  data: feed,
+  refresh,
+  pending,
+} = await useFetch(`/api/articles/by-clientsite/${slug}`, {
+  query: {
+    page,
+    limit,
+    ...(selectedTag.value ? { tag: selectedTag.value } : {}),
+    ...(searchQuery.value ? { query: searchQuery.value } : {}),
+  },
+})
+
+const allArticles = ref<NonNullable<typeof feed.value>['items']>([])
+
+const hasMore = shallowRef<boolean>(true)
 
 watch(
   feed,
@@ -261,11 +253,12 @@ watch(
   { immediate: true },
 )
 
-const loadMore = async () => {
-  if (!hasMore.value) return
-  page.value++
-  await refresh()
-}
+const debouncedRefresh = useDebounceFn(() => {
+  page.value = 1
+  allArticles.value = []
+  hasMore.value = true
+  refresh()
+}, 400)
 
 watch([selectedTag, searchQuery], debouncedRefresh)
 
@@ -277,12 +270,15 @@ const topArticles = computed(() =>
     ? [...allArticles.value].sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0)).slice(0, 3)
     : [],
 )
-const filteredArticles = computed(() => {
-  const unique = [...new Map(allArticles.value.map((a) => [a.id, a])).values()].filter(
-    (a) => a.id !== featured.value?.id,
-  )
-  return unique
-})
+const filteredArticles = computed(() =>
+  [...new Map(allArticles.value.map((a) => [a.id, a])).values()].filter((a) => a.id !== featured.value?.id),
+)
+
+const loadMore = async () => {
+  if (!hasMore.value) return
+  page.value++
+  await refresh()
+}
 </script>
 
 <style scoped>

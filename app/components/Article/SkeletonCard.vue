@@ -104,8 +104,11 @@
           class="flex flex-col sm:flex-row justify-between gap-4"
         >
           <span>
-            <span :class="{ 'text-red-500 font-semibold': isToday(new Date(article!.createdAt)) }">
-              {{ formatDate(article?.createdAt) }}
+            <span
+              v-if="article?.createdAt"
+              :class="{ 'text-red-500 font-semibold': isToday(new Date(article!.createdAt)) }"
+            >
+              {{ formatDate(new Date(article.createdAt)) }}
             </span>
             <span class="text-gray-400">·</span>
             {{ article?.readingTime ?? 5 }} min čtení
@@ -164,9 +167,9 @@
 </template>
 
 <script setup lang="ts">
-import { cs } from 'date-fns/locale'
+import { isToday } from 'date-fns'
+import { formatDate } from '~~/shared/utils'
 import { directive as vTippy } from 'vue-tippy'
-import { isToday, isYesterday, format } from 'date-fns'
 import 'tippy.js/dist/tippy.css'
 import { MessageCircle, Heart, Eye } from 'lucide-vue-next'
 // const pending = true
@@ -180,8 +183,8 @@ const props = defineProps<{
     content: string | null
     excerpt: string | null
     imageUrl: string | null
-    createdAt: Date
-    readingTime: number
+    createdAt: string
+    readingTime: number | null
     views: number
     user: { id: string; username: string; email: string; avatarUrl: string | null } | null
     _count: { comments: number; reactions: number } | null
@@ -192,16 +195,6 @@ const props = defineProps<{
   index?: number
   selectedTag?: string
 }>()
-
-const formatDate = (date?: Date) => {
-  if (!date) return 'Nikdy'
-  const now = new Date()
-  if (isToday(date)) return `Dnes, ${format(date, 'HH:mm', { locale: cs })}`
-  if (isYesterday(date)) return `Včera, ${format(date, 'HH:mm', { locale: cs })}`
-  return now.getFullYear() === new Date(date).getFullYear()
-    ? format(date, 'd. MMMM', { locale: cs })
-    : format(date, 'd. MMMM yyyy', { locale: cs })
-}
 
 const plainExcerpt = computed(() => {
   const content = props.article?.excerpt || props.article?.content || ''

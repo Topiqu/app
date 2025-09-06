@@ -96,34 +96,14 @@
             <td
               class="px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4 min-h-[72px]"
             >
-              <button
-                class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 rounded-full hover:from-green-300 hover:to-green-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                @click="router.push(`/clanky/${row.original.slug}`)"
-              >
-                <Icon name="mdi:eye" class="w-5 h-5 text-black" />
-              </button>
+              <Button icon="mdi:eye" variant="success" @click="router.push(`/clanky/${row.original.slug}`)" />
               <LazyArticleEdit v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
-                <button
-                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 rounded-full hover:from-blue-300 hover:to-blue-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                  @click="open.value = true"
-                >
-                  <Icon name="mdi:pencil" class="w-5 h-5 text-black" />
-                </button>
+                <Button icon="mdi:pencil" @click="open.value = true" />
               </LazyArticleEdit>
               <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
-                <button
-                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                  @click="open.value = true"
-                >
-                  <Icon name="mdi:tag-outline" class="w-5 h-5 text-black" />
-                </button>
+                <Button icon="mdi:tag-outline" variant="warning" @click="open.value = true" />
               </LazyArticleTag>
-              <button
-                class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 rounded-full hover:from-red-300 hover:to-red-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-                @click="del(row.original.id)"
-              >
-                <Icon name="mdi:delete" class="w-5 h-5 text-black" />
-              </button>
+              <Button icon="mdi:delete" variant="danger" @click="del(row.original.id)" />
             </td>
           </tr>
         </tbody>
@@ -230,29 +210,7 @@
         </div>
       </div>
     </div>
-    <div class="flex items-center justify-between mt-6">
-      <button
-        :disabled="page <= 1"
-        class="flex items-center gap-2 px-5 py-2.5 rounded-full border shadow-sm transition bg-white text-gray-700 border-gray-300 hover:bg-gray-50 active:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed dark:disabled:bg-gray-900 dark:disabled:text-gray-500"
-        @click="prevPage"
-      >
-        <Icon name="mdi:chevron-left" class="w-5 h-5" />
-        <span class="hidden sm:inline">Předchozí</span>
-      </button>
-
-      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-        Stránka {{ page }} z {{ totalPages === 0 ? '1' : totalPages }}
-      </span>
-
-      <button
-        :disabled="page >= totalPages"
-        class="flex items-center gap-2 px-5 py-2.5 rounded-full shadow-sm transition bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
-        @click="nextPage"
-      >
-        <span class="hidden sm:inline">Další</span>
-        <Icon name="mdi:chevron-right" class="w-5 h-5" />
-      </button>
-    </div>
+    <Pagination :page :totalPages :prevPage :nextPage class="mt-6" />
   </div>
 </template>
 

@@ -3,7 +3,7 @@
     <div v-if="auth">
       <button
         ref="btn"
-        class="flex items-center gap-3 px-3 py-2 rounded-xl bg-transparent dark:bg-transparent border-none transition-all duration-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800"
+        class="flex items-center gap-3 rounded-xl bg-transparent dark:bg-transparent border-none transition-all duration-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800"
         style="background: transparent !important"
         @click="show = !show"
       >
@@ -11,14 +11,14 @@
           v-if="userData?.avatarUrl"
           :src="userData.avatarUrl"
           alt="Profilový obrázek"
-          class="w-9 h-9 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-500 transition-all duration-200"
+          class="w-10 h-10 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-500 transition-all duration-200"
           width="36"
           height="36"
         />
         <Icon
           v-else
           name="mdi:account-circle-outline"
-          class="w-9 h-9 text-gray-400 dark:text-gray-600 transition-colors duration-200"
+          class="w-10 h-10 text-gray-400 dark:text-gray-600 transition-colors duration-200"
         />
         <div class="hidden min-[1565px]:flex flex-col min-w-0">
           <div class="flex items-center gap-2 bg-transparent">
@@ -215,6 +215,9 @@
 
 <script lang="ts" setup>
 import type { UserRole } from '@prisma/client'
+
+import { formatDate } from '~~/shared/utils'
+
 interface User {
   id: string
   username: string

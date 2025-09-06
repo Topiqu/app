@@ -6,13 +6,9 @@
         <Icon name="mdi:menu" class="w-6 h-6 text-black" />
       </button>
     </div>
-    <div class="fixed right-28 z-100">
+    <div class="fixed top-2 right-2 flex items-center justify-between gap-2 z-100">
       <UserAccount />
-    </div>
-    <div class="fixed top-2 right-16 z-50">
       <ThemeToggle />
-    </div>
-    <div class="fixed top-2 right-2 z-100">
       <NotificationBar />
     </div>
     <slot />

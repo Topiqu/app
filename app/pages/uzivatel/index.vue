@@ -197,6 +197,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate } from '~~/shared/utils'
 import { TransitionRoot } from '@headlessui/vue'
 import { Save, Upload, UserIcon } from 'lucide-vue-next'
 

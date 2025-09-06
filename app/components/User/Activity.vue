@@ -166,6 +166,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate } from '~~/shared/utils'
+
 defineProps<{
   profile: {
     likedArticles: {

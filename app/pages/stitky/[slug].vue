@@ -118,6 +118,8 @@
 <script lang="ts" setup>
 import type { Article as _Article } from '@zenstackhq/runtime/models'
 
+import { formatDate } from '~~/shared/utils'
+
 const route = useRoute()
 
 const { data: auth } = useAuth()

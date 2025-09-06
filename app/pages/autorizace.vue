@@ -7,8 +7,9 @@
 </template>
 
 <script lang="ts" setup>
+definePageMeta({ middleware: 'auth' })
+
 const route = useRoute()
+
 const initialMode = computed(() => (route.query.mode === 'register' ? 'register' : 'login'))
 </script>
-
-<style></style>

@@ -29,20 +29,19 @@
         <div
           class="flex gap-2 rounded-2xl bg-gray-100 dark:bg-gray-700 p-2 border border-gray-300 dark:border-gray-600 w-fit"
         >
-          <button
+          <Button
             v-for="option in options"
             :key="option.value"
             :class="[
-              'flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm',
               mode === option.value
-                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105'
-                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600',
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
+                : '!text-black bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
             ]"
+            :icon="option.icon"
             @click="mode = option.value"
           >
-            <Icon :name="option.icon" class="w-4 h-4" />
             {{ option.label }}
-          </button>
+          </Button>
         </div>
 
         <div
@@ -57,7 +56,7 @@
                 v-model="customPrompt"
                 placeholder="Zadejte pokyn pro AI generování článku..."
                 class="pl-10 p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm w-full resize-y min-h-[100px]"
-              ></textarea>
+              />
             </div>
           </label>
           <div
@@ -78,14 +77,14 @@
               </div>
             </div>
           </div>
-          <button
+          <Button
             v-else
-            class="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-md transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            icon="mdi:lightning-bolt"
+            class="text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
             @click="generateAIContent"
           >
-            <Icon name="mdi:lightning-bolt" class="w-5 h-5" />
             Generovat AI obsah
-          </button>
+          </Button>
         </div>
 
         <label class="flex flex-col gap-3">
@@ -121,19 +120,8 @@
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
-        <button
-          class="px-6 py-3 rounded-xl text-base font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md"
-          @click="close"
-        >
-          Zavřít
-        </button>
-        <button
-          :disabled="!newArticle.title"
-          class="px-6 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-          @click="createArticle"
-        >
-          Přidat článek
-        </button>
+        <Button variant="danger" size="lg" @click="close">Zavřít</Button>
+        <Button :disabled="!newArticle.title" size="lg" @click="createArticle">Přidat článek</Button>
       </div>
     </template>
   </Modal>
