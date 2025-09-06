@@ -157,7 +157,13 @@
               <Icon name="mdi:help-circle-outline" class="w-4 h-4 text-gray-400 cursor-help" />
             </div>
             <p class="text-2xl font-bold text-pink-600">
-              {{ stats.engagementRate ? Math.round(stats.engagementRate * 100) + '%' : '0%' }}
+              {{
+                stats.engagementRate
+                  ? Math.round(stats.engagementRate * 100) > 100
+                    ? '100%'
+                    : Math.round(stats.engagementRate * 100) + '%'
+                  : '0%'
+              }}
             </p>
           </div>
 
