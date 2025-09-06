@@ -201,7 +201,7 @@ import { formatDate } from '~~/shared/utils'
 
 const { data: auth } = useAuth()
 
-const slug = 'viky'
+const slug = 'GameDev'
 
 const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`)
 
@@ -225,18 +225,14 @@ const limit = shallowRef<number>(15)
 const selectedTag = shallowRef<string>('')
 const searchQuery = shallowRef<string>('')
 
-const {
-  data: feed,
-  refresh,
-  pending,
-} = await useFetch(`/api/articles/by-clientsite/${slug}`, {
-  query: {
-    page,
-    limit,
-    ...(selectedTag.value ? { tag: selectedTag.value } : {}),
-    ...(searchQuery.value ? { query: searchQuery.value } : {}),
-  },
-})
+const query = computed(() => ({
+  page: page.value,
+  limit: limit.value,
+  ...(selectedTag.value ? { tag: selectedTag.value } : {}),
+  ...(searchQuery.value ? { query: searchQuery.value } : {}),
+}))
+
+const { data: feed, refresh, pending } = await useFetch(`/api/articles/by-clientsite/${slug}`, { query, watch: false })
 
 const allArticles = ref<NonNullable<typeof feed.value>['items']>([])
 
