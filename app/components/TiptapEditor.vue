@@ -2,7 +2,6 @@
   <div class="flex flex-col gap-2">
     <template v-if="editor">
       <div v-if="edit" class="flex items-center flex-wrap gap-x-2 gap-y-1">
-        <BubbleMenu :editor="editor" :setLink="setLink" />
         <FileInput :uploadImage="uploadImage" @close="onFileInputClose" />
         <Button
           title="Paragraph"
@@ -72,13 +71,6 @@
         />
         <Button title="Insert YouTube Video" icon="mdi-youtube" @click="insertYoutube" />
         <Button title="Insert Poll" icon="mdi-poll" @click="insertPoll" />
-        <Button title="Insert Link" icon="mdi-link" :active="editor.isActive('link')" @click="setLink" />
-        <Button
-          title="Underline"
-          icon="mdi-format-underline"
-          :active="editor.isActive('underline')"
-          @click="editor.chain().focus().toggleUnderline().run()"
-        />
         <Button
           title="Align Left"
           icon="mdi-format-align-left"
@@ -144,8 +136,63 @@
           </span>
         </div>
       </div>
+      <BubbleMenu
+        v-if="editor"
+        :editor="editor"
+        class="flex flex-row bg-white border border-gray-200 rounded-lg shadow-xl p-2 gap-3 bg-opacity-95 backdrop-blur-md"
+        :options="{ placement: 'top' }"
+      >
+        <button
+          title="Bold"
+          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('bold') }"
+          @click="editor.chain().focus().toggleBold().run()"
+        >
+          <Icon name="mdi:format-bold" />
+        </button>
+        <button
+          title="Italic"
+          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('italic') }"
+          @click="editor.chain().focus().toggleItalic().run()"
+        >
+          <Icon name="mdi:format-italic" />
+        </button>
+        <button
+          title="Underline"
+          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('underline') }"
+          @click="editor.chain().focus().toggleUnderline().run()"
+        >
+          <Icon name="mdi:format-underline" />
+        </button>
+        <button
+          title="Strike"
+          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('strike') }"
+          @click="editor.chain().focus().toggleStrike().run()"
+        >
+          <Icon name="mdi:format-strikethrough" />
+        </button>
+        <button
+          title="Insert Link"
+          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('link') }"
+          @click="setLink"
+        >
+          <Icon name="mdi:link" />
+        </button>
+        <button
+          title="Code"
+          class="p-2 text-lg rounded-md hover:bg-gray-100 text-gray-800 transition-colors duration-150"
+          :class="{ 'bg-gray-200 text-blue-600': editor.isActive('code') }"
+          @click="editor.chain().focus().toggleCode().run()"
+        >
+          <Icon name="mdi:code-tags" />
+        </button>
+      </BubbleMenu>
       <EditorContent
-        :editor
+        :editor="editor"
         :class="{
           'rounded-lg shadow-sm': edit,
           'h-96 p-4 bg-white border border-gray-300 overflow-y-auto': true,
@@ -162,15 +209,16 @@ import { useVModel } from '@vueuse/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
 import { Image } from '@tiptap/extension-image'
+import { BubbleMenu } from '@tiptap/vue-3/menus'
 import { Youtube } from '@tiptap/extension-youtube'
 import { Underline } from '@tiptap/extension-underline'
 import { TextAlign } from '@tiptap/extension-text-align'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { Typography } from '@tiptap/extension-typography'
 import { Blockquote } from '@tiptap/extension-blockquote'
+import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import { CharacterCount } from '@tiptap/extension-character-count'
 
-import FileInput from './File/Input.vue'
 import Poll from '../../extensions/poll'
 
 const CustomBlockquote = Blockquote.extend({
@@ -196,7 +244,7 @@ const emit = defineEmits<{
   (e: 'update:edit', value: boolean): void
 }>()
 
-const content = useVModel(props, 'modelValue', emit) as Ref<string | null>
+const content = useVModel(props, 'modelValue', emit)
 if (!content.value) content.value = '<p></p>'
 
 watch(content, (newVal) => {
@@ -297,43 +345,51 @@ const validateContent = (html: string) => {
   return modified ? doc.body.innerHTML : html
 }
 
-const editor = ref(
-  useEditor({
-    content: content.value,
-    extensions: [
-      StarterKit.configure({
-        blockquote: false,
-      }),
-      CustomBlockquote.configure({
-        HTMLAttributes: { class: 'blockquote' },
-      }),
-      Image.configure({
-        inline: true,
-        HTMLAttributes: { class: 'max-w-full h-auto rounded' },
-      }),
-      Underline.configure({ HTMLAttributes: { class: 'underline' } }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Typography,
-      CharacterCount.configure({ limit }),
-      Link.configure({
-        openOnClick: false,
-        defaultProtocol: 'https',
-      }),
-      Youtube.configure({
-        HTMLAttributes: { class: 'youtube-video' },
-        inline: false,
-        allowFullscreen: true,
-        ccLanguage: 'cs',
-      }),
-      Poll,
-    ],
-    editable: edit,
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML()
-      content.value = validateContent(html)
-    },
-  }),
-)
+const editor = useEditor({
+  content: content.value,
+  extensions: [
+    StarterKit.configure({
+      blockquote: false,
+    }),
+    CustomBlockquote.configure({
+      HTMLAttributes: { class: 'blockquote' },
+    }),
+    Image.configure({
+      inline: true,
+      HTMLAttributes: { class: 'max-w-full h-auto rounded' },
+    }),
+    Underline.configure({ HTMLAttributes: { class: 'underline' } }),
+    TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    Typography,
+    CharacterCount.configure({ limit }),
+    Link.configure({
+      openOnClick: false,
+      defaultProtocol: 'https',
+    }),
+    Youtube.configure({
+      HTMLAttributes: { class: 'youtube-video' },
+      inline: false,
+      allowFullscreen: true,
+      ccLanguage: 'cs',
+    }),
+    Poll,
+    BubbleMenuExtension.configure({
+      shouldShow: ({ editor }) => {
+        return (
+          editor.isActive('text') &&
+          !editor.isActive('image') &&
+          !editor.isActive('youtube') &&
+          !editor.isActive('poll')
+        )
+      },
+    }),
+  ],
+  editable: edit,
+  onUpdate: ({ editor }) => {
+    const html = editor.getHTML()
+    content.value = validateContent(html)
+  },
+})
 
 watchEffect(() => editor.value?.setEditable(edit))
 
