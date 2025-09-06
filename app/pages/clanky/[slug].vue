@@ -499,8 +499,9 @@ watch(
 </script>
 
 <style>
-.prose p img {
-  cursor: pointer !important;
+.prose p:empty::before {
+  content: '\200B';
+  display: inline-block;
 }
 .vue-easy-lightbox {
   z-index: 1000;
@@ -511,6 +512,7 @@ watch(
   object-fit: contain;
 }
 .prose p img {
+  cursor: pointer !important;
   animation: fade-in 0.5s ease-out forwards;
 }
 </style>
