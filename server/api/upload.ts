@@ -36,8 +36,8 @@ export default defineEventHandler(async (event) => {
   } else if (type === 'user-avatar') {
     minDimensions = [100, 100]
     outputDir = 'avatars'
-    filenamePrefix = `avatar-${user?.id || 'unknown'}`
-    applyNsfwFilter = true
+    filenamePrefix = `avatar-${isAiUser ? Date.now() + (user?.clientSiteId || 'unknown') : user?.id || 'unknown'}`
+    applyNsfwFilter = !isAiUser
   } else if (type === 'article-image') {
     outputDir = 'article-images'
     filenamePrefix = 'article'
@@ -80,10 +80,14 @@ export default defineEventHandler(async (event) => {
   }
 
   if (applyNsfwFilter) {
-    const filter = new Filter({ openModeratorAPIKey: openModeratorApiKey })
-    const blob = new Blob([Uint8Array.from(buffer)], { type: 'image/webp' })
-    const result = await filter.isImageNSFW(blob)
-    if (result.nsfw) throw createError({ statusCode: 403, message: 'Nevhodný obsah' })
+    try {
+      const filter = new Filter({ openModeratorAPIKey: openModeratorApiKey })
+      const blob = new Blob([Uint8Array.from(buffer)], { type: 'image/webp' })
+      const result = await filter.isImageNSFW(blob)
+      if (result.nsfw) throw createError({ statusCode: 403, message: 'Nevhodný obsah' })
+    } catch (e: any) {
+      throw createError({ statusCode: 500, message: `Chyba při kontrole NSFW obsahu ${e.message}` })
+    }
   }
 
   const uploadDir = join(process.cwd(), `public/${outputDir}`)
@@ -106,11 +110,34 @@ export default defineEventHandler(async (event) => {
       where: { id: user.clientSiteId },
       data: { logoUrl: `/${outputDir}/${filename}` },
     })
-  } else if (type === 'user-avatar' && user && !isAiUser) {
-    await db.user.update({
-      where: { id: user.id },
-      data: { avatarUrl: `/${outputDir}/${filename}` },
-    })
+  } else if (type === 'user-avatar' && user) {
+    if (isAiUser && user.clientSiteId) {
+      const aiUser = await db.user.findFirst({
+        where: { clientSiteId: user.clientSiteId, role: 'ai' },
+      })
+      if (aiUser) {
+        await db.user.update({
+          where: { id: aiUser.id },
+          data: { avatarUrl: `/${outputDir}/${filename}` },
+        })
+      } else {
+        await db.user.create({
+          data: {
+            username: `ai-${user.clientSiteId}-${Date.now()}`,
+            email: `ai-${user.clientSiteId}-${Date.now()}@generated.com`,
+            password: null,
+            role: 'ai',
+            avatarUrl: `/${outputDir}/${filename}`,
+            clientSiteId: user.clientSiteId,
+          },
+        })
+      }
+    } else {
+      await db.user.update({
+        where: { id: user.id },
+        data: { avatarUrl: `/${outputDir}/${filename}` },
+      })
+    }
   }
 
   return { success: true, url: `/${outputDir}/${filename}` }
