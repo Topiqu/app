@@ -26,7 +26,7 @@
               width: '100%',
               height: `${virtualRow.size}px`,
             }"
-            class="border-b py-2 px-1 flex justify-between items-center text-gray"
+            class="border-b py-2 px-1 flex justify-between items-center"
           >
             <div>
               <div>
