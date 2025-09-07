@@ -5,7 +5,7 @@
   </a>
 </h1>
 
-### **Welcome** to <a href="https://topiqoblog.cz" target="_blank">**Topiqo AI Blog**</a>! 👋
+### **Welcome** to <a href="https://topiqu.cz" target="_blank">**Topiqo AI Blog**</a>! 👋
 
 An innovative AI blog web-app
 

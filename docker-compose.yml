@@ -23,7 +23,7 @@ services:
       - 'traefik.http.routers.blog.entrypoints=https'
       - 'traefik.http.routers.blog.tls.certresolver=le-http'
       - 'traefik.http.routers.blog.middlewares=secure-headers,redirect-https'
-      - 'traefik.http.services.blog.loadbalancer.server.url=https://topiqo.com'
+      - 'traefik.http.services.blog.loadbalancer.server.url=https://topiqu.com'
     networks:
       - traefik-net
 networks:

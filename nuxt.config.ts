@@ -85,7 +85,7 @@ export default defineNuxtConfig({
   },
 
   nodemailer: {
-    from: `"TOPIQO BLOG" ${process.env.NUXT_MAIL_USER}`,
+    from: `"TOPIQU BLOG" ${process.env.NUXT_MAIL_USER}`,
     service: 'gmail',
     auth: {
       user: process.env.NUXT_MAIL_USER,
