@@ -64,6 +64,7 @@
     "jsdom": "^26.1.0",
     "lucide-vue-next": "^0.539.0",
     "mitt": "^3.0.1",
+    "mjml": "^4.15.3",
     "next-auth": "4.21.1",
     "nuxt": "3.18.1",
     "nuxt-nodemailer": "^1.1.2",
@@ -84,6 +85,7 @@
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",
+    "@types/mjml": "^4.7.4",
     "@unocss/nuxt": "^66.5.0",
     "@zenstackhq/runtime": "^2.18.1",
     "eslint-plugin-perfectionist": "^4.15.0",
