@@ -7,7 +7,7 @@
     <template #content>
       <div class="flex flex-col gap-6">
         <div class="flex flex-col gap-4">
-          <h3 class="text-lg font-medium">Přidat nového uživatele</h3>
+          <h3 class="text-lg font-medium">Přiřadit nového autora klientovi</h3>
           <label class="flex flex-col gap-2">
             <span class="text-sm font-medium">Uživatelské jméno</span>
             <input
@@ -32,16 +32,6 @@
               placeholder="Heslo"
               class="p-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-          </label>
-          <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium">Role</span>
-            <select
-              v-model="newUser.role"
-              class="p-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="admin">Admin</option>
-              <option value="user">Uživatel</option>
-            </select>
           </label>
           <button
             class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
@@ -133,7 +123,7 @@ const newUser = ref({
   username: '',
   email: '',
   password: '',
-  role: 'reader' as 'admin' | 'reader',
+  role: 'admin' as 'admin' | 'reader',
 })
 
 const {
