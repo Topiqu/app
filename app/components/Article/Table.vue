@@ -42,8 +42,15 @@
           </tr>
         </thead>
         <tbody v-auto-animate class="text-gray-800">
+          <tr v-if="articles.data.length === 0" class="text-center">
+            <td colspan="5" class="px-4 py-10">
+              <NuxtImg src="/topik_smutny_rm.png" alt="Smutný Topík" class="mx-auto w-32" />
+              <p class="mt-4 text-xl text-gray-500">Achjo, cítím se k ničemu...</p>
+            </td>
+          </tr>
           <tr
             v-for="row in table.getRowModel().rows"
+            v-else
             :key="row.id"
             :class="[
               'transition-colors duration-200 light:hover:bg-gray-100 group',
@@ -109,7 +116,7 @@
         </tbody>
       </table>
     </div>
-    <div class="sm:hidden space-y-4">
+    <div v-if="articles.data.length > 0" class="sm:hidden space-y-4">
       <div
         v-for="row in table.getRowModel().rows"
         :key="row.id"
@@ -240,7 +247,7 @@ const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
 const globalFilter = shallowRef((route.query.query as string) || '')
 
-const { data, refresh } = await useFetch<{ data: Article[]; total: number }>(
+const { data: articles, refresh } = await useFetch<{ data: Article[]; total: number }>(
   () =>
     `/api/articles/search?page=${page.value}&limit=${limit}${globalFilter.value ? `&query=${encodeURIComponent(globalFilter.value)}` : ''}`,
   {
@@ -249,7 +256,7 @@ const { data, refresh } = await useFetch<{ data: Article[]; total: number }>(
   },
 )
 
-const totalPages = computed(() => Math.ceil((data.value?.total || 0) / limit))
+const totalPages = computed(() => Math.ceil((articles.value?.total || 0) / limit))
 
 const prevPage = () => {
   if (page.value > 1) {
@@ -357,7 +364,7 @@ const columns: ColumnDef<Article>[] = [
 
 const table = useVueTable({
   get data() {
-    return data.value?.data || []
+    return articles.value?.data || []
   },
   columns,
   state: {
