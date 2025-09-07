@@ -43,12 +43,48 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@vueuse/motion/nuxt',
     '@sidebase/nuxt-auth',
+    '@vite-pwa/nuxt',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-nodemailer',
     'nuxt-security',
     'nuxt-toast',
   ],
-
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'Topiqu AI Blog',
+      short_name: 'Topiqu',
+      description: 'Moderní blogovací platforma poháněná AI',
+      theme_color: '#2d5ebc',
+      // icons: [
+      //   {
+      //     src: '/icons/icon-192x192.png',
+      //     sizes: '192x192',
+      //     type: 'image/png',
+      //   },
+      //   {
+      //     src: '/icons/icon-512x512.png',
+      //     sizes: '512x512',
+      //     type: 'image/png',
+      //   },
+      // ],
+    },
+    workbox: {
+      runtimeCaching: [
+        {
+          urlPattern: 'https://topiqu.com/.*',
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: {
+              maxEntries: 50,
+              maxAgeSeconds: 86400,
+            },
+          },
+        },
+      ],
+    },
+  },
   security: {
     rateLimiter: {
       interval: 10 * 1000,
