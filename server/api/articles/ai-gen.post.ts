@@ -22,17 +22,33 @@ export default defineLazyEventHandler(() => {
     })
     if (!maxOutputTokens || maxOutputTokens < 0)
       throw createError({ statusCode: 403, statusMessage: 'Insufficient tokens' })
-    const system = `Jsi autor článku na blogu firmy zaměřené na ${focus || 'obecná témata'}. 
-    Píšeš stylem poutavým a profesionálním. 
-    Klíčová slova: ${JSON.stringify(keywords) || 'žádná'}. 
+    const system = `Jsi autor článku na blogu firmy zaměřené na ${focus || 'obecná témata'}.
+    Píšeš stylem poutavým a profesionálním.
+    Klíčová slova: ${JSON.stringify(keywords) || 'žádná'}.
     Napiš článek (500–1000 slov) na téma spojené s těmito klíčovými slovy, cílený na ${audience || 'širokou veřejnost'}. 
-    Použij h1, h2, h3, strong, blockquote, underline, italic pro v-html na frontendu. 
-    Titulek (5–15 slov) musí být poutavý, obsahovat alespoň 2 klíčová slova. 
-    Klíčová slova použij párkrát v textu, i nepřímo, a s ohledem na kontext.
-    Uživatelský prompt: ${prompt}`
-    console.log(system)
+    Napiš JSON odpověď se strukturou:
+    {
+      "perex": "krátký odstavec (3-4 věty) jako úvod",
+      "content": "článek 500–1000 slov s h1, h2, h3, strong, blockquote, underline, italic pro v-html na frontendu"
+    }
+    Titulek (5–15 slov) musí být poutavý.
+    Klíčová slova použij přirozeně.
+    Uživatelský prompt: ${prompt}.
+    Odpověz POUZE validním JSONem, bez komentářů.`
 
-    const { text, usage } = await generateText({ model: OpenAI('gpt-3.5-turbo'), maxOutputTokens, system, prompt })
+    const { text, usage } = await generateText({
+      model: OpenAI('gpt-3.5-turbo'),
+      maxOutputTokens,
+      system,
+      prompt,
+    })
+
+    let json
+    try {
+      json = JSON.parse(text)
+    } catch {
+      throw createError({ statusCode: 500, statusMessage: 'Invalid AI response' })
+    }
 
     await prisma.clientSite.update({
       data: { tokenRemaining: { decrement: usage.totalTokens } },
@@ -47,6 +63,6 @@ export default defineLazyEventHandler(() => {
       ip: getIp(event),
     })
 
-    return text
+    return json
   })
 })
