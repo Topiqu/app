@@ -2,7 +2,7 @@
   <div class="min-h-screen max-w-screen flex-1 flex flex-col bg-gray-100 relative">
     <Sidebar v-if="auth && isAdmin" :isOpen="sidebarOpen" @update:isOpen="sidebarOpen = $event || false" />
     <div class="md:hidden p-4 bg-white shadow flex items-center justify-between">
-      <button @click="sidebarOpen = !sidebarOpen">
+      <button v-if="auth && isAdmin" @click="sidebarOpen = !sidebarOpen">
         <Icon name="mdi:menu" class="w-6 h-6 text-black" />
       </button>
     </div>
