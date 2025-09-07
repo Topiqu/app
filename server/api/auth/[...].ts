@@ -19,7 +19,7 @@ function mapProfile({ id, sub, login, name, email, avatar_url, picture }: BaseOA
     id: (id ?? sub ?? login ?? '').toString(),
     name: name ?? login ?? '',
     email: email ?? '',
-    image: avatar_url ?? picture ?? (login ? `https://github.com/${login}.png` : null),
+    avatarUrl: avatar_url ?? picture ?? (login ? `https://github.com/${login}.png` : null),
     role: 'reader' as const,
     clientSiteId: '',
     plan: 'BASIC' as const,
@@ -84,6 +84,7 @@ async function assignToken(token: any, user: any, plan: string) {
   token.role = user.role
   token.clientSiteId = user.clientSiteId ?? ''
   token.plan = plan
+  token.avatarUrl = user.avatarUrl
   return token
 }
 
@@ -129,7 +130,15 @@ export default NuxtAuthHandler({
         const { email, password } = signInSchema.parse(credentials)
         const user = await prisma.user.findFirst({
           where: { email, deletedAt: null },
-          select: { id: true, username: true, role: true, password: true, clientSiteId: true, email: true },
+          select: {
+            id: true,
+            username: true,
+            role: true,
+            password: true,
+            clientSiteId: true,
+            email: true,
+            avatarUrl: true,
+          },
         })
         if (!user || !user.password) return null
         if (!(await argon.verify(user.password, password))) return null
@@ -148,6 +157,7 @@ export default NuxtAuthHandler({
           role: user.role,
           clientSiteId: user.clientSiteId ?? '',
           plan: plan ?? 'BASIC',
+          avatarUrl: user.avatarUrl,
         }
       },
     }),
@@ -169,6 +179,7 @@ export default NuxtAuthHandler({
         token.role = user.role
         token.clientSiteId = user.clientSiteId
         token.plan = user.plan
+        token.avatarUrl = user.avatarUrl
       }
       return token
     },
@@ -181,6 +192,7 @@ export default NuxtAuthHandler({
           role: token.role,
           clientSiteId: token.clientSiteId,
           plan: token.plan,
+          avatarUrl: token.avatarUrl,
         }
       }
       return session
