@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const { title, excerpt, content } = await readBody(event)
-  if (!title && !content && !excerpt)
+  if (!title && !content && content !== '<p></p>' && !excerpt)
     throw createError({ statusCode: 400, message: 'Alespoň jedno pole (title, excerpt, content) musí být vyplněno' })
   if (!user.clientSiteId) throw createError({ statusCode: 400, message: 'Chybí clientSiteId' })
 
