@@ -12,6 +12,7 @@
       <NotificationBar />
     </div>
     <slot />
+    <ButtonBackToTop />
     <ClientVersion v-if="isAdmin" :userId="auth?.user.id!" />
   </div>
 </template>
