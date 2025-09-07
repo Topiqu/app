@@ -115,7 +115,7 @@
           @click.stop
           @change="setFontFamily"
         >
-          <option value="">Default</option>
+          <option value="">Výchozí</option>
           <option value="Arial">Arial</option>
           <option value="serif">Serif</option>
           <option value="monospace">Monospace</option>

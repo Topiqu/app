@@ -45,7 +45,7 @@
           <tr v-if="articles.data.length === 0" class="text-center">
             <td colspan="5" class="px-4 py-10">
               <NuxtImg src="/topik_smutny_rm.png" alt="Smutný Topík" class="mx-auto w-32" />
-              <p class="mt-4 text-xl text-gray-500">Achjo, cítím se k ničemu...</p>
+              <p class="mt-4 text-xl text-gray-500 dark:text-gray-300">Achjo, cítím se k ničemu...</p>
             </td>
           </tr>
           <tr
