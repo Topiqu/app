@@ -1,3 +1,5 @@
+import { sendEmail } from '~/../emails/sendEmail'
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
@@ -36,29 +38,42 @@ export default defineEventHandler(async (event) => {
 
   let content = body.content
   const url = (id: string) => `http://localhost:3000/clanky/${fullArticle.slug}#comment-${id}`
+  const replyUrl = `http://localhost:3000/clanky/${fullArticle.slug}/reply`
+  const logoUrl = 'https://via.placeholder.com/150x50'
+  const unsubscribeUrl = 'http://localhost:3000/uzivatel'
 
   if (body.parentId) {
     const parent = await prisma.comment.findUnique({
       where: { id: body.parentId },
-      select: { user: { select: { username: true, email: true, allowEmail: true } } },
+      select: {
+        user: { select: { username: true, email: true, allowEmail: true, avatarUrl: true } },
+        content: true,
+      },
     })
     if (!parent) throw createError({ statusCode: 404, message: 'Rodičovský komentář nenalezen' })
     content = `@${parent.user.username} ${content}`
 
     if (parent.user.allowEmail) {
-      await useNodeMailer().sendMail({
-        from: useRuntimeConfig().from,
+      await sendEmail({
         to: parent.user.email,
         subject: 'Nová odpověď na váš komentář',
         text: `Ahoj ${parent.user.username}, ${user.name} odpověděl: "${body.content.slice(0, 50)}...".\nOdpověď najdeš zde: ${url(body.parentId)}`,
-        html: `
-      <p>Ahoj <b>${parent.user.username}</b>,</p>
-      <p><b>${user.name}</b> odpověděl: "<i>${body.content.slice(0, 50)}...</i>"</p>
-      <p><a href="${url(body.parentId)}" style="color:#2563eb;text-decoration:none;">➡️ Zobrazit odpověď</a></p>
-    `,
+        template: 'commentReply',
+        data: {
+          userName: user.name,
+          parentUsername: parent.user.username,
+          commentContent: body.content.slice(0, 50) + '...',
+          parentContent: parent.content.slice(0, 50) + '...',
+          commentUrl: url(body.parentId),
+          replyUrl,
+          avatarUrl: user.avatarUrl || 'https://via.placeholder.com/50',
+          logoUrl,
+          unsubscribeUrl,
+        },
       })
     }
   }
+
   if (fullArticle.allowedComments) {
     const comment = await prisma.comment.create({
       data: { content, articleId: body.articleId, userId: user.id, parentId: body.parentId || null },
@@ -66,22 +81,27 @@ export default defineEventHandler(async (event) => {
         id: true,
         content: true,
         createdAt: true,
-        user: { select: { id: true, username: true } },
+        user: { select: { id: true, username: true, avatarUrl: true } },
         parentId: true,
       },
     })
 
     if (fullArticle.userId !== user.id && fullArticle.user.allowEmail) {
-      await useNodeMailer().sendMail({
-        from: useRuntimeConfig().from,
+      await sendEmail({
         to: fullArticle.user.email,
         subject: `Nový komentář – ${fullArticle.title}`,
         text: `Ahoj, ${user.name} okomentoval tvůj článek: "${body.content.slice(0, 50)}...".\nPodívej se zde: ${url(comment.id)}`,
-        html: `
-      <p>Ahoj,</p>
-      <p><b>${user.name}</b> okomentoval tvůj článek: "<i>${body.content.slice(0, 50)}...</i>"</p>
-      <p><a href="${url(comment.id)}" style="color:#2563eb;text-decoration:none;">➡️ Zobrazit komentář</a></p>
-    `,
+        template: 'newComment',
+        data: {
+          userName: user.name,
+          articleTitle: fullArticle.title,
+          commentContent: body.content.slice(0, 50) + '...',
+          commentUrl: url(comment.id),
+          replyUrl,
+          avatarUrl: user.avatarUrl || 'https://via.placeholder.com/50',
+          logoUrl,
+          unsubscribeUrl,
+        },
       })
 
       await prisma.notification.create({
