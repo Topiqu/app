@@ -60,7 +60,7 @@
             </div>
           </label>
           <div v-if="aiGenerating" class="flex justify-center">
-            <NuxtImg src="/topik_premysli_rm.png" alt="Topík přemýšlí" class="w-16" />
+            <NuxtImg src="/topik_premysli_rm.png" alt="Topík přemýšlí" class="w-16 animate-pulse" />
           </div>
           <div
             v-else-if="auth?.user.plan === 'BASIC' || client?.tokenRemaining === 0"
@@ -229,12 +229,12 @@ const confirmClose = async () => {
 const generateAIContent = async () => {
   aiGenerating.value = true
   try {
-    const data = await $fetch('/api/articles/ai-gen', {
+    const { perex, content } = await $fetch('/api/articles/ai-gen', {
       method: 'POST',
-      body: { prompt: customPrompt.value || 'Vygeneruj krátký článek na téma CP77...' },
+      body: { prompt: customPrompt.value || 'Prázdný...' },
     })
-    if (!data) throw createError({ statusCode: 500, message: 'No content generated' })
-    newArticle.content = data
+    newArticle.excerpt = perex
+    newArticle.content = content
     toast.success({ message: 'AI obsah úspěšně vygenerován' })
   } catch (error: any) {
     toast.error({ message: error.data?.message || 'Nepodařilo se vygenerovat obsah' })
@@ -251,7 +251,7 @@ const generateAIContent = async () => {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.1);
   }
 }
 .animate-pulse {
