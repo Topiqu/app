@@ -143,6 +143,7 @@ const { data: auth } = useAuth()
 const { data: client } = useFetch(`/api/clients/${auth.value?.user.clientSiteId}`)
 const { emitArticleCreated } = useArticleEvent()
 const open = defineModel<boolean>()
+const { idle } = useIdle(5 * 60 * 1000)
 
 const init = () => ({
   title: '',
@@ -184,6 +185,30 @@ const handleUpload = (file: { url: string }) => {
   newArticle.imageUrl = file.url
 }
 
+const saveDraft = useDebounceFn(async () => {
+  if (idle.value) return
+  if (!newArticle.title && !newArticle.content && !newArticle.excerpt) return
+  try {
+    await $fetch('/api/articles/draft', {
+      method: 'POST',
+      body: {
+        title: newArticle.title,
+        excerpt: newArticle.excerpt || undefined,
+        content: newArticle.content || undefined,
+        userId: auth.value?.user.id,
+        clientSiteId: auth.value?.user.clientSiteId,
+      },
+    })
+    toast.success({ message: 'Draft uložen', timeout: 2000 })
+  } catch {
+    toast.error({ message: 'Uložení draftu selhalo' })
+  }
+}, 15000)
+
+watch([() => newArticle.title, () => newArticle.excerpt, () => newArticle.content], () => {
+  saveDraft()
+})
+
 const createArticle = async () => {
   if (!newArticle.title) return toast.error({ message: 'Název článku je povinný' })
   if (!isReleaseDateValid.value) {
@@ -212,8 +237,9 @@ const createArticle = async () => {
 }
 
 const confirmClose = async () => {
-  if (!newArticle.title.length && (!newArticle.content.length || newArticle.content === '<p></p>'))
+  if (!newArticle.title.length && (!newArticle.content.length || newArticle.content === '<p></p>')) {
     return (open.value = false)
+  }
   const r = await Swal.fire({
     title: 'Zavřít dialog?',
     text: 'Přidávání článku bude zrušeno. Opravdu chcete pokračovat?',
