@@ -59,8 +59,11 @@
               />
             </div>
           </label>
+          <div v-if="aiGenerating" class="flex justify-center">
+            <NuxtImg src="/topik_premysli_rm.png" alt="Topík přemýšlí" class="w-16" />
+          </div>
           <div
-            v-if="auth?.user.plan === 'BASIC' || client?.tokenRemaining === 0"
+            v-else-if="auth?.user.plan === 'BASIC' || client?.tokenRemaining === 0"
             class="relative p-4 rounded-xl bg-white dark:bg-gray-800 border-t-4 border-gradient-to-r from-blue-500 to-indigo-600 shadow-sm hover:shadow-md transition-all duration-300"
           >
             <div class="flex items-center gap-3 pl-10">
@@ -77,14 +80,16 @@
               </div>
             </div>
           </div>
-          <Button
-            v-else
-            icon="mdi:lightning-bolt"
-            class="text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
-            @click="generateAIContent"
-          >
-            Generovat AI obsah
-          </Button>
+          <div v-else class="flex justify-center">
+            <NuxtImg src="/topik_normal_rm.png" alt="Topík normální" class="w-16" />
+            <Button
+              icon="mdi:lightning-bolt"
+              class="text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+              @click="generateAIContent"
+            >
+              Generovat AI obsah
+            </Button>
+          </div>
         </div>
 
         <label class="flex flex-col gap-3">
@@ -154,6 +159,7 @@ const newArticle = reactive(init())
 const articleTags = ref<string[]>([])
 const customPrompt = shallowRef('')
 const mode = shallowRef<'manual' | 'ai'>('manual')
+const aiGenerating = ref(false)
 
 const options: { value: 'manual' | 'ai'; label: string; icon: string }[] = [
   { value: 'manual', label: 'Ruční psaní', icon: 'mdi:pencil' },
@@ -221,6 +227,7 @@ const confirmClose = async () => {
 }
 
 const generateAIContent = async () => {
+  aiGenerating.value = true
   try {
     const data = await $fetch('/api/articles/ai-gen', {
       method: 'POST',
@@ -231,6 +238,8 @@ const generateAIContent = async () => {
     toast.success({ message: 'AI obsah úspěšně vygenerován' })
   } catch (error: any) {
     toast.error({ message: error.data?.message || 'Nepodařilo se vygenerovat obsah' })
+  } finally {
+    aiGenerating.value = false
   }
 }
 </script>
