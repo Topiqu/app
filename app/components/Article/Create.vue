@@ -95,6 +95,20 @@
         <label class="flex flex-col gap-3">
           <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">Obsah</span>
           <TiptapEditor v-model="newArticle.content" edit />
+          <div v-if="drafts?.length" class="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon="mdi:file-document-outline"
+              class="px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200 bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 hover:shadow-md dark:from-indigo-500 dark:to-purple-600 dark:hover:from-indigo-600 dark:hover:to-purple-700"
+              @click="showDraftsDialog"
+            >
+              Načíst návrhy
+            </Button>
+            <span v-if="successMessage" class="text-sm text-green-600 dark:text-green-400">
+              {{ successMessage }}
+            </span>
+          </div>
         </label>
 
         <label class="flex flex-col gap-3">
@@ -124,7 +138,7 @@
     </template>
 
     <template #footer="{ close }">
-      <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
+      <div class="flex gap-4 justify-end mt-2">
         <Button variant="danger" size="lg" @click="close">Zavřít</Button>
         <Button :disabled="!newArticle.title" size="lg" @click="createArticle">Přidat článek</Button>
       </div>
@@ -160,12 +174,13 @@ const newArticle = reactive(init())
 const articleTags = ref<string[]>([])
 const customPrompt = shallowRef('')
 const mode = shallowRef<'manual' | 'ai'>('manual')
-const aiGenerating = ref(false)
+const aiGenerating = shallowRef(false)
+const successMessage = shallowRef('')
 
-const options: { value: 'manual' | 'ai'; label: string; icon: string }[] = [
+const options = [
   { value: 'manual', label: 'Ruční psaní', icon: 'mdi:pencil' },
   { value: 'ai', label: 'AI generování', icon: 'mdi:robot' },
-]
+] as const
 
 const currentDate = new Date()
 const minDate = currentDate.toISOString().slice(0, 16)
@@ -175,6 +190,67 @@ const isReleaseDateValid = computed(() => {
   if (!newArticle.releaseAt) return true
   const releaseDate = new Date(newArticle.releaseAt)
   return releaseDate >= new Date(minDate) && releaseDate <= new Date(maxDate)
+})
+
+const { data: drafts, error } = useAsyncData(
+  'drafts',
+  async () => {
+    if (!auth.value?.user.id) return []
+    return (await $fetch('/api/articles/draft')).drafts
+  },
+  { default: () => [] },
+)
+
+const showDraftsDialog = async () => {
+  if (!drafts.value?.length) {
+    toast.info({ message: 'Žádné návrhy nebyly nalezeny' })
+    return
+  }
+  const result = await Swal.fire({
+    title: 'Našli jsme neuložené návrhy',
+    text: `Chcete pokračovat v úpravách návrhu z ${new Date(drafts.value[0].updatedAt).toLocaleString()}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Pokračovat',
+    cancelButtonText: 'Zrušit',
+    showDenyButton: drafts.value.length > 1,
+    denyButtonText: 'Vybrat jiný návrh',
+  })
+  if (result.isConfirmed) {
+    Object.assign(newArticle, {
+      title: drafts.value[0].title,
+      excerpt: drafts.value[0].excerpt || '',
+      content: drafts.value[0].content,
+      slug: slugify(drafts.value[0].title, { lower: true, strict: true, trim: true }),
+    })
+  } else if (result.isDenied) {
+    const { value: selectedDraft } = await Swal.fire({
+      title: 'Vyberte návrh',
+      input: 'select',
+      inputOptions: drafts.value.reduce(
+        (acc, draft) => ({
+          ...acc,
+          [draft.id]: `${draft.title || 'Bez názvu'} (${new Date(draft.updatedAt).toLocaleString()})`,
+        }),
+        {},
+      ),
+      inputPlaceholder: 'Vyberte návrh',
+      showCancelButton: true,
+    })
+    if (selectedDraft) {
+      const draft = drafts.value.find((d) => d.id === selectedDraft)
+      Object.assign(newArticle, {
+        title: draft.title,
+        excerpt: draft.excerpt || '',
+        content: draft.content,
+        slug: slugify(draft.title, { lower: true, strict: true, trim: true }),
+      })
+    }
+  }
+}
+
+watch(error, (err) => {
+  if (err) toast.error({ message: 'Načítání návrhů selhalo' })
 })
 
 const updateSlug = () => {
@@ -188,6 +264,15 @@ const handleUpload = (file: { url: string }) => {
 const saveDraft = useDebounceFn(async () => {
   if (idle.value) return
   if (!newArticle.title && !newArticle.content && !newArticle.excerpt) return
+  if (
+    drafts.value?.some(
+      (draft) =>
+        draft.title === newArticle.title &&
+        (draft.excerpt || '') === (newArticle.excerpt || '') &&
+        draft.content === newArticle.content,
+    )
+  )
+    return
   try {
     await $fetch('/api/articles/draft', {
       method: 'POST',
@@ -199,11 +284,12 @@ const saveDraft = useDebounceFn(async () => {
         clientSiteId: auth.value?.user.clientSiteId,
       },
     })
-    toast.success({ message: 'Draft uložen', timeout: 2000 })
+    successMessage.value = 'Návrh uložen'
+    setTimeout(() => (successMessage.value = ''), 8000)
   } catch {
-    toast.error({ message: 'Uložení draftu selhalo' })
+    toast.error({ message: 'Uložení návrhu selhalo' })
   }
-}, 15000)
+}, 8000)
 
 watch([() => newArticle.title, () => newArticle.excerpt, () => newArticle.content], () => {
   saveDraft()
@@ -211,9 +297,7 @@ watch([() => newArticle.title, () => newArticle.excerpt, () => newArticle.conten
 
 const createArticle = async () => {
   if (!newArticle.title) return toast.error({ message: 'Název článku je povinný' })
-  if (!isReleaseDateValid.value) {
-    return toast.error({ message: 'Datum vydání musí být mezi ' + minDate + ' a ' + maxDate })
-  }
+  if (!isReleaseDateValid.value) return toast.error({ message: `Datum vydání musí být mezi ${minDate} a ${maxDate}` })
   try {
     const { id } = await $fetch('/api/articles', {
       method: 'POST',
@@ -238,7 +322,8 @@ const createArticle = async () => {
 
 const confirmClose = async () => {
   if (!newArticle.title.length && (!newArticle.content.length || newArticle.content === '<p></p>')) {
-    return (open.value = false)
+    open.value = false
+    return
   }
   const r = await Swal.fire({
     title: 'Zavřít dialog?',

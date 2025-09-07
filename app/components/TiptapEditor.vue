@@ -442,6 +442,12 @@ const editor = useEditor({
   },
 })
 
+watch(content, (newValue) => {
+  if (editor.value && editor.value.getHTML() !== newValue) {
+    editor.value.commands.setContent(newValue)
+  }
+})
+
 watchEffect(() => editor.value?.setEditable(edit))
 
 onBeforeUnmount(() => editor.value?.destroy())
