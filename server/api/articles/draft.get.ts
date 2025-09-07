@@ -7,5 +7,5 @@ export default defineEventHandler(async (event) => {
     orderBy: { updatedAt: 'desc' },
   })
 
-  return { success: true, drafts }
+  return drafts
 })

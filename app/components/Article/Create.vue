@@ -22,7 +22,7 @@
           <textarea
             v-model="newArticle.excerpt"
             placeholder="Zadejte krátký popis článku..."
-            class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+            class="p-4 rounded-xl dark:text-gray-200 text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
           ></textarea>
         </label>
 
@@ -35,7 +35,7 @@
             :class="[
               mode === option.value
                 ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
-                : '!text-black bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
+                : 'light:text-black bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
             ]"
             :icon="option.icon"
             @click="mode = option.value"
@@ -55,7 +55,7 @@
               <textarea
                 v-model="customPrompt"
                 placeholder="Zadejte pokyn pro AI generování článku..."
-                class="pl-10 p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm w-full resize-y min-h-[100px]"
+                class="pl-10 p-3 rounded-xl text-sm dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm w-full resize-y min-h-[100px]"
               />
             </div>
           </label>
@@ -105,8 +105,10 @@
             >
               Načíst návrhy
             </Button>
-            <span v-if="successMessage" class="text-sm text-green-600 dark:text-green-400">
-              {{ successMessage }}
+            <span v-if="successMessage" class="text-sm text-green-600 dark:text-green-400 flex items-center">
+              <Icon name="mdi:check-circle" class="w-4 h-4 text-green-600 dark:text-green-400 mr-2" />{{
+                successMessage
+              }}
             </span>
           </div>
         </label>
@@ -147,10 +149,12 @@
 </template>
 
 <script setup lang="ts">
-import type { ArticleStatus } from '@zenstackhq/runtime/models'
+import type { ArticleStatus, ArticleDraft } from '@zenstackhq/runtime/models'
 
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
+import { format } from 'date-fns'
+import { cs as locale } from 'date-fns/locale'
 
 const toast = useToast()
 const { data: auth } = useAuth()
@@ -192,14 +196,9 @@ const isReleaseDateValid = computed(() => {
   return releaseDate >= new Date(minDate) && releaseDate <= new Date(maxDate)
 })
 
-const { data: drafts, error } = useAsyncData(
-  'drafts',
-  async () => {
-    if (!auth.value?.user.id) return []
-    return (await $fetch('/api/articles/draft')).drafts
-  },
-  { default: () => [] },
-)
+const { data: drafts, refresh } = await useLazyFetch<ArticleDraft[]>('/api/articles/draft', {
+  default: () => [],
+})
 
 const showDraftsDialog = async () => {
   if (!drafts.value?.length) {
@@ -208,7 +207,7 @@ const showDraftsDialog = async () => {
   }
   const result = await Swal.fire({
     title: 'Našli jsme neuložené návrhy',
-    text: `Chcete pokračovat v úpravách návrhu z ${new Date(drafts.value[0].updatedAt).toLocaleString()}?`,
+    text: `Chcete pokračovat v úpravách návrhu z ${format(drafts.value[0]?.createdAt ?? '', 'd. M. yyyy, HH:mm', { locale })}?`,
     icon: 'question',
     showCancelButton: true,
     confirmButtonText: 'Pokračovat',
@@ -218,10 +217,10 @@ const showDraftsDialog = async () => {
   })
   if (result.isConfirmed) {
     Object.assign(newArticle, {
-      title: drafts.value[0].title,
-      excerpt: drafts.value[0].excerpt || '',
-      content: drafts.value[0].content,
-      slug: slugify(drafts.value[0].title, { lower: true, strict: true, trim: true }),
+      title: drafts.value[0]?.title,
+      excerpt: drafts.value[0]?.excerpt || '',
+      content: drafts.value[0]?.content,
+      slug: slugify(drafts.value[0]?.title ?? '', { lower: true, strict: true, trim: true }),
     })
   } else if (result.isDenied) {
     const { value: selectedDraft } = await Swal.fire({
@@ -230,7 +229,7 @@ const showDraftsDialog = async () => {
       inputOptions: drafts.value.reduce(
         (acc, draft) => ({
           ...acc,
-          [draft.id]: `${draft.title || 'Bez názvu'} (${new Date(draft.updatedAt).toLocaleString()})`,
+          [draft.id]: `${draft.title || 'Bez názvu'} (${format(draft.createdAt, 'd. M. yyyy, HH:mm', { locale })})`,
         }),
         {},
       ),
@@ -240,18 +239,14 @@ const showDraftsDialog = async () => {
     if (selectedDraft) {
       const draft = drafts.value.find((d) => d.id === selectedDraft)
       Object.assign(newArticle, {
-        title: draft.title,
-        excerpt: draft.excerpt || '',
-        content: draft.content,
-        slug: slugify(draft.title, { lower: true, strict: true, trim: true }),
+        title: draft?.title,
+        excerpt: draft?.excerpt || '',
+        content: draft?.content,
+        slug: slugify(draft?.title ?? '', { lower: true, strict: true, trim: true }),
       })
     }
   }
 }
-
-watch(error, (err) => {
-  if (err) toast.error({ message: 'Načítání návrhů selhalo' })
-})
 
 const updateSlug = () => {
   newArticle.slug = slugify(newArticle.title, { lower: true, strict: true, trim: true })
@@ -263,7 +258,7 @@ const handleUpload = (file: { url: string }) => {
 
 const saveDraft = useDebounceFn(async () => {
   if (idle.value) return
-  if (!newArticle.title && !newArticle.content && !newArticle.excerpt) return
+  if (!newArticle.title && !newArticle.excerpt && (!newArticle.content || newArticle.content === '<p></p>')) return
   if (
     drafts.value?.some(
       (draft) =>
@@ -280,20 +275,17 @@ const saveDraft = useDebounceFn(async () => {
         title: newArticle.title,
         excerpt: newArticle.excerpt || undefined,
         content: newArticle.content || undefined,
-        userId: auth.value?.user.id,
-        clientSiteId: auth.value?.user.clientSiteId,
       },
     })
     successMessage.value = 'Návrh uložen'
+    await refresh()
     setTimeout(() => (successMessage.value = ''), 8000)
   } catch {
     toast.error({ message: 'Uložení návrhu selhalo' })
   }
 }, 8000)
 
-watch([() => newArticle.title, () => newArticle.excerpt, () => newArticle.content], () => {
-  saveDraft()
-})
+watch([() => newArticle.title, () => newArticle.excerpt, () => newArticle.content], saveDraft)
 
 const createArticle = async () => {
   if (!newArticle.title) return toast.error({ message: 'Název článku je povinný' })
