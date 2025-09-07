@@ -73,6 +73,22 @@ enum SharePlatform {
   OTHER
 }
 
+model ArticleDraft {
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String     @id() @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt()
+  deletedAt    DateTime?
+  title        String
+  excerpt      String?
+  content      String
+  clientSiteId String
+  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+}
+
 model Article {
   userId          String
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -172,6 +188,7 @@ model User {
   theme            ThemeOption       @default(light)
   clientSite       ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   articles         Article[]
+  articleDrafts    ArticleDraft[]
   comments         Comment[]
   notifications    Notification[]
   reactions        CommentReaction[]
@@ -222,6 +239,7 @@ model ClientSite {
   users               User[]
   tags                Tag[]
   articles            Article[]
+  articleDrafts       ArticleDraft[]
   emojis              Emoji[]
   userBans            UserBan[]
   socials             Social[]

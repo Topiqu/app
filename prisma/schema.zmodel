@@ -92,6 +92,16 @@ abstract model Ownable {
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model ArticleDraft extends Base, Ownable {
+    title        String
+    excerpt      String?
+    content      String
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    @@allow('all', auth().id == userId || auth().role == 'admin')
+    @@index([userId, updatedAt])
+}
+
 model Article extends Base, Ownable {
     slug            String            @unique @length(1, 100, "Slug musí mít 1–100 znaků")
     title           String            @length(1, 255, "Titulek musí mít 1–255 znaků")
@@ -182,6 +192,7 @@ model User extends Base {
     theme            ThemeOption       @default(light)
     clientSite       ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     articles         Article[]
+    articleDrafts    ArticleDraft[]
     comments         Comment[]
     notifications    Notification[]
     reactions        CommentReaction[]
@@ -236,6 +247,7 @@ model ClientSite extends Base {
     users               User[]
     tags                Tag[]
     articles            Article[]
+    articleDrafts       ArticleDraft[]
     emojis              Emoji[]
     userBans            UserBan[]
     socials             Social[]
