@@ -35,7 +35,7 @@ export default defineLazyEventHandler(() => {
     Klíčová slova použij přirozeně.
     Uživatelský prompt: ${prompt}.
     Odpověz POUZE validním JSONem, bez komentářů.`
-
+    console.log(system)
     const { text, usage } = await generateText({
       model: OpenAI('gpt-3.5-turbo'),
       maxOutputTokens,

@@ -5,7 +5,7 @@
         icon="i-lucide:arrow-up"
         size="lg"
         variant="primary"
-        class="rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300"
+        class="rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
         @click="scrollToTop"
       />
     </div>

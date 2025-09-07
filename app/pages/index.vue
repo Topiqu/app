@@ -8,7 +8,7 @@
       <NuxtImg
         v-if="clientSite?.logoUrl"
         :src="clientSite.logoUrl"
-        class="w-16 h-16 mx-auto mb-4 rounded-full object-cover border border-white/20 relative z-20"
+        class="w-24 h-24 mx-auto mb-4 rounded-full object-cover border border-white/20 relative z-20"
         alt="Logo"
       />
       <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold drop-shadow text-white">
