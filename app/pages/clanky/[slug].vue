@@ -254,23 +254,13 @@
       <ArticleTOC :content="data.content" />
     </div>
   </div>
-  <div v-else-if="error" class="min-h-screen flex items-center justify-center">
-    <div class="text-center p-8 md:p-10 bg-white rounded-2xl shadow-lg border border-gray-100">
-      <Icon name="mdi:alert-circle" class="w-16 h-16 text-red-500 mx-auto mb-4 animate-pulse" aria-hidden="true" />
-      <p class="text-lg md:text-xl text-gray-500 font-medium">{{ errorMsg }}</p>
-      <NuxtLink
-        to="/"
-        class="mt-4 inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 no-underline hover:underline decoration-2 underline-offset-4"
-        aria-label="Zpět na seznam článků"
-      >
-        <Icon name="mdi:arrow-left" class="w-6 h-6 mr-2 text-blue-700" />
-        Zpět na seznam
-      </NuxtLink>
-    </div>
-  </div>
-  <div v-else class="min-h-screen flex items-center justify-center">
-    <Icon name="mdi:loading" class="w-14 h-14 text-blue-600 animate-spin" />
-  </div>
+  <Status
+    v-else-if="status === 'error'"
+    type="error"
+    :message="`Chyba ${error?.message ?? '– něco se tady pokazilo.'}`"
+  />
+  <Status v-else-if="status === 'pending'" type="pending" />
+  <!-- <StatusDemo /> -->
 </template>
 
 <script lang="ts" setup>
@@ -298,7 +288,7 @@ const lightboxVisible = shallowRef(false)
 const currentImageIndex = shallowRef(0)
 const progress = shallowRef(0)
 
-const { data, refresh, error } = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, {
+const { data, refresh, error, status } = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, {
   default: () => null,
 })
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
@@ -327,7 +317,9 @@ const toggleFollow = async () => {
   }
   try {
     if (isFollowing.value) {
-      const response = await $fetch(`/api/follows/${data.value.user.id}`, { method: 'DELETE' })
+      const response = await $fetch<{ success: true; followerCount: number }>(`/api/follows/${data.value.user.id}`, {
+        method: 'DELETE',
+      })
       isFollowing.value = false
       data.value.followerCount = response.followerCount ?? 0
       toast.success({ message: `Přestali jste sledovat ${data.value.user.username}` })
@@ -420,11 +412,8 @@ useSeoMeta({
     data.value?.excerpt?.slice(0, 160) ||
     data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
     'Přečtěte si článek...',
-  ogImage: () => data.value?.imageUrl || '',
+  ogImage: () => data.value?.imageUrl || false,
 })
-
-const errorMsg = computed(() => (error.value ? `Chyba: ${error.value.message || 'Zkuste znovu'}` : ''))
-
 const hasTags = computed(() => !!data.value?.tags?.length)
 
 const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
@@ -518,5 +507,9 @@ watch(
   max-height: 600px;
   cursor: pointer !important;
   animation: fade-in 0.5s ease-out forwards;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 </style>
