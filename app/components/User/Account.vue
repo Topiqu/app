@@ -64,7 +64,7 @@
         <div
           v-if="show || hoverShow"
           ref="dropdown"
-          class="absolute right-0 top-full mt-2 w-[95vw] max-w-[20rem] sm:max-w-[22rem] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-transparent dark:bg-transparent backdrop-blur-md"
+          class="absolute right-0 top-full mt-2 w-[95vw] max-w-[20rem] sm:max-w-[22rem] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm"
           @click.stop
         >
           <div class="flex items-center gap-4 bg-transparent dark:bg-transparent">
@@ -109,7 +109,7 @@
                   {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
                 </span>
               </div>
-              <span class="text-sm text-gray-500 dark:text-gray-400 break-all">
+              <span class="text-xs text-gray-500 dark:text-gray-400 break-all">
                 {{ userData?.email }}
               </span>
             </div>
@@ -173,7 +173,7 @@
         <div
           v-if="show || hoverShow"
           ref="dropdown"
-          class="absolute right-0 top-full mt-2 w-[95vw] max-w-[20rem] sm:max-w-[22rem] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-transparent dark:bg-transparent backdrop-blur-md"
+          class="absolute right-0 top-full mt-2 w-[95vw] max-w-[20rem] sm:max-w-[22rem] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm"
           @click.stop
         >
           <div class="flex flex-col gap-4">
