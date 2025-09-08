@@ -38,6 +38,7 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxt/image',
     '@nuxt/scripts',
+    '@nuxtjs/seo',
     '@pinia/nuxt',
     '@unocss/nuxt',
     '@vueuse/nuxt',
@@ -49,6 +50,15 @@ export default defineNuxtConfig({
     'nuxt-security',
     'nuxt-toast',
   ],
+  site: {
+    url: 'https://topiqu.com',
+    name: 'Topiqu AI Blog',
+    description: 'Moderní blogovací platforma poháněná AI',
+    defaultLocale: 'cs',
+    indexable: true,
+    // multiTenancy: {},
+  },
+  seo: {},
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
