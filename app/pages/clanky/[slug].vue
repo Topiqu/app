@@ -507,9 +507,5 @@ watch(
   max-height: 600px;
   cursor: pointer !important;
   animation: fade-in 0.5s ease-out forwards;
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 </style>
