@@ -278,6 +278,7 @@ import type { ArticleStatus, User } from '@zenstackhq/runtime/models'
 
 import { formatDate } from '~~/shared/utils'
 import VueEasyLightbox from 'vue-easy-lightbox'
+import { formatNumber } from '~~/shared/utils/number'
 
 import type { ArticleWithDetails, ArticleBase } from '../../../types/article'
 
@@ -512,6 +513,9 @@ watch(
   object-fit: contain;
 }
 .prose p img {
+  padding-top: 12px;
+  padding-bottom: 6px;
+  max-height: 600px;
   cursor: pointer !important;
   animation: fade-in 0.5s ease-out forwards;
 }
