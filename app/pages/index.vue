@@ -212,7 +212,7 @@ useSeoMeta({
   ogTitle: clientSite.value?.name ?? 'GameDev',
   ogDescription:
     clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojá gardev, herní vývoj, trendy, tipy',
-  ogImage: clientSite.value?.logoUrl ?? '',
+  ogImage: clientSite.value?.logoUrl ?? false,
   ogType: 'website',
   twitterCard: 'summary_large_image',
 })
