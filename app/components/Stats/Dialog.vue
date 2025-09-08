@@ -339,7 +339,7 @@ const shareChartData = computed(() => ({
         stats.value.shareDistribution.LINKEDIN || 0,
         stats.value.shareDistribution.OTHER || 0,
       ],
-      backgroundColor: ['#1DA1F2', '#0077B5', '#797961'],
+      backgroundColor: ['#1DA1F2', '#0077B5', '#6b6b6b'],
       borderColor: '#ffffff',
       fill: false,
     },

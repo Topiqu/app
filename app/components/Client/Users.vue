@@ -60,16 +60,17 @@
               </td>
               <td class="px-4 py-2 text-center">
                 <span
+                  v-if="user.role !== 'ai'"
                   class="inline-block px-2 py-1 rounded-full text-xs font-semibold"
                   :class="{
                     'bg-blue-200 text-blue-800 dark:bg-blue-600 dark:text-blue-100': user.role === 'admin',
                     'bg-purple-200 text-purple-800 dark:bg-purple-600 dark:text-purple-100': user.role === 'superadmin',
                     'bg-yellow-200 text-yellow-800 dark:bg-yellow-600 dark:text-yellow-100': user.role === 'reader',
-                    'bg-indigo-200 text-indigo-800 dark:bg-indigo-600 dark:text-indigo-100': user.role === 'ai',
                   }"
                 >
                   {{ user.role }}
                 </span>
+                <Icon v-else name="mdi:robot" class="w-6 h-6 text-indigo-600 dark:text-indigo-400 mx-auto" />
               </td>
               <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center">
                 <LazyUserEdit v-slot="{ open }" :user="user" hydrateOnInteraction @saved="refresh">

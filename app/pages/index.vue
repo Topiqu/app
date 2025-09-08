@@ -217,7 +217,13 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${slug}`, { lazy: true })
+const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${slug}`, {
+  lazy: true,
+  // transform: async (data) => {
+  //   await sleep(5000)
+  //   return data
+  // },
+})
 
 const page = shallowRef<number>(1)
 const limit = shallowRef<number>(15)

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between p-2">
     <Button icon="mdi:chevron-left" variant="neutral" :disabled="page <= 1" @click="prevPage">
       <span class="hidden sm:inline">Předchozí</span>
     </Button>
