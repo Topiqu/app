@@ -458,6 +458,12 @@ div.tiptap.ProseMirror {
   width: 100%;
   height: 100%;
 }
+.ProseMirror img {
+  max-width: 100%;
+  max-height: 300px;
+  height: auto;
+  object-fit: contain;
+}
 .ProseMirror p,
 .ProseMirror h1,
 .ProseMirror h2,
