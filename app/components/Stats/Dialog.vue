@@ -322,7 +322,7 @@ const chartData = computed(() => ({
     {
       label: 'Zobrazení článků',
       data: viewsHistory.value?.map((v: any) => v.views) || ([] as number[]),
-      backgroundColor: '#3b82f6',
+      backgroundColor: ['#3B82F6', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6'],
       borderColor: '#3b82f6',
       fill: false,
     },
@@ -339,7 +339,7 @@ const shareChartData = computed(() => ({
         stats.value.shareDistribution.LINKEDIN || 0,
         stats.value.shareDistribution.OTHER || 0,
       ],
-      backgroundColor: ['#1DA1F2', '#0077B5', '#F4B400', '#6B7280'],
+      backgroundColor: ['#1DA1F2', '#0077B5', '#797961'],
       borderColor: '#ffffff',
       fill: false,
     },
