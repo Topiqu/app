@@ -65,7 +65,7 @@
     @click="!disabled && !loading && onClick?.($event)"
   >
     <Icon
-      v-if="icon"
+      v-if="icon.length || loading"
       :name="loading ? 'i-lucide:loader' : icon"
       :class="[
         { 'text-inherit': true },
@@ -90,7 +90,7 @@
 
 <script lang="ts" setup>
 const {
-  icon,
+  icon = '',
   iconPosition = 'left',
   size = 'md',
   variant = 'primary',
