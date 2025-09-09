@@ -167,48 +167,36 @@
         v-if="editor"
         :editor="editor"
         :options="{ placement: 'top', size: { padding: { top: 8, right: 12, bottom: 8, left: 12 } } }"
-        class="flex flex-row items-center flex-nowrap whitespace-nowrap bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-full bg-opacity-95 backdrop-blur-md space-x-3"
       >
-        <button
-          title="Bold"
-          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
-          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('bold') }"
-          @click="editor.chain().focus().toggleBold().run()"
+        <div
+          class="flex flex-row items-center flex-nowrap whitespace-nowrap bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-full bg-opacity-95 backdrop-blur-md space-x-3"
         >
-          <Icon name="mdi:format-bold" class="w-5 h-5" />
-        </button>
-        <button
-          title="Italic"
-          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
-          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('italic') }"
-          @click="editor.chain().focus().toggleItalic().run()"
-        >
-          <Icon name="mdi:format-italic" class="w-5 h-5" />
-        </button>
-        <button
-          title="Underline"
-          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
-          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('underline') }"
-          @click="editor.chain().focus().toggleUnderline().run()"
-        >
-          <Icon name="mdi:format-underline" class="w-5 h-5" />
-        </button>
-        <button
-          title="Strike"
-          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
-          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('strike') }"
-          @click="editor.chain().focus().toggleStrike().run()"
-        >
-          <Icon name="mdi:format-strikethrough" class="w-5 h-5" />
-        </button>
-        <button
-          title="Insert Link"
-          class="w-9 h-9 inline-flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
-          :class="{ 'bg-blue-100 text-blue-600': editor.isActive('link') }"
-          @click="setLink"
-        >
-          <Icon name="mdi:link" class="w-5 h-5" />
-        </button>
+          <Button
+            icon="mdi:format-bold"
+            title="Bold"
+            :active="editor.isActive('bold')"
+            @click="editor.chain().focus().toggleBold().run()"
+          />
+          <Button
+            icon="mdi:format-italic"
+            title="Italic"
+            :active="editor.isActive('italic')"
+            @click="editor.chain().focus().toggleItalic().run()"
+          />
+          <Button
+            icon="mdi:format-underline"
+            title="Underline"
+            :active="editor.isActive('underline')"
+            @click="editor.chain().focus().toggleUnderline().run()"
+          />
+          <Button
+            icon="mdi:format-strikethrough"
+            title="Strike"
+            :active="editor.isActive('strike')"
+            @click="editor.chain().focus().toggleStrike().run()"
+          />
+          <Button icon="mdi:link" title="Insert Link" :active="editor.isActive('link')" @click="setLink" />
+        </div>
       </BubbleMenu>
       <EditorContent
         :editor="editor"
