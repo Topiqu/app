@@ -12,14 +12,36 @@
             v-model="newClient.name"
             placeholder="Název klienta"
             class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+            @input="updateDomainFields"
           />
         </label>
         <label class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Typ domény</span>
+          <select
+            v-model="newClient.domainType"
+            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+            @change="updateDomainFields"
+          >
+            <option value="SUBDOMAIN">Subdoména</option>
+            <option value="CUSTOM">Vlastní doména</option>
+          </select>
+        </label>
+        <label v-if="newClient.domainType === 'SUBDOMAIN'" class="flex flex-col gap-3">
           <span class="text-sm font-medium uppercase tracking-wide opacity-80">Subdoména</span>
           <input
             v-model="newClient.subdomain"
-            placeholder="Subdoména"
+            :placeholder="subdomainPlaceholder"
             class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+            @input="normalizeDomain('subdomain')"
+          />
+        </label>
+        <label v-if="newClient.domainType === 'CUSTOM'" class="flex flex-col gap-3">
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Vlastní doména</span>
+          <input
+            v-model="newClient.customDomain"
+            :placeholder="customDomainPlaceholder"
+            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
+            @input="normalizeDomain('customDomain')"
           />
         </label>
         <label class="flex flex-col gap-3">
@@ -120,7 +142,6 @@
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">Slova: {{ newClient.keywords.length }}</span>
         </label>
-
         <div
           v-if="newClient.tokenLimit > 0"
           class="flex flex-col gap-6 p-6 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
@@ -129,7 +150,6 @@
             <Icon name="mdi:robot" class="w-5 h-5" />
             Nastavení AI autora
           </h3>
-
           <label class="flex flex-col gap-2">
             <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Jméno AI</span>
             <input
@@ -138,7 +158,6 @@
               class="p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm"
             />
           </label>
-
           <label class="flex flex-col gap-2">
             <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Avatar AI</span>
             <FileUploader
@@ -148,7 +167,6 @@
               @upload="newClient.aiUser.avatarUrl = $event.url"
             />
           </label>
-
           <label class="flex flex-col gap-2">
             <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Popis AI</span>
             <textarea
@@ -194,8 +212,10 @@ const initClient = () => ({
   username: '',
   password: '',
   subdomain: '',
-  plan: 'BASIC' as const,
-  generationFrequency: 'NONE' as const,
+  customDomain: '',
+  domainType: 'SUBDOMAIN' as 'SUBDOMAIN' | 'CUSTOM',
+  plan: 'BASIC' as 'BASIC' | 'PRO' | 'PREMIUM' | 'CUSTOM',
+  generationFrequency: 'NONE' as 'NONE' | 'DAILY' | 'WEEKLY',
   tokenLimit: 0,
   focus: '',
   keywords: [] as string[],
@@ -210,15 +230,40 @@ const initClient = () => ({
 })
 
 const newClient = ref(initClient())
-
 const toast = useToast()
 
+const normalizeString = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-.]/g, '')
+
+const subdomainPlaceholder = computed(() =>
+  newClient.value.name ? `${normalizeString(newClient.value.name)}.topiqu.cz` : '[název-klienta].topiqu.cz',
+)
+const customDomainPlaceholder = computed(() =>
+  newClient.value.name ? `blog.${normalizeString(newClient.value.name)}.cz` : 'blog.[název-klienta].cz',
+)
+
 const isFormValid = computed(() => {
-  const { name, subdomain, email, tokenLimit, aiUser } = newClient.value
-  if (!name || !subdomain || !email) return false
+  const { name, subdomain, customDomain, domainType, email, tokenLimit, aiUser } = newClient.value
+  if (!name || !email) return false
+  if (domainType === 'SUBDOMAIN' && !subdomain) return false
+  if (domainType === 'CUSTOM' && !customDomain) return false
   if (tokenLimit > 0 && !aiUser.name) return false
   return true
 })
+
+const normalizeDomain = (field: 'subdomain' | 'customDomain') => {
+  const value = newClient.value[field]
+  if (value) newClient.value[field] = normalizeString(value)
+}
+
+const updateDomainFields = () => {
+  const normalizedName = newClient.value.name ? normalizeString(newClient.value.name) : ''
+  newClient.value.subdomain = normalizedName ? `${normalizedName}.topiqu.cz` : ''
+  newClient.value.customDomain = normalizedName ? `blog.${normalizedName}.cz` : ''
+}
 
 const updateKeywords = () => {
   newClient.value.keywords = keywordsInput.value
@@ -245,6 +290,8 @@ const createClient = async () => {
         ...newClient.value,
         keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined,
         aiUser: newClient.value.tokenLimit > 0 ? newClient.value.aiUser : undefined,
+        subdomain: newClient.value.domainType === 'SUBDOMAIN' ? newClient.value.subdomain : undefined,
+        customDomain: newClient.value.domainType === 'CUSTOM' ? newClient.value.customDomain : undefined,
       },
     })
     const generatedPassword =
@@ -277,7 +324,7 @@ const createClient = async () => {
     }
     emitClientCreated()
     open.value = false
-    newClient.value = initClient()
+    Object.assign(newClient.value, initClient())
     keywordsInput.value = ''
   } catch (e: any) {
     toast.error({
