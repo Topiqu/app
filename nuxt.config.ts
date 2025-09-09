@@ -34,6 +34,7 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/eslint',
+    '@nuxtjs/i18n',
     '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/image',
@@ -93,6 +94,33 @@ export default defineNuxtConfig({
           },
         },
       ],
+    },
+  },
+  i18n: {
+    locales: [
+      {
+        code: 'en',
+        iso: 'en-US',
+        name: 'EN',
+        file: 'en.json',
+      },
+      {
+        code: 'cs',
+        iso: 'cs-CZ',
+        name: 'CZ',
+        file: 'cs.json',
+      },
+    ],
+    defaultLocale: 'en',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      redirectOn: 'root',
+      fallbackLocale: 'en',
+    },
+    compilation: {
+      strictMessage: false,
+      escapeHtml: false,
     },
   },
   security: {

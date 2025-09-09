@@ -1,0 +1,28 @@
+{
+  "articles": {
+    "title": "Articles",
+    "searchPlaceholder": "Search articles...",
+    "noResults": {
+      "imageAlt": "Sad Topík",
+      "message": "Oh no, I feel useless..."
+    },
+    "columns": {
+      "title": "Title",
+      "content": "Content",
+      "imageUrl": "Image",
+      "status": "Status",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "tags": "Tags",
+      "delete": "Delete"
+    },
+    "status": {
+      "published": "Published",
+      "draft": "Draft"
+    }
+  }
+}

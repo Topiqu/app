@@ -1,0 +1,28 @@
+{
+  "articles": {
+    "title": "Články",
+    "searchPlaceholder": "Hledat články...",
+    "noResults": {
+      "imageAlt": "Smutný Topík",
+      "message": "Achjo, cítím se tak zbytečný..."
+    },
+    "columns": {
+      "title": "Název",
+      "content": "Obsah",
+      "imageUrl": "Obrázek",
+      "status": "Status",
+      "date": "Datum",
+      "actions": "Akce"
+    },
+    "actions": {
+      "view": "Zobrazit",
+      "edit": "Upravit",
+      "tags": "Štítky",
+      "delete": "Smazat"
+    },
+    "status": {
+      "published": "Publikováno",
+      "draft": "Koncept"
+    }
+  }
+}
