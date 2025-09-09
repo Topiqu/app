@@ -160,31 +160,6 @@
           </label>
         </div>
       </div>
-
-      <div class="flex flex-col gap-4 mt-6">
-        <div v-if="fetchedClients?.length" class="flex flex-col divide-y divide-gray-200">
-          <div v-for="c in fetchedClients" :key="c.id" class="flex items-center justify-between py-2 group">
-            <div class="flex flex-col">
-              <span class="text-sm font-medium">{{ c.name }}</span>
-              <span v-if="c.focus" class="text-gray-400 text-xs">Focus: {{ c.focus }}</span>
-              <span v-if="c.keywords" class="text-gray-400 text-xs"
-                >Klíčová slova: {{ Array.isArray(c.keywords) ? c.keywords.join(', ') : '' }}</span
-              >
-              <span v-if="c.audience" class="text-gray-400 text-xs">Cílová skupina: {{ c.audience }}</span>
-              <span v-if="c.logoUrl" class="text-gray-400 text-xs"
-                >Logo: <NuxtImg :src="c.logoUrl" class="inline-block w-6 h-6"
-              /></span>
-            </div>
-            <button
-              class="flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-500 transition-all duration-300 hover:bg-red-100 hover:text-red-700 active:scale-90"
-              @click="deleteClient(c.id, c.name)"
-            >
-              <Icon name="mdi:delete" class="w-5 h-5 text-red-500" />
-            </button>
-          </div>
-        </div>
-        <p v-else class="text-gray-600 text-sm">Žádní klienti.</p>
-      </div>
     </template>
 
     <template #footer="{ close }">
@@ -209,7 +184,7 @@
 
 <script setup lang="ts">
 import Swal from 'sweetalert2'
-const { emitClientCreated, emitClientDeleted } = useClientEvent()
+const { emitClientCreated } = useClientEvent()
 
 const open = defineModel<boolean>()
 const keywordsInput = shallowRef<string>('')
@@ -237,9 +212,6 @@ const initClient = () => ({
 const newClient = ref(initClient())
 
 const toast = useToast()
-const { data: fetchedClients, refresh } = useFetch('/api/clients', {
-  default: () => [],
-})
 
 const isFormValid = computed(() => {
   const { name, subdomain, email, tokenLimit, aiUser } = newClient.value
@@ -304,40 +276,12 @@ const createClient = async () => {
       toast.success({ message: 'Klient byl úspěšně přidán' })
     }
     emitClientCreated()
-    await refresh()
     open.value = false
     newClient.value = initClient()
     keywordsInput.value = ''
   } catch (e: any) {
     toast.error({
       message: e.data?.message || 'Nepodařilo se přidat klienta',
-    })
-  }
-}
-
-async function confirmDelete(name: string) {
-  const r = await Swal.fire({
-    title: `Smazat "${name}"?`,
-    text: `Tímto vymažete klienta "${name}" trvale.`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Ano, smazat',
-    cancelButtonText: 'Ne',
-    confirmButtonColor: '#ef4444',
-  })
-  return r.isConfirmed
-}
-
-const deleteClient = async (id: string, name: string) => {
-  if (!(await confirmDelete(name))) return
-  try {
-    await $fetch(`/api/clients/${id}?hard=true`, { method: 'DELETE' })
-    toast.success({ message: 'Klient byl úspěšně smazán' })
-    emitClientDeleted()
-    await refresh()
-  } catch (e: any) {
-    toast.error({
-      message: e.data?.message || 'Nepodařilo se smazat klienta',
     })
   }
 }
