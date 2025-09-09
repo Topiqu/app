@@ -12,12 +12,7 @@
           class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-blue-800 text-sm font-medium"
         >
           {{ t.tag.name }}
-          <button
-            class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-100 text-blue-700 hover:text-red-600 transition"
-            @click="removeTag(t.tagId)"
-          >
-            <span class="text-lg leading-none font-bold">×</span>
-          </button>
+          <Button icon="mdi:close" size="sm" variant="danger" class="!rounded-full" @click="removeTag(t.tagId)" />
         </div>
       </div>
       <div class="flex flex-col gap-4 mt-6">
@@ -28,12 +23,7 @@
             class="flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             @input="updateSlug"
           />
-          <button
-            class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition font-medium"
-            @click="addCustomTag"
-          >
-            Přidat
-          </button>
+          <Button @click="addCustomTag">Přidat</Button>
         </div>
         <div class="flex gap-2">
           <select
@@ -45,23 +35,13 @@
               {{ t.name }}
             </option>
           </select>
-          <button
-            class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition font-medium"
-            @click="addExistingTag"
-          >
-            Přidat
-          </button>
+          <Button @click="addExistingTag">Přidat</Button>
         </div>
       </div>
     </template>
 
     <template #footer="{ close }">
-      <button
-        class="px-6 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium transition"
-        @click="close"
-      >
-        Zavřít
-      </button>
+      <Button size="lg" @click="close">Zavřít</Button>
     </template>
   </Modal>
 </template>

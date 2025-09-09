@@ -2,21 +2,18 @@
   <div class="rounded-lg shadow p-6 mt-6">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">{{ title }}</h2>
-      <button
-        class="p-2 flex items-center gap-2 rounded-full bg-gray-50 hover:bg-gray-100 transition-all duration-200 hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer relative group"
+      <Button
+        variant="neutral"
+        class="!rounded-full"
+        :icon="
+          chartType === 'bar'
+            ? 'mdi:chart-line'
+            : chartType === 'line' && data?.user.plan !== 'BASIC'
+              ? 'mdi:chart-pie'
+              : 'mdi:chart-bar'
+        "
         @click="toggleType"
-      >
-        <Icon
-          :name="
-            chartType === 'bar'
-              ? 'mdi:chart-line'
-              : chartType === 'line' && data?.user.plan !== 'BASIC'
-                ? 'mdi:chart-pie'
-                : 'mdi:chart-bar'
-          "
-          class="w-6 h-6"
-        />
-      </button>
+      />
     </div>
     <div class="relative h-64">
       <component :is="currentChart" :data="chartData" :options="chartOptions" />
