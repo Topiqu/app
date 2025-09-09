@@ -121,7 +121,7 @@ export default defineEventHandler(async (event) => {
           data: { avatarUrl: `/${outputDir}/${filename}` },
         })
       } else {
-        await db.user.create({
+        await prisma.user.create({
           data: {
             username: `ai-${user.clientSiteId}-${Date.now()}`,
             email: `ai-${user.clientSiteId}-${Date.now()}@generated.com`,

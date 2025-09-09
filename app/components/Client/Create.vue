@@ -290,8 +290,9 @@ const createClient = async () => {
         ...newClient.value,
         keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined,
         aiUser: newClient.value.tokenLimit > 0 ? newClient.value.aiUser : undefined,
-        subdomain: newClient.value.domainType === 'SUBDOMAIN' ? newClient.value.subdomain : undefined,
-        customDomain: newClient.value.domainType === 'CUSTOM' ? newClient.value.customDomain : undefined,
+        subdomain:
+          newClient.value.domainType === 'SUBDOMAIN' ? newClient.value.subdomain : newClient.value.customDomain,
+        customDomain: undefined,
       },
     })
     const generatedPassword =
