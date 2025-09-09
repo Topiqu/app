@@ -213,7 +213,7 @@ const isLoading = shallowRef<boolean>(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const showDialog = shallowRef<boolean>(false)
 const dialogType = shallowRef<'followers' | 'followed'>('followers')
-const activeTab = ref<'likedArticles' | 'comments'>('likedArticles')
+const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
 
 const profileForm = ref({
   username: '',
@@ -261,23 +261,9 @@ const {
   refresh,
 } = await useFetch(`/api/users/${session.value?.user?.id}/account`)
 
-if (userData.value)
-  profileForm.value = {
-    username: userData.value.username,
-    email: userData.value.email,
-    bio: userData.value.bio || '',
-    avatarUrl: userData.value.avatarUrl || '',
-    allowNotifs: userData.value.allowNotifs ?? true,
-    allowEmail: userData.value.allowEmail ?? true,
-    createdAt: userData.value.createdAt,
-    followers: userData.value.followers || 0,
-    following: userData.value.following || 0,
-    commentsCount: userData.value.commentsCount || 0,
-    likesCount: userData.value.likesCount || 0,
-    dislikesCount: userData.value.dislikesCount || 0,
-    likedArticles: userData.value.likedArticles || [],
-    comments: userData.value.comments || [],
-  }
+if (userData.value) {
+  Object.assign(profileForm.value, userData.value)
+}
 
 function openDialog(type: 'followers' | 'followed') {
   dialogType.value = type
