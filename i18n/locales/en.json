@@ -1,6 +1,115 @@
 {
+  "common": {
+    "loading": "Loading...",
+    "error": "Error loading data",
+    "noResults": "No results found",
+    "noItems": "No items",
+    "readMore": "Read More",
+    "close": "Close",
+    "continue": "Continue",
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "tags": "Tags",
+      "delete": "Delete",
+      "upload": "Select"
+    },
+    "avatar": {
+      "alt": {
+        "profile": "Profile Picture",
+        "company": "Company Logo",
+        "author": "Author Avatar {0}"
+      },
+      "uploadSuccess": "Avatar uploaded",
+      "uploadError": "Upload failed"
+    },
+    "user": {
+      "joined": "Joined: {0}",
+      "viewProfile": "View Profile",
+      "notAvailable": "Not available"
+    },
+    "auth": {
+      "login": "Log In",
+      "register": "Register",
+      "loginPrompt": "Log in to access exclusive features and content.",
+      "loginToComment": "Log in to add a comment"
+    },
+    "labels": {
+      "article": "Article:",
+      "tagName": "Tag Name",
+      "title": "Title",
+      "excerpt": "Excerpt",
+      "content": "Content",
+      "image": "Image",
+      "releaseDate": "Release Date"
+    },
+    "messages": {
+      "deleteConfirmTitle": "Are you sure you want to delete?",
+      "deleteConfirmText": "This action cannot be undone.",
+      "deleteCancel": "Cancel",
+      "deleteSuccess": "Deleted successfully",
+      "deleteFailed": "Deletion failed",
+      "statusChangeFailed": "Status change failed",
+      "operationFailed": "Operation failed",
+      "reportSuccess": "Reported successfully",
+      "reportFailed": "Reporting failed",
+      "closeConfirmTitle": "Close dialog?",
+      "closeConfirmText": "Adding the article will be canceled. Do you want to continue?",
+      "closeConfirmButton": "Yes, close",
+      "requiredField": "{0} is required",
+      "invalidDateRange": "Release date must be between {0} and {1}",
+      "draftSaved": "Draft saved",
+      "draftSaveFailed": "Failed to save draft",
+      "invalidImage": "Select a valid image"
+    },
+    "sortOptions": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "mostInteresting": "Most interesting"
+    },
+    "created": "Created at:",
+    "deleted": "Deleted at:",
+    "cancelAction": "Cancel action"
+  },
   "articles": {
+    "comments": {
+      "title": "Comments",
+      "yourComment": "Your comment",
+      "commentPlaceholder": "Write your comment...",
+      "characterLimitReached": "Character limit reached!",
+      "replyingTo": "Replying to: {0}",
+      "submitReply": "Submit reply",
+      "addComment": "Add comment",
+      "commentsDisabled": "Commenting on this article is not allowed",
+      "errorLoadingComments": "Failed to load comments: {0}",
+      "commentAdded": "Comment added",
+      "replySubmitted": "Reply submitted",
+      "reactionFailed": "Failed to add reaction",
+      "reportComment": "Report comment",
+      "deleteComment": "Delete",
+      "deleteCommentAdmin": "Delete (admin)",
+      "deletedComment": "[This comment has been deleted]",
+      "bannedUserComment": "[Comment from banned user]",
+      "bannedUser": "Banned user",
+      "banUser": "Ban user",
+      "unbanUser": "Unban user",
+      "banReason": "Ban reason: {0}",
+      "banExpires": "until {0}",
+      "deleteModalTitle": "Delete comment",
+      "deleteReasonPlaceholder": "Reason for deletion...",
+      "banModalTitle": "Ban user",
+      "banReasonPlaceholder": "Reason for ban...",
+      "banReasonPrompt": "Enter the reason for the ban (will be sent to the user):",
+      "banExpirationLabel": "Ban expiration (optional):",
+      "banSuccess": "User banned",
+      "banFailed": "Ban failed",
+      "unbanSuccess": "User unbanned",
+      "unbanFailed": "Unban failed",
+      "likedByAuthor": "Liked by author ({0})",
+      "reportCommentConfirm": "Are you sure you want to report this comment?"
+    },
     "title": "Articles",
+    "addArticle": "Add Article",
     "searchPlaceholder": "Search articles...",
     "readingTime": "{0} min read",
     "noResults": {
@@ -16,23 +125,9 @@
       "actions": "Actions",
       "createdAt": "Created At"
     },
-    "actions": {
-      "view": "View",
-      "edit": "Edit",
-      "tags": "Tags",
-      "delete": "Delete"
-    },
     "status": {
       "published": "Published",
       "draft": "Draft"
-    },
-    "messages": {
-      "deleteConfirmTitle": "Are you sure you want to delete?",
-      "deleteConfirmText": "This action cannot be undone.",
-      "deleteCancel": "Cancel",
-      "deleteSuccess": "Article deleted",
-      "deleteFailed": "Deletion failed",
-      "statusChangeFailed": "Status change failed"
     },
     "pagination": {
       "previous": "Previous",
@@ -48,7 +143,16 @@
       "addTagSuccess": "Tag added",
       "removeTagSuccess": "Tag removed",
       "operationFailed": "Operation failed",
-      "addCustomTagFailed": "Adding custom tag failed"
+      "addCustomTagFailed": "Adding custom tag failed",
+      "manageTags": "Manage Tags",
+      "searchPlaceholder": "Search tags...",
+      "noTagsFound": "No tags found",
+      "deleteConfirmText": "This will delete the tag \"{0}\".",
+      "createSuccess": "Tag created successfully",
+      "createFailed": "Failed to create tag",
+      "updateSuccess": "Tag updated successfully",
+      "updateFailed": "Failed to update tag",
+      "noTagsSelected": "No tags selected"
     },
     "statusCell": {
       "scheduledTooltip": "Scheduled for: {0}"
@@ -76,20 +180,12 @@
         "title": "Keywords",
         "description": "Prominent topics or terms to appear more frequently in outputs. Also used for SEO.",
         "example": "E.g., 'Unreal Engine, AI in games, RPG, player freedom'."
-      },
-      "closeButton": "Close"
+      }
     },
     "userMenu": {
-      "profileImageAlt": "Profile Picture",
-      "companyLogoAlt": "Company Logo",
       "noBio": "No bio",
       "adminIn": "Administrator in: {0}",
       "noClientAssigned": "Not assigned",
-      "joined": "Joined: {0}",
-      "viewProfile": "View Profile",
-      "login": "Log In",
-      "loginPrompt": "Log in to access exclusive features and content.",
-      "register": "Register",
       "userDataError": "Error loading user data",
       "admin": "Admin",
       "superadmin": "Superadmin"
@@ -106,10 +202,8 @@
     },
     "articleCard": {
       "imageAlt": "Article Preview",
-      "readMore": "Read More",
       "commentsAndLikesTooltip": "Comments and Likes",
-      "noAuthor": "Not Specified",
-      "authorAvatarAlt": "Author Avatar {0}"
+      "noAuthor": "Not Specified"
     },
     "poll": {
       "defaultQuestion": "Enter a question",
@@ -124,10 +218,10 @@
       "following": "Following",
       "followers": "Followers",
       "likedArticles": "Liked Articles",
-      "comments": "Comments",
       "likes": "Likes",
       "email": "Email",
       "username": "Username",
+      "lastLogin": "Last login: {0}",
       "bio": "Bio",
       "notifications": "Notifications",
       "webNotifications": "Web Notifications",
@@ -139,13 +233,41 @@
       "registrationDate": "Registration Date",
       "saveChanges": "Save Changes",
       "messages": {
-        "avatarUploadSuccess": "Avatar uploaded",
-        "avatarUploadError": "Upload failed",
         "profileUpdateSuccess": "Profile updated",
         "profileUpdateError": "Update failed",
         "notificationsUpdateSuccess": "Notification settings saved",
         "notificationsUpdateError": "Failed to save notifications"
       }
+    },
+    "activity": {
+      "tabs": {
+        "likedArticles": "Liked Articles",
+        "comments": "My Comments"
+      }
+    },
+    "editor": {
+      "modes": {
+        "manual": "Manual Writing",
+        "ai": "AI Generation"
+      },
+      "ai": {
+        "customPromptPlaceholder": "Enter a prompt for AI article generation...",
+        "notAvailable": "AI generation is not available.",
+        "learnMore": "Learn More",
+        "generateButton": "Generate AI Content"
+      },
+      "drafts": {
+        "loadDrafts": "Load Drafts",
+        "selectDraftTitle": "Select Draft",
+        "selectDraftPlaceholder": "Select a draft",
+        "continueDraftPrompt": "Continue editing draft from {0}?",
+        "noDraftsFound": "No drafts found"
+      },
+      "releaseDateNote": "Used to set the article's publication date and time. Leave empty for manual release.",
+      "createSuccess": "Article created successfully",
+      "createFailed": "Failed to create article",
+      "aiContentGenerated": "AI content generated successfully",
+      "aiContentFailed": "Failed to generate AI content"
     }
   }
 }
