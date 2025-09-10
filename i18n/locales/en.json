@@ -114,6 +114,7 @@
     "poll": {
       "defaultQuestion": "Enter a question",
       "defaultOption": "Option 1",
+      "option": "Option {index}",
       "questionPlaceholder": "Enter a question",
       "optionPlaceholder": "Option",
       "addOption": "Add option"

@@ -114,6 +114,7 @@
     "poll": {
       "defaultQuestion": "Zadejte otázku",
       "defaultOption": "Možnost 1",
+      "option": "Možnost {index}",
       "questionPlaceholder": "Zadejte otázku",
       "optionPlaceholder": "Možnost",
       "addOption": "Přidat možnost"

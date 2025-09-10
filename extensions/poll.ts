@@ -10,6 +10,8 @@ export default Node.create({
   addAttributes() {
     return {
       id: { default: crypto.randomUUID() },
+      question: { default: 'Q1' },
+      options: { default: ['A1'] },
     }
   },
   parseHTML() {
@@ -21,25 +23,25 @@ export default Node.create({
           try {
             options = JSON.parse(elm.getAttribute('data-options') || '[]')
           } catch {
-            options = ['Možnost 1']
+            options = ['A1']
           }
           return {
             id: elm.getAttribute('data-id') || crypto.randomUUID(),
-            question: elm.getAttribute('data-question') || 'Zadej otázku',
-            options: options.length ? options : ['Možnost 1'],
+            question: elm.getAttribute('data-question') || 'Q1',
+            options: options.length ? options : ['A1'],
           }
         },
       },
     ]
   },
   renderHTML({ HTMLAttributes }) {
-    const options = HTMLAttributes.options?.length ? HTMLAttributes.options : ['Možnost 1']
+    const options = HTMLAttributes.options?.length ? HTMLAttributes.options : ['A1']
     return [
       'div',
       {
         'data-type': 'poll',
         'data-id': HTMLAttributes.id || crypto.randomUUID(),
-        'data-question': HTMLAttributes.question?.trim() || 'Zadej otázku',
+        'data-question': HTMLAttributes.question?.trim() || 'Q1',
         'data-options': JSON.stringify(options),
       },
     ]

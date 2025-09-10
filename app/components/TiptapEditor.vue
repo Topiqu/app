@@ -305,7 +305,11 @@ const insertPoll = () =>
     .focus()
     .insertContent({
       type: 'poll',
-      attrs: { id: crypto.randomUUID(), question: 'Zadej otázku', options: ['Možnost 1', 'Možnost 2'] },
+      attrs: {
+        id: crypto.randomUUID(),
+        question: $t('articles.poll.defaultQuestion'),
+        options: [$t('articles.poll.option', { index: 1 }), $t('articles.poll.option', { index: 2 })],
+      },
     })
     .run()
 
@@ -347,7 +351,7 @@ const validateContent = (html: string) => {
 
   doc.querySelectorAll('div[data-type="poll"]').forEach((poll) => {
     const rawQuestion = poll.getAttribute('data-question') ?? ''
-    const normalizedQuestion = String(rawQuestion).trim() || 'Zadej otázku'
+    const normalizedQuestion = String(rawQuestion).trim() || $t('articles.poll.defaultQuestion')
     if (normalizedQuestion !== rawQuestion) modified = true
 
     const rawOptions = poll.getAttribute('data-options')
@@ -363,11 +367,11 @@ const validateContent = (html: string) => {
     const before = JSON.stringify(options)
     options =
       options.length > 0
-        ? options.map((opt, i) => {
+        ? options.map((opt) => {
             const s = String(opt ?? '').trim()
-            return s || `Možnost ${i + 1}`
+            return s || $t('articles.poll.defaultOption')
           })
-        : ['Možnost 1']
+        : [$t('articles.poll.defaultOption')]
     const after = JSON.stringify(options)
     if (after !== before) modified = true
 
