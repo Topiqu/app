@@ -56,7 +56,7 @@
         class="px-5 py-2.5 rounded-xl text-sm font-medium transition hover:scale-105 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 shadow-sm"
         @click="close"
       >
-        {{ $t('articles.preferencesExplanation.closeButton') }}
+        {{ $t('common.close') }}
       </button>
     </template>
   </Modal>

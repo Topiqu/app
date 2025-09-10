@@ -187,7 +187,7 @@ const saveEdit = async () => {
     }
   } catch (error: any) {
     toast.error({
-      message: error?.data?.message || error.message || 'Nepodařilo se aktualizovat klienta',
+      message: error?.data?.message || error.data?.message || 'Nepodařilo se aktualizovat klienta',
     })
   }
 }

@@ -41,7 +41,7 @@
     </template>
 
     <template #footer="{ close }">
-      <Button size="lg" @click="close">{{ $t('articles.tags.closeButton') }}</Button>
+      <Button size="lg" @click="close">{{ $t('common.close') }}</Button>
     </template>
   </Modal>
 </template>
