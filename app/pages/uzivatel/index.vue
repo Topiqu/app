@@ -47,7 +47,7 @@
               @click="activeTab = 'comments'"
             >
               <Icon name="mdi:comment-multiple-outline" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.profile.comments') }}</p>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.comments.title') }}</p>
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.commentsCount ?? 0 }}</p>
             </div>
             <div
