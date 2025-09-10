@@ -1,0 +1,46 @@
+<template>
+  <div>
+    <NuxtImg
+      v-if="url"
+      :src="url"
+      :alt="name + ' ' + $t('articles.userMenu.profileImageAlt')"
+      :class="[
+        sizeClasses,
+        'rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-200 hover:ring-gray-400 dark:hover:ring-gray-500',
+      ]"
+    />
+    <div
+      v-else
+      :class="[
+        sizeClasses,
+        'flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 font-medium uppercase transition-all duration-200',
+      ]"
+    >
+      <span v-if="initial">{{ initial }}</span>
+      <Icon v-else name="mdi:account-circle-outline" class="w-2/3 h-2/3 opacity-70" />
+    </div>
+  </div>
+</template>
+
+<script lang="ts" setup>
+const props = defineProps<{
+  url?: string | null
+  size?: 'mn' | 'sm' | 'md' | 'lg'
+  name?: string | null
+}>()
+
+const sizeClasses = computed(() => {
+  switch (props.size) {
+    case 'mn':
+      return 'w-5 h-5 sm:w-6 sm:h-6 text-[10px] sm:text-xs'
+    case 'sm':
+      return 'w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm'
+    case 'lg':
+      return 'w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-xl'
+    default:
+      return 'w-10 h-10 sm:w-11 sm:h-11 text-sm sm:text-base'
+  }
+})
+
+const initial = computed(() => props.name?.charAt(0).toUpperCase() ?? null)
+</script>
