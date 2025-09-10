@@ -111,6 +111,7 @@ export default defineNuxtConfig({
         file: 'cs.json',
       },
     ],
+    vueI18n: './i18n/i18n.config.ts',
     defaultLocale: 'en',
     strategy: 'no_prefix',
     detectBrowserLanguage: {
