@@ -10,7 +10,7 @@
         <NuxtImg
           v-if="userData?.avatarUrl"
           :src="userData.avatarUrl"
-          alt="Profilový obrázek"
+          :alt="$t('articles.userMenu.profileImageAlt')"
           class="w-10 h-10 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-500 transition-all duration-200"
           width="36"
           height="36"
@@ -45,7 +45,7 @@
                 "
                 class="w-3.5 h-3.5"
               />
-              {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
+              {{ userData.role === 'admin' ? $t('articles.userMenu.admin') : $t('articles.userMenu.superadmin') }}
             </span>
           </div>
           <span class="text-left text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -71,7 +71,7 @@
             <NuxtImg
               v-if="userData?.avatarUrl"
               :src="userData.avatarUrl"
-              alt="Profilový obrázek"
+              :alt="$t('articles.userMenu.profileImageAlt')"
               class="w-16 h-16 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-500 transition-all duration-200"
               width="64"
               height="64"
@@ -106,7 +106,7 @@
                     "
                     class="w-3.5 h-3.5"
                   />
-                  {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
+                  {{ userData.role === 'admin' ? $t('articles.userMenu.admin') : $t('articles.userMenu.superadmin') }}
                 </span>
               </div>
               <span class="text-xs text-gray-500 dark:text-gray-400 break-all">
@@ -116,15 +116,15 @@
             <AuthLogout v-if="auth" />
           </div>
           <div class="mt-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-            <p class="whitespace-pre-wrap break-words">{{ userData?.bio || 'Žádné bio' }}</p>
+            <p class="whitespace-pre-wrap break-words">{{ userData?.bio || $t('articles.userMenu.noBio') }}</p>
           </div>
           <div
             class="mt-4 pt-3 text-xs text-gray-500 dark:text-gray-400 space-y-2 border-t border-gray-200 dark:border-gray-700"
           >
             <p v-if="userData?.role === 'admin'">
-              Administrátor ve: <span class="font-medium">{{ clientData?.name || 'Není přiřazen' }}</span>
+              {{ $t('articles.userMenu.adminIn', [clientData?.name || $t('articles.userMenu.noClientAssigned')]) }}
             </p>
-            <p>Přidal(a) se: {{ formatDate(userData?.createdAt) }}</p>
+            <p>{{ $t('articles.userMenu.joined', [formatDate(userData?.createdAt)]) }}</p>
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-1">
                 <Icon name="mdi:thumb-up-outline" class="w-4 h-4 text-green-500" />
@@ -143,7 +143,7 @@
               to="/uzivatel"
               class="inline-block text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
             >
-              Zobrazit profil
+              {{ $t('articles.userMenu.viewProfile') }}
             </NuxtLink>
           </div>
         </div>
@@ -160,7 +160,9 @@
           name="mdi:account-circle-outline"
           class="w-9 h-9 text-gray-400 dark:text-gray-600 transition-colors duration-200"
         />
-        <span class="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">Přihlásit se</span>
+        <span class="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">
+          {{ $t('articles.userMenu.login') }}
+        </span>
       </button>
       <Transition
         enterActiveClass="transition ease-out duration-200"
@@ -179,7 +181,7 @@
           <div class="flex flex-col gap-4">
             <NuxtImg
               src="/app-logo.png"
-              alt="Logo firmy"
+              :alt="$t('articles.userMenu.companyLogoAlt')"
               class="w-24 h-24 mx-auto object-contain"
               width="96"
               height="96"
@@ -188,7 +190,7 @@
               <div class="flex items-center gap-4">
                 <Icon name="mdi:account-circle-outline" class="w-16 h-16 text-gray-400 dark:text-gray-600" />
                 <p class="text-sm text-gray-700 dark:text-gray-300">
-                  Přihlaste se a získejte přístup k exkluzivním funkcím a obsahu.
+                  {{ $t('articles.userMenu.loginPrompt') }}
                 </p>
               </div>
               <div class="flex flex-col gap-2">
@@ -196,13 +198,13 @@
                   to="/autorizace"
                   class="block w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center transition"
                 >
-                  Přihlásit se
+                  {{ $t('articles.userMenu.login') }}
                 </NuxtLink>
                 <NuxtLink
                   to="/autorizace?mode=register"
                   class="block w-full py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 text-center text-sm font-semibold transition"
                 >
-                  Registrovat
+                  {{ $t('articles.userMenu.register') }}
                 </NuxtLink>
               </div>
             </div>
@@ -275,7 +277,7 @@ watch(
         clientData.value = clientResponse
       } catch (e: unknown) {
         const error = e as { data?: { message?: string } }
-        toast.error({ message: error.data?.message || 'Chyba při načítání dat uživatele' })
+        toast.error({ message: error.data?.message || $t('articles.userMenu.userDataError') })
       }
     } else {
       userData.value = null

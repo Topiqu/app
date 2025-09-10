@@ -37,7 +37,7 @@
             'w-full h-48 aspect-[3/2] object-cover rounded-lg mb-4 hover:blur-[1px] transition duration-500':
               !isFeatured,
           }"
-          :alt="article?.title || 'Náhled článku'"
+          :alt="$t('articles.articleCard.imageAlt')"
         />
         <div
           v-else
@@ -97,7 +97,7 @@
               !isFeatured,
           }"
         >
-          Číst dále
+          {{ $t('articles.articleCard.readMore') }}
         </NuxtLink>
         <div
           :class="{ 'mt-6 text-base': isFeatured, 'mt-4 text-sm': !isFeatured }"
@@ -111,27 +111,27 @@
               {{ formatDate(new Date(article.createdAt)) }}
             </span>
             <span class="text-gray-400">·</span>
-            {{ article?.readingTime ?? 5 }} min čtení
+            {{ $t('articles.readingTime', [article?.readingTime ?? 5]) }}
           </span>
-          <span v-tippy="'Komentáře a lajky'" class="inline-flex items-center gap-1">
+          <span v-tippy="$t('articles.articleCard.commentsAndLikesTooltip')" class="inline-flex items-center gap-1">
             <MessageCircle
               :class="{ 'w-5 h-5': isFeatured, 'w-4 h-4': !isFeatured }"
               class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
-              aria-label="Počet komentářů"
+              :aria-label="$t('articles.articleCard.commentsAndLikesTooltip')"
             />
             {{ article?._count?.comments ?? 0 }}
             <span class="px-1 text-gray-400">·</span>
             <Heart
               :class="{ 'w-5 h-5': isFeatured, 'w-4 h-4': !isFeatured }"
               class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
-              aria-label="Počet lajků"
+              :aria-label="$t('articles.articleCard.commentsAndLikesTooltip')"
             />
             {{ article?._count?.reactions ?? 0 }}
             <span class="px-1 text-gray-400">·</span>
             <Eye
               :class="{ 'w-5 h-5': isFeatured, 'w-4 h-4': !isFeatured }"
               class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
-              aria-label="Počet zobrazení"
+              :aria-label="$t('articles.articleCard.commentsAndLikesTooltip')"
             />
             {{ article?.views ?? 0 }}
           </span>
@@ -151,13 +151,17 @@
               :src="article?.user.avatarUrl"
               :class="{ 'w-16 h-16': isFeatured, 'w-7 h-7': !isFeatured }"
               class="rounded-full object-cover border border-gray-200 dark:border-gray-700"
-              :alt="`Avatar autora ${article?.user?.username || 'Není uveden'}`"
+              :alt="
+                $t('articles.articleCard.authorAvatarAlt', [
+                  article?.user?.username || $t('articles.articleCard.noAuthor'),
+                ])
+              "
             />
             <span
               :class="{ 'text-lg font-semibold': isFeatured, 'font-medium': !isFeatured }"
               class="text-blue-600 dark:text-blue-400 transition duration-200"
             >
-              {{ article?.user?.username ?? 'Není uveden' }}
+              {{ article?.user?.username ?? $t('articles.articleCard.noAuthor') }}
             </span>
           </NuxtLink>
         </div>

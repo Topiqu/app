@@ -1,4 +1,5 @@
-import { cs as locale } from 'date-fns/locale'
+import { useI18n } from 'vue-i18n'
+import { enUS, cs } from 'date-fns/locale'
 import {
   format,
   differenceInMinutes,
@@ -9,7 +10,12 @@ import {
 } from 'date-fns'
 
 export const formatDate = (d?: string | Date) => {
-  if (!d) return 'Nikdy'
+  const { t, locale } = useI18n()
+  const dateLocale = locale.value === 'en' ? enUS : cs
+  const dateFormat = locale.value === 'en' ? 'MMM d, HH:mm' : 'd. MMMM, HH:mm'
+  const fullDateFormat = locale.value === 'en' ? 'MMM d, yyyy, HH:mm' : 'd. MMMM yyyy, HH:mm'
+
+  if (!d) return t('articles.dateFormats.justNow')
 
   const date = new Date(d)
   const now = new Date()
@@ -20,20 +26,20 @@ export const formatDate = (d?: string | Date) => {
   const weeksDiff = differenceInWeeks(now, date)
 
   if (minutesDiff == 0 || minutesDiff == 1) {
-    return 'Právě teď'
+    return t('articles.dateFormats.justNow')
   } else if (minutesDiff < 60) {
-    return `Před ${minutesDiff} minutami`
+    return t('articles.dateFormats.minutesAgo', [minutesDiff])
   } else if (hoursDiff < 24) {
-    return `Před ${hoursDiff} hodinami`
+    return t('articles.dateFormats.hoursAgo', [hoursDiff])
   } else if (daysDiff === 1) {
-    return `Včera, ${format(date, 'HH:mm', { locale })}`
+    return t('articles.dateFormats.yesterday', [format(date, 'HH:mm', { locale: dateLocale })])
   } else if (daysDiff < 7) {
-    return `Před ${daysDiff} dny`
+    return t('articles.dateFormats.daysAgo', [daysDiff])
   } else if (weeksDiff <= 2) {
-    return `Před týdnem`
+    return t('articles.dateFormats.weekAgo')
   } else if (isThisYear(date)) {
-    return format(date, 'd. MMMM, HH:mm')
+    return format(date, dateFormat, { locale: dateLocale })
   } else {
-    return format(date, 'd. MMMM yyyy, HH:mm', { locale })
+    return format(date, fullDateFormat, { locale: dateLocale })
   }
 }

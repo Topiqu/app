@@ -162,6 +162,7 @@
                     <p v-if="avatar.success" class="text-sm text-green-600">{{ avatar.success }}</p>
                   </div>
                 </div>
+                <LangSwitch />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Datum registrace</label>
