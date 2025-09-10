@@ -64,14 +64,14 @@ import { ChevronDown } from 'lucide-vue-next'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 const { locale, setLocale } = useI18n()
 
-const availableLocales = [
+const availableLocales: Array<{ code: 'cs' | 'en'; name: string; flag: string; note: string }> = [
   { code: 'cs', name: 'Čeština', flag: '🇨🇿', note: 'Czech' },
   { code: 'en', name: 'English', flag: '🇬🇧', note: 'English' },
 ]
 
 const current = computed(() => availableLocales.find((l) => l.code === locale.value) ?? availableLocales[0])
-const currentFlag = computed(() => current.value.flag)
-const currentCode = computed(() => current.value.code.toUpperCase())
+const currentFlag = computed(() => current.value?.flag)
+const currentCode = computed(() => current.value?.code.toUpperCase())
 </script>
 
 <style scoped>
