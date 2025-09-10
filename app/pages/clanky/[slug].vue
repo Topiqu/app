@@ -47,13 +47,7 @@
         {{ data.title }}
       </h1>
       <div class="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-        <NuxtImg
-          v-if="data.user.avatarUrl"
-          :src="data.user.avatarUrl"
-          :alt="`Avatar autora: ${data.user.username}`"
-          class="w-12 h-12 rounded-full object-cover"
-        />
-        <Icon v-else name="mdi:account" class="w-12 h-12 text-blue-500 rounded-full bg-gray-100 p-2 dark:bg-gray-800" />
+        <UserPicture :url="data.user?.avatarUrl" :size="'md'" :name="data.user.username" />
         <div class="flex flex-col">
           <div class="flex items-center gap-2">
             <NuxtLink

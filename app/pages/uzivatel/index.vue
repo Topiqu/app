@@ -148,19 +148,7 @@
                 </label>
                 <div class="flex flex-col sm:flex-row items-center gap-4 mt-2">
                   <div class="cursor-pointer" @click="openFileDialog">
-                    <NuxtImg
-                      v-if="profileForm.avatarUrl"
-                      :src="profileForm.avatarUrl"
-                      :alt="$t('articles.userMenu.profileImageAlt')"
-                      class="w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-indigo-500 dark:ring-indigo-400 shadow-lg object-cover transition-transform hover:scale-105"
-                      width="128"
-                      height="128"
-                    />
-                    <Icon
-                      v-else
-                      name="mdi:account-circle-outline"
-                      class="w-28 h-28 sm:w-32 sm:h-32 text-gray-400 dark:text-gray-600"
-                    />
+                    <UserPicture :url="userData?.avatarUrl" :size="'hg'" :name="userData?.username" />
                   </div>
                   <div class="flex flex-col gap-2 w-full sm:w-auto">
                     <input

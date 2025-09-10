@@ -3,7 +3,7 @@
     <NuxtImg
       v-if="url"
       :src="url"
-      :alt="name + ' ' + $t('articles.userMenu.profileImageAlt')"
+      :alt="(name || '') + ' ' + $t('articles.userMenu.profileImageAlt')"
       :class="[
         sizeClasses,
         'rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-200 hover:ring-gray-400 dark:hover:ring-gray-500',
@@ -13,7 +13,8 @@
       v-else
       :class="[
         sizeClasses,
-        'flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 font-medium uppercase transition-all duration-200',
+        'flex items-center justify-center rounded-full font-medium uppercase transition-all duration-200',
+        'bg-gray-200 !dark:bg-gray-700 text-gray-700 dark:text-gray-200',
       ]"
     >
       <span v-if="initial">{{ initial }}</span>
@@ -25,7 +26,7 @@
 <script lang="ts" setup>
 const props = defineProps<{
   url?: string | null
-  size?: 'mn' | 'sm' | 'md' | 'lg'
+  size?: 'mn' | 'sm' | 'md' | 'lg' | 'hg'
   name?: string | null
 }>()
 
@@ -37,6 +38,8 @@ const sizeClasses = computed(() => {
       return 'w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm'
     case 'lg':
       return 'w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-xl'
+    case 'hg':
+      return 'w-16 h-16 sm:w-20 sm:h-20 text-2xl sm:text-3xl'
     default:
       return 'w-10 h-10 sm:w-11 sm:h-11 text-sm sm:text-base'
   }

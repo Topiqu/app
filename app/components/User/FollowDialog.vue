@@ -19,17 +19,7 @@
             :key="u.id"
             class="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-neutral-900"
           >
-            <NuxtImg
-              v-if="u.avatarUrl"
-              :src="u.avatarUrl"
-              :alt="`Avatar ${u.username}`"
-              format="webp"
-              quality="80"
-              width="40"
-              height="40"
-              class="w-10 h-10 rounded-full object-cover"
-            />
-            <Icon v-else name="mdi:account-circle-outline" class="w-10 h-10 text-gray-400 dark:text-gray-600" />
+            <UserPicture :url="u?.avatarUrl" :name="u?.username" />
             <div>
               <NuxtLink
                 :to="`/autor/${u.username}`"
