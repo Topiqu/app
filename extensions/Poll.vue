@@ -2,7 +2,7 @@
   <node-view-wrapper class="poll-node" contenteditable="false">
     <input
       v-model="localQuestion"
-      placeholder="Zadej otázku"
+      :placeholder="$t('articles.poll.questionPlaceholder')"
       class="question"
       @input="syncQuestion"
       @click.stop
@@ -12,7 +12,7 @@
     <div v-for="(opt, i) in localOptions" :key="i" class="poll-option">
       <input
         v-model="localOptions[i]"
-        placeholder="Možnost"
+        :placeholder="$t('articles.poll.optionPlaceholder')"
         @input="syncOptions"
         @click.stop
         @mousedown.stop
@@ -24,7 +24,7 @@
     </div>
     <button class="add-btn" @click.stop="add">
       <Icon name="mdi:plus" />
-      Přidat možnost
+      {{ $t('articles.poll.addOption') }}
     </button>
   </node-view-wrapper>
 </template>
@@ -35,21 +35,21 @@ import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
 const props = defineProps(nodeViewProps)
 const { node, updateAttributes } = props
 
-const localQuestion = ref(node.attrs.question || 'Zadej otázku')
-const localOptions = ref([...(node.attrs.options?.length ? node.attrs.options : ['Možnost 1'])])
+const localQuestion = ref(node.attrs.question || $t('articles.poll.defaultQuestion'))
+const localOptions = ref([...(node.attrs.options?.length ? node.attrs.options : [$t('articles.poll.defaultOption')])])
 const localId = ref(node.attrs.id || crypto.randomUUID())
 
 const syncQuestion = () => {
-  const question = localQuestion.value.trim() || 'Zadej otázku'
-  const validOptions = localOptions.value.length ? localOptions.value : ['Možnost 1']
+  const question = localQuestion.value.trim() || $t('articles.poll.defaultQuestion')
+  const validOptions = localOptions.value.length ? localOptions.value : [$t('articles.poll.defaultOption')]
   updateAttributes({ question, id: localId.value, options: validOptions })
 }
 
 const syncOptions = () => {
-  const validOptions = localOptions.value.length ? localOptions.value : ['Možnost 1']
+  const validOptions = localOptions.value.length ? localOptions.value : [$t('articles.poll.defaultOption')]
   localOptions.value = validOptions
   updateAttributes({
-    question: localQuestion.value.trim() || 'Zadej otázku',
+    question: localQuestion.value.trim() || $t('articles.poll.defaultQuestion'),
     id: localId.value,
     options: validOptions,
   })
@@ -69,7 +69,7 @@ const rm = (i) => {
 watch(
   () => node.attrs.question,
   (newVal) => {
-    localQuestion.value = newVal || 'Zadej otázku'
+    localQuestion.value = newVal || $t('articles.poll.defaultQuestion')
   },
 )
 

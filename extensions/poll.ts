@@ -10,8 +10,6 @@ export default Node.create({
   addAttributes() {
     return {
       id: { default: crypto.randomUUID() },
-      question: { default: 'Zadej otázku' },
-      options: { default: ['Možnost 1'] },
     }
   },
   parseHTML() {
