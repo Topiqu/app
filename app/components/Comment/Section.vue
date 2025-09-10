@@ -53,27 +53,26 @@
             <span
               >Odpovídáte na: <strong>{{ replyingTo.user?.username || 'Není k dispozici' }}</strong></span
             >
-            <button
-              type="button"
-              class="ml-auto text-red-500 hover:text-red-600 bg-white border border-red-100 hover:border-red-300 rounded-full p-1.5 transition duration-150 focus:outline-none focus:ring-2 focus:ring-red-300 cursor-pointer"
+            <Button
+              icon="mdi:close"
+              size="sm"
+              variant="danger"
               title="Zrušit odpověď"
+              class="!rounded-full ml-auto"
               @click="replyingTo = null"
-            >
-              <Icon name="mdi:close" class="w-4 h-4" />
-            </button>
+            />
           </div>
           <div class="text-sm text-gray-600 italic bg-white p-2 rounded-lg border border-gray-100">
             {{ replyingTo.content }}
           </div>
         </div>
-        <button
+        <Button
           type="submit"
-          class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all duration-150 flex items-center gap-2 shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          :loading="isSubmitting"
           :disabled="isSubmitting || !!(replyingTo && replyingTo.deletedAt)"
         >
-          <Icon v-if="isSubmitting" name="mdi:loading" class="w-4 h-4 animate-spin" />
           {{ replyingTo ? 'Odeslat odpověď' : 'Přidat komentář' }}
-        </button>
+        </Button>
       </form>
     </div>
     <p v-else-if="session?.user && !props.allowComments" class="text-gray-600 mb-14 text-base text-center">
