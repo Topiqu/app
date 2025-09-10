@@ -17,7 +17,7 @@
           class="w-4 h-4"
           :class="activeTab === tab.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'"
         />
-        {{ tab.label }}
+        {{ $t(tab.label) }}
         <span
           v-if="activeTab === tab.id"
           class="absolute bottom-0 left-0 w-full h-[2px] bg-indigo-600 dark:bg-indigo-400 rounded-t"
@@ -26,21 +26,23 @@
     </div>
 
     <div class="mt-6 space-y-4">
-      <div v-if="pending" class="text-center text-gray-500 dark:text-gray-400 py-10 text-sm">Načítání...</div>
+      <div v-if="pending" class="text-center text-gray-500 dark:text-gray-400 py-10 text-sm">
+        {{ $t('common.loading') }}
+      </div>
 
       <div
         v-else-if="error"
         class="text-center p-5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
       >
         <p class="text-red-600 dark:text-red-400 font-medium">
-          {{ error?.message || 'Chyba při načítání' }}
+          {{ error?.message || $t('common.error') }}
         </p>
       </div>
 
       <template v-else>
         <div v-if="activeTab === 'likedArticles'">
           <div v-if="!profile.likedArticles?.length" class="text-center text-gray-500 dark:text-gray-400 py-10 text-sm">
-            Žádné lajknuté články.
+            {{ $t('common.noItems') }}
           </div>
           <div v-else class="grid gap-4">
             <div
@@ -51,7 +53,7 @@
               <NuxtImg
                 v-if="article.imageUrl"
                 :src="article.imageUrl"
-                :alt="`Obrázek článku ${article.title}`"
+                :alt="$t('articles.articleCard.imageAlt', [article.title])"
                 format="webp"
                 quality="80"
                 width="48"
@@ -70,7 +72,7 @@
                   <NuxtImg
                     v-if="article.authorPfp"
                     :src="article.authorPfp"
-                    :alt="`Profilový obrázek ${article.authorUsername}`"
+                    :alt="$t('common.avatar.alt.author', [article.authorUsername])"
                     class="w-5 h-5 rounded-full object-cover ring-1 ring-gray-200 dark:ring-neutral-700"
                     width="20"
                     height="20"
@@ -79,7 +81,7 @@
                   <span>{{ article.authorUsername }}</span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Publikováno: {{ formatDate(article.createdAt || new Date().toISOString()) }}
+                  {{ $t('articles.status.published') }} {{ formatDate(article.createdAt || new Date().toISOString()) }}
                 </p>
                 <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                   <div class="flex items-center gap-1">
@@ -107,7 +109,7 @@
 
         <div v-if="activeTab === 'comments'">
           <div v-if="!profile.comments?.length" class="text-center text-gray-500 dark:text-gray-400 py-10 text-sm">
-            Žádné komentáře.
+            {{ $t('common.noItems') }}
           </div>
           <div v-else class="grid gap-4">
             <div
@@ -116,15 +118,7 @@
               class="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 hover:shadow-md transition-all"
             >
               <div class="flex items-center gap-2 mb-2">
-                <NuxtImg
-                  v-if="comment.authorPfp"
-                  :src="comment.authorPfp"
-                  :alt="`Profilový obrázek ${comment.authorUsername}`"
-                  class="w-8 h-8 rounded-full object-cover ring-1 ring-gray-200 dark:ring-neutral-700"
-                  width="32"
-                  height="32"
-                />
-                <Icon v-else name="mdi:account-circle-outline" class="w-8 h-8 text-gray-400 dark:text-gray-600" />
+                <UserPicture :name="comment.authorUsername" :url="comment.authorPfp" />
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ comment.authorUsername }}</span>
               </div>
               <p class="text-sm text-gray-700 dark:text-gray-300 mb-1">{{ comment.content }}</p>
@@ -133,10 +127,10 @@
                 class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs flex items-center gap-1"
               >
                 <Icon name="mdi:file-document-outline" class="w-3.5 h-3.5" />
-                Článek: {{ comment.articleTitle }}
+                {{ $t('common.labels.article') }} {{ comment.articleTitle }}
               </NuxtLink>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Vytvořeno: {{ formatDate(comment.createdAt) }}
+                {{ $t('common.created') }} {{ formatDate(comment.createdAt) }}
               </p>
               <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1 items-center">
                 <div class="flex items-center gap-1">
@@ -205,7 +199,7 @@ defineEmits<{
 }>()
 
 const tabs = [
-  { id: 'likedArticles', label: 'Lajknuté články', icon: 'mdi:heart-outline' },
-  { id: 'comments', label: 'Moje komentáře', icon: 'mdi:comment-outline' },
+  { id: 'likedArticles', label: 'articles.activity.tabs.likedArticles', icon: 'mdi:heart-outline' },
+  { id: 'comments', label: 'articles.activity.tabs.comments', icon: 'mdi:comment-outline' },
 ] as const
 </script>
