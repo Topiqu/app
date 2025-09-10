@@ -118,6 +118,34 @@
       "questionPlaceholder": "Enter a question",
       "optionPlaceholder": "Option",
       "addOption": "Add option"
+    },
+    "profile": {
+      "title": "My Profile",
+      "following": "Following",
+      "followers": "Followers",
+      "likedArticles": "Liked Articles",
+      "comments": "Comments",
+      "likes": "Likes",
+      "email": "Email",
+      "username": "Username",
+      "bio": "Bio",
+      "notifications": "Notifications",
+      "webNotifications": "Web Notifications",
+      "webNotificationsDescription": "Send messages directly in the browser",
+      "emailNotifications": "Email Notifications",
+      "emailNotificationsDescription": "Receive messages via email",
+      "avatar": "Avatar",
+      "uploadAvatar": "Upload Avatar",
+      "registrationDate": "Registration Date",
+      "saveChanges": "Save Changes",
+      "messages": {
+        "avatarUploadSuccess": "Avatar uploaded",
+        "avatarUploadError": "Upload failed",
+        "profileUpdateSuccess": "Profile updated",
+        "profileUpdateError": "Update failed",
+        "notificationsUpdateSuccess": "Notification settings saved",
+        "notificationsUpdateError": "Failed to save notifications"
+      }
     }
   }
 }
