@@ -4,7 +4,7 @@
       <NuxtImg
         :src="previewUrl"
         class="max-w-xs max-h-40 object-contain rounded-xl shadow-md border border-gray-200 dark:border-gray-500 transition-all duration-300 hover:scale-105"
-        alt="Náhled obrázku"
+        :alt="$t('articles.articleCard.imageAlt')"
       />
     </div>
 
@@ -26,9 +26,11 @@
           class="w-10 h-10 mb-2 text-gray-500 dark:text-gray-300 transition-all duration-200"
           :class="{ 'text-blue-500 dark:text-blue-400 animate-bounce': isDragging && !disabled }"
         />
-        <span class="font-semibold">Vyber</span> nebo přetáhni obrázek
+        <span class="font-semibold">{{ $t('common.actions.upload') }}</span> {{ $t('common.labels.image') }}
       </div>
-      <Button :disabled="isProcessing || disabled" class="w-full" @click="openFileDialog">Nahrát obrázek</Button>
+      <Button :disabled="isProcessing || disabled" class="w-full" @click="openFileDialog"
+        >{{ $t('common.actions.upload') }} {{ $t('common.labels.image') }}</Button
+      >
     </div>
     <input ref="fileInputRef" type="file" accept="image/*" class="hidden" @change="onFileChange" />
   </div>
@@ -87,7 +89,7 @@ const onDragLeave = () => {
 
 const uploadFile = async (file: File) => {
   if (!file || !file.type.startsWith('image/')) {
-    toast.error({ message: 'Vyberte platný obrázek' })
+    toast.error({ message: $t('common.messages.operationFailed') })
     isProcessing.value = false
     return
   }
@@ -104,7 +106,7 @@ const uploadFile = async (file: File) => {
     })
     emit('upload', { url })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Chyba při nahrávání' })
+    toast.error({ message: $t('common.avatar.uploadError') + e.data?.message })
   } finally {
     if (fileInputRef.value) fileInputRef.value.value = ''
     isProcessing.value = false

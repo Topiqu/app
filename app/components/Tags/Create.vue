@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="open" title="Správa tagů">
+  <Modal v-model="open" :title="$t('articles.tags.manageTags')">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
@@ -7,10 +7,12 @@
     <template #content>
       <div class="flex flex-col gap-6">
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Název tagu</span>
+          <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">{{
+            $t('common.labels.tagName')
+          }}</span>
           <input
             v-model="newTag.name"
-            placeholder="Název tagu"
+            :placeholder="$t('common.labels.tagName')"
             :class="[
               'p-4 rounded-xl text-base bg-gray-50 border focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500',
               isDuplicate
@@ -25,7 +27,7 @@
           :disabled="isDuplicate"
           @click="createTag"
         >
-          Přidat tag
+          {{ $t('articles.tags.addButton') }}
         </button>
       </div>
 
@@ -37,7 +39,7 @@
           />
           <input
             v-model="searchQuery"
-            placeholder="Vyhledat tag..."
+            :placeholder="$t('articles.tags.searchPlaceholder')"
             class="pl-12 pr-4 py-3 rounded-full text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500"
           />
         </div>
@@ -73,7 +75,7 @@
             </button>
           </div>
         </div>
-        <p v-else class="text-sm text-gray-600 dark:text-gray-400">Žádné tagy nenalezeny.</p>
+        <p v-else class="text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.tags.noTagsFound') }}</p>
       </div>
     </template>
 
@@ -82,7 +84,7 @@
         class="px-6 py-3 rounded-xl text-base font-medium bg-gray-50 hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-sm dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200"
         @click="close"
       >
-        Zavřít
+        {{ $t('common.close') }}
       </button>
     </template>
   </Modal>
@@ -124,20 +126,20 @@ const createTag = async () => {
     })
     newTag = { name: '', slug: '' }
     await refresh()
-    toast.success({ message: 'Tag byl úspěšně vytvořen.' })
+    toast.success({ message: $t('articles.tags.createSuccess') })
   } catch (error: any) {
-    toast.error({ message: `Chyba při vytváření tagu: ${error.data?.message}` })
+    toast.error({ message: $t('articles.tags.createFailed') + error.data?.message })
   }
 }
 
 const confirmDelete = async (name: string) => {
   const result = await Swal.fire({
-    title: `Smazat "${name}"?`,
-    text: `Tímto vymažete štítek "${name}".`,
+    title: $t('common.messages.deleteConfirmTitle'),
+    text: $t('articles.tags.deleteConfirmText', [name]),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Ano, smazat',
-    cancelButtonText: 'Ne',
+    confirmButtonText: $t('common.actions.delete'),
+    cancelButtonText: $t('common.messages.deleteCancel'),
     confirmButtonColor: '#ef4444',
   })
   return result.isConfirmed
@@ -149,9 +151,9 @@ const deleteTag = async (id: string, name: string) => {
   try {
     await $fetch(`/api/tags/${id}`, { method: 'DELETE' })
     await refresh()
-    toast.success({ message: 'Tag byl úspěšně smazán.' })
+    toast.success({ message: $t('common.messages.deleteSuccess') })
   } catch (error: any) {
-    toast.error({ message: `Chyba při mazání tagu: ${error.data?.message}` })
+    toast.error({ message: $t('common.messages.deleteFailed') + error.data?.message })
   }
 }
 
@@ -170,9 +172,9 @@ const updateTag = useDebounceFn(async (tag: any) => {
       body: { name: tag.name, slug: slugify(tag.name, { lower: true, strict: true, trim: true }) },
     })
     await refresh()
-    toast.success({ message: 'Tag byl aktualizován.' })
+    toast.success({ message: $t('articles.tags.updateSuccess') })
   } catch (error: any) {
-    toast.error({ message: `Chyba při aktualizaci tagu: ${error.data?.message}` })
+    toast.error({ message: $t('articles.tags.updateFailed') + error.data?.message })
   }
 }, 600)
 </script>

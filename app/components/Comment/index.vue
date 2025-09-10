@@ -9,8 +9,8 @@
           session?.user && comment.deletedAt === null && !comment.user?.isBanned && session.user.id !== comment.userId
         "
         class="p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none"
-        aria-label="Nahlásit komentář"
-        title="Nahlásit komentář"
+        :aria-label="$t('articles.comments.reportComment')"
+        :title="$t('articles.comments.reportComment')"
         @click="report(comment)"
       >
         <Icon
@@ -27,8 +27,8 @@
           !comment.user?.isBanned
         "
         class="p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none"
-        aria-label="Zabanovat uživatele"
-        title="Zabanovat uživatele"
+        :aria-label="$t('articles.comments.banUser')"
+        :title="$t('articles.comments.banUser')"
         @click="openBanModal(comment)"
       >
         <Icon
@@ -59,34 +59,34 @@
           }"
         />
         <span v-else-if="comment.user?.isBanned" class="font-semibold text-red-500">
-          Zabanovaný uživatel
-          <span v-if="comment.user.banDetails?.reason && session?.user.role == 'admin'"
-            >({{ comment.user.banDetails.reason }})</span
-          >
+          {{ $t('articles.comments.bannedUser') }}
+          <span v-if="comment.user.banDetails?.reason && session?.user.role == 'admin'">
+            ({{ $t('articles.comments.banReason', [comment.user.banDetails.reason]) }})
+          </span>
           <span v-if="comment.user.banDetails?.expiresAt && session?.user.role == 'admin'">
-            do {{ new Date(comment.user.banDetails.expiresAt).toLocaleString() }}
+            {{ $t('articles.comments.banExpires', [new Date(comment.user.banDetails.expiresAt).toLocaleString()]) }}
           </span>
         </span>
-        <span v-else class="font-semibold text-gray-800">Není k dispozici</span>
+        <span v-else class="font-semibold text-gray-800">{{ $t('common.user.notAvailable') }}</span>
       </div>
       <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
         <button
           v-if="session?.user && !isReplying && !comment.user?.isBanned"
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          aria-label="Odpovědět"
+          :aria-label="$t('articles.comments.submitReply')"
           @click="$emit('reply', comment)"
         >
           <Icon name="mdi:reply" class="w-4 h-4 text-gray-600" />
-          <span class="hidden sm:inline">Odpovědět</span>
+          <span class="hidden sm:inline">{{ $t('articles.comments.submitReply') }}</span>
         </button>
         <button
           v-if="session?.user && session.user.id === comment.userId"
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          aria-label="Smazat komentář"
+          :aria-label="$t('articles.comments.deleteComment')"
           @click="$emit('delete', comment, null)"
         >
           <Icon name="mdi:delete" class="w-4 h-4 text-red-500" />
-          <span class="hidden sm:inline">Smazat</span>
+          <span class="hidden sm:inline">{{ $t('articles.comments.deleteComment') }}</span>
         </button>
         <button
           v-else-if="
@@ -96,11 +96,11 @@
             !comment.user?.isBanned
           "
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          aria-label="Smazat komentář (admin)"
+          :aria-label="$t('articles.comments.deleteCommentAdmin')"
           @click="showDeleteModal(comment)"
         >
           <Icon name="mdi:delete" class="w-4 h-4 text-red-500" />
-          <span class="hidden sm:inline">Smazat (admin)</span>
+          <span class="hidden sm:inline">{{ $t('articles.comments.deleteCommentAdmin') }}</span>
         </button>
         <button
           v-if="
@@ -111,24 +111,26 @@
             comment.user?.isBanned
           "
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          aria-label="Odbanovat uživatele"
+          :aria-label="$t('articles.comments.unbanUser')"
           @click="unbanUser(comment)"
         >
           <Icon name="mdi:account-check" class="w-4 h-4 text-green-500" />
-          <span class="hidden sm:inline">Odbanovat</span>
+          <span class="hidden sm:inline">{{ $t('articles.comments.unbanUser') }}</span>
         </button>
       </div>
     </div>
-    <div class="text-xs sm:text-sm text-gray-500 mt-2">{{ formatDate(comment.createdAt) }}</div>
+    <div class="text-xs sm:text-sm text-gray-500 mt-2">
+      {{ $t('common.created') }} {{ formatDate(comment.createdAt) }}
+    </div>
     <p
       class="mt-2 sm:mt-3 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
       :class="{ 'text-gray-400 italic': comment.deletedAt || comment.user?.isBanned }"
     >
       {{
         comment.deletedAt
-          ? '[Tento komentář byl smazán]'
+          ? $t('articles.comments.deletedComment')
           : comment.user?.isBanned
-            ? '[Komentář od zabanovaného uživatele]'
+            ? $t('articles.comments.bannedUserComment')
             : comment.content
       }}
     </p>
@@ -171,7 +173,10 @@
         <LazyEmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="$emit('refresh')" />
         <div
           v-if="comment.isLikedByAuthor"
-          v-tippy="{ content: `Líbí se autorovi (${authorData?.username || 'Autor'})`, placement: 'top' }"
+          v-tippy="{
+            content: $t('articles.comments.likedByAuthor', [authorData?.username || $t('common.user.notAvailable')]),
+            placement: 'top',
+          }"
           class="flex items-center gap-1"
         >
           <Icon name="mdi:heart" class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
@@ -200,12 +205,12 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
       <div class="bg-white p-6 rounded-xl shadow-xl border border-gray-200 w-full max-w-md">
-        <h3 class="text-lg font-semibold mb-4">Smazat komentář</h3>
-        <p class="text-sm text-gray-600 mb-4">Zadejte důvod smazání (bude odeslán autorovi):</p>
+        <h3 class="text-lg font-semibold mb-4">{{ $t('articles.comments.deleteModalTitle') }}</h3>
+        <p class="text-sm text-gray-600 mb-4">{{ $t('common.messages.deleteConfirmText') }}</p>
         <textarea
           v-model="deleteReason"
           class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm resize-y min-h-[100px]"
-          placeholder="Důvod smazání..."
+          :placeholder="$t('articles.comments.deleteReasonPlaceholder')"
           maxlength="255"
         />
         <div class="flex justify-end gap-3 mt-4">
@@ -213,13 +218,13 @@
             class="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200"
             @click="((showModal = false), (deleteReason = ''))"
           >
-            Zrušit
+            {{ $t('common.messages.deleteCancel') }}
           </button>
           <button
             class="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
             @click="emitDelete(comment, deleteReason)"
           >
-            Smazat
+            {{ $t('articles.comments.deleteComment') }}
           </button>
         </div>
       </div>
@@ -231,17 +236,17 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
       <div class="bg-white p-6 rounded-xl shadow-xl border border-gray-200 w-full max-w-md">
-        <h3 class="text-lg font-semibold mb-4">Zabanovat uživatele</h3>
-        <p class="text-sm text-gray-600 mb-4">Zadejte důvod banu (bude odeslán uživateli):</p>
+        <h3 class="text-lg font-semibold mb-4">{{ $t('articles.comments.banModalTitle') }}</h3>
+        <p class="text-sm text-gray-600 mb-4">{{ $t('articles.comments.banReasonPrompt') }}</p>
         <textarea
           v-model="banReason"
           class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-y min-h-[100px]"
-          placeholder="Důvod banu..."
+          :placeholder="$t('articles.comments.banReasonPlaceholder')"
           maxlength="255"
           required
         />
         <div class="mt-4">
-          <label class="text-sm text-gray-600">Expirace banu (nepovinné):</label>
+          <label class="text-sm text-gray-600">{{ $t('articles.comments.banExpirationLabel') }}</label>
           <input
             v-model="banExpiresAt"
             type="datetime-local"
@@ -253,14 +258,14 @@
             class="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200"
             @click="((showBanModal = false), (banReason = ''), (banExpiresAt = ''))"
           >
-            Zrušit
+            {{ $t('common.messages.deleteCancel') }}
           </button>
           <button
             class="px-4 py-2 rounded-xl bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700"
             :disabled="!banReason.trim()"
             @click="banUser(comment)"
           >
-            Zabanovat
+            {{ $t('articles.comments.banUser') }}
           </button>
         </div>
       </div>
@@ -299,16 +304,17 @@ const banModal = ref<HTMLElement | null>(null)
 const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}/author`, {
   key: `author-${props.comment.article.userId}`,
 })
+
 const report = async (c: CommentWithReplies) => {
-  if (!confirm('Opravdu chcete nahlásit tento komentář?')) return
+  if (!confirm($t('articles.comments.reportCommentConfirm'))) return
   try {
     await $fetch('/api/notifications', {
       method: 'POST',
       body: { commentId: c.id },
     })
-    toast.success({ message: 'Komentář nahlášen' })
+    toast.success({ message: $t('common.messages.reportSuccess') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Nahlášení selhalo' })
+    toast.error({ message: e.data?.message || $t('common.messages.reportFailed') })
   }
 }
 
@@ -338,9 +344,9 @@ const banUser = async (comment: CommentWithReplies) => {
         expiresAt: banExpiresAt.value || null,
       },
     })
-    toast.success({ message: 'Uživatel zabanován' })
+    toast.success({ message: $t('articles.comments.banSuccess') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Banování selhalo' })
+    toast.error({ message: e.data?.message || $t('articles.comments.banFailed') })
   }
   showBanModal.value = false
 }
@@ -350,10 +356,10 @@ const unbanUser = async (comment: CommentWithReplies) => {
     await $fetch(`/api/bans/${comment.id}`, {
       method: 'DELETE',
     })
-    toast.success({ message: 'Uživatel odbanován' })
+    toast.success({ message: $t('articles.comments.unbanSuccess') })
     emit('refresh')
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Odbanování selhalo' })
+    toast.error({ message: e.data?.message || $t('articles.comments.unbanFailed') })
   }
 }
 

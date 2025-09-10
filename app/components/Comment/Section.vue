@@ -3,16 +3,16 @@
     <div class="flex items-center gap-3 mb-10">
       <Icon name="mdi:comment-multiple-outline" class="w-8 h-8 text-blue-600" />
       <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
-        Komentáře <span class="text-xl text-gray-500">({{ props.commCount }})</span>
+        {{ $t('articles.comments.title') }} <span class="text-xl text-gray-500">({{ props.commCount }})</span>
       </h2>
       <div class="ml-auto flex items-center gap-2">
         <select
           v-model="sort"
           class="px-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         >
-          <option value="createdAt:desc">Nejnovější</option>
-          <option value="createdAt:asc">Nejstarší</option>
-          <option value="likes:desc">Nejzajímavější</option>
+          <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
+          <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
+          <option value="likes:desc">{{ $t('common.sortOptions.mostInteresting') }}</option>
         </select>
       </div>
     </div>
@@ -25,7 +25,7 @@
         <div class="space-y-2">
           <label for="comment" class="block text-base font-semibold flex items-center gap-2">
             <Icon name="mdi:pencil-outline" class="w-5 h-5" />
-            Váš komentář
+            {{ $t('articles.comments.yourComment') }}
           </label>
           <div class="relative">
             <Icon name="mdi:comment-outline" class="absolute left-4 top-4 w-5 h-5 text-gray-400 pointer-events-none" />
@@ -34,13 +34,15 @@
               v-model="newComment"
               :maxlength="maxLength"
               class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm resize-y min-h-[100px]"
-              placeholder="Napište svůj komentář..."
+              :placeholder="$t('articles.comments.commentPlaceholder')"
               required
               :disabled="isSubmitting"
             />
             <div class="flex justify-between text-xs text-gray-500 mt-1">
               <span>{{ characterCount }} / {{ maxLength }}</span>
-              <span v-if="characterCount >= maxLength" class="text-red-500 font-medium">Dosáhli jste limitu!</span>
+              <span v-if="characterCount >= maxLength" class="text-red-500 font-medium">
+                {{ $t('articles.comments.characterLimitReached') }}
+              </span>
             </div>
           </div>
         </div>
@@ -50,14 +52,14 @@
         >
           <div class="flex items-center gap-3">
             <Icon name="mdi:reply" class="w-4 h-4 text-gray-500" />
-            <span
-              >Odpovídáte na: <strong>{{ replyingTo.user?.username || 'Není k dispozici' }}</strong></span
-            >
+            <span>
+              {{ $t('articles.comments.replyingTo', [replyingTo.user?.username || $t('common.user.notAvailable')]) }}
+            </span>
             <Button
               icon="mdi:close"
               size="sm"
               variant="danger"
-              title="Zrušit odpověď"
+              :title="$t('common.cancelAction')"
               class="!rounded-full ml-auto"
               @click="replyingTo = null"
             />
@@ -71,25 +73,25 @@
           :loading="isSubmitting"
           :disabled="isSubmitting || !!(replyingTo && replyingTo.deletedAt)"
         >
-          {{ replyingTo ? 'Odeslat odpověď' : 'Přidat komentář' }}
+          {{ replyingTo ? $t('articles.comments.submitReply') : $t('articles.comments.addComment') }}
         </Button>
       </form>
     </div>
     <p v-else-if="session?.user && !props.allowComments" class="text-gray-600 mb-14 text-base text-center">
-      Komentování tohoto článku není povoleno.
+      {{ $t('articles.comments.commentsDisabled') }}
     </p>
     <p v-else class="text-gray-600 mb-14 text-base text-center">
-      <NuxtLink to="/autorizace" class="text-blue-600 hover:underline font-medium cursor-pointer"
-        >Přihlaste se</NuxtLink
-      >
-      pro přidání komentáře.
+      <NuxtLink to="/autorizace" class="text-blue-600 hover:underline font-medium cursor-pointer">
+        {{ $t('common.auth.login') }}
+      </NuxtLink>
+      {{ $t('common.auth.loginToComment') }}
     </p>
     <div v-if="loading && !comments.length" class="flex justify-center mb-10">
       <Icon name="mdi:loading" class="w-8 h-8 text-blue-600 animate-spin" />
     </div>
     <div v-else-if="error" class="text-center p-6 bg-red-50 rounded-2xl shadow border border-gray-200">
       <Icon name="mdi:alert-circle" class="w-8 h-8 text-red-500 mx-auto mb-2" />
-      <p class="text-gray-700">Nepodařilo se načíst komentáře: {{ error.message }}</p>
+      <p class="text-gray-700">{{ $t('articles.comments.errorLoadingComments', { 0: error.message }) }}</p>
     </div>
     <div
       v-else-if="filteredComments.length"
@@ -110,12 +112,14 @@
         @refresh="refresh"
       />
       <div ref="sentinel" class="h-4"></div>
-      <div v-if="loading" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">Načítání...</div>
+      <div v-if="loading" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
+        {{ $t('common.loading') }}
+      </div>
       <div v-if="!hasMore && comments.length" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
-        Žádné další komentáře
+        {{ $t('common.noItems') }}
       </div>
     </div>
-    <p v-else class="text-gray-600 text-center text-base">Zatím žádné komentáře.</p>
+    <p v-else class="text-gray-600 text-center text-base">{{ $t('common.noItems') }}</p>
   </div>
 </template>
 
@@ -173,7 +177,11 @@ watch(
   { immediate: true },
 )
 
-watch(error, (e) => e && toast.error({ message: `Chyba při načítání: ${e.message || 'Neznámá chyba'}` }))
+watch(
+  error,
+  (e) =>
+    e && toast.error({ message: $t('articles.comments.errorLoadingComments', { 0: e.message || $t('common.error') }) }),
+)
 
 watch(sort, () => nextTick(() => scroll.value && (scroll.value.scrollTop = 0)))
 
@@ -212,7 +220,9 @@ const submitComment = async () => {
         userId: session?.value?.user?.id,
       },
     })
-    toast.success({ message: replyingTo.value ? 'Odpověď odeslána' : 'Komentář přidán' })
+    toast.success({
+      message: replyingTo.value ? $t('articles.comments.replySubmitted') : $t('articles.comments.commentAdded'),
+    })
     newComment.value = ''
     replyingTo.value = null
     page.value = 1
@@ -220,7 +230,7 @@ const submitComment = async () => {
     await refresh()
     nextTick(initObserver)
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Nepodařilo se přidat komentář' })
+    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
   } finally {
     isSubmitting.value = false
   }
@@ -233,14 +243,14 @@ const handleReply = (c: CommentWithReplies) => {
 }
 
 const handleDelete = async (c: CommentWithReplies, reason: string | null) => {
-  if (!confirm('Opravdu chcete smazat tento komentář?')) return
+  if (!confirm($t('common.messages.deleteConfirmTitle'))) return
   try {
     await $fetch(`/api/comments/${c.id}`, { method: 'DELETE', body: { reason } })
-    toast.success({ message: 'Komentář smazán' })
+    toast.success({ message: $t('common.messages.deleteSuccess') })
     await refresh()
     nextTick(initObserver)
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Nepodařilo se smazat komentář' })
+    toast.error({ message: e.data?.message || $t('common.messages.deleteFailed') })
   }
 }
 
@@ -251,7 +261,7 @@ const react = async (c: CommentWithReplies, type: 'LIKE' | 'DISLIKE') => {
     await refresh()
     nextTick(initObserver)
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Nepodařilo se přidat reakci' })
+    toast.error({ message: e.data?.message || $t('articles.comments.reactionFailed') })
   }
 }
 

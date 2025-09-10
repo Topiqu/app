@@ -104,7 +104,7 @@
             <p v-if="userData?.role === 'admin'">
               {{ $t('articles.userMenu.adminIn', [clientData?.name || $t('articles.userMenu.noClientAssigned')]) }}
             </p>
-            <p>{{ $t('articles.userMenu.joined', [formatDate(userData?.createdAt)]) }}</p>
+            <p>{{ $t('common.user.joined', [formatDate(userData?.createdAt)]) }}</p>
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-1">
                 <Icon name="mdi:thumb-up-outline" class="w-4 h-4 text-green-500" />
@@ -123,7 +123,7 @@
               to="/uzivatel"
               class="inline-block text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
             >
-              {{ $t('articles.userMenu.viewProfile') }}
+              {{ $t('common.user.viewProfile') }}
             </NuxtLink>
           </div>
         </div>

@@ -1,24 +1,28 @@
 <template>
   <div class="flex flex-col gap-6">
     <label class="flex flex-col gap-3">
-      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Vybrat tagy</span>
+      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">{{
+        $t('articles.tags.selectExistingTag')
+      }}</span>
       <select
         v-model="selectedTagId"
         class="p-4 rounded-xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
         @change="addTagToBuffer"
       >
-        <option value="" disabled>Vyber štítek</option>
+        <option value="" disabled>{{ $t('articles.tags.selectExistingTag') }}</option>
         <option v-for="t in tags.filter((t) => !tagBuffer.some((b) => b.id === t.id))" :key="t.id" :value="t.id">
           {{ t.name }}
         </option>
       </select>
     </label>
     <label class="flex flex-col gap-3">
-      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Nový štítek</span>
+      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">{{
+        $t('articles.tags.addCustomTagPlaceholder')
+      }}</span>
       <div class="flex gap-2">
         <input
           v-model="newTag.name"
-          placeholder="Např. zahradnictví"
+          :placeholder="$t('articles.tags.addCustomTagPlaceholder')"
           class="flex-1 p-4 rounded-xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
           @input="updateSlug"
           @keyup.enter="createAndAddTag"
@@ -28,7 +32,7 @@
           class="px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-700"
           @click="createAndAddTag"
         >
-          Přidat
+          {{ $t('articles.tags.addButton') }}
         </button>
       </div>
     </label>
@@ -48,7 +52,7 @@
         </button>
       </div>
     </div>
-    <p v-else class="text-sm text-gray-600 dark:text-gray-400">Žádné tagy nevybrány.</p>
+    <p v-else class="text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.tags.noTagsFound') }}</p>
   </div>
 </template>
 
@@ -114,7 +118,7 @@ const createAndAddTag = async () => {
     newTag.value = { name: '', slug: '' }
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Chyba při vytváření tagu.' })
+    toast.error({ message: $t('articles.tags.createFailed') + e.data?.message })
   }
 }
 
