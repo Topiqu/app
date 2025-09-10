@@ -23,6 +23,59 @@
     "status": {
       "published": "Published",
       "draft": "Draft"
+    },
+    "messages": {
+      "deleteConfirmTitle": "Are you sure you want to delete?",
+      "deleteConfirmText": "This action cannot be undone.",
+      "deleteCancel": "Cancel",
+      "deleteSuccess": "Article deleted",
+      "deleteFailed": "Deletion failed",
+      "statusChangeFailed": "Status change failed"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {0} of {1}"
+    },
+    "tags": {
+      "title": "Article Tags",
+      "addCustomTagPlaceholder": "Add custom tag",
+      "selectExistingTag": "Select existing tag",
+      "addButton": "Add",
+      "closeButton": "Close",
+      "addTagSuccess": "Tag added",
+      "removeTagSuccess": "Tag removed",
+      "operationFailed": "Operation failed",
+      "addCustomTagFailed": "Adding custom tag failed"
+    },
+    "statusCell": {
+      "scheduledTooltip": "Scheduled for: {0}"
+    },
+    "tableOfContents": {
+      "title": "Table of Contents",
+      "noContent": "No content to display"
+    },
+    "relatedArticles": {
+      "title": "Related Articles"
+    },
+    "preferencesExplanation": {
+      "title": "Preferences Explanation",
+      "focus": {
+        "title": "Focus",
+        "description": "The main theme or direction of the content. Helps refine the tone and intent of the outputs.",
+        "example": "E.g., 'Objective gaming journalism', 'Tech news with a focus on Unreal Engine'."
+      },
+      "targetAudience": {
+        "title": "Target Audience",
+        "description": "Defines who the content is for. Helps tailor the style, language, and technical level.",
+        "example": "E.g., 'Young adults 18–25 years', 'Game developers and IT professionals'."
+      },
+      "keywords": {
+        "title": "Keywords",
+        "description": "Prominent topics or terms to appear more frequently in outputs. Also used for SEO.",
+        "example": "E.g., 'Unreal Engine, AI in games, RPG, player freedom'."
+      },
+      "closeButton": "Close"
     }
   }
 }
