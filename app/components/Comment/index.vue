@@ -175,18 +175,7 @@
           class="flex items-center gap-1"
         >
           <Icon name="mdi:heart" class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-          <img
-            v-if="authorData?.avatarUrl"
-            :src="authorData.avatarUrl"
-            :alt="authorData.username"
-            class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-gray-200"
-          />
-          <span
-            v-else
-            class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-gray-200 bg-gray-100 flex items-center justify-center text-xs sm:text-sm text-gray-600 font-semibold"
-          >
-            {{ authorData?.username?.charAt(0) || 'A' }}
-          </span>
+          <UserPicture :url="authorData?.avatarUrl" :size="'mn'" :name="authorData?.username" />
         </div>
       </div>
     </div>

@@ -176,16 +176,7 @@
             </div>
             <template v-if="stats.topAuthor">
               <div class="flex items-center gap-3">
-                <NuxtImg
-                  v-if="stats.topAuthor.avatarUrl"
-                  :src="stats.topAuthor.avatarUrl"
-                  alt="Avatar autora"
-                  class="w-10 h-10 rounded-full object-cover"
-                  width="40"
-                  height="40"
-                  placeholder
-                />
-                <Icon v-else name="mdi:account-circle-outline" class="w-10 h-10 text-gray-400" />
+                <UserPicture :url="stats.topAuthor.avatarUrl" :name="stats.topAuthor.username" />
                 <div>
                   <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topAuthor.username">
                     {{ stats.topAuthor.username }}

@@ -4,15 +4,7 @@
       ref="card"
       class="p-4 shadow-sm border border-gray-200 dark:border-neutral-700 flex items-center gap-4 w-full max-w-md sm:max-w-full transition-all"
     >
-      <NuxtImg
-        v-if="user.avatarUrl"
-        :src="user.avatarUrl"
-        alt="Profilový obrázek"
-        class="w-12 h-12 rounded-full object-cover flex-shrink-0"
-        width="48"
-        height="48"
-      />
-      <Icon v-else name="mdi:account-circle-outline" class="w-12 h-12 text-gray-400 dark:text-gray-600 flex-shrink-0" />
+      <UserPicture :url="user?.avatarUrl" :name="user.username" />
       <div class="flex flex-col overflow-hidden min-w-0">
         <div class="flex items-center gap-2">
           <span class="font-semibold text-base truncate">
@@ -51,15 +43,7 @@
       :style="{ top: `${y}px`, left: `${Math.max(x - 320 - 16, 8)}px` }"
     >
       <div class="flex items-center gap-4">
-        <NuxtImg
-          v-if="user.avatarUrl"
-          :src="user.avatarUrl"
-          alt="Profilový obrázek"
-          class="w-14 h-14 rounded-full object-cover"
-          width="56"
-          height="56"
-        />
-        <Icon v-else name="mdi:account-circle-outline" class="w-14 h-14 text-gray-400 dark:text-gray-600" />
+        <UserPicture :url="user?.avatarUrl" :size="'lg'" :name="user?.username" />
         <div class="flex flex-col min-w-0">
           <div class="flex items-center gap-2">
             <span class="font-semibold text-gray-900 dark:text-white text-lg truncate">

@@ -7,19 +7,7 @@
         style="background: transparent !important"
         @click="show = !show"
       >
-        <NuxtImg
-          v-if="userData?.avatarUrl"
-          :src="userData.avatarUrl"
-          :alt="$t('articles.userMenu.profileImageAlt')"
-          class="w-10 h-10 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-500 transition-all duration-200"
-          width="36"
-          height="36"
-        />
-        <Icon
-          v-else
-          name="mdi:account-circle-outline"
-          class="w-10 h-10 text-gray-400 dark:text-gray-600 transition-colors duration-200"
-        />
+        <UserPicture :url="userData?.avatarUrl" :name="userData?.username" />
         <div class="hidden min-[1565px]:flex flex-col min-w-0">
           <div class="flex items-center gap-2 bg-transparent">
             <span class="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">
@@ -68,15 +56,7 @@
           @click.stop
         >
           <div class="flex items-center gap-4 bg-transparent dark:bg-transparent">
-            <NuxtImg
-              v-if="userData?.avatarUrl"
-              :src="userData.avatarUrl"
-              :alt="$t('articles.userMenu.profileImageAlt')"
-              class="w-16 h-16 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-500 transition-all duration-200"
-              width="64"
-              height="64"
-            />
-            <Icon v-else name="mdi:account-circle-outline" class="w-16 h-16 text-gray-400 dark:text-gray-600" />
+            <UserPicture :url="userData?.avatarUrl" :size="'lg'" :name="userData?.username" />
             <div class="grow flex flex-col min-w-0">
               <div class="flex items-center gap-2">
                 <span class="font-semibold text-lg text-gray-900 dark:text-white truncate max-w-[180px]">
