@@ -257,7 +257,7 @@ const del = async (id: string) => {
     })
     unreadCount.value = data.value.filter((n) => !n.isRead).length
   } catch (e: any) {
-    useToast().error({ message: `Chyba při mazání: ${e.message || 'Neznámá chyba'}` })
+    useToast().error({ message: `Chyba při mazání: ${e.data?.message || 'Neznámá chyba'}` })
   }
 }
 

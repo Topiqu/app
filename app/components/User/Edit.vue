@@ -106,7 +106,7 @@ const saveEdit = async () => {
     toast.success({ message: 'Uživatel úspěšně upraven' })
     open.value = false
   } catch (error: any) {
-    toast.error({ message: error?.data?.message || error.message || 'Nepodařilo se aktualizovat uživatele' })
+    toast.error({ message: error?.data?.message || 'Nepodařilo se aktualizovat uživatele' })
   }
 }
 

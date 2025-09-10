@@ -109,7 +109,7 @@ const vote = async (pollId: string, option: string) => {
     selectedOptions[pollId] = option
     voteCounts[pollId] = res.voteCounts
   } catch (e: any) {
-    toast.error({ message: `Hlasování selhalo: ${e.message}` })
+    toast.error({ message: `Hlasování selhalo: ${e.data?.message}` })
   }
 }
 
