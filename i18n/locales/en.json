@@ -2,6 +2,7 @@
   "articles": {
     "title": "Articles",
     "searchPlaceholder": "Search articles...",
+    "readingTime": "{0} min read",
     "noResults": {
       "imageAlt": "Sad Topík",
       "message": "Oh no, I feel useless..."
@@ -12,7 +13,8 @@
       "imageUrl": "Image",
       "status": "Status",
       "date": "Date",
-      "actions": "Actions"
+      "actions": "Actions",
+      "createdAt": "Created At"
     },
     "actions": {
       "view": "View",
@@ -52,7 +54,7 @@
       "scheduledTooltip": "Scheduled for: {0}"
     },
     "tableOfContents": {
-      "title": "Table of Contents",
+      "title": "Content",
       "noContent": "No content to display"
     },
     "relatedArticles": {
@@ -76,6 +78,45 @@
         "example": "E.g., 'Unreal Engine, AI in games, RPG, player freedom'."
       },
       "closeButton": "Close"
+    },
+    "userMenu": {
+      "profileImageAlt": "Profile Picture",
+      "companyLogoAlt": "Company Logo",
+      "noBio": "No bio",
+      "adminIn": "Administrator in: {0}",
+      "noClientAssigned": "Not assigned",
+      "joined": "Joined: {0}",
+      "viewProfile": "View Profile",
+      "login": "Log In",
+      "loginPrompt": "Log in to access exclusive features and content.",
+      "register": "Register",
+      "userDataError": "Error loading user data",
+      "admin": "Admin",
+      "superadmin": "Superadmin"
+    },
+    "dateFormats": {
+      "justNow": "Just now",
+      "minutesAgo": "{0} minutes ago",
+      "hoursAgo": "{0} hours ago",
+      "yesterday": "Yesterday, {0}",
+      "daysAgo": "{0} days ago",
+      "weekAgo": "A week ago",
+      "thisYear": "MMM d, HH:mm",
+      "otherYear": "MMM d, yyyy, HH:mm"
+    },
+    "articleCard": {
+      "imageAlt": "Article Preview",
+      "readMore": "Read More",
+      "commentsAndLikesTooltip": "Comments and Likes",
+      "noAuthor": "Not Specified",
+      "authorAvatarAlt": "Author Avatar {0}"
+    },
+    "poll": {
+      "defaultQuestion": "Enter a question",
+      "defaultOption": "Option 1",
+      "questionPlaceholder": "Enter a question",
+      "optionPlaceholder": "Option",
+      "addOption": "Add option"
     }
   }
 }

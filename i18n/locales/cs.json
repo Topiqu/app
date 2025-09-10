@@ -2,6 +2,7 @@
   "articles": {
     "title": "Články",
     "searchPlaceholder": "Hledat články...",
+    "readingTime": "{0} min čtení",
     "noResults": {
       "imageAlt": "Smutný Topík",
       "message": "Achjo, cítím se tak zbytečný..."
@@ -12,7 +13,8 @@
       "imageUrl": "Obrázek",
       "status": "Status",
       "date": "Datum",
-      "actions": "Akce"
+      "actions": "Akce",
+      "createdAt": "Vytvořeno"
     },
     "actions": {
       "view": "Zobrazit",
@@ -23,6 +25,98 @@
     "status": {
       "published": "Publikováno",
       "draft": "Koncept"
+    },
+    "messages": {
+      "deleteConfirmTitle": "Opravdu chcete smazat?",
+      "deleteConfirmText": "Tuto akci nelze vrátit zpět.",
+      "deleteCancel": "Zrušit",
+      "deleteSuccess": "Článek smazán",
+      "deleteFailed": "Smazání se nezdařilo",
+      "statusChangeFailed": "Změna stavu se nezdařila"
+    },
+    "pagination": {
+      "previous": "Předchozí",
+      "next": "Další",
+      "pageInfo": "Strana {0} z {1}"
+    },
+    "tags": {
+      "title": "Štítky článku",
+      "addCustomTagPlaceholder": "Přidat vlastní štítek",
+      "selectExistingTag": "Vybrat existující štítek",
+      "addButton": "Přidat",
+      "closeButton": "Zavřít",
+      "addTagSuccess": "Štítek přidán",
+      "removeTagSuccess": "Štítek odstraněn",
+      "operationFailed": "Operace se nezdařila",
+      "addCustomTagFailed": "Přidání vlastního štítku se nezdařilo"
+    },
+    "statusCell": {
+      "scheduledTooltip": "Naplánováno na: {0}"
+    },
+    "tableOfContents": {
+      "title": "Obsah",
+      "noContent": "Žádný obsah k zobrazení"
+    },
+    "relatedArticles": {
+      "title": "Související články"
+    },
+    "preferencesExplanation": {
+      "title": "Vysvětlení předvoleb",
+      "focus": {
+        "title": "Zaměření",
+        "description": "Hlavní téma nebo směr obsahu. Pomáhá upřesnit tón a záměr výstupů.",
+        "example": "Např. 'Objektivní herní žurnalistika', 'Technologické novinky se zaměřením na Unreal Engine'."
+      },
+      "targetAudience": {
+        "title": "Cílová skupina",
+        "description": "Určuje, pro koho je obsah určen. Pomáhá přizpůsobit styl, jazyk a technickou úroveň.",
+        "example": "Např. 'Mladí dospělí 18–25 let', 'Vývojáři her a IT profesionálové'."
+      },
+      "keywords": {
+        "title": "Klíčová slova",
+        "description": "Výrazná témata nebo pojmy, která se mají častěji objevovat ve výstupech. Používají se také pro SEO.",
+        "example": "Např. 'Unreal Engine, AI ve hrách, RPG, svoboda hráče'."
+      },
+      "closeButton": "Zavřít"
+    },
+    "userMenu": {
+      "profileImageAlt": "Profilový obrázek",
+      "companyLogoAlt": "Logo společnosti",
+      "noBio": "Žádné bio",
+      "adminIn": "Administrátor v: {0}",
+      "noClientAssigned": "Nepřiřazen",
+      "joined": "Připojen: {0}",
+      "viewProfile": "Zobrazit profil",
+      "login": "Přihlásit se",
+      "loginPrompt": "Přihlaste se pro přístup k exkluzivním funkcím a obsahu.",
+      "register": "Registrovat",
+      "userDataError": "Chyba při načítání uživatelských dat",
+      "admin": "Admin",
+      "superadmin": "Superadmin"
+    },
+    "dateFormats": {
+      "justNow": "Právě teď",
+      "minutesAgo": "Před {0} minutami",
+      "hoursAgo": "Před {0} hodinami",
+      "yesterday": "Včera, {0}",
+      "daysAgo": "Před {0} dny",
+      "weekAgo": "Před týdnem",
+      "thisYear": "MMM d, HH:mm",
+      "otherYear": "MMM d, yyyy, HH:mm"
+    },
+    "articleCard": {
+      "imageAlt": "Náhled článku",
+      "readMore": "Číst více",
+      "commentsAndLikesTooltip": "Komentáře a lajky",
+      "noAuthor": "Není uveden",
+      "authorAvatarAlt": "Avatar autora {0}"
+    },
+    "poll": {
+      "defaultQuestion": "Zadejte otázku",
+      "defaultOption": "Možnost 1",
+      "questionPlaceholder": "Zadejte otázku",
+      "optionPlaceholder": "Možnost",
+      "addOption": "Přidat možnost"
     }
   }
 }
