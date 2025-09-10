@@ -28,11 +28,11 @@
               :name="data.plan === 'PREMIUM' ? 'mdi:crown' : data.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
               class="w-4 h-4"
             />
-            Admin
+            {{ $t('articles.userMenu.admin') }}
           </span>
         </div>
         <p class="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[200px]">
-          {{ user.bio || 'Žádné bio' }}
+          {{ user.bio || $t('articles.userMenu.noBio') }}
         </p>
       </div>
     </div>
@@ -67,7 +67,7 @@
                 :name="data.plan === 'PREMIUM' ? 'mdi:crown' : data.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
                 class="w-4 h-4"
               />
-              Admin
+              {{ $t('articles.userMenu.admin') }}
             </span>
           </div>
           <p class="text-gray-500 dark:text-gray-400 text-sm break-all">
@@ -78,19 +78,21 @@
 
       <div class="mt-3 text-sm text-gray-700 dark:text-gray-300">
         <p class="whitespace-pre-wrap break-words">
-          {{ user.bio || 'Žádné bio' }}
+          {{ user.bio || $t('articles.userMenu.noBio') }}
         </p>
       </div>
 
       <div
         class="mt-3 pt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1 border-t border-gray-200 dark:border-gray-700"
       >
-        <p v-if="user.role === 'admin'">Administrátor ve: {{ data?.name || 'Není přiřazen' }}</p>
-        <p>Přidal(a) se: {{ formatDate(user.createdAt) }}</p>
-        <p>Naposledy přihlášen: {{ formatDate(user.lastLogin) }}</p>
-        <p>Komentáře: {{ user.commentsCount ?? 0 }}</p>
-        <p>Sleduje: {{ user.followers ?? 0 }}</p>
-        <p v-if="user.following > 0">Sledující: {{ user.following ?? 0 }}</p>
+        <p v-if="user.role === 'admin'">
+          {{ $t('articles.userMenu.adminIn', [data?.name || $t('articles.userMenu.noClientAssigned')]) }}
+        </p>
+        <p>{{ $t('common.user.joined', [formatDate(user.createdAt)]) }}</p>
+        <p>{{ $t('articles.profile.lastLogin', [formatDate(user.lastLogin)]) }}</p>
+        <p>{{ $t('articles.comments.title') + ': ' }} {{ user.commentsCount ?? 0 }}</p>
+        <p>{{ $t('articles.profile.followers') + ': ' }} {{ user.followers ?? 0 }}</p>
+        <p v-if="user.following > 0">{{ $t('articles.profile.following', [user.following ?? 0]) }}</p>
         <div class="flex items-center gap-2">
           <Icon name="mdi:thumb-up" class="w-4 h-4 text-green-500 dark:text-green-400" />
           <span>{{ user.likesCount ?? 0 }}</span>
