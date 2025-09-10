@@ -2,14 +2,16 @@
   <div
     v-tippy="
       props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()
-        ? `Plánováno na: ${format(new Date(props.row.original.releaseAt), 'dd.MM.yyyy, HH:mm')}`
+        ? $t('articles.statusCell.scheduledTooltip', [
+            format(new Date(props.row.original.releaseAt), 'dd.MM.yyyy, HH:mm'),
+          ])
         : ''
     "
     class="inline-flex items-center"
   >
     <select v-model="model" class="border rounded px-2 py-1">
-      <option value="draft">Návrh</option>
-      <option value="published">Publikováno</option>
+      <option value="draft">{{ $t('articles.status.draft') }}</option>
+      <option value="published">{{ $t('articles.status.published') }}</option>
     </select>
     <Icon
       v-if="props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()"

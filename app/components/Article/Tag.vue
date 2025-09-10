@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="open" title="Tagy článku">
+  <Modal v-model="open" :title="$t('articles.tags.title')">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
@@ -7,41 +7,41 @@
     <template #content>
       <div class="flex flex-wrap gap-2 mt-4">
         <div
-          v-for="t in articleTags"
-          :key="t.tagId"
+          v-for="tag in articleTags"
+          :key="tag.tagId"
           class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-blue-800 text-sm font-medium"
         >
-          {{ t.tag.name }}
-          <Button icon="mdi:close" size="sm" variant="danger" class="!rounded-full" @click="removeTag(t.tagId)" />
+          {{ tag.tag.name }}
+          <Button icon="mdi:close" size="sm" variant="danger" class="!rounded-full" @click="removeTag(tag.tagId)" />
         </div>
       </div>
       <div class="flex flex-col gap-4 mt-6">
         <div class="flex gap-2">
           <input
             v-model="newTag.name"
-            placeholder="Přidat vlastní tag"
+            :placeholder="$t('articles.tags.addCustomTagPlaceholder')"
             class="flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             @input="updateSlug"
           />
-          <Button @click="addCustomTag">Přidat</Button>
+          <Button @click="addCustomTag">{{ $t('articles.tags.addButton') }}</Button>
         </div>
         <div class="flex gap-2">
           <select
             v-model="selectedTagId"
             class="flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
-            <option value="">Vyber existující tag</option>
-            <option v-for="t in availableTags" :key="t.id" :value="t.id">
-              {{ t.name }}
+            <option value="">{{ $t('articles.tags.selectExistingTag') }}</option>
+            <option v-for="tag in availableTags" :key="tag.id" :value="tag.id">
+              {{ tag.name }}
             </option>
           </select>
-          <Button @click="addExistingTag">Přidat</Button>
+          <Button @click="addExistingTag">{{ $t('articles.tags.addButton') }}</Button>
         </div>
       </div>
     </template>
 
     <template #footer="{ close }">
-      <Button size="lg" @click="close">Zavřít</Button>
+      <Button size="lg" @click="close">{{ $t('articles.tags.closeButton') }}</Button>
     </template>
   </Modal>
 </template>
@@ -77,9 +77,11 @@ const apiCall = async (url: string, method: 'POST' | 'DELETE', body?: any) => {
 
     await Promise.all([refreshTags(), refreshAvailableTags()])
 
-    toast.success({ message: method === 'POST' ? 'Tag přidán' : 'Tag odebrán' })
+    toast.success({
+      message: method === 'POST' ? $t('articles.tags.addTagSuccess') : $t('articles.tags.removeTagSuccess'),
+    })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Operace selhala' })
+    toast.error({ message: e.data?.message || $t('articles.tags.operationFailed') })
   }
 }
 
@@ -98,7 +100,7 @@ const addCustomTag = async () => {
 
     newTag.value = { name: '', slug: '' }
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Přidání tagu selhalo' })
+    toast.error({ message: e.data?.message || $t('articles.tags.addCustomTagFailed') })
   }
 }
 

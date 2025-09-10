@@ -1,9 +1,11 @@
 <template>
   <div
     class="hidden sm:block fixed z-50 bg-gray-50 shadow-xl rounded-xl p-4 w-48 md:w-64 mr-12 mt-20 right-0 top-0 min-h-[10vh]"
-    aria-label="Table of contents"
+    :aria-label="$t('articles.tableOfContents.title')"
   >
-    <h2 class="text-base font-bold flex items-center gap-2 mb-4"><LucideList class="w-5 h-5 text-blue-600" /> Obsah</h2>
+    <h2 class="text-base font-bold flex items-center gap-2 mb-4">
+      <LucideList class="w-5 h-5 text-blue-600" /> {{ $t('articles.tableOfContents.title') }}
+    </h2>
     <nav id="toc" class="space-y-2 border-l-2 border-gray-200 pl-2" />
   </div>
 </template>
@@ -11,15 +13,13 @@
 <script lang="ts" setup>
 import tocbot from 'tocbot'
 import { LucideList } from 'lucide-vue-next'
-
 const props = defineProps<{ content: string }>()
 
-const normalizeId = (text: string) => {
-  return text
+const normalizeId = (text: string) =>
+  text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
-}
 
 const updateActiveLink = (target: string | HashChangeEvent) => {
   const hash = typeof target === 'string' ? target : new URL(target.newURL).hash.slice(1)
@@ -39,7 +39,8 @@ const initToc = async () => {
   await nextTick()
   const headings = document.querySelectorAll('.prose h1, .prose h2, .prose h3')
   if (!headings.length) {
-    document.querySelector('#toc')!.innerHTML = '<p class="text-sm text-gray-500">Žádný obsah k zobrazení</p>'
+    document.querySelector('#toc')!.innerHTML =
+      `<p class="text-sm text-gray-500">${$t('articles.tableOfContents.noContent')}</p>`
     return
   }
 

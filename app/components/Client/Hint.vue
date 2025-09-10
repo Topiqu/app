@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="open" title="Vysvětlení preferencí">
+  <Modal v-model="open" :title="$t('articles.preferencesExplanation.title')">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
@@ -9,41 +9,43 @@
         <section class="py-6">
           <div class="flex items-center gap-2 mb-2">
             <Icon name="mdi:bullseye" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Fokus</h3>
+            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+              {{ $t('articles.preferencesExplanation.focus.title') }}
+            </h3>
           </div>
           <p class="text-base leading-relaxed text-gray-700 dark:text-gray-200">
-            Hlavní téma nebo směr obsahu. Pomáhá upřesnit tonalitu a vyznění výstupů podle vašeho záměru.
+            {{ $t('articles.preferencesExplanation.focus.description') }}
           </p>
           <p class="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
-            Např. „Objektivní žurnalistika v gamingu“, „Technologické novinky s důrazem na Unreal Engine“.
+            {{ $t('articles.preferencesExplanation.focus.example') }}
           </p>
         </section>
         <section class="py-6">
           <div class="flex items-center gap-2 mb-2">
             <Icon name="mdi:account-group-outline" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
             <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-              Cílová skupina
+              {{ $t('articles.preferencesExplanation.targetAudience.title') }}
             </h3>
           </div>
           <p class="text-base leading-relaxed text-gray-700 dark:text-gray-200">
-            Definuje, komu je obsah určen. Pomáhá ladit styl, jazyk i úroveň technické náročnosti.
+            {{ $t('articles.preferencesExplanation.targetAudience.description') }}
           </p>
           <p class="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
-            Např. „Mladí dospělí 18–25 let“, „Vývojáři her a IT profesionálové“.
+            {{ $t('articles.preferencesExplanation.targetAudience.example') }}
           </p>
         </section>
         <section class="py-6">
           <div class="flex items-center gap-2 mb-2">
             <Icon name="mdi:tag-multiple-outline" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
             <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-              Klíčová slova
+              {{ $t('articles.preferencesExplanation.keywords.title') }}
             </h3>
           </div>
           <p class="text-base leading-relaxed text-gray-700 dark:text-gray-200">
-            Výrazná témata nebo pojmy, které se mají ve výstupech objevovat častěji. Slouží i pro SEO.
+            {{ $t('articles.preferencesExplanation.keywords.description') }}
           </p>
           <p class="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
-            Např. „Unreal Engine, AI ve hrách, RPG, hráčská svoboda“.
+            {{ $t('articles.preferencesExplanation.keywords.example') }}
           </p>
         </section>
       </div>
@@ -54,7 +56,7 @@
         class="px-5 py-2.5 rounded-xl text-sm font-medium transition hover:scale-105 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 shadow-sm"
         @click="close"
       >
-        Zavřít
+        {{ $t('articles.preferencesExplanation.closeButton') }}
       </button>
     </template>
   </Modal>

@@ -8,7 +8,7 @@
         <input
           v-model="globalFilter"
           type="text"
-          :placeholder="t('articles.searchPlaceholder')"
+          :placeholder="$t('articles.searchPlaceholder')"
           class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
         />
       </div>
@@ -44,8 +44,8 @@
         <tbody v-auto-animate class="text-gray-800">
           <tr v-if="articles.data.length === 0" class="text-center">
             <td colspan="5" class="px-4 py-10">
-              <NuxtImg src="/topik_smutny_rm.png" :alt="t('articles.noResults.imageAlt')" class="mx-auto w-32" />
-              <p class="mt-4 text-xl text-gray-500 dark:text-gray-300">{{ t('articles.noResults.message') }}</p>
+              <NuxtImg src="/topik_smutny_rm.png" :alt="$t('articles.noResults.imageAlt')" class="mx-auto w-32" />
+              <p class="mt-4 text-xl text-gray-500 dark:text-gray-300">{{ $t('articles.noResults.message') }}</p>
             </td>
           </tr>
           <tr
@@ -77,7 +77,7 @@
                 <NuxtImg
                   v-if="cell.getValue()"
                   :src="cell.getValue() as string"
-                  :alt="t('articles.columns.imageUrl')"
+                  :alt="$t('articles.columns.imageUrl')"
                   class="w-16 h-16 object-cover rounded"
                 />
                 <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
@@ -134,7 +134,7 @@
             class="text-gray-800"
             :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
           >
-            <div class="font-semibold">{{ t(`articles.columns.${cell.column.id}`) }}</div>
+            <div class="font-semibold">{{ $t(`articles.columns.${cell.column.id}`) }}</div>
             <div
               v-if="cell.column.id === 'content'"
               class="line-clamp-3 dark:bg-transparent"
@@ -144,7 +144,7 @@
               <NuxtImg
                 v-if="cell.getValue()"
                 :src="cell.getValue() as string"
-                :alt="t('articles.columns.imageUrl')"
+                :alt="$t('articles.columns.imageUrl')"
                 class="w-16 h-16 object-cover rounded"
               />
               <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
@@ -184,7 +184,7 @@
                   @click="router.push(`/clanky/${row.original.slug}`)"
                 >
                   <Icon name="mdi:eye" class="w-5 h-5 mr-2" />
-                  {{ t('articles.actions.view') }}
+                  {{ $t('articles.actions.view') }}
                 </button>
                 <LazyArticleEdit v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
                   <button
@@ -192,7 +192,7 @@
                     @click="open.value = true"
                   >
                     <Icon name="mdi:pencil" class="w-5 h-5 mr-2" />
-                    {{ t('articles.actions.edit') }}
+                    {{ $t('articles.actions.edit') }}
                   </button>
                 </LazyArticleEdit>
                 <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
@@ -201,7 +201,7 @@
                     @click="open.value = true"
                   >
                     <Icon name="mdi:tag-outline" class="w-5 h-5 mr-2" />
-                    {{ t('articles.actions.tags') }}
+                    {{ $t('articles.actions.tags') }}
                   </button>
                 </LazyArticleTag>
                 <button
@@ -209,7 +209,7 @@
                   @click="del(row.original.id)"
                 >
                   <Icon name="mdi:delete" class="w-5 h-5 mr-2" />
-                  {{ t('articles.actions.delete') }}
+                  {{ $t('articles.actions.delete') }}
                 </button>
               </div>
             </div>
@@ -237,7 +237,6 @@ import {
 } from '@tanstack/vue-table'
 
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
-const { t } = useI18n({ useScope: 'global' })
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
@@ -304,47 +303,47 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
     await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
     await refresh()
     toast.success({
-      message: `Stav změněn na ${status === 'draft' ? t('articles.status.draft') : t('articles.status.published')}`,
+      message: `Status changed to ${status === 'draft' ? $t('articles.status.draft').toLocaleLowerCase() : $t('articles.status.published').toLocaleLowerCase()}`,
     })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Změna stavu selhala' })
+    toast.error({ message: e.data?.message || $t('articles.messages.statusChangeFailed') })
   }
 }, 100)
 
 async function del(id: string) {
   const confirm = await Swal.fire({
-    title: 'Opravdu smazat?',
-    text: 'Tuto akci nelze vrátit zpět.',
+    title: $t('articles.messages.deleteConfirmTitle'),
+    text: $t('articles.messages.deleteConfirmText'),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: t('articles.actions.delete'),
-    cancelButtonText: 'Zrušit',
+    confirmButtonText: $t('articles.actions.delete'),
+    cancelButtonText: $t('articles.messages.deleteCancel'),
     confirmButtonColor: '#ef4444',
   })
   if (!confirm.isConfirmed) return
 
   try {
     await $fetch(`/api/articles/${id}`, { method: 'DELETE' })
-    toast.success({ message: 'Článek smazán' })
+    toast.success({ message: $t('articles.messages.deleteSuccess') })
     emitArticleDeleted()
     refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Smazání selhalo' })
+    toast.error({ message: e.data?.message || $t('articles.messages.deleteFailed') })
   }
 }
 
 const columns: ColumnDef<Article>[] = [
   {
-    header: t('articles.columns.imageUrl'),
+    header: $t('articles.columns.imageUrl'),
     accessorKey: 'imageUrl',
     enableSorting: false,
   },
   {
-    header: t('articles.columns.title'),
+    header: $t('articles.columns.title'),
     accessorKey: 'title',
   },
   {
-    header: t('articles.columns.status'),
+    header: $t('articles.columns.status'),
     accessorKey: 'status',
     cell: ({ row }) =>
       h(ArticleStatusCell, {
@@ -353,7 +352,7 @@ const columns: ColumnDef<Article>[] = [
       }),
   },
   {
-    header: t('articles.columns.date'),
+    header: $t('articles.columns.date'),
     accessorKey: 'createdAt',
     cell: (info) => format(new Date(info.getValue() as string), 'dd.MM.yyyy, HH:mm'),
     sortingFn: (rowA, rowB, columnId) => {
