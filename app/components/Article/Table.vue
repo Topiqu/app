@@ -184,7 +184,7 @@
                   @click="router.push(`/clanky/${row.original.slug}`)"
                 >
                   <Icon name="mdi:eye" class="w-5 h-5 mr-2" />
-                  {{ $t('articles.actions.view') }}
+                  {{ $t('common.actions.view') }}
                 </button>
                 <LazyArticleEdit v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
                   <button
@@ -192,7 +192,7 @@
                     @click="open.value = true"
                   >
                     <Icon name="mdi:pencil" class="w-5 h-5 mr-2" />
-                    {{ $t('articles.actions.edit') }}
+                    {{ $t('common.actions.edit') }}
                   </button>
                 </LazyArticleEdit>
                 <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
@@ -201,7 +201,7 @@
                     @click="open.value = true"
                   >
                     <Icon name="mdi:tag-outline" class="w-5 h-5 mr-2" />
-                    {{ $t('articles.actions.tags') }}
+                    {{ $t('common.actions.tags') }}
                   </button>
                 </LazyArticleTag>
                 <button
@@ -209,7 +209,7 @@
                   @click="del(row.original.id)"
                 >
                   <Icon name="mdi:delete" class="w-5 h-5 mr-2" />
-                  {{ $t('articles.actions.delete') }}
+                  {{ $t('common.actions.delete') }}
                 </button>
               </div>
             </div>
@@ -312,12 +312,12 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
 
 async function del(id: string) {
   const confirm = await Swal.fire({
-    title: $t('articles.messages.deleteConfirmTitle'),
-    text: $t('articles.messages.deleteConfirmText'),
+    title: $t('common.messages.deleteConfirmTitle'),
+    text: $t('common.messages.deleteConfirmText'),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: $t('articles.actions.delete'),
-    cancelButtonText: $t('articles.messages.deleteCancel'),
+    confirmButtonText: $t('common.actions.delete'),
+    cancelButtonText: $t('common.messages.deleteCancel'),
     confirmButtonColor: '#ef4444',
   })
   if (!confirm.isConfirmed) return
