@@ -116,7 +116,11 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     detectBrowserLanguage: {
       useCookie: true,
+      cookieKey: 'i18n_lang',
+      cookieSecure: true,
+      cookieCrossOrigin: true,
       redirectOn: 'root',
+      alwaysRedirect: true,
       fallbackLocale: 'en',
     },
     compilation: {
