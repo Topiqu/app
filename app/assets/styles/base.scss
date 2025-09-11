@@ -115,19 +115,10 @@ html.dark [role='dialog'] [id^='headlessui-dialog-panel'] {
 
 html.dark .swal2-popup {
   background-color: #374151 !important;
-  color: $input-text !important;
 }
 
 html.dark .swal2-styled {
   background-color: #4b5563 !important;
-  color: $input-text !important;
-}
-
-html.dark .swal2-title,
-html.dark .swal2-html-container,
-html.dark .swal2-actions,
-html.dark .swal2-icon-content {
-  color: $input-text !important;
 }
 
 .swal2-container {
@@ -155,25 +146,14 @@ html.dark button:hover {
   padding: 0.25rem 0.5rem;
 }
 
-html.dark .tippy-box {
+html.dark .tippy-box,
+html.dark .tippy-box .tippy-content,
+html.dark .tippy-box .tippy-arrow {
   background-color: #374151 !important;
   color: $input-text !important;
   border-color: #4b5563 !important;
 }
 
-[role='tooltip'] {
-  background-color: $input-bg;
-  color: $dialog-text !important;
-  border: 1px solid $border-color;
-  border-radius: 0.5rem;
-  padding: 0.25rem 0.5rem;
-}
-
-html.dark [role='tooltip'] {
-  background-color: #374151;
-  color: $input-text !important;
-  border-color: #4b5563;
-}
 
 [data-youtube-video] {
   width: 100%;
