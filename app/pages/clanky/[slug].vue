@@ -50,12 +50,12 @@
         <UserPicture :url="data.user?.avatarUrl" :size="'md'" :name="data.user.username" />
         <div class="flex flex-col">
           <div class="flex items-center gap-2">
-            <NuxtLink
-              :to="`/autor/${data.user.username}`"
+            <NuxtLinkLocale
+              :to="localePath({ name: 'autor-name', params: { name: data.user.username } })"
               class="font-medium text-[17px] text-blue-600 hover:text-blue-800 transition"
             >
               {{ data.user.username }}
-            </NuxtLink>
+            </NuxtLinkLocale>
             <span class="italic text-gray-400 text-sm">• {{ $t('articles.articleCard.author') }}</span>
           </div>
           <div class="flex items-center gap-2 mt-1">
@@ -102,15 +102,15 @@
       <span id="image-caption" class="sr-only">{{ $t('articles.articleCard.imageAlt') }}</span>
       <div v-if="hasTags" class="mt-4">
         <div class="flex flex-wrap gap-2.5">
-          <NuxtLink
+          <NuxtLinkLocale
             v-for="t in data.tags"
             :key="t.tag.slug"
-            :to="`/stitky/${t.tag.slug}`"
+            :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
             class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
           >
             <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
             {{ t.tag.name }}
-          </NuxtLink>
+          </NuxtLinkLocale>
         </div>
       </div>
       <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 mt-4">
@@ -264,6 +264,7 @@ type Image = { src: string; alt?: string }
 
 const route = useRoute()
 const toast = useToast()
+const localePath = useLocalePath()
 const { data: session } = useAuth()
 const slug = computed(() => route.params.slug)
 const isFollowing = shallowRef(false)

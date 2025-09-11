@@ -21,13 +21,12 @@
           >
             <UserPicture :url="u?.avatarUrl" :name="u?.username" />
             <div>
-              <NuxtLink
-                :to="`/autor/${u.username}`"
+              <NuxtLinkLocale
+                :to="localePath({ name: 'autor-name', params: { name: u?.username } })"
                 class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
                 {{ u.username }}
-              </NuxtLink>
-
+              </NuxtLinkLocale>
               <p v-if="u.bio" class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{{ u.bio }}</p>
             </div>
           </div>
@@ -40,6 +39,7 @@
 <script lang="ts" setup>
 const open = defineModel<boolean>()
 const props = defineProps<{ type: 'followers' | 'followed' }>()
+const localePath = useLocalePath()
 
 const url = computed(() => `/api/follows/${props.type}`)
 

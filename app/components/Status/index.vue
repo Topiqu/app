@@ -57,7 +57,7 @@ const props = defineProps<{
   actionText?: string
   actionTo?: string
 }>()
-const isMounted = ref(false)
+const isMounted = shallowRef<boolean>(false)
 onMounted(() => {
   isMounted.value = true
 })

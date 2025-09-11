@@ -147,10 +147,10 @@
       <div>
         <h3 class="text-xl font-bold mb-4">Nejčtenější</h3>
         <template v-if="topArticles.length">
-          <NuxtLink
+          <NuxtLinkLocale
             v-for="(top, idx) in topArticles"
             :key="top.id"
-            :to="`/clanky/${top.slug}`"
+            :to="localePath({ name: 'clanky-slug', params: { slug: top?.slug } })"
             class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
           >
             <div
@@ -173,21 +173,21 @@
                 {{ formatDate(top.createdAt ?? undefined) }}
               </div>
             </div>
-          </NuxtLink>
+          </NuxtLinkLocale>
         </template>
         <p v-else class="text-gray">Žádné články</p>
       </div>
       <div>
         <h3 class="text-xl font-bold mb-4">Tagy</h3>
         <div v-if="tags.length" class="flex flex-wrap gap-3">
-          <NuxtLink
+          <NuxtLinkLocale
             v-for="tag in tags"
             :key="tag.id"
-            :to="`/stitky/${tag.slug}`"
+            :to="localePath({ name: 'stitky-slug', params: { slug: tag.name } })"
             class="bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-95 transition duration-200 no-underline"
           >
             {{ tag.name }}
-          </NuxtLink>
+          </NuxtLinkLocale>
         </div>
         <p v-else class="text-gray">Žádné tagy</p>
       </div>
@@ -200,6 +200,7 @@ import 'tippy.js/dist/tippy.css'
 import { formatDate } from '~~/shared/utils'
 
 const { data: auth } = useAuth()
+const localePath = useLocalePath()
 
 const slug = 'GameDev'
 
