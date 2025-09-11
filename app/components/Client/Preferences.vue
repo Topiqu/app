@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="open" title="Vaše preference" :onClose="confirmClose">
+  <Modal v-model="open" :title="$t('common.preferences.title')" :onClose="confirmClose">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
@@ -8,7 +8,7 @@
       <LazyClientHint v-if="auth?.user?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
         <button
           class="p-2 rounded-full bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 border-none outline-none cursor-pointer"
-          title="Vysvětlení preferencí"
+          :title="$t('common.preferences.explanation')"
           @click="clientHintOpen.value = true"
         >
           <Icon name="mdi:information-outline" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
@@ -17,55 +17,61 @@
     </template>
 
     <template #content>
-      <div v-if="pending" class="text-center text-gray-500 dark:text-gray-400 py-8">Načítání dat...</div>
+      <div v-if="pending" class="text-center text-gray-500 dark:text-gray-400 py-8">{{ $t('common.loading') }}</div>
       <div v-else class="flex flex-col gap-6 mt-6">
         <label class="flex flex-col gap-2">
-          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Logo firmy</span>
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">{{
+            $t('common.preferences.companyLogo.label')
+          }}</span>
           <FileUploader :imageUrl="client?.logoUrl" type="client-logo" @upload="onLogoUpload" />
-          <span class="text-xs text-gray-500 dark:text-gray-400"
-            >PNG, JPEG, WebP nebo SVG, min. 512x512px, max. 2 MB</span
-          >
+          <span class="text-xs text-gray-500 dark:text-gray-400">
+            {{ $t('common.preferences.companyLogo.description') }}
+          </span>
         </label>
         <label class="flex flex-col gap-2">
-          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
-            >Popisek firmy</span
-          >
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+            {{ $t('common.preferences.companyDescription.label') }}
+          </span>
           <textarea
             v-model="form.description"
-            placeholder="Popisek firmy (např. Vaše mise nebo slogan)"
+            :placeholder="$t('common.preferences.companyDescription.placeholder')"
             maxlength="255"
             class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300 resize-none h-24"
           ></textarea>
         </label>
         <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
-          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Fokus</span>
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">{{
+            $t('common.preferences.focus.label')
+          }}</span>
           <input
             v-model="form.focus"
-            placeholder="Fokus (např. objektivní žurnalistika v gamingu, důraz na unreal engine)"
+            :placeholder="$t('common.preferences.focus.placeholder')"
             class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
           />
         </label>
         <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
-          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
-            >Cílová skupina</span
-          >
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+            {{ $t('common.preferences.audience.label') }}
+          </span>
           <input
             v-model="form.audience"
-            placeholder="Cílová skupina (např. mladí dospělí, profesionálové)"
+            :placeholder="$t('common.preferences.audience.placeholder')"
             class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
           />
         </label>
         <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
-          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300"
-            >Klíčová slova</span
-          >
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+            {{ $t('common.preferences.keywords.label') }}
+          </span>
           <input
             v-model="keywordsInput"
-            placeholder="Klíčová slova (oddělená čárkami)"
+            :placeholder="$t('common.preferences.keywords.placeholder')"
             class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
             @input="updateKeywords"
           />
-          <span class="text-sm text-gray-500 dark:text-gray-400">Slova: {{ form.keywords.length }}</span>
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{
+            $t('common.preferences.keywords.count', [form.keywords.length])
+          }}</span>
         </label>
         <div
           v-if="auth?.user?.plan !== 'BASIC' && client.tokenLimit && client.tokenLimit > 0"
@@ -73,20 +79,22 @@
         >
           <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
             <Icon name="mdi:robot" class="w-5 h-5" />
-            Nastavení AI autora
+            {{ $t('common.preferences.aiAuthor.title') }}
           </h3>
 
           <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Jméno AI</span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{
+              $t('common.preferences.aiAuthor.username.label')
+            }}</span>
             <input
               v-model="form.aiUser.username"
-              placeholder="Jméno AI"
+              :placeholder="$t('common.preferences.aiAuthor.username.placeholder')"
               class="p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm"
             />
           </label>
 
           <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Avatar AI</span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ $t('common.avatar.ai.label') }}</span>
             <FileUploader
               :imageUrl="form.aiUser.avatarUrl"
               type="user-avatar"
@@ -96,10 +104,12 @@
           </label>
 
           <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Popis AI</span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{
+              $t('common.preferences.aiAuthor.bio.label')
+            }}</span>
             <textarea
               v-model="form.aiUser.bio"
-              placeholder="Popis AI uživatele (max. 300 znaků)"
+              :placeholder="$t('common.preferences.aiAuthor.bio.placeholder')"
               maxlength="300"
               class="p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm resize-y min-h-[100px]"
             />
@@ -108,7 +118,7 @@
         <div class="flex flex-col gap-6">
           <div class="flex items-center justify-between">
             <span class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-200">
-              Sociální sítě
+              {{ $t('common.preferences.socials.label') }}
             </span>
             <div class="flex flex-wrap gap-2">
               <button
@@ -175,7 +185,9 @@
             </div>
           </div>
 
-          <span v-else class="text-sm text-gray-500 dark:text-gray-400">Sociální sítě zatím nejsou přidány.</span>
+          <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{
+            $t('common.preferences.socials.noSocials')
+          }}</span>
         </div>
       </div>
     </template>
@@ -186,13 +198,13 @@
           class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
           @click="close"
         >
-          Zrušit
+          {{ $t('common.messages.deleteCancel') }}
         </button>
         <button
           class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 text-white dark:text-black shadow-md bg-blue-600 dark:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           @click="savePreferences"
         >
-          Uložit
+          {{ $t('profile.saveChanges') }}
         </button>
       </div>
     </template>
@@ -314,17 +326,9 @@ const platformPlaceholders = computed(() => {
     OTHER: `https://${client.value?.subdomain}.cz`,
   }
 })
-
 if (client.value) {
   Object.assign(form.value, {
     ...client.value,
-    focus: client.value.focus || '',
-    audience: client.value.audience || '',
-    keywords: client.value.keywords || [],
-    description: client.value.description || '',
-    logoUrl: client.value.logoUrl || '',
-    socials: client.value.socials || [],
-    aiUser: client.value.aiUser || { username: '', bio: '', avatarUrl: '' },
   })
   keywordsInput.value = form.value.keywords.join(', ')
 }
@@ -343,27 +347,23 @@ const normalizeUrl = (i: number) =>
   (form.value.socials[i]!.url = form.value.socials[i]!.url.replace(/^http:\/\//, 'https://'))
 
 const savePreferences = async () => {
-  if (!auth.value?.user.clientSiteId) return toast.error({ message: 'Chybí ID klienta' })
+  if (!auth.value?.user.clientSiteId) return toast.error({ message: $t('common.preferences.messages.noClientId') })
   if (form.value.socials.some((s) => s.url.trim() && !isValidUrl(s.url)))
-    return toast.error({ message: 'Některé URL nejsou platné (musí začínat https://)' })
+    return toast.error({ message: $t('common.preferences.messages.invalidUrl') })
   try {
     await $fetch(`/api/clients/${auth.value.user.clientSiteId}`, {
       method: 'PATCH',
       body: {
-        focus: form.value.focus || undefined,
-        audience: form.value.audience || undefined,
-        keywords: form.value.keywords.length ? form.value.keywords : undefined,
-        description: form.value.description || undefined,
-        logoUrl: form.value.logoUrl || undefined,
+        ...form.value,
         socials: form.value.socials.filter((s) => s.url.trim()),
         aiUser: client.value.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
       },
     })
-    toast.success({ message: 'Nastavení uloženo' })
+    toast.success({ message: $t('common.preferences.messages.saveSuccess') })
     await refresh()
     open.value = false
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Uložení selhalo' })
+    toast.error({ message: e.data?.message || $t('common.preferences.messages.saveFailed') })
   }
 }
 
@@ -384,12 +384,12 @@ const confirmClose = async () => {
         form.value.aiUser.avatarUrl !== (client.value.aiUser?.avatarUrl || '')))
   if (changed) {
     const r = await Swal.fire({
-      title: 'Zavřít dialog?',
-      text: 'Neuložené změny budou ztraceny. Opravdu chcete pokračovat?',
+      title: $t('common.messages.closeConfirmTitle'),
+      text: $t('common.preferences.messages.closeConfirmText'),
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Ano, zavřít',
-      cancelButtonText: 'Ne',
+      confirmButtonText: $t('common.messages.closeConfirmButton'),
+      cancelButtonText: $t('common.messages.deleteCancel'),
       confirmButtonColor: '#ef4444',
     })
     if (r.isConfirmed) open.value = false

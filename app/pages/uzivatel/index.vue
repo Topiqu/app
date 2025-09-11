@@ -9,7 +9,7 @@
             <div class="flex items-center gap-4">
               <UserIcon class="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
-                {{ $t('articles.profile.title') }}
+                {{ $t('profile.title') }}
               </h2>
             </div>
             <AuthLogout />
@@ -21,7 +21,7 @@
               @click="openDialog('followed')"
             >
               <Icon name="mdi:account-multiple" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.profile.following') }}</p>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.following') }}</p>
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.followers ?? 0 }}</p>
             </div>
             <div
@@ -29,7 +29,7 @@
               @click="openDialog('followers')"
             >
               <Icon name="mdi:account-multiple" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.profile.followers') }}</p>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.followers') }}</p>
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.following ?? 0 }}</p>
             </div>
             <div
@@ -37,7 +37,7 @@
               @click="activeTab = 'likedArticles'"
             >
               <Icon name="mdi:heart" class="w-6 h-6 mx-auto text-red-500 dark:text-red-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.profile.likedArticles') }}</p>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.likedArticles') }}</p>
               <p class="text-lg font-semibold text-gray-900 dark:text-white">
                 {{ profileForm.likedArticles?.length ?? 0 }}
               </p>
@@ -54,7 +54,7 @@
               class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105"
             >
               <Icon name="mdi:thumb-up" class="w-6 h-6 mx-auto text-green-500 dark:text-green-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.profile.likes') }}</p>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.likes') }}</p>
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.likesCount ?? 0 }}</p>
             </div>
           </div>
@@ -63,7 +63,7 @@
             <div class="space-y-6">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('articles.profile.email') }}
+                  {{ $t('profile.email') }}
                 </label>
                 <input
                   :value="profileForm.email"
@@ -73,7 +73,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('articles.profile.username') }}
+                  {{ $t('profile.username') }}
                 </label>
                 <input
                   v-model="profileForm.username"
@@ -82,7 +82,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('articles.profile.bio') }}
+                  {{ $t('profile.bio') }}
                 </label>
                 <textarea
                   v-model="profileForm.bio"
@@ -92,7 +92,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('articles.profile.notifications') }}
+                  {{ $t('profile.notifications') }}
                 </label>
                 <div class="mt-3 space-y-4">
                   <div
@@ -108,11 +108,11 @@
                       <div class="flex items-center gap-2">
                         <Icon name="mdi:web" class="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                         <span class="font-medium text-gray-900 dark:text-white">
-                          {{ $t('articles.profile.webNotifications') }}
+                          {{ $t('profile.webNotifications') }}
                         </span>
                       </div>
                       <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ $t('articles.profile.webNotificationsDescription') }}
+                        {{ $t('profile.webNotificationsDescription') }}
                       </p>
                     </div>
                   </div>
@@ -129,11 +129,11 @@
                       <div class="flex items-center gap-2">
                         <Icon name="mdi:email-outline" class="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                         <span class="font-medium text-gray-900 dark:text-white">
-                          {{ $t('articles.profile.emailNotifications') }}
+                          {{ $t('profile.emailNotifications') }}
                         </span>
                       </div>
                       <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ $t('articles.profile.emailNotificationsDescription') }}
+                        {{ $t('profile.emailNotificationsDescription') }}
                       </p>
                     </div>
                   </div>
@@ -144,7 +144,7 @@
             <div class="space-y-6">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('articles.profile.avatar') }}
+                  {{ $t('common.avatar.title') }}
                 </label>
                 <div class="flex flex-col sm:flex-row items-center gap-4 mt-2">
                   <div class="cursor-pointer" @click="openFileDialog">
@@ -164,7 +164,7 @@
                       @click="openFileDialog"
                     >
                       <Upload class="w-5 h-5 mr-2" />
-                      {{ $t('articles.profile.uploadAvatar') }}
+                      {{ $t('common.avatar.uploadAvatar') }}
                     </button>
                     <p v-if="avatar.error" class="text-sm text-red-600">{{ avatar.error }}</p>
                     <p v-if="avatar.success" class="text-sm text-green-600">{{ avatar.success }}</p>
@@ -174,7 +174,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('articles.profile.registrationDate') }}
+                  {{ $t('profile.registrationDate') }}
                 </label>
                 <input
                   :value="formatDate(profileForm.createdAt)"
@@ -191,7 +191,7 @@
             @click="updateProfile"
           >
             <Save class="w-5 h-5 mr-2" />
-            {{ $t('articles.profile.saveChanges') }}
+            {{ $t('profile.saveChanges') }}
           </button>
           <UserActivity
             v-model:activeTab="activeTab"
@@ -301,11 +301,11 @@ async function uploadAvatar(e: Event) {
       method: 'POST',
       body: formData,
     })
-    avatar.value.success = $t('articles.profile.messages.avatarUploadSuccess')
+    avatar.value.success = $t('profile.messages.avatarUploadSuccess')
     profileForm.value.avatarUrl = url
     await refresh()
   } catch (err: any) {
-    avatar.value.error = err.data?.message || $t('articles.profile.messages.avatarUploadError')
+    avatar.value.error = err.data?.message || $t('profile.messages.avatarUploadError')
   } finally {
     isLoading.value = false
     if (input) input.value = ''
@@ -325,10 +325,10 @@ async function updateProfile() {
         allowEmail: profileForm.value.allowEmail,
       },
     })
-    toast.success({ message: $t('articles.profile.messages.profileUpdateSuccess') })
+    toast.success({ message: $t('profile.messages.profileUpdateSuccess') })
     await refresh()
   } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('articles.profile.messages.profileUpdateError') })
+    toast.error({ message: err.data?.message || $t('profile.messages.profileUpdateError') })
   } finally {
     isLoading.value = false
   }
@@ -343,9 +343,9 @@ async function updateNotifications() {
         allowEmail: profileForm.value.allowEmail,
       },
     })
-    toast.success({ message: $t('articles.profile.messages.notificationsUpdateSuccess') })
+    toast.success({ message: $t('profile.messages.notificationsUpdateSuccess') })
   } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('articles.profile.messages.notificationsUpdateError') })
+    toast.error({ message: err.data?.message || $t('profile.messages.notificationsUpdateError') })
   }
 }
 </script>

@@ -89,10 +89,10 @@
           {{ $t('articles.userMenu.adminIn', [data?.name || $t('articles.userMenu.noClientAssigned')]) }}
         </p>
         <p>{{ $t('common.user.joined', [formatDate(user.createdAt)]) }}</p>
-        <p>{{ $t('articles.profile.lastLogin', [formatDate(user.lastLogin)]) }}</p>
+        <p>{{ $t('profile.lastLogin', [formatDate(user.lastLogin)]) }}</p>
         <p>{{ $t('articles.comments.title') + ': ' }} {{ user.commentsCount ?? 0 }}</p>
-        <p>{{ $t('articles.profile.followers') + ': ' }} {{ user.followers ?? 0 }}</p>
-        <p v-if="user.following > 0">{{ $t('articles.profile.following', [user.following ?? 0]) }}</p>
+        <p>{{ $t('profile.followers') + ': ' }} {{ user.followers ?? 0 }}</p>
+        <p v-if="user.following > 0">{{ $t('profile.following', [user.following ?? 0]) }}</p>
         <div class="flex items-center gap-2">
           <Icon name="mdi:thumb-up" class="w-4 h-4 text-green-500 dark:text-green-400" />
           <span>{{ user.likesCount ?? 0 }}</span>

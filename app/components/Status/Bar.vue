@@ -7,14 +7,14 @@
         'fixed bottom-0 left-0 right-0 text-white p-2 text-center z-1000',
       ]"
     >
-      {{ isOnline ? 'Jste zpět online' : 'Jste offline' }}
+      {{ isOnline ? $t('common.connection.online') : $t('common.connection.offline') }}
     </div>
   </transition>
 </template>
 
 <script setup lang="ts">
 const isOnline = useOnline()
-const showBar = ref(false)
+const showBar = shallowRef<boolean>(false)
 
 const showTemporaryBar = () => {
   showBar.value = true

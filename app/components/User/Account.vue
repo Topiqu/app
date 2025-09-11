@@ -33,7 +33,7 @@
                 "
                 class="w-3.5 h-3.5"
               />
-              {{ userData.role === 'admin' ? $t('articles.userMenu.admin') : $t('articles.userMenu.superadmin') }}
+              {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
             </span>
           </div>
           <span class="text-left text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -86,7 +86,7 @@
                     "
                     class="w-3.5 h-3.5"
                   />
-                  {{ userData.role === 'admin' ? $t('articles.userMenu.admin') : $t('articles.userMenu.superadmin') }}
+                  {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
                 </span>
               </div>
               <span class="text-xs text-gray-500 dark:text-gray-400 break-all">
@@ -141,7 +141,7 @@
           class="w-9 h-9 text-gray-400 dark:text-gray-600 transition-colors duration-200"
         />
         <span class="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">
-          {{ $t('articles.userMenu.login') }}
+          {{ $t('common.auth.login') }}
         </span>
       </button>
       <Transition
@@ -170,7 +170,7 @@
               <div class="flex items-center gap-4">
                 <Icon name="mdi:account-circle-outline" class="w-16 h-16 text-gray-400 dark:text-gray-600" />
                 <p class="text-sm text-gray-700 dark:text-gray-300">
-                  {{ $t('articles.userMenu.loginPrompt') }}
+                  {{ $t('common.auth.loginPrompt') }}
                 </p>
               </div>
               <div class="flex flex-col gap-2">
@@ -178,13 +178,13 @@
                   to="/autorizace"
                   class="block w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center transition"
                 >
-                  {{ $t('articles.userMenu.login') }}
+                  {{ $t('common.auth.login') }}
                 </NuxtLink>
                 <NuxtLink
                   to="/autorizace?mode=register"
                   class="block w-full py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 text-center text-sm font-semibold transition"
                 >
-                  {{ $t('articles.userMenu.register') }}
+                  {{ $t('common.auth.register') }}
                 </NuxtLink>
               </div>
             </div>

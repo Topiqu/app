@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="open" title="Vytvořit emoji" :onClose="confirmClose">
+  <Modal v-model="open" :title="$t('emoji.create')" :onClose="confirmClose">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
@@ -7,10 +7,10 @@
     <template #content>
       <form class="mt-6 flex flex-col gap-6" @submit.prevent="submit">
         <label class="flex flex-col gap-2">
-          <span class="text-sm font-semibold uppercase tracking-wide">Shortcode</span>
+          <span class="text-sm font-semibold uppercase tracking-wide">{{ $t('common.labels.shortcode') }}</span>
           <input
             v-model="shortcode"
-            placeholder="např. smile"
+            :placeholder="$t('emoji.shortcodePlaceholder')"
             class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
             required
           />
@@ -19,7 +19,7 @@
       </form>
 
       <div class="mt-8">
-        <div v-if="loading && !emojis?.length" class="text-sm">Načítání...</div>
+        <div v-if="loading && !emojis?.length" class="text-sm">{{ $t('common.loading') }}</div>
         <div v-else-if="error" class="text-sm">{{ error }}</div>
         <div v-else ref="scrollParent" class="rounded-xl border shadow-inner">
           <div v-auto-animate :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
@@ -51,7 +51,7 @@
               </button>
             </div>
           </div>
-          <div v-if="!emojis?.length" class="px-2 py-4 text-sm text-center">Žádná emoji nenalezena.</div>
+          <div v-if="!emojis?.length" class="px-2 py-4 text-sm text-center">{{ $t('emoji.noEmojisFound') }}</div>
         </div>
       </div>
     </template>
@@ -62,14 +62,14 @@
           class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-sm"
           @click="close"
         >
-          Zrušit
+          {{ $t('common.messages.deleteCancel') }}
         </button>
         <button
           class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="!shortcode || !imageUrl"
           @click="submit"
         >
-          Vytvořit
+          {{ $t('emoji.create') }}
         </button>
       </div>
     </template>
@@ -112,15 +112,15 @@ const submit = async () => {
       body: { shortcode: shortcode.value, imageUrl: imageUrl.value },
     })
     if (res.success && res.emoji) {
-      toast.success({ message: `Emoji ${res.emoji.shortcode} přidáno` })
+      toast.success({ message: $t('emoji.createSuccess', [res.emoji.shortcode]) })
       shortcode.value = ''
       imageUrl.value = null
       await refresh()
     } else {
-      toast.error({ message: error.value?.message || 'Nepodařilo se přidat emoji' })
+      toast.error({ message: error.value?.message || $t('emoji.createFailed') })
     }
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Nepodařilo se přidat emoji' })
+    toast.error({ message: e.data?.message || $t('emoji.createFailed') })
   }
 }
 
@@ -128,25 +128,25 @@ const deleteEmoji = async (id: string) => {
   try {
     const res = await $fetch(`/api/emojis/${id}` as `/api/emojis/:id`, { method: 'DELETE' })
     if (res.success) {
-      toast.success({ message: `Emoji smazáno` })
+      toast.success({ message: $t('emoji.deleteSuccess') })
       await refresh()
     } else {
-      toast.error({ message: error.value?.message || 'Nepodařilo se smazat emoji' })
+      toast.error({ message: error.value?.message || $t('emoji.deleteFailed') })
     }
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Nepodařilo se smazat emoji' })
+    toast.error({ message: e.data?.message || $t('emoji.deleteFailed') })
   }
 }
 
 const confirmClose = async () => {
   if (!shortcode.value && !imageUrl.value) return (open.value = false)
   const r = await Swal.fire({
-    title: 'Zavřít dialog?',
-    text: 'Přidávání emoji bude zrušeno. Opravdu chcete pokračovat?',
+    title: $t('common.messages.closeConfirmTitle'),
+    text: $t('common.messages.closeConfirmText'),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Ano, zavřít',
-    cancelButtonText: 'Ne',
+    confirmButtonText: $t('common.messages.closeConfirmButton'),
+    cancelButtonText: $t('common.messages.deleteCancel'),
     confirmButtonColor: '#ef4444',
   })
   if (r.isConfirmed) open.value = false
