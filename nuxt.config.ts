@@ -98,22 +98,12 @@ export default defineNuxtConfig({
   },
   i18n: {
     locales: [
-      {
-        code: 'en',
-        iso: 'en-US',
-        name: 'EN',
-        file: 'en.json',
-      },
-      {
-        code: 'cs',
-        iso: 'cs-CZ',
-        name: 'CZ',
-        file: 'cs.json',
-      },
+      { code: 'en', iso: 'en-US', name: 'EN', file: 'en.json' },
+      { code: 'cs', iso: 'cs-CZ', name: 'CZ', file: 'cs.json' },
     ],
     vueI18n: './i18n/i18n.config.ts',
     defaultLocale: 'en',
-    strategy: 'no_prefix',
+    strategy: 'prefix_except_default',
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'i18n_lang',
@@ -126,6 +116,10 @@ export default defineNuxtConfig({
     compilation: {
       strictMessage: false,
       escapeHtml: false,
+    },
+    customRoutes: 'config',
+    pages: {
+      'clanky-slug': { cs: '/clanky/[slug]', en: '/articles/[slug]' },
     },
   },
   security: {

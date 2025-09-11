@@ -103,7 +103,12 @@
             <td
               class="px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4 min-h-[72px]"
             >
-              <Button :icon="'mdi:eye'" variant="success" @click="router.push(`/clanky/${row.original.slug}`)" />
+              {{ row.original.slug }}
+              <Button
+                :icon="'mdi:eye'"
+                variant="success"
+                @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
+              />
               <LazyArticleEdit v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
                 <Button :icon="'mdi:pencil'" @click="open.value = true" />
               </LazyArticleEdit>
@@ -241,7 +246,9 @@ const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 const { onArticleCreated, emitArticleDeleted } = useArticleEvent()
-
+const localePath = useLocalePath()
+console.log(useRouter().getRoutes())
+console.log(localePath({ name: 'clanky-slug', params: { slug: 'bbb-slug' } }))
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
 const globalFilter = shallowRef((route.query.query as string) || '')
