@@ -188,9 +188,7 @@
       "noBio": "Žádné bio",
       "adminIn": "Administrátor v: {0}",
       "noClientAssigned": "Nepřiřazen",
-      "userDataError": "Chyba při načítání uživatelských dat",
-      "admin": "Admin",
-      "superadmin": "Superadmin"
+      "userDataError": "Chyba při načítání uživatelských dat"
     },
     "dateFormats": {
       "justNow": "Právě teď",

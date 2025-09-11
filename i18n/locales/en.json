@@ -15,13 +15,27 @@
       "upload": "Select"
     },
     "avatar": {
+      "title": "Avatar",
+      "uploadAvatar": "Upload Avatar",
       "alt": {
         "profile": "Profile Picture",
         "company": "Company Logo",
         "author": "Author Avatar {0}"
       },
       "uploadSuccess": "Avatar uploaded",
-      "uploadError": "Upload failed"
+      "uploadError": "Upload failed",
+      "ai": {
+        "label": "AI Avatar"
+      }
+    },
+    "connection": {
+      "online": "You are back online",
+      "offline": "You are offline"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {0} of {1}"
     },
     "user": {
       "joined": "Joined: {0}",
@@ -43,6 +57,7 @@
       "excerpt": "Excerpt",
       "content": "Content",
       "image": "Image",
+      "shortcode": "Shortcode",
       "releaseDate": "Release Date"
     },
     "messages": {
@@ -62,7 +77,11 @@
       "invalidDateRange": "Release date must be between {0} and {1}",
       "draftSaved": "Draft saved",
       "draftSaveFailed": "Failed to save draft",
-      "invalidImage": "Select a valid image"
+      "invalidImage": "Select a valid image",
+      "saveSuccess": "Settings saved",
+      "saveFailed": "Failed to save settings",
+      "invalidUrl": "Some URLs are invalid (must start with https://)",
+      "noClientId": "Missing client ID"
     },
     "sortOptions": {
       "newest": "Newest",
@@ -71,7 +90,47 @@
     },
     "created": "Created at:",
     "deleted": "Deleted at:",
-    "cancelAction": "Cancel action"
+    "cancelAction": "Cancel action",
+    "preferences": {
+      "title": "Your Preferences",
+      "explanation": "Preferences Explanation",
+      "companyLogo": {
+        "label": "Company Logo",
+        "description": "PNG, JPEG, WebP, or SVG, min. 512x512px, max. 2 MB"
+      },
+      "companyDescription": {
+        "label": "Company Description",
+        "placeholder": "Company description (e.g., your mission or slogan)"
+      },
+      "focus": {
+        "label": "Focus",
+        "placeholder": "Focus (e.g., objective gaming journalism, emphasis on Unreal Engine)"
+      },
+      "audience": {
+        "label": "Target Audience",
+        "placeholder": "Target audience (e.g., young adults, professionals)"
+      },
+      "keywords": {
+        "label": "Keywords",
+        "placeholder": "Keywords (comma-separated)",
+        "count": "Words: {0}"
+      },
+      "aiAuthor": {
+        "title": "AI Author Settings",
+        "username": {
+          "label": "AI Name",
+          "placeholder": "AI Name"
+        },
+        "bio": {
+          "label": "AI Description",
+          "placeholder": "AI user description (max. 300 characters)"
+        }
+      },
+      "socials": {
+        "label": "Social Networks",
+        "noSocials": "No social networks added yet."
+      }
+    }
   },
   "articles": {
     "comments": {
@@ -131,11 +190,6 @@
       "published": "Published",
       "draft": "Draft"
     },
-    "pagination": {
-      "previous": "Previous",
-      "next": "Next",
-      "pageInfo": "Page {0} of {1}"
-    },
     "tags": {
       "title": "Article Tags",
       "addCustomTagPlaceholder": "Add custom tag",
@@ -188,9 +242,7 @@
       "noBio": "No bio",
       "adminIn": "Administrator in: {0}",
       "noClientAssigned": "Not assigned",
-      "userDataError": "Error loading user data",
-      "admin": "Admin",
-      "superadmin": "Superadmin"
+      "userDataError": "Error loading user data"
     },
     "dateFormats": {
       "justNow": "Just now",
@@ -214,32 +266,6 @@
       "questionPlaceholder": "Enter a question",
       "optionPlaceholder": "Option",
       "addOption": "Add option"
-    },
-    "profile": {
-      "title": "My Profile",
-      "following": "Following",
-      "followers": "Followers",
-      "likedArticles": "Liked Articles",
-      "likes": "Likes",
-      "email": "Email",
-      "username": "Username",
-      "lastLogin": "Last login: {0}",
-      "bio": "Bio",
-      "notifications": "Notifications",
-      "webNotifications": "Web Notifications",
-      "webNotificationsDescription": "Send messages directly in the browser",
-      "emailNotifications": "Email Notifications",
-      "emailNotificationsDescription": "Receive messages via email",
-      "avatar": "Avatar",
-      "uploadAvatar": "Upload Avatar",
-      "registrationDate": "Registration Date",
-      "saveChanges": "Save Changes",
-      "messages": {
-        "profileUpdateSuccess": "Profile updated",
-        "profileUpdateError": "Update failed",
-        "notificationsUpdateSuccess": "Notification settings saved",
-        "notificationsUpdateError": "Failed to save notifications"
-      }
     },
     "activity": {
       "tabs": {
@@ -270,6 +296,90 @@
       "createFailed": "Failed to create article",
       "aiContentGenerated": "AI content generated successfully",
       "aiContentFailed": "Failed to generate AI content"
+    }
+  },
+  "emoji": {
+    "create": "Create Emoji",
+    "shortcodePlaceholder": "e.g., smile",
+    "noEmojisFound": "No emojis found",
+    "createSuccess": "Emoji {0} added",
+    "createFailed": "Failed to add emoji",
+    "deleteSuccess": "Emoji deleted",
+    "deleteFailed": "Failed to delete emoji"
+  },
+  "stats": {
+    "title": "Blog Statistics",
+    "loading": "Loading data...",
+    "noArticles": {
+      "title": "Blog has no articles yet",
+      "description": "Statistics will be available after adding the first article"
+    },
+    "totalViews": {
+      "title": "Total Views",
+      "noViews": "No views yet"
+    },
+    "articleCount": "Article Count",
+    "totalShares": {
+      "title": "Total Shares",
+      "noShares": "No shares yet"
+    },
+    "topArticle": {
+      "title": "Most Read Article",
+      "noViews": "No article has been read yet"
+    },
+    "topTag": {
+      "title": "Most Popular Tag",
+      "noTags": "No tags used yet"
+    },
+    "topLikedArticle": {
+      "title": "Most Liked Article",
+      "noLikes": "No article has been liked yet"
+    },
+    "topCommentedArticle": {
+      "title": "Most Commented Article",
+      "noComments": "No articles have comments yet"
+    },
+    "followerCount": "Follower Count",
+    "engagementRate": {
+      "title": "Engagement Rate",
+      "tooltip": "Engagement rate shows how actively readers interact with your articles. It is calculated as the average ratio of interactions (likes, comments, shares, and poll votes) to views for each article. A higher value indicates greater reader engagement."
+    },
+    "topAuthor": {
+      "title": "Most Active Author",
+      "noAuthors": "No author has contributed yet"
+    },
+    "upgradePrompt": {
+      "title": "Unlock Premium Statistics",
+      "description": "Gain deeper insights into your blog's performance with advanced charts, share analysis, engagement rate, and popular tags. Upgrade to PRO or PREMIUM to maximize your potential!",
+      "button": "Explore Plans"
+    },
+    "charts": {
+      "viewsLastWeek": "Views in the Last Week",
+      "shareDistribution": "Share Distribution by Platform"
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "following": "Following",
+    "followers": "Followers",
+    "likedArticles": "Liked Articles",
+    "likes": "Likes",
+    "email": "Email",
+    "username": "Username",
+    "lastLogin": "Last login: {0}",
+    "bio": "Bio",
+    "notifications": "Notifications",
+    "webNotifications": "Web Notifications",
+    "webNotificationsDescription": "Send messages directly in the browser",
+    "emailNotifications": "Email Notifications",
+    "emailNotificationsDescription": "Receive messages via email",
+    "registrationDate": "Registration Date",
+    "saveChanges": "Save Changes",
+    "messages": {
+      "profileUpdateSuccess": "Profile updated",
+      "profileUpdateError": "Update failed",
+      "notificationsUpdateSuccess": "Notification settings saved",
+      "notificationsUpdateError": "Failed to save notifications"
     }
   }
 }
