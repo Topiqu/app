@@ -110,7 +110,7 @@ export default defineNuxtConfig({
       cookieSecure: true,
       cookieCrossOrigin: true,
       redirectOn: 'root',
-      alwaysRedirect: true,
+      alwaysRedirect: false,
       fallbackLocale: 'en',
     },
     compilation: {

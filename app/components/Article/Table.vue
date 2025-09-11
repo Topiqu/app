@@ -103,7 +103,6 @@
             <td
               class="px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4 min-h-[72px]"
             >
-              {{ row.original.slug }}
               <Button
                 :icon="'mdi:eye'"
                 variant="success"
@@ -184,38 +183,18 @@
               class="absolute z-10 right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
             >
               <div class="py-1">
-                <button
-                  class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-green-100"
-                  @click="router.push(`/clanky/${row.original.slug}`)"
-                >
-                  <Icon name="mdi:eye" class="w-5 h-5 mr-2" />
-                  {{ $t('common.actions.view') }}
-                </button>
+                <Button
+                  :icon="'mdi:eye'"
+                  variant="success"
+                  @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
+                />
                 <LazyArticleEdit v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
-                  <button
-                    class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-blue-100"
-                    @click="open.value = true"
-                  >
-                    <Icon name="mdi:pencil" class="w-5 h-5 mr-2" />
-                    {{ $t('common.actions.edit') }}
-                  </button>
+                  <Button :icon="'mdi:pencil'" @click="open.value = true" />
                 </LazyArticleEdit>
                 <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
-                  <button
-                    class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-yellow-100"
-                    @click="open.value = true"
-                  >
-                    <Icon name="mdi:tag-outline" class="w-5 h-5 mr-2" />
-                    {{ $t('common.actions.tags') }}
-                  </button>
+                  <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
                 </LazyArticleTag>
-                <button
-                  class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-red-100"
-                  @click="del(row.original.id)"
-                >
-                  <Icon name="mdi:delete" class="w-5 h-5 mr-2" />
-                  {{ $t('common.actions.delete') }}
-                </button>
+                <Button :icon="'mdi:delete'" variant="danger" @click="del(row.original.id)" />
               </div>
             </div>
           </div>
@@ -247,12 +226,9 @@ const route = useRoute()
 const toast = useToast()
 const { onArticleCreated, emitArticleDeleted } = useArticleEvent()
 const localePath = useLocalePath()
-console.log(useRouter().getRoutes())
-console.log(localePath({ name: 'clanky-slug', params: { slug: 'bbb-slug' } }))
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
 const globalFilter = shallowRef((route.query.query as string) || '')
-
 const { data: articles, refresh } = await useFetch<{ data: Article[]; total: number }>(
   () =>
     `/api/articles/search?page=${page.value}&limit=${limit}${globalFilter.value ? `&query=${encodeURIComponent(globalFilter.value)}` : ''}`,
