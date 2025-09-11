@@ -191,7 +191,7 @@
             @click="updateProfile"
           >
             <Save class="w-5 h-5 mr-2" />
-            {{ $t('profile.saveChanges') }}
+            {{ $t('common.actions.saveChanges') }}
           </button>
           <UserActivity
             v-model:activeTab="activeTab"

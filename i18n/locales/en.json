@@ -12,7 +12,8 @@
       "edit": "Edit",
       "tags": "Tags",
       "delete": "Delete",
-      "upload": "Select"
+      "upload": "Select",
+      "saveChanges": "Save Changes"
     },
     "avatar": {
       "title": "Avatar",
@@ -71,15 +72,15 @@
       "reportSuccess": "Reported successfully",
       "reportFailed": "Reporting failed",
       "closeConfirmTitle": "Close dialog?",
-      "closeConfirmText": "Adding the article will be canceled. Do you want to continue?",
+      "closeConfirmText": "All the changes made will be lost. Do you want to continue?",
       "closeConfirmButton": "Yes, close",
       "requiredField": "{0} is required",
       "invalidDateRange": "Release date must be between {0} and {1}",
       "draftSaved": "Draft saved",
       "draftSaveFailed": "Failed to save draft",
       "invalidImage": "Select a valid image",
-      "saveSuccess": "Settings saved",
-      "saveFailed": "Failed to save settings",
+      "saveSuccess": "Successfully saved",
+      "saveFailed": "Failed to save",
       "invalidUrl": "Some URLs are invalid (must start with https://)",
       "noClientId": "Missing client ID"
     },
@@ -274,6 +275,7 @@
       }
     },
     "editor": {
+      "title": "Edit Article",
       "modes": {
         "manual": "Manual Writing",
         "ai": "AI Generation"
@@ -374,7 +376,6 @@
     "emailNotifications": "Email Notifications",
     "emailNotificationsDescription": "Receive messages via email",
     "registrationDate": "Registration Date",
-    "saveChanges": "Save Changes",
     "messages": {
       "profileUpdateSuccess": "Profile updated",
       "profileUpdateError": "Update failed",

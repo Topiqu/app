@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="open" title="Úprava článku" :onClose="confirmClose">
+  <Modal v-model="open" :title="$t('articles.editor.title')" :onClose="confirmClose">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
@@ -7,40 +7,40 @@
     <template #content>
       <div class="flex flex-col gap-6">
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide">Název článku</span>
+          <span class="text-sm font-semibold tracking-wide">{{ $t('common.labels.articleTitle') }}</span>
           <input
             v-model="editedArticle.title"
-            placeholder="Název článku"
+            :placeholder="$t('common.labels.articleTitle')"
             class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
             @input="updateSlug"
           />
-          <span class="text-sm text-gray-500">URL Titulek: {{ editedArticle.slug }}</span>
+          <span class="text-sm text-gray-500">URL: {{ editedArticle.slug }}</span>
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide">Perex</span>
+          <span class="text-sm font-semibold tracking-wide">{{ $t('common.labels.excerpt') }}</span>
           <textarea
             v-model="editedArticle.excerpt"
-            placeholder="Zadejte krátký popis článku..."
+            :placeholder="$t('common.labels.articleExcerpt')"
             class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
           ></textarea>
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide">Obsah</span>
+          <span class="text-sm font-semibold tracking-wide">{{ $t('common.labels.content') }}</span>
           <TiptapEditor v-model="editedArticle.content" edit />
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide">Titulní Obrázek</span>
+          <span class="text-sm font-semibold tracking-wide">{{ $t('common.labels.image') }}</span>
           <FileUploader :imageUrl="editedArticle.imageUrl" @upload="handleUpload" />
           <span v-if="editedArticle.imageUrl" class="text-sm text-gray-500">
-            Obrázek: {{ editedArticle.imageUrl }}
+            {{ $t('common.labels.image') + ': ' + editedArticle.imageUrl }}
           </span>
         </label>
 
         <label v-if="showReleaseAt" class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide">Datum vydání</span>
+          <span class="text-sm font-semibold tracking-wide">{{ $t('common.labels.releaseDate') }}</span>
           <input
             v-model="editedArticle.releaseAt"
             type="datetime-local"
@@ -49,7 +49,7 @@
             class="p-4 rounded-xl text-base bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
           />
           <span class="text-sm text-gray-500">
-            Slouží pro nastavení data a času publikace článku. Můžete nechat prázdné pro manuální vydání.
+            {{ $t('articles.editor.releaseDateNote') }}
           </span>
         </label>
 
@@ -59,8 +59,8 @@
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
-        <Button variant="danger" @click="close"> Zavřít </Button>
-        <Button :disabled="!editedArticle.title" @click="saveEdit">Uložit změny</Button>
+        <Button variant="danger" @click="close">{{ $t('common.close') }}</Button>
+        <Button :disabled="!editedArticle.title" @click="saveEdit">{{ $t('common.actions.saveChanges') }}</Button>
       </div>
     </template>
   </Modal>
@@ -122,15 +122,15 @@ const updateTags = async (tagIds: string[]) => {
     ),
   )
 
-  toast.success({ message: 'Tag přidán.' })
+  toast.success({ message: $t('articles.tags.addTagSuccess') })
 }
 
 const deleteTag = async (tagId: string) => {
   try {
     await $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, { method: 'DELETE' })
-    toast.success({ message: 'Tag odebrán.' })
+    toast.success({ message: $t('articles.tags.removeTagSuccess') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Chyba při odebírání tagu.' })
+    toast.error({ message: e.data?.message || $t('articles.tags.operationFailed') })
   }
 }
 
@@ -140,7 +140,7 @@ const saveEdit = async () => {
     const minDateObj = new Date(minDate)
     const maxDateObj = new Date(maxDate)
     if (releaseDate < minDateObj || releaseDate > maxDateObj) {
-      return toast.error({ message: 'Datum vydání musí být od teď do ' + (currentDate.getFullYear() + 100) })
+      return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
     }
   }
   try {
@@ -156,22 +156,22 @@ const saveEdit = async () => {
         releaseAt: editedArticle.value.releaseAt || undefined,
       },
     })
-    toast.success({ message: 'Článek byl úspěšně upraven' })
+    toast.success({ message: $t('common.messages.saveSuccess') })
     open.value = false
     emit('saved')
   } catch (error: any) {
-    toast.error({ message: error.data?.message || 'Úprava článku selhala' })
+    toast.error({ message: error.data?.message || $t('common.messages.saveFailed') })
   }
 }
 
 const confirmClose = async () => {
   const r = await Swal.fire({
-    title: 'Zavřít dialog?',
-    text: 'Úprava článku bude zrušena. Opravdu chcete pokračovat?',
+    title: $t('common.messages.closeConfirmTitle'),
+    text: $t('common.messages.closeConfirmText'),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Ano, zavřít',
-    cancelButtonText: 'Ne',
+    confirmButtonText: $t('common.messages.closeConfirmButton'),
+    cancelButtonText: $t('common.messages.deleteCancel'),
     confirmButtonColor: '#ef4444',
   })
   if (r.isConfirmed) open.value = false

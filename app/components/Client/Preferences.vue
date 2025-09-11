@@ -204,7 +204,7 @@
           class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 text-white dark:text-black shadow-md bg-blue-600 dark:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           @click="savePreferences"
         >
-          {{ $t('profile.saveChanges') }}
+          {{ $t('common.actions.saveChanges') }}
         </button>
       </div>
     </template>
