@@ -12,7 +12,7 @@
           }}</span>
           <input
             v-model="newArticle.title"
-            :placeholder="$t('common.labels.title')"
+            :placeholder="$t('common.labels.articleTitle')"
             class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
             @input="updateSlug"
           />
@@ -25,7 +25,7 @@
           }}</span>
           <textarea
             v-model="newArticle.excerpt"
-            :placeholder="$t('common.labels.excerpt')"
+            :placeholder="$t('common.labels.articleExcerpt')"
             class="p-4 rounded-xl dark:text-gray-200 text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
           ></textarea>
         </label>

@@ -36,6 +36,8 @@
     },
     "labels": {
       "article": "Article:",
+      "articleTitle": "Article title",
+      "articleExcerpt": "Brief article description (2-4 sentences)",
       "tagName": "Tag Name",
       "title": "Title",
       "excerpt": "Excerpt",

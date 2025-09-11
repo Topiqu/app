@@ -37,6 +37,8 @@
     "labels": {
       "article": "Článek:",
       "tagName": "Název štítku",
+      "articleTitle": "Název článku",
+      "articleExcerpt": "Krátký popisek článku (2-4 věty)",
       "title": "Název",
       "excerpt": "Perex",
       "content": "Obsah",
