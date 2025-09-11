@@ -120,6 +120,8 @@ export default defineNuxtConfig({
     customRoutes: 'config',
     pages: {
       'clanky-slug': { cs: '/clanky/[slug]', en: '/articles/[slug]' },
+      'autor-name': { cs: '/autor/[name]', en: '/author/[name]' },
+      'stitky-slug': { cs: '/stitky/[slug]', en: '/tags/[slug]' },
     },
   },
   security: {
