@@ -113,12 +113,17 @@ html.dark [role='dialog'] [id^='headlessui-dialog-panel'] {
   border-radius: 0.5rem !important;
 }
 
-html.dark .swal2-popup {
-  background-color: #374151 !important;
+html.dark .swal2-popup button.swal2-confirm.swal2-styled {
+  background: var(--swal2-confirm-button-background-color, #ef4444) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
 }
 
-html.dark .swal2-styled {
-  background-color: #4b5563 !important;
+html.dark .swal2-popup button.swal2-deny.swal2-styled,
+html.dark .swal2-popup button.swal2-cancel.swal2-styled {
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
 }
 
 .swal2-container {

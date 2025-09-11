@@ -97,7 +97,7 @@
               !isFeatured,
           }"
         >
-          {{ $t('articles.articleCard.readMore') }}
+          {{ $t('common.readMore') }}
         </NuxtLink>
         <div
           :class="{ 'mt-6 text-base': isFeatured, 'mt-4 text-sm': !isFeatured }"
