@@ -8,13 +8,13 @@
         <NuxtLink
           to="/admin"
           class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 no-underline"
-          aria-label="Zpět na seznam článků"
+          :aria-label="$t('common.actions.backToList')"
         >
           <Icon
             name="mdi:arrow"
             class="w-6 h-6 mr-2 transition-transform duration-300 group-hover:-translate-x-1.5 text-blue-700"
           />
-          Zpět na seznam
+          {{ $t('common.actions.backToList') }}
         </NuxtLink>
         <h1
           class="text-xl font-extrabold text-gray-900 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent tracking-tight leading-tight"
@@ -33,13 +33,13 @@
       <NuxtLink
         to="/admin"
         class="group inline-flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300 no-underline"
-        aria-label="Zpět na seznam článků"
+        :aria-label="$t('common.actions.backToList')"
       >
         <Icon
           name="mdi:arrow"
           class="w-6 h-6 mr-2 transition-transform duration-300 group-hover:-translate-x-1.5 text-blue-700"
         />
-        Zpět na seznam
+        {{ $t('common.actions.backToList') }}
       </NuxtLink>
       <h1
         class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent tracking-tight leading-tight"
@@ -56,19 +56,18 @@
             >
               {{ data.user.username }}
             </NuxtLink>
-            <span class="italic text-gray-400 text-sm">• Autor článku</span>
+            <span class="italic text-gray-400 text-sm">• {{ $t('articles.articleCard.author') }}</span>
           </div>
           <div class="flex items-center gap-2 mt-1">
             <span
               class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
             >
               <Icon name="mdi:account-group" class="w-3.5 h-3.5" />
-              {{ data.followerCount ?? 0 }} sledujících
+              {{ data.followerCount ?? 0 }} {{ $t('profile.followers') }}
             </span>
             <button
               v-if="session?.user && session.user.id !== data.user.id"
               class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full border text-xs cursor-pointer font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-200 hover:shadow-md transform hover:scale-105 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-500"
-              :aria-label="isFollowing ? 'Přestat sledovat autora' : 'Sledovat autora'"
               @click="toggleFollow"
             >
               <Icon
@@ -76,7 +75,7 @@
                 class="w-3.5 h-3.5"
                 :class="isFollowing ? 'text-green-500' : 'text-gray-500'"
               />
-              {{ isFollowing ? 'Sledování' : 'Sledovat' }}
+              {{ isFollowing ? $t('articles.comments.banUser') : $t('articles.comments.unbanUser') }}
             </button>
           </div>
         </div>
@@ -90,7 +89,7 @@
       <NuxtImg
         v-if="data.imageUrl"
         :src="data.imageUrl"
-        :alt="`Titulní obrázek k článku: ${data.title}`"
+        :alt="$t('articles.articleCard.imageAlt')"
         format="webp"
         quality="80"
         width="800"
@@ -100,7 +99,7 @@
         loading="lazy"
         placeholder
       />
-      <span id="image-caption" class="sr-only">Titulní obrázek článku</span>
+      <span id="image-caption" class="sr-only">{{ $t('articles.articleCard.imageAlt') }}</span>
       <div v-if="hasTags" class="mt-4">
         <div class="flex flex-wrap gap-2.5">
           <NuxtLink
@@ -118,17 +117,13 @@
         <div class="flex flex-wrap items-center gap-4">
           <template v-if="session?.user.role === 'admin' && session.user.id === data.user.id">
             <div class="flex items-center gap-2">
-              <span class="font-medium">Stav:</span>
+              <span class="font-medium">{{ $t('articles.columns.status') }}</span>
               <ArticleStatusCell :onUpdate="debouncedSetStatus" :row="{ original: data }" />
-              <span
-                v-if="data.status === 'published'"
-                class="w-2 h-2 bg-green-500 rounded-full animate-pulse-slow"
-                aria-label="Článek je publikován"
-              />
+              <span v-if="data.status === 'published'" class="w-2 h-2 bg-green-500 rounded-full animate-pulse-slow" />
             </div>
             <span class="text-gray-300">|</span>
             <div class="flex items-center gap-2">
-              <span>Komentáře</span>
+              <span>{{ $t('articles.comments.title') }}</span>
               <button
                 role="switch"
                 :class="[
@@ -154,12 +149,12 @@
           <span class="text-gray-300">|</span>
           <div class="flex items-center gap-2">
             <Icon name="mdi:clock-outline" class="w-4 h-4" />
-            <span>{{ data.readingTime }} min čtení</span>
+            <span>{{ $t('articles.readingTime', [data.readingTime]) }}</span>
           </div>
         </div>
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-1">
-            <span>{{ formatNumber(data.views) }}x zhlédnutí</span>
+            <span>{{ formatNumber(data.views) }} {{ $t('stats.totalViews.title') }}</span>
           </div>
           <div class="flex items-center gap-1">
             <Icon
@@ -167,11 +162,11 @@
               class="w-4 h-4"
               :class="{ 'text-red-500': data.likedByUser, 'text-gray-500': !data.likedByUser }"
             />
-            <span>{{ formatNumber(data.likes) }}</span>
+            <span>{{ formatNumber(data.likes) }} {{ $t('profile.likes') }}</span>
           </div>
           <div class="flex items-center gap-1">
             <Icon name="mdi:share-variant" class="w-4 h-4 text-gray-500" />
-            <span>{{ formatNumber(data.shared) }}</span>
+            <span>{{ formatNumber(data.shared) }} {{ $t('stats.totalShares.title') }}</span>
           </div>
           <LazyArticleEdit
             v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
@@ -182,7 +177,7 @@
           >
             <button
               class="flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
-              aria-label="Upravit článek"
+              :aria-label="$t('common.actions.edit')"
               @click="open.value = true"
             >
               <Icon name="mdi:pencil" class="w-5 h-5" />
@@ -192,17 +187,17 @@
       </div>
       <div class="flex justify-end gap-4 mt-10">
         <button
-          aria-label="Lajknout článek"
+          :aria-label="$t('common.actions.like')"
           class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 cursor-pointer hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-red-400 dark:hover:border-red-400"
-          title="Lajknout článek"
+          :title="$t('common.actions.like')"
           @click="toggleLike"
         >
           <Icon name="mdi:heart" class="w-5 h-5" :class="{ 'text-red-500 dark:text-red-400': data.likedByUser }" />
         </button>
         <button
-          aria-label="Zkopírovat odkaz"
+          :aria-label="$t('common.actions.copyLink')"
           class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 cursor-pointer hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:hover:border-blue-500"
-          title="Zkopírovat odkaz"
+          :title="$t('common.actions.copyLink')"
           @click="copyLink"
         >
           <Icon name="mdi:link-variant" class="w-5 h-5" />
@@ -211,8 +206,8 @@
           :to="`https://x.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
           target="_blank"
           class="w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
-          title="Sdílet na X"
-          aria-label="Sdílet na X"
+          :title="$t('common.actions.shareX')"
+          :aria-label="$t('common.actions.shareX')"
           @click="share('TWITTER')"
         >
           <Icon name="mdi:twitter" class="w-5 h-5" />
@@ -221,8 +216,8 @@
           :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
           target="_blank"
           class="w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
-          title="Sdílet na LinkedIn"
-          aria-label="Sdílet na LinkedIn"
+          :title="$t('common.actions.shareLinkedIn')"
+          :aria-label="$t('common.actions.shareLinkedIn')"
           @click="share('LINKEDIN')"
         >
           <Icon name="mdi:linkedin" class="w-5 h-5" />
@@ -254,7 +249,6 @@
     :message="`Chyba ${error?.message ?? '– něco se tady pokazilo.'}`"
   />
   <Status v-else-if="status === 'pending'" type="pending" />
-  <!-- <StatusDemo /> -->
 </template>
 
 <script lang="ts" setup>
