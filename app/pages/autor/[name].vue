@@ -4,7 +4,7 @@
       <Back />
       <div class="text-center">
         <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-          Články autora:
+          {{ $t('articles.authorsArticles') }}
           <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
             {{ authorName }}
           </span>
@@ -13,7 +13,7 @@
           <NuxtImg
             v-if="author.avatarUrl"
             :src="author.avatarUrl"
-            alt="Avatar autora"
+            :alt="$t('common.avatar.alt.author', [authorName])"
             class="w-16 h-16 rounded-full border border-gray-200 dark:border-neutral-700 object-cover"
           />
           <p v-if="author.bio" class="text-gray-600 dark:text-gray-400 max-w-lg">
@@ -27,17 +27,17 @@
       >
         <input
           v-model="search"
-          placeholder="Hledat články..."
+          :placeholder="$t('articles.searchPlaceholder')"
           class="w-full px-5 py-3 rounded-xl border border-gray-300 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
         />
         <select
           v-model="sort"
           class="px-5 py-3 rounded-xl border border-gray-300 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
         >
-          <option value="createdAt:desc">Nejnovější</option>
-          <option value="createdAt:asc">Nejstarší</option>
-          <option value="title:asc">Název A-Z</option>
-          <option value="title:desc">Název Z-A</option>
+          <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
+          <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
+          <option value="title:asc">{{ $t('common.labels.title') }} A-Z</option>
+          <option value="title:desc">{{ $t('common.labels.title') }} Z-A</option>
         </select>
       </div>
 
@@ -55,7 +55,7 @@
               <NuxtImg
                 v-if="a.article.imageUrl"
                 :src="a.article.imageUrl"
-                :alt="`Titulní obrázek k článku: ${a.article.title}`"
+                :alt="$t('articles.articleCard.imageAlt')"
                 format="webp"
                 quality="80"
                 width="160"
@@ -87,7 +87,7 @@
                         :name="a.article.status === 'draft' ? 'mdi:pencil-outline' : 'mdi:check-circle-outline'"
                         class="w-4 h-4"
                       />
-                      {{ a.article.status === 'draft' ? 'Návrh' : 'Publikováno' }}
+                      {{ a.article.status === 'draft' ? $t('articles.status.draft') : $t('articles.status.published') }}
                     </span>
                     <span>•</span>
                   </div>
@@ -107,12 +107,12 @@
                       name="mdi:eye"
                       class="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition"
                     />
-                    {{ a.article.views }} zhlédnutí
+                    {{ a.article.views }} {{ $t('stats.totalViews.title') }}
                   </span>
                   <span>•</span>
                   <span class="inline-flex items-center gap-1 group-hover:text-red-500 transition">
                     <Icon name="mdi:heart" class="w-4 h-4 text-gray-400 group-hover:scale-110 transition" />
-                    {{ a.article.likes }}
+                    {{ a.article.likes }} {{ $t('profile.likes') }}
                   </span>
                 </div>
               </div>
@@ -122,7 +122,7 @@
       </div>
 
       <p v-else class="text-gray-500 dark:text-gray-400 italic text-center py-8 text-lg">
-        Tento autor zatím nemá žádné články.
+        {{ $t('articles.noResults.message') }}
       </p>
     </div>
   </div>
@@ -164,7 +164,7 @@ const search = shallowRef<string>('')
 const sort = shallowRef<string>('createdAt:desc')
 
 const { data: author } = await useFetch<AuthorResponse>(`/api/articles/${username.value}/by-author`, {
-  default: () => ({ id: '', username: 'Neznámý autor', articles: [] }),
+  default: () => ({ id: '', username: $t('articles.articleCard.noAuthor'), articles: [] }),
 })
 
 const authorName = computed(() => author.value.username)

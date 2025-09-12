@@ -1,9 +1,9 @@
 <template>
   <div class="bg-white px-6 py-8 rounded-2xl shadow-md border border-gray-200 space-y-6">
     <form v-if="mode === 'forgot'" class="space-y-5 text-sm" @submit.prevent="forgot">
-      <p class="text-gray-500 text-center text-sm">Zadejte e-mail pro obnovu hesla</p>
+      <p class="text-gray-500 text-center text-sm">{{ $t('common.auth.forgotPasswordPrompt') }}</p>
       <div class="space-y-1.5">
-        <label for="email" class="block font-semibold text-gray-700">Email</label>
+        <label for="email" class="block font-semibold text-gray-700">{{ $t('profile.email') }}</label>
         <div class="relative">
           <Icon name="mdi:envelope" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
           <input
@@ -21,7 +21,7 @@
         type="submit"
         class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
       >
-        Odeslat kód
+        {{ $t('common.auth.sendCode') }}
       </button>
       <div class="text-center">
         <button
@@ -29,15 +29,15 @@
           class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent hover:bg-black/5 border-none text-blue-600 hover:text-blue-700 text-sm font-medium transition"
           @click="emit('update:mode', 'login')"
         >
-          Zpět na přihlášení
+          {{ $t('common.auth.backToLogin') }}
         </button>
       </div>
     </form>
 
     <form v-if="mode === 'reset'" class="space-y-5 text-sm" @submit.prevent="reset">
-      <p class="text-gray-500 text-sm">Zadejte ověřovací kód a nové heslo</p>
+      <p class="text-gray-500 text-sm">{{ $t('common.auth.resetPasswordPrompt') }}</p>
       <div class="space-y-1.5">
-        <label for="code" class="block font-semibold text-gray-500">Ověřovací kód</label>
+        <label for="code" class="block font-semibold text-gray-500">{{ $t('common.auth.verificationCode') }}</label>
         <div class="relative">
           <Icon name="mdi:shield-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
           <input
@@ -48,13 +48,13 @@
             required
             minlength="8"
             maxlength="8"
-            placeholder="8místný kód"
+            :placeholder="$t('common.auth.verificationCodePlaceholder')"
           />
         </div>
       </div>
 
       <div class="space-y-1.5">
-        <label for="password" class="block font-semibold text-gray-500">Nové heslo</label>
+        <label for="password" class="block font-semibold text-gray-500">{{ $t('common.auth.newPassword') }}</label>
         <div class="relative">
           <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
           <input
@@ -65,6 +65,7 @@
             required
             minlength="4"
             maxlength="124"
+            placeholder="********"
             autocomplete="new-password"
           />
           <button
@@ -78,7 +79,9 @@
       </div>
 
       <div class="space-y-1.5">
-        <label for="passwordConfirm" class="block font-semibold text-gray-700">Potvrzení nového hesla</label>
+        <label for="passwordConfirm" class="block font-semibold text-gray-700">{{
+          $t('common.auth.passwordConfirm')
+        }}</label>
         <div class="relative">
           <Icon name="mdi:lock-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
           <input
@@ -89,6 +92,7 @@
             required
             minlength="4"
             maxlength="124"
+            placeholder="********"
             autocomplete="new-password"
           />
           <button
@@ -105,14 +109,14 @@
         type="submit"
         class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
       >
-        Resetovat heslo
+        {{ $t('common.auth.resetPassword') }}
       </button>
       <button
         type="button"
         class="w-full mt-2 inline-flex items-center justify-center px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium transition"
         @click="emit('update:mode', 'login')"
       >
-        Zpět na přihlášení
+        {{ $t('common.auth.backToLogin') }}
       </button>
     </form>
   </div>
@@ -124,8 +128,8 @@ const emit = defineEmits<{ (e: 'update:mode', value: 'login' | 'reset'): void }>
 const toast = useToast()
 
 const form = ref({ email: '', password: '', passwordConfirm: '', code: '' })
-const showPassword = ref(false)
-const showPasswordConfirm = ref(false)
+const showPassword = shallowRef(false)
+const showPasswordConfirm = shallowRef(false)
 
 const forgot = async () => {
   try {
@@ -134,15 +138,15 @@ const forgot = async () => {
       body: { email: form.value.email },
     })
     emit('update:mode', 'reset')
-    toast.success({ message: 'Ověřovací kód byl odeslán na váš e-mail' })
+    toast.success({ message: $t('common.auth.verificationCodeSent') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Nepodařilo se odeslat kód' })
+    toast.error({ message: e.data?.message || $t('common.auth.sendCodeFailed') })
   }
 }
 
 const reset = async () => {
   if (form.value.password !== form.value.passwordConfirm) {
-    toast.error({ message: 'Hesla se neshodují' })
+    toast.error({ message: $t('common.auth.passwordsMismatch') })
     return
   }
   try {
@@ -154,10 +158,10 @@ const reset = async () => {
         password: form.value.password,
       },
     })
-    toast.success({ message: 'Heslo bylo úspěšně změněno' })
+    toast.success({ message: $t('common.auth.resetPasswordSuccess') })
     emit('update:mode', 'login')
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Reset hesla selhal' })
+    toast.error({ message: e.data?.message || $t('common.auth.resetPasswordFailed') })
   }
 }
 </script>

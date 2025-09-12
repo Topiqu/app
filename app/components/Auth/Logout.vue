@@ -16,7 +16,7 @@ const logout = async () => {
     await signOut({ redirect: true, callbackUrl: '/' })
   } catch (error: any) {
     toast.error({
-      title: 'Chyba při odhlašování. Zkuste to prosím znovu.',
+      title: $t('common.messages.operationFailed'),
       message: error.data?.message,
     })
   } finally {

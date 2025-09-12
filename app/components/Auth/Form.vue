@@ -4,7 +4,9 @@
       v-if="data?.user"
       class="bg-white dark:bg-gray-900 px-6 py-8 rounded-2xl shadow-md text-center space-y-5 border border-gray-200 dark:border-gray-700"
     >
-      <p class="text-green-600 dark:text-green-400 text-lg font-semibold">Vítej, {{ data.user?.name }}!</p>
+      <p class="text-green-600 dark:text-green-400 text-lg font-semibold">
+        {{ $t('common.auth.welcome') }} {{ data.user?.name }}!
+      </p>
       <AuthLogout />
     </div>
     <div v-else-if="internalMode === 'forgot' || internalMode === 'reset'">
@@ -24,7 +26,7 @@
           ]"
           @click="internalMode = 'login'"
         >
-          Přihlásit
+          {{ $t('common.auth.login') }}
         </button>
         <button
           :class="[
@@ -35,12 +37,14 @@
           ]"
           @click="internalMode = 'register'"
         >
-          Registrace
+          {{ $t('common.auth.register') }}
         </button>
       </div>
       <form v-if="!verifyMode" class="space-y-5 text-sm" @submit.prevent="submit">
         <div class="space-y-1.5">
-          <label for="email" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">Email</label>
+          <label for="email" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
+            {{ $t('profile.email') }}
+          </label>
           <div class="relative">
             <Icon name="mdi:envelope" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
@@ -55,9 +59,9 @@
           </div>
         </div>
         <div v-if="internalMode === 'register'" class="space-y-1.5">
-          <label for="username" class="block text-sm font-semibold text-gray-500 dark:text-gray-400"
-            >Uživatelské jméno</label
-          >
+          <label for="username" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
+            {{ $t('profile.username') }}
+          </label>
           <div class="relative">
             <Icon name="mdi:account" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
@@ -74,7 +78,9 @@
           </div>
         </div>
         <div class="space-y-1.5">
-          <label for="password" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">Heslo</label>
+          <label for="password" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
+            {{ $t('common.auth.password') }}
+          </label>
           <div class="relative">
             <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
@@ -102,14 +108,14 @@
               class="text-xs p-1 text-blue-600 dark:text-blue-400 underline cursor-pointer hover:text-blue-700 dark:hover:text-blue-500 transition"
               @click="internalMode = 'forgot'"
             >
-              Zapomenuté heslo?
+              {{ $t('common.auth.forgotPassword') }}
             </button>
           </div>
         </div>
         <div v-if="internalMode === 'register'" class="space-y-1.5">
-          <label for="passwordConfirm" class="block text-sm font-semibold text-gray-500 dark:text-gray-400"
-            >Potvrzení hesla</label
-          >
+          <label for="passwordConfirm" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
+            {{ $t('common.auth.passwordConfirm') }}
+          </label>
           <div class="relative">
             <Icon name="mdi:lock-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
@@ -136,11 +142,11 @@
           type="submit"
           class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
         >
-          {{ internalMode === 'register' ? 'Registrovat' : 'Přihlásit se' }}
+          {{ internalMode === 'register' ? $t('common.auth.register') : $t('common.auth.login') }}
         </button>
         <div class="flex items-center my-4">
           <hr class="flex-grow border-gray-300 dark:border-gray-700" />
-          <span class="mx-2 text-xs text-gray-400 dark:text-gray-500">NEBO</span>
+          <span class="mx-2 text-xs text-gray-400 dark:text-gray-500">{{ $t('common.auth.or') }}</span>
           <hr class="flex-grow border-gray-300 dark:border-gray-700" />
         </div>
         <div class="space-y-3 text-center">
@@ -154,7 +160,7 @@
               alt="Google logo"
               class="w-5 h-5 mr-2"
             />
-            Přihlásit se přes Google
+            {{ $t('common.auth.signInWithGoogle') }}
           </button>
           <button
             type="button"
@@ -162,16 +168,19 @@
             @click="signInWithGithub"
           >
             <img src="https://simpleicons.org/icons/github.svg" alt="GitHub logo" class="w-5 h-5 mr-2" />
-            Přihlásit se přes GitHub
+            {{ $t('common.auth.signInWithGithub') }}
           </button>
         </div>
       </form>
       <form v-if="verifyMode" class="space-y-5 text-sm" @submit.prevent="verify">
         <p class="text-gray-500 dark:text-gray-400 text-sm">
-          Zadejte ověřovací kód odeslaný na <span class="font-medium">{{ form.email }}</span>
+          {{ $t('common.auth.enterVerificationCode') }}
+          <span class="font-medium">{{ form.email }}</span>
         </p>
         <div class="space-y-1.5">
-          <label for="code" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">Ověřovací kód</label>
+          <label for="code" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
+            {{ $t('common.auth.verificationCode') }}
+          </label>
           <div class="relative">
             <Icon name="mdi:shield-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
@@ -182,7 +191,7 @@
               required
               minlength="8"
               maxlength="8"
-              placeholder="8místný kód"
+              :placeholder="$t('common.auth.verificationCodePlaceholder')"
             />
           </div>
         </div>
@@ -190,7 +199,7 @@
           type="submit"
           class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
         >
-          Ověřit
+          {{ $t('common.auth.verify') }}
         </button>
       </form>
     </div>
@@ -226,7 +235,8 @@ watch(
 const submit = async () => {
   try {
     if (internalMode.value === 'register') {
-      if (form.value.password !== form.value.passwordConfirm) return toast.error({ message: 'Hesla se neshodují' })
+      if (form.value.password !== form.value.passwordConfirm)
+        return toast.error({ message: $t('common.auth.passwordsMismatch') })
       const res = await $fetch('/api/auth/register', {
         method: 'POST',
         body: {
@@ -235,30 +245,30 @@ const submit = async () => {
           password: form.value.password,
         },
       })
-      if (!res) return toast.error({ message: 'Registrace selhala' })
+      if (!res) return toast.error({ message: $t('common.auth.registerFailed') })
       verifyMode.value = true
-      toast.success({ message: 'Ověřovací kód byl odeslán na váš e-mail' })
+      toast.success({ message: $t('common.auth.verificationCodeSent') })
     } else {
       const result = await signIn('credentials', {
         email: form.value.email,
         password: form.value.password,
         redirect: false,
       })
-      if (result?.error) return toast.error({ message: 'Nepodařilo se vás přihlásit' })
+      if (result?.error) return toast.error({ message: $t('common.auth.loginFailed') })
       await $fetch(`/api/users/${data.value?.user.id}`, {
         method: 'PATCH',
         body: { lastLogin: Date.now() },
       })
       const user = await $fetch(`/api/users/${data.value?.user.id}`)
       theme.mode = user.theme
-      toast.success({ message: 'Přihlášení bylo úspěšné' })
+      toast.success({ message: $t('common.auth.loginSuccess') })
       if (data.value?.user?.role === 'superadmin') navigateTo('/master')
       else if (data.value?.user?.role === 'admin') navigateTo('/admin')
       else navigateTo('uzivatel/')
       form.value = init
     }
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Něco se pokazilo' })
+    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
   }
 }
 
@@ -274,17 +284,17 @@ const verify = async () => {
       password: form.value.password,
       redirect: true,
     })
-    toast.success({ message: 'E-mail byl ověřen.' })
+    toast.success({ message: $t('common.auth.verifySuccess') })
     navigateTo('/')
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Ověření selhalo' })
+    toast.error({ message: e.data?.message || $t('common.auth.verifyFailed') })
   }
 }
 
 const signInWithGoogle = async () => {
   try {
     const result = await signIn('google', { redirect: false })
-    if (result?.error) return toast.error({ message: 'Přihlášení přes Google selhalo' })
+    if (result?.error) return toast.error({ message: $t('common.auth.googleSignInFailed') })
     await $fetch(`/api/users/${data.value?.user.id}`, {
       method: 'PATCH',
       body: { lastLogin: Date.now() },
@@ -296,14 +306,14 @@ const signInWithGoogle = async () => {
     else navigateTo('uzivatel/')
     form.value = init
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Něco se pokazilo' })
+    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
   }
 }
 
 const signInWithGithub = async () => {
   try {
     const result = await signIn('github', { redirect: false })
-    if (result?.error) return toast.error({ message: 'Přihlášení přes GitHub selhalo' })
+    if (result?.error) return toast.error({ message: $t('common.auth.githubSignInFailed') })
     await $fetch(`/api/users/${data.value?.user.id}`, {
       method: 'PATCH',
       body: { lastLogin: Date.now() },
@@ -315,7 +325,7 @@ const signInWithGithub = async () => {
     else navigateTo('uzivatel/')
     form.value = init
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Něco se pokazilo' })
+    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
   }
 }
 </script>

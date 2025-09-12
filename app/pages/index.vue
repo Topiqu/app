@@ -9,20 +9,21 @@
         v-if="clientSite?.logoUrl"
         :src="clientSite.logoUrl"
         class="w-24 h-24 mx-auto mb-4 rounded-full object-cover border border-white/20 relative z-20"
-        alt="Logo"
+        :alt="$t('common.avatar.alt.company')"
       />
       <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold drop-shadow text-white">
-        {{ clientSite?.name ?? 'GameDev' }}
+        {{ clientSite?.name ?? $t('common.labels.title') }}
       </h1>
       <p class="mt-4 text-lg sm:text-xl max-w-3xl mx-auto text-white/80 dark:text-white/80">
-        {{ clientSite?.description ?? 'Nejnovější trendy a tipy pro vývojáře her' }}
+        {{ clientSite?.description ?? $t('common.preferences.companyDescription.placeholder') }}
       </p>
       <div class="mt-6" style="background-color: transparent !important">
         <NuxtLink
           href="#articles"
           class="bg-white text-blue-700 dark:bg-blue-800 dark:text-gray-100 px-6 py-2 rounded-full font-semibold text-lg shadow-lg hover:scale-105 dark:hover:bg-blue-700 transition-all duration-300 animate-pulse border-2 dark:border-blue-600/30 no-underline"
         >
-          <Icon name="material-symbols:arrow-downward" class="w-5 h-5 inline mr-2" />Prozkoumat články
+          <Icon name="material-symbols:arrow-downward" class="w-5 h-5 inline mr-2" />
+          {{ $t('articles.explore') }}
         </NuxtLink>
       </div>
     </section>
@@ -48,13 +49,13 @@
     <section id="articles" class="bg-gray-100 dark:bg-gray-900 rounded-2xl py-8 px-6">
       <div class="max-w-5xl mx-auto" style="background-color: transparent !important">
         <div class="flex flex-col items-center mb-6 gap-4" style="background-color: transparent !important">
-          <h2 class="text-3xl font-bold">Všechny články</h2>
+          <h2 class="text-3xl font-bold">{{ $t('articles.title') }}</h2>
         </div>
 
         <div class="w-full mb-6" style="background-color: transparent !important">
           <div class="flex flex-col items-center gap-4" style="background-color: transparent !important">
             <div class="w-full max-w-3xl">
-              <label for="article-search" class="sr-only">Vyhledat články</label>
+              <label for="article-search" class="sr-only">{{ $t('articles.searchPlaceholder') }}</label>
               <div class="relative w-full group">
                 <span
                   class="absolute inset-y-0 left-4 flex items-center text-gray-400 group-focus-within:text-blue-500 transition-colors"
@@ -65,8 +66,8 @@
                   id="article-search"
                   v-model="searchQuery"
                   type="search"
-                  placeholder="Vyhledat články..."
-                  aria-label="Vyhledat články"
+                  :placeholder="$t('articles.searchPlaceholder')"
+                  :aria-label="$t('articles.searchPlaceholder')"
                   class="w-full pl-12 pr-10 py-3 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-400/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:shadow-lg transition-all duration-200"
                 />
               </div>
@@ -82,7 +83,7 @@
                 ]"
                 @click="selectedTag = ''"
               >
-                Všechny
+                {{ $t('articles.title') }}
               </button>
               <button
                 v-for="tag in tags"
@@ -117,7 +118,7 @@
           />
         </div>
 
-        <p v-else class="text-center text-lg text-gray">Žádné články</p>
+        <p v-else class="text-center text-lg text-gray">{{ $t('articles.noResults.message') }}</p>
 
         <div v-if="hasMore" class="mt-8 text-center" style="background-color: transparent !important">
           <button
@@ -126,7 +127,7 @@
             @click="loadMore"
           >
             <span v-if="pending" class="animate-spin inline-block mr-2">↻</span>
-            Načíst další
+            {{ $t('common.pagination.next') }}
           </button>
         </div>
       </div>
@@ -138,14 +139,14 @@
       v-if="!auth"
       class="text-center bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-2xl py-12 shadow-lg"
     >
-      <h3 class="text-2xl font-bold">Přidejte se do diskuze</h3>
-      <p class="mt-3 max-w-xl mx-auto text-lg">Zaregistrujte se a sdílejte své názory na herní trendy</p>
+      <h3 class="text-2xl font-bold">{{ $t('common.auth.loginPrompt') }}</h3>
+      <p class="mt-3 max-w-xl mx-auto text-lg">{{ $t('common.auth.loginToComment') }}</p>
       <div class="mt-6 flex justify-center"><AuthForm /></div>
     </section>
 
     <aside class="lg:col-span-1 lg:order-last space-y-8">
       <div>
-        <h3 class="text-xl font-bold mb-4">Nejčtenější</h3>
+        <h3 class="text-xl font-bold mb-4">{{ $t('stats.topArticle.pluralTitle') }}</h3>
         <template v-if="topArticles.length">
           <NuxtLinkLocale
             v-for="(top, idx) in topArticles"
@@ -160,7 +161,7 @@
               v-if="top.imageUrl"
               :src="top.imageUrl"
               class="w-16 h-16 object-cover rounded-lg group-hover:shadow-md transition duration-500 relative z-20"
-              alt="Nejčtenější"
+              :alt="$t('articles.articleCard.imageAlt')"
             />
             <div v-else class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg">
               <Icon name="image" class="w-8 h-8 text-gray-400" />
@@ -175,10 +176,10 @@
             </div>
           </NuxtLinkLocale>
         </template>
-        <p v-else class="text-gray">Žádné články</p>
+        <p v-else class="text-gray">{{ $t('articles.noResults.message') }}</p>
       </div>
       <div>
-        <h3 class="text-xl font-bold mb-4">Tagy</h3>
+        <h3 class="text-xl font-bold mb-4">{{ $t('articles.tags.title') }}</h3>
         <div v-if="tags.length" class="flex flex-wrap gap-3">
           <NuxtLinkLocale
             v-for="tag in tags"
@@ -189,7 +190,7 @@
             {{ tag.name }}
           </NuxtLinkLocale>
         </div>
-        <p v-else class="text-gray">Žádné tagy</p>
+        <p v-else class="text-gray">{{ $t('articles.tags.noTagsFound') }}</p>
       </div>
     </aside>
   </main>
@@ -206,24 +207,8 @@ const slug = 'GameDev'
 
 const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`)
 
-useSeoMeta({
-  title: clientSite.value?.name ?? 'GameDev',
-  description: clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojáře her',
-  keywords: (clientSite.value?.keywords as string[])?.join(', ') ?? 'gamedev, herní vývoj, trendy, tipy',
-  ogTitle: clientSite.value?.name ?? 'GameDev',
-  ogDescription:
-    clientSite.value?.description ?? 'Nejnovější trendy a tipy pro vývojá gardev, herní vývoj, trendy, tipy',
-  ogImage: clientSite.value?.logoUrl ?? false,
-  ogType: 'website',
-  twitterCard: 'summary_large_image',
-})
-
 const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${slug}`, {
   lazy: true,
-  // transform: async (data) => {
-  //   await sleep(5000)
-  //   return data
-  // },
 })
 
 const page = shallowRef<number>(1)
