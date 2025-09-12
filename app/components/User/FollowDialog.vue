@@ -21,12 +21,12 @@
           >
             <UserPicture :url="u?.avatarUrl" :name="u?.username" />
             <div>
-              <NuxtLinkLocale
+              <NuxtLink
                 :to="localePath({ name: 'autor-name', params: { name: u?.username } })"
                 class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
                 {{ u.username }}
-              </NuxtLinkLocale>
+              </NuxtLink>
               <p v-if="u.bio" class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{{ u.bio }}</p>
             </div>
           </div>

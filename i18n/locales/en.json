@@ -210,7 +210,8 @@
       "commentsDisabledSuccess": "are disabled",
       "toggleSuccess": "Comments {0}",
       "likedByAuthor": "Liked by author ({0})",
-      "reportCommentConfirm": "Are you sure you want to report this comment?"
+      "reportCommentConfirm": "Are you sure you want to report this comment?",
+      "noComments": "No comments"
     },
     "title": "Articles",
     "addArticle": "Add Article",
@@ -288,6 +289,8 @@
       "noBio": "No bio",
       "adminIn": "Administrator in: {0}",
       "noClientAssigned": "Not assigned",
+      "currentPlan": "Current plan",
+      "roughlyEstimated": "Roughly {0} articles",
       "userDataError": "Error loading user data"
     },
     "dateFormats": {

@@ -11,7 +11,7 @@
     </span>
     <span>|</span>
     <span>
-      Současný plán:
+      {{ $t('articles.userMenu.currentPlan') }}
       <span
         :class="{
           'text-green-700 dark:text-green-400': site?.plan === 'BASIC',
@@ -23,7 +23,7 @@
           'font-semibold': true,
         }"
       >
-        {{ site?.plan ?? 'Není přiřazen' }}
+        {{ site?.plan ?? $t('articles.userMenu.noClientAssigned') }}
       </span>
       <span v-if="site?.tokenLimit && site?.tokenRemaining != null" v-tippy="articleEstimateTooltip">
         (<span
@@ -54,9 +54,7 @@ const articleEstimateTooltip = computed(() => {
   if (!site.value?.tokenRemaining) return ''
   const tokensPerArticle = 8000
   const estimatedArticles = Math.floor(site.value.tokenRemaining / tokensPerArticle)
-  return `Přibližně ${estimatedArticles} ${
-    estimatedArticles === 1 ? 'článek' : estimatedArticles >= 2 && estimatedArticles <= 4 ? 'články' : 'článků'
-  }`
+  return $t('articles.userMenu.roughlyEstimated', [estimatedArticles])
 })
 </script>
 

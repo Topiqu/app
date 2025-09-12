@@ -96,7 +96,7 @@
     <div
       v-else-if="filteredComments.length"
       ref="scroll"
-      class="w-full max-w-full p-0.25 space-y-6 overflow-y-auto fixed-height"
+      class="w-full max-w-full p-0.25 space-y-6 fixed-height"
       :style="{ minHeight: '50vh', maxHeight: '80vh', height: '80vh' }"
     >
       <Comment
@@ -141,7 +141,7 @@ const sentinel = useTemplateRef('sentinel')
 
 const sort = shallowRef('createdAt:desc')
 const page = shallowRef<number>(1)
-const limit = 20
+const limit = 2
 const max = 100
 const hasMore = shallowRef<boolean>(true)
 const loading = shallowRef<boolean>(false)
@@ -195,7 +195,7 @@ const initObserver = () => {
         refresh().finally(() => (loading.value = false))
       }
     },
-    { root: scroll.value, threshold: 0.1 },
+    { root: null, threshold: 0.1 },
   )
   obs.observe(sentinel.value)
   onUnmounted(() => obs.disconnect())
