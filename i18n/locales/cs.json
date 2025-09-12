@@ -45,7 +45,7 @@
       "pageInfo": "Strana {0} z {1}"
     },
     "user": {
-      "joined": "Připojen: {0}",
+      "joined": "Přidal se: {0}",
       "viewProfile": "Zobrazit profil",
       "notAvailable": "Není dostupné"
     },
@@ -93,7 +93,7 @@
       "excerpt": "Perex",
       "content": "Obsah",
       "image": "Obrázek",
-      "shortcode": "Krátký kód",
+      "shortcode": "Shortcode",
       "releaseDate": "Datum vydání"
     },
     "messages": {
@@ -132,15 +132,15 @@
     "deleted": "Smazáno:",
     "cancelAction": "Zrušit akci",
     "preferences": {
-      "title": "Vaše předvolby",
-      "explanation": "Vysvětlení předvoleb",
+      "title": "Vaše preference",
+      "explanation": "Vysvětlení preferencí",
       "companyLogo": {
-        "label": "Logo společnosti",
+        "label": "Logo blogu",
         "description": "PNG, JPEG, WebP nebo SVG, min. 512x512px, max. 2 MB"
       },
       "companyDescription": {
-        "label": "Popis společnosti",
-        "placeholder": "Popis společnosti (např. vaše mise nebo slogan)"
+        "label": "Popis blogu",
+        "placeholder": "Popis blogu (např. vaše mise nebo slogan)"
       },
       "focus": {
         "label": "Zaměření",
@@ -210,7 +210,8 @@
       "commentsDisabledSuccess": "jsou zakázány",
       "toggleSuccess": "Komentáře {0}",
       "likedByAuthor": "Líbí se autorovi ({0})",
-      "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?"
+      "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?",
+      "noComments": "Žádné komentáře"
     },
     "title": "Články",
     "addArticle": "Přidat článek",
@@ -363,12 +364,12 @@
       "description": "Statistiky budou dostupné po přidání prvního článku"
     },
     "totalViews": {
-      "title": "Celkové zobrazení",
+      "title": "Zobrazení",
       "noViews": "Zatím žádná zobrazení"
     },
     "articleCount": "Počet článků",
     "totalShares": {
-      "title": "Celkové sdílení",
+      "title": "Sdílení",
       "noShares": "Zatím žádné sdílení"
     },
     "topArticle": {

@@ -3,7 +3,7 @@
     <NuxtImg
       v-if="url"
       :src="url"
-      :alt="(name || '') + ' ' + $t('articles.userMenu.profileImageAlt')"
+      :alt="(name || '') + ' ' + $t('common.avatar.alt.profile')"
       :class="[
         sizeClasses,
         'rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-200 hover:ring-gray-400 dark:hover:ring-gray-500',

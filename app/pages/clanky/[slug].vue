@@ -154,7 +154,7 @@
         </div>
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-1">
-            <span>{{ formatNumber(data.views) }} {{ $t('stats.totalViews.title') }}</span>
+            <span>{{ formatNumber(data.views) }}x {{ $t('stats.totalViews.title') }}</span>
           </div>
           <div class="flex items-center gap-1">
             <Icon
@@ -162,11 +162,11 @@
               class="w-4 h-4"
               :class="{ 'text-red-500': data.likedByUser, 'text-gray-500': !data.likedByUser }"
             />
-            <span>{{ formatNumber(data.likes) }} {{ $t('profile.likes') }}</span>
+            <span>{{ formatNumber(data.likes) }}</span>
           </div>
           <div class="flex items-center gap-1">
             <Icon name="mdi:share-variant" class="w-4 h-4 text-gray-500" />
-            <span>{{ formatNumber(data.shared) }} {{ $t('stats.totalShares.title') }}</span>
+            <span>{{ formatNumber(data.shared) }}</span>
           </div>
           <LazyArticleEdit
             v-if="session?.user.role === 'admin' && session.user.id === data.user.id"

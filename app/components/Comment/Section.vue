@@ -116,10 +116,10 @@
         {{ $t('common.loading') }}
       </div>
       <div v-if="!hasMore && comments.length" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
-        {{ $t('common.noItems') }}
+        {{ $t('articles.comments.noComments') }}
       </div>
     </div>
-    <p v-else class="text-gray-600 text-center text-base">{{ $t('common.noItems') }}</p>
+    <p v-else class="text-gray-600 text-center text-base">{{ $t('articles.comments.noComments') }}</p>
   </div>
 </template>
 
