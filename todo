@@ -1,17 +1,17 @@
 now:
 
-1. cliensite language column
-2. cliensite customization
-3. implement missing email templates
-4. notifications should also be localised
+1. cliensite language column // 🛑 high priority
+2. cliensite customization // 🛑 high priority
+3. implement missing email templates // 🛑 high priority
+4. notifications should also be localised // 🛑 high priority
 
 once deployed:
 
-1. useClientSite composable - return language/cliensite details based on host header
-2. all clientsite endpoints should use host header instead of clientsite slug/route params
-3. GAM + total ad revenue overview & logging
-4. nuxt-gtag
-5. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function
-6. ai cron jobs for article writing
-7. automate onboarding flow : wp form -> post fetch on topiqu backend -> render api -> create subdomain/return custom domain dns details
-8. test
+1. useClientSite composable - return language/cliensite details based on host header // 🛑 high priority
+2. all clientsite endpoints should use host header instead of clientsite slug/route params // 🛑 high priority
+3. GAM + total ad revenue overview & logging // 🛑 high priority
+4. nuxt-gtag // 🛑 high priority
+5. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
+6. ai cron jobs for article writing // 🛑 high priority
+7. automate onboarding flow : wp form -> post fetch on topiqu backend -> render api -> create subdomain/return custom domain dns details // 🟡 mid priority
+8. test // 🛑 high priority
