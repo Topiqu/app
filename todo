@@ -1,0 +1,17 @@
+now:
+
+1. cliensite language column
+2. cliensite customization
+3. implement missing email templates
+4. notifications should also be localised
+
+once deployed:
+
+1. useClientSite composable - return language/cliensite details based on host header
+2. all clientsite endpoints should use host header instead of clientsite slug/route params
+3. GAM + total ad revenue overview & logging
+4. nuxt-gtag
+5. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function
+6. ai cron jobs for article writing
+7. automate onboarding flow : wp form -> post fetch on topiqu backend -> render api -> create subdomain/return custom domain dns details
+8. test
