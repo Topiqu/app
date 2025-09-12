@@ -28,7 +28,7 @@
               :name="data.plan === 'PREMIUM' ? 'mdi:crown' : data.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
               class="w-4 h-4"
             />
-            {{ $t('articles.userMenu.admin') }}
+            Admin
           </span>
         </div>
         <p class="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[200px]">
@@ -67,7 +67,7 @@
                 :name="data.plan === 'PREMIUM' ? 'mdi:crown' : data.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
                 class="w-4 h-4"
               />
-              {{ $t('articles.userMenu.admin') }}
+              Admin
             </span>
           </div>
           <p class="text-gray-500 dark:text-gray-400 text-sm break-all">

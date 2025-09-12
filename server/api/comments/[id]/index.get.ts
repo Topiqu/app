@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const sort = typeof query.sort === 'string' ? query.sort : 'createdAt:desc'
   const [sortField, sortOrder] = sort.split(':') as ['createdAt' | 'likes', 'asc' | 'desc']
   const { skip, take } = await getPagination(event)
-  const max = 75
+  const max = 5
   const adjustedTake = Math.min(take, max - skip)
   const article = await prisma.article.findUnique({
     where: { id: articleId },
