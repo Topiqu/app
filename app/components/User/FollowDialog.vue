@@ -37,11 +37,11 @@
 </template>
 
 <script lang="ts" setup>
-const open = defineModel<boolean>()
-const props = defineProps<{ type: 'followers' | 'followed' }>()
 const localePath = useLocalePath()
 
-const url = computed(() => `/api/follows/${props.type}`)
+const open = defineModel<boolean>()
 
-const { data, pending, error } = useFetch(url, { immediate: true })
+const props = defineProps<{ type: 'followers' | 'followed' }>()
+
+const { data, pending, error } = await useFetch(() => `/api/follows/${props.type}`)
 </script>

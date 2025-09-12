@@ -5,7 +5,7 @@ declare module 'next-auth' {
     id: string
     name: string
     email: string
-    role: 'admin' | 'superadmin' | 'reader'
+    role: 'admin' | 'superadmin' | 'reader' | 'ai'
     clientSiteId: string
     plan: string
     avatarUrl: string | null
@@ -21,7 +21,7 @@ declare module 'next-auth/jwt' {
     id: string
     name: string
     email: string
-    role: 'admin' | 'superadmin' | 'reader'
+    role: 'admin' | 'superadmin' | 'reader' | 'ai'
     clientSiteId: string
     plan: string
     avatarUrl: string | null

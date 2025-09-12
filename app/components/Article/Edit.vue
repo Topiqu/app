@@ -80,7 +80,7 @@ const props = defineProps<{ article: Article }>()
 const editedArticle = ref({
   ...props.article,
   excerpt: props.article.excerpt || '',
-  releaseAt: props.article.releaseAt ? new Date(props.article.releaseAt).toISOString().slice(0, 16) : null,
+  releaseAt: props.article.releaseAt ? new Date(props.article.releaseAt) : null,
 })
 const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
   default: () => [],
