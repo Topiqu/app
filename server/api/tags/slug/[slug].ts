@@ -1,14 +1,11 @@
 export default defineEventHandler(async (event) => {
-  const slug = getRouterParam(event, 'slug')
+  const slug = getRouterParam(event, 'slug')?.toLowerCase()
   if (!slug) throw createError({ statusCode: 400, message: 'Slug je povinný' })
-
-  const user = (await getServerSession(event))?.user
 
   const tag = await prisma.tag.findFirst({
     where: { slug },
     include: {
       articles: {
-        where: user?.role === 'admin' ? {} : { article: { status: 'published' } },
         include: {
           article: {
             include: {
