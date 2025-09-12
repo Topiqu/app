@@ -50,12 +50,12 @@
         <UserPicture :url="data.user?.avatarUrl" :size="'md'" :name="data.user.username" />
         <div class="flex flex-col">
           <div class="flex items-center gap-2">
-            <NuxtLinkLocale
+            <NuxtLink
               :to="localePath({ name: 'autor-name', params: { name: data.user.username } })"
               class="font-medium text-[17px] text-blue-600 hover:text-blue-800 transition"
             >
               {{ data.user.username }}
-            </NuxtLinkLocale>
+            </NuxtLink>
             <span class="italic text-gray-400 text-sm">• {{ $t('articles.articleCard.author') }}</span>
           </div>
           <div class="flex items-center gap-2 mt-1">
@@ -102,7 +102,7 @@
       <span id="image-caption" class="sr-only">{{ $t('articles.articleCard.imageAlt') }}</span>
       <div v-if="hasTags" class="mt-4">
         <div class="flex flex-wrap gap-2.5">
-          <NuxtLinkLocale
+          <NuxtLink
             v-for="t in data.tags"
             :key="t.tag.slug"
             :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
@@ -110,7 +110,7 @@
           >
             <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
             {{ t.tag.name }}
-          </NuxtLinkLocale>
+          </NuxtLink>
         </div>
       </div>
       <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 mt-4">

@@ -27,7 +27,7 @@
       :initial="{ opacity: 0, y: 50 }"
       :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 500, delay: index! * 100 } }"
     >
-      <NuxtLinkLocale class="block" :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })">
+      <NuxtLink class="block" :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })">
         <NuxtImg
           v-if="article?.imageUrl"
           :src="article?.imageUrl"
@@ -46,14 +46,14 @@
         >
           <Icon name="image" :class="{ 'w-16 h-16': isFeatured, 'w-12 h-12': !isFeatured }" class="text-gray-400" />
         </div>
-      </NuxtLinkLocale>
+      </NuxtLink>
       <div
         :class="{
           'flex flex-wrap gap-2 mt-3 ml-6': isFeatured,
           'flex flex-wrap items-center gap-2 mt-2 ml-3 sm:ml-4': !isFeatured,
         }"
       >
-        <NuxtLinkLocale
+        <NuxtLink
           v-for="tag in tags?.slice(0, 3)"
           :key="tag.tag.id"
           :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })"
@@ -61,7 +61,7 @@
           class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full font-medium hover:bg-blue-200 dark:hover:bg-blue-800 hover:scale-95 transition duration-200 no-underline"
         >
           {{ tag.tag.name }}
-        </NuxtLinkLocale>
+        </NuxtLink>
         <span
           v-if="tags && tags.length > 3"
           :class="{ 'px-3 py-1.5 text-sm': isFeatured, 'px-2.5 py-1 text-xs': !isFeatured }"
@@ -71,14 +71,14 @@
         </span>
       </div>
       <div :class="{ 'p-6': isFeatured, 'p-4 sm:p-5': !isFeatured }">
-        <NuxtLinkLocale :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })" class="no-underline">
+        <NuxtLink :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })" class="no-underline">
           <h3
             :class="{ 'text-3xl lg:text-4xl font-bold': isFeatured, 'text-lg font-semibold': !isFeatured }"
             class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
           >
             {{ article?.title }}
           </h3>
-        </NuxtLinkLocale>
+        </NuxtLink>
         <div
           :class="{
             'mt-8 text-base sm:text-lg line-clamp-4 text-gray-600 dark:text-gray-300 leading-7': isFeatured,
@@ -87,7 +87,7 @@
         >
           {{ plainExcerpt }}
         </div>
-        <NuxtLinkLocale
+        <NuxtLink
           v-if="article?.excerpt || article?.content"
           :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })"
           :class="{
@@ -98,7 +98,7 @@
           }"
         >
           {{ $t('common.readMore') }}
-        </NuxtLinkLocale>
+        </NuxtLink>
         <div
           :class="{ 'mt-6 text-base': isFeatured, 'mt-4 text-sm': !isFeatured }"
           class="flex flex-col sm:flex-row justify-between gap-4"
@@ -142,7 +142,7 @@
             'flex items-center gap-3 mt-3': !isFeatured,
           }"
         >
-          <NuxtLinkLocale
+          <NuxtLink
             :to="localePath({ name: 'autor-name', params: { name: article?.user?.username } })"
             class="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900 rounded-lg p-2 transition duration-200"
           >
@@ -163,7 +163,7 @@
             >
               {{ article?.user?.username ?? $t('articles.articleCard.noAuthor') }}
             </span>
-          </NuxtLinkLocale>
+          </NuxtLink>
         </div>
       </div>
     </div>

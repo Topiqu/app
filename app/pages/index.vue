@@ -148,7 +148,7 @@
       <div>
         <h3 class="text-xl font-bold mb-4">{{ $t('stats.topArticle.pluralTitle') }}</h3>
         <template v-if="topArticles.length">
-          <NuxtLinkLocale
+          <NuxtLink
             v-for="(top, idx) in topArticles"
             :key="top.id"
             :to="localePath({ name: 'clanky-slug', params: { slug: top?.slug } })"
@@ -174,21 +174,21 @@
                 {{ formatDate(top.createdAt ?? undefined) }}
               </div>
             </div>
-          </NuxtLinkLocale>
+          </NuxtLink>
         </template>
         <p v-else class="text-gray">{{ $t('articles.noResults.message') }}</p>
       </div>
       <div>
         <h3 class="text-xl font-bold mb-4">{{ $t('articles.tags.title') }}</h3>
         <div v-if="tags.length" class="flex flex-wrap gap-3">
-          <NuxtLinkLocale
+          <NuxtLink
             v-for="tag in tags"
             :key="tag.id"
             :to="localePath({ name: 'stitky-slug', params: { slug: tag.name } })"
             class="bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-95 transition duration-200 no-underline"
           >
             {{ tag.name }}
-          </NuxtLinkLocale>
+          </NuxtLink>
         </div>
         <p v-else class="text-gray">{{ $t('articles.tags.noTagsFound') }}</p>
       </div>

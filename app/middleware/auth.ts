@@ -4,8 +4,8 @@ export default defineNuxtRouteMiddleware(() => {
 
   if (auth.value?.user == null) return
 
-  if (auth.value.user.role === 'superadmin') return navigateTo(localePath('/master'))
-  if (auth.value.user.role === 'admin') return navigateTo(localePath('/admin'))
+  if (auth.value.user.role === 'superadmin') return navigateTo(localePath('master'))
 
-  return navigateTo(localePath('/uzivatel'))
+  if (auth.value.user.role === 'admin') return navigateTo(localePath('admin'))
+  else return navigateTo(localePath({ name: 'uzivatel' }))
 })

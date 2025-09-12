@@ -215,6 +215,7 @@ const toast = useToast()
 const theme = useThemeStore()
 const { data, signIn } = useAuth()
 const { setLocale } = useI18n()
+const localePath = useLocalePath()
 
 const init = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
 const form = ref<typeof init>(init)
@@ -284,13 +285,13 @@ const verify = async () => {
     await signIn('credentials', {
       email: form.value.email,
       password: form.value.password,
-      redirect: true,
+      redirect: false,
     })
     const user = await $fetch(`/api/users/${data.value?.user.id}`)
     setLocale(user.language)
     theme.mode = user.theme
     toast.success({ message: $t('common.auth.verifySuccess') })
-    navigateTo('/')
+    navigateTo(localePath('/'))
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('common.auth.verifyFailed') })
   }
@@ -298,7 +299,7 @@ const verify = async () => {
 
 const signInWithGoogle = async () => {
   try {
-    const result = await signIn('google', { redirect: false })
+    const result = await signIn('google', { callbackUrl: localePath({ name: 'autorizace' }) })
     if (result?.error) return toast.error({ message: $t('common.auth.googleSignInFailed') })
     await $fetch(`/api/users/${data.value?.user.id}`, {
       method: 'PATCH',
@@ -307,9 +308,6 @@ const signInWithGoogle = async () => {
     const user = await $fetch(`/api/users/${data.value?.user.id}`)
     setLocale(user.language)
     theme.mode = user.theme
-    if (data.value?.user?.role === 'superadmin') navigateTo('/master')
-    else if (data.value?.user?.role === 'admin') navigateTo('/admin')
-    else navigateTo('uzivatel/')
     form.value = init
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
@@ -318,7 +316,7 @@ const signInWithGoogle = async () => {
 
 const signInWithGithub = async () => {
   try {
-    const result = await signIn('github', { redirect: false })
+    const result = await signIn('github', { callbackUrl: localePath({ name: 'autorizace' }) })
     if (result?.error) return toast.error({ message: $t('common.auth.githubSignInFailed') })
     await $fetch(`/api/users/${data.value?.user.id}`, {
       method: 'PATCH',
@@ -327,9 +325,6 @@ const signInWithGithub = async () => {
     const user = await $fetch(`/api/users/${data.value?.user.id}`)
     setLocale(user.language)
     theme.mode = user.theme
-    if (data.value?.user?.role === 'superadmin') navigateTo('/master')
-    else if (data.value?.user?.role === 'admin') navigateTo('/admin')
-    else navigateTo('uzivatel/')
     form.value = init
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
