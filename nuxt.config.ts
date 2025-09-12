@@ -121,7 +121,15 @@ export default defineNuxtConfig({
     pages: {
       'clanky-slug': { cs: '/clanky/[slug]', en: '/articles/[slug]' },
       'autor-name': { cs: '/autor/[name]', en: '/author/[name]' },
+      uzivatel: {
+        cs: '/uzivatel',
+        en: '/user',
+      },
       'stitky-slug': { cs: '/stitky/[slug]', en: '/tags/[slug]' },
+      autorizace: {
+        cs: '/autorizace',
+        en: '/auth',
+      },
     },
   },
   security: {

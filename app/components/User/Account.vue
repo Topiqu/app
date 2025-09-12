@@ -119,12 +119,12 @@
                 <span class="font-medium">{{ userData?.commentsCount || 0 }}</span>
               </div>
             </div>
-            <NuxtLink
-              to="/uzivatel"
+            <NuxtLinkLocale
+              :to="localePath({ name: 'uzivatel' })"
               class="inline-block text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
             >
               {{ $t('common.user.viewProfile') }}
-            </NuxtLink>
+            </NuxtLinkLocale>
           </div>
         </div>
       </Transition>
@@ -174,18 +174,19 @@
                 </p>
               </div>
               <div class="flex flex-col gap-2">
-                <NuxtLink
-                  to="/autorizace"
+                <NuxtLinkLocale
+                  :to="localePath({ name: 'autorizace' })"
                   class="block w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center transition"
                 >
                   {{ $t('common.auth.login') }}
-                </NuxtLink>
-                <NuxtLink
-                  to="/autorizace?mode=register"
+                </NuxtLinkLocale>
+
+                <NuxtLinkLocale
+                  :to="localePath({ name: 'autorizace', query: { mode: 'register' } })"
                   class="block w-full py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 text-center text-sm font-semibold transition"
                 >
                   {{ $t('common.auth.register') }}
-                </NuxtLink>
+                </NuxtLinkLocale>
               </div>
             </div>
           </div>
@@ -219,7 +220,10 @@ interface Client {
 }
 
 const { data: auth } = useAuth()
+const localePath = useLocalePath()
 const toast = useToast()
+const router = useRouter()
+console.log(router.getRoutes())
 
 const userData = ref<User | null>(null)
 const clientData = ref<Client | null>(null)
