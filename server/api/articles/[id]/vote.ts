@@ -19,9 +19,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const sessionId = user?.id ? null : getCookie(event, 'anon_session') || randomUUID()
-  if (!user?.id) {
-    setCookie(event, 'anon_session', sessionId, { maxAge: 30 * 24 * 60 * 60 })
-  }
+  if (!user?.id && sessionId) setCookie(event, 'anon_session', sessionId, { maxAge: 30 * 24 * 60 * 60 })
 
   const results = await prisma.pollResult.findMany({
     where: { pollId: pollId as string },

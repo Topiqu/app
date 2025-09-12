@@ -8,7 +8,7 @@ export type ArticleBase = _Article & {
   views: number
   likedByUser: boolean
   allowedComments: boolean
-  createdAt: Date
+  createdAt: string
   readingTime: number
   followerCount: number
 }
@@ -19,7 +19,7 @@ export type ArticleWithDetails = {
   title: string
   content: string | null
   imageUrl: string | null
-  createdAt: Date
+  createdAt: string
   excerpt: string | null
   readingTime: number
   views: number

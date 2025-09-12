@@ -65,9 +65,7 @@ type Tag = { id: string; name: string }
 const emit = defineEmits(['update:tags', 'delete:tag'])
 const toast = useToast()
 
-const props = defineProps<{
-  article?: Article
-}>()
+const props = defineProps<{ article?: Article }>()
 
 const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
   default: () => [],
