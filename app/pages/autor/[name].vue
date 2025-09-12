@@ -47,8 +47,8 @@
           :key="a.articleId"
           class="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
         >
-          <NuxtLink
-            :to="`/clanky/${a.article.slug}`"
+          <NuxtLinkLocale
+            :to="localePath({ name: 'clanky-slug', params: { slug: a.article.slug } })"
             class="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 p-6 no-underline group"
           >
             <div class="relative">
@@ -117,7 +117,7 @@
                 </div>
               </div>
             </div>
-          </NuxtLink>
+          </NuxtLinkLocale>
         </div>
       </div>
 
@@ -132,6 +132,7 @@
 import type { Article as _Article } from '@zenstackhq/runtime/models'
 
 import { formatDate } from '~~/shared/utils'
+const localePath = useLocalePath()
 
 type Article = {
   articleId: string

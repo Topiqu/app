@@ -34,8 +34,8 @@
           :key="a.articleId"
           class="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
         >
-          <NuxtLink
-            :to="`/clanky/${a.article.slug}`"
+          <NuxtLinkLocale
+            :to="localePath({ name: 'clanky-slug', params: { slug: a.article.slug } })"
             class="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 p-6 no-underline group"
           >
             <div class="relative">
@@ -104,7 +104,7 @@
                 </div>
               </div>
             </div>
-          </NuxtLink>
+          </NuxtLinkLocale>
         </div>
       </div>
 
@@ -123,14 +123,16 @@ import { formatDate } from '~~/shared/utils'
 const route = useRoute()
 
 const { data: auth } = useAuth()
+const localePath = useLocalePath()
 
 const tagSlug = computed(() => route.params.slug)
-
+console.log(tagSlug.value)
 const search = shallowRef<string>('')
 const sort = shallowRef<string>('createdAt:desc')
 
 const { data: tag } = await useFetch(`/api/tags/slug/${tagSlug.value}`, {
   default: () => ({ id: '', name: 'Neznámý tag', slug: '', articles: [] }),
+  immediate: true,
 })
 
 const tagName = computed(() => tag.value.name)

@@ -75,7 +75,7 @@
                 class="w-3.5 h-3.5"
                 :class="isFollowing ? 'text-green-500' : 'text-gray-500'"
               />
-              {{ isFollowing ? $t('articles.comments.banUser') : $t('articles.comments.unbanUser') }}
+              {{ isFollowing ? $t('profile.unfollow') : $t('profile.follow') }}
             </button>
           </div>
         </div>
@@ -243,12 +243,7 @@
       <ArticleTOC :content="data.content" />
     </div>
   </div>
-  <Status
-    v-else-if="status === 'error'"
-    type="error"
-    :message="`Chyba ${error?.message ?? '– něco se tady pokazilo.'}`"
-  />
-  <Status v-else-if="status === 'pending'" type="pending" />
+  <Status v-else-if="status" :status="status" :message="status === 'error' ? `${error?.message}` : ''" />
 </template>
 
 <script lang="ts" setup>
@@ -295,13 +290,13 @@ const share = async (platform: 'TWITTER' | 'LINKEDIN' | 'OTHER') => {
     })
     data.value.shared = (data.value.shared || 0) + 1
   } catch (err: any) {
-    toast.error({ message: `Sdílení selhalo ${err.message}` })
+    toast.error({ message: $t('common.messages.operationFailed') + `: ${err.message}` })
   }
 }
 
 const toggleFollow = async () => {
   if (!session.value?.user || !data.value?.user.id) {
-    toast.error({ message: 'Musíte být přihlášeni' })
+    toast.error({ message: $t('common.auth.loginPrompt') })
     return
   }
   try {
@@ -311,12 +306,12 @@ const toggleFollow = async () => {
       })
       isFollowing.value = false
       data.value.followerCount = response.followerCount ?? 0
-      toast.success({ message: `Přestali jste sledovat ${data.value.user.username}` })
+      toast.success({ message: $t('common.messages.successGeneral') })
     } else {
       const response = await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
       isFollowing.value = true
       data.value.followerCount = response.followerCount ?? 0
-      toast.success({ message: `Nyní sledujete ${data.value.user.username}` })
+      toast.success({ message: $t('profile.messages.followSuccess', [data.value.user.username]) })
     }
     await refreshFollows()
   } catch (e: any) {
@@ -326,7 +321,9 @@ const toggleFollow = async () => {
       data.value.followerCount = response.followerCount ?? 0
     } else {
       toast.error({
-        message: e.data?.message || (isFollowing.value ? 'Přestání sledování selhalo' : 'Sledování selhalo'),
+        message:
+          e.data?.message ||
+          (isFollowing.value ? $t('profile.messages.profileUpdateError') : $t('profile.messages.followFailed')),
       })
     }
   }
@@ -334,7 +331,7 @@ const toggleFollow = async () => {
 
 const copyLink = async () => {
   navigator.clipboard.writeText(fullUrl.value)
-  toast.success({ message: 'Odkaz zkopírován do schránky!' })
+  toast.success({ message: $t('common.actions.copySuccess') })
   await share('OTHER')
 }
 
@@ -355,7 +352,7 @@ const toggleLike = async () => {
     if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
     await refresh()
   } catch {
-    toast.error({ message: 'Lajkování selhalo' })
+    toast.error({ message: $t('articles.comments.reactionFailed') })
   }
 }
 
@@ -366,10 +363,16 @@ const toggleComments = async () => {
       method: 'PATCH',
       body: { allowedComments: data.value.allowedComments },
     })
-    toast.success({ message: `Komentáře ${data.value.allowedComments ? 'povoleny' : 'zakázány'}` })
+    toast.success({
+      message: $t('articles.comments.toggleSuccess', [
+        data.value.allowedComments
+          ? $t('articles.comments.commentsEnabled')
+          : $t('articles.comments.commentsDisabledSuccess'),
+      ]),
+    })
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Změna selhala' })
+    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
     data.value.allowedComments = !data.value.allowedComments
   }
 }
@@ -391,16 +394,16 @@ const handleContentScroll = () => {
 }
 
 useSeoMeta({
-  title: () => data.value?.title || 'Článek',
+  title: () => data.value?.title || $t('common.labels.article'),
   description: () =>
     data.value?.excerpt?.slice(0, 160) ||
     data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
-    'Přečtěte si článek...',
-  ogTitle: () => data.value?.title || 'Článek',
+    $t('articles.noResults.message'),
+  ogTitle: () => data.value?.title || $t('common.labels.article'),
   ogDescription: () =>
     data.value?.excerpt?.slice(0, 160) ||
     data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
-    'Přečtěte si článek...',
+    $t('articles.noResults.message'),
   ogImage: () => data.value?.imageUrl || false,
 })
 const hasTags = computed(() => !!data.value?.tags?.length)
@@ -409,9 +412,13 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
   try {
     await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
     await refresh()
-    toast.success({ message: `Stav na ${status === 'draft' ? 'návrh' : 'publikováno'}` })
+    toast.success({
+      message: $t('articles.status.changeSuccess', [
+        status === 'draft' ? $t('articles.status.draft') : $t('articles.status.published'),
+      ]),
+    })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Změna selhala' })
+    toast.error({ message: e.data?.message || $t('common.messages.statusChangeFailed') })
   }
 }, 100)
 
