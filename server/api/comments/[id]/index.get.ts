@@ -5,17 +5,21 @@ export default defineEventHandler(async (event) => {
   if (!articleId) throw createError({ statusCode: 400, message: 'Chybí ID článku' })
 
   const user = (await getServerSession(event))?.user
-  const query = getQuery(event)
-  const sort = typeof query.sort === 'string' ? query.sort : 'createdAt:desc'
-  const [sortField, sortOrder] = sort.split(':') as ['createdAt' | 'likes', 'asc' | 'desc']
-  const { skip, take } = await getPagination(event)
-  const max = 5
-  const adjustedTake = Math.min(take, max - skip)
-  const article = await prisma.article.findUnique({
+
+  const db = await getEnhancedPrisma(user)
+
+  const article = await db.article.findUnique({
     where: { id: articleId },
     select: { userId: true, clientSiteId: true },
   })
   if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
+
+  const query = getQuery(event)
+  const sort = typeof query.sort === 'string' ? query.sort : 'createdAt:desc'
+  const [sortField, sortOrder] = sort.split(':') as ['createdAt' | 'likes', 'asc' | 'desc']
+
+  const { skip, take } = await getPagination(event)
+  const adjustedTake = Math.max(0, Math.min(take, 5))
 
   const allComments = await prisma.comment.findMany({
     where: { articleId },
@@ -64,9 +68,7 @@ export default defineEventHandler(async (event) => {
   const topLevelComments = allComments.filter((c) => c.parentId === null)
   const allReplies = allComments.filter((c) => c.parentId !== null)
 
-  const totalCount = await prisma.comment.count({
-    where: { articleId, parentId: null },
-  })
+  const totalCount = await prisma.comment.count({ where: { articleId, parentId: null } })
 
   const buildCommentTree = (
     comment: any,
