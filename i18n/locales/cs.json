@@ -12,16 +12,37 @@
       "edit": "Upravit",
       "tags": "Štítky",
       "delete": "Smazat",
-      "upload": "Vybrat"
+      "upload": "Vybrat",
+      "saveChanges": "Uložit změny",
+      "backToList": "Zpět na seznam",
+      "like": "Lajknout",
+      "copyLink": "Kopírovat odkaz",
+      "shareX": "Sdílet na X",
+      "shareLinkedIn": "Sdílet na LinkedIn",
+      "copySuccess": "Odkaz úspěšně zkopírován"
     },
     "avatar": {
+      "title": "Avatar",
+      "uploadAvatar": "Nahrát avatar",
       "alt": {
         "profile": "Profilový obrázek",
         "company": "Logo společnosti",
         "author": "Avatar autora {0}"
       },
       "uploadSuccess": "Avatar nahrán",
-      "uploadError": "Nahrávání selhalo"
+      "uploadError": "Nahrávání selhalo",
+      "ai": {
+        "label": "AI Avatar"
+      }
+    },
+    "connection": {
+      "online": "Jste zpět online",
+      "offline": "Jste offline"
+    },
+    "pagination": {
+      "previous": "Předchozí",
+      "next": "Další",
+      "pageInfo": "Strana {0} z {1}"
     },
     "user": {
       "joined": "Připojen: {0}",
@@ -32,17 +53,47 @@
       "login": "Přihlásit se",
       "register": "Registrovat",
       "loginPrompt": "Přihlaste se pro přístup k exkluzivním funkcím a obsahu.",
-      "loginToComment": "Přihlaste se pro přidání komentáře"
+      "loginToComment": "Přihlaste se pro přidání komentáře",
+      "welcome": "Vítejte",
+      "password": "Heslo",
+      "passwordConfirm": "Potvrzení hesla",
+      "forgotPassword": "Zapomenuté heslo?",
+      "or": "NEBO",
+      "backToLogin": "Zpět na přihlášení",
+      "forgotPasswordPrompt": "Zadejte e-mail pro obnovu hesla",
+      "sendCode": "Odeslat kód",
+      "resetPasswordPrompt": "Zadejte ověřovací kód a nové heslo",
+      "newPassword": "Nové heslo",
+      "resetPassword": "Resetovat heslo",
+      "sendCodeFailed": "Nepodařilo se odeslat kód",
+      "resetPasswordSuccess": "Heslo úspěšně resetováno",
+      "resetPasswordFailed": "Reset hesla selhal",
+      "signInWithGoogle": "Přihlásit se přes Google",
+      "signInWithGithub": "Přihlásit se přes GitHub",
+      "enterVerificationCode": "Zadejte ověřovací kód odeslaný na",
+      "verificationCode": "Ověřovací kód",
+      "verificationCodePlaceholder": "8místný kód",
+      "verify": "Ověřit",
+      "passwordsMismatch": "Hesla se neshodují",
+      "registerFailed": "Registrace selhala",
+      "verificationCodeSent": "Ověřovací kód odeslán na váš e-mail",
+      "loginFailed": "Přihlášení selhalo",
+      "loginSuccess": "Přihlášení úspěšné",
+      "verifySuccess": "E-mail ověřen",
+      "verifyFailed": "Ověření selhalo",
+      "googleSignInFailed": "Přihlášení přes Google selhalo",
+      "githubSignInFailed": "Přihlášení přes GitHub selhalo"
     },
     "labels": {
       "article": "Článek:",
-      "tagName": "Název štítku",
       "articleTitle": "Název článku",
       "articleExcerpt": "Krátký popisek článku (2-4 věty)",
+      "tagName": "Název štítku",
       "title": "Název",
       "excerpt": "Perex",
       "content": "Obsah",
       "image": "Obrázek",
+      "shortcode": "Krátký kód",
       "releaseDate": "Datum vydání"
     },
     "messages": {
@@ -55,14 +106,22 @@
       "operationFailed": "Operace selhala",
       "reportSuccess": "Úspěšně nahlášeno",
       "reportFailed": "Nahlášení selhalo",
+      "idle": "Ticho po pěšině",
+      "idleTitle": "Hmm, nic se neděje.",
       "closeConfirmTitle": "Zavřít dialog?",
-      "closeConfirmText": "Přidávání článku bude zrušeno. Chcete pokračovat?",
+      "closeConfirmText": "Všechny provedené změny budou ztraceny. Chcete pokračovat?",
       "closeConfirmButton": "Ano, zavřít",
       "requiredField": "{0} je povinný",
       "invalidDateRange": "Datum vydání musí být mezi {0} a {1}",
       "draftSaved": "Koncept uložen",
       "draftSaveFailed": "Uložení konceptu selhalo",
-      "invalidImage": "Vyberte platný obrázek"
+      "invalidImage": "Vyberte platný obrázek",
+      "successGeneral": "Úspěch",
+      "successGeneralTitle": "Tato operace byla úspěšná",
+      "saveSuccess": "Úspěšně uloženo",
+      "saveFailed": "Uložení selhalo",
+      "invalidUrl": "Některé adresy URL jsou neplatné (musí začínat https://)",
+      "noClientId": "Chybí ID klienta"
     },
     "sortOptions": {
       "newest": "Nejnovější",
@@ -71,7 +130,47 @@
     },
     "created": "Vytvořeno:",
     "deleted": "Smazáno:",
-    "cancelAction": "Zrušit akci"
+    "cancelAction": "Zrušit akci",
+    "preferences": {
+      "title": "Vaše předvolby",
+      "explanation": "Vysvětlení předvoleb",
+      "companyLogo": {
+        "label": "Logo společnosti",
+        "description": "PNG, JPEG, WebP nebo SVG, min. 512x512px, max. 2 MB"
+      },
+      "companyDescription": {
+        "label": "Popis společnosti",
+        "placeholder": "Popis společnosti (např. vaše mise nebo slogan)"
+      },
+      "focus": {
+        "label": "Zaměření",
+        "placeholder": "Zaměření (např. objektivní herní žurnalistika, důraz na Unreal Engine)"
+      },
+      "audience": {
+        "label": "Cílová skupina",
+        "placeholder": "Cílová skupina (např. mladí dospělí, profesionálové)"
+      },
+      "keywords": {
+        "label": "Klíčová slova",
+        "placeholder": "Klíčová slova (oddělená čárkou)",
+        "count": "Počet slov: {0}"
+      },
+      "aiAuthor": {
+        "title": "Nastavení AI autora",
+        "username": {
+          "label": "Jméno AI",
+          "placeholder": "Jméno AI"
+        },
+        "bio": {
+          "label": "Popis AI",
+          "placeholder": "Popis uživatele AI (max. 300 znaků)"
+        }
+      },
+      "socials": {
+        "label": "Sociální sítě",
+        "noSocials": "Zatím nebyly přidány žádné sociální sítě."
+      }
+    }
   },
   "articles": {
     "comments": {
@@ -107,11 +206,17 @@
       "banFailed": "Banování selhalo",
       "unbanSuccess": "Ban uživatele zrušen",
       "unbanFailed": "Zrušení banu selhalo",
+      "commentsEnabled": "jsou povoleny",
+      "commentsDisabledSuccess": "jsou zakázány",
+      "toggleSuccess": "Komentáře {0}",
       "likedByAuthor": "Líbí se autorovi ({0})",
       "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?"
     },
     "title": "Články",
     "addArticle": "Přidat článek",
+    "authorsArticles": "Články od autora",
+    "explore": "Prozkoumat články",
+    "tagsArticles": "Články se štítkem",
     "searchPlaceholder": "Hledat články...",
     "readingTime": "{0} min čtení",
     "noResults": {
@@ -130,11 +235,6 @@
     "status": {
       "published": "Publikováno",
       "draft": "Koncept"
-    },
-    "pagination": {
-      "previous": "Předchozí",
-      "next": "Další",
-      "pageInfo": "Strana {0} z {1}"
     },
     "tags": {
       "title": "Štítky článku",
@@ -203,7 +303,8 @@
     "articleCard": {
       "imageAlt": "Náhled článku",
       "commentsAndLikesTooltip": "Komentáře a lajky",
-      "noAuthor": "Není uveden"
+      "noAuthor": "Není uveden",
+      "author": "Autor článku"
     },
     "poll": {
       "defaultQuestion": "Zadejte otázku",
@@ -213,32 +314,6 @@
       "optionPlaceholder": "Možnost",
       "addOption": "Přidat možnost"
     },
-    "profile": {
-      "title": "Můj profil",
-      "following": "Sledování",
-      "followers": "Sledující",
-      "likedArticles": "Oblíbené články",
-      "likes": "Lajky",
-      "email": "E-mail",
-      "username": "Uživatelské jméno",
-      "lastLogin": "Poslední přihlášení: {0}",
-      "bio": "Bio",
-      "notifications": "Oznámení",
-      "webNotifications": "Webová oznámení",
-      "webNotificationsDescription": "Odesílat zprávy přímo v prohlížeči",
-      "emailNotifications": "E-mailová oznámení",
-      "emailNotificationsDescription": "Přijímat zprávy e-mailem",
-      "avatar": "Avatar",
-      "uploadAvatar": "Nahrát avatar",
-      "registrationDate": "Datum registrace",
-      "saveChanges": "Uložit změny",
-      "messages": {
-        "profileUpdateSuccess": "Profil aktualizován",
-        "profileUpdateError": "Aktualizace selhala",
-        "notificationsUpdateSuccess": "Nastavení oznámení uloženo",
-        "notificationsUpdateError": "Uložení nastavení oznámení selhalo"
-      }
-    },
     "activity": {
       "tabs": {
         "likedArticles": "Oblíbené články",
@@ -246,6 +321,7 @@
       }
     },
     "editor": {
+      "title": "Upravit článek",
       "modes": {
         "manual": "Ruční psaní",
         "ai": "AI generování"
@@ -268,6 +344,94 @@
       "createFailed": "Vytvoření článku selhalo",
       "aiContentGenerated": "Obsah AI úspěšně vygenerován",
       "aiContentFailed": "Generování obsahu AI selhalo"
+    }
+  },
+  "emoji": {
+    "create": "Vytvořit emoji",
+    "shortcodePlaceholder": "např. úsměv",
+    "noEmojisFound": "Žádné emoji nenalezeny",
+    "createSuccess": "Emoji {0} přidáno",
+    "createFailed": "Přidání emoji selhalo",
+    "deleteSuccess": "Emoji smazáno",
+    "deleteFailed": "Smazání emoji selhalo"
+  },
+  "stats": {
+    "title": "Statistiky blogu",
+    "loading": "Načítání dat...",
+    "noArticles": {
+      "title": "Blog zatím nemá žádné články",
+      "description": "Statistiky budou dostupné po přidání prvního článku"
+    },
+    "totalViews": {
+      "title": "Celkové zobrazení",
+      "noViews": "Zatím žádná zobrazení"
+    },
+    "articleCount": "Počet článků",
+    "totalShares": {
+      "title": "Celkové sdílení",
+      "noShares": "Zatím žádné sdílení"
+    },
+    "topArticle": {
+      "title": "Nejčtenější článek",
+      "pluralTitle": "Nejčtenější články",
+      "noViews": "Zatím žádný článek nebyl přečten"
+    },
+    "topTag": {
+      "title": "Nejpopulárnější štítek",
+      "noTags": "Zatím nebyly použity žádné štítky"
+    },
+    "topLikedArticle": {
+      "title": "Nejlajkovanější článek",
+      "noLikes": "Zatím žádný článek nebyl lajkován"
+    },
+    "topCommentedArticle": {
+      "title": "Článek s nejvíce komentáři",
+      "noComments": "Zatím žádné články nemají komentáře"
+    },
+    "followerCount": "Počet sledujících",
+    "engagementRate": {
+      "title": "Míra zapojení",
+      "tooltip": "Míra zapojení ukazuje, jak aktivně čtenáři interagují s vašimi články. Vypočítává se jako průměrný poměr interakcí (lajky, komentáře, sdílení a hlasy v anketách) k zobrazením pro každý článek. Vyšší hodnota znamená větší zapojení čtenářů."
+    },
+    "topAuthor": {
+      "title": "Nejaktivnější autor",
+      "noAuthors": "Zatím žádný autor nepřispěl"
+    },
+    "upgradePrompt": {
+      "title": "Odemkněte prémiové statistiky",
+      "description": "Získejte hlubší přehled o výkonu vašeho blogu díky pokročilým grafům, analýze sdílení, míře zapojení a populárním štítkům. Upgradujte na PRO nebo PREMIUM a maximalizujte svůj potenciál!",
+      "button": "Prozkoumat plány"
+    },
+    "charts": {
+      "viewsLastWeek": "Zobrazení za poslední týden",
+      "shareDistribution": "Rozložení sdílení podle platformy"
+    }
+  },
+  "profile": {
+    "title": "Můj profil",
+    "following": "Sledování",
+    "followers": "Sledující",
+    "follow": "Sledovat",
+    "unfollow": "Přestat sledovat",
+    "likedArticles": "Oblíbené články",
+    "likes": "Lajky",
+    "email": "E-mail",
+    "username": "Uživatelské jméno",
+    "lastLogin": "Poslední přihlášení: {0}",
+    "bio": "Bio",
+    "notifications": "Oznámení",
+    "webNotifications": "Webová oznámení",
+    "webNotificationsDescription": "Odesílat zprávy přímo v prohlížeči",
+    "emailNotifications": "E-mailová oznámení",
+    "emailNotificationsDescription": "Přijímat zprávy e-mailem",
+    "registrationDate": "Datum registrace",
+    "messages": {
+      "profileUpdateSuccess": "Profil aktualizován",
+      "profileUpdateError": "Aktualizace selhala",
+      "notificationsUpdateSuccess": "Nastavení oznámení uloženo",
+      "notificationsUpdateError": "Uložení nastavení oznámení selhalo",
+      "followSuccess": "Nyní sledujete {0}",
+      "unfollowSuccess": "Přestali jste sledovat {0}"
     }
   }
 }
