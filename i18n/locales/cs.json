@@ -103,7 +103,7 @@
       "deleteSuccess": "Úspěšně smazáno",
       "deleteFailed": "Smazání selhalo",
       "statusChangeFailed": "Změna stavu selhala",
-      "operationFailed": "Operace selhala",
+      "operationFailed": "Požadavek selhal",
       "reportSuccess": "Úspěšně nahlášeno",
       "reportFailed": "Nahlášení selhalo",
       "idle": "Ticho po pěšině",

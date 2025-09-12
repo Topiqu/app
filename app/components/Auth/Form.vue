@@ -214,6 +214,7 @@ const props = defineProps<{
 const toast = useToast()
 const theme = useThemeStore()
 const { data, signIn } = useAuth()
+const { setLocale } = useI18n()
 
 const init = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
 const form = ref<typeof init>(init)
@@ -260,6 +261,7 @@ const submit = async () => {
         body: { lastLogin: Date.now() },
       })
       const user = await $fetch(`/api/users/${data.value?.user.id}`)
+      setLocale(user.language)
       theme.mode = user.theme
       toast.success({ message: $t('common.auth.loginSuccess') })
       if (data.value?.user?.role === 'superadmin') navigateTo('/master')
@@ -284,6 +286,9 @@ const verify = async () => {
       password: form.value.password,
       redirect: true,
     })
+    const user = await $fetch(`/api/users/${data.value?.user.id}`)
+    setLocale(user.language)
+    theme.mode = user.theme
     toast.success({ message: $t('common.auth.verifySuccess') })
     navigateTo('/')
   } catch (e: any) {
@@ -300,6 +305,7 @@ const signInWithGoogle = async () => {
       body: { lastLogin: Date.now() },
     })
     const user = await $fetch(`/api/users/${data.value?.user.id}`)
+    setLocale(user.language)
     theme.mode = user.theme
     if (data.value?.user?.role === 'superadmin') navigateTo('/master')
     else if (data.value?.user?.role === 'admin') navigateTo('/admin')
@@ -319,6 +325,7 @@ const signInWithGithub = async () => {
       body: { lastLogin: Date.now() },
     })
     const user = await $fetch(`/api/users/${data.value?.user.id}`)
+    setLocale(user.language)
     theme.mode = user.theme
     if (data.value?.user?.role === 'superadmin') navigateTo('/master')
     else if (data.value?.user?.role === 'admin') navigateTo('/admin')

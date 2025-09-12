@@ -170,7 +170,7 @@
                     <p v-if="avatar.success" class="text-sm text-green-600">{{ avatar.success }}</p>
                   </div>
                 </div>
-                <LangSwitch />
+                <LangSwitch :language="profileForm.language" @update:language="updateLanguage" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -214,15 +214,15 @@ import { Save, Upload, UserIcon } from 'lucide-vue-next'
 
 const { data: session } = useAuth()
 const toast = useToast()
+const { setLocale } = useI18n()
 
 const avatar = ref<{
   error: string | null
   success: string | null
 }>({ error: null, success: null })
-
-const isLoading = shallowRef<boolean>(false)
+const isLoading = shallowRef(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
-const showDialog = shallowRef<boolean>(false)
+const showDialog = shallowRef(false)
 const dialogType = shallowRef<'followers' | 'followed'>('followers')
 const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
 
@@ -233,6 +233,7 @@ const profileForm = ref({
   avatarUrl: '',
   allowNotifs: true,
   allowEmail: true,
+  language: 'en' as 'cs' | 'en',
   createdAt: '',
   followers: 0,
   following: 0,
@@ -274,6 +275,7 @@ const {
 
 if (userData.value) {
   Object.assign(profileForm.value, userData.value)
+  setLocale(userData.value.language)
 }
 
 function openDialog(type: 'followers' | 'followed') {
@@ -297,10 +299,7 @@ async function uploadAvatar(e: Event) {
 
   try {
     isLoading.value = true
-    const { url } = await $fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    })
+    const { url } = await $fetch('/api/upload', { method: 'POST', body: formData })
     avatar.value.success = $t('profile.messages.avatarUploadSuccess')
     profileForm.value.avatarUrl = url
     await refresh()
@@ -323,6 +322,7 @@ async function updateProfile() {
         avatarUrl: profileForm.value.avatarUrl,
         allowNotifs: profileForm.value.allowNotifs,
         allowEmail: profileForm.value.allowEmail,
+        language: profileForm.value.language,
       },
     })
     toast.success({ message: $t('profile.messages.profileUpdateSuccess') })
@@ -338,14 +338,26 @@ async function updateNotifications() {
   try {
     await $fetch(`/api/users/${session.value?.user?.id}`, {
       method: 'PATCH',
-      body: {
-        allowNotifs: profileForm.value.allowNotifs,
-        allowEmail: profileForm.value.allowEmail,
-      },
+      body: { allowNotifs: profileForm.value.allowNotifs, allowEmail: profileForm.value.allowEmail },
     })
     toast.success({ message: $t('profile.messages.notificationsUpdateSuccess') })
   } catch (err: any) {
     toast.error({ message: err.data?.message || $t('profile.messages.notificationsUpdateError') })
+  }
+}
+
+async function updateLanguage(newLanguage: 'cs' | 'en') {
+  try {
+    profileForm.value.language = newLanguage
+    await $fetch(`/api/users/${session.value?.user?.id}`, {
+      method: 'PATCH',
+      body: { language: newLanguage },
+    })
+    setLocale(newLanguage)
+    toast.success({ message: $t('common.messages.saveSuccess') })
+  } catch (err: any) {
+    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
+    profileForm.value.language = userData.value?.language || 'en'
   }
 }
 </script>

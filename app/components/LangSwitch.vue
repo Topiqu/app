@@ -1,19 +1,16 @@
 <template>
-  <div class="relative inline-block">
-    <Listbox v-model="locale">
+  <div class="relative inline-block mt-4">
+    <Listbox v-model="internalLocale" @update:modelValue="handleChange">
       <div class="relative">
         <ListboxButton
           class="inline-flex items-center gap-3 rounded-full px-3 py-1.5 bg-white/90 dark:bg-gray-800/90 ring-1 ring-gray-200 dark:ring-gray-700 shadow-sm backdrop-blur-sm text-sm font-medium text-gray-700 dark:text-gray-100 transition"
         >
           <span class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full flex items-center justify-center text-sm">
-              {{ currentFlag }}
-            </span>
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-sm">{{ currentFlag }}</span>
             <span class="uppercase tracking-wide text-xs">{{ currentCode }}</span>
           </span>
           <ChevronDown class="w-4 h-4 text-gray-400" />
         </ListboxButton>
-
         <Transition
           enterActiveClass="transition ease-out duration-150"
           enterFromClass="transform opacity-0 scale-95"
@@ -35,19 +32,14 @@
                 <button
                   class="w-full text-left flex items-center gap-3 px-3 py-2 text-sm transition"
                   :class="[active ? 'bg-blue-50 dark:bg-gray-700' : '', selected ? 'font-semibold' : 'font-normal']"
-                  @click="setLocale(lang.code)"
                 >
-                  <span class="w-7 h-7 flex items-center justify-center rounded-full text-sm">
-                    {{ lang.flag }}
-                  </span>
+                  <span class="w-7 h-7 flex items-center justify-center rounded-full text-sm">{{ lang.flag }}</span>
                   <div class="flex-1">
                     <div class="flex items-center justify-between">
                       <span class="block text-sm text-gray-800 dark:text-gray-100">{{ lang.name }}</span>
                       <span class="uppercase text-xs text-gray-500 dark:text-gray-400">{{ lang.code }}</span>
                     </div>
-                    <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                      {{ lang.note }}
-                    </div>
+                    <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ lang.note }}</div>
                   </div>
                 </button>
               </ListboxOption>
@@ -62,16 +54,24 @@
 <script setup lang="ts">
 import { ChevronDown } from 'lucide-vue-next'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
-const { locale, setLocale } = useI18n()
 
-const availableLocales: Array<{ code: 'cs' | 'en'; name: string; flag: string; note: string }> = [
+const props = defineProps<{ language: 'cs' | 'en' }>()
+const emit = defineEmits<{ (e: 'update:language', value: 'cs' | 'en'): void }>()
+
+const availableLocales = [
   { code: 'cs', name: 'Čeština', flag: '🇨🇿', note: 'Czech' },
   { code: 'en', name: 'English', flag: '🇬🇧', note: 'English' },
 ]
 
-const current = computed(() => availableLocales.find((l) => l.code === locale.value) ?? availableLocales[0])
+const internalLocale = shallowRef<'cs' | 'en'>(props.language)
+
+const current = computed(() => availableLocales.find((l) => l.code === internalLocale.value) ?? availableLocales[0])
 const currentFlag = computed(() => current.value?.flag)
 const currentCode = computed(() => current.value?.code.toUpperCase())
+
+function handleChange(newLocale: 'cs' | 'en') {
+  emit('update:language', newLocale)
+}
 </script>
 
 <style scoped>

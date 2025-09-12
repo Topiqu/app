@@ -40,6 +40,7 @@ export default defineEventHandler(async (event) => {
     role: userData.role,
     emailVerified: userData.emailVerified,
     theme: userData.theme,
+    language: userData.language,
     commentsCount: userData._count.comments,
     followers: userData._count.followers,
     following: userData._count.following,

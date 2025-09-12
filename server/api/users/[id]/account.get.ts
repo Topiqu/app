@@ -75,6 +75,7 @@ export default defineEventHandler(async (event) => {
     role: userData.role,
     emailVerified: userData.emailVerified,
     clientSiteId: userData.clientSiteId,
+    language: userData.language,
     commentsCount: userData.comments.length,
     likesCount,
     dislikesCount,
