@@ -29,6 +29,11 @@ enum UserRole {
   ai
 }
 
+enum Language {
+  cs
+  en
+}
+
 enum GenerationFrequency {
   NONE
   DAILY
@@ -184,6 +189,7 @@ model User {
   allowNotifs      Boolean           @default(true)
   allowEmail       Boolean           @default(true)
   lastLogin        DateTime?         @default(now())
+  language         Language          @default(en)
   clientSiteId     String?
   theme            ThemeOption       @default(light)
   clientSite       ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
@@ -236,6 +242,7 @@ model ClientSite {
   keywords            Json?
   audience            String?
   lastGeneratedAt     DateTime?
+  language            Language            @default(en)
   users               User[]
   tags                Tag[]
   articles            Article[]
