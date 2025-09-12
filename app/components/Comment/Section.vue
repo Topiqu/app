@@ -93,12 +93,7 @@
       <Icon name="mdi:alert-circle" class="w-8 h-8 text-red-500 mx-auto mb-2" />
       <p class="text-gray-700">{{ $t('articles.comments.errorLoadingComments', { 0: error.message }) }}</p>
     </div>
-    <div
-      v-else-if="filteredComments.length"
-      ref="scroll"
-      class="w-full max-w-full p-0.25 space-y-6 fixed-height"
-      :style="{ minHeight: '50vh', maxHeight: '80vh', height: '80vh' }"
-    >
+    <div v-else-if="filteredComments.length" class="w-full max-w-full p-0.25 space-y-6">
       <Comment
         v-for="comment in filteredComments"
         :key="comment.id"
@@ -136,7 +131,6 @@ const newComment = shallowRef<string>('')
 const isSubmitting = shallowRef<boolean>(false)
 const replyingTo = ref<CommentWithReplies | null>(null)
 const commentForm = useTemplateRef<HTMLElement>('commentForm')
-const scroll = useTemplateRef('scroll')
 const sentinel = useTemplateRef('sentinel')
 
 const sort = shallowRef('createdAt:desc')
@@ -183,10 +177,10 @@ watch(
     e && toast.error({ message: $t('articles.comments.errorLoadingComments', { 0: e.message || $t('common.error') }) }),
 )
 
-watch(sort, () => nextTick(() => scroll.value && (scroll.value.scrollTop = 0)))
+watch(sort, () => nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' })))
 
 const initObserver = () => {
-  if (!sentinel.value || !scroll.value) return
+  if (!sentinel.value) return
   const obs = new IntersectionObserver(
     (entries) => {
       if (entries[0]?.isIntersecting && !loading.value && hasMore.value) {
@@ -268,10 +262,3 @@ const react = async (c: CommentWithReplies, type: 'LIKE' | 'DISLIKE') => {
 const handleLike = (c: CommentWithReplies) => react(c, 'LIKE')
 const handleDislike = (c: CommentWithReplies) => react(c, 'DISLIKE')
 </script>
-
-<style scoped>
-.fixed-height {
-  max-height: 80vh !important;
-  height: 80vh !important;
-}
-</style>
