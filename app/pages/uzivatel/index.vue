@@ -5,14 +5,39 @@
         <div
           class="bg-white dark:bg-neutral-800 p-6 sm:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700"
         >
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div class="flex items-center gap-4">
-              <UserIcon class="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
-                {{ $t('profile.title') }}
-              </h2>
+          <div class="flex flex-col items-center text-center gap-4 mb-8">
+            <div class="relative group cursor-pointer" @click="open({ accept: 'image/*' })">
+              <UserPicture
+                :url="profileForm.avatarUrl"
+                :size="'hg'"
+                :name="profileForm.username"
+                class="transition-transform group-hover:scale-102"
+              />
+              <div
+                class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full"
+                :class="{ 'opacity-100': isLoading, 'opacity-0 group-hover:opacity-100': !isLoading }"
+              >
+                <Icon v-if="!isLoading" name="mdi:camera" class="w-6 h-6 text-white" />
+                <Icon v-else name="mdi:loading" class="w-6 h-6 text-white animate-spin" />
+              </div>
             </div>
-            <AuthLogout />
+            <h1
+              class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white transition-transform duration-500 translate-y-2 opacity-0 animate-[fadeSlide_0.5s_ease-out_forwards]"
+            >
+              {{ profileForm.username }}
+            </h1>
+            <p
+              class="text-sm text-gray-500 dark:text-gray-400 max-w-md transition-transform duration-500 translate-y-2 opacity-0 animate-[fadeSlide_0.5s_ease-out_0.2s_forwards]"
+            >
+              {{ profileForm.bio || 'Žádné bio' }}
+            </p>
+            <div class="flex items-center gap-3 w-full mt-4">
+              <hr class="flex-grow border-gray-300 dark:border-gray-700" />
+              <span class="mx-2 text-xs text-gray-400 dark:text-gray-500"
+                ><Icon name="mdi:settings" class="w-6 h-6"
+              /></span>
+              <hr class="flex-grow border-gray-300 dark:border-gray-700" />
+            </div>
           </div>
 
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
@@ -59,41 +84,56 @@
             </div>
           </div>
 
+          <div
+            v-if="isDirty"
+            class="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/50 rounded-lg flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300"
+          >
+            <Icon name="mdi:alert-circle" class="w-5 h-5" />
+            <span>{{ $t('common.unsavedChanges') }}</span>
+          </div>
+
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="space-y-6">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('profile.email') }}
-                </label>
-                <input
-                  :value="profileForm.email"
-                  disabled
-                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('profile.username') }}
-                </label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  $t('profile.username')
+                }}</label>
                 <input
                   v-model="profileForm.username"
                   class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('profile.bio') }}
-                </label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  $t('profile.bio')
+                }}</label>
                 <textarea
                   v-model="profileForm.bio"
                   rows="5"
-                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition resize-y"
                 ></textarea>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('profile.notifications') }}
-                </label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  $t('profile.email')
+                }}</label>
+                <div class="relative">
+                  <input
+                    :value="profileForm.email"
+                    disabled
+                    class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
+                  />
+                  <Icon
+                    v-if="profileForm.emailVerified"
+                    name="mdi:check-circle"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  $t('profile.notifications')
+                }}</label>
                 <div class="mt-3 space-y-4">
                   <div
                     class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
@@ -102,14 +142,13 @@
                       v-model="profileForm.allowNotifs"
                       type="checkbox"
                       class="mt-1 h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
-                      @change="updateNotifications"
                     />
                     <div>
                       <div class="flex items-center gap-2">
                         <Icon name="mdi:web" class="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                        <span class="font-medium text-gray-900 dark:text-white">
-                          {{ $t('profile.webNotifications') }}
-                        </span>
+                        <span class="font-medium text-gray-900 dark:text-white">{{
+                          $t('profile.webNotifications')
+                        }}</span>
                       </div>
                       <p class="text-sm text-gray-600 dark:text-gray-400">
                         {{ $t('profile.webNotificationsDescription') }}
@@ -123,17 +162,16 @@
                       v-model="profileForm.allowEmail"
                       type="checkbox"
                       class="mt-1 h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
-                      @change="updateNotifications"
                     />
                     <div>
                       <div class="flex items-center gap-2">
                         <Icon name="mdi:email-outline" class="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                        <span class="font-medium text-gray-900 dark:text-white">
-                          {{ $t('profile.emailNotifications') }}
-                        </span>
+                        <span class="font-medium text-gray-900 dark:text-white">{{
+                          $t('profile.emailNotifications')
+                        }}</span>
                       </div>
                       <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ $t('profile.emailNotificationsDescription') }}
+                        {{ $t('profile.webNotificationsDescription') }}
                       </p>
                     </div>
                   </div>
@@ -142,40 +180,26 @@
             </div>
 
             <div class="space-y-6">
+              <LangSwitch :language="profileForm.language!" @update:language="updateLanguage" />
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('common.avatar.title') }}
-                </label>
-                <div class="flex flex-col sm:flex-row items-center gap-4 mt-2">
-                  <div class="cursor-pointer" @click="openFileDialog">
-                    <UserPicture :url="userData?.avatarUrl" :size="'hg'" :name="userData?.username" />
-                  </div>
-                  <div class="flex flex-col gap-2 w-full sm:w-auto">
-                    <input
-                      ref="fileInputRef"
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/svg+xml"
-                      class="text-sm text-gray-700 dark:text-gray-300 hidden"
-                      @change="uploadAvatar"
-                    />
-                    <button
-                      :disabled="isLoading"
-                      class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105"
-                      @click="openFileDialog"
-                    >
-                      <Upload class="w-5 h-5 mr-2" />
-                      {{ $t('common.avatar.uploadAvatar') }}
-                    </button>
-                    <p v-if="avatar.error" class="text-sm text-red-600">{{ avatar.error }}</p>
-                    <p v-if="avatar.success" class="text-sm text-green-600">{{ avatar.success }}</p>
-                  </div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">ID</label>
+                <div class="relative">
+                  <input
+                    :value="profileForm.id"
+                    readonly
+                    class="cursor-pointer mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
+                    @click="copyToClipboard(profileForm.id!)"
+                  />
+                  <Icon
+                    name="mdi:content-copy"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  />
                 </div>
-                <LangSwitch :language="profileForm.language" @update:language="updateLanguage" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ $t('profile.registrationDate') }}
-                </label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  $t('profile.registrationDate')
+                }}</label>
                 <input
                   :value="formatDate(profileForm.createdAt)"
                   disabled
@@ -186,13 +210,14 @@
           </div>
 
           <button
-            :disabled="isLoading"
+            :disabled="isLoading || !isDirty"
             class="mt-10 w-full inline-flex justify-center items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base"
             @click="updateProfile"
           >
             <Save class="w-5 h-5 mr-2" />
             {{ $t('common.actions.saveChanges') }}
           </button>
+
           <UserActivity
             v-model:activeTab="activeTab"
             :profile="profileForm"
@@ -202,45 +227,25 @@
         </div>
       </div>
     </TransitionRoot>
-
     <LazyUserFollowDialog v-model="showDialog" :type="dialogType" />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { User } from '@prisma/client'
+
+import equal from 'fast-deep-equal'
+import { Save } from 'lucide-vue-next'
 import { formatDate } from '~~/shared/utils'
 import { TransitionRoot } from '@headlessui/vue'
-import { Save, Upload, UserIcon } from 'lucide-vue-next'
 
-const { data: session } = useAuth()
-const toast = useToast()
-const { setLocale } = useI18n()
-
-const avatar = ref<{
-  error: string | null
-  success: string | null
-}>({ error: null, success: null })
-const isLoading = shallowRef(false)
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const showDialog = shallowRef(false)
-const dialogType = shallowRef<'followers' | 'followed'>('followers')
-const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
-
-const profileForm = ref({
-  username: '',
-  email: '',
-  bio: '',
-  avatarUrl: '',
-  allowNotifs: true,
-  allowEmail: true,
-  language: 'en' as 'cs' | 'en',
-  createdAt: '',
-  followers: 0,
-  following: 0,
-  commentsCount: 0,
-  likesCount: 0,
-  dislikesCount: 0,
-  likedArticles: [] as Array<{
+type Profile = Partial<User> & {
+  followers: number
+  following: number
+  commentsCount: number
+  likesCount: number
+  dislikesCount: number
+  likedArticles: Array<{
     id: string
     slug: string
     title: string
@@ -251,8 +256,8 @@ const profileForm = ref({
     views: number
     tags: string[]
     likesCount: number
-  }>,
-  comments: [] as Array<{
+  }>
+  comments: Array<{
     id: string
     content: string
     articleSlug: string
@@ -263,8 +268,35 @@ const profileForm = ref({
     createdAt: string
     likesCount: number
     dislikesCount: number
-  }>,
-})
+  }>
+}
+function getDraft(): Profile | null {
+  const raw = localStorage.getItem('profileDraft')
+  return raw ? JSON.parse(raw) : null
+}
+
+function setDraft(profile: Profile) {
+  localStorage.setItem('profileDraft', JSON.stringify(profile))
+}
+
+function clearDraft() {
+  localStorage.removeItem('profileDraft')
+}
+
+const { data: session } = useAuth()
+const toast = useToast()
+const { setLocale } = useI18n()
+
+const avatar = ref<{ error: string | null; success: string | null }>({ error: null, success: null })
+const isLoading = shallowRef(false)
+const { open, onChange } = useFileDialog()
+const showDialog = shallowRef(false)
+const dialogType = shallowRef<'followers' | 'followed'>('followers')
+const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
+const originalProfile = shallowRef<Profile | null>(null)
+const isDirty = shallowRef(false)
+
+const profileForm = ref<Profile>({} as Profile)
 
 const {
   data: userData,
@@ -275,28 +307,50 @@ const {
 
 if (userData.value) {
   Object.assign(profileForm.value, userData.value)
+  originalProfile.value = JSON.parse(JSON.stringify(userData.value))
   setLocale(userData.value.language)
 }
+
+onMounted(() => {
+  const draft = getDraft()
+  if (draft && !equal(draft, originalProfile.value)) {
+    Object.assign(profileForm.value, draft)
+    isDirty.value = true
+  }
+})
 
 function openDialog(type: 'followers' | 'followed') {
   dialogType.value = type
   showDialog.value = true
 }
 
-function openFileDialog() {
-  if (isLoading.value || !fileInputRef.value) return
-  fileInputRef.value.click()
+async function saveProfile(partial: Partial<Profile>) {
+  try {
+    isLoading.value = true
+    await $fetch(`/api/users/${session.value?.user?.id}`, {
+      method: 'PATCH',
+      body: partial,
+    })
+    Object.assign(profileForm.value, partial)
+    originalProfile.value = JSON.parse(JSON.stringify(profileForm.value))
+    clearDraft()
+    isDirty.value = false
+    toast.success({ message: $t('profile.messages.profileUpdateSuccess') })
+    await refresh()
+  } catch (err: any) {
+    toast.error({ message: err.data?.message || $t('profile.messages.profileUpdateError') })
+  } finally {
+    isLoading.value = false
+  }
 }
 
-async function uploadAvatar(e: Event) {
-  const input = e.target as HTMLInputElement
-  const file = input.files?.[0]
+async function uploadAvatar(files: FileList | null) {
+  if (!files?.length) return
+  const file = files[0]
   if (!file) return
-
   const formData = new FormData()
   formData.append('file', file)
   formData.append('type', 'user-avatar')
-
   try {
     isLoading.value = true
     const { url } = await $fetch('/api/upload', { method: 'POST', body: formData })
@@ -307,57 +361,59 @@ async function uploadAvatar(e: Event) {
     avatar.value.error = err.data?.message || $t('profile.messages.avatarUploadError')
   } finally {
     isLoading.value = false
-    if (input) input.value = ''
   }
 }
+
+onChange(uploadAvatar)
 
 async function updateProfile() {
-  try {
-    isLoading.value = true
-    await $fetch(`/api/users/${session.value?.user?.id}`, {
-      method: 'PATCH',
-      body: {
-        username: profileForm.value.username,
-        bio: profileForm.value.bio,
-        avatarUrl: profileForm.value.avatarUrl,
-        allowNotifs: profileForm.value.allowNotifs,
-        allowEmail: profileForm.value.allowEmail,
-        language: profileForm.value.language,
-      },
-    })
-    toast.success({ message: $t('profile.messages.profileUpdateSuccess') })
-    await refresh()
-  } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('profile.messages.profileUpdateError') })
-  } finally {
-    isLoading.value = false
-  }
-}
-
-async function updateNotifications() {
-  try {
-    await $fetch(`/api/users/${session.value?.user?.id}`, {
-      method: 'PATCH',
-      body: { allowNotifs: profileForm.value.allowNotifs, allowEmail: profileForm.value.allowEmail },
-    })
-    toast.success({ message: $t('profile.messages.notificationsUpdateSuccess') })
-  } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('profile.messages.notificationsUpdateError') })
-  }
+  await saveProfile({
+    username: profileForm.value.username,
+    bio: profileForm.value.bio,
+    avatarUrl: profileForm.value.avatarUrl,
+    allowNotifs: profileForm.value.allowNotifs,
+    allowEmail: profileForm.value.allowEmail,
+    language: profileForm.value.language,
+  })
 }
 
 async function updateLanguage(newLanguage: 'cs' | 'en') {
   try {
-    profileForm.value.language = newLanguage
-    await $fetch(`/api/users/${session.value?.user?.id}`, {
-      method: 'PATCH',
-      body: { language: newLanguage },
-    })
+    await saveProfile({ language: newLanguage })
     setLocale(newLanguage)
-    toast.success({ message: $t('common.messages.saveSuccess') })
-  } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
+  } catch {
     profileForm.value.language = userData.value?.language || 'en'
   }
 }
+
+async function copyToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    toast.success({ message: $t('common.actions.copySuccess') })
+  } catch {
+    toast.error({ message: $t('common.messages.operationFailed') })
+  }
+}
+
+watch(
+  profileForm,
+  (newVal) => {
+    isDirty.value = !equal(newVal, originalProfile.value)
+    if (isDirty.value) setDraft(newVal)
+  },
+  { deep: true },
+)
 </script>
+
+<style>
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
