@@ -166,6 +166,7 @@ import type { ArticleStatus, ArticleDraft } from '@zenstackhq/runtime/models'
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
 import { format } from 'date-fns'
+import equal from 'fast-deep-equal'
 import { enUS, cs } from 'date-fns/locale'
 
 const { t, locale } = useI18n()
@@ -277,11 +278,11 @@ const saveDraft = useDebounceFn(async () => {
   if (idle.value) return
   if (!newArticle.title && !newArticle.excerpt && (!newArticle.content || newArticle.content === '<p></p>')) return
   if (
-    drafts.value?.some(
-      (draft) =>
-        draft.title === newArticle.title &&
-        (draft.excerpt || '') === (newArticle.excerpt || '') &&
-        draft.content === newArticle.content,
+    drafts.value?.some((draft) =>
+      equal(
+        { title: draft.title, excerpt: draft.excerpt || '', content: draft.content },
+        { title: newArticle.title, excerpt: newArticle.excerpt || '', content: newArticle.content },
+      ),
     )
   )
     return
