@@ -223,7 +223,6 @@ const { data: auth } = useAuth()
 const localePath = useLocalePath()
 const toast = useToast()
 const router = useRouter()
-console.log(router.getRoutes())
 
 const userData = ref<User | null>(null)
 const clientData = ref<Client | null>(null)

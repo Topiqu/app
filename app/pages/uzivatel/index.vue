@@ -1,176 +1,204 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div class="max-w-4xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
     <TransitionRoot :show="true" enter="transition-opacity duration-500" enterFrom="opacity-0" enterTo="opacity-100">
-      <div class="space-y-10">
+      <div class="space-y-6 sm:space-y-8 lg:space-y-10">
         <div
-          class="bg-white dark:bg-neutral-800 p-6 sm:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700"
+          class="bg-white dark:bg-neutral-800 p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700"
         >
-          <div class="flex flex-col items-center text-center gap-4 mb-8">
+          <div class="flex flex-col items-center text-center gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div class="relative group cursor-pointer" @click="open({ accept: 'image/*' })">
               <UserPicture
                 :url="profileForm.avatarUrl"
                 :size="'hg'"
                 :name="profileForm.username"
-                class="transition-transform group-hover:scale-102"
+                class="transition-transform group-hover:scale-102 w-20 h-20 sm:w-24 sm:h-24"
               />
               <div
                 class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full"
                 :class="{ 'opacity-100': isLoading, 'opacity-0 group-hover:opacity-100': !isLoading }"
               >
-                <Icon v-if="!isLoading" name="mdi:camera" class="w-6 h-6 text-white" />
-                <Icon v-else name="mdi:loading" class="w-6 h-6 text-white animate-spin" />
+                <Icon v-if="!isLoading" name="mdi:camera" class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                <Icon v-else name="mdi:loading" class="w-5 h-5 sm:w-6 sm:h-6 text-white animate-spin" />
               </div>
             </div>
             <h1
-              class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white transition-transform duration-500 translate-y-2 opacity-0 animate-[fadeSlide_0.5s_ease-out_forwards]"
+              class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white transition-transform duration-500 translate-y-2 opacity-0 animate-[fadeSlide_0.5s_ease-out_forwards]"
             >
               {{ profileForm.username }}
             </h1>
             <p
-              class="text-sm text-gray-500 dark:text-gray-400 max-w-md transition-transform duration-500 translate-y-2 opacity-0 animate-[fadeSlide_0.5s_ease-out_0.2s_forwards]"
+              class="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-xs sm:max-w-md transition-transform duration-500 translate-y-2 opacity-0 animate-[fadeSlide_0.5s_ease-out_0.2s_forwards]"
             >
               {{ profileForm.bio || 'Žádné bio' }}
             </p>
-            <div class="flex items-center gap-3 w-full mt-4">
+            <div class="flex items-center gap-2 sm:gap-3 w-full mt-3 sm:mt-4">
               <hr class="flex-grow border-gray-300 dark:border-gray-700" />
-              <span class="mx-2 text-xs text-gray-400 dark:text-gray-500"
-                ><Icon name="mdi:settings" class="w-6 h-6"
+              <span class="mx-2 text-xs sm:text-sm text-gray-400 dark:text-gray-500"
+                ><Icon name="mdi:settings" class="w-5 h-5 sm:w-6 sm:h-6"
               /></span>
               <hr class="flex-grow border-gray-300 dark:border-gray-700" />
             </div>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
+              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
               @click="openDialog('followed')"
             >
-              <Icon name="mdi:account-multiple" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.following') }}</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.followers ?? 0 }}</p>
+              <Icon
+                name="mdi:account-multiple"
+                class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-indigo-500 dark:text-indigo-400"
+              />
+              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                {{ $t('profile.following') }}
+              </p>
+              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                {{ profileForm.followers ?? 0 }}
+              </p>
             </div>
             <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
+              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
               @click="openDialog('followers')"
             >
-              <Icon name="mdi:account-multiple" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.followers') }}</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.following ?? 0 }}</p>
+              <Icon
+                name="mdi:account-multiple"
+                class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-indigo-500 dark:text-indigo-400"
+              />
+              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                {{ $t('profile.followers') }}
+              </p>
+              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                {{ profileForm.following ?? 0 }}
+              </p>
             </div>
             <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
+              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
               @click="activeTab = 'likedArticles'"
             >
-              <Icon name="mdi:heart" class="w-6 h-6 mx-auto text-red-500 dark:text-red-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.likedArticles') }}</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">
+              <Icon name="mdi:heart" class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-red-500 dark:text-red-400" />
+              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                {{ $t('profile.likedArticles') }}
+              </p>
+              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 {{ profileForm.likedArticles?.length ?? 0 }}
               </p>
             </div>
             <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer"
+              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
               @click="activeTab = 'comments'"
             >
-              <Icon name="mdi:comment-multiple-outline" class="w-6 h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.comments.title') }}</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.commentsCount ?? 0 }}</p>
+              <Icon
+                name="mdi:comment-multiple-outline"
+                class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-indigo-500 dark:text-indigo-400"
+              />
+              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                {{ $t('articles.comments.title') }}
+              </p>
+              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                {{ profileForm.commentsCount ?? 0 }}
+              </p>
             </div>
             <div
-              class="bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105"
+              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 touch-manipulation"
             >
-              <Icon name="mdi:thumb-up" class="w-6 h-6 mx-auto text-green-500 dark:text-green-400" />
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.likes') }}</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profileForm.likesCount ?? 0 }}</p>
+              <Icon name="mdi:thumb-up" class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-green-500 dark:text-green-400" />
+              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.likes') }}</p>
+              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                {{ profileForm.likesCount ?? 0 }}
+              </p>
             </div>
           </div>
 
           <div
             v-if="isDirty"
-            class="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/50 rounded-lg flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300"
+            class="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/50 rounded-lg flex items-center gap-2 text-xs sm:text-sm text-yellow-800 dark:text-yellow-300"
           >
-            <Icon name="mdi:alert-circle" class="w-5 h-5" />
+            <Icon name="mdi:alert-circle" class="w-4 h-4 sm:w-5 sm:h-5" />
             <span>{{ $t('common.unsavedChanges') }}</span>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+            <div class="space-y-4 sm:space-y-6">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.username')
                 }}</label>
                 <input
                   v-model="profileForm.username"
-                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.bio')
                 }}</label>
                 <textarea
                   v-model="profileForm.bio"
-                  rows="5"
-                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition resize-y"
+                  rows="4 sm:rows-5"
+                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition resize-y"
                 ></textarea>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.email')
                 }}</label>
                 <div class="relative">
                   <input
                     :value="profileForm.email"
                     disabled
-                    class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
+                    class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
                   />
                   <Icon
                     v-if="profileForm.emailVerified"
                     name="mdi:check-circle"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-green-500"
                   />
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.notifications')
                 }}</label>
-                <div class="mt-3 space-y-4">
+                <div class="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
                   <div
-                    class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
+                    class="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
                   >
                     <input
                       v-model="profileForm.allowNotifs"
                       type="checkbox"
-                      class="mt-1 h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
+                      class="mt-1 h-4 w-4 sm:h-5 sm:w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
                     />
                     <div>
                       <div class="flex items-center gap-2">
-                        <Icon name="mdi:web" class="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                        <span class="font-medium text-gray-900 dark:text-white">{{
+                        <Icon name="mdi:web" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 dark:text-indigo-400" />
+                        <span class="font-medium text-gray-900 dark:text-white text-xs sm:text-sm">{{
                           $t('profile.webNotifications')
                         }}</span>
                       </div>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">
+                      <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                         {{ $t('profile.webNotificationsDescription') }}
                       </p>
                     </div>
                   </div>
                   <div
-                    class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
+                    class="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
                   >
                     <input
                       v-model="profileForm.allowEmail"
                       type="checkbox"
-                      class="mt-1 h-5 w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
+                      class="mt-1 h-4 w-4 sm:h-5 sm:w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
                     />
                     <div>
                       <div class="flex items-center gap-2">
-                        <Icon name="mdi:email-outline" class="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                        <span class="font-medium text-gray-900 dark:text-white">{{
+                        <Icon
+                          name="mdi:email-outline"
+                          class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 dark:text-indigo-400"
+                        />
+                        <span class="font-medium text-gray-900 dark:text-white text-xs sm:text-sm">{{
                           $t('profile.emailNotifications')
                         }}</span>
                       </div>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">
+                      <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                         {{ $t('profile.webNotificationsDescription') }}
                       </p>
                     </div>
@@ -179,31 +207,31 @@
               </div>
             </div>
 
-            <div class="space-y-6">
+            <div class="space-y-4 sm:space-y-6">
               <LangSwitch :language="profileForm.language!" @update:language="updateLanguage" />
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">ID</label>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">ID</label>
                 <div class="relative">
                   <input
                     :value="profileForm.id"
                     readonly
-                    class="cursor-pointer mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
+                    class="cursor-pointer mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
                     @click="copyToClipboard(profileForm.id!)"
                   />
                   <Icon
                     name="mdi:content-copy"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
                   />
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.registrationDate')
                 }}</label>
                 <input
                   :value="formatDate(profileForm.createdAt)"
                   disabled
-                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>
             </div>
@@ -211,10 +239,10 @@
 
           <button
             :disabled="isLoading || !isDirty"
-            class="mt-10 w-full inline-flex justify-center items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base"
+            class="mt-6 sm:mt-8 lg:mt-10 w-full inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
             @click="updateProfile"
           >
-            <Save class="w-5 h-5 mr-2" />
+            <Save class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {{ $t('common.actions.saveChanges') }}
           </button>
 
@@ -245,31 +273,9 @@ type Profile = Partial<User> & {
   commentsCount: number
   likesCount: number
   dislikesCount: number
-  likedArticles: Array<{
-    id: string
-    slug: string
-    title: string
-    imageUrl: string | null
-    createdAt: string | null
-    authorUsername: string
-    authorPfp: string | null
-    views: number
-    tags: string[]
-    likesCount: number
-  }>
-  comments: Array<{
-    id: string
-    content: string
-    articleSlug: string
-    articleTitle: string
-    authorUsername: string
-    authorPfp: string | null
-    tags: string[]
-    createdAt: string
-    likesCount: number
-    dislikesCount: number
-  }>
+  likedArticles: Array<{ id: string }>
 }
+
 function getDraft(): Profile | null {
   const raw = localStorage.getItem('profileDraft')
   return raw ? JSON.parse(raw) : null

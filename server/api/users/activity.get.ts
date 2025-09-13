@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
     where: { id: user.id },
     include: {
       comments: {
+        where: { deletedAt: null },
         include: {
           article: {
             select: {
@@ -45,6 +46,7 @@ export default defineEventHandler(async (event) => {
               title: true,
               imageUrl: true,
               createdAt: true,
+              excerpt: true,
               user: { select: { username: true, avatarUrl: true } },
               views: true,
               tags: { select: { tag: { select: { name: true } } } },
@@ -63,6 +65,7 @@ export default defineEventHandler(async (event) => {
       id: reaction.article.id,
       slug: reaction.article.slug,
       title: reaction.article.title,
+      excerpt: reaction.article.excerpt || '',
       imageUrl: reaction.article.imageUrl,
       createdAt: reaction.article.createdAt?.toISOString() || null,
       authorUsername: reaction.article.user?.username || 'Anonym',
@@ -77,6 +80,7 @@ export default defineEventHandler(async (event) => {
       articleSlug: comment.article?.slug || '',
       articleTitle: comment.article?.title || '',
       authorUsername: comment.user?.username || 'Anonym',
+      userId: comment.userId,
       authorPfp: comment.user?.avatarUrl || null,
       tags: comment.article?.tags.map((t) => t.tag.name) || [],
       createdAt: comment.createdAt.toISOString(),
@@ -89,6 +93,7 @@ export default defineEventHandler(async (event) => {
         articleSlug: reply.article?.slug || '',
         articleTitle: reply.article?.title || '',
         authorUsername: reply.user?.username || 'Anonym',
+        userId: reply.userId,
         authorPfp: reply.user?.avatarUrl || null,
         tags: reply.article?.tags.map((t) => t.tag.name) || [],
         createdAt: reply.createdAt.toISOString(),

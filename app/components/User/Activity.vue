@@ -1,10 +1,10 @@
 <template>
-  <div class="mt-10">
-    <div class="flex border-b border-gray-200 dark:border-neutral-700">
+  <div class="mt-10 px-4 sm:px-6">
+    <div class="flex overflow-x-auto border-b border-gray-200 dark:border-neutral-700 gap-4 pb-2">
       <button
         v-for="tab in tabs"
         :key="tab.id"
-        class="relative px-5 py-3 text-sm font-medium transition-all duration-200 flex items-center gap-2"
+        class="relative px-6 py-3 text-sm font-medium transition-all duration-200 flex items-center gap-2 shrink-0"
         :class="
           activeTab === tab.id
             ? 'text-indigo-600 dark:text-indigo-400'
@@ -24,80 +24,187 @@
         ></span>
       </button>
     </div>
-
-    <div class="mt-6 space-y-4">
-      <div v-if="pending" class="text-center text-gray-500 dark:text-gray-400 py-10 text-sm">
-        {{ $t('common.loading') }}
+    <div class="mt-6 space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <input
+          v-model="searchQuery"
+          type="text"
+          :placeholder="$t('common.search')"
+          class="px-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg w-full sm:w-1/3"
+        />
+        <div class="flex gap-2 overflow-x-auto">
+          <button
+            v-for="tag in availableTags"
+            :key="tag"
+            class="px-3 py-1 text-xs rounded-full shrink-0"
+            :class="
+              selectedTags.includes(tag)
+                ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
+                : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-gray-400'
+            "
+            @click="toggleTag(tag)"
+          >
+            {{ tag }}
+          </button>
+        </div>
+        <div v-if="activeTab === 'likedArticles'" class="flex items-center gap-2">
+          <select
+            v-model="sortOption"
+            class="px-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg"
+          >
+            <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
+            <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
+            <option value="likes:desc">{{ $t('common.sortOptions.mostInteresting') }}</option>
+            <option value="views:desc">{{ $t('common.sortOptions.mostViews') }}</option>
+          </select>
+          <button class="p-2 rounded-lg bg-gray-100 dark:bg-neutral-800" @click="isGrid = !isGrid">
+            <Icon :name="isGrid ? 'mdi:view-list' : 'mdi:view-grid'" class="w-5 h-5" />
+          </button>
+        </div>
+        <div v-else class="flex items-center gap-2">
+          <select
+            v-model="sortComment"
+            class="px-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg"
+          >
+            <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
+            <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
+            <option value="likes:desc">{{ $t('common.sortOptions.mostInteresting') }}</option>
+          </select>
+        </div>
       </div>
-
+      <div v-if="pending" class="space-y-4">
+        <div v-for="i in 3" :key="i" class="h-32 bg-gray-200 dark:bg-neutral-800 rounded-2xl animate-pulse"></div>
+      </div>
       <div
         v-else-if="error"
-        class="text-center p-5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
+        class="text-center p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl"
       >
         <p class="text-red-600 dark:text-red-400 font-medium">
           {{ error?.message || $t('common.error') }}
         </p>
       </div>
-
       <template v-else>
         <div v-if="activeTab === 'likedArticles'">
-          <div v-if="!profile.likedArticles?.length" class="text-center text-gray-500 dark:text-gray-400 py-10 text-sm">
-            {{ $t('common.noItems') }}
+          <div v-if="!filteredArticles.length" class="text-center py-12">
+            <NuxtImg
+              src="/topik_empty_rm.png"
+              alt="Empty state"
+              class="w-16 h-16 mx-auto"
+              format="webp"
+              quality="80"
+              loading="lazy"
+            />
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ $t('common.noResults') }}</p>
+            <NuxtLink :to="localePath('/')" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
+              {{ $t('articles.explore') }}
+            </NuxtLink>
           </div>
-          <div v-else class="grid gap-4">
+          <div :class="isGrid ? 'grid gap-6 grid-cols-1 sm:grid-cols-2' : 'space-y-4'">
             <div
-              v-for="article in profile.likedArticles"
+              v-for="article in filteredArticles"
               :key="article.id"
-              class="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 hover:shadow-md transition-all"
+              class="p-5 sm:p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-150 ease-in-out"
+              :class="isGrid ? 'flex flex-col gap-4' : 'flex items-start gap-4'"
             >
               <NuxtImg
                 v-if="article.imageUrl"
                 :src="article.imageUrl"
                 :alt="$t('articles.articleCard.imageAlt', [article.title])"
                 format="webp"
-                quality="80"
-                width="48"
-                height="48"
-                class="w-12 h-12 rounded-lg object-cover ring-1 ring-gray-200 dark:ring-neutral-700"
+                quality="95"
+                :class="
+                  isGrid
+                    ? 'w-full aspect-video rounded-xl object-cover transition-transform duration-150 ease-in-out'
+                    : 'w-20 h-20 rounded-xl object-cover flex-shrink-0 transition-transform duration-150 ease-in-out'
+                "
+                loading="lazy"
               />
-              <Icon v-else name="mdi:image-outline" class="w-12 h-12 text-gray-400 dark:text-gray-600" />
-              <div class="flex flex-col gap-0.5">
+              <NuxtImg
+                v-else
+                src="/topik_empty_rm.png"
+                alt="No image"
+                format="webp"
+                quality="95"
+                :class="
+                  isGrid
+                    ? 'w-full aspect-video rounded-xl object-cover transition-transform duration-150 ease-in-out'
+                    : 'w-20 h-20 rounded-xl object-cover flex-shrink-0 transition-transform duration-150 ease-in-out'
+                "
+                loading="lazy"
+              />
+
+              <div class="flex flex-col flex-1 gap-2">
                 <NuxtLink
-                  :to="`/clanky/${article.slug}`"
-                  class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+                  :to="localePath({ name: 'clanky-slug', params: { slug: article.slug } })"
+                  class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold text-base sm:text-lg"
                 >
                   {{ article.title }}
                 </NuxtLink>
-                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+
+                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                   <NuxtImg
                     v-if="article.authorPfp"
                     :src="article.authorPfp"
                     :alt="$t('common.avatar.alt.author', [article.authorUsername])"
-                    class="w-5 h-5 rounded-full object-cover ring-1 ring-gray-200 dark:ring-neutral-700"
-                    width="20"
-                    height="20"
+                    class="w-6 h-6 rounded-full object-cover ring-1 ring-gray-200 dark:ring-neutral-700"
+                    width="24"
+                    height="24"
+                    quality="95"
+                    loading="lazy"
                   />
-                  <Icon v-else name="mdi:account-outline" class="w-3.5 h-3.5" />
-                  <span>{{ article.authorUsername }}</span>
+                  <Icon v-else name="mdi:account-outline" class="w-5 h-5" />
+                  <span class="text-sm">{{ article.authorUsername }}</span>
                 </div>
+
                 <p class="text-xs text-gray-500 dark:text-gray-400">
                   {{ $t('articles.status.published') }} {{ formatDate(article.createdAt || new Date().toISOString()) }}
                 </p>
-                <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                  <div class="flex items-center gap-1">
-                    <Icon name="mdi:thumb-up-outline" class="w-3.5 h-3.5" />
-                    <span>{{ article.likesCount }}</span>
+
+                <p
+                  v-if="article.excerpt || article.content"
+                  class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mt-1"
+                >
+                  {{ (article.excerpt || article.content).replace(/<[^>]+>/g, '').substring(0, 120) }}…
+                </p>
+
+                <div class="flex items-center justify-between gap-3 text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1">
+                      <Icon name="mdi:thumb-up-outline" class="w-3.5 h-3.5" />
+                      <span>{{ article.likesCount }}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <Icon name="mdi:eye-outline" class="w-3.5 h-3.5" />
+                      <span>{{ article.views }}</span>
+                    </div>
                   </div>
-                  <div class="flex items-center gap-1">
-                    <Icon name="mdi:eye-outline" class="w-3.5 h-3.5" />
-                    <span>{{ article.views }}</span>
+                  <div class="flex items-center gap-1.5">
+                    <Button
+                      :onClick="() => unlikeArticle(article.id)"
+                      icon="mdi:heart-broken"
+                      class="!border-none !text-red-500 hover:!text-red-600 transition-colors"
+                      square
+                      size="md"
+                      variant="neutral"
+                      borderless
+                    />
+                    <Button
+                      :onClick="() => shareArticle(article)"
+                      icon="mdi:share-variant"
+                      class="!border-none !text-indigo-500 hover:!text-indigo-600 transition-colors"
+                      square
+                      size="md"
+                      variant="neutral"
+                      borderless
+                    />
                   </div>
                 </div>
-                <div v-if="article.tags.length" class="flex flex-wrap gap-1 mt-1">
+
+                <div v-if="article.tags.length" class="flex flex-wrap gap-1.5 mt-3">
                   <span
                     v-for="tag in article.tags"
                     :key="tag"
-                    class="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full"
+                    class="px-2 py-0.5 text-xs bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800 transition-colors"
                   >
                     {{ tag }}
                   </span>
@@ -106,24 +213,35 @@
             </div>
           </div>
         </div>
-
         <div v-if="activeTab === 'comments'">
-          <div v-if="!profile.comments?.length" class="text-center text-gray-500 dark:text-gray-400 py-10 text-sm">
-            {{ $t('common.noItems') }}
+          <div v-if="!filteredComments.length" class="text-center py-12">
+            <NuxtImg
+              src="/topik_empty_rm.png"
+              alt="Empty state"
+              class="w-16 h-16 mx-auto"
+              format="webp"
+              quality="80"
+              loading="lazy"
+            />
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ $t('common.noResults') }}</p>
+            <NuxtLink :to="localePath('/')" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
+              {{ $t('articles.comments.commentsAction') }}
+            </NuxtLink>
           </div>
-          <div v-else class="grid gap-4">
+          <div v-for="comment in filteredComments" :key="comment.id" class="space-y-5">
             <div
-              v-for="comment in profile.comments"
-              :key="comment.id"
-              class="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 hover:shadow-md transition-all"
+              v-if="!comment.deletedAt"
+              class="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 hover:shadow-lg transition-all"
             >
               <div class="flex items-center gap-2 mb-2">
                 <UserPicture :name="comment.authorUsername" :url="comment.authorPfp" />
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ comment.authorUsername }}</span>
               </div>
-              <p class="text-sm text-gray-700 dark:text-gray-300 mb-1">{{ comment.content }}</p>
+              <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">{{ comment.content }}</p>
               <NuxtLink
-                :to="`/clanky/${comment.articleSlug}#comment-${comment.id}`"
+                :to="
+                  localePath({ name: 'clanky-slug', params: { slug: comment.articleSlug } }) + `#comment-${comment.id}`
+                "
                 class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs flex items-center gap-1"
               >
                 <Icon name="mdi:file-document-outline" class="w-3.5 h-3.5" />
@@ -132,7 +250,7 @@
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {{ $t('common.created') }} {{ formatDate(comment.createdAt) }}
               </p>
-              <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1 items-center">
+              <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2 items-center">
                 <div class="flex items-center gap-1">
                   <Icon name="mdi:thumb-up-outline" class="w-3.5 h-3.5" />
                   <span>{{ comment.likesCount }}</span>
@@ -141,8 +259,17 @@
                   <Icon name="mdi:thumb-down-outline" class="w-3.5 h-3.5" />
                   <span>{{ comment.dislikesCount }}</span>
                 </div>
+                <Button
+                  v-if="session?.user?.id === comment.userId"
+                  :onClick="() => handleDelete(comment.id)"
+                  icon="mdi:delete-outline"
+                  square
+                  size="sm"
+                  variant="danger"
+                  borderless
+                />
               </div>
-              <div v-if="comment.tags.length" class="flex flex-wrap gap-1 mt-1">
+              <div v-if="comment.tags.length" class="flex flex-wrap gap-1 mt-2">
                 <span
                   v-for="tag in comment.tags"
                   :key="tag"
@@ -150,6 +277,59 @@
                 >
                   {{ tag }}
                 </span>
+              </div>
+              <div v-if="comment.replies?.length" class="mt-4 space-y-4">
+                <div
+                  v-for="reply in sortReplies(comment.replies)"
+                  :key="reply.id"
+                  class="p-4 rounded-xl bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 ml-6 sm:ml-10"
+                >
+                  <div class="flex items-center gap-2 mb-2">
+                    <UserPicture :name="reply.authorUsername" :url="reply.authorPfp" />
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ reply.authorUsername }}</span>
+                  </div>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">{{ reply.content }}</p>
+                  <NuxtLink
+                    :to="
+                      localePath({ name: 'clanky-slug', params: { slug: reply.articleSlug } }) + `#comment-${reply.id}`
+                    "
+                    class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs flex items-center gap-1"
+                  >
+                    <Icon name="mdi:file-document-outline" class="w-3.5 h-3.5" />
+                    {{ $t('common.labels.article') }} {{ reply.articleTitle }}
+                  </NuxtLink>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {{ $t('common.created') }} {{ formatDate(reply.createdAt) }}
+                  </p>
+                  <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2 items-center">
+                    <div class="flex items-center gap-1">
+                      <Icon name="mdi:thumb-up-outline" class="w-3.5 h-3.5" />
+                      <span>{{ reply.likesCount }}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <Icon name="mdi:thumb-down-outline" class="w-3.5 h-3.5" />
+                      <span>{{ reply.dislikesCount }}</span>
+                    </div>
+                    <Button
+                      v-if="session?.user?.id === reply.userId"
+                      :onClick="() => handleDelete(reply.id)"
+                      icon="mdi:delete-outline"
+                      square
+                      size="sm"
+                      variant="danger"
+                      borderless
+                    />
+                  </div>
+                  <div v-if="reply.tags.length" class="flex flex-wrap gap-1 mt-2">
+                    <span
+                      v-for="tag in reply.tags"
+                      :key="tag"
+                      class="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full"
+                    >
+                      {{ tag }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -160,37 +340,47 @@
 </template>
 
 <script setup lang="ts">
+import type { Article as _Article, Comment as _Comment } from '@prisma/client'
 import { formatDate } from '~~/shared/utils'
 
+interface Article {
+  id: string
+  slug: string
+  title: string
+  content: string
+  excerpt: string
+  imageUrl: string | null
+  createdAt: string | null
+  authorUsername: string
+  authorPfp: string | null
+  views: number
+  tags: string[]
+  likesCount: number
+}
+
+interface Comment {
+  id: string
+  content: string
+  articleSlug: string
+  articleTitle: string
+  userId: string
+  authorUsername: string
+  authorPfp: string | null
+  tags: string[]
+  createdAt: string
+  likesCount: number
+  dislikesCount: number
+  parentId: string | null
+  replies: Comment[]
+  deletedAt: string | null
+}
+
+interface ActivityResponse {
+  likedArticles: Article[]
+  comments: Comment[]
+}
+
 defineProps<{
-  profile: {
-    likedArticles: {
-      id: string
-      slug: string
-      title: string
-      imageUrl: string | null
-      createdAt: string | null
-      authorUsername: string
-      authorPfp: string | null
-      views: number
-      tags: string[]
-      likesCount: number
-    }[]
-    comments: {
-      id: string
-      content: string
-      articleSlug: string
-      articleTitle: string
-      authorUsername: string
-      authorPfp: string | null
-      tags: string[]
-      createdAt: string
-      likesCount: number
-      dislikesCount: number
-    }[]
-  }
-  pending: boolean
-  error: any
   activeTab: 'likedArticles' | 'comments'
 }>()
 
@@ -198,8 +388,140 @@ defineEmits<{
   (e: 'update:activeTab', value: 'likedArticles' | 'comments'): void
 }>()
 
+const localePath = useLocalePath()
+const toast = useToast()
+const { data: session } = useAuth()
+
 const tabs = [
   { id: 'likedArticles', label: 'articles.activity.tabs.likedArticles', icon: 'mdi:heart-outline' },
   { id: 'comments', label: 'articles.activity.tabs.comments', icon: 'mdi:comment-outline' },
 ] as const
+
+const sortOption = shallowRef('createdAt:desc')
+const sortComment = shallowRef('createdAt:desc')
+const isGrid = shallowRef(true)
+const searchQuery = shallowRef('')
+const selectedTags = ref<string[]>([])
+
+const { data, pending, error, refresh } = await useFetch<ActivityResponse>('/api/users/activity', {
+  default: () => ({ likedArticles: [], comments: [] }),
+})
+
+const availableTags = computed(() => {
+  const tags = new Set<string>()
+  data.value.likedArticles.forEach((a) => a.tags.forEach((t) => tags.add(t)))
+  data.value.comments.forEach((c) => {
+    c.tags.forEach((t) => tags.add(t))
+    c.replies.forEach((r) => r.tags.forEach((t) => tags.add(t)))
+  })
+  return [...tags]
+})
+
+const toggleTag = (tag: string) => {
+  if (selectedTags.value.includes(tag)) {
+    selectedTags.value = selectedTags.value.filter((t) => t !== tag)
+  } else {
+    selectedTags.value.push(tag)
+  }
+}
+
+const filteredArticles = computed(() => {
+  const [field, order] = sortOption.value.split(':')
+  return [...data.value.likedArticles]
+    .filter((article) => {
+      const matchesSearch = article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesTags = selectedTags.value.length
+        ? selectedTags.value.every((tag) => article.tags.includes(tag))
+        : true
+      return matchesSearch && matchesTags
+    })
+    .sort((a, b) => {
+      let av: number, bv: number
+      if (field === 'createdAt') {
+        av = new Date(a.createdAt || 0).getTime()
+        bv = new Date(b.createdAt || 0).getTime()
+      } else if (field === 'likes') {
+        av = a.likesCount || 0
+        bv = b.likesCount || 0
+      } else {
+        av = a.views || 0
+        bv = b.views || 0
+      }
+      return order === 'asc' ? av - bv : bv - av
+    })
+})
+
+const sortReplies = (replies: Comment[]) => {
+  const [field, order] = sortComment.value.split(':')
+  return [...replies]
+    .filter((reply) => {
+      const matchesSearch = reply.content.toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesTags = selectedTags.value.length ? selectedTags.value.every((tag) => reply.tags.includes(tag)) : true
+      return matchesSearch && matchesTags
+    })
+    .sort((a, b) => {
+      const av = field === 'createdAt' ? new Date(a.createdAt).getTime() : a.likesCount || 0
+      const bv = field === 'createdAt' ? new Date(b.createdAt).getTime() : b.likesCount || 0
+      return order === 'asc' ? av - bv : bv - av
+    })
+}
+
+const filteredComments = computed(() => {
+  const [field, order] = sortComment.value.split(':')
+  return [...data.value.comments]
+    .filter((comment) => {
+      const matchesSearch = comment.content.toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesTags = selectedTags.value.length
+        ? selectedTags.value.every((tag) => comment.tags.includes(tag))
+        : true
+      return matchesSearch && matchesTags && !comment.parentId
+    })
+    .sort((a, b) => {
+      const av = field === 'createdAt' ? new Date(a.createdAt).getTime() : a.likesCount || 0
+      const bv = field === 'createdAt' ? new Date(b.createdAt).getTime() : b.likesCount || 0
+      return order === 'asc' ? av - bv : bv - av
+    })
+})
+
+const unlikeArticle = async (articleId: string) => {
+  try {
+    await $fetch(`/api/articles/${articleId}/reaction`, { method: 'POST' })
+    data.value.likedArticles = data.value.likedArticles.filter((a) => a.id !== articleId)
+    await refresh()
+    toast.success({ message: $t('common.messages.successGeneral') })
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
+  }
+}
+
+const shareArticle = (article: Article) => {
+  const url = `${window.location.origin}${localePath({ name: 'clanky-slug', params: { slug: article.slug } })}`
+  navigator.clipboard.writeText(url)
+  toast.success({ message: $t('common.actions.copySuccess') })
+}
+
+const handleDelete = async (commentId: string) => {
+  if (!confirm($t('common.messages.deleteConfirmTitle'))) return
+  try {
+    await $fetch(`/api/comments/${commentId}`, { method: 'DELETE', body: { reason: '' } })
+    const updateComments = (comments: Comment[]): Comment[] => {
+      return comments
+        .map((c) => {
+          if (c.id === commentId) {
+            return { ...c, deletedAt: new Date().toISOString() }
+          }
+          if (c.replies?.length) {
+            return { ...c, replies: updateComments(c.replies) }
+          }
+          return c
+        })
+        .filter((c) => !c.deletedAt)
+    }
+    await refresh()
+    data.value.comments = updateComments(data.value.comments)
+    toast.success({ message: $t('common.messages.deleteSuccess') })
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
+  }
+}
 </script>
