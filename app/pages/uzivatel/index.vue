@@ -11,7 +11,7 @@
                 :url="profileForm.avatarUrl"
                 :size="'hg'"
                 :name="profileForm.username"
-                class="transition-transform group-hover:scale-102 w-20 h-20 sm:w-24 sm:h-24"
+                class="transition-transform group-hover:scale-102"
               />
               <div
                 class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full"

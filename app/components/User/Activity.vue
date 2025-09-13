@@ -4,11 +4,11 @@
       <button
         v-for="tab in tabs"
         :key="tab.id"
-        class="relative px-6 py-3 text-sm font-medium transition-all duration-200 flex items-center gap-2 shrink-0"
+        class="relative px-6 py-3 text-sm font-medium transition-all duration-200 flex items-center gap-2 shrink-0 rounded-md"
         :class="
           activeTab === tab.id
             ? 'text-indigo-600 dark:text-indigo-400'
-            : 'text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
+            : 'text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-neutral-800'
         "
         @click="$emit('update:activeTab', tab.id)"
       >
@@ -20,7 +20,7 @@
         {{ $t(tab.label) }}
         <span
           v-if="activeTab === tab.id"
-          class="absolute bottom-0 left-0 w-full h-[2px] bg-indigo-600 dark:bg-indigo-400 rounded-t"
+          class="absolute bottom-0 left-0 w-full h-[2px] bg-indigo-600 dark:bg-indigo-400 rounded-t motion-safe:transition-[width,left] duration-300 ease-in-out"
         ></span>
       </button>
     </div>
@@ -30,17 +30,17 @@
           v-model="searchQuery"
           type="text"
           :placeholder="$t('common.search')"
-          class="px-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg w-full sm:w-1/3"
+          class="px-4 py-2.5 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg w-full sm:w-1/3 transition-colors duration-150 ease-in-out"
         />
         <div class="flex gap-2 overflow-x-auto">
           <button
             v-for="tag in availableTags"
             :key="tag"
-            class="px-3 py-1 text-xs rounded-full shrink-0"
+            class="px-3 py-1 text-xs rounded-full shrink-0 transition-colors duration-150 ease-in-out"
             :class="
               selectedTags.includes(tag)
                 ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
-                : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-gray-400'
+                : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-gray-400 hover:bg-indigo-100 dark:hover:bg-indigo-800'
             "
             @click="toggleTag(tag)"
           >
@@ -50,21 +50,24 @@
         <div v-if="activeTab === 'likedArticles'" class="flex items-center gap-2">
           <select
             v-model="sortOption"
-            class="px-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg"
+            class="px-4 py-2.5 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg transition-colors duration-150 ease-in-out"
           >
             <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
             <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
             <option value="likes:desc">{{ $t('common.sortOptions.mostInteresting') }}</option>
             <option value="views:desc">{{ $t('common.sortOptions.mostViews') }}</option>
           </select>
-          <button class="p-2 rounded-lg bg-gray-100 dark:bg-neutral-800" @click="isGrid = !isGrid">
+          <button
+            class="p-2 rounded-lg bg-gray-100 dark:bg-neutral-800 transition-colors duration-150 ease-in-out"
+            @click="isGrid = !isGrid"
+          >
             <Icon :name="isGrid ? 'mdi:view-list' : 'mdi:view-grid'" class="w-5 h-5" />
           </button>
         </div>
         <div v-else class="flex items-center gap-2">
           <select
             v-model="sortComment"
-            class="px-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg"
+            class="px-4 py-2.5 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg transition-colors duration-150 ease-in-out"
           >
             <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
             <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
@@ -99,12 +102,15 @@
               {{ $t('articles.explore') }}
             </NuxtLink>
           </div>
-          <div :class="isGrid ? 'grid gap-6 grid-cols-1 sm:grid-cols-2' : 'space-y-4'">
+          <div
+            :class="isGrid ? 'grid gap-6 grid-cols-1 sm:grid-cols-2' : 'space-y-4'"
+            class="transition-[margin,transform,opacity] duration-200 ease-in-out"
+          >
             <div
               v-for="article in filteredArticles"
               :key="article.id"
               class="p-5 sm:p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-150 ease-in-out"
-              :class="isGrid ? 'flex flex-col gap-4' : 'flex items-start gap-4'"
+              :class="isGrid ? 'flex flex-col gap-4' : 'flex items-start gap-5'"
             >
               <NuxtImg
                 v-if="article.imageUrl"
@@ -114,8 +120,8 @@
                 quality="95"
                 :class="
                   isGrid
-                    ? 'w-full aspect-video rounded-xl object-cover transition-transform duration-150 ease-in-out'
-                    : 'w-20 h-20 rounded-xl object-cover flex-shrink-0 transition-transform duration-150 ease-in-out'
+                    ? 'w-full aspect-video rounded-xl object-cover transition-transform duration-150 ease-in-out hover:scale-[1.01]'
+                    : 'w-20 h-20 rounded-xl object-cover flex-shrink-0 transition-transform duration-150 ease-in-out hover:scale-[1.01]'
                 "
                 loading="lazy"
               />
@@ -127,54 +133,39 @@
                 quality="95"
                 :class="
                   isGrid
-                    ? 'w-full aspect-video rounded-xl object-cover transition-transform duration-150 ease-in-out'
-                    : 'w-20 h-20 rounded-xl object-cover flex-shrink-0 transition-transform duration-150 ease-in-out'
+                    ? 'w-full aspect-video rounded-xl object-cover transition-transform duration-150 ease-in-out hover:scale-[1.01]'
+                    : 'w-20 h-20 rounded-xl object-cover flex-shrink-0 transition-transform duration-150 ease-in-out hover:scale-[1.01]'
                 "
                 loading="lazy"
               />
-
-              <div class="flex flex-col flex-1 gap-2">
+              <div class="flex flex-col flex-1 gap-2 leading-relaxed">
                 <NuxtLink
                   :to="localePath({ name: 'clanky-slug', params: { slug: article.slug } })"
                   class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold text-base sm:text-lg"
                 >
                   {{ article.title }}
                 </NuxtLink>
-
                 <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                  <NuxtImg
-                    v-if="article.authorPfp"
-                    :src="article.authorPfp"
-                    :alt="$t('common.avatar.alt.author', [article.authorUsername])"
-                    class="w-6 h-6 rounded-full object-cover ring-1 ring-gray-200 dark:ring-neutral-700"
-                    width="24"
-                    height="24"
-                    quality="95"
-                    loading="lazy"
-                  />
-                  <Icon v-else name="mdi:account-outline" class="w-5 h-5" />
+                  <UserPicture :url="article.authorPfp" :name="article.authorUsername" :size="'sm'" />
                   <span class="text-sm">{{ article.authorUsername }}</span>
                 </div>
-
                 <p class="text-xs text-gray-500 dark:text-gray-400">
                   {{ $t('articles.status.published') }} {{ formatDate(article.createdAt || new Date().toISOString()) }}
                 </p>
-
                 <p
                   v-if="article.excerpt || article.content"
                   class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mt-1"
                 >
                   {{ (article.excerpt || article.content).replace(/<[^>]+>/g, '').substring(0, 120) }}…
                 </p>
-
                 <div class="flex items-center justify-between gap-3 text-xs text-gray-500 dark:text-gray-400 mt-2">
                   <div class="flex items-center gap-3">
                     <div class="flex items-center gap-1">
-                      <Icon name="mdi:thumb-up-outline" class="w-3.5 h-3.5" />
+                      <Icon name="mdi:thumb-up-outline" class="w-3 h-3" />
                       <span>{{ article.likesCount }}</span>
                     </div>
                     <div class="flex items-center gap-1">
-                      <Icon name="mdi:eye-outline" class="w-3.5 h-3.5" />
+                      <Icon name="mdi:eye-outline" class="w-3 h-3" />
                       <span>{{ article.views }}</span>
                     </div>
                   </div>
@@ -182,7 +173,7 @@
                     <Button
                       :onClick="() => unlikeArticle(article.id)"
                       icon="mdi:heart-broken"
-                      class="!border-none !text-red-500 hover:!text-red-600 transition-colors"
+                      class="!border-none !text-red-500 hover:!text-red-600 transition-colors w-5 h-5"
                       square
                       size="md"
                       variant="neutral"
@@ -191,7 +182,7 @@
                     <Button
                       :onClick="() => shareArticle(article)"
                       icon="mdi:share-variant"
-                      class="!border-none !text-indigo-500 hover:!text-indigo-600 transition-colors"
+                      class="!border-none !text-indigo-500 hover:!text-indigo-600 transition-colors w-5 h-5"
                       square
                       size="md"
                       variant="neutral"
@@ -199,7 +190,6 @@
                     />
                   </div>
                 </div>
-
                 <div v-if="article.tags.length" class="flex flex-wrap gap-1.5 mt-3">
                   <span
                     v-for="tag in article.tags"
@@ -231,32 +221,34 @@
           <div v-for="comment in filteredComments" :key="comment.id" class="space-y-5">
             <div
               v-if="!comment.deletedAt"
-              class="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 hover:shadow-lg transition-all"
+              class="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-150 ease-in-out"
             >
               <div class="flex items-center gap-2 mb-2">
                 <UserPicture :name="comment.authorUsername" :url="comment.authorPfp" />
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ comment.authorUsername }}</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">{{
+                  comment.authorUsername
+                }}</span>
               </div>
-              <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">{{ comment.content }}</p>
+              <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 leading-relaxed">{{ comment.content }}</p>
               <NuxtLink
                 :to="
                   localePath({ name: 'clanky-slug', params: { slug: comment.articleSlug } }) + `#comment-${comment.id}`
                 "
                 class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs flex items-center gap-1"
               >
-                <Icon name="mdi:file-document-outline" class="w-3.5 h-3.5" />
+                <Icon name="mdi:file-document-outline" class="w-3 h-3" />
                 {{ $t('common.labels.article') }} {{ comment.articleTitle }}
               </NuxtLink>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                 {{ $t('common.created') }} {{ formatDate(comment.createdAt) }}
               </p>
               <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2 items-center">
                 <div class="flex items-center gap-1">
-                  <Icon name="mdi:thumb-up-outline" class="w-3.5 h-3.5" />
+                  <Icon name="mdi:thumb-up-outline" class="w-3 h-3" />
                   <span>{{ comment.likesCount }}</span>
                 </div>
                 <div class="flex items-center gap-1">
-                  <Icon name="mdi:thumb-down-outline" class="w-3.5 h-3.5" />
+                  <Icon name="mdi:thumb-down-outline" class="w-3 h-3" />
                   <span>{{ comment.dislikesCount }}</span>
                 </div>
                 <Button
@@ -267,13 +259,14 @@
                   size="sm"
                   variant="danger"
                   borderless
+                  class="w-5 h-5"
                 />
               </div>
               <div v-if="comment.tags.length" class="flex flex-wrap gap-1 mt-2">
                 <span
                   v-for="tag in comment.tags"
                   :key="tag"
-                  class="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full"
+                  class="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
                 >
                   {{ tag }}
                 </span>
@@ -282,32 +275,34 @@
                 <div
                   v-for="reply in sortReplies(comment.replies)"
                   :key="reply.id"
-                  class="p-4 rounded-xl bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 ml-6 sm:ml-10"
+                  class="p-4 rounded-lg bg-gray-50 dark:bg-neutral-800 border-l-2 border-indigo-100 dark:border-indigo-900 ml-6 sm:ml-10 transition-all duration-150 ease-in-out"
                 >
                   <div class="flex items-center gap-2 mb-2">
                     <UserPicture :name="reply.authorUsername" :url="reply.authorPfp" />
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ reply.authorUsername }}</span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">{{
+                      reply.authorUsername
+                    }}</span>
                   </div>
-                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">{{ reply.content }}</p>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 leading-relaxed">{{ reply.content }}</p>
                   <NuxtLink
                     :to="
                       localePath({ name: 'clanky-slug', params: { slug: reply.articleSlug } }) + `#comment-${reply.id}`
                     "
                     class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs flex items-center gap-1"
                   >
-                    <Icon name="mdi:file-document-outline" class="w-3.5 h-3.5" />
+                    <Icon name="mdi:file-document-outline" class="w-3 h-3" />
                     {{ $t('common.labels.article') }} {{ reply.articleTitle }}
                   </NuxtLink>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                     {{ $t('common.created') }} {{ formatDate(reply.createdAt) }}
                   </p>
                   <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2 items-center">
                     <div class="flex items-center gap-1">
-                      <Icon name="mdi:thumb-up-outline" class="w-3.5 h-3.5" />
+                      <Icon name="mdi:thumb-up-outline" class="w-3 h-3" />
                       <span>{{ reply.likesCount }}</span>
                     </div>
                     <div class="flex items-center gap-1">
-                      <Icon name="mdi:thumb-down-outline" class="w-3.5 h-3.5" />
+                      <Icon name="mdi:thumb-down-outline" class="w-3 h-3" />
                       <span>{{ reply.dislikesCount }}</span>
                     </div>
                     <Button
@@ -318,13 +313,14 @@
                       size="sm"
                       variant="danger"
                       borderless
+                      class="w-5 h-5"
                     />
                   </div>
                   <div v-if="reply.tags.length" class="flex flex-wrap gap-1 mt-2">
                     <span
                       v-for="tag in reply.tags"
                       :key="tag"
-                      class="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full"
+                      class="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
                     >
                       {{ tag }}
                     </span>
