@@ -84,28 +84,6 @@ export default defineEventHandler(async (event) => {
     theme: userData.theme,
     likedArticles: userData.articleReactions.map((reaction) => ({
       id: reaction.article.id,
-      slug: reaction.article.slug,
-      title: reaction.article.title,
-      imageUrl: reaction.article.imageUrl,
-      createdAt: reaction.article.createdAt?.toISOString() || null,
-      authorUsername: reaction.article.user?.username || 'Anonym',
-      authorPfp: reaction.article.user.avatarUrl,
-      views: reaction.article.views,
-      tags: reaction.article.tags.map((t) => t.tag.name),
-      likesCount: reaction.article.reactions.length,
-    })),
-    comments: userData.comments.map((comment) => ({
-      id: comment.id,
-      content: comment.content,
-      articleSlug: comment.article?.slug || '',
-      articleTitle: comment.article?.title || '',
-      authorUsername: comment.article?.user?.username || 'Anonym',
-      authorPfp: comment.article.user.avatarUrl,
-      views: comment.article?.views || 0,
-      tags: comment.article?.tags.map((t) => t.tag.name) || [],
-      createdAt: comment.createdAt.toISOString(),
-      likesCount: comment.reactions.filter((r) => r.type === 'LIKE').length,
-      dislikesCount: comment.reactions.filter((r) => r.type === 'DISLIKE').length,
     })),
   }
 })
