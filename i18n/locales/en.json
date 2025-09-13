@@ -8,6 +8,7 @@
     "close": "Close",
     "continue": "Continue",
     "unsavedChanges": "Unsaved changes!",
+    "search": "Search...",
     "actions": {
       "view": "View",
       "edit": "Edit",
@@ -127,7 +128,8 @@
     "sortOptions": {
       "newest": "Newest",
       "oldest": "Oldest",
-      "mostInteresting": "Most interesting"
+      "mostInteresting": "Most interesting",
+      "mostViews": "Most views"
     },
     "created": "Created at:",
     "deleted": "Deleted at:",
@@ -212,7 +214,8 @@
       "toggleSuccess": "Comments {0}",
       "likedByAuthor": "Liked by author ({0})",
       "reportCommentConfirm": "Are you sure you want to report this comment?",
-      "noComments": "No comments"
+      "noComments": "No comments",
+      "commentsAction": "You have yet to comment something"
     },
     "title": "Articles",
     "addArticle": "Add Article",

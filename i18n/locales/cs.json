@@ -8,6 +8,7 @@
     "close": "Zavřít",
     "continue": "Pokračovat",
     "unsavedChanges": "Neuložené změny!",
+    "search": "Hledat...",
     "actions": {
       "view": "Zobrazit",
       "edit": "Upravit",
@@ -127,7 +128,8 @@
     "sortOptions": {
       "newest": "Nejnovější",
       "oldest": "Nejstarší",
-      "mostInteresting": "Nejzajímavější"
+      "mostInteresting": "Nejzajímavější",
+      "mostViews": "Nejvíce zhlédnutí"
     },
     "created": "Vytvořeno:",
     "deleted": "Smazáno:",
@@ -212,7 +214,8 @@
       "toggleSuccess": "Komentáře {0}",
       "likedByAuthor": "Líbí se autorovi ({0})",
       "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?",
-      "noComments": "Žádné komentáře"
+      "noComments": "Žádné komentáře",
+      "commentsAction": "Přidejte se k diskuzi."
     },
     "title": "Články",
     "addArticle": "Přidat článek",
