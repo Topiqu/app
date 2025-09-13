@@ -267,7 +267,7 @@ const submit = async () => {
       toast.success({ message: $t('common.auth.loginSuccess') })
       if (data.value?.user?.role === 'superadmin') navigateTo('/master')
       else if (data.value?.user?.role === 'admin') navigateTo('/admin')
-      else navigateTo('uzivatel/')
+      else navigateTo(localePath('uzivatel/'))
       form.value = init
     }
   } catch (e: any) {
