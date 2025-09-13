@@ -48,6 +48,7 @@
         "date-fns": "^4.1.0",
         "dompurify": "^3.2.6",
         "eslint": "^9.35.0",
+        "fast-deep-equal": "^3.1.3",
         "jsdom": "^26.1.0",
         "lucide-vue-next": "^0.539.0",
         "mitt": "^3.0.1",
@@ -65,6 +66,7 @@
         "typescript": "^5.9.2",
         "vue": "^3.5.21",
         "vue-chartjs": "^5.3.2",
+        "vue-countup-v3": "^1.4.2",
         "vue-easy-lightbox": "^1.19.0",
         "vue-router": "^4.5.1",
         "vue-tippy": "^6.7.1",
@@ -1486,6 +1488,8 @@
     "core-js-compat": ["core-js-compat@3.45.0", "", { "dependencies": { "browserslist": "^4.25.1" } }, "sha512-gRoVMBawZg0OnxaVv3zpqLLxaHmsubEGyTnqdpI/CEBvX4JadI1dMSHxagThprYRtSVbuQxvi6iUatdPxohHpA=="],
 
     "core-util-is": ["core-util-is@1.0.3", "", {}, "sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ=="],
+
+    "countup.js": ["countup.js@2.9.0", "", {}, "sha512-llqrvyXztRFPp6+i8jx25phHWcVWhrHO4Nlt0uAOSKHB8778zzQswa4MU3qKBvkXfJKftRYFJuVHez67lyKdHg=="],
 
     "crc-32": ["crc-32@1.2.2", "", { "bin": { "crc32": "bin/crc32.njs" } }, "sha512-ROmzCKrTnOwybPcJApAA6WBWij23HVfGVNKqqrZpuyZOHqK2CwHSvpGuyt/UNNvaIjEd8X5IFGp4Mh+Ie1IHJQ=="],
 
@@ -3262,6 +3266,8 @@
     "vue-bundle-renderer": ["vue-bundle-renderer@2.1.2", "", { "dependencies": { "ufo": "^1.6.1" } }, "sha512-M4WRBO/O/7G9phGaGH9AOwOnYtY9ZpPoDVpBpRzR2jO5rFL9mgIlQIgums2ljCTC2HL1jDXFQc//CzWcAQHgAw=="],
 
     "vue-chartjs": ["vue-chartjs@5.3.2", "", { "peerDependencies": { "chart.js": "^4.1.1", "vue": "^3.0.0-0 || ^2.7.0" } }, "sha512-NrkbRRoYshbXbWqJkTN6InoDVwVb90C0R7eAVgMWcB9dPikbruaOoTFjFYHE/+tNPdIe6qdLCDjfjPHQ0fw4jw=="],
+
+    "vue-countup-v3": ["vue-countup-v3@1.4.2", "", { "dependencies": { "countup.js": "^2.6.2" }, "peerDependencies": { "vue": "^3.0.0" } }, "sha512-nRC65jBcdgwybxqztgd/WaK8ZN5T9ECPyiCFGYFMewCsvqdRVo1CtpT7JREcPNF837Fgu/izTSFiuzrIGD6w0A=="],
 
     "vue-devtools-stub": ["vue-devtools-stub@0.1.0", "", {}, "sha512-RutnB7X8c5hjq39NceArgXg28WZtZpGc3+J16ljMiYnFhKvd8hITxSWQSQ5bvldxMDU6gG5mkxl1MTQLXckVSQ=="],
 
