@@ -330,6 +330,25 @@
             </div>
           </div>
         </div>
+        <div v-if="hasMore[activeTab] && !loading" class="mt-8 text-center">
+          <button
+            :disabled="pending"
+            class="bg-indigo-600 text-white px-6 py-2 rounded-full font-semibold text-lg hover:bg-indigo-700 dark:bg-indigo-800 dark:hover:bg-indigo-700 transition duration-300 disabled:opacity-50"
+            @click="loadMore"
+          >
+            <span v-if="pending" class="animate-spin inline-block mr-2">↻</span>
+            {{ $t('common.pagination.next') }}
+          </button>
+        </div>
+        <div v-if="loading" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
+          {{ $t('common.loading') }}
+        </div>
+        <div
+          v-if="!hasMore[activeTab] && (filteredArticles.length || filteredComments.length)"
+          class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm"
+        >
+          {{ $t('common.noResults') }}
+        </div>
       </template>
     </div>
   </div>
@@ -337,46 +356,35 @@
 
 <script setup lang="ts">
 import type { Article as _Article, Comment as _Comment } from '@prisma/client'
+
 import { formatDate } from '~~/shared/utils'
 
-interface Article {
-  id: string
-  slug: string
-  title: string
-  content: string
-  excerpt: string
-  imageUrl: string | null
-  createdAt: string | null
+type Article = Pick<_Article, 'id' | 'slug' | 'title' | 'content' | 'excerpt' | 'imageUrl' | 'views' | 'createdAt'> & {
   authorUsername: string
-  authorPfp: string | null
-  views: number
+  authorPfp?: string
   tags: string[]
   likesCount: number
 }
 
-interface Comment {
-  id: string
-  content: string
+type Comment = Pick<_Comment, 'id' | 'content' | 'articleId' | 'userId' | 'parentId' | 'createdAt'> & {
   articleSlug: string
   articleTitle: string
-  userId: string
   authorUsername: string
-  authorPfp: string | null
+  authorPfp?: string
   tags: string[]
-  createdAt: string
   likesCount: number
   dislikesCount: number
-  parentId: string | null
   replies: Comment[]
-  deletedAt: string | null
+  deletedAt?: string
 }
 
-interface ActivityResponse {
+type ActivityResponse = {
   likedArticles: Article[]
   comments: Comment[]
+  hasMore: Record<'likedArticles' | 'comments', boolean>
 }
 
-defineProps<{
+const props = defineProps<{
   activeTab: 'likedArticles' | 'comments'
 }>()
 
@@ -398,15 +406,45 @@ const sortComment = shallowRef('createdAt:desc')
 const isGrid = shallowRef(true)
 const searchQuery = shallowRef('')
 const selectedTags = ref<string[]>([])
+const page = shallowRef(1)
+const limit = 5
+const loading = shallowRef(false)
+const hasMore = shallowRef({ likedArticles: true, comments: true })
 
 const { data, pending, error, refresh } = await useFetch<ActivityResponse>('/api/users/activity', {
-  default: () => ({ likedArticles: [], comments: [] }),
+  query: {
+    page,
+    limit,
+    sort: computed(() => (props.activeTab === 'likedArticles' ? sortOption.value : sortComment.value)),
+  },
+})
+
+watch(
+  data,
+  (v) => {
+    if (!v) return
+    if (page.value === 1) {
+      data.value.likedArticles = v.likedArticles || []
+      data.value.comments = v.comments || []
+    } else {
+      data.value.likedArticles = [...(data.value.likedArticles || []), ...(v.likedArticles || [])]
+      data.value.comments = [...(data.value.comments || []), ...(v.comments || [])]
+    }
+    hasMore.value = v.hasMore || { likedArticles: true, comments: true }
+  },
+  { immediate: true },
+)
+
+watch([sortOption, sortComment, props.activeTab, searchQuery, selectedTags], () => {
+  page.value = 1
+  hasMore.value = { likedArticles: true, comments: true }
+  refresh()
 })
 
 const availableTags = computed(() => {
   const tags = new Set<string>()
-  data.value.likedArticles.forEach((a) => a.tags.forEach((t) => tags.add(t)))
-  data.value.comments.forEach((c) => {
+  data.value?.likedArticles?.forEach((a) => a.tags.forEach((t) => tags.add(t)))
+  data.value?.comments?.forEach((c) => {
     c.tags.forEach((t) => tags.add(t))
     c.replies.forEach((r) => r.tags.forEach((t) => tags.add(t)))
   })
@@ -423,7 +461,7 @@ const toggleTag = (tag: string) => {
 
 const filteredArticles = computed(() => {
   const [field, order] = sortOption.value.split(':')
-  return [...data.value.likedArticles]
+  return [...(data.value?.likedArticles || [])]
     .filter((article) => {
       const matchesSearch = article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
       const matchesTags = selectedTags.value.length
@@ -449,7 +487,7 @@ const filteredArticles = computed(() => {
 
 const sortReplies = (replies: Comment[]) => {
   const [field, order] = sortComment.value.split(':')
-  return [...replies]
+  return [...(replies || [])]
     .filter((reply) => {
       const matchesSearch = reply.content.toLowerCase().includes(searchQuery.value.toLowerCase())
       const matchesTags = selectedTags.value.length ? selectedTags.value.every((tag) => reply.tags.includes(tag)) : true
@@ -464,7 +502,7 @@ const sortReplies = (replies: Comment[]) => {
 
 const filteredComments = computed(() => {
   const [field, order] = sortComment.value.split(':')
-  return [...data.value.comments]
+  return [...(data.value?.comments || [])]
     .filter((comment) => {
       const matchesSearch = comment.content.toLowerCase().includes(searchQuery.value.toLowerCase())
       const matchesTags = selectedTags.value.length
@@ -482,7 +520,7 @@ const filteredComments = computed(() => {
 const unlikeArticle = async (articleId: string) => {
   try {
     await $fetch(`/api/articles/${articleId}/reaction`, { method: 'POST' })
-    data.value.likedArticles = data.value.likedArticles.filter((a) => a.id !== articleId)
+    data.value.likedArticles = (data.value.likedArticles || []).filter((a) => a.id !== articleId)
     await refresh()
     toast.success({ message: $t('common.messages.successGeneral') })
   } catch (e: any) {
@@ -513,11 +551,18 @@ const handleDelete = async (commentId: string) => {
         })
         .filter((c) => !c.deletedAt)
     }
+    data.value.comments = updateComments(data.value.comments || [])
     await refresh()
-    data.value.comments = updateComments(data.value.comments)
     toast.success({ message: $t('common.messages.deleteSuccess') })
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
   }
+}
+
+const loadMore = async () => {
+  if (!hasMore.value[props.activeTab]) return
+  loading.value = true
+  page.value++
+  await refresh().finally(() => (loading.value = false))
 }
 </script>

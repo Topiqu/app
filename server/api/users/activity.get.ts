@@ -3,65 +3,63 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const db = await getEnhancedPrisma(user)
+  const query = getQuery(event)
+  const sort = typeof query.sort === 'string' ? query.sort : 'createdAt:desc'
+  const [sortField, sortOrder] = sort.split(':') as ['createdAt' | 'likes', 'asc' | 'desc']
+  const { skip, take } = await getPagination(event)
+  const adjustedTake = Math.max(0, Math.min(take, 5))
 
-  const userData = await db.user.findUnique({
-    where: { id: user.id },
+  const likedArticlesCount = await db.articleReaction.count({ where: { userId: user.id } })
+  const likedArticles = await db.articleReaction.findMany({
+    where: { userId: user.id },
+    skip,
+    take: adjustedTake,
+    orderBy:
+      sortField === 'likes' ? { article: { reactions: { _count: sortOrder } } } : { article: { createdAt: sortOrder } },
     include: {
-      comments: {
-        where: { deletedAt: null },
-        include: {
-          article: {
-            select: {
-              slug: true,
-              title: true,
-              views: true,
-              tags: { select: { tag: { select: { name: true } } } },
-            },
-          },
+      article: {
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          excerpt: true,
+          imageUrl: true,
+          createdAt: true,
+          views: true,
           user: { select: { username: true, avatarUrl: true } },
-          reactions: { select: { type: true } },
-          replies: {
-            include: {
-              article: {
-                select: {
-                  slug: true,
-                  title: true,
-                  views: true,
-                  tags: { select: { tag: { select: { name: true } } } },
-                },
-              },
-              user: { select: { username: true, avatarUrl: true } },
-              reactions: { select: { type: true } },
-            },
-          },
-        },
-      },
-      articleReactions: {
-        where: { userId: user.id },
-        include: {
-          article: {
-            select: {
-              id: true,
-              slug: true,
-              title: true,
-              imageUrl: true,
-              createdAt: true,
-              excerpt: true,
-              user: { select: { username: true, avatarUrl: true } },
-              views: true,
-              tags: { select: { tag: { select: { name: true } } } },
-              reactions: { select: { id: true } },
-            },
-          },
+          tags: { select: { tag: { select: { name: true } } } },
+          reactions: { select: { id: true } },
         },
       },
     },
   })
 
-  if (!userData) throw createError({ statusCode: 404, message: 'Uživatel nenalezen' })
+  const commentsCount = await db.comment.count({ where: { userId: user.id, parentId: null, deletedAt: null } })
+  const comments = await db.comment.findMany({
+    where: { userId: user.id, parentId: null, deletedAt: null },
+    skip,
+    take: adjustedTake,
+    orderBy: sortField === 'likes' ? { reactions: { _count: sortOrder } } : { createdAt: sortOrder },
+    include: {
+      article: {
+        select: { slug: true, title: true, views: true, tags: { select: { tag: { select: { name: true } } } } },
+      },
+      user: { select: { username: true, avatarUrl: true } },
+      reactions: { select: { type: true } },
+      replies: {
+        include: {
+          article: {
+            select: { slug: true, title: true, views: true, tags: { select: { tag: { select: { name: true } } } } },
+          },
+          user: { select: { username: true, avatarUrl: true } },
+          reactions: { select: { type: true } },
+        },
+      },
+    },
+  })
 
   return {
-    likedArticles: userData.articleReactions.map((reaction) => ({
+    likedArticles: likedArticles.map((reaction) => ({
       id: reaction.article.id,
       slug: reaction.article.slug,
       title: reaction.article.title,
@@ -74,7 +72,7 @@ export default defineEventHandler(async (event) => {
       tags: reaction.article.tags.map((t) => t.tag.name),
       likesCount: reaction.article.reactions.length,
     })),
-    comments: userData.comments.map((comment) => ({
+    comments: comments.map((comment) => ({
       id: comment.id,
       content: comment.content,
       articleSlug: comment.article?.slug || '',
@@ -104,5 +102,9 @@ export default defineEventHandler(async (event) => {
       })),
       deletedAt: comment.deletedAt?.toISOString() || null,
     })),
+    hasMore: {
+      likedArticles: skip + likedArticles.length < likedArticlesCount,
+      comments: skip + comments.length < commentsCount,
+    },
   }
 })
