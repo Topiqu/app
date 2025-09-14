@@ -120,7 +120,7 @@
       </div>
     </div>
     <div class="text-xs sm:text-sm text-gray-500 mt-2">
-      {{ $t('common.created') }} {{ formatDate(comment.createdAt) }}
+      {{ formatDate(comment.createdAt) }}
     </div>
     <p
       class="mt-2 sm:mt-3 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"

@@ -293,6 +293,8 @@
       "noBio": "Žádné bio",
       "adminIn": "Administrátor v: {0}",
       "noClientAssigned": "Nepřiřazen",
+      "currentPlan": "Současný plán",
+      "roughlyEstimated": "Přibližně {0} článků",
       "userDataError": "Chyba při načítání uživatelských dat"
     },
     "dateFormats": {
