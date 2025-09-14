@@ -276,22 +276,22 @@ type Profile = Partial<User> & {
   likedArticles: Array<{ id: string }>
 }
 
+const { data: session } = useAuth()
+const toast = useToast()
+const { setLocale } = useI18n()
+
 function getDraft(): Profile | null {
-  const raw = localStorage.getItem('profileDraft')
+  const raw = localStorage.getItem(`profileDraft-${session.value?.user.id}`)
   return raw ? JSON.parse(raw) : null
 }
 
 function setDraft(profile: Profile) {
-  localStorage.setItem('profileDraft', JSON.stringify(profile))
+  localStorage.setItem(`profileDraft-${session.value?.user.id}`, JSON.stringify(profile))
 }
 
 function clearDraft() {
-  localStorage.removeItem('profileDraft')
+  localStorage.removeItem(`profileDraft-${session.value?.user.id}`)
 }
-
-const { data: session } = useAuth()
-const toast = useToast()
-const { setLocale } = useI18n()
 
 const avatar = ref<{ error: string | null; success: string | null }>({ error: null, success: null })
 const isLoading = shallowRef(false)
