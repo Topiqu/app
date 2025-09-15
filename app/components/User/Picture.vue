@@ -1,13 +1,10 @@
 <template>
-  <div>
+  <div :class="sizeClasses" class="flex items-center justify-center rounded-full overflow-hidden">
     <NuxtImg
       v-if="url"
       :src="url"
       :alt="(name || '') + ' ' + $t('common.avatar.alt.profile')"
-      :class="[
-        sizeClasses,
-        'rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-200 hover:ring-gray-400 dark:hover:ring-gray-500',
-      ]"
+      class="min-h-full object-cover ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-200 hover:ring-gray-400 dark:hover:ring-gray-500"
     />
     <div
       v-else
@@ -33,15 +30,15 @@ const props = defineProps<{
 const sizeClasses = computed(() => {
   switch (props.size) {
     case 'mn':
-      return 'w-5 h-5 sm:w-6 sm:h-6 text-[10px] sm:text-xs'
+      return 'w-6 h-6 text-[10px] sm:text-xs'
     case 'sm':
-      return 'w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm'
+      return 'w-8 h-8 text-xs sm:text-sm'
     case 'lg':
       return 'w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-xl'
     case 'hg':
       return 'w-16 h-16 sm:w-20 sm:h-20 text-2xl sm:text-3xl'
     default:
-      return 'w-10 h-10 sm:w-11 sm:h-11 text-sm sm:text-base'
+      return 'w-10 h-10 text-sm sm:text-base'
   }
 })
 
