@@ -1,29 +1,87 @@
 <mjml>
   <mj-head>
-    <mj-preview>Nová odpověď od {{userName}} na váš komentář</mj-preview>
+    <mj-preview>Nová odpověď od {{ userName }} na váš komentář</mj-preview>
     <mj-font name="Montserrat" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" />
     <mj-attributes>
-      <mj-text font-family="Montserrat, Helvetica, Arial, sans-serif" color="#333333" line-height="24px" font-size="15px" />
-      <mj-button font-family="Montserrat, Helvetica, Arial, sans-serif" background-color="#2563eb" color="#ffffff" font-size="16px" font-weight="600" border-radius="8px" padding="16px 28px" />
+      <mj-text
+        font-family="Montserrat, Helvetica, Arial, sans-serif"
+        color="#333333"
+        line-height="24px"
+        font-size="15px"
+      />
+      <mj-button
+        font-family="Montserrat, Helvetica, Arial, sans-serif"
+        background-color="#2563eb"
+        color="#ffffff"
+        font-size="16px"
+        font-weight="600"
+        border-radius="8px"
+        padding="16px 28px"
+      />
       <mj-section padding="20px" background-color="#ffffff" border-radius="12px" border="1px solid #e5e7eb" />
       <mj-column width="100%" />
     </mj-attributes>
     <mj-style inline="inline">
-      .comment-text { font-size: 15px; margin: 8px 0; }
-      .header-text { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
-      .quote-text { font-size: 14px; color: #555555; font-style: italic; padding: 10px 14px; border-left: 3px solid #2563eb; background-color: #f9fafb; border-radius: 6px; margin-top: 10px; }
-      a { color: #2563eb; text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      .mj-button a { transition: background-color 0.2s ease-in-out; }
-      .mj-button-primary a:hover { background-color: #1e40af !important; }
-      .mj-button-secondary a:hover { background-color: #3b82f6 !important; }
-      @media (max-width: 480px) { .comment-text { font-size: 16px !important; } .quote-text { font-size: 15px !important; } }
-      @media (prefers-color-scheme: dark) { 
-        body { background-color: #111111 !important; }
-        .section-bg { background-color: #1f1f1f !important; }
-        .comment-text { color: #dddddd !important; }
-        .header-text { color: #ffffff !important; }
-        .quote-text { background-color: #2a2a2a !important; color: #cccccc !important; }
+      .comment-text {
+        font-size: 15px;
+        margin: 8px 0;
+      }
+      .header-text {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .quote-text {
+        font-size: 14px;
+        color: #555555;
+        font-style: italic;
+        padding: 10px 14px;
+        border-left: 3px solid #2563eb;
+        background-color: #f9fafb;
+        border-radius: 6px;
+        margin-top: 10px;
+      }
+      a {
+        color: #2563eb;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .mj-button a {
+        transition: background-color 0.2s ease-in-out;
+      }
+      .mj-button-primary a:hover {
+        background-color: #1e40af !important;
+      }
+      .mj-button-secondary a:hover {
+        background-color: #3b82f6 !important;
+      }
+      @media (max-width: 480px) {
+        .comment-text {
+          font-size: 16px !important;
+        }
+        .quote-text {
+          font-size: 15px !important;
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #111111 !important;
+        }
+        .section-bg {
+          background-color: #1f1f1f !important;
+        }
+        .comment-text {
+          color: #dddddd !important;
+        }
+        .header-text {
+          color: #ffffff !important;
+        }
+        .quote-text {
+          background-color: #2a2a2a !important;
+          color: #cccccc !important;
+        }
       }
     </mj-style>
   </mj-head>
@@ -48,25 +106,33 @@
       </mj-section>
       <mj-section css-class="section-bg">
         <mj-column width="20%">
-          <mj-image src="{{avatarUrl}}" alt="Profilový obrázek {{userName}}" width="50px" border-radius="50%" border="2px solid #2563eb" padding="10px" />
+          <mj-image
+            src="{{avatarUrl}}"
+            alt="Profilový obrázek {{userName}}"
+            width="50px"
+            border-radius="50%"
+            border="2px solid #2563eb"
+            padding="10px"
+          />
         </mj-column>
         <mj-column width="80%">
           <mj-text css-class="header-text">
-            Ahoj <b>{{parentUsername}}</b>,
+            Ahoj <b>{{ parentUsername }}</b
+            >,
           </mj-text>
           <mj-text css-class="comment-text">
-            <b>{{userName}}</b> odpověděl: "<i>{{commentContent}}</i>"
+            <b>{{ userName }}</b> odpověděl: "<i>{{ commentContent }}</i
+            >"
           </mj-text>
           <mj-text css-class="quote-text">
-            Tvůj komentář: "<i>{{parentContent}}</i>"
+            Tvůj komentář: "<i>{{ parentContent }}</i
+            >"
           </mj-text>
         </mj-column>
       </mj-section>
       <mj-section css-class="section-bg">
         <mj-column>
-          <mj-button css-class="mj-button-primary" href="{{commentUrl}}">
-            Zobrazit odpověď
-          </mj-button>
+          <mj-button css-class="mj-button-primary" href="{{commentUrl}}"> Zobrazit odpověď </mj-button>
         </mj-column>
       </mj-section>
       <mj-section background-color="#f4f4f4" padding="10px">
