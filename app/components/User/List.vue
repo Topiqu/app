@@ -146,7 +146,7 @@ const restore = async (id: string | undefined) => {
   if (!id) return
 
   try {
-    await $fetch(`/api/users/${id}`, { method: 'PATCH', body: { deletedAt: null } })
+    await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'PATCH', body: { deletedAt: null } })
 
     const user = users.value?.find((u) => u?.id === id)
     if (user) user.deletedAt = null
