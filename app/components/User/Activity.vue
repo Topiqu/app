@@ -273,7 +273,7 @@
               </div>
               <div v-if="comment.replies?.length" class="mt-4 space-y-4">
                 <div
-                  v-for="reply in sortReplies(comment.replies)"
+                  v-for="reply in sortReplies(comment.replies as Comment[])"
                   :key="reply.id"
                   class="p-4 rounded-lg bg-gray-50 dark:bg-neutral-800 border-l-2 border-indigo-100 dark:border-indigo-900 ml-6 sm:ml-10 transition-all duration-150 ease-in-out"
                 >
@@ -359,38 +359,30 @@ import type { Article as _Article, Comment as _Comment } from '@prisma/client'
 
 import { formatDate } from '~~/shared/utils'
 
-type Article = Pick<_Article, 'id' | 'slug' | 'title' | 'content' | 'excerpt' | 'imageUrl' | 'views' | 'createdAt'> & {
+type Article = Pick<_Article, 'id' | 'slug' | 'title' | 'content' | 'excerpt' | 'imageUrl' | 'views'> & {
   authorUsername: string
-  authorPfp?: string
+  authorPfp?: string | null
   tags: string[]
   likesCount: number
+  createdAt: string | null
 }
 
-type Comment = Pick<_Comment, 'id' | 'content' | 'articleId' | 'userId' | 'parentId' | 'createdAt'> & {
+type Comment = Pick<_Comment, 'id' | 'content' | 'userId' | 'parentId'> & {
   articleSlug: string
   articleTitle: string
   authorUsername: string
-  authorPfp?: string
+  authorPfp?: string | null
   tags: string[]
   likesCount: number
   dislikesCount: number
   replies: Comment[]
+  createdAt: string
   deletedAt?: string
 }
 
-type ActivityResponse = {
-  likedArticles: Article[]
-  comments: Comment[]
-  hasMore: Record<'likedArticles' | 'comments', boolean>
-}
+const props = defineProps<{ activeTab: 'likedArticles' | 'comments' }>()
 
-const props = defineProps<{
-  activeTab: 'likedArticles' | 'comments'
-}>()
-
-defineEmits<{
-  (e: 'update:activeTab', value: 'likedArticles' | 'comments'): void
-}>()
+defineEmits<{ (e: 'update:activeTab', value: 'likedArticles' | 'comments'): void }>()
 
 const localePath = useLocalePath()
 const toast = useToast()
@@ -411,12 +403,17 @@ const limit = 5
 const loading = shallowRef(false)
 const hasMore = shallowRef({ likedArticles: true, comments: true })
 
-const { data, pending, error, refresh } = await useFetch<ActivityResponse>('/api/users/activity', {
+const { data, pending, error, refresh } = await useFetch('/api/users/activity', {
   query: {
     page,
     limit,
     sort: computed(() => (props.activeTab === 'likedArticles' ? sortOption.value : sortComment.value)),
   },
+  default: () => ({
+    likedArticles: [] as Article[],
+    comments: [] as Comment[],
+    hasMore: { likedArticles: true, comments: true },
+  }),
 })
 
 watch(
@@ -428,7 +425,7 @@ watch(
       data.value.comments = v.comments || []
     } else {
       data.value.likedArticles = [...(data.value.likedArticles || []), ...(v.likedArticles || [])]
-      data.value.comments = [...(data.value.comments || []), ...(v.comments || [])]
+      data.value.comments = [...(data.value.comments || []), ...(v.comments || [])] as Comment[]
     }
     hasMore.value = v.hasMore || { likedArticles: true, comments: true }
   },
@@ -551,7 +548,7 @@ const handleDelete = async (commentId: string) => {
         })
         .filter((c) => !c.deletedAt)
     }
-    data.value.comments = updateComments(data.value.comments || [])
+    data.value.comments = updateComments((data.value.comments || []) as Comment[])
     await refresh()
     toast.success({ message: $t('common.messages.deleteSuccess') })
   } catch (e: any) {
