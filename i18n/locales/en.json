@@ -153,6 +153,10 @@
         "label": "Target Audience",
         "placeholder": "Target audience (e.g., young adults, professionals)"
       },
+      "language": {
+        "label": "Language",
+        "placeholder": "Choose a language"
+      },
       "keywords": {
         "label": "Keywords",
         "placeholder": "Keywords (comma-separated)",
@@ -440,5 +444,9 @@
       "followSuccess": "You're now following {0}",
       "unfollowSuccess": "You've stopped following {0}"
     }
+  },
+  "languages": {
+    "en": "English",
+    "cs": "Czech"
   }
 }

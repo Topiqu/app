@@ -153,6 +153,10 @@
         "label": "Cílová skupina",
         "placeholder": "Cílová skupina (např. mladí dospělí, profesionálové)"
       },
+      "language": {
+        "label": "Jazyk",
+        "placeholder": "Vyberte jazyk"
+      },
       "keywords": {
         "label": "Klíčová slova",
         "placeholder": "Klíčová slova (oddělená čárkou)",
@@ -440,5 +444,9 @@
       "followSuccess": "Nyní sledujete {0}",
       "unfollowSuccess": "Přestali jste sledovat {0}"
     }
+  },
+  "languages": {
+    "en": "Angličtina",
+    "cs": "Čeština"
   }
 }
