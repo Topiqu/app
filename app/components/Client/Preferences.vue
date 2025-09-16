@@ -75,6 +75,20 @@
         </label>
         <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
           <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+            {{ $t('common.preferences.theme.label') }}
+          </span>
+          <select
+            v-model="form.theme"
+            class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
+          >
+            <option disabled>{{ $t('common.preferences.theme.placeholder') }}</option>
+            <option v-for="theme in ThemeSchema.options" :key="theme" :value="theme">
+              {{ $t(`themes.${theme}`) }}
+            </option>
+          </select>
+        </label>
+        <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
             {{ $t('common.preferences.keywords.label') }}
           </span>
           <input
@@ -229,7 +243,7 @@
 import type { SocialPlatform } from '@prisma/client'
 
 import Swal from 'sweetalert2'
-import { LanguageSchema } from '~~/shared/zod/enums'
+import { ThemeSchema, LanguageSchema } from '~~/shared/zod/enums'
 
 const toast = useToast()
 const { data: auth } = useAuth()
@@ -239,6 +253,7 @@ const init = {
   focus: '',
   audience: '',
   language: 'en' as unknown as typeof LanguageSchema.options,
+  theme: 'blue' as unknown as typeof ThemeSchema.options,
   keywords: [] as string[],
   description: '',
   logoUrl: '',
@@ -256,6 +271,7 @@ interface ClientSite {
   focus: string | null
   audience: string | null
   language: typeof LanguageSchema.options
+  theme: typeof ThemeSchema.options
   keywords: string[] | null
   description: string | null
   logoUrl: string | null
@@ -322,6 +338,7 @@ const {
     focus: null,
     audience: null,
     language: LanguageSchema.options[0] as unknown as typeof LanguageSchema.options,
+    theme: ThemeSchema.options[0] as unknown as typeof ThemeSchema.options,
     keywords: [],
     description: null,
     logoUrl: null,
@@ -392,6 +409,7 @@ const confirmClose = async () => {
     form.value.focus !== (client.value?.focus || '') ||
     form.value.audience !== (client.value?.audience || '') ||
     form.value.language !== (client.value?.language || 'en') ||
+    form.value.theme !== (client.value?.theme || 'blue') ||
     form.value.description !== (client.value?.description || '') ||
     form.value.logoUrl !== (client.value?.logoUrl || '') ||
     form.value.keywords.join(',') !== (client.value?.keywords || []).join(',') ||
