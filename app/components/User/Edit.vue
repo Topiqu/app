@@ -98,7 +98,7 @@ const saveEdit = async () => {
       role: editedUser.value.role,
     }
     if (editedUser.value.password) body.password = editedUser.value.password
-    await $fetch(`/api/users/${editedUser.value.id}`, {
+    await $fetch(`/api/users/${editedUser.value.id}` as `/api/users/:id`, {
       method: 'PATCH',
       body,
     })

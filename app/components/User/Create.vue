@@ -178,7 +178,7 @@ const assignToClientSite = async (userId: string | undefined) => {
   if (!userId) return
 
   try {
-    const response = await $fetch(`/api/users/${userId}`, {
+    const response = await $fetch(`/api/users/${userId}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { clientSiteId: props.clientId, role: 'admin' },
     })

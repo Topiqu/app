@@ -132,7 +132,7 @@ const del = async (id: string | undefined) => {
   if (!r.isConfirmed) return
 
   try {
-    await $fetch(`/api/users/${id}`, { method: 'DELETE' })
+    await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
 
     toast.success({ message: 'Uživatel zablokován' })
 

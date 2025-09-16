@@ -333,7 +333,7 @@ function openDialog(type: 'followers' | 'followed') {
 async function saveProfile(partial: Partial<Profile>) {
   try {
     isLoading.value = true
-    await $fetch(`/api/users/${session.value?.user?.id}`, {
+    await $fetch(`/api/users/${session.value?.user?.id}` as `/api/users/:id`, {
       method: 'PATCH',
       body: partial,
     })

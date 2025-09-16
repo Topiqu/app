@@ -222,7 +222,6 @@ interface Client {
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
 const toast = useToast()
-const router = useRouter()
 
 const userData = ref<User | null>(null)
 const clientData = ref<Client | null>(null)

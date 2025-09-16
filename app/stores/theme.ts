@@ -17,7 +17,7 @@ export const useThemeStore = defineStore(
       mode.value = newMode
       if (user.value?.user.id) {
         try {
-          await $fetch(`/api/users/${user.value.user.id}`, {
+          await $fetch(`/api/users/${user.value.user.id}` as `/api/users/:id`, {
             method: 'PATCH',
             body: { theme: newMode },
           })

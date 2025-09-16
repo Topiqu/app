@@ -73,10 +73,10 @@
                 <Icon v-else name="mdi:robot" class="w-6 h-6 text-indigo-600 dark:text-indigo-400 mx-auto" />
               </td>
               <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center">
-                <LazyUserEdit v-slot="{ open }" :user="user" hydrateOnInteraction @saved="refresh">
+                <LazyUserEdit v-slot="{ open: userEditOpen }" :user="user" hydrateOnInteraction @saved="refresh">
                   <button
                     class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 rounded-full hover:from-blue-300 hover:to-blue-400 transition shadow-sm hover:shadow-md transform hover:scale-105 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 dark:text-gray-200"
-                    @click="open.value = true"
+                    @click="userEditOpen.value = true"
                   >
                     <Icon name="mdi:pencil" class="w-5 h-5 text-black" />
                   </button>
@@ -137,7 +137,7 @@ const del = async (id: string) => {
   })
   if (!r.isConfirmed) return
   try {
-    await $fetch(`/api/users/${id}`, { method: 'DELETE' })
+    await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
     toast.success({ message: 'Uživatel zablokován' })
     await refresh()
   } catch (e: any) {
@@ -147,7 +147,7 @@ const del = async (id: string) => {
 
 const restore = async (id: string) => {
   try {
-    await $fetch(`/api/users/${id}`, { method: 'PATCH', body: { deletedAt: null } })
+    await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'PATCH', body: { deletedAt: null } })
     const user = users.value.find((u) => u.id === id)
     if (user) user.deletedAt = null
     await refresh()
