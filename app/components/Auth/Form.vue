@@ -257,11 +257,11 @@ const submit = async () => {
         redirect: false,
       })
       if (result?.error) return toast.error({ message: $t('common.auth.loginFailed') })
-      await $fetch(`/api/users/${data.value?.user.id}`, {
+      await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
         method: 'PATCH',
         body: { lastLogin: Date.now() },
       })
-      const user = await $fetch(`/api/users/${data.value?.user.id}`)
+      const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
       setLocale(user.language)
       theme.mode = user.theme
       toast.success({ message: $t('common.auth.loginSuccess') })
@@ -287,7 +287,7 @@ const verify = async () => {
       password: form.value.password,
       redirect: false,
     })
-    const user = await $fetch(`/api/users/${data.value?.user.id}`)
+    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
     setLocale(user.language)
     theme.mode = user.theme
     toast.success({ message: $t('common.auth.verifySuccess') })
@@ -301,11 +301,11 @@ const signInWithGoogle = async () => {
   try {
     const result = await signIn('google', { callbackUrl: localePath({ name: 'autorizace' }) })
     if (result?.error) return toast.error({ message: $t('common.auth.googleSignInFailed') })
-    await $fetch(`/api/users/${data.value?.user.id}`, {
+    await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { lastLogin: Date.now() },
     })
-    const user = await $fetch(`/api/users/${data.value?.user.id}`)
+    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
     setLocale(user.language)
     theme.mode = user.theme
     form.value = init
@@ -318,11 +318,11 @@ const signInWithGithub = async () => {
   try {
     const result = await signIn('github', { callbackUrl: localePath({ name: 'autorizace' }) })
     if (result?.error) return toast.error({ message: $t('common.auth.githubSignInFailed') })
-    await $fetch(`/api/users/${data.value?.user.id}`, {
+    await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { lastLogin: Date.now() },
     })
-    const user = await $fetch(`/api/users/${data.value?.user.id}`)
+    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
     setLocale(user.language)
     theme.mode = user.theme
     form.value = init
