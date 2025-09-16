@@ -1,7 +1,7 @@
 now:
 
-1. cliensite language column // 🛑 high priority
-2. cliensite customization // 🛑 high priority
+// DONE: 1. cliensite language column // 🛑 high priority
+// DONE: 2. cliensite customization (themes) // 🛑 high priority
 3. implement missing email templates // 🛑 high priority
 4. notifications should also be localised // 🛑 high priority
 
