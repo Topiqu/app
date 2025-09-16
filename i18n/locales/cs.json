@@ -157,6 +157,10 @@
         "label": "Jazyk",
         "placeholder": "Vyberte jazyk"
       },
+      "theme": {
+        "label": "Vzhled",
+        "placeholder": "Vyberte vzhled"
+      },
       "keywords": {
         "label": "Klíčová slova",
         "placeholder": "Klíčová slova (oddělená čárkou)",
@@ -448,5 +452,22 @@
   "languages": {
     "en": "Angličtina",
     "cs": "Čeština"
+  },
+  "themes": {
+    "blue": "Modrá",
+    "green": "Zelená",
+    "red": "Červená",
+    "purple": "Fialová",
+    "orange": "Oranžová",
+    "teal": "Tyrkysová",
+    "yellow": "Žlutá",
+    "pink": "Růžová",
+    "indigo": "Indigo",
+    "gray": "Šedá",
+    "lime": "Limetková",
+    "sky": "Nebeská",
+    "amber": "Jantarová",
+    "cyan": "Azurová",
+    "violet": "Fialová"
   }
 }

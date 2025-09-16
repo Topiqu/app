@@ -157,6 +157,10 @@
         "label": "Language",
         "placeholder": "Choose a language"
       },
+      "theme": {
+        "label": "Theme",
+        "placeholder": "Choose a theme"
+      },
       "keywords": {
         "label": "Keywords",
         "placeholder": "Keywords (comma-separated)",
@@ -448,5 +452,22 @@
   "languages": {
     "en": "English",
     "cs": "Czech"
+  },
+  "themes": {
+    "blue": "Blue",
+    "green": "Green",
+    "red": "Red",
+    "purple": "Purple",
+    "orange": "Orange",
+    "teal": "Teal",
+    "yellow": "Yellow",
+    "pink": "Pink",
+    "indigo": "Indigo",
+    "gray": "Gray",
+    "lime": "Lime",
+    "sky": "Sky",
+    "amber": "Amber",
+    "cyan": "Cyan",
+    "violet": "Violet"
   }
 }
