@@ -34,6 +34,24 @@ enum Language {
   en
 }
 
+enum Theme {
+  blue
+  green
+  red
+  purple
+  orange
+  teal
+  yellow
+  pink
+  indigo
+  gray
+  lime
+  sky
+  amber
+  cyan
+  violet
+}
+
 enum GenerationFrequency {
   NONE
   DAILY
@@ -243,6 +261,7 @@ model ClientSite {
   audience            String?
   lastGeneratedAt     DateTime?
   language            Language            @default(en)
+  theme               Theme               @default(blue)
   users               User[]
   tags                Tag[]
   articles            Article[]
