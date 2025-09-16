@@ -61,6 +61,20 @@
         </label>
         <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
           <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+            {{ $t('common.preferences.language.label') }}
+          </span>
+          <select
+            v-model="form.language"
+            class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
+          >
+            <option disabled>{{ $t('common.preferences.language.placeholder') }}</option>
+            <option v-for="lang in LanguageSchema.options" :key="lang" :value="lang">
+              {{ $t(`languages.${lang}`) }}
+            </option>
+          </select>
+        </label>
+        <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
+          <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
             {{ $t('common.preferences.keywords.label') }}
           </span>
           <input
@@ -215,6 +229,7 @@
 import type { SocialPlatform } from '@prisma/client'
 
 import Swal from 'sweetalert2'
+import { LanguageSchema } from '~~/shared/zod/enums'
 
 const toast = useToast()
 const { data: auth } = useAuth()
@@ -223,6 +238,7 @@ const socialPlatforms: SocialPlatform[] = ['FACEBOOK', 'TWITTER', 'INSTAGRAM', '
 const init = {
   focus: '',
   audience: '',
+  language: 'en' as unknown as typeof LanguageSchema.options,
   keywords: [] as string[],
   description: '',
   logoUrl: '',
@@ -239,6 +255,7 @@ interface ClientSite {
   plan: string
   focus: string | null
   audience: string | null
+  language: typeof LanguageSchema.options
   keywords: string[] | null
   description: string | null
   logoUrl: string | null
@@ -304,6 +321,7 @@ const {
     plan: 'BASIC',
     focus: null,
     audience: null,
+    language: LanguageSchema.options[0] as unknown as typeof LanguageSchema.options,
     keywords: [],
     description: null,
     logoUrl: null,
@@ -373,6 +391,7 @@ const confirmClose = async () => {
   const changed =
     form.value.focus !== (client.value?.focus || '') ||
     form.value.audience !== (client.value?.audience || '') ||
+    form.value.language !== (client.value?.language || 'en') ||
     form.value.description !== (client.value?.description || '') ||
     form.value.logoUrl !== (client.value?.logoUrl || '') ||
     form.value.keywords.join(',') !== (client.value?.keywords || []).join(',') ||

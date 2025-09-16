@@ -47,6 +47,7 @@ export default defineEventHandler(async (event) => {
   }
   if (body.keywords !== undefined) data.keywords = body.keywords
   if (body.audience !== undefined) data.audience = body.audience
+  if (body.language !== undefined) data.language = body.language
   if (body.focus !== undefined) data.focus = body.focus
   if (body.description !== undefined) data.description = body.description ? sanitizeHtml(body.description) : null
   if (body.logoUrl !== undefined) data.logoUrl = body.logoUrl
