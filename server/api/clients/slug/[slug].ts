@@ -4,7 +4,17 @@ export default defineEventHandler(async (event) => {
 
   const clientSite = await prisma.clientSite.findFirst({
     where: { name: slug },
-    select: { id: true, name: true, description: true, logoUrl: true, keywords: true, audience: true, focus: true },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      logoUrl: true,
+      keywords: true,
+      audience: true,
+      language: true,
+      focus: true,
+      theme: true,
+    },
   })
 
   if (!clientSite) throw createError({ statusCode: 404, message: 'Blog nenalezen' })

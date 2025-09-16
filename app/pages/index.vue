@@ -3,7 +3,10 @@
     class="sm:min-w-md md:min-w-lg lg:min-w-xl xl:min-w-2xl max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12"
   >
     <section
-      class="relative bg-gradient-to-r from-blue-600 to-indigo-900 dark:from-gray-900 dark:to-black rounded-3xl py-12 px-6 text-center shadow-xl overflow-hidden animate-gradient-x [animation-duration:8s]"
+      :class="[
+        'relative bg-gradient-to-r rounded-3xl py-12 px-6 text-center shadow-xl overflow-hidden animate-gradient-x [animation-duration:8s',
+        clientSite?.theme && Object.keys(themes).includes(clientSite.theme) ? themes[clientSite.theme] : themes.blue,
+      ]"
     >
       <NuxtImg
         v-if="clientSite?.logoUrl"
@@ -203,7 +206,7 @@ import { formatDate } from '~~/shared/utils'
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
 
-const slug = 'GameDev'
+const slug = 'viky'
 
 const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`)
 
@@ -266,6 +269,24 @@ const loadMore = async () => {
   if (!hasMore.value) return
   page.value++
   await refresh()
+}
+
+const themes = {
+  blue: 'from-blue-600 to-indigo-900 dark:from-blue-800 dark:to-indigo-950',
+  green: 'from-green-600 to-emerald-900 dark:from-green-800 dark:to-emerald-950',
+  red: 'from-red-600 to-pink-900 dark:from-red-800 dark:to-pink-950',
+  purple: 'from-purple-600 to-indigo-900 dark:from-purple-800 dark:to-indigo-950',
+  orange: 'from-orange-500 to-red-600 dark:from-orange-700 dark:to-red-900',
+  teal: 'from-teal-600 to-cyan-900 dark:from-teal-800 dark:to-cyan-950',
+  yellow: 'from-yellow-400 to-yellow-700 dark:from-yellow-600 dark:to-yellow-900',
+  pink: 'from-pink-500 to-fuchsia-800 dark:from-pink-700 dark:to-fuchsia-900',
+  indigo: 'from-indigo-600 to-blue-900 dark:from-indigo-800 dark:to-blue-950',
+  gray: 'from-gray-400 to-gray-700 dark:from-gray-700 dark:to-gray-900',
+  lime: 'from-lime-500 to-green-800 dark:from-lime-700 dark:to-green-900',
+  sky: 'from-sky-500 to-blue-700 dark:from-sky-700 dark:to-blue-900',
+  amber: 'from-amber-500 to-orange-700 dark:from-amber-700 dark:to-orange-900',
+  cyan: 'from-cyan-500 to-teal-800 dark:from-cyan-700 dark:to-teal-900',
+  violet: 'from-violet-600 to-purple-900 dark:from-violet-800 dark:to-purple-950',
 }
 </script>
 
