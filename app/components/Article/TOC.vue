@@ -6,7 +6,7 @@
     <h2 class="text-base font-bold flex items-center gap-2 mb-4">
       <LucideList class="w-5 h-5 text-blue-600" /> {{ $t('articles.tableOfContents.title') }}
     </h2>
-    <nav id="toc" class="space-y-2 border-l-2 border-gray-200 pl-2" />
+    <nav id="toc" class="space-y-2 border-l-2 border-gray-200" />
   </div>
 </template>
 
@@ -126,12 +126,36 @@ onUnmounted(() => {
   background-color: #94a3b8;
 }
 
+#toc .toc-list {
+  list-style: none;
+  padding-left: 0rem;
+
+  > .toc-list-item > a {
+    list-style: disc inside;
+    display: list-item;
+  }
+
+  &:is(dir, menu, ol, ul) ul.toc-list {
+    > .toc-list-item > a {
+      list-style: circle inside;
+      display: list-item;
+    }
+
+    &:is(dir, menu, ol, ul) ul.toc-list {
+      > .toc-list-item > a {
+        list-style: square inside;
+        display: list-item;
+      }
+    }
+  }
+}
+
 #toc .toc-list .toc-list {
-  padding-left: 1rem;
+  padding-left: 0.75rem;
 }
 
 #toc .toc-list .toc-list .toc-list {
-  padding-left: 1.5rem;
+  padding-left: 1rem;
 }
 
 #toc a.toc-link {
