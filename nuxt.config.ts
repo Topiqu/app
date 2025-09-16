@@ -3,14 +3,14 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
-  future: { compatibilityVersion: 4 },
-
   runtimeConfig: {
     public: { appVersion: '1.0.0 beta' },
     openModeratorApiKey: process.env.OPENMODERATOR_API_KEY,
     openAI: { apiKey: process.env.OPENAI_API_KEY },
     authSecret: process.env.AUTH_SECRET,
   },
+
+  typescript: { tsConfig: { include: ['../types/**/*.d.ts'] } },
 
   nitro: {
     experimental: { tasks: true },

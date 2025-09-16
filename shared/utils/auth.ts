@@ -3,4 +3,4 @@ export const signInSchema = z.object({
   password: z.string().min(4).max(124),
   email: z.string().email(),
 })
-export type SignInInput = typeof signInSchema._type
+export type SignInInput = typeof signInSchema.type
