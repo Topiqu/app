@@ -5,41 +5,64 @@
         <div
           class="bg-white dark:bg-neutral-800 p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700"
         >
-          <div class="flex flex-col items-center text-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <div class="relative group cursor-pointer" @click="open({ accept: 'image/*' })">
-              <UserPicture
-                :url="profileForm.avatarUrl"
-                :size="'hg'"
-                :name="profileForm.username"
-                class="transition-transform group-hover:scale-102"
-              />
-              <div
-                class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full"
-                :class="{ 'opacity-100': isLoading, 'opacity-0 group-hover:opacity-100': !isLoading }"
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 items-center mb-8">
+            <div class="flex flex-col items-center sm:items-start gap-4">
+              <div class="relative group cursor-pointer" @click="open({ accept: 'image/*' })">
+                <UserPicture
+                  :url="profileForm.avatarUrl"
+                  :size="'hg'"
+                  :name="profileForm.username"
+                  class="transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
+                />
+                <div
+                  class="absolute bottom-0 right-0 w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
+                >
+                  <Icon name="mdi:edit" class="w-3 h-3 text-white" />
+                </div>
+                <div
+                  class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full transition-opacity"
+                  :class="{ 'opacity-100': isLoading, 'opacity-0 group-hover:opacity-100': !isLoading }"
+                >
+                  <Icon v-if="!isLoading" name="mdi:camera" class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                  <Icon v-else name="mdi:loading" class="w-6 h-6 sm:w-8 sm:h-8 text-white animate-spin" />
+                </div>
+              </div>
+              <Button
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition cursor-pointer"
+                @click="open({ accept: 'image/*' })"
               >
-                <Icon v-if="!isLoading" name="mdi:camera" class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                <Icon v-else name="mdi:loading" class="w-5 h-5 sm:w-6 sm:h-6 text-white animate-spin" />
+                {{ $t('common.avatar.uploadAvatar') }}
+              </Button>
+            </div>
+            <div class="text-center sm:text-left space-y-4">
+              <div class="p-4 sm:p-6 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/60 backdrop-blur">
+                <h1
+                  class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2"
+                >
+                  {{ profileForm.username }}
+                </h1>
+                <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-2">
+                  @{{ profileForm.username?.toLowerCase().replace(/\s+/g, '') }}
+                </p>
+                <p
+                  class="text-sm sm:text-base text-gray-600 dark:text-gray-400 italic border-l-2 pl-3 border-indigo-500"
+                >
+                  {{ profileForm.bio || $t('common.noBio') }}
+                </p>
+                <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-4">
+                  <span class="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
+                    <Icon name="mdi:email" class="w-4 h-4" />
+                    {{ profileForm.email }}
+                  </span>
+                  <span class="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
+                    <Icon name="mdi:calendar" class="w-4 h-4" />
+                    {{ formatDate(profileForm.createdAt) }}
+                  </span>
+                </div>
               </div>
             </div>
-            <h1
-              class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white transition-transform duration-500 translate-y-2 opacity-0 animate-[fadeSlide_0.5s_ease-out_forwards]"
-            >
-              {{ profileForm.username }}
-            </h1>
-            <p
-              class="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-xs sm:max-w-md transition-transform duration-500 translate-y-2 opacity-0 animate-[fadeSlide_0.5s_ease-out_0.2s_forwards]"
-            >
-              {{ profileForm.bio || 'Žádné bio' }}
-            </p>
-            <div class="flex items-center gap-2 sm:gap-3 w-full mt-3 sm:mt-4">
-              <hr class="flex-grow border-gray-300 dark:border-gray-700" />
-              <span class="mx-2 text-xs sm:text-sm text-gray-400 dark:text-gray-500"
-                ><Icon name="mdi:settings" class="w-5 h-5 sm:w-6 sm:h-6"
-              /></span>
-              <hr class="flex-grow border-gray-300 dark:border-gray-700" />
-            </div>
           </div>
-
+          <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200 my-8"></div>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div
               class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
@@ -234,17 +257,26 @@
                   class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>
+              <Button
+                :disabled="isLoading"
+                class="w-full inline-flex justify-center items-center px-4 py-2 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-gray-300 rounded-lg hover:text-white disabled:opacity-50 transition-colors text-sm cursor-pointer touch-manipulation"
+                :variant="'danger'"
+                @click="deactivateAccount"
+              >
+                <Icon name="mdi:account-cancel" class="w-4 h-4 mr-2" />
+                {{ $t('profile.deactivateAccount') }}
+              </Button>
             </div>
           </div>
 
-          <button
+          <Button
             :disabled="isLoading || !isDirty"
             class="mt-6 sm:mt-8 lg:mt-10 w-full inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
             @click="updateProfile"
           >
             <Save class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {{ $t('common.actions.saveChanges') }}
-          </button>
+          </Button>
 
           <UserActivity
             v-model:activeTab="activeTab"
@@ -268,6 +300,7 @@ import { formatDate } from '~~/shared/utils'
 import { TransitionRoot } from '@headlessui/vue'
 
 type Profile = Partial<User> & {
+  handle: string
   followers: number
   following: number
   commentsCount: number
@@ -276,7 +309,7 @@ type Profile = Partial<User> & {
   likedArticles: Array<{ id: string }>
 }
 
-const { data: session } = useAuth()
+const { data: session, signOut } = useAuth()
 const toast = useToast()
 const { setLocale } = useI18n()
 
@@ -312,8 +345,11 @@ const {
 } = await useFetch(`/api/users/${session.value?.user?.id}/account`)
 
 if (userData.value) {
-  Object.assign(profileForm.value, userData.value)
-  originalProfile.value = JSON.parse(JSON.stringify(userData.value))
+  Object.assign(profileForm.value, {
+    ...userData.value,
+    handle: userData.value.username.toLowerCase().replace(/\s+/g, ''),
+  })
+  originalProfile.value = JSON.parse(JSON.stringify(profileForm.value))
   setLocale(userData.value.language)
 }
 
@@ -398,6 +434,22 @@ async function copyToClipboard(text: string) {
     toast.success({ message: $t('common.actions.copySuccess') })
   } catch {
     toast.error({ message: $t('common.messages.operationFailed') })
+  }
+}
+
+async function deactivateAccount() {
+  try {
+    isLoading.value = true
+    await $fetch(`/api/users/${session.value?.user?.id}` as `/api/users/:id`, {
+      method: 'PATCH',
+      body: { deletedAt: new Date().toISOString() },
+    })
+    toast.success({ message: $t('common.messages.successGeneralTitle') })
+    await signOut()
+  } catch (err: any) {
+    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
+  } finally {
+    isLoading.value = false
   }
 }
 
