@@ -77,15 +77,27 @@
           <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
             {{ $t('common.preferences.theme.label') }}
           </span>
-          <select
-            v-model="form.theme"
-            class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/70 transition-all duration-300"
-          >
-            <option disabled>{{ $t('common.preferences.theme.placeholder') }}</option>
-            <option v-for="theme in ThemeSchema.options" :key="theme" :value="theme">
-              {{ $t(`themes.${theme}`) }}
-            </option>
-          </select>
+          <div class="grid grid-cols-5 gap-6 max-w-sm justify-items-center">
+            <button
+              v-for="theme in ThemeSchema.options"
+              :key="theme"
+              type="button"
+              :style="{ backgroundColor: theme }"
+              class="relative w-12 h-12 rounded-full shadow-md transition-all duration-200 cursor-pointer"
+              :class="
+                form.theme === theme
+                  ? 'ring-2 ring-blue-500 scale-110'
+                  : 'hover:scale-105 border border-gray-300 dark:border-gray-600'
+              "
+              @click="form.theme = theme"
+            >
+              <Icon
+                v-if="form.theme === theme"
+                name="mdi:check"
+                class="absolute inset-0 w-5 h-5 m-auto text-white drop-shadow"
+              />
+            </button>
+          </div>
         </label>
         <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
           <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
@@ -422,7 +434,7 @@ const confirmClose = async () => {
   if (changed) {
     const r = await Swal.fire({
       title: $t('common.messages.closeConfirmTitle'),
-      text: $t('common.preferences.messages.closeConfirmText'),
+      text: $t('common.messages.closeConfirmText'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: $t('common.messages.closeConfirmButton'),
