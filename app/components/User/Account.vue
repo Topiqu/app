@@ -163,8 +163,6 @@
               src="/app-logo.png"
               :alt="$t('articles.userMenu.companyLogoAlt')"
               class="w-24 h-24 mx-auto object-contain"
-              width="96"
-              height="96"
             />
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">

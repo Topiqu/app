@@ -440,6 +440,7 @@
     "emailNotifications": "Email Notifications",
     "emailNotificationsDescription": "Receive messages via email",
     "registrationDate": "Registration Date",
+    "deactivateAccount": "Deactivate account",
     "messages": {
       "profileUpdateSuccess": "Profile updated",
       "profileUpdateError": "Update failed",

@@ -440,6 +440,7 @@
     "emailNotifications": "E-mailová oznámení",
     "emailNotificationsDescription": "Přijímat zprávy e-mailem",
     "registrationDate": "Datum registrace",
+    "deactivateAccount": "Deaktivovat účet",
     "messages": {
       "profileUpdateSuccess": "Profil aktualizován",
       "profileUpdateError": "Aktualizace selhala",
