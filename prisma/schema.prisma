@@ -260,6 +260,7 @@ model ClientSite {
   keywords            Json?
   audience            String?
   lastGeneratedAt     DateTime?
+  allowShapes         Boolean             @default(false)
   language            Language            @default(en)
   theme               Theme               @default(blue)
   users               User[]
