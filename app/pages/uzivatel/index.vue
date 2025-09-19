@@ -330,8 +330,69 @@
                       @click="changePassword"
                     >
                       <Icon name="mdi:lock-reset" class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                      {{ $t('profile.changePassword') }}
+                      {{ $t('common.auth.changePassword') }}
                     </Button>
+                  </div>
+                  <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
+                  <div>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {{ $t('profile.sessions') }}
+                    </label>
+                    <div class="mt-2 space-y-3">
+                      <div
+                        v-for="session in profileForm.sessions"
+                        :key="session.id"
+                        class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900/70 shadow-sm"
+                      >
+                        <div class="flex items-center gap-3">
+                          <div class="flex-shrink-0">
+                            <Icon
+                              :name="
+                                session.device === 'mobile'
+                                  ? 'mdi:cellphone'
+                                  : session.device === 'tablet'
+                                    ? 'mdi:tablet'
+                                    : 'mdi:laptop'
+                              "
+                              class="w-6 h-6 text-indigo-500 dark:text-indigo-400"
+                            />
+                          </div>
+                          <div class="space-y-1">
+                            <p class="font-medium text-gray-900 dark:text-white">
+                              {{ session.device || $t('common.unknown') }} – {{ session.os || $t('common.unknown') }} –
+                              {{ session.browser || $t('common.unknown') }}
+                            </p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
+                              {{ session.city || $t('common.unknown') }}, {{ session.region || $t('common.unknown') }},
+                              {{ session.country || $t('common.unknown') }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ $t('profile.lastUsed', [formatDate(session.lastUsedAt)]) }}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div class="mt-3 sm:mt-0">
+                          <Button
+                            v-if="!session.revoked"
+                            size="sm"
+                            class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                            @click="revokeSession(session.id)"
+                          >
+                            {{ $t('common.actions.revoke') }}
+                          </Button>
+                          <span
+                            v-else
+                            class="px-3 py-1 bg-gray-100 dark:bg-neutral-800 text-gray-500 text-xs rounded-lg"
+                          >
+                            {{ $t('profile.sessionRevoked') }}
+                          </span>
+                        </div>
+                      </div>
+                      <p v-if="!profileForm.sessions?.length" class="text-sm text-gray-500 dark:text-gray-400 italic">
+                        {{ $t('profile.noActiveSessions') }}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -359,7 +420,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '@prisma/client'
+import type { User, Session } from '@prisma/client'
 
 import equal from 'fast-deep-equal'
 import { Save } from 'lucide-vue-next'
@@ -374,6 +435,7 @@ type Profile = Partial<User> & {
   likesCount: number
   dislikesCount: number
   likedArticles: Array<{ id: string }>
+  sessions: Session[]
 }
 
 const { data: session, signOut } = useAuth()
@@ -382,11 +444,17 @@ const { setLocale } = useI18n()
 
 function getDraft(): Profile | null {
   const raw = localStorage.getItem(`profileDraft-${session.value?.user.id}`)
-  return raw ? JSON.parse(raw) : null
+  if (raw) {
+    const parsed = JSON.parse(raw)
+    delete parsed.sessions
+    return parsed
+  }
+  return null
 }
 
 function setDraft(profile: Profile) {
-  localStorage.setItem(`profileDraft-${session.value?.user.id}`, JSON.stringify(profile))
+  const { sessions, ...profileWithoutSessions } = profile
+  localStorage.setItem(`profileDraft-${session.value?.user.id}`, JSON.stringify(profileWithoutSessions))
 }
 
 function clearDraft() {
@@ -431,7 +499,9 @@ if (userData.value) {
     ...userData.value,
     handle: userData.value.username.toLowerCase().replace(/\s+/g, ''),
   })
-  originalProfile.value = JSON.parse(JSON.stringify(profileForm.value))
+  originalProfile.value = JSON.parse(
+    JSON.stringify({ ...userData.value, handle: userData.value.username.toLowerCase().replace(/\s+/g, '') }),
+  )
   setLocale(userData.value.language)
 }
 
@@ -456,7 +526,9 @@ async function saveProfile(partial: Partial<Profile>) {
       body: partial,
     })
     Object.assign(profileForm.value, partial)
-    originalProfile.value = JSON.parse(JSON.stringify(profileForm.value))
+    originalProfile.value = JSON.parse(
+      JSON.stringify({ ...profileForm.value, handle: profileForm.value.username?.toLowerCase().replace(/\s+/g, '') }),
+    )
     clearDraft()
     isDirty.value = false
     toast.success({ message: $t('common.messages.successGeneralTitle') })
@@ -498,6 +570,28 @@ async function changePassword() {
     })
     toast.success({ message: $t('common.messages.successGeneralTitle') })
     passwordForm.value = { oldPassword: '', newPassword: '', confirmNewPassword: '' }
+  } catch (err: any) {
+    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function revokeSession(sessionId: string) {
+  try {
+    isLoading.value = true
+    await $fetch(`/api/sessions/${sessionId}`, {
+      method: 'PATCH',
+      body: { revoked: true },
+    })
+    profileForm.value.sessions = profileForm.value.sessions.map((s) =>
+      s.id === sessionId ? { ...s, revoked: true } : s,
+    )
+    console.log(session.value?.user.sessionId, sessionId)
+    if (session.value?.user.sessionId === sessionId) {
+      await signOut()
+    }
+    toast.success({ message: $t('profile.sessionRevokedSuccess') })
   } catch (err: any) {
     toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
   } finally {
@@ -555,7 +649,7 @@ async function deactivateAccount() {
 watch(
   profileForm,
   (newVal) => {
-    isDirty.value = !equal(newVal, originalProfile.value)
+    isDirty.value = !equal({ ...newVal, sessions: undefined }, { ...originalProfile.value, sessions: undefined })
     if (isDirty.value) setDraft(newVal)
   },
   { deep: true },
