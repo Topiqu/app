@@ -259,7 +259,6 @@ export default NuxtAuthHandler({
         token.plan = user.plan
         token.avatarUrl = user.avatarUrl
         token.sessionId = user.sessionId
-        console.log(token.sessionId)
       }
       return token
     },

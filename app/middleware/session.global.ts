@@ -5,8 +5,7 @@ export default defineNuxtRouteMiddleware(async () => {
   if (auth.value?.user && auth.value?.user.sessionId)
     try {
       await $fetch('/api/sessions/ping', { method: 'POST' })
-    } catch (e: any) {
-      console.log('cau mafe' + e.data.message)
+    } catch {
       await signOut()
       throw createError({
         statusCode: 401,

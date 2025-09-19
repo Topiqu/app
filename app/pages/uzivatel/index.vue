@@ -587,7 +587,6 @@ async function revokeSession(sessionId: string) {
     profileForm.value.sessions = profileForm.value.sessions.map((s) =>
       s.id === sessionId ? { ...s, revoked: true } : s,
     )
-    console.log(session.value?.user.sessionId, sessionId)
     if (session.value?.user.sessionId === sessionId) {
       await signOut()
     }
