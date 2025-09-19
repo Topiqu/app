@@ -48,6 +48,23 @@ export default defineEventHandler(async (event) => {
           },
         },
       },
+      sessions: {
+        where: { revoked: false },
+        select: {
+          id: true,
+          ip: true,
+          userAgent: true,
+          device: true,
+          os: true,
+          browser: true,
+          city: true,
+          region: true,
+          country: true,
+          lastUsedAt: true,
+          revoked: true,
+          userId: true,
+        },
+      },
     },
   })
 
@@ -84,6 +101,20 @@ export default defineEventHandler(async (event) => {
     theme: userData.theme,
     likedArticles: userData.articleReactions.map((reaction) => ({
       id: reaction.article.id,
+    })),
+    sessions: userData.sessions.map((session) => ({
+      id: session.id,
+      ip: session.ip,
+      userAgent: session.userAgent,
+      device: session.device,
+      os: session.os,
+      browser: session.browser,
+      city: session.city,
+      region: session.region,
+      country: session.country,
+      lastUsedAt: session.lastUsedAt.toISOString(),
+      revoked: session.revoked,
+      userId: session.userId,
     })),
   }
 })
