@@ -9,6 +9,7 @@ declare module 'next-auth' {
     clientSiteId: string
     plan: string
     avatarUrl: string | null
+    sessionId?: string
   }
 
   interface Session {
@@ -26,5 +27,6 @@ declare module 'next-auth/jwt' {
     plan: string
     avatarUrl: string | null
     provider?: string
+    sessionId?: string
   }
 }
