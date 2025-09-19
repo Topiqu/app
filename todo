@@ -4,6 +4,9 @@ now:
 // DONE: 2. cliensite customization (themes) // 🛑 high priority
 3. implement missing email templates // 🛑 high priority
 4. notifications should also be localised // 🛑 high priority
+5. add sessionId for oauth providers in nuxt auth callback
+6. further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
+7. misc style/ui cleanups OR general code optimisation
 
 once deployed:
 
