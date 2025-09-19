@@ -2,9 +2,7 @@
   <div class="max-w-4xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
     <TransitionRoot :show="true" enter="transition-opacity duration-500" enterFrom="opacity-0" enterTo="opacity-100">
       <div class="space-y-6 sm:space-y-8 lg:space-y-10">
-        <div
-          class="bg-white dark:bg-neutral-800 p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700"
-        >
+        <div class="p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 items-center mb-8">
             <div class="flex flex-col items-center sm:items-start gap-4">
               <div class="relative group cursor-pointer" @click="open({ accept: 'image/*' })">
@@ -47,7 +45,7 @@
                 <p
                   class="text-sm sm:text-base text-gray-600 dark:text-gray-400 italic border-l-2 pl-3 border-indigo-500"
                 >
-                  {{ profileForm.bio || $t('common.noBio') }}
+                  {{ profileForm.bio || $t('articles.userMenu.noBio') }}
                 </p>
                 <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-4">
                   <span class="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
@@ -257,18 +255,88 @@
                   class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>
-              <Button
-                :disabled="isLoading"
-                class="w-full inline-flex justify-center items-center px-4 py-2 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-gray-300 rounded-lg hover:text-white disabled:opacity-50 transition-colors text-sm cursor-pointer touch-manipulation"
-                :variant="'danger'"
-                @click="deactivateAccount"
-              >
-                <Icon name="mdi:account-cancel" class="w-4 h-4 mr-2" />
-                {{ $t('profile.deactivateAccount') }}
-              </Button>
+              <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  $t('profile.security')
+                }}</label>
+                <div class="space-y-3 sm:space-y-4">
+                  <Button
+                    :disabled="isLoading"
+                    class="w-full inline-flex justify-center items-center px-4 py-2 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-gray-300 rounded-lg hover:text-white disabled:opacity-50 transition-colors text-sm cursor-pointer touch-manipulation"
+                    :variant="'danger'"
+                    @click="deactivateAccount"
+                  >
+                    <Icon name="mdi:account-cancel" class="w-4 h-4 mr-2" />
+                    {{ $t('profile.deactivateAccount') }}
+                  </Button>
+                  <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
+                  <div class="space-y-3 sm:space-y-4">
+                    <div class="relative">
+                      <input
+                        v-model="passwordForm.oldPassword"
+                        :type="showOldPassword ? 'text' : 'password'"
+                        :placeholder="$t('common.auth.oldPassword')"
+                        class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
+                      />
+                      <Icon
+                        :name="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer"
+                        @click="showOldPassword = !showOldPassword"
+                      />
+                    </div>
+                    <div class="relative">
+                      <input
+                        v-model="passwordForm.newPassword"
+                        :type="showNewPassword ? 'text' : 'password'"
+                        :placeholder="$t('common.auth.newPassword')"
+                        :class="{
+                          'border-red-500 dark:border-red-500':
+                            !isPasswordFormValid && passwordForm.newPassword && passwordForm.confirmNewPassword,
+                        }"
+                        class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
+                      />
+                      <Icon
+                        :name="showNewPassword ? 'mdi:eye-off' : 'mdi:eye'"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer"
+                        @click="showNewPassword = !showNewPassword"
+                      />
+                    </div>
+                    <div class="relative">
+                      <input
+                        v-model="passwordForm.confirmNewPassword"
+                        :type="showConfirmPassword ? 'text' : 'password'"
+                        :placeholder="$t('common.auth.passwordConfirm')"
+                        :class="{
+                          'border-red-500 dark:border-red-500':
+                            !isPasswordFormValid && passwordForm.newPassword && passwordForm.confirmNewPassword,
+                        }"
+                        class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
+                      />
+                      <Icon
+                        :name="showConfirmPassword ? 'mdi:eye-off' : 'mdi:eye'"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer"
+                        @click="showConfirmPassword = !showConfirmPassword"
+                      />
+                    </div>
+                    <p
+                      v-if="!isPasswordFormValid && passwordForm.newPassword && passwordForm.confirmNewPassword"
+                      class="text-xs sm:text-sm text-red-500 dark:text-red-400"
+                    >
+                      {{ $t('common.auth.passwordsMismatch') }}
+                    </p>
+                    <Button
+                      :disabled="isLoading || !isPasswordFormValid"
+                      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
+                      @click="changePassword"
+                    >
+                      <Icon name="mdi:lock-reset" class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                      {{ $t('profile.changePassword') }}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
           <Button
             :disabled="isLoading || !isDirty"
             class="mt-6 sm:mt-8 lg:mt-10 w-full inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
@@ -277,7 +345,6 @@
             <Save class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {{ $t('common.actions.saveChanges') }}
           </Button>
-
           <UserActivity
             v-model:activeTab="activeTab"
             :profile="profileForm"
@@ -334,8 +401,23 @@ const dialogType = shallowRef<'followers' | 'followed'>('followers')
 const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
 const originalProfile = shallowRef<Profile | null>(null)
 const isDirty = shallowRef(false)
-
+const showOldPassword = shallowRef(false)
+const showNewPassword = shallowRef(false)
+const showConfirmPassword = shallowRef(false)
 const profileForm = ref<Profile>({} as Profile)
+const passwordForm = ref({
+  oldPassword: '',
+  newPassword: '',
+  confirmNewPassword: '',
+})
+
+const isPasswordFormValid = computed(() => {
+  return (
+    passwordForm.value.oldPassword &&
+    passwordForm.value.newPassword &&
+    passwordForm.value.newPassword === passwordForm.value.confirmNewPassword
+  )
+})
 
 const {
   data: userData,
@@ -377,10 +459,10 @@ async function saveProfile(partial: Partial<Profile>) {
     originalProfile.value = JSON.parse(JSON.stringify(profileForm.value))
     clearDraft()
     isDirty.value = false
-    toast.success({ message: $t('profile.messages.profileUpdateSuccess') })
+    toast.success({ message: $t('common.messages.successGeneralTitle') })
     await refresh()
   } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('profile.messages.profileUpdateError') })
+    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
   } finally {
     isLoading.value = false
   }
@@ -396,11 +478,28 @@ async function uploadAvatar(files: FileList | null) {
   try {
     isLoading.value = true
     const { url } = await $fetch('/api/upload', { method: 'POST', body: formData })
-    avatar.value.success = $t('profile.messages.avatarUploadSuccess')
+    avatar.value.success = $t('common.messages.successGeneralTitle')
     profileForm.value.avatarUrl = url
     await refresh()
   } catch (err: any) {
-    avatar.value.error = err.data?.message || $t('profile.messages.avatarUploadError')
+    avatar.value.error = err.data?.message || $t('common.messages.operationFailed')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function changePassword() {
+  if (!isPasswordFormValid.value) return
+  try {
+    isLoading.value = true
+    await $fetch(`/api/users/${session.value?.user?.id}` as `/api/users/:id`, {
+      method: 'PATCH',
+      body: { password: passwordForm.value.newPassword },
+    })
+    toast.success({ message: $t('common.messages.successGeneralTitle') })
+    passwordForm.value = { oldPassword: '', newPassword: '', confirmNewPassword: '' }
+  } catch (err: any) {
+    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
   } finally {
     isLoading.value = false
   }
