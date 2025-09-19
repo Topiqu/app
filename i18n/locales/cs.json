@@ -58,6 +58,8 @@
       "loginToComment": "Přihlaste se pro přidání komentáře",
       "welcome": "Vítejte",
       "password": "Heslo",
+      "changePassword": "Změna hesla",
+      "oldPassword": "Staré heslo",
       "passwordConfirm": "Potvrzení hesla",
       "forgotPassword": "Zapomenuté heslo?",
       "or": "NEBO",
@@ -424,6 +426,7 @@
   },
   "profile": {
     "title": "Můj profil",
+    "security": "Zabezpečení účtu",
     "following": "Sledování",
     "followers": "Sledující",
     "follow": "Sledovat",

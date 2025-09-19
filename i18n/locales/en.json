@@ -58,6 +58,8 @@
       "loginToComment": "Log in to add a comment",
       "welcome": "Welcome",
       "password": "Password",
+      "changePassword": "Change password",
+      "oldPassword": "Old password",
       "passwordConfirm": "Confirm Password",
       "forgotPassword": "Forgot Password?",
       "or": "OR",
@@ -424,6 +426,7 @@
   },
   "profile": {
     "title": "My Profile",
+    "security": "Account Security",
     "following": "Following",
     "followers": "Followers",
     "follow": "Follow",
