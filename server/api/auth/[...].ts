@@ -171,7 +171,7 @@ export default NuxtAuthHandler({
           })
           plan = clientSite!.plan
         }
-        const ip = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? null
+        const ip = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? ''
         const userAgent = req.headers?.['user-agent'] ?? null
         const parser = new UAParser(userAgent)
         const { device, os, browser } = parser.getResult()
@@ -249,15 +249,17 @@ export default NuxtAuthHandler({
         const avatarValue = token.picture ?? token.image
         token = await handleOAuthUser(token, existingUser, prisma, avatarValue)
         token.provider = account.provider
+        token.sessionId = user.sessionId
       } else if (user) {
         token.id = user.id
         token.name = user.name
         token.email = user.email
         token.role = user.role
-        token.clientClientSiteId = user.clientSiteId
+        token.clientSiteId = user.clientSiteId
         token.plan = user.plan
         token.avatarUrl = user.avatarUrl
         token.sessionId = user.sessionId
+        console.log(token.sessionId)
       }
       return token
     },
