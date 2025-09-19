@@ -10,8 +10,7 @@
       @click="isSidebarOpen = !isSidebarOpen"
     />
     <NuxtLink to="/" class="flex items-center justify-center gap-2">
-      <NuxtImg src="/topik_normal_rm.png" alt="Logo" class="h-10 w-8" />
-      <NuxtImg src="/app-logo.png" alt="Logo" class="h-10 w-auto" />
+      <NuxtImg src="/app-logo.png" alt="Logo" class="h-26 mt-10" />
     </NuxtLink>
     <div class="flex items-center justify-between gap-2">
       <UserAccount />
