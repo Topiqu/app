@@ -247,8 +247,7 @@ model Session extends Base {
     revoked    Boolean  @default(false)
     userId     String
     user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
-    @@allow('read', auth().id == userId || auth().role == 'admin')
-    @@allow('delete', auth().id == userId || auth().role == 'admin')
+    @@allow('all', auth().id == userId || auth().role == 'superadmin')
     @@index([userId, lastUsedAt])
 }
 
