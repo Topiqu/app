@@ -12,8 +12,10 @@ export const useThemeStore = defineStore(
       initialValue: 'light',
     })
 
+    const isDark = computed(() => mode.value === 'dark')
+
     const toggle = async () => {
-      const newMode = mode.value === 'light' ? 'dark' : 'light'
+      const newMode = isDark.value ? 'light' : 'dark'
       mode.value = newMode
       if (user.value?.user.id) {
         try {
@@ -27,7 +29,7 @@ export const useThemeStore = defineStore(
       }
     }
 
-    return { mode, toggle }
+    return { mode, isDark, toggle }
   },
   {
     persist: {
