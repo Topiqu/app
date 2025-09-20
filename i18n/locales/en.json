@@ -195,6 +195,7 @@
       "characterLimitReached": "Character limit reached!",
       "replyingTo": "Replying to: {0}",
       "submitReply": "Submit reply",
+      "reply": "Reply",
       "addComment": "Add comment",
       "commentsDisabled": "Commenting on this article is not allowed",
       "errorLoadingComments": "Failed to load comments: {0}",

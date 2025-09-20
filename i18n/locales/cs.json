@@ -195,6 +195,7 @@
       "characterLimitReached": "Dosažen limit znaků!",
       "replyingTo": "Odpovídáte na: {0}",
       "submitReply": "Odeslat odpověď",
+      "reply": "Odpovědět",
       "addComment": "Přidat komentář",
       "commentsDisabled": "Komentování tohoto článku není povoleno",
       "errorLoadingComments": "Nepodařilo se načíst komentáře: {0}",

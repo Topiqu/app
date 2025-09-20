@@ -77,7 +77,7 @@
           @click="$emit('reply', comment)"
         >
           <Icon name="mdi:reply" class="w-4 h-4 text-gray-600" />
-          <span class="hidden sm:inline">{{ $t('articles.comments.submitReply') }}</span>
+          <span class="hidden sm:inline">{{ $t('articles.comments.reply') }}</span>
         </button>
         <button
           v-if="session?.user && session.user.id === comment.userId"
