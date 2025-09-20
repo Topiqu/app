@@ -24,9 +24,9 @@
       </div>
       <div
         v-if="isSticky"
-        class="h-1 transition-all duration-300 ease-in-out"
+        class="h-1 bg-gradient-to-r transition-all duration-300 ease-in-out"
+        :class="progressBarColor"
         :style="{ width: `${progress}%` }"
-        style="background-color: #3b82f6"
       ></div>
     </div>
     <div ref="container" class="max-w-[1000px] mx-auto flex flex-col gap-8 px-4 sm:px-0">
@@ -253,8 +253,9 @@ import { formatDate } from '~~/shared/utils'
 import VueEasyLightbox from 'vue-easy-lightbox'
 import { formatNumber } from '~~/shared/utils/number'
 
-import type { ArticleWithDetails, ArticleBase } from '../../../types/article'
+import { themes } from '~/composables/theme'
 
+import type { ArticleWithDetails, ArticleBase } from '../../../types/article'
 type Image = { src: string; alt?: string }
 
 const route = useRoute()
@@ -272,6 +273,15 @@ const lightboxVisible = shallowRef(false)
 const currentImageIndex = shallowRef(0)
 const progress = shallowRef(0)
 
+const csSlug = 'GameDev'
+const { data: clientSite } = await useFetch(`/api/clients/slug/${csSlug}`)
+
+const progressBarColor = computed(() => {
+  return clientSite.value?.theme && Object.keys(themes).includes(clientSite.value.theme)
+    ? themes[clientSite.value.theme]
+    : themes.blue
+})
+console.log(progressBarColor.value)
 const { data, refresh, error, status } = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, {
   default: () => null,
 })
@@ -282,16 +292,11 @@ isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || f
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
 
 const share = async (platform: 'TWITTER' | 'LINKEDIN' | 'OTHER') => {
-  if (!data.value?.id) return
-  try {
-    await $fetch(`/api/articles/${data.value.id}/share`, {
-      method: 'POST',
-      body: { platform },
-    })
-    data.value.shared = (data.value.shared || 0) + 1
-  } catch (err: any) {
-    toast.error({ message: $t('common.messages.operationFailed') + `: ${err.message}` })
-  }
+  await $fetch(`/api/articles/${data.value?.id}/share`, {
+    method: 'POST',
+    body: { platform },
+  })
+  data.value!.shared = (data.value!.shared || 0) + 1
 }
 
 const toggleFollow = async () => {
@@ -483,7 +488,6 @@ watch(
   { immediate: true },
 )
 </script>
-
 <style>
 .prose p:empty::before {
   content: '\200B';
