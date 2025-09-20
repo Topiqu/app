@@ -10,7 +10,7 @@
       @click="isSidebarOpen = !isSidebarOpen"
     />
     <NuxtLink to="/" class="flex items-center justify-center gap-2">
-      <NuxtImg src="/app-logo.png" alt="Logo" class="h-26 mt-10" />
+      <NuxtImg :src="clientSite?.logoUrl || '/app-logo.png'" alt="Logo" class="h-20 mt-10" />
     </NuxtLink>
     <div class="flex items-center justify-between gap-2">
       <UserAccount />
@@ -22,6 +22,10 @@
 
 <script lang="ts" setup>
 const isSidebarOpen = defineModel<boolean>('isSidebarOpen')
+
+const slug = 'GameDev'
+
+const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`, { server: false })
 
 const { data: auth } = useAuth()
 
