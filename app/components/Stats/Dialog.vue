@@ -352,7 +352,10 @@ const refreshAll = () => {
   refreshTopAuthor()
   if (!isBasicPlan.value) refreshShares()
 }
-
+onMounted(() => {
+  const interval = setInterval(refreshAll, 20000)
+  onBeforeUnmount(() => clearInterval(interval))
+})
 onArticleCreated(refreshAll)
 onArticleDeleted(refreshAll)
 </script>
