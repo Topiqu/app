@@ -28,13 +28,15 @@ export default defineLazyEventHandler(() => {
     Napiš článek (500–1000 slov) na téma spojené s těmito klíčovými slovy, cílený na ${audience || 'širokou veřejnost'}. 
     Napiš JSON odpověď se strukturou:
     {
+      "title": "poutavý titulek 5-15 slov",
       "perex": "krátký odstavec (3-4 věty) jako úvod",
       "content": "článek 500–1000 slov s h1, h2, h3, strong, blockquote, underline, italic pro v-html na frontendu"
     }
     Titulek (5–15 slov) musí být poutavý.
-    Klíčová slova použij přirozeně.
+    Klíčová slova použij přirozeně, tj. článek nemusí obsahovat všechny.
     Uživatelský prompt: ${prompt}.
-    Odpověz POUZE validním JSONem, bez komentářů.`
+    ${user.plan === 'PREMIUM' || (user.plan === 'CUSTOM' && maxOutputTokens > 5000) ? 'Můžeš vyhledávat i na webu.' : ''}
+    Odpověz POUZE validním JSONem, bez komentářů a piš jazykem, ve kterém se firma prezentuje, či uvedený v promptu.`
     console.log(system)
     const { text, usage } = await generateText({
       model: OpenAI('gpt-3.5-turbo'),
