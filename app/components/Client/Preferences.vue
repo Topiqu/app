@@ -386,8 +386,14 @@ const updateKeywords = () =>
     .split(',')
     .map((k) => k.trim())
     .filter(Boolean))
-const addSocial = (p: SocialPlatform) =>
-  !form.value.socials.some((s) => s.platform === p) && form.value.socials.push({ platform: p, url: '' })
+const addSocial = (p: SocialPlatform) => {
+  if (!form.value.socials.some((s) => s.platform === p)) {
+    form.value.socials.push({
+      platform: p,
+      url: platformPlaceholders.value[p],
+    })
+  }
+}
 const removeSocial = (i: number) => form.value.socials.splice(i, 1)
 const isValidUrl = (u: string) => !u.trim() || (u.startsWith('https://') && !!new URL(u))
 const normalizeUrl = (i: number) =>
