@@ -4,7 +4,7 @@
   >
     <section
       :class="[
-        'relative bg-gradient-to-r rounded-3xl py-12 px-6 text-center shadow-xl overflow-hidden animate-gradient-x [animation-duration:8s',
+        'relative bg-gradient-to-r rounded-3xl py-12 px-6 text-center shadow-xl overflow-hidden animate-gradient-x [animation-duration:8s]',
         clientSite?.theme && Object.keys(themes).includes(clientSite.theme) ? themes[clientSite.theme] : themes.blue,
       ]"
     >
