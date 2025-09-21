@@ -281,7 +281,6 @@ const progressBarColor = computed(() => {
     ? themes[clientSite.value.theme]
     : themes.blue
 })
-console.log(progressBarColor.value)
 const { data, refresh, error, status } = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, {
   default: () => null,
 })
