@@ -1,11 +1,11 @@
 <template>
   <div class="min-h-screen flex items-center justify-center px-4">
     <div
-      class="p-8 md:p-10 bg-white dark:bg-neutral-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 max-w-md w-full transition-all duration-300 ease-in-out transform"
+      class="p-8 md:p-10 bg-white dark:bg-neutral-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 max-w-md md:max-w-lg w-full transition-all duration-300 ease-in-out transform"
       :class="{ 'scale-95 opacity-0': !isMounted, 'scale-100 opacity-100': isMounted }"
     >
       <slot name="icon">
-        <div class="flex justify-center">
+        <div class="flex justify-center relative">
           <NuxtImg
             v-if="showTopik404"
             src="/topik_404_rm.png"
@@ -14,6 +14,15 @@
             loading="lazy"
             placeholder
           />
+          <div v-else-if="effectiveType === 'error'" class="relative">
+            <Icon :name="iconName" class="w-12 h-12 mx-auto mb-4" :class="iconClass" aria-hidden="true" />
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-200 dark:bg-red-800 rounded-full"></span>
+          </div>
+          <div v-else-if="effectiveType === 'pending'" class="flex justify-center">
+            <div
+              class="w-12 h-12 mx-auto mb-4 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"
+            ></div>
+          </div>
           <Icon v-else :name="iconName" class="w-12 h-12 mx-auto mb-4" :class="iconClass" aria-hidden="true" />
         </div>
       </slot>
@@ -26,6 +35,30 @@
         <p class="text-center text-base mt-2" :class="messageClass">
           {{ computedMessage }}
         </p>
+      </slot>
+      <slot v-if="effectiveType === 'error' && stackTrace" name="stackTrace">
+        <div class="mt-4 flex justify-between items-center">
+          <Button
+            class="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200"
+            @click="showStack = !showStack"
+          >
+            {{ showStack ? $t('common.actions.hideDetails') : $t('common.actions.showDetails') }}
+          </Button>
+          <button
+            v-if="showStack"
+            class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            @click="copyStackTrace"
+          >
+            <Icon name="mdi:content-copy" class="w-5 h-5" />
+          </button>
+        </div>
+        <div v-if="showStack" class="mt-2">
+          <div
+            class="text-sm text-gray-500 dark:text-gray-400 max-h-64 overflow-y-auto bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg font-mono leading-6"
+          >
+            <pre class="whitespace-pre-wrap">{{ formattedStackTrace }}</pre>
+          </div>
+        </div>
       </slot>
       <slot v-if="effectiveType !== 'pending'" name="action">
         <div v-if="props.actionText" class="mt-6 flex justify-center">
@@ -59,9 +92,13 @@ const props = defineProps<{
   title?: string
   actionText?: string
   actionTo?: string
+  stackTrace?: string
+  errorCode?: number
 }>()
 
 const isMounted = shallowRef(false)
+const showStack = shallowRef(false)
+
 onMounted(() => (isMounted.value = true))
 
 const statusMap: Record<AsyncDataRequestStatus, 'error' | 'pending' | 'success' | 'idle'> = {
@@ -74,7 +111,7 @@ const statusMap: Record<AsyncDataRequestStatus, 'error' | 'pending' | 'success' 
 const effectiveType = computed(() => props.type || (props.status ? statusMap[props.status] : 'idle'))
 
 const titles = {
-  error: $t('common.error'),
+  error: props.title || $t('common.error'),
   pending: $t('common.loading'),
   success: $t('common.messages.successGeneralTitle'),
   idle: $t('common.messages.idleTitle'),
@@ -91,6 +128,19 @@ const icons = {
   success: 'mdi:check-circle',
   idle: 'mdi:pause-circle',
 } as const
+const errorIcons: Record<number, string> = {
+  400: 'mdi:alert-octagon',
+  401: 'mdi:lock-off',
+  403: 'mdi:shield-off',
+  404: 'mdi:map-marker-off',
+  409: 'mdi:alert-decagram',
+  422: 'mdi:file-alert',
+  429: 'mdi:timer-off',
+  500: 'mdi:server-off',
+  503: 'mdi:cloud-alert',
+  504: 'mdi:network-off',
+  406: 'mdi:alert-box',
+}
 const iconClasses = {
   error: 'text-red-500 animate-pulse',
   pending: 'text-blue-600 animate-spin',
@@ -119,11 +169,30 @@ const actionClasses = {
 
 const computedTitle = computed(() => props.title || titles[effectiveType.value])
 const computedMessage = computed(() => props.message || messages[effectiveType.value])
-const iconName = computed(() => icons[effectiveType.value])
+const iconName = computed(() =>
+  effectiveType.value === 'error' && props.errorCode && props.errorCode !== 404
+    ? errorIcons[props.errorCode] || icons.error
+    : icons[effectiveType.value],
+)
 const iconClass = computed(() => iconClasses[effectiveType.value])
 const titleClass = computed(() => titleClasses[effectiveType.value])
 const messageClass = computed(() => messageClasses[effectiveType.value])
 const actionClass = computed(() => actionClasses[effectiveType.value])
+const showTopik404 = computed(() => effectiveType.value === 'error' && props.errorCode === 404)
+const formattedStackTrace = computed(() => {
+  if (!props.stackTrace) return ''
+  return props.stackTrace
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line)
+    .slice(0, 20)
+    .join('\n')
+})
 
-const showTopik404 = computed(() => effectiveType.value === 'error' && props.message?.includes('404'))
+const copyStackTrace = async () => {
+  if (props.stackTrace) {
+    await navigator.clipboard.writeText(props.stackTrace)
+    useToast().success({ message: $t('common.actions.copySuccess') })
+  }
+}
 </script>
