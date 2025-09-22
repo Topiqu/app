@@ -342,8 +342,16 @@
                       <div
                         v-for="session in profileForm.sessions"
                         :key="session.id"
-                        class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900/70 shadow-sm"
+                        class="relative flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900/70 shadow-sm"
                       >
+                        <span
+                          v-if="session.id === user?.user.sessionId"
+                          class="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 text-xs font-medium rounded-full"
+                        >
+                          <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                          {{ $t('profile.active') }}
+                        </span>
+
                         <div class="flex items-center gap-3">
                           <div class="flex-shrink-0">
                             <Icon
@@ -376,7 +384,8 @@
                           <Button
                             v-if="!session.revoked"
                             size="sm"
-                            class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                            :disabled="session.id === user?.user.sessionId"
+                            class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             @click="revokeSession(session.id)"
                           >
                             {{ $t('common.actions.revoke') }}
@@ -389,6 +398,7 @@
                           </span>
                         </div>
                       </div>
+
                       <p v-if="!profileForm.sessions?.length" class="text-sm text-gray-500 dark:text-gray-400 italic">
                         {{ $t('profile.noActiveSessions') }}
                       </p>
@@ -438,12 +448,12 @@ type Profile = Partial<User> & {
   sessions: Session[]
 }
 
-const { data: session, signOut } = useAuth()
+const { data: user, signOut } = useAuth()
 const toast = useToast()
 const { setLocale } = useI18n()
 
 function getDraft(): Profile | null {
-  const raw = localStorage.getItem(`profileDraft-${session.value?.user.id}`)
+  const raw = localStorage.getItem(`profileDraft-${user.value?.user.id}`)
   if (raw) {
     const parsed = JSON.parse(raw)
     delete parsed.sessions
@@ -454,11 +464,11 @@ function getDraft(): Profile | null {
 
 function setDraft(profile: Profile) {
   const { sessions, ...profileWithoutSessions } = profile
-  localStorage.setItem(`profileDraft-${session.value?.user.id}`, JSON.stringify(profileWithoutSessions))
+  localStorage.setItem(`profileDraft-${user.value?.user.id}`, JSON.stringify(profileWithoutSessions))
 }
 
 function clearDraft() {
-  localStorage.removeItem(`profileDraft-${session.value?.user.id}`)
+  localStorage.removeItem(`profileDraft-${user.value?.user.id}`)
 }
 
 const avatar = ref<{ error: string | null; success: string | null }>({ error: null, success: null })
@@ -492,7 +502,7 @@ const {
   pending: userDataPending,
   error: userDataError,
   refresh,
-} = await useFetch(`/api/users/${session.value?.user?.id}/account`)
+} = await useFetch(`/api/users/${user.value?.user?.id}/account`)
 
 if (userData.value) {
   Object.assign(profileForm.value, {
@@ -521,7 +531,7 @@ function openDialog(type: 'followers' | 'followed') {
 async function saveProfile(partial: Partial<Profile>) {
   try {
     isLoading.value = true
-    await $fetch(`/api/users/${session.value?.user?.id}` as `/api/users/:id`, {
+    await $fetch(`/api/users/${user.value?.user?.id}` as `/api/users/:id`, {
       method: 'PATCH',
       body: partial,
     })
@@ -564,7 +574,7 @@ async function changePassword() {
   if (!isPasswordFormValid.value) return
   try {
     isLoading.value = true
-    await $fetch(`/api/users/${session.value?.user?.id}` as `/api/users/:id`, {
+    await $fetch(`/api/users/${user.value?.user?.id}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { password: passwordForm.value.newPassword },
     })
@@ -587,7 +597,7 @@ async function revokeSession(sessionId: string) {
     profileForm.value.sessions = profileForm.value.sessions.map((s) =>
       s.id === sessionId ? { ...s, revoked: true } : s,
     )
-    if (session.value?.user.sessionId === sessionId) {
+    if (user.value?.user.sessionId === sessionId) {
       await signOut()
     }
     toast.success({ message: $t('profile.sessionRevokedSuccess') })
@@ -632,7 +642,7 @@ async function copyToClipboard(text: string) {
 async function deactivateAccount() {
   try {
     isLoading.value = true
-    await $fetch(`/api/users/${session.value?.user?.id}` as `/api/users/:id`, {
+    await $fetch(`/api/users/${user.value?.user?.id}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { deletedAt: new Date().toISOString() },
     })

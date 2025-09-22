@@ -434,6 +434,7 @@
     "title": "My Profile",
     "security": "Account Security",
     "sessions": "Added devices",
+    "active": "Currently active",
     "following": "Following",
     "followers": "Followers",
     "follow": "Follow",
