@@ -13,7 +13,7 @@ export default defineNuxtConfig({
   typescript: { tsConfig: { include: ['../types/**/*.d.ts'] } },
 
   nitro: {
-    experimental: { tasks: true },
+    experimental: { tasks: true, asyncContext: true },
     scheduledTasks: {
       '*/1 * * * *': ['publish-check'],
     },

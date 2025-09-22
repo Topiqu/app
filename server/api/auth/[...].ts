@@ -105,9 +105,7 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
 
     const event = useEvent()
     const sessionId = await generateSessionToken(existingUser, event.node.req)
-    return assignToken(sessionId, existingUser, plan)
-
-    // return assignToken(token, existingUser, plan)
+    return assignToken(token, existingUser, plan, sessionId)
   } else {
     let username = token.name ?? token.email?.split('@')[0] ?? 'user'
     if (await prisma.user.findUnique({ where: { username } })) {
@@ -125,10 +123,8 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
     })
 
     const event = useEvent()
-    const sessionId = await generateSessionToken(existingUser, event.node.req)
-    return assignToken(sessionId, newUser, 'BASIC')
-
-    // return assignToken(token, newUser, 'BASIC')
+    const sessionId = await generateSessionToken(newUser, event.node.req)
+    return assignToken(token, newUser, 'BASIC', sessionId)
   }
 }
 
