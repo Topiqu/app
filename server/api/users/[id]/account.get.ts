@@ -5,9 +5,8 @@ export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
   if (user.id !== id && user.role !== 'superadmin')
     throw createError({ statusCode: 403, message: 'Nepovolený přístup' })
-  const db = await getEnhancedPrisma(user)
 
-  const userData = await db.user.findUnique({
+  const userData = await prisma.user.findUnique({
     where: { id },
     include: {
       comments: {
@@ -99,6 +98,7 @@ export default defineEventHandler(async (event) => {
     followers: userData.followers.length,
     following: userData.following.length,
     theme: userData.theme,
+    hasPassword: !!userData.password,
     likedArticles: userData.articleReactions.map((reaction) => ({
       id: reaction.article.id,
     })),
