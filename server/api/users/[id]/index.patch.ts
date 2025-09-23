@@ -6,18 +6,47 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const { id } = getRouterParams(event)
 
+  const UserUpdateWithOldPassSchema = UserUpdateSchema.extend({
+    oldPass: z
+      .string()
+      .optional()
+      .refine((val) => !val || val.length >= 4, {
+        message: 'Staré heslo musí mít alespoň 4 znaky',
+      }),
+  })
+
   if (user.id !== id && user.role !== 'superadmin')
     throw createError({ statusCode: 403, message: 'Nepovolený přístup' })
 
-  const body = await readValidatedBody(event, UserUpdateSchema.parse)
+  const oldPasswordDb = await prisma.user.findUnique({
+    where: { id },
+    select: { password: true },
+  })
 
-  if (user.role !== 'superadmin') {
-    if (body.password) throw createError({ statusCode: 403, message: 'Změna hesla povolena pouze superadminovi' })
-    if (body.role && body.role !== user.role)
-      throw createError({ statusCode: 403, message: 'Změna role není povolena' })
+  const body = await readValidatedBody(event, UserUpdateWithOldPassSchema.parse)
+  const { oldPass, ...data } = body
+
+  if (user.role !== 'superadmin' && body.password) {
+    if (oldPasswordDb?.password) {
+      const match = await argon.verify(oldPasswordDb.password, oldPass ?? '')
+      if (!match) {
+        throw createError({ statusCode: 403, message: 'Změna hesla selhala' })
+      }
+    }
   }
 
-  if (body.password) body.password = await argon.hash(body.password)
+  if (user.role !== 'superadmin' && body.role && body.role !== user.role) {
+    throw createError({ statusCode: 403, message: 'Změna role není povolena' })
+  }
+
+  if (body.password) {
+    data.password = await argon.hash(body.password, {
+      type: argon.argon2id,
+      memoryCost: 2 ** 16,
+      timeCost: 3,
+      parallelism: 1,
+    })
+  }
 
   const ip = getIp(event)
   const currentUser = await db.user.findUnique({ where: { id } })
@@ -30,8 +59,9 @@ export default defineEventHandler(async (event) => {
       ip,
       metadata: { userId: id, newRole: body.role },
     })
+
     if (currentUser?.role === 'admin' && body.role === 'reader') {
-      body.clientSiteId = null
+      data.clientSiteId = null
     }
   }
 
@@ -47,7 +77,7 @@ export default defineEventHandler(async (event) => {
 
   return await db.user.update({
     where: { id },
-    data: body,
+    data,
     select: {
       id: true,
       username: true,
