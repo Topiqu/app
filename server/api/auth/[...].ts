@@ -77,7 +77,7 @@ const Credentials =
     ? (CredentialsProvider.default as typeof CredentialsProvider)
     : CredentialsProvider
 
-async function assignToken(token: any, user: any, plan: string, sessionId?: string) {
+async function assignToken(token: any, user: any, plan: string, sessionId: string) {
   token.id = user.id
   token.name = user.username
   token.email = user.email
@@ -85,7 +85,7 @@ async function assignToken(token: any, user: any, plan: string, sessionId?: stri
   token.clientSiteId = user.clientSiteId ?? ''
   token.plan = plan
   token.avatarUrl = user.avatarUrl
-  if (sessionId) token.sessionId = sessionId
+  token.sessionId = sessionId
   return token
 }
 
@@ -105,6 +105,7 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
 
     const event = useEvent()
     const sessionId = await generateSessionToken(existingUser, event.node.req)
+    console.log(sessionId)
     return assignToken(token, existingUser, plan, sessionId)
   } else {
     let username = token.name ?? token.email?.split('@')[0] ?? 'user'
@@ -183,7 +184,6 @@ export default NuxtAuthHandler({
         const avatarValue = token.picture ?? token.image
         token = await handleOAuthUser(token, existingUser, prisma, avatarValue)
         token.provider = account.provider
-        token.sessionId = user.sessionId
       } else if (user) {
         token.id = user.id
         token.name = user.name
