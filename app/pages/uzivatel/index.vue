@@ -271,7 +271,7 @@
                   </Button>
                   <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
                   <div class="space-y-3 sm:space-y-4">
-                    <div class="relative">
+                    <div v-if="userData?.hasPassword" class="relative">
                       <input
                         v-model="passwordForm.oldPassword"
                         :type="showOldPassword ? 'text' : 'password'"
@@ -490,11 +490,7 @@ const passwordForm = ref({
 })
 
 const isPasswordFormValid = computed(() => {
-  return (
-    passwordForm.value.oldPassword &&
-    passwordForm.value.newPassword &&
-    passwordForm.value.newPassword === passwordForm.value.confirmNewPassword
-  )
+  return passwordForm.value.newPassword && passwordForm.value.newPassword === passwordForm.value.confirmNewPassword
 })
 
 const {
@@ -503,7 +499,6 @@ const {
   error: userDataError,
   refresh,
 } = await useFetch(`/api/users/${user.value?.user?.id}/account`)
-
 if (userData.value) {
   Object.assign(profileForm.value, {
     ...userData.value,
@@ -576,7 +571,7 @@ async function changePassword() {
     isLoading.value = true
     await $fetch(`/api/users/${user.value?.user?.id}` as `/api/users/:id`, {
       method: 'PATCH',
-      body: { password: passwordForm.value.newPassword },
+      body: { password: passwordForm.value.newPassword, oldPass: passwordForm.value.oldPassword },
     })
     toast.success({ message: $t('common.messages.successGeneralTitle') })
     passwordForm.value = { oldPassword: '', newPassword: '', confirmNewPassword: '' }
