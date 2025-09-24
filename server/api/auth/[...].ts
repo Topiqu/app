@@ -72,10 +72,12 @@ function GitHubProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>)
   }
 }
 
-const Credentials =
-  import.meta.dev && 'default' in CredentialsProvider
-    ? (CredentialsProvider.default as typeof CredentialsProvider)
-    : CredentialsProvider
+const Credentials = CredentialsProvider
+
+// const Credentials =
+//   import.meta.dev && 'default' in CredentialsProvider
+//     ? (CredentialsProvider.default as typeof CredentialsProvider)
+//     : CredentialsProvider
 
 async function assignToken(token: any, user: any, plan: string, sessionId: string) {
   token.id = user.id
