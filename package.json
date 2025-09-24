@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "bun zenstack:generate && bun postinstall && nuxt build && bun compress",
+    "build": "bun zenstack:generate && bun postinstall && bun prisma:deploy && nuxt build && bun compress",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
