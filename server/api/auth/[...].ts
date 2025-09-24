@@ -72,13 +72,6 @@ function GitHubProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>)
   }
 }
 
-const Credentials = CredentialsProvider
-
-// const Credentials =
-//   import.meta.dev && 'default' in CredentialsProvider
-//     ? (CredentialsProvider.default as typeof CredentialsProvider)
-//     : CredentialsProvider
-
 async function assignToken(token: any, user: any, plan: string, sessionId: string) {
   token.id = user.id
   token.name = user.username
@@ -134,7 +127,7 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
 export default NuxtAuthHandler({
   secret: useRuntimeConfig().authSecret,
   providers: [
-    Credentials({
+    CredentialsProvider({
       credentials: { email: { label: 'Email', type: 'email' }, password: { label: 'Heslo', type: 'password' } },
       async authorize(credentials, req) {
         const { email, password } = signInSchema.parse(credentials)
