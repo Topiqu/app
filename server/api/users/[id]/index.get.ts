@@ -29,21 +29,7 @@ export default defineEventHandler(async (event) => {
   })
 
   return {
-    id: userData.id,
-    username: userData.username,
-    email: userData.email,
-    bio: userData.bio,
-    avatarUrl: userData.avatarUrl,
-    createdAt: userData.createdAt.toISOString(),
-    lastLogin: userData.lastLogin ? userData.lastLogin.toISOString() : null,
-    allowNotifs: userData.allowNotifs,
-    role: userData.role,
-    emailVerified: userData.emailVerified,
-    theme: userData.theme,
-    language: userData.language,
-    commentsCount: userData._count.comments,
-    followers: userData._count.followers,
-    following: userData._count.following,
+    ...userData,
     likesCount,
     dislikesCount,
   }
