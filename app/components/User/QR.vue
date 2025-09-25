@@ -3,24 +3,34 @@
     <div v-if="!enabled">
       <Button
         :disabled="isLoading"
-        class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm touch-manipulation"
+        class="w-full inline-flex justify-center items-center px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
         @click="enable2FA"
       >
-        <Icon name="mdi:shield-lock" class="w-4 h-4 mr-2" />
+        <Icon name="mdi:shield-lock" class="w-5 h-5 mr-2" />
         {{ $t('profile.enable2FA') }}
       </Button>
     </div>
     <div v-if="showForm && otpauthUrl">
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ $t('profile.scanTotp') }}</p>
-      <ClientOnly>
-        <Qrcode :value="otpauthUrl" size="200" class="mx-auto" />
-      </ClientOnly>
-      <div class="relative mt-4">
+      <div
+        class="mt-4 p-4 sm:p-6 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm bg-white dark:bg-neutral-900"
+      >
+        <div class="w-32 h-32 mx-auto overflow-hidden">
+          <div class="scale-75 origin-center">
+            <ClientOnly>
+              <Qrcode :value="otpauthUrl" class="mx-auto" />
+            </ClientOnly>
+          </div>
+        </div>
+        <p class="text-center mt-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+          {{ $t('profile.scanTotp') }}
+        </p>
+      </div>
+      <div class="relative mt-6">
         <input
           v-model="totpCode"
           type="text"
           :placeholder="$t('profile.enterTotpCode')"
-          class="w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+          class="w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
           :class="{ 'border-red-500 dark:border-red-500': error }"
         />
         <p v-if="error" class="text-xs sm:text-sm text-red-500 dark:text-red-400 mt-1">
@@ -29,24 +39,32 @@
       </div>
       <Button
         :disabled="isLoading || !totpCode"
-        class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation mt-4"
+        class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation mt-4"
         @click="verifyTotpCode"
       >
-        <Icon name="mdi:check-circle" class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+        <Icon name="mdi:check-circle" class="w-5 h-5 mr-2" />
         {{ $t('profile.verify2FA') }}
       </Button>
     </div>
     <div v-if="enabled" class="text-center">
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ $t('profile.scanTotp') }}</p>
-      <ClientOnly>
-        <Qrcode :value="otpauthUrl" size="200" class="mx-auto" />
-      </ClientOnly>
+      <div
+        class="mt-4 p-4 sm:p-6 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm bg-white dark:bg-neutral-900"
+      >
+        <div class="w-40 h-40 mx-auto overflow-hidden">
+          <ClientOnly>
+            <Qrcode :value="otpauthUrl" class="mx-auto" />
+          </ClientOnly>
+        </div>
+        <p class="text-center mt-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+          {{ $t('profile.scanTotp') }}
+        </p>
+      </div>
       <Button
         :disabled="isLoading"
-        class="w-full inline-flex justify-center items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm touch-manipulation mt-4"
+        class="w-full inline-flex justify-center items-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation mt-4"
         @click="disable2FA"
       >
-        <Icon name="mdi:shield-off" class="w-4 h-4 mr-2" />
+        <Icon name="mdi:shield-off" class="w-5 h-5 mr-2" />
         {{ $t('profile.disable2FA') }}
       </Button>
     </div>

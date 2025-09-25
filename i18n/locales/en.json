@@ -433,7 +433,7 @@
   "profile": {
     "title": "My Profile",
     "security": "Account Security",
-    "disable2FA": "Disable Two-Factor Authentication",
+    "disable2FA": "Disable 2FA",
     "verify2FA": "Verify & Enable",
     "twoFactorAuth": "Two-Factor Authentication (2FA)",
     "enable2FA": "Enable Two-Factor Authentication",
