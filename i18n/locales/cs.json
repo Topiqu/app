@@ -105,7 +105,11 @@
       "verifySuccess": "E-mail ověřen",
       "verifyFailed": "Ověření selhalo",
       "googleSignInFailed": "Přihlášení přes Google selhalo",
-      "githubSignInFailed": "Přihlášení přes GitHub selhalo"
+      "githubSignInFailed": "Přihlášení přes GitHub selhalo",
+      "enterTotpCode": "Zadejte Váš kód pro ",
+      "totpCode": "TOTP kód",
+      "totpCodePlaceholder": "6místný kód",
+      "verifyTotp": "Ověřit TOTP"
     },
     "labels": {
       "article": "Článek:",

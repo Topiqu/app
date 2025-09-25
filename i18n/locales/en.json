@@ -91,8 +91,12 @@
       "verifySuccess": "Email verified",
       "verifyFailed": "Verification failed",
       "googleSignInFailed": "Google sign-in failed",
-      "githubSignInFailed": "GitHub sign-in failed"
-    },
+      "githubSignInFailed": "GitHub sign-in failed",
+      "enterTotpCode": "Enter your TOTP code for",
+      "totpCode": "TOTP Code",
+      "totpCodePlaceholder": "6-digit code",
+      "verifyTotp": "Verify TOTP"
+  },
     "labels": {
       "article": "Article:",
       "articleTitle": "Article title",
