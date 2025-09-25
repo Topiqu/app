@@ -12,6 +12,12 @@ export default defineNuxtConfig({
 
   typescript: { tsConfig: { include: ['../types/**/*.d.ts'] } },
 
+  $production: {
+    nitro: {
+      preset: 'vercel',
+    },
+  },
+
   nitro: {
     experimental: { tasks: true, asyncContext: true },
     scheduledTasks: {
