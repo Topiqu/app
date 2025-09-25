@@ -61,74 +61,15 @@
             </div>
           </div>
           <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200 my-8"></div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <div
-              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
-              @click="openDialog('followed')"
-            >
-              <Icon
-                name="mdi:account-multiple"
-                class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-indigo-500 dark:text-indigo-400"
-              />
-              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                {{ $t('profile.following') }}
-              </p>
-              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                {{ profileForm.followers ?? 0 }}
-              </p>
-            </div>
-            <div
-              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
-              @click="openDialog('followers')"
-            >
-              <Icon
-                name="mdi:account-multiple"
-                class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-indigo-500 dark:text-indigo-400"
-              />
-              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                {{ $t('profile.followers') }}
-              </p>
-              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                {{ profileForm.following ?? 0 }}
-              </p>
-            </div>
-            <div
-              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
-              @click="activeTab = 'likedArticles'"
-            >
-              <Icon name="mdi:heart" class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-red-500 dark:text-red-400" />
-              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                {{ $t('profile.likedArticles') }}
-              </p>
-              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                {{ profileForm.likedArticles?.length ?? 0 }}
-              </p>
-            </div>
-            <div
-              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
-              @click="activeTab = 'comments'"
-            >
-              <Icon
-                name="mdi:comment-multiple-outline"
-                class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-indigo-500 dark:text-indigo-400"
-              />
-              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                {{ $t('articles.comments.title') }}
-              </p>
-              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                {{ profileForm.commentsCount ?? 0 }}
-              </p>
-            </div>
-            <div
-              class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 touch-manipulation"
-            >
-              <Icon name="mdi:thumb-up" class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-green-500 dark:text-green-400" />
-              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.likes') }}</p>
-              <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                {{ profileForm.likesCount ?? 0 }}
-              </p>
-            </div>
-          </div>
+          <StatsUser
+            :followers="profileForm.followers"
+            :following="profileForm.following"
+            :likedArticles="profileForm.likedArticles"
+            :commentsCount="profileForm.commentsCount"
+            :likesCount="profileForm.likesCount"
+            @openDialog="openDialog"
+            @updateTab="activeTab = $event"
+          />
           <div
             v-if="isDirty"
             class="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/50 rounded-lg flex items-center gap-2 text-xs sm:text-sm text-yellow-800 dark:text-yellow-300"
