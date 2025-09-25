@@ -56,7 +56,16 @@ export default defineNuxtConfig({
     'nuxt-nodemailer',
     'nuxt-security',
     'nuxt-toast',
+    'nuxt-qrcode',
   ],
+  qrcode: {
+    options: {
+      variant: 'pixelated',
+      radius: 1,
+      blackColor: 'currentColor',
+      whiteColor: 'transparent',
+    },
+  },
   site: {
     url: 'https://topiqu.com',
     name: 'Topiqu AI Blog',
