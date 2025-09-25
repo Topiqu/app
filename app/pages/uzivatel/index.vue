@@ -511,6 +511,8 @@ const {
   refresh,
 } = await useFetch(`/api/users/${user.value?.user?.id}/account`)
 const is2FAEnabled = shallowRef(!!userData.value?.totpSecret)
+otpauthUrl.value = userData.value?.otpauthUrl || ''
+
 if (userData.value) {
   Object.assign(profileForm.value, {
     ...userData.value,
@@ -550,6 +552,7 @@ async function saveProfile(partial: Partial<Profile>) {
     isDirty.value = false
     toast.success({ message: $t('common.messages.successGeneralTitle') })
     await refresh()
+    otpauthUrl.value = (await useFetch(`/api/users/${user.value?.user?.id}/account`)).data.value?.otpauthUrl || ''
   } catch (err: any) {
     toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
   } finally {
