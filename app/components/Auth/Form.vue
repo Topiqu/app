@@ -1,7 +1,7 @@
 <template>
   <div class="w-xs sm:w-sm md:w-md px-6">
     <div
-      v-if="data?.user"
+      v-if="data?.user && !internalMode"
       class="bg-white dark:bg-gray-900 px-6 py-8 rounded-2xl shadow-md text-center space-y-5 border border-gray-200 dark:border-gray-700"
     >
       <p class="text-green-600 dark:text-green-400 text-lg font-semibold">
@@ -40,7 +40,7 @@
           {{ $t('common.auth.register') }}
         </button>
       </div>
-      <form v-if="!verifyMode" class="space-y-5 text-sm" @submit.prevent="submit">
+      <form v-if="!verifyMode && internalMode !== 'totp'" class="space-y-5 text-sm" @submit.prevent="submit">
         <div class="space-y-1.5">
           <label for="email" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
             {{ $t('profile.email') }}
@@ -202,6 +202,36 @@
           {{ $t('common.auth.verify') }}
         </button>
       </form>
+      <form v-if="internalMode === 'totp'" class="space-y-5 text-sm" @submit.prevent="verifyTotp">
+        <p class="text-gray-500 dark:text-gray-400 text-sm">
+          {{ $t('common.auth.enterTotpCode') }}
+          <span class="font-medium">{{ form.email }}</span>
+        </p>
+        <div class="space-y-1.5">
+          <label for="totpCode" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
+            {{ $t('common.auth.totpCode') }}
+          </label>
+          <div class="relative">
+            <Icon name="mdi:shield-lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
+            <input
+              id="totpCode"
+              v-model="form.totpCode"
+              type="text"
+              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              required
+              minlength="6"
+              maxlength="6"
+              :placeholder="$t('common.auth.totpCodePlaceholder')"
+            />
+          </div>
+        </div>
+        <button
+          type="submit"
+          class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
+        >
+          {{ $t('common.auth.verifyTotp') }}
+        </button>
+      </form>
     </div>
   </div>
 </template>
@@ -217,9 +247,18 @@ const { data, signIn } = useAuth()
 const { setLocale } = useI18n()
 const localePath = useLocalePath()
 
-const init = { email: '', username: '', password: '', passwordConfirm: '', code: '' }
+const init = {
+  email: '',
+  username: '',
+  password: '',
+  passwordConfirm: '',
+  code: '',
+  totpCode: '',
+  totpSecret: '',
+  userId: '',
+}
 const form = ref<typeof init>(init)
-const internalMode = shallowRef<'login' | 'register' | 'forgot' | 'reset'>('login')
+const internalMode = shallowRef<'login' | 'register' | 'forgot' | 'reset' | 'totp'>('login')
 const verifyMode = shallowRef<boolean>(false)
 const showPassword = shallowRef(false)
 const showPasswordConfirm = shallowRef(false)
@@ -251,24 +290,36 @@ const submit = async () => {
       verifyMode.value = true
       toast.success({ message: $t('common.auth.verificationCodeSent') })
     } else {
-      const result = await signIn('credentials', {
-        email: form.value.email,
-        password: form.value.password,
-        redirect: false,
+      const totpData = await $fetch('/api/users/totp', {
+        method: 'POST',
+        body: {
+          email: form.value.email,
+          password: form.value.password,
+        },
       })
-      if (result?.error) return toast.error({ message: $t('common.auth.loginFailed') })
-      await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
-        method: 'PATCH',
-        body: { lastLogin: Date.now() },
-      })
-      const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
-      setLocale(user.language)
-      theme.mode = user.theme
-      toast.success({ message: $t('common.auth.loginSuccess') })
-      if (data.value?.user?.role === 'superadmin') navigateTo('/master')
-      else if (data.value?.user?.role === 'admin') navigateTo('/admin')
-      else navigateTo(localePath('uzivatel/'))
-      form.value = init
+      form.value.userId = totpData.id
+      if (totpData.totpSecret) {
+        form.value.totpSecret = totpData.totpSecret
+        internalMode.value = 'totp'
+      } else {
+        await signIn('credentials', {
+          email: form.value.email,
+          password: form.value.password,
+          redirect: false,
+        })
+        const user = await $fetch(`/api/users/${totpData.id}` as `/api/users/:id`)
+        await $fetch(`/api/users/${totpData.id}` as `/api/users/:id`, {
+          method: 'PATCH',
+          body: { lastLogin: Date.now() },
+        })
+        setLocale(user.language)
+        theme.mode = user.theme
+        toast.success({ message: $t('common.auth.loginSuccess') })
+        if (user.role === 'superadmin') navigateTo('/master')
+        else if (user.role === 'admin') navigateTo('/admin')
+        else navigateTo(localePath('uzivatel/'))
+        form.value = init
+      }
     }
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
@@ -288,12 +339,48 @@ const verify = async () => {
       redirect: false,
     })
     const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
+    await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
+      method: 'PATCH',
+      body: { lastLogin: Date.now() },
+    })
     setLocale(user.language)
     theme.mode = user.theme
     toast.success({ message: $t('common.auth.verifySuccess') })
     navigateTo(localePath('/'))
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.auth.verifyFailed') })
+    toast.error({ message: e.message || $t('common.auth.verifyFailed') })
+  }
+}
+
+const verifyTotp = async () => {
+  if (!form.value.totpCode) return
+  try {
+    const token = form.value.totpCode.replace(/\s/g, '')
+    const res = await $fetch('/api/users/verify-totp', {
+      method: 'POST',
+      body: { token, secret: form.value.totpSecret },
+    })
+    if (!res.isValid) throw createError({ statusCode: 400, message: 'Neplatný TOTP kód' })
+    await signIn('credentials', {
+      email: form.value.email,
+      password: form.value.password,
+      redirect: false,
+    })
+    const user = await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`)
+    await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`, {
+      method: 'PATCH',
+      body: { lastLogin: Date.now() },
+    })
+    setLocale(user.language)
+    theme.mode = user.theme
+    toast.success({ message: $t('common.auth.totpSuccess') })
+    if (user.role === 'superadmin') navigateTo('/master')
+    else if (user.role === 'admin') navigateTo('/admin')
+    else navigateTo(localePath('uzivatel/'))
+    form.value = init
+    internalMode.value = 'login'
+  } catch (e: any) {
+    toast.error({ message: e.message || $t('common.auth.totpFailed') })
   }
 }
 
@@ -301,11 +388,11 @@ const signInWithGoogle = async () => {
   try {
     const result = await signIn('google', { callbackUrl: localePath({ name: 'autorizace' }) })
     if (result?.error) return toast.error({ message: $t('common.auth.googleSignInFailed') })
+    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
     await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { lastLogin: Date.now() },
     })
-    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
     setLocale(user.language)
     theme.mode = user.theme
     form.value = init
@@ -318,11 +405,11 @@ const signInWithGithub = async () => {
   try {
     const result = await signIn('github', { callbackUrl: localePath({ name: 'autorizace' }) })
     if (result?.error) return toast.error({ message: $t('common.auth.githubSignInFailed') })
+    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
     await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { lastLogin: Date.now() },
     })
-    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
     setLocale(user.language)
     theme.mode = user.theme
     form.value = init
