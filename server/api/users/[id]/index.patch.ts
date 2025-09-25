@@ -1,4 +1,5 @@
 import argon from 'argon2'
+import { authenticator } from 'otplib'
 
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
@@ -13,6 +14,8 @@ export default defineEventHandler(async (event) => {
       .refine((val) => !val || val.length >= 4, {
         message: 'Staré heslo musí mít alespoň 4 znaky',
       }),
+    totpAction: z.literal('enable').optional(),
+    totpCode: z.string().length(6).optional(),
   })
 
   if (user.id !== id && user.role !== 'superadmin')
@@ -20,11 +23,40 @@ export default defineEventHandler(async (event) => {
 
   const oldPasswordDb = await prisma.user.findUnique({
     where: { id },
-    select: { password: true },
+    select: { password: true, totpSecret: true },
   })
 
   const body = await readValidatedBody(event, UserUpdateWithOldPassSchema.parse)
-  const { oldPass, ...data } = body
+  const { oldPass, totpAction, totpCode, totpSecret, ...data } = body
+
+  if (totpAction === 'enable') {
+    const secret = authenticator.generateSecret()
+    data.totpSecret = secret
+    const otpauthUrl = authenticator.keyuri(user.email, 'Topiqu', secret)
+    const updated = await db.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        bio: true,
+      },
+    })
+    return { ...updated, otpauthUrl }
+  }
+
+  if (totpCode) {
+    if (!authenticator.verify({ token: totpCode, secret: oldPasswordDb?.totpSecret ?? '' })) {
+      throw createError({ statusCode: 403, message: 'Neplatný TOTP kód' })
+    }
+    return { verified: true }
+  }
+
+  if (totpSecret === null) {
+    data.totpSecret = null
+  }
 
   if (user.role !== 'superadmin' && body.password) {
     if (oldPasswordDb?.password) {
