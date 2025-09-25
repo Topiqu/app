@@ -204,6 +204,7 @@ model User {
   role             UserRole          @default(reader)
   avatarUrl        String?
   verification     VerificationCode?
+  totpSecret       String?
   emailVerified    Boolean           @default(false)
   allowNotifs      Boolean           @default(true)
   allowEmail       Boolean           @default(true)
