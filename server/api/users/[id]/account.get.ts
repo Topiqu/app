@@ -1,3 +1,5 @@
+import { authenticator } from 'otplib'
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
@@ -78,6 +80,10 @@ export default defineEventHandler(async (event) => {
     0,
   )
 
+  let otpauthUrl = ''
+  if (userData.totpSecret) {
+    otpauthUrl = authenticator.keyuri(userData.username, 'Topiqu', userData.totpSecret)
+  }
   return {
     id: userData.id,
     username: userData.username,
@@ -100,6 +106,7 @@ export default defineEventHandler(async (event) => {
     theme: userData.theme,
     hasPassword: !!userData.password,
     totpSecret: userData.totpSecret,
+    otpauthUrl,
     likedArticles: userData.articleReactions.map((reaction) => ({
       id: reaction.article.id,
     })),
