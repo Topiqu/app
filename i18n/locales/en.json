@@ -433,6 +433,12 @@
   "profile": {
     "title": "My Profile",
     "security": "Account Security",
+    "disable2FA": "Disable Two-Factor Authentication",
+    "verify2FA": "Verify & Enable",
+    "twoFactorAuth": "Two-Factor Authentication (2FA)",
+    "enable2FA": "Enable Two-Factor Authentication",
+    "scanTotp": "Scan this QR code",
+    "enterTotpCode": "Enter the code from your authenticator app",
     "sessions": "Added devices",
     "active": "Currently active",
     "following": "Following",

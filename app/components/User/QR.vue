@@ -59,7 +59,6 @@ const props = defineProps<{
   otpauthUrl: string
   userId: string
 }>()
-
 const emit = defineEmits<{
   (e: 'update:enabled', value: boolean): void
   (e: 'error', value: string): void

@@ -447,6 +447,12 @@
   "profile": {
     "title": "Můj profil",
     "security": "Zabezpečení účtu",
+    "disable2FA": "Vypnout dvoufázové ověření",
+    "verify2FA": "Ověřit a povolit",
+    "twoFactorAuth": "Dvoufázové ověření (2FA)",
+    "enable2FA": "Povolit dvoufázové ověření",
+    "scanTotp": "Naskenujte tento QR kód",
+    "enterTotpCode": "Zadejte kód z vaší autentikační aplikace",
     "sessions": "Přidaná zařízení",
     "active": "Právě aktivní",
     "following": "Sledování",
