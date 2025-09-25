@@ -129,7 +129,6 @@
               </p>
             </div>
           </div>
-
           <div
             v-if="isDirty"
             class="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/50 rounded-lg flex items-center gap-2 text-xs sm:text-sm text-yellow-800 dark:text-yellow-300"
@@ -137,7 +136,6 @@
             <Icon name="mdi:alert-circle" class="w-4 h-4 sm:w-5 sm:h-5" />
             <span>{{ $t('common.unsavedChanges') }}</span>
           </div>
-
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             <div class="space-y-4 sm:space-y-6">
               <div>
@@ -227,7 +225,6 @@
                 </div>
               </div>
             </div>
-
             <div class="space-y-4 sm:space-y-6">
               <LangSwitch :language="profileForm.language!" @update:language="updateLanguage" />
               <div>
@@ -335,9 +332,22 @@
                   </div>
                   <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
                   <div>
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {{ $t('profile.sessions') }}
-                    </label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                      $t('profile.twoFactorAuth')
+                    }}</label>
+                    <UserQR
+                      :enabled="is2FAEnabled"
+                      :otpauthUrl="otpauthUrl"
+                      :userId="user?.user.id!"
+                      @update:enabled="is2FAEnabled = $event"
+                      @error="twoFAError = $event"
+                    />
+                  </div>
+                  <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
+                  <div>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                      $t('profile.sessions')
+                    }}</label>
                     <div class="mt-2 space-y-3">
                       <div
                         v-for="session in profileForm.sessions"
@@ -351,7 +361,6 @@
                           <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
                           {{ $t('profile.active') }}
                         </span>
-
                         <div class="flex items-center gap-3">
                           <div class="flex-shrink-0">
                             <Icon
@@ -379,7 +388,6 @@
                             </p>
                           </div>
                         </div>
-
                         <div class="mt-3 sm:mt-0">
                           <Button
                             v-if="!session.revoked"
@@ -398,7 +406,6 @@
                           </span>
                         </div>
                       </div>
-
                       <p v-if="!profileForm.sessions?.length" class="text-sm text-gray-500 dark:text-gray-400 italic">
                         {{ $t('profile.noActiveSessions') }}
                       </p>
@@ -446,11 +453,15 @@ type Profile = Partial<User> & {
   dislikesCount: number
   likedArticles: Array<{ id: string }>
   sessions: Session[]
+  totpSecret?: string
 }
 
 const { data: user, signOut } = useAuth()
 const toast = useToast()
 const { setLocale } = useI18n()
+
+const twoFAError = shallowRef('')
+const otpauthUrl = shallowRef('')
 
 function getDraft(): Profile | null {
   const raw = localStorage.getItem(`profileDraft-${user.value?.user.id}`)
@@ -499,6 +510,7 @@ const {
   error: userDataError,
   refresh,
 } = await useFetch(`/api/users/${user.value?.user?.id}/account`)
+const is2FAEnabled = shallowRef(!!userData.value?.totpSecret)
 if (userData.value) {
   Object.assign(profileForm.value, {
     ...userData.value,
