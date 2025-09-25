@@ -99,6 +99,7 @@ export default defineEventHandler(async (event) => {
     following: userData.following.length,
     theme: userData.theme,
     hasPassword: !!userData.password,
+    totpSecret: userData.totpSecret,
     likedArticles: userData.articleReactions.map((reaction) => ({
       id: reaction.article.id,
     })),
