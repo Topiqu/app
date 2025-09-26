@@ -12,9 +12,14 @@ export default defineEventHandler(async (event) => {
   const type = form?.find((f) => f.name === 'type')?.data.toString() || 'article-image'
   const shortcode = form?.find((f) => f.name === 'shortcode')?.data.toString()
   const isAiUser = form?.find((f) => f.name === 'isAiUser')?.data.toString() === 'true'
+
   const maxSizeFromForm = Number(form?.find((f) => f.name === 'maxSize')?.data.toString())
   const minSizeFromForm = Number(form?.find((f) => f.name === 'minSize')?.data.toString())
-  console.log(minSizeFromForm)
+  const maxWidthFromForm = Number(form?.find((f) => f.name === 'maxWidth')?.data.toString())
+  const maxHeightFromForm = Number(form?.find((f) => f.name === 'maxHeight')?.data.toString())
+  const minWidthFromForm = Number(form?.find((f) => f.name === 'minWidth')?.data.toString())
+  const minHeightFromForm = Number(form?.find((f) => f.name === 'minHeight')?.data.toString())
+
   if (
     !file ||
     !file.type?.startsWith('image/') ||
@@ -33,22 +38,23 @@ export default defineEventHandler(async (event) => {
 
   if (type === 'client-logo') {
     maxSize = maxSizeFromForm || 2 * 1024 * 1024
-    minDimensions = [512, 512]
+    minDimensions = [minWidthFromForm || 512, minHeightFromForm || 512]
     outputDir = 'client-logos'
     filenamePrefix = `logo-${user?.clientSiteId || 'unknown'}`
   } else if (type === 'user-avatar') {
-    minDimensions = [100, 100]
+    minDimensions = [minWidthFromForm || 100, minHeightFromForm || 100]
     outputDir = 'avatars'
     filenamePrefix = `avatar-${isAiUser ? Date.now() + (user?.clientSiteId || 'unknown') : user?.id || 'unknown'}`
     applyNsfwFilter = !isAiUser
   } else if (type === 'article-image') {
+    minDimensions = [minWidthFromForm || 300, minHeightFromForm || 200]
     outputDir = 'article-images'
     filenamePrefix = 'article'
   } else if (type === 'emoji') {
     if (!shortcode) throw createError({ statusCode: 400, message: 'Chybí shortcode' })
     if (!user || user.role !== 'admin') throw createError({ statusCode: 403, message: 'Povoleno pouze pro adminy' })
     maxSize = maxSizeFromForm || 1 * 1024 * 1024
-    minDimensions = [64, 64]
+    minDimensions = [minWidthFromForm || 64, minHeightFromForm || 64]
     outputDir = 'emojis'
     filename = `${shortcode}.webp`
   }
@@ -63,26 +69,30 @@ export default defineEventHandler(async (event) => {
   let buffer = file.data
   if (file.type === 'image/svg+xml' && type !== 'emoji') {
     filename = `${filenamePrefix}-${Date.now()}.svg`
-  } else if (minDimensions) {
-    const img = await sharp(file.data)
-    const meta = await img.metadata()
-    if (!meta.width || !meta.height || meta.width < minDimensions[0] || meta.height < minDimensions[1]) {
-      throw createError({
-        statusCode: 400,
-        message: `Minimální rozlišení je ${minDimensions[0]}x${minDimensions[1]}px`,
-      })
-    }
-    buffer = await img
-      .resize({
-        width: minDimensions[0],
-        height: minDimensions[1],
-        fit: 'contain',
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      })
-      .webp({ quality: 80 })
-      .toBuffer()
   } else {
-    buffer = await sharp(file.data).webp({ quality: 80 }).toBuffer()
+    const img = sharp(file.data)
+    const meta = await img.metadata()
+
+    if (!meta.width || !meta.height) {
+      throw createError({ statusCode: 400, message: 'Nepodařilo se zjistit rozměry obrázku' })
+    }
+
+    if (minDimensions) {
+      if (meta.width < minDimensions[0] || meta.height < minDimensions[1]) {
+        throw createError({
+          statusCode: 400,
+          message: `Minimální rozlišení je ${minDimensions[0]}x${minDimensions[1]}px`,
+        })
+      }
+    }
+    if (maxWidthFromForm && meta.width > maxWidthFromForm) {
+      throw createError({ statusCode: 400, message: `Maximální šířka je ${maxWidthFromForm}px` })
+    }
+    if (maxHeightFromForm && meta.height > maxHeightFromForm) {
+      throw createError({ statusCode: 400, message: `Maximální výška je ${maxHeightFromForm}px` })
+    }
+
+    buffer = await img.webp({ quality: 80 }).toBuffer()
   }
 
   if (applyNsfwFilter) {
@@ -105,7 +115,7 @@ export default defineEventHandler(async (event) => {
       await access(filePath)
       throw createError({ statusCode: 409, message: 'Emoji s tímto shortcode již existuje' })
     } catch {
-      // proceed
+      //
     }
   }
 
