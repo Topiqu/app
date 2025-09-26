@@ -55,7 +55,7 @@
         </label>
         <label class="flex flex-col gap-3">
           <span class="text-sm font-medium uppercase tracking-wide opacity-80">Logo klienta</span>
-          <FileUploader :imageUrl="newClient.logoUrl" type="client-logo" @upload="newClient.logoUrl = $event.url" />
+          <FileUploader :maxSize="100000000" :minSize="100" :imageUrl="newClient.logoUrl" type="client-logo" @upload="newClient.logoUrl = $event.url" />
         </label>
         <label class="flex flex-col gap-3">
           <span class="text-sm font-medium uppercase tracking-wide opacity-80">Cílová skupina</span>
