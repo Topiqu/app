@@ -12,25 +12,30 @@
       <Button
         variant="danger"
         size="sm"
-        class="flex items-center gap-1 text-red-500 hover:text-red-600"
+        class="flex items-center gap-1 hover:text-red-600"
         @click="cancelUpload"
       >
         <Icon name="mdi:cancel" class="w-5 h-5" />
       </Button>
     </div>
 
+    <div v-if="isProcessing" class="flex justify-center items-center h-20">
+      <Icon name="mdi:loading" class="animate-spin w-6 h-6 text-gray-500" />
+    </div>
+
     <div class="flex flex-col gap-4 items-center">
       <div
+        v-if="!isProcessing"
         class="w-full relative flex flex-col justify-center items-center border-2 border-dashed border-gray-300 p-6 rounded-xl text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all duration-200 dark:border-gray-500 dark:text-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 aspect-video"
         :class="{
           'border-blue-500 dark:border-blue-400 shadow-md animate-pulse': isDragging && !disabled,
           'opacity-50 cursor-not-allowed': disabled,
+          'cursor-pointer': !disabled,
         }"
         @dragover.prevent="onDragOver"
         @dragenter.prevent="onDragEnter"
         @dragleave="onDragLeave"
         @drop.prevent="onDrop"
-        @click="disabled ? null : open({ accept: 'image/*' })"
       >
         <Icon
           name="mdi:upload"
@@ -47,7 +52,8 @@
         </div>
       </div>
       <Button
-        :disabled="isProcessing || disabled"
+        v-if="!isProcessing"
+        :disabled="disabled"
         class="w-full"
         @click="open({ accept: 'image/*' })"
       >
@@ -173,13 +179,13 @@ const cancelUpload = () => {
 }
 
 const onDragOver = (e: DragEvent) => {
-  if (props.disabled) return
+  if (props.disabled || isProcessing.value) return
   e.preventDefault()
   isDragging.value = true
 }
 
 const onDragEnter = (e: DragEvent) => {
-  if (props.disabled) return
+  if (props.disabled || isProcessing.value) return
   e.preventDefault()
   isDragging.value = true
 }
@@ -189,7 +195,7 @@ const onDragLeave = () => {
 }
 
 const onDrop = async (e: DragEvent) => {
-  if (props.disabled) return
+  if (props.disabled || isProcessing.value) return
   e.preventDefault()
   isDragging.value = false
   const file = e.dataTransfer?.files[0]
