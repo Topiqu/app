@@ -12,7 +12,9 @@ export default defineEventHandler(async (event) => {
   const type = form?.find((f) => f.name === 'type')?.data.toString() || 'article-image'
   const shortcode = form?.find((f) => f.name === 'shortcode')?.data.toString()
   const isAiUser = form?.find((f) => f.name === 'isAiUser')?.data.toString() === 'true'
-
+  const maxSizeFromForm = Number(form?.find((f) => f.name === 'maxSize')?.data.toString())
+  const minSizeFromForm = Number(form?.find((f) => f.name === 'minSize')?.data.toString())
+  console.log(minSizeFromForm)
   if (
     !file ||
     !file.type?.startsWith('image/') ||
@@ -21,7 +23,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Podporovány jsou PNG, JPEG, WebP nebo SVG' })
   }
 
-  let maxSize = 5 * 1024 * 1024
+  let maxSize = maxSizeFromForm || 5 * 1024 * 1024
+  const minSize = minSizeFromForm || 0
   let minDimensions: [number, number] | null = null
   let outputDir = 'article-images'
   let filenamePrefix = 'article'
@@ -29,7 +32,7 @@ export default defineEventHandler(async (event) => {
   let filename = `${filenamePrefix}-${Date.now()}.webp`
 
   if (type === 'client-logo') {
-    maxSize = 2 * 1024 * 1024
+    maxSize = maxSizeFromForm || 2 * 1024 * 1024
     minDimensions = [512, 512]
     outputDir = 'client-logos'
     filenamePrefix = `logo-${user?.clientSiteId || 'unknown'}`
@@ -44,7 +47,7 @@ export default defineEventHandler(async (event) => {
   } else if (type === 'emoji') {
     if (!shortcode) throw createError({ statusCode: 400, message: 'Chybí shortcode' })
     if (!user || user.role !== 'admin') throw createError({ statusCode: 403, message: 'Povoleno pouze pro adminy' })
-    maxSize = 1 * 1024 * 1024
+    maxSize = maxSizeFromForm || 1 * 1024 * 1024
     minDimensions = [64, 64]
     outputDir = 'emojis'
     filename = `${shortcode}.webp`
@@ -52,6 +55,9 @@ export default defineEventHandler(async (event) => {
 
   if (file.data.length > maxSize) {
     throw createError({ statusCode: 400, message: `Soubor příliš velký (max ${maxSize / 1024 / 1024} MB)` })
+  }
+  if (minSize && file.data.length < minSize) {
+    throw createError({ statusCode: 400, message: `Soubor příliš malý (min ${minSize / 1024} KB)` })
   }
 
   let buffer = file.data
