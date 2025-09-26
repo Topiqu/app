@@ -10,13 +10,12 @@
         :alt="$t('articles.articleCard.imageAlt')"
       />
       <Button
-        variant="warning"
+        variant="danger"
         size="sm"
         class="flex items-center gap-1 text-red-500 hover:text-red-600"
         @click="cancelUpload"
       >
         <Icon name="mdi:cancel" class="w-5 h-5" />
-        {{ $t('common.actions.cancel') }}
       </Button>
     </div>
 
@@ -40,6 +39,12 @@
         />
         <span class="font-semibold">{{ $t('common.actions.upload') }}</span>
         {{ $t('common.labels.image') }}
+        <div v-if="props.maxSize || props.minSize || props.maxWidth || props.maxHeight || props.minWidth || props.minHeight" class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+          <div v-if="props.maxSize">Max: {{ (props.maxSize / 1024 / 1024).toFixed(1) }} MB</div>
+          <div v-if="props.minSize">Min: {{ (props.minSize / 1024).toFixed(0) }} KB</div>
+          <div v-if="props.maxWidth || props.maxHeight">Max dim: {{ props.maxWidth || '∞' }}×{{ props.maxHeight || '∞' }}px</div>
+          <div v-if="props.minWidth || props.minHeight">Min dim: {{ props.minWidth || 0 }}×{{ props.minHeight || 0 }}px</div>
+        </div>
       </div>
       <Button
         :disabled="isProcessing || disabled"
@@ -65,6 +70,10 @@ const props = defineProps<{
   isAiUser?: boolean
   maxSize?: number
   minSize?: number
+  maxWidth?: number
+  maxHeight?: number
+  minWidth?: number
+  minHeight?: number
 }>()
 
 const toast = useToast()
@@ -108,8 +117,28 @@ const handleFile = async (file: File) => {
     return
   }
 
+  const image = new Image()
+  const objectUrl = URL.createObjectURL(file)
+  image.src = objectUrl
+  await new Promise((resolve) => (image.onload = resolve))
+  const { width, height } = image
+  if (props.maxWidth && width > props.maxWidth || props.maxHeight && height > props.maxHeight) {
+    toast.error({
+      message: `Rozměry obrázku jsou příliš velké (max ${props.maxWidth || '∞'}×${props.maxHeight || '∞'} px)`,
+    })
+    reset()
+    return
+  }
+  if (props.minWidth && width < props.minWidth || props.minHeight && height < props.minHeight) {
+    toast.error({
+      message: `Rozměry obrázku jsou příliš malé (min ${props.minWidth || 0}×${props.minHeight || 0} px)`,
+    })
+    reset()
+    return
+  }
+
   isProcessing.value = true
-  previewUrl.value = URL.createObjectURL(file)
+  previewUrl.value = objectUrl
 
   const formData = new FormData()
   formData.append('file', file)
@@ -118,6 +147,10 @@ const handleFile = async (file: File) => {
   if (props.isAiUser) formData.append('isAiUser', 'true')
   if (props.maxSize) formData.append('maxSize', props.maxSize.toString())
   if (props.minSize) formData.append('minSize', props.minSize.toString())
+  if (props.maxWidth) formData.append('maxWidth', props.maxWidth.toString())
+  if (props.maxHeight) formData.append('maxHeight', props.maxHeight.toString())
+  if (props.minWidth) formData.append('minWidth', props.minWidth.toString())
+  if (props.minHeight) formData.append('minHeight', props.minHeight.toString())
 
   try {
     const { url } = await $fetch('/api/upload', {
