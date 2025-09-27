@@ -54,6 +54,7 @@
     "@vite-pwa/nuxt": "^1.0.4",
     "@vueuse/motion": "^3.0.3",
     "@vueuse/nuxt": "^13.9.0",
+    "@zxcvbn-ts/core": "^3.0.4",
     "ai": "^5.0.52",
     "argon2": "^0.44.0",
     "chart.js": "^4.5.0",
