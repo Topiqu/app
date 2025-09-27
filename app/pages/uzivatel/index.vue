@@ -276,11 +276,12 @@
                     <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                       $t('profile.twoFactorAuth')
                     }}</label>
-                    <UserQR
+                   <UserQR
                       :enabled="is2FAEnabled"
                       :otpauthUrl="otpauthUrl"
                       :userId="user?.user.id!"
                       @update:enabled="is2FAEnabled = $event"
+                      @update:otpauthUrl="otpauthUrl = $event"
                       @error="twoFAError = $event"
                     />
                   </div>

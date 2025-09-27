@@ -373,7 +373,6 @@ const verifyTotp = async () => {
     })
     setLocale(user.language)
     theme.mode = user.theme
-    toast.success({ message: $t('common.auth.totpSuccess') })
     if (user.role === 'superadmin') navigateTo('/master')
     else if (user.role === 'admin') navigateTo('/admin')
     else navigateTo(localePath('uzivatel/'))

@@ -46,7 +46,7 @@
         {{ $t('profile.verify2FA') }}
       </Button>
     </div>
-    <div v-if="enabled" class="text-center">
+    <div v-if="enabled && otpauthUrl" class="text-center">
       <div
         class="mt-4 p-4 sm:p-6 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm bg-white dark:bg-neutral-900"
       >
@@ -79,21 +79,22 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{
   (e: 'update:enabled', value: boolean): void
-  (e: 'error', value: string): void
+  (e: 'update:otpauthUrl' | 'error', value: string): void
 }>()
 
 const isLoading = shallowRef(false)
 const showForm = shallowRef(false)
 const totpCode = shallowRef('')
 const error = shallowRef<string | null>(null)
-console.log(props.otpauthUrl)
+
 async function enable2FA() {
   try {
     isLoading.value = true
-    await $fetch(`/api/users/${props.userId}` as `/api/users/:id`, {
+    const response = await $fetch(`/api/users/${props.userId}`, {
       method: 'PATCH',
       body: { totpAction: 'enable' },
     })
+    emit('update:otpauthUrl', response.otpauthUrl)
     showForm.value = true
     emit('update:enabled', false)
   } catch (err: any) {
@@ -106,15 +107,17 @@ async function enable2FA() {
 async function verifyTotpCode() {
   try {
     isLoading.value = true
-    await $fetch(`/api/users/${props.userId}` as `/api/users/:id`, {
+    const response = await $fetch(`/api/users/${props.userId}`, {
       method: 'PATCH',
       body: { totpCode: totpCode.value },
     })
-    showForm.value = false
-    totpCode.value = ''
-    error.value = null
-    emit('update:enabled', true)
-    emit('error', '')
+    if (response.verified) {
+      showForm.value = false
+      totpCode.value = ''
+      error.value = null
+      emit('update:enabled', true)
+      emit('error', '')
+    }
   } catch (err: any) {
     error.value = err.data?.message || $t('common.messages.operationFailed')
   } finally {
@@ -125,7 +128,7 @@ async function verifyTotpCode() {
 async function disable2FA() {
   try {
     isLoading.value = true
-    await $fetch(`/api/users/${props.userId}` as `/api/users/:id`, {
+    await $fetch(`/api/users/${props.userId}`, {
       method: 'PATCH',
       body: { totpSecret: null },
     })
@@ -133,6 +136,7 @@ async function disable2FA() {
     totpCode.value = ''
     error.value = null
     emit('update:enabled', false)
+    emit('update:otpauthUrl', '')
     emit('error', '')
   } catch (err: any) {
     emit('error', err.data?.message || $t('common.messages.operationFailed'))
