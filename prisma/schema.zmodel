@@ -209,6 +209,7 @@ model User extends Base {
     avatarUrl        String?
     verification     VerificationCode?
     totpSecret       String?           @omit
+    totpTempSecret   String?           @omit
     emailVerified    Boolean           @default(false)
     allowNotifs      Boolean           @default(true)
     allowEmail       Boolean           @default(true)
