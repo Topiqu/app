@@ -375,9 +375,21 @@ const platformPlaceholders = computed(() => {
 })
 if (client.value) {
   Object.assign(form.value, {
-    ...client.value,
+    focus: client.value.focus ?? '',
+    audience: client.value.audience ?? '',
+    language: client.value.language ?? 'en',
+    theme: client.value.theme ?? 'blue',
+    description: client.value.description ?? '',
+    logoUrl: client.value.logoUrl ?? '',
+    keywords: client.value.keywords ?? [],
+    socials: client.value.socials ?? [],
+    aiUser: {
+      username: client.value.aiUser?.username ?? '',
+      bio: client.value.aiUser?.bio ?? '',
+      avatarUrl: client.value.aiUser?.avatarUrl ?? '',
+    },
   })
-  keywordsInput.value = form.value.keywords.join(', ')
+  keywordsInput.value = (client.value.keywords ?? []).join(', ')
 }
 
 const onLogoUpload = ({ url }: { url: string }) => (form.value.logoUrl = url)
@@ -430,7 +442,7 @@ const confirmClose = async () => {
     form.value.theme !== (client.value?.theme || 'blue') ||
     form.value.description !== (client.value?.description || '') ||
     form.value.logoUrl !== (client.value?.logoUrl || '') ||
-    form.value.keywords.join(',') !== (client.value?.keywords || []).join(',') ||
+    form.value.keywords.join(',') !== (client.value?.keywords || []).join(',') || 
     diff(form.value.socials, client.value?.socials || []) ||
     (client.value.tokenLimit &&
       client.value.tokenLimit > 0 &&
