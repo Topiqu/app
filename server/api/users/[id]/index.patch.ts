@@ -23,47 +23,52 @@ export default defineEventHandler(async (event) => {
 
   const oldPasswordDb = await prisma.user.findUnique({
     where: { id },
-    select: { password: true, totpSecret: true },
+    select: { password: true, totpSecret: true, totpTempSecret: true },
   })
 
   const body = await readValidatedBody(event, UserUpdateWithOldPassSchema.parse)
-  const { oldPass, totpAction, totpCode, totpSecret, ...data } = body
+  const { oldPass, totpAction, totpCode, ...data } = body
 
   if (totpAction === 'enable') {
+    if (oldPasswordDb?.totpTempSecret) {
+      const otpauthUrl = authenticator.keyuri(user.email, 'Topiqu', oldPasswordDb.totpTempSecret)
+      return { otpauthUrl }
+    }
     const secret = authenticator.generateSecret()
-    data.totpSecret = secret
     const otpauthUrl = authenticator.keyuri(user.email, 'Topiqu', secret)
-    const updated = await db.user.update({
+    await db.user.update({
       where: { id },
-      data,
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        role: true,
-        bio: true,
-      },
+      data: { totpTempSecret: secret },
     })
-    return { ...updated, otpauthUrl }
+    return { otpauthUrl }
   }
 
   if (totpCode) {
-    if (!authenticator.verify({ token: totpCode, secret: oldPasswordDb?.totpSecret ?? '' })) {
+    const tempSecret = oldPasswordDb?.totpTempSecret
+    if (!tempSecret || !authenticator.verify({ token: totpCode, secret: tempSecret })) {
       throw createError({ statusCode: 403, message: 'Neplatný TOTP kód' })
     }
-    return { verified: true }
+    const updated = await db.user.update({
+      where: { id },
+      data: { totpSecret: tempSecret, totpTempSecret: null },
+      select: { id: true, username: true, email: true, role: true, bio: true },
+    })
+    return { ...updated, verified: true }
   }
 
-  if (totpSecret === null) {
-    data.totpSecret = null
+  if (body.totpSecret === null) {
+    const updated = await db.user.update({
+      where: { id },
+      data: { totpSecret: null, totpTempSecret: null },
+      select: { id: true, username: true, email: true, role: true, bio: true },
+    })
+    return { ...updated, verified: false }
   }
 
   if (user.role !== 'superadmin' && body.password) {
     if (oldPasswordDb?.password) {
       const match = await argon.verify(oldPasswordDb.password, oldPass ?? '')
-      if (!match) {
-        throw createError({ statusCode: 403, message: 'Změna hesla selhala' })
-      }
+      if (!match) throw createError({ statusCode: 403, message: 'Změna hesla selhala' })
     }
   }
 
@@ -91,7 +96,6 @@ export default defineEventHandler(async (event) => {
       ip,
       metadata: { userId: id, newRole: body.role },
     })
-
     if (currentUser?.role === 'admin' && body.role === 'reader') {
       data.clientSiteId = null
     }
@@ -107,15 +111,10 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return await db.user.update({
+  const updated = await db.user.update({
     where: { id },
     data,
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      role: true,
-      bio: true,
-    },
+    select: { id: true, username: true, email: true, role: true, bio: true },
   })
+  return { ...updated }
 })
