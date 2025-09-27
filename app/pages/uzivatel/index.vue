@@ -222,40 +222,8 @@
                         @click="showOldPassword = !showOldPassword"
                       />
                     </div>
-                    <div class="relative">
-                      <input
-                        v-model="passwordForm.newPassword"
-                        :type="showNewPassword ? 'text' : 'password'"
-                        :placeholder="$t('common.auth.newPassword')"
-                        :class="{
-                          'border-red-500 dark:border-red-500':
-                            !isPasswordFormValid && passwordForm.newPassword && passwordForm.confirmNewPassword,
-                        }"
-                        class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
-                      />
-                      <Icon
-                        :name="showNewPassword ? 'mdi:eye-off' : 'mdi:eye'"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer"
-                        @click="showNewPassword = !showNewPassword"
-                      />
-                    </div>
-                    <div class="relative">
-                      <input
-                        v-model="passwordForm.confirmNewPassword"
-                        :type="showConfirmPassword ? 'text' : 'password'"
-                        :placeholder="$t('common.auth.passwordConfirm')"
-                        :class="{
-                          'border-red-500 dark:border-red-500':
-                            !isPasswordFormValid && passwordForm.newPassword && passwordForm.confirmNewPassword,
-                        }"
-                        class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
-                      />
-                      <Icon
-                        :name="showConfirmPassword ? 'mdi:eye-off' : 'mdi:eye'"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer"
-                        @click="showConfirmPassword = !showConfirmPassword"
-                      />
-                    </div>
+                    <UserPassword v-model="passwordForm.newPassword" :isValid="isPasswordFormValid" />
+                    <UserPassword v-model="passwordForm.confirmNewPassword" :isValid="isPasswordFormValid" isConfirm />
                     <p
                       v-if="!isPasswordFormValid && passwordForm.newPassword && passwordForm.confirmNewPassword"
                       class="text-xs sm:text-sm text-red-500 dark:text-red-400"
@@ -276,7 +244,7 @@
                     <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                       $t('profile.twoFactorAuth')
                     }}</label>
-                   <UserQR
+                    <UserQR
                       :enabled="is2FAEnabled"
                       :otpauthUrl="otpauthUrl"
                       :userId="user?.user.id!"
@@ -433,8 +401,6 @@ const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
 const originalProfile = shallowRef<Profile | null>(null)
 const isDirty = shallowRef(false)
 const showOldPassword = shallowRef(false)
-const showNewPassword = shallowRef(false)
-const showConfirmPassword = shallowRef(false)
 const profileForm = ref<Profile>({} as Profile)
 const passwordForm = ref({
   oldPassword: '',
@@ -616,16 +582,3 @@ watch(
   { deep: true },
 )
 </script>
-
-<style>
-@keyframes fadeSlide {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>

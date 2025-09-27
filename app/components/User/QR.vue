@@ -28,7 +28,8 @@
       <div class="relative mt-6">
         <input
           v-model="totpCode"
-          type="text"
+          type="tel"
+          pattern="[0-9]*"
           :placeholder="$t('profile.enterTotpCode')"
           class="w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
           :class="{ 'border-red-500 dark:border-red-500': error }"
