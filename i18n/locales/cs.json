@@ -206,6 +206,21 @@
         "label": "Sociální sítě",
         "noSocials": "Zatím nebyly přidány žádné sociální sítě."
       }
+    },
+    "passwordSuggestions": {
+      "weak": "Slabé",
+      "medium": "Střední",
+      "strong": "Silné",
+      "useLongerPassword": "Použijte delší heslo.",
+      "addWords": "Přidejte další jedno nebo dvě slova. Méně obvyklá slova jsou lepší.",
+      "avoidCommonPhrases": "Použijte několik slov, vyhněte se běžným frázím.",
+      "avoidRepeated": "Vyhněte se opakovaným slovům a znakům.",
+      "addUppercase": "Přidejte velká písmena.",
+      "addLowercase": "Přidejte malá písmena.",
+      "addNumbers": "Přidejte čísla.",
+      "addSpecialChars": "Přidejte speciální znaky.",
+      "avoidDates": "Vyhněte se datům a letopočtům spojeným s vámi.",
+      "avoidCommonWords": "Vyhněte se běžným slovům a frázím."
     }
   },
   "articles": {

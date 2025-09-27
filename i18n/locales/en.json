@@ -96,7 +96,7 @@
       "totpCode": "TOTP Code",
       "totpCodePlaceholder": "6-digit code",
       "verifyTotp": "Verify TOTP"
-  },
+    },
     "labels": {
       "article": "Article:",
       "articleTitle": "Article title",
@@ -192,6 +192,21 @@
         "label": "Social Networks",
         "noSocials": "No social networks added yet."
       }
+    },
+    "passwordSuggestions": {
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong",
+      "useLongerPassword": "Use a longer password.",
+      "addWords": "Add another word or two. Uncommon words are better.",
+      "avoidCommonPhrases": "Use a few words, avoid common phrases.",
+      "avoidRepeated": "Avoid repeated words and characters.",
+      "addUppercase": "Add some uppercase letters.",
+      "addLowercase": "Add some lowercase letters.",
+      "addNumbers": "Add some numbers.",
+      "addSpecialChars": "Add some special characters.",
+      "avoidDates": "Avoid dates and years that are associated with you.",
+      "avoidCommonWords": "Avoid common words and phrases."
     }
   },
   "articles": {
