@@ -81,7 +81,7 @@
           <label for="password" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
             {{ $t('common.auth.password') }}
           </label>
-          <div class="relative">
+          <div v-if="internalMode === 'login'" class="relative">
             <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               id="password"
@@ -102,6 +102,7 @@
               <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" />
             </button>
           </div>
+          <UserPassword v-else v-model="form.password" :isValid="isPasswordFormValid" />
           <div v-if="internalMode === 'login'" class="inline-flex justify-end w-full">
             <button
               type="button"
@@ -116,27 +117,7 @@
           <label for="passwordConfirm" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
             {{ $t('common.auth.passwordConfirm') }}
           </label>
-          <div class="relative">
-            <Icon name="mdi:lock-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
-            <input
-              id="passwordConfirm"
-              v-model="form.passwordConfirm"
-              :type="showPasswordConfirm ? 'text' : 'password'"
-              class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              autocomplete="new-password"
-              placeholder="********"
-              maxlength="124"
-              minlength="4"
-              required
-            />
-            <button
-              type="button"
-              class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-600 dark:hover:text-gray-400"
-              @click="showPasswordConfirm = !showPasswordConfirm"
-            >
-              <Icon :name="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'" />
-            </button>
-          </div>
+          <UserPassword v-model="form.passwordConfirm" :isValid="isPasswordFormValid" isConfirm />
         </div>
         <button
           type="submit"
@@ -261,7 +242,12 @@ const form = ref<typeof init>(init)
 const internalMode = shallowRef<'login' | 'register' | 'forgot' | 'reset' | 'totp'>('login')
 const verifyMode = shallowRef<boolean>(false)
 const showPassword = shallowRef(false)
-const showPasswordConfirm = shallowRef(false)
+
+const isPasswordFormValid = computed(() => {
+  return internalMode.value === 'register'
+    ? form.value.password && form.value.password === form.value.passwordConfirm
+    : true
+})
 
 watch(
   () => props.mode,
@@ -276,8 +262,7 @@ watch(
 const submit = async () => {
   try {
     if (internalMode.value === 'register') {
-      if (form.value.password !== form.value.passwordConfirm)
-        return toast.error({ message: $t('common.auth.passwordsMismatch') })
+      if (!isPasswordFormValid.value) return toast.error({ message: $t('common.auth.passwordsMismatch') })
       const res = await $fetch('/api/auth/register', {
         method: 'POST',
         body: {

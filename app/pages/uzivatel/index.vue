@@ -214,11 +214,11 @@
                         v-model="passwordForm.oldPassword"
                         :type="showOldPassword ? 'text' : 'password'"
                         :placeholder="$t('common.auth.oldPassword')"
-                        class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
+                        class="w-full pl-5 pr-10 py-2.5 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                       />
                       <Icon
                         :name="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer"
+                        class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500 cursor-pointer hover:text-gray-600 dark:hover:text-gray-400"
                         @click="showOldPassword = !showOldPassword"
                       />
                     </div>
