@@ -44,11 +44,11 @@
         />
         <span class="font-semibold">{{ $t('common.actions.upload') }}</span>
         {{ $t('common.labels.image') }}
-        <div v-if="props.maxSize || props.minSize || props.maxWidth || props.maxHeight || props.minWidth || props.minHeight" class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-          <div v-if="props.maxSize">Max: {{ (props.maxSize / 1024 / 1024).toFixed(1) }} MB</div>
-          <div v-if="props.minSize">Min: {{ (props.minSize / 1024).toFixed(0) }} KB</div>
-          <div v-if="props.maxWidth || props.maxHeight">Max dim: {{ props.maxWidth || '∞' }}×{{ props.maxHeight || '∞' }}px</div>
-          <div v-if="props.minWidth || props.minHeight">Min dim: {{ props.minWidth || 0 }}×{{ props.minHeight || 0 }}px</div>
+        <div v-if="constraints.maxSize || constraints.minSize || constraints.maxWidth || constraints.maxHeight || constraints.minWidth || constraints.minHeight" class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+          <div v-if="constraints.maxSize">Max: {{ (constraints.maxSize / 1024 / 1024).toFixed(1) }} MB</div>
+          <div v-if="constraints.minSize">Min: {{ (constraints.minSize / 1024).toFixed(0) }} KB</div>
+          <div v-if="constraints.maxWidth || constraints.maxHeight">Max: {{ constraints.maxWidth || 'Není omezeno' }}×{{ constraints.maxHeight || 'Není omezeno' }}px</div>
+          <div v-if="constraints.minWidth || constraints.minHeight">Min: {{ constraints.minWidth || 0 }}×{{ constraints.minHeight || 0 }}px</div>
         </div>
       </div>
       <Button
@@ -87,6 +87,28 @@ const previewUrl = shallowRef<string | null>(props.imageUrl || null)
 const isDragging = shallowRef(false)
 const isProcessing = shallowRef(false)
 
+const defaultConstraints: Record<
+  NonNullable<typeof props.type>,
+  { maxWidth?: number; maxHeight?: number; minWidth?: number; minHeight?: number; maxSize?: number; minSize?: number }
+> = {
+  'client-logo': { maxWidth: 1024, maxHeight: 1024, minWidth: 512, minHeight: 512, maxSize: 2 * 1024 * 1024, minSize: 0 },
+  'user-avatar': { maxWidth: 512, maxHeight: 512, minWidth: 100, minHeight: 100, maxSize: 5 * 1024 * 1024, minSize: 0 },
+  'article-image': { maxWidth: 1920, maxHeight: 1080, minWidth: 300, minHeight: 200, maxSize: 5 * 1024 * 1024, minSize: 0 },
+  'emoji': { maxWidth: 128, maxHeight: 128, minWidth: 64, minHeight: 64, maxSize: 1 * 1024 * 1024, minSize: 0 },
+}
+
+const constraints = computed(() => {
+  const base = props.type ? defaultConstraints[props.type] : {}
+  return {
+    maxWidth: props.maxWidth ?? base.maxWidth,
+    maxHeight: props.maxHeight ?? base.maxHeight,
+    minWidth: props.minWidth ?? base.minWidth,
+    minHeight: props.minHeight ?? base.minHeight,
+    maxSize: props.maxSize ?? base.maxSize,
+    minSize: props.minSize ?? base.minSize,
+  }
+})
+
 watch(
   () => props.imageUrl,
   (newUrl) => {
@@ -108,16 +130,19 @@ const handleFile = async (file: File) => {
     reset()
     return
   }
-  if (props.maxSize && file.size > props.maxSize) {
+
+  const { maxWidth, maxHeight, minWidth, minHeight, maxSize, minSize } = constraints.value
+
+  if (maxSize && file.size > maxSize) {
     toast.error({
-      message: `Soubor je příliš velký (max ${(props.maxSize / 1024 / 1024).toFixed(1)} MB)`,
+      message: `Soubor je příliš velký (max ${(maxSize / 1024 / 1024).toFixed(1)} MB)`,
     })
     reset()
     return
   }
-  if (props.minSize && file.size < props.minSize) {
+  if (minSize && file.size < minSize) {
     toast.error({
-      message: `Soubor je příliš malý (min ${(props.minSize / 1024).toFixed(0)} KB)`,
+      message: `Soubor je příliš malý (min ${(minSize / 1024).toFixed(0)} KB)`,
     })
     reset()
     return
@@ -128,16 +153,17 @@ const handleFile = async (file: File) => {
   image.src = objectUrl
   await new Promise((resolve) => (image.onload = resolve))
   const { width, height } = image
-  if (props.maxWidth && width > props.maxWidth || props.maxHeight && height > props.maxHeight) {
+
+  if ((maxWidth && width > maxWidth) || (maxHeight && height > maxHeight)) {
     toast.error({
-      message: `Rozměry obrázku jsou příliš velké (max ${props.maxWidth || '∞'}×${props.maxHeight || '∞'} px)`,
+      message: `Rozměry obrázku jsou příliš velké (max ${maxWidth || 'Není omezeno'}×${maxHeight || 'Není omezeno'} px)`,
     })
     reset()
     return
   }
-  if (props.minWidth && width < props.minWidth || props.minHeight && height < props.minHeight) {
+  if ((minWidth && width < minWidth) || (minHeight && height < minHeight)) {
     toast.error({
-      message: `Rozměry obrázku jsou příliš malé (min ${props.minWidth || 0}×${props.minHeight || 0} px)`,
+      message: `Rozměry obrázku jsou příliš malé (min ${minWidth || 0}×${minHeight || 0} px)`,
     })
     reset()
     return
