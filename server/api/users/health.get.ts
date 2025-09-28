@@ -26,42 +26,57 @@ export default defineEventHandler(async (event) => {
   const weights = { email: 20, totp: 25, password: 25, sessions: 15, bans: 15 }
 
   let score = 0
-  const checks = []
+  const checks: { label: string; ok: boolean }[] = []
+  let passwordStrength: number | null = null
+  const bansCount: number = dbUser.bans.length
 
   if (dbUser.emailVerified) {
     score += weights.email
-    checks.push({ label: 'Email ověřený', ok: true })
+    checks.push({ label: 'profile.checks.emailVerified', ok: true })
   } else {
-    checks.push({ label: 'Email není ověřený', ok: false })
+    checks.push({ label: 'profile.checks.emailNotVerified', ok: false })
   }
 
   if (dbUser.totpSecret) {
     score += weights.totp
-    checks.push({ label: 'Dvoufaktorová autentizace aktivní', ok: true })
+    checks.push({ label: 'profile.checks.2faEnabled', ok: true })
   } else {
-    checks.push({ label: 'Nemáš zapnutou 2FA', ok: false })
+    checks.push({ label: 'profile.checks.2faDisabled', ok: false })
   }
 
   let metadata = logs.length > 0 ? logs[0]?.metadata : null
-  if (typeof metadata === 'string') metadata = JSON.parse(metadata)
+  if (typeof metadata === 'string') {
+    try {
+      metadata = JSON.parse(metadata)
+    } catch {
+      metadata = null
+    }
+  }
 
   if (!dbUser.password) {
     score += weights.password
-    checks.push({ label: 'Účet bez hesla (Chráněn skrze OAuth)', ok: true })
+    checks.push({ label: 'profile.checks.noPassword', ok: true })
   } else if (
     metadata &&
     typeof metadata === 'object' &&
     'passwordStrength' in metadata &&
+    typeof metadata.passwordStrength === 'number' &&
     metadata.passwordStrength >= 3
   ) {
     score += weights.password
-    checks.push({ label: 'Heslo má dobrou sílu', ok: true })
-  } else if (metadata && typeof metadata === 'object' && 'passwordStrength' in metadata) {
-    const partial = weights.password * (Number(metadata.passwordStrength) / 4)
-    score += partial
-    checks.push({ label: `Síla hesla: ${metadata.passwordStrength}/4`, ok: false })
+    checks.push({ label: 'profile.checks.passwordStrong', ok: true })
+    passwordStrength = metadata.passwordStrength
+  } else if (
+    metadata &&
+    typeof metadata === 'object' &&
+    'passwordStrength' in metadata &&
+    typeof metadata.passwordStrength === 'number'
+  ) {
+    score += weights.password * (metadata.passwordStrength / 4)
+    checks.push({ label: 'profile.checks.passwordWeak', ok: false })
+    passwordStrength = metadata.passwordStrength
   } else {
-    checks.push({ label: 'Žádná informace o síle hesla', ok: false })
+    checks.push({ label: 'profile.checks.passwordUnknown', ok: false })
   }
 
   const countries = new Set(dbUser.sessions.map((s) => s.country).filter(Boolean))
@@ -69,26 +84,26 @@ export default defineEventHandler(async (event) => {
     dbUser.lastLogin && new Date(dbUser.lastLogin) < new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
 
   if (dbUser.sessions.length === 0) {
-    checks.push({ label: 'Žádná aktivní session', ok: false })
+    checks.push({ label: 'profile.checks.noSessions', ok: false })
   } else if (countries.size > 1 || lastLoginYearAgo) {
     score += weights.sessions * 0.5
     checks.push({
-      label: countries.size > 1 ? 'Sessions z různých zemí' : 'Poslední login před více než rokem',
+      label: countries.size > 1 ? 'profile.checks.sessionsMultipleCountries' : 'profile.checks.lastLoginOld',
       ok: false,
     })
   } else {
     score += weights.sessions
-    checks.push({ label: 'Sessions v pořádku', ok: true })
+    checks.push({ label: 'profile.checks.sessionsOk', ok: true })
   }
 
   if (dbUser.bans.length > 0) {
     const penalty = Math.min(weights.bans, dbUser.bans.length * 5)
     score += Math.max(0, weights.bans - penalty)
-    checks.push({ label: `Aktivní bany: ${dbUser.bans.length}`, ok: false })
+    checks.push({ label: 'profile.checks.bans', ok: false })
   } else {
     score += weights.bans
-    checks.push({ label: 'Žádné aktivní bany', ok: true })
+    checks.push({ label: 'profile.checks.noBans', ok: true })
   }
 
-  return { accountHealth: Math.max(0, Math.min(100, Math.round(score))), checks }
+  return { accountHealth: Math.max(0, Math.min(100, Math.round(score))), checks, passwordStrength, bansCount }
 })
