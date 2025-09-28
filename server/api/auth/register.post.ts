@@ -1,5 +1,6 @@
 import argon from 'argon2'
 import { randomBytes } from 'crypto'
+import { zxcvbn } from '@zxcvbn-ts/core'
 
 export default defineEventHandler(async (e) => {
   const body = await readValidatedBody(e, signInSchema.parse)
@@ -16,6 +17,7 @@ export default defineEventHandler(async (e) => {
 
   const code = randomBytes(4).toString('hex')
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+  const strength = zxcvbn(password).score
   const hash = await argon.hash(password)
 
   const user = await prisma.user.create({
@@ -28,6 +30,24 @@ export default defineEventHandler(async (e) => {
       verification: { create: { code, expiresAt: expires } },
     },
     select: { id: true, username: true, email: true },
+  })
+
+  const ip = getIp(e)
+
+  await logAction({
+    action: 'USER_CREATE',
+    userId: user.id,
+    clientSiteId: undefined,
+    ip,
+    metadata: { username, email },
+  })
+
+  await logAction({
+    action: 'PASSWORD_SET',
+    userId: user.id,
+    clientSiteId: undefined,
+    ip,
+    metadata: { passwordStrength: strength },
   })
 
   const t = useNodeMailer()
