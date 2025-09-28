@@ -471,6 +471,7 @@
   "profile": {
     "title": "Můj profil",
     "security": "Zabezpečení účtu",
+    "health": "Zdraví účtu",
     "disable2FA": "Vypnout dvoufázové ověření",
     "verify2FA": "Ověřit a povolit",
     "twoFactorAuth": "Dvoufázové ověření (2FA)",
@@ -505,6 +506,22 @@
       "notificationsUpdateError": "Uložení nastavení oznámení selhalo",
       "followSuccess": "Nyní sledujete {0}",
       "unfollowSuccess": "Přestali jste sledovat {0}"
+    },
+    "checks": {
+      "emailVerified": "E-mail je ověřen",
+      "emailNotVerified": "E-mail není ověřen",
+      "2faEnabled": "Dvoufaktorová autentizace je povolena",
+      "2faDisabled": "Dvoufaktorová autentizace není povolena",
+      "noPassword": "Účet nemá heslo",
+      "passwordStrong": "Heslo je silné",
+      "passwordWeak": "Heslo je slabé (síla: {value}/4)",
+      "passwordUnknown": "Síla hesla není známa",
+      "noSessions": "Žádné aktivní relace",
+      "sessionsOk": "Relace jsou v pořádku",
+      "sessionsMultipleCountries": "Relace z více zemí",
+      "lastLoginOld": "Poslední přihlášení je starší než rok",
+      "noBans": "Žádné bany",
+      "bans": "Počet banů: {count}"
     }
   },
   "languages": {

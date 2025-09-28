@@ -457,6 +457,7 @@
   "profile": {
     "title": "My Profile",
     "security": "Account Security",
+    "health": "Account Health",
     "disable2FA": "Disable 2FA",
     "verify2FA": "Verify & Enable",
     "twoFactorAuth": "Two-Factor Authentication (2FA)",
@@ -491,6 +492,22 @@
       "notificationsUpdateError": "Failed to save notifications",
       "followSuccess": "You're now following {0}",
       "unfollowSuccess": "You've stopped following {0}"
+    },
+    "checks": {
+      "emailVerified": "Email is verified",
+      "emailNotVerified": "Email is not verified",
+      "2faEnabled": "Two-factor authentication is enabled",
+      "2faDisabled": "Two-factor authentication is disabled",
+      "noPassword": "Account has no password",
+      "passwordStrong": "Password is strong",
+      "passwordWeak": "Password is weak (strength: {value}/4)",
+      "passwordUnknown": "Password strength is unknown",
+      "noSessions": "No active sessions",
+      "sessionsOk": "Sessions are okay",
+      "sessionsMultipleCountries": "Sessions from multiple countries",
+      "lastLoginOld": "Last login is older than a year",
+      "noBans": "No bans",
+      "bans": "Number of bans: {count}"
     }
   },
   "languages": {
