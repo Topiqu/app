@@ -1,4 +1,5 @@
 import argon from 'argon2'
+import { zxcvbn } from '@zxcvbn-ts/core'
 
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
@@ -26,26 +27,48 @@ export default defineEventHandler(async (event) => {
 
   if (!existingClientSite) throw createError({ statusCode: 404, message: 'Klient nenalezen' })
 
+  const strength = zxcvbn(password).score
   const hashedPassword = await argon.hash(password)
+  const ip = getIp(event)
 
-  const newUser = await db.user.create({
-    data: {
-      username,
-      email,
-      password: hashedPassword,
-      role,
-      clientSiteId,
-    },
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      role: true,
-      clientSiteId: true,
-      createdAt: true,
-      updatedAt: true,
-      deletedAt: true,
-    },
+  const newUser = await db.$transaction(async (tx) => {
+    const createdUser = await tx.user.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+        role,
+        clientSiteId,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        clientSiteId: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+      },
+    })
+
+    return createdUser
+  })
+
+  await logAction({
+    action: 'USER_CREATE',
+    userId: newUser.id,
+    clientSiteId,
+    ip,
+    metadata: { username, email },
+  })
+
+  await logAction({
+    action: 'PASSWORD_SET',
+    userId: newUser.id,
+    clientSiteId,
+    ip,
+    metadata: { userId: newUser.id, passwordStrength: strength },
   })
 
   return newUser

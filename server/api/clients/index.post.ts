@@ -1,5 +1,6 @@
 import argon from 'argon2'
 import { randomBytes } from 'crypto'
+import { zxcvbn } from '@zxcvbn-ts/core'
 
 export default defineEventHandler(async (event) => {
   const session = (await getServerSession(event))?.user
@@ -31,7 +32,9 @@ export default defineEventHandler(async (event) => {
 
   const generatedUsername = body.username || `user-${randomBytes(4).toString('hex')}`
   const generatedPassword = body.password || randomBytes(8).toString('hex')
+  const strength = zxcvbn(generatedPassword).score
   const hashedPassword = await argon.hash(generatedPassword)
+  const ip = getIp(event)
 
   const result = await prisma.$transaction(async (tx) => {
     const clientSite = await tx.clientSite.create({
@@ -86,6 +89,22 @@ export default defineEventHandler(async (event) => {
     }
 
     return { clientSite, newUser }
+  })
+
+  await logAction({
+    action: 'USER_CREATE',
+    userId: result.newUser.id,
+    clientSiteId: result.clientSite.id,
+    ip,
+    metadata: { username: result.newUser.username, email: result.newUser.email },
+  })
+
+  await logAction({
+    action: 'PASSWORD_SET',
+    userId: result.newUser.id,
+    clientSiteId: result.clientSite.id,
+    ip,
+    metadata: { userId: result.newUser.id, passwordStrength: strength },
   })
 
   return {
