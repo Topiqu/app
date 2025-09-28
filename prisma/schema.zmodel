@@ -196,7 +196,7 @@ model Log {
     previousHash String?
     hash         String
     @@allow('create', true)
-    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId) || (auth().id == userId))
     @@deny('update,delete', true)
 }
 
