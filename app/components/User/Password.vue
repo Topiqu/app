@@ -41,6 +41,7 @@
 
 <script setup lang="ts">
 import { zxcvbn } from '@zxcvbn-ts/core'
+import { signInSchema } from '~~/shared/utils/auth'
 
 const props = defineProps<{
   isValid?: boolean
@@ -53,32 +54,38 @@ const password = defineModel<string>({ default: '' })
 const showPassword = shallowRef(false)
 const passwordAnalysis = computed(() => zxcvbn(password.value || ''))
 
+const getFallbackMinLength = (): number => {
+  const result = signInSchema.shape.password.safeParse('')
+  const issue = result.error?.issues.find((i) => i.code === 'too_small')
+  return issue ? Number(issue.minimum) : 4
+}
+
+const getFallbackMaxLength = (): number => {
+  const result = signInSchema.shape.password.safeParse('a'.repeat(125))
+  const issue = result.error?.issues.find((i) => i.code === 'too_big')
+  return issue ? Number(issue.maximum) : 124
+}
+
 const isValidReal = computed(() => {
   const externalValid = props.isValid ?? true
   const scoreValid = passwordAnalysis.value.score >= 3
-  const minLength = props.minLength ?? 4
-  const maxLength = props.maxLength ?? 128
+  const minLength = props.minLength ?? getFallbackMinLength()
+  const maxLength = props.maxLength ?? getFallbackMaxLength()
   const lengthValid = password.value.length >= minLength && password.value.length <= maxLength
   return externalValid && scoreValid && lengthValid
 })
 
 const suggestions = computed(() => {
   const rawSuggestions = passwordAnalysis.value.feedback.suggestions || []
-  const minLength = props.minLength ?? 4
-  const maxLength = props.maxLength ?? 128
+  const minLength = props.minLength ?? getFallbackMinLength()
+  const maxLength = props.maxLength ?? getFallbackMaxLength()
   if (password.value.length < minLength) {
-    return [
-      $t('common.passwordSuggestions.tooShort', { minLength }),
-      ...rawSuggestions.map((s) => translateSuggestion(s)),
-    ]
+    return [$t('common.passwordSuggestions.tooShort', { minLength }), ...rawSuggestions.map(translateSuggestion)]
   }
   if (password.value.length > maxLength) {
-    return [
-      $t('common.passwordSuggestions.tooLong', { maxLength }),
-      ...rawSuggestions.map((s) => translateSuggestion(s)),
-    ]
+    return [$t('common.passwordSuggestions.tooLong', { maxLength }), ...rawSuggestions.map(translateSuggestion)]
   }
-  return rawSuggestions.map((s) => translateSuggestion(s))
+  return rawSuggestions.map(translateSuggestion)
 })
 
 const strengthLabel = computed(() => {
