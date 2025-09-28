@@ -223,7 +223,9 @@
       "avoidDates": "Vyhněte se datům a letopočtům spojeným s vámi.",
       "avoidCommonWords": "Vyhněte se běžným slovům a frázím.",
       "avoidRecentYears": "Vyhněte se nedávným rokům.",
-      "avoidSequences": "Vyhněte se sekvencím."
+      "avoidSequences": "Vyhněte se sekvencím.",
+      "tooShort": "Heslo je příliš krátké (min. {minLength} znaků)",
+      "tooLong": "Heslo je příliš dlouhé (max. {maxLength} znaků)"
     }
   },
   "articles": {

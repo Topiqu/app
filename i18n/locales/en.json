@@ -209,7 +209,9 @@
       "avoidDates": "Avoid dates and years that are associated with you.",
       "avoidCommonWords": "Avoid common words and phrases.",
       "avoidRecentYears": "Avoid recent years.",
-      "avoidSequences": "Avoid sequences."
+      "avoidSequences": "Avoid sequences.",
+      "tooShort": "Password is too short. (min. {minLength} characters)",
+      "tooLong": "Password is too long. (max. {maxLength} characters)"
     }
   },
   "articles": {
