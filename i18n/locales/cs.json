@@ -211,6 +211,7 @@
       "weak": "Slabé",
       "medium": "Střední",
       "strong": "Silné",
+      "veryStrong": "Velmi silné",
       "useLongerPassword": "Použijte delší heslo.",
       "addWords": "Přidejte další jedno nebo dvě slova. Méně obvyklá slova jsou lepší.",
       "avoidCommonPhrases": "Použijte několik slov, vyhněte se běžným frázím.",
@@ -220,7 +221,9 @@
       "addNumbers": "Přidejte čísla.",
       "addSpecialChars": "Přidejte speciální znaky.",
       "avoidDates": "Vyhněte se datům a letopočtům spojeným s vámi.",
-      "avoidCommonWords": "Vyhněte se běžným slovům a frázím."
+      "avoidCommonWords": "Vyhněte se běžným slovům a frázím.",
+      "avoidRecentYears": "Vyhněte se nedávným rokům.",
+      "avoidSequences": "Vyhněte se sekvencím."
     }
   },
   "articles": {

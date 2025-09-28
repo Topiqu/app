@@ -197,6 +197,7 @@
       "weak": "Weak",
       "medium": "Medium",
       "strong": "Strong",
+      "veryStrong": "Very strong",
       "useLongerPassword": "Use a longer password.",
       "addWords": "Add another word or two. Uncommon words are better.",
       "avoidCommonPhrases": "Use a few words, avoid common phrases.",
@@ -206,7 +207,9 @@
       "addNumbers": "Add some numbers.",
       "addSpecialChars": "Add some special characters.",
       "avoidDates": "Avoid dates and years that are associated with you.",
-      "avoidCommonWords": "Avoid common words and phrases."
+      "avoidCommonWords": "Avoid common words and phrases.",
+      "avoidRecentYears": "Avoid recent years.",
+      "avoidSequences": "Avoid sequences."
     }
   },
   "articles": {
