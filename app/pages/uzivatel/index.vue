@@ -165,6 +165,7 @@
                   </div>
                 </div>
               </div>
+              <UserAccountHealth class="mt-1" />
             </div>
             <div class="space-y-4 sm:space-y-6">
               <LangSwitch :language="profileForm.language!" @update:language="updateLanguage" />
@@ -410,7 +411,7 @@ const passwordForm = ref({
 
 const isPasswordFormValid = computed(() => {
   return passwordForm.value.newPassword && passwordForm.value.newPassword === passwordForm.value.confirmNewPassword
-})
+}) as ComputedRef<boolean>
 
 const {
   data: userData,
