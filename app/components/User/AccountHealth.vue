@@ -1,10 +1,10 @@
 <template>
   <div class="rounded-2xl shadow-lg p-6 bg-white dark:bg-neutral-900 border">
     <div class="flex items-center">
-      <Icon :name="`mdi:${iconName}`" :class="iconClass" size="48" />
+      <Icon :name="`mdi:${iconName}`" :class="colorClass(data?.accountHealth ?? 0)" size="48" />
       <div class="ml-4">
-        <h2 class="text-xl font-semibold">{{ $t('profile.accountHealth') }}</h2>
-        <p :class="scoreClass" class="text-2xl font-bold">{{ data?.accountHealth }}%</p>
+        <h2 class="text-xl font-semibold">{{ $t('profile.health') }}</h2>
+        <p :class="colorClass(data?.accountHealth ?? 0)" class="text-2xl font-bold">{{ data?.accountHealth }}%</p>
       </div>
     </div>
     <ul class="mt-4 divide-y divide-gray-200 dark:divide-gray-700">
@@ -12,15 +12,17 @@
         <div class="flex items-center">
           <Icon v-if="check.ok" name="mdi:check-circle" class="w-5 h-5 text-green-500" />
           <Icon v-else name="mdi:close-circle" class="w-5 h-5 text-red-500" />
-          <span class="ml-2">{{ $t(`profile.checks.${check.label}`) }}</span>
+          <span class="ml-2">{{ getCheckLabel(check) }}</span>
         </div>
-        <button
-          v-if="!check.ok && actionFor(check.label)"
-          class="text-sm text-blue-600 hover:underline"
-          @click="handleAction(check.label)"
+        <Button
+          v-if="!check.ok && actions[check.label]"
+          variant="primary"
+          size="sm"
+          class="ml-2"
+          @click="router.push(localePath({ name: actions[check.label]?.route }))"
         >
-          {{ $t(`profile.actions.${actionFor(check.label)}`) }}
-        </button>
+          {{ $t(actions[check.label]?.key) }}
+        </Button>
       </li>
     </ul>
   </div>
@@ -29,6 +31,17 @@
 <script setup lang="ts">
 const { data } = await useFetch('/api/users/health')
 const localePath = useLocalePath()
+const router = useRouter()
+
+const actions: Record<string, { key: string; route: string }> = {
+  'profile.checks.emailNotVerified': { key: 'common.auth.verify', route: 'uzivatel' },
+  'profile.checks.2faDisabled': { key: 'profile.enable2FA', route: 'uzivatel' },
+  'profile.checks.passwordWeak': { key: 'common.auth.changePassword', route: 'uzivatel' },
+  'profile.checks.passwordUnknown': { key: 'common.auth.changePassword', route: 'uzivatel' },
+  'profile.checks.noSessions': { key: 'profile.sessions', route: 'uzivatel' },
+  'profile.checks.sessionsMultipleCountries': { key: 'profile.sessions', route: 'uzivatel' },
+  'profile.checks.lastLoginOld': { key: 'profile.sessions', route: 'uzivatel' },
+}
 
 const iconName = computed(() => {
   const health = data.value?.accountHealth ?? 0
@@ -37,28 +50,19 @@ const iconName = computed(() => {
   return 'heart-plus'
 })
 
-const iconClass = computed(() => {
-  const health = data.value?.accountHealth ?? 0
+const colorClass = (health: number) => {
   return health <= 40 ? 'text-red-500' : health <= 70 ? 'text-orange-500' : 'text-green-500'
-})
-
-const scoreClass = computed(() => {
-  const health = data.value?.accountHealth ?? 0
-  return health <= 40 ? 'text-red-500' : health <= 70 ? 'text-orange-500' : 'text-green-500'
-})
-
-const actionFor = (label: string) => {
-  if (label.includes('emailVerified')) return 'verifyEmail'
-  if (label.includes('twoFactorEnabled')) return 'enable2FA'
-  if (label.includes('passwordStrength')) return 'changePassword'
-  if (label.includes('activeSessions')) return 'revokeAllSessions'
-  return null
 }
 
-const handleAction = (label: string) => {
-  if (label.includes('emailVerified')) navigateTo(localePath({ name: 'uzivatel' }))
-  if (label.includes('twoFactorEnabled')) navigateTo(localePath({ name: 'uzivatel' }))
-  if (label.includes('passwordStrength')) navigateTo(localePath({ name: 'uzivatel' }))
-  if (label.includes('activeSessions')) navigateTo(localePath({ name: 'uzivatel' }))
+const getCheckLabel = (check: { label: string; ok: boolean }) => {
+  if (check.label === 'profile.checks.passwordWeak') {
+    const strength = data.value?.passwordStrength ?? 0
+    return $t(check.label, { value: strength })
+  }
+  if (check.label === 'profile.checks.bans') {
+    const count = data.value?.bansCount ?? 0
+    return $t(check.label, { count })
+  }
+  return $t(check.label)
 }
 </script>
