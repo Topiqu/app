@@ -8,6 +8,9 @@ now:
 2. notifications should also be localised // 🛑 high priority
 3. further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
 4. misc style/ui cleanups OR general code optimisation
+5. account health - sessions, password strength, 2fa, amount of bans, verified email... // 🟡 mid priority
+6. better gamification - badges, levels, site activity points 
+(exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
 
 once deployed:
 
