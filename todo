@@ -11,6 +11,9 @@ now:
 5. account health - sessions, password strength, 2fa, amount of bans, verified email... // 🟡 mid priority
 6. better gamification - badges, levels, site activity points 
 (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
+7. fix header Z-index
+8. user page - enhance/improve styling & ui for hero section
+9. lang switcher -> improve styles
 
 once deployed:
 
