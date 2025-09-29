@@ -79,7 +79,7 @@
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             <div class="space-y-4 sm:space-y-6">
-              <div>
+              <div id="username-section">
                 <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.username')
                 }}</label>
@@ -88,7 +88,7 @@
                   class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>
-              <div>
+              <div id="bio-section">
                 <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.bio')
                 }}</label>
@@ -99,11 +99,12 @@
                 ></textarea>
               </div>
               <UserEmail
-                v-model:email="profileForm.email"
-                v-model:isEmailVerified="profileForm.emailVerified"
+                id="email-section"
+                v-model:email="profileForm.email!"
+                v-model:isEmailVerified="profileForm.emailVerified!"
                 v-model:isLoading="isLoading"
               />
-              <div>
+              <div id="notifications-section">
                 <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.notifications')
                 }}</label>
@@ -156,8 +157,8 @@
               <UserAccountHealth class="mt-1" />
             </div>
             <div class="space-y-4 sm:space-y-6">
-              <LangSwitch :language="profileForm.language!" @update:language="updateLanguage" />
-              <div>
+              <LangSwitch id="language-section" :language="profileForm.language!" @update:language="updateLanguage" />
+              <div id="id-section">
                 <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">ID</label>
                 <div class="relative">
                   <input
@@ -172,7 +173,7 @@
                   />
                 </div>
               </div>
-              <div>
+              <div id="registration-section">
                 <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.registrationDate')
                 }}</label>
@@ -182,7 +183,7 @@
                   class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>
-              <div>
+              <div id="security-section">
                 <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.security')
                 }}</label>
@@ -197,7 +198,7 @@
                     {{ $t('profile.deactivateAccount') }}
                   </Button>
                   <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
-                  <div class="space-y-3 sm:space-y-4">
+                  <div id="password-section" class="space-y-3 sm:space-y-4">
                     <div v-if="userData?.hasPassword" class="relative">
                       <input
                         v-model="passwordForm.oldPassword"
@@ -229,7 +230,7 @@
                     </Button>
                   </div>
                   <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
-                  <div>
+                  <div id="2fa-section">
                     <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                       $t('profile.twoFactorAuth')
                     }}</label>
@@ -243,7 +244,7 @@
                     />
                   </div>
                   <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
-                  <div>
+                  <div id="sessions-section">
                     <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                       $t('profile.sessions')
                     }}</label>
@@ -358,7 +359,19 @@ type Profile = Partial<User> & {
 const { data: user, signOut } = useAuth()
 const toast = useToast()
 const { setLocale } = useI18n()
+const route = useRoute()
+function highlight(id?: string) {
+  if (!id) return
+  nextTick(() => {
+    const el = document.getElementById(id.replace('#', ''))
+    if (!el) return
+    el.classList.add('highlight')
+    setTimeout(() => el.classList.remove('highlight'), 1200)
+  })
+}
 
+onMounted(() => highlight(route.hash))
+watch(() => route.hash, highlight)
 const twoFAError = shallowRef('')
 const otpauthUrl = shallowRef('')
 function getDraft(): Profile | null {
@@ -570,3 +583,25 @@ watch(
   { deep: true },
 )
 </script>
+
+<style>
+.highlight {
+  animation: highlight 1.2s ease-in-out;
+}
+
+@keyframes highlight {
+  0%,
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  40% {
+    background-color: rgba(99, 102, 241, 0.25);
+    transform: scale(1.02);
+  }
+  60% {
+    background-color: rgba(99, 102, 241, 0.15);
+    transform: scale(1.01);
+  }
+}
+</style>
