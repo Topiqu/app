@@ -76,6 +76,13 @@
           >
             <Icon name="mdi:alert-circle" class="w-4 h-4 sm:w-5 sm:h-5" />
             <span>{{ $t('common.unsavedChanges') }}</span>
+            <Icon
+              name="mdi:undo"
+              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-300 ml-auto cursor-pointer rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700 transition disabled:opacity-50"
+              :title="$t('common.actions.revertChanges')"
+              :class="{ 'pointer-events-none opacity-50': isLoading }"
+              @click="!isLoading && revertChanges()"
+            />
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             <div class="space-y-4 sm:space-y-6">
@@ -315,14 +322,16 @@
               </div>
             </div>
           </div>
-          <Button
-            :disabled="isLoading || !isDirty"
-            class="mt-6 sm:mt-8 lg:mt-10 w-full inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
-            @click="updateProfile"
-          >
-            <Save class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            {{ $t('common.actions.saveChanges') }}
-          </Button>
+          <div class="mt-6 sm:mt-8 lg:mt-10 flex flex-col sm:flex-row gap-4">
+            <Button
+              :disabled="isLoading || !isDirty"
+              class="w-full sm:w-1/2 inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
+              @click="updateProfile"
+            >
+              <Save class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              {{ $t('common.actions.saveChanges') }}
+            </Button>
+          </div>
           <UserActivity
             v-model:activeTab="activeTab"
             :profile="profileForm"
@@ -360,6 +369,22 @@ const { data: user, signOut } = useAuth()
 const toast = useToast()
 const { setLocale } = useI18n()
 const route = useRoute()
+
+const draftKey = computed(() => `profileDraft-${user.value?.user.id}`)
+const draft = {
+  load: (): Profile | null => {
+    const raw = localStorage.getItem(draftKey.value)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      delete parsed.sessions
+      return parsed
+    }
+    return null
+  },
+  save: (p: Profile) => localStorage.setItem(draftKey.value, JSON.stringify({ ...p, sessions: undefined })),
+  clear: () => localStorage.removeItem(draftKey.value),
+}
+
 function highlight(id?: string) {
   if (!id) return
   nextTick(() => {
@@ -372,27 +397,9 @@ function highlight(id?: string) {
 
 onMounted(() => highlight(route.hash))
 watch(() => route.hash, highlight)
+
 const twoFAError = shallowRef('')
 const otpauthUrl = shallowRef('')
-function getDraft(): Profile | null {
-  const raw = localStorage.getItem(`profileDraft-${user.value?.user.id}`)
-  if (raw) {
-    const parsed = JSON.parse(raw)
-    delete parsed.sessions
-    return parsed
-  }
-  return null
-}
-
-function setDraft(profile: Profile) {
-  const { sessions, ...profileWithoutSessions } = profile
-  localStorage.setItem(`profileDraft-${user.value?.user.id}`, JSON.stringify(profileWithoutSessions))
-}
-
-function clearDraft() {
-  localStorage.removeItem(`profileDraft-${user.value?.user.id}`)
-}
-
 const avatar = ref<{ error: string | null; success: string | null }>({ error: null, success: null })
 const isLoading = shallowRef(false)
 const { open, onChange } = useFileDialog()
@@ -434,12 +441,21 @@ if (userData.value) {
 }
 
 onMounted(() => {
-  const draft = getDraft()
-  if (draft && !equal(draft, originalProfile.value)) {
-    Object.assign(profileForm.value, draft)
+  const draftData = draft.load()
+  if (draftData && !equal(draftData, originalProfile.value)) {
+    Object.assign(profileForm.value, draftData)
     isDirty.value = true
   }
 })
+
+function revertChanges() {
+  if (originalProfile.value) {
+    Object.assign(profileForm.value, originalProfile.value)
+    draft.clear()
+    isDirty.value = false
+    toast.success({ message: $t('common.messages.successGeneral') })
+  }
+}
 
 function openDialog(type: 'followers' | 'followed') {
   dialogType.value = type
@@ -457,7 +473,7 @@ async function saveProfile(partial: Partial<Profile>) {
     originalProfile.value = JSON.parse(
       JSON.stringify({ ...profileForm.value, handle: profileForm.value.username?.toLowerCase().replace(/\s+/g, '') }),
     )
-    clearDraft()
+    draft.clear()
     isDirty.value = false
     toast.success({ message: $t('common.messages.successGeneralTitle') })
     await refresh()
@@ -578,7 +594,7 @@ watch(
   profileForm,
   (newVal) => {
     isDirty.value = !equal({ ...newVal, sessions: undefined }, { ...originalProfile.value, sessions: undefined })
-    if (isDirty.value) setDraft(newVal)
+    if (isDirty.value) draft.save(newVal)
   },
   { deep: true },
 )
