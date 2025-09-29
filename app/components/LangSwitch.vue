@@ -6,7 +6,7 @@
           class="inline-flex items-center gap-3 rounded-full px-3 py-1.5 bg-white/90 dark:bg-gray-800/90 ring-1 ring-gray-200 dark:ring-gray-700 shadow-sm backdrop-blur-sm text-sm font-medium text-gray-700 dark:text-gray-100 transition"
         >
           <span class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full flex items-center justify-center text-sm">{{ currentFlag }}</span>
+            <Icon :name="currentIcon!" class="w-6 h-6" />
             <span class="uppercase tracking-wide text-xs">{{ currentCode }}</span>
           </span>
           <ChevronDown class="w-4 h-4 text-gray-400" />
@@ -33,7 +33,7 @@
                   class="w-full text-left flex items-center gap-3 px-3 py-2 text-sm transition"
                   :class="[active ? 'bg-blue-50 dark:bg-gray-700' : '', selected ? 'font-semibold' : 'font-normal']"
                 >
-                  <span class="w-7 h-7 flex items-center justify-center rounded-full text-sm">{{ lang.flag }}</span>
+                  <Icon :name="lang.icon" class="w-7 h-7" />
                   <div class="flex-1">
                     <div class="flex items-center justify-between">
                       <span class="block text-sm text-gray-800 dark:text-gray-100">{{ lang.name }}</span>
@@ -59,24 +59,17 @@ const props = defineProps<{ language: 'cs' | 'en' }>()
 const emit = defineEmits<{ (e: 'update:language', value: 'cs' | 'en'): void }>()
 
 const availableLocales = [
-  { code: 'cs', name: 'Čeština', flag: '🇨🇿', note: 'Czech' },
-  { code: 'en', name: 'English', flag: '🇬🇧', note: 'English' },
+  { code: 'cs', name: 'Čeština', icon: 'twemoji:flag-czechia', note: 'Czech' },
+  { code: 'en', name: 'English', icon: 'twemoji:flag-united-kingdom', note: 'English' },
 ]
 
 const internalLocale = shallowRef<'cs' | 'en'>(props.language)
 
 const current = computed(() => availableLocales.find((l) => l.code === internalLocale.value) ?? availableLocales[0])
-const currentFlag = computed(() => current.value?.flag)
+const currentIcon = computed(() => current.value?.icon)
 const currentCode = computed(() => current.value?.code.toUpperCase())
 
 function handleChange(newLocale: 'cs' | 'en') {
   emit('update:language', newLocale)
 }
 </script>
-
-<style scoped>
-:where(.ring-1:focus) {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
-}
-</style>
