@@ -19,7 +19,7 @@
           variant="primary"
           size="sm"
           class="ml-2"
-          @click="router.push(localePath({ name: actions[check.label]?.route }))"
+          @click="navigateToSection(check.label)"
         >
           {{ $t(actions[check.label]?.key) }}
         </Button>
@@ -30,17 +30,17 @@
 
 <script setup lang="ts">
 const { data } = await useFetch('/api/users/health')
-const localePath = useLocalePath()
 const router = useRouter()
+const { locale } = useI18n()
 
-const actions: Record<string, { key: string; route: string }> = {
-  'profile.checks.emailNotVerified': { key: 'common.auth.verify', route: 'uzivatel' },
-  'profile.checks.2faDisabled': { key: 'profile.enable2FA', route: 'uzivatel' },
-  'profile.checks.passwordWeak': { key: 'common.auth.changePassword', route: 'uzivatel' },
-  'profile.checks.passwordUnknown': { key: 'common.auth.changePassword', route: 'uzivatel' },
-  'profile.checks.noSessions': { key: 'profile.sessions', route: 'uzivatel' },
-  'profile.checks.sessionsMultipleCountries': { key: 'profile.sessions', route: 'uzivatel' },
-  'profile.checks.lastLoginOld': { key: 'profile.sessions', route: 'uzivatel' },
+const actions: Record<string, { key: string; tab: string }> = {
+  'profile.checks.emailNotVerified': { key: 'common.auth.verify', tab: 'email-section' },
+  'profile.checks.2faDisabled': { key: 'profile.enable2FA', tab: '2fa-section' },
+  'profile.checks.passwordWeak': { key: 'common.auth.changePassword', tab: 'password-section' },
+  'profile.checks.passwordUnknown': { key: 'common.auth.changePassword', tab: 'password-section' },
+  'profile.checks.noSessions': { key: 'profile.sessions', tab: 'sessions-section' },
+  'profile.checks.sessionsMultipleCountries': { key: 'profile.sessions', tab: 'sessions-section' },
+  'profile.checks.lastLoginOld': { key: 'profile.sessions', tab: 'sessions-section' },
 }
 
 const iconName = computed(() => {
@@ -64,5 +64,13 @@ const getCheckLabel = (check: { label: string; ok: boolean }) => {
     return $t(check.label, { count })
   }
   return $t(check.label)
+}
+
+function navigateToSection(label: string) {
+  const tab = actions[label]?.tab
+  if (tab) {
+    const path = locale.value === 'cs' ? `/uzivatel#${tab}` : `/en/user#${tab}`
+    router.push(path)
+  }
 }
 </script>
