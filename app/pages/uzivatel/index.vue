@@ -98,23 +98,11 @@
                   class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition resize-y"
                 ></textarea>
               </div>
-              <div>
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                  $t('profile.email')
-                }}</label>
-                <div class="relative">
-                  <input
-                    :value="profileForm.email"
-                    disabled
-                    class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
-                  />
-                  <Icon
-                    v-if="profileForm.emailVerified"
-                    name="mdi:check-circle"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-green-500"
-                  />
-                </div>
-              </div>
+              <UserEmail
+                v-model:email="profileForm.email"
+                v-model:isEmailVerified="profileForm.emailVerified"
+                v-model:isLoading="isLoading"
+              />
               <div>
                 <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
                   $t('profile.notifications')
@@ -373,7 +361,6 @@ const { setLocale } = useI18n()
 
 const twoFAError = shallowRef('')
 const otpauthUrl = shallowRef('')
-
 function getDraft(): Profile | null {
   const raw = localStorage.getItem(`profileDraft-${user.value?.user.id}`)
   if (raw) {
