@@ -105,7 +105,7 @@ const {
   icon?: string
   iconPosition?: 'left' | 'right' | 'center'
   size?: 'sm' | 'md' | 'lg'
-  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral'
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral' | 'transparent'
   type?: 'button' | 'submit' | 'reset'
   active?: boolean
   disabled?: boolean
