@@ -3,35 +3,30 @@
     <TransitionRoot :show="true" enter="transition-opacity duration-500" enterFrom="opacity-0" enterTo="opacity-100">
       <div class="space-y-6 sm:space-y-8 lg:space-y-10">
         <div class="p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 items-center mb-8">
-            <div class="flex flex-col items-center sm:items-start gap-4">
-              <div class="relative group cursor-pointer" @click="open({ accept: 'image/*' })">
-                <UserPicture
-                  :url="profileForm.avatarUrl"
-                  :size="'hg'"
-                  :name="profileForm.username"
-                  class="transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
-                />
-                <div
-                  class="absolute bottom-0 right-0 w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
-                >
-                  <Icon name="mdi:edit" class="w-3 h-3 text-white" />
-                </div>
-                <div
-                  class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full transition-opacity"
-                  :class="{ 'opacity-100': isLoading, 'opacity-0 group-hover:opacity-100': !isLoading }"
-                >
-                  <Icon v-if="!isLoading" name="mdi:camera" class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                  <Icon v-else name="mdi:loading" class="w-6 h-6 sm:w-8 sm:h-8 text-white animate-spin" />
+          <div class="flex items-center justify-between gap-6 sm:gap-8 items-center mb-8">
+            <UserPictureUploader
+              v-slot="{ open: pictureUploaderOpen }"
+              v-model="profileForm.avatarUrl"
+              @upload="() => refresh()"
+            >
+              <div class="flex flex-col items-center sm:items-start gap-4" @click="pictureUploaderOpen.value = true">
+                <div class="relative group cursor-pointer">
+                  <UserPicture
+                    :url="profileForm.avatarUrl"
+                    :size="'hg'"
+                    :name="profileForm.username"
+                    class="transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
+                  />
+                  <div
+                    class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full transition-opacity"
+                    :class="{ 'opacity-100': isLoading, 'opacity-0 group-hover:opacity-100': !isLoading }"
+                  >
+                    <Icon v-if="!isLoading" name="mdi:camera" class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    <Icon v-else name="mdi:loading" class="w-6 h-6 sm:w-8 sm:h-8 text-white animate-spin" />
+                  </div>
                 </div>
               </div>
-              <Button
-                class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition cursor-pointer"
-                @click="open({ accept: 'image/*' })"
-              >
-                {{ $t('common.avatar.uploadAvatar') }}
-              </Button>
-            </div>
+            </UserPictureUploader>
             <div class="text-center sm:text-left space-y-4">
               <div class="p-4 sm:p-6 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/60 backdrop-blur">
                 <h1
@@ -352,7 +347,7 @@ const twoFAError = shallowRef('')
 const otpauthUrl = shallowRef('')
 const avatar = ref<{ error: string | null; success: string | null }>({ error: null, success: null })
 const isLoading = shallowRef(false)
-const { open, onChange } = useFileDialog()
+const { onChange } = useFileDialog()
 const showDialog = shallowRef(false)
 const dialogType = shallowRef<'followers' | 'followed'>('followers')
 const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
@@ -537,6 +532,7 @@ watch(
   { deep: true },
 )
 </script>
+
 <style>
 .highlight {
   animation: highlight 1.2s ease-in-out;
