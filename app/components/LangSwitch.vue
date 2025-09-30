@@ -20,30 +20,29 @@
           leaveToClass="transform opacity-0 scale-95"
         >
           <ListboxOptions
-            class="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-black/30 shadow-lg focus:outline-none z-50"
+            class="mt-2 w-44 sm:w-64 flex flex-col gap-0.5 absolute right-0 overflow-hidden rounded-xl bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-black/30 shadow-lg focus:outline-none z-50"
           >
-            <div class="py-1">
-              <ListboxOption
-                v-for="lang in availableLocales"
-                :key="lang.code"
-                v-slot="{ active, selected }"
-                :value="lang.code"
+            <ListboxOption
+              v-for="lang in availableLocales"
+              :key="lang.code"
+              v-slot="{ active, selected }"
+              :value="lang.code"
+            >
+              <Button
+                class="w-full text-left bg-transparent border-none!"
+                variant="neutral"
+                :class="[active ? 'bg-blue-50 dark:bg-gray-700' : '', selected ? 'font-semibold' : 'font-normal']"
               >
-                <button
-                  class="w-full text-left flex items-center gap-3 px-3 py-2 text-sm transition"
-                  :class="[active ? 'bg-blue-50 dark:bg-gray-700' : '', selected ? 'font-semibold' : 'font-normal']"
-                >
-                  <Icon :name="lang.icon" class="w-7 h-7" />
-                  <div class="flex-1">
-                    <div class="flex items-center justify-between">
-                      <span class="block text-sm text-gray-800 dark:text-gray-100">{{ lang.name }}</span>
-                      <span class="uppercase text-xs text-gray-500 dark:text-gray-400">{{ lang.code }}</span>
-                    </div>
-                    <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ lang.note }}</div>
+                <Icon :name="lang.icon" class="w-7 h-7 mr-1" />
+                <div class="flex-1">
+                  <div class="flex items-center justify-between">
+                    <span class="block text-sm text-gray-800 dark:text-gray-100">{{ lang.name }}</span>
+                    <span class="uppercase text-xs text-gray-500 dark:text-gray-400">{{ lang.code }}</span>
                   </div>
-                </button>
-              </ListboxOption>
-            </div>
+                  <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ lang.note }}</div>
+                </div>
+              </Button>
+            </ListboxOption>
           </ListboxOptions>
         </Transition>
       </div>
