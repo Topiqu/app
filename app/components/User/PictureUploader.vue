@@ -8,7 +8,7 @@
               :url="avatar || auth?.user.avatarUrl"
               :size="'hg'"
               :name="auth?.user.name"
-              class="transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
+              class="size-32! transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
             />
             <div
               class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full transition-opacity"

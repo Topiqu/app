@@ -3,55 +3,31 @@
     <TransitionRoot :show="true" enter="transition-opacity duration-500" enterFrom="opacity-0" enterTo="opacity-100">
       <div class="space-y-6 sm:space-y-8 lg:space-y-10">
         <div class="p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700">
-          <div class="flex items-center justify-between gap-6 sm:gap-8 items-center mb-8">
-            <UserPictureUploader
-              v-slot="{ open: pictureUploaderOpen }"
-              v-model="profileForm.avatarUrl"
-              @upload="() => refresh()"
-            >
-              <div class="flex flex-col items-center sm:items-start gap-4" @click="pictureUploaderOpen.value = true">
-                <div class="relative group cursor-pointer">
-                  <UserPicture
-                    :url="profileForm.avatarUrl"
-                    :size="'hg'"
-                    :name="profileForm.username"
-                    class="transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
-                  />
-                  <div
-                    class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full transition-opacity"
-                    :class="{ 'opacity-100': isLoading, 'opacity-0 group-hover:opacity-100': !isLoading }"
-                  >
-                    <Icon v-if="!isLoading" name="mdi:camera" class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                    <Icon v-else name="mdi:loading" class="w-6 h-6 sm:w-8 sm:h-8 text-white animate-spin" />
-                  </div>
-                </div>
-              </div>
-            </UserPictureUploader>
-            <div class="text-center sm:text-left space-y-4">
-              <div class="p-4 sm:p-6 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/60 backdrop-blur">
-                <h1
-                  class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2"
-                >
-                  {{ profileForm.username }}
-                </h1>
-                <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-2">
-                  @{{ profileForm.username?.toLowerCase().replace(/\s+/g, '') }}
-                </p>
-                <p
-                  class="text-sm sm:text-base text-gray-600 dark:text-gray-400 italic border-l-2 pl-3 border-indigo-500"
-                >
-                  {{ profileForm.bio || $t('articles.userMenu.noBio') }}
-                </p>
-                <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-4">
-                  <span class="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
-                    <Icon name="mdi:email" class="w-4 h-4" />
-                    {{ profileForm.email }}
-                  </span>
-                  <span class="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
-                    <Icon name="mdi:calendar" class="w-4 h-4" />
-                    {{ formatDate(profileForm.createdAt) }}
-                  </span>
-                </div>
+          <div
+            class="mb-8 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/60 backdrop-blur"
+          >
+            <UserPictureUploader v-model="profileForm.avatarUrl" @upload="refresh()" />
+            <div class="space-y-4 text-center sm:text-left">
+              <h1
+                class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2"
+              >
+                {{ profileForm.username }}
+              </h1>
+              <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-2">
+                @{{ profileForm.username?.toLowerCase().replace(/\s+/g, '') }}
+              </p>
+              <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 italic border-l-2 pl-3 border-indigo-500">
+                {{ profileForm.bio || $t('articles.userMenu.noBio') }}
+              </p>
+              <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-4">
+                <span class="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
+                  <Icon name="mdi:email" class="w-4 h-4" />
+                  {{ profileForm.email }}
+                </span>
+                <span class="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
+                  <Icon name="mdi:calendar" class="w-4 h-4" />
+                  {{ formatDate(profileForm.createdAt) }}
+                </span>
               </div>
             </div>
           </div>
