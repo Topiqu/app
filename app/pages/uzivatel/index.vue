@@ -164,7 +164,15 @@
               <UserAccountHealth class="mt-1" />
             </div>
             <div class="space-y-4 sm:space-y-6">
-              <LangSwitch id="language-section" :language="profileForm.language!" @update:language="updateLanguage" />
+              <div id="language-section">
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Language</label>
+                <LangSwitch
+                  id="language-section"
+                  class="w-full mt-1"
+                  :language="profileForm.language!"
+                  @update:language="updateLanguage"
+                />
+              </div>
               <div id="id-section">
                 <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">ID</label>
                 <div class="relative">

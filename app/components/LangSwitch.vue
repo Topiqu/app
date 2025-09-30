@@ -1,9 +1,9 @@
 <template>
-  <div class="relative inline-block mt-4">
+  <div class="relative inline-block">
     <Listbox v-model="internalLocale" @update:modelValue="handleChange">
       <div class="relative">
         <ListboxButton
-          class="inline-flex items-center gap-3 rounded-full px-3 py-1.5 bg-white/90 dark:bg-gray-800/90 ring-1 ring-gray-200 dark:ring-gray-700 shadow-sm backdrop-blur-sm text-sm font-medium text-gray-700 dark:text-gray-100 transition"
+          class="w-full px-3 sm:px-4 py-2 sm:py-3 inline-flex items-center gap-3 rounded-lg px-3 py-1.5 bg-white/90 dark:bg-gray-800/90 ring-1 ring-gray-200 dark:ring-gray-700 shadow-sm backdrop-blur-sm text-sm font-medium text-gray-700 dark:text-gray-100 border border-gray-300 dark:border-neutral-600 shadow-sm transition"
         >
           <span class="flex items-center gap-2">
             <Icon :name="currentIcon!" class="w-6 h-6" />
