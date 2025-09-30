@@ -13,12 +13,7 @@
           hydrateOnInteraction
           @create="refresh"
         >
-          <button
-            class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-200 to-green-300 text-gray-800 rounded-full hover:from-green-300 hover:to-green-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 dark:text-gray-200"
-            @click="userCreateOpen.value = true"
-          >
-            <Icon name="mdi:plus" class="w-5 h-5" />
-          </button>
+          <Button variant="success" icon="mdi:plus" class="rounded-full!" @click="userCreateOpen.value = true" />
         </LazyUserCreate>
       </div>
       <div class="overflow-x-auto">
@@ -74,27 +69,10 @@
               </td>
               <td class="px-4 py-2 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center">
                 <LazyUserEdit v-slot="{ open: userEditOpen }" :user="user" hydrateOnInteraction @saved="refresh">
-                  <button
-                    class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-blue-200 to-blue-300 rounded-full hover:from-blue-300 hover:to-blue-400 transition shadow-sm hover:shadow-md transform hover:scale-105 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 dark:text-gray-200"
-                    @click="userEditOpen.value = true"
-                  >
-                    <Icon name="mdi:pencil" class="w-5 h-5 text-black" />
-                  </button>
+                  <Button icon="mdi:pencil" variant="primary" @click="userEditOpen.value = true" />
                 </LazyUserEdit>
-                <button
-                  v-if="user.deletedAt === null"
-                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 text-gray-800 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 dark:from-red-600 dark:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 dark:text-gray-200"
-                  @click="del(user.id)"
-                >
-                  <Icon name="mdi:lock" class="w-5 h-5" />
-                </button>
-                <button
-                  v-if="user.deletedAt !== null"
-                  class="flex items-center justify-center w-full sm:w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 text-gray-800 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 dark:from-yellow-600 dark:to-yellow-700 dark:hover:from-yellow-700 dark:hover:to-yellow-800 dark:text-gray-200"
-                  @click="restore(user.id)"
-                >
-                  <Icon name="mdi:lock-open" class="w-5 h-5" />
-                </button>
+                <Button v-if="user.deletedAt === null" icon="mdi:delete" variant="danger" @click="del(user.id)" />
+                <Button v-else icon="mdi:lock-open" variant="warning" @click="restore(user.id)" />
               </td>
             </tr>
           </tbody>
@@ -103,12 +81,7 @@
     </template>
 
     <template #footer="{ close }">
-      <button
-        class="px-6 py-3 rounded-xl text-base font-medium bg-gray-50 hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-sm dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
-        @click="close"
-      >
-        Zavřít
-      </button>
+      <Button variant="neutral" size="lg" @click="close">Zavřít</Button>
     </template>
   </Modal>
 </template>

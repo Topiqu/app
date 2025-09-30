@@ -229,12 +229,9 @@
     </template>
 
     <template #footer="{ close }">
-      <button
-        class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-        @click="close"
-      >
+      <Button size="lg" @click="close">
         {{ $t('common.close') }}
-      </button>
+      </Button>
     </template>
   </Modal>
 </template>

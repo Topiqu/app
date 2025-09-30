@@ -5,31 +5,27 @@
     </template>
 
     <template #content>
-      <div class="flex flex-col gap-6">
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">{{
-            $t('common.labels.tagName')
-          }}</span>
+      <label class="flex flex-col gap-3">
+        <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">{{
+          $t('common.labels.tagName')
+        }}</span>
+        <div class="w-full flex items-center justify-between gap-2">
           <input
             v-model="newTag.name"
             :placeholder="$t('common.labels.tagName')"
             :class="[
-              'p-4 rounded-xl text-base bg-gray-50 border focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500',
+              'w-full p-4 rounded-xl text-base bg-gray-50 border focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500',
               isDuplicate
                 ? 'border-red-500 focus:ring-red-400 focus:border-red-400 dark:border-red-500 dark:focus:ring-red-500 dark:focus:border-red-500'
                 : 'border-gray-200',
             ]"
             @input="updateSlug"
           />
-        </label>
-        <button
-          class="self-end px-6 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800"
-          :disabled="isDuplicate"
-          @click="createTag"
-        >
-          {{ $t('articles.tags.addButton') }}
-        </button>
-      </div>
+          <Button size="lg" :disabled="isDuplicate" @click="createTag">
+            {{ $t('articles.tags.addButton') }}
+          </Button>
+        </div>
+      </label>
 
       <div class="flex flex-col gap-4 mt-4">
         <div class="relative">
@@ -40,7 +36,7 @@
           <input
             v-model="searchQuery"
             :placeholder="$t('articles.tags.searchPlaceholder')"
-            class="pl-12 pr-4 py-3 rounded-full text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            class="w-full pl-12 pr-4 py-3 rounded-full text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500"
           />
         </div>
         <div v-if="filteredTags.length" class="flex flex-wrap gap-3">
@@ -80,12 +76,9 @@
     </template>
 
     <template #footer="{ close }">
-      <button
-        class="px-6 py-3 rounded-xl text-base font-medium bg-gray-50 hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-sm dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200"
-        @click="close"
-      >
+      <Button variant="neutral" size="lg" @click="close">
         {{ $t('common.close') }}
-      </button>
+      </Button>
     </template>
   </Modal>
 </template>

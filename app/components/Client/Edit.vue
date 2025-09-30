@@ -105,19 +105,8 @@
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end flex-shrink-0">
-        <button
-          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
-          @click="close"
-        >
-          Zavřít
-        </button>
-        <button
-          :disabled="!isFormValid"
-          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-          @click="saveEdit"
-        >
-          Uložit změny
-        </button>
+        <Button variant="neutral" size="lg" @click="close">Zavřít</Button>
+        <Button size="lg" :disabled="!isFormValid" @click="saveEdit">Uložit změny</Button>
       </div>
     </template>
   </Modal>

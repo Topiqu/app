@@ -52,12 +52,7 @@
     </template>
 
     <template #footer="{ close }">
-      <button
-        class="px-5 py-2.5 rounded-xl text-sm font-medium transition hover:scale-105 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 shadow-sm"
-        @click="close"
-      >
-        {{ $t('common.close') }}
-      </button>
+      <Button variant="neutral" size="lg" @click="close">{{ $t('common.close') }}</Button>
     </template>
   </Modal>
 </template>

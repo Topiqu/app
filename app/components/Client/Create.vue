@@ -182,19 +182,8 @@
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
-        <button
-          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm"
-          @click="close"
-        >
-          Zavřít
-        </button>
-        <button
-          class="px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="!isFormValid"
-          @click="createClient"
-        >
-          Přidat klienta
-        </button>
+        <Button variant="neutral" size="lg" @click="close">Zavřít</Button>
+        <Button size="lg" :disabled="!isFormValid" @click="createClient">Přidat klienta</Button>
       </div>
     </template>
   </Modal>

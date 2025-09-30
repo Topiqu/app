@@ -58,19 +58,8 @@
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-6 flex-shrink-0 pt-4 border-t">
-        <button
-          class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-sm"
-          @click="close"
-        >
-          {{ $t('common.messages.deleteCancel') }}
-        </button>
-        <button
-          class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="!shortcode || !imageUrl"
-          @click="submit"
-        >
-          {{ $t('emoji.create') }}
-        </button>
+        <Button variant="neutral" size="lg" @click="close">{{ $t('common.messages.deleteCancel') }}</Button>
+        <Button :disabled="!shortcode || !imageUrl" @click="submit">{{ $t('emoji.create') }}</Button>
       </div>
     </template>
   </Modal>

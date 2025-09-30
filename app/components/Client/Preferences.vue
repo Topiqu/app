@@ -7,11 +7,11 @@
     <template #close>
       <LazyClientHint v-if="auth?.user?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
         <button
-          class="p-2 rounded-full bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 border-none outline-none cursor-pointer"
+          class="flex items-center justify-center p-2 rounded-full bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 border-none outline-none cursor-pointer"
           :title="$t('common.preferences.explanation')"
           @click="clientHintOpen.value = true"
         >
-          <Icon name="mdi:information-outline" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
+          <Icon name="mdi:information-outline" class="size-6 text-gray-600 dark:text-gray-300" />
         </button>
       </LazyClientHint>
     </template>
@@ -78,25 +78,20 @@
             {{ $t('common.preferences.theme.label') }}
           </span>
           <div class="grid grid-cols-5 gap-6 max-w-sm justify-items-center">
-            <button
+            <Button
               v-for="theme in ThemeSchema.options"
               :key="theme"
               type="button"
+              :icon="form.theme === theme ? 'mdi:check' : undefined"
               :style="{ backgroundColor: theme }"
-              class="relative w-12 h-12 rounded-full shadow-md transition-all duration-200 cursor-pointer"
+              class="size-12! rounded-full! aspect-square"
               :class="
                 form.theme === theme
                   ? 'ring-2 ring-blue-500 scale-110'
                   : 'hover:scale-105 border border-gray-300 dark:border-gray-600'
               "
               @click="form.theme = theme"
-            >
-              <Icon
-                v-if="form.theme === theme"
-                name="mdi:check"
-                class="absolute inset-0 w-5 h-5 m-auto text-white drop-shadow"
-              />
-            </button>
+            />
           </div>
         </label>
         <label v-if="auth?.user?.plan !== 'BASIC'" class="flex flex-col gap-2">
@@ -161,20 +156,20 @@
               {{ $t('common.preferences.socials.label') }}
             </span>
             <div class="flex flex-wrap gap-2">
-              <button
+              <Button
                 v-for="platform in socialPlatforms"
                 :key="platform"
+                variant="transparent"
+                :icon="platformIcons[platform]"
                 :disabled="form.socials.some((s) => s.platform === platform)"
-                class="relative flex items-center justify-center p-2.5 rounded-lg transition disabled:cursor-not-allowed"
+                class="text-white"
                 :class="[
                   form.socials.some((s) => s.platform === platform)
                     ? 'bg-gray-200 dark:bg-gray-700 opacity-50'
-                    : platformStyles[platform].bg,
+                    : `${platformStyles[platform].bg}!`,
                 ]"
                 @click="addSocial(platform)"
-              >
-                <Icon :name="platformIcons[platform]" class="w-5 h-5 text-white" />
-              </button>
+              />
             </div>
           </div>
 
@@ -234,18 +229,12 @@
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-6 flex-shrink-0 pt-4 border-t border-gray-300 dark:border-gray-600">
-        <button
-          class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 shadow-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
-          @click="close"
-        >
+        <Button variant="neutral" @click="close">
           {{ $t('common.messages.deleteCancel') }}
-        </button>
-        <button
-          class="px-5 py-2.5 rounded-xl text-sm font-medium transition transform hover:scale-105 text-white dark:text-black shadow-md bg-blue-600 dark:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          @click="savePreferences"
-        >
+        </Button>
+        <Button @click="savePreferences">
           {{ $t('common.actions.saveChanges') }}
-        </button>
+        </Button>
       </div>
     </template>
   </Modal>
@@ -442,7 +431,7 @@ const confirmClose = async () => {
     form.value.theme !== (client.value?.theme || 'blue') ||
     form.value.description !== (client.value?.description || '') ||
     form.value.logoUrl !== (client.value?.logoUrl || '') ||
-    form.value.keywords.join(',') !== (client.value?.keywords || []).join(',') || 
+    form.value.keywords.join(',') !== (client.value?.keywords || []).join(',') ||
     diff(form.value.socials, client.value?.socials || []) ||
     (client.value.tokenLimit &&
       client.value.tokenLimit > 0 &&

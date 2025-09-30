@@ -48,12 +48,7 @@
                   </slot>
                 </div>
                 <slot v-if="closeBtn" name="close" v-bind="actions">
-                  <button
-                    class="ml-auto flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
-                    @click="close"
-                  >
-                    <Icon name="mdi:close" class="size-5" />
-                  </button>
+                  <Button variant="neutral" icon="mdi:close" class="ml-auto rounded-full!" @click="close" />
                 </slot>
               </slot>
             </div>
