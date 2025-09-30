@@ -20,9 +20,9 @@
           <div class="flex-shrink-0">
             <Icon
               :name="
-                session.device === 'mobile'
+                getDeviceCategory(session.device) === 'mobile'
                   ? 'mdi:cellphone'
-                  : session.device === 'tablet'
+                  : getDeviceCategory(session.device) === 'tablet'
                     ? 'mdi:tablet'
                     : 'mdi:laptop'
               "
@@ -83,6 +83,13 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
+
+function getDeviceCategory(device: string | null): 'mobile' | 'tablet' | 'desktop' {
+  const d = device?.toLowerCase() || ''
+  if (d.includes('android') || d.includes('ios')) return 'mobile'
+  if (d.includes('ipad') || d.includes('tablet')) return 'tablet'
+  return 'desktop'
+}
 
 async function revokeSession(sessionId: string) {
   try {
