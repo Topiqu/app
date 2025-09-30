@@ -26,7 +26,7 @@
       <div class="grow flex flex-col gap-8">
         <div class="w-full my-8 flex items-center justify-center">
           <UserPicture
-            :url="auth?.user.avatarUrl"
+            :url="avatar || auth?.user.avatarUrl"
             :size="'hg'"
             :name="auth?.user.name"
             class="size-32! transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
@@ -48,7 +48,7 @@
 <script lang="ts" setup>
 const toast = useToast()
 
-const { data: auth } = useAuth()
+const { data: auth, refresh } = useAuth()
 
 const avatar = defineModel<string | null | undefined>()
 
@@ -69,6 +69,8 @@ const handleUpload = (file: { url: string }) => {
   avatar.value = file.url
 
   auth.value.user.avatarUrl = file.url
+
+  refresh()
 
   toast.success({
     title: 'Úspěch',
