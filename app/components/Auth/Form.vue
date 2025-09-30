@@ -17,28 +17,28 @@
       class="bg-white dark:bg-gray-900 px-6 py-8 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 space-y-6"
     >
       <div class="flex justify-between items-center gap-2 text-sm font-medium">
-        <button
+        <Button
           :class="[
             'w-full px-4 py-2 rounded-lg transition font-semibold',
             internalMode === 'login'
-              ? 'bg-blue-600 text-white shadow'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700',
+              ? 'bg-blue-600! text-white! shadow'
+              : 'bg-gray-100! dark:bg-gray-800! text-gray-500! dark:text-gray-400! hover:bg-gray-200! dark:hover:bg-gray-700!',
           ]"
           @click="internalMode = 'login'"
         >
           {{ $t('common.auth.login') }}
-        </button>
-        <button
+        </Button>
+        <Button
           :class="[
             'w-full px-4 py-2 rounded-lg transition font-semibold',
             internalMode === 'register'
-              ? 'bg-blue-600 text-white shadow'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700',
+              ? 'bg-blue-600! text-white! shadow'
+              : 'bg-gray-100! dark:bg-gray-800! text-gray-500! dark:text-gray-400! hover:bg-gray-200! dark:hover:bg-gray-700!',
           ]"
           @click="internalMode = 'register'"
         >
           {{ $t('common.auth.register') }}
-        </button>
+        </Button>
       </div>
       <form v-if="!verifyMode && internalMode !== 'totp'" class="space-y-5 text-sm" @submit.prevent="submit">
         <div class="space-y-1.5">
@@ -106,7 +106,7 @@
           <div v-if="internalMode === 'login'" class="inline-flex justify-end w-full">
             <button
               type="button"
-              class="text-xs p-1 text-blue-600 dark:text-blue-400 underline cursor-pointer hover:text-blue-700 dark:hover:text-blue-500 transition"
+              class="text-xs p-1 text-blue-600 dark:text-blue-400 underline cursor-pointer hover:text-blue-700 dark:hover:text-blue-500 transition bg-transparent border-none"
               @click="internalMode = 'forgot'"
             >
               {{ $t('common.auth.forgotPassword') }}
@@ -119,21 +119,22 @@
           </label>
           <UserPassword v-model="form.passwordConfirm" :isValid="isPasswordFormValid" isConfirm />
         </div>
-        <button
+        <Button
           type="submit"
           class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
         >
           {{ internalMode === 'register' ? $t('common.auth.register') : $t('common.auth.login') }}
-        </button>
+        </Button>
         <div class="flex items-center my-4">
           <hr class="flex-grow border-gray-300 dark:border-gray-700" />
           <span class="mx-2 text-xs text-gray-400 dark:text-gray-500">{{ $t('common.auth.or') }}</span>
           <hr class="flex-grow border-gray-300 dark:border-gray-700" />
         </div>
         <div class="space-y-3 text-center">
-          <button
+          <Button
             type="button"
-            class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-white dark:bg-[#131314] border border-[#747775] dark:border-[#8E918F] text-[#1F1F1F] dark:text-[#E3E3E3] text-sm font-roboto font-medium transition hover:bg-gray-50 dark:hover:bg-gray-800"
+            variant="neutral"
+            class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-white! dark:bg-[#131314]! border border-[#747775] dark:border-[#8E918F] text-[#1F1F1F] dark:text-[#E3E3E3] text-sm font-roboto font-medium transition hover:bg-gray-50! dark:hover:bg-gray-800!"
             @click="signInWithGoogle"
           >
             <img
@@ -142,15 +143,15 @@
               class="w-5 h-5 mr-2"
             />
             {{ $t('common.auth.signInWithGoogle') }}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-[#24292e] dark:bg-[#24292e] border border-[#747775] dark:border-[#8E918F] text-white dark:text-white text-sm font-roboto font-medium transition hover:bg-[#2f363d] dark:hover:bg-[#2f363d]"
+            class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-[#24292e]! dark:bg-[#24292e]! border border-[#747775] dark:border-[#8E918F] text-white dark:text-white text-sm font-roboto font-medium transition hover:bg-[#2f363d]! dark:hover:bg-[#2f363d]!"
             @click="signInWithGithub"
           >
             <img src="https://simpleicons.org/icons/github.svg" alt="GitHub logo" class="w-5 h-5 mr-2" />
             {{ $t('common.auth.signInWithGithub') }}
-          </button>
+          </Button>
         </div>
       </form>
       <form v-if="verifyMode" class="space-y-5 text-sm" @submit.prevent="verify">

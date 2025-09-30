@@ -7,10 +7,9 @@
       { 'backdrop-blur-sm transition-all hover:scale-105 active:scale-[0.95]': true },
       { 'focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2': true },
 
-      {
-        'border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)]':
-          !borderless,
-      },
+      borderless
+        ? 'border-none shadow-none'
+        : 'border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)]',
 
       { 'cursor-not-allowed opacity-80': disabled || loading },
 
