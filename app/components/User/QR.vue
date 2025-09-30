@@ -12,7 +12,7 @@
     </div>
     <div v-if="showForm && otpauthUrl" class="text-center">
       <div
-        class="relative mt-4 p-2 sm:p-3 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm bg-white dark:bg-neutral-900 sm:max-w-[18rem] w-full mx-auto"
+        class="relative mt-4 p-2 sm:p-3 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm bg-white dark:bg-neutral-900 sm:max-w-[22rem] w-full mx-auto"
       >
         <div
           v-if="!showQR"
@@ -38,6 +38,28 @@
           <p class="text-center mt-1 text-[10px] text-yellow-500 dark:text-yellow-400">
             ⚠️ {{ $t('profile.sensitiveInfo') }}
           </p>
+          <div v-if="showQR" class="mt-3 flex justify-center">
+            <Button
+              size="sm"
+              variant="neutral"
+              class="inline-flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md px-2 py-1"
+              @click="showSecret = !showSecret"
+            >
+              <Icon :name="showSecret ? 'mdi:eye-off' : 'mdi:eye'" class="w-4 h-4" />
+              <span class="text-sm">
+                {{ showSecret ? $t('profile.hideSecret') : $t('profile.showSecret') }}
+              </span>
+            </Button>
+          </div>
+
+          <div v-if="showSecret" class="mt-2 flex items-center justify-center gap-2">
+            <code class="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-xs">
+              {{ secret }}
+            </code>
+            <Button size="sm" variant="neutral" class="p-1" @click="copySecret(secret)">
+              <Icon name="mdi:content-copy" class="w-4 h-4" />
+            </Button>
+          </div>
         </div>
         <Icon
           v-if="showQR"
@@ -70,7 +92,7 @@
     </div>
     <div v-if="enabled && otpauthUrl" class="text-center">
       <div
-        class="relative mt-4 p-2 sm:p-3 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm bg-white dark:bg-neutral-900 sm:max-w-[18rem] w-full mx-auto"
+        class="relative mt-4 p-2 sm:p-3 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm bg-white dark:bg-neutral-900 sm:max-w-[22rem] w-full mx-auto"
       >
         <div
           v-if="!showQR"
@@ -96,6 +118,28 @@
           <p class="text-center mt-1 text-[10px] text-yellow-500 dark:text-yellow-400">
             ⚠️ {{ $t('profile.sensitiveInfo') }}
           </p>
+          <div v-if="showQR" class="mt-3 flex justify-center">
+            <Button
+              size="sm"
+              variant="neutral"
+              class="inline-flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md px-2 py-1"
+              @click="showSecret = !showSecret"
+            >
+              <Icon :name="showSecret ? 'mdi:eye-off' : 'mdi:eye'" class="w-4 h-4" />
+              <span class="text-sm">
+                {{ showSecret ? $t('profile.hideSecret') : $t('profile.showSecret') }}
+              </span>
+            </Button>
+          </div>
+
+          <div v-if="showSecret" class="mt-2 flex items-center justify-center gap-2">
+            <code class="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-xs">
+              {{ secret }}
+            </code>
+            <Button size="sm" variant="neutral" class="p-1" @click="copySecret(secret)">
+              <Icon name="mdi:content-copy" class="w-4 h-4" />
+            </Button>
+          </div>
         </div>
         <Icon
           v-if="showQR"
@@ -130,8 +174,26 @@ const emit = defineEmits<{
 const isLoading = shallowRef(false)
 const showForm = shallowRef(false)
 const showQR = shallowRef(false)
+const showSecret = shallowRef(false)
 const totpCode = shallowRef('')
 const error = shallowRef<string | null>(null)
+
+const secret = computed(() => {
+  try {
+    const url = new URL(props.otpauthUrl)
+    return url.searchParams.get('secret') ?? ''
+  } catch {
+    return ''
+  }
+})
+
+async function copySecret(value: string) {
+  try {
+    await navigator.clipboard.writeText(value)
+  } catch {
+    alert('Copy failed')
+  }
+}
 
 async function enable2FA() {
   try {
@@ -160,6 +222,7 @@ async function verifyTotpCode() {
     if (response.verified) {
       showForm.value = false
       showQR.value = false
+      showSecret.value = false
       totpCode.value = ''
       error.value = null
       emit('update:enabled', true)
@@ -181,6 +244,7 @@ async function disable2FA() {
     })
     showForm.value = false
     showQR.value = false
+    showSecret.value = false
     totpCode.value = ''
     error.value = null
     emit('update:enabled', false)
