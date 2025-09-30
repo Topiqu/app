@@ -463,6 +463,7 @@
     "twoFactorAuth": "Two-Factor Authentication (2FA)",
     "enable2FA": "Enable Two-Factor Authentication",
     "scanTotp": "Scan this QR code",
+    "sensitiveInfo": "This is a sensitive piece of information. Make sure no one else sees it.",
     "enterTotpCode": "Enter the code from your authenticator app",
     "sessions": "Added devices",
     "active": "Currently active",
