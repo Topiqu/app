@@ -1,19 +1,11 @@
 now:
 
-// DONE: 1. cliensite language column // 🛑 high priority
-// DONE: 2. cliensite customization (themes) // 🛑 high priority
-// DONE: 3. add sessionId for oauth providers in nuxt auth callback
-
 1. implement missing email templates // 🛑 high priority
 2. notifications should also be localised // 🛑 high priority
 3. further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
 4. misc style/ui cleanups OR general code optimisation
-5. account health - sessions, password strength, 2fa, amount of bans, verified email... // 🟡 mid priority
-6. better gamification - badges, levels, site activity points 
-(exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
-7. fix header Z-index
-8. user page - enhance/improve styling & ui for hero section
-9. lang switcher -> improve styles
+5. better gamification - badges, levels, site activity points
+   (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
 
 once deployed:
 
@@ -25,3 +17,14 @@ once deployed:
 6. ai cron jobs for article writing // 🛑 high priority
 7. automate onboarding flow : wp form -> post fetch on topiqu backend -> render api -> create subdomain/return custom domain dns details // 🟡 mid priority
 8. test // 🛑 high priority
+
+done:
+
+1. cliensite language column // 🛑 high priority
+2. cliensite customization (themes) // 🛑 high priority
+3. add sessionId for oauth providers in nuxt auth callback
+4. account health - sessions, password strength, 2fa, amount of bans, verified email... // 🟡 mid priority
+5. fix header Z-index
+6. fix background floating objects z-index
+7. user page - enhance/improve styling & ui for hero section
+8. lang switcher -> improve styles
