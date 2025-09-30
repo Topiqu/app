@@ -2,7 +2,7 @@
   <Modal v-model="open" :title="$t('common.avatar.uploadAvatar')">
     <template #default="actions">
       <slot v-bind="actions">
-        <div class="flex flex-col items-center sm:items-start gap-4">
+        <div class="flex flex-col items-center sm:items-start gap-4" @click="open = !open">
           <div class="relative group cursor-pointer">
             <UserPicture
               :url="avatar || auth?.user.avatarUrl"
