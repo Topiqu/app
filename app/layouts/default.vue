@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-4 min-h-screen max-w-screen flex-1 flex flex-col bg-gray-100 relative overflow-hidden">
+  <div class="pt-4 min-h-screen max-w-screen flex-1 flex flex-col bg-gray-100/90 relative overflow-hidden">
     <Header v-model:isSidebarOpen="isSidebarOpen" />
     <Sidebar v-if="auth && isAdmin" v-model:isOpen="isSidebarOpen" />
     <slot />
@@ -9,7 +9,7 @@
       <div
         v-for="(obj, index) in floatingObjects"
         :key="index"
-        class="absolute pointer-events-none"
+        class="absolute pointer-events-none -z-10"
         :style="{
           left: `${obj.x}%`,
           top: `${obj.y}%`,
