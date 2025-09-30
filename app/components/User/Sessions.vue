@@ -20,9 +20,9 @@
           <div class="flex-shrink-0">
             <Icon
               :name="
-                session.device === 'mobile'
+                getDeviceCategory(session) === 'mobile'
                   ? 'mdi:cellphone'
-                  : session.device === 'tablet'
+                  : getDeviceCategory(session) === 'tablet'
                     ? 'mdi:tablet'
                     : 'mdi:laptop'
               "
@@ -31,7 +31,7 @@
           </div>
           <div class="space-y-1">
             <p class="font-medium text-gray-900 dark:text-white">
-              {{ session.device || $t('common.unknown') }} – {{ session.os || $t('common.unknown') }} –
+              {{ getDeviceLabel(session) }} – {{ session.os || $t('common.unknown') }} –
               {{ session.browser || $t('common.unknown') }}
             </p>
             <p class="text-xs text-gray-600 dark:text-gray-400">
@@ -83,6 +83,23 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
+
+function getDeviceCategory(session: { device: string | null; os: string | null }) {
+  const device = session.device?.toLowerCase() || ''
+  const os = session.os?.toLowerCase() || ''
+  if (os.includes('android') || os.includes('ios')) return 'mobile'
+  if (os.includes('ipad') || os.includes('tablet')) return 'tablet'
+  if (device.includes('mobile')) return 'mobile'
+  if (device.includes('tablet')) return 'tablet'
+  return 'desktop'
+}
+
+function getDeviceLabel(session: { device: string | null; os: string | null }) {
+  if (!session.device || session.device.length <= 2) {
+    return session.os || 'Unknown'
+  }
+  return session.device
+}
 
 async function revokeSession(sessionId: string) {
   try {
