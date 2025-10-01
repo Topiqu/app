@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   const generatedUsername = body.username || `user-${randomBytes(4).toString('hex')}`
   const generatedPassword = body.password || randomBytes(8).toString('hex')
 
-  const result = await prisma.$transaction(async (tx) => {
+  const clientSite = await prisma.$transaction(async (tx) => {
     const clientSite = await tx.clientSite.create({
       data: {
         name: body.name,
@@ -51,15 +51,6 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    const newUser = await saveUserWithLogging(event, {
-      email: body.email,
-      username: generatedUsername,
-      password: generatedPassword,
-      clientSiteId: clientSite.id,
-      emailVerified: true,
-      role: 'admin',
-    })
-
     if (body.tokenLimit > 0 && body.aiUser?.name) {
       await tx.user.create({
         data: {
@@ -76,25 +67,34 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    return { clientSite, newUser }
+    return clientSite
+  })
+
+  const newUser = await saveUserWithLogging(event, {
+    email: body.email,
+    username: generatedUsername,
+    password: generatedPassword,
+    clientSiteId: clientSite.id,
+    emailVerified: true,
+    role: 'admin',
   })
 
   return {
     clientSite: {
-      id: result.clientSite.id,
-      name: result.clientSite.name,
-      subdomain: result.clientSite.subdomain,
-      plan: result.clientSite.plan,
-      generationFrequency: result.clientSite.generationFrequency,
-      tokenLimit: result.clientSite.tokenLimit,
-      keywords: result.clientSite.keywords,
-      focus: result.clientSite.focus,
-      description: result.clientSite.description,
-      logoUrl: result.clientSite.logoUrl,
-      audience: result.clientSite.audience,
+      id: clientSite.id,
+      name: clientSite.name,
+      subdomain: clientSite.subdomain,
+      plan: clientSite.plan,
+      generationFrequency: clientSite.generationFrequency,
+      tokenLimit: clientSite.tokenLimit,
+      keywords: clientSite.keywords,
+      focus: clientSite.focus,
+      description: clientSite.description,
+      logoUrl: clientSite.logoUrl,
+      audience: clientSite.audience,
     },
     user: {
-      ...result.newUser,
+      ...newUser,
       password: body.password ? 'user submitted' : generatedPassword,
     },
   }
