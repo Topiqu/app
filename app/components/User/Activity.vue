@@ -399,7 +399,7 @@ const isGrid = shallowRef(true)
 const searchQuery = shallowRef('')
 const selectedTags = ref<string[]>([])
 const page = shallowRef(1)
-const limit = 5
+const limit = 2
 const loading = shallowRef(false)
 const hasMore = shallowRef({ likedArticles: true, comments: true })
 
@@ -558,8 +558,6 @@ const handleDelete = async (commentId: string) => {
 
 const loadMore = async () => {
   if (!hasMore.value[props.activeTab]) return
-  loading.value = true
   page.value++
-  await refresh().finally(() => (loading.value = false))
 }
 </script>
