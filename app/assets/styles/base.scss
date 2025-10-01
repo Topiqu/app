@@ -47,7 +47,8 @@ a {
 
 input,
 textarea,
-select {
+select,
+.input {
   background-color: $input-bg !important;
   color: $input-text !important;
   border: 1px solid $border-color !important;
