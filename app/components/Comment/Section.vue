@@ -183,10 +183,8 @@ const initObserver = () => {
   if (!sentinel.value) return
   const obs = new IntersectionObserver(
     (entries) => {
-      if (entries[0]?.isIntersecting && !loading.value && hasMore.value) {
-        loading.value = true
+      if (entries[0]?.isIntersecting && hasMore.value && !loading.value) {
         page.value++
-        refresh().finally(() => (loading.value = false))
       }
     },
     { root: null, threshold: 0.1 },
