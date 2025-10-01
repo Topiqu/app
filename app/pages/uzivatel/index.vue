@@ -138,6 +138,12 @@
             <div class="space-y-4 sm:space-y-6">
               <div id="language-section">
                 <FormLabel :text="$t('profile.language')" />
+                <LangSwitcher
+                  id="language-section"
+                  class="w-full mt-1"
+                  :modelValue="profileForm.language || lcls[0]!.value"
+                  @update:modelValue="updateLanguage"
+                />
                 <LangSwitch
                   id="language-section"
                   class="w-full mt-1"
@@ -454,7 +460,8 @@ async function updateProfile() {
   })
 }
 
-async function updateLanguage(newLanguage: 'cs' | 'en') {
+const lcls = locales
+async function updateLanguage(newLanguage: Language) {
   try {
     await saveProfile({ language: newLanguage })
     setLocale(newLanguage)
