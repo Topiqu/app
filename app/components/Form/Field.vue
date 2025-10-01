@@ -27,6 +27,7 @@ const { label, labelIcon, ...props } = defineProps<{
   required?: boolean
   readonly?: boolean
   disabled?: boolean
+  maxLength?: number
 }>()
 
 const value = defineModel<InputTypeValue<T>>()

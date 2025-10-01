@@ -47,6 +47,7 @@ export interface FormInputProps<T> {
   required?: boolean
   readonly?: boolean
   disabled?: boolean
+  maxlength?: number
 }
 
 const id = useId()
@@ -55,20 +56,7 @@ defineOptions({ inheritAttrs: false })
 
 const { id: idAttr, ...attrs } = useAttrs()
 
-const {
-  type = 'text',
-  iconPosition = 'leading',
-  ...props
-} = defineProps<{
-  icon?: string
-  iconPosition?: 'leading' | 'trailing'
-  type?: T
-  name?: string
-  placeholder?: string
-  required?: boolean
-  readonly?: boolean
-  disabled?: boolean
-}>()
+const { type = 'text', iconPosition = 'leading', ...props } = defineProps<FormInputProps<T>>()
 
 const value = defineModel<InputTypeValue<T>>()
 </script>
