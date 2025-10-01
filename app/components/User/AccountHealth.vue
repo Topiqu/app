@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-2xl shadow-lg p-6 bg-white dark:bg-neutral-900 border">
+  <div class="rounded-2xl shadow-lg p-6 bg-white dark:bg-neutral-900 border relative overflow-hidden">
     <div class="flex items-center">
       <Icon :name="`mdi:${iconName}`" :class="colorClass(data?.accountHealth ?? 0)" size="48" />
       <div class="ml-4">
@@ -8,17 +8,17 @@
       </div>
     </div>
     <ul class="mt-4 divide-y divide-gray-200 dark:divide-gray-700">
-      <li v-for="check in data?.checks" :key="check.label" class="flex items-center justify-between py-2">
-        <div class="flex items-center">
-          <Icon v-if="check.ok" name="mdi:check-circle" class="w-5 h-5 text-green-500" />
-          <Icon v-else name="mdi:close-circle" class="w-5 h-5 text-red-500" />
-          <span class="ml-2">{{ getCheckLabel(check) }}</span>
+      <li v-for="check in data?.checks" :key="check.label" class="flex items-center justify-between py-2 flex-wrap">
+        <div class="flex items-center min-w-0">
+          <Icon v-if="check.ok" name="mdi:check-circle" class="w-5 h-5 text-green-500 shrink-0" />
+          <Icon v-else name="mdi:close-circle" class="w-5 h-5 text-red-500 shrink-0" />
+          <span class="ml-2 truncate">{{ getCheckLabel(check) }}</span>
         </div>
         <Button
           v-if="!check.ok && actions[check.label]"
           variant="primary"
           size="sm"
-          class="ml-2"
+          class="ml-2 mt-2 sm:mt-0 whitespace-normal break-words text-center px-3 py-1.5 max-w-full sm:max-w-[240px]"
           @click="navigateToSection(check.label)"
         >
           {{ $t(actions[check.label]?.key) }}
