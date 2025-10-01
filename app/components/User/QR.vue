@@ -16,7 +16,7 @@
       >
         <div
           v-if="!showQR"
-          class="absolute inset-0 backdrop-blur-sm bg-black/40 flex items-center justify-center rounded-xl z-10"
+          class="absolute inset-0 backdrop-blur-md bg-black/50 flex items-center justify-center rounded-xl z-10"
         >
           <Button
             :disabled="isLoading"
@@ -26,8 +26,8 @@
             Show QR
           </Button>
         </div>
-        <div :class="showQR ? 'opacity-100 scale-100' : 'opacity-0 scale-95'" class="transition-all duration-300">
-          <div v-if="showQR" class="relative w-40 h-40 mx-auto">
+        <div :class="showQR ? 'opacity-100 scale-100' : 'opacity-50 scale-95'" class="transition-all duration-300">
+          <div class="relative w-40 h-40 mx-auto">
             <ClientOnly>
               <Qrcode :value="otpauthUrl" class="mx-auto" />
             </ClientOnly>
@@ -51,7 +51,6 @@
               </span>
             </Button>
           </div>
-
           <div v-if="showSecret" class="mt-2 flex items-center justify-center gap-2">
             <code class="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-xs">
               {{ secret }}
@@ -96,7 +95,7 @@
       >
         <div
           v-if="!showQR"
-          class="absolute inset-0 backdrop-blur-sm bg-black/40 flex items-center justify-center rounded-xl z-10"
+          class="absolute inset-0 backdrop-blur-md bg-black/50 flex items-center justify-center rounded-xl z-10"
         >
           <Button
             :disabled="isLoading"
@@ -106,8 +105,8 @@
             Show QR
           </Button>
         </div>
-        <div :class="showQR ? 'opacity-100 scale-100' : 'opacity-0 scale-95'" class="transition-all duration-300">
-          <div v-if="showQR" class="relative w-40 h-40 mx-auto">
+        <div :class="showQR ? 'opacity-100 scale-100' : 'opacity-50 scale-95'" class="transition-all duration-300">
+          <div class="relative w-40 h-40 mx-auto">
             <ClientOnly>
               <Qrcode :value="otpauthUrl" class="mx-auto" />
             </ClientOnly>
@@ -131,7 +130,6 @@
               </span>
             </Button>
           </div>
-
           <div v-if="showSecret" class="mt-2 flex items-center justify-center gap-2">
             <code class="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-xs">
               {{ secret }}
