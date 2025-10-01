@@ -50,7 +50,7 @@ const props = defineProps<{
   maxLength?: number
 }>()
 
-const password = defineModel<string>({ default: '' })
+const password = defineModel<string>({ default: '', required: true })
 const showPassword = shallowRef(false)
 const passwordAnalysis = computed(() => zxcvbn(password.value || ''))
 

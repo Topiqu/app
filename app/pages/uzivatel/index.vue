@@ -58,23 +58,26 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             <div class="space-y-4 sm:space-y-6">
               <div id="username-section">
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                  $t('profile.username')
-                }}</label>
-                <input
+                <FormField
                   v-model="profileForm.username"
-                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  :label="$t('profile.username')"
+                  type="text"
+                  name="username"
+                  placeholder="Enter your username"
                 />
               </div>
               <div id="bio-section">
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                  $t('profile.bio')
-                }}</label>
-                <textarea
+                <FormField
                   v-model="profileForm.bio"
+                  :label="$t('profile.bio')"
+                  type="textarea"
+                  name="bio"
                   rows="4 sm:rows-5"
-                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition resize-y"
-                ></textarea>
+                  :maxlength="BIO_MAX_LENGTH"
+                />
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {{ bioCharCount }} / {{ BIO_MAX_LENGTH }}
+                </p>
               </div>
               <UserEmail
                 id="email-section"
@@ -83,9 +86,7 @@
                 v-model:isLoading="isLoading"
               />
               <div id="notifications-section">
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                  $t('profile.notifications')
-                }}</label>
+                <FormLabel :text="$t('profile.notifications')" />
                 <div class="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
                   <div
                     class="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
@@ -136,7 +137,7 @@
             </div>
             <div class="space-y-4 sm:space-y-6">
               <div id="language-section">
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Language</label>
+                <FormLabel :text="$t('profile.language')" />
                 <LangSwitch
                   id="language-section"
                   class="w-full mt-1"
@@ -145,34 +146,28 @@
                 />
               </div>
               <div id="id-section">
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">ID</label>
-                <div class="relative">
-                  <input
-                    :value="profileForm.id"
-                    readonly
-                    class="cursor-pointer mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
-                    @click="copyToClipboard(profileForm.id!)"
-                  />
-                  <Icon
-                    name="mdi:content-copy"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
-                  />
-                </div>
+                <FormField
+                  v-model="profileForm.id"
+                  :label="$t('profile.id')"
+                  type="text"
+                  name="id"
+                  readonly
+                  icon="mdi:content-copy"
+                  iconPosition="trailing"
+                  @click="copyToClipboard(profileForm.id!)"
+                />
               </div>
               <div id="registration-section">
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                  $t('profile.registrationDate')
-                }}</label>
-                <input
-                  :value="formatDate(profileForm.createdAt)"
+                <FormField
+                  v-model="formattedCreatedAt"
+                  :label="$t('profile.registrationDate')"
+                  type="text"
+                  name="createdAt"
                   disabled
-                  class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>
               <div id="security-section">
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                  $t('profile.security')
-                }}</label>
+                <FormLabel :text="$t('profile.security')" />
                 <div class="space-y-3 sm:space-y-4">
                   <Button
                     :disabled="isLoading"
@@ -185,17 +180,16 @@
                   </Button>
                   <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
                   <div id="password-section" class="space-y-3 sm:space-y-4">
-                    <div v-if="userData?.hasPassword" class="relative">
-                      <input
+                    <div v-if="userData?.hasPassword">
+                      <FormField
                         v-model="passwordForm.oldPassword"
+                        :label="$t('common.auth.oldPassword')"
                         :type="showOldPassword ? 'text' : 'password'"
-                        :placeholder="$t('common.auth.oldPassword')"
-                        class="w-full pl-5 pr-10 py-2.5 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                      />
-                      <Icon
-                        :name="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'"
-                        class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500 cursor-pointer hover:text-gray-600 dark:hover:text-gray-400"
-                        @click="showOldPassword = !showOldPassword"
+                        name="oldPassword"
+                        placeholder="Enter old password"
+                        :icon="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'"
+                        iconPosition="trailing"
+                        @click:icon="showOldPassword = !showOldPassword"
                       />
                     </div>
                     <UserPassword v-model="passwordForm.newPassword" :isValid="isPasswordFormValid" />
@@ -217,9 +211,7 @@
                   </div>
                   <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
                   <div id="2fa-section">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                      $t('profile.twoFactorAuth')
-                    }}</label>
+                    <FormLabel :text="$t('profile.twoFactorAuth')" />
                     <UserQR
                       :enabled="is2FAEnabled"
                       :otpauthUrl="otpauthUrl"
@@ -286,6 +278,8 @@ type Profile = Partial<User> & {
   totpSecret?: string
 }
 
+const BIO_MAX_LENGTH = 300
+
 const { data: user, signOut } = useAuth()
 const toast = useToast()
 const { setLocale } = useI18n()
@@ -340,6 +334,10 @@ const passwordForm = ref({
 const isPasswordFormValid = computed(() => {
   return passwordForm.value.newPassword && passwordForm.value.newPassword === passwordForm.value.confirmNewPassword
 }) as ComputedRef<boolean>
+
+const bioCharCount = computed(() => profileForm.value.bio?.length || 0)
+
+const formattedCreatedAt = computed(() => formatDate(profileForm.value.createdAt))
 
 const {
   data: userData,
