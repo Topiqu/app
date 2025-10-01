@@ -56,11 +56,11 @@ export default defineLazyEventHandler(() => {
         },
       },
       schema: z.object({
-        title: z.string().min(5).max(100).describe('Catchy title 5-15 words'),
-        perex: z.string().min(20).max(300).describe('Short introductory paragraph (3-4 sentences)'),
+        title: z.string().min(5).max(500).describe('Catchy title 5-15 words'),
+        perex: z.string().min(20).max(1000).describe('Short introductory paragraph (3-4 sentences)'),
         content: z
           .string()
-          .min(1000)
+          .min(500)
           .max(20000)
           .describe(
             'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend',
