@@ -1,6 +1,5 @@
 import argon from 'argon2'
 import { authenticator } from 'otplib'
-import { zxcvbn } from '@zxcvbn-ts/core'
 
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
@@ -70,41 +69,19 @@ export default defineEventHandler(async (event) => {
   if (user.role !== 'superadmin' && body.role && body.role !== user.role)
     throw createError({ statusCode: 403, message: 'Změna role není povolena' })
 
-  const ip = getIp(event)
   const currentUser = await db.user.findUnique({ where: { id } })
 
   if (body.role && body.role !== currentUser?.role) {
+    if (currentUser?.role === 'admin' && body.role === 'reader') data.clientSiteId = null
     await logAction({
       action: 'ROLE_CHANGE',
       userId: user.id,
-      clientSiteId: user.clientSiteId,
-      ip,
+      clientSiteId: user.clientSiteId ? user.clientSiteId : undefined,
+      ip: getIp(event),
       metadata: { userId: id, newRole: body.role },
     })
-    if (currentUser?.role === 'admin' && body.role === 'reader') data.clientSiteId = null
   }
 
-  if (body.password) {
-    const strength = zxcvbn(body.password).score
-    data.password = await argon.hash(body.password, {
-      type: argon.argon2id,
-      memoryCost: 2 ** 16,
-      timeCost: 3,
-      parallelism: 1,
-    })
-    await logAction({
-      action: 'PASSWORD_CHANGE',
-      userId: user.id,
-      clientSiteId: user.clientSiteId ? user.clientSiteId : undefined,
-      ip,
-      metadata: { userId: id, passwordStrength: strength },
-    })
-  }
-
-  const updated = await db.user.update({
-    where: { id },
-    data,
-    select: { id: true, username: true, email: true, role: true, bio: true },
-  })
+  const updated = await saveUserWithLogging(event, { id, ...data }, true)
   return { ...updated }
 })
