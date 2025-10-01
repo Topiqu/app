@@ -1,3 +1,4 @@
+import argon from 'argon2'
 import { PrismaClient } from '@prisma/client'
 
 const prismaClientSingleton = () =>
@@ -19,7 +20,24 @@ const prismaClientSingleton = () =>
             const words = value.trim().split(/\s+/).length
             args.data.readingTime = Math.ceil(words / 200)
           }
+          return query(args)
+        },
+      },
+      user: {
+        async create({ args, query }) {
+          if (typeof args.data.password === 'string') {
+            args.data.password = await argon.hash(args.data.password)
+          }
+          return query(args)
+        },
+        async update({ args, query }) {
+          const pwd = args.data.password ?? ''
+          const value = typeof pwd === 'object' && 'set' in pwd ? pwd.set : pwd
 
+          if (typeof value === 'string') {
+            args.data.password =
+              typeof pwd === 'object' && 'set' in pwd ? { set: await argon.hash(value) } : await argon.hash(value)
+          }
           return query(args)
         },
       },
