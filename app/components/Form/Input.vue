@@ -47,7 +47,7 @@ export interface FormInputProps<T> {
   required?: boolean
   readonly?: boolean
   disabled?: boolean
-  maxlength?: number
+  maxLength?: number
 }
 
 const id = useId()
