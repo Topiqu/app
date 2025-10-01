@@ -9,6 +9,7 @@
     "unknown": "Unknown",
     "continue": "Continue",
     "unsavedChanges": "Unsaved changes!",
+    "showPassword": "Show password",
     "search": "Search...",
     "actions": {
       "view": "View",
@@ -455,6 +456,7 @@
     }
   },
   "profile": {
+    "id": "User ID",
     "title": "My Profile",
     "security": "Account Security",
     "health": "Account Health",
@@ -476,6 +478,7 @@
     "likedArticles": "Liked Articles",
     "likes": "Likes",
     "email": "Email",
+    "language": "Language",
     "username": "Username",
     "lastLogin": "Last login: {0}",
     "lastUsed": "Last used: {0}",

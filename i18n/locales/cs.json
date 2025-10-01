@@ -9,6 +9,7 @@
     "unknown": "Neznámo",
     "continue": "Pokračovat",
     "unsavedChanges": "Neuložené změny!",
+    "showPassword": "Zobrazit heslo",
     "search": "Hledat...",
     "errTypes": {
       "notFound": "Tohle jsem nenašel, asi jsem slepý.",
@@ -469,6 +470,7 @@
     }
   },
   "profile": {
+    "id": "ID uživatele",
     "title": "Můj profil",
     "security": "Zabezpečení účtu",
     "health": "Zdraví účtu",
@@ -490,6 +492,7 @@
     "likedArticles": "Oblíbené články",
     "likes": "Lajky",
     "email": "E-mail",
+    "language": "Jazyk",
     "username": "Uživatelské jméno",
     "lastLogin": "Poslední přihlášení: {0}",
     "lastUsed": "Naposledy použito: {0}",
