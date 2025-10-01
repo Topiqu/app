@@ -16,11 +16,11 @@
       >
         <div
           v-if="!showQR"
-          class="absolute inset-0 backdrop-blur-md bg-black/50 flex items-center justify-center rounded-xl z-10"
+          class="absolute inset-0 backdrop-blur-md bg-black/50 !dark:bg-transparent flex items-center justify-center rounded-xl z-10"
         >
           <Button
             :disabled="isLoading"
-            class="rounded-full px-4 py-2 bg-gray-200 dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700 disabled:opacity-50 transition-transform hover:scale-110 text-sm"
+            class="rounded-full px-4 py-2 bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700 disabled:opacity-50 transition-transform hover:scale-110 text-sm"
             @click="showQR = true"
           >
             Show QR
@@ -95,11 +95,12 @@
       >
         <div
           v-if="!showQR"
-          class="absolute inset-0 backdrop-blur-md bg-black/50 flex items-center justify-center rounded-xl z-10"
+          class="absolute inset-0 backdrop-blur-md bg-black/50 !dark:bg-transparent flex items-center justify-center rounded-xl z-10"
         >
           <Button
             :disabled="isLoading"
-            class="rounded-full px-4 py-2 bg-gray-200 dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700 disabled:opacity-50 transition-transform hover:scale-110 text-sm"
+            variant="transparent"
+            class="rounded-full px-4 py-2 bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700 disabled:opacity-50 transition-transform hover:scale-110 text-sm"
             @click="showQR = true"
           >
             Show QR
