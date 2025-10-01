@@ -61,7 +61,8 @@ html.dark div:not(.iziToast,
   [role='dialog'],
   [role='dialog'] *,
   [data-youtube-video],
-  [data-youtube-video] *) {
+  [data-youtube-video] *,
+  .pointer-events-none) {
   background-color: #1f2937;
 }
 
