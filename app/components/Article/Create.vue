@@ -14,7 +14,6 @@
             v-model="newArticle.title"
             :placeholder="$t('common.labels.articleTitle')"
             class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
-            @input="updateSlug"
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">URL: {{ newArticle.slug }}</span>
         </label>
@@ -266,13 +265,7 @@ const showDraftsDialog = async () => {
   }
 }
 
-const updateSlug = () => {
-  newArticle.slug = slugify(newArticle.title, { lower: true, strict: true, trim: true })
-}
-
-const handleUpload = (file: { url: string }) => {
-  newArticle.imageUrl = file.url
-}
+const handleUpload = (file: { url: string }) => (newArticle.imageUrl = file.url)
 
 const saveDraft = useDebounceFn(async () => {
   if (idle.value) return
@@ -304,6 +297,10 @@ const saveDraft = useDebounceFn(async () => {
 }, 8000)
 
 watch([() => newArticle.title, () => newArticle.excerpt, () => newArticle.content], saveDraft)
+watch(
+  [() => newArticle.title],
+  () => (newArticle.slug = slugify(newArticle.title, { lower: true, strict: true, trim: true })),
+)
 
 const createArticle = async () => {
   if (!newArticle.title) return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
@@ -332,10 +329,9 @@ const createArticle = async () => {
 }
 
 const confirmClose = async () => {
-  if (!newArticle.title.length && (!newArticle.content.length || newArticle.content === '<p></p>')) {
-    open.value = false
-    return
-  }
+  if (!newArticle.title.length && (!newArticle.content.length || newArticle.content === '<p></p>'))
+    return (open.value = false)
+
   const r = await Swal.fire({
     title: t('common.messages.closeConfirmTitle'),
     text: t('common.messages.closeConfirmText'),
@@ -350,13 +346,17 @@ const confirmClose = async () => {
 
 const generateAIContent = async () => {
   aiGenerating.value = true
+
   try {
-    const { perex, content } = await $fetch('/api/articles/ai-gen', {
+    const { title, perex, content } = await $fetch('/api/articles/ai-gen', {
       method: 'POST',
       body: { prompt: customPrompt.value || 'Empty...' },
     })
+
+    newArticle.title = title
     newArticle.excerpt = perex
     newArticle.content = content
+
     toast.success({ message: t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
     toast.error({ message: t('articles.editor.aiContentFailed') + error.data?.message })
@@ -376,6 +376,7 @@ const generateAIContent = async () => {
     transform: scale(1.1);
   }
 }
+
 .animate-pulse {
   animation: pulse 2s ease-in-out infinite;
 }
