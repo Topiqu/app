@@ -1,5 +1,5 @@
 export const useClientsite = async () => {
-  const hostname = import.meta.client ? window.location.hostname : null
+  const hostname = import.meta.client ? window.location.hostname.split('.')[0] : null
 
   if (!hostname) return null
 
