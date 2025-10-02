@@ -348,7 +348,7 @@ const generateAIContent = async () => {
   aiGenerating.value = true
 
   try {
-    const { title, perex, content } = await $fetch('/api/articles/ai-gen', {
+    const { title, perex, content, articleImageUrl } = await $fetch('/api/articles/ai-gen', {
       method: 'POST',
       body: { prompt: customPrompt.value || 'Empty...' },
     })
@@ -356,9 +356,7 @@ const generateAIContent = async () => {
     newArticle.title = title
     newArticle.excerpt = perex
     newArticle.content = content
-
-    const img = content.match(/<img src="([^"]+)" \/>/)?.[1]
-    if (img) newArticle.imageUrl = img
+    newArticle.imageUrl = articleImageUrl
 
     toast.success({ message: t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
