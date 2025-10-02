@@ -1,4 +1,6 @@
+import { join } from 'path'
 import { createXai } from '@ai-sdk/xai'
+import { mkdir, writeFile } from 'fs/promises'
 import { generateObject, experimental_generateImage as generateImage } from 'ai'
 
 export default defineLazyEventHandler(() => {
@@ -73,17 +75,25 @@ export default defineLazyEventHandler(() => {
       }),
     })
 
-    for (const [idx, img] of object.images.entries()) {
+    for await (const [idx, img] of object.images.entries()) {
       const { image } = await generateImage({
         model: xAI.image('grok-2-image'),
         prompt: img,
         n: 1,
       })
 
-      object.content = object.content.replace(
-        `[[IMAGE${idx + 1}]]`,
-        image ? `<img src="data:image/jpeg;base64,${image.base64}" alt="${img}" />` : '',
-      )
+      const outputDir = 'article-images'
+      const filenamePrefix = 'article'
+      const filename = `${filenamePrefix}-${Date.now()}.webp`
+
+      const uploadDir = join(process.cwd(), `public/${outputDir}`)
+      await mkdir(uploadDir, { recursive: true })
+      const filePath = join(uploadDir, filename)
+      await writeFile(filePath, image.uint8Array)
+
+      const url = `/${outputDir}/${filename}`
+
+      object.content = object.content.replace(`[[IMAGE${idx + 1}]]`, image ? `<img src="${url}" alt="${img}" />` : '')
     }
 
     await prisma.clientSite.update({
