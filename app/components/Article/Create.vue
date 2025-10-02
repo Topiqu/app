@@ -357,6 +357,9 @@ const generateAIContent = async () => {
     newArticle.excerpt = perex
     newArticle.content = content
 
+    const img = content.match(/<img src="([^"]+)" \/>/)?.[1]
+    if (img) newArticle.imageUrl = img
+
     toast.success({ message: t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
     toast.error({ message: t('articles.editor.aiContentFailed') + error.data?.message })
