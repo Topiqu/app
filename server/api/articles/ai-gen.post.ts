@@ -1,5 +1,5 @@
-import { generateObject } from 'ai'
 import { createXai } from '@ai-sdk/xai'
+import { generateObject, experimental_generateImage as generateImage } from 'ai'
 
 export default defineLazyEventHandler(() => {
   const apiKey = useRuntimeConfig().xai.apiKey
@@ -72,6 +72,19 @@ export default defineLazyEventHandler(() => {
           .describe('Array of image descriptions corresponding to slots in content'),
       }),
     })
+
+    for (const [idx, img] of object.images.entries()) {
+      const { image } = await generateImage({
+        model: xAI.image('grok-2-image'),
+        prompt: img,
+        n: 1,
+      })
+
+      object.content = object.content.replace(
+        `[[IMAGE${idx + 1}]]`,
+        image ? `<img src="data:image/jpeg;base64,${image.base64}" alt="${img}" />` : '',
+      )
+    }
 
     await prisma.clientSite.update({
       data: { tokenRemaining: { decrement: usage.totalTokens } },
