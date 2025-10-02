@@ -1,9 +1,8 @@
-export const useClientsite = () => {
-  const clientsite = shallowRef<string | null>(null)
+export const useClientsite = async () => {
+  const hostname = import.meta.client ? window.location.hostname : null
 
-  if (import.meta.client) {
-    clientsite.value = window.location.hostname
-  }
+  if (!hostname) return null
 
-  return clientsite
+  const { data } = await useAsyncData(`clientsite-${hostname}`, () => $fetch(`/api/clients/slug/${hostname}`))
+  return data
 }
