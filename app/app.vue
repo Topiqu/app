@@ -15,9 +15,7 @@
 
 <script setup lang="ts">
 import type { themes } from '~/composables/theme'
-const slug = 'GameDev'
-
-const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`, { server: false })
+const clientSite = await useClientsite()
 // throw createError({ statusCode: 400, message: 'Service Unavailable', statusMessage: 'Service Unavailable' })
 
 const themeColors: Record<keyof typeof themes, string> = {

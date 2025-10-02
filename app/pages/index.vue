@@ -204,15 +204,13 @@ import 'tippy.js/dist/tippy.css'
 import { formatDate } from '~~/shared/utils'
 
 import { themes } from '~/composables/theme'
+import { useClientsite } from '~/composables/useClientsite'
 
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
 
-const slug = 'GameDev'
-
-const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`)
-
-const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${slug}`, {
+const clientSite = await useClientsite()
+const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.value?.name}`, {
   lazy: true,
 })
 
@@ -229,7 +227,11 @@ const query = computed(() => ({
   ...(searchQuery.value ? { query: searchQuery.value } : {}),
 }))
 
-const { data: feed, refresh, pending } = await useFetch(`/api/articles/by-clientsite/${slug}`, { query, watch: false })
+const {
+  data: feed,
+  refresh,
+  pending,
+} = await useFetch(`/api/articles/by-clientsite/${clientSite?.value?.name}`, { query, watch: false })
 
 const allArticles = ref<NonNullable<typeof feed.value>['items']>([])
 
