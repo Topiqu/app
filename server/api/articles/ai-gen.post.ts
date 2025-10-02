@@ -34,12 +34,14 @@ export default defineLazyEventHandler(() => {
       {
         "title": "catchy title 5-15 words",
         "perex": "short introductory paragraph (3-4 sentences)",
-        "content": "article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend"
+        "content": "article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.",
+        "images": ["detailed description for IMAGE1", "detailed description for IMAGE2", ...]
       }.
       The title must be engaging.
       Naturally incorporate keywords if provided.
       ${keywords && `Keywords: ${JSON.stringify(keywords)}`}.
       Write in the language of the prompt or the company's presentation language.
+      If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding detailed, vivid descriptions in the images array for AI image generation. Use 0 images if not relevant.
     `.trim()
 
     const { object, usage } = await generateObject({
@@ -63,8 +65,11 @@ export default defineLazyEventHandler(() => {
           .min(500)
           .max(20000)
           .describe(
-            'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend',
+            'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.',
           ),
+        images: z
+          .array(z.string().min(10).max(1000).describe('Detailed description for image generation'))
+          .describe('Array of image descriptions corresponding to slots in content'),
       }),
     })
 
