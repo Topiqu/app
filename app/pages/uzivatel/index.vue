@@ -141,13 +141,7 @@
                 <LangSwitcher
                   id="language-section"
                   class="w-full mt-1"
-                  :modelValue="profileForm.language || lcls[0]!.value"
-                  @update:modelValue="updateLanguage"
-                />
-                <LangSwitch
-                  id="language-section"
-                  class="w-full mt-1"
-                  :language="profileForm.language!"
+                  :language="profileForm.language || lcls[0]!.value"
                   @update:language="updateLanguage"
                 />
               </div>
