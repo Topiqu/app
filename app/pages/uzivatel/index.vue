@@ -73,11 +73,8 @@
                   type="textarea"
                   name="bio"
                   rows="4 sm:rows-5"
-                  :maxlength="BIO_MAX_LENGTH"
+                  :maxLength="BIO_MAX_LENGTH"
                 />
-                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {{ bioCharCount }} / {{ BIO_MAX_LENGTH }}
-                </p>
               </div>
               <UserEmail
                 id="email-section"
@@ -334,8 +331,6 @@ const passwordForm = ref({
 const isPasswordFormValid = computed(() => {
   return passwordForm.value.newPassword && passwordForm.value.newPassword === passwordForm.value.confirmNewPassword
 }) as ComputedRef<boolean>
-
-const bioCharCount = computed(() => profileForm.value.bio?.length || 0)
 
 const formattedCreatedAt = computed(() => formatDate(profileForm.value.createdAt))
 
