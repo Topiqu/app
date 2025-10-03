@@ -8,8 +8,7 @@ now:
    (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
 
 once deployed:
-
-1. useClientSite composable - return language/cliensite details based on host header // 🛑 high priority
+1. bullmq / railway / queue up cron jobs
 2. all clientsite endpoints should use host header instead of clientsite slug/route params // 🛑 high priority
 3. GAM + total ad revenue overview & logging // 🛑 high priority
 4. nuxt-gtag // 🛑 high priority
@@ -28,3 +27,4 @@ done:
 6. fix background floating objects z-index
 7. user page - enhance/improve styling & ui for hero section
 8. lang switcher -> improve styles
+9. useClientSite composable - return language/cliensite details based on host header // 🛑 high priority
