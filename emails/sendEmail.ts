@@ -15,7 +15,7 @@ export async function sendEmail({ to, subject, text, template, data }: EmailData
   let mjmlTemplate = await readFile(templatePath, 'utf-8')
 
   for (const [key, value] of Object.entries(data)) {
-    mjmlTemplate = mjmlTemplate.replace(new RegExp(`{{${key}}}`, 'g'), sanitizeHtml(value))
+    mjmlTemplate = mjmlTemplate.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), sanitizeHtml(value))
   }
 
   const { html, errors } = mjml2html(mjmlTemplate)
