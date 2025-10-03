@@ -183,7 +183,7 @@
                         :label="$t('common.auth.oldPassword')"
                         :type="showOldPassword ? 'text' : 'password'"
                         name="oldPassword"
-                        placeholder="Enter old password"
+                        :placeholder="$t('common.auth.oldPassword')"
                         :icon="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'"
                         iconPosition="trailing"
                         @click:icon="showOldPassword = !showOldPassword"
@@ -262,7 +262,6 @@ import equal from 'fast-deep-equal'
 import { Save } from 'lucide-vue-next'
 import { formatDate } from '~~/shared/utils'
 import { TransitionRoot } from '@headlessui/vue'
-
 type Profile = Partial<User> & {
   handle: string
   followers: number
@@ -278,10 +277,13 @@ type Profile = Partial<User> & {
 const BIO_MAX_LENGTH = 300
 
 const { data: user, signOut } = useAuth()
+const localePath = useLocalePath()
 const toast = useToast()
 const { setLocale } = useI18n()
 const route = useRoute()
-
+if (!user.value) {
+  await navigateTo(localePath({ name: 'autorizace' }))
+}
 const draftKey = computed(() => `profileDraft-${user.value?.user.id}`)
 const draft = {
   load: (): Profile | null => {
