@@ -1,5 +1,7 @@
 import { randomBytes } from 'crypto'
 
+import { sendEmail } from '~/../emails/sendEmail'
+
 export default defineEventHandler(async (e) => {
   const body = await readValidatedBody(e, signInSchema.parse)
   const { username, email, password } = body
@@ -25,13 +27,19 @@ export default defineEventHandler(async (e) => {
     verification: { create: { code, expiresAt: expires } },
   })
 
-  const t = useNodeMailer()
-  await t.sendMail({
-    from: useRuntimeConfig().from,
+  await sendEmail({
     to: email,
     subject: 'Ověření registrace',
-    text: `Váš ověřovací kód: ${code}`,
-    html: `<p>Váš ověřovací kód: <b>${code}</b></p><p>Kód je platný 24 hodin.</p>`,
+    text: `Váš ověřovací kód: ${code}. Kód je platný 24 hodin.`,
+    template: 'verification-code',
+    data: {
+      userName: username!,
+      verificationCode: code,
+      actionType: 'registrace',
+      logoUrl: 'https://via.placeholder.com/150x50',
+      // verificationUrl: `${useRuntimeConfig().public.baseUrl}/verify?code=${code}`,
+      unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${email}`,
+    },
   })
 
   return user

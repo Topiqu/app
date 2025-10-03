@@ -1,5 +1,7 @@
 import { randomBytes } from 'crypto'
 
+import { sendEmail } from '~/../emails/sendEmail'
+
 export default defineEventHandler(async (event) => {
   const { email } = await readBody(event)
   if (!email) throw createError({ statusCode: 400, message: 'E-mail je povinný' })
@@ -16,13 +18,19 @@ export default defineEventHandler(async (event) => {
     create: { code, expiresAt, userId: user.id },
   })
 
-  const t = useNodeMailer()
-  await t.sendMail({
-    from: useRuntimeConfig().from,
+  await sendEmail({
     to: user.email,
     subject: 'Obnova hesla',
-    text: `Ahoj ${user.username},\npro obnovu hesla použij tento kód: " ${code} ".`,
-    html: `<p>Ahoj <b>${user.username}</b>,<br>pro obnovu hesla použij tento kód: <b>${code}</b>.</p>`,
+    text: `Ahoj ${user.username},\npro obnovu hesla použij tento kód: ${code}. Kód je platný 24 hodin.`,
+    template: 'verification-code',
+    data: {
+      userName: user.username,
+      verificationCode: code,
+      actionType: 'obnovy hesla',
+      logoUrl: 'https://via.placeholder.com/150x50',
+      // verificationUrl: `${useRuntimeConfig().public.baseUrl}/verify?code=${code}`,
+      unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${user.email}`,
+    },
   })
 
   return { message: 'Kód odeslán' }
