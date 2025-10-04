@@ -31,13 +31,18 @@ const prismaClientSingleton = () =>
           return query(args)
         },
         async update({ args, query }) {
-          const pwd = args.data.password ?? ''
-          const value = typeof pwd === 'object' && 'set' in pwd ? pwd.set : pwd
+          if ('password' in args.data) {
+            const pwd = args.data.password
+            const value = typeof pwd === 'object' && 'set' in pwd! ? pwd.set : pwd
 
-          if (typeof value === 'string') {
-            args.data.password =
-              typeof pwd === 'object' && 'set' in pwd ? { set: await argon.hash(value) } : await argon.hash(value)
+            if (typeof value === 'string' && value.length > 0) {
+              args.data.password =
+                typeof pwd === 'object' && 'set' in pwd! ? { set: await argon.hash(value) } : await argon.hash(value)
+            } else {
+              delete args.data.password
+            }
           }
+
           return query(args)
         },
       },
