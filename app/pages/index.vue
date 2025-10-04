@@ -210,7 +210,7 @@ const { data: auth } = useAuth()
 const localePath = useLocalePath()
 
 const clientSite = await useClientsite()
-const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.value?.name}`, {
+const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
   lazy: true,
 })
 
@@ -231,7 +231,7 @@ const {
   data: feed,
   refresh,
   pending,
-} = await useFetch(`/api/articles/by-clientsite/${clientSite?.value?.name}`, { query, watch: false })
+} = await useFetch(`/api/articles/by-clientsite/${clientSite?.name}`, { query, watch: false })
 
 const allArticles = ref<NonNullable<typeof feed.value>['items']>([])
 
