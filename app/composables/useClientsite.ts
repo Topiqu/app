@@ -1,4 +1,4 @@
-export const useClientsite = async () => {
+export const useClientSite = async () => {
   let hostname: string | undefined = ''
   if (import.meta.client) {
     hostname = window.location.hostname.split('.')[0]

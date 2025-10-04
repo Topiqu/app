@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import type { themes } from '~/composables/theme'
-const clientSite = await useClientsite()
+const clientSite = await useClientSite()
 // throw createError({ statusCode: 400, message: 'Service Unavailable', statusMessage: 'Service Unavailable' })
 
 const themeColors: Record<keyof typeof themes, string> = {

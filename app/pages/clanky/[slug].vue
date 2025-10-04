@@ -274,7 +274,7 @@ const currentImageIndex = shallowRef(0)
 const progress = shallowRef(0)
 
 // const csSlug = 'GameDev'
-const clientSite = await useClientsite()
+const clientSite = await useClientSite()
 const progressBarColor = computed(() => {
   return clientSite?.theme && Object.keys(themes).includes(clientSite.theme) ? themes[clientSite.theme] : themes.blue
 })

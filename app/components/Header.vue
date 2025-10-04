@@ -25,7 +25,7 @@ const isSidebarOpen = defineModel<boolean>('isSidebarOpen')
 
 // const slug = 'GameDev'
 
-const clientSite = await useClientsite()
+const clientSite = await useClientSite()
 
 const { data: auth } = useAuth()
 

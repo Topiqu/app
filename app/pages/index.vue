@@ -204,12 +204,10 @@ import 'tippy.js/dist/tippy.css'
 import { formatDate } from '~~/shared/utils'
 
 import { themes } from '~/composables/theme'
-import { useClientsite } from '~/composables/useClientsite'
-
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
 
-const clientSite = await useClientsite()
+const clientSite = await useClientSite()
 const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
   lazy: true,
 })
