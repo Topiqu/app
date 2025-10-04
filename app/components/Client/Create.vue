@@ -228,10 +228,10 @@ const normalizeString = (value: string) =>
     .replace(/[^a-z0-9-.]/g, '')
 
 const subdomainPlaceholder = computed(() =>
-  newClient.value.name ? `${normalizeString(newClient.value.name)}.topiqu.cz` : '[název-klienta].topiqu.cz',
+  newClient.value.name ? `${normalizeString(newClient.value.name)}.topiqu.com` : '[název-klienta].topiqu.com',
 )
 const customDomainPlaceholder = computed(() =>
-  newClient.value.name ? `blog.${normalizeString(newClient.value.name)}.cz` : 'blog.[název-klienta].cz',
+  newClient.value.name ? `blog.${normalizeString(newClient.value.name)}.com` : 'blog.[název-klienta].com',
 )
 
 const isFormValid = computed(() => {
@@ -250,8 +250,8 @@ const normalizeDomain = (field: 'subdomain' | 'customDomain') => {
 
 const updateDomainFields = () => {
   const normalizedName = newClient.value.name ? normalizeString(newClient.value.name) : ''
-  newClient.value.subdomain = normalizedName ? `${normalizedName}.topiqu.cz` : ''
-  newClient.value.customDomain = normalizedName ? `blog.${normalizedName}.cz` : ''
+  newClient.value.subdomain = normalizedName ? `${normalizedName}.topiqu.com` : ''
+  newClient.value.customDomain = normalizedName ? `blog.${normalizedName}.com` : ''
 }
 
 const updateKeywords = () => {
