@@ -23,9 +23,9 @@
 <script lang="ts" setup>
 const isSidebarOpen = defineModel<boolean>('isSidebarOpen')
 
-const slug = 'GameDev'
+// const slug = 'GameDev'
 
-const { data: clientSite } = await useFetch(`/api/clients/slug/${slug}`, { server: false })
+const clientSite = await useClientsite()
 
 const { data: auth } = useAuth()
 

@@ -11,5 +11,5 @@ export const useClientsite = async () => {
 
   const { data } = await useAsyncData(`clientsite-${hostname}`, () => $fetch(`/api/clients/slug/${hostname}`))
 
-  return data
+  return data.value
 }

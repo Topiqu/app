@@ -273,13 +273,10 @@ const lightboxVisible = shallowRef(false)
 const currentImageIndex = shallowRef(0)
 const progress = shallowRef(0)
 
-const csSlug = 'GameDev'
-const { data: clientSite } = await useFetch(`/api/clients/slug/${csSlug}`)
-
+// const csSlug = 'GameDev'
+const clientSite = await useClientsite()
 const progressBarColor = computed(() => {
-  return clientSite.value?.theme && Object.keys(themes).includes(clientSite.value.theme)
-    ? themes[clientSite.value.theme]
-    : themes.blue
+  return clientSite?.theme && Object.keys(themes).includes(clientSite.theme) ? themes[clientSite.theme] : themes.blue
 })
 const { data, refresh, error, status } = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, {
   default: () => null,
