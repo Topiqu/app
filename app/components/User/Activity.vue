@@ -330,7 +330,7 @@
             </div>
           </div>
         </div>
-        <div v-if="hasMore[activeTab] && !loading" class="mt-8 text-center">
+        <div v-if="hasMore[activeTab] && !pending" class="mt-8 text-center">
           <button
             :disabled="pending"
             class="bg-indigo-600 text-white px-6 py-2 rounded-full font-semibold text-lg hover:bg-indigo-700 dark:bg-indigo-800 dark:hover:bg-indigo-700 transition duration-300 disabled:opacity-50"
@@ -340,7 +340,7 @@
             {{ $t('common.pagination.next') }}
           </button>
         </div>
-        <div v-if="loading" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
+        <div v-if="pending" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
           {{ $t('common.loading') }}
         </div>
         <div
@@ -400,8 +400,9 @@ const searchQuery = shallowRef('')
 const selectedTags = ref<string[]>([])
 const page = shallowRef(1)
 const limit = 2
-const loading = shallowRef(false)
 const hasMore = shallowRef({ likedArticles: true, comments: true })
+const allArticles = ref<Article[]>([])
+const allComments = ref<Comment[]>([])
 
 const { data, pending, error, refresh } = await useFetch('/api/users/activity', {
   query: {
@@ -414,34 +415,38 @@ const { data, pending, error, refresh } = await useFetch('/api/users/activity', 
     comments: [] as Comment[],
     hasMore: { likedArticles: true, comments: true },
   }),
+  watch: false,
 })
 
 watch(
   data,
   (v) => {
     if (!v) return
-    if (page.value === 1) {
-      data.value.likedArticles = v.likedArticles || []
-      data.value.comments = v.comments || []
-    } else {
-      data.value.likedArticles = [...(data.value.likedArticles || []), ...(v.likedArticles || [])]
-      data.value.comments = [...(data.value.comments || []), ...(v.comments || [])] as Comment[]
-    }
+    const existingArticleIds = new Set(allArticles.value.map((a) => a.id))
+    const existingCommentIds = new Set(allComments.value.map((c) => c.id))
+    allArticles.value = [...allArticles.value, ...(v.likedArticles || []).filter((a) => !existingArticleIds.has(a.id))]
+    allComments.value = [...allComments.value, ...(v.comments || []).filter((c) => !existingCommentIds.has(c.id))]
     hasMore.value = v.hasMore || { likedArticles: true, comments: true }
   },
   { immediate: true },
 )
 
+watchEffect(() => {
+  console.log({ allArticles: allArticles.value, allComments: allComments.value })
+})
+
 watch([sortOption, sortComment, props.activeTab, searchQuery, selectedTags], () => {
   page.value = 1
+  allArticles.value = []
+  allComments.value = []
   hasMore.value = { likedArticles: true, comments: true }
   refresh()
 })
 
 const availableTags = computed(() => {
   const tags = new Set<string>()
-  data.value?.likedArticles?.forEach((a) => a.tags.forEach((t) => tags.add(t)))
-  data.value?.comments?.forEach((c) => {
+  allArticles.value.forEach((a) => a.tags.forEach((t) => tags.add(t)))
+  allComments.value.forEach((c) => {
     c.tags.forEach((t) => tags.add(t))
     c.replies.forEach((r) => r.tags.forEach((t) => tags.add(t)))
   })
@@ -458,7 +463,7 @@ const toggleTag = (tag: string) => {
 
 const filteredArticles = computed(() => {
   const [field, order] = sortOption.value.split(':')
-  return [...(data.value?.likedArticles || [])]
+  return [...allArticles.value]
     .filter((article) => {
       const matchesSearch = article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
       const matchesTags = selectedTags.value.length
@@ -499,7 +504,7 @@ const sortReplies = (replies: Comment[]) => {
 
 const filteredComments = computed(() => {
   const [field, order] = sortComment.value.split(':')
-  return [...(data.value?.comments || [])]
+  return [...allComments.value]
     .filter((comment) => {
       const matchesSearch = comment.content.toLowerCase().includes(searchQuery.value.toLowerCase())
       const matchesTags = selectedTags.value.length
@@ -517,11 +522,11 @@ const filteredComments = computed(() => {
 const unlikeArticle = async (articleId: string) => {
   try {
     await $fetch(`/api/articles/${articleId}/reaction`, { method: 'POST' })
-    data.value.likedArticles = (data.value.likedArticles || []).filter((a) => a.id !== articleId)
+    allArticles.value = allArticles.value.filter((a) => a.id !== articleId)
     await refresh()
     toast.success({ message: $t('common.messages.successGeneral') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
+    toast.error({ message: e.data?.message || e.message || $t('common.messages.operationFailed') })
   }
 }
 
@@ -548,16 +553,17 @@ const handleDelete = async (commentId: string) => {
         })
         .filter((c) => !c.deletedAt)
     }
-    data.value.comments = updateComments((data.value.comments || []) as Comment[])
+    allComments.value = updateComments(allComments.value)
     await refresh()
     toast.success({ message: $t('common.messages.deleteSuccess') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
+    toast.error({ message: e.data?.message || e.message || $t('common.messages.operationFailed') })
   }
 }
 
 const loadMore = async () => {
-  if (!hasMore.value[props.activeTab]) return
+  if (!hasMore.value[props.activeTab] || pending.value) return
   page.value++
+  await refresh()
 }
 </script>
