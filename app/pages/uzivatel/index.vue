@@ -4,10 +4,10 @@
       <div class="space-y-6 sm:space-y-8 lg:space-y-10">
         <div class="p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700">
           <div
-            class="mb-8 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/60 backdrop-blur"
+            class="mb-8 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/60 backdrop-blur relative"
           >
             <UserPictureUploader v-model="profileForm.avatarUrl" @upload="refresh()" />
-            <div class="space-y-4 text-center sm:text-left">
+            <div class="space-y-4 text-center sm:text-left flex-1">
               <h1
                 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2"
               >
@@ -29,6 +29,19 @@
                   {{ formatDate(profileForm.createdAt) }}
                 </span>
               </div>
+            </div>
+            <div class="absolute top-3 right-3 sm:top-5 sm:right-5">
+              <Button
+                :disabled="isLoading"
+                icon="mdi:file-pdf-box"
+                variant="transparent"
+                square
+                borderless
+                :title="$t('profile.exportToPDF')"
+                class="relative cursor-pointer flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gray-100/80 !dark:bg-gray-800/70 shadow-md backdrop-blur hover:bg-indigo-50 dark:hover:bg-indigo-500/20 transition-all duration-300 hover:shadow-lg active:scale-95 disabled:opacity-50"
+                @click="exportToPDF"
+              >
+              </Button>
             </div>
           </div>
           <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200 my-8"></div>
@@ -262,6 +275,7 @@ import equal from 'fast-deep-equal'
 import { Save } from 'lucide-vue-next'
 import { formatDate } from '~~/shared/utils'
 import { TransitionRoot } from '@headlessui/vue'
+
 type Profile = Partial<User> & {
   handle: string
   followers: number
@@ -416,6 +430,30 @@ async function uploadAvatar(files: FileList | null) {
     await refresh()
   } catch (err: any) {
     avatar.value.error = err.data?.message || $t('common.messages.operationFailed')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function exportToPDF() {
+  try {
+    isLoading.value = true
+
+    const response = await fetch('/api/users/pdf')
+
+    if (!response.ok) throw new Error('Failed to download PDF')
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `profile_${profileForm.value.username}.pdf`
+    link.click()
+
+    window.URL.revokeObjectURL(url)
+  } catch (err: any) {
+    toast.error({ message: err.message || $t('common.messages.operationFailed') })
   } finally {
     isLoading.value = false
   }
