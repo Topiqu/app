@@ -458,6 +458,7 @@
   "profile": {
     "id": "User ID",
     "title": "My Profile",
+    "exportToPDF": "Export Profile to PDF",
     "security": "Account Security",
     "health": "Account Health",
     "disable2FA": "Disable 2FA",

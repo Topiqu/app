@@ -472,6 +472,7 @@
   "profile": {
     "id": "ID uživatele",
     "title": "Můj profil",
+    "exportToPDF": "Exportovat profil do PDF",
     "security": "Zabezpečení účtu",
     "health": "Zdraví účtu",
     "disable2FA": "Vypnout dvoufázové ověření",
