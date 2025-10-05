@@ -2,17 +2,15 @@
   <button
     :type
     :disabled="disabled || loading"
+    :aria-label="aria || (typeof $attrs.title === 'string' ? $attrs.title : undefined)"
     :class="[
       { 'flex items-center justify-center': true },
       { 'backdrop-blur-sm transition-all hover:scale-105 active:scale-[0.95]': true },
       { 'focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2': true },
-
       borderless
         ? 'border-none shadow-none'
         : 'border border-gray-200/50 dark:border-neutral-700/50 shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)]',
-
       { 'cursor-not-allowed opacity-80': disabled || loading },
-
       square
         ? {
             'w-8 h-8': size === 'sm',
@@ -30,7 +28,6 @@
               'h-10 px-4 py-2 gap-1.5 rounded-xl': size === 'md',
               'h-12 px-6 py-3 gap-2 rounded-2xl': size === 'lg',
             },
-
       active
         ? {
             'bg-blue-400': variant === 'primary',
@@ -50,7 +47,6 @@
             'bg-teal-600': variant === 'info',
             'bg-white': variant === 'neutral',
           },
-
       {
         'text-white hover:bg-blue-800': variant === 'primary',
         'text-black hover:bg-gray-800': variant === 'secondary',
@@ -68,13 +64,10 @@
       :name="loading ? 'i-lucide:loader' : icon"
       :class="[
         { 'text-inherit': true },
-
         { 'animate-rotate': loading },
-
         { 'order-first': iconPosition === 'left' },
         { 'mx-auto': iconPosition === 'center' },
         { '-order-first': iconPosition === 'right' },
-
         {
           'w-4 h-4': size === 'sm',
           'w-5 h-5': size === 'md',
@@ -99,6 +92,7 @@ const {
   square = false,
   borderless = false,
   type = 'button',
+  aria = '',
   onClick,
 } = defineProps<{
   icon?: string
@@ -111,6 +105,7 @@ const {
   loading?: boolean
   square?: boolean
   borderless?: boolean
+  aria?: string
   onClick?: (event: MouseEvent) => void
 }>()
 </script>
