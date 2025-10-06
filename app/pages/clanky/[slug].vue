@@ -239,6 +239,41 @@
         @hide="lightboxVisible = false"
       />
       <ArticleRelated :articles="relatedArticles" />
+      <div v-if="data.sources?.length" class="group w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div
+          class="flex items-center justify-between cursor-pointer select-none text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+          @click="isOpen = !isOpen"
+        >
+          <div class="flex items-center gap-2">
+            <Icon name="mdi:book-open-page-variant" class="w-5 h-5 text-blue-500 dark:text-blue-400" />
+            {{ $t('articles.columns.sources') }} ({{ data.sources.length }})
+          </div>
+          <Icon
+            name="mdi:chevron-down"
+            class="w-5 h-5 text-gray-400 transition-transform duration-300"
+            :class="{ 'rotate-180': isOpen }"
+          />
+        </div>
+        <transition name="fade-slide">
+          <ul v-if="isOpen" class="mt-4 space-y-3 pl-1">
+            <li v-for="source in data.sources" :key="source" class="flex items-center gap-3 group/item">
+              <LazyNuxtImg
+                :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
+                class="w-5 h-5 rounded-sm flex-shrink-0 opacity-80 group-hover/item:opacity-100 transition-opacity duration-200"
+                alt="favicon"
+              />
+              <NuxtLink
+                :to="source"
+                target="_blank"
+                rel="noreferrer"
+                class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-4 transition-colors duration-200 truncate max-w-[calc(100%-2.5rem)]"
+              >
+                {{ source }}
+              </NuxtLink>
+            </li>
+          </ul>
+        </transition>
+      </div>
       <CommentSection :articleId="data.id" :commCount="data.commentCount || 0" :allowComments="data.allowedComments" />
       <ArticleTOC :content="data.content" />
     </div>
@@ -273,7 +308,6 @@ const lightboxVisible = shallowRef(false)
 const currentImageIndex = shallowRef(0)
 const progress = shallowRef(0)
 
-// const csSlug = 'GameDev'
 const clientSite = await useClientSite()
 const progressBarColor = computed(() => {
   return clientSite?.theme && Object.keys(themes).includes(clientSite.theme) ? themes[clientSite.theme] : themes.blue
@@ -281,6 +315,7 @@ const progressBarColor = computed(() => {
 const { data, refresh, error, status } = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, {
   default: () => null,
 })
+const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5)
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 
 isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || false
@@ -485,6 +520,19 @@ watch(
 )
 </script>
 <style>
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
 .prose p:empty::before {
   content: '\200B';
   display: inline-block;
