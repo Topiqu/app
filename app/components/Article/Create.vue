@@ -132,6 +132,8 @@
           >
         </label>
 
+        <ArticleSources v-model="newArticle.sources" />
+
         <label class="flex flex-col gap-3">
           <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">{{
             $t('common.labels.releaseDate')
@@ -187,6 +189,7 @@ const init = () => ({
   imageUrl: '',
   status: 'draft' as ArticleStatus,
   releaseAt: null as string | null,
+  sources: [] as string[],
 })
 
 const newArticle = reactive(init())
@@ -214,57 +217,6 @@ const isReleaseDateValid = computed(() => {
 const { data: drafts, refresh } = await useLazyFetch<ArticleDraft[]>('/api/articles/draft', {
   default: () => [],
 })
-
-const showDraftsDialog = async () => {
-  if (!drafts.value?.length) {
-    toast.info({ message: t('articles.editor.drafts.noDraftsFound') })
-    return
-  }
-  const result = await Swal.fire({
-    title: t('articles.editor.drafts.continueDraftPrompt', [
-      format(drafts.value[0]?.createdAt ?? new Date(), dateFormat.value, { locale: dateLocale.value }),
-    ]),
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: t('common.continue'),
-    cancelButtonText: t('common.messages.deleteCancel'),
-    showDenyButton: drafts.value.length > 1,
-    denyButtonText: t('articles.editor.drafts.selectDraftTitle'),
-  })
-  if (result.isConfirmed) {
-    Object.assign(newArticle, {
-      title: drafts.value[0]?.title,
-      excerpt: drafts.value[0]?.excerpt || '',
-      content: drafts.value[0]?.content,
-      slug: slugify(drafts.value[0]?.title ?? '', { lower: true, strict: true, trim: true }),
-    })
-  } else if (result.isDenied) {
-    const { value: selectedDraft } = await Swal.fire({
-      title: t('articles.editor.drafts.selectDraftTitle'),
-      input: 'select',
-      inputOptions: drafts.value.reduce(
-        (acc, draft) => ({
-          ...acc,
-          [draft.id]: `${draft.title || 'Bez názvu'} (${format(draft.createdAt, dateFormat.value, { locale: dateLocale.value })})`,
-        }),
-        {},
-      ),
-      inputPlaceholder: t('articles.editor.drafts.selectDraftPlaceholder'),
-      showCancelButton: true,
-    })
-    if (selectedDraft) {
-      const draft = drafts.value.find((d) => d.id === selectedDraft)
-      Object.assign(newArticle, {
-        title: draft?.title,
-        excerpt: draft?.excerpt || '',
-        content: draft?.content,
-        slug: slugify(draft?.title ?? '', { lower: true, strict: true, trim: true }),
-      })
-    }
-  }
-}
-
-const handleUpload = (file: { url: string }) => (newArticle.imageUrl = file.url)
 
 const saveDraft = useDebounceFn(async () => {
   if (idle.value) return
@@ -301,6 +253,59 @@ watch(
   () => (newArticle.slug = slugify(newArticle.title, { lower: true, strict: true, trim: true })),
 )
 
+const showDraftsDialog = async () => {
+  if (!drafts.value?.length) {
+    toast.info({ message: t('articles.editor.drafts.noDraftsFound') })
+    return
+  }
+  const result = await Swal.fire({
+    title: t('articles.editor.drafts.continueDraftPrompt', [
+      format(drafts.value[0]?.createdAt ?? new Date(), dateFormat.value, { locale: dateLocale.value }),
+    ]),
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: t('common.continue'),
+    cancelButtonText: t('common.messages.deleteCancel'),
+    showDenyButton: drafts.value.length > 1,
+    denyButtonText: t('articles.editor.drafts.selectDraftTitle'),
+  })
+  if (result.isConfirmed) {
+    Object.assign(newArticle, {
+      title: drafts.value[0]?.title,
+      excerpt: drafts.value[0]?.excerpt || '',
+      content: drafts.value[0]?.content,
+      slug: slugify(drafts.value[0]?.title ?? '', { lower: true, strict: true, trim: true }),
+      sources: [],
+    })
+  } else if (result.isDenied) {
+    const { value: selectedDraft } = await Swal.fire({
+      title: t('articles.editor.drafts.selectDraftTitle'),
+      input: 'select',
+      inputOptions: drafts.value.reduce(
+        (acc, draft) => ({
+          ...acc,
+          [draft.id]: `${draft.title || 'Bez názvu'} (${format(draft.createdAt, dateFormat.value, { locale: dateLocale.value })})`,
+        }),
+        {},
+      ),
+      inputPlaceholder: t('articles.editor.drafts.selectDraftPlaceholder'),
+      showCancelButton: true,
+    })
+    if (selectedDraft) {
+      const draft = drafts.value.find((d) => d.id === selectedDraft)
+      Object.assign(newArticle, {
+        title: draft?.title,
+        excerpt: draft?.excerpt || '',
+        content: draft?.content,
+        slug: slugify(draft?.title ?? '', { lower: true, strict: true, trim: true }),
+        sources: [],
+      })
+    }
+  }
+}
+
+const handleUpload = (file: { url: string }) => (newArticle.imageUrl = file.url)
+
 const createArticle = async () => {
   if (!newArticle.title) return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
   if (!isReleaseDateValid.value)
@@ -313,6 +318,7 @@ const createArticle = async () => {
         excerpt: newArticle.excerpt || undefined,
         content: newArticle.content || undefined,
         releaseAt: newArticle.releaseAt || undefined,
+        sources: newArticle.sources.filter((source) => source.trim() !== ''),
       },
     })
     await Promise.all(
@@ -328,7 +334,11 @@ const createArticle = async () => {
 }
 
 const confirmClose = async () => {
-  if (!newArticle.title.length && (!newArticle.content.length || newArticle.content === '<p></p>'))
+  if (
+    !newArticle.title.length &&
+    (!newArticle.content.length || newArticle.content === '<p></p>') &&
+    !newArticle.sources.length
+  )
     return (open.value = false)
 
   const r = await Swal.fire({
@@ -345,19 +355,17 @@ const confirmClose = async () => {
 
 const generateAIContent = async () => {
   aiGenerating.value = true
-
   try {
-    const { title, perex, content, articleImageUrl, tags } = await $fetch('/api/articles/ai-gen', {
+    const { title, perex, content, articleImageUrl, tags, sources } = await $fetch('/api/articles/ai-gen', {
       method: 'POST',
       body: { prompt: customPrompt.value || 'Empty...' },
     })
-
     newArticle.title = title
     newArticle.excerpt = perex
     newArticle.content = content
     newArticle.imageUrl = articleImageUrl
+    newArticle.sources = sources || []
     articleTags.value = tags
-
     toast.success({ message: t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
     toast.error({ message: t('articles.editor.aiContentFailed') + error.data?.message })
