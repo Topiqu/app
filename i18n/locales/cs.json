@@ -287,10 +287,14 @@
       "title": "Název",
       "content": "Obsah",
       "imageUrl": "Obrázek",
+      "sources": "Zdroje",
       "status": "Status",
       "date": "Datum",
       "actions": "Akce",
       "createdAt": "Vytvořeno"
+    },
+    "sources": {
+      "placeholder": "Odkaz na zdroj (https://...)"
     },
     "status": {
       "published": "Publikováno",

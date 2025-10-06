@@ -273,10 +273,14 @@
       "title": "Title",
       "content": "Content",
       "imageUrl": "Image",
+      "sources": "Sources",
       "status": "Status",
       "date": "Date",
       "actions": "Actions",
       "createdAt": "Created At"
+    },
+    "sources": {
+      "placeholder": "Source link (https://...)"
     },
     "status": {
       "published": "Published",
