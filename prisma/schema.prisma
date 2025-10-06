@@ -140,7 +140,7 @@ model Article {
   shares          ArticleShare[]
   pollResults     PollResult[]
   notifications   Notification[]    @relation("ArticleNotifications")
-  source          String?
+  sources         String[]
   prompt          String?
 
   @@index([title])
