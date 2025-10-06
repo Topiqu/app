@@ -36,19 +36,9 @@ export default defineEventHandler(async (event) => {
   })
 
   const contentWithIds = $.html()
-
+  const data = { content: sanitizeHtml(contentWithIds), ...body }
   const article = await db.article.create({
-    data: {
-      title: body.title,
-      excerpt: body.excerpt,
-      content: sanitizeHtml(contentWithIds),
-      slug: body.slug,
-      userId: body.userId,
-      clientSiteId: user.clientSiteId,
-      createdAt: new Date(),
-      imageUrl: body.imageUrl,
-      releaseAt: body.releaseAt,
-    },
+    data,
   })
 
   await logAction({
