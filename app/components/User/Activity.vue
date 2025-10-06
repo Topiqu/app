@@ -431,10 +431,6 @@ watch(
   { immediate: true },
 )
 
-watchEffect(() => {
-  console.log({ allArticles: allArticles.value, allComments: allComments.value })
-})
-
 watch([sortOption, sortComment, props.activeTab, searchQuery, selectedTags], () => {
   page.value = 1
   allArticles.value = []

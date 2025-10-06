@@ -103,7 +103,6 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
 
     const event = useEvent()
     const sessionId = await generateSessionToken(existingUser, event.node.req)
-    console.log(sessionId)
     return assignToken(token, existingUser, plan, sessionId)
   } else {
     let username = token.name ?? token.email?.split('@')[0] ?? 'user'
