@@ -184,7 +184,6 @@ const init = () => ({
   excerpt: '',
   content: '',
   slug: '',
-  userId: auth.value?.user.id,
   imageUrl: '',
   status: 'draft' as ArticleStatus,
   releaseAt: null as string | null,
