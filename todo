@@ -9,13 +9,12 @@ now:
 
 once deployed:
 1. bullmq / railway / queue up cron jobs
-2. all clientsite endpoints should use host header instead of clientsite slug/route params // 🛑 high priority
-3. GAM + total ad revenue overview & logging // 🛑 high priority
-4. nuxt-gtag // 🛑 high priority
-5. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
-6. ai cron jobs for article writing // 🛑 high priority
-7. automate onboarding flow : wp form -> post fetch on topiqu backend -> render api -> create subdomain/return custom domain dns details // 🟡 mid priority
-8. test // 🛑 high priority
+2. GAM + total ad revenue overview & logging // 🛑 high priority
+3. nuxt-gtag // 🛑 high priority
+4. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
+5. ai cron jobs for article writing // 🛑 high priority
+6. automate onboarding flow : wp form -> post fetch on topiqu backend -> render api -> create subdomain/return custom domain dns details // 🟡 mid priority
+7. test // 🛑 high priority
 
 done:
 
@@ -28,3 +27,4 @@ done:
 7. user page - enhance/improve styling & ui for hero section
 8. lang switcher -> improve styles
 9. useClientSite composable - return language/cliensite details based on host header // 🛑 high priority
+10. all clientsite endpoints should use host header instead of clientsite slug/route params // 🛑 high priority
