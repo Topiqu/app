@@ -163,6 +163,9 @@ export default defineNuxtConfig({
           'https://lh3.googleusercontent.com',
           'https://avatars.githubusercontent.com',
           'https://simpleicons.org',
+          // 'https://www.google.com',
+          'https://t1.gstatic.com',
+          'https://www.gstatic.com', // fallback
         ],
         'frame-src': ['https://www.youtube.com', 'https://www.youtube-nocookie.com'],
         'connect-src': ["'self'", 'https:'],
