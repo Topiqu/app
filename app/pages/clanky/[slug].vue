@@ -91,11 +91,8 @@
         :src="data.imageUrl"
         :alt="$t('articles.articleCard.imageAlt')"
         format="webp"
-        quality="80"
-        width="800"
-        height="400"
-        class="rounded-xl shadow-md border border-gray-100 object-contain object-center w-full aspect-video max-h-[400px] transition-transform duration-500 hover:scale-[1.005]"
-        aria-describedby="image-caption"
+        quality="85"
+        class="w-full max-h-[70vh] rounded-2xl object-contain bg-neutral-100 dark:bg-neutral-900 border border-gray-100/20 shadow-sm transition-transform duration-700 ease-in-out hover:scale-[1.008]"
         loading="lazy"
         placeholder
       />
