@@ -79,11 +79,11 @@ export default defineEventHandler(async (event) => {
       data: { views: body.views },
     })
   } else {
-    const data = {
-      content: sanitizeHtml(content || ''),
+    const data: any = {
       releaseAt: body.releaseAt ? new Date(body.releaseAt) : undefined,
       ...body,
     }
+    if (body.content) data.content = sanitizeHtml(content || '')
     article = await db.article.update({
       where: { id },
       data,
