@@ -80,7 +80,7 @@ export default defineLazyEventHandler(() => {
           .min(500)
           .max(20000)
           .describe(
-            'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.',
+            'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, you can also add <br> tags at the end of each section/paragraph for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.',
           ),
         images: z
           .array(z.string().min(10).max(1000).describe('Detailed description for image generation'))
