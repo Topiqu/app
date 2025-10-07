@@ -271,8 +271,10 @@
 import type { User, Session } from '@prisma/client'
 
 import Swal from 'sweetalert2'
+import { format } from 'date-fns'
 import equal from 'fast-deep-equal'
 import { Save } from 'lucide-vue-next'
+import { enUS, cs } from 'date-fns/locale'
 import { formatDate } from '~~/shared/utils'
 import { TransitionRoot } from '@headlessui/vue'
 
@@ -283,7 +285,7 @@ type Profile = Partial<User> & {
   commentsCount: number
   likesCount: number
   dislikesCount: number
-  likedArticles: Array<{ id: string }>
+  likedArticles: { id: string }[]
   sessions: Session[]
   totpSecret?: string
 }
@@ -328,7 +330,7 @@ watch(() => route.hash, highlight)
 
 const twoFAError = shallowRef('')
 const otpauthUrl = shallowRef('')
-const avatar = ref<{ error: string | null; success: string | null }>({ error: null, success: null })
+const avatar = shallowReactive<{ error: string | null; success: string | null }>({ error: null, success: null })
 const isLoading = shallowRef(false)
 const { onChange } = useFileDialog()
 const showDialog = shallowRef(false)
@@ -337,18 +339,24 @@ const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
 const originalProfile = shallowRef<Profile | null>(null)
 const isDirty = shallowRef(false)
 const showOldPassword = shallowRef(false)
-const profileForm = ref<Profile>({} as Profile)
-const passwordForm = ref({
+const profileForm = shallowReactive<Profile>({} as Profile)
+let passwordForm = shallowReactive({
   oldPassword: '',
   newPassword: '',
   confirmNewPassword: '',
 })
 
 const isPasswordFormValid = computed(() => {
-  return passwordForm.value.newPassword && passwordForm.value.newPassword === passwordForm.value.confirmNewPassword
+  return passwordForm.newPassword && passwordForm.newPassword === passwordForm.confirmNewPassword
 }) as ComputedRef<boolean>
 
-const formattedCreatedAt = computed(() => formatDate(profileForm.value.createdAt))
+const formattedCreatedAt = computed(() => {
+  if (!profileForm.createdAt) return ''
+  const { locale } = useI18n()
+  const dateLocale = locale.value === 'en' ? enUS : cs
+  const exactDateFormat = locale.value === 'en' ? 'MM/dd/yyyy' : 'd.M.yyyy'
+  return `${formatDate(profileForm.createdAt)} (${format(profileForm.createdAt, exactDateFormat, { locale: dateLocale })})`
+})
 
 const {
   data: userData,
@@ -360,7 +368,7 @@ const is2FAEnabled = shallowRef(!!userData.value?.totpSecret)
 otpauthUrl.value = userData.value?.otpauthUrl || ''
 
 if (userData.value) {
-  Object.assign(profileForm.value, {
+  Object.assign(profileForm, {
     ...userData.value,
     handle: userData.value.username.toLowerCase().replace(/\s+/g, ''),
   })
@@ -373,14 +381,14 @@ if (userData.value) {
 onMounted(() => {
   const draftData = draft.load()
   if (draftData && !equal(draftData, originalProfile.value)) {
-    Object.assign(profileForm.value, draftData)
+    Object.assign(profileForm, draftData)
     isDirty.value = true
   }
 })
 
 function revertChanges() {
   if (originalProfile.value) {
-    Object.assign(profileForm.value, originalProfile.value)
+    Object.assign(profileForm, originalProfile.value)
     draft.clear()
     isDirty.value = false
     toast.success({ message: $t('common.messages.successGeneral') })
@@ -399,9 +407,9 @@ async function saveProfile(partial: Partial<Profile>) {
       method: 'PATCH',
       body: partial,
     })
-    Object.assign(profileForm.value, partial)
+    Object.assign(profileForm, partial)
     originalProfile.value = JSON.parse(
-      JSON.stringify({ ...profileForm.value, handle: profileForm.value.username?.toLowerCase().replace(/\s+/g, '') }),
+      JSON.stringify({ ...profileForm, handle: profileForm.username?.toLowerCase().replace(/\s+/g, '') }),
     )
     draft.clear()
     isDirty.value = false
@@ -425,11 +433,11 @@ async function uploadAvatar(files: FileList | null) {
   try {
     isLoading.value = true
     const { url } = await $fetch('/api/upload', { method: 'POST', body: formData })
-    avatar.value.success = $t('common.messages.successGeneralTitle')
-    profileForm.value.avatarUrl = url
+    avatar.success = $t('common.messages.successGeneralTitle')
+    profileForm.avatarUrl = url
     await refresh()
   } catch (err: any) {
-    avatar.value.error = err.data?.message || $t('common.messages.operationFailed')
+    avatar.error = err.data?.message || $t('common.messages.operationFailed')
   } finally {
     isLoading.value = false
   }
@@ -448,7 +456,7 @@ async function exportToPDF() {
 
     const link = document.createElement('a')
     link.href = url
-    link.download = `profile_${profileForm.value.username}.pdf`
+    link.download = `profile_${profileForm.username}.pdf`
     link.click()
 
     window.URL.revokeObjectURL(url)
@@ -465,10 +473,10 @@ async function changePassword() {
     isLoading.value = true
     await $fetch(`/api/users/${user.value?.user?.id}` as `/api/users/:id`, {
       method: 'PATCH',
-      body: { password: passwordForm.value.newPassword, oldPass: passwordForm.value.oldPassword },
+      body: { password: passwordForm.newPassword, oldPass: passwordForm.oldPassword },
     })
     toast.success({ message: $t('common.messages.successGeneralTitle') })
-    passwordForm.value = { oldPassword: '', newPassword: '', confirmNewPassword: '' }
+    passwordForm = { oldPassword: '', newPassword: '', confirmNewPassword: '' }
   } catch (err: any) {
     toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
   } finally {
@@ -480,12 +488,12 @@ onChange(uploadAvatar)
 
 async function updateProfile() {
   await saveProfile({
-    username: profileForm.value.username,
-    bio: profileForm.value.bio,
-    avatarUrl: profileForm.value.avatarUrl,
-    allowNotifs: profileForm.value.allowNotifs,
-    allowEmail: profileForm.value.allowEmail,
-    language: profileForm.value.language,
+    username: profileForm.username,
+    bio: profileForm.bio,
+    avatarUrl: profileForm.avatarUrl,
+    allowNotifs: profileForm.allowNotifs,
+    allowEmail: profileForm.allowEmail,
+    language: profileForm.language,
   })
 }
 
@@ -495,7 +503,7 @@ async function updateLanguage(newLanguage: Language) {
     await saveProfile({ language: newLanguage })
     setLocale(newLanguage)
   } catch {
-    profileForm.value.language = userData.value?.language || 'en'
+    profileForm.language = userData.value?.language || 'en'
   }
 }
 
@@ -546,6 +554,8 @@ watch(
 <style>
 .highlight {
   animation: highlight 1.2s ease-in-out;
+  padding: 0.5rem;
+  scroll-margin-top: 2rem;
 }
 
 @keyframes highlight {
