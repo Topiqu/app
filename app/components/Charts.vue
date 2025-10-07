@@ -66,8 +66,7 @@ const props = defineProps<{
   title: string
 }>()
 
-const isShareChart = (title: string) => title === 'Rozdělení sdílení podle platforem'
-
+const isShareChart = (title: string) => title === 'Rozložení sdílení podle platformy'
 const chartType = shallowRef<'bar' | 'line' | 'pie'>(isShareChart(props.title) ? 'pie' : 'bar')
 
 const toggleType = () => {
