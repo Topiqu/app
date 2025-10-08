@@ -213,7 +213,7 @@
                     <Button
                       :disabled="isLoading || !isPasswordFormValid"
                       class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
-                      @click="changePassword"
+                      @click="handleChangePassword"
                     >
                       <Icon name="mdi:lock-reset" class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       {{ $t('common.auth.changePassword') }}
@@ -268,9 +268,6 @@
 </template>
 
 <script setup lang="ts">
-import type { User, Session } from '@prisma/client'
-
-import Swal from 'sweetalert2'
 import { format } from 'date-fns'
 import equal from 'fast-deep-equal'
 import { Save } from 'lucide-vue-next'
@@ -278,28 +275,21 @@ import { enUS, cs } from 'date-fns/locale'
 import { formatDate } from '~~/shared/utils'
 import { TransitionRoot } from '@headlessui/vue'
 
-type Profile = Partial<User> & {
-  handle: string
-  followers: number
-  following: number
-  commentsCount: number
-  likesCount: number
-  dislikesCount: number
-  likedArticles: { id: string }[]
-  sessions: Session[]
-  totpSecret?: string
-}
+import { useProfile, type Profile } from '~/composables/useProfile'
 
 const BIO_MAX_LENGTH = 300
 
 const { data: user, signOut } = useAuth()
+const { saveProfile, changePassword, deactivateAccount } = useProfile()
 const localePath = useLocalePath()
 const toast = useToast()
 const { setLocale } = useI18n()
 const route = useRoute()
+
 if (!user.value) {
   await navigateTo(localePath({ name: 'autorizace' }))
 }
+
 const draftKey = computed(() => `profileDraft-${user.value?.user.id}`)
 const draft = {
   load: (): Profile | null => {
@@ -330,9 +320,7 @@ watch(() => route.hash, highlight)
 
 const twoFAError = shallowRef('')
 const otpauthUrl = shallowRef('')
-const avatar = shallowReactive<{ error: string | null; success: string | null }>({ error: null, success: null })
 const isLoading = shallowRef(false)
-const { onChange } = useFileDialog()
 const showDialog = shallowRef(false)
 const dialogType = shallowRef<'followers' | 'followed'>('followers')
 const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
@@ -345,7 +333,7 @@ let passwordForm = shallowReactive({
   newPassword: '',
   confirmNewPassword: '',
 })
-
+const lcls = locales
 const isPasswordFormValid = computed(() => {
   return passwordForm.newPassword && passwordForm.newPassword === passwordForm.confirmNewPassword
 }) as ComputedRef<boolean>
@@ -357,7 +345,6 @@ const formattedCreatedAt = computed(() => {
   const exactDateFormat = locale.value === 'en' ? 'MM/dd/yyyy' : 'd.M.yyyy'
   return `${formatDate(profileForm.createdAt)} (${format(profileForm.createdAt, exactDateFormat, { locale: dateLocale })})`
 })
-
 const {
   data: userData,
   pending: userDataPending,
@@ -372,9 +359,10 @@ if (userData.value) {
     ...userData.value,
     handle: userData.value.username.toLowerCase().replace(/\s+/g, ''),
   })
-  originalProfile.value = JSON.parse(
-    JSON.stringify({ ...userData.value, handle: userData.value.username.toLowerCase().replace(/\s+/g, '') }),
-  )
+  originalProfile.value = {
+    ...userData.value,
+    handle: userData.value.username.toLowerCase().replace(/\s+/g, ''),
+  }
   setLocale(userData.value.language)
 }
 
@@ -400,65 +388,39 @@ function openDialog(type: 'followers' | 'followed') {
   showDialog.value = true
 }
 
-async function saveProfile(partial: Partial<Profile>) {
-  try {
-    isLoading.value = true
-    await $fetch(`/api/users/${user.value?.user?.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: partial,
-    })
-    Object.assign(profileForm, partial)
-    originalProfile.value = JSON.parse(
-      JSON.stringify({ ...profileForm, handle: profileForm.username?.toLowerCase().replace(/\s+/g, '') }),
-    )
-    draft.clear()
-    isDirty.value = false
-    toast.success({ message: $t('common.messages.successGeneralTitle') })
-    await refresh()
-    otpauthUrl.value = (await useFetch(`/api/users/${user.value?.user?.id}/account`)).data.value?.otpauthUrl || ''
-  } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
-  } finally {
-    isLoading.value = false
-  }
-}
-
-async function uploadAvatar(files: FileList | null) {
-  if (!files?.length) return
-  const file = files[0]
-  if (!file) return
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('type', 'user-avatar')
-  try {
-    isLoading.value = true
-    const { url } = await $fetch('/api/upload', { method: 'POST', body: formData })
-    avatar.success = $t('common.messages.successGeneralTitle')
-    profileForm.avatarUrl = url
-    await refresh()
-  } catch (err: any) {
-    avatar.error = err.data?.message || $t('common.messages.operationFailed')
-  } finally {
-    isLoading.value = false
-  }
+async function updateProfile() {
+  isLoading.value = true
+  const response = await saveProfile({
+    username: profileForm.username,
+    bio: profileForm.bio,
+    avatarUrl: profileForm.avatarUrl,
+    allowNotifs: profileForm.allowNotifs,
+    allowEmail: profileForm.allowEmail,
+    language: profileForm.language,
+  })
+  Object.assign(profileForm, response)
+  await refresh()
+  Object.assign(originalProfile.value!, {
+    ...profileForm,
+    handle: profileForm.username?.toLowerCase().replace(/\s+/g, ''),
+  })
+  draft.clear()
+  isDirty.value = false
+  otpauthUrl.value = (await useFetch(`/api/users/${user.value?.user?.id}/account`)).data.value?.otpauthUrl || ''
+  isLoading.value = false
 }
 
 async function exportToPDF() {
   try {
     isLoading.value = true
-
     const response = await fetch('/api/users/pdf')
-
     if (!response.ok) throw new Error('Failed to download PDF')
-
     const blob = await response.blob()
     const url = window.URL.createObjectURL(blob)
-
     const link = document.createElement('a')
     link.href = url
     link.download = `profile_${profileForm.username}.pdf`
     link.click()
-
     window.URL.revokeObjectURL(url)
   } catch (err: any) {
     toast.error({ message: err.message || $t('common.messages.operationFailed') })
@@ -467,44 +429,19 @@ async function exportToPDF() {
   }
 }
 
-async function changePassword() {
+async function handleChangePassword() {
   if (!isPasswordFormValid.value) return
-  try {
-    isLoading.value = true
-    await $fetch(`/api/users/${user.value?.user?.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { password: passwordForm.newPassword, oldPass: passwordForm.oldPassword },
-    })
-    toast.success({ message: $t('common.messages.successGeneralTitle') })
-    passwordForm = { oldPassword: '', newPassword: '', confirmNewPassword: '' }
-  } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
-  } finally {
-    isLoading.value = false
-  }
+  isLoading.value = true
+  await changePassword(passwordForm.oldPassword, passwordForm.newPassword)
+  passwordForm = { oldPassword: '', newPassword: '', confirmNewPassword: '' }
+  isLoading.value = false
 }
 
-onChange(uploadAvatar)
-
-async function updateProfile() {
-  await saveProfile({
-    username: profileForm.username,
-    bio: profileForm.bio,
-    avatarUrl: profileForm.avatarUrl,
-    allowNotifs: profileForm.allowNotifs,
-    allowEmail: profileForm.allowEmail,
-    language: profileForm.language,
-  })
-}
-
-const lcls = locales
 async function updateLanguage(newLanguage: Language) {
-  try {
-    await saveProfile({ language: newLanguage })
-    setLocale(newLanguage)
-  } catch {
-    profileForm.language = userData.value?.language || 'en'
-  }
+  isLoading.value = true
+  await saveProfile({ language: newLanguage })
+  setLocale(newLanguage)
+  isLoading.value = false
 }
 
 async function copyToClipboard(text: string) {
@@ -513,31 +450,6 @@ async function copyToClipboard(text: string) {
     toast.success({ message: $t('common.actions.copySuccess') })
   } catch {
     toast.error({ message: $t('common.messages.operationFailed') })
-  }
-}
-
-async function deactivateAccount() {
-  const result = await Swal.fire({
-    title: $t('profile.deactivateAccountConfirmTitle'),
-    text: $t('profile.deactivateAccountConfirmText'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: $t('common.actions.confirm'),
-    cancelButtonText: $t('common.messages.cancel'),
-  })
-  if (!result.isConfirmed) return
-  try {
-    isLoading.value = true
-    await $fetch(`/api/users/${user.value?.user?.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { deletedAt: new Date().toISOString() },
-    })
-    toast.success({ message: $t('common.messages.successGeneralTitle') })
-    await signOut()
-  } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
-  } finally {
-    isLoading.value = false
   }
 }
 
