@@ -126,7 +126,7 @@
           <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">{{
             $t('common.labels.image')
           }}</span>
-          <FileUploader @upload="handleUpload" />
+          <FileUploader type="article-image" @upload="handleUpload" />
           <span v-if="newArticle.imageUrl" class="text-sm text-gray-500 dark:text-gray-400"
             >{{ $t('common.labels.image') }}: {{ newArticle.imageUrl }}</span
           >

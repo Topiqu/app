@@ -33,7 +33,7 @@
 
         <label class="flex flex-col gap-3">
           <span class="text-sm font-semibold tracking-wide">{{ $t('common.labels.image') }}</span>
-          <FileUploader :imageUrl="editedArticle.imageUrl" @upload="handleUpload" />
+          <FileUploader :imageUrl="editedArticle.imageUrl" type="article-image" @upload="handleUpload" />
           <span v-if="editedArticle.imageUrl" class="text-sm text-gray-500">
             {{ $t('common.labels.image') + ': ' + editedArticle.imageUrl }}
           </span>
