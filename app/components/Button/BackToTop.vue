@@ -1,15 +1,17 @@
 <template>
-  <Transition name="fade-scale">
-    <div v-if="isVisible" class="fixed bottom-12 right-8 z-50">
-      <Button
-        icon="i-lucide:arrow-up"
-        size="lg"
-        variant="primary"
-        class="rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-        @click="scrollToTop"
-      />
-    </div>
-  </Transition>
+  <Teleport to="body">
+    <Transition name="fade-scale">
+      <div v-if="isVisible" class="fixed bottom-12 right-8 z-50">
+        <Button
+          icon="i-lucide:arrow-up"
+          size="lg"
+          variant="primary"
+          class="rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+          @click="scrollToTop"
+        />
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script lang="ts" setup>
