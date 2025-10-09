@@ -262,6 +262,7 @@
     "addArticle": "Add Article",
     "authorsArticles": "Articles by author",
     "explore": "Explore articles",
+    "votes": "Votes",
     "tagsArticles": "Articles with tag",
     "searchPlaceholder": "Search articles...",
     "readingTime": "{0} min read",

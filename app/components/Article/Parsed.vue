@@ -1,26 +1,40 @@
 <template>
   <div>
     <div v-for="(node, i) in parsedContent" :key="i">
-      <div v-if="node.type === 'poll'" class="poll-display">
-        <h4>{{ node.question }}</h4>
-        <div v-for="(opt, j) in node.options" :key="j" class="poll-option">
+      <div
+        v-if="node.type === 'poll'"
+        class="border border-gray-200 dark:border-gray-400 bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm m-4"
+      >
+        <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ node.question }}</h4>
+        <div v-for="(opt, j) in node.options" :key="j" class="relative group mb-2">
           <button
             :disabled="hasVoted[node.pollId]"
-            class="poll-button"
-            :class="{ voted: selectedOptions[node.pollId] === opt }"
+            class="relative z-10 w-full p-3 text-left rounded-md border border-transparent transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-500 hover:border-gray-400 dark:hover:border-gray-500 focus-visible:ring-2 focus-visible:ring-blue-400 disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden"
+            :class="{
+              'ring-2 ring-green-400': hasVoted[node.pollId] && opt === getTopOption(node.pollId),
+              'cursor-pointer': !hasVoted[node.pollId],
+            }"
             @click="vote(node.pollId, opt)"
           >
-            <span
-              class="poll-background"
+            <div
+              class="absolute inset-0 rounded-md transition-all duration-500 ease-out"
+              :class="
+                selectedOptions[node.pollId] === opt
+                  ? 'bg-green-500/60 dark:bg-green-400/50'
+                  : 'bg-gray-300 dark:bg-gray-600'
+              "
               :style="{ width: hasVoted[node.pollId] ? `${getPercentage(node.pollId, opt)}%` : '0%' }"
-            ></span>
-            <span class="poll-content">
+            ></div>
+            <span class="relative flex justify-between items-center">
               {{ opt }}
-              <span v-if="hasVoted[node.pollId]" class="vote-info">
-                ({{ voteCounts[node.pollId]?.[opt] || 0 }} hlasů, {{ getPercentage(node.pollId, opt) }}%)
+              <span v-if="hasVoted[node.pollId]" class="text-xs opacity-80">
+                {{ getPercentage(node.pollId, opt) }}%
               </span>
             </span>
           </button>
+        </div>
+        <div v-if="hasVoted[node.pollId]" class="text-sm opacity-80 mb-4 text-gray-600 dark:text-gray-300">
+          ({{ `${getTotalVotes(node.pollId)} ${$t('articles.votes').toLowerCase()}` }})
         </div>
       </div>
       <div v-else v-html="node.html" />
@@ -98,6 +112,19 @@ const getPercentage = (pollId: string, option: string) => {
   return totalVotes ? Math.round((optionVotes / totalVotes) * 100) : 0
 }
 
+const getTotalVotes = (pollId: string) => {
+  const counts = voteCounts[pollId] || {}
+  return Object.values(counts).reduce((sum, count) => sum + count, 0)
+}
+
+const getTopOption = (pollId: string) => {
+  const counts = voteCounts[pollId] || {}
+  return Object.entries(counts).reduce(
+    (top, [opt, count]) => (count > (counts[top] || 0) ? opt : top),
+    Object.keys(counts)[0] || '',
+  )
+}
+
 const vote = async (pollId: string, option: string) => {
   if (hasVoted[pollId]) return
   try {
@@ -126,80 +153,3 @@ watch(
   },
 )
 </script>
-
-<style>
-.poll-display {
-  border: 1px solid #ccc;
-  padding: 16px;
-  margin: 16px 0;
-  border-radius: 8px;
-  background-color: #f9fafb;
-}
-html.dark .poll-display {
-  background-color: #374151;
-  border-color: #4b5563;
-}
-.poll-display h4 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #1f2937;
-}
-html.dark .poll-display h4 {
-  color: #e5e7eb;
-}
-.poll-option .poll-button {
-  position: relative;
-  width: 100%;
-  padding: 8px 16px;
-  margin: 4px 0;
-  background-color: #e5e7eb;
-  color: #1f2937;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  overflow: hidden;
-  text-align: left;
-}
-.poll-option .poll-button:disabled {
-  cursor: not-allowed;
-}
-.poll-option .voted {
-  font-weight: 600;
-}
-.poll-option .poll-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background-color: #bcc3ce;
-  transition: width 0.5s ease-in-out;
-  z-index: 0;
-}
-.poll-option .voted .poll-background {
-  background-color: #10b981;
-}
-.poll-option .poll-content {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1;
-}
-.poll-option .vote-info {
-  font-size: 0.85rem;
-  opacity: 0.9;
-  margin-left: 8px;
-}
-html.dark .poll-option .poll-button {
-  background-color: #4b5563;
-  color: #e5e7eb;
-}
-html.dark .poll-option .poll-background {
-  background-color: #60a5fa;
-}
-html.dark .poll-option .voted .poll-background {
-  background-color: #34d399;
-}
-</style>
