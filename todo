@@ -7,6 +7,8 @@ now:
 5. better gamification - badges, levels, site activity points
    (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
 6. centralised ArticleModal component (for ArticleCreate/Edit) // low priority 🟢
+7. rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one // low priority 🟢
+8. HP/index page should get a UI rework and move from MVP to actual production ready page
 
 once deployed:
 1. bullmq / railway / queue up cron jobs
