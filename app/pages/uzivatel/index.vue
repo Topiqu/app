@@ -283,7 +283,7 @@ const { data: user, signOut } = useAuth()
 const { saveProfile, changePassword, deactivateAccount } = useProfile()
 const localePath = useLocalePath()
 const toast = useToast()
-const { setLocale } = useI18n()
+const { setLocale, locale } = useI18n()
 const route = useRoute()
 
 if (!user.value) {
@@ -340,7 +340,6 @@ const isPasswordFormValid = computed(() => {
 
 const formattedCreatedAt = computed(() => {
   if (!profileForm.createdAt) return ''
-  const { locale } = useI18n()
   const dateLocale = locale.value === 'en' ? enUS : cs
   const exactDateFormat = locale.value === 'en' ? 'MM/dd/yyyy' : 'd.M.yyyy'
   return `${formatDate(profileForm.createdAt)} (${format(profileForm.createdAt, exactDateFormat, { locale: dateLocale })})`
@@ -396,7 +395,6 @@ async function updateProfile() {
     avatarUrl: profileForm.avatarUrl,
     allowNotifs: profileForm.allowNotifs,
     allowEmail: profileForm.allowEmail,
-    language: profileForm.language,
   })
   Object.assign(profileForm, response)
   await refresh()
@@ -441,6 +439,7 @@ async function updateLanguage(newLanguage: Language) {
   isLoading.value = true
   await saveProfile({ language: newLanguage })
   setLocale(newLanguage)
+  refresh()
   isLoading.value = false
 }
 
