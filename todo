@@ -6,6 +6,7 @@ now:
 4. misc style/ui cleanups OR general code optimisation
 5. better gamification - badges, levels, site activity points
    (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
+6. centralised ArticleModal component (for ArticleCreate/Edit) // low priority 🟢
 
 once deployed:
 1. bullmq / railway / queue up cron jobs
