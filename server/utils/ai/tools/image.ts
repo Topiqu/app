@@ -7,7 +7,7 @@ export const generateImageTool: Tool = {
   inputSchema: z.object({ prompt: z.string() }),
   outputSchema: z.object({ prompt: z.string(), url: z.string() }),
   execute: async ({ prompt }) => {
-    const url = await generateImage(prompt)
+    const { url } = await generateImage(prompt)
     return { prompt, url }
   },
 }
