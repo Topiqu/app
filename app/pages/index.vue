@@ -1,37 +1,67 @@
 <template>
   <main
-    class="sm:min-w-md md:min-w-lg lg:min-w-xl xl:min-w-2xl max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12"
+    class="sm:min-w-md md:min-w-lg lg:min-w-xl xl:min-w-2xl max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-12"
   >
-    <section
-      :class="[
-        'relative bg-gradient-to-r rounded-3xl py-12 px-6 text-center shadow-xl overflow-hidden animate-gradient-x [animation-duration:8s]',
-        clientSite?.theme && Object.keys(themes).includes(clientSite.theme) ? themes[clientSite.theme] : themes.blue,
-      ]"
-    >
+    <section class="text-center py-2 sm:py-3 space-y-2 relative">
+      <div class="absolute top-2 right-2">
+        <div
+          class="w-12 h-12 flex flex-col items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm"
+        >
+          <span class="text-base font-semibold text-gray-900 dark:text-gray-100 leading-none">
+            {{ new Date().getDate() }}
+          </span>
+          <span class="text-[0.65rem] uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            {{ new Date().toLocaleDateString(locale, { month: 'short' }) }}
+          </span>
+        </div>
+      </div>
       <NuxtImg
         v-if="clientSite?.logoUrl"
         :src="clientSite.logoUrl"
-        class="w-24 h-24 mx-auto mb-4 rounded-full object-cover border border-white/20 relative z-20"
+        class="w-16 h-16 mx-auto mb-2 rounded-full object-contain border border-gray-200 dark:border-gray-700"
         :alt="$t('common.avatar.alt.company')"
       />
-      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold drop-shadow text-white">
-        {{ clientSite?.name ?? $t('common.labels.title') }}
-      </h1>
-      <p class="mt-4 text-lg sm:text-xl max-w-3xl mx-auto text-white/80 dark:text-white/80">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">
+          {{ clientSite?.name ?? $t('common.labels.title') }}
+        </h1>
+        <div class="w-8 h-1 bg-blue-500 mx-auto mt-2 rounded"></div>
+      </div>
+      <p class="mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-xl mx-auto leading-relaxed">
         {{ clientSite?.description ?? $t('common.preferences.companyDescription.placeholder') }}
       </p>
-      <div class="mt-6" style="background-color: transparent !important">
+      <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+        <span>{{ $t('stats.articleCount', { count: allArticles.length }) }}</span>
+        <span>•</span>
+        <span>{{ $t('articles.latestArticle') }}</span>
         <NuxtLink
-          href="#articles"
-          class="bg-white text-blue-700 dark:bg-blue-800 dark:text-gray-100 px-6 py-2 rounded-full font-semibold text-lg shadow-lg hover:scale-105 dark:hover:bg-blue-700 transition-all duration-300 animate-pulse border-2 dark:border-blue-600/30 no-underline"
+          :to="localePath({ name: 'clanky-slug', params: { slug: latestArticleSlug ?? '' } })"
+          class="underline underline-offset-2 hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[180px]"
         >
-          <Icon name="material-symbols:arrow-downward" class="w-5 h-5 inline mr-2" />
-          {{ $t('articles.explore') }}
+          {{ latestArticleTitle }}
         </NuxtLink>
       </div>
+      <div class="mt-3 max-w-2xl mx-auto">
+        <div class="flex flex-wrap justify-center gap-1.5">
+          <NuxtLink
+            :to="localePath({ name: 'stitky-slug', params: { slug: '' } })"
+            class="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700 transition"
+          >
+            {{ $t('articles.title') }}
+          </NuxtLink>
+          <NuxtLink
+            v-for="tag in tags"
+            :key="tag.id"
+            :to="localePath({ name: 'stitky-slug', params: { slug: tag.name } })"
+            class="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700 transition"
+            role="listitem"
+          >
+            {{ tag.name }}
+          </NuxtLink>
+        </div>
+      </div>
+      <hr class="mt-4 border-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
     </section>
-
-    <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <ArticleSkeletonCard :pending="featPending" isFeatured :article="featured || undefined" :tags="featured?.tags" />
@@ -54,7 +84,6 @@
         <div class="flex flex-col items-center mb-6 gap-4" style="background-color: transparent !important">
           <h2 class="text-3xl font-bold">{{ $t('articles.title') }}</h2>
         </div>
-
         <div class="w-full mb-6" style="background-color: transparent !important">
           <div class="flex flex-col items-center gap-4" style="background-color: transparent !important">
             <div class="w-full max-w-3xl">
@@ -75,11 +104,10 @@
                 />
               </div>
             </div>
-
             <div class="w-full flex flex-wrap justify-center gap-2" style="background-color: transparent !important">
               <button
                 :class="[
-                  'flex-shrink-0 text-sm px-3 py-1 rounded-full font-medium transition duration-150 sticky left-0 z-10',
+                  'flex-shrink-0 text-sm px-3 py-1 rounded-full font-medium transition duration-150',
                   selectedTag === ''
                     ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
                     : 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700',
@@ -105,7 +133,6 @@
             </div>
           </div>
         </div>
-
         <div
           v-if="filteredArticles.length"
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -120,9 +147,7 @@
             :index="idx"
           />
         </div>
-
         <p v-else class="text-center text-lg text-gray">{{ $t('articles.noResults.message') }}</p>
-
         <div v-if="hasMore" class="mt-8 text-center" style="background-color: transparent !important">
           <button
             :disabled="pending"
@@ -138,6 +163,53 @@
 
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl py-8 px-6">
+        <h2 class="text-3xl font-bold text-center mb-6">{{ $t('articles.poll.hpTitle') }}</h2>
+        <ArticlePoll v-if="latestPoll && pollArticle" :poll="latestPoll" :articleId="pollArticle.id" />
+        <p v-else class="text-center text-lg text-gray">{{ $t('articles.poll.noPoll') }}</p>
+      </div>
+      <aside class="space-y-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4">{{ $t('stats.topArticle.pluralTitle') }}</h3>
+          <template v-if="topArticles.length">
+            <NuxtLink
+              v-for="(top, idx) in topArticles"
+              :key="top.id"
+              :to="localePath({ name: 'clanky-slug', params: { slug: top?.slug } })"
+              class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
+            >
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
+              />
+              <NuxtImg
+                v-if="top.imageUrl"
+                :src="top.imageUrl"
+                class="w-16 h-16 object-cover rounded-lg group-hover:shadow-md transition duration-500 relative z-20"
+                :alt="$t('articles.articleCard.imageAlt')"
+              />
+              <div v-else class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg">
+                <Icon name="image" class="w-8 h-8 text-gray-400" />
+              </div>
+              <div class="relative z-20">
+                <h4
+                  class="text-base font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
+                >
+                  #{{ idx + 1 }} {{ top.title }}
+                </h4>
+                <div class="mt-1 text-sm">
+                  {{ formatDate(top.createdAt ?? undefined) }}
+                </div>
+              </div>
+            </NuxtLink>
+          </template>
+          <p v-else class="text-gray">{{ $t('articles.noResults.message') }}</p>
+        </div>
+      </aside>
+    </section>
+
+    <hr class="border-gray-200 dark:border-gray-800 my-8" />
+
     <section
       v-if="!auth"
       class="text-center bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-2xl py-12 shadow-lg"
@@ -146,56 +218,6 @@
       <p class="mt-3 max-w-xl mx-auto text-lg">{{ $t('common.auth.loginToComment') }}</p>
       <div class="mt-6 flex justify-center"><AuthForm /></div>
     </section>
-
-    <aside class="lg:col-span-1 lg:order-last space-y-8">
-      <div>
-        <h3 class="text-xl font-bold mb-4">{{ $t('stats.topArticle.pluralTitle') }}</h3>
-        <template v-if="topArticles.length">
-          <NuxtLink
-            v-for="(top, idx) in topArticles"
-            :key="top.id"
-            :to="localePath({ name: 'clanky-slug', params: { slug: top?.slug } })"
-            class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
-          >
-            <div
-              class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
-            />
-            <NuxtImg
-              v-if="top.imageUrl"
-              :src="top.imageUrl"
-              class="w-16 h-16 object-cover rounded-lg group-hover:shadow-md transition duration-500 relative z-20"
-              :alt="$t('articles.articleCard.imageAlt')"
-            />
-            <div v-else class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg">
-              <Icon name="image" class="w-8 h-8 text-gray-400" />
-            </div>
-            <div class="relative z-20">
-              <h4 class="text-base font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition duration-200">
-                #{{ idx + 1 }} {{ top.title }}
-              </h4>
-              <div class="mt-1 text-sm">
-                {{ formatDate(top.createdAt ?? undefined) }}
-              </div>
-            </div>
-          </NuxtLink>
-        </template>
-        <p v-else class="text-gray">{{ $t('articles.noResults.message') }}</p>
-      </div>
-      <div>
-        <h3 class="text-xl font-bold mb-4">{{ $t('articles.tags.title') }}</h3>
-        <div v-if="tags.length" class="flex flex-wrap gap-3">
-          <NuxtLink
-            v-for="tag in tags"
-            :key="tag.id"
-            :to="localePath({ name: 'stitky-slug', params: { slug: tag.name } })"
-            class="bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-95 transition duration-200 no-underline"
-          >
-            {{ tag.name }}
-          </NuxtLink>
-        </div>
-        <p v-else class="text-gray">{{ $t('articles.tags.noTagsFound') }}</p>
-      </div>
-    </aside>
   </main>
 </template>
 
@@ -203,18 +225,16 @@
 import 'tippy.js/dist/tippy.css'
 import { formatDate } from '~~/shared/utils'
 
-import { themes } from '~/composables/theme'
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
-
+const { locale } = useI18n()
 const clientSite = await useClientSite()
+
 const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
   lazy: true,
 })
-
 const page = shallowRef<number>(1)
 const limit = shallowRef<number>(15)
-
 const selectedTag = shallowRef<string>('')
 const searchQuery = shallowRef<string>('')
 
@@ -229,18 +249,20 @@ const {
   data: feed,
   refresh,
   pending,
-} = await useFetch(`/api/articles/by-clientsite/${clientSite?.name}`, { query, watch: false })
-
-const allArticles = ref<NonNullable<typeof feed.value>['items']>([])
-
+} = await useFetch(`/api/articles/by-clientsite/${clientSite?.name}`, {
+  query,
+  watch: false,
+})
+const articleMap = ref<Map<string, NonNullable<typeof feed.value>['items'][number]>>(new Map())
 const hasMore = shallowRef<boolean>(true)
 
 watch(
   feed,
   (d) => {
-    const existing = new Set(allArticles.value.map((a) => a.id))
-    const next = (d?.items ?? []).filter((a) => !existing.has(a.id))
-    allArticles.value = [...allArticles.value, ...next]
+    const next = (d?.items ?? []).filter((a) => !articleMap.value.has(a.id))
+    for (const article of next) {
+      articleMap.value.set(article.id, article)
+    }
     hasMore.value = !!d?.hasMore
   },
   { immediate: true },
@@ -248,13 +270,14 @@ watch(
 
 const debouncedRefresh = useDebounceFn(() => {
   page.value = 1
-  allArticles.value = []
+  articleMap.value.clear()
   hasMore.value = true
   refresh()
 }, 400)
 
 watch([selectedTag, searchQuery], debouncedRefresh)
 
+const allArticles = computed(() => Array.from(articleMap.value.values()))
 const featured = computed(() => feat.value?.featured ?? null)
 const recommended = computed(() => feat.value?.recommended ?? [])
 const tags = computed(() => feed.value?.tags ?? [])
@@ -263,8 +286,60 @@ const topArticles = computed(() =>
     ? [...allArticles.value].sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0)).slice(0, 3)
     : [],
 )
-const filteredArticles = computed(() =>
-  [...new Map(allArticles.value.map((a) => [a.id, a])).values()].filter((a) => a.id !== featured.value?.id),
+const filteredArticles = computed(() => allArticles.value.filter((a) => a.id !== featured.value?.id))
+const latestArticleTitle = computed(() => {
+  if (!allArticles.value.length) return $t('common.noItems')
+  const latestArticle = [...allArticles.value].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )[0]
+  return latestArticle?.title ?? $t('common.noItems')
+})
+const latestArticleSlug = computed(() => {
+  if (!allArticles.value.length) return null
+  const latestArticle = [...allArticles.value].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )[0]
+  return latestArticle?.slug ?? null
+})
+
+const pollArticle = ref<NonNullable<typeof feed.value>['items'][number] | null>(null)
+const latestPoll = ref<{ type: string; pollId: string; question: string; options: string[] } | null>(null)
+
+watch(
+  feed,
+  (d) => {
+    const newArticles = (d?.items ?? []).filter((a) => !pollArticle.value && a.content?.includes('data-type="poll"'))
+    if (newArticles.length && import.meta.client) {
+      const article = [...newArticles].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )[0]
+      if (article) {
+        pollArticle.value = article
+        const p = new DOMParser()
+        const d = p.parseFromString(article.content, 'text/html')
+        const node = Array.from(d.body.childNodes).findLast((n) => {
+          const el = n as Element
+          return el.nodeName === 'DIV' && el.getAttribute('data-type') === 'poll'
+        })
+        if (node) {
+          const el = node as Element
+          try {
+            latestPoll.value = {
+              type: 'poll',
+              pollId: el.getAttribute('data-id') || crypto.randomUUID(),
+              question: el.getAttribute('data-question') || 'Zadej otázku',
+              options: JSON.parse(el.getAttribute('data-options') || '[]') || ['Možnost 1'],
+            }
+          } catch {
+            latestPoll.value = null
+          }
+        } else {
+          latestPoll.value = null
+        }
+      }
+    }
+  },
+  { immediate: true },
 )
 
 const loadMore = async () => {
@@ -273,21 +348,3 @@ const loadMore = async () => {
   await refresh()
 }
 </script>
-
-<style scoped>
-@keyframes gradient-x {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-.animate-gradient-x {
-  background-size: 200% 100%;
-  animation: gradient-x 15s ease-in-out infinite;
-}
-</style>
