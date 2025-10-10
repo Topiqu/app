@@ -23,7 +23,13 @@
           <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">{{
             $t('common.preferences.companyLogo.label')
           }}</span>
-          <FileUploader :imageUrl="client?.logoUrl" type="client-logo" @upload="onLogoUpload" />
+          <FileUploader
+            :imageUrl="client?.logoUrl"
+            type="client-logo"
+            :maxWidth="1920"
+            :maxHeight="1080"
+            @upload="onLogoUpload"
+          />
           <span class="text-xs text-gray-500 dark:text-gray-400">
             {{ $t('common.preferences.companyLogo.description') }}
           </span>
