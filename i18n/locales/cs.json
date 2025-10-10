@@ -280,6 +280,7 @@
     "tagsArticles": "Články se štítkem",
     "searchPlaceholder": "Hledat články...",
     "readingTime": "{0} min čtení",
+    "latestArticle": "Nejnovější článek:",
     "noResults": {
       "imageAlt": "Smutný Topík",
       "message": "Achjo, cítím se tak zbytečný..."
@@ -379,6 +380,8 @@
       "option": "Možnost {index}",
       "questionPlaceholder": "Zadejte otázku",
       "optionPlaceholder": "Možnost",
+      "hpTitle": "Nejnovější anketa",
+      "noPolls": "Žádné ankety",
       "addOption": "Přidat možnost"
     },
     "activity": {

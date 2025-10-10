@@ -265,6 +265,7 @@
     "votes": "Votes",
     "tagsArticles": "Articles with tag",
     "searchPlaceholder": "Search articles...",
+    "latestArticle": "Latest article:",
     "readingTime": "{0} min read",
     "noResults": {
       "imageAlt": "Sad Topík",
@@ -365,6 +366,8 @@
       "option": "Option {index}",
       "questionPlaceholder": "Enter a question",
       "optionPlaceholder": "Option",
+      "hpTitle": "Hot Poll",
+      "noPolls": "No Poll",
       "addOption": "Add option"
     },
     "activity": {
@@ -419,7 +422,7 @@
       "title": "Total Views",
       "noViews": "No views yet"
     },
-    "articleCount": "Article Count",
+    "articleCount": "Total articles",
     "totalShares": {
       "title": "Total Shares",
       "noShares": "No shares yet"
