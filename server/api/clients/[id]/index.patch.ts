@@ -57,8 +57,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const ip = getIp(event)
+  const isEmptyObjectValues = Object.values(body.aiUser).every((v) => v === '')
 
-  if (body.aiUser !== undefined && clientSite.tokenLimit && clientSite.tokenLimit > 0) {
+  if (body.aiUser !== undefined && !isEmptyObjectValues && clientSite.tokenLimit && clientSite.tokenLimit > 0) {
     const existingAiUser = clientSite.users[0]
     if (existingAiUser) {
       await db.user.update({
