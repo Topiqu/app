@@ -287,144 +287,27 @@ import { formatNumber } from '~~/shared/utils/number'
 
 import { themes } from '~/composables/theme'
 
-import type { ArticleWithDetails, ArticleBase } from '../../../types/article'
 type Image = { src: string; alt?: string }
 
 const route = useRoute()
+
 const toast = useToast()
+
+const clipboard = useClipboard()
+
 const localePath = useLocalePath()
+
 const { data: session } = useAuth()
-const slug = computed(() => route.params.slug)
-const isFollowing = shallowRef(false)
-const relatedArticles = ref<ArticleWithDetails[]>([])
-const isSticky = shallowRef(false)
-const content = ref<HTMLElement | null>(null)
-const container = useTemplateRef('container')
-const images = ref<Image[]>([])
-const lightboxVisible = shallowRef(false)
-const currentImageIndex = shallowRef(0)
-const progress = shallowRef(0)
 
 const clientSite = await useClientSite()
-const progressBarColor = computed(() => {
-  return clientSite?.theme && Object.keys(themes).includes(clientSite.theme) ? themes[clientSite.theme] : themes.blue
-})
-const { data, refresh, error, status } = await useFetch<ArticleBase | null>(`/api/articles/${slug.value}`, {
-  default: () => null,
-})
-const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5)
+
+const slug = computed(() => route.params.slug)
+
+const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`)
+
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 
-isFollowing.value = follows.value?.some((f) => f.id === data.value?.userId) || false
-
-const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
-
-const share = async (platform: 'TWITTER' | 'LINKEDIN' | 'OTHER') => {
-  await $fetch(`/api/articles/${data.value?.id}/share`, {
-    method: 'POST',
-    body: { platform },
-  })
-  data.value!.shared = (data.value!.shared || 0) + 1
-}
-
-const toggleFollow = async () => {
-  if (!session.value?.user || !data.value?.user.id) {
-    toast.error({ message: $t('common.auth.loginPrompt') })
-    return
-  }
-  try {
-    if (isFollowing.value) {
-      const response = await $fetch<{ success: true; followerCount: number }>(`/api/follows/${data.value.user.id}`, {
-        method: 'DELETE',
-      })
-      isFollowing.value = false
-      data.value.followerCount = response.followerCount ?? 0
-      toast.success({ message: $t('common.messages.successGeneral') })
-    } else {
-      const response = await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
-      isFollowing.value = true
-      data.value.followerCount = response.followerCount ?? 0
-      toast.success({ message: $t('profile.messages.followSuccess', [data.value.user.username]) })
-    }
-    await refreshFollows()
-  } catch (e: any) {
-    if (e.data?.statusCode === 409) {
-      isFollowing.value = true
-      const response = await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
-      data.value.followerCount = response.followerCount ?? 0
-    } else {
-      toast.error({
-        message:
-          e.data?.message ||
-          (isFollowing.value ? $t('profile.messages.profileUpdateError') : $t('profile.messages.followFailed')),
-      })
-    }
-  }
-}
-
-const copyLink = async () => {
-  navigator.clipboard.writeText(fullUrl.value)
-  toast.success({ message: $t('common.actions.copySuccess') })
-  await share('OTHER')
-}
-
-const toggleLike = async () => {
-  if (!data.value?.slug) return
-  const key = `liked-${data.value.slug}`
-  const hasLiked = sessionStorage.getItem(key)
-  if (hasLiked && !session.value?.user.id) {
-    data.value.likedByUser = false
-    data.value.likes -= 1
-    sessionStorage.removeItem(key)
-    return
-  }
-  try {
-    const res = await $fetch(`/api/articles/${data.value.id}/reaction`, { method: 'POST' })
-    data.value.likedByUser = res.liked
-    data.value.likes = res.likes
-    if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
-    await refresh()
-  } catch {
-    toast.error({ message: $t('articles.comments.reactionFailed') })
-  }
-}
-
-const toggleComments = async () => {
-  if (!data.value?.id) return
-  try {
-    await $fetch(`/api/articles/${data.value.id}`, {
-      method: 'PATCH',
-      body: { allowedComments: data.value.allowedComments },
-    })
-    toast.success({
-      message: $t('articles.comments.toggleSuccess', [
-        data.value.allowedComments
-          ? $t('articles.comments.commentsEnabled')
-          : $t('articles.comments.commentsDisabledSuccess'),
-      ]),
-    })
-    await refresh()
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
-    data.value.allowedComments = !data.value.allowedComments
-  }
-}
-
-const handleContentScroll = () => {
-  if (!content.value) return
-  const contentRect = content.value.getBoundingClientRect()
-  const contentTop = contentRect.top + window.scrollY
-  const contentHeight = contentRect.height
-  const windowScrollY = window.scrollY
-  const windowHeight = window.innerHeight
-  const scrollableDistance = contentHeight - windowHeight
-  if (scrollableDistance > 0) {
-    const scrollProgress = Math.max(0, windowScrollY - contentTop + windowHeight / 2)
-    progress.value = Math.min(100, (scrollProgress / scrollableDistance) * 100)
-  } else {
-    progress.value = 0
-  }
-}
+const { data: relatedArticles } = await useFetch(`/api/articles/${slug.value}/related` as `/api/articles/:id/related`)
 
 useSeoMeta({
   title: () => data.value?.title || $t('common.labels.article'),
@@ -439,6 +322,139 @@ useSeoMeta({
     $t('articles.noResults.message'),
   ogImage: () => data.value?.imageUrl || false,
 })
+
+const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5)
+
+const isFollowing = shallowRef<boolean>(follows.value?.some((f) => f.id === data.value?.userId) || false)
+
+const toggleFollow = async () => {
+  if (!session.value?.user || !data.value?.user.id) return toast.error({ message: $t('common.auth.loginPrompt') })
+
+  try {
+    if (isFollowing.value) {
+      const response = await $fetch<{ success: true; followerCount: number }>(`/api/follows/${data.value.user.id}`, {
+        method: 'DELETE',
+      })
+
+      isFollowing.value = false
+      data.value.followerCount = response.followerCount ?? 0
+
+      toast.success({ message: $t('common.messages.successGeneral') })
+    } else {
+      const response = await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
+
+      isFollowing.value = true
+      data.value.followerCount = response.followerCount ?? 0
+
+      toast.success({ message: $t('profile.messages.followSuccess', [data.value.user.username]) })
+    }
+
+    await refreshFollows()
+  } catch (e: any) {
+    if (e.data?.statusCode === 409) {
+      isFollowing.value = true
+
+      const response = await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
+
+      data.value.followerCount = response.followerCount ?? 0
+    } else {
+      toast.error({
+        message:
+          e.data?.message ||
+          (isFollowing.value ? $t('profile.messages.profileUpdateError') : $t('profile.messages.followFailed')),
+      })
+    }
+  }
+}
+
+const share = async (platform: 'TWITTER' | 'LINKEDIN' | 'OTHER') => {
+  await $fetch(`/api/articles/${data.value?.id}/share`, {
+    method: 'POST',
+    body: { platform },
+  })
+
+  data.value!.shared = (data.value!.shared || 0) + 1
+}
+
+const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
+
+const copyLink = async () => {
+  clipboard.copy(fullUrl.value)
+  toast.success({ message: $t('common.actions.copySuccess') })
+  await share('OTHER')
+}
+
+const toggleLike = async () => {
+  if (!data.value?.slug) return
+
+  const key = `liked-${data.value.slug}`
+  const hasLiked = sessionStorage.getItem(key)
+  if (hasLiked && !session.value?.user.id) {
+    data.value.likedByUser = false
+    data.value.likes -= 1
+    return sessionStorage.removeItem(key)
+  }
+
+  try {
+    const res = await $fetch(`/api/articles/${data.value.id}/reaction`, { method: 'POST' })
+    data.value.likedByUser = res.liked
+    data.value.likes = res.likes
+    if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
+
+    await refresh()
+  } catch {
+    toast.error({ message: $t('articles.comments.reactionFailed') })
+  }
+}
+
+const toggleComments = async () => {
+  if (!data.value?.id) return
+  try {
+    await $fetch(`/api/articles/${data.value.id}`, {
+      method: 'PATCH',
+      body: { allowedComments: data.value.allowedComments },
+    })
+
+    toast.success({
+      message: $t('articles.comments.toggleSuccess', [
+        data.value.allowedComments
+          ? $t('articles.comments.commentsEnabled')
+          : $t('articles.comments.commentsDisabledSuccess'),
+      ]),
+    })
+
+    await refresh()
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
+    data.value.allowedComments = !data.value.allowedComments
+  }
+}
+
+const content = ref<HTMLElement | null>(null)
+
+const progress = shallowRef<number>(0)
+
+const progressBarColor = computed(() =>
+  clientSite?.theme && Object.keys(themes).includes(clientSite.theme) ? themes[clientSite.theme] : themes.blue,
+)
+
+const handleContentScroll = () => {
+  if (!content.value) return
+
+  const { top, height } = content.value.getBoundingClientRect()
+  const contentTop = top + window.scrollY
+  const contentHeight = height
+
+  const windowScrollY = window.scrollY
+  const windowHeight = window.innerHeight
+
+  const scrollableDistance = contentHeight - windowHeight
+  if (scrollableDistance > 0) {
+    const scrollProgress = Math.max(0, windowScrollY - contentTop + windowHeight / 2)
+    progress.value = Math.min(100, (scrollProgress / scrollableDistance) * 100)
+  } else progress.value = 0
+}
+
 const hasTags = computed(() => !!data.value?.tags?.length)
 
 const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
@@ -455,12 +471,23 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
   }
 }, 100)
 
+const isSticky = shallowRef<boolean>(false)
+
+const container = useTemplateRef('container')
+
+const images = ref<Image[]>([])
+
+const currentImageIndex = shallowRef<number>(0)
+
+const lightboxVisible = shallowRef<boolean>(false)
+
 onMounted(() => {
   const onScroll = () => {
     if (!container.value || !content.value) return
     isSticky.value = window.scrollY > 100
     handleContentScroll()
   }
+
   const extractImages = () => {
     if (!content.value) return
     const imgElements = content.value.querySelectorAll('img')
@@ -469,32 +496,36 @@ onMounted(() => {
       alt: img.alt || '',
     }))
   }
+
   const handleImageClick = (e: Event) => {
     const target = e.target as HTMLElement
-    if (target.tagName === 'IMG') {
-      const img = target as HTMLImageElement
-      const src = img.src
-      const index = images.value.findIndex((i) => i.src === src)
-      if (index !== -1) {
-        currentImageIndex.value = index
-        lightboxVisible.value = true
-      }
-    }
+    if (target.tagName !== 'IMG') return
+
+    const img = target as HTMLImageElement
+    const src = img.src
+    const index = images.value.findIndex((i) => i.src === src)
+    if (index === -1) return
+
+    currentImageIndex.value = index
+    lightboxVisible.value = true
   }
+
+  setTimeout(() => extractImages, 100)
+
   window.addEventListener('scroll', onScroll)
   content.value?.addEventListener('click', handleImageClick)
-  setTimeout(() => {
-    extractImages()
-  }, 100)
+
   onUnmounted(() => {
     window.removeEventListener('scroll', onScroll)
     content.value?.removeEventListener('click', handleImageClick)
   })
+
   if (!data.value?.id) return
   const key = `viewed-${data.value.id}`
   const lastView = sessionStorage.getItem(key)
   const now = Date.now()
   if (lastView && now - Number(lastView) <= 1000) return
+
   try {
     $fetch(`/api/articles/${data.value.id}`, { method: 'PATCH', body: { views: data.value.views + 1 } })
     sessionStorage.setItem(key, now.toString())
@@ -502,20 +533,8 @@ onMounted(() => {
     console.log('Failed to update article views')
   }
 })
-
-watch(
-  () => data.value,
-  async (article) => {
-    if (article?.id && article.tags?.length) {
-      const res = await $fetch<{ articles: ArticleWithDetails[] }>(`/api/tags/${article.tags[0]?.tag.id}?limit=4`)
-      relatedArticles.value = res.articles.filter((a) => a.id !== article.id)
-    } else {
-      relatedArticles.value = []
-    }
-  },
-  { immediate: true },
-)
 </script>
+
 <style>
 .fade-slide-enter-active,
 .fade-slide-leave-active {
