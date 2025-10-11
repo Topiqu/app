@@ -35,11 +35,19 @@ const themeColors: Record<keyof typeof themes, string> = {
   cyan: '#06b6d4',
   violet: '#8b5cf6',
 }
-
 useSeoMeta({
-  title: 'Topiqu AI blog',
-  description: 'Vítejte v Topiqu blogu.',
-  keywords: 'blog, Topiqu, insights, stories, journey',
-  author: 'Big John',
+  title: () => clientSite?.name || 'Topiqu AI blog',
+  description: () => clientSite?.description || 'Vítejte v Topiqu blogu.',
+  keywords: () =>
+    Array.isArray(clientSite?.keywords)
+      ? clientSite.keywords.join(', ')
+      : typeof clientSite?.keywords === 'string'
+        ? clientSite.keywords
+        : 'blog, AI, Topiqu',
+  author: () => clientSite?.name || 'Topiqu',
+  ogTitle: () => clientSite?.name || 'Topiqu AI blog',
+  ogDescription: () => clientSite?.description || 'Vítejte v Topiqu blogu.',
+  ogImage: () => clientSite?.logoUrl || '/default-og-image.webp',
+  ogLocale: () => clientSite?.language || 'en',
 })
 </script>
