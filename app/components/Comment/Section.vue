@@ -3,7 +3,7 @@
     <div class="flex items-center gap-3 mb-10">
       <Icon name="mdi:comment-multiple-outline" class="w-8 h-8 text-blue-600" />
       <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
-        {{ $t('articles.comments.title') }} <span class="text-xl text-gray-500">({{ props.commCount }})</span>
+        {{ $t('articles.comments.title') }} <span class="text-xl text-gray-500">({{ commCount }})</span>
       </h2>
       <div class="ml-auto flex items-center gap-2">
         <select
@@ -142,7 +142,7 @@ const loading = shallowRef<boolean>(false)
 const comments = shallowRef<CommentWithReplies[]>([])
 const maxLength = 1000
 const characterCount = computed(() => newComment.value.length)
-
+const commCount = shallowRef(props.commCount)
 const {
   data: commentsData,
   error,
@@ -150,6 +150,7 @@ const {
 } = await useFetch<{ comments: CommentWithReplies[]; hasMore: boolean }>(`/api/comments/${props.articleId}`, {
   query: { page, limit },
   default: () => ({ comments: [], hasMore: true }),
+  watch: false,
 })
 
 const filteredComments = computed(() => {
@@ -179,21 +180,15 @@ watch(
 
 watch(sort, () => nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' })))
 
-const initObserver = () => {
-  if (!sentinel.value) return
-  const obs = new IntersectionObserver(
-    (entries) => {
-      if (entries[0]?.isIntersecting && hasMore.value && !loading.value) {
-        page.value++
-      }
-    },
-    { root: null, threshold: 0.1 },
-  )
-  obs.observe(sentinel.value)
-  onUnmounted(() => obs.disconnect())
-}
-
-onMounted(initObserver)
+useInfiniteScroll(
+  sentinel,
+  async () => {
+    if (!hasMore.value || loading.value) return
+    page.value++
+    await refresh()
+  },
+  { distance: 100, interval: 300 },
+)
 
 onClickOutside(commentForm, (e) => {
   if (replyingTo.value && commentForm.value && !commentForm.value.contains(e.target as Node)) replyingTo.value = null
@@ -219,8 +214,8 @@ const submitComment = async () => {
     replyingTo.value = null
     page.value = 1
     comments.value = []
+    commCount.value += 1
     await refresh()
-    nextTick(initObserver)
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
   } finally {
@@ -240,7 +235,6 @@ const handleDelete = async (c: CommentWithReplies, reason: string | null) => {
     await $fetch(`/api/comments/${c.id}`, { method: 'DELETE', body: { reason } })
     toast.success({ message: $t('common.messages.deleteSuccess') })
     await refresh()
-    nextTick(initObserver)
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('common.messages.deleteFailed') })
   }
@@ -251,7 +245,6 @@ const react = async (c: CommentWithReplies, type: 'LIKE' | 'DISLIKE') => {
   try {
     await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: c.id, type } })
     await refresh()
-    nextTick(initObserver)
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('articles.comments.reactionFailed') })
   }
