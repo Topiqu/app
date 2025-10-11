@@ -5,13 +5,9 @@
 </template>
 
 <script lang="ts" setup>
-const { data: auth } = useAuth()
-
 definePageMeta({ middleware: 'admin' })
 
-const { data: client } = await useFetch(`/api/clients/${auth.value?.user.clientSiteId}`, {
-  key: `client-${auth.value?.user.clientSiteId}`,
-})
+const client = await useClientSite()
 
-useSeoMeta({ title: `${client.value?.name} - Administrace` })
+useSeoMeta({ title: `${client?.name} - Administrace` })
 </script>
