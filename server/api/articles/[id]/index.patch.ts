@@ -88,6 +88,14 @@ export default defineEventHandler(async (event) => {
       where: { id },
       data,
     })
+
+    await logAction({
+      action: 'ARTICLE_UPDATE',
+      userId: user.id,
+      clientSiteId: user.clientSiteId,
+      ip: getIp(event),
+      metadata: { articleId: id, updatedFields: Object.keys(body) },
+    })
   }
 
   if (!isOnlyViews && article.status === 'published' && previousArticle?.status === 'draft') {
