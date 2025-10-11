@@ -67,7 +67,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (event: 'close' | 'confirm' | 'cancel'): void
+  (event: 'confirm' | 'cancel'): void
 }>()
 
 const isOpen = defineModel<boolean>('open', { default: false })
@@ -80,7 +80,6 @@ const close = () => {
     showOverlay.value = false
     setTimeout(() => {
       isOpen.value = false
-      emit('close')
     }, 100)
   }, 200)
 }
