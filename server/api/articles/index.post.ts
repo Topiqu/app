@@ -48,8 +48,7 @@ export default defineEventHandler(async (event) => {
     ip: getIp(event),
     metadata: {
       articleId: article.id,
-      title: article.title,
-      slug: article.slug,
+      ...article,
     },
   })
 
