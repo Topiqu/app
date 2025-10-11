@@ -1,6 +1,6 @@
 <mjml>
   <mj-head>
-    <mj-preview>Nová odpověď od {{ userName }} na váš komentář</mj-preview>
+    <mj-preview>{comment.subject}</mj-preview>
     <mj-font name="Montserrat" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" />
     <mj-attributes>
       <mj-text
@@ -89,14 +89,12 @@
     <mj-wrapper padding="20px" background-color="#f4f4f4">
       <mj-section padding="0">
         <mj-column>
-          <mj-image src="{{logoUrl}}" alt="Logo aplikace" width="150px" padding="10px" />
+          <mj-image src="{logoUrl}" alt="Logo aplikace" width="150px" padding="10px" />
         </mj-column>
       </mj-section>
       <mj-section background-color="#2563eb" border-radius="10px 10px 0 0">
         <mj-column>
-          <mj-text align="center" color="#ffffff" font-size="20px" font-weight="600">
-            Nová odpověď na váš komentář
-          </mj-text>
+          <mj-text align="center" color="#ffffff" font-size="20px" font-weight="600">{comment.subject}</mj-text>
         </mj-column>
       </mj-section>
       <mj-section>
@@ -107,8 +105,8 @@
       <mj-section css-class="section-bg">
         <mj-column width="20%">
           <mj-image
-            src="{{avatarUrl}}"
-            alt="Profilový obrázek {{userName}}"
+            src="{avatarUrl}"
+            alt="Profilový obrázek"
             width="50px"
             border-radius="50%"
             border="2px solid #2563eb"
@@ -116,29 +114,20 @@
           />
         </mj-column>
         <mj-column width="80%">
-          <mj-text css-class="header-text">
-            Ahoj <b>{{ parentUsername }}</b
-            >,
-          </mj-text>
-          <mj-text css-class="comment-text">
-            <b>{{ userName }}</b> odpověděl: "<i>{{ commentContent }}</i
-            >"
-          </mj-text>
-          <mj-text css-class="quote-text">
-            Tvůj komentář: "<i>{{ parentContent }}</i
-            >"
-          </mj-text>
+          <mj-text css-class="header-text">{comment.greeting}</mj-text>
+          <mj-text css-class="comment-text">{comment.intro}</mj-text>
+          <mj-text css-class="quote-text">{comment.parent}</mj-text>
         </mj-column>
       </mj-section>
       <mj-section css-class="section-bg">
         <mj-column>
-          <mj-button css-class="mj-button-primary" href="{{commentUrl}}"> Zobrazit odpověď </mj-button>
+          <mj-button css-class="mj-button-primary" href="{commentUrl}">{comment.button}</mj-button>
         </mj-column>
       </mj-section>
       <mj-section background-color="#f4f4f4" padding="10px">
         <mj-column>
           <mj-text font-size="12px" color="#666666" align="center">
-            Nechcete dostávat notifikace? <a href="{{unsubscribeUrl}}">Odhlásit se</a>
+            {comment.unsubscribe.text} <a href="{unsubscribeUrl}">{comment.unsubscribe.link}</a>
           </mj-text>
         </mj-column>
       </mj-section>

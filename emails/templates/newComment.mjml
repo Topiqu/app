@@ -1,6 +1,6 @@
 <mjml>
   <mj-head>
-    <mj-preview>Nový komentář od {{ userName }} k vašemu článku</mj-preview>
+    <mj-preview>{newComment.subject}</mj-preview>
     <mj-font name="Montserrat" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" />
     <mj-attributes>
       <mj-text font-family="Montserrat, Helvetica, Arial, sans-serif" color="#333333" line-height="24px" />
@@ -49,14 +49,12 @@
     <mj-wrapper padding="20px" background-color="#f4f4f4">
       <mj-section padding="0">
         <mj-column>
-          <mj-image src="{{logoUrl}}" alt="Logo aplikace" width="150px" padding="10px" />
+          <mj-image src="{logoUrl}" alt="Logo aplikace" width="150px" padding="10px" />
         </mj-column>
       </mj-section>
       <mj-section background-color="#2563eb">
         <mj-column>
-          <mj-text align="center" color="#ffffff" font-size="20px" font-weight="600">
-            Nový komentář k vašemu článku
-          </mj-text>
+          <mj-text align="center" color="#ffffff" font-size="20px" font-weight="600">{newComment.subject}</mj-text>
         </mj-column>
       </mj-section>
       <mj-section>
@@ -67,8 +65,8 @@
       <mj-section css-class="section-bg">
         <mj-column width="20%">
           <mj-image
-            src="{{avatarUrl}}"
-            alt="Profilový obrázek {{userName}}"
+            src="{avatarUrl}"
+            alt="Profilový obrázek"
             width="50px"
             border-radius="50%"
             border="2px solid #2563eb"
@@ -76,24 +74,19 @@
           />
         </mj-column>
         <mj-column width="80%">
-          <mj-text css-class="header-text"> Ahoj, </mj-text>
-          <mj-text css-class="comment-text">
-            <b>{{ userName }}</b> okomentoval tvůj článek "<i>{{ articleTitle }}</i
-            >": "<i>{{ commentContent }}</i
-            >"
-          </mj-text>
+          <mj-text css-class="header-text">{newComment.greeting}</mj-text>
+          <mj-text css-class="comment-text">{newComment.intro}</mj-text>
         </mj-column>
       </mj-section>
       <mj-section css-class="section-bg">
         <mj-column>
-          <mj-button href="{{commentUrl}}"> Zobrazit komentář </mj-button>
+          <mj-button href="{commentUrl}">{newComment.button}</mj-button>
         </mj-column>
       </mj-section>
       <mj-section background-color="#f4f4f4" padding="10px">
         <mj-column>
           <mj-text font-size="12px" color="#666666" align="center">
-            Nechcete dostávat notifikace?
-            <a href="{{unsubscribeUrl}}" style="color: #2563eb; text-decoration: none">Odhlásit se</a>
+            {newComment.unsubscribe.text} <a href="{unsubscribeUrl}">{newComment.unsubscribe.link}</a>
           </mj-text>
         </mj-column>
       </mj-section>
