@@ -512,7 +512,7 @@ onMounted(() => {
     lightboxVisible.value = true
   }
 
-  setTimeout(() => extractImages, 100)
+  setTimeout(() => extractImages(), 100)
 
   window.addEventListener('scroll', onScroll)
   content.value?.addEventListener('click', handleImageClick)
