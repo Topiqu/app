@@ -307,7 +307,9 @@ const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.va
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 
-const { data: relatedArticles } = await useFetch(`/api/articles/${slug.value}/related` as `/api/articles/:id/related`)
+const { data: relatedArticles } = await useFetch(
+  `/api/articles/${slug.value}/related?limit=3` as `/api/articles/:id/related`,
+)
 
 useSeoMeta({
   title: () => data.value?.title || $t('common.labels.article'),

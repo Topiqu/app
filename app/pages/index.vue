@@ -167,7 +167,7 @@
       <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl py-8 px-6">
         <h2 class="text-3xl font-bold text-center mb-6">{{ $t('articles.poll.hpTitle') }}</h2>
         <ArticlePoll v-if="latestPoll && pollArticle" :poll="latestPoll" :articleId="pollArticle.id" />
-        <p v-else class="text-center text-lg text-gray">{{ $t('articles.poll.noPoll') }}</p>
+        <p v-else class="text-center text-lg text-gray">{{ $t('articles.poll.noPolls') }}</p>
       </div>
       <aside class="space-y-8">
         <div>
