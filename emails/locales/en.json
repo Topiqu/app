@@ -1,0 +1,33 @@
+{
+  "newComment": {
+    "subject": "New comment on your article",
+    "greeting": "Hello,",
+    "intro": "<b>{userName}</b> commented on your article \"<i>{articleTitle}</i>\": \"<i>{commentContent}</i>\"",
+    "button": "View comment",
+    "unsubscribe": {
+      "text": "Don't want to receive notifications?",
+      "link": "Unsubscribe"
+    }
+  },
+  "comment": {
+    "subject": "New reply to your comment",
+    "greeting": "Hello <b>{parentUsername}</b>,",
+    "intro": "<b>{userName}</b> replied: \"<i>{commentContent}</i>\"",
+    "parent": "Your comment: \"<i>{parentContent}</i>\"",
+    "button": "View reply",
+    "unsubscribe": {
+      "text": "Don't want to receive notifications?",
+      "link": "Unsubscribe"
+    }
+  },
+  "verify": {
+    "subject": "Verification code for {userName}",
+    "greeting": "Hello {userName},",
+    "intro": "To complete your {actionType}, please use the following verification code:",
+    "expiration": "This code is valid for 24 hours. If you did not request this, you can safely ignore this email.",
+    "unsubscribe": {
+      "text": "Don't want to receive notifications?",
+      "link": "Unsubscribe"
+    }
+  }
+}

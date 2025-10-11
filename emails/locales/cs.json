@@ -1,0 +1,33 @@
+{
+  "newComment": {
+    "subject": "Nový komentář k vašemu článku",
+    "greeting": "Dobrý den,",
+    "intro": "<b>{userName}</b> okomentoval váš článek „<i>{articleTitle}</i>“: „<i>{commentContent}</i>“",
+    "button": "Zobrazit komentář",
+    "unsubscribe": {
+      "text": "Nechcete dostávat notifikace?",
+      "link": "Odhlásit se"
+    }
+  },
+  "comment": {
+    "subject": "Nová odpověď na váš komentář",
+    "greeting": "Dobrý den, <b>{parentUsername}</b>,",
+    "intro": "<b>{userName}</b> odpověděl: „<i>{commentContent}</i>“",
+    "parent": "Váš komentář: „<i>{parentContent}</i>“",
+    "button": "Zobrazit odpověď",
+    "unsubscribe": {
+      "text": "Nechcete dostávat notifikace?",
+      "link": "Odhlásit se"
+    }
+  },
+  "verify": {
+    "subject": "Ověřovací kód pro {userName}",
+    "greeting": "Dobrý den, {userName},",
+    "intro": "Pro dokončení akce {actionType} použijte následující ověřovací kód:",
+    "expiration": "Tento kód je platný 24 hodin. Pokud jste tuto žádost neodeslali, můžete tento e-mail ignorovat.",
+    "unsubscribe": {
+      "text": "Nechcete dostávat notifikace?",
+      "link": "Odhlásit se"
+    }
+  }
+}
