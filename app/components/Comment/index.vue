@@ -200,44 +200,39 @@
       />
     </div>
 
-    <div
+    <ModalMini
       v-if="showModal && selectedComment?.id === comment.id"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      v-model:open="showModal"
+      :title="$t('articles.comments.deleteModalTitle')"
+      :message="$t('common.messages.deleteConfirmText')"
+      :icon="'mdi:delete'"
+      :cancelText="$t('common.messages.deleteCancel')"
+      :confirmText="$t('articles.comments.deleteComment')"
+      @confirm="emitDelete(comment, deleteReason)"
+      @cancel="((showModal = false), (deleteReason = ''))"
     >
-      <div class="bg-white p-6 rounded-xl shadow-xl border border-gray-200 w-full max-w-md">
-        <h3 class="text-lg font-semibold mb-4">{{ $t('articles.comments.deleteModalTitle') }}</h3>
-        <p class="text-sm text-gray-600 mb-4">{{ $t('common.messages.deleteConfirmText') }}</p>
+      <template #content>
         <textarea
           v-model="deleteReason"
           class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm resize-y min-h-[100px]"
           :placeholder="$t('articles.comments.deleteReasonPlaceholder')"
           maxlength="255"
         />
-        <div class="flex justify-end gap-3 mt-4">
-          <button
-            class="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200"
-            @click="((showModal = false), (deleteReason = ''))"
-          >
-            {{ $t('common.messages.deleteCancel') }}
-          </button>
-          <button
-            class="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
-            @click="emitDelete(comment, deleteReason)"
-          >
-            {{ $t('articles.comments.deleteComment') }}
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </ModalMini>
 
-    <div
+    <ModalMini
       v-if="showBanModal && selectedComment?.id === comment.id"
-      ref="banModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      v-model:open="showBanModal"
+      :title="$t('articles.comments.banModalTitle')"
+      :message="$t('articles.comments.banReasonPrompt')"
+      :icon="'mdi:account-cancel'"
+      :cancelText="$t('common.messages.deleteCancel')"
+      :confirmText="$t('articles.comments.banUser')"
+      @confirm="banUser(comment)"
+      @cancel="((showBanModal = false), (banReason = ''), (banExpiresAt = ''))"
     >
-      <div class="bg-white p-6 rounded-xl shadow-xl border border-gray-200 w-full max-w-md">
-        <h3 class="text-lg font-semibold mb-4">{{ $t('articles.comments.banModalTitle') }}</h3>
-        <p class="text-sm text-gray-600 mb-4">{{ $t('articles.comments.banReasonPrompt') }}</p>
+      <template #content>
         <textarea
           v-model="banReason"
           class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-y min-h-[100px]"
@@ -253,23 +248,8 @@
             class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mt-2"
           />
         </div>
-        <div class="flex justify-end gap-3 mt-4">
-          <button
-            class="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200"
-            @click="((showBanModal = false), (banReason = ''), (banExpiresAt = ''))"
-          >
-            {{ $t('common.messages.deleteCancel') }}
-          </button>
-          <button
-            class="px-4 py-2 rounded-xl bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700"
-            :disabled="!banReason.trim()"
-            @click="banUser(comment)"
-          >
-            {{ $t('articles.comments.banUser') }}
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </ModalMini>
   </div>
 </template>
 
@@ -300,7 +280,6 @@ const selectedComment = shallowRef<CommentWithReplies | null>(null)
 const deleteReason = shallowRef('')
 const banReason = shallowRef('')
 const banExpiresAt = shallowRef('')
-const banModal = ref<HTMLElement | null>(null)
 const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}/author`, {
   key: `author-${props.comment.article.userId}`,
 })
@@ -362,10 +341,4 @@ const unbanUser = async (comment: CommentWithReplies) => {
     toast.error({ message: e.data?.message || $t('articles.comments.unbanFailed') })
   }
 }
-
-onClickOutside(banModal, () => {
-  showBanModal.value = false
-  banReason.value = ''
-  banExpiresAt.value = ''
-})
 </script>
