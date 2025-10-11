@@ -1,11 +1,10 @@
 now:
 
-1. implement missing email templates // 🛑 high priority
-2. notifications should also be localised // 🛑 high priority
-3. further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
-4. misc style/ui cleanups OR general code optimisation
-5. centralised ArticleModal component (for ArticleCreate/Edit) // low priority 🟢
-6. HP/index page should get a UI rework and move from MVP to actual production ready page
+1. notifications should also be localised // 🛑 high priority
+2. further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
+3. misc style/ui cleanups OR general code optimisation
+4. centralised ArticleModal component (for ArticleCreate/Edit) // low priority 🟢
+5. HP/index page should get a UI rework and move from MVP to actual production ready page // 🟡 mid priority
 
 ---
 
@@ -24,7 +23,7 @@ once deployed:
 future:
 
 1. better gamification - badges, levels, site activity points
-   (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
+(exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
 
 ---
 
@@ -41,3 +40,4 @@ done:
 9. useClientSite composable - return language/cliensite details based on host header // 🛑 high priority
 10. all clientsite endpoints should use host header instead of clientsite slug/route params // 🛑 high priority
 11. rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one // low priority 🟢
+12. implement missing email templates // 🛑 high priority
