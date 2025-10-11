@@ -5,7 +5,8 @@ now:
 3. misc style/ui cleanups OR general code optimisation
 4. centralised ArticleModal component (for ArticleCreate/Edit) // low priority 🟢
 5. HP/index page should get a UI rework and move from MVP to actual production ready page // 🟡 mid priority
-
+6. fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions) // 🟡 mid priority
+7. implement ModalMini (exp. ArticleCreate draft select could use it instead of sweetalert)
 ---
 
 once deployed:
