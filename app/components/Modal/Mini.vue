@@ -106,14 +106,4 @@ const confirm = () => {
   emit('confirm')
   close()
 }
-
-watch(isOpen, (val) => {
-  document.body.style.overflow = val ? 'hidden' : ''
-})
-
-onMounted(() => {
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isOpen.value) close()
-  })
-})
 </script>

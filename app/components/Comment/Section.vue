@@ -243,7 +243,9 @@ const handleDelete = async (c: CommentWithReplies, reason: string | null) => {
 const react = async (c: CommentWithReplies, type: 'LIKE' | 'DISLIKE') => {
   if (c.deletedAt) return
   try {
-    await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: c.id, type } })
+    console.log('reacting here: ', type)
+    const response = await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: c.id, type } })
+    console.log('after fetch: ', type, response, c.id)
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('articles.comments.reactionFailed') })

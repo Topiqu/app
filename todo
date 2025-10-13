@@ -16,7 +16,7 @@ once deployed:
 3. nuxt-gtag // 🛑 high priority
 4. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
 5. ai cron jobs for article writing // 🛑 high priority
-6. automate onboarding flow : wp form -> post fetch on topiqu backend -> render api -> create subdomain/return custom domain dns details // 🟡 mid priority
+6. automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details // 🟡 mid priority
 7. test // 🛑 high priority
 
 ---
