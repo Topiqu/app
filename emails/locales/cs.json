@@ -29,5 +29,15 @@
       "text": "Nechcete dostávat notifikace?",
       "link": "Odhlásit se"
     }
+  },
+  "deleteComment": {
+    "subject": "Váš komentář byl smazán",
+    "greeting": "Dobrý den, {userName},",
+    "intro": "Váš komentář „<i>{commentContent}</i>“ byl smazán.",
+    "reason": "{deleteReason}",
+    "unsubscribe": {
+      "text": "Nechcete dostávat notifikace?",
+      "link": "Odhlásit se"
+    }
   }
 }
