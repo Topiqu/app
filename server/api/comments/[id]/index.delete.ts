@@ -1,3 +1,5 @@
+import { sendEmail } from '~/../emails/sendEmail'
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   const db = await getEnhancedPrisma(user)
@@ -24,7 +26,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Nemáte oprávnění smazat tento komentář' })
 
   const { reason } = await readBody(event)
-  const deleteReason = reason?.trim()
+  const deleteReason = reason?.trim() || 'porušení pravidel komunity'
 
   await db.comment.update({
     where: { id: commentId },
@@ -32,13 +34,17 @@ export default defineEventHandler(async (event) => {
   })
 
   if (comment.user.email && user.role === 'admin' && comment.userId !== user.id && comment.user.allowEmail) {
-    const t = useNodeMailer()
-    await t.sendMail({
-      from: useRuntimeConfig().from,
+    await sendEmail({
+      event,
       to: comment.user.email,
-      subject: 'Váš komentář byl smazán',
-      text: `Ahoj ${comment.user.username},\nVáš komentář "${comment.content.slice(0, 50)}..." byl smazán${reason ? ` z důvodu: ${deleteReason}` : ' z důvodu porušení pravidel komunity'}.`,
-      html: `<p>Ahoj <b>${comment.user.username}</b>,<br>Váš komentář "<b>${comment.content.slice(0, 50)}...</b>" byl smazán${reason ? ` z důvodu: ${deleteReason}` : ' z důvodu porušení pravidel komunity'}.</p>`,
+      template: 'deleteComment',
+      data: {
+        userName: comment.user.username,
+        commentContent: comment.content.slice(0, 50) + (comment.content.length > 50 ? '...' : ''),
+        deleteReason,
+        logoUrl: 'https://via.placeholder.com/150x50',
+        unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${comment.user.email}`,
+      },
     })
   }
 

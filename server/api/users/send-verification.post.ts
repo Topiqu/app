@@ -41,7 +41,7 @@ export default defineEventHandler(async (e) => {
     to: user.email,
     subject: 'Ověření e-mailu',
     text: `Váš ověřovací kód: ${code}. Kód je platný 24 hodin.`,
-    template: 'verification-code',
+    template: 'verificationCode',
     data: {
       userName: userDb!.username,
       verificationCode: code,

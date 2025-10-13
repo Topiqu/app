@@ -76,7 +76,6 @@ export default defineEventHandler(async (event) => {
     await t.sendMail({
       from: useRuntimeConfig().from,
       to: comment.user.email,
-      subject: 'Váš účet byl zabanován',
       text: `Ahoj ${comment.user.username},\nVáš účet byl zabanován na subdoméně ${comment.article.clientSiteId}${reason ? ` z důvodu: ${reason}` : ''}${expiresAt ? ` do ${new Date(expiresAt).toLocaleString('cs-CZ')}` : ''}.`,
       html: `<p>Ahoj <b>${comment.user.username}</b>,<br>Váš účet byl zabanován na subdoméně <b>${comment.article.clientSiteId}</b>${reason ? ` z důvodu: ${reason}` : ''}${expiresAt ? ` do ${new Date(expiresAt).toLocaleString('cs-CZ')}` : ''}.</p>`,
     })

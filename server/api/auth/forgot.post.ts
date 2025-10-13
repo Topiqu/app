@@ -19,10 +19,9 @@ export default defineEventHandler(async (event) => {
   })
 
   await sendEmail({
+    event,
     to: user.email,
-    subject: 'Obnova hesla',
-    text: `Ahoj ${user.username},\npro obnovu hesla použij tento kód: ${code}. Kód je platný 24 hodin.`,
-    template: 'verification-code',
+    template: 'verificationCode',
     data: {
       userName: user.username,
       verificationCode: code,

@@ -2,8 +2,8 @@ import { randomBytes } from 'crypto'
 
 import { sendEmail } from '~/../emails/sendEmail'
 
-export default defineEventHandler(async (e) => {
-  const body = await readValidatedBody(e, signInSchema.parse)
+export default defineEventHandler(async (event) => {
+  const body = await readValidatedBody(event, signInSchema.parse)
   const { username, email, password } = body
 
   const exists = await prisma.user.findFirst({
@@ -18,7 +18,7 @@ export default defineEventHandler(async (e) => {
   const code = randomBytes(4).toString('hex')
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
-  const user = await saveUserWithLogging(e, {
+  const user = await saveUserWithLogging(event, {
     username: username!,
     email,
     password,
@@ -28,10 +28,9 @@ export default defineEventHandler(async (e) => {
   })
 
   await sendEmail({
+    event,
     to: email,
-    subject: 'Ověření registrace',
-    text: `Váš ověřovací kód: ${code}. Kód je platný 24 hodin.`,
-    template: 'verification-code',
+    template: 'verificationCode',
     data: {
       userName: username!,
       verificationCode: code,
