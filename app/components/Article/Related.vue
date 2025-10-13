@@ -17,5 +17,5 @@
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
 
-defineProps<{ articles: ArticleWithDetails[] }>()
+defineProps<{ articles: ArticleWithDetails[]; pending: boolean }>()
 </script>

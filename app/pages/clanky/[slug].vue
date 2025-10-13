@@ -235,7 +235,7 @@
         :index="currentImageIndex"
         @hide="lightboxVisible = false"
       />
-      <ArticleRelated :articles="relatedArticles" />
+      <ArticleRelated :articles="relatedArticles" :pending />
       <div v-if="data.sources?.length" class="group w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
         <div
           class="flex items-center justify-between cursor-pointer select-none text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
@@ -307,8 +307,9 @@ const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.va
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 
-const { data: relatedArticles } = await useFetch(
+const { data: relatedArticles, pending } = await useFetch(
   `/api/articles/${slug.value}/related?limit=3` as `/api/articles/:id/related`,
+  { lazy: true },
 )
 
 useSeoMeta({
