@@ -4,7 +4,9 @@
       v-if="url"
       :src="url"
       :alt="(name || '') + ' ' + $t('common.avatar.alt.profile')"
-      class="min-h-full object-cover ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-200 hover:ring-gray-400 dark:hover:ring-gray-500"
+      class="w-full h-full object-contain block transition-all duration-200 hover:ring-gray-400 dark:hover:ring-gray-500"
+      width="160"
+      height="160"
     />
     <div
       v-else
