@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
       matchCount: article.tags.filter((tag) => tagIds.includes(tag.tagId)).length,
     }))
     .sort((a, b) => b.matchCount - a.matchCount)
+    .slice(0, take)
 
   return articles
 })
