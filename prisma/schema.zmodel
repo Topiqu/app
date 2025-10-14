@@ -289,6 +289,8 @@ model ClientSite extends Base {
     keywords            Json?
     audience            String?
     lastGeneratedAt     DateTime?
+    gtagId              String?
+    allowGtag           Boolean?
     allowShapes         Boolean             @default(false)
     language            Language            @default(en)
     theme               Theme               @default(blue)
