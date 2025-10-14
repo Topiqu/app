@@ -54,6 +54,7 @@
                     size="sm"
                     variant="warning"
                     icon="mdi:close"
+                    animation="softpop"
                     class="!text-gray-700 dark:!text-gray-300 hover:!bg-gray-100/60 dark:hover:!bg-white/10"
                     @click="cancel"
                   />
@@ -63,6 +64,7 @@
                     size="sm"
                     variant="primary"
                     icon="mdi:check"
+                    animation="softpop"
                     class="!text-white hover:!brightness-110 dark:hover:!brightness-125"
                     @click="confirm"
                   />

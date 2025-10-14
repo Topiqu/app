@@ -1,5 +1,5 @@
 <template>
-  <Button icon="mdi:logout" title="Odhlásit se" variant="danger" :loading @click="logout" />
+  <Button icon="mdi:logout" animation="logout" title="Odhlásit se" variant="danger" :loading @click="logout" />
 </template>
 
 <script setup lang="ts">
