@@ -57,6 +57,7 @@ export default defineNuxtConfig({
     'nuxt-security',
     'nuxt-toast',
     'nuxt-qrcode',
+    'nuxt-gtag',
   ],
   qrcode: {
     options: {
@@ -74,6 +75,7 @@ export default defineNuxtConfig({
     indexable: true,
     // multiTenancy: {},
   },
+  gtag: {},
   seo: {},
   pwa: {
     registerType: 'autoUpdate',
