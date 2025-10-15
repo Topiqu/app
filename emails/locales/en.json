@@ -29,5 +29,17 @@
       "text": "Don't want to receive notifications?",
       "link": "Unsubscribe"
     }
+  },
+  "userBan": {
+    "subject": "Your account has been banned",
+    "greeting": "Hello {userName},",
+    "intro_with_reason_permanent": "Your account has been banned on the subdomain <b>{clientSiteId}</b> for the following reason: {reason}. This ban is permanent.",
+    "intro_with_reason_temporary": "Your account has been banned on the subdomain <b>{clientSiteId}</b> for the following reason: {reason}. The ban is effective until {banDuration}.",
+    "intro_no_reason": "Your account has been banned on the subdomain <b>{clientSiteId}</b>.",
+    "reason": "{reason}",
+    "unsubscribe": {
+      "text": "Don't want to receive notifications?",
+      "link": "Unsubscribe"
+    }
   }
 }
