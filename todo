@@ -12,11 +12,10 @@ now:
 once deployed:
 
 1. GAM + total ad revenue overview & logging // 🛑 high priority
-2. nuxt-gtag // 🛑 high priority
-3. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
-4. ai cron jobs for article writing // 🛑 high priority
-5. automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details // 🟡 mid priority
-6. test // 🛑 high priority
+2. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
+3. ai cron jobs for article writing // 🛑 high priority
+4. automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details // 🟡 mid priority
+5. test // 🛑 high priority
 
 ---
 
@@ -42,3 +41,4 @@ done:
 10. all clientsite endpoints should use host header instead of clientsite slug/route params // 🛑 high priority
 11. rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one // low priority 🟢
 12. implement missing email templates // 🛑 high priority
+13. nuxt-gtag // 🛑 high priority
