@@ -52,8 +52,7 @@
         <div
           v-if="show || hoverShow"
           ref="dropdown"
-          class="absolute right-0 top-full mt-2 w-[95vw] max-w-[20rem] sm:max-w-[22rem] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm"
-          @click.stop
+          class="fixed left-1/2 top-[70px] -translate-x-1/2 w-[95vw] max-w-[20rem] sm:absolute sm:top-full sm:mt-2 sm:left-auto sm:right-0 sm:translate-x-0 sm:fixed-none rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm"
         >
           <div class="flex items-center gap-4 bg-transparent dark:bg-transparent">
             <UserPicture :url="userData?.avatarUrl" :size="'lg'" :name="userData?.username" />
