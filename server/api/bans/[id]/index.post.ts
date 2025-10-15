@@ -1,9 +1,10 @@
+import { sendEmail } from '~/../emails/sendEmail'
+
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   const db = await getEnhancedPrisma(user)
 
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
-
   if (user.role !== 'admin' || !user.clientSiteId)
     throw createError({ statusCode: 403, message: 'Nemáte oprávnění banovat uživatele' })
 
@@ -72,12 +73,31 @@ export default defineEventHandler(async (event) => {
   }
 
   if (comment.user.email && comment.user.allowEmail) {
-    const t = useNodeMailer()
-    await t.sendMail({
-      from: useRuntimeConfig().from,
+    const lang = (getCookie(event, 'i18n_lang') || 'en') as 'cs' | 'en'
+    const banDuration = expiresAt
+      ? new Date(expiresAt).toLocaleString(lang === 'cs' ? 'cs-CZ' : 'en-US')
+      : lang === 'cs'
+        ? 'trvale'
+        : 'permanently'
+    const introKey = reason
+      ? banDuration === (lang === 'cs' ? 'trvale' : 'permanently')
+        ? 'intro_with_reason_permanent'
+        : 'intro_with_reason_temporary'
+      : 'intro_no_reason'
+    await sendEmail({
+      event,
       to: comment.user.email,
-      text: `Ahoj ${comment.user.username},\nVáš účet byl zabanován na subdoméně ${comment.article.clientSiteId}${reason ? ` z důvodu: ${reason}` : ''}${expiresAt ? ` do ${new Date(expiresAt).toLocaleString('cs-CZ')}` : ''}.`,
-      html: `<p>Ahoj <b>${comment.user.username}</b>,<br>Váš účet byl zabanován na subdoméně <b>${comment.article.clientSiteId}</b>${reason ? ` z důvodu: ${reason}` : ''}${expiresAt ? ` do ${new Date(expiresAt).toLocaleString('cs-CZ')}` : ''}.</p>`,
+      template: 'userBan',
+      lang,
+      data: {
+        userName: comment.user.username,
+        clientSiteId: comment.article.clientSiteId,
+        reason: reason.trim(),
+        banDuration,
+        introKey,
+        logoUrl: 'https://via.placeholder.com/150x50',
+        unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${comment.user.email}`,
+      },
     })
   }
 
