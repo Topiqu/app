@@ -29,7 +29,6 @@
       />
     </div>
 
-    <!-- Subtle counter -->
     <div
       v-if="props.maxLength"
       class="mt-1 text-xs text-right"

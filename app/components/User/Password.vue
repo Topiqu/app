@@ -1,30 +1,31 @@
 <template>
   <div class="relative space-y-2">
-    <div class="relative flex items-center">
-      <input
-        v-model="password"
-        :type="showPassword ? 'text' : 'password'"
-        :placeholder="$t(isConfirm ? 'common.auth.passwordConfirm' : 'common.auth.newPassword')"
-        class="w-full pl-5 pr-10 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all duration-300"
-        :class="{
-          'border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800': !password,
-          '!border-green-500 dark:border-green-500': password && isValidReal,
-          '!border-red-500 dark:border-red-500': password && !isValidReal,
-        }"
-      />
-      <div
-        class="absolute right-3 inset-y-0 flex items-center"
-        :aria-label="showPassword ? $t('common.hidePassword') : $t('common.showPassword')"
-        @click="showPassword = !showPassword"
-      >
-        <Icon
-          :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'"
-          class="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer"
-        />
-      </div>
-    </div>
+    <FormInput
+      v-model="password"
+      :type="showPassword ? 'text' : 'password'"
+      :placeholder="$t(isConfirm ? 'common.auth.passwordConfirm' : 'common.auth.newPassword')"
+      class="w-full pl-5 pr-10 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all duration-300"
+      :class="{
+        'border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-800': !password,
+        '!border-green-500 dark:border-green-500': password && isValidReal && !isConfirm,
+        '!border-red-500 dark:border-red-500': password && !isValidReal && !isConfirm,
+      }"
+    >
+      <template #icon>
+        <div
+          class="absolute right-3 inset-y-0 flex items-center"
+          :aria-label="showPassword ? $t('common.hidePassword') : $t('common.showPassword')"
+          @click="showPassword = !showPassword"
+        >
+          <Icon
+            :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'"
+            class="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer"
+          />
+        </div>
+      </template>
+    </FormInput>
 
-    <div v-if="password" class="space-y-2">
+    <div v-if="password && !isConfirm" class="space-y-2">
       <div class="flex gap-1">
         <div v-for="n in 4" :key="n" class="flex-1 h-2 rounded transition-all duration-300" :class="segmentClass(n)" />
       </div>
@@ -52,7 +53,9 @@ const props = defineProps<{
 
 const password = defineModel<string>({ default: '', required: true })
 const showPassword = shallowRef(false)
-const passwordAnalysis = computed(() => zxcvbn(password.value || ''))
+const passwordAnalysis = computed(() =>
+  props.isConfirm ? { score: 0, feedback: { suggestions: [] } } : zxcvbn(password.value || ''),
+)
 
 const getFallbackMinLength = (): number => {
   const result = signInSchema.shape.password.safeParse('')
@@ -67,6 +70,7 @@ const getFallbackMaxLength = (): number => {
 }
 
 const isValidReal = computed(() => {
+  if (props.isConfirm) return props.isValid ?? true
   const externalValid = props.isValid ?? true
   const scoreValid = passwordAnalysis.value.score >= 3
   const minLength = props.minLength ?? getFallbackMinLength()
@@ -76,6 +80,7 @@ const isValidReal = computed(() => {
 })
 
 const suggestions = computed(() => {
+  if (props.isConfirm) return []
   const rawSuggestions = passwordAnalysis.value.feedback.suggestions || []
   const minLength = props.minLength ?? getFallbackMinLength()
   const maxLength = props.maxLength ?? getFallbackMaxLength()
@@ -89,6 +94,7 @@ const suggestions = computed(() => {
 })
 
 const strengthLabel = computed(() => {
+  if (props.isConfirm) return ''
   const sc = passwordAnalysis.value.score
   if (sc <= 1) return $t('common.passwordSuggestions.weak')
   if (sc === 2) return $t('common.passwordSuggestions.medium')
@@ -98,6 +104,7 @@ const strengthLabel = computed(() => {
 })
 
 const labelColor = computed(() => {
+  if (props.isConfirm) return 'text-gray-400'
   const sc = passwordAnalysis.value.score
   if (sc <= 1) return 'text-red-500'
   if (sc === 2) return 'text-yellow-500'
@@ -107,6 +114,7 @@ const labelColor = computed(() => {
 })
 
 function segmentClass(n: number): string {
+  if (props.isConfirm) return 'bg-gray-300 dark:bg-neutral-700'
   const sc = passwordAnalysis.value.score
   if (sc <= 1 && n === 1) return 'bg-red-500'
   if (sc === 2 && n <= 2) return 'bg-yellow-500'
