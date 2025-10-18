@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
     where: { id },
     include: {
       comments: {
+        where: { deletedAt: null, parentId: null },
         include: {
           reactions: { select: { type: true } },
           article: {
