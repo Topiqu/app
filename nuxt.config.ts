@@ -1,5 +1,5 @@
 export default defineNuxtConfig({
-  compatibilityDate: '2025-08-18',
+  compatibilityDate: '2025-10-19',
 
   devtools: { enabled: true },
 
@@ -100,7 +100,7 @@ export default defineNuxtConfig({
     workbox: {
       runtimeCaching: [
         {
-          urlPattern: 'https://topiqu.com/.*',
+          urlPattern: /^https:\/\/topiqu\.com\/.*$/,
           handler: 'NetworkFirst',
           options: {
             cacheName: 'api-cache',
@@ -170,8 +170,15 @@ export default defineNuxtConfig({
           'https://www.gstatic.com', // fallback
         ],
         'frame-src': ['https://www.youtube.com', 'https://www.youtube-nocookie.com'],
-        'connect-src': ["'self'", 'https:'],
-        'script-src': ["'self'", "'unsafe-inline'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
+        'connect-src': ["'self'", 'https:', 'https://www.googletagmanager.com', 'https://www.google-analytics.com'],
+        'script-src': [
+          "'self'",
+          "'unsafe-inline'",
+          'https://www.youtube.com',
+          'https://www.youtube-nocookie.com',
+          'https://www.googletagmanager.com',
+          'https://www.google-analytics.com',
+        ],
       },
     },
     xssValidator: false,
