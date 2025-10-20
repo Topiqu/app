@@ -83,7 +83,7 @@ function getGradientColors(theme: keyof typeof themes): [string, string] {
 
 onMounted(() => {
   const interval = setInterval(() => {
-    currentTheme.value = themeKeys[Math.floor(Math.random() * themeKeys.length)]
+    currentTheme.value = themeKeys[Math.floor(Math.random() * themeKeys.length)]!
   }, 10000)
   onUnmounted(() => clearInterval(interval))
 })

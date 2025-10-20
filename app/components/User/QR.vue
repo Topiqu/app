@@ -197,10 +197,12 @@ async function copySecret(value: string) {
 async function enable2FA() {
   try {
     isLoading.value = true
-    const response = await $fetch(`/api/users/${props.userId}`, {
+    const response = await $fetch(`/api/users/${props.userId}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { totpAction: 'enable' },
     })
+    if (!('otpauthUrl' in response))
+      throw createError({ statusCode: 500, statusMessage: 'Invalid response from server' })
     emit('update:otpauthUrl', response.otpauthUrl)
     showForm.value = true
     emit('update:enabled', false)
@@ -214,19 +216,20 @@ async function enable2FA() {
 async function verifyTotpCode() {
   try {
     isLoading.value = true
-    const response = await $fetch(`/api/users/${props.userId}`, {
+    const response = await $fetch(`/api/users/${props.userId}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { totpCode: totpCode.value },
     })
-    if (response.verified) {
-      showForm.value = false
-      showQR.value = false
-      showSecret.value = false
-      totpCode.value = ''
-      error.value = null
-      emit('update:enabled', true)
-      emit('error', '')
-    }
+    if (!('verified' in response) || !response.verified)
+      throw createError({ statusCode: 500, statusMessage: 'Invalid response from server' })
+
+    showForm.value = false
+    showQR.value = false
+    showSecret.value = false
+    totpCode.value = ''
+    error.value = null
+    emit('update:enabled', true)
+    emit('error', '')
   } catch (err: any) {
     error.value = err.data?.message || $t('common.messages.operationFailed')
   } finally {

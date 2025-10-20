@@ -22,12 +22,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
+import type { ArticleWithDetails } from '~~/types/article'
+import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
 import { format } from 'date-fns'
 import { directive as vTippy } from 'vue-tippy'
 
-const props = defineProps<{ row: { original: Article } }>()
+const props = defineProps<{ row: { original: ArticleWithDetails } }>()
 const emit = defineEmits<{
   (e: 'update', id: string, newStatus: ArticleStatus): void
 }>()

@@ -1,8 +1,12 @@
-import type { User, Session } from '@prisma/client'
+import type { User, Session as _Session } from '@prisma/client'
 
 import Swal from 'sweetalert2'
 
-export type Profile = Partial<User> & {
+export type Session = Omit<_Session, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastUsedAt'> & {
+  lastUsedAt?: string
+}
+
+export type Profile = Omit<Partial<User>, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastLogin'> & {
   handle: string
   followers: number
   following: number
@@ -11,7 +15,11 @@ export type Profile = Partial<User> & {
   dislikesCount: number
   likedArticles: { id: string }[]
   sessions: Session[]
-  totpSecret?: string
+  totpSecret?: string | null
+  createdAt: string
+  updatedAt?: string
+  deletedAt?: string
+  lastLogin: string | null
 }
 
 export function useProfile() {

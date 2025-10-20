@@ -50,7 +50,7 @@
             placeholder="Hledat podle jména nebo emailu..."
             class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
           />
-          <div v-if="loading && !users?.length" class="text-gray-600">Načítání...</div>
+          <div v-if="loading && !users?.data.length" class="text-gray-600">Načítání...</div>
           <div v-else-if="error" class="text-red-600">{{ error }}</div>
           <div v-else ref="scrollParent" class="relative max-h-96 overflow-auto">
             <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
@@ -139,7 +139,7 @@ const {
 const filteredUsers = computed(() => {
   if (!users.value) return []
   const q = searchQuery.value.toLowerCase()
-  return users.value.filter(
+  return users.value.data.filter(
     (u) =>
       (u?.username?.toLowerCase().includes(q) || u?.email?.toLowerCase().includes(q)) &&
       u?.clientSiteId !== props.clientId &&

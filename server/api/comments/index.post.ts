@@ -56,10 +56,12 @@ export default defineEventHandler(async (event) => {
     if (parent.user.allowEmail) {
       await sendEmail({
         to: parent.user.email,
-        subject: 'Nová odpověď na váš komentář',
-        text: `Ahoj ${parent.user.username}, ${user.name} odpověděl: "${body.content.slice(0, 50)}...".\nOdpověď najdeš zde: ${url(body.parentId)}`,
+        // subject: 'Nová odpověď na váš komentář',
+        // text: `Ahoj ${parent.user.username}, ${user.name} odpověděl: "${body.content.slice(0, 50)}...".\nOdpověď najdeš zde: ${url(body.parentId)}`,
         template: 'commentReply',
         data: {
+          subject: 'Nová odpověď na váš komentář',
+          text: `Ahoj ${parent.user.username}, ${user.name} odpověděl: "${body.content.slice(0, 50)}...".\nOdpověď najdeš zde: ${url(body.parentId)}`,
           userName: user.name,
           parentUsername: parent.user.username,
           commentContent: body.content.slice(0, 50) + '...',
@@ -89,10 +91,12 @@ export default defineEventHandler(async (event) => {
     if (fullArticle.userId !== user.id && fullArticle.user.allowEmail) {
       await sendEmail({
         to: fullArticle.user.email,
-        subject: `Nový komentář – ${fullArticle.title}`,
-        text: `Ahoj, ${user.name} okomentoval tvůj článek: "${body.content.slice(0, 50)}...".\nPodívej se zde: ${url(comment.id)}`,
+        // subject: `Nový komentář – ${fullArticle.title}`,
+        // text: `Ahoj, ${user.name} okomentoval tvůj článek: "${body.content.slice(0, 50)}...".\nPodívej se zde: ${url(comment.id)}`,
         template: 'newComment',
         data: {
+          subject: `Nový komentář – ${fullArticle.title}`,
+          text: `Ahoj, ${user.name} okomentoval tvůj článek: "${body.content.slice(0, 50)}...".\nPodívej se zde: ${url(comment.id)}`,
           userName: user.name,
           articleTitle: fullArticle.title,
           commentContent: body.content.slice(0, 50) + '...',

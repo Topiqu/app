@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
         select: {
           username: true,
           id: true,
+          email: true,
           avatarUrl: true,
           _count: { select: { following: true } },
         },

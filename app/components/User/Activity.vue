@@ -364,9 +364,9 @@ type Comment = Pick<_Comment, 'id' | 'content' | 'userId' | 'parentId'> & {
   tags: string[]
   likesCount: number
   dislikesCount: number
-  replies: Comment[]
+  replies?: Comment[]
   createdAt: string
-  deletedAt?: string
+  deletedAt?: string | null
 }
 
 const props = defineProps<{ activeTab: 'likedArticles' | 'comments' }>()
@@ -440,7 +440,7 @@ const availableTags = computed(() => {
   allArticles.value.forEach((a) => a.tags.forEach((t) => tags.add(t)))
   allComments.value.forEach((c) => {
     c.tags.forEach((t) => tags.add(t))
-    c.replies.forEach((r) => r.tags.forEach((t) => tags.add(t)))
+    c.replies?.forEach((r) => r.tags.forEach((t) => tags.add(t)))
   })
   return [...tags]
 })

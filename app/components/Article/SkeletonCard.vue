@@ -184,7 +184,7 @@ const props = defineProps<{
     id: string
     slug: string
     title: string
-    content: string | null
+    content?: string | null
     excerpt: string | null
     imageUrl: string | null
     createdAt: string

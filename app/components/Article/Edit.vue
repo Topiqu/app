@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Article } from '@zenstackhq/runtime/models'
+import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
@@ -75,7 +75,7 @@ import Swal from 'sweetalert2'
 const toast = useToast()
 const open = defineModel<boolean>()
 const emit = defineEmits(['saved'])
-const props = defineProps<{ article: Article }>()
+const props = defineProps<{ article: ArticleWithDetails }>()
 
 const editedArticle = ref({
   ...props.article,
@@ -151,7 +151,7 @@ const saveEdit = async () => {
         excerpt: editedArticle.value.excerpt || '',
         content: editedArticle.value.content,
         slug: editedArticle.value.slug,
-        userId: editedArticle.value.userId,
+        userId: editedArticle.value.userId || editedArticle.value.user?.id,
         imageUrl: editedArticle.value.imageUrl,
         releaseAt: editedArticle.value.releaseAt || undefined,
       },
