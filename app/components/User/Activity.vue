@@ -48,15 +48,7 @@
           </button>
         </div>
         <div v-if="activeTab === 'likedArticles'" class="flex items-center gap-2">
-          <select
-            v-model="sortOption"
-            class="px-4 py-2.5 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg transition-colors duration-150 ease-in-out"
-          >
-            <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
-            <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
-            <option value="likes:desc">{{ $t('common.sortOptions.mostInteresting') }}</option>
-            <option value="views:desc">{{ $t('common.sortOptions.mostViews') }}</option>
-          </select>
+          <FormSelect v-model="sortOption" :items="sortItems" :showValue="false" />
           <button
             class="p-2 rounded-lg bg-gray-100 dark:bg-neutral-800 transition-colors duration-150 ease-in-out"
             @click="isGrid = !isGrid"
@@ -65,14 +57,11 @@
           </button>
         </div>
         <div v-else class="flex items-center gap-2">
-          <select
+          <FormSelect
             v-model="sortComment"
-            class="px-4 py-2.5 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg transition-colors duration-150 ease-in-out"
-          >
-            <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
-            <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
-            <option value="likes:desc">{{ $t('common.sortOptions.mostInteresting') }}</option>
-          </select>
+            :items="sortItems.filter((item) => item.value !== 'views:desc')"
+            :showValue="false"
+          />
         </div>
       </div>
       <div v-if="pending" class="space-y-4">
@@ -403,6 +392,13 @@ const limit = 2
 const hasMore = shallowRef({ likedArticles: true, comments: true })
 const allArticles = ref<Article[]>([])
 const allComments = ref<Comment[]>([])
+
+const sortItems = [
+  { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'mdi:clock-outline' },
+  { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'mdi:clock-time-twelve-outline' },
+  { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'mdi:heart' },
+  { label: $t('common.sortOptions.mostViews'), value: 'views:desc', icon: 'mdi:eye-outline' },
+]
 
 const { data, pending, error, refresh } = await useFetch('/api/users/activity', {
   query: {

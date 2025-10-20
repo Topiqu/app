@@ -6,14 +6,7 @@
         {{ $t('articles.comments.title') }} <span class="text-xl text-gray-500">({{ commCount }})</span>
       </h2>
       <div class="ml-auto flex items-center gap-2">
-        <select
-          v-model="sort"
-          class="px-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-        >
-          <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
-          <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
-          <option value="likes:desc">{{ $t('common.sortOptions.mostInteresting') }}</option>
-        </select>
+        <FormSelect v-model="sort" :items="sortItems" :showValue="false" />
       </div>
     </div>
     <div
@@ -134,6 +127,11 @@ const commentForm = useTemplateRef<HTMLElement>('commentForm')
 const sentinel = useTemplateRef('sentinel')
 
 const sort = shallowRef('createdAt:desc')
+const sortItems = [
+  { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'mdi:clock-outline' },
+  { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'mdi:clock-time-twelve-outline' },
+  { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'mdi:heart' },
+]
 const page = shallowRef<number>(1)
 const limit = 2
 const max = 100
@@ -177,8 +175,6 @@ watch(
   (e) =>
     e && toast.error({ message: $t('articles.comments.errorLoadingComments', { 0: e.message || $t('common.error') }) }),
 )
-
-watch(sort, () => nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' })))
 
 useInfiniteScroll(
   sentinel,
