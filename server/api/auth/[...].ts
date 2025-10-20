@@ -127,7 +127,7 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
 }
 
 export default NuxtAuthHandler({
-  secret: useRuntimeConfig().authSecret,
+  secret: useRuntimeConfig().auth.secret,
   providers: [
     Credentials({
       credentials: { email: { label: 'Email', type: 'email' }, password: { label: 'Heslo', type: 'password' } },
