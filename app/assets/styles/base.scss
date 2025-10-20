@@ -55,14 +55,17 @@ select,
   border-radius: 6px !important;
 }
 
-html.dark div:not(.iziToast,
-  .iziToast-capsule,
-  .iziToast-wrapper *,
-  [role='dialog'],
-  [role='dialog'] *,
-  [data-youtube-video],
-  [data-youtube-video] *,
-  .pointer-events-none) {
+html.dark
+  div:not(
+    .iziToast,
+    .iziToast-capsule,
+    .iziToast-wrapper *,
+    [role='dialog'],
+    [role='dialog'] *,
+    [data-youtube-video],
+    [data-youtube-video] *,
+    .pointer-events-none
+  ) {
   background-color: #1f2937;
 }
 

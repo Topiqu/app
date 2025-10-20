@@ -9,12 +9,7 @@
         class="max-w-xs max-h-40 object-contain rounded-xl shadow-md border border-gray-200 dark:border-gray-500 transition-all duration-300 hover:scale-105"
         :alt="$t('articles.articleCard.imageAlt')"
       />
-      <Button
-        variant="danger"
-        size="sm"
-        class="flex items-center gap-1 hover:text-red-600"
-        @click="cancelUpload"
-      >
+      <Button variant="danger" size="sm" class="flex items-center gap-1 hover:text-red-600" @click="cancelUpload">
         <Icon name="mdi:cancel" class="w-5 h-5" />
       </Button>
     </div>
@@ -44,19 +39,28 @@
         />
         <span class="font-semibold">{{ $t('common.actions.upload') }}</span>
         {{ $t('common.labels.image') }}
-        <div v-if="constraints.maxSize || constraints.minSize || constraints.maxWidth || constraints.maxHeight || constraints.minWidth || constraints.minHeight" class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+        <div
+          v-if="
+            constraints.maxSize ||
+            constraints.minSize ||
+            constraints.maxWidth ||
+            constraints.maxHeight ||
+            constraints.minWidth ||
+            constraints.minHeight
+          "
+          class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center"
+        >
           <div v-if="constraints.maxSize">Max: {{ (constraints.maxSize / 1024 / 1024).toFixed(1) }} MB</div>
           <div v-if="constraints.minSize">Min: {{ (constraints.minSize / 1024).toFixed(0) }} KB</div>
-          <div v-if="constraints.maxWidth || constraints.maxHeight">Max: {{ constraints.maxWidth || 'Není omezeno' }}×{{ constraints.maxHeight || 'Není omezeno' }}px</div>
-          <div v-if="constraints.minWidth || constraints.minHeight">Min: {{ constraints.minWidth || 0 }}×{{ constraints.minHeight || 0 }}px</div>
+          <div v-if="constraints.maxWidth || constraints.maxHeight">
+            Max: {{ constraints.maxWidth || 'Není omezeno' }}×{{ constraints.maxHeight || 'Není omezeno' }}px
+          </div>
+          <div v-if="constraints.minWidth || constraints.minHeight">
+            Min: {{ constraints.minWidth || 0 }}×{{ constraints.minHeight || 0 }}px
+          </div>
         </div>
       </div>
-      <Button
-        v-if="!isProcessing"
-        :disabled="disabled"
-        class="w-full"
-        @click="open({ accept: 'image/*' })"
-      >
+      <Button v-if="!isProcessing" :disabled="disabled" class="w-full" @click="open({ accept: 'image/*' })">
         {{ $t('common.actions.upload') }} {{ $t('common.labels.image') }}
       </Button>
     </div>
@@ -91,10 +95,24 @@ const defaultConstraints: Record<
   NonNullable<typeof props.type>,
   { maxWidth?: number; maxHeight?: number; minWidth?: number; minHeight?: number; maxSize?: number; minSize?: number }
 > = {
-  'client-logo': { maxWidth: 1024, maxHeight: 1024, minWidth: 512, minHeight: 512, maxSize: 2 * 1024 * 1024, minSize: 0 },
+  'client-logo': {
+    maxWidth: 1024,
+    maxHeight: 1024,
+    minWidth: 512,
+    minHeight: 512,
+    maxSize: 2 * 1024 * 1024,
+    minSize: 0,
+  },
   'user-avatar': { maxWidth: 512, maxHeight: 512, minWidth: 100, minHeight: 100, maxSize: 5 * 1024 * 1024, minSize: 0 },
-  'article-image': { maxWidth: 1920, maxHeight: 1080, minWidth: 300, minHeight: 200, maxSize: 5 * 1024 * 1024, minSize: 0 },
-  'emoji': { maxWidth: 128, maxHeight: 128, minWidth: 64, minHeight: 64, maxSize: 1 * 1024 * 1024, minSize: 0 },
+  'article-image': {
+    maxWidth: 1920,
+    maxHeight: 1080,
+    minWidth: 300,
+    minHeight: 200,
+    maxSize: 5 * 1024 * 1024,
+    minSize: 0,
+  },
+  emoji: { maxWidth: 128, maxHeight: 128, minWidth: 64, minHeight: 64, maxSize: 1 * 1024 * 1024, minSize: 0 },
 }
 
 const constraints = computed(() => {
