@@ -29,9 +29,9 @@
             >
               <Icon v-if="icon" :name="icon" class="w-7 h-7 mr-1" />
               <div class="flex-1">
-                <div class="flex is-center justify-between">
+                <div class="flex items-center justify-between">
                   <span class="block text-sm text-gray-800 dark:text-gray-100">{{ label }}</span>
-                  <span class="uppercase text-xs text-gray-500 dark:text-gray-400">{{ value }}</span>
+                  <span v-if="showValue" class="uppercase text-xs text-gray-500 dark:text-gray-400">{{ value }}</span>
                 </div>
               </div>
             </Button>
@@ -51,7 +51,10 @@ export type FormSelectItem = {
   value: string
 }
 
-const { items } = defineProps<{ items: FormSelectItem[] }>()
+const { items, showValue = true } = defineProps<{
+  items: FormSelectItem[]
+  showValue?: boolean
+}>()
 
 const modelValue = defineModel<FormSelectItem['value']>({ required: true })
 
