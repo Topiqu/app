@@ -13,9 +13,6 @@ export default defineNuxtConfig({
   $production: {
     nitro: {
       preset: 'vercel',
-      externals: {
-        inline: ['jsdom', 'parse5'],
-      },
     },
   },
 
