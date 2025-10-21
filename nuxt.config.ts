@@ -10,7 +10,14 @@ export default defineNuxtConfig({
     auth: { secret: process.env.AUTH_SECRET },
   },
 
-  $production: { nitro: { preset: 'vercel' } },
+  $production: {
+    nitro: {
+      preset: 'vercel',
+      externals: {
+        inline: ['jsdom', 'parse5'],
+      },
+    },
+  },
 
   nitro: {
     experimental: {
