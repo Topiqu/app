@@ -246,7 +246,7 @@ const showPassword = shallowRef(false)
 
 const isPasswordFormValid = computed(() => {
   return internalMode.value === 'register'
-    ? form.value.password && form.value.password === form.value.passwordConfirm
+    ? !!(form.value.password && form.value.password === form.value.passwordConfirm)
     : true
 })
 

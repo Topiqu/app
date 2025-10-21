@@ -235,7 +235,7 @@
         :index="currentImageIndex"
         @hide="lightboxVisible = false"
       />
-      <ArticleRelated :articles="relatedArticles" :pending />
+      <ArticleRelated :articles="relatedArticles!" :pending />
       <div v-if="data.sources?.length" class="group w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
         <div
           class="flex items-center justify-between cursor-pointer select-none text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"

@@ -259,8 +259,8 @@ const socialPlatforms: SocialPlatform[] = ['FACEBOOK', 'TWITTER', 'INSTAGRAM', '
 const init = {
   focus: '',
   audience: '',
-  language: 'en' as unknown as typeof LanguageSchema.options,
-  theme: 'blue' as unknown as typeof ThemeSchema.options,
+  language: 'en' as unknown as (typeof LanguageSchema.options)[number],
+  theme: 'blue' as unknown as (typeof ThemeSchema.options)[number],
   keywords: [] as string[],
   description: '',
   logoUrl: '',
@@ -277,8 +277,8 @@ interface ClientSite {
   plan: string
   focus: string | null
   audience: string | null
-  language: typeof LanguageSchema.options
-  theme: typeof ThemeSchema.options
+  language: (typeof LanguageSchema.options)[number]
+  theme: (typeof ThemeSchema.options)[number]
   keywords: string[] | null
   description: string | null
   logoUrl: string | null
@@ -344,8 +344,8 @@ const {
     plan: 'BASIC',
     focus: null,
     audience: null,
-    language: LanguageSchema.options[0] as unknown as typeof LanguageSchema.options,
-    theme: ThemeSchema.options[0] as unknown as typeof ThemeSchema.options,
+    language: LanguageSchema.options[0] as unknown as (typeof LanguageSchema.options)[number],
+    theme: ThemeSchema.options[0] as unknown as (typeof ThemeSchema.options)[number],
     keywords: [],
     description: null,
     logoUrl: null,

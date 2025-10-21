@@ -66,9 +66,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Session } from '@prisma/client'
-
 import { formatDate } from '~~/shared/utils'
+
+import type { Session } from '~/composables/useProfile'
 
 const props = defineProps<{
   sessions: Session[]

@@ -39,10 +39,12 @@ export default defineEventHandler(async (e) => {
 
   await sendEmail({
     to: user.email,
-    subject: 'Ověření e-mailu',
-    text: `Váš ověřovací kód: ${code}. Kód je platný 24 hodin.`,
+    // subject: 'Ověření e-mailu',
+    // text: `Váš ověřovací kód: ${code}. Kód je platný 24 hodin.`,
     template: 'verificationCode',
     data: {
+      subject: 'Ověření e-mailu',
+      text: `Váš ověřovací kód: ${code}. Kód je platný 24 hodin.`,
       userName: userDb!.username,
       verificationCode: code,
       actionType: 'ověření e-mailu',

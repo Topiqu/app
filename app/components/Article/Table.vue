@@ -206,7 +206,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Article, ArticleStatus } from '@zenstackhq/runtime/models'
+import type { ArticleWithDetails } from '~~/types/article'
+import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
 import Swal from 'sweetalert2'
 import { format } from 'date-fns'
@@ -229,7 +230,7 @@ const localePath = useLocalePath()
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
 const globalFilter = shallowRef((route.query.query as string) || '')
-const { data: articles, refresh } = await useFetch<{ data: Article[]; total: number }>(
+const { data: articles, refresh } = await useFetch<{ data: ArticleWithDetails[]; total: number }>(
   () =>
     `/api/articles/search?page=${page.value}&limit=${limit}${globalFilter.value ? `&query=${encodeURIComponent(globalFilter.value)}` : ''}`,
   {
@@ -315,7 +316,7 @@ async function del(id: string) {
   }
 }
 
-const columns: ColumnDef<Article>[] = [
+const columns: ColumnDef<ArticleWithDetails>[] = [
   {
     header: $t('articles.columns.imageUrl'),
     accessorKey: 'imageUrl',

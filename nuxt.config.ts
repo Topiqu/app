@@ -5,24 +5,18 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: { appVersion: '1.0.0 beta' },
-    openModeratorApiKey: process.env.OPENMODERATOR_API_KEY,
+    openModerator: { apiKey: process.env.OPENMODERATOR_API_KEY },
     xai: { apiKey: process.env.XAI_API_KEY },
-    authSecret: process.env.AUTH_SECRET,
+    auth: { secret: process.env.AUTH_SECRET },
   },
 
-  typescript: { tsConfig: { include: ['../types/**/*.d.ts'] } },
-
-  $production: {
-    nitro: {
-      preset: 'vercel',
-      externals: {
-        inline: ['jsdom', 'parse5'],
-      },
-    },
-  },
+  $production: { nitro: { preset: 'vercel' } },
 
   nitro: {
-    experimental: { tasks: true, asyncContext: true },
+    experimental: {
+      tasks: true,
+      asyncContext: true,
+    },
     scheduledTasks: {
       '*/1 * * * *': ['publish-check'],
     },
@@ -62,6 +56,33 @@ export default defineNuxtConfig({
     'nuxt-qrcode',
     'nuxt-gtag',
   ],
+
+  typescript: { tsConfig: { include: ['../types/**/*.d.ts'] } },
+
+  eslint: { config: { typescript: true } },
+
+  css: ['~/assets/styles/base.scss'],
+
+  auth: {
+    provider: { type: 'authjs' },
+    baseURL: process.env.AUTH_ORIGIN,
+    originEnvKey: 'AUTH_ORIGIN',
+  },
+
+  image: {
+    quality: 90,
+    formats: ['avif', 'webp', 'png'],
+  },
+
+  nodemailer: {
+    from: `"TOPIQU BLOG" ${process.env.NUXT_MAIL_USER}`,
+    service: 'gmail',
+    auth: {
+      user: process.env.NUXT_MAIL_USER,
+      pass: process.env.NUXT_MAIL_PASS,
+    },
+  },
+
   qrcode: {
     options: {
       variant: 'pixelated',
@@ -70,88 +91,7 @@ export default defineNuxtConfig({
       whiteColor: 'transparent',
     },
   },
-  site: {
-    url: 'https://topiqu.com',
-    name: 'Topiqu AI Blog',
-    description: 'Moderní blogovací platforma poháněná AI',
-    defaultLocale: 'cs',
-    indexable: true,
-    // multiTenancy: {},
-  },
-  gtag: {},
-  seo: {},
-  pwa: {
-    registerType: 'autoUpdate',
-    manifest: {
-      name: 'Topiqu AI Blog',
-      short_name: 'Topiqu',
-      description: 'Moderní blogovací platforma poháněná AI',
-      theme_color: '#2d5ebc',
-      // icons: [
-      //   {
-      //     src: '/icons/icon-192x192.png',
-      //     sizes: '192x192',
-      //     type: 'image/png',
-      //   },
-      //   {
-      //     src: '/icons/icon-512x512.png',
-      //     sizes: '512x512',
-      //     type: 'image/png',
-      //   },
-      // ],
-    },
-    workbox: {
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/topiqu\.com\/.*$/,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'api-cache',
-            expiration: {
-              maxEntries: 50,
-              maxAgeSeconds: 86400,
-            },
-          },
-        },
-      ],
-    },
-  },
-  i18n: {
-    locales: [
-      { code: 'en', iso: 'en-US', name: 'EN', file: 'en.json' },
-      { code: 'cs', iso: 'cs-CZ', name: 'CZ', file: 'cs.json' },
-    ],
-    vueI18n: './i18n/i18n.config.ts',
-    defaultLocale: 'en',
-    strategy: 'prefix',
-    detectBrowserLanguage: {
-      useCookie: true,
-      cookieKey: 'i18n_lang',
-      cookieSecure: true,
-      cookieCrossOrigin: true,
-      redirectOn: 'root',
-      alwaysRedirect: true,
-      fallbackLocale: 'en',
-    },
-    compilation: {
-      strictMessage: false,
-      escapeHtml: false,
-    },
-    customRoutes: 'config',
-    pages: {
-      'clanky-slug': { cs: '/clanky/[slug]', en: '/articles/[slug]' },
-      'autor-name': { cs: '/autor/[name]', en: '/author/[name]' },
-      uzivatel: {
-        cs: '/uzivatel',
-        en: '/user',
-      },
-      'stitky-slug': { cs: '/stitky/[slug]', en: '/tags/[slug]' },
-      autorizace: {
-        cs: '/autorizace',
-        en: '/auth',
-      },
-    },
-  },
+
   security: {
     rateLimiter: {
       interval: 10 * 1000,
@@ -187,27 +127,94 @@ export default defineNuxtConfig({
     xssValidator: false,
   },
 
-  eslint: { config: { typescript: true } },
-
-  css: ['~/assets/styles/base.scss'],
-
-  auth: {
-    provider: { type: 'authjs' },
-    baseURL: process.env.AUTH_ORIGIN,
-    originEnvKey: 'AUTH_ORIGIN',
-  },
-
-  nodemailer: {
-    from: `"TOPIQU BLOG" ${process.env.NUXT_MAIL_USER}`,
-    service: 'gmail',
-    auth: {
-      user: process.env.NUXT_MAIL_USER,
-      pass: process.env.NUXT_MAIL_PASS,
+  i18n: {
+    locales: [
+      { code: 'en', iso: 'en-US', name: 'EN', file: 'en.json' },
+      { code: 'cs', iso: 'cs-CZ', name: 'CZ', file: 'cs.json' },
+    ],
+    vueI18n: './i18n/i18n.config.ts',
+    defaultLocale: 'en',
+    strategy: 'prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_lang',
+      cookieSecure: true,
+      cookieCrossOrigin: true,
+      redirectOn: 'root',
+      alwaysRedirect: true,
+      fallbackLocale: 'en',
+    },
+    compilation: {
+      strictMessage: false,
+      escapeHtml: false,
+    },
+    customRoutes: 'config',
+    pages: {
+      'clanky-slug': {
+        cs: '/clanky/[slug]',
+        en: '/articles/[slug]',
+      },
+      'autor-name': {
+        cs: '/autor/[name]',
+        en: '/author/[name]',
+      },
+      uzivatel: {
+        cs: '/uzivatel',
+        en: '/user',
+      },
+      'stitky-slug': {
+        cs: '/stitky/[slug]',
+        en: '/tags/[slug]',
+      },
+      autorizace: {
+        cs: '/autorizace',
+        en: '/auth',
+      },
     },
   },
 
-  image: {
-    quality: 90,
-    formats: ['avif', 'webp', 'png'],
+  site: {
+    url: 'https://topiqu.com',
+    name: 'Topiqu AI Blog',
+    description: 'Moderní blogovací platforma poháněná AI',
+    defaultLocale: 'cs',
+    indexable: true,
+  },
+
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'Topiqu AI Blog',
+      short_name: 'Topiqu',
+      description: 'Moderní blogovací platforma poháněná AI',
+      theme_color: '#2d5ebc',
+      // icons: [
+      //   {
+      //     src: '/icons/icon-192x192.png',
+      //     sizes: '192x192',
+      //     type: 'image/png',
+      //   },
+      //   {
+      //     src: '/icons/icon-512x512.png',
+      //     sizes: '512x512',
+      //     type: 'image/png',
+      //   },
+      // ],
+    },
+    workbox: {
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/topiqu\.com\/.*$/,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: {
+              maxEntries: 50,
+              maxAgeSeconds: 86400,
+            },
+          },
+        },
+      ],
+    },
   },
 })

@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Article } from '@zenstackhq/runtime/models'
+import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
 
@@ -65,7 +65,7 @@ type Tag = { id: string; name: string }
 const emit = defineEmits(['update:tags', 'delete:tag'])
 const toast = useToast()
 
-const props = defineProps<{ article?: Article }>()
+const props = defineProps<{ article?: ArticleWithDetails }>()
 
 const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
   default: () => [],
