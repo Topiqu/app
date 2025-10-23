@@ -1,4 +1,4 @@
-import argon from 'argon2'
+import argon from 'argon2-browser'
 import { authenticator } from 'otplib'
 
 export default defineEventHandler(async (event) => {
@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
 
   if (user.role !== 'superadmin' && body.password) {
     if (oldPasswordDb?.password) {
-      const match = await argon.verify(oldPasswordDb.password, oldPass ?? '')
+      const match = await argon.verify({ pass: oldPasswordDb.password, encoded: oldPass ?? '' })
       if (!match) throw createError({ statusCode: 403, message: 'Změna hesla selhala' })
     }
   }

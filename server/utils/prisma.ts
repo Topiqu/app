@@ -1,4 +1,4 @@
-import argon from 'argon2'
+import argon from 'argon2-browser'
 import { PrismaClient } from '@prisma/client'
 
 const prismaClientSingleton = () =>
@@ -26,7 +26,7 @@ const prismaClientSingleton = () =>
       user: {
         async create({ args, query }) {
           if (typeof args.data.password === 'string') {
-            args.data.password = await argon.hash(args.data.password)
+            args.data.password = (await argon.hash({ pass: args.data.password, salt: '' })).encoded
           }
           return query(args)
         },
@@ -37,7 +37,9 @@ const prismaClientSingleton = () =>
 
             if (typeof value === 'string' && value.length > 0) {
               args.data.password =
-                typeof pwd === 'object' && 'set' in pwd! ? { set: await argon.hash(value) } : await argon.hash(value)
+                typeof pwd === 'object' && 'set' in pwd!
+                  ? { set: (await argon.hash({ pass: value, salt: '' })).encoded }
+                  : (await argon.hash({ pass: value, salt: '' })).encoded
             } else {
               delete args.data.password
             }
