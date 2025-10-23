@@ -1,6 +1,6 @@
 import type { OAuthConfig, OAuthUserConfig } from 'next-auth/providers/oauth'
 
-import argon from 'argon2'
+import argon from 'argon2-browser'
 import { NuxtAuthHandler } from '#auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
@@ -146,7 +146,7 @@ export default NuxtAuthHandler({
           },
         })
         if (!user || !user.password) return null
-        if (!(await argon.verify(user.password, password))) return null
+        if (!(await argon.verify({ pass: user.password, encoded: password }))) return null
         let plan: string | null = null
         if (user.clientSiteId) {
           const clientSite = await prisma.clientSite.findFirst({
