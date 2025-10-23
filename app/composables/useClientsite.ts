@@ -6,13 +6,12 @@ export const useClientSite = async () => {
   if (import.meta.client && globalThis.gtagInit === undefined) globalThis.gtagInit = false
 
   const hostname = import.meta.client
-    ? useBrowserLocation().value.hostname?.split('.')[0]
-    : (useNuxtApp().ssrContext?.event.node.req.headers.host?.split('.')[0] ?? '')
+    ? useBrowserLocation().value.hostname?.replace('www.', '').split(':')[0]
+    : (useNuxtApp().ssrContext?.event.node.req.headers.host?.replace('www.', '').split(':')[0] ?? '')
 
   if (!hostname) return
 
   const { data } = await useAsyncData(`clientsite-${hostname}`, () => $fetch(`/api/clients/slug/${hostname}`))
-
   const gtagId = data.value?.gtagId
 
   if (import.meta.client && data.value?.plan !== 'BASIC' && gtagId && !globalThis.gtagInit) {
