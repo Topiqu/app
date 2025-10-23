@@ -251,6 +251,7 @@ const {
   pending,
 } = await useFetch(`/api/articles/by-clientsite/${clientSite?.name}`, {
   query,
+  lazy: true,
   watch: false,
 })
 const articleMap = ref<Map<string, NonNullable<typeof feed.value>['items'][number]>>(new Map())
