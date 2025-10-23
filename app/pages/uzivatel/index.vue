@@ -191,16 +191,27 @@
                   <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
                   <div id="password-section" class="space-y-3 sm:space-y-4">
                     <div v-if="userData?.hasPassword">
-                      <FormField
+                      <FormLabel :text="$t('common.auth.oldPassword')" />
+                      <FormInput
                         v-model="passwordForm.oldPassword"
-                        :label="$t('common.auth.oldPassword')"
                         :type="showOldPassword ? 'text' : 'password'"
                         name="oldPassword"
                         :placeholder="$t('common.auth.oldPassword')"
-                        :icon="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'"
-                        iconPosition="trailing"
-                        @click:icon="showOldPassword = !showOldPassword"
-                      />
+                        class="w-full rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all duration-300 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-neutral-700"
+                      >
+                        <template #icon>
+                          <div
+                            class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center size-6 text-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer"
+                            :aria-label="showOldPassword ? $t('common.hidePassword') : $t('common.showPassword')"
+                            @click="showOldPassword = !showOldPassword"
+                          >
+                            <Icon
+                              :name="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'"
+                              class="size-full text-[inherit]"
+                            />
+                          </div>
+                        </template>
+                      </FormInput>
                     </div>
                     <UserPassword v-model="passwordForm.newPassword" :isValid="isPasswordFormValid" />
                     <UserPassword v-model="passwordForm.confirmNewPassword" :isValid="isPasswordFormValid" isConfirm />

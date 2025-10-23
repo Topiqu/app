@@ -1,26 +1,25 @@
 <template>
   <div class="relative space-y-2">
+    <FormLabel :text="$t(isConfirm ? 'common.auth.passwordConfirm' : 'common.auth.newPassword')" />
     <FormInput
       v-model="password"
       :type="showPassword ? 'text' : 'password'"
       :placeholder="$t(isConfirm ? 'common.auth.passwordConfirm' : 'common.auth.newPassword')"
-      class="w-full pl-5 pr-10 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all duration-300"
+      class="w-full rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all duration-300"
       :class="{
-        'border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-800': !password,
-        '!border-green-500 dark:border-green-500': password && isValidReal && !isConfirm,
-        '!border-red-500 dark:border-red-500': password && !isValidReal && !isConfirm,
+        'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-neutral-700': !password,
+        '!border-green-500 dark:border-green-500 bg-gray-100 dark:bg-neutral-700':
+          password && isValidReal && !isConfirm,
+        '!border-red-500 dark:border-red-500 bg-gray-100 dark:bg-neutral-700': password && !isValidReal && !isConfirm,
       }"
     >
       <template #icon>
         <div
-          class="absolute right-3 inset-y-0 flex items-center"
+          class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center size-6 text-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer"
           :aria-label="showPassword ? $t('common.hidePassword') : $t('common.showPassword')"
           @click="showPassword = !showPassword"
         >
-          <Icon
-            :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'"
-            class="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer"
-          />
+          <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" class="size-full text-[inherit]" />
         </div>
       </template>
     </FormInput>
