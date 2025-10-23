@@ -5,6 +5,9 @@ export default defineEventHandler(async (event) => {
   const clientSite = await prisma.clientSite.findFirst({
     where: { name: slug },
   })
+  // const clientSite = await prisma.clientSite.findFirst({
+  //   where: { subdomain: slug },
+  // }) // FOR PRODUCTION
 
   if (!clientSite) throw createError({ statusCode: 404, message: 'Blog nenalezen' })
 
