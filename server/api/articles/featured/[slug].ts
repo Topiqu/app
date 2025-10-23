@@ -11,13 +11,13 @@ export default defineEventHandler(async (event) => {
 
   if (!clientSite) throw createError({ statusCode: 404, message: 'Blog nenalezen' })
 
-  const twoWeeksAgo = new Date()
-  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+  const monthAgo = new Date()
+  monthAgo.setDate(monthAgo.getDate() - 30)
 
   const articles = await db.article.findMany({
     where: {
       clientSiteId: clientSite.id,
-      createdAt: { gte: twoWeeksAgo },
+      createdAt: { gte: monthAgo },
     },
     include: {
       tags: { include: { tag: true } },
@@ -27,7 +27,6 @@ export default defineEventHandler(async (event) => {
     orderBy: { createdAt: 'desc' },
     take: 10,
   })
-
   const sortedArticles = articles.sort((a, b) => {
     const aScore = (a._count?.reactions ?? 0) + (a._count?.comments ?? 0)
     const bScore = (b._count?.reactions ?? 0) + (b._count?.comments ?? 0)
