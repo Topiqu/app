@@ -39,6 +39,14 @@ export default defineNuxtConfig({
     dirs: ['shared/zod/models', 'utils', '#auth'],
   },
 
+  vite: {
+    resolve: {
+      alias: {
+        '.prisma/client/index-browser': './node_modules/@prisma/client/index-browser.js',
+      },
+    },
+  },
+
   modules: [
     '@nuxt/eslint',
     '@nuxtjs/i18n',
