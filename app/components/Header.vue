@@ -10,7 +10,8 @@
       @click="isSidebarOpen = !isSidebarOpen"
     />
     <NuxtLink to="/" class="flex items-center justify-center gap-2">
-      <NuxtImg :src="clientSite?.logoUrl || '/app-logo.png'" alt="Logo" class="w-14 object-conatin" />
+      <NuxtImg v-if="clientLogo" :src="clientLogo" alt="Logo" class="w-14 object-contain" />
+      <div v-else class="w-14 h-14 bg-gray-200 dark:bg-neutral-700 rounded-md animate-pulse" />
     </NuxtLink>
     <div class="flex items-center justify-between gap-2">
       <UserAccount />
@@ -23,10 +24,11 @@
 <script lang="ts" setup>
 const isSidebarOpen = defineModel<boolean>('isSidebarOpen')
 
-// const slug = 'GameDev'
-
 const clientSite = await useClientSite()
-
+const clientLogo = shallowRef<string | undefined>(undefined)
+onMounted(() => {
+  clientLogo.value = clientSite?.logoUrl || '/app-logo.png'
+})
 const { data: auth } = useAuth()
 
 const isAdmin = computed(() => ['admin', 'superadmin'].includes(auth?.value?.user.role || ''))
