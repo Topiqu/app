@@ -290,6 +290,8 @@ model ClientSite extends Base {
     audience            String?
     lastGeneratedAt     DateTime?
     gtagId              String?
+    gamNetworkCode      String?             
+    allowAds            Boolean             @default(false)
     allowGtag           Boolean?
     allowShapes         Boolean             @default(false)
     language            Language            @default(en)
