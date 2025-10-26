@@ -26,11 +26,14 @@
               id="comment"
               v-model="newComment"
               :maxlength="maxLength"
-              class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm resize-y min-h-[100px]"
+              class="w-full pl-12 pr-10 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm resize-y min-h-[100px]"
               :placeholder="$t('articles.comments.commentPlaceholder')"
               required
               :disabled="isSubmitting"
             />
+            <div class="absolute right-2 top-2">
+              <GifSelector @select="handleGifSelect" />
+            </div>
             <div class="flex justify-between text-xs text-gray-500 mt-1">
               <span>{{ characterCount }} / {{ maxLength }}</span>
               <span v-if="characterCount >= maxLength" class="text-red-500 font-medium">
@@ -114,8 +117,16 @@
 <script lang="ts" setup>
 import type { CommentWithReplies } from '~~/types/comment'
 
-const toast = useToast()
+interface GiphyGif {
+  id: string
+  title: string
+  images: {
+    fixed_height: { url: string }
+    original: { url: string }
+  }
+}
 
+const toast = useToast()
 const { data: session } = useAuth()
 
 const props = defineProps<{ articleId: string; commCount: number; allowComments: boolean }>()
@@ -190,6 +201,10 @@ onClickOutside(commentForm, (e) => {
   if (replyingTo.value && commentForm.value && !commentForm.value.contains(e.target as Node)) replyingTo.value = null
 })
 
+const handleGifSelect = (gif: GiphyGif) => {
+  newComment.value = `${newComment.value ? `${newComment.value} ` : ''}${gif.images.original.url}`.trim()
+}
+
 const submitComment = async () => {
   if (!newComment.value.trim() || isSubmitting.value || (replyingTo.value && replyingTo.value.deletedAt)) return
   isSubmitting.value = true
@@ -239,9 +254,7 @@ const handleDelete = async (c: CommentWithReplies, reason: string | null) => {
 const react = async (c: CommentWithReplies, type: 'LIKE' | 'DISLIKE') => {
   if (c.deletedAt) return
   try {
-    console.log('reacting here: ', type)
-    const response = await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: c.id, type } })
-    console.log('after fetch: ', type, response, c.id)
+    await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: c.id, type } })
     await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('articles.comments.reactionFailed') })
