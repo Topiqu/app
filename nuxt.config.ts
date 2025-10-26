@@ -36,9 +36,8 @@ export default defineNuxtConfig({
 
   imports: {
     presets: [{ from: 'zod', imports: [{ name: 'z' }] }],
-    dirs: ['shared/zod/models', 'utils', '#auth'],
+    dirs: ['shared/zod/models', 'utils', '#auth', 'server/shared/consts'],
   },
-
   vite: {
     resolve: {
       alias: {
@@ -112,20 +111,15 @@ export default defineNuxtConfig({
     headers: {
       referrerPolicy: 'origin',
       contentSecurityPolicy: {
-        'img-src': [
-          "'self'",
-          'data:',
-          'blob:',
-          'https://developers.google.com',
-          'https://lh3.googleusercontent.com',
-          'https://avatars.githubusercontent.com',
-          'https://simpleicons.org',
-          // 'https://www.google.com',
-          'https://t1.gstatic.com',
-          'https://www.gstatic.com', // fallback
-        ],
+        'img-src': ["'self'", 'data:', 'blob:', 'https:'],
         'frame-src': ['https://www.youtube.com', 'https://www.youtube-nocookie.com'],
-        'connect-src': ["'self'", 'https:', 'https://www.googletagmanager.com', 'https://www.google-analytics.com'],
+        'connect-src': [
+          "'self'",
+          'https:',
+          'https://www.googletagmanager.com',
+          'https://www.google-analytics.com',
+          'https://api.giphy.com',
+        ],
         'script-src': [
           "'self'",
           "'unsafe-inline'",
