@@ -40,7 +40,7 @@
                 {{ $t('articles.comments.characterLimitReached') }}
               </span>
             </div>
-            <Gif v-model:content="selectedGifUrl" />
+            <Gif v-model:content="selectedGifUrl" cancellable />
           </div>
         </div>
         <div
