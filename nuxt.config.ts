@@ -110,6 +110,7 @@ export default defineNuxtConfig({
     },
     headers: {
       referrerPolicy: 'origin',
+      xFrameOptions: false,
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'blob:', 'https:'],
         'frame-src': ['https://www.youtube.com', 'https://www.youtube-nocookie.com'],
