@@ -121,6 +121,7 @@ export default defineNuxtConfig({
           'https://www.google-analytics.com',
           'https://api.giphy.com',
         ],
+        'frame-ancestors': ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
         'script-src': [
           "'self'",
           "'unsafe-inline'",
