@@ -123,6 +123,8 @@ export default defineNuxtConfig({
         'script-src': [
           "'self'",
           "'unsafe-inline'",
+          'blob:',
+          'data:',
           'https://www.youtube.com',
           'https://www.youtube-nocookie.com',
           'https://www.googletagmanager.com',
