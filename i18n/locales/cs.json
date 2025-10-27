@@ -231,6 +231,7 @@
   },
   "articles": {
     "comments": {
+      "addGif": "Přidat GIF",
       "title": "Komentáře",
       "yourComment": "Váš komentář",
       "commentPlaceholder": "Napište svůj komentář...",

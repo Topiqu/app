@@ -217,6 +217,7 @@
   },
   "articles": {
     "comments": {
+      "addGif": "Add GIF",
       "title": "Comments",
       "yourComment": "Your comment",
       "commentPlaceholder": "Write your comment...",
