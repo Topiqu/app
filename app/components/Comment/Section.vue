@@ -40,6 +40,7 @@
                 {{ $t('articles.comments.characterLimitReached') }}
               </span>
             </div>
+            <Gif v-model:content="selectedGifUrl" />
           </div>
         </div>
         <div
@@ -55,6 +56,7 @@
               icon="mdi:close"
               size="sm"
               variant="danger"
+              square
               :title="$t('common.cancelAction')"
               class="!rounded-full ml-auto"
               @click="replyingTo = null"
@@ -132,6 +134,7 @@ const { data: session } = useAuth()
 const props = defineProps<{ articleId: string; commCount: number; allowComments: boolean }>()
 
 const newComment = shallowRef<string>('')
+const selectedGifUrl = shallowRef<string | null>(null)
 const isSubmitting = shallowRef<boolean>(false)
 const replyingTo = ref<CommentWithReplies | null>(null)
 const commentForm = useTemplateRef<HTMLElement>('commentForm')
@@ -200,9 +203,9 @@ useInfiniteScroll(
 onClickOutside(commentForm, (e) => {
   if (replyingTo.value && commentForm.value && !commentForm.value.contains(e.target as Node)) replyingTo.value = null
 })
-
 const handleGifSelect = (gif: GiphyGif) => {
-  newComment.value = `${newComment.value ? `${newComment.value} ` : ''}${gif.images.original.url}`.trim()
+  // console.log(gif.images.original.url)
+  selectedGifUrl.value = gif.images.original.url
 }
 
 const submitComment = async () => {
@@ -222,6 +225,7 @@ const submitComment = async () => {
       message: replyingTo.value ? $t('articles.comments.replySubmitted') : $t('articles.comments.commentAdded'),
     })
     newComment.value = ''
+    selectedGifUrl.value = null
     replyingTo.value = null
     page.value = 1
     comments.value = []
