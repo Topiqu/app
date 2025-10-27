@@ -26,6 +26,7 @@ export default defineEventHandler(async (event) => {
     select: {
       id: true,
       content: true,
+      gifUrl: true,
       createdAt: true,
       userId: true,
       parentId: true,
@@ -129,6 +130,7 @@ export default defineEventHandler(async (event) => {
     return {
       id: comment.id,
       content: comment.content,
+      gifUrl: comment.gifUrl,
       createdAt: comment.createdAt,
       userId: comment.userId,
       parentId: comment.parentId,

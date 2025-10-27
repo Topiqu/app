@@ -1,6 +1,7 @@
 export interface CommentWithReplies {
   id: string
   content: string
+  gifUrl: string | null
   createdAt: Date
   userId: string
   parentId: string | null
