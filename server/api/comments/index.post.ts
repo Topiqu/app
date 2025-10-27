@@ -5,6 +5,11 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
 
   const body = { ...(await readValidatedBody(event, CommentCreateSchema.parse)) }
+
+  if (body.gifUrl && !body.gifUrl.match(/https:\/\/(media[0-9]*\.)?giphy\.com\/[^)]+\.(gif|mp4|webp)/)) {
+    throw createError({ statusCode: 400, message: 'Neplatné GIF URL' })
+  }
+
   body.content = sanitizeHtml(body.content)
 
   const article = await prisma.article.findUnique({
@@ -56,8 +61,6 @@ export default defineEventHandler(async (event) => {
     if (parent.user.allowEmail) {
       await sendEmail({
         to: parent.user.email,
-        // subject: 'Nová odpověď na váš komentář',
-        // text: `Ahoj ${parent.user.username}, ${user.name} odpověděl: "${body.content.slice(0, 50)}...".\nOdpověď najdeš zde: ${url(body.parentId)}`,
         template: 'commentReply',
         data: {
           subject: 'Nová odpověď na váš komentář',
@@ -78,10 +81,17 @@ export default defineEventHandler(async (event) => {
 
   if (fullArticle.allowedComments) {
     const comment = await prisma.comment.create({
-      data: { content, articleId: body.articleId, userId: user.id, parentId: body.parentId || null },
+      data: {
+        content,
+        gifUrl: body.gifUrl || null,
+        articleId: body.articleId,
+        userId: user.id,
+        parentId: body.parentId || null,
+      },
       select: {
         id: true,
         content: true,
+        gifUrl: true,
         createdAt: true,
         user: { select: { id: true, username: true, avatarUrl: true } },
         parentId: true,
@@ -91,8 +101,6 @@ export default defineEventHandler(async (event) => {
     if (fullArticle.userId !== user.id && fullArticle.user.allowEmail) {
       await sendEmail({
         to: fullArticle.user.email,
-        // subject: `Nový komentář – ${fullArticle.title}`,
-        // text: `Ahoj, ${user.name} okomentoval tvůj článek: "${body.content.slice(0, 50)}...".\nPodívej se zde: ${url(comment.id)}`,
         template: 'newComment',
         data: {
           subject: `Nový komentář – ${fullArticle.title}`,

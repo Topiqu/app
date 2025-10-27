@@ -217,6 +217,7 @@ const submitComment = async () => {
       body: {
         articleId: props.articleId,
         content: newComment.value,
+        gifUrl: selectedGifUrl.value,
         parentId: replyingTo.value?.id,
         userId: session?.value?.user?.id,
       },
