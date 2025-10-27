@@ -1,4 +1,4 @@
-import argon from 'argon2-browser'
+import argon from 'argon2'
 
 export default defineEventHandler(async (event) => {
   const { email, password } = await readBody(event)
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   })
   if (!user) throw createError({ statusCode: 401, message: 'Neplatné přihlašovací údaje' })
 
-  const isPasswordValid = await argon.verify({ pass: user.password!, encoded: password })
+  const isPasswordValid = await argon.verify(user.password!, password)
   if (!isPasswordValid) throw createError({ statusCode: 401, message: 'Neplatné přihlašovací údaje' })
 
   return { id: user.id, totpSecret: user.totpSecret }
