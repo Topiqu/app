@@ -1,7 +1,7 @@
 <template>
   <Popover v-slot="{ close }" class="relative">
     <PopoverButton
-      class="flex items-center gap-1 p-2 text-gray-500 hover:text-blue-500 rounded-xl hover:bg-gray-100 transition-colors"
+      class="flex items-center gap-1 p-2 text-gray-500 hover:text-blue-500 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
       :title="$t('articles.comments.addGif')"
     >
       <Icon name="mdi:gif" class="w-6 h-6" />
@@ -19,13 +19,11 @@
       <PopoverPanel
         static
         focus
-        class="absolute bottom-full right-0 z-20 mb-2 w-96 max-w-[90vw] bg-white rounded-2xl shadow-2xl border border-gray-200 p-4"
-        @mousedown.stop
-        @click.stop
+        class="absolute bottom-full right-0 z-20 mb-2 w-96 max-w-[90vw] bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-gray-300 dark:border-neutral-600 p-4"
       >
         <div
           v-if="categoriesLoading"
-          class="p-4 text-center text-gray-600 text-sm flex items-center justify-center gap-2"
+          class="p-4 text-center text-gray-600 dark:text-neutral-300 text-sm flex items-center justify-center gap-2"
         >
           <Icon name="mdi:loading" class="w-6 h-6 text-blue-500 animate-spin" />
           {{ $t('common.loading') }}
@@ -39,21 +37,29 @@
               variant="neutral"
               borderless
               aria="Zrušit výběr kategorie"
+              class="text-gray-500 hover:text-blue-500 dark:text-neutral-300 dark:hover:text-blue-400"
               @click.stop="clearCategory"
             />
-            <input
+            <FormInput
               v-model="searchQuery"
               type="text"
-              :placeholder="$t('articles.comments.searchGif')"
-              class="w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              icon="mdi:magnify"
+              iconPosition="leading"
+              :placeholder="$t('common.search')"
+              class="w-full"
               @input="debouncedSearch"
             />
           </div>
-          <div v-show="shouldShowGifs" ref="gifContainer" class="grid grid-cols-3 gap-3 mt-4 max-h-96 overflow-y-auto">
+          <div
+            v-show="shouldShowGifs"
+            ref="gifContainer"
+            class="grid grid-cols-3 gap-3 mt-4 max-h-96 overflow-y-auto transition-opacity duration-200"
+            :class="{ 'opacity-0 -translate-y-2': !shouldShowGifs, 'opacity-100 translate-y-0': shouldShowGifs }"
+          >
             <button
               v-for="gif in gifs"
               :key="gif.id"
-              class="relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer"
+              class="relative aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer"
               @click="selectGif(gif, close)"
             >
               <NuxtImg
@@ -61,24 +67,26 @@
                 :alt="gif.title"
                 class="w-full h-full object-cover"
                 loading="lazy"
-                format="webp"
-                quality="80"
               />
             </button>
-            <div v-if="loading" class="col-span-3 grid grid-cols-3 gap-3 py-4">
+            <div v-if="gifsLoading" class="col-span-3 grid grid-cols-3 gap-3 py-4">
               <div
                 v-for="i in 6"
                 :key="'skeleton-' + i"
-                class="aspect-square rounded-xl bg-gray-200 animate-pulse"
+                class="aspect-square rounded-lg bg-gray-200 dark:bg-neutral-700 animate-pulse"
               ></div>
             </div>
             <div ref="gifSentinel" class="h-4 col-span-3"></div>
           </div>
-          <div v-show="!shouldShowGifs" class="grid grid-cols-3 gap-3 mt-4 max-h-96 overflow-y-auto">
+          <div
+            v-show="!shouldShowGifs"
+            class="grid grid-cols-3 gap-3 mt-4 max-h-96 overflow-y-auto transition-opacity duration-200"
+            :class="{ 'opacity-0 -translate-y-2': shouldShowGifs, 'opacity-100 translate-y-0': !shouldShowGifs }"
+          >
             <button
               v-for="cat in categories"
               :key="cat.name_encoded"
-              class="relative aspect-square rounded-xl overflow-hidden hover:scale-105 transition-transform duration-200 cursor-pointer"
+              class="relative aspect-square rounded-lg overflow-hidden hover:scale-[1.03] transition-transform duration-300 cursor-pointer"
               @pointerdown.stop.prevent="selectCategory(cat)"
             >
               <NuxtImg
@@ -86,30 +94,28 @@
                 :src="cat.gif.images.fixed_height.url"
                 class="absolute inset-0 w-full h-full object-cover opacity-30"
                 loading="lazy"
-                format="webp"
-                quality="80"
               />
               <div
-                class="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-gray-900/30 to-transparent backdrop-blur-sm text-white text-sm"
+                class="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-gray-900/40 to-transparent backdrop-blur-sm text-white text-sm font-medium"
               >
-                <span class="mr-1">{{ cat.name }}</span>
+                <span class="mr-1 shadow-sm">{{ cat.name }}</span>
                 <Icon name="mdi:arrow-right" class="w-4 h-4 hover:text-blue-300 transition-colors" />
               </div>
             </button>
           </div>
           <div
             v-if="shouldShowGifs && error"
-            class="p-4 text-center text-red-600 text-sm flex flex-col items-center gap-2"
+            class="p-6 text-center text-red-600 dark:text-red-400 text-sm flex flex-col items-center gap-3"
           >
-            <NuxtImg src="/topik_404_rm.png" alt="Error" class="w-16 h-16" />
-            {{ $t('articles.comments.errorLoadingGifs') }}
+            <NuxtImg src="/topik_404_rm.png" alt="Error" class="w-20 h-20" />
+            {{ $t('common.noResults') }}
           </div>
           <div
-            v-else-if="shouldShowGifs && !gifs.length && !loading"
-            class="p-4 text-center text-gray-600 text-sm flex flex-col items-center gap-2"
+            v-else-if="shouldShowGifs && !gifs.length && !gifsLoading"
+            class="p-6 text-center text-gray-600 dark:text-neutral-300 text-sm flex flex-col items-center gap-3"
           >
-            <Icon name="mdi:emoticon-sad-outline" class="w-6 h-6" />
-            {{ $t('articles.comments.noGifs') }}
+            <Icon name="mdi:emoticon-sad-outline" class="w-8 h-8" />
+            {{ $t('common.noResults') }}
           </div>
         </div>
       </PopoverPanel>
@@ -156,18 +162,17 @@ interface GiphyCategoriesResponse {
   data: GiphyCategory[]
 }
 
-const toast = useToast()
 const gifContainer = useTemplateRef('gifContainer')
 const gifSentinel = useTemplateRef('gifSentinel')
 
 const gifs = shallowRef<GiphyGif[]>([])
 const searchQuery = shallowRef('')
 const selectedCategory = shallowRef<GiphyCategory | null>(null)
-const page = shallowRef(1)
 const hasMore = shallowRef(true)
-const loading = shallowRef(false)
 const error = shallowRef<Error | null>(null)
 const categories = shallowRef<GiphyCategory[]>([])
+
+const queryParams = shallowReactive({ page: 1, query: '' })
 
 const emit = defineEmits<{
   (e: 'select', gif: GiphyGif): void
@@ -178,54 +183,49 @@ const shouldShowGifs = computed(() => !!searchQuery.value || !!selectedCategory.
 const {
   data: categoriesData,
   pending: categoriesLoading,
-  error: categoriesError,
   execute: fetchCategories,
 } = await useFetch<GiphyCategoriesResponse>('/api/gifs?action=list-categories', {
   default: () => ({ data: [] }),
   immediate: false,
 })
 
-watch(categoriesData, (v) => {
-  if (v) categories.value = v.data
-})
-watch(categoriesError, (e) => {
-  if (e) toast.error({ message: $t('articles.comments.errorLoadingCategories') })
+const {
+  data: gifsData,
+  pending: gifsLoading,
+  refresh: refreshGifs,
+} = await useFetch<GiphyResponse>('/api/gifs', {
+  query: queryParams,
+  default: () => ({ data: [], pagination: { offset: 0, count: 0, total_count: 0 } }),
+  watch: false,
 })
 
 const getQueryParam = () =>
   searchQuery.value || (selectedCategory.value ? selectedCategory.value.name_encoded : undefined)
 
-const fetchGifs = async () => {
-  if (loading.value || !hasMore.value || !shouldShowGifs.value) return
-  loading.value = true
-  try {
-    const queryParam = getQueryParam()
-    const res = await $fetch<GiphyResponse>('/api/gifs', {
-      query: { page: page.value, ...(queryParam && { query: queryParam }) },
-    })
-    gifs.value = page.value === 1 ? res.data : [...gifs.value, ...res.data]
-    hasMore.value = res.pagination.offset + res.pagination.count < res.pagination.total_count
-    error.value = null
-  } catch (e: any) {
-    error.value = e
-    toast.error({ message: $t('articles.comments.errorLoadingGifs') })
-  } finally {
-    loading.value = false
+watch(categoriesData, (v) => {
+  if (v) categories.value = v.data
+})
+
+watch(gifsData, (v) => {
+  if (v) {
+    gifs.value = queryParams.page === 1 ? v.data : [...gifs.value, ...v.data]
+    hasMore.value = v.pagination.offset + v.pagination.count < v.pagination.total_count
   }
-}
+})
 
 const debouncedSearch = useDebounceFn(() => {
-  page.value = 1
+  queryParams.page = 1
+  queryParams.query = getQueryParam() || ''
   gifs.value = []
-  fetchGifs()
+  refreshGifs()
 }, 300)
 
 useInfiniteScroll(
   gifSentinel,
   async () => {
-    if (!hasMore.value || loading.value || !shouldShowGifs.value) return
-    page.value++
-    await fetchGifs()
+    if (!hasMore.value || gifsLoading.value || !shouldShowGifs.value) return
+    queryParams.page++
+    await refreshGifs()
   },
   { distance: 100, interval: 300 },
 )
@@ -233,11 +233,12 @@ useInfiniteScroll(
 const selectCategory = (cat: GiphyCategory) => {
   selectedCategory.value = cat
   searchQuery.value = ''
-  page.value = 1
+  queryParams.page = 1
+  queryParams.query = getQueryParam() || ''
   gifs.value = []
   nextTick(() => {
     gifContainer.value?.focus()
-    fetchGifs()
+    refreshGifs()
   })
 }
 
@@ -246,14 +247,16 @@ const selectGif = (gif: GiphyGif, close: () => void) => {
   close()
   searchQuery.value = ''
   selectedCategory.value = null
-  page.value = 1
+  queryParams.page = 1
+  queryParams.query = ''
   gifs.value = []
 }
 
 const clearCategory = () => {
   selectedCategory.value = null
   searchQuery.value = ''
-  page.value = 1
+  queryParams.page = 1
+  queryParams.query = ''
   gifs.value = []
 }
 
@@ -263,7 +266,8 @@ onMounted(async () => {
 
 watch(searchQuery, () => {
   selectedCategory.value = null
-  page.value = 1
+  queryParams.page = 1
+  queryParams.query = getQueryParam() || ''
   gifs.value = []
 })
 </script>
