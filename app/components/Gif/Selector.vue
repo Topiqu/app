@@ -19,7 +19,7 @@
       <PopoverPanel
         static
         focus
-        class="absolute bottom-full right-0 z-20 mb-2 w-96 max-w-[90vw] bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-gray-300 dark:border-neutral-600 p-4"
+        class="absolute bottom-full right-0 z-20 mb-2 w-[26rem] max-w-[95vw] bg-white/95 dark:bg-neutral-800/95 backdrop-blur-[4px] rounded-lg shadow-xl border border-gray-300 dark:border-neutral-600 px-6 py-4"
       >
         <div
           v-if="categoriesLoading"
@@ -28,7 +28,7 @@
           <Icon name="mdi:loading" class="w-6 h-6 text-blue-500 animate-spin" />
           {{ $t('common.loading') }}
         </div>
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-4 relative">
           <div class="flex items-center gap-2">
             <Button
               v-if="selectedCategory"
@@ -53,13 +53,13 @@
           <div
             v-show="shouldShowGifs"
             ref="gifContainer"
-            class="grid grid-cols-3 gap-3 mt-4 max-h-96 overflow-y-auto transition-opacity duration-200"
+            class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto transition-opacity duration-200"
             :class="{ 'opacity-0 -translate-y-2': !shouldShowGifs, 'opacity-100 translate-y-0': shouldShowGifs }"
           >
             <button
               v-for="gif in gifs"
               :key="gif.id"
-              class="relative aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer"
+              class="relative aspect-square rounded-lg overflow-hidden shadow-md hover:ring-2 hover:ring-blue-400/60 transition-all duration-300 cursor-pointer"
               @click="selectGif(gif, close)"
             >
               <NuxtImg
@@ -69,7 +69,7 @@
                 loading="lazy"
               />
             </button>
-            <div v-if="gifsLoading" class="col-span-3 grid grid-cols-3 gap-3 py-4">
+            <div v-if="gifsLoading" class="col-span-3 grid grid-cols-3 gap-4 py-4">
               <div
                 v-for="i in 6"
                 :key="'skeleton-' + i"
@@ -80,23 +80,23 @@
           </div>
           <div
             v-show="!shouldShowGifs"
-            class="grid grid-cols-3 gap-3 mt-4 max-h-96 overflow-y-auto transition-opacity duration-200"
+            class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto transition-opacity duration-200"
             :class="{ 'opacity-0 -translate-y-2': shouldShowGifs, 'opacity-100 translate-y-0': !shouldShowGifs }"
           >
             <button
               v-for="cat in categories"
               :key="cat.name_encoded"
-              class="relative aspect-square rounded-lg overflow-hidden hover:scale-[1.03] transition-transform duration-300 cursor-pointer"
+              class="relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-400/60 transition-transform duration-300 cursor-pointer"
               @pointerdown.stop.prevent="selectCategory(cat)"
             >
               <NuxtImg
                 v-if="cat.gif?.images?.fixed_height?.url"
                 :src="cat.gif.images.fixed_height.url"
-                class="absolute inset-0 w-full h-full object-cover opacity-30"
+                class="absolute inset-0 w-full h-full object-cover opacity-40"
                 loading="lazy"
               />
               <div
-                class="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-gray-900/40 to-transparent backdrop-blur-sm text-white text-sm font-medium"
+                class="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/60 via-black/20 to-transparent !dark:bg-transparent backdrop-blur-[1px] text-white text-sm font-medium p-4"
               >
                 <span class="mr-1 shadow-sm">{{ cat.name }}</span>
                 <Icon name="mdi:arrow-right" class="w-4 h-4 hover:text-blue-300 transition-colors" />
@@ -117,6 +117,12 @@
             <Icon name="mdi:emoticon-sad-outline" class="w-8 h-8" />
             {{ $t('common.noResults') }}
           </div>
+          <NuxtImg
+            :src="theme.isDark ? '/Poweredby_100px-Black_VertLogo.png' : '/Poweredby_100px-White_VertLogo.png'"
+            alt="Powered by Giphy"
+            class="absolute bottom-3 right-5 w-16 opacity-75 pointer-events-none"
+            loading="lazy"
+          />
         </div>
       </PopoverPanel>
     </TransitionRoot>
@@ -125,7 +131,7 @@
 
 <script lang="ts" setup>
 import { Popover, PopoverButton, PopoverPanel, TransitionRoot } from '@headlessui/vue'
-
+const theme = useThemeStore()
 interface GiphyImage {
   url: string
   width: string

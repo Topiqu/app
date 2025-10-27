@@ -134,7 +134,11 @@
             : comment.content
       }}
     </p>
-
+    <Gif
+      v-if="comment.gifUrl && !comment.deletedAt && !comment.user?.isBanned"
+      :content="comment.gifUrl"
+      class="mt-2"
+    />
     <div
       v-if="!comment.deletedAt && !comment.user?.isBanned"
       class="mt-4 sm:mt-5 flex items-center justify-between flex-wrap gap-2 sm:gap-3 pb-2 sm:pb-4 md:pb-6"
