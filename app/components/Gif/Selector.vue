@@ -1,10 +1,13 @@
 <template>
   <Popover v-slot="{ close }" class="relative">
     <PopoverButton
-      class="flex items-center gap-1 p-2 text-gray-500 hover:text-blue-500 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+      class="relative group inline-flex items-center justify-center w-10 h-10 rounded-xl cursor-pointer transition-all duration-200 ease-out bg-transparent hover:backdrop-blur-sm hover:bg-gray-300/25 dark:hover:bg-white/10 hover:scale-105 hover:shadow-md dark:hover:shadow-black/40 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 !border-none"
       :title="$t('articles.comments.addGif')"
     >
-      <Icon name="mdi:gif" class="w-6 h-6" />
+      <Icon
+        name="mdi:gif"
+        class="w-6 h-6 text-gray-600 dark:text-gray-300 transition-colors duration-200 group-hover:text-blue-500"
+      />
     </PopoverButton>
     <TransitionRoot
       appear
