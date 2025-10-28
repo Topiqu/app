@@ -2,20 +2,24 @@
   "headers": [
     {
       "source": "/manifest.webmanifest",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/manifest+json"
-        }
-      ]
+      "headers": [{ "key": "Content-Type", "value": "application/manifest+json" }]
     },
     {
       "source": "/sitemap.xml",
+      "headers": [{ "key": "Content-Type", "value": "application/xml" }]
+    },
+    {
+      "source": "/_nuxt/(.*)\\.js",
       "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/xml"
-        }
+        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/_nuxt/(.*)\\.mjs",
+      "headers": [
+        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
   ]
