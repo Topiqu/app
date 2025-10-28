@@ -111,6 +111,7 @@ export default defineNuxtConfig({
     headers: {
       referrerPolicy: 'origin',
       xFrameOptions: false,
+      crossOriginEmbedderPolicy: false,
       crossOriginOpenerPolicy: 'unsafe-none',
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'blob:', 'https:'],
