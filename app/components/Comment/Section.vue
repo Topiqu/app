@@ -122,39 +122,34 @@ import type { CommentWithReplies } from '~~/types/comment'
 interface GiphyGif {
   id: string
   title: string
-  images: {
-    fixed_height: { url: string }
-    original: { url: string }
-  }
+  images: { fixed_height: { url: string }; original: { url: string } }
 }
 
-const toast = useToast()
-const { data: session } = useAuth()
-
+const toast = useToast(),
+  { data: session } = useAuth()
 const props = defineProps<{ articleId: string; commCount: number; allowComments: boolean }>()
 
-const newComment = shallowRef<string>('')
-const selectedGifUrl = shallowRef<string | null>(null)
-const isSubmitting = shallowRef<boolean>(false)
-const replyingTo = ref<CommentWithReplies | null>(null)
-const commentForm = useTemplateRef<HTMLElement>('commentForm')
-const sentinel = useTemplateRef('sentinel')
-
-const sort = shallowRef('createdAt:desc')
-const sortItems = [
-  { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'mdi:clock-outline' },
-  { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'mdi:clock-time-twelve-outline' },
-  { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'mdi:heart' },
-]
-const page = shallowRef<number>(1)
-const limit = 2
-const max = 100
-const hasMore = shallowRef<boolean>(true)
-const loading = shallowRef<boolean>(false)
-const comments = shallowRef<CommentWithReplies[]>([])
-const maxLength = 1000
-const characterCount = computed(() => newComment.value.length)
-const commCount = shallowRef(props.commCount)
+const newComment = shallowRef(''),
+  selectedGifUrl = shallowRef<string | null>(null),
+  isSubmitting = shallowRef(false),
+  replyingTo = ref<CommentWithReplies | null>(null),
+  commentForm = useTemplateRef<HTMLElement>('commentForm'),
+  sentinel = useTemplateRef('sentinel')
+const sort = shallowRef('createdAt:desc'),
+  sortItems = [
+    { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'mdi:clock-outline' },
+    { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'mdi:clock-time-twelve-outline' },
+    { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'mdi:heart' },
+  ]
+const page = shallowRef(1),
+  limit = 2,
+  max = 100,
+  hasMore = shallowRef(true),
+  loading = shallowRef(false),
+  comments = shallowRef<CommentWithReplies[]>([]),
+  maxLength = 1000,
+  characterCount = computed(() => newComment.value.length),
+  commCount = shallowRef(props.commCount)
 const {
   data: commentsData,
   error,
@@ -166,11 +161,11 @@ const {
 })
 
 const filteredComments = computed(() => {
-  const [field, order] = sort.value.split(':')
+  const [f, o] = sort.value.split(':')
   return [...comments.value].sort((a, b) => {
-    const av = field === 'createdAt' ? new Date(a.createdAt).getTime() : a.likes || 0
-    const bv = field === 'createdAt' ? new Date(b.createdAt).getTime() : b.likes || 0
-    return order === 'asc' ? av - bv : bv - av
+    const av = f === 'createdAt' ? new Date(a.createdAt).getTime() : a.likes || 0,
+      bv = f === 'createdAt' ? new Date(b.createdAt).getTime() : b.likes || 0
+    return o === 'asc' ? av - bv : bv - av
   })
 })
 
@@ -183,13 +178,11 @@ watch(
   },
   { immediate: true },
 )
-
 watch(
   error,
   (e) =>
     e && toast.error({ message: $t('articles.comments.errorLoadingComments', { 0: e.message || $t('common.error') }) }),
 )
-
 useInfiniteScroll(
   sentinel,
   async () => {
@@ -199,14 +192,12 @@ useInfiniteScroll(
   },
   { distance: 100, interval: 300 },
 )
-
-onClickOutside(commentForm, (e) => {
-  if (replyingTo.value && commentForm.value && !commentForm.value.contains(e.target as Node)) replyingTo.value = null
-})
-const handleGifSelect = (gif: GiphyGif) => {
-  // console.log(gif.images.original.url)
-  selectedGifUrl.value = gif.images.original.url
-}
+onClickOutside(
+  commentForm,
+  (e) =>
+    replyingTo.value && commentForm.value && !commentForm.value.contains(e.target as Node) && (replyingTo.value = null),
+)
+const handleGifSelect = (g: GiphyGif) => (selectedGifUrl.value = g.images.original.url)
 
 const submitComment = async () => {
   if (!newComment.value.trim() || isSubmitting.value || (replyingTo.value && replyingTo.value.deletedAt)) return
@@ -239,33 +230,15 @@ const submitComment = async () => {
   }
 }
 
-const handleReply = (c: CommentWithReplies) => {
-  if (c.deletedAt) return
-  replyingTo.value = c
-  nextTick(() => commentForm.value?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
-}
-
-const handleDelete = async (c: CommentWithReplies, reason: string | null) => {
-  if (!confirm($t('common.messages.deleteConfirmTitle'))) return
-  try {
-    await $fetch(`/api/comments/${c.id}`, { method: 'DELETE', body: { reason } })
-    toast.success({ message: $t('common.messages.deleteSuccess') })
-    await refresh()
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.deleteFailed') })
-  }
-}
-
-const react = async (c: CommentWithReplies, type: 'LIKE' | 'DISLIKE') => {
-  if (c.deletedAt) return
-  try {
-    await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: c.id, type } })
-    await refresh()
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('articles.comments.reactionFailed') })
-  }
-}
-
-const handleLike = (c: CommentWithReplies) => react(c, 'LIKE')
-const handleDislike = (c: CommentWithReplies) => react(c, 'DISLIKE')
+const handleReply = (c: CommentWithReplies) =>
+  c.deletedAt ||
+  ((replyingTo.value = c), nextTick(() => commentForm.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })))
+const handleDelete = async (c: CommentWithReplies, r: string | null) =>
+  (confirm($t('common.messages.deleteConfirmTitle')) &&
+    (await $fetch(`/api/comments/${c.id}`, { method: 'DELETE', body: { reason: r } }),
+    toast.success({ message: $t('common.messages.deleteSuccess') }),
+    await refresh())) ||
+  toast.error({ message: $t('common.messages.deleteFailed') })
+const handleLike = (c: CommentWithReplies) => !c.deletedAt
+const handleDislike = (c: CommentWithReplies) => !c.deletedAt
 </script>

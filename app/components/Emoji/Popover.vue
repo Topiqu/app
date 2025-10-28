@@ -19,9 +19,9 @@
         <PopoverPanel
           class="absolute bottom-full right-0 z-20 mb-2 w-52 p-3 bg-white rounded-2xl shadow-2xl border border-gray-200"
         >
-          <div v-if="loading" class="p-2 text-gray-600 text-xs">Načítání…</div>
-          <div v-else-if="error" class="p-2 text-red-600 text-xs">Chyba při načítání</div>
-          <div v-else-if="!emojis?.length" class="p-2 text-gray-600 text-xs">Žádná emoji</div>
+          <div v-if="loading" class="p-2 text-gray-600 text-xs">{{ $t('common.loading') }}</div>
+          <div v-else-if="error" class="p-2 text-red-600 text-xs">{{ $t('common.error') }}</div>
+          <div v-else-if="!emojis?.length" class="p-2 text-gray-600 text-xs">{{ $t('common.noItems') }}</div>
           <div v-else class="grid grid-cols-5 gap-10">
             <button
               v-for="emoji in emojis"
@@ -43,9 +43,20 @@
 import { directive as vTippy } from 'vue-tippy'
 import { Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import 'tippy.js/dist/tippy.css'
-
 const props = defineProps<{ commentId: string; articleId: string }>()
-const emit = defineEmits<{ (e: 'reaction'): void }>()
+const emit = defineEmits<{
+  (
+    e: 'reaction',
+    data: {
+      commentId: string
+      emojiId: string
+      userId: string
+      shortcode: string
+      imageUrl: string
+      revert?: boolean
+    },
+  ): void
+}>()
 
 const toast = useToast()
 const { data: session } = useAuth()
@@ -54,23 +65,31 @@ const {
   data: emojis,
   pending: loading,
   error,
-} = await useFetch(`/api/emojis/${props.articleId}/by-article`, {
-  immediate: true,
-  server: false,
-})
+} = await useFetch(`/api/emojis/${props.articleId}/by-article`, { server: false, immediate: true })
 
 const toggleEmoji = async (emojiId: string, close: () => void) => {
-  const res = await $fetch('/api/emojis/reaction', {
-    method: 'POST',
-    body: { commentId: props.commentId, emojiId },
+  const emoji = emojis.value!.find((e) => e.id === emojiId)!
+  emit('reaction', {
+    commentId: props.commentId,
+    emojiId,
+    shortcode: emoji.shortcode,
+    imageUrl: emoji.imageUrl,
+    userId: session.value!.user.id,
   })
-
   close()
-  if (res.success && res.created != null) {
-    toast.success({ message: res.created ? 'Emoji přidáno' : 'Emoji odebráno' })
-    emit('reaction')
-  } else {
-    toast.error({ message: 'Nepodařilo se přidat/odebrat emoji' })
+  try {
+    const res = await $fetch('/api/emojis/reaction', { method: 'POST', body: { commentId: props.commentId, emojiId } })
+    if (!res.success) throw new Error()
+  } catch {
+    toast.error({ message: $t('articles.comments.reactionFailed') })
+    emit('reaction', {
+      commentId: props.commentId,
+      emojiId,
+      shortcode: emoji.shortcode,
+      imageUrl: emoji.imageUrl,
+      userId: session.value!.user.id,
+      revert: true,
+    })
   }
 }
 </script>

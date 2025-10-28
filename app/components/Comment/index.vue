@@ -146,24 +146,24 @@
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
         <button
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 cursor-pointer bg-gray-100"
-          :class="comment.userReaction?.type === 'LIKE' ? 'bg-green-100 text-green-600' : 'text-gray-600'"
-          @click="$emit('like', comment)"
+          :class="local.userReaction?.type === 'LIKE' ? 'bg-green-100 text-green-600' : 'text-gray-600'"
+          @click="updateReaction('LIKE')"
         >
           <Icon name="mdi:thumb-up-outline" class="w-4 h-4 sm:w-5 sm:h-5" />
-          <span>{{ comment.likes || 0 }}</span>
+          <span>{{ local.likes }}</span>
         </button>
         <button
           class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 cursor-pointer bg-gray-100"
-          :class="comment.userReaction?.type === 'DISLIKE' ? 'bg-red-100 text-red-600' : 'text-gray-600'"
-          @click="$emit('dislike', comment)"
+          :class="local.userReaction?.type === 'DISLIKE' ? 'bg-red-100 text-red-600' : 'text-gray-600'"
+          @click="updateReaction('DISLIKE')"
         >
           <Icon name="mdi:thumb-down-outline" class="w-4 h-4 sm:w-5 sm:h-5" />
-          <span>{{ comment.dislikes || 0 }}</span>
+          <span>{{ local.dislikes }}</span>
         </button>
 
-        <div v-if="comment.emojiReactions?.length" class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <div v-if="local.emojiReactions?.length" class="flex items-center gap-2 sm:gap-3 flex-wrap">
           <div
-            v-for="reaction in comment.emojiReactions"
+            v-for="reaction in local.emojiReactions"
             :key="reaction.emojiId"
             v-tippy="{ content: reaction.emoji.shortcode, placement: 'top' }"
             class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100 text-gray-600"
@@ -174,9 +174,9 @@
         </div>
       </div>
       <div class="flex items-center gap-2 sm:gap-3">
-        <LazyEmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="$emit('refresh')" />
+        <LazyEmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="handleEmojiReaction" />
         <div
-          v-if="comment.isLikedByAuthor"
+          v-if="local.isLikedByAuthor"
           v-tippy="{
             content: $t('articles.comments.likedByAuthor', [authorData?.username || $t('common.user.notAvailable')]),
             placement: 'top',
@@ -264,16 +264,31 @@ import { formatDate } from '~~/shared/utils'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 
-const props = defineProps<{
-  comment: CommentWithReplies
-  isReplying: boolean
-  depth: number
-}>()
+type ReactionType = 'LIKE' | 'DISLIKE'
+type EmojiReaction = {
+  emojiId: string
+  count: number
+  emoji: { imageUrl: string; shortcode: string }
+  hasReacted?: boolean
+}
 
+const props = defineProps<{ comment: CommentWithReplies; isReplying: boolean; depth: number }>()
 const emit = defineEmits<{
-  (e: 'reply' | 'like' | 'dislike', comment: CommentWithReplies): void
-  (e: 'delete', comment: CommentWithReplies, reason: string | null): void
+  (e: 'reply' | 'like' | 'dislike', c: CommentWithReplies): void
+  (e: 'delete', c: CommentWithReplies, reason: string | null): void
   (e: 'refresh'): void
+  (
+    e: 'reaction',
+    d: {
+      commentId: string
+      emojiId: string
+      shortcode: string
+      imageUrl: string
+      userId: string
+      hasReacted: boolean
+      revert?: boolean
+    },
+  ): void
 }>()
 
 const { data: session } = useAuth()
@@ -288,16 +303,46 @@ const { data: authorData } = await useFetch(`/api/users/${props.comment.article.
   key: `author-${props.comment.article.userId}`,
 })
 
-const report = async (c: CommentWithReplies) => {
-  if (!confirm($t('articles.comments.reportCommentConfirm'))) return
+const local = reactive({
+  likes: props.comment.likes ?? 0,
+  dislikes: props.comment.dislikes ?? 0,
+  userReaction: props.comment.userReaction as { type: ReactionType } | null,
+  emojiReactions: [...(props.comment.emojiReactions ?? [])] as EmojiReaction[],
+  isLikedByAuthor: props.comment.isLikedByAuthor,
+})
+
+watch(
+  () => props.comment,
+  (c) =>
+    Object.assign(local, {
+      likes: c.likes ?? 0,
+      dislikes: c.dislikes ?? 0,
+      userReaction: c.userReaction as { type: ReactionType } | null,
+      emojiReactions: [...(c.emojiReactions ?? [])] as EmojiReaction[],
+      isLikedByAuthor: c.isLikedByAuthor,
+    }),
+  { deep: true },
+)
+
+const isAuthor = computed(() => session.value?.user?.id === props.comment.article.userId)
+
+const confirmAction = (msg: string) => confirm($t(msg))
+const fetchSafe = async (url: string, opts: any, onFail: string) => {
   try {
-    await $fetch('/api/notifications', {
-      method: 'POST',
-      body: { commentId: c.id },
-    })
-    toast.success({ message: $t('common.messages.reportSuccess') })
+    await $fetch(url, opts)
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.reportFailed') })
+    toast.error({ message: e.data?.message || $t(onFail) })
+    throw e
+  }
+}
+
+const report = async (c: CommentWithReplies) => {
+  if (!confirmAction('articles.comments.reportCommentConfirm')) return
+  try {
+    await $fetch('/api/notifications', { method: 'POST', body: { commentId: c.id } })
+    toast.success({ message: $t('common.messages.reportSuccess') })
+  } catch {
+    toast.error({ message: $t('common.messages.reportFailed') })
   }
 }
 
@@ -305,44 +350,100 @@ const showDeleteModal = (c: CommentWithReplies) => {
   selectedComment.value = c
   showModal.value = true
 }
-
 const openBanModal = (c: CommentWithReplies) => {
   selectedComment.value = c
   showBanModal.value = true
 }
-
-const emitDelete = (comment: CommentWithReplies, reason: string) => {
-  emit('delete', comment, reason)
+const emitDelete = (c: CommentWithReplies, reason: string) => {
+  emit('delete', c, reason)
   showModal.value = false
   deleteReason.value = ''
 }
 
-const banUser = async (comment: CommentWithReplies) => {
+const banUser = async (c: CommentWithReplies) => {
   if (!banReason.value.trim()) return
-  try {
-    await $fetch(`/api/bans/${comment.id}`, {
-      method: 'POST',
-      body: {
-        reason: banReason.value,
-        expiresAt: banExpiresAt.value || null,
-      },
-    })
-    toast.success({ message: $t('articles.comments.banSuccess') })
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('articles.comments.banFailed') })
-  }
+  await fetchSafe(
+    `/api/bans/${c.id}`,
+    { method: 'POST', body: { reason: banReason.value, expiresAt: banExpiresAt.value || null } },
+    'articles.comments.banFailed',
+  )
+  toast.success({ message: $t('articles.comments.banSuccess') })
   showBanModal.value = false
 }
 
-const unbanUser = async (comment: CommentWithReplies) => {
+const unbanUser = async (c: CommentWithReplies) => {
+  await fetchSafe(`/api/bans/${c.id}`, { method: 'DELETE' }, 'articles.comments.unbanFailed')
+  toast.success({ message: $t('articles.comments.unbanSuccess') })
+  emit('refresh')
+}
+
+const updateReaction = async (type: ReactionType) => {
+  const prev = local.userReaction?.type
+  const isOff = prev === type
+  const opposite = !!prev && prev !== type
+  const counts: Record<ReactionType, 'likes' | 'dislikes'> = { LIKE: 'likes', DISLIKE: 'dislikes' }
+
+  if (opposite && prev) local[counts[prev as ReactionType]]--
+  local[counts[type]] += isOff ? -1 : 1
+  local.userReaction = isOff ? null : { type }
+
+  if (isAuthor.value) local.isLikedByAuthor = type === 'LIKE' && !isOff
+
   try {
-    await $fetch(`/api/bans/${comment.id}`, {
-      method: 'DELETE',
+    await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: props.comment.id, type } })
+  } catch {
+    if (opposite && prev) local[counts[prev as ReactionType]]++
+    local[counts[type]] += isOff ? 1 : -1
+    local.userReaction = prev ? { type: prev } : null
+    if (isAuthor.value) local.isLikedByAuthor = local.userReaction?.type === 'LIKE'
+    toast.error({ message: $t('articles.comments.reactionFailed') })
+  }
+}
+
+const handleEmojiReaction = (data: {
+  commentId: string
+  emojiId: string
+  shortcode: string
+  imageUrl: string
+  userId: string
+  revert?: boolean
+}) => {
+  if (data.commentId !== props.comment.id) return
+  if (!session.value?.user) return
+
+  const currentUserId = session.value.user.id
+  if (data.userId !== currentUserId) return
+
+  const idx = local.emojiReactions.findIndex((x) => x.emojiId === data.emojiId)
+  const r = local.emojiReactions[idx]
+
+  if (r) {
+    if (data.revert) {
+      if (r.hasReacted) {
+        r.hasReacted = false
+        r.count = Math.max(0, r.count - 1)
+        if (r.count === 0) local.emojiReactions.splice(idx, 1)
+      }
+    } else {
+      if (!r.hasReacted) {
+        r.hasReacted = true
+        r.count += 1
+      } else {
+        r.hasReacted = false
+        r.count = Math.max(0, r.count - 1)
+        if (r.count === 0) local.emojiReactions.splice(idx, 1)
+      }
+    }
+    return
+  }
+
+  if (!data.revert) {
+    local.emojiReactions.push({
+      emojiId: data.emojiId,
+      emoji: { shortcode: data.shortcode, imageUrl: data.imageUrl },
+      count: 1,
+      hasReacted: true,
     })
-    toast.success({ message: $t('articles.comments.unbanSuccess') })
-    emit('refresh')
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('articles.comments.unbanFailed') })
   }
 }
 </script>
