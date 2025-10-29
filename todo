@@ -4,25 +4,22 @@ now:
 8. GAM + total ad revenue overview & logging // 🛑 high priority
 10. ai cron jobs for article writing // 🛑 high priority
 12. test // 🛑 high priority
-13. zapier integration // 🛑 high priority
 2. further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
 3. misc style/ui cleanups OR general code optimisation
 5. HP/index page should get a UI rework and move from MVP to actual production ready page // 🟡 mid priority
 6. fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions) // 🟡 mid priority
-11. automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details // 🟡 mid priority
-9. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
 7. implement ModalMini (exp. ArticleCreate draft select could use it instead of sweetalert) // low priority 🟢
 4. centralised ArticleModal component (for ArticleCreate/Edit) // low priority 🟢
 x. favorite button for articles (bookmark/save) // low priority 🟢
-y. use publishedAt instead of createdAt where appropriate // low priority 🟢
-
-
+y. production fix email template json not loadings
 ---
 
 future:
 
+13. zapier integration // 🛑 high priority
 1. bullmq / railway / queue up cron jobs // low priority 🟢
 2. better gamification - badges, levels, site activity points
+11. automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details // 🟡 mid priority
 (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
 3. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
 4. multi agent writing (seo analyzer, copywriter, reviewer) with tools (debate, vote, merge, post) // 🔰 low-mid priority
