@@ -1,42 +1,62 @@
 import type { H3Event } from 'h3'
 
-import { join } from 'path'
 import mjml2html from 'mjml'
-import { readFile } from 'fs/promises'
+import { getCookie } from 'h3'
 
 interface EmailData {
   event?: H3Event
   to: string
-  lang?: 'cs' | 'en'
+  lang?: Language
   template: string
   data: Record<string, string>
 }
 
-export async function sendEmail({ event, to, template, data, lang }: EmailData) {
-  const resolvedLang = lang || (event ? (getCookie(event, 'i18n_lang') as 'cs' | 'en' | undefined) : undefined) || 'en'
-  const localePath = join(process.cwd(), 'emails/locales', `${resolvedLang}.json`)
-  const messages = JSON.parse(await readFile(localePath, 'utf-8'))
+const resolveLang = (event?: H3Event, forced?: Language): Language =>
+  forced ?? (event ? (getCookie(event, 'i18n_lang') as Language | undefined) : undefined) ?? 'en'
 
-  const translate = (key: string, params?: Record<string, string>) => {
-    const template = key.split('.').reduce((obj, k) => obj?.[k], messages) as string
-    if (!template) {
-      console.warn(`Translation key "${key}" not found for locale "${resolvedLang}"`)
-      return key
+const loadLocale = async (lang: Language) => {
+  const module = await import(`../emails/locales/${lang}.json`, { assert: { type: 'json' } })
+
+  return module.default
+}
+
+const loadTemplate = async (template: string): Promise<string> => {
+  const module = await import(`../emails/templates/${template}.mjml?raw`, { assert: { type: 'text' } })
+
+  return module.default
+}
+
+export async function sendEmail({ event, to, template, data, lang: forcedLang }: EmailData) {
+  const lang = resolveLang(event, forcedLang)
+
+  const [messages, mjmlTemplate] = await Promise.all([
+    loadLocale(lang),
+    loadTemplate(template).catch(() => {
+      throw createError(`Template "${template}.mjml" not found`)
+    }),
+  ])
+
+  const translate = (key: string, params?: Record<string, string>): string => {
+    const path = key.split('.')
+    let value: any = messages
+    for (const segment of path) {
+      value = value?.[segment]
+      if (value === undefined) break
     }
-    return params ? template.replace(/{(\w+)}/g, (_, k) => params[k] || k) : template
+
+    const str = typeof value === 'string' ? value : ''
+    if (!str) return key
+
+    return params ? str.replace(/{(\w+)}/g, (_, k) => params[k] ?? `{${k}}`) : str
   }
 
-  const templatePath = join(process.cwd(), 'emails/templates', `${template}.mjml`)
-  let mjmlTemplate = await readFile(templatePath, 'utf-8')
+  let rendered = mjmlTemplate
+  for (const [k, v] of Object.entries(data)) rendered = rendered.replace(new RegExp(`{\\s*${k}\\s*}`, 'g'), v)
 
-  for (const [key, value] of Object.entries(data)) {
-    mjmlTemplate = mjmlTemplate.replace(new RegExp(`{\\s*${key}\\s*}`, 'g'), value)
-  }
+  rendered = rendered.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, data))
 
-  mjmlTemplate = mjmlTemplate.replace(/\{t:([^}]+)\}/g, (_, key) => translate(key, data))
-
-  const { html, errors } = mjml2html(mjmlTemplate)
-  if (errors.length) throw new Error(JSON.stringify(errors))
+  const { html, errors } = mjml2html(rendered)
+  if (errors.length) throw createError('MJML compilation failed')
 
   await useNodeMailer().sendMail({
     from: useRuntimeConfig().nodemailer.from,
