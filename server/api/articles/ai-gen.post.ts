@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     action: 'GENERATE_ARTICLE',
     userId: user.id,
     clientSiteId: user.clientSiteId,
-    metadata: article,
+    metadata: { ...article, usage },
     ip: getIp(event),
   })
 
