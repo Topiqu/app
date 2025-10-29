@@ -6,6 +6,7 @@
     "noItems": "No items",
     "readMore": "Read More",
     "close": "Close",
+    "warning": "Warning",
     "unknown": "Unknown",
     "continue": "Continue",
     "unsavedChanges": "Unsaved changes!",
@@ -271,6 +272,25 @@
     "noResults": {
       "imageAlt": "Sad Topík",
       "message": "Oh no, I feel useless..."
+    },
+    "export": {
+      "warning": {
+        "title": {
+          "json": "JSON Export",
+          "csv": "CSV Export",
+          "pdf": "PDF Export"
+        },
+        "message": {
+          "json": "You are about to export {count} articles to a JSON file.",
+          "csv": "You are about to export {count} articles to a CSV file.",
+          "pdf": "You are about to export {count} articles to a PDF document."
+        },
+        "note": {
+          "json": "JSON can be large but loads quickly.",
+          "csv": "CSV is ideal for spreadsheets but may be bulky.",
+          "pdf": "PDF generation may take a while due to images."
+        }
+      }
     },
     "columns": {
       "title": "Title",

@@ -6,6 +6,7 @@
     "noItems": "Žádné položky",
     "readMore": "Číst více",
     "close": "Zavřít",
+    "warning": "Upozornění",
     "unknown": "Neznámo",
     "continue": "Pokračovat",
     "unsavedChanges": "Neuložené změny!",
@@ -285,6 +286,25 @@
     "noResults": {
       "imageAlt": "Smutný Topík",
       "message": "Achjo, cítím se tak zbytečný..."
+    },
+    "export": {
+      "warning": {
+        "title": {
+          "json": "Export do JSON",
+          "csv": "Export do CSV",
+          "pdf": "Export do PDF"
+        },
+        "message": {
+          "json": "Chystáte se exportovat {count} článků do JSON souboru.",
+          "csv": "Chystáte se exportovat {count} článků do CSV souboru.",
+          "pdf": "Chystáte se exportovat {count} článků do PDF dokumentu."
+        },
+        "note": {
+          "json": "JSON může být velký, ale načítání je rychlé.",
+          "csv": "CSV je ideální pro tabulky, ale může být objemný.",
+          "pdf": "PDF generování může chvíli trvat kvůli obrázkům."
+        }
+      }
     },
     "columns": {
       "title": "Název",
