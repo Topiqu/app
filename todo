@@ -1,18 +1,21 @@
 now:
 
 1. notifications should also be localised // 🛑 high priority
-2. further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
-3. misc style/ui cleanups OR general code optimisation
-4. centralised ArticleModal component (for ArticleCreate/Edit) // low priority 🟢
-5. HP/index page should get a UI rework and move from MVP to actual production ready page // 🟡 mid priority
-6. fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions) // 🟡 mid priority
-7. implement ModalMini (exp. ArticleCreate draft select could use it instead of sweetalert) // low priority 🟢
 8. GAM + total ad revenue overview & logging // 🛑 high priority
-9. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
 10. ai cron jobs for article writing // 🛑 high priority
-11. automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details // 🟡 mid priority
 12. test // 🛑 high priority
 13. zapier integration // 🛑 high priority
+2. further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
+3. misc style/ui cleanups OR general code optimisation
+5. HP/index page should get a UI rework and move from MVP to actual production ready page // 🟡 mid priority
+6. fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions) // 🟡 mid priority
+11. automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details // 🟡 mid priority
+9. ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
+7. implement ModalMini (exp. ArticleCreate draft select could use it instead of sweetalert) // low priority 🟢
+4. centralised ArticleModal component (for ArticleCreate/Edit) // low priority 🟢
+x. favorite button for articles (bookmark/save) // low priority 🟢
+y. use publishedAt instead of createdAt where appropriate // low priority 🟢
+
 
 ---
 
