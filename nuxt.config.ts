@@ -68,7 +68,7 @@ export default defineNuxtConfig({
     'nuxt-gtag',
   ],
 
-  typescript: { tsConfig: { include: ['../types/**/*.d.ts'] } },
+  typescript: { tsConfig: { include: ['../types/**/*.d.ts', '../server/tasks/**/*.ts'] } },
 
   eslint: { config: { typescript: true } },
 
