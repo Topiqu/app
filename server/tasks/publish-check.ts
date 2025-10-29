@@ -13,15 +13,15 @@ export default defineTask({
   },
   async run() {
     const now = new Date()
-    return prisma.$transaction(async (tx) => {
-      const articles = await tx.article.findMany({
+    return prisma.$transaction(async (ctx) => {
+      const articles = await ctx.article.findMany({
         where: { status: 'draft', releaseAt: { not: null, lte: now } },
         select: { id: true, title: true, userId: true, clientSiteId: true, user: { select: { username: true } } },
       })
       if (!articles.length) return { result: { count: 0, timestamp: now.toISOString() } }
 
       const articleIds = articles.map((a) => a.id)
-      const update = await tx.article.updateMany({
+      const update = await ctx.article.updateMany({
         where: { id: { in: articleIds }, status: 'draft' },
         data: { status: 'published', releaseAt: null },
       })
@@ -39,7 +39,7 @@ export default defineTask({
 
       const authorNotifications = await Promise.all(
         articles.map((a) =>
-          tx.notification.create({
+          ctx.notification.create({
             data: {
               message: `Tvůj naplánovaný článek "${a.title}" byl publikován`,
               userId: a.userId,
@@ -61,7 +61,7 @@ export default defineTask({
 
       const notifications = []
       for (const a of articles) {
-        const followers = await tx.follow.findMany({
+        const followers = await ctx.follow.findMany({
           where: { followedId: a.userId, follower: { allowNotifs: true } },
           select: { followerId: true },
         })
@@ -78,7 +78,7 @@ export default defineTask({
       const BATCH_SIZE = 100
       for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
         const batch = notifications.slice(i, i + BATCH_SIZE)
-        await tx.notification.createMany({ data: batch, skipDuplicates: true })
+        await ctx.notification.createMany({ data: batch, skipDuplicates: true })
         batch.forEach((notification) => {
           const streamKey = `notifications:${notification.userId}`
           const streams = globalThis.eventStreams?.get(streamKey)
