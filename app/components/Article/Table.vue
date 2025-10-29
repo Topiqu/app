@@ -5,7 +5,7 @@
         <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
           <Icon name="material-symbols:search-rounded" />
         </span>
-        <input
+        <FormInput
           v-model="globalFilter"
           type="text"
           :placeholder="$t('articles.searchPlaceholder')"
@@ -13,6 +13,11 @@
         />
       </div>
     </div>
+
+    <div v-if="articles.data.length" class="flex justify-end gap-2 mb-4">
+      <Exports :articles="visibleRows" />
+    </div>
+
     <div class="overflow-x-auto rounded border border-gray-300 sm:block hidden">
       <table class="w-full table-auto text-sm divide-y divide-gray-200">
         <thead class="bg-gray-100 text-left font-semibold text-black">
@@ -115,6 +120,9 @@
                 <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
               </LazyArticleTag>
               <Button :icon="'mdi:delete'" variant="danger" @click="del(row.original.id)" />
+              <Button :icon="'mdi:code-json'" size="sm" @click="exportJson(row.original)" />
+              <Button :icon="'mdi:file-delimited'" size="sm" @click="exportCsv(row.original)" />
+              <Button :icon="'mdi:file-pdf-box'" size="sm" @click="exportPdf(row.original)" />
             </td>
           </tr>
         </tbody>
@@ -182,7 +190,7 @@
               v-if="openDropdown === row.id"
               class="absolute z-10 right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
             >
-              <div class="py-1">
+              <div class="py-1 flex flex-col gap-1">
                 <Button
                   :icon="'mdi:eye'"
                   variant="success"
@@ -195,12 +203,16 @@
                   <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
                 </LazyArticleTag>
                 <Button :icon="'mdi:delete'" variant="danger" @click="del(row.original.id)" />
+                <Button :icon="'mdi:code-json'" size="sm" @click="exportJson(row.original)" />
+                <Button :icon="'mdi:file-delimited'" size="sm" @click="exportCsv(row.original)" />
+                <Button :icon="'mdi:file-pdf-box'" size="sm" @click="exportPdf(row.original)" />
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
     <Pagination :page :totalPages :prevPage :nextPage class="mt-6" />
   </div>
 </template>
@@ -222,6 +234,7 @@ import {
 } from '@tanstack/vue-table'
 
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
+
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
@@ -362,6 +375,9 @@ const table = useVueTable({
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
 })
+
+const { exportJson, exportCsv, exportPdf } = useExport()
+const visibleRows = computed(() => table.getFilteredRowModel().rows.map((r) => r.original))
 
 onArticleCreated(refresh)
 
