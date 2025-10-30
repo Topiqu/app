@@ -22,7 +22,7 @@ now:
 test:
 
 - production fix email template json not loadings
-- ai cron jobs for article writing // 🛑 high priority
+- ai cron jobs for article writing and its notifications // 🛑 high priority
 
 ---
 
