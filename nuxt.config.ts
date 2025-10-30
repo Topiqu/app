@@ -23,6 +23,7 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       '*/1 * * * *': ['publish-check'],
+      '0 15 * * *': ['generate-article'],
     },
     preset: 'bun',
     imports: {
