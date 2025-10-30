@@ -10,7 +10,6 @@ now:
 
 - notifications should also be localised // 🛑 high priority
 - GAM + total ad revenue overview & logging // 🛑 high priority
-- ai cron jobs for article writing // 🛑 high priority
 - further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
 - HP/index page should get a UI rework and move from MVP to actual production ready page // 🟡 mid priority
 - fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions) // 🟡 mid priority
@@ -23,6 +22,7 @@ now:
 test:
 
 - production fix email template json not loadings
+- ai cron jobs for article writing // 🛑 high priority
 
 ---
 
