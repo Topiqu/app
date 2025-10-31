@@ -25,7 +25,10 @@
             leaveTo="opacity-0 scale-95"
           >
             <DialogPanel
-              class="relative bg-white/90 dark:bg-neutral-900/80 border border-neutral-200/70 dark:border-white/10 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.8)] rounded-2xl p-5 flex items-center gap-4 max-w-lg w-full backdrop-blur-xl"
+              :class="[
+                'relative bg-white/90 dark:bg-neutral-900/80 border border-neutral-200/70 dark:border-white/10 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.8)] rounded-2xl p-5 flex items-center w-full backdrop-blur-xl',
+                parentWidth ?? 'max-w-lg',
+              ]"
             >
               <div v-if="$slots.icon || icon" class="flex-shrink-0">
                 <slot name="icon">
@@ -87,6 +90,7 @@ defineProps<{
   icon?: string
   confirmText?: string
   cancelText?: string
+  parentWidth?: string
 }>()
 
 const emit = defineEmits<{
