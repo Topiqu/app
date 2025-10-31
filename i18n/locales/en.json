@@ -274,6 +274,11 @@
       "message": "Oh no, I feel useless..."
     },
     "export": {
+      "title": {
+        "json": "Export to JSON",
+        "csv": "Export to CSV",
+        "pdf": "Export to PDF"
+      },
       "warning": {
         "title": {
           "json": "JSON Export",

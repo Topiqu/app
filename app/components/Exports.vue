@@ -1,7 +1,7 @@
 <template>
   <div v-if="articles.length" class="flex justify-end gap-2 mb-4">
     <Button
-      :title="$t('articles.export.json')"
+      :title="$t('articles.export.title.json')"
       icon="mdi:code-json"
       size="sm"
       :loading="exporting === 'json'"
@@ -10,7 +10,7 @@
       @click="handleExport(exportJson, 'json')"
     />
     <Button
-      :title="$t('articles.export.csv')"
+      :title="$t('articles.export.title.csv')"
       icon="mdi:file-delimited"
       size="sm"
       :loading="exporting === 'csv'"
@@ -19,7 +19,7 @@
       @click="handleExport(exportCsv, 'csv')"
     />
     <Button
-      :title="$t('articles.export.pdf')"
+      :title="$t('articles.export.title.pdf')"
       icon="mdi:file-pdf-box"
       size="sm"
       :loading="exporting === 'pdf'"

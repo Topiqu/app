@@ -288,6 +288,11 @@
       "message": "Achjo, cítím se tak zbytečný..."
     },
     "export": {
+      "title": {
+        "json": "Exportovat do JSON",
+        "csv": "Exportovat do CSV",
+        "pdf": "Exportovat do PDF"
+      },
       "warning": {
         "title": {
           "json": "Export do JSON",

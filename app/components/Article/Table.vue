@@ -125,19 +125,19 @@
                   [
                     {
                       id: 'json',
-                      label: 'Export to JSON',
+                      label: $t('articles.export.title.json'),
                       icon: 'mdi:code-json',
                       onClick: () => exportJson(row.original),
                     },
                     {
                       id: 'csv',
-                      label: 'Export to CSV',
+                      label: $t('articles.export.title.csv'),
                       icon: 'mdi:file-delimited',
                       onClick: () => exportCsv(row.original),
                     },
                     {
                       id: 'pdf',
-                      label: 'Export to PDF',
+                      label: $t('articles.export.title.pdf'),
                       icon: 'mdi:file-pdf-box',
                       onClick: () => exportPdf(row.original),
                     },
@@ -231,19 +231,19 @@
                     [
                       {
                         id: 'json',
-                        label: 'Export to JSON',
+                        label: $t('articles.export.title.json'),
                         icon: 'mdi:code-json',
                         onClick: () => exportJson(row.original),
                       },
                       {
                         id: 'csv',
-                        label: 'Export to CSV',
+                        label: $t('articles.export.title.csv'),
                         icon: 'mdi:file-delimited',
                         onClick: () => exportCsv(row.original),
                       },
                       {
                         id: 'pdf',
-                        label: 'Export to PDF',
+                        label: $t('articles.export.title.pdf'),
                         icon: 'mdi:file-pdf-box',
                         onClick: () => exportPdf(row.original),
                       },
