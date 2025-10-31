@@ -120,9 +120,32 @@
                 <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
               </LazyArticleTag>
               <Button :icon="'mdi:delete'" variant="danger" @click="del(row.original.id)" />
-              <Button :icon="'mdi:code-json'" size="sm" @click="exportJson(row.original)" />
-              <Button :icon="'mdi:file-delimited'" size="sm" @click="exportCsv(row.original)" />
-              <Button :icon="'mdi:file-pdf-box'" size="sm" @click="exportPdf(row.original)" />
+              <Dropdown
+                :groups="[
+                  [
+                    {
+                      id: 'json',
+                      label: 'Export to JSON',
+                      icon: 'mdi:code-json',
+                      onClick: () => exportJson(row.original),
+                    },
+                    {
+                      id: 'csv',
+                      label: 'Export to CSV',
+                      icon: 'mdi:file-delimited',
+                      onClick: () => exportCsv(row.original),
+                    },
+                    {
+                      id: 'pdf',
+                      label: 'Export to PDF',
+                      icon: 'mdi:file-pdf-box',
+                      onClick: () => exportPdf(row.original),
+                    },
+                  ],
+                ]"
+              >
+                <Button :icon="'mdi:dots-horizontal'" variant="neutral" />
+              </Dropdown>
             </td>
           </tr>
         </tbody>
@@ -203,9 +226,32 @@
                   <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
                 </LazyArticleTag>
                 <Button :icon="'mdi:delete'" variant="danger" @click="del(row.original.id)" />
-                <Button :icon="'mdi:code-json'" size="sm" @click="exportJson(row.original)" />
-                <Button :icon="'mdi:file-delimited'" size="sm" @click="exportCsv(row.original)" />
-                <Button :icon="'mdi:file-pdf-box'" size="sm" @click="exportPdf(row.original)" />
+                <Dropdown
+                  :groups="[
+                    [
+                      {
+                        id: 'json',
+                        label: 'Export to JSON',
+                        icon: 'mdi:code-json',
+                        onClick: () => exportJson(row.original),
+                      },
+                      {
+                        id: 'csv',
+                        label: 'Export to CSV',
+                        icon: 'mdi:file-delimited',
+                        onClick: () => exportCsv(row.original),
+                      },
+                      {
+                        id: 'pdf',
+                        label: 'Export to PDF',
+                        icon: 'mdi:file-pdf-box',
+                        onClick: () => exportPdf(row.original),
+                      },
+                    ],
+                  ]"
+                >
+                  <Button :icon="'mdi:dots-horizontal'" variant="neutral" />
+                </Dropdown>
               </div>
             </div>
           </div>
