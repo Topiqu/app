@@ -20,9 +20,9 @@
         </label>
 
         <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">{{
-            $t('common.labels.excerpt')
-          }}</span>
+          <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
+            {{ $t('common.labels.excerpt') }}
+          </span>
           <textarea
             v-model="editedArticle.excerpt"
             :placeholder="$t('common.labels.articleExcerpt')"
@@ -54,9 +54,9 @@
           class="flex flex-col gap-4 p-5 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/50"
         >
           <label class="flex flex-col gap-2">
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{
-              $t('articles.editor.ai.customPromptPlaceholder')
-            }}</span>
+            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              {{ $t('articles.editor.ai.customPromptPlaceholder') }}
+            </span>
             <div class="relative">
               <Icon name="mdi:chat-processing" class="absolute left-3 top-3 w-5 h-5 text-gray-400 dark:text-gray-500" />
               <textarea
@@ -112,7 +112,7 @@
               size="sm"
               icon="mdi:file-document-outline"
               class="px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200 bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 hover:shadow-md dark:from-indigo-500 dark:to-purple-600 dark:hover:from-indigo-600 dark:hover:to-purple-700"
-              @click="showDraftsDialog"
+              @click="draftsOpen = true"
             >
               {{ $t('articles.editor.drafts.loadDrafts') }}
             </Button>
@@ -124,6 +124,7 @@
           </div>
         </label>
 
+        <LazyArticleDrafts v-model:open="draftsOpen" :drafts :loading @select="loadDraft" @close="draftsOpen = false" />
         <label class="flex flex-col gap-3">
           <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">{{
             $t('common.labels.image')
@@ -170,9 +171,7 @@ import type { ArticleDraft } from '@zenstackhq/runtime/models'
 
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
-import { format } from 'date-fns'
 import equal from 'fast-deep-equal'
-import { enUS, cs } from 'date-fns/locale'
 
 import Modal from '~/components/Modal/index.vue'
 
@@ -218,6 +217,7 @@ const customPrompt = shallowRef('')
 const mode = shallowRef<'manual' | 'ai'>('manual')
 const aiGenerating = shallowRef(false)
 const successMessage = shallowRef('')
+const draftsOpen = shallowRef(false)
 
 const options = [
   { value: 'manual', label: 'manual', icon: 'mdi:pencil' },
@@ -234,9 +234,11 @@ const isReleaseDateValid = computed(() => {
   return releaseDate >= new Date(minDate) && releaseDate <= new Date(maxDate)
 })
 
-const { data: drafts, refresh } = await useLazyFetch<ArticleDraft[]>('/api/articles/draft', {
-  default: () => [],
-})
+const {
+  data: drafts,
+  refresh,
+  pending: loading,
+} = await useLazyFetch<ArticleDraft[]>('/api/articles/draft', { default: () => [], server: false })
 
 const saveDraft = useDebounceFn(async () => {
   if (idle.value) return
@@ -268,11 +270,11 @@ const saveDraft = useDebounceFn(async () => {
         content: editedArticle.value.content || undefined,
       },
     })
-    successMessage.value = t('common.messages.draftSaved')
+    successMessage.value = $t('common.messages.draftSaved')
     await refresh()
     setTimeout(() => (successMessage.value = ''), 8000)
   } catch {
-    toast.error({ message: t('common.messages.draftSaveFailed') })
+    toast.error({ message: $t('common.messages.draftSaveFailed') })
   }
 }, 8000)
 
@@ -347,7 +349,7 @@ const createArticle = async () => {
   if (!editedArticle.value.title)
     return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
   if (!isReleaseDateValid.value)
-    return toast.error({ message: t('common.messages.invalidDateRange', [minDate, maxDate]) })
+    return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
   try {
     console.log('dokud jsem tady ja')
     const { id } = await $fetch('/api/articles', {
@@ -368,7 +370,7 @@ const createArticle = async () => {
     emitArticleCreated()
     open.value = false
   } catch (error: any) {
-    toast.error({ message: t('articles.editor.createFailed') + error.data?.message })
+    toast.error({ message: $t('articles.editor.createFailed') + error.data?.message })
   }
 }
 
@@ -379,14 +381,13 @@ const confirmClose = async () => {
     !editedArticle.value.sources?.length
   )
     return (open.value = false)
-
   const r = await Swal.fire({
-    title: t('common.messages.closeConfirmTitle'),
-    text: t('common.messages.closeConfirmText'),
+    title: $t('common.messages.closeConfirmTitle'),
+    text: $t('common.messages.closeConfirmText'),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: t('common.messages.closeConfirmButton'),
-    cancelButtonText: t('common.messages.deleteCancel'),
+    confirmButtonText: $t('common.messages.closeConfirmButton'),
+    cancelButtonText: $t('common.messages.deleteCancel'),
     confirmButtonColor: '#ef4444',
   })
   if (r.isConfirmed) open.value = false
@@ -405,9 +406,9 @@ const generateAIContent = async () => {
     editedArticle.value.imageUrl = articleImageUrl
     editedArticle.value.sources = sources || []
     articleTags.value = tags
-    toast.success({ message: t('articles.editor.aiContentGenerated') })
+    toast.success({ message: $t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
-    toast.error({ message: t('articles.editor.aiContentFailed') + error.data?.message })
+    toast.error({ message: $t('articles.editor.aiContentFailed') + error.data?.message })
   } finally {
     aiGenerating.value = false
   }

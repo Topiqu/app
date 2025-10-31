@@ -107,6 +107,7 @@ model ArticleDraft {
   title        String
   excerpt      String?
   content      String
+  imageUrl     String?
   clientSiteId String
   clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
 
