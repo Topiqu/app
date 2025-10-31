@@ -15,7 +15,14 @@
             required
           />
         </label>
-        <FileUploader type="emoji" :shortcode="shortcode" :disabled="!shortcode" @upload="onUpload" />
+        <FileUploader
+          type="emoji"
+          :shortcode="shortcode"
+          :maxWidth="1920"
+          :maxHeight="1080"
+          :disabled="!shortcode"
+          @upload="onUpload"
+        />
       </form>
 
       <div class="mt-8">
