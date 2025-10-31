@@ -120,12 +120,12 @@ model ArticleDraft extends Base, Ownable {
     title        String
     excerpt      String?
     content      String
+    imageUrl     String?
     clientSiteId String
     clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     @@allow('all', auth().id == userId || auth().role == 'admin')
     @@index([userId, updatedAt])
 }
-
 model Article extends Base, Ownable {
     slug            String            @unique @length(1, 100, "Slug musí mít 1–100 znaků")
     title           String            @length(1, 255, "Titulek musí mít 1–255 znaků")
