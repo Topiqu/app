@@ -176,7 +176,7 @@ import equal from 'fast-deep-equal'
 import Modal from '~/components/Modal/index.vue'
 
 const toast = useToast()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const { data: auth } = useAuth()
 const open = defineModel<boolean>()
 const { idle } = useIdle(5 * 60 * 1000)
@@ -208,9 +208,6 @@ const editedArticle = ref(
       }
     : init(),
 )
-
-const dateLocale = computed(() => (locale.value === 'en' ? enUS : cs))
-const dateFormat = computed(() => (locale.value === 'en' ? 'MMM d, yyyy, HH:mm' : 'd. MMMM yyyy, HH:mm'))
 
 const articleTags = ref<string[]>([])
 const customPrompt = shallowRef('')
@@ -287,56 +284,15 @@ watch(
   () => (editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })),
 )
 
-const showDraftsDialog = async () => {
-  if (!drafts.value?.length) {
-    toast.info({ message: t('articles.editor.drafts.noDraftsFound') })
-    return
-  }
-  const result = await Swal.fire({
-    title: t('articles.editor.drafts.continueDraftPrompt', [
-      format(drafts.value[0]?.createdAt ?? new Date(), dateFormat.value, { locale: dateLocale.value }),
-    ]),
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: t('common.continue'),
-    cancelButtonText: t('common.messages.deleteCancel'),
-    showDenyButton: drafts.value.length > 1,
-    denyButtonText: t('articles.editor.drafts.selectDraftTitle'),
+const loadDraft = (draft: ArticleDraft) =>
+  Object.assign(editedArticle.value, {
+    title: draft.title,
+    excerpt: draft.excerpt || '',
+    content: draft.content,
+    imageUrl: draft.imageUrl || '',
+    slug: slugify(draft.title ?? '', { lower: true, strict: true, trim: true }),
+    sources: [],
   })
-  if (result.isConfirmed) {
-    Object.assign(editedArticle, {
-      title: drafts.value[0]?.title,
-      excerpt: drafts.value[0]?.excerpt || '',
-      content: drafts.value[0]?.content,
-      slug: slugify(drafts.value[0]?.title ?? '', { lower: true, strict: true, trim: true }),
-      sources: [],
-    })
-  } else if (result.isDenied) {
-    const { value: selectedDraft } = await Swal.fire({
-      title: t('articles.editor.drafts.selectDraftTitle'),
-      input: 'select',
-      inputOptions: drafts.value.reduce(
-        (acc, draft) => ({
-          ...acc,
-          [draft.id]: `${draft.title || 'Bez názvu'} (${format(draft.createdAt, dateFormat.value, { locale: dateLocale.value })})`,
-        }),
-        {},
-      ),
-      inputPlaceholder: t('articles.editor.drafts.selectDraftPlaceholder'),
-      showCancelButton: true,
-    })
-    if (selectedDraft) {
-      const draft = drafts.value.find((d) => d.id === selectedDraft)
-      Object.assign(editedArticle, {
-        title: draft?.title,
-        excerpt: draft?.excerpt || '',
-        content: draft?.content,
-        slug: slugify(draft?.title ?? '', { lower: true, strict: true, trim: true }),
-        sources: [],
-      })
-    }
-  }
-}
 
 const handleUpload = (file: { url: string }) => (editedArticle.value.imageUrl = file.url)
 
