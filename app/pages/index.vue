@@ -105,31 +105,18 @@
               </div>
             </div>
             <div class="w-full flex flex-wrap justify-center gap-2" style="background-color: transparent !important">
-              <button
-                :class="[
-                  'flex-shrink-0 text-sm px-3 py-1 rounded-full font-medium transition duration-150',
-                  selectedTag === ''
-                    ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
-                    : 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700',
-                ]"
-                @click="selectedTag = ''"
-              >
+              <Button :variant="selectedTag === '' ? 'primary' : 'neutral'" @click="selectedTag = ''">
                 {{ $t('articles.title') }}
-              </button>
-              <button
+              </Button>
+              <Button
                 v-for="tag in tags"
                 :key="tag.id"
-                :class="[
-                  'flex-shrink-0 text-sm px-3 py-1 rounded-full font-medium transition duration-150',
-                  selectedTag === tag.name
-                    ? 'bg-blue-500 dark:bg-blue-600 text-white border border-blue-400 dark:border-blue-500'
-                    : 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700',
-                ]"
                 role="listitem"
+                :variant="selectedTag === tag.name ? 'primary' : 'neutral'"
                 @click="selectedTag = selectedTag === tag.name ? '' : tag.name"
               >
                 {{ tag.name }}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
