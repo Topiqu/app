@@ -165,7 +165,7 @@
             <Icon name="mdi:share-variant" class="w-4 h-4 text-gray-500" />
             <span>{{ formatNumber(data.shared) }}</span>
           </div>
-          <LazyArticleEdit
+          <LazyArticleModal
             v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
             v-slot="{ open }"
             :article="data"
@@ -179,7 +179,7 @@
             >
               <Icon name="mdi:pencil" class="w-5 h-5" />
             </button>
-          </LazyArticleEdit>
+          </LazyArticleModal>
         </div>
       </div>
       <div class="flex justify-end gap-4 mt-10">

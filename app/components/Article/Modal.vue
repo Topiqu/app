@@ -8,14 +8,15 @@
       <div class="flex flex-col gap-6">
         <label class="flex flex-col gap-3">
           <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">{{
-            $t('common.labels.title')
+            $t('common.labels.articleTitle')
           }}</span>
           <input
-            v-model="newArticle.title"
+            v-model="editedArticle.title"
             :placeholder="$t('common.labels.articleTitle')"
             class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
+            @input="updateSlug"
           />
-          <span class="text-sm text-gray-500 dark:text-gray-400">URL: {{ newArticle.slug }}</span>
+          <span class="text-sm text-gray-500 dark:text-gray-400">URL: {{ editedArticle.slug }}</span>
         </label>
 
         <label class="flex flex-col gap-3">
@@ -23,13 +24,14 @@
             $t('common.labels.excerpt')
           }}</span>
           <textarea
-            v-model="newArticle.excerpt"
+            v-model="editedArticle.excerpt"
             :placeholder="$t('common.labels.articleExcerpt')"
             class="p-4 rounded-xl dark:text-gray-200 text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
           ></textarea>
         </label>
 
         <div
+          v-if="!article"
           class="flex gap-2 rounded-2xl bg-gray-100 dark:bg-gray-700 p-2 border border-gray-300 dark:border-gray-600 w-fit"
         >
           <Button
@@ -103,8 +105,8 @@
           <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">{{
             $t('common.labels.content')
           }}</span>
-          <TiptapEditor v-model="newArticle.content" edit />
-          <div v-if="drafts?.length" class="flex items-center gap-2">
+          <TiptapEditor v-model="editedArticle.content" edit />
+          <div v-if="!article && drafts?.length" class="flex items-center gap-2">
             <Button
               variant="secondary"
               size="sm"
@@ -127,19 +129,19 @@
             $t('common.labels.image')
           }}</span>
           <FileUploader type="article-image" :maxWidth="3840" :maxHeight="2160" @upload="handleUpload" />
-          <span v-if="newArticle.imageUrl" class="text-sm text-gray-500 dark:text-gray-400"
-            >{{ $t('common.labels.image') }}: {{ newArticle.imageUrl }}</span
+          <span v-if="editedArticle.imageUrl" class="text-sm text-gray-500 dark:text-gray-400"
+            >{{ $t('common.labels.image') }}: {{ editedArticle.imageUrl }}</span
           >
         </label>
 
-        <ArticleSources v-model="newArticle.sources" />
+        <ArticleSources v-model="editedArticle.sources" />
 
-        <label class="flex flex-col gap-3">
+        <label v-if="showReleaseAt" class="flex flex-col gap-3">
           <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">{{
             $t('common.labels.releaseDate')
           }}</span>
           <input
-            v-model="newArticle.releaseAt"
+            v-model="editedArticle.releaseAt"
             type="datetime-local"
             :min="minDate"
             :max="maxDate"
@@ -148,21 +150,23 @@
           <span class="text-sm text-gray-500 dark:text-gray-400">{{ $t('articles.editor.releaseDateNote') }}</span>
         </label>
 
-        <TagsManager v-model:tags="articleTags" />
+        <TagsManager v-if="article" :article="editedArticle" @update:tags="updateTags" @delete:tag="deleteTag" />
+        <TagsManager v-else v-model:tags="articleTags" />
       </div>
     </template>
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-2">
         <Button variant="danger" size="lg" @click="close">{{ $t('common.close') }}</Button>
-        <Button :disabled="!newArticle.title" size="lg" @click="createArticle">{{ $t('articles.addArticle') }}</Button>
+        <Button :disabled="!editedArticle.title" size="lg" @click="onSubmit">{{ $t('articles.addArticle') }}</Button>
       </div>
     </template>
   </Modal>
 </template>
 
 <script setup lang="ts">
-import type { ArticleStatus, ArticleDraft } from '@zenstackhq/runtime/models'
+import type { ArticleWithDetails } from '~~/types/article'
+import type { ArticleDraft } from '@zenstackhq/runtime/models'
 
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
@@ -170,29 +174,45 @@ import { format } from 'date-fns'
 import equal from 'fast-deep-equal'
 import { enUS, cs } from 'date-fns/locale'
 
-const { t, locale } = useI18n()
+import Modal from '~/components/Modal/index.vue'
+
 const toast = useToast()
+const { t, locale } = useI18n()
 const { data: auth } = useAuth()
-const { data: client } = useFetch(`/api/clients/${auth.value?.user.clientSiteId}`)
-const { emitArticleCreated } = useArticleEvent()
 const open = defineModel<boolean>()
 const { idle } = useIdle(5 * 60 * 1000)
+const { emitArticleCreated } = useArticleEvent()
+const { data: client } = useFetch(`/api/clients/${auth.value?.user.clientSiteId}`)
+
+const emit = defineEmits(['saved'])
+const props = defineProps<{ article: ArticleWithDetails }>()
+
+const init = () =>
+  ({
+    title: '',
+    excerpt: '',
+    content: '',
+    slug: '',
+    imageUrl: '',
+    status: 'draft',
+    releaseAt: null,
+    sources: [],
+  }) as unknown as ArticleWithDetails
+
+const editedArticle = ref(
+  props.article
+    ? {
+        ...props.article,
+        sources: props.article.sources || [],
+        excerpt: props.article.excerpt || '',
+        releaseAt: props.article.releaseAt ? new Date(props.article.releaseAt) : null,
+      }
+    : init(),
+)
 
 const dateLocale = computed(() => (locale.value === 'en' ? enUS : cs))
 const dateFormat = computed(() => (locale.value === 'en' ? 'MMM d, yyyy, HH:mm' : 'd. MMMM yyyy, HH:mm'))
 
-const init = () => ({
-  title: '',
-  excerpt: '',
-  content: '',
-  slug: '',
-  imageUrl: '',
-  status: 'draft' as ArticleStatus,
-  releaseAt: null as string | null,
-  sources: [] as string[],
-})
-
-const newArticle = reactive(init())
 const articleTags = ref<string[]>([])
 const customPrompt = shallowRef('')
 const mode = shallowRef<'manual' | 'ai'>('manual')
@@ -209,8 +229,8 @@ const minDate = currentDate.toISOString().slice(0, 16)
 const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59).toISOString().slice(0, 16)
 
 const isReleaseDateValid = computed(() => {
-  if (!newArticle.releaseAt) return true
-  const releaseDate = new Date(newArticle.releaseAt)
+  if (!editedArticle.value.releaseAt) return true
+  const releaseDate = new Date(editedArticle.value.releaseAt)
   return releaseDate >= new Date(minDate) && releaseDate <= new Date(maxDate)
 })
 
@@ -220,12 +240,21 @@ const { data: drafts, refresh } = await useLazyFetch<ArticleDraft[]>('/api/artic
 
 const saveDraft = useDebounceFn(async () => {
   if (idle.value) return
-  if (!newArticle.title && !newArticle.excerpt && (!newArticle.content || newArticle.content === '<p></p>')) return
+  if (
+    !editedArticle.value.title &&
+    !editedArticle.value.excerpt &&
+    (!editedArticle.value.content || editedArticle.value.content === '<p></p>')
+  )
+    return
   if (
     drafts.value?.some((draft) =>
       equal(
         { title: draft.title, excerpt: draft.excerpt || '', content: draft.content },
-        { title: newArticle.title, excerpt: newArticle.excerpt || '', content: newArticle.content },
+        {
+          title: editedArticle.value.title,
+          excerpt: editedArticle.value.excerpt || '',
+          content: editedArticle.value.content,
+        },
       ),
     )
   )
@@ -234,9 +263,9 @@ const saveDraft = useDebounceFn(async () => {
     await $fetch('/api/articles/draft', {
       method: 'POST',
       body: {
-        title: newArticle.title,
-        excerpt: newArticle.excerpt || undefined,
-        content: newArticle.content || undefined,
+        title: editedArticle.value.title,
+        excerpt: editedArticle.value.excerpt || undefined,
+        content: editedArticle.value.content || undefined,
       },
     })
     successMessage.value = t('common.messages.draftSaved')
@@ -247,10 +276,13 @@ const saveDraft = useDebounceFn(async () => {
   }
 }, 8000)
 
-watch([() => newArticle.title, () => newArticle.excerpt, () => newArticle.content], saveDraft)
 watch(
-  [() => newArticle.title],
-  () => (newArticle.slug = slugify(newArticle.title, { lower: true, strict: true, trim: true })),
+  [() => editedArticle.value.title, () => editedArticle.value.excerpt, () => editedArticle.value.content],
+  saveDraft,
+)
+watch(
+  [() => editedArticle.value.title],
+  () => (editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })),
 )
 
 const showDraftsDialog = async () => {
@@ -270,7 +302,7 @@ const showDraftsDialog = async () => {
     denyButtonText: t('articles.editor.drafts.selectDraftTitle'),
   })
   if (result.isConfirmed) {
-    Object.assign(newArticle, {
+    Object.assign(editedArticle, {
       title: drafts.value[0]?.title,
       excerpt: drafts.value[0]?.excerpt || '',
       content: drafts.value[0]?.content,
@@ -293,7 +325,7 @@ const showDraftsDialog = async () => {
     })
     if (selectedDraft) {
       const draft = drafts.value.find((d) => d.id === selectedDraft)
-      Object.assign(newArticle, {
+      Object.assign(editedArticle, {
         title: draft?.title,
         excerpt: draft?.excerpt || '',
         content: draft?.content,
@@ -304,28 +336,35 @@ const showDraftsDialog = async () => {
   }
 }
 
-const handleUpload = (file: { url: string }) => (newArticle.imageUrl = file.url)
+const handleUpload = (file: { url: string }) => (editedArticle.value.imageUrl = file.url)
+
+const onSubmit = async () => {
+  if (props.article != null) await saveEdit()
+  else await createArticle()
+}
 
 const createArticle = async () => {
-  if (!newArticle.title) return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
+  if (!editedArticle.value.title)
+    return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
   if (!isReleaseDateValid.value)
     return toast.error({ message: t('common.messages.invalidDateRange', [minDate, maxDate]) })
   try {
+    console.log('dokud jsem tady ja')
     const { id } = await $fetch('/api/articles', {
       method: 'POST',
       body: {
-        ...newArticle,
-        excerpt: newArticle.excerpt || undefined,
-        content: newArticle.content || undefined,
-        releaseAt: newArticle.releaseAt || undefined,
-        sources: newArticle.sources.filter((source) => source.trim() !== ''),
+        ...editedArticle.value,
+        excerpt: editedArticle.value.excerpt || undefined,
+        content: editedArticle.value.content || undefined,
+        releaseAt: editedArticle.value.releaseAt || undefined,
+        sources: editedArticle.value.sources?.filter((source) => source.trim() !== ''),
       },
     })
     await Promise.all(
       articleTags.value.map((tagId) => $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })),
     )
     toast.success({ message: t('articles.editor.createSuccess') })
-    Object.assign(newArticle, init())
+    Object.assign(editedArticle, init())
     emitArticleCreated()
     open.value = false
   } catch (error: any) {
@@ -335,9 +374,9 @@ const createArticle = async () => {
 
 const confirmClose = async () => {
   if (
-    !newArticle.title.length &&
-    (!newArticle.content.length || newArticle.content === '<p></p>') &&
-    !newArticle.sources.length
+    !editedArticle.value.title.length &&
+    (!editedArticle.value.content?.length || editedArticle.value.content === '<p></p>') &&
+    !editedArticle.value.sources?.length
   )
     return (open.value = false)
 
@@ -360,17 +399,93 @@ const generateAIContent = async () => {
       method: 'POST',
       body: { prompt: customPrompt.value || 'Empty...' },
     })
-    newArticle.title = title
-    newArticle.excerpt = perex
-    newArticle.content = content
-    newArticle.imageUrl = articleImageUrl
-    newArticle.sources = sources || []
+    editedArticle.value.title = title
+    editedArticle.value.excerpt = perex
+    editedArticle.value.content = content
+    editedArticle.value.imageUrl = articleImageUrl
+    editedArticle.value.sources = sources || []
     articleTags.value = tags
     toast.success({ message: t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
     toast.error({ message: t('articles.editor.aiContentFailed') + error.data?.message })
   } finally {
     aiGenerating.value = false
+  }
+}
+
+const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
+  default: () => [],
+  key: `article-tags-${props.article?.id}`,
+})
+
+const showReleaseAt = computed(() => {
+  if (editedArticle.value.status === 'published') return false
+  if (editedArticle.value.releaseAt) {
+    const releaseDate = new Date(editedArticle.value.releaseAt)
+    return releaseDate >= currentDate
+  }
+  return true
+})
+
+const updateSlug = () =>
+  (editedArticle.value.slug = slugify(editedArticle.value.title, {
+    lower: true,
+    strict: true,
+    trim: true,
+  }))
+
+const updateTags = async (tagIds: string[]) => {
+  const currentTags = (artTags.value || []).map((t) => t.tagId)
+  const tagsToAdd = tagIds.filter((id) => !currentTags.includes(id))
+
+  await Promise.all(
+    tagsToAdd.map((tagId) =>
+      $fetch(`/api/articles/${editedArticle.value.id}/tags`, {
+        method: 'POST',
+        body: { tagId },
+      }).catch((e) => console.error('POST error:', e)),
+    ),
+  )
+
+  toast.success({ message: $t('articles.tags.addTagSuccess') })
+}
+
+const deleteTag = async (tagId: string) => {
+  try {
+    await $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, { method: 'DELETE' })
+    toast.success({ message: $t('articles.tags.removeTagSuccess') })
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || $t('articles.tags.operationFailed') })
+  }
+}
+
+const saveEdit = async () => {
+  if (editedArticle.value.releaseAt) {
+    const releaseDate = new Date(editedArticle.value.releaseAt)
+    const minDateObj = new Date(minDate)
+    const maxDateObj = new Date(maxDate)
+    if (releaseDate < minDateObj || releaseDate > maxDateObj) {
+      return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
+    }
+  }
+  try {
+    await $fetch(`/api/articles/${editedArticle.value.id}`, {
+      method: 'PATCH',
+      body: {
+        title: editedArticle.value.title,
+        excerpt: editedArticle.value.excerpt || '',
+        content: editedArticle.value.content,
+        slug: editedArticle.value.slug,
+        userId: editedArticle.value.userId || editedArticle.value.user?.id,
+        imageUrl: editedArticle.value.imageUrl,
+        releaseAt: editedArticle.value.releaseAt || undefined,
+      },
+    })
+    toast.success({ message: $t('common.messages.saveSuccess') })
+    open.value = false
+    emit('saved')
+  } catch (error: any) {
+    toast.error({ message: error.data?.message || $t('common.messages.saveFailed') })
   }
 }
 </script>

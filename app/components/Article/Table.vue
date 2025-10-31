@@ -113,9 +113,9 @@
                 variant="success"
                 @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
               />
-              <LazyArticleEdit v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
+              <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
                 <Button :icon="'mdi:pencil'" @click="open.value = true" />
-              </LazyArticleEdit>
+              </LazyArticleModal>
               <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                 <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
               </LazyArticleTag>
@@ -219,9 +219,9 @@
                   variant="success"
                   @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
                 />
-                <LazyArticleEdit v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
+                <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
                   <Button :icon="'mdi:pencil'" @click="open.value = true" />
-                </LazyArticleEdit>
+                </LazyArticleModal>
                 <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                   <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
                 </LazyArticleTag>

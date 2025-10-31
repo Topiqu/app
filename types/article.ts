@@ -26,6 +26,7 @@ export type ArticleWithDetails = {
   releaseAt: Date | string | null
   status: ArticleStatus
   userId?: string | null
+  sources?: string[]
   user: { id: string; username: string; email: string; avatarUrl: string | null } | null
   tags: { tag: { id: string; name: string; slug: string } }[]
   _count: { comments: number; reactions: number } | null

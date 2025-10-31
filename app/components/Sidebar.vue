@@ -16,9 +16,9 @@
     >
       <div v-if="auth?.user?.role === 'admin'" class="flex flex-col gap-4">
         <Button icon="mdi:home" variant="neutral" @click="router.push('/admin')" />
-        <LazyArticleCreate v-slot="{ open }" hydrateOnInteraction>
+        <LazyArticleModal v-slot="{ open }" hydrateOnInteraction>
           <Button icon="mdi:pencil" variant="neutral" @click="open.value = true" />
-        </LazyArticleCreate>
+        </LazyArticleModal>
         <LazyTagsCreate v-slot="{ open }" hydrateOnInteraction>
           <Button icon="mdi:tag-outline" variant="neutral" @click="open.value = true" />
         </LazyTagsCreate>
