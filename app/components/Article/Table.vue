@@ -1,17 +1,14 @@
 <template>
   <div class="mb-10 space-y-4 px-4 sm:px-6 lg:px-8">
     <div class="flex justify-center">
-      <div class="relative w-full max-w-xs sm:max-w-xl">
-        <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-          <Icon name="material-symbols:search-rounded" />
-        </span>
-        <FormInput
-          v-model="globalFilter"
-          type="text"
-          :placeholder="$t('articles.searchPlaceholder')"
-          class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
-        />
-      </div>
+      <FormInput
+        v-model="globalFilter"
+        type="text"
+        icon="mdi:magnify"
+        inputClass="rounded-full!"
+        class="relative w-full max-w-xs sm:max-w-xl"
+        :placeholder="$t('articles.searchPlaceholder')"
+      />
     </div>
 
     <div v-if="articles.data.length" class="flex justify-end gap-2 mb-4">
