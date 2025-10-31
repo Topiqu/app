@@ -21,6 +21,8 @@ now:
 
 test:
 
+- google analycitsanalytics
+- google ads
 - production fix email template json not loadings
 - ai cron jobs for article writing and its notifications // 🛑 high priority
 
@@ -48,6 +50,8 @@ done:
 - fix background floating objects z-index
 - user page - enhance/improve styling & ui for hero section
 - lang switcher -> improve styles
+- create dropdown menu component w groups
+- encapsulate article exports
 - useClientSite composable - return language/cliensite details based on host header // 🛑 high priority
 - all clientsite endpoints should use host header instead of clientsite slug/route params // 🛑 high priority
 - rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one // low priority 🟢
