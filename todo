@@ -1,59 +1,67 @@
 always:
 
-- keep misc style/ui clean
-- keep code optimised
-- test out before marking done
+- 🛑 keep misc style/ui clean
+- 🛑 keep code optimised
+- 🛑 test out before marking done
 
 ---
 
 now:
 
-- notifications should also be localised // 🛑 high priority
-- GAM + total ad revenue overview & logging // 🛑 high priority
-- further clientsite customization : fonts (🟡 mid priority), background shapes/patterns (🟡 mid priority), more color variety (🛑 high priority)
-- HP/index page should get a UI rework and move from MVP to actual production ready page // 🟡 mid priority
-- fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions) // 🟡 mid priority
-- implement ModalMini (exp. ArticleCreate draft select could use it instead of sweetalert) // low priority 🟢
-- centralised ArticleModal component (for ArticleCreate/Edit) // low priority 🟢
-- favorite button for articles (bookmark/save) // low priority 🟢
+- 🛑 notifications should also be localised
+- 🛑 GAM + total ad revenue overview & logging
+- 🟡 fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions)
+- 🟢 implement ModalMini (exp. ArticleCreate draft select could use it instead of sweetalert)
 
 ---
 
 test:
 
-- google analycitsanalytics
-- google ads
-- production fix email template json not loadings
-- ai cron jobs for article writing and its notifications // 🛑 high priority
+- 🛑 google ads
+- 🛑 google analytics
+- 🛑 production fix email template json not loadings
+- 🛑 ai cron jobs for article writing and its notifications
+- 🟢 centralised ArticleModal component (for ArticleCreate/Edit)
+
+---
+
+optional:
+
+- further clientsite customization
+  - 🟡 fonts
+  - 🟡 background shapes/patterns
+  - 🛑 more color variety
+- 🟡 HP/index page should get a UI rework and move from MVP to actual production ready page
+- 🟢 favorite button for articles (bookmark/save)
 
 ---
 
 future:
 
-- zapier integration // 🛑 high priority
-- bullmq / railway / queue up cron jobs // low priority 🟢
-- better gamification - badges, levels, site activity points
-- automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details // 🟡 mid priority
-- (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))... // 🔰 low-mid priority
-- ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function // 🔰 low-mid priority
-- multi agent writing (seo analyzer, copywriter, reviewer) with tools (debate, vote, merge, post) // 🔰 low-mid priority
+- 🛑 zapier integration
+- 🟢 bullmq / railway / queue up cron jobs
+- 🟢 better gamification - badges, levels, site activity points
+- 🟡 automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details
+- 🔰 (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))...
+- 🔰 ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function
+- 🔰 multi agent writing (seo analyzer, copywriter, reviewer) with tools (debate, vote, merge, post)
 
 ---
 
 done:
 
-- cliensite language column // 🛑 high priority
-- cliensite customization (themes) // 🛑 high priority
-- add sessionId for oauth providers in nuxt auth callback
-- account health - sessions, password strength, 2fa, amount of bans, verified email... // 🟡 mid priority
-- fix header Z-index
-- fix background floating objects z-index
-- user page - enhance/improve styling & ui for hero section
-- lang switcher -> improve styles
-- create dropdown menu component w groups
-- encapsulate article exports
-- useClientSite composable - return language/cliensite details based on host header // 🛑 high priority
-- all clientsite endpoints should use host header instead of clientsite slug/route params // 🛑 high priority
-- rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one // low priority 🟢
-- implement missing email templates // 🛑 high priority
-- nuxt-gtag // 🛑 high priority
+- 🛑 cliensite language column
+- 🛑 cliensite customization (themes)
+- 🛑 add sessionId for oauth providers in nuxt auth callback
+- 🟡 account health - sessions, password strength, 2fa, amount of bans, verified email...
+- 🟢 fix header z-index
+- 🟢 fix background floating objects z-index
+- 🟢 user page - enhance/improve styling & ui for hero section
+- 🟢 lang switcher -> improve styles
+- 🟡 create dropdown menu component w groups
+- 🟡 encapsulate article exports
+- 🛑 useClientSite composable - return language/cliensite details based on host header
+- 🛑 all clientsite endpoints should use host header instead of clientsite slug/route params
+- 🟢 rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one
+- 🛑 implement missing email templates
+- 🛑 nuxt-gtag
