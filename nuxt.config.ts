@@ -33,6 +33,7 @@ export default defineNuxtConfig({
       ],
       dirs: ['shared/zod/models', 'server/utils', '#auth'],
     },
+    serverAssets: [{ baseName: 'templates', dir: '../emails/templates' }],
   },
 
   imports: {
