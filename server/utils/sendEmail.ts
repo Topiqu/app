@@ -35,8 +35,10 @@ type Templates = ReturnType<(typeof templateCache)['get']>
 export const getEmailTemplate = async (id: string): Promise<Templates> => {
   if (!templateCache.has(id))
     try {
-      const template = await import(`~~/emails/templates/${id}.mjml`)
-      templateCache.set(id, template.default)
+      const template = await useStorage('assets:templates').getItem(`${id}.mjml`)
+      if (!template) throw createError(`Email template "${id}" not found in storage`)
+
+      templateCache.set(id, template.toString())
     } catch (error) {
       throw createError(`An error occured while trying to get email template "${id}": ${error}`)
     }
