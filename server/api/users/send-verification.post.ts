@@ -1,7 +1,5 @@
 import { randomBytes } from 'crypto'
 
-import { sendEmail } from '~/../emails/sendEmail'
-
 export default defineEventHandler(async (e) => {
   const user = (await getServerSession(e))?.user
   if (!user) {

@@ -1,7 +1,5 @@
 import { randomBytes } from 'crypto'
 
-import { sendEmail } from '~/../emails/sendEmail'
-
 export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, signInSchema.parse)
   const { username, email, password } = body

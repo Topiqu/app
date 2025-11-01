@@ -1,5 +1,3 @@
-import { sendEmail } from '~/../emails/sendEmail'
-
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   const db = await getEnhancedPrisma(user)
