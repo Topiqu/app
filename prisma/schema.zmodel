@@ -23,6 +23,7 @@ plugin zod {
 enum ArticleStatus {
     draft
     published
+    archived
 }
 
 enum ThemeOption {
@@ -102,6 +103,13 @@ enum SharePlatform {
     LINKEDIN
     EMAIL
     OTHER
+}
+
+enum SentimentStatus {
+  PENDING
+  SKIPPED
+  PROCESSED
+  ERROR
 }
 
 abstract model Base {
@@ -336,18 +344,22 @@ model UserBan extends Base {
 }
 
 model Comment extends Base, Ownable {
-    content        String            @length(1, 1000, "Komentář musí mít 1–1000 znaků")
-    gifUrl         String?           @length(0, 350, "URL GIFu musí mít max. 255 znaků")
-    articleId      String
-    article        Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
-    parentId       String?
-    parent         Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-    reactions      CommentReaction[]
-    emojiReactions EmojiReaction[]
-    replies        Comment[]         @relation("CommentReplies")
+    content         String            @length(1, 1000, "Komentář musí mít 1–1000 znaků")
+    gifUrl          String?           @length(0, 350, "URL GIFu musí mít max. 350 znaků")
+    articleId       String
+    article         Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    parentId        String?
+    parent          Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+    reactions       CommentReaction[]
+    emojiReactions  EmojiReaction[]
+    replies         Comment[]         @relation("CommentReplies")
+    sentiment       Json?
+    sentimentStatus SentimentStatus   @default(PENDING)
+
     @@allow('read', true)
     @@allow('create', auth() != null)
-    @@allow('update, delete', auth().id == userId || auth().role == 'admin')
+    @@allow('update,delete', auth().id == userId || auth().role == 'admin')
+    @@index([sentimentStatus])
 }
 
 model CommentReaction extends Ownable {
