@@ -8,37 +8,27 @@
   >
     <template #content>
       <div class="mt-4">
-        <div class="flex items-center justify-between mb-4">
-          <div v-if="drafts.length" class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 flex-1">
-            <div class="relative flex-1">
-              <Icon
-                name="mdi:magnify"
-                class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
-              />
-              <FormInput
-                v-model="searchQuery"
-                :placeholder="$t('common.search')"
-                class="w-full py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200"
-                :disabled="loading"
-                icon="mdi:magnify"
-              />
-            </div>
-            <FormSelect
-              v-model="sortOption"
-              :items="sortItems"
-              class="w-full md:w-44"
+        <div v-if="drafts.length" class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+          <div class="relative flex-1">
+            <Icon
+              name="mdi:magnify"
+              class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+            />
+            <FormInput
+              v-model="searchQuery"
+              :placeholder="$t('common.search')"
+              class="w-full py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200"
               :disabled="loading"
-              :showValue="false"
+              icon="mdi:magnify"
             />
           </div>
-          <Button
-            variant="danger"
-            animation="softpop"
-            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition ml-auto"
-            @click="close"
-          >
-            <Icon name="mdi:close" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </Button>
+          <FormSelect
+            v-model="sortOption"
+            :items="sortItems"
+            class="w-full md:w-44"
+            :disabled="loading"
+            :showValue="false"
+          />
         </div>
 
         <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 opacity-60">
@@ -58,7 +48,7 @@
           <button
             v-for="draft in filteredDrafts"
             :key="draft.id"
-            class="group relative flex cursor-pointer flex-col justify-between rounded-2xl bg-white/90 dark:bg-neutral-900/70 border border-gray-200 dark:border-gray-800 overflow-hidden hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300"
+            class="group relative flex flex-col cursor-pointer rounded-2xl bg-white dark:bg-neutral-900/80 border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 ease-out"
             :disabled="loading"
             @click="selectDraft(draft)"
           >
@@ -66,42 +56,48 @@
               <NuxtImg
                 v-if="draft.imageUrl"
                 :src="draft.imageUrl"
-                class="object-contain w-full h-full group-hover:scale-105 transition-transform duration-500"
+                class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
               />
               <div
                 v-else
-                class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800"
+                class="w-full h-full bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-800 dark:to-gray-700"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 dark:via-neutral-900/40 to-white dark:to-neutral-900 backdrop-blur-[2px] pointer-events-none"
               />
               <div
                 class="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               />
             </div>
-
-            <div class="flex flex-col p-5">
+            <div
+              class="flex flex-col flex-1 p-5 bg-white dark:bg-neutral-950 border-t border-gray-200 dark:border-gray-800 shadow-inner"
+            >
               <h3
-                class="font-semibold text-gray-900 dark:text-gray-100 text-base mb-1 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                class="font-medium text-gray-900 dark:text-gray-100 text-base mb-1 line-clamp-1 tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
               >
-                {{ draft.title || $t('articles.editor.drafts.untitled') }}
+                {{ draft.title || $t('articles.editor.drafts.untitled', [draft.id.slice(-4)]) }}
               </h3>
-              <p v-if="draft.excerpt" class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+              <p
+                v-if="draft.excerpt"
+                class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4 leading-snug flex-1"
+              >
                 {{ draft.excerpt }}
               </p>
-
               <div
-                class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400"
+                class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400"
               >
                 <div class="flex items-center gap-1.5">
-                  <Icon name="mdi:clock-outline" class="w-3.5 h-3.5" />
-                  {{ format(draft.createdAt, dateFormat, { locale: dateLocale }) }}
+                  <Icon name="mdi:clock-outline" class="w-3.5 h-3.5" />{{
+                    format(draft.createdAt, dateFormat, { locale: dateLocale })
+                  }}
                 </div>
                 <Button
                   variant="danger"
                   size="sm"
-                  class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition"
+                  class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 active:scale-95 transition"
                   @click.stop="deleteDraft(draft.id)"
-                >
-                  <Icon name="mdi:delete" class="w-4 h-4" />
-                </Button>
+                  ><Icon name="mdi:delete" class="w-4 h-4"
+                /></Button>
               </div>
             </div>
           </button>
@@ -121,7 +117,6 @@
     </template>
   </ModalMini>
 </template>
-
 <script setup lang="ts">
 import type { ArticleDraft } from '@zenstackhq/runtime/models'
 

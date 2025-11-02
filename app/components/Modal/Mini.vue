@@ -49,7 +49,7 @@
                 <slot name="content" />
               </div>
 
-              <div class="flex-shrink-0 flex items-center gap-2">
+              <div class="flex-shrink-0 flex items-center gap-2 ml-4">
                 <slot name="actions">
                   <Button
                     v-if="cancelText"
@@ -71,6 +71,19 @@
                     class="!text-white hover:!brightness-110 dark:hover:!brightness-125"
                     @click="confirm"
                   />
+                </slot>
+              </div>
+
+              <div class="absolute top-4 right-4">
+                <slot name="close">
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                    @click="close"
+                  >
+                    <Icon name="mdi:close" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  </Button>
                 </slot>
               </div>
             </DialogPanel>
