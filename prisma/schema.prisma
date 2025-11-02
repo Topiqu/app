@@ -152,8 +152,7 @@ model Article {
   sources         String[]
   prompt          String?
 
-  @@index([title])
-  @@index([excerpt])
+  @@index([title, excerpt, clientSiteId])
 }
 
 model ArticleShare {
@@ -299,6 +298,8 @@ model ClientSite {
   allowAds            Boolean             @default(false)
   allowGtag           Boolean?
   allowShapes         Boolean             @default(false)
+  communityInsight    Json?
+  insightUpdatedAt    DateTime?
   language            Language            @default(en)
   theme               Theme               @default(blue)
   users               User[]
@@ -309,6 +310,8 @@ model ClientSite {
   userBans            UserBan[]
   socials             Social[]
   logs                Log[]               @relation("LogToClientSite")
+
+  @@index([subdomain, name, plan])
 }
 
 model PollResult {

@@ -159,8 +159,7 @@ model Article extends Base, Ownable {
     prompt          String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin')
-    @@index([title])
-    @@index([excerpt])
+    @@index([title, excerpt, clientSiteId])
 }
 
 model ArticleShare extends Base {
@@ -302,6 +301,8 @@ model ClientSite extends Base {
     allowAds            Boolean             @default(false)
     allowGtag           Boolean?
     allowShapes         Boolean             @default(false)
+    communityInsight    Json?
+    insightUpdatedAt    DateTime?
     language            Language            @default(en)
     theme               Theme               @default(blue)
     users               User[]
@@ -315,6 +316,7 @@ model ClientSite extends Base {
     @@allow('read', true)
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')
+    @@index([subdomain, name, plan])
 }
 
 model PollResult extends Base {
