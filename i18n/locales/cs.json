@@ -466,6 +466,9 @@
       "noViews": "Zatím žádná zobrazení"
     },
     "articleCount": "Počet článků",
+    "sentiment": {
+      "title": "Vaše komunita"
+    },
     "totalShares": {
       "title": "Sdílení",
       "noShares": "Zatím žádné sdílení"

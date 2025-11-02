@@ -452,6 +452,9 @@
       "noViews": "No views yet"
     },
     "articleCount": "Total articles",
+    "sentiment": {
+      "title": "Your community"
+    },
     "totalShares": {
       "title": "Total Shares",
       "noShares": "No shares yet"

@@ -102,7 +102,7 @@
               {{ $t('stats.topLikedArticle.title') }}
             </div>
             <template v-if="stats.topLikedArticle && stats.topLikedArticle.likes > 0">
-              <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topLikedArticle.title">
+              <p class="text-lg font-medium text-gray truncate" :title="stats.topLikedArticle.title">
                 {{ stats.topLikedArticle.title }}
               </p>
               <p class="text-sm text-gray-500">
@@ -143,11 +143,7 @@
 
           <div
             v-if="data?.user.plan !== 'BASIC'"
-            v-tippy="{
-              content: $t('stats.engagementRate.tooltip'),
-              theme: 'light',
-              placement: 'top',
-            }"
+            v-tippy="{ content: $t('stats.engagementRate.tooltip'), theme: 'light', placement: 'top' }"
             class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
           >
             <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
@@ -156,13 +152,7 @@
               <Icon name="mdi:help-circle-outline" class="w-4 h-4 text-gray-400 cursor-help" />
             </div>
             <p class="text-2xl font-bold text-pink-600">
-              {{
-                stats.engagementRate
-                  ? Math.round(stats.engagementRate * 100) > 100
-                    ? '100%'
-                    : Math.round(stats.engagementRate * 100) + '%'
-                  : '0%'
-              }}
+              {{ stats.engagementRate ? Math.min(Math.round(stats.engagementRate * 100), 100) + '%' : '0%' }}
             </p>
           </div>
 
@@ -187,6 +177,42 @@
               </div>
             </template>
             <p v-else class="text-gray-500 italic">{{ $t('stats.topAuthor.noAuthors') }}</p>
+          </div>
+
+          <div
+            v-if="insight"
+            class="col-span-1 sm:col-span-2 p-6 rounded-2xl border shadow-[0_2px_15px_-4px_rgba(0,0,0,0.15)] backdrop-blur-2xl bg-gradient-to-br from-white/70 to-neutral-100/60 dark:from-neutral-900/80 dark:to-neutral-950/70 border-neutral-200/50 dark:border-neutral-800/50 transition-all duration-300"
+          >
+            <div class="flex items-start gap-4">
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 dark:bg-indigo-400/10">
+                <Icon name="mdi:brain" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight">
+                  {{ $t('stats.sentiment.title') }}
+                </p>
+                <p class="text-sm text-neutral-700 dark:text-neutral-300 mt-2 leading-relaxed">
+                  {{ insight.summary }}
+                </p>
+
+                <div class="flex flex-wrap gap-5 mt-5">
+                  <div class="flex items-center gap-1.5 text-xs font-medium text-green-700 dark:text-green-400">
+                    <Icon name="mdi:emoticon-happy-outline" class="w-4 h-4" />
+                    <span>{{ insight.topEmotion }}</span>
+                  </div>
+
+                  <div class="flex items-center gap-1.5 text-xs font-medium text-red-700 dark:text-red-400">
+                    <Icon name="mdi:fire" class="w-4 h-4" />
+                    <span>{{ (insight.toxicity * 100).toFixed(0) }}% toxicity</span>
+                  </div>
+
+                  <div class="flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                    <Icon name="mdi:lightbulb-on-outline" class="w-4 h-4" />
+                    <span>{{ insight.suggestion }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div
@@ -242,7 +268,6 @@ import { directive as vTippy } from 'vue-tippy'
 const open = defineModel<boolean>()
 const { data } = useAuth()
 const { onArticleCreated, onArticleDeleted } = useArticleEvent()
-
 const isBasicPlan = computed(() => data?.value?.user.plan === 'BASIC')
 
 const [
@@ -257,6 +282,7 @@ const [
   { data: engagementRate, pending: engagementRatePending, refresh: refreshEngagementRate },
   { data: topAuthor, pending: topAuthorPending, refresh: refreshTopAuthor },
   { data: shares, pending: sharesPending, refresh: refreshShares },
+  { data: rawInsight, pending: insightPending, refresh: refreshInsight },
 ] = await Promise.all([
   useFetch('/api/stats/views', { lazy: true }),
   useFetch('/api/stats/top-article', { lazy: true }),
@@ -269,6 +295,7 @@ const [
   useFetch('/api/stats/engagement-rate', { lazy: true, immediate: !isBasicPlan.value }),
   useFetch('/api/stats/top-author', { lazy: true }),
   useFetch('/api/stats/shares', { lazy: true, immediate: !isBasicPlan.value }),
+  useFetch('/api/clients/sentiment', { lazy: true, immediate: !isBasicPlan.value }),
 ])
 
 const loading = computed(() =>
@@ -284,19 +311,21 @@ const loading = computed(() =>
     engagementRatePending,
     topAuthorPending,
     sharesPending,
+    insightPending,
   ].some((p) => p.value),
 )
+
+const insight = computed(() => {
+  const v = rawInsight.value
+  if (!v) return null
+  return typeof v === 'string' ? JSON.parse(v) : v
+})
 
 const stats = computed(() => ({
   totalViews: views.value?.totalViews || 0,
   articleCount: articleCount.value?.articleCount || 0,
   totalShares: shares.value?.totalShares || 0,
-  shareDistribution: shares.value?.distribution || {
-    TWITTER: 0,
-    LINKEDIN: 0,
-    EMAIL: 0,
-    OTHER: 0,
-  },
+  shareDistribution: shares.value?.distribution || { TWITTER: 0, LINKEDIN: 0, EMAIL: 0, OTHER: 0 },
   topArticle: topArticle.value,
   topTags: topTags.value || [],
   topLikedArticle: topLiked.value,
@@ -307,11 +336,11 @@ const stats = computed(() => ({
 }))
 
 const chartData = computed(() => ({
-  labels: viewsHistory.value?.map((v: any) => v.date) || ([] as string[]),
+  labels: viewsHistory.value?.map((v: any) => v.date) || [],
   datasets: [
     {
       label: $t('stats.totalViews.title'),
-      data: viewsHistory.value?.map((v: any) => v.views) || ([] as number[]),
+      data: viewsHistory.value?.map((v: any) => v.views) || [],
       backgroundColor: ['#3B82F6', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6'],
       borderColor: '#3b82f6',
       fill: false,
@@ -348,10 +377,10 @@ const refreshAll = () => {
   if (!isBasicPlan.value) refreshEngagementRate()
   refreshTopAuthor()
   if (!isBasicPlan.value) refreshShares()
+  if (!isBasicPlan.value) refreshInsight()
 }
 onMounted(() => {
-  const interval = setInterval(refreshAll, 20000)
-  onBeforeUnmount(() => clearInterval(interval))
+  refreshAll()
 })
 onArticleCreated(refreshAll)
 onArticleDeleted(refreshAll)
@@ -359,14 +388,12 @@ onArticleDeleted(refreshAll)
 
 <style scoped>
 @keyframes gradient-x {
-  0% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
     background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
   }
 }
 .animate-gradient-x {
