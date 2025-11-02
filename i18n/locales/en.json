@@ -421,7 +421,8 @@
         "selectDraftTitle": "Select Draft",
         "selectDraftPlaceholder": "Select a draft",
         "continueDraftPrompt": "Continue editing draft from {0}?",
-        "noDraftsFound": "No drafts found"
+        "noDraftsFound": "No drafts found",
+        "untitled": "Untitled draft #{0}"
       },
       "releaseDateNote": "Used to set the article's publication date and time. Leave empty for manual release.",
       "createSuccess": "Article created successfully",

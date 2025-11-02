@@ -435,7 +435,8 @@
         "selectDraftTitle": "Vybrat koncept",
         "selectDraftPlaceholder": "Vyberte koncept",
         "continueDraftPrompt": "Pokračovat v úpravě konceptu z {0}?",
-        "noDraftsFound": "Žádné koncepty nenalezeny"
+        "noDraftsFound": "Žádné koncepty nenalezeny",
+        "untitled": "Návrh bez názvu #{0}"
       },
       "releaseDateNote": "Slouží k nastavení data a času publikace článku. Nechte prázdné pro manuální vydání.",
       "createSuccess": "Článek úspěšně vytvořen",
