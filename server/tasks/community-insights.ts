@@ -23,7 +23,7 @@ export default defineTask({
 
     const sites = await prisma.clientSite.findMany({
       where: { plan: { in: ['PREMIUM', 'CUSTOM'] } },
-      select: { id: true, name: true, communityInsight: true },
+      select: { id: true, name: true, communityInsight: true, language: true },
     })
 
     const updates = await Promise.all(
@@ -75,22 +75,22 @@ export default defineTask({
         try {
           const { object, usage } = await generateObject({
             model: xai('grok-4-fast-reasoning'),
-            system: `You are a community analyst. Summary must be 250 characters or less. Count every character. Return ONLY valid JSON. No extra text.`,
+            system: `You are a community analyst. Respond in the client's language: ${site.language}. Summary must be 250 characters or less. Count every character. Return ONLY valid JSON. No extra text.`,
             prompt: `
-Client: ${site.name}
-Comments: ${comments.length} (24h)
-Avg score: ${current.avgScore.toFixed(2)}
-Top emotion: ${current.topEmotion || 'N/A'}
-Toxicity: ${current.toxicity.toFixed(2)}
-Helpfulness: ${current.helpfulness.toFixed(2)}
-Sarcasm: ${current.sarcasm.toFixed(2)}
-Top points: ${current.topPoints?.join(' | ') || 'N/A'}
-Trend: ${trend || 'N/A'}
+              Client: ${site.name}
+              Comments: ${comments.length} (24h)
+              Avg score: ${current.avgScore.toFixed(2)}
+              Top emotion: ${current.topEmotion || 'N/A'}
+              Toxicity: ${current.toxicity.toFixed(2)}
+              Helpfulness: ${current.helpfulness.toFixed(2)}
+              Sarcasm: ${current.sarcasm.toFixed(2)}
+              Top points: ${current.topPoints?.join(' | ') || 'N/A'}
+              Trend: ${trend || 'N/A'}
 
-Sample comments:
-${sampleTexts}
+              Sample comments:
+              ${sampleTexts}
 
-Write 1–2 sentence summary (MAX 250 CHARS). Add short suggestion if needed.
+              Write 1–2 sentence summary (MAX 250 CHARS). Add short suggestion if needed.
             `.trim(),
             schema: insightSchema,
             temperature: 0,
