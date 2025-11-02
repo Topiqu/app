@@ -25,7 +25,6 @@ const premiumSchema = z.object({
   point: z.string().max(75).trim(),
 })
 export const detectSentiment = async (text: string, plan: ClientPlan) => {
-  const sanitized = sanitizeHtml(text)
   const schema = plan === 'PREMIUM' ? premiumSchema : basicSchema
 
   const { object, usage } = await generateObject({
@@ -34,7 +33,7 @@ export const detectSentiment = async (text: string, plan: ClientPlan) => {
       plan === 'PREMIUM'
         ? `Analyze sentiment with 5-tier label, emotion breakdown, toxicity, helpfulness, sarcasm. Extract main point in ≤75 chars. Score -1 to 1. Return ONLY valid JSON.`
         : `Analyze sentiment with 3-tier label. Score -1 to 1. Return ONLY valid JSON.`,
-    prompt: sanitized.slice(0, 1000),
+    prompt: text.slice(0, 1000),
     schema,
     temperature: 0,
   })
