@@ -3,6 +3,7 @@
     <template v-if="editor">
       <div v-if="edit" class="flex items-center flex-wrap gap-x-2 gap-y-1">
         <FileInput :uploadImage="uploadImage" @close="onFileInputClose" />
+        <Button title="Image URL" icon="mdi:image-plus" @click="addImageFromUrl" />
         <Button
           title="Paragraph"
           icon="mdi-format-paragraph"
@@ -71,6 +72,60 @@
         />
         <Button title="Insert YouTube Video" icon="mdi-youtube" @click="insertYoutube" />
         <Button title="Insert Poll" icon="mdi-poll" @click="insertPoll" />
+        <Button
+          title="Insert Table"
+          icon="mdi-table"
+          :disabled="!editor.can().insertTable()"
+          @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()"
+        />
+        <Button
+          title="Add Column After"
+          icon="mdi-table-column-plus-after"
+          :disabled="!editor.can().addColumnAfter()"
+          @click="editor.chain().focus().addColumnAfter().run()"
+        />
+        <Button
+          title="Delete Column"
+          icon="mdi-table-column-remove"
+          :disabled="!editor.can().deleteColumn()"
+          @click="editor.chain().focus().deleteColumn().run()"
+        />
+        <Button
+          title="Add Row After"
+          icon="mdi-table-row-plus-after"
+          :disabled="!editor.can().addRowAfter()"
+          @click="editor.chain().focus().addRowAfter().run()"
+        />
+        <Button
+          title="Delete Row"
+          icon="mdi-table-row-remove"
+          :disabled="!editor.can().deleteRow()"
+          @click="editor.chain().focus().deleteRow().run()"
+        />
+        <Button
+          title="Delete Table"
+          icon="mdi-table-remove"
+          :disabled="!editor.can().deleteTable()"
+          @click="editor.chain().focus().deleteTable().run()"
+        />
+        <Button
+          title="Merge Cells"
+          icon="mdi-table-merge-cells"
+          :disabled="!editor.can().mergeCells()"
+          @click="editor.chain().focus().mergeCells().run()"
+        />
+        <Button
+          title="Split Cell"
+          icon="mdi-table-split-cell"
+          :disabled="!editor.can().splitCell()"
+          @click="editor.chain().focus().splitCell().run()"
+        />
+        <Button
+          title="Toggle Header Row"
+          icon="mdi-table-row-height"
+          :disabled="!editor.can().toggleHeaderRow()"
+          @click="editor.chain().focus().toggleHeaderRow().run()"
+        />
         <Button
           title="Align Left"
           icon="mdi-format-align-left"
@@ -172,30 +227,30 @@
           class="flex flex-row items-center flex-nowrap whitespace-nowrap bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-full bg-opacity-95 backdrop-blur-md space-x-3"
         >
           <Button
-            icon="mdi:format-bold"
+            icon="mdi-format-bold"
             title="Bold"
             :active="editor.isActive('bold')"
             @click="editor.chain().focus().toggleBold().run()"
           />
           <Button
-            icon="mdi:format-italic"
+            icon="mdi-format-italic"
             title="Italic"
             :active="editor.isActive('italic')"
             @click="editor.chain().focus().toggleItalic().run()"
           />
           <Button
-            icon="mdi:format-underline"
+            icon="mdi-format-underline"
             title="Underline"
             :active="editor.isActive('underline')"
             @click="editor.chain().focus().toggleUnderline().run()"
           />
           <Button
-            icon="mdi:format-strikethrough"
+            icon="mdi-format-strikethrough"
             title="Strike"
             :active="editor.isActive('strike')"
             @click="editor.chain().focus().toggleStrike().run()"
           />
-          <Button icon="mdi:link" title="Insert Link" :active="editor.isActive('link')" @click="setLink" />
+          <Button icon="mdi-link" title="Insert Link" :active="editor.isActive('link')" @click="setLink" />
         </div>
       </BubbleMenu>
       <EditorContent
@@ -228,12 +283,30 @@ import { Blockquote } from '@tiptap/extension-blockquote'
 import { FontFamily } from '@tiptap/extension-font-family'
 import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import { CharacterCount } from '@tiptap/extension-character-count'
+import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
+import { Dropcursor } from '@tiptap/extension-dropcursor'
 
 import Poll from '../../extensions/poll'
 
 const CustomBlockquote = Blockquote.extend({
   renderHTML({ HTMLAttributes }) {
     return ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0]
+  },
+})
+
+const CustomTableCell = TableCell.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      backgroundColor: {
+        default: null,
+        parseHTML: (el) => el.getAttribute('data-background-color'),
+        renderHTML: (attrs) => ({
+          'data-background-color': attrs.backgroundColor,
+          style: attrs.backgroundColor ? `background-color: ${attrs.backgroundColor}` : '',
+        }),
+      },
+    }
   },
 })
 
@@ -266,21 +339,21 @@ const percentage = computed(() => Math.round((100 / limit) * (editor.value?.stor
 const uploadImage = async (files: FileList | null) => {
   const file = files?.item(0)
   if (!file) return
-
   const formData = new FormData()
   formData.append('file', file)
-
   try {
     const res = await fetch('/api/upload', { method: 'POST', body: formData })
-
     const { url, error } = await res.json()
-
     if (error) return alert(error)
-
     editor.value?.commands.setImage({ src: url, alt: file.name })
   } catch (err) {
     alert('Chyba při nahrávání obrázku: ' + (err as Error).message)
   }
+}
+
+const addImageFromUrl = () => {
+  const url = window.prompt('URL:')
+  if (url) editor.value?.chain().focus().setImage({ src: url }).run()
 }
 
 const onFileInputClose = () => editor.value?.chain().focus().run()
@@ -291,7 +364,6 @@ const handleEditorClick = () => {
 }
 
 const setBlockquote = () => editor.value?.chain().focus().setParagraph().setBlockquote().run()
-
 const unsetBlockquote = () => editor.value?.chain().focus().unsetBlockquote().run()
 
 const insertYoutube = () => {
@@ -323,41 +395,36 @@ const setLink = () => {
 
 const setColor = (e: Event) => {
   const target = e.target as HTMLInputElement
-  if (target && editor.value) {
+  if (target && editor.value)
     editor.value
       .chain()
       .focus()
       .setColor(target.value || '#000000')
       .run()
-  }
 }
 
 const setFontFamily = (e: Event) => {
   const target = e.target as HTMLSelectElement
-  if (target && editor.value) {
-    const value = target.value
+  if (target && editor.value)
     editor.value
       .chain()
       .focus()
-      .setFontFamily(value || '')
+      .setFontFamily(target.value || '')
       .run()
-  }
 }
 
 const validateContent = (html: string) => {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
   let modified = false
-
   doc.querySelectorAll('div[data-type="poll"]').forEach((poll) => {
     const rawQuestion = poll.getAttribute('data-question') ?? ''
     const normalizedQuestion = String(rawQuestion).trim() || $t('articles.poll.defaultQuestion')
     if (normalizedQuestion !== rawQuestion) modified = true
 
-    const rawOptions = poll.getAttribute('data-options')
     let parsed: unknown
     try {
-      parsed = rawOptions ? JSON.parse(rawOptions) : []
+      parsed = poll.getAttribute('data-options') ? JSON.parse(poll.getAttribute('data-options')!) : []
     } catch {
       parsed = []
       modified = true
@@ -367,10 +434,7 @@ const validateContent = (html: string) => {
     const before = JSON.stringify(options)
     options =
       options.length > 0
-        ? options.map((opt) => {
-            const s = String(opt ?? '').trim()
-            return s || $t('articles.poll.defaultOption')
-          })
+        ? options.map((opt) => String(opt ?? '').trim() || $t('articles.poll.defaultOption'))
         : [$t('articles.poll.defaultOption')]
     const after = JSON.stringify(options)
     if (after !== before) modified = true
@@ -378,34 +442,21 @@ const validateContent = (html: string) => {
     poll.setAttribute('data-question', normalizedQuestion)
     poll.setAttribute('data-options', after)
   })
-
   return modified ? doc.body.innerHTML : html
 }
 
 const editor = useEditor({
   content: content.value,
   extensions: [
-    StarterKit.configure({
-      blockquote: false,
-    }),
-    CustomBlockquote.configure({
-      HTMLAttributes: { class: 'blockquote' },
-    }),
-    Image.configure({
-      inline: true,
-      HTMLAttributes: { class: 'max-w-full h-auto rounded' },
-    }),
+    StarterKit.configure({ blockquote: false }),
+    CustomBlockquote.configure({ HTMLAttributes: { class: 'blockquote' } }),
+    Image.configure({ inline: true, HTMLAttributes: { class: 'max-w-full h-auto rounded' } }),
+    Dropcursor,
     Underline,
-    TextAlign.configure({
-      types: ['heading', 'paragraph'],
-    }),
+    TextAlign.configure({ types: ['heading', 'paragraph'] }),
     Typography,
     CharacterCount.configure({ limit }),
-    Link.configure({
-      openOnClick: false,
-      defaultProtocol: 'https',
-      HTMLAttributes: { class: 'link' },
-    }),
+    Link.configure({ openOnClick: false, defaultProtocol: 'https', HTMLAttributes: { class: 'link' } }),
     Youtube.configure({
       HTMLAttributes: { class: 'youtube-video' },
       inline: false,
@@ -413,14 +464,16 @@ const editor = useEditor({
       ccLanguage: 'cs',
     }),
     Poll,
+    Table.configure({ resizable: true }),
+    TableRow,
+    TableHeader,
+    CustomTableCell,
     BubbleMenuExtension.configure({
-      shouldShow: ({ editor }) => {
-        return (
-          editor.isActive('text') &&
-          !editor.isActive('image') &&
-          !editor.isActive('youtube') &&
-          !editor.isActive('poll')
-        )
+      shouldShow: ({ editor, state }) => {
+        const { from, to } = state.selection
+        const isTextSelected = from !== to
+        const isInTable = editor.isActive('tableCell') || editor.isActive('tableHeader')
+        return isTextSelected && !isInTable
       },
     }),
     TextStyle,
@@ -435,9 +488,7 @@ const editor = useEditor({
 })
 
 watch(content, (newValue) => {
-  if (editor.value && editor.value.getHTML() !== newValue) {
-    editor.value.commands.setContent(newValue)
-  }
+  if (editor.value && editor.value.getHTML() !== newValue) editor.value.commands.setContent(newValue)
 })
 
 watchEffect(() => editor.value?.setEditable(edit))
@@ -445,7 +496,7 @@ watchEffect(() => editor.value?.setEditable(edit))
 onBeforeUnmount(() => editor.value?.destroy())
 </script>
 
-<style>
+<style scoped>
 div.tiptap.ProseMirror {
   width: 100%;
   height: 100%;
@@ -535,5 +586,18 @@ html.dark .ProseMirror .poll-node button {
 .color-swatch::-moz-color-swatch {
   border: none;
   border-radius: 9999px;
+}
+:deep(.ProseMirror .column-resize-handle) {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background: #3b82f6;
+  pointer-events: none;
+  z-index: 3;
+}
+:deep(.ProseMirror.resize-cursor) {
+  cursor: col-resize !important;
 }
 </style>
