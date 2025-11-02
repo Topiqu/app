@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="open" :title="$t('articles.addArticle')" :onClose="confirmClose">
+  <Modal v-model="open" :title="$t('articles.addArticle')" class="max-w-2xl" :onClose="confirmClose">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>

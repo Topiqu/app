@@ -25,7 +25,10 @@
           leaveTo="opacity-0 translate-y-10"
         >
           <DialogPanel
-            class="h-11/12 w-full max-w-xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col gap-6 overflow-y-auto border border-gray-200/70"
+            :class="[
+              'h-11/12 w-full bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col gap-6 overflow-y-auto border border-gray-200/70',
+              $attrs.class || 'max-w-xl',
+            ]"
           >
             <div class="flex justify-between items-center gap-4">
               <slot name="header" v-bind="actions">
