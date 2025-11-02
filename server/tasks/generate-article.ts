@@ -52,7 +52,6 @@ export default defineTask({
           action: 'GENERATE_ARTICLE',
           clientSiteId: client.id,
           metadata: { ...generated, usage },
-          userId: 'system',
         })
 
         await prisma.clientSite.update({
