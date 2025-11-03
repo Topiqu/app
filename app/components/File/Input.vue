@@ -1,5 +1,5 @@
 <template>
-  <Button icon="mdi-image-plus" @click="open({ accept: 'image/*' })" />
+  <Button icon="mdi-file-image" @click="open({ accept: 'image/*' })" />
 </template>
 
 <script lang="ts" setup>
