@@ -4,7 +4,7 @@
     <Sidebar v-if="auth && isAdmin" v-model:isOpen="isSidebarOpen" />
     <slot />
     <ButtonBackToTop />
-    <ClientVersion v-if="isAdmin" :userId="auth?.user.id!" />
+    <ClientVersion v-if="isAdmin" />
     <template v-if="!theme.isDark">
       <div
         v-for="(obj, index) in floatingObjects"
