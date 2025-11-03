@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const { usage, ...article } = await generateArticle(user.clientSiteId, prompt)
 
   await prisma.clientSite.update({
-    data: { tokenRemaining: { decrement: usage.totalTokens } },
+    data: { tokenRemaining: { decrement: usage.totalTokens }, totalUsage: { increment: usage.totalTokens } },
     where: { id: user.clientSiteId },
   })
 
