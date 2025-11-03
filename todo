@@ -1,68 +1,53 @@
 always:
-
-- 🛑 keep misc style/ui clean
-- 🛑 keep code optimised
-- 🛑 test out before marking done
-
+  - 🛑 keep misc style/ui clean
+  - 🛑 keep code optimised
+  - 🛑 test out before marking done
 ---
-
 now:
-
-- 🛑 notifications should also be localised
-- 🛑 GAM + total ad revenue overview & logging
-- 🟡 fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions)
-- 🟢 replace sweetalert modals with custom ModalMini component
-
+  - 🛑 notifications should also be localised
+  - 🛑 GAM + total ad revenue overview & logging
+  - 🟡 fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions)
+  - 🟢 replace sweetalert modals with custom ModalMini component
 ---
-
 test:
-
-- 🛑 google ads
-- 🛑 google analytics
-- 🛑 production fix email template json not loadings
-- 🛑 ai cron jobs for article writing and its notifications
-- 🟢 centralised ArticleModal component (for ArticleCreate/Edit)
-- 🟢 remake ArticleModal Drafts with ModalMini
-
+  - 🛑 google ads
+  - 🛑 google analytics
+  - 🛑 production fix email template json not loadings
+  - 🛑 ai cron jobs for article writing and its notifications
+  - 🟢 centralised ArticleModal component (for ArticleCreate/Edit)
+  - 🟢 remake ArticleModal Drafts with ModalMini
 ---
-
 optional:
-
-- further clientsite customization
-  - 🟡 fonts
-  - 🟡 background shapes/patterns
-  - 🛑 more color variety
-- 🟡 HP/index page should get a UI rework and move from MVP to actual production ready page
-- 🟢 favorite button for articles (bookmark/save)
-
+  - further clientsite customization
+    - 🟡 fonts
+    - 🟡 background shapes/patterns
+    - 🛑 more color variety
+  - 🟡 HP/index page should get a UI rework and move from MVP to actual production ready page
+  - 🟢 favorite button for articles (bookmark/save)
+  - 🟢 tiptap for comments
 ---
-
 future:
-
-- 🛑 zapier integration
-- 🟢 bullmq / railway / queue up cron jobs
-- 🟢 better gamification - badges, levels, site activity points
-- 🟡 automate onboarding flow : wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details
-- 🔰 (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))...
-- 🔰 ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function
-- 🔰 multi agent writing (seo analyzer, copywriter, reviewer) with tools (debate, vote, merge, post)
-
+  - 🛑 zapier integration
+  - 🟢 bullmq / railway / queue up cron jobs
+  - 🟢 better gamification - badges, levels, site activity points
+  - 🟡 automate onboarding flow: wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details
+  - 🔰 (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))...
+  - 🔰 multi agent writing (seo analyzer, copywriter, reviewer) with tools (debate, vote, merge, post)
 ---
-
 done:
-
-- 🛑 cliensite language column
-- 🛑 cliensite customization (themes)
-- 🛑 add sessionId for oauth providers in nuxt auth callback
-- 🟡 account health - sessions, password strength, 2fa, amount of bans, verified email...
-- 🟢 fix header z-index
-- 🟢 fix background floating objects z-index
-- 🟢 user page - enhance/improve styling & ui for hero section
-- 🟢 lang switcher -> improve styles
-- 🟡 create dropdown menu component w groups
-- 🟡 encapsulate article exports
-- 🛑 useClientSite composable - return language/cliensite details based on host header
-- 🛑 all clientsite endpoints should use host header instead of clientsite slug/route params
-- 🟢 rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one
-- 🛑 implement missing email templates
-- 🛑 nuxt-gtag
+  - 🛑 cliensite language column
+  - 🛑 cliensite customization (themes)
+  - 🛑 add sessionId for oauth providers in nuxt auth callback
+  - 🔰 ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function
+  - 🟡 account health - sessions, password strength, 2fa, amount of bans, verified email...
+  - 🟢 fix header z-index
+  - 🟢 fix background floating objects z-index
+  - 🟢 user page - enhance/improve styling & ui for hero section
+  - 🟢 lang switcher -> improve styles
+  - 🟡 create dropdown menu component w groups
+  - 🟡 encapsulate article exports
+  - 🛑 useClientSite composable - return language/cliensite details based on host header
+  - 🛑 all clientsite endpoints should use host header instead of clientsite slug/route params
+  - 🟢 rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one
+  - 🛑 implement missing email templates
+  - 🛑 nuxt-gtag
