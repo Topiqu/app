@@ -23,7 +23,7 @@ export default defineTask({
 
     const sites = await prisma.clientSite.findMany({
       where: { plan: { in: ['PREMIUM', 'CUSTOM'] } },
-      select: { id: true, name: true, communityInsight: true, language: true },
+      select: { id: true, name: true, communityInsight: true, language: true, focus: true, audience: true },
     })
 
     const updates = await Promise.all(
@@ -90,7 +90,7 @@ export default defineTask({
               Sample comments:
               ${sampleTexts}
 
-              Write 1–2 sentence summary (MAX 250 CHARS). Add short suggestion if needed.
+              Write 1–2 sentence summary (MAX 250 CHARS). Add short suggestion if needed, relevant to client's focus and audience: ${site.focus}, ${site.audience}.
             `.trim(),
             schema: insightSchema,
             temperature: 0,
@@ -188,7 +188,7 @@ function calculateAverages(sentiments: any[]) {
 
   const topPoints = Array.from(pointCount.entries())
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
+    .slice(0, 15)
     .map(([point]) => point)
 
   return { avgScore, topEmotion, toxicity, helpfulness, sarcasm, topPoints }
