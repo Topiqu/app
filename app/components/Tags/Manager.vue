@@ -73,14 +73,14 @@ const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
 })
 
 const { data: tags, refresh } = await useFetch('/api/tags', { default: () => [] })
-const newTag = ref<{ name: string; slug: string }>({ name: '', slug: '' })
-const selectedTagId = ref('')
-const tagBuffer = ref<Tag[]>(
+let newTag = shallowReactive<{ name: string; slug: string }>({ name: '', slug: '' })
+const selectedTagId = shallowRef('')
+let tagBuffer = shallowReactive<Tag[]>(
   props.article?.id && artTags.value?.length ? [...artTags.value.map((t) => ({ id: t.tagId, name: t.tag.name }))] : [],
 )
 
 const updateSlug = () => {
-  newTag.value.slug = slugify(newTag.value.name, {
+  newTag.slug = slugify(newTag.name, {
     lower: true,
     strict: true,
     trim: true,
@@ -90,30 +90,30 @@ const updateSlug = () => {
 const addTagToBuffer = () => {
   if (!selectedTagId.value) return
   const tag = tags.value.find((t: Tag) => t.id === selectedTagId.value)
-  if (tag && !tagBuffer.value.some((t: Tag) => t.id === tag.id)) {
-    tagBuffer.value.push({ id: tag.id, name: tag.name })
+  if (tag && !tagBuffer.some((t: Tag) => t.id === tag.id)) {
+    tagBuffer.push({ id: tag.id, name: tag.name })
     emit(
       'update:tags',
-      tagBuffer.value.map((t) => t.id),
+      tagBuffer.map((t) => t.id),
     )
   }
   selectedTagId.value = ''
 }
 
 const createAndAddTag = async () => {
-  if (!newTag.value.name) return
+  if (!newTag.name) return
   updateSlug()
   try {
     const { id, name } = await $fetch('/api/tags', {
       method: 'POST',
-      body: { name: newTag.value.name, slug: newTag.value.slug },
+      body: { name: newTag.name, slug: newTag.slug },
     })
-    tagBuffer.value.push({ id, name })
+    tagBuffer.push({ id, name })
     emit(
       'update:tags',
-      tagBuffer.value.map((t) => t.id),
+      tagBuffer.map((t) => t.id),
     )
-    newTag.value = { name: '', slug: '' }
+    newTag = { name: '', slug: '' }
     await refresh()
   } catch (e: any) {
     toast.error({ message: $t('articles.tags.createFailed') + e.data?.message })
@@ -121,13 +121,13 @@ const createAndAddTag = async () => {
 }
 
 const removeTagFromBuffer = (id: string) => {
-  tagBuffer.value = tagBuffer.value.filter((t: Tag) => t.id !== id)
+  tagBuffer = tagBuffer.filter((t: Tag) => t.id !== id)
   if (props.article?.id) {
     emit('delete:tag', id)
   } else {
     emit(
       'update:tags',
-      tagBuffer.value.map((t) => t.id),
+      tagBuffer.map((t) => t.id),
     )
   }
 }
