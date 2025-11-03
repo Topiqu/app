@@ -186,7 +186,7 @@ export default defineTask({
         language: true,
         generationFrequency: true,
         lastGeneratedAt: true,
-        users: { select: { id: true }, orderBy: { role: 'asc' }, take: 1 },
+        users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
       },
       where: {
         tokenRemaining: { gt: 7000 },
@@ -195,11 +195,11 @@ export default defineTask({
           { lastGeneratedAt: null },
           {
             generationFrequency: 'DAILY',
-            lastGeneratedAt: { lt: new Date(now - 24 * 60 * 60 * 1000) },
+            lastGeneratedAt: { lte: new Date(now - 24 * 60 * 60 * 1000) },
           },
           {
             generationFrequency: 'WEEKLY',
-            lastGeneratedAt: { lt: new Date(now - 7 * 24 * 60 * 60 * 1000) },
+            lastGeneratedAt: { lte: new Date(now - 7 * 24 * 60 * 60 * 1000) },
           },
         ],
       },
