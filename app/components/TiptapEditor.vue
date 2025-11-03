@@ -1,171 +1,48 @@
 <template>
   <div class="flex flex-col gap-2">
     <template v-if="editor">
-      <div v-if="edit" class="flex items-center flex-wrap gap-x-2 gap-y-1">
+      <div v-if="edit" class="flex flex-wrap items-center gap-1">
         <FileInput :uploadImage="uploadImage" @close="onFileInputClose" />
-        <Button title="Image URL" icon="mdi:image-plus" @click="addImageFromUrl" />
+        <Button title="URL" icon="mdi:image-plus" @click="addImageFromUrl" />
         <Button
-          title="Paragraph"
           icon="mdi-format-paragraph"
           :active="editor.isActive('paragraph')"
           @click="editor.chain().focus().setParagraph().run()"
         />
         <Button
-          title="Heading 1"
-          icon="mdi-format-header-1"
-          :active="editor.isActive('heading', { level: 1 })"
-          @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+          v-for="n in 6"
+          :key="n"
+          :icon="`mdi-format-header-${n}`"
+          :active="editor.isActive('heading', { level: n })"
+          @click="editor.chain().focus().toggleHeading({ level: n }).run()"
         />
         <Button
-          title="Heading 2"
-          icon="mdi-format-header-2"
-          :active="editor.isActive('heading', { level: 2 })"
-          @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        />
-        <Button
-          title="Heading 3"
-          icon="mdi-format-header-3"
-          :active="editor.isActive('heading', { level: 3 })"
-          @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-        />
-        <Button
-          title="Heading 4"
-          icon="mdi-format-header-4"
-          :active="editor.isActive('heading', { level: 4 })"
-          @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
-        />
-        <Button
-          title="Heading 5"
-          icon="mdi-format-header-5"
-          :active="editor.isActive('heading', { level: 5 })"
-          @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
-        />
-        <Button
-          title="Heading 6"
-          icon="mdi-format-header-6"
-          :active="editor.isActive('heading', { level: 6 })"
-          @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
-        />
-        <Button
-          title="Bullet List"
           icon="mdi-format-list-bulleted"
           :active="editor.isActive('bulletList')"
           @click="editor.chain().focus().toggleBulletList().run()"
         />
         <Button
-          title="Ordered List"
           icon="mdi-format-list-numbered"
           :active="editor.isActive('orderedList')"
           @click="editor.chain().focus().toggleOrderedList().run()"
         />
+        <Button icon="mdi-format-quote-open" :disabled="!editor.can().setBlockquote()" @click="setBlockquote" />
+        <Button icon="mdi-format-quote-close" :disabled="!editor.can().unsetBlockquote()" @click="unsetBlockquote" />
+        <Button icon="mdi-youtube" @click="insertYoutube" />
+        <Button icon="mdi-poll" @click="insertPoll" />
         <Button
-          title="Set Blockquote"
-          icon="mdi-format-quote-open"
-          :disabled="!editor.can().setBlockquote()"
-          @click="setBlockquote"
+          v-for="a in ['left', 'center', 'right', 'justify']"
+          :key="a"
+          :icon="`mdi-format-align-${a}`"
+          :active="editor.isActive({ textAlign: a })"
+          @click="editor.chain().focus().setTextAlign(a).run()"
         />
-        <Button
-          title="Unset Blockquote"
-          icon="mdi-format-quote-close"
-          :disabled="!editor.can().unsetBlockquote()"
-          @click="unsetBlockquote"
-        />
-        <Button title="Insert YouTube Video" icon="mdi-youtube" @click="insertYoutube" />
-        <Button title="Insert Poll" icon="mdi-poll" @click="insertPoll" />
-        <Button
-          title="Insert Table"
-          icon="mdi-table"
-          :disabled="!editor.can().insertTable()"
-          @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()"
-        />
-        <Button
-          title="Add Column After"
-          icon="mdi-table-column-plus-after"
-          :disabled="!editor.can().addColumnAfter()"
-          @click="editor.chain().focus().addColumnAfter().run()"
-        />
-        <Button
-          title="Delete Column"
-          icon="mdi-table-column-remove"
-          :disabled="!editor.can().deleteColumn()"
-          @click="editor.chain().focus().deleteColumn().run()"
-        />
-        <Button
-          title="Add Row After"
-          icon="mdi-table-row-plus-after"
-          :disabled="!editor.can().addRowAfter()"
-          @click="editor.chain().focus().addRowAfter().run()"
-        />
-        <Button
-          title="Delete Row"
-          icon="mdi-table-row-remove"
-          :disabled="!editor.can().deleteRow()"
-          @click="editor.chain().focus().deleteRow().run()"
-        />
-        <Button
-          title="Delete Table"
-          icon="mdi-table-remove"
-          :disabled="!editor.can().deleteTable()"
-          @click="editor.chain().focus().deleteTable().run()"
-        />
-        <Button
-          title="Merge Cells"
-          icon="mdi-table-merge-cells"
-          :disabled="!editor.can().mergeCells()"
-          @click="editor.chain().focus().mergeCells().run()"
-        />
-        <Button
-          title="Split Cell"
-          icon="mdi-table-split-cell"
-          :disabled="!editor.can().splitCell()"
-          @click="editor.chain().focus().splitCell().run()"
-        />
-        <Button
-          title="Toggle Header Row"
-          icon="mdi-table-row-height"
-          :disabled="!editor.can().toggleHeaderRow()"
-          @click="editor.chain().focus().toggleHeaderRow().run()"
-        />
-        <Button
-          title="Align Left"
-          icon="mdi-format-align-left"
-          :active="editor.isActive({ textAlign: 'left' })"
-          @click="editor.chain().focus().setTextAlign('left').run()"
-        />
-        <Button
-          title="Align Center"
-          icon="mdi-format-align-center"
-          :active="editor.isActive({ textAlign: 'center' })"
-          @click="editor.chain().focus().setTextAlign('center').run()"
-        />
-        <Button
-          title="Align Right"
-          icon="mdi-format-align-right"
-          :active="editor.isActive({ textAlign: 'right' })"
-          @click="editor.chain().focus().setTextAlign('right').run()"
-        />
-        <Button
-          title="Align Justify"
-          icon="mdi-format-align-justify"
-          :active="editor.isActive({ textAlign: 'justify' })"
-          @click="editor.chain().focus().setTextAlign('justify').run()"
-        />
-        <Button title="Horizontal Rule" icon="mdi-minus" @click="editor.chain().focus().setHorizontalRule().run()" />
-        <Button
-          title="Undo"
-          icon="mdi-undo"
-          :disabled="!editor.can().chain().focus().undo().run()"
-          @click="editor.chain().focus().undo().run()"
-        />
-        <Button
-          title="Redo"
-          icon="mdi-redo"
-          :disabled="!editor.can().chain().focus().redo().run()"
-          @click="editor.chain().focus().redo().run()"
-        />
-        <Button title="Clear Nodes" icon="mdi-format-clear" @click="editor.chain().focus().clearNodes().run()" />
+        <Button icon="mdi-minus" @click="editor.chain().focus().setHorizontalRule().run()" />
+        <Button icon="mdi-undo" :disabled="!editor.can().undo()" @click="editor.chain().focus().undo().run()" />
+        <Button icon="mdi-redo" :disabled="!editor.can().redo()" @click="editor.chain().focus().redo().run()" />
+        <Button icon="mdi-format-clear" @click="editor.chain().focus().clearNodes().run()" />
         <select
-          class="h-9 px-3 rounded-full border border-gray-300 bg-white text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          class="h-9 px-3 rounded-full border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           @mousedown.stop
           @click.stop
           @change="setFontFamily"
@@ -177,25 +54,25 @@
           <option value="Georgia">Georgia</option>
           <option value="Times New Roman">Times New Roman</option>
         </select>
-        <div class="relative w-9 h-9 inline-flex items-center justify-center flex-shrink-0">
+        <div class="relative w-9 h-9">
           <span
             class="absolute inset-0 rounded-full border border-gray-300"
-            :style="{ backgroundColor: editor.getAttributes('textStyle').color || '#000000' }"
+            :style="{ backgroundColor: editor.getAttributes('textStyle').color || '#000' }"
           />
           <input
             type="color"
             class="absolute inset-0 opacity-0 cursor-pointer"
-            :value="editor.getAttributes('textStyle').color || '#000000'"
+            :value="editor.getAttributes('textStyle').color || '#000'"
             @mousedown.stop
             @click.stop
             @input="setColor"
           />
         </div>
         <div
-          :class="{
-            'flex items-center text-green-500 text-xs gap-2 ml-auto': true,
-            'text-red-500': editor.storage.characterCount.characters() === limit,
-          }"
+          :class="[
+            'ml-auto text-xs flex items-center gap-2',
+            editor.storage.characterCount.characters() === limit ? 'text-red-500' : 'text-green-500',
+          ]"
         >
           <svg height="40" width="40" viewBox="0 0 40 40">
             <circle r="15" cx="20" cy="20" fill="#e9ecef" />
@@ -206,14 +83,13 @@
               fill="transparent"
               stroke="currentColor"
               stroke-width="20"
-              :stroke-dasharray="`calc(${percentage} * 31.4 / 100) 31.4`"
+              :stroke-dasharray="`${percentage * 0.314} 31.4`"
               transform="rotate(-90) translate(-40)"
             />
             <circle r="6" cx="20" cy="20" fill="white" />
           </svg>
           <span>
-            {{ editor.storage.characterCount.characters() }} / {{ limit }} characters
-            <br />
+            {{ editor.storage.characterCount.characters() }} / {{ limit }}<br />
             {{ editor.storage.characterCount.words() }} words
           </span>
         </div>
@@ -224,45 +100,38 @@
         :options="{ placement: 'top', size: { padding: { top: 8, right: 12, bottom: 8, left: 12 } } }"
       >
         <div
-          class="flex flex-row items-center flex-nowrap whitespace-nowrap bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-full bg-opacity-95 backdrop-blur-md space-x-3"
+          class="flex items-center gap-3 bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-full bg-opacity-95 backdrop-blur-md"
         >
           <Button
             icon="mdi-format-bold"
-            title="Bold"
             :active="editor.isActive('bold')"
             @click="editor.chain().focus().toggleBold().run()"
           />
           <Button
             icon="mdi-format-italic"
-            title="Italic"
             :active="editor.isActive('italic')"
             @click="editor.chain().focus().toggleItalic().run()"
           />
           <Button
             icon="mdi-format-underline"
-            title="Underline"
             :active="editor.isActive('underline')"
             @click="editor.chain().focus().toggleUnderline().run()"
           />
           <Button
             icon="mdi-format-strikethrough"
-            title="Strike"
             :active="editor.isActive('strike')"
             @click="editor.chain().focus().toggleStrike().run()"
           />
-          <Button icon="mdi-link" title="Insert Link" :active="editor.isActive('link')" @click="setLink" />
+          <Button icon="mdi-link" :active="editor.isActive('link')" @click="setLink" />
         </div>
       </BubbleMenu>
       <EditorContent
         :editor="editor"
-        :class="{
-          'rounded-lg shadow-sm': edit,
-          'h-96 p-4 bg-white border border-gray-300 overflow-y-auto': true,
-        }"
+        :class="{ 'rounded-lg shadow-sm': edit, 'h-96 p-4 bg-white border border-gray-300 overflow-y-auto': true }"
         @click.stop.prevent="handleEditorClick"
       />
     </template>
-    <div v-else class="text-black" v-html="content ? content : fallback" />
+    <div v-else v-html="content || fallback" />
   </div>
 </template>
 
@@ -283,7 +152,6 @@ import { Blockquote } from '@tiptap/extension-blockquote'
 import { FontFamily } from '@tiptap/extension-font-family'
 import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import { CharacterCount } from '@tiptap/extension-character-count'
-import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
 import { Dropcursor } from '@tiptap/extension-dropcursor'
 
 import Poll from '../../extensions/poll'
@@ -291,22 +159,6 @@ import Poll from '../../extensions/poll'
 const CustomBlockquote = Blockquote.extend({
   renderHTML({ HTMLAttributes }) {
     return ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0]
-  },
-})
-
-const CustomTableCell = TableCell.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      backgroundColor: {
-        default: null,
-        parseHTML: (el) => el.getAttribute('data-background-color'),
-        renderHTML: (attrs) => ({
-          'data-background-color': attrs.backgroundColor,
-          style: attrs.backgroundColor ? `background-color: ${attrs.backgroundColor}` : '',
-        }),
-      },
-    }
   },
 })
 
@@ -464,10 +316,6 @@ const editor = useEditor({
       ccLanguage: 'cs',
     }),
     Poll,
-    Table.configure({ resizable: true }),
-    TableRow,
-    TableHeader,
-    CustomTableCell,
     BubbleMenuExtension.configure({
       shouldShow: ({ editor, state }) => {
         const { from, to } = state.selection
@@ -586,18 +434,5 @@ html.dark .ProseMirror .poll-node button {
 .color-swatch::-moz-color-swatch {
   border: none;
   border-radius: 9999px;
-}
-:deep(.ProseMirror .column-resize-handle) {
-  position: absolute;
-  right: -2px;
-  top: 0;
-  bottom: -2px;
-  width: 4px;
-  background: #3b82f6;
-  pointer-events: none;
-  z-index: 3;
-}
-:deep(.ProseMirror.resize-cursor) {
-  cursor: col-resize !important;
 }
 </style>

@@ -551,18 +551,9 @@ onMounted(() => {
   opacity: 0;
   transform: translateY(-4px);
 }
-
 .prose p:empty::before {
   content: '\200B';
   display: inline-block;
-}
-.vue-easy-lightbox {
-  z-index: 1000;
-}
-.vue-easy-lightbox img {
-  max-height: 90vh;
-  max-width: 90vw;
-  object-fit: contain;
 }
 .prose p img {
   padding-top: 12px;
