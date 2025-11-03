@@ -290,6 +290,8 @@ model ClientSite {
   generationFrequency GenerationFrequency @default(NONE)
   tokenLimit          Int?                @default(0)
   tokenRemaining      Int?                @default(0)
+  totalUsage          Int?                @default(0)
+  autoRelease         Boolean             @default(false)
   keywords            Json?
   audience            String?
   lastGeneratedAt     DateTime?
