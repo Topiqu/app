@@ -203,7 +203,6 @@ const editedArticle = ref(
     ? {
         ...props.article,
         sources: props.article.sources || [],
-        excerpt: props.article.excerpt || '',
         releaseAt: props.article.releaseAt ? new Date(props.article.releaseAt) : null,
       }
     : init(),
@@ -261,11 +260,7 @@ const saveDraft = useDebounceFn(async () => {
   try {
     await $fetch('/api/articles/draft', {
       method: 'POST',
-      body: {
-        title: editedArticle.value.title,
-        excerpt: editedArticle.value.excerpt || undefined,
-        content: editedArticle.value.content || undefined,
-      },
+      body: { ...editedArticle.value },
     })
     successMessage.value = $t('common.messages.draftSaved')
     await refresh()
@@ -276,7 +271,12 @@ const saveDraft = useDebounceFn(async () => {
 }, 8000)
 
 watch(
-  [() => editedArticle.value.title, () => editedArticle.value.excerpt, () => editedArticle.value.content],
+  [
+    () => editedArticle.value.title,
+    () => editedArticle.value.excerpt,
+    () => editedArticle.value.content,
+    () => editedArticle.value.imageUrl,
+  ],
   saveDraft,
 )
 watch(
