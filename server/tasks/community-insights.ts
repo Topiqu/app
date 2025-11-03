@@ -19,7 +19,7 @@ export default defineTask({
   },
   async run() {
     const now = new Date()
-    const since = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
     const sites = await prisma.clientSite.findMany({
       where: { plan: { in: ['PREMIUM', 'CUSTOM'] } },
@@ -40,7 +40,7 @@ export default defineTask({
           take: 175,
         })
 
-        if (comments.length < 5) {
+        if (comments.length < 10) {
           await logAction({
             action: 'COMMUNITY_INSIGHT_SKIPPED',
             clientSiteId: site.id,
