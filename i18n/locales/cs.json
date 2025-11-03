@@ -384,7 +384,22 @@
       "noClientAssigned": "Nepřiřazen",
       "currentPlan": "Současný plán",
       "roughlyEstimated": "Přibližně {0} článků",
-      "userDataError": "Chyba při načítání uživatelských dat"
+      "userDataError": "Chyba při načítání uživatelských dat",
+      "remainingTokens": "Zbývající tokeny",
+      "totalConsumed": "Celkem spotřebováno: {0} tokenů",
+      "buyTokens": "Koupit tokeny",
+      "upgradeToPremium": "Povýšit na PREMIUM",
+      "recentActions": "Poslední akce",
+      "ga4Connected": "GA4 připojeno",
+      "gamConnected": "GAM připojeno",
+      "tip": "Tip",
+      "adjustPreferences": "Upravte preference pro lepší výsledky AI",
+      "articleGenerated": "Článek vygenerován",
+      "generationFailed": "Generování selhalo",
+      "articlePublished": "Článek publikován",
+      "articleSavedAsDraft": "Článek uložen jako koncept",
+      "insightGenerated": "Insight vytvořen",
+      "insightSkipped": "Insight přeskočen"
     },
     "dateFormats": {
       "justNow": "Právě teď",

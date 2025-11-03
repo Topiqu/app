@@ -370,7 +370,22 @@
       "noClientAssigned": "Not assigned",
       "currentPlan": "Current plan",
       "roughlyEstimated": "Roughly {0} articles",
-      "userDataError": "Error loading user data"
+      "userDataError": "Error loading user data",
+      "remainingTokens": "Remaining tokens",
+      "totalConsumed": "Total consumed: {0} tokens",
+      "buyTokens": "Buy tokens",
+      "upgradeToPremium": "Upgrade to PREMIUM",
+      "recentActions": "Recent actions",
+      "ga4Connected": "GA4 connected",
+      "gamConnected": "GAM connected",
+      "tip": "Tip",
+      "adjustPreferences": "Adjust preferences for better AI results",
+      "articleGenerated": "Article generated",
+      "generationFailed": "Generation failed",
+      "articlePublished": "Article published",
+      "articleSavedAsDraft": "Article saved as draft",
+      "insightGenerated": "Insight generated",
+      "insightSkipped": "Insight skipped"
     },
     "dateFormats": {
       "justNow": "Just now",
