@@ -135,7 +135,7 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { useVModel } from '@vueuse/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
@@ -157,9 +157,7 @@ import { Dropcursor } from '@tiptap/extension-dropcursor'
 import Poll from '../../extensions/poll'
 
 const CustomBlockquote = Blockquote.extend({
-  renderHTML({ HTMLAttributes }) {
-    return ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0]
-  },
+  renderHTML: ({ HTMLAttributes }) => ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0],
 })
 
 const {
@@ -174,42 +172,30 @@ const {
   edit?: boolean
 }>()
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-  (e: 'update:edit', value: boolean): void
-}>()
+const emit = defineEmits<{ (e: 'update:modelValue', value: string): void; (e: 'update:edit', value: boolean): void }>()
+const content = useVModel(props, 'modelValue', emit, { defaultValue: '<p></p>' })
 
-const content = useVModel(props, 'modelValue', emit)
-if (!content.value) content.value = '<p></p>'
-
-watch(content, (newVal) => {
-  if (!newVal) content.value = '<p></p>'
-})
-
-const percentage = computed(() => Math.round((100 / limit) * (editor.value?.storage.characterCount.characters() || 0)))
+watch(content, (v) => v || (content.value = '<p></p>'))
+const percentage = computed(() => Math.round((100 * (editor.value?.storage.characterCount.characters() || 0)) / limit))
 
 const uploadImage = async (files: FileList | null) => {
-  const file = files?.item(0)
+  const file = files?.[0]
   if (!file) return
-  const formData = new FormData()
-  formData.append('file', file)
+  const form = new FormData()
+  form.append('file', file)
   try {
-    const res = await fetch('/api/upload', { method: 'POST', body: formData })
-    const { url, error } = await res.json()
-    if (error) return alert(error)
-    editor.value?.commands.setImage({ src: url, alt: file.name })
-  } catch (err) {
-    alert('Chyba při nahrávání obrázku: ' + (err as Error).message)
+    const { url, success } = await $fetch('/api/upload', { method: 'POST', body: form })
+    !success ? alert('Upload error') : editor.value?.commands.setImage({ src: url, alt: file.name })
+  } catch (e: any) {
+    alert('ERR: ' + e.message)
   }
 }
 
 const addImageFromUrl = () => {
-  const url = window.prompt('URL:')
-  if (url) editor.value?.chain().focus().setImage({ src: url }).run()
+  const url = prompt('URL:')
+  url && editor.value?.chain().focus().setImage({ src: url }).run()
 }
-
 const onFileInputClose = () => editor.value?.chain().focus().run()
-
 const handleEditorClick = () => {
   if (!edit) emit('update:edit', true)
   editor.value?.chain().focus().run()
@@ -217,10 +203,9 @@ const handleEditorClick = () => {
 
 const setBlockquote = () => editor.value?.chain().focus().setParagraph().setBlockquote().run()
 const unsetBlockquote = () => editor.value?.chain().focus().unsetBlockquote().run()
-
 const insertYoutube = () => {
-  const url = window.prompt('Zadejte URL YouTube videa:')
-  if (url) editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
+  const url = prompt('YouTube URL:')
+  url && editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
 }
 
 const insertPoll = () =>
@@ -232,69 +217,51 @@ const insertPoll = () =>
       attrs: {
         id: crypto.randomUUID(),
         question: $t('articles.poll.defaultQuestion'),
-        options: [$t('articles.poll.option', { index: 1 }), $t('articles.poll.option', { index: 2 })],
+        options: [1, 2].map((i) => $t('articles.poll.option', { index: i })),
       },
     })
     .run()
 
 const setLink = () => {
-  const previousUrl = editor.value?.getAttributes('link').href
-  const url = window.prompt('URL', previousUrl)
+  const url = prompt('URL', editor.value?.getAttributes('link').href)
   if (url === null) return
-  if (url === '') return editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
-  if (url && !previousUrl) return editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+  url === ''
+    ? editor.value?.chain().focus().unsetLink().run()
+    : editor.value?.chain().focus().setLink({ href: url }).run()
 }
 
-const setColor = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  if (target && editor.value)
-    editor.value
-      .chain()
-      .focus()
-      .setColor(target.value || '#000000')
-      .run()
-}
-
-const setFontFamily = (e: Event) => {
-  const target = e.target as HTMLSelectElement
-  if (target && editor.value)
-    editor.value
-      .chain()
-      .focus()
-      .setFontFamily(target.value || '')
-      .run()
-}
+const setColor = (e: Event) =>
+  editor.value
+    ?.chain()
+    .focus()
+    .setColor((e.target as HTMLInputElement).value || '#000')
+    .run()
+const setFontFamily = (e: Event) =>
+  editor.value
+    ?.chain()
+    .focus()
+    .setFontFamily((e.target as HTMLSelectElement).value || '')
+    .run()
 
 const validateContent = (html: string) => {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(html, 'text/html')
-  let modified = false
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  let changed = false
   doc.querySelectorAll('div[data-type="poll"]').forEach((poll) => {
-    const rawQuestion = poll.getAttribute('data-question') ?? ''
-    const normalizedQuestion = String(rawQuestion).trim() || $t('articles.poll.defaultQuestion')
-    if (normalizedQuestion !== rawQuestion) modified = true
-
-    let parsed: unknown
+    const question = (poll.getAttribute('data-question') ?? '').trim() || $t('articles.poll.defaultQuestion')
+    let opts: string[] = []
     try {
-      parsed = poll.getAttribute('data-options') ? JSON.parse(poll.getAttribute('data-options')!) : []
-    } catch {
-      parsed = []
-      modified = true
-    }
-
-    let options = Array.isArray(parsed) ? parsed : []
-    const before = JSON.stringify(options)
-    options =
-      options.length > 0
-        ? options.map((opt) => String(opt ?? '').trim() || $t('articles.poll.defaultOption'))
+      opts = poll.getAttribute('data-options') ? JSON.parse(poll.getAttribute('data-options')!) : []
+    } catch {}
+    opts =
+      Array.isArray(opts) && opts.length
+        ? opts.map((o) => String(o ?? '').trim() || $t('articles.poll.defaultOption'))
         : [$t('articles.poll.defaultOption')]
-    const after = JSON.stringify(options)
-    if (after !== before) modified = true
-
-    poll.setAttribute('data-question', normalizedQuestion)
-    poll.setAttribute('data-options', after)
+    if (question !== poll.getAttribute('data-question') || JSON.stringify(opts) !== poll.getAttribute('data-options'))
+      changed = true
+    poll.setAttribute('data-question', question)
+    poll.setAttribute('data-options', JSON.stringify(opts))
   })
-  return modified ? doc.body.innerHTML : html
+  return changed ? doc.body.innerHTML : html
 }
 
 const editor = useEditor({
@@ -317,30 +284,19 @@ const editor = useEditor({
     }),
     Poll,
     BubbleMenuExtension.configure({
-      shouldShow: ({ editor, state }) => {
-        const { from, to } = state.selection
-        const isTextSelected = from !== to
-        const isInTable = editor.isActive('tableCell') || editor.isActive('tableHeader')
-        return isTextSelected && !isInTable
-      },
+      shouldShow: ({ editor, state }) =>
+        state.selection.from !== state.selection.to && !editor.isActive('tableCell') && !editor.isActive('tableHeader'),
     }),
     TextStyle,
     Color.configure({ types: ['textStyle'] }),
     FontFamily.configure({ types: ['textStyle'] }),
   ],
   editable: edit,
-  onUpdate: ({ editor }) => {
-    const html = editor.getHTML()
-    content.value = validateContent(html)
-  },
+  onUpdate: ({ editor }) => (content.value = validateContent(editor.getHTML())),
 })
 
-watch(content, (newValue) => {
-  if (editor.value && editor.value.getHTML() !== newValue) editor.value.commands.setContent(newValue)
-})
-
+watch(content, (v) => editor.value?.getHTML() !== v && editor.value?.commands.setContent(v))
 watchEffect(() => editor.value?.setEditable(edit))
-
 onBeforeUnmount(() => editor.value?.destroy())
 </script>
 
