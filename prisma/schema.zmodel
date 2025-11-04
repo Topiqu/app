@@ -158,7 +158,7 @@ model Article extends Base, Ownable {
     sources         String[]
     prompt          String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
-    @@allow('all', auth().role == 'admin')
+    @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
     @@index([title, excerpt, clientSiteId])
 }
 
