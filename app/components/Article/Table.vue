@@ -58,14 +58,19 @@
               'transition-colors duration-200 light:hover:bg-gray-100 group',
               row.original.status === 'published'
                 ? 'light:bg-green-50 border-l-4 border-green-400'
-                : 'light:bg-white border-l-4 border-yellow-400',
+                : row.original.status === 'archived'
+                  ? 'light:bg-gray-100 border-l-4 border-gray-400'
+                  : 'light:bg-white border-l-4 border-yellow-400',
             ]"
           >
             <td
               v-for="cell in row.getVisibleCells()"
               :key="cell.id"
               class="px-4 py-2 break-words max-w-[240px] sm:max-w-none text-center min-h-[72px] dark:text-white"
-              :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
+              :class="[
+                row.original.status === 'published' ? 'dark:text-green-300' : '',
+                row.original.status === 'archived' ? 'text-gray-400 dark:text-gray-500 italic' : '',
+              ]"
             >
               <div
                 v-if="cell.column.id === 'content'"
@@ -87,14 +92,13 @@
               <div
                 v-else-if="cell.column.id === 'status'"
                 class="flex items-center justify-center h-full dark:bg-transparent"
-                :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
               >
                 <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
               </div>
               <div
                 v-else-if="['title', 'date'].includes(cell.column.id)"
                 class="flex items-center justify-center h-full dark:bg-transparent"
-                :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
+                :class="row.original.status === 'archived' ? 'line-through' : ''"
               >
                 <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
               </div>
@@ -111,13 +115,18 @@
                 @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
               />
               <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
-                <Button :icon="'mdi:pencil'" @click="open.value = true" />
+                <Button
+                  :icon="'mdi:pencil'"
+                  :disabled="row.original.status === 'archived'"
+                  @click="open.value = true"
+                />
               </LazyArticleModal>
               <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                 <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
               </LazyArticleTag>
               <Button :icon="'mdi:delete'" variant="danger" @click="del(row.original.id)" />
               <Dropdown
+                v-if="row.original.status !== 'archived'"
                 :groups="[
                   [
                     {
@@ -148,6 +157,7 @@
         </tbody>
       </table>
     </div>
+
     <div v-if="articles.data.length > 0" class="sm:hidden space-y-4">
       <div
         v-for="row in table.getRowModel().rows"
@@ -156,7 +166,9 @@
           'p-4 rounded-lg border border-gray-300 shadow-sm transition-colors duration-200 hover:bg-gray-100',
           row.original.status === 'published'
             ? 'bg-green-50 border-l-4 border-green-400'
-            : 'bg-white border-l-4 border-yellow-400',
+            : row.original.status === 'archived'
+              ? 'bg-gray-100 border-l-4 border-gray-400'
+              : 'bg-white border-l-4 border-yellow-400',
         ]"
       >
         <div class="space-y-2">
@@ -164,7 +176,10 @@
             v-for="cell in row.getVisibleCells()"
             :key="cell.id"
             class="text-gray-800"
-            :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
+            :class="[
+              row.original.status === 'published' ? 'dark:text-green-300' : '',
+              row.original.status === 'archived' ? 'text-gray-400 dark:text-gray-500 italic' : '',
+            ]"
           >
             <div class="font-semibold">{{ $t(`articles.columns.${cell.column.id}`) }}</div>
             <div
@@ -181,17 +196,13 @@
               />
               <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
             </div>
-            <div
-              v-else-if="cell.column.id === 'status'"
-              class="dark:bg-transparent"
-              :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
-            >
+            <div v-else-if="cell.column.id === 'status'" class="dark:bg-transparent">
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
             </div>
             <div
               v-else-if="['title', 'date'].includes(cell.column.id)"
               class="dark:bg-transparent"
-              :class="row.original.status === 'published' ? 'dark:text-green-300' : ''"
+              :class="row.original.status === 'archived' ? 'line-through' : ''"
             >
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
             </div>
@@ -208,7 +219,7 @@
             </button>
             <div
               v-if="openDropdown === row.id"
-              class="absolute z-10 right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
+              class="absolute z-[10000] right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
             >
               <div class="py-1 flex flex-col gap-1">
                 <Button
@@ -217,13 +228,19 @@
                   @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
                 />
                 <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
-                  <Button :icon="'mdi:pencil'" @click="open.value = true" />
+                  <Button
+                    :icon="'mdi:pencil'"
+                    :disabled="row.original.status === 'archived'"
+                    v-tippy="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''"
+                    @click="open.value = true"
+                  />
                 </LazyArticleModal>
                 <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                   <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
                 </LazyArticleTag>
                 <Button :icon="'mdi:delete'" variant="danger" @click="del(row.original.id)" />
                 <Dropdown
+                  v-if="row.original.status !== 'archived'"
                   :groups="[
                     [
                       {
@@ -343,7 +360,7 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
     await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
     await refresh()
     toast.success({
-      message: `Status changed to ${status === 'draft' ? $t('articles.status.draft').toLocaleLowerCase() : $t('articles.status.published').toLocaleLowerCase()}`,
+      message: 'Status ' + $t(`articles.status.${status}`).toLocaleLowerCase(),
     })
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('articles.messages.statusChangeFailed') })
