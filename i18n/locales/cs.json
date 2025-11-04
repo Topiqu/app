@@ -328,7 +328,8 @@
     },
     "status": {
       "published": "Publikováno",
-      "draft": "Koncept"
+      "draft": "Koncept",
+      "archived": "Archivováno"
     },
     "tags": {
       "title": "Štítky článku",

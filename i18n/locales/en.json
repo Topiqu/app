@@ -314,7 +314,8 @@
     },
     "status": {
       "published": "Published",
-      "draft": "Draft"
+      "draft": "Draft",
+      "archived": "Archived"
     },
     "tags": {
       "title": "Article Tags",
