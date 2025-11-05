@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-between p-2">
-    <Button icon="mdi:chevron-left" variant="neutral" :disabled="page <= 1" @click="prevPage">
+    <Button icon="mdi:chevron-left" variant="neutral" :disabled="page <= 1" class="cursor-pointer" @click="prevPage">
       <span class="hidden sm:inline">{{ $t('common.pagination.previous') }}</span>
     </Button>
 
@@ -13,6 +13,7 @@
       icon="mdi:chevron-right"
       iconPosition="right"
       variant="neutral"
+      class="cursor-pointer"
       @click="nextPage"
     >
       <span class="hidden sm:inline">{{ $t('common.pagination.next') }}</span>
