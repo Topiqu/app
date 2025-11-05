@@ -9,7 +9,7 @@
     </span>
     <span class="text-gray-400">|</span>
 
-    <div ref="trigger" @click="show = !show" class="flex items-center gap-1.5 cursor-pointer select-none">
+    <div ref="trigger" class="flex items-center gap-1.5 cursor-pointer select-none" @click="show = !show">
       <span :class="planColor">{{ site?.plan ?? $t('articles.userMenu.noClientAssigned') }}</span>
       <span v-if="site?.tokenRemaining != null" v-tippy="tokenTooltip" class="text-xs">
         (<span :class="tokenColor">{{ site.tokenRemaining }}/{{ site.tokenLimit }}</span
@@ -77,13 +77,16 @@
                 </div>
               </div>
             </div>
-            <button
+            <Button
               v-if="logs.hasMore"
+              class="w-full py-2 text-xs font-medium cursor-pointer transition-colors !hover:scale-100"
+              variant="transparent"
+              :title="$t('common.pagination.next')"
+              animation="softpop"
               @click="loadMore"
-              class="w-full py-2 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
             >
               {{ $t('common.pagination.next') }}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -118,12 +121,31 @@ const { data: session } = useAuth()
 const { data: site } = await useFetch(`/api/clients/${session.value?.user.id}/by-userid`)
 
 const page = shallowRef(1)
-const { data: logs, refresh } = await useFetch(() => `/api/clients/${site.value?.id}/log?page=${page.value}&limit=20`, {
-  default: () => ({ items: [], hasMore: false }),
-})
-const loadMore = () => {
+const logs = reactive<{ items: any[]; hasMore: boolean }>({ items: [], hasMore: false })
+
+const { data: response, refresh } = await useFetch(
+  () => `/api/clients/${site.value?.id}/log?page=${page.value}&limit=20`,
+  {
+    default: () => ({ items: [], hasMore: false }),
+    watch: false,
+  },
+)
+
+watch(
+  response,
+  (newData) => {
+    if (newData?.items) {
+      logs.items.push(...newData.items)
+      logs.hasMore = newData.hasMore
+    }
+  },
+  { immediate: true },
+)
+
+const loadMore = async () => {
+  if (!logs.hasMore) return
   page.value++
-  refresh()
+  await refresh()
 }
 
 const remainingPercent = computed(() =>
