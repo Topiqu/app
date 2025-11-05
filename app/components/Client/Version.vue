@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed bottom-3 right-3 flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400 bg-white/80 dark:bg-neutral-900/80 px-3 py-1.5 rounded-full shadow-md border border-gray-200/70 dark:border-neutral-700/70 backdrop-blur-md"
+    class="fixed bottom-3 right-3 flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400 bg-white/80 dark:bg-neutral-900/80 px-3 py-1.5 rounded-full shadow-md border z-[1000] border-gray-200/70 dark:border-neutral-700/70 backdrop-blur-md"
   >
     <span>
       Topiqu AI Blog
