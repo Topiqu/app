@@ -22,34 +22,37 @@
         </div>
       </div>
 
-      <div
-        class="flex flex-col gap-4 pb-4 border-b border-gray-200 dark:border-neutral-700 sm:flex-row sm:justify-between sm:items-center"
-      >
-        <input
-          v-model="search"
-          :placeholder="$t('articles.searchPlaceholder')"
-          class="w-full px-5 py-3 rounded-xl border border-gray-300 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-        />
-        <select
-          v-model="sort"
-          class="px-5 py-3 rounded-xl border border-gray-300 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-        >
-          <option value="createdAt:desc">{{ $t('common.sortOptions.newest') }}</option>
-          <option value="createdAt:asc">{{ $t('common.sortOptions.oldest') }}</option>
-          <option value="title:asc">{{ $t('common.labels.title') }} A-Z</option>
-          <option value="title:desc">{{ $t('common.labels.title') }} Z-A</option>
-        </select>
+      <div class="flex flex-col sm:flex-row gap-4 pb-4 border-b border-gray-200 dark:border-neutral-700">
+        <FormInput v-model="search" :placeholder="$t('articles.searchPlaceholder')" />
+        <FormSelect v-model="sort" :items="sortItems" :showValue="false" />
       </div>
 
-      <div v-if="filteredArticles.length" class="grid gap-6">
+      <div v-if="pending" class="grid gap-6">
         <div
-          v-for="a in filteredArticles"
+          v-for="i in 6"
+          :key="i"
+          class="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-700 shadow-sm p-6 animate-pulse"
+        >
+          <div class="flex gap-4">
+            <div class="bg-gray-200 dark:bg-neutral-800 rounded-xl w-48 h-[120px]" />
+            <div class="flex-1 space-y-3">
+              <div class="h-6 bg-gray-200 dark:bg-neutral-800 rounded w-3/4" />
+              <div class="h-4 bg-gray-200 dark:bg-neutral-800 rounded w-full" />
+              <div class="h-4 bg-gray-200 dark:bg-neutral-800 rounded w-5/6" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="paginated.length" class="grid gap-6">
+        <div
+          v-for="a in paginated"
           :key="a.articleId"
           class="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
         >
           <NuxtLink
             :to="localePath({ name: 'clanky-slug', params: { slug: a.article.slug } })"
-            class="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 p-6 no-underline group"
+            class="flex flex-col sm:flex-row items-stretch gap-4 p-6 no-underline group"
           >
             <div class="relative">
               <NuxtImg
@@ -60,7 +63,7 @@
                 quality="80"
                 width="160"
                 height="100"
-                class="rounded-xl border border-gray-100 dark:border-neutral-800 shadow-sm object-cover w-full sm:w-48 h-[120px] group-hover:brightness-105 transition"
+                class="rounded-xl border border-gray-100 dark:border-neutral-800 object-cover w-full sm:w-48 h-[120px] group-hover:brightness-105 transition"
               />
               <div
                 v-else
@@ -69,7 +72,6 @@
                 <Icon name="mdi:image-off" class="w-8 h-8" />
               </div>
             </div>
-
             <div class="flex flex-col justify-between gap-3 flex-1">
               <div class="flex flex-col gap-2">
                 <h2
@@ -77,9 +79,8 @@
                 >
                   {{ a.article.title }}
                 </h2>
-
                 <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400 pt-1">
-                  <div v-if="auth?.user.role === 'admin' || auth?.user.role === 'superadmin'">
+                  <template v-if="auth?.user.role === 'admin' || auth?.user.role === 'superadmin'">
                     <span
                       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 font-medium"
                     >
@@ -90,11 +91,10 @@
                       {{ a.article.status === 'draft' ? $t('articles.status.draft') : $t('articles.status.published') }}
                     </span>
                     <span>•</span>
-                  </div>
-
+                  </template>
                   <span class="inline-flex items-center gap-1">
                     <Icon name="mdi:calendar" class="w-4 h-4 text-gray-400" />
-                    {{ formatDate(a.article.createdAt.toString()) }}
+                    {{ formatDate(a.article.createdAt) }}
                   </span>
                   <span>•</span>
                   <span class="inline-flex items-center gap-1 text-blue-500 dark:text-blue-400 font-medium">
@@ -119,6 +119,7 @@
             </div>
           </NuxtLink>
         </div>
+        <Pagination :page :totalPages="totalPages" :nextPage="nextPage" :prevPage="prevPage" />
       </div>
 
       <p v-else class="text-gray-500 dark:text-gray-400 italic text-center py-8 text-lg">
@@ -128,61 +129,76 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import type { Article as _Article } from '@zenstackhq/runtime/models'
 
 import { formatDate } from '~~/shared/utils'
-const localePath = useLocalePath()
-
-type Article = {
-  articleId: string
-  article: _Article & {
-    user: { username: string }
-    tags: {
-      articleId: string
-      tagId: string
-      tag: { name: string; slug: string }
-    }[]
-    views: number
-    likes: number
-  }
-}
-
-type AuthorResponse = {
-  id: string
-  username: string
-  avatarUrl?: string
-  bio?: string
-  articles: Article[]
-}
 
 const route = useRoute()
-const { data: auth } = useAuth()
-const username = computed(() => route.params.name)
+const auth = useAuth().data
+const localePath = useLocalePath()
 
-const search = shallowRef<string>('')
-const sort = shallowRef<string>('createdAt:desc')
+const username = computed(() => decodeURIComponent(route.params.name as string).trim())
+console.log(username)
+const search = shallowRef('')
+const sort = shallowRef('createdAt:desc')
+const page = shallowRef(1)
+const perPage = 20
 
-const { data: author } = await useFetch<AuthorResponse>(`/api/articles/${username.value}/by-author`, {
-  default: () => ({ id: '', username: $t('articles.articleCard.noAuthor'), articles: [] }),
+const query = computed(() => ({
+  page: page.value,
+  limit: perPage,
+  ...(search.value ? { search: search.value } : {}),
+  sort: sort.value,
+}))
+
+const {
+  data: author,
+  pending,
+  refresh,
+} = await useFetch(`/api/articles/${username.value}/by-author`, {
+  query,
+  default: () => ({
+    id: '',
+    username: $t('articles.articleCard.noAuthor'),
+    articles: [],
+    hasMore: false,
+    bio: '',
+    avatarUrl: '',
+  }),
+  watch: false,
+  lazy: true,
+})
+
+watchEffect(() => {
+  if (page.value > 1 && !author.value.hasMore) page.value = 1
 })
 
 const authorName = computed(() => author.value.username)
+const paginated = computed(() =>
+  author.value.articles.map((a: any) => ({
+    ...a,
+    article: { ...a.article, likes: a.article._count?.reactions ?? 0 },
+  })),
+)
+const totalPages = computed(() => 1)
+const hasMore = computed(() => author.value.hasMore)
+const nextPage = () => hasMore.value && page.value++
+const prevPage = () => page.value > 1 && page.value--
 
-const filteredArticles = computed(() => {
-  const result = author.value.articles.filter((a) => a.article.title.toLowerCase().includes(search.value.toLowerCase()))
-  const [field, order] = sort.value.split(':')
-  result.sort((a, b) =>
-    field === 'createdAt'
-      ? order === 'asc'
-        ? new Date(a.article.createdAt).getTime() - new Date(b.article.createdAt).getTime()
-        : new Date(b.article.createdAt).getTime() - new Date(a.article.createdAt).getTime()
-      : order === 'asc'
-        ? a.article.title.localeCompare(b.article.title)
-        : b.article.title.localeCompare(a.article.title),
-  )
-  return result
-})
+const sortItems = computed(() => [
+  { value: 'createdAt:desc', label: $t('common.sortOptions.newest') },
+  { value: 'createdAt:asc', label: $t('common.sortOptions.oldest') },
+  { value: 'title:asc', label: $t('common.labels.title') + ' A-Z' },
+  { value: 'title:desc', label: $t('common.labels.title') + ' Z-A' },
+])
+
+const debouncedRefresh = useDebounceFn(() => {
+  page.value = 1
+  refresh()
+}, 300)
+
+watch([search, sort], debouncedRefresh)
 
 useSeoMeta({
   title: () => `Články autora: ${authorName.value}`,
