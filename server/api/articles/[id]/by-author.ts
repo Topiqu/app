@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   const username = decodeURIComponent(getRouterParam(event, 'id')!.trim())
   if (!username) throw createError({ statusCode: 400, message: 'Uživatelské jméno je povinné' })
-  console.log(username)
+
   const { skip, take } = await getPagination(event)
   const query = getQuery(event)
   const { search = '', sort = 'createdAt:desc' } = query as { search?: string; sort?: string }

@@ -265,7 +265,7 @@ const del = async (id: string, name: string) => {
 
   if (result.isConfirmed) {
     try {
-      await $fetch(`/api/clients/${id}?hard=true`, { method: 'DELETE' })
+      await $fetch(`/api/clients/${id}?hard=true` as `api/clients/:id`, { method: 'DELETE' })
 
       toast.success({ message: 'Klient trvale smazán' })
 
@@ -275,7 +275,7 @@ const del = async (id: string, name: string) => {
     }
   } else if (result.isDenied) {
     try {
-      await $fetch(`/api/clients/${id}`, { method: 'DELETE' })
+      await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'DELETE' })
 
       toast.success({ message: 'Klient deaktivován' })
 
@@ -304,7 +304,7 @@ const restore = async (id: string) => {
   if (!result.isConfirmed) return
 
   try {
-    await $fetch(`/api/clients/${id}`, { method: 'PATCH', body: { deletedAt: null } })
+    await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'PATCH', body: { deletedAt: null } })
 
     toast.success({ message: 'Klient aktivován' })
 

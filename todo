@@ -6,8 +6,6 @@ always:
 now:
   - 🛑 notifications should also be localised
   - 🛑 GAM + total ad revenue overview & logging
-  - 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
-  - 🛑 OAuth ?redirect param
   - 🟡 fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions)
   - 🟡 Stripe integration for token refill
   - 🟢 replace sweetalert modals with custom ModalMini component
@@ -15,8 +13,11 @@ now:
 test:
   - 🛑 google ads
   - 🛑 google analytics
+  - 🛑 OAuth ?redirect param
+  - 🛑 fix auth errors with zod id param
   - 🛑 production fix email template json not loadings
   - 🛑 ai cron jobs for article writing and its notifications
+  - 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
   - 🟢 centralised ArticleModal component (for ArticleCreate/Edit)
   - 🟢 remake ArticleModal Drafts with ModalMini
 ---

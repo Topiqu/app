@@ -1,4 +1,5 @@
 import type { EventStream } from 'h3'
+
 import slugify from 'slugify'
 
 interface GlobalThis {
@@ -39,6 +40,15 @@ const processClient = async (client: any) => {
     Target audience: ${client.audience || 'general'}
     Focus area: ${client.focus || 'general topics'}
     Keywords to include naturally: ${client.keywords?.join(', ') ?? 'none'}
+
+    Exclude articles similar to my recent articles:
+    ${client.articles.map((a: any) => `- ${a.title}`).join('\n') || 'none'}
+
+    Article must include:
+    - A catchy title
+    - An engaging perex (introductory paragraph)
+    - Well-structured content with headings and subheadings
+    - Relevant tags (return as array of tag IDs from the database)
 
     CRITICAL LANGUAGE RULE:
     - Default language is ${defaultLang.toUpperCase()}.
@@ -186,6 +196,7 @@ export default defineTask({
         language: true,
         generationFrequency: true,
         lastGeneratedAt: true,
+        articles: { select: { title: true }, orderBy: { createdAt: 'desc' }, take: 5 },
         users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
       },
       where: {

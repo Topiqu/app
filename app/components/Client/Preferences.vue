@@ -411,7 +411,7 @@ const savePreferences = async () => {
   if (form.value.socials.some((s) => s.url.trim() && !isValidUrl(s.url)))
     return toast.error({ message: $t('common.preferences.messages.invalidUrl') })
   try {
-    await $fetch(`/api/clients/${auth.value.user.clientSiteId}`, {
+    await $fetch(`/api/clients/${auth.value.user.clientSiteId}` as `/api/clients/:id`, {
       method: 'PATCH',
       body: {
         ...form.value,

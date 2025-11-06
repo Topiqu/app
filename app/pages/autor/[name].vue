@@ -139,7 +139,6 @@ const auth = useAuth().data
 const localePath = useLocalePath()
 
 const username = computed(() => decodeURIComponent(route.params.name as string).trim())
-console.log(username)
 const search = shallowRef('')
 const sort = shallowRef('createdAt:desc')
 const page = shallowRef(1)

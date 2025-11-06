@@ -181,10 +181,10 @@ const { data: auth } = useAuth()
 const open = defineModel<boolean>()
 const { idle } = useIdle(5 * 60 * 1000)
 const { emitArticleCreated } = useArticleEvent()
-const { data: client } = useFetch(`/api/clients/${auth.value?.user.clientSiteId}`)
+const { data: client } = await useFetch(`/api/clients/${auth.value?.user.clientSiteId}` as `/api/clients/:id`)
 
 const emit = defineEmits(['saved'])
-const props = defineProps<{ article: ArticleWithDetails }>()
+const props = defineProps<{ article?: ArticleWithDetails }>()
 
 const init = () =>
   ({
@@ -307,7 +307,6 @@ const createArticle = async () => {
   if (!isReleaseDateValid.value)
     return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
   try {
-    console.log('dokud jsem tady ja')
     const { id } = await $fetch('/api/articles', {
       method: 'POST',
       body: {

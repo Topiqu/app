@@ -78,7 +78,9 @@ export function useExport() {
         try {
           const base64 = await loadImage(a.imageUrl)
           doc.addImage(base64, 'JPEG', 14, 46, 50, 50)
-        } catch {}
+        } catch (e: any) {
+          console.error('Failed to load image for PDF export:', e)
+        }
       }
       const content = doc.splitTextToSize(a.content ? a.content.replace(/<[^>]*>/g, '') : '', 180)
       doc.text(content, 14, a.imageUrl ? 110 : 54)

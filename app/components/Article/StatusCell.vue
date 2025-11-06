@@ -9,7 +9,7 @@
     "
     class="inline-flex items-center"
   >
-    <FormSelect :items="statusItems" v-model="model" :showValue="false" />
+    <FormSelect v-model="model" :items="statusItems" :showValue="false" />
     <Icon
       v-if="props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()"
       name="mdi:hourglass"
@@ -21,6 +21,7 @@
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
+
 import { format } from 'date-fns'
 import { directive as vTippy } from 'vue-tippy'
 

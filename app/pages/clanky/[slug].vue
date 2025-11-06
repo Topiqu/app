@@ -249,9 +249,11 @@
 
 <script setup lang="ts">
 import type { ArticleStatus, User } from '@zenstackhq/runtime/models'
+
 import { formatDate } from '~~/shared/utils'
 import VueEasyLightbox from 'vue-easy-lightbox'
 import { formatNumber } from '~~/shared/utils/number'
+
 import { themes } from '~/composables/theme'
 
 type Image = { src: string; alt?: string }
@@ -450,8 +452,8 @@ onMounted(() => {
   try {
     $fetch(`/api/articles/${data.value.id}`, { method: 'PATCH', body: { views: data.value.views + 1 } })
     sessionStorage.setItem(key, now.toString())
-  } catch {
-    console.log('Failed to update article views')
+  } catch (e: any) {
+    console.error('Failed to update article views:', e)
   }
 })
 </script>

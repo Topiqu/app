@@ -12,4 +12,6 @@ definePageMeta({ middleware: 'auth' })
 const route = useRoute()
 
 const initialMode = computed(() => (route.query.mode === 'register' ? 'register' : 'login'))
+
+if (route.query.redirect?.length) navigateTo(route.query.redirect.toString(), { external: true })
 </script>
