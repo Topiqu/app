@@ -40,6 +40,9 @@ const processClient = async (client: any) => {
     Focus area: ${client.focus || 'general topics'}
     Keywords to include naturally: ${client.keywords?.join(', ') ?? 'none'}
 
+    Exclude articles similar to my recent articles:
+    ${client.articles.map((a: any) => `- ${a.title}`).join('\n') || 'none'}
+
     Article must include:
     - A catchy title
     - An engaging perex (introductory paragraph)
@@ -192,6 +195,7 @@ export default defineTask({
         language: true,
         generationFrequency: true,
         lastGeneratedAt: true,
+        articles: { select: { title: true }, orderBy: { createdAt: 'desc' }, take: 5 },
         users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
       },
       where: {
