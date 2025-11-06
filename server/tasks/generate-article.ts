@@ -1,4 +1,5 @@
 import type { EventStream } from 'h3'
+
 import slugify from 'slugify'
 
 interface GlobalThis {

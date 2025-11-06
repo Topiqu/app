@@ -229,9 +229,9 @@
                 />
                 <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
                   <Button
+                    v-tippy="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''"
                     :icon="'mdi:pencil'"
                     :disabled="row.original.status === 'archived'"
-                    v-tippy="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''"
                     @click="open.value = true"
                   />
                 </LazyArticleModal>

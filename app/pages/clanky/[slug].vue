@@ -249,9 +249,11 @@
 
 <script setup lang="ts">
 import type { ArticleStatus, User } from '@zenstackhq/runtime/models'
+
 import { formatDate } from '~~/shared/utils'
 import VueEasyLightbox from 'vue-easy-lightbox'
 import { formatNumber } from '~~/shared/utils/number'
+
 import { themes } from '~/composables/theme'
 
 type Image = { src: string; alt?: string }

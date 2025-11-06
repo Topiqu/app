@@ -13,8 +13,14 @@
           v-for="n in 6"
           :key="n"
           :icon="`mdi-format-header-${n}`"
-          :active="editor.isActive('heading', { level: n })"
-          @click="editor.chain().focus().toggleHeading({ level: n }).run()"
+          :active="editor.isActive('heading', { level: n as Level })"
+          @click="
+            editor
+              .chain()
+              .focus()
+              .toggleHeading({ level: n as Level })
+              .run()
+          "
         />
         <Button
           icon="mdi-format-list-bulleted"
@@ -136,6 +142,8 @@
 </template>
 
 <script setup lang="ts">
+import type { Level } from '@tiptap/extension-heading'
+
 import { useVModel } from '@vueuse/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
@@ -149,10 +157,10 @@ import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { Typography } from '@tiptap/extension-typography'
 import { Blockquote } from '@tiptap/extension-blockquote'
+import { Dropcursor } from '@tiptap/extension-dropcursor'
 import { FontFamily } from '@tiptap/extension-font-family'
 import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import { CharacterCount } from '@tiptap/extension-character-count'
-import { Dropcursor } from '@tiptap/extension-dropcursor'
 
 import Poll from '../../extensions/poll'
 
@@ -185,7 +193,9 @@ const uploadImage = async (files: FileList | null) => {
   form.append('file', file)
   try {
     const { url, success } = await $fetch('/api/upload', { method: 'POST', body: form })
-    !success ? alert('Upload error') : editor.value?.commands.setImage({ src: url, alt: file.name })
+
+    if (!success) alert('Upload error')
+    else editor.value?.commands.setImage({ src: url, alt: file.name })
   } catch (e: any) {
     alert('ERR: ' + e.message)
   }
@@ -193,7 +203,7 @@ const uploadImage = async (files: FileList | null) => {
 
 const addImageFromUrl = () => {
   const url = prompt('URL:')
-  url && editor.value?.chain().focus().setImage({ src: url }).run()
+  if (url) editor.value?.chain().focus().setImage({ src: url }).run()
 }
 const onFileInputClose = () => editor.value?.chain().focus().run()
 const handleEditorClick = () => {
@@ -205,7 +215,7 @@ const setBlockquote = () => editor.value?.chain().focus().setParagraph().setBloc
 const unsetBlockquote = () => editor.value?.chain().focus().unsetBlockquote().run()
 const insertYoutube = () => {
   const url = prompt('YouTube URL:')
-  url && editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
+  if (url) editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
 }
 
 const insertPoll = () =>
@@ -225,9 +235,9 @@ const insertPoll = () =>
 const setLink = () => {
   const url = prompt('URL', editor.value?.getAttributes('link').href)
   if (url === null) return
-  url === ''
-    ? editor.value?.chain().focus().unsetLink().run()
-    : editor.value?.chain().focus().setLink({ href: url }).run()
+
+  if (url === '') editor.value?.chain().focus().unsetLink().run()
+  else editor.value?.chain().focus().setLink({ href: url }).run()
 }
 
 const setColor = (e: Event) =>
@@ -251,7 +261,9 @@ const validateContent = (html: string) => {
     let opts: string[] = []
     try {
       opts = poll.getAttribute('data-options') ? JSON.parse(poll.getAttribute('data-options')!) : []
-    } catch {}
+    } catch (e: any) {
+      console.error(e)
+    }
     opts =
       Array.isArray(opts) && opts.length
         ? opts.map((o) => String(o ?? '').trim() || $t('articles.poll.defaultOption'))
