@@ -159,7 +159,7 @@ const saveEdit = async () => {
   if (!isFormValid.value) return
 
   try {
-    const response = await $fetch(`/api/clients/${editedClient.value.id}`, {
+    const response = await $fetch(`/api/clients/${editedClient.value.id}` as `/api/clients/:id`, {
       method: 'PATCH',
       body: {
         ...editedClient.value,

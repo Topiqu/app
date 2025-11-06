@@ -181,10 +181,10 @@ const { data: auth } = useAuth()
 const open = defineModel<boolean>()
 const { idle } = useIdle(5 * 60 * 1000)
 const { emitArticleCreated } = useArticleEvent()
-const { data: client } = useFetch(`/api/clients/${auth.value?.user.clientSiteId}`)
+const { data: client } = await useFetch(`/api/clients/${auth.value?.user.clientSiteId}` as `/api/clients/:id`)
 
 const emit = defineEmits(['saved'])
-const props = defineProps<{ article: ArticleWithDetails }>()
+const props = defineProps<{ article?: ArticleWithDetails }>()
 
 const init = () =>
   ({
