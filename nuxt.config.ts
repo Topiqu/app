@@ -86,7 +86,7 @@ export default defineNuxtConfig({
 
   image: {
     quality: 90,
-    formats: ['avif', 'webp', 'png'],
+    format: ['avif', 'webp', 'png'],
   },
 
   nodemailer: {
