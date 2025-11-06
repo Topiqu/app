@@ -40,6 +40,12 @@ const processClient = async (client: any) => {
     Focus area: ${client.focus || 'general topics'}
     Keywords to include naturally: ${client.keywords?.join(', ') ?? 'none'}
 
+    Article must include:
+    - A catchy title
+    - An engaging perex (introductory paragraph)
+    - Well-structured content with headings and subheadings
+    - Relevant tags (return as array of tag IDs from the database)
+
     CRITICAL LANGUAGE RULE:
     - Default language is ${defaultLang.toUpperCase()}.
     - BUT: If ANY of the input (keywords, audience, focus) contains text in a DIFFERENT language (e.g. Turkish, Thai, Arabic, etc.),
