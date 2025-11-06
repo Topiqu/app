@@ -14,6 +14,7 @@ now:
 test:
   - 🛑 google ads
   - 🛑 google analytics
+  - 🛑 fix auth errors with zod id param
   - 🛑 production fix email template json not loadings
   - 🛑 ai cron jobs for article writing and its notifications
   - 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
