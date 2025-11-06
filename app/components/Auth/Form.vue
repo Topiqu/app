@@ -375,6 +375,7 @@ const signInWithGoogle = async () => {
       callbackUrl:
         (import.meta.dev ? 'http://localhost:3000' : 'https://topiqu.com') +
         `${localePath({ name: 'autorizace' })}?redirect=${window.location + localePath({ name: 'autorizace' })}`,
+      external: true,
     })
     if (result?.error) return toast.error({ message: $t('common.auth.googleSignInFailed') })
     const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
@@ -396,6 +397,7 @@ const signInWithGithub = async () => {
       callbackUrl:
         (import.meta.dev ? 'http://localhost:3000' : 'https://topiqu.com') +
         `${localePath({ name: 'autorizace' })}?redirect=${window.location + localePath({ name: 'autorizace' })}`,
+      external: true,
     })
     if (result?.error) return toast.error({ message: $t('common.auth.githubSignInFailed') })
     const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
