@@ -30,7 +30,7 @@ const updateActiveLink = (target: string | HashChangeEvent) => {
         .querySelectorAll(`#toc a[href$="#${CSS.escape(hash)}"]`)
         .forEach((el) => el.classList.add('active-current'))
     } catch (e: any) {
-      console.log(e)
+      console.error(e)
     }
   }
 }

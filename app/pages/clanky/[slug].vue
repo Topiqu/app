@@ -450,8 +450,8 @@ onMounted(() => {
   try {
     $fetch(`/api/articles/${data.value.id}`, { method: 'PATCH', body: { views: data.value.views + 1 } })
     sessionStorage.setItem(key, now.toString())
-  } catch {
-    console.log('Failed to update article views')
+  } catch (e: any) {
+    console.error('Failed to update article views:', e)
   }
 })
 </script>

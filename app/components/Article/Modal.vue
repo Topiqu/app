@@ -307,7 +307,6 @@ const createArticle = async () => {
   if (!isReleaseDateValid.value)
     return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
   try {
-    console.log('dokud jsem tady ja')
     const { id } = await $fetch('/api/articles', {
       method: 'POST',
       body: {

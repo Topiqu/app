@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
   if (!slug) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
-  console.log(slug)
+
   // const clientSite = await prisma.clientSite.findFirst({
   //   where: { name: slug },
   // })

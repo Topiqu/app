@@ -59,7 +59,6 @@ const sources = defineModel<string[]>({ default: [] })
 
 const extractDomain = (url: string) => {
   try {
-    console.log(new URL(url).hostname.replace(/^www\./, ''))
     return new URL(url).hostname.replace(/^www\./, '')
   } catch {
     return ''
