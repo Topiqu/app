@@ -35,29 +35,38 @@ const processClient = async (client: any) => {
   const defaultLang = client.language
 
   const prompt = `
-    Create a detailed blog article on a trending topic relevant to my audience.
+  Generate a blog article for the client.
 
-    Target audience: ${client.audience || 'general'}
-    Focus area: ${client.focus || 'general topics'}
-    Keywords to include naturally: ${client.keywords?.join(', ') ?? 'none'}
+  Audience: ${client.audience || 'general'}
+  Focus: ${client.focus || 'general topics'}
+  Keywords: ${client.keywords?.join(', ') ?? 'none'}
 
-    Exclude articles similar to my recent articles:
-    ${client.articles.map((a: any) => `- ${a.title}`).join('\n') || 'none'}
+  ## TOPIC RULES
+  - Do NOT create an article that is semantically similar to previous ones.
+  - Similarity = same topic, argument, or thesis, not wording.
+  - Past article summaries (avoid these topics):
+  ${client.articles.map((a: any) => `- ${a.excerpt}`).join('\n') || 'none'}
 
-    Article must include:
-    - A catchy title
-    - An engaging perex (introductory paragraph)
-    - Well-structured content with headings and subheadings
-    - Relevant tags (return as array of tag IDs from the database)
+  Before writing, choose a topic and confirm it is:
+  1) Meaningfully different
+  2) Not rephrased
+  3) Adds a new angle or unanswered question
+  
+  ## COMMUNITY INSIGHT (optional)
+  ${client.communityInsight?.suggestion || 'none'}
+  If relevant AND non-duplicate, prefer it as topic.
 
-    CRITICAL LANGUAGE RULE:
-    - Default language is ${defaultLang.toUpperCase()}.
-    - BUT: If ANY of the input (keywords, audience, focus) contains text in a DIFFERENT language (e.g. Turkish, Thai, Arabic, etc.),
-      THEN: OVERRIDE the default and write the ENTIRE article in THAT language.
-    - Translate all other parts (title, content, perex) into that detected language.
-    - Use proper grammar, formatting, and cultural context of the detected language.
+  ## ARTICLE REQUIREMENTS
+  - Catchy title
+  - Engaging perex
+  - Structured sections with headings
+  - Return "tags" as array of tag IDs
 
-    Respond ONLY in valid JSON as defined in the schema.
+  ## LANGUAGE RULE
+  Default: ${defaultLang.toUpperCase()}
+  If ANY input (audience, keywords, focus) contains another language, write entire article in that language.
+
+  Respond ONLY in valid JSON (schema required).
   `.trim()
 
   let generated: any, usage: any
@@ -195,8 +204,9 @@ export default defineTask({
         focus: true,
         language: true,
         generationFrequency: true,
+        communityInsight: true,
         lastGeneratedAt: true,
-        articles: { select: { title: true }, orderBy: { createdAt: 'desc' }, take: 5 },
+        articles: { select: { excerpt: true }, orderBy: { createdAt: 'desc' }, take: 30 },
         users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
       },
       where: {
@@ -220,7 +230,7 @@ export default defineTask({
 
     for (let i = 0; i < clients.length; i += BATCH_SIZE) {
       const batch = clients.slice(i, i + BATCH_SIZE)
-      await Promise.all(batch.map(processClient))
+      await Promise.allSettled(batch.map(processClient))
     }
 
     return { result: { count: clients.length, timestamp: new Date(now).toISOString() } }
