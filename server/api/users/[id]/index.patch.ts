@@ -1,42 +1,47 @@
+import { z } from 'zod/v3'
 import argon from 'argon2'
 import { authenticator } from 'otplib'
 
 export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
-  const db = await getEnhancedPrisma(user)
-  const { id } = getRouterParams(event)
 
-  const UserUpdateWithOldPassSchema = z
-    .object({
-      oldPass: z
-        .string()
-        .optional()
-        .refine((val) => !val || val.length >= 4, { message: 'Staré heslo musí mít alespoň 4 znaky' }),
-      totpAction: z.literal('enable').optional(),
-      totpCode: z.string().length(6).optional(),
-    })
-    .extend(UserUpdateSchema.shape)
+  const db = await getEnhancedPrisma(user)
+
+  const { id } = getRouterParams(event)
 
   if (user.id !== id && user.role !== 'superadmin')
     throw createError({ statusCode: 403, message: 'Nepovolený přístup' })
 
-  const oldPasswordDb = await prisma.user.findUnique({
-    where: { id },
-    select: { password: true, totpSecret: true },
-  })
+  const oldPasswordDb = await prisma.user.findUnique({ where: { id }, select: { password: true, totpSecret: true } })
 
-  const body = await readValidatedBody(event, UserUpdateWithOldPassSchema.parse)
+  const body = await readValidatedBody(
+    event,
+    z
+      .object({
+        oldPass: z
+          .string()
+          .optional()
+          .refine((val) => !val || val.length >= 4, { message: 'Staré heslo musí mít alespoň 4 znaky' }),
+        totpAction: z.literal('enable').optional(),
+        totpCode: z.string().length(6).optional(),
+      })
+      .extend(UserUpdateSchema.shape).parse,
+  )
+
   const { oldPass, totpAction, totpCode, ...data } = body
-
   if (totpAction === 'enable') {
     if (oldPasswordDb?.totpSecret) {
       const otpauthUrl = authenticator.keyuri(user.email, 'Topiqu', oldPasswordDb.totpSecret)
       return { otpauthUrl }
     }
+
     const secret = authenticator.generateSecret()
+
     const otpauthUrl = authenticator.keyuri(user.email, 'Topiqu', secret)
+
     await db.user.update({ where: { id }, data: { totpSecret: secret } })
+
     return { otpauthUrl }
   }
 
@@ -44,11 +49,13 @@ export default defineEventHandler(async (event) => {
     const secret = oldPasswordDb?.totpSecret
     if (!secret || !authenticator.verify({ token: totpCode, secret }))
       throw createError({ statusCode: 403, message: 'Neplatný TOTP kód' })
+
     const updated = await db.user.update({
       where: { id },
       data: { totpSecret: secret },
       select: { id: true, username: true, email: true, role: true, bio: true },
     })
+
     return { ...updated, verified: true }
   }
 
@@ -58,14 +65,13 @@ export default defineEventHandler(async (event) => {
       data: { totpSecret: null },
       select: { id: true, username: true, email: true, role: true, bio: true },
     })
+
     return { ...updated, verified: false }
   }
 
-  if (user.role !== 'superadmin' && body.password) {
-    if (oldPasswordDb?.password) {
-      const match = await argon.verify(oldPasswordDb.password, oldPass ?? '')
-      if (!match) throw createError({ statusCode: 403, message: 'Změna hesla selhala' })
-    }
+  if (user.role !== 'superadmin' && body.password && oldPasswordDb?.password) {
+    const match = await argon.verify(oldPasswordDb.password, oldPass ?? '')
+    if (!match) throw createError({ statusCode: 403, message: 'Změna hesla selhala' })
   }
 
   if (user.role !== 'superadmin' && body.role && body.role !== user.role)
@@ -75,6 +81,7 @@ export default defineEventHandler(async (event) => {
 
   if (body.role && body.role !== currentUser?.role) {
     if (currentUser?.role === 'admin' && body.role === 'reader') data.clientSiteId = null
+
     await logAction({
       action: 'ROLE_CHANGE',
       userId: user.id,
@@ -84,6 +91,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const updated = await saveUserWithLogging(event, { id, ...data }, true)
+  const updated = await saveUserWithLogging(event, { ...data, id }, true)
+
   return { ...updated }
 })
