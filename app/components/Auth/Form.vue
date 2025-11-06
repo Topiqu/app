@@ -78,9 +78,6 @@
           </div>
         </div>
         <div class="space-y-1.5">
-          <label for="password" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
-            {{ $t('common.auth.password') }}
-          </label>
           <div v-if="internalMode === 'login'" class="relative">
             <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
@@ -114,9 +111,6 @@
           </div>
         </div>
         <div v-if="internalMode === 'register'" class="space-y-1.5">
-          <label for="passwordConfirm" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
-            {{ $t('common.auth.passwordConfirm') }}
-          </label>
           <UserPassword v-model="form.passwordConfirm" :isValid="isPasswordFormValid" isConfirm />
         </div>
         <Button
