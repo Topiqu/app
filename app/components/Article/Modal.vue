@@ -151,7 +151,13 @@
           <span class="text-sm text-gray-500 dark:text-gray-400">{{ $t('articles.editor.releaseDateNote') }}</span>
         </label>
 
-        <TagsManager v-if="article" :article="editedArticle" @update:tags="updateTags" @delete:tag="deleteTag" />
+        <TagsManager
+          v-if="article"
+          :tags="article.tags.map((t) => ({ id: t.tag.id, name: t.tag.name }))"
+          :articleId="article.id"
+          @update:tags="updateTags"
+          @delete:tag="deleteTag"
+        />
         <TagsManager v-else v-model:tags="articleTags" />
       </div>
     </template>

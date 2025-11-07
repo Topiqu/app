@@ -57,40 +57,38 @@
 </template>
 
 <script lang="ts" setup>
-import type { ArticleWithDetails } from '~~/types/article'
-
 import slugify from 'slugify'
 
 type Tag = { id: string; name: string }
 const emit = defineEmits(['update:tags', 'delete:tag'])
 const toast = useToast()
 
-const props = defineProps<{ article?: ArticleWithDetails }>()
+const props = defineProps<{
+  tags: Tag[]
+  articleId?: string
+}>()
 
-const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
-  default: () => [],
-  key: `article-tags-${props.article?.id}`,
-})
-
-const { data: tags, refresh } = await useFetch('/api/tags', { default: () => [] })
+const { data: allTags, refresh } = await useFetch('/api/tags', { default: () => [] })
 let newTag = shallowReactive<{ name: string; slug: string }>({ name: '', slug: '' })
 const selectedTagId = shallowRef('')
-let tagBuffer = shallowReactive<Tag[]>(
-  props.article?.id && artTags.value?.length ? [...artTags.value.map((t) => ({ id: t.tagId, name: t.tag.name }))] : [],
+let tagBuffer = shallowReactive<Tag[]>([...props.tags])
+
+watch(
+  () => props.tags,
+  (val) => {
+    tagBuffer = [...val]
+  },
+  { deep: true },
 )
 
 const updateSlug = () => {
-  newTag.slug = slugify(newTag.name, {
-    lower: true,
-    strict: true,
-    trim: true,
-  })
+  newTag.slug = slugify(newTag.name, { lower: true, strict: true, trim: true })
 }
 
 const addTagToBuffer = () => {
   if (!selectedTagId.value) return
-  const tag = tags.value.find((t: Tag) => t.id === selectedTagId.value)
-  if (tag && !tagBuffer.some((t: Tag) => t.id === tag.id)) {
+  const tag = allTags.value.find((t: Tag) => t.id === selectedTagId.value)
+  if (tag && !tagBuffer.some((t) => t.id === tag.id)) {
     tagBuffer.push({ id: tag.id, name: tag.name })
     emit(
       'update:tags',
@@ -121,8 +119,8 @@ const createAndAddTag = async () => {
 }
 
 const removeTagFromBuffer = (id: string) => {
-  tagBuffer = tagBuffer.filter((t: Tag) => t.id !== id)
-  if (props.article?.id) {
+  tagBuffer = tagBuffer.filter((t) => t.id !== id)
+  if (props.articleId) {
     emit('delete:tag', id)
   } else {
     emit(
