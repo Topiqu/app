@@ -150,15 +150,14 @@
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">{{ $t('articles.editor.releaseDateNote') }}</span>
         </label>
-
         <TagsManager
           v-if="article"
-          :tags="article.tags.map((t) => ({ id: t.tag.id, name: t.tag.name }))"
-          :articleId="article.id"
-          @update:tags="updateTags"
-          @delete:tag="deleteTag"
+          :article="editedArticle"
+          @add:tag="addTagToArticle"
+          @delete:tag="deleteTagFromArticle"
+          @create:tag="addTagToArticle"
         />
-        <TagsManager v-else v-model:tags="articleTags" />
+        <TagsManager v-else @add:tag="(id) => articleTags.push(id)" @create:tag="(id) => articleTags.push(id)" />
       </div>
     </template>
 
@@ -186,7 +185,7 @@ const { t } = useI18n()
 const { data: auth } = useAuth()
 const open = defineModel<boolean>()
 const { idle } = useIdle(5 * 60 * 1000)
-const { emitArticleCreated } = useArticleEvent()
+const { emitArticleCreated, emitArticleUpdated } = useArticleEvent()
 const { data: client } = await useFetch(`/api/clients/${auth.value?.user.clientSiteId}` as `/api/clients/:id`)
 
 const emit = defineEmits(['saved'])
@@ -220,12 +219,10 @@ const mode = shallowRef<'manual' | 'ai'>('manual')
 const aiGenerating = shallowRef(false)
 const successMessage = shallowRef('')
 const draftsOpen = shallowRef(false)
-
 const options = [
   { value: 'manual', label: 'manual', icon: 'mdi:pencil' },
   { value: 'ai', label: 'ai', icon: 'mdi:robot' },
 ] as const
-
 const currentDate = new Date()
 const minDate = currentDate.toISOString().slice(0, 16)
 const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59).toISOString().slice(0, 16)
@@ -263,16 +260,14 @@ const saveDraft = useDebounceFn(async () => {
     )
   )
     return
+
   try {
-    await $fetch('/api/articles/draft', {
-      method: 'POST',
-      body: { ...editedArticle.value },
-    })
-    successMessage.value = $t('common.messages.draftSaved')
+    await $fetch('/api/articles/draft', { method: 'POST', body: { ...editedArticle.value } })
+    successMessage.value = t('common.messages.draftSaved')
     await refresh()
     setTimeout(() => (successMessage.value = ''), 8000)
   } catch {
-    toast.error({ message: $t('common.messages.draftSaveFailed') })
+    toast.error({ message: t('common.messages.draftSaveFailed') })
   }
 }, 8000)
 
@@ -303,15 +298,19 @@ const loadDraft = (draft: ArticleDraft) =>
 const handleUpload = (file: { url: string }) => (editedArticle.value.imageUrl = file.url)
 
 const onSubmit = async () => {
-  if (props.article != null) await saveEdit()
-  else await createArticle()
+  if (props.article) {
+    await saveEdit()
+  } else {
+    await createArticle()
+  }
 }
 
 const createArticle = async () => {
   if (!editedArticle.value.title)
     return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
   if (!isReleaseDateValid.value)
-    return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
+    return toast.error({ message: t('common.messages.invalidDateRange', [minDate, maxDate]) })
+
   try {
     const { id } = await $fetch('/api/articles', {
       method: 'POST',
@@ -320,18 +319,64 @@ const createArticle = async () => {
         excerpt: editedArticle.value.excerpt || undefined,
         content: editedArticle.value.content || undefined,
         releaseAt: editedArticle.value.releaseAt || undefined,
-        sources: editedArticle.value.sources?.filter((source) => source.trim() !== ''),
+        sources: editedArticle.value.sources?.filter((s) => s.trim() !== ''),
       },
     })
+
     await Promise.all(
       articleTags.value.map((tagId) => $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })),
     )
     toast.success({ message: t('articles.editor.createSuccess') })
-    Object.assign(editedArticle, init())
+    Object.assign(editedArticle.value, init())
+    articleTags.value = []
     emitArticleCreated()
     open.value = false
   } catch (error: any) {
-    toast.error({ message: $t('articles.editor.createFailed') + error.data?.message })
+    toast.error({ message: t('articles.editor.createFailed') + error.data?.message })
+  }
+}
+
+const addTagToArticle = (tagId: string) => {
+  $fetch(`/api/articles/${editedArticle.value.id}/tags`, { method: 'POST', body: { tagId } })
+  toast.success({ message: t('articles.tags.addTagSuccess') })
+  emitArticleUpdated()
+}
+
+const deleteTagFromArticle = (tagId: string) => {
+  $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, { method: 'DELETE' })
+  toast.success({ message: t('articles.tags.removeTagSuccess') })
+  emitArticleUpdated()
+}
+
+const saveEdit = async () => {
+  if (editedArticle.value.releaseAt) {
+    const releaseDate = new Date(editedArticle.value.releaseAt)
+    const minDateObj = new Date(minDate)
+    const maxDateObj = new Date(maxDate)
+    if (releaseDate < minDateObj || releaseDate > maxDateObj) {
+      return toast.error({ message: t('common.messages.invalidDateRange', [minDate, maxDate]) })
+    }
+  }
+
+  try {
+    await $fetch(`/api/articles/${editedArticle.value.id}`, {
+      method: 'PATCH',
+      body: {
+        title: editedArticle.value.title,
+        excerpt: editedArticle.value.excerpt || '',
+        content: editedArticle.value.content,
+        slug: editedArticle.value.slug,
+        userId: editedArticle.value.userId || editedArticle.value.user?.id,
+        imageUrl: editedArticle.value.imageUrl,
+        releaseAt: editedArticle.value.releaseAt || undefined,
+      },
+    })
+    emitArticleUpdated()
+    toast.success({ message: t('common.messages.saveSuccess') })
+    open.value = false
+    emit('saved')
+  } catch (error: any) {
+    toast.error({ message: error.data?.message || t('common.messages.saveFailed') })
   }
 }
 
@@ -340,15 +385,17 @@ const confirmClose = async () => {
     !editedArticle.value.title.length &&
     (!editedArticle.value.content?.length || editedArticle.value.content === '<p></p>') &&
     !editedArticle.value.sources?.length
-  )
-    return (open.value = false)
+  ) {
+    open.value = false
+    return
+  }
   const r = await Swal.fire({
-    title: $t('common.messages.closeConfirmTitle'),
-    text: $t('common.messages.closeConfirmText'),
+    title: t('common.messages.closeConfirmTitle'),
+    text: t('common.messages.closeConfirmText'),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: $t('common.messages.closeConfirmButton'),
-    cancelButtonText: $t('common.messages.deleteCancel'),
+    confirmButtonText: t('common.messages.closeConfirmButton'),
+    cancelButtonText: t('common.messages.deleteCancel'),
     confirmButtonColor: '#ef4444',
   })
   if (r.isConfirmed) open.value = false
@@ -367,19 +414,13 @@ const generateAIContent = async () => {
     editedArticle.value.imageUrl = articleImageUrl
     editedArticle.value.sources = sources || []
     articleTags.value = tags
-    toast.success({ message: $t('articles.editor.aiContentGenerated') })
+    toast.success({ message: t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
-    toast.error({ message: $t('articles.editor.aiContentFailed') + error.data?.message })
+    toast.error({ message: t('articles.editor.aiContentFailed') + error.data?.message })
   } finally {
     aiGenerating.value = false
   }
 }
-
-const { data: artTags } = useFetch(`/api/articles/${props.article?.id}/tags`, {
-  default: () => [],
-  key: `article-tags-${props.article?.id}`,
-})
-
 const showReleaseAt = computed(() => {
   if (editedArticle.value.status === 'published') return false
   if (editedArticle.value.releaseAt) {
@@ -388,68 +429,12 @@ const showReleaseAt = computed(() => {
   }
   return true
 })
-
 const updateSlug = () =>
   (editedArticle.value.slug = slugify(editedArticle.value.title, {
     lower: true,
     strict: true,
     trim: true,
   }))
-
-const updateTags = async (tagIds: string[]) => {
-  const currentTags = (artTags.value || []).map((t) => t.tagId)
-  const tagsToAdd = tagIds.filter((id) => !currentTags.includes(id))
-
-  await Promise.all(
-    tagsToAdd.map((tagId) =>
-      $fetch(`/api/articles/${editedArticle.value.id}/tags`, {
-        method: 'POST',
-        body: { tagId },
-      }).catch((e) => console.error('POST error:', e)),
-    ),
-  )
-
-  toast.success({ message: $t('articles.tags.addTagSuccess') })
-}
-
-const deleteTag = async (tagId: string) => {
-  try {
-    await $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, { method: 'DELETE' })
-    toast.success({ message: $t('articles.tags.removeTagSuccess') })
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('articles.tags.operationFailed') })
-  }
-}
-
-const saveEdit = async () => {
-  if (editedArticle.value.releaseAt) {
-    const releaseDate = new Date(editedArticle.value.releaseAt)
-    const minDateObj = new Date(minDate)
-    const maxDateObj = new Date(maxDate)
-    if (releaseDate < minDateObj || releaseDate > maxDateObj) {
-      return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
-    }
-  }
-  try {
-    await $fetch(`/api/articles/${editedArticle.value.id}`, {
-      method: 'PATCH',
-      body: {
-        title: editedArticle.value.title,
-        excerpt: editedArticle.value.excerpt || '',
-        content: editedArticle.value.content,
-        slug: editedArticle.value.slug,
-        userId: editedArticle.value.userId || editedArticle.value.user?.id,
-        imageUrl: editedArticle.value.imageUrl,
-        releaseAt: editedArticle.value.releaseAt || undefined,
-      },
-    })
-    toast.success({ message: $t('common.messages.saveSuccess') })
-    open.value = false
-    emit('saved')
-  } catch (error: any) {
-    toast.error({ message: error.data?.message || $t('common.messages.saveFailed') })
-  }
-}
 </script>
 
 <style scoped>

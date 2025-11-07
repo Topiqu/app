@@ -50,13 +50,12 @@
 import slugify from 'slugify'
 
 const toast = useToast()
-
 const open = defineModel<boolean>()
-
 const props = defineProps<{ articleId: string }>()
 
-const newTag = ref<{ name: string; slug: string }>({ name: '', slug: '' })
+const { onArticleUpdated } = useArticleEvent()
 
+let newTag = shallowReactive<{ name: string; slug: string }>({ name: '', slug: '' })
 const selectedTagId = shallowRef<string>('')
 
 const { data: articleTags, refresh: refreshTags } = useFetch(
@@ -69,14 +68,17 @@ const { data: availableTags, refresh: refreshAvailableTags } = useFetch(
   { default: () => [] },
 )
 
-const updateSlug = () => (newTag.value.slug = slugify(newTag.value.name, { lower: true, strict: true, trim: true }))
+onArticleUpdated(() => {
+  refreshTags()
+  refreshAvailableTags()
+})
+
+const updateSlug = () => (newTag.slug = slugify(newTag.name, { lower: true, strict: true, trim: true }))
 
 const apiCall = async (url: string, method: 'POST' | 'DELETE', body?: any) => {
   try {
     await $fetch(url, { method, body })
-
     await Promise.all([refreshTags(), refreshAvailableTags()])
-
     toast.success({
       message: method === 'POST' ? $t('articles.tags.addTagSuccess') : $t('articles.tags.removeTagSuccess'),
     })
@@ -86,19 +88,15 @@ const apiCall = async (url: string, method: 'POST' | 'DELETE', body?: any) => {
 }
 
 const addCustomTag = async () => {
-  if (!newTag.value.name.trim()) return
-
+  if (!newTag.name.trim()) return
   updateSlug()
-
   try {
     const tag = await $fetch('/api/tags', {
       method: 'POST',
-      body: { name: newTag.value.name.trim(), slug: newTag.value.slug },
+      body: { name: newTag.name.trim(), slug: newTag.slug },
     })
-
     await apiCall(`/api/articles/${props.articleId}/tags`, 'POST', { tagId: tag.id })
-
-    newTag.value = { name: '', slug: '' }
+    newTag = { name: '', slug: '' }
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('articles.tags.addCustomTagFailed') })
   }
@@ -106,9 +104,7 @@ const addCustomTag = async () => {
 
 const addExistingTag = async () => {
   if (!selectedTagId.value) return
-
   await apiCall(`/api/articles/${props.articleId}/tags`, 'POST', { tagId: selectedTagId.value })
-
   selectedTagId.value = ''
 }
 
