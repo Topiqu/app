@@ -45,7 +45,11 @@
         :class="{ 'w-full h-48 lg:h-64 aspect-[3/2]': isFeatured, 'w-full h-32 aspect-[3/2]': !isFeatured }"
         class="bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg mb-4"
       >
-        <Icon name="image" :class="{ 'w-16 h-16': isFeatured, 'w-12 h-12': !isFeatured }" class="text-gray-400" />
+        <Icon
+          name="mdi:image-off"
+          :class="{ 'w-16 h-16': isFeatured, 'w-12 h-12': !isFeatured }"
+          class="text-gray-400"
+        />
       </div>
     </NuxtLink>
     <div
@@ -152,11 +156,7 @@
             :src="article?.user.avatarUrl"
             :class="{ 'w-16 h-16': isFeatured, 'w-7 h-7': !isFeatured }"
             class="rounded-full object-cover border border-gray-200 dark:border-gray-700"
-            :alt="
-              $t('articles.articleCard.authorAvatarAlt', [
-                article?.user?.username || $t('articles.articleCard.noAuthor'),
-              ])
-            "
+            :alt="$t('common.avatar.alt.author', [article?.user?.username || $t('articles.articleCard.noAuthor')])"
           />
           <span
             :class="{ 'text-lg font-semibold': isFeatured, 'font-medium': !isFeatured }"

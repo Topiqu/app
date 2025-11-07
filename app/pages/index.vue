@@ -176,7 +176,7 @@
                 :alt="$t('articles.articleCard.imageAlt')"
               />
               <div v-else class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg">
-                <Icon name="image" class="w-8 h-8 text-gray-400" />
+                <Icon name="mdi:image-off" class="w-8 h-8 text-gray-400" />
               </div>
               <div class="relative z-20">
                 <h4

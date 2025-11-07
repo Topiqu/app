@@ -419,11 +419,11 @@ const savePreferences = async () => {
         aiUser: client.value.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
       },
     })
-    toast.success({ message: $t('common.preferences.messages.saveSuccess') })
+    toast.success({ message: $t('common.messages.successGeneralTitle') })
     await refresh()
     open.value = false
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.preferences.messages.saveFailed') })
+    toast.error({ message: e.data?.message || $t('common.messages.saveFailed') })
   }
 }
 
