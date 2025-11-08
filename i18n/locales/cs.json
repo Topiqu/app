@@ -26,6 +26,11 @@
       "gatewayTimeout": "Brána se sekla jak lagující server. Počkejte chvilku a zkuste to znova.",
       "unprocessableEntity": "Tomuhle nerozumíme, jako AI na špatný prompt. Přidejte víc detailů a půjde to."
     },
+    "errors": {
+      "unauthorized": "Přístup zamítnut.",
+      "alreadyExists": "Toto již existuje.",
+      "forbidden": "Tady je plot s ostnatým drátem – přístup zakázán, ani pro superadminy s cheat kódem."
+    },
     "actions": {
       "view": "Zobrazit",
       "edit": "Upravit",

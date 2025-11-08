@@ -33,6 +33,25 @@
       "shareLinkedIn": "Share on LinkedIn",
       "copySuccess": "Successfully copied"
     },
+    "errTypes": {
+      "notFound": "Couldn't find that. I must be blind.",
+      "unauthorized": "State, you can't go here. This is forbidden territory for unauthenticated adventurers.",
+      "forbidden": "There's barbed wire here – access denied, even for superadmins with cheat codes.",
+      "server": "The server took a coffee break. Try again later.",
+      "badRequest": "Your request is as confused as a draft article without a title – try writing it clearly.",
+      "tooManyRequests": "Spam alert! You're clicking faster than a speedrunner – take a break.",
+      "internalError": "Something exploded inside like a poorly written script. Our technomages are on it.",
+      "serviceUnavailable": "The service went on vacation. Refresh the page or have some tea in the meantime.",
+      "conflict": "The data is arguing like two editors over one article. Decide which version wins.",
+      "notAcceptable": "This is against the rules of the game. Edit the content and try again.",
+      "gatewayTimeout": "The gateway got stuck like a lagging server. Wait a moment and try again.",
+      "unprocessableEntity": "We don't understand this, like an AI with a bad prompt. Add more details and it'll work."
+    },
+    "errors": {
+      "unauthorized": "Access denied.",
+      "alreadyExists": "This already exists.",
+      "forbidden": "There's barbed wire here – access denied, even for superadmins with cheat codes."
+    },
     "avatar": {
       "title": "Avatar",
       "uploadAvatar": "Upload Avatar",
