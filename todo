@@ -6,8 +6,24 @@ always:
 now:
   - 🛑 notifications should also be localised
   - 🛑 GAM + total ad revenue overview & logging
-  - 🟡 fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions)
   - 🟡 Stripe integration for token refill
+  - 🟡 fix prod mjml parse issue ([request error] [unhandled] [POST] https://johnnyho-blog.topiqu.com/api/comments
+          H3Error: Parsing failed. Check your mjml.
+              at MJMLParser (/var/task/node_modules/mjml-parser-xml/lib/index.js:286:11)
+              ... 7 lines matching cause stack trace ...
+              at async Server.<anonymous> (/opt/rust/nodejs.js:16:7750) {
+            cause: Error: Parsing failed. Check your mjml.
+                at MJMLParser (/var/task/node_modules/mjml-parser-xml/lib/index.js:286:11)
+                at mjml2html (/var/task/node_modules/mjml-core/lib/index.js:186:39)
+                at sendEmail (file:///var/task/chunks/nitro/nitro.mjs:7119:28)
+                at async Object.handler (file:///var/task/chunks/routes/api/index.post3.mjs:125:5)
+                at async file:///var/task/chunks/nitro/nitro.mjs:2452:19
+                at async Object.callAsync (file:///var/task/chunks/nitro/nitro.mjs:5838:16)
+                at async toNodeHandle (file:///var/task/chunks/nitro/nitro.mjs:2723:7)
+                at async Server.r (/opt/rust/nodejs.js:2:15569)
+                at async Server.<anonymous> (/opt/rust/nodejs.js:16:7750),
+})
+  - 🟡 fix server i18n not loading correctly dynamic languages
   - 🟢 replace sweetalert modals with custom ModalMini component
 ---
 test:
@@ -48,6 +64,7 @@ done:
   - 🟢 fix background floating objects z-index
   - 🟢 user page - enhance/improve styling & ui for hero section
   - 🟢 lang switcher -> improve styles
+  - 🟡 fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions)
   - 🟡 create dropdown menu component w groups
   - 🟡 encapsulate article exports
   - 🛑 useClientSite composable - return language/cliensite details based on host header
