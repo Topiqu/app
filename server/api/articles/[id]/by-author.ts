@@ -1,7 +1,8 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   const username = decodeURIComponent(getRouterParam(event, 'id')!.trim())
-  if (!username) throw createError({ statusCode: 400, message: 'Uživatelské jméno je povinné' })
+  if (!username) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const { skip, take } = await getPagination(event)
   const query = getQuery(event)
@@ -13,7 +14,7 @@ export default defineEventHandler(async (event) => {
     where: { username },
     select: { id: true, username: true, avatarUrl: true, bio: true, clientSiteId: true },
   })
-  if (!author) throw createError({ statusCode: 404, message: `Autor nenalezen: ${username}` })
+  if (!author) throw createError({ statusCode: 404, message: t('common.errors.authorNotFound')! })
 
   const [field, order] = (sort as string).split(':') as ['createdAt' | 'title', 'asc' | 'desc']
 

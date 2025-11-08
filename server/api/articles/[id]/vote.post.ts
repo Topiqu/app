@@ -1,12 +1,13 @@
 import { randomUUID } from 'crypto'
 
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   const { id } = getRouterParams(event)
   const { pollId, response } = await readBody(event)
 
   if (!pollId || !id || !response) {
-    throw createError({ statusCode: 400, statusMessage: 'Něco chybí' })
+    throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   }
 
   const article = await prisma.article.findUnique({
@@ -15,7 +16,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!article) {
-    throw createError({ statusCode: 404, statusMessage: 'Článek neexistuje' })
+    throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
   }
 
   const sessionId = user?.id ? null : getCookie(event, 'anon_session') || randomUUID()
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
   const existingVote = await prisma.pollResult.findFirst({ where })
 
   if (existingVote) {
-    throw createError({ statusCode: 409, statusMessage: 'Už jste hlasovali v této anketě' })
+    throw createError({ statusCode: 409, message: t('common.errors.alreadyVoted')! })
   }
 
   const pollResult = await prisma.pollResult.create({

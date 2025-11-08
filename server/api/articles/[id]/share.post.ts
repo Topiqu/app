@@ -1,6 +1,7 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const id = getRouterParam(event, 'id')
-  if (!id) throw createError({ status: 400, message: 'ID článku je povinné' })
+  if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const body = await readBody(event)
 
@@ -8,7 +9,7 @@ export default defineEventHandler(async (event) => {
     where: { id, status: 'published' },
     select: { id: true, clientSiteId: true },
   })
-  if (!article) throw createError({ status: 404, message: 'Článek nenalezen' })
+  if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   await prisma.$transaction(async (tx) => {
     await tx.article.update({

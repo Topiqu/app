@@ -1,6 +1,12 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user)
+    throw createError({
+      statusCode: 401,
+      message: t('common.errors.unauthorized', { locale: 'cs' })!,
+    })
 
   const body = await readValidatedBody(event, TagCreateSchema.parse)
 
@@ -12,8 +18,9 @@ export default defineEventHandler(async (event) => {
   if (existingTag)
     throw createError({
       statusCode: 409,
-      message: 'Tag s tímto názvem už existuje.',
+      message: t('common.errors.alreadyExists')!,
     })
+
   const tag = await db.tag.create({
     data: {
       name: body.name,

@@ -1,7 +1,9 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
+
   const slug = getRouterParam(event, 'id')
-  if (!slug) throw createError({ statusCode: 400, message: 'Slug je povinný' })
+  if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const { take } = await getPagination(event)
 

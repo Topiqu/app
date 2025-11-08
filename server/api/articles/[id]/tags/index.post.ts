@@ -1,8 +1,13 @@
-import type { H3Event } from 'h3'
+export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+  const user = (await getServerSession(event))?.user
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
-export default defineEventHandler(async (event: H3Event) => {
   const articleId = event.context.params!.id!
+  if (!articleId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+
   const body = await readValidatedBody(event, z.object({ tagId: z.string() }).parse)
 
-  return await prisma.articleTag.create({ data: { articleId, tagId: body.tagId } })
+  await prisma.articleTag.create({ data: { articleId, tagId: body.tagId } })
+  return { success: true }
 })

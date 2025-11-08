@@ -1,7 +1,8 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   const slug = getRouterParam(event, 'id')
-  if (!slug) throw createError({ statusCode: 400, message: 'Slug je povinný' })
+  if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const sessionId = getCookie(event, 'anon_session')
   const article = await prisma.article.findUnique({
@@ -26,10 +27,11 @@ export default defineEventHandler(async (event) => {
       },
     },
   })
-  if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
+  if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   if (article.status !== 'published' && user?.role !== 'admin')
-    throw createError({ statusCode: 403, message: 'Nedostupné' })
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+
   return {
     ...article,
     commentCount: article._count.comments,

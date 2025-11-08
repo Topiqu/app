@@ -35,7 +35,7 @@
     },
     "errTypes": {
       "notFound": "Couldn't find that. I must be blind.",
-      "unauthorized": "State, you can't go here. This is forbidden territory for unauthenticated adventurers.",
+      "unauthorized": "Stop, you can't go here. This is forbidden territory for unauthenticated adventurers.",
       "forbidden": "There's barbed wire here – access denied, even for superadmins with cheat codes.",
       "server": "The server took a coffee break. Try again later.",
       "badRequest": "Your request is as confused as a draft article without a title – try writing it clearly.",
@@ -49,8 +49,24 @@
     },
     "errors": {
       "unauthorized": "Access denied.",
+      "invalidRequest": "Invalid request.",
+      "missingBlog": "Missing blog name.",
+      "blogNotFound": "Blog not found.",
+      "tagNotFound": "Tag not found.",
       "alreadyExists": "This already exists.",
-      "forbidden": "There's barbed wire here – access denied, even for superadmins with cheat codes."
+      "forbidden": "Forbidden.",
+      "articleNotFound": "Article not found",
+      "authorNotFound": "Author not found",
+      "articleIdRequired": "Article ID is required",
+      "articleEditForbidden": "You cannot edit this article",
+      "invalidReleaseDate": "Invalid release date",
+      "missing": "Something is missing",
+      "alreadyVoted": "You have already voted in this poll",
+      "releaseDateLocked": "Cannot edit release date for a published article or one with a passed release date"
+    },
+    "notifications": {
+      "userLikedArticle": "{0} liked your article.",
+      "anonymousLikedArticle": "Someone liked your article."
     },
     "avatar": {
       "title": "Avatar",

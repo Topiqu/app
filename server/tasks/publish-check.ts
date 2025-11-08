@@ -14,13 +14,13 @@ export default defineTask({
   async run() {
     const now = new Date()
     return prisma.$transaction(async (ctx) => {
-      console.log('now', now.toISOString())
+      // console.log('now', now.toISOString())
       const articles = await ctx.article.findMany({
         where: { status: 'draft', releaseAt: { not: null, lte: now } },
         select: { id: true, title: true, userId: true, clientSiteId: true, user: { select: { username: true } } },
       })
       if (!articles.length) return { result: { count: 0, timestamp: now.toISOString() } }
-      console.log(articles)
+      // console.log(articles)
 
       const articleIds = articles.map((a) => a.id)
       const update = await ctx.article.updateMany({

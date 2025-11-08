@@ -1,12 +1,17 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+
   const user = (await getServerSession(event))?.user
-  const tagName = decodeURIComponent(getRouterParam(event, 'slug')!.trim())
-  if (!tagName) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+
+  const tagName = decodeURIComponent(getRouterParam(event, 'slug')?.trim() ?? '')
+  if (!tagName) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const { skip, take } = await getPagination(event)
   const query = getQuery(event)
   const { search = '', sort = 'createdAt:desc', site } = query as { search?: string; sort?: string; site: string }
-  if (!site) throw createError({ statusCode: 400, message: 'Chybí název blogu' })
+
+  if (!site) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const db = await getEnhancedPrisma(user)
 
@@ -14,7 +19,7 @@ export default defineEventHandler(async (event) => {
     where: { name: site },
     select: { id: true },
   })
-  if (!clientSite) throw createError({ statusCode: 404, message: 'Blog nenalezen' })
+  if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   const [field, order] = (sort as string).split(':') as ['createdAt' | 'title', 'asc' | 'desc']
 
@@ -48,7 +53,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!tag) throw createError({ statusCode: 404, message: 'Tag nenalezen' })
+  if (!tag) throw createError({ statusCode: 404, message: t('common.errors.tagNotFound') ?? 'Tag nenalezen' })
 
   const hasMore = tag.articles.length > take
   const items = hasMore ? tag.articles.slice(0, take) : tag.articles
@@ -56,11 +61,10 @@ export default defineEventHandler(async (event) => {
   return {
     ...tag,
     articles: items.map((a) => ({
-      ...a,
-      article: {
-        ...a.article,
-        likes: a.article._count.reactions,
-      },
+      ...a.article,
+      likes: a.article._count.reactions,
+      tags: a.article.tags.map((t) => t.tag),
+      user: a.article.user,
     })),
     hasMore,
   }

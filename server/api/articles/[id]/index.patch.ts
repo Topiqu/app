@@ -2,19 +2,20 @@ import type { NotificationType } from '@prisma/client'
 
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
-
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+
   const id = getRouterParam(event, 'id')
   const user = (await getServerSession(event))?.user
-  if (!id) throw createError({ status: 400, message: 'ID článku je povinné' })
-  if (!user) throw createError({ status: 401 })
+  if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
   const isOnlyViews = Object.keys(body).length === 1 && 'views' in body
 
   if (!isOnlyViews && body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
-    throw createError({ status: 403, message: 'Tento článek nemůžete upravovat' })
+    throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
 
   const currentDate = new Date()
   const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59)
@@ -23,8 +24,8 @@ export default defineEventHandler(async (event) => {
     const releaseDate = new Date(body.releaseAt)
     if (isNaN(releaseDate.getTime()) || releaseDate < currentDate || releaseDate > maxDate) {
       throw createError({
-        status: 400,
-        message: `Datum vydání musí být od teď (${currentDate.toISOString()}) do ${currentDate.getFullYear() + 100}`,
+        statusCode: 400,
+        message: t('common.errors.invalidReleaseDate')!,
       })
     }
   }
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
     select: { status: true, releaseAt: true },
   })
 
-  if (!previousArticle) throw createError({ status: 404, message: 'Článek nenalezen' })
+  if (!previousArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   if (
     body.releaseAt &&
@@ -42,8 +43,8 @@ export default defineEventHandler(async (event) => {
       (previousArticle.releaseAt && new Date(previousArticle.releaseAt) < currentDate))
   ) {
     throw createError({
-      status: 403,
-      message: 'Nelze upravit datum vydání u publikovaného článku nebo článku s uplynulým datem vydání',
+      statusCode: 403,
+      message: t('common.errors.releaseDateLocked')!,
     })
   }
 

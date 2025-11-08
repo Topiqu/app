@@ -1,7 +1,8 @@
-import type { H3Event } from 'h3'
+export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
 
-export default defineEventHandler(async (event: H3Event) => {
   const articleId = getRouterParam(event, 'id')
+  if (!articleId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   return await prisma.articleTag.findMany({
     where: { articleId },

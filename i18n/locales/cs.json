@@ -28,8 +28,24 @@
     },
     "errors": {
       "unauthorized": "Přístup zamítnut.",
+      "invalidRequest": "Neplatný požadavek.",
+      "missingBlog": "Chybí název blogu.",
+      "blogNotFound": "Blog nenalezen.",
+      "tagNotFound": "Tag nenalezen.",
       "alreadyExists": "Toto již existuje.",
-      "forbidden": "Tady je plot s ostnatým drátem – přístup zakázán, ani pro superadminy s cheat kódem."
+      "forbidden": "Chybí oprávnění.",
+      "articleNotFound": "Článek nenalezen",
+      "authorNotFound": "Autor nenalezen",
+      "articleIdRequired": "ID článku je povinné",
+      "articleEditForbidden": "Tento článek nemůžete upravovat",
+      "invalidReleaseDate": "Neplatné datum vydání",
+      "missing": "Něco chybí",
+      "alreadyVoted": "Už jste hlasovali v této anketě",
+      "releaseDateLocked": "Nelze upravit datum vydání u publikovaného článku nebo článku s uplynulým datem vydání"
+    },
+    "notifications": {
+      "userLikedArticle": "{0} lajkl váš článek.",
+      "anonymousLikedArticle": "Někdo lajkl váš článek."
     },
     "actions": {
       "view": "Zobrazit",

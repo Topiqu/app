@@ -7,12 +7,13 @@ interface GlobalThis {
 }
 
 declare const globalThis: GlobalThis
-
 export default defineEventHandler(async (event) => {
-  const user = (await getServerSession(event))?.user
-  const id = getRouterParam(event, 'id')
-  if (!id) throw createError({ statusCode: 400, message: 'ID článku je povinné' })
+  const { translate: t } = await useServerI18n(event)
 
+  const id = getRouterParam(event, 'id')
+  if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
+
+  const user = (await getServerSession(event))?.user
   const sessionId = getCookie(event, 'anon_session') || randomUUID()
   setCookie(event, 'anon_session', sessionId, { maxAge: 30 * 24 * 60 * 60 })
 
@@ -35,7 +36,7 @@ export default defineEventHandler(async (event) => {
     select: { userId: true },
   })
 
-  if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
+  if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   await db.articleReaction.create({
     data: { articleId: id, userId: user?.id || null, sessionId: user?.id ? null : sessionId },
@@ -44,12 +45,15 @@ export default defineEventHandler(async (event) => {
   if (article.userId && article.userId !== user?.id) {
     const notification = await prisma.notification.create({
       data: {
-        message: `${user?.name || 'Někdo'} dal like vašemu článku.`,
+        message: user?.name
+          ? t('common.notifications.userLikedArticle', [user.name])!
+          : t('common.notifications.anonymousLikedArticle')!,
         userId: article.userId,
         articleId: id,
         type: 'LIKE',
       },
     })
+
     const streamKey = `notifications:${article.userId}`
     const streams = globalThis.eventStreams?.get(streamKey)
     if (streams) {
