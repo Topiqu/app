@@ -32,19 +32,28 @@
       "missingBlog": "Chybí název blogu.",
       "blogNotFound": "Blog nenalezen.",
       "tagNotFound": "Tag nenalezen.",
+      "commentNotFound": "Komentář nenalezen.",
+      "banNotFound": "Uživatel není zabanován.",
+      "commentsDisabled": "Komentáře jsou u tohoto článku vypnuty.",
       "alreadyExists": "Toto již existuje.",
       "forbidden": "Chybí oprávnění.",
       "articleNotFound": "Článek nenalezen",
       "authorNotFound": "Autor nenalezen",
+      "userNotFound": "Uživatel nenalezen",
       "articleIdRequired": "ID článku je povinné",
       "articleEditForbidden": "Tento článek nemůžete upravovat",
       "invalidReleaseDate": "Neplatné datum vydání",
       "missing": "Něco chybí",
       "alreadyVoted": "Už jste hlasovali v této anketě",
-      "releaseDateLocked": "Nelze upravit datum vydání u publikovaného článku nebo článku s uplynulým datem vydání"
+      "releaseDateLocked": "Nelze upravit datum vydání u publikovaného článku nebo článku s uplynulým datem vydání",
+      "banReasonRequired": "Důvod banu je povinný.",
+      "userAlreadyBanned": "Uživatel je již zabanován na této subdoméně.",
+      "blogAlreadyDeactivated": "Blog je již deaktivován.",
+      "subdomainExists": "Subdoména je již obsazená."
     },
     "notifications": {
       "userLikedArticle": "{0} lajkl váš článek.",
+      "userCommentedArticle": "{0} okomentoval váš článek.",
       "anonymousLikedArticle": "Někdo lajkl váš článek."
     },
     "actions": {
@@ -93,6 +102,7 @@
     },
     "user": {
       "joined": "Přidal se: {0}",
+      "violateRules": "Porušení pravidel",
       "viewProfile": "Zobrazit profil",
       "notAvailable": "Není dostupné"
     },

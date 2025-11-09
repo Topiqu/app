@@ -1,13 +1,14 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   const db = await getEnhancedPrisma(user)
 
-  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
   if (user.role !== 'admin' || !user.clientSiteId)
-    throw createError({ statusCode: 403, message: 'Nemáte oprávnění banovat uživatele' })
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const commentId = getRouterParam(event, 'id')
-  if (!commentId) throw createError({ statusCode: 400, message: 'Chybí ID komentáře' })
+  if (!commentId) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const comment = await db.comment.findUnique({
     where: { id: commentId },
@@ -19,13 +20,13 @@ export default defineEventHandler(async (event) => {
       user: { select: { email: true, username: true, allowEmail: true } },
     },
   })
-  if (!comment) throw createError({ statusCode: 404, message: 'Komentář nenalezen' })
+  if (!comment) throw createError({ statusCode: 404, message: t('common.errors.commentNotFound')! })
 
   if (user.clientSiteId !== comment.article.clientSiteId)
-    throw createError({ statusCode: 403, message: 'Nemáte oprávnění banovat uživatele na této subdoméně' })
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const { reason, expiresAt } = await readBody(event)
-  if (!reason?.trim()) throw createError({ statusCode: 400, message: 'Důvod banu je povinný' })
+  if (!reason?.trim()) throw createError({ statusCode: 400, message: t('common.errors.banReasonRequired')! })
 
   const existingBan = await db.userBan.findFirst({
     where: {
@@ -36,9 +37,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (existingBan) {
-    throw createError({ statusCode: 409, message: 'Uživatel je již zabanován na této subdoméně' })
-  }
+  if (existingBan) throw createError({ statusCode: 409, message: t('common.errors.userAlreadyBanned')! })
 
   const softDeletedBan = await db.userBan.findFirst({
     where: {
@@ -82,6 +81,7 @@ export default defineEventHandler(async (event) => {
         ? 'intro_with_reason_permanent'
         : 'intro_with_reason_temporary'
       : 'intro_no_reason'
+
     await sendEmail({
       event,
       to: comment.user.email,
@@ -99,5 +99,5 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return { message: 'Uživatel zabanován' }
+  return { message: t('common.messages.successGeneral')! }
 })

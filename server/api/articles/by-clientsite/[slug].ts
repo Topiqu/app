@@ -1,7 +1,9 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   const slug = decodeURIComponent(getRouterParam(event, 'slug')!.trim())
-  if (!slug) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
+  if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+
   const { take, skip } = await getPagination(event)
   const query = getQuery(event)
   const tag = query.tag as string | undefined
@@ -12,7 +14,7 @@ export default defineEventHandler(async (event) => {
     where: { name: slug },
     select: { id: true },
   })
-  if (!clientSite) throw createError({ statusCode: 404, message: 'Blog nenalezen' })
+  if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   const rows = await db.article.findMany({
     where: {

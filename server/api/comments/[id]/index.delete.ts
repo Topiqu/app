@@ -1,11 +1,12 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   const db = await getEnhancedPrisma(user)
 
-  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const commentId = getRouterParam(event, 'id')
-  if (!commentId) throw createError({ statusCode: 400, message: 'Chybí ID komentáře' })
+  if (!commentId) throw createError({ statusCode: 400, message: t('common.errors.commentIdRequired')! })
 
   const comment = await db.comment.findUnique({
     where: { id: commentId },
@@ -18,20 +19,23 @@ export default defineEventHandler(async (event) => {
       article: { select: { clientSiteId: true } },
     },
   })
-  if (!comment) throw createError({ statusCode: 404, message: 'Komentář nenalezen' })
 
-  if (comment.userId !== user.id && !(user.role === 'admin' && user.clientSiteId === comment.article.clientSiteId))
-    throw createError({ statusCode: 403, message: 'Nemáte oprávnění smazat tento komentář' })
+  if (!comment) throw createError({ statusCode: 404, message: t('common.errors.commentNotFound')! })
+
+  const isOwner = comment.userId === user.id
+  const isAdmin = user.role === 'admin' && user.clientSiteId === comment.article.clientSiteId
+
+  if (!isOwner && !isAdmin) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const { reason } = await readBody(event)
-  const deleteReason = reason?.trim() || 'porušení pravidel komunity'
+  const deleteReason = reason?.trim() || t('common.user.violateRules')!
 
   await db.comment.update({
     where: { id: commentId },
     data: { deletedAt: new Date() },
   })
 
-  if (comment.user.email && user.role === 'admin' && comment.userId !== user.id && comment.user.allowEmail) {
+  if (comment.user.email && isAdmin && !isOwner && comment.user.allowEmail) {
     await sendEmail({
       event,
       to: comment.user.email,
@@ -46,5 +50,5 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return { message: 'Komentář smazán' }
+  return { message: t('common.messages.successGeneral')! }
 })

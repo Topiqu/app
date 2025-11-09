@@ -1,7 +1,8 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   const name = decodeURIComponent(getRouterParam(event, 'slug')!).trim()
-  if (!name) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
+  if (!name) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const db = await getEnhancedPrisma(user)
   const clientSite = await db.clientSite.findUnique({
@@ -9,7 +10,7 @@ export default defineEventHandler(async (event) => {
     select: { id: true },
   })
 
-  if (!clientSite) throw createError({ statusCode: 404, message: 'Blog nenalezen' })
+  if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   const monthAgo = new Date()
   monthAgo.setDate(monthAgo.getDate() - 30)
@@ -27,6 +28,7 @@ export default defineEventHandler(async (event) => {
     orderBy: { createdAt: 'desc' },
     take: 10,
   })
+
   const sortedArticles = articles.sort((a, b) => {
     const aScore = (a._count?.reactions ?? 0) + (a._count?.comments ?? 0)
     const bScore = (b._count?.reactions ?? 0) + (b._count?.comments ?? 0)

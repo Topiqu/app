@@ -2,8 +2,9 @@ import slugify from 'slugify'
 import * as cheerio from 'cheerio'
 
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user || user.role !== 'admin') throw createError({ status: 401 })
+  if (!user || user.role !== 'admin') throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
@@ -36,20 +37,21 @@ export default defineEventHandler(async (event) => {
   })
 
   const contentWithIds = $.html()
-  const data = { content: sanitizeHtml(contentWithIds), clientSiteId: user.clientSiteId, userId: user.id, ...body }
-  const article = await db.article.create({
-    data,
-  })
+  const data = {
+    content: sanitizeHtml(contentWithIds),
+    clientSiteId: user.clientSiteId,
+    userId: user.id,
+    ...body,
+  }
+
+  const article = await db.article.create({ data })
 
   await logAction({
     action: 'ARTICLE_CREATED',
     userId: user.id,
     clientSiteId: user.clientSiteId,
     ip: getIp(event),
-    metadata: {
-      articleId: article.id,
-      ...article,
-    },
+    metadata: { articleId: article.id, ...article },
   })
 
   return article

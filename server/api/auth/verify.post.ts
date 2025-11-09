@@ -1,20 +1,23 @@
 export default defineEventHandler(async (e) => {
+  const { translate: t } = await useServerI18n(e)
   const body = await readBody(e)
-  if (!body || !body?.code)
+  if (!body?.code)
     throw createError({
       statusCode: 400,
-      message: 'Neplatný nebo chybějící kód',
+      message: t('common.errors.missing')!,
     })
+
   const { code } = body
 
   const verification = await prisma.verificationCode.findFirst({
     where: { code, expiresAt: { gt: new Date() } },
     include: { user: true },
   })
+
   if (!verification)
     throw createError({
       statusCode: 400,
-      message: 'Neplatný nebo expirovaný kód',
+      message: t('common.errors.invalidRequest')!,
     })
 
   await prisma.user.update({

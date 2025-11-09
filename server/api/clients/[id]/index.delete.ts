@@ -1,10 +1,14 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
+
+  if (!user || user.role !== 'superadmin')
+    throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
 
   const id = getRouterParam(event, 'id')
-  if (!id) throw createError({ statusCode: 400, message: 'ID nenalezeno' })
+  if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const { hard } = getQuery(event)
   const forceDelete = hard === 'true'

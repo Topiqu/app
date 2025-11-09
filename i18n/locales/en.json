@@ -53,19 +53,28 @@
       "missingBlog": "Missing blog name.",
       "blogNotFound": "Blog not found.",
       "tagNotFound": "Tag not found.",
+      "commentNotFound": "Comment not found.",
+      "banNotFound": "This user isn't banned.",
+      "commentsDisabled": "Comments are disabled for this article",
       "alreadyExists": "This already exists.",
       "forbidden": "Forbidden.",
       "articleNotFound": "Article not found",
       "authorNotFound": "Author not found",
+      "userNotFound": "User not found",
       "articleIdRequired": "Article ID is required",
       "articleEditForbidden": "You cannot edit this article",
       "invalidReleaseDate": "Invalid release date",
       "missing": "Something is missing",
       "alreadyVoted": "You have already voted in this poll",
-      "releaseDateLocked": "Cannot edit release date for a published article or one with a passed release date"
+      "releaseDateLocked": "Cannot edit release date for a published article or one with a passed release date",
+      "banReasonRequired": "Ban reason is required.",
+      "userAlreadyBanned": "User is already banned on this subdomain.",
+      "blogAlreadyDeactivated": "Blog is already deactivated.",
+      "subdomainExists": "Subdomain already taken."
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",
+      "userCommentedArticle": "{0} commented on your article",
       "anonymousLikedArticle": "Someone liked your article."
     },
     "avatar": {
@@ -93,6 +102,7 @@
     },
     "user": {
       "joined": "Joined: {0}",
+      "violateRules": "Violating rules",
       "viewProfile": "View Profile",
       "notAvailable": "Not available"
     },

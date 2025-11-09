@@ -1,13 +1,12 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user || (user.role !== 'superadmin' && user.role !== 'admin')) {
-    throw createError({ statusCode: 401, message: 'Neautorizováno' })
-  }
+
+  if (!user || !['superadmin', 'admin'].includes(user.role))
+    throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({ statusCode: 400, message: 'ID nenalezeno' })
-  }
+  if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id },
@@ -20,9 +19,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!clientSite) {
-    throw createError({ statusCode: 404, message: 'Klient nenalezen' })
-  }
+  if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   return {
     ...clientSite,

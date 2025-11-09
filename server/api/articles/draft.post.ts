@@ -1,16 +1,17 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const { title, excerpt, content, imageUrl } = await readBody(event)
 
   if (!title && !content && content !== '<p></p>' && !excerpt)
-    throw createError({ statusCode: 400, message: 'Alespoň jedno pole (title, excerpt, content) musí být vyplněno' })
-  if (!user.clientSiteId) throw createError({ statusCode: 400, message: 'Chybí clientSiteId' })
+    throw createError({ statusCode: 400, message: t('common.errors.missing')! })
+  if (!user.clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const clientSite = await prisma.clientSite.findUnique({ where: { id: user.clientSiteId } })
   if (!clientSite || clientSite.id !== user.clientSiteId)
-    throw createError({ statusCode: 403, message: 'Neoprávněný přístup k clientSite' })
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const draft = await prisma.articleDraft.create({
     data: {

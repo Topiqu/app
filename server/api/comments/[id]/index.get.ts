@@ -1,18 +1,18 @@
 import type { CommentWithReplies } from '~~/types/comment'
 
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const articleId = getRouterParam(event, 'id')
-  if (!articleId) throw createError({ statusCode: 400, message: 'Chybí ID článku' })
+  if (!articleId) throw createError({ statusCode: 400, message: t('common.errors.articleIdRequired')! })
 
   const user = (await getServerSession(event))?.user
-
   const db = await getEnhancedPrisma(user)
 
   const article = await db.article.findUnique({
     where: { id: articleId },
     select: { userId: true, clientSiteId: true },
   })
-  if (!article) throw createError({ statusCode: 404, message: 'Článek nenalezen' })
+  if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   const query = getQuery(event)
   const sort = typeof query.sort === 'string' ? query.sort : 'createdAt:desc'
@@ -122,7 +122,6 @@ export default defineEventHandler(async (event) => {
     }))
 
     const directReplies = allReplies.filter((reply) => reply.parentId === comment.id)
-
     const processedReplies = directReplies.map((reply) =>
       buildCommentTree(reply, allReplies, currentDepth + 1, clientSiteId),
     )
@@ -178,7 +177,6 @@ export default defineEventHandler(async (event) => {
   })
 
   const paginatedTopLevel = sortedTopLevel.slice(skip, skip + adjustedTake)
-
   const processedComments = paginatedTopLevel.map((comment) =>
     buildCommentTree(comment, allReplies, 1, comment.article.clientSiteId),
   )

@@ -1,11 +1,12 @@
 import type { H3Event } from 'h3'
 
 export default defineEventHandler(async (event: H3Event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
+  if (!user?.id) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+
   const { skip, take } = await getPagination(event)
   const query = getQuery(event).query as string | undefined
-
-  if (!user?.id) throw createError({ statusCode: 401, message: 'Unauthorized' })
 
   const db = await getEnhancedPrisma(user)
 

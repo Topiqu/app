@@ -1,11 +1,10 @@
-import type { H3Event } from 'h3'
-
-export default defineEventHandler(async (event: H3Event) => {
+export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user?.clientSiteId) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user?.clientSiteId) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const id = getRouterParam(event, 'id')
-  if (id !== user.clientSiteId) throw createError({ statusCode: 403, message: 'Přístup zamítnut' })
+  if (id !== user.clientSiteId) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const { take, skip } = await getPagination(event)
   const limitedTake = Math.min(take, 50)
@@ -27,12 +26,7 @@ export default defineEventHandler(async (event: H3Event) => {
     orderBy: { createdAt: 'desc' },
     take: limitedTake + 1,
     skip,
-    select: {
-      id: true,
-      action: true,
-      createdAt: true,
-      metadata: true,
-    },
+    select: { id: true, action: true, createdAt: true, metadata: true },
   })
 
   const hasMore = logs.length > limitedTake

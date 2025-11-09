@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto'
 
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const body = await readValidatedBody(event, signInSchema.parse)
   const { username, email, password } = body
 
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event) => {
   if (exists)
     throw createError({
       statusCode: 400,
-      message: exists.username === username ? 'Uživatelské jméno je zabrané' : 'Email už existuje',
+      message: exists.username === username ? t('common.errors.alreadyExists')! : t('common.errors.alreadyExists')!,
     })
 
   const code = randomBytes(4).toString('hex')
@@ -32,9 +33,9 @@ export default defineEventHandler(async (event) => {
     data: {
       userName: username!,
       verificationCode: code,
-      actionType: 'registrace',
-      logoUrl: 'https://via.placeholder.com/150x50',
+      actionType: t('common.auth.register')!,
       // verificationUrl: `${useRuntimeConfig().public.baseUrl}/verify?code=${code}`,
+      logoUrl: 'https://via.placeholder.com/150x50',
       unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${email}`,
     },
   })
