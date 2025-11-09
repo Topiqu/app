@@ -35,7 +35,11 @@ export default defineNuxtConfig({
       ],
       dirs: ['shared/zod/models', 'server/utils', '#auth'],
     },
-    serverAssets: [{ baseName: 'templates', dir: '../emails/templates' }],
+    serverAssets: [
+      { baseName: 'emails:locales', dir: '../emails/locales' },
+      { baseName: 'emails:templates', dir: '../emails/templates' },
+      { baseName: 'i18n:locales', dir: '../i18n/locales' },
+    ],
   },
 
   imports: {
