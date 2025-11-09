@@ -9,11 +9,11 @@ type Messages = ReturnType<(typeof messageCache)['get']>
 export const getServerLocaleMessages = async (locale: Locale): Promise<Messages> => {
   if (!messageCache.has(locale))
     try {
-      const messages = await import(`~~/i18n/locales/${locale}.json`)
-      messageCache.set(locale, messages.default)
+      const messages = await useStorage('assets:i18n:locales').getItem(`${locale}.json`)
+      messageCache.set(locale, messages)
     } catch {
-      const fallback = await import('~~/i18n/locales/en.json')
-      messageCache.set(locale, fallback.default)
+      const fallback = await useStorage('assets:i18n:locales').getItem(`en.json`)
+      messageCache.set(locale, fallback)
     }
 
   return messageCache.get(locale)
