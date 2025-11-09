@@ -18,11 +18,11 @@ type Messages = ReturnType<(typeof messageCache)['get']>
 export const getEmailLocaleMessages = async (locale: Language): Promise<Messages> => {
   if (!messageCache.has(locale))
     try {
-      const messages = await import(`~~/emails/locales/${locale}.json`)
-      messageCache.set(locale, messages.default)
+      const messages = await useStorage('assets:emails:locales').getItem(`${locale}.json`)
+      messageCache.set(locale, messages)
     } catch {
-      const fallback = await import('~~/emails/locales/en.json')
-      messageCache.set(locale, fallback.default)
+      const fallback = await useStorage('assets:emails:locales').getItem(`en.json`)
+      messageCache.set(locale, fallback)
     }
 
   return messageCache.get(locale)
@@ -35,7 +35,7 @@ type Templates = ReturnType<(typeof templateCache)['get']>
 export const getEmailTemplate = async (id: string): Promise<Templates> => {
   if (!templateCache.has(id))
     try {
-      const template = await useStorage('assets:templates').getItem(`${id}.mjml`)
+      const template = await useStorage('assets:emails:templates').getItem(`${id}.mjml`)
       if (!template) throw createError(`Email template "${id}" not found in storage`)
 
       templateCache.set(id, template.toString())
