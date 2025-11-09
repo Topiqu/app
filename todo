@@ -7,6 +7,16 @@ now:
   - 🛑 notifications should also be localised
   - 🛑 GAM + total ad revenue overview & logging
   - 🟡 Stripe integration for token refill
+  - 🟢 replace sweetalert modals with custom ModalMini component
+---
+test:
+  - 🛑 google ads
+  - 🛑 google analytics
+  - 🛑 OAuth ?redirect param
+  - 🛑 fix auth errors with zod id param
+  - 🛑 production fix email template json not loadings
+  - 🛑 ai cron jobs for article writing and its notifications
+  - 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
   - 🟡 fix prod mjml parse issue ([request error] [unhandled] [POST] https://johnnyho-blog.topiqu.com/api/comments
           H3Error: Parsing failed. Check your mjml.
               at MJMLParser (/var/task/node_modules/mjml-parser-xml/lib/index.js:286:11)
@@ -23,16 +33,6 @@ now:
                 at async Server.r (/opt/rust/nodejs.js:2:15569)
                 at async Server.<anonymous> (/opt/rust/nodejs.js:16:7750),
 })
-  - 🟢 replace sweetalert modals with custom ModalMini component
----
-test:
-  - 🛑 google ads
-  - 🛑 google analytics
-  - 🛑 OAuth ?redirect param
-  - 🛑 fix auth errors with zod id param
-  - 🛑 production fix email template json not loadings
-  - 🛑 ai cron jobs for article writing and its notifications
-  - 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
   - 🟡 fix server i18n not loading correctly dynamic languages
   - 🟢 centralised ArticleModal component (for ArticleCreate/Edit)
   - 🟢 remake ArticleModal Drafts with ModalMini
