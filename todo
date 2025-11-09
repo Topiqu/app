@@ -23,7 +23,6 @@ now:
                 at async Server.r (/opt/rust/nodejs.js:2:15569)
                 at async Server.<anonymous> (/opt/rust/nodejs.js:16:7750),
 })
-  - 🟡 fix server i18n not loading correctly dynamic languages
   - 🟢 replace sweetalert modals with custom ModalMini component
 ---
 test:
@@ -33,6 +32,7 @@ test:
   - 🛑 fix auth errors with zod id param
   - 🛑 production fix email template json not loadings
   - 🛑 ai cron jobs for article writing and its notifications
+  - 🟡 fix server i18n not loading correctly dynamic languages
   - 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
   - 🟢 centralised ArticleModal component (for ArticleCreate/Edit)
   - 🟢 remake ArticleModal Drafts with ModalMini
