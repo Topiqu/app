@@ -404,7 +404,7 @@ const confirmClose = async () => {
 const generateAIContent = async () => {
   aiGenerating.value = true
   try {
-    const { title, perex, content, articleImageUrl, tags, sources } = await $fetch('/api/articles/ai-gen', {
+    const { title, perex, content, articleImageUrl, tags, sources } = await $fetch('/api/articles/generate', {
       method: 'POST',
       body: { prompt: customPrompt.value || 'Empty...' },
     })
