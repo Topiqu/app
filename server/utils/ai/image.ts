@@ -19,7 +19,11 @@ export const generateImage = async (
     n: 1,
   })
 
-  const filename = `${filenamePrefix ? filenamePrefix + '-' : ''}-${Date.now()}${filenameSuffix ? '-' + filenameSuffix : ``}.webp`
+  const filename =
+    (filenamePrefix ? filenamePrefix + '-' : '') +
+    `${Date.now()}` +
+    (filenameSuffix ? '-' + filenameSuffix : ``) +
+    `.webp`
   const uploadDir = join(process.cwd(), `public/${outputDir}`)
   await mkdir(uploadDir, { recursive: true })
   const filePath = join(uploadDir, filename)
