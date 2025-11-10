@@ -1,17 +1,6 @@
-import { join } from 'path'
-import { mkdir, writeFile } from 'fs/promises'
-import { generateObject, experimental_generateImage as generateImage } from 'ai'
+import { generateObject } from 'ai'
 
-export const generateArticle = async (
-  clientSiteId: string,
-  prompt: string,
-  opts: {
-    outputDir?: string
-    filenamePrefix?: string
-  } = {},
-) => {
-  const { outputDir = 'article-images', filenamePrefix = 'article' } = opts
-
+export const generateArticle = async (clientSiteId: string, prompt: string) => {
   const {
     tokenRemaining: maxOutputTokens,
     plan,
@@ -92,25 +81,20 @@ export const generateArticle = async (
     }),
   })
 
-  const { image } = await generateImage({
-    model: xai.image('grok-2-image'),
-    prompt: `${object.title} — ${object.perex}`.trim().slice(0, 1024),
-    n: 1,
-  })
-  const filename = `${filenamePrefix}-${Date.now()}.webp`
-  const uploadDir = join(process.cwd(), `public/${outputDir}`)
-  await mkdir(uploadDir, { recursive: true })
-  const filePath = join(uploadDir, filename)
-  await writeFile(filePath, image.uint8Array)
-  const articleImageUrl = `/${outputDir}/${filename}`
+  const generateImageOptions = {
+    outputDir: 'article-images',
+    filenamePrefix: 'article',
+  }
+
+  const { url: articleImageUrl } = await generateImage(
+    `${object.title} — ${object.perex}`.trim().slice(0, 1024),
+    generateImageOptions,
+  )
 
   const generatedImages = await Promise.all(
     object.images.map(async (img, idx) => {
-      const { image } = await generateImage({ model: xai.image('grok-2-image'), prompt: img, n: 1 })
-      const filename = `${filenamePrefix}-${Date.now()}-${idx}.webp`
-      const filePath = join(uploadDir, filename)
-      await writeFile(filePath, image.uint8Array)
-      return { url: `/${outputDir}/${filename}`, desc: img }
+      const { url } = await generateImage(img, { ...generateImageOptions, filenameSuffix: idx.toString() })
+      return { url, desc: img }
     }),
   )
 

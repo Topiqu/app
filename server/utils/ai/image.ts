@@ -7,9 +7,10 @@ export const generateImage = async (
   opts: {
     outputDir?: string
     filenamePrefix?: string
+    filenameSuffix?: string
   } = {},
 ) => {
-  const { outputDir = 'article-images', filenamePrefix = 'article' } = opts
+  const { outputDir = 'article-images', filenamePrefix = 'article', filenameSuffix } = opts
 
   const output = await generateImg({
     model: xai.image('grok-2-image'),
@@ -18,7 +19,7 @@ export const generateImage = async (
     n: 1,
   })
 
-  const filename = `${filenamePrefix}-${Date.now()}.webp`
+  const filename = `${filenamePrefix ? filenamePrefix + '-' : ''}-${Date.now()}${filenameSuffix ? '-' + filenameSuffix : ``}.webp`
   const uploadDir = join(process.cwd(), `public/${outputDir}`)
   await mkdir(uploadDir, { recursive: true })
   const filePath = join(uploadDir, filename)
