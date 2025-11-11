@@ -40,8 +40,11 @@
       "articleNotFound": "Článek nenalezen",
       "authorNotFound": "Autor nenalezen",
       "userNotFound": "Uživatel nenalezen",
+      "adminNotFound": "Admin nenalezen",
       "articleIdRequired": "ID článku je povinné",
       "articleEditForbidden": "Tento článek nemůžete upravovat",
+      "notificationIdRequired": "ID notifikace je povinné",
+      "notificationNotFound": "Notifikace nenalezena",
       "invalidReleaseDate": "Neplatné datum vydání",
       "missing": "Něco chybí",
       "alreadyVoted": "Už jste hlasovali v této anketě",
@@ -49,12 +52,15 @@
       "banReasonRequired": "Důvod banu je povinný.",
       "userAlreadyBanned": "Uživatel je již zabanován na této subdoméně.",
       "blogAlreadyDeactivated": "Blog je již deaktivován.",
-      "subdomainExists": "Subdoména je již obsazená."
+      "subdomainExists": "Subdoména je již obsazená.",
+      "streamCreationError": "Chyba při vytváření streamu: {error}."
     },
     "notifications": {
       "userLikedArticle": "{0} lajkl váš článek.",
       "userCommentedArticle": "{0} okomentoval váš článek.",
-      "anonymousLikedArticle": "Někdo lajkl váš článek."
+      "anonymousLikedArticle": "Někdo lajkl váš článek.",
+      "userReportedComment": "{user} nahlásil váš komentář k článku: {article}",
+      "commentReported": "Komentář nahlášen"
     },
     "actions": {
       "view": "Zobrazit",

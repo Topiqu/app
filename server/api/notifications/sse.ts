@@ -12,17 +12,17 @@ globalThis.eventStreams = eventStreams
 setInterval(() => {
   for (const [key, streams] of eventStreams) {
     const toRemove = new Set<EventStream>()
-    streams.forEach((stream) => {
-      stream.push('ping').catch(() => toRemove.add(stream))
-    })
+    streams.forEach((stream) => stream.push('ping').catch(() => toRemove.add(stream)))
     toRemove.forEach((stream) => streams.delete(stream))
     if (streams.size === 0) eventStreams.delete(key)
   }
 }, 30000)
 
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+
   const user = (await getServerSession(event))?.user
-  if (!user?.id) throw createError({ statusCode: 401, message: 'Neautorizovaný přístup' })
+  if (!user?.id) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   try {
     const eventStream = createEventStream(event)
@@ -41,6 +41,6 @@ export default defineEventHandler(async (event) => {
     const streamKey = `notifications:${user.id}`
     eventStreams.get(streamKey)?.forEach((stream) => stream.close())
     eventStreams.delete(streamKey)
-    throw createError({ statusCode: 500, message: `Chyba při vytváření streamu: ${error.message}` })
+    throw createError({ statusCode: 500, message: t('common.errors.streamCreationError', { error: error.message })! })
   }
 })

@@ -61,8 +61,11 @@
       "articleNotFound": "Article not found",
       "authorNotFound": "Author not found",
       "userNotFound": "User not found",
+      "adminNotFound": "Admin not found",
       "articleIdRequired": "Article ID is required",
       "articleEditForbidden": "You cannot edit this article",
+      "notificationIdRequired": "Notification ID is required",
+      "notificationNotFound": "Notification not found",
       "invalidReleaseDate": "Invalid release date",
       "missing": "Something is missing",
       "alreadyVoted": "You have already voted in this poll",
@@ -70,12 +73,15 @@
       "banReasonRequired": "Ban reason is required.",
       "userAlreadyBanned": "User is already banned on this subdomain.",
       "blogAlreadyDeactivated": "Blog is already deactivated.",
-      "subdomainExists": "Subdomain already taken."
+      "subdomainExists": "Subdomain already taken.",
+      "streamCreationError": "Error creating stream: {error}."
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",
       "userCommentedArticle": "{0} commented on your article",
-      "anonymousLikedArticle": "Someone liked your article."
+      "anonymousLikedArticle": "Someone liked your article.",
+      "userReportedComment": "{user} reported your comment on article: {article}",
+      "commentReported": "Comment reported"
     },
     "avatar": {
       "title": "Avatar",

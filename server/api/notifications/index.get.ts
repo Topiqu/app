@@ -1,6 +1,8 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
   const { skip, take } = await getPagination(event)
