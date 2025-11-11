@@ -4,10 +4,10 @@ always:
   - 🛑 test out before marking done
 ---
 now:
-  - 🛑 notifications should also be localised
   - 🛑 GAM + total ad revenue overview & logging
   - 🟡 Stripe integration for token refill
   - 🟡 Localise user PDF export
+  - 🟡 Localise notifications used in crons/nitro-tasks (think up how to detect language since tasks dont provide event)
   - 🟢 replace sweetalert modals with custom ModalMini component
 ---
 test:
@@ -15,6 +15,7 @@ test:
   - 🛑 google analytics
   - 🛑 OAuth ?redirect param
   - 🛑 fix auth errors with zod id param
+  - 🛑 notifications should also be localised
   - 🛑 production fix email template json not loadings
   - 🛑 ai cron jobs for article writing and its notifications
   - 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
