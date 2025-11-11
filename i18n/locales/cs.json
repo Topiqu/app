@@ -57,6 +57,7 @@
     },
     "notifications": {
       "userLikedArticle": "{0} lajkl váš článek.",
+      "userLikedComment": "{user} lajkl váš komentář.",
       "userCommentedArticle": "{0} okomentoval váš článek.",
       "anonymousLikedArticle": "Někdo lajkl váš článek.",
       "userReportedComment": "{user} nahlásil váš komentář k článku: {article}",

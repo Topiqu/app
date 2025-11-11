@@ -7,8 +7,10 @@ interface GlobalThis {
 declare const globalThis: GlobalThis
 
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const body = await readValidatedBody(event, CommentReactionSchema.omit({ userId: true }).parse)
 
@@ -17,7 +19,7 @@ export default defineEventHandler(async (event) => {
     where: { id: body.commentId, deletedAt: null },
     select: { id: true, userId: true },
   })
-  if (!comment) throw createError({ statusCode: 404, message: 'Komentář nenalezen' })
+  if (!comment) throw createError({ statusCode: 404, message: t('common.errors.commentNotFound')! })
 
   const where = { commentId: body.commentId, userId: user.id }
 
@@ -40,7 +42,7 @@ export default defineEventHandler(async (event) => {
   if (body.type === 'LIKE' && comment.userId && comment.userId !== user.id) {
     const notification = await prisma.notification.create({
       data: {
-        message: `${user.name || 'Někdo'} dal like vašemu komentáři.`,
+        message: t('notifications.userLikedComment', { user: user.name || 'Anonymous' })!,
         userId: comment.userId,
         type: 'LIKE',
       },
