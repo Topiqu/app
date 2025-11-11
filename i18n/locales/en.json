@@ -74,14 +74,17 @@
       "userAlreadyBanned": "User is already banned on this subdomain.",
       "blogAlreadyDeactivated": "Blog is already deactivated.",
       "subdomainExists": "Subdomain already taken.",
-      "streamCreationError": "Error creating stream: {error}."
+      "streamCreationError": "Error creating stream: {error}.",
+      "cannotFollowYourself": "You cannot follow yourself.",
+      "alreadyFollowingUser": "You are already following this user."
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",
       "userCommentedArticle": "{0} commented on your article",
       "anonymousLikedArticle": "Someone liked your article.",
       "userReportedComment": "{user} reported your comment on article: {article}",
-      "commentReported": "Comment reported"
+      "commentReported": "Comment reported",
+      "newFollower": "{user} started following you."
     },
     "avatar": {
       "title": "Avatar",

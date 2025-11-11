@@ -53,7 +53,9 @@
       "userAlreadyBanned": "Uživatel je již zabanován na této subdoméně.",
       "blogAlreadyDeactivated": "Blog je již deaktivován.",
       "subdomainExists": "Subdoména je již obsazená.",
-      "streamCreationError": "Chyba při vytváření streamu: {error}."
+      "streamCreationError": "Chyba při vytváření streamu: {error}.",
+      "cannotFollowYourself": "Nemůžete sledovat sami sebe.",
+      "alreadyFollowingUser": "Tohoto uživatele už sledujete."
     },
     "notifications": {
       "userLikedArticle": "{0} lajkl váš článek.",
@@ -61,7 +63,8 @@
       "userCommentedArticle": "{0} okomentoval váš článek.",
       "anonymousLikedArticle": "Někdo lajkl váš článek.",
       "userReportedComment": "{user} nahlásil váš komentář k článku: {article}",
-      "commentReported": "Komentář nahlášen"
+      "commentReported": "Komentář nahlášen",
+      "newFollower": "{user} vás začal sledovat."
     },
     "actions": {
       "view": "Zobrazit",
