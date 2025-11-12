@@ -5,6 +5,8 @@ always:
 ---
 now:
   - 🛑 GAM + total ad revenue overview & logging
+  - 🛑 AWS S3 Bucket integration
+  - 🛑 AWS SES integration
   - 🟡 Stripe integration for token refill
   - 🟡 Localise user PDF export
   - 🟡 Localise notifications used in crons/nitro-tasks (think up how to detect language since tasks dont provide event)
