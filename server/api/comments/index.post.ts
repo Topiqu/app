@@ -19,11 +19,12 @@ export default defineEventHandler(async (event) => {
       userId: true,
       slug: true,
       title: true,
+      clientSite: { select: { subdomain: true } },
       user: { select: { email: true, allowEmail: true } },
     },
   })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
-  if (!article.allowedComments) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  if (!article.allowedComments) throw createError({ statusCode: 403, message: t('common.errors.commentsDisabled')! })
 
   const activeBan = await prisma.userBan.findFirst({
     where: {
@@ -35,9 +36,11 @@ export default defineEventHandler(async (event) => {
   })
   if (activeBan) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
-  const base = useRuntimeConfig().public.baseUrl
-  const commentUrl = (id: string) => `${base}/clanky/${article.slug}#comment-${id}`
-  const replyUrl = `${base}/clanky/${article.slug}/reply`
+  const protocol = import.meta.dev ? 'http' : 'https'
+  const host = import.meta.dev ? 'localhost:3000' : `${article.clientSite.subdomain}`
+
+  const commentUrl = (id: string) => `${protocol}://${host}/clanky/${article.slug}#comment-${id}`
+  const replyUrl = `${protocol}://${host}/clanky/${article.slug}/reply`
   const logoUrl = 'https://via.placeholder.com/150x50'
 
   let content = body.content
@@ -64,7 +67,7 @@ export default defineEventHandler(async (event) => {
           replyUrl,
           avatarUrl: user.avatarUrl || 'https://via.placeholder.com/50',
           logoUrl,
-          unsubscribeUrl: `${base}/unsubscribe?email=${encodeURIComponent(parent.user.email)}`,
+          unsubscribeUrl: `${protocol}://${host}/unsubscribe?email=${encodeURIComponent(parent.user.email)}`,
         },
       })
     }
@@ -102,7 +105,7 @@ export default defineEventHandler(async (event) => {
         replyUrl,
         avatarUrl: user.avatarUrl || 'https://via.placeholder.com/50',
         logoUrl,
-        unsubscribeUrl: `${base}/unsubscribe?email=${encodeURIComponent(article.user.email)}`,
+        unsubscribeUrl: `${protocol}://${host}/unsubscribe?email=${encodeURIComponent(article.user.email)}`,
       },
     })
 
