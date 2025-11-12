@@ -12,6 +12,9 @@
     "unsavedChanges": "Neuložené změny!",
     "showPassword": "Zobrazit heslo",
     "search": "Hledat...",
+    "yes": "Ano",
+    "no": "Ne",
+    "none": "Žádný",
     "errTypes": {
       "notFound": "Tohle jsem nenašel, asi jsem slepý.",
       "unauthorized": "Stát, sem nesmíš, to je zakázané území pro nepřihlášené dobrodruhy.",
@@ -55,7 +58,8 @@
       "subdomainExists": "Subdoména je již obsazená.",
       "streamCreationError": "Chyba při vytváření streamu: {error}.",
       "cannotFollowYourself": "Nemůžete sledovat sami sebe.",
-      "alreadyFollowingUser": "Tohoto uživatele už sledujete."
+      "alreadyFollowingUser": "Tohoto uživatele už sledujete.",
+      "failedToLoad": "Nepodařilo se načíst"
     },
     "notifications": {
       "userLikedArticle": "{0} lajkl váš článek.",
@@ -597,6 +601,18 @@
     "lastUsed": "Naposledy použito: {0}",
     "sessionRevoked": "Relace odebrána",
     "bio": "Bio",
+    "data": "Data profilu uživatele",
+    "pdfExportHeader": "Export v souladu s GDPR",
+    "gdprCompliance": "Soulad s GDPR",
+    "gdprText": "Tento dokument obsahuje veškeré osobní údaje spojené s vaším účtem, poskytnuté v souladu s nařízeními GDPR. Pro dotazy týkající se zpracování údajů kontaktujte náš tým podpory na adrese support@topiqu.com.",
+    "generatedOn": "Automaticky vygenerováno Topiqu dne {0}.",
+    "roleLabel": "Role",
+    "emailVerifiedLabel": "E-mail ověřen",
+    "associatedClient": "Přidružený klient",
+    "userBans": "Zákazy uživatele",
+    "banReasonLabel": "Důvod",
+    "banDateLabel": "Datum",
+    "bioNotFound": "Bio nebylo uvedeno",
     "notifications": "Oznámení",
     "webNotifications": "Webová oznámení",
     "webNotificationsDescription": "Odesílat zprávy přímo v prohlížeči",
