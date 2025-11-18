@@ -235,6 +235,8 @@ model User {
   bans             UserBan[]         @relation("BannedUser")
   bansIssued       UserBan[]         @relation("BannedBy")
   logs             Log[]             @relation("LogToUser")
+
+  @@index([username, email, role, language, allowNotifs])
 }
 
 model Session {

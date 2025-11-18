@@ -242,6 +242,7 @@ model User extends Base {
     @@allow('create', true)
     @@allow('update', auth().id == id || auth().role == 'superadmin')
     @@allow('all', auth().role == 'admin' || auth().role == 'superadmin')
+    @@index([username, email, role, language, allowNotifs])
 }
 
 model Session extends Base {
