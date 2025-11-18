@@ -604,7 +604,7 @@
     "data": "Data profilu uživatele",
     "pdfExportHeader": "Export v souladu s GDPR",
     "gdprCompliance": "Soulad s GDPR",
-    "gdprText": "Tento dokument obsahuje veškeré osobní údaje spojené s vaším účtem, poskytnuté v souladu s nařízeními GDPR. Pro dotazy týkající se zpracování údajů kontaktujte náš tým podpory na adrese support@topiqu.com.",
+    "gdprText": "Tento dokument obsahuje veškeré osobní údaje spojené s vaším účtem, poskytnuté v souladu s nařízeními GDPR. Pro dotazy týkající se zpracování údajů kontaktujte náš tým podpory na adrese support{'@'}topiqu.com.",
     "generatedOn": "Automaticky vygenerováno Topiqu dne {0}.",
     "roleLabel": "Role",
     "emailVerifiedLabel": "E-mail ověřen",
