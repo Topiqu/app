@@ -81,6 +81,12 @@
       "cannotFollowYourself": "You cannot follow yourself.",
       "alreadyFollowingUser": "You are already following this user.",
       "failedToLoad": "Failed to load",
+      "giphyCategoriesFailed": "Failed to fetch Giphy categories",
+      "giphyFetchFailed": "Failed to fetch GIFs",
+      "sessionNotFound": "Session not found",
+      "sessionAlreadyRevoked": "Session already revoked",
+      "missingSessionId": "Missing sessionId",
+      "sessionInvalidOrRevoked": "Session is invalid or revoked",
       "followNotFound": "You are not following this user"
     },
     "notifications": {

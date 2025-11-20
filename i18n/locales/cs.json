@@ -60,6 +60,12 @@
       "cannotFollowYourself": "Nemůžete sledovat sami sebe.",
       "alreadyFollowingUser": "Tohoto uživatele už sledujete.",
       "failedToLoad": "Nepodařilo se načíst",
+      "giphyCategoriesFailed": "Nepodařilo se načíst kategorie Giphy",
+      "giphyFetchFailed": "Nepodařilo se načíst GIFy",
+      "sessionNotFound": "Relace nenalezena",
+      "sessionAlreadyRevoked": "Relace již byla zrušena",
+      "missingSessionId": "Chybí sessionId",
+      "sessionInvalidOrRevoked": "Relace byla zrušena nebo neexistuje",
       "followNotFound": "Tento follow vztah neexistuje"
     },
     "notifications": {

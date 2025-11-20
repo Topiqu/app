@@ -1,9 +1,10 @@
 import type { SharePlatform } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
-  if (!user.clientSiteId) throw createError({ statusCode: 403, message: 'Uživatel není přiřazen k žádnému ClientSite' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  if (!user.clientSiteId) throw createError({ statusCode: 403, message: t('common.errors.missing')! })
 
   const db = await getEnhancedPrisma()
   const articles = await db.article.findMany({
@@ -30,8 +31,5 @@ export default defineEventHandler(async (event) => {
     distribution[s.platform] = s._count.platform
   })
 
-  return {
-    totalShares,
-    distribution,
-  }
+  return { totalShares, distribution }
 })
