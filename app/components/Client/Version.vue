@@ -9,13 +9,30 @@
     </span>
     <span class="text-gray-400">|</span>
 
-    <div ref="trigger" class="flex items-center gap-1.5 cursor-pointer select-none" @click="show = !show">
+    <div ref="trigger" class="relative flex items-center gap-1.5 cursor-pointer select-none" @click="show = !show">
       <span :class="planColor">{{ site?.plan ?? $t('articles.userMenu.noClientAssigned') }}</span>
       <span v-if="site?.tokenRemaining != null" v-tippy="tokenTooltip" class="text-xs">
         (<span :class="tokenColor">{{ site.tokenRemaining }}/{{ site.tokenLimit }}</span
         >)
       </span>
       <Icon name="mdi:chevron-up" :class="['w-3 h-3 transition-transform duration-200', isOpen && 'rotate-180']" />
+
+      <Transition
+        enterActiveClass="transition ease-out duration-300"
+        enterFromClass="opacity-0 scale-50"
+        enterToClass="opacity-100 scale-100"
+        leaveActiveClass="transition ease-in duration-200"
+        leaveFromClass="opacity-100 scale-100"
+        leaveToClass="opacity-0 scale-50"
+      >
+        <div
+          v-if="isLowTokens"
+          v-tippy="$t('articles.userMenu.lowTokensWarning')"
+          class="pointer-events-none absolute -top-3 -right-3 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-lg animate-pulse"
+        >
+          <Icon name="mdi:alert" class="w-4 h-4" />
+        </div>
+      </Transition>
     </div>
 
     <Transition
@@ -49,12 +66,12 @@
         </div>
 
         <div class="flex gap-2">
-          <Button v-if="site?.plan && ['BASIC', 'PRO'].includes(site.plan)" size="sm" @click="buyTokens">{{
-            $t('articles.userMenu.buyTokens')
-          }}</Button>
-          <Button v-if="site?.plan === 'BASIC'" size="sm" variant="primary" @click="upgrade">{{
-            $t('articles.userMenu.upgradeToPremium')
-          }}</Button>
+          <Button size="sm" variant="primary" @click="buyTokens">
+            {{ $t('articles.userMenu.buyTokens') }}
+          </Button>
+          <Button v-if="site?.plan === 'BASIC'" size="sm" variant="primary" @click="upgrade">
+            {{ $t('articles.userMenu.upgradeToPremium') }}
+          </Button>
         </div>
 
         <div class="space-y-2">
@@ -79,9 +96,8 @@
             </div>
             <Button
               v-if="logs.hasMore"
-              class="w-full py-2 text-xs font-medium cursor-pointer transition-colors !hover:scale-100"
+              class="w-full py-2 text-xs font-medium"
               variant="transparent"
-              :title="$t('common.pagination.next')"
               animation="softpop"
               @click="loadMore"
             >
@@ -99,6 +115,17 @@
             <Icon name="mdi:google-ads" class="w-4 h-4" />
             <span>{{ $t('articles.userMenu.gamConnected') }}</span>
           </div>
+        </div>
+
+        <div
+          v-if="isLowTokens"
+          class="p-4 bg-red-50 dark:bg-red-900/30 rounded-xl border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200"
+        >
+          <strong class="flex items-center gap-2">
+            <Icon name="mdi:alert" class="w-5 h-5" />
+            {{ $t('articles.userMenu.lowTokensWarning') }}
+          </strong>
+          <span class="block mt-1 text-xs">{{ $t('articles.userMenu.lowTokensHint') }}</span>
         </div>
 
         <div
@@ -151,6 +178,8 @@ const loadMore = async () => {
 const remainingPercent = computed(() =>
   Math.max(0, ((site.value?.tokenRemaining ?? 0) / (site.value?.tokenLimit ?? 20000)) * 100),
 )
+const isLowTokens = computed(() => remainingPercent.value <= 20)
+
 const estimatedArticles = computed(() => Math.floor((site.value?.tokenRemaining ?? 0) / 5000))
 const tokenTooltip = computed(() => $t('articles.userMenu.roughlyEstimated', [estimatedArticles.value]))
 
@@ -164,8 +193,8 @@ const planColor = computed(() => ({
   'font-semibold': true,
 }))
 const tokenColor = computed(() => ({
-  'text-red-700 dark:text-red-400': (site.value?.tokenRemaining ?? 0) / (site.value?.tokenLimit ?? 1) < 0.3,
-  'text-green-700 dark:text-green-400': true,
+  'text-red-700 dark:text-red-400': isLowTokens.value,
+  'text-green-700 dark:text-green-400': !isLowTokens.value,
   'font-semibold': true,
 }))
 
@@ -175,6 +204,7 @@ const getLogIcon = (a: string) =>
     : a === 'CRON_GENERATE_ARTICLE_FAILED'
       ? 'mdi:alert-circle'
       : 'mdi:lightbulb-on'
+
 const formatAction = (a: string) => {
   const m: Record<string, string> = {
     CRON_GENERATE_ARTICLE: $t('articles.userMenu.articleGenerated'),
