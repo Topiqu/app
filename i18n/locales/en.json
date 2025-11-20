@@ -87,7 +87,10 @@
       "sessionAlreadyRevoked": "Session already revoked",
       "missingSessionId": "Missing sessionId",
       "sessionInvalidOrRevoked": "Session is invalid or revoked",
-      "followNotFound": "You are not following this user"
+      "followNotFound": "You are not following this user",
+      "invalidTotp": "Invalid TOTP code",
+      "passwordChangeFailed": "Password change failed",
+      "roleChangeForbidden": "Changing role is not allowed"
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",

@@ -66,6 +66,9 @@
       "sessionAlreadyRevoked": "Relace již byla zrušena",
       "missingSessionId": "Chybí sessionId",
       "sessionInvalidOrRevoked": "Relace byla zrušena nebo neexistuje",
+      "invalidTotp": "Neplatný TOTP kód",
+      "passwordChangeFailed": "Změna hesla selhala",
+      "roleChangeForbidden": "Změna role není povolena",
       "followNotFound": "Tento follow vztah neexistuje"
     },
     "notifications": {

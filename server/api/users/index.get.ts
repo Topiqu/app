@@ -1,6 +1,8 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user || user.role !== 'superadmin') throw createError({ statusCode: 403 })
+  if (!user || user.role !== 'superadmin')
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const { skip, take } = await getPagination(event)
   const query = getQuery(event).query as string | undefined

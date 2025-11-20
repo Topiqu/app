@@ -1,6 +1,7 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
   const query = getQuery(event)
@@ -60,34 +61,34 @@ export default defineEventHandler(async (event) => {
   })
 
   return {
-    likedArticles: likedArticles.map((reaction) => ({
-      id: reaction.article.id,
-      slug: reaction.article.slug,
-      title: reaction.article.title,
-      content: reaction.article.content,
-      excerpt: reaction.article.excerpt || '',
-      imageUrl: reaction.article.imageUrl,
-      createdAt: reaction.article.createdAt?.toISOString() || null,
-      authorUsername: reaction.article.user?.username || 'Anonym',
-      authorPfp: reaction.article.user?.avatarUrl || null,
-      views: reaction.article.views,
-      tags: reaction.article.tags.map((t) => t.tag.name),
-      likesCount: reaction.article.reactions.length,
+    likedArticles: likedArticles.map((r) => ({
+      id: r.article.id,
+      slug: r.article.slug,
+      title: r.article.title,
+      content: r.article.content,
+      excerpt: r.article.excerpt || '',
+      imageUrl: r.article.imageUrl,
+      createdAt: r.article.createdAt?.toISOString() || null,
+      authorUsername: r.article.user?.username || 'Anonym',
+      authorPfp: r.article.user?.avatarUrl || null,
+      views: r.article.views,
+      tags: r.article.tags.map((t) => t.tag.name),
+      likesCount: r.article.reactions.length,
     })),
-    comments: comments.map((comment) => ({
-      id: comment.id,
-      content: comment.content,
-      articleSlug: comment.article?.slug || '',
-      articleTitle: comment.article?.title || '',
-      authorUsername: comment.user?.username || 'Anonym',
-      userId: comment.userId,
-      authorPfp: comment.user?.avatarUrl || null,
-      tags: comment.article?.tags.map((t) => t.tag.name) || [],
-      createdAt: comment.createdAt.toISOString(),
-      likesCount: comment.reactions.filter((r) => r.type === 'LIKE').length,
-      dislikesCount: comment.reactions.filter((r) => r.type === 'DISLIKE').length,
-      parentId: comment.parentId || null,
-      replies: comment.replies.map((reply) => ({
+    comments: comments.map((c) => ({
+      id: c.id,
+      content: c.content,
+      articleSlug: c.article?.slug || '',
+      articleTitle: c.article?.title || '',
+      authorUsername: c.user?.username || 'Anonym',
+      userId: c.userId,
+      authorPfp: c.user?.avatarUrl || null,
+      tags: c.article?.tags.map((t) => t.tag.name) || [],
+      createdAt: c.createdAt.toISOString(),
+      likesCount: c.reactions.filter((r) => r.type === 'LIKE').length,
+      dislikesCount: c.reactions.filter((r) => r.type === 'DISLIKE').length,
+      parentId: c.parentId || null,
+      replies: c.replies.map((reply) => ({
         id: reply.id,
         content: reply.content,
         articleSlug: reply.article?.slug || '',
@@ -102,7 +103,7 @@ export default defineEventHandler(async (event) => {
         parentId: reply.parentId || null,
         deletedAt: reply.deletedAt?.toISOString() || null,
       })),
-      deletedAt: comment.deletedAt?.toISOString() || null,
+      deletedAt: c.deletedAt?.toISOString() || null,
     })),
     hasMore: {
       likedArticles: skip + likedArticles.length < likedArticlesCount,

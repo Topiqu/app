@@ -1,12 +1,13 @@
 import { authenticator } from 'otplib'
 
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, message: 'Neautorizováno' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const { id } = getRouterParams(event)
   if (user.id !== id && user.role !== 'superadmin')
-    throw createError({ statusCode: 403, message: 'Nepovolený přístup' })
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const userData = await prisma.user.findUnique({
     where: { id },
@@ -26,12 +27,8 @@ export default defineEventHandler(async (event) => {
           },
         },
       },
-      followers: {
-        select: { followerId: true },
-      },
-      following: {
-        select: { followedId: true },
-      },
+      followers: { select: { followerId: true } },
+      following: { select: { followedId: true } },
       articleReactions: {
         where: { userId: id },
         include: {
@@ -70,14 +67,11 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!userData) throw createError({ statusCode: 404, message: 'Uživatel nenalezen' })
+  if (!userData) throw createError({ statusCode: 404, message: t('common.errors.userNotFound')! })
 
-  const likesCount = userData.comments.reduce(
-    (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'LIKE').length,
-    0,
-  )
+  const likesCount = userData.comments.reduce((sum, c) => sum + c.reactions.filter((r) => r.type === 'LIKE').length, 0)
   const dislikesCount = userData.comments.reduce(
-    (sum, comment) => sum + comment.reactions.filter((r) => r.type === 'DISLIKE').length,
+    (sum, c) => sum + c.reactions.filter((r) => r.type === 'DISLIKE').length,
     0,
   )
 
@@ -85,6 +79,7 @@ export default defineEventHandler(async (event) => {
   if (userData.totpSecret) {
     otpauthUrl = authenticator.keyuri(userData.username, 'Topiqu', userData.totpSecret)
   }
+
   return {
     id: userData.id,
     username: userData.username,
@@ -92,7 +87,7 @@ export default defineEventHandler(async (event) => {
     bio: userData.bio,
     avatarUrl: userData.avatarUrl,
     createdAt: userData.createdAt.toISOString(),
-    lastLogin: userData.lastLogin ? userData.lastLogin.toISOString() : null,
+    lastLogin: userData.lastLogin?.toISOString() ?? null,
     allowNotifs: userData.allowNotifs,
     allowEmail: userData.allowEmail,
     role: userData.role,
@@ -108,22 +103,20 @@ export default defineEventHandler(async (event) => {
     hasPassword: !!userData.password,
     totpSecret: userData.totpSecret,
     otpauthUrl,
-    likedArticles: userData.articleReactions.map((reaction) => ({
-      id: reaction.article.id,
-    })),
-    sessions: userData.sessions.map((session) => ({
-      id: session.id,
-      ip: session.ip,
-      userAgent: session.userAgent,
-      device: session.device,
-      os: session.os,
-      browser: session.browser,
-      city: session.city,
-      region: session.region,
-      country: session.country,
-      lastUsedAt: session.lastUsedAt.toISOString(),
-      revoked: session.revoked,
-      userId: session.userId,
+    likedArticles: userData.articleReactions.map((r) => ({ id: r.article.id })),
+    sessions: userData.sessions.map((s) => ({
+      id: s.id,
+      ip: s.ip,
+      userAgent: s.userAgent,
+      device: s.device,
+      os: s.os,
+      browser: s.browser,
+      city: s.city,
+      region: s.region,
+      country: s.country,
+      lastUsedAt: s.lastUsedAt.toISOString(),
+      revoked: s.revoked,
+      userId: s.userId,
     })),
   }
 })
