@@ -59,7 +59,8 @@
       "streamCreationError": "Chyba při vytváření streamu: {error}.",
       "cannotFollowYourself": "Nemůžete sledovat sami sebe.",
       "alreadyFollowingUser": "Tohoto uživatele už sledujete.",
-      "failedToLoad": "Nepodařilo se načíst"
+      "failedToLoad": "Nepodařilo se načíst",
+      "followNotFound": "Tento follow vztah neexistuje"
     },
     "notifications": {
       "userLikedArticle": "{0} lajkl váš článek.",

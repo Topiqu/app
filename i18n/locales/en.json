@@ -80,7 +80,8 @@
       "streamCreationError": "Error creating stream: {error}.",
       "cannotFollowYourself": "You cannot follow yourself.",
       "alreadyFollowingUser": "You are already following this user.",
-      "failedToLoad": "Failed to load"
+      "failedToLoad": "Failed to load",
+      "followNotFound": "You are not following this user"
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",

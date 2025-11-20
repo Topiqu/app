@@ -8,7 +8,6 @@ now:
   - 🛑 AWS S3 Bucket integration
   - 🛑 AWS SES integration
   - 🟡 Stripe integration for token refill
-  - 🟡 Localise notifications used in crons/nitro-tasks (think up how to detect language since tasks dont provide event)
   - 🟢 replace sweetalert modals with custom ModalMini component
 ---
 test:
@@ -20,6 +19,7 @@ test:
   - 🛑 production fix email template json not loadings
   - 🛑 ai cron jobs for article writing and its notifications
   - 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
+  - 🟡 Localise notifications used in crons/nitro-tasks (think up how to detect language since tasks dont provide event)
   - 🟡 fix prod mjml parse issue ([request error] [unhandled] [POST] https://johnnyho-blog.topiqu.com/api/comments
           H3Error: Parsing failed. Check your mjml.
               at MJMLParser (/var/task/node_modules/mjml-parser-xml/lib/index.js:286:11)

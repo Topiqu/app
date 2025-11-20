@@ -1,11 +1,13 @@
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user || user.role !== 'admin') throw createError({ statusCode: 403, message: 'Povoleno pouze pro adminy' })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
+  const db = await getEnhancedPrisma(user)
   const id = getRouterParam(event, 'id')
-  if (!id) throw createError({ statusCode: 400, message: 'Chybí ID emoji' })
+  if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
-  await prisma.emoji.delete({
+  await db.emoji.delete({
     where: { id, clientSiteId: user.clientSiteId },
   })
 
