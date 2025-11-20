@@ -84,11 +84,14 @@
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",
-      "userCommentedArticle": "{0} commented on your article",
+      "userLikedComment": "{user} liked your comment.",
+      "userCommentedArticle": "{0} commented on your article.",
       "anonymousLikedArticle": "Someone liked your article.",
       "userReportedComment": "{user} reported your comment on article: {article}",
       "commentReported": "Comment reported",
-      "newFollower": "{user} started following you."
+      "newFollower": "{user} started following you.",
+      "articlePublished": "Your article \"{0}\" has been successfully published!",
+      "newArticleFromFollowed": "{0} published a new article: {1}"
     },
     "avatar": {
       "title": "Avatar",

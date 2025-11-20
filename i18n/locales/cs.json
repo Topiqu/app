@@ -68,7 +68,9 @@
       "anonymousLikedArticle": "Někdo lajkl váš článek.",
       "userReportedComment": "{user} nahlásil váš komentář k článku: {article}",
       "commentReported": "Komentář nahlášen",
-      "newFollower": "{user} vás začal sledovat."
+      "newFollower": "{user} vás začal sledovat.",
+      "articlePublished": "Váš článek „{0}“ byl úspěšně publikován!",
+      "newArticleFromFollowed": "{0} publikoval nový článek: {1}"
     },
     "actions": {
       "view": "Zobrazit",
