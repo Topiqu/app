@@ -74,7 +74,7 @@ export default defineTask({
 
         try {
           const { object, usage } = await generateObject({
-            model: xai('grok-4-fast-reasoning'),
+            model: xai('grok-4-1-fast-reasoning'),
             system: `You are a community analyst. Respond in the client's language: ${site.language}. Summary must be 250 characters or less. Count every character. Return ONLY valid JSON. No extra text.`,
             prompt: `
               Client: ${site.name}

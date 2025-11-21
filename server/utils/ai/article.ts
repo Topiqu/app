@@ -45,7 +45,7 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
     `.trim()
 
   const { object, usage } = await generateObject({
-    model: xai('grok-4-fast'),
+    model: xai('grok-4-1-fast'),
     maxOutputTokens,
     system,
     prompt,

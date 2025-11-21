@@ -23,7 +23,7 @@ export default defineEventHandler(async () => {
   //       Include 0-5 credible sources (URLs or references) relevant to the article topic in the sources array, if necessary (ie. jokes, short skits, or others).
   //     `.trim()
   //   const { object, usage } = await generateObject({
-  //     model: xai('grok-4-fast'),
+  //     model: xai('grok-4-1-fast'),
   //     maxOutputTokens: 10000,
   //     system,
   //     mode: 'tool',
@@ -87,7 +87,7 @@ export default defineEventHandler(async () => {
   //       .describe('Array of credible sources relevant to the article topic'),
   //   })
   //   const { experimental_output: object, usage } = await generateText({
-  //     model: xai('grok-4-fast'),
+  //     model: xai('grok-4-1-fast'),
   //     maxOutputTokens: 10000,
   //     system,
   //     prompt: 'Write an article about the benefits of AI in modern healthcare.',
@@ -134,7 +134,7 @@ export default defineEventHandler(async () => {
   //     //   .describe('Array of credible sources relevant to the article topic'),
   //   })
   //   const { experimental_output: object, usage } = await generateText({
-  //     model: xai('grok-4-fast'),
+  //     model: xai('grok-4-1-fast'),
   //     maxOutputTokens: 10000,
   //     system,
   //     prompt: 'Write an article about the benefits of AI in modern healthcare.',
@@ -193,7 +193,7 @@ export default defineEventHandler(async () => {
   //   //     //   .describe('Array of credible sources relevant to the article topic'),
   //   //   })
   //   const { content, usage } = await generateText({
-  //     model: xai('grok-4-fast'),
+  //     model: xai('grok-4-1-fast'),
   //     maxOutputTokens: 10000,
   //     system,
   //     prompt: 'Write an article about the benefits of AI in modern healthcare.',
@@ -240,7 +240,7 @@ export default defineEventHandler(async () => {
   //       .describe('Array of credible sources relevant to the article topic'),
   //   })
   //   const { experimental_output: object, usage } = await generateText({
-  //     model: xai('grok-4-fast'),
+  //     model: xai('grok-4-1-fast'),
   //     maxOutputTokens: 10000,
   //     system,
   //     prompt: 'Write an article about the benefits of AI in modern healthcare.',
@@ -256,7 +256,7 @@ export default defineEventHandler(async () => {
   // !
 
   //   const result = await generateText({
-  //     model: xai('grok-4-fast'),
+  //     model: xai('grok-4-1-fast'),
   //     experimental_output: Output.object({
   //       schema: z.object({
   //         summary: z.string(),
@@ -303,7 +303,7 @@ export default defineEventHandler(async () => {
   //   const prompt = 'Write an article about the benefits of AI in modern healthcare.'
 
   //   const { text: content, usage: contentUsage } = await generateText({
-  //     model: xai('grok-4-fast'),
+  //     model: xai('grok-4-1-fast'),
   //     maxOutputTokens: 10000,
   //     system: contentSystem,
   //     tools: { generateImage: generateImageTool },
@@ -325,7 +325,7 @@ export default defineEventHandler(async () => {
   //         `.trim()
 
   //   const { object, usage } = await generateObject({
-  //     model: xai('grok-4-fast'),
+  //     model: xai('grok-4-1-fast'),
   //     maxOutputTokens: 10000,
   //     system: articleSystem,
   //     prompt: 'Edit the content into the article structure as specified.',
@@ -364,7 +364,7 @@ export default defineEventHandler(async () => {
   //     // experimental_output,
   //     usage,
   //   } = await generateText({
-  //     model: xai('grok-4-fast'),
+  //     model: xai('grok-4-1-fast'),
   //     maxOutputTokens: 10000,
   //     system,
   //     // experimental_output: Output.object({
@@ -411,7 +411,7 @@ export default defineEventHandler(async () => {
   //         `.trim()
 
   //           const { text: content } = await generateText({
-  //             model: xai('grok-4-fast'),
+  //             model: xai('grok-4-1-fast'),
   //             maxOutputTokens: 10000,
   //             system: contentSystem,
   //             prompt,
