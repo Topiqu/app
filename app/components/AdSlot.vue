@@ -7,18 +7,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, shallowRef, computed } from 'vue'
-
-interface Props {
+const props = defineProps<{
   adUnitPath: string
   sizes: number[][]
   slotId?: string
   targeting?: Record<string, string | string[]>
   width?: string
   height?: string
-}
-
-const props = defineProps<Props>()
+}>()
 
 const loading = shallowRef(true)
 const { defineSlot, destroySlots } = useGamAds()
@@ -46,7 +42,7 @@ onBeforeUnmount(() => {
 }
 
 .ad-loading::after {
-  content: 'Nahrávám reklamu...';
+  content: 'Loading...';
   position: absolute;
   top: 50%;
   left: 50%;
