@@ -304,6 +304,12 @@ model ClientSite {
   allowShapes         Boolean             @default(false)
   communityInsight    Json?
   insightUpdatedAt    DateTime?
+  monthlyPayment      Int?                @default(0)
+  annualPayment       Int?                @default(0)
+  enableAi            Boolean             @default(false)
+  enableCron          Boolean             @default(false)
+  enableSentiment     Boolean             @default(false)
+  currency            String?             @default("USD")
   language            Language            @default(en)
   theme               Theme               @default(blue)
   users               User[]
