@@ -5,6 +5,7 @@
     <slot />
     <ButtonBackToTop />
     <ClientVersion v-if="isAdmin" />
+    <Footer />
     <template v-if="!theme.isDark">
       <div
         v-for="(obj, index) in floatingObjects"

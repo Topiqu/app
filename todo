@@ -7,7 +7,9 @@ now:
   - 🛑 GAM + total ad revenue overview & logging
   - 🛑 AWS S3 Bucket integration
   - 🛑 AWS SES integration
+  - 🛑 dynamic pricing (clientpreferences)
   - 🟡 Stripe integration for token refill
+  - 🟡 footer branding for free tier clients
   - 🟢 replace sweetalert modals with custom ModalMini component
 ---
 test:
