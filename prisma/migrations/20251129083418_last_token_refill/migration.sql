@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "ClientSite" ADD COLUMN     "lastTokenRefilled" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP;

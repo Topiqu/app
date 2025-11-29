@@ -312,6 +312,8 @@ model ClientSite extends Base {
     enableCron          Boolean             @default(false)
     enableSentiment     Boolean             @default(false)
     currency            String?             @default('USD')
+    lastPaidAt          DateTime?           @default(now())
+    lastTokenRefilled   DateTime?           @default(now())
     language            Language            @default(en)
     theme               Theme               @default(blue)
     users               User[]
