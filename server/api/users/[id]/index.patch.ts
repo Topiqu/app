@@ -14,22 +14,30 @@ export default defineEventHandler(async (event) => {
 
   const oldPasswordDb = await prisma.user.findUnique({ where: { id }, select: { password: true, totpSecret: true } })
 
-  const body = await readValidatedBody(
-    event,
-    z
-      .object({
-        oldPass: z
-          .string()
-          .optional()
-          .refine((val) => !val || val.length >= 4, {
-            message: t('common.passwordSuggestions.tooShort', { minLength: 4 })!,
-          }),
-        totpAction: z.literal('enable').optional(),
-        totpCode: z.string().length(6).optional(),
-      })
-      .extend(UserUpdateSchema.shape).parse,
-  )
+  const PatchSchema = z.object({
+    oldPass: z
+      .string()
+      .optional()
+      .refine((val) => !val || val.length >= 4, {
+        message: t('common.passwordSuggestions.tooShort', { minLength: 4 })!,
+      }),
+    totpAction: z.literal('enable').optional(),
+    totpCode: z.string().length(6).optional(),
+    username: z.string().optional(),
+    email: z.string().email().optional(),
+    password: z.string().min(4).optional(),
+    role: z.enum(['reader', 'admin', 'superadmin']).optional(),
+    bio: z.string().optional(),
+    language: z.string().optional(),
+    allowNotifs: z.boolean().optional(),
+    allowEmail: z.boolean().optional(),
+    lastLogin: z.date().optional(),
+    avatarUrl: z.string().optional(),
+    totpSecret: z.string().nullable().optional(),
+    clientSiteId: z.string().nullable().optional(),
+  })
 
+  const body = await readValidatedBody(event, PatchSchema.parse)
   const { oldPass, totpAction, totpCode, ...data } = body
 
   if (totpAction === 'enable') {
@@ -45,9 +53,8 @@ export default defineEventHandler(async (event) => {
 
   if (totpCode) {
     const secret = oldPasswordDb?.totpSecret
-    if (!secret || !authenticator.verify({ token: totpCode, secret })) {
+    if (!secret || !authenticator.verify({ token: totpCode, secret }))
       throw createError({ statusCode: 403, message: t('common.errors.invalidTotp')! })
-    }
     const updated = await db.user.update({
       where: { id },
       data: { totpSecret: secret },
@@ -70,9 +77,8 @@ export default defineEventHandler(async (event) => {
     if (!match) throw createError({ statusCode: 403, message: t('common.errors.passwordChangeFailed')! })
   }
 
-  if (user.role !== 'superadmin' && body.role && body.role !== user.role) {
+  if (user.role !== 'superadmin' && body.role && body.role !== user.role)
     throw createError({ statusCode: 403, message: t('common.errors.roleChangeForbidden')! })
-  }
 
   const currentUser = await db.user.findUnique({ where: { id } })
 
@@ -81,12 +87,12 @@ export default defineEventHandler(async (event) => {
     await logAction({
       action: 'ROLE_CHANGE',
       userId: user.id,
-      clientSiteId: user.clientSiteId || undefined,
+      clientSiteId: user.clientSiteId ? user.clientSiteId : undefined,
       ip: getIp(event),
       metadata: { userId: id, newRole: body.role },
     })
   }
 
-  const updated = await saveUserWithLogging(event, { ...data, id }, true)
+  const updated = await saveUserWithLogging(event, { id, ...data }, true)
   return { ...updated }
 })
