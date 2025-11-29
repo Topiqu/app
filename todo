@@ -8,6 +8,27 @@ now:
   - 🛑 AWS S3 Bucket integration
   - 🛑 AWS SES integration
   - 🛑 dynamic pricing (clientpreferences)
+  - 🛑 fix issue in users/[id]/patch : {
+  "error": true,
+  "url": "http://localhost:3000/api/users/f0ddd9fb-42af-4fe9-ab4e-4dd9257b632a",
+  "statusCode": 400,
+  "statusMessage": "Validation Error",
+  "message": "Invalid element at key \"id\": expected a Zod schema",
+  "data": {},
+  "stack": [
+    "Invalid element at key \"id\": expected a Zod schema",
+    "at createError (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:71:15)",
+    "at createValidationError (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:237:9)",
+    "at validateData (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:233:11)",
+    "at readValidatedBody (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:454:10)",
+    "at process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
+    "at async Object.handler (C:\\Users\\kurib\\rasg-blog\\server\\api\\users\\[id]\\index.patch.ts:17:0)",
+    "at async file:///C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:2004:19)",
+    "at async Object.callAsync (C:/Users/kurib/rasg-blog/node_modules/unctx/dist/index.mjs:72:16)",
+    "at async Object.callAsync (C:/Users/kurib/rasg-blog/node_modules/unctx/dist/index.mjs:72:16)",
+    "at async Server.toNodeHandle (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:2296:7)"
+  ]
+}
   - 🟡 Stripe integration for token refill
   - 🟡 footer branding for free tier clients
   - 🟢 replace sweetalert modals with custom ModalMini component
