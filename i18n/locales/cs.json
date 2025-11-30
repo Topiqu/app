@@ -15,6 +15,16 @@
     "yes": "Ano",
     "no": "Ne",
     "none": "Žádný",
+    "features": {
+      "ai": "AI Generování",
+      "aiDesc": "Generování obsahu a AI doplňky",
+      "crons": "Plánované úlohy",
+      "cronsDesc": "Automatizace pro Váš blog - automatické vydávání článků, analýzy a další",
+      "sentiment": "Analýza sentimentu",
+      "sentimentDesc": "Podrobná analýza nálady a zpětné vazby čtenářů",
+      "articleCrons": "Plánované generování článků",
+      "articleCronsDesc": "Automatické vydávání článků pomocí AI na základě vašich preferencí"
+    },
     "errTypes": {
       "notFound": "Tohle jsem nenašel, asi jsem slepý.",
       "unauthorized": "Stát, sem nesmíš, to je zakázané území pro nepřihlášené dobrodruhy.",
@@ -223,7 +233,12 @@
     "cancelAction": "Zrušit akci",
     "preferences": {
       "title": "Vaše preference",
+      "external": "Externí služby",
       "explanation": "Vysvětlení preferencí",
+      "monthlyTitle": "Měsíční cena",
+      "annuallyTitle": "Roční cena",
+      "monthly": "měsíc",
+      "annually": "rok",
       "companyLogo": {
         "label": "Logo blogu",
         "description": "PNG, JPEG, WebP nebo SVG, min. 512x512px, max. 2 MB"

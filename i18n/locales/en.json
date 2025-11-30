@@ -15,6 +15,16 @@
     "yes": "Yes",
     "no": "No",
     "none": "None",
+    "features": {
+      "ai": "AI Generation",
+      "aiDesc": "Content generation and AI enhancements",
+      "crons": "Scheduled Tasks",
+      "cronsDesc": "Automation for your blog – automatic article publishing, analysis, and more",
+      "sentiment": "Sentiment Analysis",
+      "sentimentDesc": "Detailed analysis of readers' mood and feedback",
+      "articleCrons": "Scheduled Article Generation",
+      "articleCronsDesc": "Automatic publishing of articles using AI based on your preferences"
+    },
     "actions": {
       "view": "View",
       "edit": "Edit",
@@ -223,7 +233,12 @@
     "cancelAction": "Cancel action",
     "preferences": {
       "title": "Your Preferences",
+      "external": "External services",
       "explanation": "Preferences Explanation",
+      "monthlyTitle": "Monthly Price",
+      "annuallyTitle": "Yearly Price",
+      "monthly": "month",
+      "annually": "year",
       "companyLogo": {
         "label": "Company Logo",
         "description": "PNG, JPEG, WebP, or SVG, min. 512x512px, max. 2 MB"
