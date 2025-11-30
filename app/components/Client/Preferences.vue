@@ -120,8 +120,7 @@
                 {{ $t('common.preferences.monthlyTitle') }}
               </div>
               <div class="text-4xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
-                {{ monthlyPrice }}
-                <span class="text-xl text-neutral-500 dark:text-neutral-400">{{ client?.currency ?? 'EUR' }}</span>
+                {{ formatPrice('monthly') }}
               </div>
               <div class="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
                 /{{ $t('common.preferences.monthly') }}
@@ -135,8 +134,7 @@
                 {{ $t('common.preferences.annuallyTitle') }}
               </div>
               <div class="text-4xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
-                {{ annualPrice }}
-                <span class="text-xl text-neutral-500 dark:text-neutral-400">{{ client?.currency ?? 'EUR' }}</span>
+                {{ formatPrice('annual') }}
               </div>
               <div class="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
                 /{{ $t('common.preferences.annually') }}
@@ -224,7 +222,6 @@ interface ClientSite {
 
 const { data: client, refresh, pending } = await useFetch<ClientSite>(`/api/clients/${auth.value?.user.clientSiteId}`)
 const { data: features } = await useFetch(`/api/features`)
-
 const rate = await useCurrencyRate(client.value?.currency ?? 'EUR')
 
 const activeFeatures = computed(() => client.value?.activeFeatures ?? [])
@@ -232,19 +229,23 @@ const allowedFeatures = computed(
   () => client.value?.allowedFeatures ?? { AI: false, SENTIMENT: false, ARTICLE_CRONS: false },
 )
 
-const monthlyPrice = computed(() => {
-  if (client.value?.billingPlan === 'PERMANENT') return 0
-  const base = client.value?.monthlyPayment ?? 0
-  const price = client.value?.currency === 'CZK' ? base : base / rate
-  return Number(price.toFixed(2))
-})
+const formatPrice = (type: 'monthly' | 'annual') => {
+  const monthlyCZK = client.value?.monthlyPayment
+  if (!monthlyCZK) return '–'
 
-const annualPrice = computed(() => {
-  if (client.value?.billingPlan === 'PERMANENT') return 0
-  const base = monthlyPrice.value * 12
-  const price = client.value?.billingPlan === 'ANNUAL' ? base * 0.8 : base
-  return Number(price.toFixed(2))
-})
+  const price =
+    type === 'annual' ? (client.value?.billingPlan === 'ANNUAL' ? monthlyCZK * 12 * 0.8 : monthlyCZK * 12) : monthlyCZK
+  const final = client.value?.currency === 'CZK' ? price : price / rate
+
+  return new Intl.NumberFormat(client.value?.currency === 'CZK' ? 'cs-CZ' : undefined, {
+    style: 'currency',
+    currency: client.value?.currency ?? 'EUR',
+    currencyDisplay: 'narrowSymbol',
+    minimumFractionDigits: client.value?.currency === 'CZK' ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(final)
+}
+
 const showPricing = computed(() => client.value?.billingPlan !== 'PERMANENT')
 
 watch(
