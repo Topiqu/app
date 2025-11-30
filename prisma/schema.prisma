@@ -60,11 +60,24 @@ enum GenerationFrequency {
   WEEKLY
 }
 
+enum FeatureCodes {
+  AI
+  CRONS
+  SENTIMENT
+  ARTICLE_CRONS
+}
+
 enum ClientPlan {
   BASIC
   PRO
   PREMIUM
   CUSTOM
+}
+
+enum BillingPlans {
+  MONTHLY
+  ANNUAL
+  PERMANENT
 }
 
 enum ReactionType {
@@ -304,6 +317,7 @@ model ClientSite {
   allowShapes         Boolean             @default(false)
   communityInsight    Json?
   insightUpdatedAt    DateTime?
+  billingPlan         BillingPlans        @default(MONTHLY)
   monthlyPayment      Int?                @default(0)
   annualPayment       Int?                @default(0)
   enableAi            Boolean             @default(false)
@@ -322,8 +336,41 @@ model ClientSite {
   userBans            UserBan[]
   socials             Social[]
   logs                Log[]               @relation("LogToClientSite")
+  features            ClientFeature[]
 
-  @@index([subdomain, name, plan])
+  @@index([subdomain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
+}
+
+model Feature {
+  id             String          @id() @default(uuid())
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime?       @updatedAt()
+  deletedAt      DateTime?
+  code           FeatureCodes    @unique()
+  name           String
+  priceMonthly   Int
+  priceAnnual    Int?
+  tier           String?
+  clientFeatures ClientFeature[]
+}
+
+model ClientFeature {
+  id                 String     @id() @default(uuid())
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime?  @updatedAt()
+  deletedAt          DateTime?
+  clientSiteId       String
+  featureId          String
+  feature            Feature    @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  activatedAt        DateTime   @default(now())
+  deactivatedAt      DateTime?
+  billingLockedUntil DateTime
+  isActive           Boolean    @default(true)
+  clientSite         ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
+  @@unique([clientSiteId, featureId])
+  @@index([clientSiteId])
+  @@index([billingLockedUntil])
 }
 
 model PollResult {

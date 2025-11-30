@@ -67,11 +67,24 @@ enum GenerationFrequency {
     WEEKLY
 }
 
+enum FeatureCodes {
+    AI
+    CRONS
+    SENTIMENT
+    ARTICLE_CRONS
+}
+
 enum ClientPlan {
     BASIC
     PRO
     PREMIUM
     CUSTOM
+}
+
+enum BillingPlans {
+    MONTHLY
+    ANNUAL
+    PERMANENT
 }
 
 enum ReactionType {
@@ -285,49 +298,88 @@ model Social {
 }
 
 model ClientSite extends Base {
-    name                String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
-    subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
-    plan                ClientPlan          @default(BASIC)
-    focus               String?
-    description         String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
-    logoUrl             String?             @length(0, 255, "URL loga musí mít max. 255 znaků")
-    generationFrequency GenerationFrequency @default(NONE)
-    tokenLimit          Int?                @default(0)
-    tokenRemaining      Int?                @default(0)
-    totalUsage          Int?                @default(0)
-    autoRelease         Boolean             @default(false)
-    keywords            Json?
-    audience            String?
-    lastGeneratedAt     DateTime?
-    gtagId              String?
-    gamNetworkCode      String?             
-    allowAds            Boolean             @default(false)
-    allowGtag           Boolean?
-    allowShapes         Boolean             @default(false)
-    communityInsight    Json?
-    insightUpdatedAt    DateTime?
-    monthlyPayment      Int?                @default(0)
-    annualPayment       Int?                @default(0)
-    enableAi            Boolean             @default(false)
-    enableCron          Boolean             @default(false)
-    enableSentiment     Boolean             @default(false)
-    currency            String?             @default('USD')
-    lastPaidAt          DateTime?           @default(now())
-    lastTokenRefilled   DateTime?           @default(now())
-    language            Language            @default(en)
-    theme               Theme               @default(blue)
-    users               User[]
-    tags                Tag[]
-    articles            Article[]
-    articleDrafts       ArticleDraft[]
-    emojis              Emoji[]
-    userBans            UserBan[]
-    socials             Social[]
-    logs                Log[]               @relation("LogToClientSite")
-    @@allow('read', true)
-    @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
-    @@allow('all', auth().role == 'superadmin')
-    @@index([subdomain, name, plan])
+  name                String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
+  subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
+  plan                ClientPlan          @default(BASIC)
+  focus               String?
+  description         String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
+  logoUrl             String?             @length(0, 255, "URL loga musí mít max. 255 znaků")
+  generationFrequency GenerationFrequency @default(NONE)
+  tokenLimit          Int?                @default(0)
+  tokenRemaining      Int?                @default(0)
+  totalUsage          Int?                @default(0)
+  autoRelease         Boolean             @default(false)
+  keywords            Json?
+  audience            String?
+  lastGeneratedAt     DateTime?
+  gtagId              String?
+  gamNetworkCode      String?             
+  allowAds            Boolean             @default(false)
+  allowGtag           Boolean?
+  allowShapes         Boolean             @default(false)
+  communityInsight    Json?
+  insightUpdatedAt    DateTime?
+  billingPlan         BillingPlans        @default(MONTHLY)
+  monthlyPayment      Int?                @default(0)
+  annualPayment       Int?                @default(0)
+  enableAi            Boolean             @default(false)
+  enableCron          Boolean             @default(false)
+  enableSentiment     Boolean             @default(false)
+  currency            String?             @default('USD')
+  lastPaidAt          DateTime?           @default(now())
+  lastTokenRefilled   DateTime?           @default(now())
+  language            Language            @default(en)
+  theme               Theme               @default(blue)
+
+  users               User[]
+  tags                Tag[]
+  articles            Article[]
+  articleDrafts       ArticleDraft[]
+  emojis              Emoji[]
+  userBans            UserBan[]
+  socials             Social[]
+  logs                Log[]            @relation("LogToClientSite")
+  features            ClientFeature[]
+
+  @@allow('read', true)
+  @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
+  @@allow('all', auth().role == 'superadmin')
+  @@index([subdomain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
+}
+
+model Feature extends Base {
+  code           FeatureCodes @unique
+  name           String
+  priceMonthly   Int
+  priceAnnual    Int?
+  tier           String?
+
+  clientFeatures ClientFeature[]
+
+  @@allow('read', true)
+  @@allow('all', auth().role == 'superadmin')
+}
+
+model ClientFeature extends Base {
+  clientSiteId       String
+  featureId          String
+  feature            Feature    @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  activatedAt        DateTime   @default(now())
+  deactivatedAt      DateTime?
+  billingLockedUntil DateTime
+
+  isActive           Boolean    @default(true)
+
+  clientSite         ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
+  @@unique([clientSiteId, featureId])
+  @@index([clientSiteId])
+  @@index([billingLockedUntil])
+
+  @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+  @@allow('create, update', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+  @@allow('delete', auth().role == 'superadmin')
 }
 
 model PollResult extends Base {
