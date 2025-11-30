@@ -16,10 +16,26 @@ export default defineEventHandler(async (event) => {
         select: { id: true, username: true, bio: true, avatarUrl: true },
       },
       socials: true,
+      features: {
+        where: { isActive: true },
+        include: {
+          feature: {
+            select: { code: true },
+          },
+        },
+      },
     },
   })
 
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
+
+  const activeFeatures = clientSite.features.map((cf) => cf.feature.code)
+
+  const allowedFeatures = {
+    AI: ['PRO', 'PREMIUM', 'CUSTOM'].includes(clientSite.plan),
+    SENTIMENT: ['PREMIUM', 'CUSTOM'].includes(clientSite.plan),
+    ARTICLE_CRONS: ['PRO', 'PREMIUM', 'CUSTOM'].includes(clientSite.plan),
+  }
 
   return {
     ...clientSite,
@@ -30,5 +46,7 @@ export default defineEventHandler(async (event) => {
           avatarUrl: clientSite.users[0].avatarUrl,
         }
       : null,
+    activeFeatures,
+    allowedFeatures,
   }
 })
