@@ -68,6 +68,7 @@ export default defineNuxtConfig({
     '@vueuse/motion/nuxt',
     '@sidebase/nuxt-auth',
     '@vite-pwa/nuxt',
+    '@unlok-co/nuxt-stripe',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-nodemailer',
     'nuxt-security',
@@ -81,6 +82,11 @@ export default defineNuxtConfig({
   eslint: { config: { typescript: true } },
 
   css: ['~/assets/styles/base.scss'],
+
+  stripe: {
+    client: { key: process.env.STRIPE_PK, options: { locale: 'cs' } },
+    server: { key: process.env.STRIPE_SK },
+  },
 
   auth: {
     provider: { type: 'authjs' },
