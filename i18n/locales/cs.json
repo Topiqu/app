@@ -233,10 +233,28 @@
     "cancelAction": "Zrušit akci",
     "preferences": {
       "title": "Vaše preference",
+      "currentPlan": "Aktuální tarif",
+      "nextPayment": "Další platba",
+      "savingsTitle": "Úspora",
       "external": "Externí služby",
       "explanation": "Vysvětlení preferencí",
       "monthlyTitle": "Měsíční cena",
       "annuallyTitle": "Roční cena",
+      "billing": {
+        "permanent": "– Trvalý přístup",
+        "annual": "– Roční platba",
+        "monthly": "– Měsíční platba"
+      },
+      "validity": {
+        "permanent": "Trvalý přístup",
+        "unknown": "Platnost neurčena",
+        "until": "Platnost do {date}"
+      },
+      "nextBilling": {
+        "annual": "za 12 měsíců",
+        "monthly": "za měsíc"
+      },
+      "savings": "{amount} ročně",
       "monthly": "měsíc",
       "annually": "rok",
       "companyLogo": {

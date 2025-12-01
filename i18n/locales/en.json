@@ -233,10 +233,28 @@
     "cancelAction": "Cancel action",
     "preferences": {
       "title": "Your Preferences",
+      "currentPlan": "Current plan",
+      "nextPayment": "Next payment",
+      "savingsTitle": "Savings",
       "external": "External services",
       "explanation": "Preferences Explanation",
       "monthlyTitle": "Monthly Price",
       "annuallyTitle": "Yearly Price",
+      "billing": {
+        "permanent": "– Lifetime access",
+        "annual": "– Annual billing",
+        "monthly": "– Monthly billing"
+      },
+      "validity": {
+        "permanent": "Lifetime access",
+        "unknown": "Validity unknown",
+        "until": "Valid until {date}"
+      },
+      "nextBilling": {
+        "annual": "in 12 months",
+        "monthly": "in 1 month"
+      },
+      "savings": "{amount} per year",
       "monthly": "month",
       "annually": "year",
       "companyLogo": {
