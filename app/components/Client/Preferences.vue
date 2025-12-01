@@ -116,6 +116,57 @@
             <div
               class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-lg"
             >
+              <div class="text-xs uppercase text-neutral-600 dark:text-neutral-300 mb-2">
+                {{ $t('common.preferences.currentPlan') }}
+              </div>
+              <div class="flex items-center gap-2">
+                <Icon name="mdi:check-circle" class="size-7 text-emerald-500" />
+                <div>
+                  <div class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                    {{ client?.plan }}
+                  </div>
+                  <div class="text-sm text-neutral-500 dark:text-neutral-400">
+                    {{ billingPlanText }}
+                  </div>
+                </div>
+              </div>
+              <div class="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
+                {{ validityText }}
+              </div>
+            </div>
+
+            <div
+              v-if="client?.billingPlan !== 'PERMANENT' && client?.nextBillingAt"
+              class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-lg"
+            >
+              <div class="flex items-center gap-2 text-xs uppercase text-neutral-600 dark:text-neutral-300 mb-2">
+                <Icon name="mdi:calendar-clock" class="size-4" />
+                {{ $t('common.preferences.nextPayment') }}
+              </div>
+              <div class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                {{ nextBillingDate }}
+              </div>
+              <div class="text-sm text-neutral-500 dark:text-neutral-400">
+                {{ nextBillingAmountText }}
+              </div>
+            </div>
+
+            <div
+              v-if="client?.billingPlan === 'ANNUAL'"
+              class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-lg"
+            >
+              <div class="flex items-center gap-2 text-xs uppercase text-emerald-600 dark:text-emerald-400 mb-2">
+                <Icon name="mdi:currency-usd-off" class="size-4" />
+                {{ $t('common.preferences.savingsTitle') }}
+              </div>
+              <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                {{ formatSavings }}
+              </div>
+            </div>
+
+            <div
+              class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-lg"
+            >
               <div class="text-neutral-600 dark:text-neutral-300 text-xs uppercase tracking-wider mb-1">
                 {{ $t('common.preferences.monthlyTitle') }}
               </div>
@@ -128,7 +179,7 @@
             </div>
 
             <div
-              class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-lg"
+              class="relative rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-lg"
             >
               <div class="text-neutral-600 dark:text-neutral-300 text-xs uppercase tracking-wider mb-1">
                 {{ $t('common.preferences.annuallyTitle') }}
@@ -139,11 +190,13 @@
               <div class="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
                 /{{ $t('common.preferences.annually') }}
               </div>
-              <div
-                v-if="client?.billingPlan === 'ANNUAL'"
-                class="mt-3 text-xl font-bold text-emerald-600 dark:text-emerald-400"
-              >
-                –20 %
+              <div v-if="client?.billingPlan === 'ANNUAL'" class="absolute -top-3 -right-3">
+                <div
+                  class="flex items-center gap-1 bg-emerald-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg"
+                >
+                  <Icon name="mdi:tag-outline" class="size-4" />
+                  -20 %
+                </div>
               </div>
             </div>
           </div>
@@ -165,10 +218,12 @@
 </template>
 
 <script setup lang="ts">
-import type { SocialPlatform } from '@prisma/client'
 import type { ThemeSchema, LanguageSchema } from '~~/shared/zod/enums'
+import type { SocialPlatform, ClientSite as _ClientSite } from '@prisma/client'
 
 import Swal from 'sweetalert2'
+import { cs, enUS } from 'date-fns/locale'
+import { format, parseISO } from 'date-fns'
 
 const toast = useToast()
 const { data: auth } = useAuth()
@@ -190,34 +245,21 @@ const form = ref({
   allowGtag: false,
 })
 
-interface ClientSite {
-  id: string
-  name: string
-  subdomain: string
-  plan: string
-  focus: string | null
-  audience: string | null
-  language: (typeof LanguageSchema.options)[number]
-  theme: (typeof ThemeSchema.options)[number]
-  keywords: string[] | null
-  description: string | null
-  logoUrl: string | null
-  generationFrequency: string
-  tokenLimit: number | null
-  tokenRemaining: number | null
+interface ClientSite
+  extends Omit<_ClientSite, 'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'lastTokenRefilled'> {
+  billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT' | null
+  nextBillingAt: string | null
   lastGeneratedAt: string | null
+  lastTokenRefilled: string | null
+  activeFeatures: string[] | null
+  keywords: string[] | null
+  allowedFeatures: {
+    AI?: boolean
+    SENTIMENT?: boolean
+    ARTICLE_CRONS?: boolean
+  } | null
   socials: { platform: SocialPlatform; url: string }[]
-  aiUser?: { username: string; bio: string; avatarUrl: string }
-  gtagId?: string | null
-  gamNetworkCode?: string | null
-  allowAds: boolean
-  allowGtag?: boolean | null
-  monthlyPayment?: number | null
-  annualPayment?: number | null
-  currency?: string | null
-  billingPlan?: 'MONTHLY' | 'ANNUAL' | 'PERMANENT'
-  activeFeatures?: string[]
-  allowedFeatures?: { AI?: boolean; SENTIMENT?: boolean; ARTICLE_CRONS?: boolean }
+  aiUser: { username: string; bio: string; avatarUrl: string } | null
 }
 
 const { data: client, refresh, pending } = await useFetch<ClientSite>(`/api/clients/${auth.value?.user.clientSiteId}`)
@@ -229,20 +271,59 @@ const allowedFeatures = computed(
   () => client.value?.allowedFeatures ?? { AI: false, SENTIMENT: false, ARTICLE_CRONS: false },
 )
 
+const billingPlanText = computed(() => {
+  if (!client.value) return ''
+  if (client.value.billingPlan === 'PERMANENT') return $t('common.preferences.billing.permanent')
+  if (client.value.billingPlan === 'ANNUAL') return $t('common.preferences.billing.annual')
+  return $t('common.preferences.billing.monthly')
+})
+
+const validityText = computed(() => {
+  if (!client.value) return ''
+  if (client.value.billingPlan === 'PERMANENT') return $t('common.preferences.validity.permanent')
+  if (!client.value.nextBillingAt) return $t('common.preferences.validity.unknown')
+  const date = parseISO(client.value.nextBillingAt)
+  const locale = client.value.language === 'cs' ? cs : enUS
+  return $t('common.preferences.validity.until', { date: format(date, 'd. M. yyyy', { locale }) })
+})
+
+const nextBillingDate = computed(() => {
+  if (!client.value?.nextBillingAt) return '–'
+  const date = parseISO(client.value.nextBillingAt)
+  const locale = client.value.language === 'cs' ? cs : enUS
+  return format(date, 'd. M. yyyy', { locale })
+})
+
+const nextBillingAmountText = computed(() => {
+  if (!client.value) return ''
+  return client.value.billingPlan === 'ANNUAL'
+    ? $t('common.preferences.nextBilling.annual')
+    : $t('common.preferences.nextBilling.monthly')
+})
+
+const formatSavings = computed(() => {
+  if (!client.value?.monthlyPayment) return ''
+  const savings = Math.round(client.value.monthlyPayment * 12 * 0.2)
+  return $t('common.preferences.savings', {
+    amount: new Intl.NumberFormat(client.value.language === 'cs' ? 'cs-CZ' : undefined, {
+      style: 'currency',
+      currency: client.value.currency ?? 'EUR',
+      currencyDisplay: 'narrowSymbol',
+    }).format(savings),
+  })
+})
+
 const formatPrice = (type: 'monthly' | 'annual') => {
-  const monthlyCZK = client.value?.monthlyPayment
-  if (!monthlyCZK) return '–'
-
+  const monthly = client.value?.monthlyPayment
+  if (!monthly) return '–'
   const price =
-    type === 'annual' ? (client.value?.billingPlan === 'ANNUAL' ? monthlyCZK * 12 * 0.8 : monthlyCZK * 12) : monthlyCZK
+    type === 'annual' ? (client.value?.billingPlan === 'ANNUAL' ? monthly * 12 * 0.8 : monthly * 12) : monthly
   const final = client.value?.currency === 'CZK' ? price : price / rate
-
   return new Intl.NumberFormat(client.value?.currency === 'CZK' ? 'cs-CZ' : undefined, {
     style: 'currency',
     currency: client.value?.currency ?? 'EUR',
     currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: client.value?.currency === 'CZK' ? 0 : 2,
-    maximumFractionDigits: 2,
   }).format(final)
 }
 
@@ -279,11 +360,20 @@ watch(
 const toggleFeature = async ({ code, enabled }: { code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }) => {
   if (!client.value?.id) return
   try {
-    const res = await $fetch<ClientSite>(`/api/clients/${client.value.id}/features`, {
+    const res = await $fetch<{
+      activeFeatures: string[]
+      monthlyPayment: number
+      annualPayment: number
+    }>(`/api/clients/${client.value.id}/features`, {
       method: 'PATCH',
       body: { code, enabled },
     })
-    client.value = res
+    client.value = {
+      ...client.value!,
+      activeFeatures: res.activeFeatures,
+      monthlyPayment: res.monthlyPayment,
+      annualPayment: res.annualPayment,
+    }
     toast.success({ message: enabled ? $t('common.messages.featureEnabled') : $t('common.messages.featureDisabled') })
   } catch {
     toast.error({ message: $t('common.messages.saveFailed') })
@@ -320,9 +410,6 @@ const confirmClose = async () => {
     form.value.logoUrl !== (client.value?.logoUrl ?? '') ||
     JSON.stringify(form.value.keywords) !== JSON.stringify(client.value?.keywords ?? []) ||
     JSON.stringify(form.value.socials) !== JSON.stringify(client.value?.socials ?? []) ||
-    form.value.gtagId !== (client.value?.gtagId ?? '') ||
-    form.value.gamNetworkCode !== (client.value?.gamNetworkCode ?? '') ||
-    form.value.allowAds !== client.value?.allowAds ||
     form.value.allowGtag !== (client.value?.allowGtag ?? false) ||
     (client.value?.tokenLimit &&
       client.value.tokenLimit > 0 &&
@@ -341,7 +428,6 @@ const confirmClose = async () => {
     cancelButtonText: $t('common.messages.deleteCancel'),
     confirmButtonColor: '#ef4444',
   })
-
   if (r.isConfirmed) open.value = false
 }
 </script>
