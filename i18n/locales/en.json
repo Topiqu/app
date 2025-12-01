@@ -593,6 +593,7 @@
     },
     "topLikedArticle": {
       "title": "Most Liked Article",
+      "likes": "likes",
       "noLikes": "No article has been liked yet"
     },
     "topCommentedArticle": {

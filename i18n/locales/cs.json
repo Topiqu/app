@@ -593,6 +593,7 @@
     },
     "topLikedArticle": {
       "title": "Nejlajkovanější článek",
+      "likes": "lajků",
       "noLikes": "Zatím žádný článek nebyl lajkován"
     },
     "topCommentedArticle": {
