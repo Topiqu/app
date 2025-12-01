@@ -77,21 +77,48 @@
 
           <div
             v-if="data?.user.plan !== 'BASIC'"
-            class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+            class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer"
+            @click="showTopTags = !showTopTags"
           >
-            <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
-              <Icon name="mdi:tag" class="w-5 h-5 text-emerald-600" />
-              {{ $t('stats.topTag.title') }}
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+                <Icon name="mdi:tag" class="w-5 h-5 text-emerald-600" />
+                {{ $t('stats.topTag.title') }}
+              </div>
+              <Icon :name="showTopTags ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="w-5 h-5 text-gray-400" />
             </div>
-            <template v-if="stats.topTags.length > 0">
+
+            <div v-if="!showTopTags && stats.topTags.length > 0" class="mt-3">
               <p class="text-lg font-medium text-gray-900">
                 {{ stats.topTags[0]?.name }}
               </p>
               <p class="text-sm text-gray-500">
                 {{ stats.topTags[0]?.views.toLocaleString() }} {{ $t('stats.totalViews.title').toLowerCase() }}
               </p>
-            </template>
-            <p v-else class="text-gray-500 italic">{{ $t('stats.topTag.noTags') }}</p>
+            </div>
+
+            <transition name="fade">
+              <div v-if="showTopTags && stats.topTags.length > 0" class="mt-4 space-y-3">
+                <div
+                  v-for="(tag, index) in stats.topTags.slice(0, 3)"
+                  :key="tag.name"
+                  class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50/70 dark:bg-gray-800/50"
+                  :class="{ 'ring-2 ring-emerald-500/30': index === 0 }"
+                >
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-emerald-600">#{{ index + 1 }}</span>
+                    <span class="font-medium text-gray-900">{{ tag.name }}</span>
+                  </div>
+                  <span class="text-sm text-gray-500">
+                    {{ tag.views.toLocaleString() }} {{ $t('stats.totalViews.title').toLowerCase() }}
+                  </span>
+                </div>
+              </div>
+            </transition>
+
+            <p v-if="stats.topTags.length === 0" class="mt-3 text-gray-500 italic">
+              {{ $t('stats.topTag.noTags') }}
+            </p>
           </div>
 
           <div
@@ -106,8 +133,7 @@
                 {{ stats.topLikedArticle.title }}
               </p>
               <p class="text-sm text-gray-500">
-                {{ stats.topLikedArticle.likes }}
-                {{ $t('stats.topLikedArticle.title').toLowerCase().replace('article', 'likes') }}
+                {{ stats.topLikedArticle.likes }} {{ $t('stats.topLikedArticle.likes') }}
               </p>
             </template>
             <p v-else class="text-gray-500 italic">{{ $t('stats.topLikedArticle.noLikes') }}</p>
@@ -232,7 +258,7 @@
               </p>
               <NuxtLink
                 to="/"
-                class="px-6 py-2.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-semibold rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:from-yellow-500 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50"
+                class="px-6 py-2.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-semibold rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:from-yellow-500 hover:to-orange-600"
               >
                 {{ $t('stats.upgradePrompt.button') }}
               </NuxtLink>
@@ -269,6 +295,7 @@ const open = defineModel<boolean>()
 const { data } = useAuth()
 const { onArticleCreated, onArticleDeleted } = useArticleEvent()
 const isBasicPlan = computed(() => data?.value?.user.plan === 'BASIC')
+const showTopTags = ref(false)
 
 const [
   { data: views, pending: viewsPending, refresh: refreshViews },
@@ -287,7 +314,7 @@ const [
   useFetch('/api/stats/views', { lazy: true }),
   useFetch('/api/stats/top-article', { lazy: true }),
   useFetch('/api/stats/article-count', { lazy: true }),
-  useFetch('/api/stats/top-tags?limit=1', { lazy: true, immediate: !isBasicPlan.value }),
+  useFetch('/api/stats/top-tags?limit=3', { lazy: true, immediate: !isBasicPlan.value }),
   useFetch('/api/stats/views-history', { lazy: true, immediate: !isBasicPlan.value }),
   useFetch('/api/stats/top-liked', { lazy: true }),
   useFetch('/api/stats/top-commented', { lazy: true }),
@@ -327,7 +354,7 @@ const stats = computed(() => ({
   totalShares: shares.value?.totalShares || 0,
   shareDistribution: shares.value?.distribution || { TWITTER: 0, LINKEDIN: 0, EMAIL: 0, OTHER: 0 },
   topArticle: topArticle.value,
-  topTags: topTags.value || [],
+  topTags: (topTags.value || []).sort((a: any, b: any) => b.views - a.views),
   topLikedArticle: topLiked.value,
   topCommentedArticle: topCommented.value,
   followerCount: followerCount.value?.count || 0,
@@ -379,14 +406,25 @@ const refreshAll = () => {
   if (!isBasicPlan.value) refreshShares()
   if (!isBasicPlan.value) refreshInsight()
 }
-onMounted(() => {
-  refreshAll()
-})
+
+onMounted(() => refreshAll())
 onArticleCreated(refreshAll)
 onArticleDeleted(refreshAll)
 </script>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 @keyframes gradient-x {
   0%,
   100% {
