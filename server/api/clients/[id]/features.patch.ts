@@ -5,33 +5,37 @@ export default defineEventHandler(async (event) => {
   if (!user || !['superadmin', 'admin'].includes(user.role))
     throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
-  const id = getRouterParam(event, 'id')
-  if (!id) throw createError({ statusCode: 400, message: 'Missing client ID' })
+  const clientId = getRouterParam(event, 'id')
+  if (!clientId) throw createError({ statusCode: 400, message: 'Missing client ID' })
 
   const { code, enabled } = await readBody<{ code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }>(event)
 
   const now = new Date()
-  const billingLockedUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+  const lockUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 
-  const clientSiteBefore = await prisma.clientSite.findUnique({
-    where: { id },
-    include: {
-      users: { where: { role: 'ai' }, select: { id: true, username: true, bio: true, avatarUrl: true }, take: 1 },
-      socials: true,
-      features: { include: { feature: { select: { id: true, code: true, priceMonthly: true, priceAnnual: true } } } },
+  const before = await prisma.clientSite.findUnique({
+    where: { id: clientId },
+    select: {
+      plan: true,
+      billingPlan: true,
+      monthlyPayment: true,
+      annualPayment: true,
     },
   })
 
-  if (!clientSiteBefore) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
+  if (!before) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
-  const oldMonthly = clientSiteBefore.monthlyPayment ?? 0
-  const oldAnnual = clientSiteBefore.annualPayment ?? 0
+  const oldMonthly = before.monthlyPayment ?? 0
+  const oldAnnual = before.annualPayment ?? 0
 
-  await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const feature = await tx.feature.findUnique({ where: { code } })
-    if (!feature) return
+    if (!feature)
+      throw createError({ statusCode: 400, message: t('common.errors.invalidFeature') ?? 'Invalid feature' })
 
-    const current = clientSiteBefore.features.find((cf) => cf.feature.code === code)
+    const current = await tx.clientFeature.findFirst({
+      where: { clientSiteId: clientId, featureId: feature.id },
+    })
 
     if (enabled) {
       if (current) {
@@ -42,19 +46,13 @@ export default defineEventHandler(async (event) => {
               isActive: true,
               deactivatedAt: null,
               billingLockedUntil:
-                current.billingLockedUntil && current.billingLockedUntil > now
-                  ? current.billingLockedUntil
-                  : billingLockedUntil,
+                current.billingLockedUntil && current.billingLockedUntil > now ? current.billingLockedUntil : lockUntil,
             },
           })
         }
       } else {
         await tx.clientFeature.create({
-          data: {
-            clientSiteId: id,
-            featureId: feature.id,
-            billingLockedUntil,
-          },
+          data: { clientSiteId: clientId, featureId: feature.id, billingLockedUntil: lockUntil },
         })
       }
     } else if (current?.isActive) {
@@ -64,74 +62,49 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const billedFeatures = await tx.clientFeature.findMany({
-      where: { clientSiteId: id, billingLockedUntil: { gt: now } },
+    const activeFeatures = await tx.clientFeature
+      .findMany({
+        where: { clientSiteId: clientId, isActive: true },
+        select: { feature: { select: { code: true } } },
+      })
+      .then((r) => r.map((x) => x.feature.code))
+
+    const billed = await tx.clientFeature.findMany({
+      where: { clientSiteId: clientId, billingLockedUntil: { gt: now } },
       include: { feature: { select: { priceMonthly: true } } },
     })
 
-    const monthlyTotal = billedFeatures.reduce((sum, cf) => sum + cf.feature.priceMonthly, 0)
-
-    const annualTotal =
-      clientSiteBefore.billingPlan === 'ANNUAL' ? Math.round(monthlyTotal * 12 * 0.8) : monthlyTotal * 12
+    const monthlyTotal = billed.reduce((s, cf) => s + cf.feature.priceMonthly, 0)
+    const annualTotal = before.billingPlan === 'ANNUAL' ? Math.round(monthlyTotal * 12 * 0.8) : monthlyTotal * 12
 
     await tx.clientSite.update({
-      where: { id },
+      where: { id: clientId },
       data: {
-        monthlyPayment: clientSiteBefore.billingPlan === 'PERMANENT' ? 0 : monthlyTotal,
-        annualPayment: clientSiteBefore.billingPlan === 'PERMANENT' ? 0 : annualTotal,
+        monthlyPayment: before.billingPlan === 'PERMANENT' ? 0 : monthlyTotal,
+        annualPayment: before.billingPlan === 'PERMANENT' ? 0 : annualTotal,
       },
     })
-  })
 
-  const clientSiteAfter = await prisma.clientSite.findUnique({
-    where: { id },
-    include: {
-      users: { where: { role: 'ai' }, select: { id: true, username: true, bio: true, avatarUrl: true }, take: 1 },
-      socials: true,
-      features: { where: { isActive: true }, include: { feature: { select: { code: true } } } },
-    },
+    return { activeFeatures, monthlyPayment: monthlyTotal, annualPayment: annualTotal }
   })
-
-  const newMonthly = clientSiteAfter!.monthlyPayment ?? 0
-  const newAnnual = clientSiteAfter!.annualPayment ?? 0
-  const activeFeatureCodes = clientSiteAfter!.features.map((f) => f.feature.code)
 
   await logAction({
     action: 'CLIENT_FEATURE_TOGGLE',
     userId: user.id,
-    clientSiteId: id,
+    clientSiteId: clientId,
     metadata: {
       toggledFeature: code,
       enabled,
-      plan: clientSiteBefore.plan,
-      billingPlan: clientSiteBefore.billingPlan,
+      plan: before.plan,
+      billingPlan: before.billingPlan,
       monthlyBefore: oldMonthly,
-      monthlyAfter: newMonthly,
+      monthlyAfter: result.monthlyPayment,
       annualBefore: oldAnnual,
-      annualAfter: newAnnual,
-      activeFeatures: activeFeatureCodes,
+      annualAfter: result.annualPayment,
+      activeFeatures: result.activeFeatures,
     },
     ip: getRequestIP(event),
   })
 
-  const allowedFeatures = {
-    AI: ['PRO', 'PREMIUM', 'CUSTOM'].includes(clientSiteAfter!.plan),
-    SENTIMENT: ['PREMIUM', 'CUSTOM'].includes(clientSiteAfter!.plan),
-    ARTICLE_CRONS: ['PRO', 'PREMIUM', 'CUSTOM'].includes(clientSiteAfter!.plan),
-  }
-
-  const aiUser = clientSiteAfter!.users[0]
-    ? {
-        username: clientSiteAfter!.users[0].username,
-        bio: clientSiteAfter!.users[0].bio ?? null,
-        avatarUrl: clientSiteAfter!.users[0].avatarUrl ?? null,
-      }
-    : null
-
-  return {
-    ...clientSiteAfter,
-    activeFeatures: activeFeatureCodes,
-    allowedFeatures,
-    aiUser,
-  }
+  return result
 })
