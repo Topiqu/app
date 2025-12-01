@@ -320,6 +320,9 @@ model ClientSite extends Base {
   communityInsight    Json?
   insightUpdatedAt    DateTime?
   billingPlan         BillingPlans        @default(MONTHLY)
+  firstPaidAt         DateTime?
+  nextBillingAt       DateTime?
+  lastInvoicedAt      DateTime?
   monthlyPayment      Int?                @default(0)
   annualPayment       Int?                @default(0)
   enableAi            Boolean             @default(false)
