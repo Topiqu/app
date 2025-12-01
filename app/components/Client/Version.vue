@@ -65,11 +65,33 @@
           </div>
         </div>
 
-        <div class="flex gap-2">
-          <Button size="sm" variant="primary" @click="buyTokens">
-            {{ $t('articles.userMenu.buyTokens') }}
+        <div class="grid grid-cols-1 gap-3">
+          <Button
+            size="sm"
+            variant="primary"
+            class="w-full justify-center"
+            @click="buyTokens(10000, 9.99, 'Token Pack 10k')"
+          >
+            10 000 tokenů – 9,99 $
           </Button>
-          <Button v-if="site?.plan === 'BASIC'" size="sm" variant="primary" @click="upgrade">
+          <Button
+            size="sm"
+            variant="primary"
+            class="w-full justify-center"
+            @click="buyTokens(25000, 19.99, 'Token Pack 25k')"
+          >
+            25 000 tokenů – 19,99 $
+          </Button>
+          <Button
+            size="sm"
+            variant="primary"
+            class="w-full justify-center"
+            @click="buyTokens(50000, 34.99, 'Token Pack 50k')"
+          >
+            50 000 tokenů – 34,99 $
+          </Button>
+
+          <Button v-if="site?.plan === 'BASIC'" size="sm" variant="primary" class="w-full" @click="upgrade">
             {{ $t('articles.userMenu.upgradeToPremium') }}
           </Button>
         </div>
@@ -179,7 +201,6 @@ const remainingPercent = computed(() =>
   Math.max(0, ((site.value?.tokenRemaining ?? 0) / (site.value?.tokenLimit ?? 20000)) * 100),
 )
 const isLowTokens = computed(() => remainingPercent.value <= 20)
-
 const estimatedArticles = computed(() => Math.floor((site.value?.tokenRemaining ?? 0) / 5000))
 const tokenTooltip = computed(() => $t('articles.userMenu.roughlyEstimated', [estimatedArticles.value]))
 
@@ -217,7 +238,19 @@ const formatAction = (a: string) => {
   return m[a] || a
 }
 
-const buyTokens = () => navigateTo('/pricing')
+const buyTokens = async (tokens: number, priceUsd: number, name: string) => {
+  await $fetch('/api/stripe/checkout', {
+    method: 'POST',
+    body: {
+      tokens,
+      priceUsd,
+      name,
+      origin: window.location.origin,
+      clientSiteId: site.value?.id,
+    },
+  })
+}
+
 const upgrade = () => navigateTo('/pricing?plan=PREMIUM')
 
 const trigger = useTemplateRef('trigger')
