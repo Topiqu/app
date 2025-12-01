@@ -53,6 +53,7 @@
     "@tiptap/vue-3": "^3.11.0",
     "@types/jspdf": "^2.0.0",
     "@unhead/vue": "^2.0.19",
+    "@unlok-co/nuxt-stripe": "^5.0.0",
     "@vite-pwa/nuxt": "^1.0.7",
     "@vueuse/motion": "^3.0.3",
     "@vueuse/nuxt": "^14.0.0",
