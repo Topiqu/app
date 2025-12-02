@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "ClientSite" ALTER COLUMN "annualPayment" SET DEFAULT 0,
+ALTER COLUMN "annualPayment" SET DATA TYPE DECIMAL(65,30),
+ALTER COLUMN "monthlyPayment" SET DEFAULT 0,
+ALTER COLUMN "monthlyPayment" SET DATA TYPE DECIMAL(65,30);
