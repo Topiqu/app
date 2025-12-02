@@ -239,18 +239,20 @@ const formatAction = (a: string) => {
 }
 
 const buyTokens = async (tokens: number, priceUsd: number, name: string) => {
-  await $fetch('/api/stripe/checkout', {
+  const res = await $fetch('/api/stripe/checkout', {
     method: 'POST',
     body: {
       tokens,
       priceUsd,
       name,
-      origin: window.location.origin,
       clientSiteId: site.value?.id,
+      origin: window.location.origin,
     },
   })
+  if (res.url) {
+    window.location.href = res.url
+  }
 }
-
 const upgrade = () => navigateTo('/pricing?plan=PREMIUM')
 
 const trigger = useTemplateRef('trigger')
