@@ -303,28 +303,39 @@ const nextBillingAmountText = computed(() => {
 
 const formatSavings = computed(() => {
   if (!client.value?.monthlyPayment) return ''
-  const savings = Math.round(client.value.monthlyPayment * 12 * 0.2)
-  return $t('common.preferences.savings', {
-    amount: new Intl.NumberFormat(client.value.language === 'cs' ? 'cs-CZ' : undefined, {
-      style: 'currency',
-      currency: client.value.currency ?? 'EUR',
-      currencyDisplay: 'narrowSymbol',
-    }).format(savings),
-  })
+
+  const monthlyCzk = client.value.monthlyPayment
+  const yearlyCzk = monthlyCzk * 12
+  const savingsCzk = Math.round(yearlyCzk * 0.2)
+
+  const savingsInClientCurrency = client.value.currency === 'CZK' ? savingsCzk : savingsCzk / rate
+
+  return new Intl.NumberFormat(client.value.language === 'cs' ? 'cs-CZ' : 'en-US', {
+    style: 'currency',
+    currency: client.value.currency ?? 'EUR',
+    currencyDisplay: 'narrowSymbol',
+    minimumFractionDigits: client.value.currency === 'CZK' ? 0 : 2,
+  }).format(savingsInClientCurrency)
 })
 
 const formatPrice = (type: 'monthly' | 'annual') => {
-  const monthly = client.value?.monthlyPayment
-  if (!monthly) return '–'
-  const price =
-    type === 'annual' ? (client.value?.billingPlan === 'ANNUAL' ? monthly * 12 * 0.8 : monthly * 12) : monthly
-  const final = client.value?.currency === 'CZK' ? price : price / rate
-  return new Intl.NumberFormat(client.value?.currency === 'CZK' ? 'cs-CZ' : undefined, {
+  const monthlyCzk = client.value?.monthlyPayment ?? 0
+  if (monthlyCzk === 0) return '–'
+
+  let amountCzk = type === 'monthly' ? monthlyCzk : monthlyCzk * 12
+
+  if (type === 'annual' && client.value?.billingPlan === 'ANNUAL') {
+    amountCzk = Math.round(amountCzk * 0.8)
+  }
+
+  const finalAmount = client.value?.currency === 'CZK' ? amountCzk : amountCzk / rate
+
+  return new Intl.NumberFormat(client.value?.language === 'cs' ? 'cs-CZ' : 'en-US', {
     style: 'currency',
     currency: client.value?.currency ?? 'EUR',
     currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: client.value?.currency === 'CZK' ? 0 : 2,
-  }).format(final)
+  }).format(finalAmount)
 }
 
 const showPricing = computed(() => client.value?.billingPlan !== 'PERMANENT')
