@@ -140,7 +140,14 @@ export default defineNuxtConfig({
       crossOriginOpenerPolicy: 'unsafe-none',
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'blob:', 'https:'],
-        'frame-src': ['https://www.youtube.com', 'https://www.youtube-nocookie.com'],
+        'frame-src': [
+          'https://www.youtube.com',
+          'https://www.youtube-nocookie.com',
+          'https://googleads.g.doubleclick.net',
+          'https://tpc.googlesyndication.com',
+          'https://www.google.com',
+          'https://fundingchoicesmessages.google.com',
+        ],
         'connect-src': [
           "'self'",
           'https:',
@@ -158,12 +165,15 @@ export default defineNuxtConfig({
           'https://www.youtube-nocookie.com',
           'https://www.googletagmanager.com',
           'https://www.google-analytics.com',
+          'https://pagead2.googlesyndication.com',
+          'https://tpc.googlesyndication.com',
+          'https://adservice.google.com',
+          'https://fundingchoicesmessages.google.com',
         ],
       },
     },
     xssValidator: false,
   },
-
   i18n: {
     locales: [
       { code: 'en', iso: 'en-US', name: 'EN', file: 'en.json' },
