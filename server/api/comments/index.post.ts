@@ -111,7 +111,7 @@ export default defineEventHandler(async (event) => {
 
     await prisma.notification.create({
       data: {
-        message: t('notifications.userCommentedArticle', [user.name])!,
+        message: t('common.notifications.userCommentedArticle', [user.name])!,
         userId: article.userId,
         articleId: article.id,
         type: 'COMMENT',
