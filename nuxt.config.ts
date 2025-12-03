@@ -15,7 +15,18 @@ export default defineNuxtConfig({
       preset: 'vercel',
     },
   },
-
+  app: {
+    head: {
+      meta: [{ name: 'google-adsense-account', content: 'ca-pub-9286243311790870' }],
+      script: [
+        {
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9286243311790870',
+          async: true,
+          crossorigin: 'anonymous',
+        },
+      ],
+    },
+  },
   nitro: {
     experimental: {
       tasks: true,
