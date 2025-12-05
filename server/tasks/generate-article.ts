@@ -1,6 +1,7 @@
 import type { EventStream } from 'h3'
 
 import slugify from 'slugify'
+import { consumeClientTokens } from '~~/server/utils/consumeTokens'
 
 interface GlobalThis {
   eventStreams?: Map<string, Set<EventStream>>
@@ -84,14 +85,19 @@ const processClient = async (client: any) => {
   const tokens = usage.totalTokens ?? 0
   if (tokens <= 0) return
 
-  await prisma.clientSite.update({
-    where: { id: clientSiteId },
-    data: {
-      tokenRemaining: { decrement: tokens },
-      totalUsage: { increment: tokens },
-      lastGeneratedAt: new Date(),
-    },
-  })
+  try {
+    await consumeClientTokens(clientSiteId, tokens, 'CRON_GENERATE_ARTICLE', {
+      title: generated.title,
+      tags: generated.tags,
+    })
+  } catch (err: any) {
+    await logAction({
+      action: 'CRON_GENERATE_ARTICLE_INSUFFICIENT_TOKENS',
+      clientSiteId,
+      metadata: { required: tokens, error: err.message },
+    })
+    return
+  }
 
   await logAction({
     action: 'CRON_GENERATE_ARTICLE',
@@ -123,6 +129,11 @@ const processClient = async (client: any) => {
     })
 
     return article
+  })
+
+  await prisma.clientSite.update({
+    where: { id: clientSiteId },
+    data: { lastGeneratedAt: new Date() },
   })
 
   if (status === 'published') {

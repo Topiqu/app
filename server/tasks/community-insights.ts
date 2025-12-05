@@ -1,4 +1,5 @@
 import { generateObject } from 'ai'
+import { consumeClientTokens } from '~~/server/utils/consumeTokens'
 
 const insightSchema = z.object({
   summary: z.string().min(20).max(400),
@@ -95,6 +96,12 @@ export default defineTask({
             schema: insightSchema,
             temperature: 0,
             maxRetries: 1,
+          })
+
+          await consumeClientTokens(site.id, usage.totalTokens!, 'COMMUNITY_INSIGHT_GENERATED', {
+            commentCount: comments.length,
+            avgScore: current.avgScore,
+            topEmotion: current.topEmotion,
           })
 
           newInsight = {

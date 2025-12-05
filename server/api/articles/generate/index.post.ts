@@ -1,3 +1,5 @@
+import { consumeClientTokens } from '~~/server/utils/consumeTokens'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -10,18 +12,7 @@ export default defineEventHandler(async (event) => {
 
   const { usage, ...article } = await generateArticle(user.clientSiteId, prompt)
 
-  await prisma.clientSite.update({
-    data: { tokenRemaining: { decrement: usage.totalTokens }, totalUsage: { increment: usage.totalTokens } },
-    where: { id: user.clientSiteId },
-  })
-
-  await logAction({
-    action: 'GENERATE_ARTICLE',
-    userId: user.id,
-    clientSiteId: user.clientSiteId,
-    metadata: { ...article, usage },
-    ip: getIp(event),
-  })
+  await consumeClientTokens(user.clientSiteId, usage.totalTokens!, 'GENERATE_ARTICLE', { ...article, usage }, event)
 
   return article
 })

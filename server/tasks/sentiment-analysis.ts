@@ -1,3 +1,5 @@
+import { consumeClientTokens } from '~~/server/utils/consumeTokens'
+
 export default defineTask({
   meta: {
     name: 'sentiment-analysis',
@@ -41,6 +43,13 @@ export default defineTask({
         const clientSiteId = comment!.article.clientSite.id
 
         if (r.status === 'fulfilled') {
+          consumeClientTokens(clientSiteId, r.value.usage.totalTokens!, 'SENTIMENT_ANALYSIS', {
+            commentId: comment!.id,
+            plan: comment!.article.clientSite.plan,
+            score: r.value.object.score,
+            label: r.value.object.label,
+          })
+
           logAction({
             action: 'SENTIMENT_PROCESSED',
             clientSiteId,
