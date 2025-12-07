@@ -16,8 +16,10 @@
 <script setup lang="ts">
 import type { themes } from '~/composables/theme'
 const clientSite = await useClientSite()
+// const { adTargeting, assign } = useAdChance()
 // throw createError({ statusCode: 400, message: 'Service Unavailable', statusMessage: 'Service Unavailable' })
-
+// assign(clientSite!.id, clientSite!.plan)
+// console.log(adTargeting.value)
 const themeColors: Record<keyof typeof themes, string> = {
   blue: '#2563eb',
   green: '#16a34a',
