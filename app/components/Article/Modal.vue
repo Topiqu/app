@@ -29,7 +29,6 @@
             class="p-4 rounded-xl dark:text-gray-200 text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
           ></textarea>
         </label>
-
         <div
           v-if="!article"
           class="flex gap-2 rounded-2xl bg-gray-100 dark:bg-gray-700 p-2 border border-gray-300 dark:border-gray-600 w-fit"
@@ -43,10 +42,12 @@
                 : 'light:text-black bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
             ]"
             :icon="option.icon"
-            @click="mode = option.value"
+            :disabled="option.value === 'import' && client?.plan === 'BASIC'"
+            @click="option.value === 'import' ? jsonInput?.click() : (mode = option.value)"
           >
             {{ $t(`articles.editor.modes.${option.value}`) }}
           </Button>
+          <input ref="jsonInput" type="file" accept=".json" class="hidden" @change="handleJsonImport" />
         </div>
 
         <div
@@ -181,13 +182,11 @@ import equal from 'fast-deep-equal'
 import Modal from '~/components/Modal/index.vue'
 
 const toast = useToast()
-const { t } = useI18n()
 const { data: auth } = useAuth()
 const open = defineModel<boolean>()
 const { idle } = useIdle(5 * 60 * 1000)
 const { emitArticleCreated, emitArticleUpdated } = useArticleEvent()
-const { data: client } = await useFetch(`/api/clients/${auth.value?.user.clientSiteId}` as `/api/clients/:id`)
-
+const client = await useClientSite()
 const emit = defineEmits(['saved'])
 const props = defineProps<{ article?: ArticleWithDetails }>()
 
@@ -214,14 +213,40 @@ const editedArticle = ref(
 )
 
 const articleTags = ref<string[]>([])
+const jsonInput = ref<HTMLInputElement>()
+const handleJsonImport = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  try {
+    const text = await file.text()
+    const data = JSON.parse(text)[0]
+    Object.assign(editedArticle.value, {
+      title: data.title ?? '',
+      excerpt: data.excerpt ?? '',
+      content: data.content ?? '',
+      slug: data.slug ?? slugify(data.title ?? '', { lower: true, strict: true, trim: true }),
+      imageUrl: data.imageUrl ?? '',
+      sources: Array.isArray(data.sources) ? data.sources : [],
+      releaseAt: data.releaseAt ? new Date(data.releaseAt) : null,
+    })
+
+    toast.success({ message: $t('common.messages.successGeneral') })
+  } catch {
+    toast.error({ message: $t('common.error') })
+  } finally {
+    jsonInput.value!.value = ''
+  }
+}
 const customPrompt = shallowRef('')
-const mode = shallowRef<'manual' | 'ai'>('manual')
+const mode = shallowRef<'manual' | 'ai' | 'import'>('manual')
 const aiGenerating = shallowRef(false)
 const successMessage = shallowRef('')
 const draftsOpen = shallowRef(false)
 const options = [
   { value: 'manual', label: 'manual', icon: 'mdi:pencil' },
   { value: 'ai', label: 'ai', icon: 'mdi:robot' },
+  { value: 'import', label: 'import', icon: 'mdi:import' },
 ] as const
 const currentDate = new Date()
 const minDate = currentDate.toISOString().slice(0, 16)
@@ -263,11 +288,11 @@ const saveDraft = useDebounceFn(async () => {
 
   try {
     await $fetch('/api/articles/draft', { method: 'POST', body: { ...editedArticle.value } })
-    successMessage.value = t('common.messages.draftSaved')
+    successMessage.value = $t('common.messages.draftSaved')
     await refresh()
     setTimeout(() => (successMessage.value = ''), 8000)
   } catch {
-    toast.error({ message: t('common.messages.draftSaveFailed') })
+    toast.error({ message: $t('common.messages.draftSaveFailed') })
   }
 }, 8000)
 
@@ -304,12 +329,12 @@ const onSubmit = async () => {
     await createArticle()
   }
 }
-
+$n(1999)
 const createArticle = async () => {
   if (!editedArticle.value.title)
-    return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
+    return toast.error({ message: $t('common.messages.requiredField', [$t('common.labels.title')]) })
   if (!isReleaseDateValid.value)
-    return toast.error({ message: t('common.messages.invalidDateRange', [minDate, maxDate]) })
+    return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
 
   try {
     const { id } = await $fetch('/api/articles', {
@@ -326,25 +351,25 @@ const createArticle = async () => {
     await Promise.all(
       articleTags.value.map((tagId) => $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })),
     )
-    toast.success({ message: t('articles.editor.createSuccess') })
+    toast.success({ message: $t('articles.editor.createSuccess') })
     Object.assign(editedArticle.value, init())
     articleTags.value = []
     emitArticleCreated()
     open.value = false
   } catch (error: any) {
-    toast.error({ message: t('articles.editor.createFailed') + error.data?.message })
+    toast.error({ message: $t('articles.editor.createFailed') + error.data?.message })
   }
 }
 
 const addTagToArticle = (tagId: string) => {
   $fetch(`/api/articles/${editedArticle.value.id}/tags`, { method: 'POST', body: { tagId } })
-  toast.success({ message: t('articles.tags.addTagSuccess') })
+  toast.success({ message: $t('articles.tags.addTagSuccess') })
   emitArticleUpdated()
 }
 
 const deleteTagFromArticle = (tagId: string) => {
   $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, { method: 'DELETE' })
-  toast.success({ message: t('articles.tags.removeTagSuccess') })
+  toast.success({ message: $t('articles.tags.removeTagSuccess') })
   emitArticleUpdated()
 }
 
@@ -354,7 +379,7 @@ const saveEdit = async () => {
     const minDateObj = new Date(minDate)
     const maxDateObj = new Date(maxDate)
     if (releaseDate < minDateObj || releaseDate > maxDateObj) {
-      return toast.error({ message: t('common.messages.invalidDateRange', [minDate, maxDate]) })
+      return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
     }
   }
 
@@ -372,11 +397,11 @@ const saveEdit = async () => {
       },
     })
     emitArticleUpdated()
-    toast.success({ message: t('common.messages.saveSuccess') })
+    toast.success({ message: $t('common.messages.saveSuccess') })
     open.value = false
     emit('saved')
   } catch (error: any) {
-    toast.error({ message: error.data?.message || t('common.messages.saveFailed') })
+    toast.error({ message: error.data?.message || $t('common.messages.saveFailed') })
   }
 }
 
@@ -390,12 +415,12 @@ const confirmClose = async () => {
     return
   }
   const r = await Swal.fire({
-    title: t('common.messages.closeConfirmTitle'),
-    text: t('common.messages.closeConfirmText'),
+    title: $t('common.messages.closeConfirmTitle'),
+    text: $t('common.messages.closeConfirmText'),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: t('common.messages.closeConfirmButton'),
-    cancelButtonText: t('common.messages.deleteCancel'),
+    confirmButtonText: $t('common.messages.closeConfirmButton'),
+    cancelButtonText: $t('common.messages.deleteCancel'),
     confirmButtonColor: '#ef4444',
   })
   if (r.isConfirmed) open.value = false
@@ -414,9 +439,9 @@ const generateAIContent = async () => {
     editedArticle.value.imageUrl = articleImageUrl
     editedArticle.value.sources = sources || []
     articleTags.value = tags
-    toast.success({ message: t('articles.editor.aiContentGenerated') })
+    toast.success({ message: $t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
-    toast.error({ message: t('articles.editor.aiContentFailed') + error.data?.message })
+    toast.error({ message: $t('articles.editor.aiContentFailed') + error.data?.message })
   } finally {
     aiGenerating.value = false
   }

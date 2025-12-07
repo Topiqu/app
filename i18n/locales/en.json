@@ -531,6 +531,7 @@
       "title": "Edit Article",
       "modes": {
         "manual": "Manual Writing",
+        "import": "JSON Import",
         "ai": "AI Generation"
       },
       "ai": {

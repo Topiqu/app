@@ -531,6 +531,7 @@
       "title": "Upravit článek",
       "modes": {
         "manual": "Ruční psaní",
+        "import": "Importovat z JSON",
         "ai": "AI generování"
       },
       "ai": {
