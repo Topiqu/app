@@ -13,7 +13,7 @@ export const useClientSite = async () => {
 
   const gtagId = data.value?.gtagId
 
-  if (import.meta.client && data.value?.plan !== 'BASIC' && gtagId && !globalThis.gtagInit) {
+  if (import.meta.client && data.value?.plan !== 'BASIC' && gtagId && data.value?.allowGtag && !globalThis.gtagInit) {
     const { initialize } = useGtag()
     initialize(gtagId)
     globalThis.gtagInit = true

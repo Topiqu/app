@@ -64,35 +64,63 @@
             {{ $t('articles.userMenu.totalConsumed', [site?.totalUsage ?? 0]) }}
           </div>
         </div>
-
-        <div class="grid grid-cols-1 gap-3">
+        <div class="grid grid-cols-1 gap-4">
           <Button
-            size="sm"
+            size="lg"
             variant="primary"
-            class="w-full justify-center"
-            @click="buyTokens(10000, 9.99, 'Token Pack 10k')"
+            class="w-full justify-between font-medium tracking-wide shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white"
+            @click="buyTokens(10000, 3.99, 'Token Pack 10k')"
           >
-            10 000 tokenů – 9,99 $
-          </Button>
-          <Button
-            size="sm"
-            variant="primary"
-            class="w-full justify-center"
-            @click="buyTokens(25000, 19.99, 'Token Pack 25k')"
-          >
-            25 000 tokenů – 19,99 $
-          </Button>
-          <Button
-            size="sm"
-            variant="primary"
-            class="w-full justify-center"
-            @click="buyTokens(50000, 34.99, 'Token Pack 50k')"
-          >
-            50 000 tokenů – 34,99 $
+            <span class="flex items-center gap-3">
+              <Icon name="mdi:package-variant" class="w-6 h-6" />
+              10 000 tokenů
+            </span>
+            <span class="text-xl font-bold">3,99 $</span>
           </Button>
 
-          <Button v-if="site?.plan === 'BASIC'" size="sm" variant="primary" class="w-full" @click="upgrade">
-            {{ $t('articles.userMenu.upgradeToPremium') }}
+          <Button
+            size="lg"
+            variant="primary"
+            class="w-full justify-between font-medium tracking-wide shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white"
+            @click="buyTokens(25000, 9.99, 'Token Pack 25k')"
+          >
+            <span class="flex items-center gap-3">
+              <Icon name="mdi:star" class="w-6 h-6 text-yellow-300" />
+              25 000 tokenů
+            </span>
+            <span class="text-xl font-bold">9,99 $</span>
+          </Button>
+
+          <Button
+            size="lg"
+            variant="primary"
+            class="relative w-full justify-between font-bold tracking-wide shadow-2xl hover:shadow-3xl transition-all duration-300 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:via-pink-700 hover:to-rose-700 text-white overflow-hidden"
+            @click="buyTokens(50000, 19.99, 'Token Pack 50k')"
+          >
+            <span class="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></span>
+            <span class="absolute -top-1 -right-1">
+              <span
+                class="flex h-8 items-center gap-1.5 bg-yellow-400 text-purple-900 text-xs font-extrabold px-3 rounded-bl-lg rounded-tr-lg shadow-md"
+              >
+                <Icon name="mdi:star" class="w-4 h-4" />
+                NEJLEPŠÍ HODNOTA
+              </span>
+            </span>
+            <span class="flex items-center gap-3">
+              <Icon name="mdi:diamond" class="w-6 h-6" />
+              50 000 tokenů
+            </span>
+            <span class="text-2xl font-extrabold">19,99 $</span>
+          </Button>
+
+          <Button
+            v-if="site?.plan === 'BASIC'"
+            size="lg"
+            class="w-full border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors duration-300"
+            @click="upgrade"
+          >
+            <Icon name="mdi:rocket-launch" class="w-6 h-6 mr-2" />
+            Přejít na PREMIUM
           </Button>
         </div>
 
@@ -249,10 +277,9 @@ const buyTokens = async (tokens: number, priceUsd: number, name: string) => {
       origin: window.location.origin,
     },
   })
-  if (res.url) {
-    window.location.href = res.url
-  }
+  if (res.url) window.location.href = res.url
 }
+
 const upgrade = () => navigateTo('/pricing?plan=PREMIUM')
 
 const trigger = useTemplateRef('trigger')
