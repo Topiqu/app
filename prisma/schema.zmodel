@@ -74,6 +74,12 @@ enum FeatureCodes {
     ARTICLE_CRONS
 }
 
+enum AIInvolvement {
+    NONE
+    ASSIST
+    FULL
+}
+
 enum ClientPlan {
     BASIC
     PRO
@@ -158,6 +164,7 @@ model Article extends Base, Ownable {
     clientSite      ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     views           Int               @default(0)
     shared          Int               @default(0)
+    aiInvolvement   AIInvolvement     @default(NONE)
     readingTime     Int?
     publishedAt     DateTime?
     releaseAt       DateTime?
