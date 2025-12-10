@@ -287,19 +287,20 @@ const canonicalUrl = computed(() => {
 const articleDescription = computed(
   () => data.value?.excerpt?.slice(0, 160) || data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) || '',
 )
+const hasSeoPlan = computed(() => clientSite?.plan !== 'BASIC')
 
 useSeoMeta({
   title: () => data.value?.title || 'Article',
-  description: () => articleDescription.value,
-  ogTitle: () => data.value?.title || 'Article',
-  ogDescription: () => articleDescription.value,
-  ogImage: () => data.value?.imageUrl,
-  ogUrl: () => canonicalUrl.value,
-  ogType: 'article',
-  twitterCard: 'summary_large_image',
-  twitterTitle: () => data.value?.title || 'Article',
-  twitterDescription: () => articleDescription.value,
-  twitterImage: () => data.value?.imageUrl,
+  description: () => (hasSeoPlan.value ? articleDescription.value : undefined),
+  ogTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
+  ogDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
+  ogImage: () => (hasSeoPlan.value ? data.value?.imageUrl : undefined),
+  ogUrl: () => (hasSeoPlan.value ? canonicalUrl.value : undefined),
+  ogType: () => (hasSeoPlan.value ? 'article' : undefined),
+  twitterCard: () => (hasSeoPlan.value ? 'summary_large_image' : undefined),
+  twitterTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
+  twitterDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
+  twitterImage: () => (hasSeoPlan.value ? data.value?.imageUrl : undefined),
 })
 
 useHead({
@@ -313,31 +314,33 @@ useHead({
     {
       type: 'application/ld+json',
       innerHTML: computed(() =>
-        JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'BlogPosting',
-          headline: data.value?.title,
-          description: articleDescription.value,
-          mainEntityOfPage: {
-            '@type': 'WebPage',
-            '@id': canonicalUrl.value,
-          },
-          image: data.value?.imageUrl ? [data.value.imageUrl] : [],
-          datePublished: data.value?.createdAt,
-          dateModified: data.value?.updatedAt,
-          author: {
-            '@type': 'Person',
-            name: data.value?.user?.username || clientSite?.name,
-          },
-          publisher: {
-            '@type': 'Organization',
-            name: clientSite?.name,
-            logo: {
-              '@type': 'ImageObject',
-              url: clientSite?.logoUrl,
-            },
-          },
-        }),
+        hasSeoPlan.value && data.value
+          ? JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BlogPosting',
+              headline: data.value?.title,
+              description: articleDescription.value,
+              mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': canonicalUrl.value,
+              },
+              image: data.value?.imageUrl ? [data.value.imageUrl] : [],
+              datePublished: data.value?.createdAt,
+              dateModified: data.value?.updatedAt,
+              author: {
+                '@type': 'Person',
+                name: data.value?.user?.username || clientSite?.name,
+              },
+              publisher: {
+                '@type': 'Organization',
+                name: clientSite?.name,
+                logo: {
+                  '@type': 'ImageObject',
+                  url: clientSite?.logoUrl,
+                },
+              },
+            })
+          : '',
       ),
     },
   ],
