@@ -323,6 +323,22 @@
       "tooLong": "Heslo je příliš dlouhé (max. {maxLength} znaků)"
     }
   },
+  "seo": {
+    "default": {
+      "title": "Topiqu",
+      "description": "Vítejte v Topiqu blogu.",
+      "keywords": "blog, AI, Topiqu",
+      "author": "Topiqu"
+    },
+    "tags": {
+      "title": "Články s tagem: {name}",
+      "description": "Seznam článků označených tagem {name}."
+    },
+    "author": {
+      "title": "Články autora: {name}",
+      "description": "Seznam článků, které napsal autor {name}."
+    }
+  },
   "articles": {
     "comments": {
       "addGif": "Přidat GIF",

@@ -323,6 +323,22 @@
       "tooLong": "Password is too long. (max. {maxLength} characters)"
     }
   },
+  "seo": {
+    "default": {
+      "title": "Topiqu",
+      "description": "Welcome to the Topiqu blog.",
+      "keywords": "blog, AI, Topiqu",
+      "author": "Topiqu"
+    },
+    "tags": {
+      "title": "Articles tagged: {name}",
+      "description": "List of articles tagged with {name}."
+    },
+    "author": {
+      "title": "Articles by {name}",
+      "description": "List of articles written by {name}."
+    }
+  },
   "articles": {
     "comments": {
       "addGif": "Add GIF",
