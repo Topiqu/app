@@ -27,6 +27,31 @@
       ></div>
     </div>
     <div ref="container" class="max-w-[1000px] mx-auto flex flex-col gap-8 px-4 sm:px-0">
+      <nav v-if="breadcrumbs?.length" aria-label="Breadcrumb" class="w-full">
+        <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <li v-for="(item, index) in breadcrumbs" :key="index" class="flex items-center gap-2">
+            <Icon
+              v-if="index > 0"
+              name="mdi:chevron-right"
+              class="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0"
+            />
+            <NuxtLink
+              v-if="index < breadcrumbs.length - 1"
+              :to="item.to"
+              class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 font-medium"
+            >
+              {{ item.label }}
+            </NuxtLink>
+            <span
+              v-else
+              class="font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[200px] sm:max-w-[400px]"
+              aria-current="page"
+            >
+              {{ item.label }}
+            </span>
+          </li>
+        </ol>
+      </nav>
       <NuxtLink
         to="/admin"
         class="group flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300"
@@ -257,7 +282,22 @@ import { formatNumber } from '~~/shared/utils/number'
 import { themes } from '~/composables/theme'
 
 type Image = { src: string; alt?: string }
+const items = useBreadcrumbItems()
+const breadcrumbs = computed(() => {
+  return items.value.map((item, index) => {
+    if (index === 0) {
+      return { ...item, label: $t('common.actions.home') }
+    }
 
+    if (index === items.value.length - 1) {
+      return { ...item, label: data.value?.title }
+    }
+
+    if (item.label === 'Clanky') return { ...item, label: $t('articles.title') }
+
+    return item
+  })
+})
 const route = useRoute(),
   toast = useToast(),
   clipboard = useClipboard(),
