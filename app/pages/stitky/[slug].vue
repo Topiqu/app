@@ -112,6 +112,7 @@ import slugify from 'slugify'
 import { formatDate } from '~~/shared/utils'
 
 const route = useRoute()
+const reqUrl = useRequestURL()
 const auth = useAuth().data
 const localePath = useLocalePath()
 
@@ -120,7 +121,7 @@ const tagSlug = computed(() =>
 )
 
 const clientSite = await useClientSite()
-if (!clientSite?.id) throw createError({ statusCode: 404, message: 'Blog nenalezen' })
+if (!clientSite?.id) throw createError({ statusCode: 404, message: 'Blog not found', fatal: true })
 
 const search = shallowRef('')
 const sort = shallowRef('createdAt:desc')
@@ -145,6 +146,10 @@ const {
   watch: false,
   lazy: true,
 })
+
+if (!pending.value && !tag.value?.id) {
+  throw createError({ statusCode: 404, message: 'Tag not found', fatal: true })
+}
 
 watchEffect(() => {
   if (page.value > 1 && !tag.value.hasMore) page.value = 1
@@ -176,11 +181,48 @@ const debouncedRefresh = useDebounceFn(() => {
 
 watch([search, sort], debouncedRefresh)
 
+const canonicalUrl = computed(() => {
+  const path = localePath({ name: 'stitky-slug', params: { slug: tagSlug.value } })
+  return `${reqUrl.protocol}//${reqUrl.host}${path}`
+})
+
+const hasSeoPlan = computed(() => clientSite?.plan !== 'BASIC')
+
 useSeoMeta({
-  title: () => `Články s tagem: ${tagName.value}`,
-  description: () => `Seznam článků označených tagem ${tagName.value}.`,
-  ogTitle: () => `Články s tagem: ${tagName.value}`,
-  ogDescription: () => `Seznam článků označených tagem ${tagName.value}.`,
-  twitterCard: 'summary',
+  title: () => $t('seo.tags.title', { name: tagName.value }),
+  description: () => (hasSeoPlan.value ? $t('seo.tags.description', { name: tagName.value }) : undefined),
+  ogTitle: () => (hasSeoPlan.value ? $t('seo.tags.title', { name: tagName.value }) : undefined),
+  ogDescription: () => (hasSeoPlan.value ? $t('seo.tags.description', { name: tagName.value }) : undefined),
+  ogUrl: () => (hasSeoPlan.value ? canonicalUrl.value : undefined),
+  twitterCard: () => (hasSeoPlan.value ? 'summary' : undefined),
+  robots: () => (hasSeoPlan.value && !search.value ? 'index, follow' : 'noindex, follow'),
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() =>
+        hasSeoPlan.value && tag.value?.id
+          ? JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'CollectionPage',
+              name: tagName.value,
+              description: $t('seo.tags.description', { name: tagName.value }),
+              url: canonicalUrl.value,
+              mainEntity: {
+                '@type': 'ItemList',
+                itemListElement: tag.value.articles.map((item: any, index: number) => ({
+                  '@type': 'ListItem',
+                  position: index + 1,
+                  url: `${reqUrl.protocol}//${reqUrl.host}${localePath({ name: 'clanek-slug', params: { slug: item.article.slug } })}`,
+                })),
+              },
+            })
+          : '',
+      ),
+    },
+  ],
 })
 </script>

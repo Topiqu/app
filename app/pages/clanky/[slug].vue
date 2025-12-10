@@ -262,6 +262,9 @@ const route = useRoute(),
   toast = useToast(),
   clipboard = useClipboard(),
   localePath = useLocalePath()
+
+const reqUrl = useRequestURL()
+
 const { data: session } = useAuth(),
   clientSite = await useClientSite()
 const slug = computed(() => route.params.slug)
@@ -275,18 +278,69 @@ const { data: relatedArticles, pending } = await useFetch(
   { lazy: true },
 )
 
+const canonicalUrl = computed(() => {
+  if (!data.value?.slug) return ''
+  const path = localePath({ name: 'clanky-slug', params: { slug: data.value.slug } })
+  return `${reqUrl.protocol}//${reqUrl.host}${path}`
+})
+
+const articleDescription = computed(
+  () => data.value?.excerpt?.slice(0, 160) || data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) || '',
+)
+
 useSeoMeta({
-  title: () => data.value?.title || $t('common.labels.article'),
-  description: () =>
-    data.value?.excerpt?.slice(0, 160) ||
-    data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
-    $t('articles.noResults.message'),
-  ogTitle: () => data.value?.title || $t('common.labels.article'),
-  ogDescription: () =>
-    data.value?.excerpt?.slice(0, 160) ||
-    data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
-    $t('articles.noResults.message'),
-  ogImage: () => data.value?.imageUrl || false,
+  title: () => data.value?.title || 'Article',
+  description: () => articleDescription.value,
+  ogTitle: () => data.value?.title || 'Article',
+  ogDescription: () => articleDescription.value,
+  ogImage: () => data.value?.imageUrl,
+  ogUrl: () => canonicalUrl.value,
+  ogType: 'article',
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => data.value?.title || 'Article',
+  twitterDescription: () => articleDescription.value,
+  twitterImage: () => data.value?.imageUrl,
+})
+
+useHead({
+  link: [
+    {
+      rel: 'canonical',
+      href: canonicalUrl,
+    },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() =>
+        JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: data.value?.title,
+          description: articleDescription.value,
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': canonicalUrl.value,
+          },
+          image: data.value?.imageUrl ? [data.value.imageUrl] : [],
+          datePublished: data.value?.createdAt,
+          dateModified: data.value?.updatedAt,
+          author: {
+            '@type': 'Person',
+            name: data.value?.user?.username || clientSite?.name,
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: clientSite?.name,
+            logo: {
+              '@type': 'ImageObject',
+              url: clientSite?.logoUrl,
+            },
+          },
+        }),
+      ),
+    },
+  ],
 })
 
 const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5),

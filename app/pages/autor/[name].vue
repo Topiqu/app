@@ -135,6 +135,7 @@ import type { Article as _Article } from '@zenstackhq/runtime/models'
 import { formatDate } from '~~/shared/utils'
 
 const route = useRoute()
+const reqUrl = useRequestURL()
 const auth = useAuth().data
 const localePath = useLocalePath()
 
@@ -150,6 +151,8 @@ const query = computed(() => ({
   ...(search.value ? { search: search.value } : {}),
   sort: sort.value,
 }))
+
+const clientSite = await useClientSite()
 
 const {
   data: author,
@@ -168,6 +171,10 @@ const {
   watch: false,
   lazy: true,
 })
+
+if (!pending.value && !author.value?.id) {
+  throw createError({ statusCode: 404, message: 'Author not found', fatal: true })
+}
 
 watchEffect(() => {
   if (page.value > 1 && !author.value.hasMore) page.value = 1
@@ -199,11 +206,47 @@ const debouncedRefresh = useDebounceFn(() => {
 
 watch([search, sort], debouncedRefresh)
 
+const canonicalUrl = computed(() => {
+  const path = localePath({ name: 'autor-name', params: { name: username.value } })
+  return `${reqUrl.protocol}//${reqUrl.host}${path}`
+})
+
+const hasSeoPlan = computed(() => clientSite?.plan !== 'BASIC')
+
 useSeoMeta({
-  title: () => `Články autora: ${authorName.value}`,
-  description: () => `Seznam článků, které napsal autor ${authorName.value}.`,
-  ogTitle: () => `Články autora: ${authorName.value}`,
-  ogDescription: () => `Seznam článků, které napsal autor ${authorName.value}.`,
-  twitterCard: 'summary',
+  title: () => $t('seo.author.title', { name: authorName.value }),
+  description: () =>
+    hasSeoPlan.value ? author.value.bio || $t('seo.author.description', { name: authorName.value }) : undefined,
+  ogTitle: () => (hasSeoPlan.value ? $t('seo.author.title', { name: authorName.value }) : undefined),
+  ogDescription: () =>
+    hasSeoPlan.value ? author.value.bio || $t('seo.author.description', { name: authorName.value }) : undefined,
+  ogImage: () => (hasSeoPlan.value ? author.value.avatarUrl || '/default-user.png' : undefined),
+  ogUrl: () => (hasSeoPlan.value ? canonicalUrl.value : undefined),
+  twitterCard: () => (hasSeoPlan.value ? 'summary' : undefined),
+  robots: () => (hasSeoPlan.value && !search.value ? 'index, follow' : 'noindex, follow'),
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() =>
+        hasSeoPlan.value && author.value?.id
+          ? JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'ProfilePage',
+              mainEntity: {
+                '@type': 'Person',
+                name: authorName.value,
+                description: author.value.bio || $t('seo.author.description', { name: authorName.value }),
+                image: author.value.avatarUrl,
+                url: canonicalUrl.value,
+              },
+            })
+          : '',
+      ),
+    },
+  ],
 })
 </script>

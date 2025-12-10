@@ -15,11 +15,13 @@
 
 <script setup lang="ts">
 import type { themes } from '~/composables/theme'
-const clientSite = await useClientSite()
 // const { adTargeting, assign } = useAdChance()
 // throw createError({ statusCode: 400, message: 'Service Unavailable', statusMessage: 'Service Unavailable' })
 // assign(clientSite!.id, clientSite!.plan)
 // console.log(adTargeting.value)
+const reqUrl = useRequestURL()
+const clientSite = await useClientSite()
+
 const themeColors: Record<keyof typeof themes, string> = {
   blue: '#2563eb',
   green: '#16a34a',
@@ -37,19 +39,46 @@ const themeColors: Record<keyof typeof themes, string> = {
   cyan: '#06b6d4',
   violet: '#8b5cf6',
 }
+
 useSeoMeta({
-  title: () => clientSite?.name || 'Topiqu AI blog',
-  description: () => clientSite?.description || 'Vítejte v Topiqu blogu.',
+  title: () => clientSite?.name || $t('seo.default.title'),
+  description: () => clientSite?.description || $t('seo.default.description'),
   keywords: () =>
     Array.isArray(clientSite?.keywords)
       ? clientSite.keywords.join(', ')
       : typeof clientSite?.keywords === 'string'
         ? clientSite.keywords
-        : 'blog, AI, Topiqu',
-  author: () => clientSite?.name || 'Topiqu',
-  ogTitle: () => clientSite?.name || 'Topiqu AI blog',
-  ogDescription: () => clientSite?.description || 'Vítejte v Topiqu blogu.',
+        : $t('seo.default.keywords'),
+  author: () => clientSite?.name || $t('seo.default.author'),
+  ogTitle: () => clientSite?.name || $t('seo.default.title'),
+  ogDescription: () => clientSite?.description || $t('seo.default.description'),
   ogImage: () => clientSite?.logoUrl || '/default-og-image.webp',
   ogLocale: () => clientSite?.language || 'en',
+})
+
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() =>
+        JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: clientSite?.name || $t('seo.default.title'),
+          url: reqUrl.origin,
+          description: clientSite?.description || $t('seo.default.description'),
+          publisher: {
+            '@type': 'Organization',
+            name: clientSite?.name || $t('seo.default.author'),
+            logo: {
+              '@type': 'ImageObject',
+              url: clientSite?.logoUrl || `${reqUrl.origin}/logo.png`,
+            },
+          },
+          inLanguage: clientSite?.language || 'en',
+        }),
+      ),
+    },
+  ],
 })
 </script>
