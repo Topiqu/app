@@ -1,15 +1,20 @@
 <template>
-  <div
-    :id="internalSlotId"
-    :class="['ad-slot', { 'ad-loading': loading }]"
-    :style="{ width: slotWidth, height: slotHeight }"
-  ></div>
+  <div v-show="!isEmpty" class="relative overflow-hidden" :style="{ width: slotWidth, height: slotHeight }">
+    <div
+      v-if="loading"
+      class="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 animate-pulse rounded-md"
+    >
+      <span class="text-xs font-medium text-gray-400">{{ $t('common.loading') }}</span>
+    </div>
+
+    <div :id="internalSlotId" class="w-full h-full"></div>
+  </div>
 </template>
 
 <script setup lang="ts">
 const props = defineProps<{
   adUnitPath: string
-  sizes: number[][]
+  sizes: number[][] | 'fluid'
   slotId?: string
   targeting?: Record<string, string | string[]>
   width?: string
@@ -17,37 +22,29 @@ const props = defineProps<{
 }>()
 
 const loading = shallowRef(true)
+const isEmpty = shallowRef(false)
 const { defineSlot, destroySlots } = useGamAds()
 
-const internalSlotId = props.slotId ?? `gpt-ad-${Date.now()}-${Math.random().toString(36).slice(2)}`
+const internalSlotId = props.slotId ?? `gpt-ad-${Date.now()}-${Math.floor(Math.random() * 1000)}`
 const slotWidth = computed(() => props.width || '100%')
-const slotHeight = computed(() => props.height || 'auto')
+const slotHeight = computed(() => (props.sizes === 'fluid' ? 'auto' : props.height || 'auto'))
 
 onMounted(async () => {
+  if (window.googletag && window.googletag.cmd) {
+    window.googletag.cmd.push(() => {
+      window.googletag.pubads().addEventListener('slotRenderEnded', (event: any) => {
+        if (event.slot.getSlotElementId() === internalSlotId) {
+          loading.value = false
+          isEmpty.value = event.isEmpty
+        }
+      })
+    })
+  }
+
   await defineSlot(props.adUnitPath, props.sizes, internalSlotId, props.targeting)
-  loading.value = false
 })
 
 onBeforeUnmount(() => {
   destroySlots([internalSlotId])
 })
 </script>
-
-<style scoped>
-.ad-slot {
-  position: relative;
-  min-height: 250px;
-  background: #f0f0f0;
-  border: 1px dashed #ccc;
-}
-
-.ad-loading::after {
-  content: 'Loading...';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #666;
-  font-size: 14px;
-}
-</style>

@@ -2,63 +2,78 @@ declare global {
   var googletag: any
 }
 
-export const useGamAds = () => {
-  let isInitialized = false
-  let cachedClient: any = null
+let isInitialized = false
+let cachedClient: any = null
+let gptScriptPromise: Promise<void> | null = null
 
+export const useGamAds = () => {
   const fetchClientData = async () => {
     if (cachedClient) return cachedClient
 
-    const hostname =
-      useRequestURL()
-        .hostname?.split(':')[0]
-        ?.replace(/^www\./, '') ?? ''
-
+    const hostname = window.location.hostname.replace(/^www\./, '')
     if (!hostname) return null
 
-    const { data } = await useAsyncData(`clientsite-${hostname}`, () => $fetch(`/api/clients/slug/${hostname}`))
-
-    cachedClient = data.value
+    try {
+      cachedClient = await $fetch(`/api/clients/slug/${hostname}`)
+    } catch (e) {
+      console.error(e)
+    }
     return cachedClient
   }
 
   const initialize = async () => {
-    if (!import.meta.client) return
-    if (isInitialized || globalThis.googletag?.cmd) return
+    if (typeof window === 'undefined') return
+    if (gptScriptPromise) return gptScriptPromise
 
-    const client = await fetchClientData()
-    if (!client?.gamNetworkCode || !client.allowAds || client.plan === 'BASIC') return
+    gptScriptPromise = new Promise<void>((resolve) => {
+      fetchClientData().then((client) => {
+        if (!client?.gamNetworkCode || !client.allowAds || client.plan === 'BASIC') {
+          gptScriptPromise = null
+          return
+        }
 
-    globalThis.googletag = globalThis.googletag || { cmd: [] }
+        window.googletag = window.googletag || { cmd: [] }
 
-    const script = document.createElement('script')
-    script.async = true
-    script.src = 'https://securepubads.g.doubleclick.net/tag/js/gpt.js'
-    document.head.appendChild(script)
-
-    await new Promise<void>((resolve) => {
-      script.onload = () => {
-        googletag.cmd.push(() => {
-          googletag.pubads().enableSingleRequest()
-          googletag.pubads().collapseEmptyDivs(true)
-          googletag.pubads().enableLazyLoad({
-            fetchMarginPercent: 200,
-            renderMarginPercent: 100,
-            mobileScaling: 2.0,
-          })
-
-          if (import.meta.dev) {
-            googletag.pubads().setForceSafeFrame(true)
-          }
-
-          googletag.enableServices()
+        if (document.getElementById('gpt-script')) {
           isInitialized = true
           resolve()
-        })
-      }
+          return
+        }
 
-      script.onerror = () => resolve()
+        const script = document.createElement('script')
+        script.id = 'gpt-script'
+        script.async = true
+        script.src = 'https://securepubads.g.doubleclick.net/tag/js/gpt.js'
+        document.head.appendChild(script)
+
+        script.onload = () => {
+          window.googletag.cmd.push(() => {
+            window.googletag.pubads().enableSingleRequest()
+            window.googletag.pubads().collapseEmptyDivs(true)
+            window.googletag.pubads().enableLazyLoad({
+              fetchMarginPercent: 200,
+              renderMarginPercent: 100,
+              mobileScaling: 2.0,
+            })
+
+            if (import.meta.dev) {
+              // window.googletag.pubads().setForceSafeFrame(true)
+            }
+
+            window.googletag.enableServices()
+            isInitialized = true
+            resolve()
+          })
+        }
+
+        script.onerror = () => {
+          gptScriptPromise = null
+          resolve()
+        }
+      })
     })
+
+    return gptScriptPromise
   }
 
   const defineSlot = async (
@@ -69,20 +84,24 @@ export const useGamAds = () => {
   ) => {
     await initialize()
 
-    if (!isInitialized || !globalThis.googletag) return
+    if (!isInitialized || !window.googletag) return
 
     const client = cachedClient
     if (!client?.gamNetworkCode) return
 
-    googletag.cmd.push(() => {
-      const existingSlot = googletag
-        .pubads()
-        .getSlots()
-        .find((s: any) => s.getSlotElementId() === slotId)
+    window.googletag.cmd.push(() => {
+      const cleanPath = adUnitPath.startsWith('/') ? adUnitPath : `/${adUnitPath}`
+      const fullPath = `/${client.gamNetworkCode}${cleanPath}`
 
-      if (existingSlot) return
+      const existingSlots = window.googletag.pubads().getSlots()
+      const isDefined = existingSlots.some((s: any) => s.getSlotElementId() === slotId)
 
-      const slot = googletag.defineSlot(`${client.gamNetworkCode}${adUnitPath}`, sizes, slotId)
+      if (isDefined) {
+        window.googletag.display(slotId)
+        return
+      }
+
+      const slot = window.googletag.defineSlot(fullPath, sizes, slotId)
 
       if (!slot) return
 
@@ -92,32 +111,37 @@ export const useGamAds = () => {
         })
       }
 
-      slot.addService(googletag.pubads())
-      googletag.display(slotId)
+      slot.addService(window.googletag.pubads())
+      window.googletag.display(slotId)
     })
   }
 
   const refreshAds = (slots?: any[]) => {
-    if (!isInitialized || !globalThis.googletag) return
+    if (!isInitialized || !window.googletag) return
 
-    googletag.cmd.push(() => {
-      googletag.pubads().refresh(slots)
+    window.googletag.cmd.push(() => {
+      window.googletag.pubads().refresh(slots)
     })
   }
 
   const setTargeting = (key: string, value: string | string[]) => {
-    if (!isInitialized || !globalThis.googletag) return
+    if (!isInitialized || !window.googletag) return
 
-    googletag.cmd.push(() => {
-      googletag.pubads().setTargeting(key, value)
+    window.googletag.cmd.push(() => {
+      window.googletag.pubads().setTargeting(key, value)
     })
   }
 
-  const destroySlots = (slots?: any[]) => {
-    if (!globalThis.googletag) return
+  const destroySlots = (slotIds: string[]) => {
+    if (!window.googletag) return
 
-    googletag.cmd.push(() => {
-      googletag.destroySlots(slots)
+    window.googletag.cmd.push(() => {
+      const allSlots = window.googletag.pubads().getSlots()
+      const slotsToDestroy = allSlots.filter((s: any) => slotIds.includes(s.getSlotElementId()))
+
+      if (slotsToDestroy.length > 0) {
+        window.googletag.destroySlots(slotsToDestroy)
+      }
     })
   }
 
