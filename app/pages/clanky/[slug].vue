@@ -293,7 +293,7 @@ const breadcrumbs = computed(() => {
       return { ...item, label: data.value?.title }
     }
 
-    if (item.label === 'Clanky') return { ...item, label: $t('articles.title') }
+    if (item.label === 'Clanky') return { ...item, label: $t('articles.title'), to: '/' }
 
     return item
   })
