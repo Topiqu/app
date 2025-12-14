@@ -131,7 +131,59 @@
         </label>
       </div>
     </div>
+    <Transition
+      enterActiveClass="transition duration-300 ease-out"
+      enterFromClass="transform -translate-y-4 opacity-0"
+      enterToClass="transform translate-y-0 opacity-100"
+      leaveActiveClass="transition duration-200 ease-in"
+      leaveFromClass="transform translate-y-0 opacity-100"
+      leaveToClass="transform -translate-y-4 opacity-0"
+    >
+      <div
+        v-if="aiEnabled && articleCronsEnabled"
+        class="rounded-2xl border p-5 flex items-center gap-4 transition-colors duration-300"
+        :class="
+          autoRelease
+            ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
+            : 'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700'
+        "
+      >
+        <div
+          class="p-2 rounded-full"
+          :class="
+            autoRelease
+              ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-500'
+          "
+        >
+          <Icon :name="autoRelease ? 'mdi:publish' : 'mdi:file-document-edit-outline'" class="w-6 h-6" />
+        </div>
 
+        <div class="flex-1">
+          <div
+            class="font-semibold text-sm"
+            :class="autoRelease ? 'text-amber-900 dark:text-amber-100' : 'text-gray-900 dark:text-gray-100'"
+          >
+            {{ $t('common.preferences.autoRelease.title') }}
+          </div>
+          <div
+            class="text-xs leading-tight"
+            :class="autoRelease ? 'text-amber-700 dark:text-amber-300' : 'text-gray-500 dark:text-gray-400'"
+          >
+            {{ autoRelease ? $t('common.preferences.autoRelease.warning') : $t('common.preferences.autoRelease.desc') }}
+          </div>
+        </div>
+
+        <div class="flex items-center">
+          <FormInput
+            :modelValue="autoRelease"
+            type="checkbox"
+            class="!w-5 !h-5 cursor-pointer"
+            @update:modelValue="(val) => handleAutoReleaseToggle(val as boolean)"
+          />
+        </div>
+      </div>
+    </Transition>
     <div
       class="flex flex-col gap-6 p-8 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
     >
@@ -161,6 +213,16 @@
         </div>
       </div>
     </div>
+
+    <ModalMini
+      v-model:open="showAutoReleaseModal"
+      :title="$t('common.preferences.autoRelease.confirmTitle')"
+      :message="$t('common.preferences.autoRelease.confirmMessage')"
+      icon="mdi:alert-rhombus-outline"
+      :confirmText="$t('common.actions.enable')"
+      :cancelText="$t('common.actions.cancel')"
+      @confirm="confirmAutoRelease"
+    />
   </div>
 </template>
 
@@ -172,6 +234,7 @@ const props = defineProps<{
   aiEnabled: boolean
   sentimentEnabled: boolean
   articleCronsEnabled: boolean
+  autoRelease: boolean
   canEnableAi: boolean
   canEnableSentiment: boolean
   canEnableArticleCrons: boolean
@@ -180,13 +243,15 @@ const props = defineProps<{
   features: { code: string; priceMonthly: number; priceAnnual?: number | null }[]
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT'
 }>()
-
 const emit = defineEmits<{
   'update:username': [string]
   'update:bio': [string]
   'update:avatarUrl': [string]
+  'update:autoRelease': [boolean]
   'toggle:feature': [{ code: string; enabled: boolean }]
 }>()
+
+const showAutoReleaseModal = shallowRef(false)
 
 const rate = await useCurrencyRate(props.currency)
 
@@ -194,6 +259,19 @@ const username = computed({ get: () => props.username, set: (v) => emit('update:
 const bio = computed({ get: () => props.bio, set: (v) => emit('update:bio', v) })
 const avatarUrl = computed({ get: () => props.avatarUrl, set: (v) => emit('update:avatarUrl', v) })
 const togglePending = computed(() => props.togglePending ?? false)
+
+const handleAutoReleaseToggle = (newValue: boolean) => {
+  if (newValue) {
+    showAutoReleaseModal.value = true
+  } else {
+    emit('update:autoRelease', false)
+  }
+}
+
+const confirmAutoRelease = () => {
+  emit('update:autoRelease', true)
+  showAutoReleaseModal.value = false
+}
 
 const toggle = (code: string) => {
   const current =

@@ -69,33 +69,33 @@
             size="lg"
             variant="primary"
             class="w-full justify-between font-medium tracking-wide shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white"
-            @click="buyTokens(10000, 3.99, 'Token Pack 10k')"
+            @click="buyTokens(10000, 2.99, 'Token Pack 10k')"
           >
             <span class="flex items-center gap-3">
               <Icon name="mdi:package-variant" class="w-6 h-6" />
               10 000 tokenů
             </span>
-            <span class="text-xl font-bold">3,99 $</span>
+            <span class="text-xl font-bold">2,99 $</span>
           </Button>
 
           <Button
             size="lg"
             variant="primary"
             class="w-full justify-between font-medium tracking-wide shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white"
-            @click="buyTokens(25000, 9.99, 'Token Pack 25k')"
+            @click="buyTokens(25000, 4.99, 'Token Pack 25k')"
           >
             <span class="flex items-center gap-3">
               <Icon name="mdi:star" class="w-6 h-6 text-yellow-300" />
               25 000 tokenů
             </span>
-            <span class="text-xl font-bold">9,99 $</span>
+            <span class="text-xl font-bold">4,99 $</span>
           </Button>
 
           <Button
             size="lg"
             variant="primary"
             class="relative w-full justify-between font-bold tracking-wide shadow-2xl hover:shadow-3xl transition-all duration-300 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:via-pink-700 hover:to-rose-700 text-white overflow-hidden"
-            @click="buyTokens(50000, 19.99, 'Token Pack 50k')"
+            @click="buyTokens(50000, 9.99, 'Token Pack 50k')"
           >
             <span class="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></span>
             <span class="absolute -top-1 -right-1">
@@ -110,7 +110,7 @@
               <Icon name="mdi:diamond" class="w-6 h-6" />
               50 000 tokenů
             </span>
-            <span class="text-2xl font-extrabold">19,99 $</span>
+            <span class="text-2xl font-extrabold">9,99 $</span>
           </Button>
 
           <Button
