@@ -77,6 +77,7 @@
               <div class="absolute top-4 right-4">
                 <slot name="close">
                   <Button
+                    v-if="!cancelText"
                     variant="danger"
                     size="sm"
                     class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
