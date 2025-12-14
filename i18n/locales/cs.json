@@ -286,6 +286,13 @@
         "placeholder": "Klíčová slova (oddělená čárkou)",
         "count": "Počet slov: {0}"
       },
+      "autoRelease": {
+        "title": "Automatické publikování",
+        "desc": "Vygenerované články se uloží jako koncepty ke schválení.",
+        "warning": "Články budou veřejně publikovány ihned po vygenerování.",
+        "confirmTitle": "Povolit automatické publikování?",
+        "confirmMessage": "Jste si jistí? AI může občas generovat nepřesnosti. Důrazně doporučujeme články před vydáním kontrolovat."
+        },
       "aiAuthor": {
         "title": "Nastavení AI autora",
         "username": {

@@ -286,6 +286,13 @@
         "placeholder": "Keywords (comma-separated)",
         "count": "Words: {0}"
       },
+      "autoRelease": {
+        "title": "Automatic Publishing",
+        "desc": "Generated articles will be saved as drafts for approval.",
+        "warning": "Articles will be publicly published immediately after generation.",
+        "confirmTitle": "Enable Automatic Publishing?",
+        "confirmMessage": "Are you sure? AI may occasionally generate inaccuracies. We still recommend reviewing content before publication. If enabled, content will go live immediately without your approval."
+        },
       "aiAuthor": {
         "title": "AI Author Settings",
         "username": {
