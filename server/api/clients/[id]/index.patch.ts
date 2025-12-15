@@ -18,59 +18,76 @@ export default defineEventHandler(async (event) => {
     where: { id },
     include: { socials: true, users: { where: { role: 'ai' }, take: 1 } },
   })
+
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
 
   if (clientSite.deletedAt && body.deletedAt !== null)
     throw createError({ statusCode: 400, message: t('common.errors.clientDeactivated')! })
 
   if (body.subdomain) {
-    const conflict = await db.clientSite.findUnique({ where: { subdomain: body.subdomain } })
-    if (conflict && conflict.id !== id)
-      throw createError({ statusCode: 409, message: t('common.errors.subdomainExists')! })
+    const conflict = await db.clientSite.findFirst({
+      where: { subdomain: body.subdomain, id: { not: id } },
+    })
+    if (conflict) throw createError({ statusCode: 409, message: t('common.errors.subdomainExists')! })
   }
 
-  const data: any = {
-    ...(body.name !== undefined && { name: body.name }),
-    ...(body.subdomain !== undefined && { subdomain: body.subdomain }),
-    ...(body.plan !== undefined && { plan: body.plan }),
-    ...(body.generationFrequency !== undefined && { generationFrequency: body.generationFrequency }),
-    ...(body.tokenLimit !== undefined && { tokenLimit: body.tokenLimit, tokenRemaining: body.tokenLimit }),
-    ...(body.keywords !== undefined && { keywords: body.keywords }),
-    ...(body.audience !== undefined && { audience: body.audience }),
-    ...(body.language !== undefined && { language: body.language }),
-    ...(body.theme !== undefined && { theme: body.theme }),
-    ...(body.focus !== undefined && { focus: body.focus }),
-    ...(body.description !== undefined && { description: body.description ? sanitizeHtml(body.description) : null }),
-    ...(body.logoUrl !== undefined && { logoUrl: body.logoUrl }),
-    ...(body.deletedAt !== undefined && { deletedAt: body.deletedAt === null ? null : new Date() }),
-  }
+  const allowedFields = [
+    'name',
+    'subdomain',
+    'plan',
+    'generationFrequency',
+    'tokenLimit',
+    'keywords',
+    'audience',
+    'language',
+    'theme',
+    'focus',
+    'logoUrl',
+    'autoRelease',
+    'gtagId',
+    'gamNetworkCode',
+    'allowAds',
+    'allowGtag',
+  ]
+
+  const data: any = allowedFields.reduce(
+    (acc, field) => {
+      if (body[field] !== undefined) acc[field] = body[field]
+      return acc
+    },
+    {} as Record<string, any>,
+  )
+
+  if (body.tokenLimit !== undefined) data.tokenRemaining = body.tokenLimit
+  if (body.description !== undefined) data.description = body.description ? sanitizeHtml(body.description) : null
+  if (body.deletedAt !== undefined) data.deletedAt = body.deletedAt === null ? null : new Date()
 
   const aiUserPayload = body.aiUser
-  const hasAiUserData = aiUserPayload && !Object.values(aiUserPayload).every((v) => v === '')
-  const aiUser = clientSite.users[0]
+  const currentAiUser = clientSite.users[0]
+  const hasAiPayload = aiUserPayload && Object.values(aiUserPayload).some((v) => v !== '')
+  const effectiveTokenLimit = body.tokenLimit ?? clientSite.tokenLimit ?? 0
 
-  if (hasAiUserData && clientSite.tokenLimit && clientSite.tokenLimit > 0) {
+  if (hasAiPayload && effectiveTokenLimit > 0) {
     const aiData = {
       username: aiUserPayload.username || `ai-${id}-${Date.now()}`,
       bio: aiUserPayload.bio || '',
       avatarUrl: aiUserPayload.avatarUrl || '',
     }
 
-    if (aiUser) {
-      await db.user.update({ where: { id: aiUser.id }, data: aiData })
+    if (currentAiUser) {
+      await db.user.update({ where: { id: currentAiUser.id }, data: aiData })
       await logAction({
         action: 'AI_USER_UPDATE',
         userId: user.id,
         clientSiteId: id,
         ip: getIp(event),
-        metadata: { aiUserId: aiUser.id, updatedFields: aiUserPayload },
+        metadata: { aiUserId: currentAiUser.id, updatedFields: aiUserPayload },
       })
     } else {
       const newAi = await db.user.create({
         data: {
           ...aiData,
           email: `ai-${randomBytes(8).toString('hex')}@generated.ai`,
-          password: null,
           role: 'ai',
           clientSiteId: id,
         },
@@ -83,33 +100,39 @@ export default defineEventHandler(async (event) => {
         metadata: { aiUserId: newAi.id },
       })
     }
-  } else if (body.tokenLimit === 0 && aiUser) {
-    await db.user.delete({ where: { id: aiUser.id } })
+  } else if (body.tokenLimit === 0 && currentAiUser) {
+    await db.user.delete({ where: { id: currentAiUser.id } })
     await logAction({
       action: 'AI_USER_DELETE',
       userId: user.id,
       clientSiteId: id,
       ip: getIp(event),
-      metadata: { aiUserId: aiUser.id },
+      metadata: { aiUserId: currentAiUser.id },
     })
   }
 
   if (body.socials) {
     const incoming = body.socials as { platform: SocialPlatform; url: string }[]
     const existing = clientSite.socials
+    const operations = []
 
-    const toDelete = existing.filter((e) => !incoming.some((i) => i.platform === e.platform))
-    const toUpdate = incoming.filter((i) => existing.some((e) => e.platform === i.platform))
-    const toCreate = incoming.filter((i) => !existing.some((e) => e.platform === i.platform))
-
+    const toDelete = existing.filter((e) => !incoming.find((i) => i.platform === e.platform)).map((s) => s.platform)
     if (toDelete.length)
-      await db.social.deleteMany({ where: { clientSiteId: id, platform: { in: toDelete.map((s) => s.platform) } } })
-    for (const s of toUpdate)
-      await db.social.updateMany({ where: { clientSiteId: id, platform: s.platform }, data: { url: s.url } })
-    if (toCreate.length)
-      await db.social.createMany({
-        data: toCreate.map((s) => ({ clientSiteId: id, platform: s.platform, url: s.url })),
-      })
+      operations.push(db.social.deleteMany({ where: { clientSiteId: id, platform: { in: toDelete } } }))
+
+    for (const s of incoming) {
+      const exists = existing.find((e) => e.platform === s.platform)
+      if (exists) {
+        if (exists.url !== s.url)
+          operations.push(
+            db.social.updateMany({ where: { clientSiteId: id, platform: s.platform }, data: { url: s.url } }),
+          )
+      } else {
+        operations.push(db.social.create({ data: { clientSiteId: id, platform: s.platform, url: s.url } }))
+      }
+    }
+
+    if (operations.length) await Promise.all(operations)
   }
 
   const updatedSite = await db.clientSite.update({
@@ -123,31 +146,16 @@ export default defineEventHandler(async (event) => {
     userId: user.id,
     clientSiteId: id,
     ip: getIp(event),
-    metadata: { updatedFields: Object.keys(body) },
+    metadata: { updatedFields: Object.keys(data) },
   })
 
+  const ai = updatedSite.users[0]
   return {
     clientSite: {
-      id: updatedSite.id,
-      name: updatedSite.name,
-      subdomain: updatedSite.subdomain,
-      plan: updatedSite.plan,
-      generationFrequency: updatedSite.generationFrequency,
-      tokenLimit: updatedSite.tokenLimit,
-      deletedAt: updatedSite.deletedAt,
-      keywords: updatedSite.keywords,
-      audience: updatedSite.audience,
-      focus: updatedSite.focus,
-      description: updatedSite.description,
-      logoUrl: updatedSite.logoUrl,
+      ...updatedSite,
       socials: updatedSite.socials.map((s) => ({ platform: s.platform, url: s.url })),
-      aiUser: updatedSite.users[0]
-        ? {
-            username: updatedSite.users[0].username,
-            bio: updatedSite.users[0].bio,
-            avatarUrl: updatedSite.users[0].avatarUrl,
-          }
-        : null,
+      aiUser: ai ? { username: ai.username, bio: ai.bio, avatarUrl: ai.avatarUrl } : null,
+      users: undefined,
     },
   }
 })

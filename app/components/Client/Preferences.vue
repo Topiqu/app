@@ -100,12 +100,14 @@
                 :canEnableAi="allowedFeatures.AI"
                 :canEnableSentiment="allowedFeatures.SENTIMENT"
                 :canEnableArticleCrons="allowedFeatures.ARTICLE_CRONS"
+                :autoRelease="form.autoRelease"
                 :features
                 :currency="client?.currency ?? 'EUR'"
                 @toggle:feature="toggleFeature"
                 @update:username="form.aiUser.username = $event"
                 @update:bio="form.aiUser.bio = $event"
                 @update:avatarUrl="form.aiUser.avatarUrl = $event"
+                @update:autoRelease="form.autoRelease = $event"
               />
             </div>
           </section>
@@ -242,6 +244,7 @@ const form = ref({
   gtagId: '',
   gamNetworkCode: '',
   allowAds: false,
+  autoRelease: false,
   allowGtag: false,
 })
 
@@ -361,6 +364,7 @@ watch(
       },
       gtagId: c.gtagId ?? '',
       gamNetworkCode: c.gamNetworkCode ?? '',
+      autoRelease: c.autoRelease ?? false,
       allowAds: c.allowAds,
       allowGtag: c.allowGtag ?? false,
     }

@@ -91,6 +91,7 @@ done:
     "at async Server.toNodeHandle (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:2296:7)"
   ]
 }
+  - 🟡 autorelease articles
   - 🟡 encapsulate article exports
   - 🟡 create dropdown menu component w groups
   - 🟡 account health - sessions, password strength, 2fa, amount of bans, verified email...
