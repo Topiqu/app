@@ -153,7 +153,7 @@
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl py-8 px-6">
         <h2 class="text-3xl font-bold text-center mb-6">{{ $t('articles.poll.hpTitle') }}</h2>
-        <ArticlePoll v-if="latestPoll && pollArticle" :poll="latestPoll" :articleId="pollArticle.id" />
+        <ArticlePoll v-if="latestPoll" :poll="latestPoll" :articleId="latestPoll.articleId" />
         <p v-else class="text-center text-lg text-gray">{{ $t('articles.poll.noPolls') }}</p>
       </div>
       <aside class="space-y-8">
@@ -241,8 +241,12 @@ const {
   lazy: true,
   watch: false,
 })
+
 const articleMap = ref<Map<string, NonNullable<typeof feed.value>['items'][number]>>(new Map())
 const hasMore = shallowRef<boolean>(true)
+const latestPoll = ref<{ type: string; pollId: string; question: string; options: string[]; articleId: string } | null>(
+  null,
+)
 
 watch(
   feed,
@@ -251,6 +255,13 @@ watch(
     for (const article of next) {
       articleMap.value.set(article.id, article)
     }
+
+    if (d?.latestPoll) {
+      latestPoll.value = d.latestPoll as unknown as typeof latestPoll.value
+    } else {
+      latestPoll.value = null
+    }
+
     hasMore.value = !!d?.hasMore
   },
   { immediate: true },
@@ -289,46 +300,6 @@ const latestArticleSlug = computed(() => {
   )[0]
   return latestArticle?.slug ?? null
 })
-
-const pollArticle = ref<NonNullable<typeof feed.value>['items'][number] | null>(null)
-const latestPoll = ref<{ type: string; pollId: string; question: string; options: string[] } | null>(null)
-
-watch(
-  feed,
-  (d) => {
-    const newArticles = (d?.items ?? []).filter((a) => !pollArticle.value && a.content?.includes('data-type="poll"'))
-    if (newArticles.length && import.meta.client) {
-      const article = [...newArticles].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      )[0]
-      if (article) {
-        pollArticle.value = article
-        const p = new DOMParser()
-        const d = p.parseFromString(article.content, 'text/html')
-        const node = Array.from(d.body.childNodes).findLast((n) => {
-          const el = n as Element
-          return el.nodeName === 'DIV' && el.getAttribute('data-type') === 'poll'
-        })
-        if (node) {
-          const el = node as Element
-          try {
-            latestPoll.value = {
-              type: 'poll',
-              pollId: el.getAttribute('data-id') || crypto.randomUUID(),
-              question: el.getAttribute('data-question') || 'Zadej otázku',
-              options: JSON.parse(el.getAttribute('data-options') || '[]') || ['Možnost 1'],
-            }
-          } catch {
-            latestPoll.value = null
-          }
-        } else {
-          latestPoll.value = null
-        }
-      }
-    }
-  },
-  { immediate: true },
-)
 
 const loadMore = async () => {
   if (!hasMore.value) return
