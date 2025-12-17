@@ -45,7 +45,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const article = await db.article.create({ data })
-
   await logAction({
     action: 'ARTICLE_CREATED',
     userId: user.id,

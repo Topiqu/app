@@ -148,7 +148,7 @@ model Article {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime?         @updatedAt()
   deletedAt       DateTime?
-  slug            String            @unique()
+  slug            String
   title           String
   excerpt         String?
   content         String
@@ -172,6 +172,7 @@ model Article {
   sources         String[]
   prompt          String?
 
+  @@unique([slug, clientSiteId])
   @@index([title, excerpt, clientSiteId])
 }
 
@@ -450,11 +451,13 @@ model Emoji {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime?       @updatedAt()
   deletedAt      DateTime?
-  shortcode      String          @unique()
+  shortcode      String
   imageUrl       String
   clientSiteId   String
   clientSite     ClientSite      @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   emojiReactions EmojiReaction[]
+
+  @@unique([shortcode, clientSiteId])
 }
 
 model EmojiReaction {

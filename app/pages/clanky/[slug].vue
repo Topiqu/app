@@ -309,7 +309,9 @@ const { data: session } = useAuth(),
   clientSite = await useClientSite()
 const slug = computed(() => route.params.slug)
 
-const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`)
+const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`, {
+  query: { clientSiteId: clientSite?.id },
+})
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 
