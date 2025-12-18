@@ -13,6 +13,7 @@ now:
   - 🟡 Stripe integration for token refill
   - 🟡 AI Inolvement with article (cron based = fully AI, AI generated/enhanced = partially AI, no AI used = 100% human)
   - 🟢 replace sweetalert modals with custom ModalMini component
+  - 🟢 implement in clientpreferences humanHourlyRate / humanWordsPerHour
 ---
 test:
   - 🛑 google ads

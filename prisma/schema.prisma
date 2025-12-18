@@ -142,35 +142,38 @@ model ArticleDraft {
 }
 
 model Article {
-  userId          String
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  id              String            @id() @default(uuid())
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime?         @updatedAt()
-  deletedAt       DateTime?
-  slug            String
-  title           String
-  excerpt         String?
-  content         String
-  imageUrl        String?
-  status          ArticleStatus     @default(draft)
-  clientSiteId    String
-  clientSite      ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-  views           Int               @default(0)
-  shared          Int               @default(0)
-  aiInvolvement   AIInvolvement     @default(NONE)
-  readingTime     Int?
-  publishedAt     DateTime?
-  releaseAt       DateTime?
-  allowedComments Boolean           @default(true)
-  tags            ArticleTag[]
-  comments        Comment[]
-  reactions       ArticleReaction[]
-  shares          ArticleShare[]
-  pollResults     PollResult[]
-  notifications   Notification[]    @relation("ArticleNotifications")
-  sources         String[]
-  prompt          String?
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String            @id() @default(uuid())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime?         @updatedAt()
+  deletedAt        DateTime?
+  slug             String
+  title            String
+  excerpt          String?
+  content          String
+  imageUrl         String?
+  status           ArticleStatus     @default(draft)
+  clientSiteId     String
+  clientSite       ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  views            Int               @default(0)
+  shared           Int               @default(0)
+  aiInvolvement    AIInvolvement     @default(NONE)
+  readingTime      Int?
+  totalWords       Int?
+  savedAmount      Float             @default(0.0)
+  savedTimeMinutes Int               @default(0)
+  publishedAt      DateTime?
+  releaseAt        DateTime?
+  allowedComments  Boolean           @default(true)
+  tags             ArticleTag[]
+  comments         Comment[]
+  reactions        ArticleReaction[]
+  shares           ArticleShare[]
+  pollResults      PollResult[]
+  notifications    Notification[]    @relation("ArticleNotifications")
+  sources          String[]
+  prompt           String?
 
   @@unique([slug, clientSiteId])
   @@index([title, excerpt, clientSiteId])
@@ -318,6 +321,8 @@ model ClientSite {
   keywords            Json?
   audience            String?
   lastGeneratedAt     DateTime?
+  humanHourlyRate     Int                 @default(1400)
+  humanWordsPerHour   Int                 @default(400)
   gtagId              String?
   apiKey              String?
   gamNetworkCode      String?
