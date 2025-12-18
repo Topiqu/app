@@ -5,15 +5,17 @@
     </template>
 
     <template #close>
-      <LazyClientHint v-if="auth?.user?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
-        <button
-          class="flex items-center justify-center p-2 rounded-full bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 border-none outline-none cursor-pointer"
-          :title="$t('common.preferences.explanation')"
-          @click="clientHintOpen.value = true"
-        >
-          <Icon name="mdi:information-outline" class="size-6 text-gray-600 dark:text-gray-300" />
-        </button>
-      </LazyClientHint>
+      <div class="flex items-center gap-1">
+        <LazyClientHint v-if="auth?.user?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
+          <button
+            class="flex items-center justify-center p-2 rounded-full bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 border-none outline-none cursor-pointer"
+            :title="$t('common.preferences.explanation')"
+            @click="clientHintOpen.value = true"
+          >
+            <Icon name="mdi:information-outline" class="size-6 text-gray-600 dark:text-gray-300" />
+          </button>
+        </LazyClientHint>
+      </div>
     </template>
 
     <template #content>
@@ -84,6 +86,60 @@
                     icon="mdi:code-tags"
                   />
                 </Transition>
+              </div>
+            </div>
+          </section>
+
+          <section v-if="auth?.user?.plan !== 'BASIC'">
+            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Icon name="mdi:key-chain-variant" class="w-5 h-5 text-purple-500" />
+              {{ $t('common.preferences.api.title') }}
+            </h3>
+
+            <div
+              class="bg-white/5 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10 transition-all hover:border-white/20"
+            >
+              <div v-if="!form.apiKey" class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm text-neutral-600 dark:text-neutral-400">
+                  {{ $t('common.preferences.api.description') }}
+                </div>
+                <Button variant="neutral" class="shrink-0" @click="generateApiKey">
+                  <Icon name="mdi:plus" class="mr-1.5 size-4" />
+                  {{ $t('common.preferences.api.generate') }}
+                </Button>
+              </div>
+
+              <div v-else class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                    {{ $t('common.preferences.api.label') }}
+                  </label>
+                </div>
+
+                <div class="relative group">
+                  <div
+                    class="w-full bg-neutral-100 dark:bg-black/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-4 pr-12 py-3 font-mono text-sm text-neutral-800 dark:text-neutral-200 truncate transition-colors group-hover:border-purple-500/30"
+                  >
+                    {{ form.apiKey }}
+                  </div>
+
+                  <button
+                    class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors text-neutral-500 dark:text-neutral-400"
+                    :title="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
+                    @click="copyApi(form.apiKey)"
+                  >
+                    <Icon
+                      :name="apiCopied ? 'mdi:check' : 'mdi:content-copy'"
+                      class="size-5 transition-all duration-300"
+                      :class="apiCopied ? 'text-emerald-500 scale-110' : ''"
+                    />
+                  </button>
+                </div>
+
+                <div class="flex items-start gap-2 text-xs text-neutral-500 dark:text-neutral-500">
+                  <Icon name="mdi:shield-alert-outline" class="size-4 shrink-0 mt-0.5" />
+                  <p>{{ $t('common.preferences.api.warning') }}</p>
+                </div>
               </div>
             </div>
           </section>
@@ -230,6 +286,7 @@ import { format, parseISO } from 'date-fns'
 const toast = useToast()
 const { data: auth } = useAuth()
 const open = defineModel<boolean>()
+const { copy: copyApi, copied: apiCopied } = useClipboard({ legacy: true })
 
 const form = ref({
   focus: '',
@@ -244,6 +301,7 @@ const form = ref({
   gtagId: '',
   gamNetworkCode: '',
   allowAds: false,
+  apiKey: '',
   autoRelease: false,
   allowGtag: false,
 })
@@ -262,6 +320,7 @@ interface ClientSite
     ARTICLE_CRONS?: boolean
   } | null
   socials: { platform: SocialPlatform; url: string }[]
+  apiKey: string | null
   aiUser: { username: string; bio: string; avatarUrl: string } | null
 }
 
@@ -357,6 +416,7 @@ watch(
       logoUrl: c.logoUrl ?? '',
       keywords: c.keywords ?? [],
       socials: c.socials ?? [],
+      apiKey: c.apiKey ?? '',
       aiUser: {
         username: c.aiUser?.username ?? '',
         bio: c.aiUser?.bio ?? '',
@@ -444,5 +504,19 @@ const confirmClose = async () => {
     confirmButtonColor: '#ef4444',
   })
   if (r.isConfirmed) open.value = false
+}
+const generateApiKey = async () => {
+  if (!auth.value?.user.clientSiteId) return
+
+  try {
+    const res = await $fetch<{ apiKey: string }>(`/api/clients/${auth.value.user.clientSiteId}/api-key`, {
+      method: 'POST',
+    })
+
+    form.value.apiKey = res.apiKey
+    toast.success({ message: 'API Key successfully generated' })
+  } catch {
+    toast.error({ message: 'Failed to generate API Key' })
+  }
 }
 </script>

@@ -317,7 +317,7 @@ const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/
 
 const { data: relatedArticles, pending } = await useFetch(
   `/api/articles/${slug.value}/related?limit=3` as `/api/articles/:id/related`,
-  { lazy: true },
+  { lazy: true, query: { clientSiteId: clientSite?.id } },
 )
 
 const canonicalUrl = computed(() => {
