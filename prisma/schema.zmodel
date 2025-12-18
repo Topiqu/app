@@ -154,29 +154,32 @@ model ArticleDraft extends Base, Ownable {
     @@index([userId, updatedAt])
 }
 model Article extends Base, Ownable {
-    slug            String            @length(1, 100, "Slug musí mít 1–100 znaků")
-    title           String            @length(1, 255, "Titulek musí mít 1–255 znaků")
-    excerpt         String?           @length(0, 500, "Perex může mít max. 500 znaků")
-    content         String            @length(1, 50000, "Článek překročil délku znaků")
-    imageUrl        String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
-    status          ArticleStatus     @default(draft)
-    clientSiteId    String
-    clientSite      ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-    views           Int               @default(0)
-    shared          Int               @default(0)
-    aiInvolvement   AIInvolvement     @default(NONE)
-    readingTime     Int?
-    publishedAt     DateTime?
-    releaseAt       DateTime?
-    allowedComments Boolean           @default(true)
-    tags            ArticleTag[]
-    comments        Comment[]
-    reactions       ArticleReaction[]
-    shares          ArticleShare[]
-    pollResults     PollResult[]
-    notifications   Notification[]    @relation("ArticleNotifications")
-    sources         String[]
-    prompt          String?           @length(0, 5000)
+    slug             String            @length(1, 100, "Slug musí mít 1–100 znaků")
+    title            String            @length(1, 255, "Titulek musí mít 1–255 znaků")
+    excerpt          String?           @length(0, 500, "Perex může mít max. 500 znaků")
+    content          String            @length(1, 50000, "Článek překročil délku znaků")
+    imageUrl         String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    status           ArticleStatus     @default(draft)
+    clientSiteId     String
+    clientSite       ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    views            Int               @default(0)
+    shared           Int               @default(0)
+    aiInvolvement    AIInvolvement     @default(NONE)
+    readingTime      Int?
+    totalWords       Int?
+    savedAmount      Float             @default(0.0)
+    savedTimeMinutes Int               @default(0)
+    publishedAt      DateTime?
+    releaseAt        DateTime?
+    allowedComments  Boolean           @default(true)
+    tags             ArticleTag[]
+    comments         Comment[]
+    reactions        ArticleReaction[]
+    shares           ArticleShare[]
+    pollResults      PollResult[]
+    notifications    Notification[]    @relation("ArticleNotifications")
+    sources          String[]
+    prompt           String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
     @@unique([slug, clientSiteId])
@@ -320,6 +323,8 @@ model ClientSite extends Base {
     keywords            Json?
     audience            String?
     lastGeneratedAt     DateTime?
+    humanHourlyRate     Int                 @default(1400)
+    humanWordsPerHour   Int                 @default(400)
     gtagId              String?
     apiKey              String?
     gamNetworkCode      String?
