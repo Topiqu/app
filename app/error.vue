@@ -2,50 +2,44 @@
   <NuxtLayout name="default">
     <Status
       type="error"
-      :title="title"
-      :message="message"
+      :title="errorTitle"
+      :message="errorMessage"
       :actionText="$t('common.actions.home')"
-      :actionTo="'/'"
-      :stackTrace="stackTrace"
       :errorCode="statusCode"
+      :stackTrace="isDev ? stackTrace : undefined"
+      @action="handleClearError"
     />
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 const error = useError()
+const isDev = process.env.NODE_ENV === 'development'
 
-const statusCode = computed(() => error.value?.statusCode)
+const statusCode = computed(() => error.value?.statusCode ?? 500)
+const errorMessage = computed(() => error.value?.message || '')
+const stackTrace = computed(() => error.value?.stack || '')
 
-const title = computed(() => {
-  switch (statusCode.value) {
-    case 404:
-      return $t('common.errTypes.notFound')
-    case 401:
-      return $t('common.errTypes.unauthorized')
-    case 403:
-      return $t('common.errTypes.forbidden')
-    case 400:
-      return $t('common.errTypes.badRequest')
-    case 429:
-      return $t('common.errTypes.tooManyRequests')
-    case 500:
-      return $t('common.errTypes.server')
-    case 503:
-      return $t('common.errTypes.serviceUnavailable')
-    case 409:
-      return $t('common.errTypes.conflict')
-    case 406:
-      return $t('common.errTypes.notAcceptable')
-    case 504:
-      return $t('common.errTypes.gatewayTimeout')
-    case 422:
-      return $t('common.errTypes.unprocessableEntity')
-    default:
-      return $t('common.errTypes.internalError')
-  }
+const errorTitleMap: Record<number, string> = {
+  400: 'common.errTypes.badRequest',
+  401: 'common.errTypes.unauthorized',
+  403: 'common.errTypes.forbidden',
+  404: 'common.errTypes.notFound',
+  406: 'common.errTypes.notAcceptable',
+  409: 'common.errTypes.conflict',
+  422: 'common.errTypes.unprocessableEntity',
+  429: 'common.errTypes.tooManyRequests',
+  500: 'common.errTypes.server',
+  503: 'common.errTypes.serviceUnavailable',
+  504: 'common.errTypes.gatewayTimeout',
+}
+
+const errorTitle = computed(() => {
+  const key = errorTitleMap[statusCode.value] || 'common.errTypes.internalError'
+  return $t(key)
 })
 
-const message = computed(() => error.value?.message || '')
-const stackTrace = computed(() => error.value?.stack || '')
+const handleClearError = () => {
+  clearError({ redirect: '/' })
+}
 </script>

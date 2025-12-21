@@ -336,13 +336,13 @@ useSeoMeta({
   description: () => (hasSeoPlan.value ? articleDescription.value : undefined),
   ogTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
   ogDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
-  ogImage: () => (hasSeoPlan.value ? data.value?.imageUrl : undefined),
+  ogImage: () => (hasSeoPlan.value ? data.value?.imageUrl || undefined : undefined),
   ogUrl: () => (hasSeoPlan.value ? canonicalUrl.value : undefined),
   ogType: () => (hasSeoPlan.value ? 'article' : undefined),
   twitterCard: () => (hasSeoPlan.value ? 'summary_large_image' : undefined),
   twitterTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
   twitterDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
-  twitterImage: () => (hasSeoPlan.value ? data.value?.imageUrl : undefined),
+  twitterImage: () => (hasSeoPlan.value ? data.value?.imageUrl || undefined : undefined),
 })
 
 useHead({
