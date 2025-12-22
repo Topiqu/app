@@ -1,18 +1,48 @@
-import { consumeClientTokens } from '~~/server/utils/consumeTokens'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+
+  if (!user || !user.clientSiteId) {
+    throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  }
 
   const { prompt } = await readValidatedBody(
     event,
-    z.object({ prompt: z.string().nonempty(t('common.errors.missing')!) }).parse,
+    z.object({
+      prompt: z.string().nonempty(t('common.errors.missing')!),
+    }).parse,
   )
+
+  const client = await prisma.clientSite.findUnique({
+    where: { id: user.clientSiteId },
+    select: { humanHourlyRate: true, humanWordsPerHour: true },
+  })
+
+  if (!client) {
+    throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
+  }
 
   const { usage, ...article } = await generateArticle(user.clientSiteId, prompt)
 
-  await consumeClientTokens(user.clientSiteId, usage.totalTokens!, 'GENERATE_ARTICLE', { ...article, usage }, event)
+  const metrics = calculateArticleMetrics(article.content, client.humanHourlyRate, client.humanWordsPerHour)
 
-  return article
+  await consumeClientTokens(
+    user.clientSiteId,
+    usage.totalTokens || 0,
+    'GENERATE_ARTICLE',
+    {
+      ...article,
+      usage,
+      metrics,
+      aiInvolvement: 'FULL',
+      createdAt: new Date(),
+    },
+    event,
+  )
+
+  return {
+    ...article,
+    metrics,
+    aiInvolvement: 'FULL',
+  }
 })

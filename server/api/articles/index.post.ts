@@ -9,42 +9,38 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
 
-  const $ = cheerio.load(body.content)
+  const $ = cheerio.load(body.content || '')
   const usedIds = new Map()
 
   $('h1, h2, h3').each((i, el) => {
     const $el = $(el)
     let text = $el.text().trim()
-
     if (!text) {
       $el.attr('id', `heading-${i}`)
       return
     }
-
     const maxLength = 50
     text = text.length > maxLength ? text.slice(0, maxLength) : text
-
     const baseId = slugify(text, { lower: true, strict: true })
     let id = baseId
     let counter = 1
-
     while (usedIds.has(id)) {
       id = `${baseId}-${counter++}`
     }
     usedIds.set(id, true)
-
     $el.attr('id', id)
   })
 
   const contentWithIds = $.html()
   const data = {
+    ...body,
     content: sanitizeHtml(contentWithIds),
     clientSiteId: user.clientSiteId,
     userId: user.id,
-    ...body,
   }
 
   const article = await db.article.create({ data })
+
   await logAction({
     action: 'ARTICLE_CREATED',
     userId: user.id,

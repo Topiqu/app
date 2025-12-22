@@ -99,10 +99,12 @@ const processClient = async (client: any) => {
     return
   }
 
+  const metrics = calculateArticleMetrics(generated.content, client.humanHourlyRate, client.humanWordsPerHour)
+
   await logAction({
     action: 'CRON_GENERATE_ARTICLE',
     clientSiteId,
-    metadata: { ...generated, usage },
+    metadata: { ...generated, usage, metrics },
   })
 
   const status = client.autoRelease ? 'published' : 'draft'
@@ -111,7 +113,7 @@ const processClient = async (client: any) => {
     const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
 
     const article = await ctx.article.create({
-      select: { id: true, title: true, userId: true, user: { select: { username: true } } },
+      select: { id: true, title: true, userId: true, user: { select: { username: true, language: true, role: true } } },
       data: {
         title: generated.title,
         excerpt: generated.perex,
@@ -120,6 +122,10 @@ const processClient = async (client: any) => {
         content: generated.content,
         clientSiteId,
         status,
+        aiInvolvement: 'FULL',
+        totalWords: metrics.totalWords,
+        savedAmount: metrics.savedAmount,
+        savedTimeMinutes: metrics.savedTimeMinutes,
       },
     })
 
@@ -242,6 +248,8 @@ export default defineTask({
     const clients = await prisma.clientSite.findMany({
       select: {
         id: true,
+        humanHourlyRate: true,
+        humanWordsPerHour: true,
         autoRelease: true,
         audience: true,
         keywords: true,

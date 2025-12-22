@@ -1,4 +1,4 @@
-import type { Article as _Article, ArticleStatus } from '@zenstackhq/runtime/models'
+import type { Article as _Article, ArticleStatus, AIInvolvement } from '@zenstackhq/runtime/models'
 
 export type ArticleBase = _Article & {
   user: { id: string; username: string; email: string; avatarUrl: string | null }
@@ -25,6 +25,9 @@ export type ArticleWithDetails = {
   views: number
   releaseAt: Date | string | null
   status: ArticleStatus
+  aiInvolvement: AIInvolvement
+  savedAmount: number | null
+  savedTimeMinutes: number | null
   userId?: string | null
   sources?: string[]
   user: { id: string; username: string; email: string; avatarUrl: string | null } | null
