@@ -5,7 +5,7 @@
     </template>
 
     <template #content>
-      <div v-if="loading" class="text-center text-gray-500 py-8">
+      <div v-if="pending" class="text-center text-gray-500 py-8">
         <div class="animate-pulse flex flex-col items-center gap-4">
           <Icon name="mdi:loading" class="w-8 h-8 text-gray-400 animate-spin" />
           <span>{{ $t('stats.loading') }}</span>
@@ -45,6 +45,30 @@
           </div>
 
           <div
+            class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+          >
+            <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+              <Icon name="mdi:clock-check-outline" class="w-5 h-5 text-violet-600" />
+              {{ $t('stats.savedTime.title') }}
+            </div>
+            <p class="text-2xl font-bold text-violet-600">
+              {{ formatDuration(stats.savedTimeMinutes) }}
+            </p>
+          </div>
+
+          <div
+            class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
+          >
+            <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
+              <Icon name="mdi:cash-multiple" class="w-5 h-5 text-emerald-600" />
+              {{ $t('stats.savedAmount.title') }}
+            </div>
+            <p class="text-2xl font-bold text-emerald-600">
+              {{ formatMoney(stats.savedAmount) }}
+            </p>
+          </div>
+
+          <div
             v-if="!isBasicPlan"
             class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
           >
@@ -76,7 +100,7 @@
           </div>
 
           <div
-            v-if="data?.user.plan !== 'BASIC'"
+            v-if="!isBasicPlan"
             class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer"
             @click="showTopTags = !showTopTags"
           >
@@ -88,25 +112,25 @@
               <Icon :name="showTopTags ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="w-5 h-5 text-gray-400" />
             </div>
 
-            <div v-if="!showTopTags && stats.topTags.length > 0" class="mt-3">
-              <p class="text-lg font-medium text-gray-900">
-                {{ stats.topTags[0]?.name }}
+            <div v-if="!showTopTags && stats.topTags[0]">
+              <p class="text-lg font-medium text-gray-900 mt-3">
+                {{ stats.topTags[0].name }}
               </p>
               <p class="text-sm text-gray-500">
-                {{ stats.topTags[0]?.views.toLocaleString() }} {{ $t('stats.totalViews.title').toLowerCase() }}
+                {{ stats.topTags[0].views.toLocaleString() }} {{ $t('stats.totalViews.title').toLowerCase() }}
               </p>
             </div>
 
             <transition name="fade">
-              <div v-if="showTopTags && stats.topTags.length > 0" class="mt-4 space-y-3">
+              <div v-if="showTopTags && stats.topTags.length" class="mt-4 space-y-3">
                 <div
-                  v-for="(tag, index) in stats.topTags.slice(0, 3)"
+                  v-for="(tag, i) in stats.topTags"
                   :key="tag.name"
                   class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50/70 dark:bg-gray-800/50"
-                  :class="{ 'ring-2 ring-emerald-500/30': index === 0 }"
+                  :class="{ 'ring-2 ring-emerald-500/30': i === 0 }"
                 >
                   <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold text-emerald-600">#{{ index + 1 }}</span>
+                    <span class="text-sm font-semibold text-emerald-600">#{{ i + 1 }}</span>
                     <span class="font-medium text-gray-900">{{ tag.name }}</span>
                   </div>
                   <span class="text-sm text-gray-500">
@@ -116,7 +140,7 @@
               </div>
             </transition>
 
-            <p v-if="stats.topTags.length === 0" class="mt-3 text-gray-500 italic">
+            <p v-if="!stats.topTags.length" class="mt-3 text-gray-500 italic">
               {{ $t('stats.topTag.noTags') }}
             </p>
           </div>
@@ -128,7 +152,7 @@
               <Icon name="mdi:heart" class="w-5 h-5 text-red-500" />
               {{ $t('stats.topLikedArticle.title') }}
             </div>
-            <template v-if="stats.topLikedArticle && stats.topLikedArticle.likes > 0">
+            <template v-if="stats.topLikedArticle">
               <p class="text-lg font-medium text-gray truncate" :title="stats.topLikedArticle.title">
                 {{ stats.topLikedArticle.title }}
               </p>
@@ -146,7 +170,7 @@
               <Icon name="mdi:comment-text" class="w-5 h-5 text-purple-600" />
               {{ $t('stats.topCommentedArticle.title') }}
             </div>
-            <template v-if="stats.topCommentedArticle && stats.topCommentedArticle.comments > 0">
+            <template v-if="stats.topCommentedArticle">
               <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topCommentedArticle.title">
                 {{ stats.topCommentedArticle.title }}
               </p>
@@ -168,7 +192,7 @@
           </div>
 
           <div
-            v-if="data?.user.plan !== 'BASIC'"
+            v-if="!isBasicPlan"
             v-tippy="{ content: $t('stats.engagementRate.tooltip'), theme: 'light', placement: 'top' }"
             class="p-4 bg-white/70 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
           >
@@ -190,7 +214,7 @@
               {{ $t('stats.topAuthor.title') }}
             </div>
             <template v-if="stats.topAuthor">
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-3 mt-2">
                 <UserPicture :url="stats.topAuthor.avatarUrl" :name="stats.topAuthor.username" />
                 <div>
                   <p class="text-lg font-medium text-gray-900 truncate" :title="stats.topAuthor.username">
@@ -242,7 +266,7 @@
           </div>
 
           <div
-            v-if="data?.user.plan === 'BASIC'"
+            v-if="isBasicPlan"
             class="col-span-1 sm:col-span-2 p-6 bg-gradient-to-br from-gray-900 to-gray-800/90 backdrop-blur-lg rounded-xl shadow-xl border border-gray-700/30 text-white relative overflow-hidden"
           >
             <div
@@ -267,14 +291,11 @@
         </div>
 
         <Charts
-          v-if="!loading && stats.articleCount > 0 && data?.user.plan !== 'BASIC'"
+          v-if="!pending && stats.articleCount > 0 && !isBasicPlan"
           :chartData="chartData"
           :title="$t('stats.charts.viewsLastWeek')"
         />
-        <div
-          v-if="!loading && stats.articleCount > 0 && stats.totalShares > 0 && data?.user.plan !== 'BASIC'"
-          class="mt-8"
-        >
+        <div v-if="!pending && stats.articleCount > 0 && stats.totalShares > 0 && !isBasicPlan" class="mt-8">
           <Charts :chartData="shareChartData" :title="$t('stats.charts.shareDistribution')" />
         </div>
       </div>
@@ -292,82 +313,77 @@
 import { directive as vTippy } from 'vue-tippy'
 
 const open = defineModel<boolean>()
-const { data } = useAuth()
+const { data: authData } = useAuth()
 const { onArticleCreated, onArticleDeleted } = useArticleEvent()
-const isBasicPlan = computed(() => data?.value?.user.plan === 'BASIC')
-const showTopTags = ref(false)
 
-const [
-  { data: views, pending: viewsPending, refresh: refreshViews },
-  { data: topArticle, pending: topArticlePending, refresh: refreshTopArticle },
-  { data: articleCount, pending: articleCountPending, refresh: refreshArticleCount },
-  { data: topTags, pending: topTagsPending, refresh: refreshTopTags },
-  { data: viewsHistory, pending: viewsHistoryPending, refresh: refreshViewsHistory },
-  { data: topLiked, pending: topLikedPending, refresh: refreshTopLiked },
-  { data: topCommented, pending: topCommentedPending, refresh: refreshTopCommented },
-  { data: followerCount, pending: followerCountPending, refresh: refreshFollowerCount },
-  { data: engagementRate, pending: engagementRatePending, refresh: refreshEngagementRate },
-  { data: topAuthor, pending: topAuthorPending, refresh: refreshTopAuthor },
-  { data: shares, pending: sharesPending, refresh: refreshShares },
-  { data: rawInsight, pending: insightPending, refresh: refreshInsight },
-] = await Promise.all([
-  useFetch('/api/stats/views', { lazy: true }),
-  useFetch('/api/stats/top-article', { lazy: true }),
-  useFetch('/api/stats/article-count', { lazy: true }),
-  useFetch('/api/stats/top-tags?limit=3', { lazy: true, immediate: !isBasicPlan.value }),
-  useFetch('/api/stats/views-history', { lazy: true, immediate: !isBasicPlan.value }),
-  useFetch('/api/stats/top-liked', { lazy: true }),
-  useFetch('/api/stats/top-commented', { lazy: true }),
-  useFetch('/api/stats/follower-count', { lazy: true }),
-  useFetch('/api/stats/engagement-rate', { lazy: true, immediate: !isBasicPlan.value }),
-  useFetch('/api/stats/top-author', { lazy: true }),
-  useFetch('/api/stats/shares', { lazy: true, immediate: !isBasicPlan.value }),
-  useFetch('/api/clients/sentiment', { lazy: true, immediate: !isBasicPlan.value }),
-])
+const clientSite = await useClientSite()
 
-const loading = computed(() =>
-  [
-    viewsPending,
-    topArticlePending,
-    articleCountPending,
-    topTagsPending,
-    viewsHistoryPending,
-    topLikedPending,
-    topCommentedPending,
-    followerCountPending,
-    engagementRatePending,
-    topAuthorPending,
-    sharesPending,
-    insightPending,
-  ].some((p) => p.value),
-)
+const isBasicPlan = computed(() => authData.value?.user.plan === 'BASIC')
+const showTopTags = shallowRef(false)
+
+const { data: dashboard, pending, refresh } = await useFetch('/api/stats/dashboard', { lazy: true })
+
+const { data: rawInsight, refresh: refreshInsight } = await useFetch('/api/clients/sentiment', {
+  lazy: true,
+  immediate: !isBasicPlan.value,
+})
+
+const formatDuration = (totalMinutes: number) => {
+  if (!totalMinutes) return '0m'
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+
+  if (hours === 0) return `${minutes}m`
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+}
+
+const formatMoney = (amount: number) => {
+  const currency = clientSite?.currency || 'USD'
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
 
 const insight = computed(() => {
-  const v = rawInsight.value
-  if (!v) return null
-  return typeof v === 'string' ? JSON.parse(v) : v
+  if (!rawInsight.value) return null
+  return typeof rawInsight.value === 'string' ? JSON.parse(rawInsight.value) : rawInsight.value
 })
 
 const stats = computed(() => ({
-  totalViews: views.value?.totalViews || 0,
-  articleCount: articleCount.value?.articleCount || 0,
-  totalShares: shares.value?.totalShares || 0,
-  shareDistribution: shares.value?.distribution || { TWITTER: 0, LINKEDIN: 0, EMAIL: 0, OTHER: 0 },
-  topArticle: topArticle.value,
-  topTags: (topTags.value || []).sort((a: any, b: any) => b.views - a.views),
-  topLikedArticle: topLiked.value,
-  topCommentedArticle: topCommented.value,
-  followerCount: followerCount.value?.count || 0,
-  engagementRate: engagementRate.value?.engagementRate || 0,
-  topAuthor: topAuthor.value,
+  totalViews: dashboard.value?.totalViews || 0,
+  articleCount: dashboard.value?.articleCount || 0,
+  savedAmount: dashboard.value?.savedAmount || 0,
+  savedTimeMinutes: dashboard.value?.savedTimeMinutes || 0,
+  totalShares: dashboard.value?.totalShares || 0,
+  sharesDistribution: dashboard.value?.sharesDistribution || {
+    TWITTER: 0,
+    LINKEDIN: 0,
+    FACEBOOK: 0,
+    EMAIL: 0,
+    OTHER: 0,
+  },
+  topArticle: dashboard.value?.topArticle ? { ...dashboard.value.topArticle } : null,
+  topTags: dashboard.value?.topTags || [],
+  topLikedArticle: dashboard.value?.topLikedArticle
+    ? { ...dashboard.value.topLikedArticle, likes: dashboard.value.topLikedArticle.likes || 0 }
+    : null,
+  topCommentedArticle: dashboard.value?.topCommentedArticle
+    ? { ...dashboard.value.topCommentedArticle, comments: dashboard.value.topCommentedArticle.comments || 0 }
+    : null,
+  followerCount: dashboard.value?.followerCount || 0,
+  engagementRate: dashboard.value?.engagementRate || 0,
+  topAuthor: dashboard.value?.topAuthor,
 }))
 
 const chartData = computed(() => ({
-  labels: viewsHistory.value?.map((v: any) => v.date) || [],
+  labels: dashboard.value?.viewsHistory?.map((v: any) => v.date) || [],
   datasets: [
     {
       label: $t('stats.totalViews.title'),
-      data: viewsHistory.value?.map((v: any) => v.views) || [],
+      data: dashboard.value?.viewsHistory?.map((v: any) => v.views) || [],
       backgroundColor: ['#3B82F6', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6'],
       borderColor: '#3b82f6',
       fill: false,
@@ -376,16 +392,17 @@ const chartData = computed(() => ({
 }))
 
 const shareChartData = computed(() => ({
-  labels: ['Twitter', 'LinkedIn', 'Other'],
+  labels: ['Twitter', 'LinkedIn', 'Facebook', 'Email', 'Other'],
   datasets: [
     {
       label: $t('stats.totalShares.title'),
       data: [
-        stats.value.shareDistribution.TWITTER || 0,
-        stats.value.shareDistribution.LINKEDIN || 0,
-        stats.value.shareDistribution.OTHER || 0,
+        stats.value.sharesDistribution.TWITTER || 0,
+        stats.value.sharesDistribution.LINKEDIN || 0,
+        stats.value.sharesDistribution.FACEBOOK || 0,
+        stats.value.sharesDistribution.OTHER || 0,
       ],
-      backgroundColor: ['#1DA1F2', '#0077B5', '#6b6b6b'],
+      backgroundColor: ['#1DA1F2', '#0077B5', '#1877F2', '#34A853', '#6b6b6b'],
       borderColor: '#ffffff',
       fill: false,
     },
@@ -393,21 +410,11 @@ const shareChartData = computed(() => ({
 }))
 
 const refreshAll = () => {
-  refreshViews()
-  refreshTopArticle()
-  refreshArticleCount()
-  if (!isBasicPlan.value) refreshTopTags()
-  if (!isBasicPlan.value) refreshViewsHistory()
-  refreshTopLiked()
-  refreshTopCommented()
-  refreshFollowerCount()
-  if (!isBasicPlan.value) refreshEngagementRate()
-  refreshTopAuthor()
-  if (!isBasicPlan.value) refreshShares()
+  refresh()
   if (!isBasicPlan.value) refreshInsight()
 }
 
-onMounted(() => refreshAll())
+onMounted(refreshAll)
 onArticleCreated(refreshAll)
 onArticleDeleted(refreshAll)
 </script>
@@ -424,7 +431,6 @@ onArticleDeleted(refreshAll)
   opacity: 0;
   transform: translateY(-8px);
 }
-
 @keyframes gradient-x {
   0%,
   100% {

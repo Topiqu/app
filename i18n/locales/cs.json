@@ -608,6 +608,12 @@
       "title": "Zobrazení",
       "noViews": "Zatím žádná zobrazení"
     },
+    "savedTime": {
+      "title": "Ušetřený čas"
+    },
+    "savedAmount": {
+      "title": "Ušetřené náklady"
+    },
     "articleCount": "Počet článků",
     "sentiment": {
       "title": "Vaše komunita"

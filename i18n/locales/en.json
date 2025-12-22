@@ -608,6 +608,12 @@
       "title": "Total Views",
       "noViews": "No views yet"
     },
+    "savedTime": {
+      "title": "Time Saved"
+    },
+    "savedAmount": {
+      "title": "Money Saved"
+    },
     "articleCount": "Total articles",
     "sentiment": {
       "title": "Your community"
