@@ -51,6 +51,8 @@ optional:
     - 🟡 background shapes/patterns
     - 🟡 fonts
   - 🟡 HP/index page should get a UI rework and move from MVP to actual production ready page
+  - 🟢 article series (how to build a house 1/5) + next part/back button
+  - 🟢 feedback loop (was this helpful ? 👍/👎)
   - 🟢 favorite button for articles (bookmark/save)
   - 🟢 tiptap for comments
 ---
@@ -58,6 +60,7 @@ future:
   - 🛑 zapier integration
   - 🟡 automate onboarding flow: wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details
   - 🔰 (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))...
+  - 🔰 newsletter for pro+ clients
   - 🔰 multi agent writing (seo analyzer, copywriter, reviewer) with tools (debate, vote, merge, post)
   - 🟢 better gamification - badges, levels, site activity points
   - 🟢 bullmq / railway / queue up cron jobs
