@@ -309,13 +309,15 @@ const { data: session } = useAuth(),
   clientSite = await useClientSite()
 const slug = computed(() => route.params.slug)
 
-const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`)
+const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`, {
+  query: { clientSiteId: clientSite?.id },
+})
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 
 const { data: relatedArticles, pending } = await useFetch(
   `/api/articles/${slug.value}/related?limit=3` as `/api/articles/:id/related`,
-  { lazy: true },
+  { lazy: true, query: { clientSiteId: clientSite?.id } },
 )
 
 const canonicalUrl = computed(() => {
@@ -334,13 +336,13 @@ useSeoMeta({
   description: () => (hasSeoPlan.value ? articleDescription.value : undefined),
   ogTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
   ogDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
-  ogImage: () => (hasSeoPlan.value ? data.value?.imageUrl : undefined),
+  ogImage: () => (hasSeoPlan.value ? data.value?.imageUrl || undefined : undefined),
   ogUrl: () => (hasSeoPlan.value ? canonicalUrl.value : undefined),
   ogType: () => (hasSeoPlan.value ? 'article' : undefined),
   twitterCard: () => (hasSeoPlan.value ? 'summary_large_image' : undefined),
   twitterTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
   twitterDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
-  twitterImage: () => (hasSeoPlan.value ? data.value?.imageUrl : undefined),
+  twitterImage: () => (hasSeoPlan.value ? data.value?.imageUrl || undefined : undefined),
 })
 
 useHead({

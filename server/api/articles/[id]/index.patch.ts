@@ -2,11 +2,12 @@ import type { NotificationType } from '@prisma/client'
 
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-
   const id = getRouterParam(event, 'id')
   const user = (await getServerSession(event))?.user
+
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
@@ -23,10 +24,7 @@ export default defineEventHandler(async (event) => {
   if (body.releaseAt) {
     const releaseDate = new Date(body.releaseAt)
     if (isNaN(releaseDate.getTime()) || releaseDate < currentDate || releaseDate > maxDate) {
-      throw createError({
-        statusCode: 400,
-        message: t('common.errors.invalidReleaseDate')!,
-      })
+      throw createError({ statusCode: 400, message: t('common.errors.invalidReleaseDate')! })
     }
   }
 
@@ -42,10 +40,7 @@ export default defineEventHandler(async (event) => {
     (previousArticle.status === 'published' ||
       (previousArticle.releaseAt && new Date(previousArticle.releaseAt) < currentDate))
   ) {
-    throw createError({
-      statusCode: 403,
-      message: t('common.errors.releaseDateLocked')!,
-    })
+    throw createError({ statusCode: 403, message: t('common.errors.releaseDateLocked')! })
   }
 
   let content = body.content
@@ -81,10 +76,11 @@ export default defineEventHandler(async (event) => {
     })
   } else {
     const data: any = {
-      releaseAt: body.releaseAt ? new Date(body.releaseAt) : undefined,
       ...body,
+      releaseAt: body.releaseAt ? new Date(body.releaseAt) : undefined,
     }
     if (body.content) data.content = sanitizeHtml(content || '')
+
     article = await db.article.update({
       where: { id },
       data,
@@ -101,10 +97,7 @@ export default defineEventHandler(async (event) => {
 
   if (!isOnlyViews && article.status === 'published' && previousArticle?.status === 'draft') {
     const followers = await db.follow.findMany({
-      where: {
-        followedId: article.userId,
-        follower: { allowNotifs: true },
-      },
+      where: { followedId: article.userId, follower: { allowNotifs: true } },
       select: { followerId: true },
     })
 
@@ -119,9 +112,8 @@ export default defineEventHandler(async (event) => {
       await db.$transaction(async (tx) => {
         const BATCH_SIZE = 100
         for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
-          const batch = notifications.slice(i, i + BATCH_SIZE)
           await tx.notification.createMany({
-            data: batch,
+            data: notifications.slice(i, i + BATCH_SIZE),
             skipDuplicates: true,
           })
         }

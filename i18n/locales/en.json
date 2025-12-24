@@ -240,6 +240,16 @@
       "explanation": "Preferences Explanation",
       "monthlyTitle": "Monthly Price",
       "annuallyTitle": "Yearly Price",
+      "api": {
+        "title": "API Access",
+        "description": "Generate a secure API key to access endpoints programmatically.",
+        "generate": "Generate Key",
+        "label": "Your API Key",
+        "revoke": "Revoke & Regenerate",
+        "copy": "Copy API Key",
+        "copied": "Copied",
+        "warning": "Keep this key secret. Do not share it in client-side code or public repositories."
+      },
       "billing": {
         "permanent": "– Lifetime access",
         "annual": "– Annual billing",
@@ -597,6 +607,12 @@
     "totalViews": {
       "title": "Total Views",
       "noViews": "No views yet"
+    },
+    "savedTime": {
+      "title": "Time Saved"
+    },
+    "savedAmount": {
+      "title": "Money Saved"
     },
     "articleCount": "Total articles",
     "sentiment": {

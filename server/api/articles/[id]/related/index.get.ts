@@ -6,9 +6,9 @@ export default defineEventHandler(async (event) => {
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const { take } = await getPagination(event)
-
+  const { clientSiteId } = getQuery<{ clientSiteId: string }>(event)
   const { tags } = await prisma.article.findUniqueOrThrow({
-    where: { slug },
+    where: { slug_clientSiteId: { slug, clientSiteId } },
     select: { tags: { select: { tagId: true } } },
   })
 

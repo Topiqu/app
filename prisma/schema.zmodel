@@ -125,10 +125,10 @@ enum SharePlatform {
 }
 
 enum SentimentStatus {
-  PENDING
-  SKIPPED
-  PROCESSED
-  ERROR
+    PENDING
+    SKIPPED
+    PROCESSED
+    ERROR
 }
 
 abstract model Base {
@@ -154,31 +154,35 @@ model ArticleDraft extends Base, Ownable {
     @@index([userId, updatedAt])
 }
 model Article extends Base, Ownable {
-    slug            String            @unique @length(1, 100, "Slug musí mít 1–100 znaků")
-    title           String            @length(1, 255, "Titulek musí mít 1–255 znaků")
-    excerpt         String?           @length(0, 500, "Perex může mít max. 500 znaků")
-    content         String            @length(1, 50000, "Článek překročil délku znaků")
-    imageUrl        String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
-    status          ArticleStatus     @default(draft)
-    clientSiteId    String
-    clientSite      ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-    views           Int               @default(0)
-    shared          Int               @default(0)
-    aiInvolvement   AIInvolvement     @default(NONE)
-    readingTime     Int?
-    publishedAt     DateTime?
-    releaseAt       DateTime?
-    allowedComments Boolean           @default(true)
-    tags            ArticleTag[]
-    comments        Comment[]
-    reactions       ArticleReaction[]
-    shares          ArticleShare[]
-    pollResults     PollResult[]
-    notifications   Notification[]    @relation("ArticleNotifications")
-    sources         String[]
-    prompt          String?           @length(0, 5000)
+    slug             String            @length(1, 100, "Slug musí mít 1–100 znaků")
+    title            String            @length(1, 255, "Titulek musí mít 1–255 znaků")
+    excerpt          String?           @length(0, 500, "Perex může mít max. 500 znaků")
+    content          String            @length(1, 50000, "Článek překročil délku znaků")
+    imageUrl         String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    status           ArticleStatus     @default(draft)
+    clientSiteId     String
+    clientSite       ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    views            Int               @default(0)
+    shared           Int               @default(0)
+    aiInvolvement    AIInvolvement     @default(NONE)
+    readingTime      Int?
+    totalWords       Int?
+    savedAmount      Float             @default(0.0)
+    savedTimeMinutes Int               @default(0)
+    publishedAt      DateTime?
+    releaseAt        DateTime?
+    allowedComments  Boolean           @default(true)
+    tags             ArticleTag[]
+    comments         Comment[]
+    reactions        ArticleReaction[]
+    shares           ArticleShare[]
+    pollResults      PollResult[]
+    notifications    Notification[]    @relation("ArticleNotifications")
+    sources          String[]
+    prompt           String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
+    @@unique([slug, clientSiteId])
     @@index([title, excerpt, clientSiteId])
 }
 
@@ -305,91 +309,94 @@ model Social {
 }
 
 model ClientSite extends Base {
-  name                String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
-  subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
-  plan                ClientPlan          @default(BASIC)
-  focus               String?
-  description         String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
-  logoUrl             String?             @length(0, 255, "URL loga musí mít max. 255 znaků")
-  generationFrequency GenerationFrequency @default(NONE)
-  tokenLimit          Int?                @default(0)
-  tokenRemaining      Int?                @default(0)
-  totalUsage          Int?                @default(0)
-  autoRelease         Boolean             @default(false)
-  keywords            Json?
-  audience            String?
-  lastGeneratedAt     DateTime?
-  gtagId              String?
-  gamNetworkCode      String?             
-  allowAds            Boolean             @default(false)
-  allowGtag           Boolean?
-  allowShapes         Boolean             @default(false)
-  communityInsight    Json?
-  insightUpdatedAt    DateTime?
-  billingPlan         BillingPlans        @default(MONTHLY)
-  firstPaidAt         DateTime?
-  nextBillingAt       DateTime?
-  lastInvoicedAt      DateTime?
-  monthlyPayment      Int?                @default(0)
-  annualPayment       Int?                @default(0)
-  enableAi            Boolean             @default(false)
-  enableCron          Boolean             @default(false)
-  enableSentiment     Boolean             @default(false)
-  currency            String?             @default('USD')
-  lastPaidAt          DateTime?           @default(now())
-  lastTokenRefilled   DateTime?           @default(now())
-  language            Language            @default(en)
-  theme               Theme               @default(blue)
+    name                String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
+    subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
+    plan                ClientPlan          @default(BASIC)
+    focus               String?
+    description         String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
+    logoUrl             String?             @length(0, 255, "URL loga musí mít max. 255 znaků")
+    generationFrequency GenerationFrequency @default(NONE)
+    tokenLimit          Int?                @default(0)
+    tokenRemaining      Int?                @default(0)
+    totalUsage          Int?                @default(0)
+    autoRelease         Boolean             @default(false)
+    keywords            Json?
+    audience            String?
+    lastGeneratedAt     DateTime?
+    humanHourlyRate     Int                 @default(1400)
+    humanWordsPerHour   Int                 @default(400)
+    gtagId              String?
+    apiKey              String?
+    gamNetworkCode      String?
+    allowAds            Boolean             @default(false)
+    allowGtag           Boolean?
+    allowShapes         Boolean             @default(false)
+    communityInsight    Json?
+    insightUpdatedAt    DateTime?
+    billingPlan         BillingPlans        @default(MONTHLY)
+    firstPaidAt         DateTime?
+    nextBillingAt       DateTime?
+    lastInvoicedAt      DateTime?
+    monthlyPayment      Int?                @default(0)
+    annualPayment       Int?                @default(0)
+    enableAi            Boolean             @default(false)
+    enableCron          Boolean             @default(false)
+    enableSentiment     Boolean             @default(false)
+    currency            String?             @default('USD')
+    lastPaidAt          DateTime?           @default(now())
+    lastTokenRefilled   DateTime?           @default(now())
+    language            Language            @default(en)
+    theme               Theme               @default(blue)
 
-  users               User[]
-  tags                Tag[]
-  articles            Article[]
-  articleDrafts       ArticleDraft[]
-  emojis              Emoji[]
-  userBans            UserBan[]
-  socials             Social[]
-  logs                Log[]            @relation("LogToClientSite")
-  features            ClientFeature[]
+    users               User[]
+    tags                Tag[]
+    articles            Article[]
+    articleDrafts       ArticleDraft[]
+    emojis              Emoji[]
+    userBans            UserBan[]
+    socials             Social[]
+    logs                Log[]               @relation("LogToClientSite")
+    features            ClientFeature[]
 
-  @@allow('read', true)
-  @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
-  @@allow('all', auth().role == 'superadmin')
-  @@index([subdomain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
+    @@allow('read', true)
+    @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
+    @@allow('all', auth().role == 'superadmin')
+    @@index([subdomain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
 }
 
 model Feature extends Base {
-  code           FeatureCodes @unique
-  name           String
-  priceMonthly   Int
-  priceAnnual    Int?
-  tier           String?
+    code           FeatureCodes    @unique
+    name           String
+    priceMonthly   Int
+    priceAnnual    Int?
+    tier           String?
 
-  clientFeatures ClientFeature[]
+    clientFeatures ClientFeature[]
 
-  @@allow('read', true)
-  @@allow('all', auth().role == 'superadmin')
+    @@allow('read', true)
+    @@allow('all', auth().role == 'superadmin')
 }
 
 model ClientFeature extends Base {
-  clientSiteId       String
-  featureId          String
-  feature            Feature    @relation(fields: [featureId], references: [id], onDelete: Cascade)
+    clientSiteId       String
+    featureId          String
+    feature            Feature    @relation(fields: [featureId], references: [id], onDelete: Cascade)
 
-  activatedAt        DateTime   @default(now())
-  deactivatedAt      DateTime?
-  billingLockedUntil DateTime
+    activatedAt        DateTime   @default(now())
+    deactivatedAt      DateTime?
+    billingLockedUntil DateTime
 
-  isActive           Boolean    @default(true)
+    isActive           Boolean    @default(true)
 
-  clientSite         ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    clientSite         ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
 
-  @@unique([clientSiteId, featureId])
-  @@index([clientSiteId])
-  @@index([billingLockedUntil])
+    @@unique([clientSiteId, featureId])
+    @@index([clientSiteId])
+    @@index([billingLockedUntil])
 
-  @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
-  @@allow('create, update', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
-  @@allow('delete', auth().role == 'superadmin')
+    @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('create, update', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@allow('delete', auth().role == 'superadmin')
 }
 
 model PollResult extends Base {
@@ -449,12 +456,13 @@ model CommentReaction extends Ownable {
 }
 
 model Emoji extends Base {
-    shortcode      String          @unique @length(1, 50, "Shortcode musí mít 1–50 znaků")
+    shortcode      String          @length(1, 50, "Shortcode musí mít 1–50 znaků")
     imageUrl       String          @length(1, 255, "URL obrázku musí mít 1–255 znaků")
     clientSiteId   String
     clientSite     ClientSite      @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     emojiReactions EmojiReaction[]
     @@allow('read', true)
+    @@unique([shortcode, clientSiteId])
     @@allow('create, update, delete', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
 }
 

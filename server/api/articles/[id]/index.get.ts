@@ -5,8 +5,9 @@ export default defineEventHandler(async (event) => {
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const sessionId = getCookie(event, 'anon_session')
+  const { clientSiteId } = getQuery<{ clientSiteId: string }>(event)
   const article = await prisma.article.findUnique({
-    where: { slug },
+    where: { slug_clientSiteId: { slug, clientSiteId } },
     include: {
       user: {
         select: {

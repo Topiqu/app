@@ -200,6 +200,9 @@ const init = () =>
     status: 'draft',
     releaseAt: null,
     sources: [],
+    savedAmount: 0,
+    savedTimeMinutes: 0,
+    aiInvolvement: 'NONE',
   }) as unknown as ArticleWithDetails
 
 const editedArticle = ref(
@@ -207,6 +210,9 @@ const editedArticle = ref(
     ? {
         ...props.article,
         sources: props.article.sources || [],
+        savedAmount: props.article.savedAmount || 0,
+        savedTimeMinutes: props.article.savedTimeMinutes || 0,
+        aiInvolvement: props.article.aiInvolvement || 'NONE',
         releaseAt: props.article.releaseAt ? new Date(props.article.releaseAt) : null,
       }
     : init(),
@@ -214,10 +220,10 @@ const editedArticle = ref(
 
 const articleTags = ref<string[]>([])
 const jsonInput = ref<HTMLInputElement>()
+
 const handleJsonImport = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
-
   try {
     const text = await file.text()
     const data = JSON.parse(text)[0]
@@ -229,8 +235,10 @@ const handleJsonImport = async (e: Event) => {
       imageUrl: data.imageUrl ?? '',
       sources: Array.isArray(data.sources) ? data.sources : [],
       releaseAt: data.releaseAt ? new Date(data.releaseAt) : null,
+      savedAmount: 0,
+      savedTimeMinutes: 0,
+      aiInvolvement: 'NONE',
     })
-
     toast.success({ message: $t('common.messages.successGeneral') })
   } catch {
     toast.error({ message: $t('common.error') })
@@ -238,6 +246,7 @@ const handleJsonImport = async (e: Event) => {
     jsonInput.value!.value = ''
   }
 }
+
 const customPrompt = shallowRef('')
 const mode = shallowRef<'manual' | 'ai' | 'import'>('manual')
 const aiGenerating = shallowRef(false)
@@ -248,6 +257,7 @@ const options = [
   { value: 'ai', label: 'ai', icon: 'mdi:robot' },
   { value: 'import', label: 'import', icon: 'mdi:import' },
 ] as const
+
 const currentDate = new Date()
 const minDate = currentDate.toISOString().slice(0, 16)
 const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59).toISOString().slice(0, 16)
@@ -272,22 +282,30 @@ const saveDraft = useDebounceFn(async () => {
     (!editedArticle.value.content || editedArticle.value.content === '<p></p>')
   )
     return
+
+  const currentData = {
+    title: editedArticle.value.title,
+    excerpt: editedArticle.value.excerpt || '',
+    content: editedArticle.value.content,
+  }
+
   if (
     drafts.value?.some((draft) =>
-      equal(
-        { title: draft.title, excerpt: draft.excerpt || '', content: draft.content },
-        {
-          title: editedArticle.value.title,
-          excerpt: editedArticle.value.excerpt || '',
-          content: editedArticle.value.content,
-        },
-      ),
+      equal({ title: draft.title, excerpt: draft.excerpt || '', content: draft.content }, currentData),
     )
   )
     return
 
   try {
-    await $fetch('/api/articles/draft', { method: 'POST', body: { ...editedArticle.value } })
+    await $fetch('/api/articles/draft', {
+      method: 'POST',
+      body: {
+        ...editedArticle.value,
+        savedAmount: editedArticle.value.savedAmount,
+        savedTimeMinutes: editedArticle.value.savedTimeMinutes,
+        aiInvolvement: editedArticle.value.aiInvolvement,
+      },
+    })
     successMessage.value = $t('common.messages.draftSaved')
     await refresh()
     setTimeout(() => (successMessage.value = ''), 8000)
@@ -310,7 +328,22 @@ watch(
   () => (editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })),
 )
 
-const loadDraft = (draft: ArticleDraft) =>
+watch(
+  () => editedArticle.value.content,
+  (newContent, oldContent) => {
+    if (aiGenerating.value) return
+
+    const isInitialLoad = oldContent === '' || oldContent === '<p></p>'
+    if (!isInitialLoad) {
+      editedArticle.value.savedAmount = 0
+      editedArticle.value.savedTimeMinutes = 0
+      editedArticle.value.aiInvolvement =
+        editedArticle.value.aiInvolvement === 'FULL' ? 'ASSIST' : editedArticle.value.aiInvolvement
+    }
+  },
+)
+
+const loadDraft = (draft: ArticleDraft) => {
   Object.assign(editedArticle.value, {
     title: draft.title,
     excerpt: draft.excerpt || '',
@@ -318,7 +351,11 @@ const loadDraft = (draft: ArticleDraft) =>
     imageUrl: draft.imageUrl || '',
     slug: slugify(draft.title ?? '', { lower: true, strict: true, trim: true }),
     sources: [],
+    savedAmount: 0,
+    savedTimeMinutes: 0,
+    aiInvolvement: 'NONE',
   })
+}
 
 const handleUpload = (file: { url: string }) => (editedArticle.value.imageUrl = file.url)
 
@@ -329,7 +366,6 @@ const onSubmit = async () => {
     await createArticle()
   }
 }
-$n(1999)
 const createArticle = async () => {
   if (!editedArticle.value.title)
     return toast.error({ message: $t('common.messages.requiredField', [$t('common.labels.title')]) })
@@ -337,7 +373,7 @@ const createArticle = async () => {
     return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
 
   try {
-    const { id } = await $fetch('/api/articles', {
+    await $fetch('/api/articles', {
       method: 'POST',
       body: {
         ...editedArticle.value,
@@ -345,12 +381,11 @@ const createArticle = async () => {
         content: editedArticle.value.content || undefined,
         releaseAt: editedArticle.value.releaseAt || undefined,
         sources: editedArticle.value.sources?.filter((s) => s.trim() !== ''),
+        savedAmount: editedArticle.value.savedAmount,
+        savedTimeMinutes: editedArticle.value.savedTimeMinutes,
+        aiInvolvement: editedArticle.value.aiInvolvement,
       },
     })
-
-    await Promise.all(
-      articleTags.value.map((tagId) => $fetch(`/api/articles/${id}/tags`, { method: 'POST', body: { tagId } })),
-    )
     toast.success({ message: $t('articles.editor.createSuccess') })
     Object.assign(editedArticle.value, init())
     articleTags.value = []
@@ -360,7 +395,6 @@ const createArticle = async () => {
     toast.error({ message: $t('articles.editor.createFailed') + error.data?.message })
   }
 }
-
 const addTagToArticle = (tagId: string) => {
   $fetch(`/api/articles/${editedArticle.value.id}/tags`, { method: 'POST', body: { tagId } })
   toast.success({ message: $t('articles.tags.addTagSuccess') })
@@ -376,9 +410,7 @@ const deleteTagFromArticle = (tagId: string) => {
 const saveEdit = async () => {
   if (editedArticle.value.releaseAt) {
     const releaseDate = new Date(editedArticle.value.releaseAt)
-    const minDateObj = new Date(minDate)
-    const maxDateObj = new Date(maxDate)
-    if (releaseDate < minDateObj || releaseDate > maxDateObj) {
+    if (releaseDate < new Date(minDate) || releaseDate > new Date(maxDate)) {
       return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
     }
   }
@@ -394,6 +426,9 @@ const saveEdit = async () => {
         userId: editedArticle.value.userId || editedArticle.value.user?.id,
         imageUrl: editedArticle.value.imageUrl,
         releaseAt: editedArticle.value.releaseAt || undefined,
+        savedAmount: editedArticle.value.savedAmount,
+        savedTimeMinutes: editedArticle.value.savedTimeMinutes,
+        aiInvolvement: editedArticle.value.aiInvolvement,
       },
     })
     emitArticleUpdated()
@@ -402,6 +437,33 @@ const saveEdit = async () => {
     emit('saved')
   } catch (error: any) {
     toast.error({ message: error.data?.message || $t('common.messages.saveFailed') })
+  }
+}
+
+const generateAIContent = async () => {
+  aiGenerating.value = true
+  try {
+    const response = await $fetch('/api/articles/generate', {
+      method: 'POST',
+      body: { prompt: customPrompt.value || 'Empty...' },
+    })
+
+    editedArticle.value.title = response.title
+    editedArticle.value.excerpt = response.perex
+    editedArticle.value.content = response.content
+    editedArticle.value.imageUrl = response.articleImageUrl
+    editedArticle.value.sources = response.sources || []
+    editedArticle.value.savedAmount = response.metrics.savedAmount
+    editedArticle.value.savedTimeMinutes = response.metrics.savedTimeMinutes
+    editedArticle.value.aiInvolvement = response.aiInvolvement || 'FULL'
+    articleTags.value = response.tags
+
+    await nextTick()
+    toast.success({ message: $t('articles.editor.aiContentGenerated') })
+  } catch (error: any) {
+    toast.error({ message: $t('articles.editor.aiContentFailed') + error.data?.message })
+  } finally {
+    aiGenerating.value = false
   }
 }
 
@@ -426,40 +488,13 @@ const confirmClose = async () => {
   if (r.isConfirmed) open.value = false
 }
 
-const generateAIContent = async () => {
-  aiGenerating.value = true
-  try {
-    const { title, perex, content, articleImageUrl, tags, sources } = await $fetch('/api/articles/generate', {
-      method: 'POST',
-      body: { prompt: customPrompt.value || 'Empty...' },
-    })
-    editedArticle.value.title = title
-    editedArticle.value.excerpt = perex
-    editedArticle.value.content = content
-    editedArticle.value.imageUrl = articleImageUrl
-    editedArticle.value.sources = sources || []
-    articleTags.value = tags
-    toast.success({ message: $t('articles.editor.aiContentGenerated') })
-  } catch (error: any) {
-    toast.error({ message: $t('articles.editor.aiContentFailed') + error.data?.message })
-  } finally {
-    aiGenerating.value = false
-  }
-}
 const showReleaseAt = computed(() => {
   if (editedArticle.value.status === 'published') return false
-  if (editedArticle.value.releaseAt) {
-    const releaseDate = new Date(editedArticle.value.releaseAt)
-    return releaseDate >= currentDate
-  }
-  return true
+  return !editedArticle.value.releaseAt || new Date(editedArticle.value.releaseAt) >= currentDate
 })
+
 const updateSlug = () =>
-  (editedArticle.value.slug = slugify(editedArticle.value.title, {
-    lower: true,
-    strict: true,
-    trim: true,
-  }))
+  (editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true }))
 </script>
 
 <style scoped>

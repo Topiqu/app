@@ -240,6 +240,16 @@
       "explanation": "Vysvětlení preferencí",
       "monthlyTitle": "Měsíční cena",
       "annuallyTitle": "Roční cena",
+      "api": {
+        "title": "API přístup",
+        "description": "Vygenerujte si bezpečný API klíč pro programatický přístup k endpointům.",
+        "generate": "Vygenerovat klíč",
+        "label": "Váš API klíč",
+        "revoke": "Zneplatnit a přegenerovat",
+        "copy": "Kopírovat API klíč",
+        "copied": "Zkopírováno",
+        "warning": "Tento klíč držte v tajnosti. Nesdílejte jej v klientském kódu ani veřejných repozitářích."
+      },
       "billing": {
         "permanent": "– Trvalý přístup",
         "annual": "– Roční platba",
@@ -597,6 +607,12 @@
     "totalViews": {
       "title": "Zobrazení",
       "noViews": "Zatím žádná zobrazení"
+    },
+    "savedTime": {
+      "title": "Ušetřený čas"
+    },
+    "savedAmount": {
+      "title": "Ušetřené náklady"
     },
     "articleCount": "Počet článků",
     "sentiment": {
