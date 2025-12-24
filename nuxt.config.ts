@@ -147,6 +147,8 @@ export default defineNuxtConfig({
           'https://tpc.googlesyndication.com',
           'https://www.google.com',
           'https://fundingchoicesmessages.google.com',
+          'https://pagead2.googlesyndication.com',
+          'https://ep2.adtrafficquality.google',
         ],
         'connect-src': [
           "'self'",
@@ -169,6 +171,7 @@ export default defineNuxtConfig({
           'https://tpc.googlesyndication.com',
           'https://adservice.google.com',
           'https://fundingchoicesmessages.google.com',
+          'https://ep2.adtrafficquality.google',
         ],
       },
     },

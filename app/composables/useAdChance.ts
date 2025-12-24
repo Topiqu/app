@@ -7,6 +7,7 @@ interface AdTargeting {
 
 export const useAdChance = () => {
   const adTargeting = ref<AdTargeting | null>(null)
+  if (import.meta.server) return null
 
   const calculateAdTargeting = (clientId: string, plan: ClientPlan): AdTargeting => {
     const random = Math.random()
