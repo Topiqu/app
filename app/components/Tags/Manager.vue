@@ -64,7 +64,10 @@ import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
 
-const props = defineProps<{ article?: ArticleWithDetails }>()
+const props = defineProps<{
+  article?: ArticleWithDetails
+  initialTags?: string[]
+}>()
 
 const emit = defineEmits<{
   'add:tag': [tagId: string]
@@ -75,22 +78,41 @@ const emit = defineEmits<{
 const toast = useToast()
 const { data: allTags, refresh } = await useFetch('/api/tags', { default: () => [] })
 
-const { data: articleTags } = useFetch(`/api/articles/${props.article?.id}/tags`, { default: () => [] })
+const { data: articleTags } = useFetch(() => `/api/articles/${props.article?.id}/tags`, {
+  default: () => [],
+  immediate: !!props.article?.id,
+  watch: [() => props.article?.id],
+})
 
 const selectedTagId = shallowRef('')
 const newTagName = shallowRef('')
 
-const tagBuffer = shallowReactive<{ id: string; name: string }[]>(
-  articleTags.value?.map((t) => ({ id: t.tagId, name: t.tag.name })) || [],
-)
+const tagBuffer = shallowReactive<{ id: string; name: string }[]>([])
 
 watch(
   articleTags,
   (newVal) => {
-    tagBuffer.length = 0
-    newVal?.forEach((t) => tagBuffer.push({ id: t.tagId, name: t.tag.name }))
+    if (newVal && newVal.length > 0) {
+      tagBuffer.length = 0
+      newVal.forEach((t) => tagBuffer.push({ id: t.tagId, name: t.tag.name }))
+    }
   },
   { immediate: true },
+)
+
+watch(
+  () => props.initialTags,
+  (newIds) => {
+    if (!props.article?.id && newIds && allTags.value.length) {
+      const tagsToAdd = allTags.value.filter((t) => newIds.includes(t.id))
+      tagsToAdd.forEach((t) => {
+        if (!tagBuffer.some((b) => b.id === t.id)) {
+          tagBuffer.push({ id: t.id, name: t.name })
+        }
+      })
+    }
+  },
+  { deep: true },
 )
 
 const availableTags = computed(() => allTags.value.filter((t) => !tagBuffer.some((b) => b.id === t.id)))
@@ -123,11 +145,9 @@ const createNew = async () => {
 }
 
 const remove = (id: string) => {
-  tagBuffer.splice(
-    tagBuffer.findIndex((t) => t.id === id),
-    1,
-  )
-  if (props.article?.id) {
+  const index = tagBuffer.findIndex((t) => t.id === id)
+  if (index !== -1) {
+    tagBuffer.splice(index, 1)
     emit('delete:tag', id)
   }
 }
