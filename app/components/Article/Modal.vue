@@ -29,6 +29,9 @@
             class="p-4 rounded-xl dark:text-gray-200 text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md resize-y min-h-[100px]"
           ></textarea>
         </label>
+
+        <ArticleSeriesSelector v-model="selectedSeries" />
+
         <div
           v-if="!article"
           class="flex gap-2 rounded-2xl bg-gray-100 dark:bg-gray-700 p-2 border border-gray-300 dark:border-gray-600 w-fit"
@@ -152,13 +155,12 @@
           <span class="text-sm text-gray-500 dark:text-gray-400">{{ $t('articles.editor.releaseDateNote') }}</span>
         </label>
         <TagsManager
-          v-if="article"
-          :article="editedArticle"
+          :article="props.article"
+          :initialTags="articleTags"
           @add:tag="addTagToArticle"
-          @delete:tag="deleteTagFromArticle"
           @create:tag="addTagToArticle"
+          @delete:tag="deleteTagFromArticle"
         />
-        <TagsManager v-else @add:tag="(id) => articleTags.push(id)" @create:tag="(id) => articleTags.push(id)" />
       </div>
     </template>
 
@@ -190,6 +192,17 @@ const client = await useClientSite()
 const emit = defineEmits(['saved'])
 const props = defineProps<{ article?: ArticleWithDetails }>()
 
+const selectedSeries = shallowRef<any>(
+  props.article?.articleSeries
+    ? {
+        id: props.article.articleSeries.id,
+        name: props.article.articleSeries.name,
+        articles: props.article.articleSeries.articles || [],
+      }
+    : null,
+)
+const articleTags = ref<string[]>([])
+
 const init = () =>
   ({
     title: '',
@@ -218,8 +231,30 @@ const editedArticle = ref(
     : init(),
 )
 
-const articleTags = ref<string[]>([])
 const jsonInput = ref<HTMLInputElement>()
+const customPrompt = shallowRef('')
+const mode = shallowRef<'manual' | 'ai' | 'import'>('manual')
+const aiGenerating = shallowRef(false)
+const successMessage = shallowRef('')
+const draftsOpen = shallowRef(false)
+const options = [
+  { value: 'manual', icon: 'mdi:pencil' },
+  { value: 'ai', icon: 'mdi:robot' },
+  { value: 'import', icon: 'mdi:import' },
+] as const
+
+const currentDate = new Date()
+const minDate = currentDate.toISOString().slice(0, 16)
+const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59).toISOString().slice(0, 16)
+
+const {
+  data: drafts,
+  refresh,
+  pending: loading,
+} = await useLazyFetch<ArticleDraft[]>('/api/articles/draft', {
+  default: () => [],
+  server: false,
+})
 
 const handleJsonImport = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -247,33 +282,6 @@ const handleJsonImport = async (e: Event) => {
   }
 }
 
-const customPrompt = shallowRef('')
-const mode = shallowRef<'manual' | 'ai' | 'import'>('manual')
-const aiGenerating = shallowRef(false)
-const successMessage = shallowRef('')
-const draftsOpen = shallowRef(false)
-const options = [
-  { value: 'manual', label: 'manual', icon: 'mdi:pencil' },
-  { value: 'ai', label: 'ai', icon: 'mdi:robot' },
-  { value: 'import', label: 'import', icon: 'mdi:import' },
-] as const
-
-const currentDate = new Date()
-const minDate = currentDate.toISOString().slice(0, 16)
-const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59).toISOString().slice(0, 16)
-
-const isReleaseDateValid = computed(() => {
-  if (!editedArticle.value.releaseAt) return true
-  const releaseDate = new Date(editedArticle.value.releaseAt)
-  return releaseDate >= new Date(minDate) && releaseDate <= new Date(maxDate)
-})
-
-const {
-  data: drafts,
-  refresh,
-  pending: loading,
-} = await useLazyFetch<ArticleDraft[]>('/api/articles/draft', { default: () => [], server: false })
-
 const saveDraft = useDebounceFn(async () => {
   if (idle.value) return
   if (
@@ -282,20 +290,17 @@ const saveDraft = useDebounceFn(async () => {
     (!editedArticle.value.content || editedArticle.value.content === '<p></p>')
   )
     return
-
   const currentData = {
     title: editedArticle.value.title,
     excerpt: editedArticle.value.excerpt || '',
     content: editedArticle.value.content,
   }
-
   if (
     drafts.value?.some((draft) =>
       equal({ title: draft.title, excerpt: draft.excerpt || '', content: draft.content }, currentData),
     )
   )
     return
-
   try {
     await $fetch('/api/articles/draft', {
       method: 'POST',
@@ -324,7 +329,7 @@ watch(
   saveDraft,
 )
 watch(
-  [() => editedArticle.value.title],
+  () => editedArticle.value.title,
   () => (editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })),
 )
 
@@ -332,7 +337,6 @@ watch(
   () => editedArticle.value.content,
   (newContent, oldContent) => {
     if (aiGenerating.value) return
-
     const isInitialLoad = oldContent === '' || oldContent === '<p></p>'
     if (!isInitialLoad) {
       editedArticle.value.savedAmount = 0
@@ -355,23 +359,35 @@ const loadDraft = (draft: ArticleDraft) => {
     savedTimeMinutes: 0,
     aiInvolvement: 'NONE',
   })
+  selectedSeries.value = null
+  articleTags.value = []
 }
 
 const handleUpload = (file: { url: string }) => (editedArticle.value.imageUrl = file.url)
 
-const onSubmit = async () => {
-  if (props.article) {
-    await saveEdit()
+const addTagToArticle = async (tagId: string) => {
+  if (props.article?.id) {
+    await $fetch(`/api/articles/${props.article.id}/tags`, { method: 'POST', body: { tagId } })
+    toast.success({ message: $t('articles.tags.addTagSuccess') })
+    emitArticleUpdated()
   } else {
-    await createArticle()
+    if (!articleTags.value.includes(tagId)) articleTags.value.push(tagId)
   }
 }
+
+const deleteTagFromArticle = async (tagId: string) => {
+  if (props.article?.id) {
+    await $fetch(`/api/articles/${props.article.id}/tags/${tagId}`, { method: 'DELETE' })
+    toast.success({ message: $t('articles.tags.removeTagSuccess') })
+    emitArticleUpdated()
+  } else {
+    articleTags.value = articleTags.value.filter((id) => id !== tagId)
+  }
+}
+
 const createArticle = async () => {
   if (!editedArticle.value.title)
     return toast.error({ message: $t('common.messages.requiredField', [$t('common.labels.title')]) })
-  if (!isReleaseDateValid.value)
-    return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
-
   try {
     await $fetch('/api/articles', {
       method: 'POST',
@@ -380,55 +396,40 @@ const createArticle = async () => {
         excerpt: editedArticle.value.excerpt || undefined,
         content: editedArticle.value.content || undefined,
         releaseAt: editedArticle.value.releaseAt || undefined,
-        sources: editedArticle.value.sources?.filter((s) => s.trim() !== ''),
+        sources: editedArticle.value.sources?.filter((s: string) => s.trim()),
         savedAmount: editedArticle.value.savedAmount,
         savedTimeMinutes: editedArticle.value.savedTimeMinutes,
         aiInvolvement: editedArticle.value.aiInvolvement,
+        articleSeriesId: selectedSeries.value?.id || null,
+        tags: articleTags.value,
       },
     })
     toast.success({ message: $t('articles.editor.createSuccess') })
     Object.assign(editedArticle.value, init())
     articleTags.value = []
+    selectedSeries.value = null
     emitArticleCreated()
     open.value = false
   } catch (error: any) {
     toast.error({ message: $t('articles.editor.createFailed') + error.data?.message })
   }
 }
-const addTagToArticle = (tagId: string) => {
-  $fetch(`/api/articles/${editedArticle.value.id}/tags`, { method: 'POST', body: { tagId } })
-  toast.success({ message: $t('articles.tags.addTagSuccess') })
-  emitArticleUpdated()
-}
-
-const deleteTagFromArticle = (tagId: string) => {
-  $fetch(`/api/articles/${editedArticle.value.id}/tags/${tagId}`, { method: 'DELETE' })
-  toast.success({ message: $t('articles.tags.removeTagSuccess') })
-  emitArticleUpdated()
-}
 
 const saveEdit = async () => {
-  if (editedArticle.value.releaseAt) {
-    const releaseDate = new Date(editedArticle.value.releaseAt)
-    if (releaseDate < new Date(minDate) || releaseDate > new Date(maxDate)) {
-      return toast.error({ message: $t('common.messages.invalidDateRange', [minDate, maxDate]) })
-    }
-  }
-
   try {
-    await $fetch(`/api/articles/${editedArticle.value.id}`, {
+    await $fetch(`/api/articles/${props.article!.id}`, {
       method: 'PATCH',
       body: {
         title: editedArticle.value.title,
         excerpt: editedArticle.value.excerpt || '',
         content: editedArticle.value.content,
         slug: editedArticle.value.slug,
-        userId: editedArticle.value.userId || editedArticle.value.user?.id,
         imageUrl: editedArticle.value.imageUrl,
         releaseAt: editedArticle.value.releaseAt || undefined,
         savedAmount: editedArticle.value.savedAmount,
         savedTimeMinutes: editedArticle.value.savedTimeMinutes,
         aiInvolvement: editedArticle.value.aiInvolvement,
+        articleSeriesId: selectedSeries.value?.id || null,
       },
     })
     emitArticleUpdated()
@@ -440,6 +441,8 @@ const saveEdit = async () => {
   }
 }
 
+const onSubmit = async () => (props.article ? await saveEdit() : await createArticle())
+
 const generateAIContent = async () => {
   aiGenerating.value = true
   try {
@@ -447,21 +450,20 @@ const generateAIContent = async () => {
       method: 'POST',
       body: { prompt: customPrompt.value || 'Empty...' },
     })
-
-    editedArticle.value.title = response.title
-    editedArticle.value.excerpt = response.perex
-    editedArticle.value.content = response.content
-    editedArticle.value.imageUrl = response.articleImageUrl
-    editedArticle.value.sources = response.sources || []
-    editedArticle.value.savedAmount = response.metrics.savedAmount
-    editedArticle.value.savedTimeMinutes = response.metrics.savedTimeMinutes
-    editedArticle.value.aiInvolvement = response.aiInvolvement || 'FULL'
-    articleTags.value = response.tags
-
-    await nextTick()
+    Object.assign(editedArticle.value, {
+      title: response.title,
+      excerpt: response.perex,
+      content: response.content,
+      imageUrl: response.articleImageUrl,
+      sources: response.sources || [],
+      savedAmount: response.metrics.savedAmount,
+      savedTimeMinutes: response.metrics.savedTimeMinutes,
+      aiInvolvement: response.aiInvolvement || 'FULL',
+    })
+    articleTags.value = response.tags ?? []
     toast.success({ message: $t('articles.editor.aiContentGenerated') })
-  } catch (error: any) {
-    toast.error({ message: $t('articles.editor.aiContentFailed') + error.data?.message })
+  } catch {
+    toast.error({ message: $t('articles.editor.aiContentFailed') })
   } finally {
     aiGenerating.value = false
   }
@@ -488,15 +490,13 @@ const confirmClose = async () => {
   if (r.isConfirmed) open.value = false
 }
 
-const showReleaseAt = computed(() => {
-  if (editedArticle.value.status === 'published') return false
-  return !editedArticle.value.releaseAt || new Date(editedArticle.value.releaseAt) >= currentDate
-})
+const showReleaseAt = computed(
+  () => !editedArticle.value.releaseAt || new Date(editedArticle.value.releaseAt) >= currentDate,
+)
 
 const updateSlug = () =>
   (editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true }))
 </script>
-
 <style scoped>
 @keyframes pulse {
   0%,
