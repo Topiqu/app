@@ -340,6 +340,23 @@
       "tooLong": "Password is too long. (max. {maxLength} characters)"
     }
   },
+  "series": {
+    "label": "Series",
+    "placeholder": "Select or create a series...",
+    "part": "Part {count}",
+    "createTitle": "Create new series",
+    "nameLabel": "Series name",
+    "namePlaceholder": "e.g. Introduction to Vue 3...",
+    "createNew": "Create new series...",
+    "createFailed": "Failed to create series",
+    "continueReading": "Continue reading the series",
+    "previous": "Previous",
+    "next": "Next part",
+    "nextPart": "Next part",
+    "current": "Currently reading",
+    "showList": "Show full series",
+    "hideList": "Hide series list"
+  },
   "seo": {
     "default": {
       "title": "Topiqu",
