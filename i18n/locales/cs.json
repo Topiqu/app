@@ -99,6 +99,7 @@
       "tags": "Štítky",
       "home": "Domů",
       "continue": "Pokračovat",
+      "send": "Odeslat",
       "cancel": "Zrušit",
       "showDetails": "Zobrazit detaily",
       "hideDetails": "Skrýt detaily",
@@ -357,6 +358,15 @@
     "current": "Právě čtete",
     "showList": "Zobrazit celou sérii",
     "hideList": "Skrýt seznam dílů"
+  },
+  "feedback": {
+    "question": "Byl tento článek užitečný?",
+    "subtitle": "Váš názor nám pomáhá zlepšovat obsah pro ostatní.",
+    "placeholder": "Co můžeme vylepšit? (volitelné)",
+    "thankYou": "Díky za zpětnou vazbu!",
+    "recorded": "Váš názor nám pomáhá zlepšovat obsah.",
+    "change": "Změnit názor",
+    "thanks_short": "Díky!"
   },
   "seo": {
     "default": {

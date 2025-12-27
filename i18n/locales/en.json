@@ -31,6 +31,7 @@
       "tags": "Tags",
       "home": "Home",
       "continue": "Continue",
+      "send": "Send",
       "cancel": "Cancel",
       "showDetails": "Show details",
       "hideDetails": "Hide details",
@@ -356,6 +357,15 @@
     "current": "Currently reading",
     "showList": "Show full series",
     "hideList": "Hide series list"
+  },
+  "feedback": {
+    "question": "Was this article helpful?",
+    "subtitle": "Your feedback helps us improve content for others.",
+    "placeholder": "What can we improve? (optional)",
+    "thankYou": "Thank you for your feedback!",
+    "recorded": "Your opinion helps us improve the content.",
+    "change": "Change your mind",
+    "thanks_short": "Thanks!"
   },
   "seo": {
     "default": {
