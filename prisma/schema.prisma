@@ -173,6 +173,7 @@ model Article {
   comments         Comment[]
   reactions        ArticleReaction[]
   shares           ArticleShare[]
+  feedbacks        ArticleFeedback[]
   pollResults      PollResult[]
   notifications    Notification[]    @relation("ArticleNotifications")
   sources          String[]
@@ -229,6 +230,36 @@ model ArticleTag {
   @@id([articleId, tagId])
 }
 
+model ArticleFeedback {
+  id        String    @id() @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
+  articleId String
+  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  isHelpful Boolean
+  reason    String?
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId String?
+
+  @@unique([articleId, userId, sessionId])
+}
+
+model ArticleReaction {
+  id        String    @id() @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
+  articleId String
+  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+
+  @@unique([articleId, userId, sessionId])
+}
+
 model Log {
   id           String      @id() @default(uuid())
   action       String
@@ -271,6 +302,7 @@ model User {
   comments         Comment[]
   notifications    Notification[]
   reactions        CommentReaction[]
+  feedbacks        ArticleFeedback[]
   emojiReactions   EmojiReaction[]
   articleReactions ArticleReaction[]
   followers        Follow[]          @relation("Follower")
@@ -495,20 +527,6 @@ model EmojiReaction {
   emoji     Emoji   @relation(fields: [emojiId], references: [id], onDelete: Cascade)
 
   @@id([userId, commentId, emojiId])
-}
-
-model ArticleReaction {
-  id        String    @id() @default(uuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt()
-  deletedAt DateTime?
-  articleId String
-  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  userId    String?
-  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sessionId String?
-
-  @@unique([articleId, userId, sessionId])
 }
 
 model VerificationCode {

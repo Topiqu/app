@@ -179,6 +179,7 @@ model Article extends Base, Ownable {
     comments         Comment[]
     reactions        ArticleReaction[]
     shares           ArticleShare[]
+    feedbacks        ArticleFeedback[]
     pollResults      PollResult[]
     notifications    Notification[]    @relation("ArticleNotifications")
     sources          String[]
@@ -234,6 +235,35 @@ model ArticleTag {
     @@allow('all', auth().role == 'admin')
 }
 
+model ArticleFeedback extends Base {
+    articleId String
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+    isHelpful Boolean
+    reason    String? @length(0, 500)
+
+    userId    String?
+    user      User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+    sessionId String?
+
+    @@unique([articleId, userId, sessionId])
+
+    @@allow('create, read', true)
+    @@allow('update', auth().id == userId)
+}
+model ArticleReaction extends Base {
+    articleId String
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    userId    String?
+    user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    sessionId String?
+    @@unique([articleId, userId, sessionId])
+    @@allow('create', true)
+    @@allow('read', true)
+    @@allow('delete', auth().id == userId || auth().role == 'admin')
+}
+
 model Log {
     id           String      @id @default(uuid())
     action       String
@@ -275,6 +305,7 @@ model User extends Base {
     comments         Comment[]
     notifications    Notification[]
     reactions        CommentReaction[]
+    feedbacks        ArticleFeedback[]
     emojiReactions   EmojiReaction[]
     articleReactions ArticleReaction[]
     followers        Follow[]          @relation("Follower")
@@ -498,17 +529,6 @@ model EmojiReaction extends Ownable {
     @@allow('read', true)
 }
 
-model ArticleReaction extends Base {
-    articleId String
-    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-    userId    String?
-    user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-    sessionId String?
-    @@unique([articleId, userId, sessionId])
-    @@allow('create', true)
-    @@allow('read', true)
-    @@allow('delete', auth().id == userId || auth().role == 'admin')
-}
 
 model VerificationCode extends Base, Ownable {
     code      String   @length(8, 8, "Kód musí mít přesně 8 znaků")
