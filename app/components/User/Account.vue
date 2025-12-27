@@ -1,29 +1,44 @@
 <template>
-  <div class="relative group">
+  <div class="relative group z-50">
     <div v-if="auth">
       <button
         ref="btn"
-        class="flex items-center gap-3 rounded-xl bg-transparent dark:bg-transparent border-none transition-all duration-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800"
-        style="background: transparent !important"
+        class="group/btn relative flex items-center gap-3 rounded-full p-1.5 pr-4 transition-all duration-300 ease-out hover:bg-white/60 dark:hover:bg-neutral-800/60 border border-transparent hover:border-gray-200/50 dark:hover:border-white/5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
         @click="show = !show"
       >
-        <UserPicture :url="userData?.avatarUrl" :name="userData?.username" />
-        <div class="hidden min-[1565px]:flex flex-col min-w-0">
-          <div class="flex items-center gap-2 bg-transparent">
-            <span class="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">
+        <div class="relative" style="background: transparent !important">
+          <UserPicture
+            :url="userData?.avatarUrl"
+            :name="userData?.username"
+            class="ring-2 ring-white dark:ring-neutral-900 shadow-sm transition-transform duration-300 group-hover/btn:scale-105"
+          />
+          <div
+            v-if="['PREMIUM', 'PRO', 'CUSTOM'].includes(clientData?.plan || '')"
+            class="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-neutral-900 rounded-full p-[2px] shadow-sm"
+          >
+            <Icon name="mdi:circle-slice-8" class="w-3.5 h-3.5 text-emerald-500" />
+          </div>
+        </div>
+
+        <div
+          class="hidden min-[1565px]:flex flex-col items-start min-w-0 text-left gap-0.5"
+          style="background: transparent !important"
+        >
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-sm text-gray-800 dark:text-gray-100 truncate tracking-tight leading-none">
               {{ userData?.username }}
             </span>
             <span
               v-if="userData?.role === 'admin' || userData?.role === 'superadmin'"
               :class="[
-                'text-[11px] font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm backdrop-blur-sm',
+                'text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-white/10',
                 clientData?.plan === 'PREMIUM'
-                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
+                  ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-orange-500/20'
                   : clientData?.plan === 'PRO'
-                    ? 'bg-gradient-to-r from-indigo-400 to-indigo-600 text-white'
+                    ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-indigo-500/20'
                     : clientData?.plan === 'CUSTOM'
-                      ? 'bg-gradient-to-r from-pink-400 to-pink-600 text-white'
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+                      ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-rose-500/20'
+                      : 'bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300',
               ]"
             >
               <Icon
@@ -31,160 +46,192 @@
                 :name="
                   clientData?.plan === 'PREMIUM' ? 'mdi:crown' : clientData?.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'
                 "
-                class="w-3.5 h-3.5"
+                class="w-3 h-3"
               />
-              {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
+              {{ userData.role === 'admin' ? 'Admin' : 'Super' }}
             </span>
           </div>
-          <span class="text-left text-xs text-gray-500 dark:text-gray-400 truncate">
+          <span
+            class="text-xs text-gray-500 dark:text-gray-400 truncate font-medium leading-none opacity-80 group-hover/btn:opacity-100 transition-opacity"
+          >
             {{ userData?.email }}
           </span>
         </div>
+
+        <Icon
+          name="mdi:chevron-down"
+          class="w-4 h-4 text-gray-400 transition-transform duration-300 group-hover/btn:rotate-180"
+          :class="{ 'rotate-180': show }"
+        />
       </button>
+
       <Transition
-        enterActiveClass="transition ease-out duration-200"
-        enterFromClass="opacity-0 translate-y-1 scale-95"
+        enterActiveClass="transition ease-out duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
+        enterFromClass="opacity-0 translate-y-3 scale-95"
         enterToClass="opacity-100 translate-y-0 scale-100"
         leaveActiveClass="transition ease-in duration-150"
         leaveFromClass="opacity-100 translate-y-0 scale-100"
-        leaveToClass="opacity-0 translate-y-1 scale-95"
+        leaveToClass="opacity-0 translate-y-2 scale-95"
       >
         <div
           v-if="show || hoverShow"
           ref="dropdown"
-          class="fixed left-1/2 top-[70px] -translate-x-1/2 w-[95vw] max-w-[20rem] sm:absolute sm:top-full sm:mt-2 sm:left-auto sm:right-0 sm:translate-x-0 sm:fixed-none rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm"
+          class="fixed left-1/2 top-[80px] -translate-x-1/2 w-[92vw] max-w-[24rem] sm:absolute sm:top-full sm:mt-3 sm:left-auto sm:right-0 sm:translate-x-0 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-gray-900/5 dark:ring-white/10 dark:shadow-black/50 overflow-hidden bg-white/90 dark:bg-[#121212]/90 backdrop-blur-2xl border border-white/20 dark:border-white/5"
         >
-          <div class="flex items-center gap-4 bg-transparent dark:bg-transparent">
-            <UserPicture :url="userData?.avatarUrl" :size="'lg'" :name="userData?.username" />
-            <div class="grow flex flex-col min-w-0">
-              <div class="flex items-center gap-2">
-                <span class="font-semibold text-lg text-gray-900 dark:text-white truncate max-w-[180px]">
-                  {{ userData?.username }}
-                </span>
-                <span
-                  v-if="userData?.role === 'admin' || userData?.role === 'superadmin'"
-                  :class="[
-                    'text-[11px] font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm backdrop-blur-sm',
-                    clientData?.plan === 'PREMIUM'
-                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
-                      : clientData?.plan === 'PRO'
-                        ? 'bg-gradient-to-r from-indigo-400 to-indigo-600 text-white'
-                        : clientData?.plan === 'CUSTOM'
-                          ? 'bg-gradient-to-r from-pink-400 to-pink-600 text-white'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-                  ]"
-                >
-                  <Icon
-                    v-if="['PREMIUM', 'PRO', 'CUSTOM'].includes(clientData?.plan || '')"
-                    :name="
+          <div class="p-6 pb-4">
+            <div class="flex items-start gap-4">
+              <UserPicture
+                :url="userData?.avatarUrl"
+                :size="'lg'"
+                :name="userData?.username"
+                class="ring-4 ring-gray-50 dark:ring-white/5 rounded-full shadow-md"
+              />
+              <div class="flex-1 min-w-0 space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-lg text-gray-900 dark:text-white truncate">
+                    {{ userData?.username }}
+                  </span>
+                  <AuthLogout v-if="auth" class="opacity-70 hover:opacity-100 transition-opacity" />
+                </div>
+                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">
+                  {{ userData?.email }}
+                </div>
+                <div class="pt-1">
+                  <span
+                    v-if="userData?.role === 'admin' || userData?.role === 'superadmin'"
+                    :class="[
+                      'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide',
                       clientData?.plan === 'PREMIUM'
-                        ? 'mdi:crown'
-                        : clientData?.plan === 'PRO'
-                          ? 'mdi:star'
-                          : 'mdi:diamond'
-                    "
-                    class="w-3.5 h-3.5"
-                  />
-                  {{ userData.role === 'admin' ? 'Admin' : 'Superadmin' }}
-                </span>
+                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
+                        : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
+                    ]"
+                  >
+                    {{ userData.role === 'admin' ? 'Administrator' : 'Superadmin' }}
+                  </span>
+                </div>
               </div>
-              <span class="text-xs text-gray-500 dark:text-gray-400 break-all">
-                {{ userData?.email }}
-              </span>
             </div>
-            <AuthLogout v-if="auth" />
+
+            <div class="mt-5 p-4 rounded-2xl bg-gray-50/80 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+              <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-3">
+                {{ userData?.bio || $t('articles.userMenu.noBio') }}
+              </p>
+            </div>
           </div>
-          <div class="mt-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-            <p class="whitespace-pre-wrap break-words">{{ userData?.bio || $t('articles.userMenu.noBio') }}</p>
+
+          <div class="grid grid-cols-3 gap-px bg-gray-100 dark:bg-white/5 border-t border-gray-100 dark:border-white/5">
+            <div
+              class="group flex flex-col items-center justify-center p-3 bg-white dark:bg-[#121212] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-default"
+            >
+              <div class="flex items-center gap-1.5 text-green-600 dark:text-green-400 mb-1">
+                <Icon name="mdi:thumb-up" class="w-4 h-4" />
+                <span class="font-bold text-sm">{{ userData?.likesCount || 0 }}</span>
+              </div>
+              <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Likes</span>
+            </div>
+            <div
+              class="group flex flex-col items-center justify-center p-3 bg-white dark:bg-[#121212] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-default"
+            >
+              <div class="flex items-center gap-1.5 text-red-500 dark:text-red-400 mb-1">
+                <Icon name="mdi:thumb-down" class="w-4 h-4" />
+                <span class="font-bold text-sm">{{ userData?.dislikesCount || 0 }}</span>
+              </div>
+              <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Dislikes</span>
+            </div>
+            <div
+              class="group flex flex-col items-center justify-center p-3 bg-white dark:bg-[#121212] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-default"
+            >
+              <div class="flex items-center gap-1.5 text-blue-500 dark:text-blue-400 mb-1">
+                <Icon name="mdi:comment" class="w-4 h-4" />
+                <span class="font-bold text-sm">{{ userData?.commentsCount || 0 }}</span>
+              </div>
+              <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Comments</span>
+            </div>
           </div>
-          <div
-            class="mt-4 pt-3 text-xs text-gray-500 dark:text-gray-400 space-y-2 border-t border-gray-200 dark:border-gray-700"
-          >
-            <p v-if="userData?.role === 'admin'">
-              {{ $t('articles.userMenu.adminIn', [clientData?.name || $t('articles.userMenu.noClientAssigned')]) }}
-            </p>
-            <p>{{ $t('common.user.joined', [formatDate(userData?.createdAt)]) }}</p>
-            <div class="flex items-center gap-4">
-              <div class="flex items-center gap-1">
-                <Icon name="mdi:thumb-up-outline" class="w-4 h-4 text-green-500" />
-                <span class="font-medium">{{ userData?.likesCount || 0 }}</span>
-              </div>
-              <div class="flex items-center gap-1">
-                <Icon name="mdi:thumb-down-outline" class="w-4 h-4 text-red-500" />
-                <span class="font-medium">{{ userData?.dislikesCount || 0 }}</span>
-              </div>
-              <div class="flex items-center gap-1">
-                <Icon name="mdi:comment-outline" class="w-4 h-4 text-blue-500" />
-                <span class="font-medium">{{ userData?.commentsCount || 0 }}</span>
-              </div>
+
+          <div class="p-4 bg-gray-50 dark:bg-[#0a0a0a]/50 border-t border-gray-100 dark:border-white/5 space-y-3">
+            <div class="flex items-center justify-between text-[11px] font-medium text-gray-400 dark:text-gray-500">
+              <span>{{ $t('common.user.joined', [formatDate(userData?.createdAt)]) }}</span>
+              <span v-if="userData?.role === 'admin'" class="opacity-75">
+                {{ clientData?.name }}
+              </span>
             </div>
             <NuxtLink
               :to="localePath({ name: 'uzivatel' })"
-              class="inline-block text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
+              class="flex items-center justify-center w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all duration-200"
             >
               {{ $t('common.user.viewProfile') }}
+              <Icon name="mdi:arrow-right" class="w-4 h-4 ml-1.5 opacity-80" />
             </NuxtLink>
           </div>
         </div>
       </Transition>
     </div>
+
     <div v-else>
       <button
         ref="btn"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl bg-transparent dark:bg-transparent border-none transition-all duration-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800"
-        style="background: transparent !important"
+        class="group flex items-center gap-2.5 px-4 py-2 rounded-full bg-transparent hover:bg-gray-100 dark:hover:bg-neutral-800 transition-all duration-300 border border-transparent hover:border-gray-200 dark:hover:border-white/10"
         @click="show = !show"
       >
-        <Icon
-          name="mdi:account-circle-outline"
-          class="w-9 h-9 text-gray-400 dark:text-gray-600 transition-colors duration-200"
-        />
-        <span class="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">
+        <div
+          class="p-1.5 bg-gray-100 dark:bg-neutral-800 rounded-full group-hover:bg-white dark:group-hover:bg-neutral-700 transition-colors shadow-sm"
+        >
+          <Icon name="mdi:account-circle" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+        </div>
+        <span
+          class="font-semibold text-sm text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white"
+        >
           {{ $t('common.auth.login') }}
         </span>
       </button>
+
       <Transition
-        enterActiveClass="transition ease-out duration-200"
-        enterFromClass="opacity-0 translate-y-1 scale-95"
+        enterActiveClass="transition ease-out duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
+        enterFromClass="opacity-0 translate-y-3 scale-95"
         enterToClass="opacity-100 translate-y-0 scale-100"
         leaveActiveClass="transition ease-in duration-150"
         leaveFromClass="opacity-100 translate-y-0 scale-100"
-        leaveToClass="opacity-0 translate-y-1 scale-95"
+        leaveToClass="opacity-0 translate-y-2 scale-95"
       >
         <div
           v-if="show || hoverShow"
           ref="dropdown"
-          class="absolute right-0 top-full mt-2 w-[95vw] max-w-[20rem] sm:max-w-[22rem] rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 p-4 sm:p-5 border border-gray-100 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm"
+          class="absolute right-0 top-full mt-3 w-[90vw] max-w-[22rem] rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-gray-900/5 dark:ring-white/10 dark:shadow-black/50 p-6 bg-white/90 dark:bg-[#121212]/95 backdrop-blur-2xl border border-white/20 dark:border-white/5"
           @click.stop
         >
-          <div class="flex flex-col gap-4">
-            <NuxtImg
-              src="/app-logo.png"
-              :alt="$t('articles.userMenu.companyLogoAlt')"
-              class="w-24 h-24 mx-auto object-contain"
-            />
-            <div class="flex flex-col gap-4">
-              <div class="flex items-center gap-4">
-                <Icon name="mdi:account-circle-outline" class="w-16 h-16 text-gray-400 dark:text-gray-600" />
-                <p class="text-sm text-gray-700 dark:text-gray-300">
-                  {{ $t('common.auth.loginPrompt') }}
-                </p>
-              </div>
-              <div class="flex flex-col gap-2">
-                <NuxtLink
-                  :to="localePath({ name: 'autorizace' })"
-                  class="block w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center transition"
-                >
-                  {{ $t('common.auth.login') }}
-                </NuxtLink>
+          <div class="flex flex-col items-center gap-6 text-center">
+            <div
+              class="relative w-20 h-20 flex items-center justify-center bg-gradient-to-tr from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-2xl shadow-inner mb-2"
+            >
+              <NuxtImg
+                src="/app-logo.png"
+                :alt="$t('articles.userMenu.companyLogoAlt')"
+                class="w-14 h-14 object-contain drop-shadow-md"
+              />
+            </div>
 
-                <NuxtLink
-                  :to="localePath({ name: 'autorizace', query: { mode: 'register' } })"
-                  class="block w-full py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 text-center text-sm font-semibold transition"
-                >
-                  {{ $t('common.auth.register') }}
-                </NuxtLink>
-              </div>
+            <div class="space-y-1">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white">Welcome Back</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 max-w-[200px] mx-auto leading-relaxed">
+                {{ $t('common.auth.loginPrompt') }}
+              </p>
+            </div>
+
+            <div class="w-full space-y-3">
+              <NuxtLink
+                :to="localePath({ name: 'autorizace' })"
+                class="flex items-center justify-center w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all duration-200"
+              >
+                {{ $t('common.auth.login') }}
+              </NuxtLink>
+
+              <NuxtLink
+                :to="localePath({ name: 'autorizace', query: { mode: 'register' } })"
+                class="flex items-center justify-center w-full py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 font-semibold text-sm transition-all duration-200"
+              >
+                {{ $t('common.auth.register') }}
+              </NuxtLink>
             </div>
           </div>
         </div>
