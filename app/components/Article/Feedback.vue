@@ -1,117 +1,105 @@
 <template>
   <div
-    class="relative w-full overflow-hidden rounded-3xl border border-gray-100 bg-white/50 p-1 shadow-sm backdrop-blur-xl transition-all dark:border-gray-800 dark:bg-gray-900/40"
+    class="relative overflow-hidden rounded-2xl border border-gray-100 bg-gray-50/50 p-1.5 transition-all duration-300 dark:border-gray-800 dark:bg-gray-900/40"
+    :class="[
+      showReasonInput
+        ? 'bg-white shadow-lg ring-1 ring-black/5 dark:bg-gray-900 dark:ring-white/5'
+        : 'hover:border-gray-200 dark:hover:border-gray-700',
+    ]"
   >
-    <div class="flex flex-col gap-5 p-5 sm:p-6">
-      <div v-if="!hasVoted" class="flex flex-col items-center gap-2 text-center">
-        <div
-          class="mb-2 flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-500 dark:bg-blue-900/20 dark:text-blue-400"
-        >
-          <Icon name="mdi:message-question-outline" class="size-5" />
+    <div class="flex flex-col">
+      <div class="flex items-center justify-between gap-3 px-3 py-1.5">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex size-8 items-center justify-center rounded-full transition-colors"
+            :class="
+              hasVoted
+                ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+            "
+          >
+            <Icon v-if="isLoading" name="svg-spinners:ring-resize" class="size-5" />
+            <Icon v-else-if="hasVoted" name="mdi:check" class="size-5" />
+            <Icon v-else name="mdi:message-question-outline" class="size-5" />
+          </div>
+
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">
+              <span v-if="hasVoted">{{ $t('feedback.thankYou') }}</span>
+              <span v-else>{{ $t('feedback.question') }}</span>
+            </span>
+
+            <span v-if="hasVoted" class="hidden items-center gap-1 text-xs text-gray-400 sm:inline-flex">
+              {{ $t('feedback.recorded') }}
+              <Button
+                variant="transparent"
+                size="sm"
+                borderless
+                class="!h-auto !p-0 text-xs text-gray-400 hover:text-gray-600 hover:underline dark:hover:text-gray-300"
+                @click="resetVote"
+              >
+                {{ $t('feedback.change') }}
+              </Button>
+            </span>
+          </div>
         </div>
-        <h3 class="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-          {{ $t('feedback.question') }}
-        </h3>
-        <p class="max-w-xs text-sm text-gray-500 dark:text-gray-400">
-          {{ $t('feedback.subtitle') }}
-        </p>
-      </div>
-      <div
-        v-if="isLoading"
-        class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 rounded-3xl bg-white/60 backdrop-blur-sm dark:bg-gray-950/60"
-      >
-        <Icon name="svg-spinners:180-ring-with-bg" class="size-8 text-indigo-500" />
-        <span class="text-xs font-medium text-gray-500">{{ $t('common.processing') }}...</span>
-      </div>
-      <div v-if="!hasVoted" class="flex flex-col gap-4 transition-all">
-        <div class="flex w-full gap-3 sm:gap-4">
+
+        <div v-if="!hasVoted" class="flex items-center gap-2">
           <Button
-            class="flex-1"
             size="lg"
             variant="neutral"
+            class="!h-9 !px-3"
             icon="mdi:thumb-up-outline"
+            :disabled="isLoading"
             animation="softpop"
             @click="submitVote(true)"
-          >
-            {{ $t('common.yes') }}
-          </Button>
+          />
           <Button
-            class="flex-1"
             size="lg"
             variant="neutral"
+            class="!h-9 !px-3"
             icon="mdi:thumb-down-outline"
-            :active="showReasonInput"
-            :class="showReasonInput ? '!ring-2 !ring-red-500/20 !bg-red-50 dark:!bg-red-900/10' : ''"
+            :disabled="isLoading"
             animation="softpop"
+            :active="showReasonInput"
+            :class="
+              showReasonInput
+                ? '!bg-red-50 !text-red-600 !ring-1 !ring-red-200 dark:!bg-red-900/20 dark:!border-red-800'
+                : ''
+            "
             @click="showReasonInput = true"
-          >
-            {{ $t('common.no') }}
-          </Button>
+          />
         </div>
-        <div
-          v-if="showReasonInput"
-          class="flex flex-col gap-3 animate-in slide-in-from-top-4 fade-in duration-300 ease-out"
-        >
-          <div class="relative">
-            <div class="absolute -top-2 left-1/2 -translate-x-1/2">
-              <Icon name="mdi:triangle" class="text-gray-100 dark:text-neutral-700 rotate-180" />
-            </div>
-            <FormInput
-              v-model="reasonText"
-              type="textarea"
-              icon="mdi:comment-quote-outline"
-              iconPosition="leading"
-              :placeholder="$t('feedback.placeholder')"
-              :maxLength="500"
-              class="shadow-sm"
-            />
-          </div>
-          <div class="flex items-center justify-end gap-2">
-            <Button variant="transparent" size="sm" @click="showReasonInput = false">
+      </div>
+
+      <div v-if="showReasonInput" class="animate-in slide-in-from-top-2 fade-in duration-300">
+        <div class="mt-2 border-t border-gray-100 px-3 pb-3 pt-3 dark:border-gray-800">
+          <FormInput
+            v-model="reasonText"
+            type="textarea"
+            :placeholder="$t('feedback.placeholder', 'Co můžeme vylepšit?')"
+            :maxLength="500"
+            inputClass="!h-24 !bg-white dark:!bg-black/20 !text-sm"
+            class="mb-2"
+          />
+          <div class="flex justify-end gap-2">
+            <Button variant="transparent" size="sm" class="text-xs" @click="showReasonInput = false">
               {{ $t('common.actions.cancel') }}
             </Button>
             <Button
               variant="primary"
               size="sm"
+              class="text-xs"
               icon="mdi:paper-airplane"
               animation="explode"
+              :disabled="!reasonText || reasonText.length < 3"
+              :loading="isLoading"
               @click="submitVote(false)"
             >
               {{ $t('common.actions.send') }}
             </Button>
           </div>
         </div>
-      </div>
-      <div
-        v-else
-        class="flex flex-col items-center justify-center gap-4 py-4 text-center animate-in zoom-in-95 duration-500 ease-out-back"
-      >
-        <div
-          class="relative flex size-16 items-center justify-center rounded-full bg-gradient-to-tr from-green-100 to-emerald-50 text-emerald-600 shadow-inner dark:from-green-900/30 dark:to-emerald-900/10 dark:text-emerald-400"
-        >
-          <Icon name="mdi:check-circle" class="size-8 animate-in zoom-in spin-in-12 duration-700" />
-          <Icon name="mdi:star-four-points" class="absolute -top-1 -right-1 size-4 text-yellow-400 animate-pulse" />
-          <Icon
-            name="mdi:star-four-points"
-            class="absolute bottom-0 -left-2 size-3 text-blue-400 animate-pulse delay-100"
-          />
-        </div>
-        <div class="space-y-1">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ $t('feedback.thankYou') }}
-          </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ $t('feedback.recorded') }}
-          </p>
-        </div>
-        <Button
-          variant="transparent"
-          size="sm"
-          class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-          @click="resetVote"
-        >
-          {{ $t('feedback.change') }}
-        </Button>
       </div>
     </div>
   </div>
