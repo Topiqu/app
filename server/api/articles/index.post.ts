@@ -9,6 +9,19 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
 
+  let seriesOrder = 0
+  if (body.articleSeriesId) {
+    const lastArticle = await db.article.findFirst({
+      where: {
+        articleSeriesId: body.articleSeriesId,
+        clientSiteId: user.clientSiteId,
+      },
+      orderBy: { seriesOrder: 'desc' },
+      select: { seriesOrder: true },
+    })
+    seriesOrder = (lastArticle?.seriesOrder ?? 0) + 1
+  }
+
   const $ = cheerio.load(body.content || '')
   const usedIds = new Map()
 
@@ -34,6 +47,7 @@ export default defineEventHandler(async (event) => {
   const contentWithIds = $.html()
   const data = {
     ...body,
+    seriesOrder,
     content: sanitizeHtml(contentWithIds),
     clientSiteId: user.clientSiteId,
     userId: user.id,
