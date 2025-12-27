@@ -249,8 +249,14 @@
       </div>
 
       <ArticleSeries v-if="data.series" :series="data.series" />
-
-      <div class="w-full"><ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-3 p-4" /></div>
+      <div
+        class="mt-8 flex flex-col items-start justify-between gap-4 border-t border-gray-100 pt-8 sm:flex-row sm:items-center dark:border-gray-800"
+      >
+        <div class="flex shrink-0 items-center">
+          <ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-2 text-gray-400 dark:text-gray-500" />
+        </div>
+        <ArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
+      </div>
       <VueEasyLightbox
         :visible="lightboxVisible"
         :imgs="images"
