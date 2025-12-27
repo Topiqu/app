@@ -1,38 +1,42 @@
 <template>
   <Popover v-slot="{ close }" class="relative">
     <PopoverButton
-      class="relative group inline-flex items-center justify-center w-10 h-10 rounded-xl cursor-pointer transition-all duration-200 ease-out bg-transparent hover:backdrop-blur-sm hover:bg-gray-300/25 dark:hover:bg-white/10 hover:scale-105 hover:shadow-md dark:hover:shadow-black/40 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 !border-none"
+      class="group relative inline-flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 ease-out hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 active:scale-95 dark:hover:bg-white/10 dark:hover:text-blue-400"
       :title="$t('articles.comments.addGif')"
     >
       <Icon
         name="mdi:gif"
-        class="w-6 h-6 text-gray-600 dark:text-gray-300 transition-colors duration-200 group-hover:text-blue-500"
+        class="h-6 w-6 text-gray-500 transition-colors duration-300 group-hover:text-blue-600 dark:text-gray-400 dark:group-hover:text-blue-400"
       />
     </PopoverButton>
+
     <TransitionRoot
       appear
-      enter="transition ease-out duration-200 transform"
-      enterFrom="opacity-0 scale-95"
-      enterTo="opacity-100 scale-100"
-      leave="transition ease-in duration-150 transform"
-      leaveFrom="opacity-100 scale-100"
-      leaveTo="opacity-0 scale-95"
-      class="origin-top-right"
+      enter="transition ease-out duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
+      enterFrom="opacity-0 translate-y-2 scale-95"
+      enterTo="opacity-100 translate-y-0 scale-100"
+      leave="transition ease-in duration-150 cubic-bezier(0.16, 1, 0.3, 1)"
+      leaveFrom="opacity-100 translate-y-0 scale-100"
+      leaveTo="opacity-0 translate-y-2 scale-95"
+      class="origin-bottom-right z-50"
     >
       <PopoverPanel
         static
         focus
-        class="absolute bottom-full right-0 z-20 mb-2 w-[26rem] max-w-[95vw] bg-white/95 dark:bg-neutral-800/95 backdrop-blur-[4px] rounded-lg shadow-xl border border-gray-300 dark:border-neutral-600 px-6 py-4"
+        class="absolute bottom-full right-0 z-50 mb-3 w-[28rem] max-w-[95vw] overflow-hidden rounded-2xl border border-gray-100 bg-white/90 p-0 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl dark:border-white/5 dark:bg-[#1a1a1a]/90 dark:ring-white/10"
       >
         <div
           v-if="categoriesLoading"
-          class="p-4 text-center text-gray-600 dark:text-neutral-300 text-sm flex items-center justify-center gap-2"
+          class="flex h-64 items-center justify-center gap-3 text-sm font-medium text-gray-500 dark:text-neutral-400"
         >
-          <Icon name="mdi:loading" class="w-6 h-6 text-blue-500 animate-spin" />
+          <Icon name="mdi:loading" class="h-6 w-6 animate-spin text-blue-500" />
           {{ $t('common.loading') }}
         </div>
-        <div v-else class="space-y-4 relative">
-          <div class="flex items-center gap-2">
+
+        <div v-else class="relative flex flex-col">
+          <div
+            class="flex items-center gap-3 border-b border-gray-100 bg-white/50 p-4 backdrop-blur-sm dark:border-white/5 dark:bg-white/5"
+          >
             <Button
               v-if="selectedCategory"
               icon="mdi:arrow-left"
@@ -40,92 +44,115 @@
               variant="neutral"
               borderless
               aria="Zrušit výběr kategorie"
-              class="text-gray-500 hover:text-blue-500 dark:text-neutral-300 dark:hover:text-blue-400"
+              class="shrink-0 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-white"
               @click.stop="clearCategory"
             />
-            <FormInput
-              v-model="searchQuery"
-              type="text"
-              icon="mdi:magnify"
-              iconPosition="leading"
-              :placeholder="$t('common.search')"
-              class="w-full"
-              @input="debouncedSearch"
-            />
-          </div>
-          <div
-            v-show="shouldShowGifs"
-            ref="gifContainer"
-            class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto transition-opacity duration-200"
-            :class="{ 'opacity-0 -translate-y-2': !shouldShowGifs, 'opacity-100 translate-y-0': shouldShowGifs }"
-          >
-            <button
-              v-for="gif in gifs"
-              :key="gif.id"
-              class="relative aspect-square rounded-lg overflow-hidden shadow-md hover:ring-2 hover:ring-blue-400/60 transition-all duration-300 cursor-pointer"
-              @click="selectGif(gif, close)"
-            >
-              <NuxtImg
-                :src="gif.images.fixed_height.url"
-                :alt="gif.title"
-                class="w-full h-full object-cover"
-                loading="lazy"
+            <div class="relative flex-1">
+              <FormInput
+                v-model="searchQuery"
+                type="text"
+                icon="mdi:magnify"
+                iconPosition="leading"
+                :placeholder="$t('common.search')"
+                class="w-full !rounded-xl !border-transparent !bg-gray-100/80 !py-2.5 !text-sm transition-all focus:!bg-white focus:!ring-2 focus:!ring-blue-500/20 dark:!bg-black/20 dark:focus:!bg-black/40 dark:focus:!ring-blue-500/30"
+                @input="debouncedSearch"
               />
-            </button>
-            <div v-if="gifsLoading" class="col-span-3 grid grid-cols-3 gap-4 py-4">
-              <div
-                v-for="i in 6"
-                :key="'skeleton-' + i"
-                class="aspect-square rounded-lg bg-gray-200 dark:bg-neutral-700 animate-pulse"
-              ></div>
             </div>
-            <div ref="gifSentinel" class="h-4 col-span-3"></div>
           </div>
-          <div
-            v-show="!shouldShowGifs"
-            class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto transition-opacity duration-200"
-            :class="{ 'opacity-0 -translate-y-2': shouldShowGifs, 'opacity-100 translate-y-0': !shouldShowGifs }"
-          >
-            <button
-              v-for="cat in categories"
-              :key="cat.name_encoded"
-              class="relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-400/60 transition-transform duration-300 cursor-pointer"
-              @pointerdown.stop.prevent="selectCategory(cat)"
+
+          <div class="relative min-h-[300px]">
+            <div
+              v-show="shouldShowGifs"
+              ref="gifContainer"
+              class="scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent max-h-[400px] overflow-y-auto p-4 pb-12 transition-all duration-300"
+              :class="{ 'opacity-0 translate-y-4': !shouldShowGifs, 'opacity-100 translate-y-0': shouldShowGifs }"
+            >
+              <div class="grid grid-cols-3 gap-3">
+                <button
+                  v-for="gif in gifs"
+                  :key="gif.id"
+                  class="group/gif relative aspect-square overflow-hidden rounded-xl bg-gray-100 ring-1 ring-black/5 transition-all active:scale-95 dark:bg-white/5 dark:ring-white/5"
+                  @click="selectGif(gif, close)"
+                >
+                  <NuxtImg
+                    :src="gif.images.fixed_height.url"
+                    :alt="gif.title"
+                    class="h-full w-full object-cover transition-transform duration-500 group-hover/gif:scale-110"
+                    loading="lazy"
+                  />
+                  <div
+                    class="absolute inset-0 bg-black/0 transition-colors group-hover/gif:bg-black/10 dark:group-hover/gif:bg-white/10"
+                  ></div>
+                </button>
+
+                <template v-if="gifsLoading">
+                  <div
+                    v-for="i in 6"
+                    :key="'skeleton-' + i"
+                    class="aspect-square rounded-xl bg-gray-100 animate-pulse dark:bg-white/5"
+                  ></div>
+                </template>
+              </div>
+
+              <div ref="gifSentinel" class="h-4 w-full"></div>
+
+              <div v-if="error" class="mt-8 flex flex-col items-center gap-4 text-center">
+                <div class="rounded-full bg-red-50 p-4 dark:bg-red-500/10">
+                  <NuxtImg src="/topik_404_rm.png" alt="Error" class="h-12 w-12 opacity-80" />
+                </div>
+                <p class="text-sm font-medium text-red-600 dark:text-red-400">{{ $t('common.noResults') }}</p>
+              </div>
+              <div
+                v-else-if="!gifs.length && !gifsLoading"
+                class="mt-12 flex flex-col items-center gap-3 text-center text-gray-400 dark:text-neutral-500"
+              >
+                <Icon name="mdi:emoticon-sad-outline" class="h-10 w-10 opacity-50" />
+                <span class="text-sm font-medium">{{ $t('common.noResults') }}</span>
+              </div>
+            </div>
+
+            <div
+              v-show="!shouldShowGifs"
+              class="scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent max-h-[400px] overflow-y-auto p-4 pb-12 transition-all duration-300"
+              :class="{ 'opacity-0 -translate-y-4': shouldShowGifs, 'opacity-100 translate-y-0': !shouldShowGifs }"
+            >
+              <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <button
+                  v-for="cat in categories"
+                  :key="cat.name_encoded"
+                  class="group/cat relative aspect-[4/3] overflow-hidden rounded-xl bg-gray-900 shadow-sm transition-all hover:shadow-md active:scale-95 sm:aspect-square"
+                  @pointerdown.stop.prevent="selectCategory(cat)"
+                >
+                  <NuxtImg
+                    v-if="cat.gif?.images?.fixed_height?.url"
+                    :src="cat.gif.images.fixed_height.url"
+                    class="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover/cat:scale-110 group-hover/cat:opacity-50"
+                    loading="lazy"
+                  />
+                  <div
+                    class="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 !dark:bg-transparent"
+                  >
+                    <span
+                      class="text-center text-sm font-bold text-white drop-shadow-sm group-hover/cat:scale-105 transition-transform"
+                    >
+                      {{ cat.name }}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="absolute bottom-0 right-0 z-10 w-full bg-gradient-to-t from-white via-white/90 to-transparent pb-3 pr-5 pt-8 dark:from-[#1a1a1a] dark:via-[#1a1a1a]/90 pointer-events-none flex justify-end"
             >
               <NuxtImg
-                v-if="cat.gif?.images?.fixed_height?.url"
-                :src="cat.gif.images.fixed_height.url"
-                class="absolute inset-0 w-full h-full object-cover opacity-40"
+                :src="theme.isDark ? '/Poweredby_100px-Black_VertLogo.png' : '/Poweredby_100px-White_VertLogo.png'"
+                alt="Powered by Giphy"
+                class="h-auto w-14 opacity-60 mix-blend-luminosity grayscale transition-all hover:grayscale-0 hover:opacity-100"
                 loading="lazy"
               />
-              <div
-                class="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/60 via-black/20 to-transparent !dark:bg-transparent backdrop-blur-[1px] text-white text-sm font-medium p-4"
-              >
-                <span class="mr-1 shadow-sm">{{ cat.name }}</span>
-                <Icon name="mdi:arrow-right" class="w-4 h-4 hover:text-blue-300 transition-colors" />
-              </div>
-            </button>
+            </div>
           </div>
-          <div
-            v-if="shouldShowGifs && error"
-            class="p-6 text-center text-red-600 dark:text-red-400 text-sm flex flex-col items-center gap-3"
-          >
-            <NuxtImg src="/topik_404_rm.png" alt="Error" class="w-20 h-20" />
-            {{ $t('common.noResults') }}
-          </div>
-          <div
-            v-else-if="shouldShowGifs && !gifs.length && !gifsLoading"
-            class="p-6 text-center text-gray-600 dark:text-neutral-300 text-sm flex flex-col items-center gap-3"
-          >
-            <Icon name="mdi:emoticon-sad-outline" class="w-8 h-8" />
-            {{ $t('common.noResults') }}
-          </div>
-          <NuxtImg
-            :src="theme.isDark ? '/Poweredby_100px-Black_VertLogo.png' : '/Poweredby_100px-White_VertLogo.png'"
-            alt="Powered by Giphy"
-            class="absolute bottom-3 right-5 w-16 opacity-75 pointer-events-none"
-            loading="lazy"
-          />
         </div>
       </PopoverPanel>
     </TransitionRoot>
