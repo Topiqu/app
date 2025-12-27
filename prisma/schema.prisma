@@ -164,6 +164,9 @@ model Article {
   savedAmount      Float             @default(0.0)
   savedTimeMinutes Int               @default(0)
   publishedAt      DateTime?
+  articleSeriesId  String?
+  articleSeries    ArticleSeries?    @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
+  seriesOrder      Int?              @default(0)
   releaseAt        DateTime?
   allowedComments  Boolean           @default(true)
   tags             ArticleTag[]
@@ -176,7 +179,23 @@ model Article {
   prompt           String?
 
   @@unique([slug, clientSiteId])
-  @@index([title, excerpt, clientSiteId])
+  @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])
+}
+
+model ArticleSeries {
+  id           String     @id() @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt()
+  deletedAt    DateTime?
+  name         String
+  slug         String
+  description  String?
+  imageUrl     String?
+  clientSiteId String
+  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  articles     Article[]
+
+  @@unique([slug, clientSiteId])
 }
 
 model ArticleShare {
@@ -348,6 +367,7 @@ model ClientSite {
   users               User[]
   tags                Tag[]
   articles            Article[]
+  articleSeries       ArticleSeries[]
   articleDrafts       ArticleDraft[]
   emojis              Emoji[]
   userBans            UserBan[]

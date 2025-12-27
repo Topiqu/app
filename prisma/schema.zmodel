@@ -170,6 +170,9 @@ model Article extends Base, Ownable {
     savedAmount      Float             @default(0.0)
     savedTimeMinutes Int               @default(0)
     publishedAt      DateTime?
+    articleSeriesId  String?
+    articleSeries    ArticleSeries?    @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
+    seriesOrder      Int?              @default(0)
     releaseAt        DateTime?
     allowedComments  Boolean           @default(true)
     tags             ArticleTag[]
@@ -183,7 +186,23 @@ model Article extends Base, Ownable {
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
     @@unique([slug, clientSiteId])
-    @@index([title, excerpt, clientSiteId])
+    @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])
+}
+
+model ArticleSeries extends Base {
+    name         String     @length(1, 255, "Název série musí mít 1–255 znaků")
+    slug         String     @length(1, 100, "Slug série musí mít 1–100 znaků")
+    description  String?    @length(0, 500)
+    imageUrl     String?    @length(0, 255)
+
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
+    articles     Article[]
+
+    @@unique([slug, clientSiteId])
+    @@allow('read', true)
+    @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
 }
 
 model ArticleShare extends Base {
@@ -351,6 +370,7 @@ model ClientSite extends Base {
     users               User[]
     tags                Tag[]
     articles            Article[]
+    articleSeries       ArticleSeries[]
     articleDrafts       ArticleDraft[]
     emojis              Emoji[]
     userBans            UserBan[]
