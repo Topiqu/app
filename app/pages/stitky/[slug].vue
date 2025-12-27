@@ -29,7 +29,7 @@
       <div v-else-if="paginated.length" class="grid gap-6">
         <div
           v-for="a in paginated"
-          :key="a.articleId"
+          :key="a.id"
           class="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
         >
           <NuxtLink
@@ -77,7 +77,7 @@
                     }}</span
                   ><span>•</span
                   ><span class="inline-flex items-center gap-1 text-blue-500 dark:text-blue-400 font-medium"
-                    ><Icon name="mdi:account-outline" class="w-4 h-4" />{{ a.article.user.username }}</span
+                    ><Icon name="mdi:account-outline" class="w-4 h-4" />{{ a.article?.user?.username }}</span
                   ><span>•</span
                   ><span class="inline-flex items-center gap-1"
                     ><Icon
@@ -140,14 +140,15 @@ const {
   data: tag,
   pending,
   refresh,
+  error,
 } = await useFetch(`/api/tags/slug/${tagSlug.value}`, {
+  key: `tag-${tagSlug.value}`,
   query,
-  default: () => ({ id: '', name: $t('articles.tags.noTagsFound'), slug: '', articles: [], hasMore: false }),
+  default: () => ({ id: '', name: '', slug: '', articles: [], hasMore: false }),
   watch: false,
-  lazy: true,
 })
 
-if (!pending.value && !tag.value?.id) {
+if (error.value || (!pending.value && !tag.value?.id)) {
   throw createError({ statusCode: 404, message: 'Tag not found', fatal: true })
 }
 
@@ -157,9 +158,8 @@ watchEffect(() => {
 
 const tagName = computed(() => tag.value.name)
 const paginated = computed(() =>
-  tag.value.articles.map((a: any) => ({
-    ...a,
-    article: { ...a.article, likes: a.article._count?.reactions ?? 0 },
+  tag.value.articles.map((articleData: any) => ({
+    article: articleData,
   })),
 )
 const totalPages = computed(() => 1)
@@ -216,7 +216,7 @@ useHead({
                 itemListElement: tag.value.articles.map((item: any, index: number) => ({
                   '@type': 'ListItem',
                   position: index + 1,
-                  url: `${reqUrl.protocol}//${reqUrl.host}${localePath({ name: 'clanek-slug', params: { slug: item.article.slug } })}`,
+                  url: `${reqUrl.protocol}//${reqUrl.host}${localePath({ name: 'clanek-slug', params: { slug: item.slug } })}`,
                 })),
               },
             })

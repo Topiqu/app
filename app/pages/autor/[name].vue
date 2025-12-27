@@ -158,21 +158,22 @@ const {
   data: author,
   pending,
   refresh,
+  error,
 } = await useFetch(`/api/articles/${username.value}/by-author`, {
+  key: `author-${username.value}`,
   query,
   default: () => ({
     id: '',
-    username: $t('articles.articleCard.noAuthor'),
+    username: '',
     articles: [],
     hasMore: false,
     bio: '',
     avatarUrl: '',
   }),
   watch: false,
-  lazy: true,
 })
 
-if (!pending.value && !author.value?.id) {
+if (error.value || (!pending.value && !author.value?.id)) {
   throw createError({ statusCode: 404, message: 'Author not found', fatal: true })
 }
 
@@ -180,13 +181,9 @@ watchEffect(() => {
   if (page.value > 1 && !author.value.hasMore) page.value = 1
 })
 
-const authorName = computed(() => author.value.username)
-const paginated = computed(() =>
-  author.value.articles.map((a: any) => ({
-    ...a,
-    article: { ...a.article, likes: a.article._count?.reactions ?? 0 },
-  })),
-)
+const authorName = computed(() => author.value.username || '')
+
+const paginated = computed(() => author.value.articles)
 const totalPages = computed(() => 1)
 const hasMore = computed(() => author.value.hasMore)
 const nextPage = () => hasMore.value && page.value++
