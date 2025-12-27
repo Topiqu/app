@@ -2,9 +2,7 @@ export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   const slug = getRouterParam(event, 'id')
-
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-
   const sessionId = getCookie(event, 'anon_session')
   const { clientSiteId } = getQuery<{ clientSiteId: string }>(event)
 
@@ -27,7 +25,6 @@ export default defineEventHandler(async (event) => {
           id: true,
           name: true,
           slug: true,
-          _count: { select: { articles: true } },
         },
       },
       _count: {
@@ -40,41 +37,41 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
-
   if (article.status !== 'published' && user?.role !== 'admin')
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   let seriesNav = null
 
   if (article.articleSeriesId && article.seriesOrder !== null) {
-    const [prev, next] = await Promise.all([
-      prisma.article.findFirst({
-        where: {
-          articleSeriesId: article.articleSeriesId,
-          seriesOrder: { lt: article.seriesOrder },
-          status: 'published',
-        },
-        orderBy: { seriesOrder: 'desc' },
-        select: { title: true, slug: true, imageUrl: true, seriesOrder: true },
-      }),
-      prisma.article.findFirst({
-        where: {
-          articleSeriesId: article.articleSeriesId,
-          seriesOrder: { gt: article.seriesOrder },
-          status: 'published',
-        },
-        orderBy: { seriesOrder: 'asc' },
-        select: { title: true, slug: true, imageUrl: true, seriesOrder: true },
-      }),
-    ])
+    const whereFilter: any = { articleSeriesId: article.articleSeriesId }
+    if (user?.role !== 'admin') whereFilter.status = 'published'
+
+    const allSeriesArticles = await prisma.article.findMany({
+      where: whereFilter,
+      orderBy: { seriesOrder: 'asc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        imageUrl: true,
+        seriesOrder: true,
+        status: true,
+      },
+    })
+
+    const currentIndex = allSeriesArticles.findIndex((a) => a.id === article.id)
+    const prev = currentIndex > 0 ? allSeriesArticles[currentIndex - 1] : null
+    const next =
+      currentIndex !== -1 && currentIndex < allSeriesArticles.length - 1 ? allSeriesArticles[currentIndex + 1] : null
 
     seriesNav = {
       name: article.articleSeries?.name,
       slug: article.articleSeries?.slug,
-      total: article.articleSeries?._count.articles,
-      current: (article.seriesOrder || 0) + 1,
+      total: allSeriesArticles.length,
+      current: article.seriesOrder,
       prev,
       next,
+      articles: allSeriesArticles,
     }
   }
 
