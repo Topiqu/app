@@ -80,6 +80,7 @@
     "nuxt": "^4.2.1",
     "nuxt-gtag": "^4.1.0",
     "nuxt-nodemailer": "^1.1.4",
+    "nuxt-og-image": "^5.1.13",
     "nuxt-qrcode": "^0.4.8",
     "nuxt-toast": "^1.4.0",
     "otplib": "^12.0.1",

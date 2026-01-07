@@ -83,10 +83,19 @@ export default defineNuxtConfig({
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-nodemailer',
     'nuxt-security',
+    'nuxt-og-image',
     'nuxt-toast',
     'nuxt-qrcode',
     'nuxt-gtag',
   ],
+  ogImage: {
+    defaults: {
+      component: 'NuxtSeo',
+    },
+    compatibility: {
+      prerender: { chromium: false },
+    },
+  },
 
   typescript: { tsConfig: { include: ['../types/**/*.d.ts', '../server/tasks/**/*.ts'] } },
 

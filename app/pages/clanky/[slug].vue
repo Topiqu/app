@@ -336,14 +336,37 @@ useSeoMeta({
   description: () => (hasSeoPlan.value ? articleDescription.value : undefined),
   ogTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
   ogDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
-  ogImage: () => (hasSeoPlan.value ? data.value?.imageUrl || undefined : undefined),
   ogUrl: () => (hasSeoPlan.value ? canonicalUrl.value : undefined),
   ogType: () => (hasSeoPlan.value ? 'article' : undefined),
-  twitterCard: () => (hasSeoPlan.value ? 'summary_large_image' : undefined),
   twitterTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
   twitterDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
-  twitterImage: () => (hasSeoPlan.value ? data.value?.imageUrl || undefined : undefined),
 })
+
+if (data.value) {
+  if (hasSeoPlan.value) {
+    defineOgImageComponent('TopiquArticle', {
+      title: data.value.title,
+      description: articleDescription.value,
+      siteName: clientSite?.name || 'Blog',
+      siteLogo: clientSite?.logoUrl || undefined,
+      authorName: data.value.user?.username,
+      authorImage: data.value.user?.avatarUrl || undefined,
+      readingTime: $t('articles.readingTime', [data.value.readingTime]),
+      backgroundImage: data.value.imageUrl || undefined,
+      isPremium: true,
+    })
+  } else {
+    defineOgImageComponent('TopiquArticle', {
+      title: data.value.title,
+      // description: 'Přečtěte si více na Topiqu.',
+      siteName: 'Topiqu',
+      // siteLogo: 'https://topiqu.com/logo-small.png',
+      authorName: data.value.user?.username,
+      backgroundImage: undefined,
+      isPremium: false,
+    })
+  }
+}
 
 useHead({
   link: [
