@@ -2,8 +2,8 @@
   <NuxtLoadingIndicator
     class="z-[9999]"
     :color="
-      clientSite?.theme && Object.keys(themeColors).includes(clientSite.theme)
-        ? themeColors[clientSite.theme]
+      clientSite?.theme && Object.keys(themeColors).includes(clientSite!.theme)
+        ? themeColors[clientSite!.theme]
         : themeColors.blue
     "
   />
@@ -15,12 +15,12 @@
 
 <script setup lang="ts">
 import type { themes } from '~/composables/theme'
-// const { adTargeting, assign } = useAdChance()
-// throw createError({ statusCode: 400, message: 'Service Unavailable', statusMessage: 'Service Unavailable' })
-// assign(clientSite!.id, clientSite!.plan)
-// console.log(adTargeting.value)
 const reqUrl = useRequestURL()
 const clientSite = await useClientSite()
+const adChance = useAdChance()
+// throw createError({ statusCode: 400, message: 'Service Unavailable', statusMessage: 'Service Unavailable' })
+adChance?.assign(clientSite!.id, clientSite!.plan)
+console.log(adChance?.adTargeting.value)
 
 const themeColors: Record<keyof typeof themes, string> = {
   blue: '#2563eb',

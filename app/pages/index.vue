@@ -79,7 +79,7 @@
 
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
-    <section id="articles" class="bg-gray-100 dark:bg-gray-900 rounded-2xl py-8 px-6">
+    <section id="articles" class="bg-gray-100 dark:bg-gray-900 rounded-xl py-8 px-6">
       <div class="max-w-5xl mx-auto" style="background-color: transparent !important">
         <div class="flex flex-col items-center mb-6 gap-4" style="background-color: transparent !important">
           <h2 class="text-3xl font-bold">{{ $t('articles.title') }}</h2>
@@ -100,7 +100,7 @@
                   type="search"
                   :placeholder="$t('articles.searchPlaceholder')"
                   :aria-label="$t('articles.searchPlaceholder')"
-                  class="w-full pl-12 pr-10 py-3 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-400/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:shadow-lg transition-all duration-200"
+                  class="w-full pl-12 pr-10 py-3 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-400/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:shadow-lg transition-all duration-200"
                 />
               </div>
             </div>
@@ -151,7 +151,7 @@
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl py-8 px-6">
+      <div class="bg-gray-100 dark:bg-gray-900 rounded-xl py-8 px-6">
         <h2 class="text-3xl font-bold text-center mb-6">{{ $t('articles.poll.hpTitle') }}</h2>
         <ArticlePoll v-if="latestPoll" :poll="latestPoll" :articleId="latestPoll.articleId" />
         <p v-else class="text-center text-lg text-gray">{{ $t('articles.poll.noPolls') }}</p>
@@ -164,7 +164,7 @@
               v-for="(top, idx) in topArticles"
               :key="top.id"
               :to="localePath({ name: 'clanky-slug', params: { slug: top?.slug } })"
-              class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
+              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
             >
               <div
                 class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
@@ -199,7 +199,7 @@
 
     <section
       v-if="!auth"
-      class="text-center bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-2xl py-12 shadow-lg"
+      class="text-center bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-xl py-12 shadow-lg"
     >
       <h3 class="text-2xl font-bold">{{ $t('common.auth.loginPrompt') }}</h3>
       <p class="mt-3 max-w-xl mx-auto text-lg">{{ $t('common.auth.loginToComment') }}</p>
