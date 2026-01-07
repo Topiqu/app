@@ -170,12 +170,16 @@ model Article extends Base, Ownable {
     savedAmount      Float             @default(0.0)
     savedTimeMinutes Int               @default(0)
     publishedAt      DateTime?
+    articleSeriesId  String?
+    articleSeries    ArticleSeries?    @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
+    seriesOrder      Int?              @default(0)
     releaseAt        DateTime?
     allowedComments  Boolean           @default(true)
     tags             ArticleTag[]
     comments         Comment[]
     reactions        ArticleReaction[]
     shares           ArticleShare[]
+    feedbacks        ArticleFeedback[]
     pollResults      PollResult[]
     notifications    Notification[]    @relation("ArticleNotifications")
     sources          String[]
@@ -183,7 +187,23 @@ model Article extends Base, Ownable {
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
     @@unique([slug, clientSiteId])
-    @@index([title, excerpt, clientSiteId])
+    @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])
+}
+
+model ArticleSeries extends Base {
+    name         String     @length(1, 255, "Název série musí mít 1–255 znaků")
+    slug         String     @length(1, 100, "Slug série musí mít 1–100 znaků")
+    description  String?    @length(0, 500)
+    imageUrl     String?    @length(0, 255)
+
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
+    articles     Article[]
+
+    @@unique([slug, clientSiteId])
+    @@allow('read', true)
+    @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
 }
 
 model ArticleShare extends Base {
@@ -212,6 +232,36 @@ model ArticleTag {
     tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
     @@id([articleId, tagId])
     @@allow('read', true)
+    @@allow('all', auth().role == 'admin')
+}
+
+model ArticleFeedback extends Base {
+    articleId String
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+    isHelpful Boolean
+    reason    String? @length(0, 500)
+
+    userId    String?
+    user      User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+    sessionId String?
+
+    @@unique([articleId, userId, sessionId])
+
+    @@allow('create, read', true)
+    @@allow('update', auth().id == userId)
+}
+model ArticleReaction extends Base {
+    articleId String
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    userId    String?
+    user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    sessionId String?
+    @@unique([articleId, userId, sessionId])
+    @@allow('create', true)
+    @@allow('read', true)
+    @@allow('delete', auth().id == userId || auth().role == 'admin')
 }
 
 model Log {
@@ -255,6 +305,7 @@ model User extends Base {
     comments         Comment[]
     notifications    Notification[]
     reactions        CommentReaction[]
+    feedbacks        ArticleFeedback[]
     emojiReactions   EmojiReaction[]
     articleReactions ArticleReaction[]
     followers        Follow[]          @relation("Follower")
@@ -351,6 +402,7 @@ model ClientSite extends Base {
     users               User[]
     tags                Tag[]
     articles            Article[]
+    articleSeries       ArticleSeries[]
     articleDrafts       ArticleDraft[]
     emojis              Emoji[]
     userBans            UserBan[]
@@ -477,17 +529,6 @@ model EmojiReaction extends Ownable {
     @@allow('read', true)
 }
 
-model ArticleReaction extends Base {
-    articleId String
-    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-    userId    String?
-    user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-    sessionId String?
-    @@unique([articleId, userId, sessionId])
-    @@allow('create', true)
-    @@allow('read', true)
-    @@allow('delete', auth().id == userId || auth().role == 'admin')
-}
 
 model VerificationCode extends Base, Ownable {
     code      String   @length(8, 8, "Kód musí mít přesně 8 znaků")

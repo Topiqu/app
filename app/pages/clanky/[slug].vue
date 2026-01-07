@@ -1,124 +1,147 @@
 <template>
-  <div v-if="data" class="min-h-screen p-8 md:p-12 transition-all duration-500 ease-out relative">
+  <div v-if="data" class="min-h-screen p-8 md:p-12 relative">
     <div
-      class="fixed top-0 hidden sm:block left-0 w-full bg-white dark:bg-neutral-900 shadow-md z-25 transition-all duration-300 ease-in-out"
+      class="fixed top-0 hidden sm:block left-0 w-full bg-white dark:bg-neutral-900 shadow-md z-25"
       :class="isSticky ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'"
     >
       <div class="max-w-[1000px] mx-auto flex items-center justify-between px-4 py-4">
         <NuxtLink
           to="/admin"
-          class="group flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300"
+          class="group flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg"
           :aria-label="$t('common.actions.backToList')"
-          ><Icon name="mdi:arrow" class="w-6 h-6 mr-2 transition-transform group-hover:-translate-x-1.5" />{{
-            $t('common.actions.backToList')
-          }}</NuxtLink
         >
-        <h1
-          class="text-xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent tracking-tight"
-        >
-          {{ data.title }}
-        </h1>
+          <Icon name="mdi:arrow" class="w-6 h-6 mr-2 group-hover:-translate-x-1.5" />
+          {{ $t('common.actions.backToList') }}
+        </NuxtLink>
+        <div class="flex flex-col items-end">
+          <span v-if="data.series" class="text-xs font-bold text-blue-600 uppercase">
+            {{ data.series.name }} ({{ data.series.current }}/{{ data.series.total }})
+          </span>
+          <h1 class="text-xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+            {{ data.title }}
+          </h1>
+        </div>
       </div>
       <div
         v-if="isSticky"
-        class="h-1 bg-gradient-to-r transition-all duration-300"
+        class="h-1 bg-gradient-to-r"
         :class="progressBarColor"
         :style="{ width: `${progress}%` }"
       ></div>
     </div>
+
     <div ref="container" class="max-w-[1000px] mx-auto flex flex-col gap-8 px-4 sm:px-0">
       <nav v-if="breadcrumbs?.length" aria-label="Breadcrumb" class="w-full">
         <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
           <li v-for="(item, index) in breadcrumbs" :key="index" class="flex items-center gap-2">
-            <Icon
-              v-if="index > 0"
-              name="mdi:chevron-right"
-              class="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0"
-            />
+            <Icon v-if="index > 0" name="mdi:chevron-right" class="w-4 h-4 text-gray-300 dark:text-gray-600" />
             <NuxtLink
               v-if="index < breadcrumbs.length - 1"
               :to="item.to"
-              class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 font-medium"
+              class="hover:text-blue-600 dark:hover:text-blue-400 font-medium"
             >
               {{ item.label }}
             </NuxtLink>
-            <span
-              v-else
-              class="font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[200px] sm:max-w-[400px]"
-              aria-current="page"
-            >
+            <span v-else class="font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[200px] sm:max-w-[400px]">
               {{ item.label }}
             </span>
           </li>
         </ol>
       </nav>
+
       <NuxtLink
         to="/admin"
-        class="group flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg transition-all duration-300"
+        class="group flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg"
         :aria-label="$t('common.actions.backToList')"
-        ><Icon name="mdi:arrow" class="w-6 h-6 mr-2 transition-transform group-hover:-translate-x-1.5" />{{
-          $t('common.actions.backToList')
-        }}</NuxtLink
       >
+        <Icon name="mdi:arrow" class="w-6 h-6 mr-2 group-hover:-translate-x-1.5" />
+        {{ $t('common.actions.backToList') }}
+      </NuxtLink>
+
+      <div v-if="data.series" class="flex items-center gap-3">
+        <span
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800 uppercase"
+        >
+          <Icon name="mdi:bookshelf" class="w-3.5 h-3.5" />
+          {{ $t('series.label', 'Série') }}
+        </span>
+        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+          <span class="font-bold text-gray-900 dark:text-white">{{ data.series.name }}</span>
+          <span class="mx-2">•</span>
+          {{ $t('series.part', 'Část') }} {{ data.series.current }} / {{ data.series.total }}
+        </span>
+      </div>
+
       <h1
-        class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent tracking-tight leading-tight mb-3"
+        class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-tight mb-3"
       >
         {{ data.title }}
       </h1>
+
       <div class="flex items-center gap-3 text-gray-600 dark:text-gray-400">
         <UserPicture :url="data.user?.avatarUrl" :size="'md'" :name="data.user.username" />
         <div class="flex flex-col">
           <div class="flex items-center gap-2">
             <NuxtLink
               :to="localePath({ name: 'autor-name', params: { name: data.user.username } })"
-              class="font-medium text-[17px] text-blue-600 hover:text-blue-800 transition"
-              >{{ data.user.username }}</NuxtLink
-            ><span class="italic text-gray-400 text-sm">• {{ $t('articles.articleCard.author') }}</span>
+              class="font-medium text-[17px] text-blue-600 hover:text-blue-800"
+            >
+              {{ data.user.username }}
+            </NuxtLink>
+            <span class="italic text-gray-400 text-sm">• {{ $t('articles.articleCard.author') }}</span>
           </div>
           <div class="flex items-center gap-2 mt-1">
             <span
               class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
-              ><Icon name="mdi:account-group" class="w-3.5 h-3.5" />{{ data.followerCount ?? 0 }}
-              {{ $t('profile.followers') }}</span
-            ><button
+            >
+              <Icon name="mdi:account-group" class="w-3.5 h-3.5" />{{ data.followerCount ?? 0 }}
+              {{ $t('profile.followers') }}
+            </span>
+            <button
               v-if="session?.user && session.user.id !== data.user.id"
-              class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all hover:shadow-md hover:scale-105 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+              class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium text-gray-700 bg-white border-gray-200 hover:bg-gray-100 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
               @click="toggleFollow"
             >
               <Icon
                 :name="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
                 class="w-3.5 h-3.5"
                 :class="isFollowing ? 'text-green-500' : 'text-gray-500'"
-              />{{ isFollowing ? $t('profile.unfollow') : $t('profile.follow') }}
+              />
+              {{ isFollowing ? $t('profile.unfollow') : $t('profile.follow') }}
             </button>
           </div>
         </div>
       </div>
+
       <p
         v-if="data.excerpt"
-        class="text-lg md:text-xl italic text-gray-700 dark:text-gray-200 leading-relaxed border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4 mb-3 shadow-sm"
+        class="text-lg md:text-xl italic text-gray-700 dark:text-gray-200 leading-relaxed border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4 mb-3"
       >
         {{ data.excerpt }}
       </p>
+
       <NuxtImg
         v-if="data.imageUrl"
         :src="data.imageUrl"
         :alt="$t('articles.articleCard.imageAlt')"
         format="webp"
         quality="85"
-        class="w-full max-h-[70vh] rounded-2xl object-contain bg-neutral-100 dark:bg-neutral-900 border border-gray-100/20 shadow-sm transition-transform duration-700 hover:scale-[1.008]"
+        class="w-full max-h-[70vh] rounded-2xl object-contain bg-neutral-100 dark:bg-neutral-900 border border-gray-100/20"
         loading="lazy"
         placeholder
       />
+
       <div v-if="hasTags" class="mt-4 flex flex-wrap gap-2.5">
         <NuxtLink
           v-for="t in data.tags"
           :key="t.tag.slug"
           :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
-          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
-          ><Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />{{ t.tag.name }}</NuxtLink
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 hover:bg-gray-100 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
         >
+          <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />{{ t.tag.name }}
+        </NuxtLink>
       </div>
+
       <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 mt-4">
         <div class="flex flex-wrap items-center gap-4">
           <template v-if="session?.user.role === 'admin' && session.user.id === data.user.id">
@@ -133,14 +156,14 @@
               <button
                 role="switch"
                 :class="[
-                  'relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
+                  'relative inline-flex h-5 w-10 items-center rounded-full',
                   data.allowedComments ? 'bg-blue-600' : 'bg-gray-500 dark:bg-gray-600',
                 ]"
                 @click="((data.allowedComments = !data.allowedComments), toggleComments())"
               >
                 <span
                   :class="[
-                    'inline-block h-4 w-4 rounded-full bg-white transition-transform',
+                    'inline-block h-4 w-4 rounded-full bg-white',
                     data.allowedComments ? 'translate-x-5' : 'translate-x-1',
                   ]"
                 />
@@ -161,11 +184,8 @@
             <span>{{ formatNumber(data.views) }}x {{ $t('stats.totalViews.title') }}</span>
           </div>
           <div class="flex items-center gap-1">
-            <Icon
-              name="mdi:heart"
-              class="w-4 h-4"
-              :class="data.likedByUser ? 'text-red-500' : 'text-gray-500'"
-            /><span>{{ formatNumber(data.likes) }}</span>
+            <Icon name="mdi:heart" class="w-4 h-4" :class="data.likedByUser ? 'text-red-500' : 'text-gray-500'" />
+            <span>{{ formatNumber(data.likes) }}</span>
           </div>
           <div class="flex items-center gap-1">
             <Icon name="mdi:share-variant" class="w-4 h-4 text-gray-500" /><span>{{ formatNumber(data.shared) }}</span>
@@ -176,94 +196,102 @@
             :article="data"
             hydrateOnInteraction
             @saved="refresh"
-            ><button
-              class="flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400 transition-all shadow-sm hover:shadow-md hover:scale-105"
+          >
+            <button
+              class="flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400"
               :aria-label="$t('common.actions.edit')"
               @click="open.value = true"
             >
-              <Icon name="mdi:pencil" class="w-5 h-5" /></button
-          ></LazyArticleModal>
+              <Icon name="mdi:pencil" class="w-5 h-5" />
+            </button>
+          </LazyArticleModal>
         </div>
       </div>
+
       <div class="flex justify-end gap-4 mt-10">
         <button
           :aria-label="$t('common.actions.like')"
-          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 cursor-pointer hover:text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-red-400 dark:hover:border-red-400"
-          :title="$t('common.actions.like')"
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-red-400 dark:hover:border-red-400"
           @click="toggleLike"
         >
           <Icon name="mdi:heart" class="w-5 h-5" :class="{ 'text-red-500 dark:text-red-400': data.likedByUser }" />
         </button>
         <button
           :aria-label="$t('common.actions.copyLink')"
-          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all shadow-sm hover:shadow-md hover:scale-105 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:hover:border-blue-500"
-          :title="$t('common.actions.copyLink')"
+          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:hover:border-blue-500"
           @click="copyLink"
         >
-          <Icon name="mdi:link-variant" class="w-5 h-5" /></button
-        ><NuxtLink
+          <Icon name="mdi:link-variant" class="w-5 h-5" />
+        </button>
+        <NuxtLink
           :to="`https://x.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
           target="_blank"
-          class="w-10 h-10 flex items-center justify-center rounded-full border transition-all shadow-sm hover:shadow-md hover:scale-105 bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
-          :title="$t('common.actions.shareX')"
-          :aria-label="$t('common.actions.shareX')"
+          class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
           @click="share('TWITTER')"
-          ><Icon name="mdi:twitter" class="w-5 h-5" /></NuxtLink
-        ><NuxtLink
+        >
+          <Icon name="mdi:twitter" class="w-5 h-5" />
+        </NuxtLink>
+        <NuxtLink
           :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
           target="_blank"
-          class="w-10 h-10 flex items-center justify-center rounded-full border transition-all shadow-sm hover:shadow-md hover:scale-105 bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
-          :title="$t('common.actions.shareLinkedIn')"
-          :aria-label="$t('common.actions.shareLinkedIn')"
+          class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
           @click="share('LINKEDIN')"
-          ><Icon name="mdi:linkedin" class="w-5 h-5"
-        /></NuxtLink>
+        >
+          <Icon name="mdi:linkedin" class="w-5 h-5" />
+        </NuxtLink>
       </div>
+
       <div
         ref="content"
-        class="max-w-[1000px] bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-500 text-[17px] md:text-lg leading-[1.8] text-gray-800 space-y-6 prose prose-gray prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:hover:border-gray-600 dark:prose-invert dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600"
+        class="max-w-[1000px] bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 text-[17px] md:text-lg leading-[1.8] text-gray-800 space-y-6 prose prose-gray prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:prose-invert dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600"
       >
         <ArticleParsed :content="data.content" :articleId="data.id" />
       </div>
-      <div class="w-full"><ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-3 p-4" /></div>
+
+      <ArticleSeries v-if="data.series" :series="data.series" />
+      <div
+        class="mt-8 flex flex-col items-start justify-between gap-4 border-t border-gray-100 pt-8 sm:flex-row sm:items-center dark:border-gray-800"
+      >
+        <div class="flex shrink-0 items-center">
+          <ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-2 text-gray-400 dark:text-gray-500" />
+        </div>
+        <ArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
+      </div>
       <VueEasyLightbox
         :visible="lightboxVisible"
         :imgs="images"
         :index="currentImageIndex"
         @hide="lightboxVisible = false"
-      /><ArticleRelated :articles="relatedArticles!" :pending />
-      <div v-if="data.sources?.length" class="group w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
+      />
+      <ArticleRelated :articles="relatedArticles!" :pending />
+      <div v-if="data.sources?.length" class="w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
         <div
-          class="flex items-center justify-between cursor-pointer select-none text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+          class="flex items-center justify-between cursor-pointer text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400"
           @click="isOpen = !isOpen"
         >
           <div class="flex items-center gap-2">
             <Icon name="mdi:book-open-page-variant" class="w-5 h-5 text-blue-500 dark:text-blue-400" />
             {{ $t('articles.columns.sources') }} ({{ data.sources.length }})
           </div>
-          <Icon
-            name="mdi:chevron-down"
-            class="w-5 h-5 text-gray-400 transition-transform duration-300"
-            :class="{ 'rotate-180': isOpen }"
-          />
+          <Icon name="mdi:chevron-down" class="w-5 h-5 text-gray-400" :class="{ 'rotate-180': isOpen }" />
         </div>
-        <transition name="fade-slide"
-          ><ul v-if="isOpen" class="mt-4 space-y-3 pl-1">
-            <li v-for="source in data.sources" :key="source" class="flex items-center gap-3 group/item">
-              <LazyNuxtImg
-                :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
-                class="w-5 h-5 rounded-sm opacity-80 group-hover/item:opacity-100 transition-opacity"
-                alt="favicon"
-              /><NuxtLink
-                :to="source"
-                target="_blank"
-                rel="noreferrer"
-                class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-4 transition-colors truncate max-w-[calc(100%-2.5rem)]"
-                >{{ source }}
-              </NuxtLink>
-            </li>
-          </ul>
-        </transition>
+        <ul v-if="isOpen" class="mt-4 space-y-3 pl-1">
+          <li v-for="source in data.sources" :key="source" class="flex items-center gap-3">
+            <LazyNuxtImg
+              :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
+              class="w-5 h-5 rounded-sm"
+              alt="favicon"
+            />
+            <NuxtLink
+              :to="source"
+              target="_blank"
+              rel="noreferrer"
+              class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline truncate max-w-[calc(100%-2.5rem)]"
+            >
+              {{ source }}
+            </NuxtLink>
+          </li>
+        </ul>
       </div>
       <CommentSection :articleId="data.id" :commCount="data.commentCount || 0" :allowComments="data.allowedComments" />
       <ArticleTOC :content="data.content" />

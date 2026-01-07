@@ -4,6 +4,7 @@
       type="error"
       :title="errorTitle"
       :message="errorMessage"
+      :actionTo="'/'"
       :actionText="$t('common.actions.home')"
       :errorCode="statusCode"
       :stackTrace="isDev ? stackTrace : undefined"

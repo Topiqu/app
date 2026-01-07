@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     allowNotifs: z.boolean().optional(),
     allowEmail: z.boolean().optional(),
     lastLogin: z.coerce.date().optional(),
-    avatarUrl: z.string().optional(),
+    avatarUrl: z.url().nullable().optional(),
     totpSecret: z.string().nullable().optional(),
     clientSiteId: z.string().nullable().optional(),
   })

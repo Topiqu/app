@@ -164,19 +164,39 @@ model Article {
   savedAmount      Float             @default(0.0)
   savedTimeMinutes Int               @default(0)
   publishedAt      DateTime?
+  articleSeriesId  String?
+  articleSeries    ArticleSeries?    @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
+  seriesOrder      Int?              @default(0)
   releaseAt        DateTime?
   allowedComments  Boolean           @default(true)
   tags             ArticleTag[]
   comments         Comment[]
   reactions        ArticleReaction[]
   shares           ArticleShare[]
+  feedbacks        ArticleFeedback[]
   pollResults      PollResult[]
   notifications    Notification[]    @relation("ArticleNotifications")
   sources          String[]
   prompt           String?
 
   @@unique([slug, clientSiteId])
-  @@index([title, excerpt, clientSiteId])
+  @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])
+}
+
+model ArticleSeries {
+  id           String     @id() @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt()
+  deletedAt    DateTime?
+  name         String
+  slug         String
+  description  String?
+  imageUrl     String?
+  clientSiteId String
+  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  articles     Article[]
+
+  @@unique([slug, clientSiteId])
 }
 
 model ArticleShare {
@@ -208,6 +228,36 @@ model ArticleTag {
   tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([articleId, tagId])
+}
+
+model ArticleFeedback {
+  id        String    @id() @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
+  articleId String
+  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  isHelpful Boolean
+  reason    String?
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId String?
+
+  @@unique([articleId, userId, sessionId])
+}
+
+model ArticleReaction {
+  id        String    @id() @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
+  articleId String
+  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+
+  @@unique([articleId, userId, sessionId])
 }
 
 model Log {
@@ -252,6 +302,7 @@ model User {
   comments         Comment[]
   notifications    Notification[]
   reactions        CommentReaction[]
+  feedbacks        ArticleFeedback[]
   emojiReactions   EmojiReaction[]
   articleReactions ArticleReaction[]
   followers        Follow[]          @relation("Follower")
@@ -348,6 +399,7 @@ model ClientSite {
   users               User[]
   tags                Tag[]
   articles            Article[]
+  articleSeries       ArticleSeries[]
   articleDrafts       ArticleDraft[]
   emojis              Emoji[]
   userBans            UserBan[]
@@ -475,20 +527,6 @@ model EmojiReaction {
   emoji     Emoji   @relation(fields: [emojiId], references: [id], onDelete: Cascade)
 
   @@id([userId, commentId, emojiId])
-}
-
-model ArticleReaction {
-  id        String    @id() @default(uuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt()
-  deletedAt DateTime?
-  articleId String
-  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  userId    String?
-  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sessionId String?
-
-  @@unique([articleId, userId, sessionId])
 }
 
 model VerificationCode {

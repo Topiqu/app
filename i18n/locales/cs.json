@@ -8,6 +8,7 @@
     "close": "Zavřít",
     "warning": "Upozornění",
     "unknown": "Neznámo",
+    "remove": "Odebrat",
     "continue": "Pokračovat",
     "unsavedChanges": "Neuložené změny!",
     "showPassword": "Zobrazit heslo",
@@ -98,6 +99,7 @@
       "tags": "Štítky",
       "home": "Domů",
       "continue": "Pokračovat",
+      "send": "Odeslat",
       "cancel": "Zrušit",
       "showDetails": "Zobrazit detaily",
       "hideDetails": "Skrýt detaily",
@@ -339,6 +341,32 @@
       "tooShort": "Heslo je příliš krátké (min. {minLength} znaků)",
       "tooLong": "Heslo je příliš dlouhé (max. {maxLength} znaků)"
     }
+  },
+  "series": {
+    "label": "Série",
+    "placeholder": "Vyber nebo vytvoř sérii...",
+    "part": "{count}. díl",
+    "createTitle": "Vytvořit novou sérii",
+    "nameLabel": "Název série",
+    "namePlaceholder": "Např. Jak vybrat nemovitost...",
+    "createNew": "Vytvořit novou sérii...",
+    "createFailed": "Nepodařilo se vytvořit sérii",
+    "continueReading": "Pokračovat v sérii",
+    "previous": "Předchozí",
+    "next": "Další část",
+    "nextPart": "Následující část",
+    "current": "Právě čtete",
+    "showList": "Zobrazit celou sérii",
+    "hideList": "Skrýt seznam dílů"
+  },
+  "feedback": {
+    "question": "Byl tento článek užitečný?",
+    "subtitle": "Váš názor nám pomáhá zlepšovat obsah pro ostatní.",
+    "placeholder": "Co můžeme vylepšit? (volitelné)",
+    "thankYou": "Díky za zpětnou vazbu!",
+    "recorded": "Váš názor nám pomáhá zlepšovat obsah.",
+    "change": "Změnit názor",
+    "thanks_short": "Díky!"
   },
   "seo": {
     "default": {

@@ -1,8 +1,8 @@
 <template>
-  <Menu :as class="relative inline-block text-left">
+  <Menu v-slot="{ open }" :as class="relative inline-block text-left">
     <Float placement="bottom-end" :offset="8" portal>
       <MenuButton as="template">
-        <slot />
+        <slot :open />
       </MenuButton>
 
       <transition

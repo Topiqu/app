@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
   const previousArticle = await db.article.findUnique({
     where: { id },
-    select: { status: true, releaseAt: true },
+    select: { status: true, releaseAt: true, articleSeriesId: true, seriesOrder: true },
   })
 
   if (!previousArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
@@ -41,6 +41,23 @@ export default defineEventHandler(async (event) => {
       (previousArticle.releaseAt && new Date(previousArticle.releaseAt) < currentDate))
   ) {
     throw createError({ statusCode: 403, message: t('common.errors.releaseDateLocked')! })
+  }
+
+  let newSeriesOrder = previousArticle.seriesOrder
+  if (body.articleSeriesId !== undefined) {
+    if (body.articleSeriesId === null) {
+      newSeriesOrder = 0
+    } else if (body.articleSeriesId !== previousArticle.articleSeriesId) {
+      const lastArticle = await db.article.findFirst({
+        where: {
+          articleSeriesId: body.articleSeriesId,
+          clientSiteId: user.clientSiteId,
+        },
+        orderBy: { seriesOrder: 'desc' },
+        select: { seriesOrder: true },
+      })
+      newSeriesOrder = (lastArticle?.seriesOrder ?? 0) + 1
+    }
   }
 
   let content = body.content
@@ -77,6 +94,7 @@ export default defineEventHandler(async (event) => {
   } else {
     const data: any = {
       ...body,
+      seriesOrder: newSeriesOrder,
       releaseAt: body.releaseAt ? new Date(body.releaseAt) : undefined,
     }
     if (body.content) data.content = sanitizeHtml(content || '')
