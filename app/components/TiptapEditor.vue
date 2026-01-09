@@ -144,6 +144,7 @@
 <script setup lang="ts">
 import type { Level } from '@tiptap/extension-heading'
 
+import tippy from 'tippy.js'
 import { useVModel } from '@vueuse/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
@@ -153,7 +154,6 @@ import { BubbleMenu } from '@tiptap/vue-3/menus'
 import { Youtube } from '@tiptap/extension-youtube'
 import { Underline } from '@tiptap/extension-underline'
 import { TextAlign } from '@tiptap/extension-text-align'
-import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { Typography } from '@tiptap/extension-typography'
 import { Blockquote } from '@tiptap/extension-blockquote'
@@ -161,8 +161,12 @@ import { Dropcursor } from '@tiptap/extension-dropcursor'
 import { FontFamily } from '@tiptap/extension-font-family'
 import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import { CharacterCount } from '@tiptap/extension-character-count'
+import { EditorContent, useEditor, VueRenderer } from '@tiptap/vue-3'
+import 'tippy.js/dist/tippy.css'
 
 import Poll from '../../extensions/poll'
+import CommandList from './CommandList.vue'
+import SlashCommand from '../../extensions/slashCommand'
 
 const CustomBlockquote = Blockquote.extend({
   renderHTML: ({ HTMLAttributes }) => ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0],
@@ -173,18 +177,15 @@ const {
   fallback = 'No content available',
   limit = 8192,
   ...props
-} = defineProps<{
-  modelValue: string | null
-  fallback?: string
-  limit?: number
-  edit?: boolean
-}>()
-
+} = defineProps<{ modelValue: string | null; fallback?: string; limit?: number; edit?: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void; (e: 'update:edit', value: boolean): void }>()
 const content = useVModel(props, 'modelValue', emit, { defaultValue: '<p></p>' })
 
 watch(content, (v) => v || (content.value = '<p></p>'))
 const percentage = computed(() => Math.round((100 * (editor.value?.storage.characterCount.characters() || 0)) / limit))
+
+const chain = () => editor.value?.chain().focus()
+const runCmd = (fn: (c: any) => any) => fn(chain())?.run()
 
 const uploadImage = async (files: FileList | null) => {
   const file = files?.[0]
@@ -193,9 +194,11 @@ const uploadImage = async (files: FileList | null) => {
   form.append('file', file)
   try {
     const { url, success } = await $fetch('/api/upload', { method: 'POST', body: form })
-
-    if (!success) alert('Upload error')
-    else editor.value?.commands.setImage({ src: url, alt: file.name })
+    if (success) {
+      editor.value?.commands.setImage({ src: url, alt: file.name })
+    } else {
+      alert('Upload error')
+    }
   } catch (e: any) {
     alert('ERR: ' + e.message)
   }
@@ -203,77 +206,151 @@ const uploadImage = async (files: FileList | null) => {
 
 const addImageFromUrl = () => {
   const url = prompt('URL:')
-  if (url) editor.value?.chain().focus().setImage({ src: url }).run()
+  if (url) chain()?.setImage({ src: url }).run()
 }
-const onFileInputClose = () => editor.value?.chain().focus().run()
-const handleEditorClick = () => {
-  if (!edit) emit('update:edit', true)
-  editor.value?.chain().focus().run()
-}
-
-const setBlockquote = () => editor.value?.chain().focus().setParagraph().setBlockquote().run()
-const unsetBlockquote = () => editor.value?.chain().focus().unsetBlockquote().run()
+const onFileInputClose = () => chain()?.run()
+const handleEditorClick = () => (!edit && emit('update:edit', true), chain()?.run())
+const setBlockquote = () => runCmd((c) => c.setParagraph().setBlockquote())
+const unsetBlockquote = () => runCmd((c) => c.unsetBlockquote())
 const insertYoutube = () => {
   const url = prompt('YouTube URL:')
-  if (url) editor.value?.chain().focus().setYoutubeVideo({ src: url }).run()
+  if (url) runCmd((c) => c.setYoutubeVideo({ src: url }))
 }
 
 const insertPoll = () =>
-  editor.value
-    ?.chain()
-    .focus()
-    .insertContent({
+  runCmd((c) =>
+    c.insertContent({
       type: 'poll',
       attrs: {
         id: crypto.randomUUID(),
         question: $t('articles.poll.defaultQuestion'),
         options: [1, 2].map((i) => $t('articles.poll.option', { index: i })),
       },
-    })
-    .run()
+    }),
+  )
 
 const setLink = () => {
   const url = prompt('URL', editor.value?.getAttributes('link').href)
-  if (url === null) return
-
-  if (url === '') editor.value?.chain().focus().unsetLink().run()
-  else editor.value?.chain().focus().setLink({ href: url }).run()
+  if (url !== null) runCmd((c) => (url === '' ? c.unsetLink() : c.setLink({ href: url })))
 }
 
-const setColor = (e: Event) =>
-  editor.value
-    ?.chain()
-    .focus()
-    .setColor((e.target as HTMLInputElement).value || '#000')
-    .run()
-const setFontFamily = (e: Event) =>
-  editor.value
-    ?.chain()
-    .focus()
-    .setFontFamily((e.target as HTMLSelectElement).value || '')
-    .run()
+const setColor = (e: Event) => runCmd((c) => c.setColor((e.target as HTMLInputElement).value || '#000'))
+const setFontFamily = (e: Event) => runCmd((c) => c.setFontFamily((e.target as HTMLSelectElement).value || ''))
 
 const validateContent = (html: string) => {
   const doc = new DOMParser().parseFromString(html, 'text/html')
   let changed = false
-  doc.querySelectorAll('div[data-type="poll"]').forEach((poll) => {
-    const question = (poll.getAttribute('data-question') ?? '').trim() || $t('articles.poll.defaultQuestion')
-    let opts: string[] = []
+  doc.querySelectorAll('div[data-type="poll"]').forEach((p) => {
+    const q = (p.getAttribute('data-question') ?? '').trim() || $t('articles.poll.defaultQuestion')
+    let o = []
     try {
-      opts = poll.getAttribute('data-options') ? JSON.parse(poll.getAttribute('data-options')!) : []
-    } catch (e: any) {
+      o = JSON.parse(p.getAttribute('data-options')!)
+    } catch (e) {
       console.error(e)
     }
-    opts =
-      Array.isArray(opts) && opts.length
-        ? opts.map((o) => String(o ?? '').trim() || $t('articles.poll.defaultOption'))
+    o =
+      Array.isArray(o) && o.length
+        ? o.map((x) => String(x ?? '').trim() || $t('articles.poll.defaultOption'))
         : [$t('articles.poll.defaultOption')]
-    if (question !== poll.getAttribute('data-question') || JSON.stringify(opts) !== poll.getAttribute('data-options'))
+    if (q !== p.getAttribute('data-question') || JSON.stringify(o) !== p.getAttribute('data-options')) {
       changed = true
-    poll.setAttribute('data-question', question)
-    poll.setAttribute('data-options', JSON.stringify(opts))
+      p.setAttribute('data-question', q)
+      p.setAttribute('data-options', JSON.stringify(o))
+    }
   })
   return changed ? doc.body.innerHTML : html
+}
+
+const getSuggestionItems = ({ query }: { query: string }) =>
+  [
+    {
+      title: 'Heading 1',
+      icon: 'mdi-format-header-1',
+      command: ({ editor, range }: any) =>
+        editor.chain().focus().deleteRange(range).setNode('heading', { level: 1 }).run(),
+    },
+    {
+      title: 'Heading 2',
+      icon: 'mdi-format-header-2',
+      command: ({ editor, range }: any) =>
+        editor.chain().focus().deleteRange(range).setNode('heading', { level: 2 }).run(),
+    },
+    {
+      title: 'Heading 3',
+      icon: 'mdi-format-header-3',
+      command: ({ editor, range }: any) =>
+        editor.chain().focus().deleteRange(range).setNode('heading', { level: 3 }).run(),
+    },
+    {
+      title: 'Bullet List',
+      icon: 'mdi-format-list-bulleted',
+      command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).toggleBulletList().run(),
+    },
+    {
+      title: 'Numbered List',
+      icon: 'mdi-format-list-numbered',
+      command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
+    },
+    {
+      title: 'Quote',
+      icon: 'mdi-format-quote-open',
+      command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).setBlockquote().run(),
+    },
+    {
+      title: 'Image',
+      icon: 'mdi-image',
+      command: ({ editor, range }: any) => {
+        editor.chain().focus().deleteRange(range).run()
+        addImageFromUrl()
+      },
+    },
+    {
+      title: 'YouTube',
+      icon: 'mdi-youtube',
+      command: ({ editor, range }: any) => {
+        editor.chain().focus().deleteRange(range).run()
+        insertYoutube()
+      },
+    },
+    {
+      title: 'Poll',
+      icon: 'mdi-poll',
+      command: ({ editor, range }: any) => {
+        editor.chain().focus().deleteRange(range).run()
+        insertPoll()
+      },
+    },
+  ].filter((item) => item.title.toLowerCase().startsWith(query.toLowerCase()))
+
+const renderSuggestion = () => {
+  let component: any, popup: any
+  return {
+    onStart: (props: any) => {
+      component = new VueRenderer(CommandList, { props, editor: props.editor })
+      if (props.clientRect)
+        popup = tippy('body', {
+          getReferenceClientRect: props.clientRect,
+          appendTo: () => document.body,
+          content: component.element,
+          showOnCreate: true,
+          interactive: true,
+          trigger: 'manual',
+          placement: 'bottom-start',
+        })
+    },
+    onUpdate(props: any) {
+      component.updateProps(props)
+      if (props.clientRect) {
+        popup[0].setProps({ getReferenceClientRect: props.clientRect })
+      }
+    },
+    onKeyDown: (props: any) =>
+      props.event.key === 'Escape' ? (popup[0].hide(), true) : component.ref?.onKeyDown(props),
+    onExit() {
+      popup?.[0].destroy()
+      component?.destroy()
+    },
+  }
 }
 
 const editor = useEditor({
@@ -295,13 +372,14 @@ const editor = useEditor({
       ccLanguage: 'cs',
     }),
     Poll,
+    TextStyle,
+    Color.configure({ types: ['textStyle'] }),
+    FontFamily.configure({ types: ['textStyle'] }),
     BubbleMenuExtension.configure({
       shouldShow: ({ editor, state }) =>
         state.selection.from !== state.selection.to && !editor.isActive('tableCell') && !editor.isActive('tableHeader'),
     }),
-    TextStyle,
-    Color.configure({ types: ['textStyle'] }),
-    FontFamily.configure({ types: ['textStyle'] }),
+    SlashCommand.configure({ suggestion: { items: getSuggestionItems, render: renderSuggestion } as any }),
   ],
   editable: edit,
   onUpdate: ({ editor }) => (content.value = validateContent(editor.getHTML())),
