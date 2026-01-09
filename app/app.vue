@@ -1,12 +1,5 @@
 <template>
-  <NuxtLoadingIndicator
-    class="z-[9999]"
-    :color="
-      clientSite?.theme && Object.keys(themeColors).includes(clientSite!.theme)
-        ? themeColors[clientSite!.theme]
-        : themeColors.blue
-    "
-  />
+  <NuxtLoadingIndicator class="z-[9999]" :color="computedThemeColor" />
   <StatusBar />
   <div>
     <NuxtLayout> <NuxtPage /> </NuxtLayout>
@@ -15,12 +8,13 @@
 
 <script setup lang="ts">
 import type { themes } from '~/composables/theme'
+
 const reqUrl = useRequestURL()
 const clientSite = await useClientSite()
 const adChance = useAdChance()
-// throw createError({ statusCode: 400, message: 'Service Unavailable', statusMessage: 'Service Unavailable' })
+
 adChance?.assign(clientSite!.id, clientSite!.plan)
-console.log(adChance?.adTargeting.value)
+// console.log(adChance?.adTargeting.value)
 
 const themeColors: Record<keyof typeof themes, string> = {
   blue: '#2563eb',
@@ -40,6 +34,12 @@ const themeColors: Record<keyof typeof themes, string> = {
   violet: '#8b5cf6',
 }
 
+const computedThemeColor = computed(() => {
+  return clientSite?.theme && Object.keys(themeColors).includes(clientSite!.theme)
+    ? themeColors[clientSite!.theme]
+    : themeColors.blue
+})
+
 useSeoMeta({
   title: () => clientSite?.name || $t('seo.default.title'),
   description: () => clientSite?.description || $t('seo.default.description'),
@@ -52,8 +52,16 @@ useSeoMeta({
   author: () => clientSite?.name || $t('seo.default.author'),
   ogTitle: () => clientSite?.name || $t('seo.default.title'),
   ogDescription: () => clientSite?.description || $t('seo.default.description'),
-  ogImage: () => clientSite?.logoUrl || '/default-og-image.webp',
   ogLocale: () => clientSite?.language || 'en',
+})
+
+defineOgImageComponent('ClientSite', {
+  title: clientSite?.name || $t('seo.default.title'),
+  description: clientSite?.description || $t('seo.default.description'),
+  siteName: clientSite?.name || '',
+  siteLogo: clientSite?.logoUrl || `${reqUrl.origin}/logo.png`,
+  themeColor: computedThemeColor.value,
+  domain: reqUrl.host,
 })
 
 useHead({
