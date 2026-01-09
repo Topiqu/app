@@ -1,9 +1,21 @@
+/// <reference types="@types/google-publisher-tag" />
+
 declare global {
-  var googletag: any
+  interface Window {
+    googletag: typeof googletag
+  }
+}
+
+interface ClientData {
+  gamNetworkCode: string
+  allowAds: boolean
+  id: string
+  plan: string
+  category?: string
 }
 
 let isInitialized = false
-let cachedClient: any = null
+let cachedClient: ClientData | null = null
 let gptScriptPromise: Promise<void> | null = null
 
 export const useGamAds = () => {
@@ -14,7 +26,7 @@ export const useGamAds = () => {
     if (!hostname) return null
 
     try {
-      cachedClient = await $fetch(`/api/clients/slug/${hostname}`)
+      cachedClient = await $fetch<ClientData>(`/api/clients/slug/${hostname}`)
     } catch (e) {
       console.error(e)
     }
@@ -27,12 +39,12 @@ export const useGamAds = () => {
 
     gptScriptPromise = new Promise<void>((resolve) => {
       fetchClientData().then((client) => {
-        if (!client?.gamNetworkCode || !client.allowAds || client.plan === 'BASIC') {
+        if (!client?.gamNetworkCode || !client.allowAds) {
           gptScriptPromise = null
           return
         }
 
-        window.googletag = window.googletag || { cmd: [] }
+        window.googletag = window.googletag || ({ cmd: [] } as any)
 
         if (document.getElementById('gpt-script')) {
           isInitialized = true
@@ -48,16 +60,22 @@ export const useGamAds = () => {
 
         script.onload = () => {
           window.googletag.cmd.push(() => {
-            window.googletag.pubads().enableSingleRequest()
-            window.googletag.pubads().collapseEmptyDivs(true)
-            window.googletag.pubads().enableLazyLoad({
+            const pubads = window.googletag.pubads()
+
+            pubads.enableSingleRequest()
+            pubads.collapseEmptyDivs(true)
+            pubads.enableLazyLoad({
               fetchMarginPercent: 200,
               renderMarginPercent: 100,
               mobileScaling: 2.0,
             })
 
-            if (import.meta.dev) {
-              // window.googletag.pubads().setForceSafeFrame(true)
+            if (client) {
+              pubads.setTargeting('client_id', client.id)
+              pubads.setTargeting('plan', client.plan)
+              if (client.category) {
+                pubads.setTargeting('category', client.category)
+              }
             }
 
             window.googletag.enableServices()
@@ -78,7 +96,7 @@ export const useGamAds = () => {
 
   const defineSlot = async (
     adUnitPath: string,
-    sizes: number[][] | 'fluid',
+    sizes: googletag.GeneralSize,
     slotId: string,
     targeting?: Record<string, string | string[]>,
   ) => {
@@ -94,7 +112,7 @@ export const useGamAds = () => {
       const fullPath = `/${client.gamNetworkCode}${cleanPath}`
 
       const existingSlots = window.googletag.pubads().getSlots()
-      const isDefined = existingSlots.some((s: any) => s.getSlotElementId() === slotId)
+      const isDefined = existingSlots.some((s) => s.getSlotElementId() === slotId)
 
       if (isDefined) {
         window.googletag.display(slotId)
@@ -116,7 +134,7 @@ export const useGamAds = () => {
     })
   }
 
-  const refreshAds = (slots?: any[]) => {
+  const refreshAds = (slots?: googletag.Slot[]) => {
     if (!isInitialized || !window.googletag) return
 
     window.googletag.cmd.push(() => {
@@ -124,7 +142,7 @@ export const useGamAds = () => {
     })
   }
 
-  const setTargeting = (key: string, value: string | string[]) => {
+  const setPageTargeting = (key: string, value: string | string[]) => {
     if (!isInitialized || !window.googletag) return
 
     window.googletag.cmd.push(() => {
@@ -137,7 +155,7 @@ export const useGamAds = () => {
 
     window.googletag.cmd.push(() => {
       const allSlots = window.googletag.pubads().getSlots()
-      const slotsToDestroy = allSlots.filter((s: any) => slotIds.includes(s.getSlotElementId()))
+      const slotsToDestroy = allSlots.filter((s) => slotIds.includes(s.getSlotElementId()))
 
       if (slotsToDestroy.length > 0) {
         window.googletag.destroySlots(slotsToDestroy)
@@ -149,7 +167,7 @@ export const useGamAds = () => {
     initialize,
     defineSlot,
     refreshAds,
-    setTargeting,
+    setPageTargeting,
     destroySlots,
     get isInitialized() {
       return isInitialized

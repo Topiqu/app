@@ -101,6 +101,7 @@
   },
   "devDependencies": {
     "@types/argon2-browser": "^1.18.4",
+    "@types/google-publisher-tag": "^1.20251117.0",
     "@types/mjml": "^4.7.4",
     "@types/pdfkit": "^0.17.3",
     "@unocss/nuxt": "^66.5.9",

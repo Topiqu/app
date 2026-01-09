@@ -88,6 +88,7 @@
       },
       "devDependencies": {
         "@types/argon2-browser": "^1.18.4",
+        "@types/google-publisher-tag": "^1.20251117.0",
         "@types/mjml": "^4.7.4",
         "@types/pdfkit": "^0.17.3",
         "@unocss/nuxt": "^66.5.9",
@@ -1259,6 +1260,8 @@
     "@types/eslint-scope": ["@types/eslint-scope@3.7.7", "", { "dependencies": { "@types/eslint": "*", "@types/estree": "*" } }, "sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg=="],
 
     "@types/estree": ["@types/estree@1.0.8", "", {}, "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="],
+
+    "@types/google-publisher-tag": ["@types/google-publisher-tag@1.20251117.0", "", {}, "sha512-pcqhkSnj0zUj0JzaNF93c9bTVzRLvSht9bMPXcE3l+C3tZmqNwHdvuzsdVWYqrpajSmKo6i/09BylJWoei4q6A=="],
 
     "@types/graceful-fs": ["@types/graceful-fs@4.1.9", "", { "dependencies": { "@types/node": "*" } }, "sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ=="],
 

@@ -12,6 +12,8 @@
 </template>
 
 <script setup lang="ts">
+/// <reference types="@types/google-publisher-tag" />
+
 const props = defineProps<{
   adUnitPath: string
   sizes: number[][] | 'fluid'
@@ -41,7 +43,7 @@ onMounted(async () => {
     })
   }
 
-  await defineSlot(props.adUnitPath, props.sizes, internalSlotId, props.targeting)
+  await defineSlot(props.adUnitPath, props.sizes as googletag.GeneralSize, internalSlotId, props.targeting)
 })
 
 onBeforeUnmount(() => {

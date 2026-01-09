@@ -97,7 +97,14 @@ export default defineNuxtConfig({
     },
   },
 
-  typescript: { tsConfig: { include: ['../types/**/*.d.ts', '../server/tasks/**/*.ts'] } },
+  typescript: {
+    tsConfig: {
+      include: ['../types/**/*.d.ts', '../server/tasks/**/*.ts'],
+      compilerOptions: {
+        types: ['@types/google-publisher-tag'],
+      },
+    },
+  },
 
   eslint: { config: { typescript: true } },
 
