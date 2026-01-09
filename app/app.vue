@@ -13,8 +13,9 @@ const reqUrl = useRequestURL()
 const clientSite = await useClientSite()
 const adChance = useAdChance()
 
-adChance?.assign(clientSite!.id, clientSite!.plan)
-// console.log(adChance?.adTargeting.value)
+if (clientSite) {
+  adChance?.assign(clientSite.id, clientSite.plan)
+} // console.log(adChance?.adTargeting.value)
 
 const themeColors: Record<keyof typeof themes, string> = {
   blue: '#2563eb',
