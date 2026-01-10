@@ -232,7 +232,7 @@ const percentage = computed(() => Math.round((100 * (editor.value?.storage.chara
 const chain = () => editor.value?.chain().focus()
 const runCmd = (fn: (c: any) => any) => fn(chain())?.run()
 
-const linkModal = reactive({ show: false, url: '', type: 'link' as 'link' | 'image' | 'youtube' })
+const linkModal = shallowReactive({ show: false, url: '', type: 'link' as 'link' | 'image' | 'youtube' })
 
 const openPrompt = (type: typeof linkModal.type, val = '') => {
   linkModal.type = type
