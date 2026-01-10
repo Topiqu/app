@@ -304,7 +304,7 @@
         "warning": "Články budou veřejně publikovány ihned po vygenerování.",
         "confirmTitle": "Povolit automatické publikování?",
         "confirmMessage": "Jste si jistí? AI může občas generovat nepřesnosti. Důrazně doporučujeme články před vydáním kontrolovat."
-        },
+      },
       "aiAuthor": {
         "title": "Nastavení AI autora",
         "username": {
@@ -476,7 +476,9 @@
       "createdAt": "Vytvořeno"
     },
     "sources": {
-      "placeholder": "Odkaz na zdroj (https://...)"
+      "placeholder": "Odkaz na zdroj (https://...)",
+      "imageUrl": "Odkaz na obrázek (https://...)",
+      "youtube": "Odkaz na YouTube video (https://...)"
     },
     "status": {
       "published": "Publikováno",

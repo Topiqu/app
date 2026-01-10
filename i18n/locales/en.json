@@ -303,7 +303,7 @@
         "warning": "Articles will be publicly published immediately after generation.",
         "confirmTitle": "Enable Automatic Publishing?",
         "confirmMessage": "Are you sure? AI may occasionally generate inaccuracies. We still recommend reviewing content before publication. If enabled, content will go live immediately without your approval."
-        },
+      },
       "aiAuthor": {
         "title": "AI Author Settings",
         "username": {
@@ -475,7 +475,9 @@
       "createdAt": "Created At"
     },
     "sources": {
-      "placeholder": "Source link (https://...)"
+      "placeholder": "Source link (https://...)",
+      "imageUrl": "Image link (https://...)",
+      "youtube": "YouTube video link (https://...)"
     },
     "status": {
       "published": "Published",

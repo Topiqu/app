@@ -3,50 +3,53 @@
     <template v-if="editor">
       <div v-if="edit" class="flex flex-wrap items-center gap-1">
         <FileInput :uploadImage="uploadImage" @close="onFileInputClose" />
-        <Button title="URL" icon="mdi:image-plus" @click="addImageFromUrl" />
+        <Button title="URL" icon="mdi:image-plus" @click="openPrompt('image')" />
         <Button
           icon="mdi-format-paragraph"
           :active="editor.isActive('paragraph')"
-          @click="editor.chain().focus().setParagraph().run()"
+          @click="runCmd((c) => c.setParagraph())"
         />
         <Button
           v-for="n in 6"
           :key="n"
           :icon="`mdi-format-header-${n}`"
           :active="editor.isActive('heading', { level: n as Level })"
-          @click="
-            editor
-              .chain()
-              .focus()
-              .toggleHeading({ level: n as Level })
-              .run()
-          "
+          @click="runCmd((c) => c.toggleHeading({ level: n as Level }))"
         />
         <Button
           icon="mdi-format-list-bulleted"
           :active="editor.isActive('bulletList')"
-          @click="editor.chain().focus().toggleBulletList().run()"
+          @click="runCmd((c) => c.toggleBulletList())"
         />
         <Button
           icon="mdi-format-list-numbered"
           :active="editor.isActive('orderedList')"
-          @click="editor.chain().focus().toggleOrderedList().run()"
+          @click="runCmd((c) => c.toggleOrderedList())"
         />
-        <Button icon="mdi-format-quote-open" :disabled="!editor.can().setBlockquote()" @click="setBlockquote" />
-        <Button icon="mdi-format-quote-close" :disabled="!editor.can().unsetBlockquote()" @click="unsetBlockquote" />
-        <Button icon="mdi-youtube" @click="insertYoutube" />
+        <Button
+          icon="mdi-format-quote-open"
+          :disabled="!editor.can().setBlockquote()"
+          @click="runCmd((c) => c.setParagraph().setBlockquote())"
+        />
+        <Button
+          icon="mdi-format-quote-close"
+          :disabled="!editor.can().unsetBlockquote()"
+          @click="runCmd((c) => c.unsetBlockquote())"
+        />
+        <Button icon="mdi-youtube" @click="openPrompt('youtube')" />
         <Button icon="mdi-poll" @click="insertPoll" />
         <Button
           v-for="a in ['left', 'center', 'right', 'justify']"
           :key="a"
           :icon="`mdi-format-align-${a}`"
           :active="editor.isActive({ textAlign: a })"
-          @click="editor.chain().focus().setTextAlign(a).run()"
+          @click="runCmd((c) => c.setTextAlign(a))"
         />
-        <Button icon="mdi-minus" @click="editor.chain().focus().setHorizontalRule().run()" />
-        <Button icon="mdi-undo" :disabled="!editor.can().undo()" @click="editor.chain().focus().undo().run()" />
-        <Button icon="mdi-redo" :disabled="!editor.can().redo()" @click="editor.chain().focus().redo().run()" />
-        <Button icon="mdi-format-clear" @click="editor.chain().focus().clearNodes().run()" />
+        <Button icon="mdi-minus" @click="runCmd((c) => c.setHorizontalRule())" />
+        <Button icon="mdi-undo" :disabled="!editor.can().undo()" @click="runCmd((c) => c.undo())" />
+        <Button icon="mdi-redo" :disabled="!editor.can().redo()" @click="runCmd((c) => c.redo())" />
+        <Button icon="mdi-format-clear" @click="runCmd((c) => c.clearNodes())" />
+
         <select
           class="h-9 px-3 rounded-full border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           @mousedown.stop
@@ -60,6 +63,7 @@
           <option value="Georgia">Georgia</option>
           <option value="Times New Roman">Times New Roman</option>
         </select>
+
         <div class="relative w-9 h-9">
           <span
             class="absolute inset-0 rounded-full border border-gray-300"
@@ -74,6 +78,7 @@
             @input="setColor"
           />
         </div>
+
         <div
           :class="[
             'ml-auto text-xs flex items-center gap-2',
@@ -100,6 +105,7 @@
           </span>
         </div>
       </div>
+
       <BubbleMenu
         v-if="editor"
         :editor="editor"
@@ -108,29 +114,68 @@
         <div
           class="flex items-center gap-3 bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-full bg-opacity-95 backdrop-blur-md"
         >
-          <Button
-            icon="mdi-format-bold"
-            :active="editor.isActive('bold')"
-            @click="editor.chain().focus().toggleBold().run()"
-          />
+          <Button icon="mdi-format-bold" :active="editor.isActive('bold')" @click="runCmd((c) => c.toggleBold())" />
           <Button
             icon="mdi-format-italic"
             :active="editor.isActive('italic')"
-            @click="editor.chain().focus().toggleItalic().run()"
+            @click="runCmd((c) => c.toggleItalic())"
           />
           <Button
             icon="mdi-format-underline"
             :active="editor.isActive('underline')"
-            @click="editor.chain().focus().toggleUnderline().run()"
+            @click="runCmd((c) => c.toggleUnderline())"
           />
           <Button
             icon="mdi-format-strikethrough"
             :active="editor.isActive('strike')"
-            @click="editor.chain().focus().toggleStrike().run()"
+            @click="runCmd((c) => c.toggleStrike())"
           />
-          <Button icon="mdi-link" :active="editor.isActive('link')" @click="setLink" />
+          <Button
+            icon="mdi-link"
+            :active="editor.isActive('link')"
+            @click="openPrompt('link', editor.getAttributes('link').href)"
+          />
         </div>
       </BubbleMenu>
+
+      <Teleport to="body">
+        <div
+          v-if="linkModal.show"
+          class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          @click.self="linkModal.show = false"
+        >
+          <div
+            class="bg-white dark:bg-neutral-900 w-full max-w-md p-6 rounded-2xl shadow-2xl border border-gray-200 dark:border-neutral-800 flex flex-col gap-4"
+          >
+            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">
+              {{
+                linkModal.type === 'link'
+                  ? $t('articles.sources.placeholder')
+                  : linkModal.type === 'image'
+                    ? $t('articles.sources.imageUrl')
+                    : $t('articles.sources.youtube')
+              }}
+            </h3>
+
+            <FormInput
+              id="editor-link-input"
+              v-model="linkModal.url"
+              :placeholder="linkModal.type === 'youtube' ? 'https://youtube.com/...' : 'https://...'"
+              :icon="
+                linkModal.type === 'image' ? 'mdi:image' : linkModal.type === 'youtube' ? 'mdi:youtube' : 'mdi:link'
+              "
+              autofocus
+              @keydown.enter.prevent.stop="applyLink"
+            />
+
+            <div class="flex justify-end gap-2">
+              <Button variant="neutral" @click="linkModal.show = false">{{ $t('common.close') }}</Button>
+              <Button variant="primary" @click="applyLink">{{ $t('common.continue') }}</Button>
+            </div>
+          </div>
+        </div>
+      </Teleport>
+
       <EditorContent
         :editor="editor"
         :class="{ 'rounded-lg shadow-sm': edit, 'h-96 p-4 bg-white border border-gray-300 overflow-y-auto': true }"
@@ -187,6 +232,31 @@ const percentage = computed(() => Math.round((100 * (editor.value?.storage.chara
 const chain = () => editor.value?.chain().focus()
 const runCmd = (fn: (c: any) => any) => fn(chain())?.run()
 
+const linkModal = reactive({ show: false, url: '', type: 'link' as 'link' | 'image' | 'youtube' })
+
+const openPrompt = (type: typeof linkModal.type, val = '') => {
+  linkModal.type = type
+  linkModal.url = val || ''
+  linkModal.show = true
+  nextTick(() => document.getElementById('editor-link-input')?.focus())
+}
+
+const applyLink = () => {
+  const { url, type } = linkModal
+  linkModal.show = false
+
+  if (!url && type === 'link') {
+    runCmd((c) => c.unsetLink())
+    return
+  }
+
+  if (url) {
+    if (type === 'link') runCmd((c) => c.setLink({ href: url }))
+    if (type === 'image') runCmd((c) => c.setImage({ src: url }))
+    if (type === 'youtube') runCmd((c) => c.setYoutubeVideo({ src: url }))
+  }
+}
+
 const uploadImage = async (files: FileList | null) => {
   const file = files?.[0]
   if (!file) return
@@ -204,18 +274,8 @@ const uploadImage = async (files: FileList | null) => {
   }
 }
 
-const addImageFromUrl = () => {
-  const url = prompt('URL:')
-  if (url) chain()?.setImage({ src: url }).run()
-}
 const onFileInputClose = () => chain()?.run()
 const handleEditorClick = () => (!edit && emit('update:edit', true), chain()?.run())
-const setBlockquote = () => runCmd((c) => c.setParagraph().setBlockquote())
-const unsetBlockquote = () => runCmd((c) => c.unsetBlockquote())
-const insertYoutube = () => {
-  const url = prompt('YouTube URL:')
-  if (url) runCmd((c) => c.setYoutubeVideo({ src: url }))
-}
 
 const insertPoll = () =>
   runCmd((c) =>
@@ -228,11 +288,6 @@ const insertPoll = () =>
       },
     }),
   )
-
-const setLink = () => {
-  const url = prompt('URL', editor.value?.getAttributes('link').href)
-  if (url !== null) runCmd((c) => (url === '' ? c.unsetLink() : c.setLink({ href: url })))
-}
 
 const setColor = (e: Event) => runCmd((c) => c.setColor((e.target as HTMLInputElement).value || '#000'))
 const setFontFamily = (e: Event) => runCmd((c) => c.setFontFamily((e.target as HTMLSelectElement).value || ''))
@@ -301,7 +356,7 @@ const getSuggestionItems = ({ query }: { query: string }) =>
       icon: 'mdi-image',
       command: ({ editor, range }: any) => {
         editor.chain().focus().deleteRange(range).run()
-        addImageFromUrl()
+        openPrompt('image')
       },
     },
     {
@@ -309,7 +364,7 @@ const getSuggestionItems = ({ query }: { query: string }) =>
       icon: 'mdi-youtube',
       command: ({ editor, range }: any) => {
         editor.chain().focus().deleteRange(range).run()
-        insertYoutube()
+        openPrompt('youtube')
       },
     },
     {
@@ -389,7 +444,6 @@ watch(content, (v) => editor.value?.getHTML() !== v && editor.value?.commands.se
 watchEffect(() => editor.value?.setEditable(edit))
 onBeforeUnmount(() => editor.value?.destroy())
 </script>
-
 <style scoped>
 div.tiptap.ProseMirror {
   width: 100%;
