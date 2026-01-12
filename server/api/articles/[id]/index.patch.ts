@@ -13,9 +13,8 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(user)
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
-  const isOnlyViews = Object.keys(body).length === 1 && 'views' in body
 
-  if (!isOnlyViews && body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
+  if (body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
 
   const currentDate = new Date()
@@ -85,35 +84,27 @@ export default defineEventHandler(async (event) => {
     content = $.html()
   }
 
-  let article
-  if (isOnlyViews) {
-    article = await prisma.article.update({
-      where: { id },
-      data: { views: body.views },
-    })
-  } else {
-    const data: any = {
-      ...body,
-      seriesOrder: newSeriesOrder,
-      releaseAt: body.releaseAt ? new Date(body.releaseAt) : undefined,
-    }
-    if (body.content) data.content = sanitizeHtml(content || '')
-
-    article = await db.article.update({
-      where: { id },
-      data,
-    })
-
-    await logAction({
-      action: 'ARTICLE_UPDATE',
-      userId: user.id,
-      clientSiteId: user.clientSiteId,
-      ip: getIp(event),
-      metadata: { articleId: id, updatedFields: Object.keys(body) },
-    })
+  const data: any = {
+    ...body,
+    seriesOrder: newSeriesOrder,
+    releaseAt: body.releaseAt ? new Date(body.releaseAt) : undefined,
   }
+  if (body.content) data.content = sanitizeHtml(content || '')
 
-  if (!isOnlyViews && article.status === 'published' && previousArticle?.status === 'draft') {
+  const article = await db.article.update({
+    where: { id },
+    data,
+  })
+
+  await logAction({
+    action: 'ARTICLE_UPDATE',
+    userId: user.id,
+    clientSiteId: user.clientSiteId,
+    ip: getIp(event),
+    metadata: { articleId: id, updatedFields: Object.keys(body) },
+  })
+
+  if (article.status === 'published' && previousArticle?.status === 'draft') {
     const followers = await db.follow.findMany({
       where: { followedId: article.userId, follower: { allowNotifs: true } },
       select: { followerId: true },

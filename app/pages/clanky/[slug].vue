@@ -598,9 +598,9 @@ onMounted(() => {
   const key = `viewed-${data.value.id}`,
     last = sessionStorage.getItem(key),
     now = Date.now()
-  if (last && now - Number(last) <= 1000) return
+  if (last && now - Number(last) < 1000 * 60 * 30) return
   try {
-    $fetch(`/api/articles/${data.value.id}`, { method: 'PATCH', body: { views: data.value.views + 1 } })
+    $fetch(`/api/articles/${data.value.id}/view`, { method: 'POST' })
     sessionStorage.setItem(key, now.toString())
   } catch (e: any) {
     console.error('Failed to update article views:', e)
