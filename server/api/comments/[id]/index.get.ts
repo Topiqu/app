@@ -77,6 +77,11 @@ export default defineEventHandler(async (event) => {
     currentDepth: number = 1,
     clientSiteId: string,
   ): CommentWithReplies => {
+    const directReplies = allReplies.filter((reply) => reply.parentId === comment.id)
+    const processedReplies = directReplies.map((reply) =>
+      buildCommentTree(reply, allReplies, currentDepth + 1, clientSiteId),
+    )
+
     const userData = comment.user
     const relevantBans = userData ? userData.bans.filter((ban: any) => ban.clientSiteId === clientSiteId) : []
     const isBanned = relevantBans.length > 0
@@ -121,15 +126,12 @@ export default defineEventHandler(async (event) => {
       emoji: data.emoji,
     }))
 
-    const directReplies = allReplies.filter((reply) => reply.parentId === comment.id)
-    const processedReplies = directReplies.map((reply) =>
-      buildCommentTree(reply, allReplies, currentDepth + 1, clientSiteId),
-    )
+    const isDeleted = !!comment.deletedAt
 
     return {
       id: comment.id,
-      content: comment.content,
-      gifUrl: comment.gifUrl,
+      content: isDeleted ? '' : comment.content,
+      gifUrl: isDeleted ? null : comment.gifUrl,
       createdAt: comment.createdAt,
       userId: comment.userId,
       parentId: comment.parentId,
@@ -157,10 +159,10 @@ export default defineEventHandler(async (event) => {
       likes: comment.reactions.filter((r: any) => r.type === 'LIKE').length,
       dislikes: comment.reactions.filter((r: any) => r.type === 'DISLIKE').length,
       replies: processedReplies,
-      userReaction: userReaction ? { type: userReaction.type } : null,
-      emojiReactions,
+      userReaction: isDeleted || !userReaction ? null : { type: userReaction.type },
+      emojiReactions: isDeleted ? [] : emojiReactions,
       depth: currentDepth,
-      isLikedByAuthor,
+      isLikedByAuthor: isDeleted ? false : isLikedByAuthor,
     }
   }
 
