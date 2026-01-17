@@ -90,7 +90,7 @@
 
       <template #actions>
         <Button size="sm" variant="primary" icon="mdi:check" :disabled="!newSeriesName.trim()" @click="createAndSelect">
-          {{ $t('common.create') }}
+          {{ $t('common.continue') }}
         </Button>
       </template>
     </ModalMini>

@@ -96,17 +96,24 @@ const defaultConstraints: Record<
   { maxWidth?: number; maxHeight?: number; minWidth?: number; minHeight?: number; maxSize?: number; minSize?: number }
 > = {
   'client-logo': {
-    maxWidth: 1024,
-    maxHeight: 1024,
+    maxWidth: 3840,
+    maxHeight: 2160,
     minWidth: 512,
     minHeight: 512,
     maxSize: 2 * 1024 * 1024,
     minSize: 0,
   },
-  'user-avatar': { maxWidth: 512, maxHeight: 512, minWidth: 100, minHeight: 100, maxSize: 5 * 1024 * 1024, minSize: 0 },
-  'article-image': {
+  'user-avatar': {
     maxWidth: 1920,
     maxHeight: 1080,
+    minWidth: 100,
+    minHeight: 100,
+    maxSize: 5 * 1024 * 1024,
+    minSize: 0,
+  },
+  'article-image': {
+    maxWidth: 3840,
+    maxHeight: 2160,
     minWidth: 300,
     minHeight: 200,
     maxSize: 5 * 1024 * 1024,

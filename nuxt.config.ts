@@ -8,6 +8,11 @@ export default defineNuxtConfig({
     openModerator: { apiKey: process.env.OPENMODERATOR_API_KEY },
     xai: { apiKey: process.env.XAI_API_KEY },
     auth: { secret: process.env.AUTH_SECRET },
+    awsAccessKeyId: '',
+    awsSecretAccessKey: '',
+    awsRegion: '',
+    awsS3BucketName: '',
+    cdnUrl: '',
   },
 
   $production: {
