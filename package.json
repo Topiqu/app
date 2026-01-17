@@ -22,6 +22,7 @@
     "@ai-sdk/xai": "^2.0.34",
     "@auth/core": "0.34.3",
     "@auth/prisma-adapter": "^2.11.1",
+    "@aws-sdk/client-rekognition": "^3.971.0",
     "@aws-sdk/client-s3": "^3.971.0",
     "@fingerprintjs/fingerprintjs": "^5.0.1",
     "@floating-ui/dom": "^1.7.4",
