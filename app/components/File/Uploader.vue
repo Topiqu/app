@@ -69,7 +69,7 @@
 
 <script setup lang="ts">
 const emit = defineEmits<{
-  (e: 'upload', payload: { url: string }): void
+  (e: 'upload', payload: { url: string; optimizedUrl: string }): void
 }>()
 
 const props = defineProps<{
@@ -98,14 +98,14 @@ const defaultConstraints: Record<
   'client-logo': {
     maxWidth: 3840,
     maxHeight: 2160,
-    minWidth: 512,
-    minHeight: 512,
-    maxSize: 2 * 1024 * 1024,
+    minWidth: 100,
+    minHeight: 100,
+    maxSize: 8 * 1024 * 1024,
     minSize: 0,
   },
   'user-avatar': {
-    maxWidth: 1920,
-    maxHeight: 1080,
+    maxWidth: 3840,
+    maxHeight: 2160,
     minWidth: 100,
     minHeight: 100,
     maxSize: 5 * 1024 * 1024,
@@ -210,11 +210,11 @@ const handleFile = async (file: File) => {
   if (props.minHeight) formData.append('minHeight', props.minHeight.toString())
 
   try {
-    const { url } = await $fetch('/api/upload', {
+    const { url, optimizedUrl } = await $fetch('/api/upload', {
       method: 'POST',
       body: formData,
     })
-    emit('upload', { url })
+    emit('upload', { url, optimizedUrl })
   } catch (e: any) {
     toast.error({ message: $t('common.avatar.uploadError') + e.data?.message })
     reset()
@@ -226,7 +226,7 @@ const handleFile = async (file: File) => {
 const cancelUpload = () => {
   previewUrl.value = null
   reset()
-  emit('upload', { url: '' })
+  emit('upload', { url: '', optimizedUrl: '' })
 }
 
 const onDragOver = (e: DragEvent) => {

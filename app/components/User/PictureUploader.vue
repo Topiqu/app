@@ -56,9 +56,9 @@ const open = defineModel<boolean>('open')
 
 const isLoading = shallowRef<boolean>(false)
 
-const emit = defineEmits<{ (e: 'upload', value: string): void }>()
+const emit = defineEmits<{ (e: 'upload', value: { url: string; optimizedUrl: string }): void }>()
 
-const handleUpload = (file: { url: string }) => {
+const handleUpload = (file: { url: string; optimizedUrl: string }) => {
   if (!auth.value)
     return toast.error({
       title: 'Chyba',
@@ -78,7 +78,7 @@ const handleUpload = (file: { url: string }) => {
     icon: 'mdi:check-circle',
   })
 
-  emit('upload', file.url)
+  emit('upload', { url: file.url, optimizedUrl: file.optimizedUrl })
 
   open.value = false
 }

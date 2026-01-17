@@ -224,6 +224,7 @@ const editedArticle = ref(
         ...props.article,
         sources: props.article.sources || [],
         savedAmount: props.article.savedAmount || 0,
+        optimizedImageUrl: '',
         savedTimeMinutes: props.article.savedTimeMinutes || 0,
         aiInvolvement: props.article.aiInvolvement || 'NONE',
         releaseAt: props.article.releaseAt ? new Date(props.article.releaseAt) : null,
@@ -237,6 +238,7 @@ const mode = shallowRef<'manual' | 'ai' | 'import'>('manual')
 const aiGenerating = shallowRef(false)
 const successMessage = shallowRef('')
 const draftsOpen = shallowRef(false)
+const optimizedImageUrl = shallowRef('')
 const options = [
   { value: 'manual', icon: 'mdi:pencil' },
   { value: 'ai', icon: 'mdi:robot' },
@@ -363,7 +365,10 @@ const loadDraft = (draft: ArticleDraft) => {
   articleTags.value = []
 }
 
-const handleUpload = (file: { url: string }) => (editedArticle.value.imageUrl = file.url)
+const handleUpload = (file: { url: string; optimizedUrl: string }) => {
+  editedArticle.value.imageUrl = file.url
+  optimizedImageUrl.value = file.optimizedUrl
+}
 
 const addTagToArticle = async (tagId: string) => {
   if (props.article?.id) {
@@ -396,6 +401,7 @@ const createArticle = async () => {
         excerpt: editedArticle.value.excerpt || undefined,
         content: editedArticle.value.content || undefined,
         releaseAt: editedArticle.value.releaseAt || undefined,
+        imageUrl: optimizedImageUrl.value || editedArticle.value.imageUrl,
         sources: editedArticle.value.sources?.filter((s: string) => s.trim()),
         savedAmount: editedArticle.value.savedAmount,
         savedTimeMinutes: editedArticle.value.savedTimeMinutes,
@@ -424,7 +430,7 @@ const saveEdit = async () => {
         excerpt: editedArticle.value.excerpt || '',
         content: editedArticle.value.content,
         slug: editedArticle.value.slug,
-        imageUrl: editedArticle.value.imageUrl,
+        imageUrl: optimizedImageUrl.value,
         releaseAt: editedArticle.value.releaseAt || undefined,
         savedAmount: editedArticle.value.savedAmount,
         savedTimeMinutes: editedArticle.value.savedTimeMinutes,

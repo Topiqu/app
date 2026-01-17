@@ -32,7 +32,7 @@
             :name="client?.name ?? ''"
             :subdomain="client?.subdomain ?? ''"
             :currentTheme="form.theme"
-            @update:logoUrl="form.logoUrl = $event"
+            @update:logoUrl="((form.logoUrl = $event.url), (form.optimizedUrl = $event.optimizedUrl))"
             @update:description="form.description = $event"
             @update:socials="form.socials = $event"
             @update:currentTheme="form.theme = $event as typeof form.theme"
@@ -162,7 +162,10 @@
                 @toggle:feature="toggleFeature"
                 @update:username="form.aiUser.username = $event"
                 @update:bio="form.aiUser.bio = $event"
-                @update:avatarUrl="form.aiUser.avatarUrl = $event"
+                @update:avatarUrl="
+                  ((form.aiUser.avatarUrl = $event.avatarUrl),
+                  (form.aiUser.optimizedAvatarUrl = $event.optimizedImageUrl))
+                "
                 @update:autoRelease="form.autoRelease = $event"
               />
             </div>
@@ -296,8 +299,9 @@ const form = ref({
   keywords: [] as string[],
   description: '',
   logoUrl: '',
+  optimizedUrl: '',
   socials: [] as { platform: SocialPlatform; url: string }[],
-  aiUser: { username: '', bio: '', avatarUrl: '' },
+  aiUser: { username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' },
   gtagId: '',
   gamNetworkCode: '',
   allowAds: false,
@@ -421,6 +425,7 @@ watch(
         username: c.aiUser?.username ?? '',
         bio: c.aiUser?.bio ?? '',
         avatarUrl: c.aiUser?.avatarUrl ?? '',
+        optimizedAvatarUrl: '',
       },
       gtagId: c.gtagId ?? '',
       gamNetworkCode: c.gamNetworkCode ?? '',
@@ -463,6 +468,7 @@ const savePreferences = async () => {
       method: 'PATCH',
       body: {
         ...form.value,
+        logoUrl: form.value.optimizedUrl || form.value.logoUrl,
         socials: form.value.socials.filter((s) => s.url.trim()),
         aiUser: client.value?.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
       },

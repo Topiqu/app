@@ -62,10 +62,11 @@ export default defineEventHandler(async (event) => {
 
   const fileExt = file.filename?.split('.').pop() || 'webp'
   const filename = `content-${Date.now()}.${fileExt}`
+  const optimizedFilename = filename.replace(/\.[^/.]+$/, '.webp')
 
   const command = new PutObjectCommand({
     Bucket: config.awsS3BucketName,
-    Key: filename,
+    Key: `uploads/${filename}`,
     Body: file.data,
     ContentType: file.type,
     Metadata: {
@@ -79,7 +80,8 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      url: `${config.cdnUrl}/${filename}`,
+      url: `${config.cdnUrl}/uploads/${filename}`,
+      optimizedUrl: `${config.cdnUrl}/optimized/${optimizedFilename}`,
       filename,
       tags: detectedTagsString.split(',').filter(Boolean),
     }

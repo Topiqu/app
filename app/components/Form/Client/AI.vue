@@ -200,7 +200,12 @@
         />
         <div class="flex flex-col gap-2">
           <FormLabel :text="$t('common.avatar.ai.label')" />
-          <FileUploader :imageUrl="avatarUrl" type="user-avatar" :isAiUser="true" @upload="avatarUrl = $event.url" />
+          <FileUploader
+            :imageUrl="avatarUrl"
+            type="user-avatar"
+            :isAiUser="true"
+            @upload="((avatarUrl = $event.url), (optimizedImageUrl = $event.optimizedUrl))"
+          />
         </div>
         <div class="flex flex-col gap-2">
           <FormLabel :text="$t('common.preferences.aiAuthor.bio.label')" />
@@ -246,7 +251,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:username': [string]
   'update:bio': [string]
-  'update:avatarUrl': [string]
+  'update:avatarUrl': [{ avatarUrl: string; optimizedImageUrl: string }]
   'update:autoRelease': [boolean]
   'toggle:feature': [{ code: string; enabled: boolean }]
 }>()
@@ -257,7 +262,8 @@ const rate = await useCurrencyRate(props.currency)
 
 const username = computed({ get: () => props.username, set: (v) => emit('update:username', v) })
 const bio = computed({ get: () => props.bio, set: (v) => emit('update:bio', v) })
-const avatarUrl = computed({ get: () => props.avatarUrl, set: (v) => emit('update:avatarUrl', v) })
+const avatarUrl = computed({ get: () => props.avatarUrl, set: (v) => emit('update:avatarUrl', { avatarUrl: v, optimizedImageUrl: optimizedImageUrl.value }) })
+const optimizedImageUrl = shallowRef('')
 const togglePending = computed(() => props.togglePending ?? false)
 
 const handleAutoReleaseToggle = (newValue: boolean) => {

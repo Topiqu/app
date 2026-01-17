@@ -7,9 +7,9 @@
       <FileUploader
         :imageUrl="logoUrl"
         type="client-logo"
-        :maxWidth="1920"
-        :maxHeight="1080"
-        @upload="emit('update:logoUrl', $event.url)"
+        :maxWidth="3840"
+        :maxHeight="2160"
+        @upload="emit('update:logoUrl', { url: $event.url, optimizedUrl: $event.optimizedUrl })"
       />
       <span class="text-xs text-gray-500 dark:text-gray-400">
         {{ $t('common.preferences.companyLogo.description') }}
@@ -129,7 +129,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'update:logoUrl': [url: string]
+  'update:logoUrl': [url: { url: string; optimizedUrl: string }]
   'update:description': [value: string]
   'update:socials': [socials: { platform: SocialPlatform; url: string }[]]
   'update:currentTheme': [theme: string]

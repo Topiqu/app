@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
     const aiData = {
       username: aiUserPayload.username || `ai-${id}-${Date.now()}`,
       bio: aiUserPayload.bio || '',
-      avatarUrl: aiUserPayload.avatarUrl || '',
+      avatarUrl: aiUserPayload.optimizedAvatarUrl || '',
     }
 
     if (currentAiUser) {
