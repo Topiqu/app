@@ -306,6 +306,7 @@ import type { ArticleStatus, User } from '@zenstackhq/runtime/models'
 import { formatDate } from '~~/shared/utils'
 import VueEasyLightbox from 'vue-easy-lightbox'
 import { formatNumber } from '~~/shared/utils/number'
+import FingerprintJS from '@fingerprintjs/fingerprintjs'
 
 import { themes } from '~/composables/theme'
 
@@ -330,7 +331,7 @@ const route = useRoute(),
   toast = useToast(),
   clipboard = useClipboard(),
   localePath = useLocalePath()
-
+let fpPromise: Promise<any> | undefined
 const reqUrl = useRequestURL()
 
 const { data: session } = useAuth(),
@@ -486,23 +487,53 @@ const copyLink = async () => {
   await share('OTHER')
 }
 
+const getVisitorId = async () => {
+  if (!fpPromise) {
+    fpPromise = FingerprintJS.load()
+  }
+  const fp = await fpPromise
+  const result = await fp.get()
+  console.log(result)
+  return result.visitorId
+}
+
 const toggleLike = async () => {
   if (!data.value?.slug) return
-  const key = `liked-${data.value.slug}`,
-    hasLiked = sessionStorage.getItem(key)
-  if (hasLiked && !session.value?.user.id) {
-    data.value.likedByUser = false
-    data.value.likes -= 1
-    return sessionStorage.removeItem(key)
+
+  let visitorId = null
+  if (!session.value?.user.id) {
+    visitorId = await getVisitorId()
   }
+
+  const key = `liked-${data.value.slug}`
+  const hasLiked = sessionStorage.getItem(key)
+
+  if (hasLiked && !session.value?.user.id) {
+    sessionStorage.removeItem(key)
+  }
+
   try {
-    const res = await $fetch(`/api/articles/${data.value.id}/reaction`, { method: 'POST' })
-    data.value.likedByUser = res.liked
-    data.value.likes = res.likes
-    if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
-    await refresh()
+    const res = await $fetch(`/api/articles/${data.value.id}/reaction`, {
+      method: 'POST',
+      body: { visitorId },
+    })
+
+    if (data.value) {
+      data.value.likedByUser = res.liked
+      data.value.likes = res.likes
+      triggerRef(data)
+    }
+
+    if (res.liked && !session.value?.user.id) {
+      sessionStorage.setItem(key, 'true')
+    } else if (!res.liked && !session.value?.user.id) {
+      sessionStorage.removeItem(key)
+    }
   } catch {
     toast.error({ message: $t('articles.comments.reactionFailed') })
+    if (hasLiked && !session.value?.user.id) {
+      sessionStorage.setItem(key, 'true')
+    }
   }
 }
 
@@ -586,6 +617,14 @@ onMounted(() => {
     if (idx === -1) return
     currentImageIndex.value = idx
     lightboxVisible.value = true
+  }
+  if (data.value?.slug && !session.value?.user.id) {
+    const likeKey = `liked-${data.value.slug}`
+    const hasLikedLocal = sessionStorage.getItem(likeKey)
+    if (hasLikedLocal && !data.value.likedByUser) {
+      data.value.likedByUser = true
+      // triggerRef(data)
+    }
   }
   setTimeout(extractImages, 100)
   window.addEventListener('scroll', onScroll)

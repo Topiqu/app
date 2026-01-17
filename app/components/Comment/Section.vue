@@ -233,12 +233,37 @@ const submitComment = async () => {
 const handleReply = (c: CommentWithReplies) =>
   c.deletedAt ||
   ((replyingTo.value = c), nextTick(() => commentForm.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })))
-const handleDelete = async (c: CommentWithReplies, r: string | null) =>
-  (confirm($t('common.messages.deleteConfirmTitle')) &&
-    (await $fetch(`/api/comments/${c.id}`, { method: 'DELETE', body: { reason: r } }),
-    toast.success({ message: $t('common.messages.deleteSuccess') }),
-    await refresh())) ||
-  toast.error({ message: $t('common.messages.deleteFailed') })
+
+const markAsDeleted = (list: CommentWithReplies[], id: string): boolean => {
+  for (const comment of list) {
+    if (comment.id === id) {
+      comment.deletedAt = new Date()
+      return true
+    }
+    if (comment.replies.length > 0) {
+      if (markAsDeleted(comment.replies, id)) return true
+    }
+  }
+  return false
+}
+
+const handleDelete = async (c: CommentWithReplies, r: string | null) => {
+  if (!confirm($t('common.messages.deleteConfirmTitle'))) return
+
+  markAsDeleted(comments.value, c.id)
+  triggerRef(comments)
+
+  try {
+    await $fetch(`/api/comments/${c.id}`, {
+      method: 'DELETE',
+      body: { reason: r },
+    })
+    toast.success({ message: $t('common.messages.deleteSuccess') })
+  } catch (e) {
+    console.error(e)
+    toast.error({ message: $t('common.messages.deleteFailed') })
+  }
+}
 const handleLike = (c: CommentWithReplies) => !c.deletedAt
 const handleDislike = (c: CommentWithReplies) => !c.deletedAt
 </script>

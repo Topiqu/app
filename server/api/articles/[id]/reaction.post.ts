@@ -1,12 +1,15 @@
 import type { EventStream } from 'h3'
 
-import { randomUUID } from 'crypto'
-
 interface GlobalThis {
   eventStreams?: Map<string, Set<EventStream>>
 }
 
 declare const globalThis: GlobalThis
+
+const BodySchema = z.object({
+  visitorId: z.string().optional().nullable(),
+})
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
 
@@ -14,9 +17,14 @@ export default defineEventHandler(async (event) => {
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const user = (await getServerSession(event))?.user
-  const sessionId = getCookie(event, 'anon_session') || randomUUID()
-  setCookie(event, 'anon_session', sessionId, { maxAge: 30 * 24 * 60 * 60 })
+  const body = await readValidatedBody(event, BodySchema.parse)
+  const clientFingerprint = body.visitorId
 
+  if (!user && !clientFingerprint) {
+    throw createError({ statusCode: 400, message: 'Missing visitor identification' })
+  }
+
+  const sessionId = user ? null : clientFingerprint
   const db = await getEnhancedPrisma(user)
 
   const where = user?.id
@@ -39,7 +47,11 @@ export default defineEventHandler(async (event) => {
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   await db.articleReaction.create({
-    data: { articleId: id, userId: user?.id || null, sessionId: user?.id ? null : sessionId },
+    data: {
+      articleId: id,
+      userId: user?.id || null,
+      sessionId,
+    },
   })
 
   if (article.userId && article.userId !== user?.id) {
