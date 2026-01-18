@@ -66,9 +66,9 @@ const handleUpload = (file: { url: string; optimizedUrl: string }) => {
       icon: 'mdi:alert-circle',
     })
 
-  avatar.value = file.url
+  avatar.value = file.optimizedUrl
 
-  auth.value.user.avatarUrl = file.url
+  auth.value.user.avatarUrl = file.optimizedUrl
 
   refresh()
 

@@ -18,8 +18,8 @@
         <FileUploader
           type="emoji"
           :shortcode="shortcode"
-          :maxWidth="1920"
-          :maxHeight="1080"
+          :maxWidth="2560"
+          :maxHeight="1440"
           :disabled="!shortcode"
           @upload="onUpload"
         />
@@ -43,7 +43,7 @@
               class="py-2 px-3 flex justify-between items-center transition border-b"
             >
               <div class="flex items-center gap-3">
-                <img
+                <NuxtImg
                   :src="emojis![virtualRow.index]?.imageUrl"
                   :alt="emojis![virtualRow.index]?.shortcode"
                   class="w-6 h-6 rounded"
@@ -81,6 +81,7 @@ const toast = useToast()
 const open = defineModel<boolean>()
 const shortcode = shallowRef<string>('')
 const imageUrl = shallowRef<string | null>(null)
+const optimizedImageUrl = shallowRef<string | null>(null)
 const scrollParent = useTemplateRef('scrollParent')
 
 const { data: emojis, pending: loading, error, refresh } = await useFetch('/api/emojis')
@@ -96,8 +97,9 @@ const virtualizer = useVirtualizer({
   overscan: 5,
 })
 
-const onUpload = ({ url }: { url: string }) => {
+const onUpload = ({ url, optimizedUrl }: { url: string; optimizedUrl: string }) => {
   imageUrl.value = url
+  optimizedImageUrl.value = optimizedUrl
 }
 
 const submit = async () => {
@@ -105,7 +107,7 @@ const submit = async () => {
   try {
     const res = await $fetch('/api/emojis', {
       method: 'POST',
-      body: { shortcode: shortcode.value, imageUrl: imageUrl.value },
+      body: { shortcode: shortcode.value, imageUrl: optimizedImageUrl.value || imageUrl.value },
     })
     if (res.success && res.emoji) {
       toast.success({ message: $t('emoji.createSuccess', [res.emoji.shortcode]) })

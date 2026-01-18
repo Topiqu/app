@@ -10,12 +10,7 @@
       @click="isSidebarOpen = !isSidebarOpen"
     />
     <NuxtLink to="/" class="flex items-center justify-center gap-2">
-      <NuxtImg
-        v-if="clientSite?.logoUrl"
-        :src="clientSite?.logoUrl || '/app-logo.png'"
-        alt="Logo"
-        class="w-14 object-contain"
-      />
+      <NuxtImg v-if="clientSite" :src="logoSrc" alt="Logo" class="w-14 object-contain" />
       <div v-else class="w-14 h-14 bg-gray-200 dark:bg-neutral-700 rounded-md animate-pulse" />
     </NuxtLink>
     <div class="flex items-center justify-between gap-2">
@@ -33,4 +28,7 @@ const clientSite = await useClientSite()
 const { data: auth } = useAuth()
 
 const isAdmin = computed(() => ['admin', 'superadmin'].includes(auth?.value?.user.role || ''))
+const logoSrc = computed(() => {
+  return clientSite?.logoUrl || 'https://cdn.topiqu.com/app-logo.png'
+})
 </script>

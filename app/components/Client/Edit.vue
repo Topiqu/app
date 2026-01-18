@@ -37,7 +37,7 @@
             <FileUploader
               :imageUrl="editedClient.logoUrl"
               type="client-logo"
-              @upload="editedClient.logoUrl = $event.url"
+              @upload="((editedClient.logoUrl = $event.url), (editedClient.optimizedUrl = $event.optimizedUrl))"
             />
           </label>
           <label class="flex flex-col gap-3">
@@ -138,6 +138,7 @@ const editedClient = ref({
   tokenLimit: props.client.tokenLimit,
   description: props.client.description || '',
   logoUrl: props.client.logoUrl || '',
+  optimizedUrl: '',
   audience: props.client.audience || '',
   focus: props.client.focus || '',
   keywords: normalizeKeywords(props.client.keywords),
@@ -163,6 +164,7 @@ const saveEdit = async () => {
       method: 'PATCH',
       body: {
         ...editedClient.value,
+        logoUrl: editedClient.value.optimizedUrl || editedClient.value.logoUrl,
         keywords: editedClient.value.keywords.length ? editedClient.value.keywords : undefined,
       },
     })

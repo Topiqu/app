@@ -105,10 +105,10 @@
           </div>
         </div>
 
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">{{
-            $t('common.labels.content')
-          }}</span>
+        <div class="flex flex-col gap-3">
+          <span class="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
+            {{ $t('common.labels.content') }}
+          </span>
           <TiptapEditor v-model="editedArticle.content" edit />
           <div v-if="!article && drafts?.length" class="flex items-center gap-2">
             <Button
@@ -126,7 +126,7 @@
               }}
             </span>
           </div>
-        </label>
+        </div>
 
         <LazyArticleDrafts v-model:open="draftsOpen" :drafts :loading @select="loadDraft" @close="draftsOpen = false" />
         <label class="flex flex-col gap-3">
@@ -448,6 +448,11 @@ const saveEdit = async () => {
 }
 
 const onSubmit = async () => (props.article ? await saveEdit() : await createArticle())
+const playSuccessSound = () => {
+  const audio = new Audio('/success.wav')
+  audio.volume = 0.5
+  audio.play().catch(() => {})
+}
 
 const generateAIContent = async () => {
   aiGenerating.value = true
@@ -467,6 +472,7 @@ const generateAIContent = async () => {
       aiInvolvement: response.aiInvolvement || 'FULL',
     })
     articleTags.value = response.tags ?? []
+    playSuccessSound()
     toast.success({ message: $t('articles.editor.aiContentGenerated') })
   } catch {
     toast.error({ message: $t('articles.editor.aiContentFailed') })

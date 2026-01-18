@@ -4,7 +4,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   runtimeConfig: {
-    public: { appVersion: '1.0.0 beta' },
+    public: {
+      appVersion: '1.0.0 beta',
+      cdnUrl: process.env.CDN_URL || 'https://cdn.topiqu.com',
+    },
     openModerator: { apiKey: process.env.OPENMODERATOR_API_KEY },
     xai: { apiKey: process.env.XAI_API_KEY },
     auth: { secret: process.env.AUTH_SECRET },

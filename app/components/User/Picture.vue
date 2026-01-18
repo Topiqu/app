@@ -1,18 +1,34 @@
 <template>
-  <div :class="sizeClasses" class="flex items-center justify-center rounded-full overflow-hidden">
+  <div
+    :class="sizeClasses"
+    class="flex items-center justify-center rounded-full overflow-hidden relative bg-gray-100 dark:bg-gray-800 isolate"
+  >
+    <Transition
+      enterActiveClass="transition duration-200 ease-out"
+      enterFromClass="opacity-0"
+      enterToClass="opacity-100"
+      leaveActiveClass="transition duration-500 ease-in"
+      leaveFromClass="opacity-100"
+      leaveToClass="opacity-0"
+    >
+      <div v-if="isRetrying" class="absolute inset-0 bg-gray-300 dark:bg-gray-600 animate-pulse z-20" />
+    </Transition>
+
     <NuxtImg
-      v-if="url"
-      :src="url"
+      v-if="currentSrc"
+      :src="currentSrc"
       :alt="(name || '') + ' ' + $t('common.avatar.alt.profile')"
-      class="w-full h-full object-contain block transition-all duration-200 hover:ring-gray-400 dark:hover:ring-gray-500"
+      class="w-full h-full object-contain block transition-transform duration-300 hover:scale-105"
       width="160"
       height="160"
+      @error="handleError"
+      @load="handleLoad"
     />
+
     <div
       v-else
       :class="[
-        sizeClasses,
-        'flex items-center justify-center rounded-full font-medium uppercase transition-all duration-200',
+        'w-full h-full flex items-center justify-center font-medium uppercase transition-all duration-200',
         'bg-gray-200 !dark:bg-gray-700 text-gray-700 dark:text-gray-200',
       ]"
     >
@@ -28,6 +44,8 @@ const props = defineProps<{
   size?: 'mn' | 'sm' | 'md' | 'lg' | 'hg'
   name?: string | null
 }>()
+
+const { currentSrc, isRetrying, handleError, handleLoad } = useImageRetry(() => props.url)
 
 const sizeClasses = computed(() => {
   switch (props.size) {

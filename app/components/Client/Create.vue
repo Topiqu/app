@@ -55,7 +55,11 @@
         </label>
         <label class="flex flex-col gap-3">
           <span class="text-sm font-medium uppercase tracking-wide opacity-80">Logo klienta</span>
-          <FileUploader :imageUrl="newClient.logoUrl" type="client-logo" @upload="newClient.logoUrl = $event.url" />
+          <FileUploader
+            :imageUrl="newClient.logoUrl"
+            type="client-logo"
+            @upload="((newClient.logoUrl = $event.url), (newClient.optimizedUrl = $event.optimizedUrl))"
+          />
         </label>
         <label class="flex flex-col gap-3">
           <span class="text-sm font-medium uppercase tracking-wide opacity-80">Cílová skupina</span>
@@ -205,6 +209,7 @@ const initClient = () => ({
   domainType: 'SUBDOMAIN' as 'SUBDOMAIN' | 'CUSTOM',
   plan: 'BASIC' as 'BASIC' | 'PRO' | 'PREMIUM' | 'CUSTOM',
   generationFrequency: 'NONE' as 'NONE' | 'DAILY' | 'WEEKLY',
+  optimizedUrl: '',
   tokenLimit: 0,
   focus: '',
   keywords: [] as string[],
@@ -278,6 +283,7 @@ const createClient = async () => {
       body: {
         ...newClient.value,
         keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined,
+        logoUrl: newClient.value.optimizedUrl || newClient.value.logoUrl,
         aiUser: newClient.value.tokenLimit > 0 ? newClient.value.aiUser : undefined,
         subdomain:
           newClient.value.domainType === 'SUBDOMAIN' ? newClient.value.subdomain : newClient.value.customDomain,
