@@ -430,7 +430,7 @@ const saveEdit = async () => {
         excerpt: editedArticle.value.excerpt || '',
         content: editedArticle.value.content,
         slug: editedArticle.value.slug,
-        imageUrl: optimizedImageUrl.value,
+        imageUrl: optimizedImageUrl.value || editedArticle.value.imageUrl,
         releaseAt: editedArticle.value.releaseAt || undefined,
         savedAmount: editedArticle.value.savedAmount,
         savedTimeMinutes: editedArticle.value.savedTimeMinutes,
