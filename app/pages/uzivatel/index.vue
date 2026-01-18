@@ -164,7 +164,7 @@
                   readonly
                   icon="mdi:content-copy"
                   iconPosition="trailing"
-                  @click="copyToClipboard(profileForm.id!)"
+                  @click="clipboard.copy(profileForm.id!)"
                 />
               </div>
               <div id="registration-section">
@@ -453,15 +453,7 @@ async function updateLanguage(newLanguage: Language) {
   refresh()
   isLoading.value = false
 }
-
-async function copyToClipboard(text: string) {
-  try {
-    await navigator.clipboard.writeText(text)
-    toast.success({ message: $t('common.actions.copySuccess') })
-  } catch {
-    toast.error({ message: $t('common.messages.operationFailed') })
-  }
-}
+const clipboard = useClipboard()
 
 watch(
   profileForm,
@@ -475,24 +467,28 @@ watch(
 
 <style>
 .highlight {
-  animation: highlight 1.2s ease-in-out;
-  padding: 0.5rem;
-  scroll-margin-top: 2rem;
+  scroll-margin-top: 5rem;
+  border-radius: 0.5rem;
+  will-change: box-shadow, background-color;
+  animation: enterprise-pulse 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-@keyframes highlight {
-  0%,
-  100% {
+@keyframes enterprise-pulse {
+  0% {
     background-color: transparent;
-    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+  15% {
+    background-color: rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
   }
   40% {
-    background-color: rgba(99, 102, 241, 0.25);
-    transform: scale(1.02);
-  }
-  60% {
     background-color: rgba(99, 102, 241, 0.15);
-    transform: scale(1.01);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 12px rgba(99, 102, 241, 0);
   }
 }
 </style>
