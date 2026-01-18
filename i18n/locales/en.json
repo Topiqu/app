@@ -37,6 +37,9 @@
       "hideDetails": "Hide details",
       "delete": "Delete",
       "revoke": "Revoke",
+      "change": "Change",
+      "clickToUpload": "Click to upload",
+      "dropHere": "Drop file here",
       "upload": "Select",
       "saveChanges": "Save Changes",
       "backToList": "Back to list",
@@ -194,7 +197,9 @@
       "content": "Content",
       "image": "Image",
       "shortcode": "Shortcode",
-      "releaseDate": "Release Date"
+      "releaseDate": "Release Date",
+      "orDrag": "or drag and drop",
+      "pasteImage": "Paste image"
     },
     "messages": {
       "deleteConfirmTitle": "Are you sure you want to delete?",

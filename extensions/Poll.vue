@@ -67,12 +67,12 @@
 import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
 
 const props = defineProps(nodeViewProps)
-// Destructuring deleteNode z props
+
 const { node, updateAttributes, deleteNode } = props
 
-const localQuestion = ref(node.attrs.question || $t('articles.poll.defaultQuestion'))
+const localQuestion = shallowRef(node.attrs.question || $t('articles.poll.defaultQuestion'))
 const localOptions = ref([...(node.attrs.options?.length ? node.attrs.options : [$t('articles.poll.defaultOption')])])
-const localId = ref(node.attrs.id || crypto.randomUUID())
+const localId = shallowRef(node.attrs.id || crypto.randomUUID())
 
 const syncQuestion = () => {
   const question = localQuestion.value.trim() || $t('articles.poll.defaultQuestion')
