@@ -60,8 +60,9 @@ export default defineEventHandler(async (event) => {
     console.warn('Rekognition Labeling failed:', err)
   }
 
+  const customFilename = files.find((f) => f.name === 'customFilename')?.data.toString()
   const fileExt = file.filename?.split('.').pop() || 'webp'
-  const filename = `content-${Date.now()}.${fileExt}`
+  const filename = customFilename || `content-${Date.now()}.${fileExt}`
   const optimizedFilename = filename.replace(/\.[^/.]+$/, '.webp')
 
   const command = new PutObjectCommand({

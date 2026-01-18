@@ -206,12 +206,16 @@ import { Dropcursor } from '@tiptap/extension-dropcursor'
 import { FontFamily } from '@tiptap/extension-font-family'
 import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import { CharacterCount } from '@tiptap/extension-character-count'
-import { EditorContent, useEditor, VueRenderer } from '@tiptap/vue-3'
+import { EditorContent, useEditor, VueRenderer, VueNodeViewRenderer } from '@tiptap/vue-3'
 import 'tippy.js/dist/tippy.css'
+
+import TiptapImage from '~/components/File/TiptapImage.vue'
 
 import Poll from '../../extensions/poll'
 import CommandList from './CommandList.vue'
 import SlashCommand from '../../extensions/slashCommand'
+
+const config = useRuntimeConfig()
 
 const CustomBlockquote = Blockquote.extend({
   renderHTML: ({ HTMLAttributes }) => ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0],
@@ -256,17 +260,33 @@ const applyLink = () => {
     if (type === 'youtube') runCmd((c) => c.setYoutubeVideo({ src: url }))
   }
 }
-
 const uploadImage = async (files: FileList | null) => {
   const file = files?.[0]
   if (!file) return
+
+  const fileExt = file.name.split('.').pop() || 'jpg'
+  const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
+  const generatedFilename = `content-${uniqueId}.${fileExt}`
+  const optimizedFilename = generatedFilename.replace(/\.[^/.]+$/, '.webp')
+  const predictedUrl = `${config.public.cdnUrl}/optimized/${optimizedFilename}`
+
+  editor.value?.commands.setImage({
+    src: predictedUrl,
+    alt: file.name,
+  })
+  onFileInputClose()
+
   const form = new FormData()
   form.append('file', file)
+  form.append('customFilename', generatedFilename)
+
   try {
-    const { url, success } = await $fetch('/api/upload', { method: 'POST', body: form })
-    if (success) {
-      editor.value?.commands.setImage({ src: url, alt: file.name })
-    } else {
+    const { success } = await $fetch('/api/upload', {
+      method: 'POST',
+      body: form,
+    })
+
+    if (!success) {
       alert('Upload error')
     }
   } catch (e: any) {
@@ -413,7 +433,13 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({ blockquote: false }),
     CustomBlockquote.configure({ HTMLAttributes: { class: 'blockquote' } }),
-    Image.configure({ inline: true, HTMLAttributes: { class: 'max-w-full h-auto rounded' } }),
+    Image.configure({ inline: true, allowBase64: true, HTMLAttributes: { class: 'max-w-full h-auto rounded' } }).extend(
+      {
+        addNodeView() {
+          return VueNodeViewRenderer(TiptapImage)
+        },
+      },
+    ),
     Dropcursor,
     Underline,
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
