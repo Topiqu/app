@@ -213,6 +213,7 @@
       "deleteConfirmText": "This action cannot be undone.",
       "deleteCancel": "Cancel",
       "deleteSuccess": "Deleted successfully",
+      "featureDisabled": "Feature disabled",
       "deleteFailed": "Deletion failed",
       "statusChangeFailed": "Status change failed",
       "operationFailed": "Operation failed",

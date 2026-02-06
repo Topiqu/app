@@ -214,6 +214,7 @@
       "deleteConfirmText": "Tuto akci nelze vrátit zpět.",
       "deleteCancel": "Zrušit",
       "deleteSuccess": "Úspěšně smazáno",
+      "featureDisabled": "Funkce vypnuta",
       "deleteFailed": "Smazání selhalo",
       "statusChangeFailed": "Změna stavu selhala",
       "operationFailed": "Požadavek selhal",

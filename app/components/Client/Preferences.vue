@@ -454,7 +454,7 @@ const toggleFeature = async ({ code, enabled }: { code: 'AI' | 'SENTIMENT' | 'AR
       monthlyPayment: res.monthlyPayment,
       annualPayment: res.annualPayment,
     }
-    toast.success({ message: enabled ? $t('common.messages.featureEnabled') : $t('common.messages.featureDisabled') })
+    toast.success({ message: enabled ? $t('common.messages.saveSuccess') : $t('common.messages.featureDisabled') })
   } catch {
     toast.error({ message: $t('common.messages.saveFailed') })
     await refresh()
