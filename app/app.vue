@@ -1,8 +1,13 @@
 <template>
   <NuxtLoadingIndicator class="z-[9999]" :color="computedThemeColor" />
   <StatusBar />
-  <div>
-    <NuxtLayout> <NuxtPage /> </NuxtLayout>
+
+  <Landing v-if="!clientSite" />
+
+  <div v-else>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </div>
 </template>
 
@@ -15,7 +20,7 @@ const adChance = useAdChance()
 
 if (clientSite) {
   adChance?.assign(clientSite.id, clientSite.plan)
-} // console.log(adChance?.adTargeting.value)
+}
 
 const themeColors: Record<keyof typeof themes, string> = {
   blue: '#2563eb',
@@ -36,58 +41,61 @@ const themeColors: Record<keyof typeof themes, string> = {
 }
 
 const computedThemeColor = computed(() => {
-  return clientSite?.theme && Object.keys(themeColors).includes(clientSite!.theme)
-    ? themeColors[clientSite!.theme]
+  if (!clientSite) return themeColors.blue
+  return clientSite.theme && Object.keys(themeColors).includes(clientSite.theme)
+    ? themeColors[clientSite.theme as keyof typeof themes]
     : themeColors.blue
 })
 
 useSeoMeta({
-  title: () => clientSite?.name || $t('seo.default.title'),
-  description: () => clientSite?.description || $t('seo.default.description'),
+  title: () => clientSite?.name || 'Topiqu',
+  description: () => clientSite?.description || 'Moderní blogovací platforma',
   keywords: () =>
     Array.isArray(clientSite?.keywords)
       ? clientSite.keywords.join(', ')
       : typeof clientSite?.keywords === 'string'
         ? clientSite.keywords
-        : $t('seo.default.keywords'),
-  author: () => clientSite?.name || $t('seo.default.author'),
-  ogTitle: () => clientSite?.name || $t('seo.default.title'),
-  ogDescription: () => clientSite?.description || $t('seo.default.description'),
-  ogLocale: () => clientSite?.language || 'en',
+        : 'blog, ai, platforma',
+  author: () => clientSite?.name || 'Topiqu',
+  ogTitle: () => clientSite?.name || 'Topiqu',
+  ogDescription: () => clientSite?.description || 'Moderní blogovací platforma',
+  ogLocale: () => clientSite?.language || 'cs',
 })
 
-defineOgImageComponent('ClientSite', {
-  title: clientSite?.name || $t('seo.default.title'),
-  description: clientSite?.description || $t('seo.default.description'),
-  siteName: clientSite?.name || '',
-  siteLogo: clientSite?.logoUrl || `${reqUrl.origin}/logo.png`,
-  themeColor: computedThemeColor.value,
-  domain: reqUrl.host,
-})
+if (clientSite) {
+  defineOgImageComponent('ClientSite', {
+    title: clientSite.name,
+    description: clientSite.description || '',
+    siteName: clientSite.name,
+    siteLogo: clientSite.logoUrl || `${reqUrl.origin}/logo.png`,
+    themeColor: computedThemeColor.value,
+    domain: reqUrl.host,
+  })
 
-useHead({
-  script: [
-    {
-      type: 'application/ld+json',
-      innerHTML: computed(() =>
-        JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          name: clientSite?.name || $t('seo.default.title'),
-          url: reqUrl.origin,
-          description: clientSite?.description || $t('seo.default.description'),
-          publisher: {
-            '@type': 'Organization',
-            name: clientSite?.name || $t('seo.default.author'),
-            logo: {
-              '@type': 'ImageObject',
-              url: clientSite?.logoUrl || `${reqUrl.origin}/logo.png`,
+  useHead({
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: computed(() =>
+          JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: clientSite.name,
+            url: reqUrl.origin,
+            description: clientSite.description,
+            publisher: {
+              '@type': 'Organization',
+              name: clientSite.name,
+              logo: {
+                '@type': 'ImageObject',
+                url: clientSite.logoUrl || `${reqUrl.origin}/logo.png`,
+              },
             },
-          },
-          inLanguage: clientSite?.language || 'en',
-        }),
-      ),
-    },
-  ],
-})
+            inLanguage: clientSite.language || 'en',
+          }),
+        ),
+      },
+    ],
+  })
+}
 </script>

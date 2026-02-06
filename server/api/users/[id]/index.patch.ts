@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     email: z.string().email().optional(),
     password: z.string().min(4).optional(),
     role: z.enum(['reader', 'admin', 'superadmin']).optional(),
-    bio: z.string().optional(),
+    bio: z.string().nullable().optional(),
     language: z.string().optional(),
     allowNotifs: z.boolean().optional(),
     allowEmail: z.boolean().optional(),

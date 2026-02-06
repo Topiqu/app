@@ -344,11 +344,13 @@ const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.va
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 
-const { data: relatedArticles, pending } = await useFetch(
-  `/api/articles/${slug.value}/related?limit=3` as `/api/articles/:id/related`,
-  { lazy: true, query: { clientSiteId: clientSite?.id } },
-)
-
+const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/${slug.value}/related`, {
+  lazy: true,
+  query: {
+    limit: 3,
+    clientSiteId: clientSite?.id,
+  },
+})
 const canonicalUrl = computed(() => {
   if (!data.value?.slug) return ''
   const path = localePath({ name: 'clanky-slug', params: { slug: data.value.slug } })

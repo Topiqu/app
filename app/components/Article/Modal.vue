@@ -175,11 +175,9 @@
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
-import type { ArticleDraft } from '@zenstackhq/runtime/models'
 
 import slugify from 'slugify'
 import Swal from 'sweetalert2'
-import equal from 'fast-deep-equal'
 
 import Modal from '~/components/Modal/index.vue'
 
@@ -203,7 +201,7 @@ const selectedSeries = shallowRef<any>(
 )
 const articleTags = ref<string[]>([])
 
-const init = () =>
+const init = (): ArticleWithDetails =>
   ({
     title: '',
     excerpt: '',
@@ -232,12 +230,17 @@ const editedArticle = ref(
     : init(),
 )
 
+const { drafts, loading, draftsOpen, successMessage, loadDraft } = await useArticleDrafts(editedArticle, idle, {
+  onDraftLoaded: () => {
+    selectedSeries.value = null
+    articleTags.value = []
+  },
+})
+
 const jsonInput = ref<HTMLInputElement>()
 const customPrompt = shallowRef('')
 const mode = shallowRef<'manual' | 'ai' | 'import'>('manual')
 const aiGenerating = shallowRef(false)
-const successMessage = shallowRef('')
-const draftsOpen = shallowRef(false)
 const optimizedImageUrl = shallowRef('')
 const options = [
   { value: 'manual', icon: 'mdi:pencil' },
@@ -248,15 +251,6 @@ const options = [
 const currentDate = new Date()
 const minDate = currentDate.toISOString().slice(0, 16)
 const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59).toISOString().slice(0, 16)
-
-const {
-  data: drafts,
-  refresh,
-  pending: loading,
-} = await useLazyFetch<ArticleDraft[]>('/api/articles/draft', {
-  default: () => [],
-  server: false,
-})
 
 const handleJsonImport = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -280,89 +274,8 @@ const handleJsonImport = async (e: Event) => {
   } catch {
     toast.error({ message: $t('common.error') })
   } finally {
-    jsonInput.value!.value = ''
+    if (jsonInput.value) jsonInput.value.value = ''
   }
-}
-
-const saveDraft = useDebounceFn(async () => {
-  if (idle.value) return
-  if (
-    !editedArticle.value.title &&
-    !editedArticle.value.excerpt &&
-    (!editedArticle.value.content || editedArticle.value.content === '<p></p>')
-  )
-    return
-  const currentData = {
-    title: editedArticle.value.title,
-    excerpt: editedArticle.value.excerpt || '',
-    content: editedArticle.value.content,
-  }
-  if (
-    drafts.value?.some((draft) =>
-      equal({ title: draft.title, excerpt: draft.excerpt || '', content: draft.content }, currentData),
-    )
-  )
-    return
-  try {
-    await $fetch('/api/articles/draft', {
-      method: 'POST',
-      body: {
-        ...editedArticle.value,
-        savedAmount: editedArticle.value.savedAmount,
-        savedTimeMinutes: editedArticle.value.savedTimeMinutes,
-        aiInvolvement: editedArticle.value.aiInvolvement,
-      },
-    })
-    successMessage.value = $t('common.messages.draftSaved')
-    await refresh()
-    setTimeout(() => (successMessage.value = ''), 8000)
-  } catch {
-    toast.error({ message: $t('common.messages.draftSaveFailed') })
-  }
-}, 8000)
-
-watch(
-  [
-    () => editedArticle.value.title,
-    () => editedArticle.value.excerpt,
-    () => editedArticle.value.content,
-    () => editedArticle.value.imageUrl,
-  ],
-  saveDraft,
-)
-watch(
-  () => editedArticle.value.title,
-  () => (editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })),
-)
-
-watch(
-  () => editedArticle.value.content,
-  (newContent, oldContent) => {
-    if (aiGenerating.value) return
-    const isInitialLoad = oldContent === '' || oldContent === '<p></p>'
-    if (!isInitialLoad) {
-      editedArticle.value.savedAmount = 0
-      editedArticle.value.savedTimeMinutes = 0
-      editedArticle.value.aiInvolvement =
-        editedArticle.value.aiInvolvement === 'FULL' ? 'ASSIST' : editedArticle.value.aiInvolvement
-    }
-  },
-)
-
-const loadDraft = (draft: ArticleDraft) => {
-  Object.assign(editedArticle.value, {
-    title: draft.title,
-    excerpt: draft.excerpt || '',
-    content: draft.content,
-    imageUrl: draft.imageUrl || '',
-    slug: slugify(draft.title ?? '', { lower: true, strict: true, trim: true }),
-    sources: [],
-    savedAmount: 0,
-    savedTimeMinutes: 0,
-    aiInvolvement: 'NONE',
-  })
-  selectedSeries.value = null
-  articleTags.value = []
 }
 
 const handleUpload = (file: { url: string; optimizedUrl: string }) => {
@@ -448,6 +361,7 @@ const saveEdit = async () => {
 }
 
 const onSubmit = async () => (props.article ? await saveEdit() : await createArticle())
+
 const playSuccessSound = () => {
   const audio = new Audio('/success.wav')
   audio.volume = 0.5
@@ -506,8 +420,24 @@ const showReleaseAt = computed(
   () => !editedArticle.value.releaseAt || new Date(editedArticle.value.releaseAt) >= currentDate,
 )
 
-const updateSlug = () =>
-  (editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true }))
+watch(
+  () => editedArticle.value.title,
+  () => (editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })),
+)
+
+watch(
+  () => editedArticle.value.content,
+  (newContent, oldContent) => {
+    if (aiGenerating.value) return
+    const isInitialLoad = oldContent === '' || oldContent === '<p></p>'
+    if (!isInitialLoad) {
+      editedArticle.value.savedAmount = 0
+      editedArticle.value.savedTimeMinutes = 0
+      editedArticle.value.aiInvolvement =
+        editedArticle.value.aiInvolvement === 'FULL' ? 'ASSIST' : editedArticle.value.aiInvolvement
+    }
+  },
+)
 </script>
 <style scoped>
 @keyframes pulse {

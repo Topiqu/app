@@ -11,6 +11,11 @@
     "continue": "Continue",
     "unsavedChanges": "Unsaved changes!",
     "showPassword": "Show password",
+    "links": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "status": "System Status"
+    },
     "search": "Search...",
     "yes": "Yes",
     "no": "No",
@@ -26,6 +31,8 @@
       "articleCronsDesc": "Automatic publishing of articles using AI based on your preferences"
     },
     "actions": {
+      "get_started": "Start Integration",
+      "learn_more": "View Documentation",
       "view": "View",
       "edit": "Edit",
       "tags": "Tags",
@@ -363,6 +370,173 @@
     "showList": "Show full series",
     "hideList": "Hide series list"
   },
+ "landing": {
+    "hero": {
+      "badge": "Content Marketing 2.0",
+      "title_prefix": "Your Company Blog",
+      "title_suffix": "on Autopilot",
+      "subtitle": "Boost organic traffic and build your brand without hiring an army of writers. A complete publishing platform that pays for itself via ad revenue sharing.",
+      "stats": {
+        "score": "SEO Performance",
+        "ads": "Revenue Share",
+        "billing": "Hybrid Model",
+        "api": "Full Integration"
+      }
+    },
+    "specs": {
+      "title": "Less Hassle, More Results",
+      "subtitle": "Topiqu isn't just an editor. It's a complete ecosystem handling content creation, distribution, and monetization for you.",
+      "ai": {
+        "badge": "Smart Content",
+        "title": "AI That Understands Your Business",
+        "desc": "Our engine learns your tone-of-voice and brand identity. It generates relevant articles that actually attract customers, not just generic text. Automatically monitors discussion quality and community sentiment.",
+        "tags": {
+          "enhance": "Brand Voice",
+          "vibe": "Sentiment Analysis",
+          "helpfulness": "Reader Value"
+        }
+      },
+      "monetization": {
+        "title": "Self-Funding Tool",
+        "desc": "Unique Google Ad Manager (GAM) revenue sharing model. The higher quality your content and traffic, the more you earn back. Your blog becomes a profitable channel."
+      },
+      "security": {
+        "title": "Enterprise Standards",
+        "list": {
+          "rbac": "Team Access Control",
+          "mfa": "Two-Factor Auth",
+          "hashing": "Client Data Encryption",
+          "antibot": "Spam Protection"
+        }
+      },
+      "api": {
+        "badge": "Plug & Play",
+        "title": "Deploy in Minutes",
+        "desc": "No complex development. Embed a link on your site, use our plugin, or fetch data via API to display it your way. Fully customizable design, colors, and domain."
+      }
+    },
+    "pricing": {
+      "title": "Plans & Pricing",
+      "subtitle": "Transparent pricing. No hidden fees. Choose the level that matches your ambition.",
+      "revenue_share": "Revenue Share",
+      "month": "/mo",
+      "plans": {
+        "free": {
+          "badge": "Start",
+          "name": "Free",
+          "desc": "Perfect for beginners and hobby projects.",
+          "price": "0 €",
+          "features": {
+            "manual_writing": "Manual Article Writing",
+            "subdomain": "Free Subdomain",
+            "no_ai": "No AI Generation",
+            "basic_analytics": "Basic Analytics"
+          },
+          "cta": "Start for Free"
+        },
+        "pro": {
+          "badge": "Creator",
+          "name": "Pro",
+          "desc": "For creators who want to grow with AI.",
+          "price": "19 €",
+          "features": {
+            "ai_tokens": "AI Generation + Tokens",
+            "seo": "Advanced SEO Optimization",
+            "import": "Import Existing Articles",
+            "everything_free": "Everything in Free"
+          },
+          "cta": "Select Pro"
+        },
+        "premium": {
+          "badge": "Most Popular",
+          "name": "Premium",
+          "desc": "Maximum performance and complete automation.",
+          "price": "39 €",
+          "features": {
+            "sentiment": "AI Sentiment & Images",
+            "indexing": "Priority Indexing & Sourcing",
+            "branding": "Custom Emojis & Branding",
+            "support": "Priority 24/7 Support"
+          },
+          "cta": "Select Premium"
+        },
+        "custom": {
+          "badge": "Enterprise",
+          "name": "Custom",
+          "desc": "White-label solution without any limits.",
+          "price": "Custom",
+          "features": {
+            "domain": "Custom Domain (Apex)",
+            "whitelabel": "Full White-Label (No Branding)",
+            "banners": "Custom Ad Banners",
+            "unlimited_ai": "Unlimited AI Tokens"
+          },
+          "cta": "Contact Us"
+        }
+      }
+    },
+    "faq": {
+      "badge": "Support & Help",
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know about the Topiqu platform. From domain setup to AI generation and monetization.",
+      "cta_title": "Still have questions?",
+      "cta_desc": "Our support team is here for you 24/7.",
+      "cta_button": "Contact Support",
+      "items": [
+        {
+          "q": "How does the revenue share model work?",
+          "a": "Topiqu rewards creators based on their plan. With the FREE tier, 100% of ad revenue goes to platform operations. The PRO plan offers a 70/30 split in your favor, and PREMIUM increases this share to 90/10."
+        },
+        {
+          "q": "Can I use Topiqu on my own domain?",
+          "a": "Yes. Starting from the PRO plan, you can use your own subdomain (e.g., blog.yourcompany.com) via CNAME record. The CUSTOM plan unlocks deployment on an apex domain."
+        },
+        {
+          "q": "Is AI-generated content safe for SEO?",
+          "a": "Absolutely. We use advanced Grok 4.1 Fast Reasoning models to generate content that is strictly optimized for search engines. Algorithms automatically structure articles and monitor keywords."
+        },
+        {
+          "q": "What analytics tools does the platform offer?",
+          "a": "Besides GA4 integration, we provide our own detailed metrics for B2B blogging. We track engagement rate, community sentiment in comments, and author activity."
+        },
+        {
+          "q": "Can I upgrade my plan at any time?",
+          "a": "Of course. Plan upgrades are instant, and AI tokens or new features (like custom domains) become available immediately upon confirmation."
+        }
+      ]
+    },
+    "performance": {
+      "title": "Speed That\nGoogle Loves.",
+      "subtitle": "Technology fades into the background. What matters is the reader experience and search engine ranking. We guarantee both.",
+      "stack": {
+        "title": "Maximum Performance",
+        "desc": "Optimized for Core Web Vitals. Your articles load instantly, improving conversion rates and reducing bounce rates."
+      },
+      "analytics": {
+        "title": "Data for Decisions",
+        "desc": "Clear reports on what your readers actually engage with. Engagement rate, shares, and business impact in one dashboard."
+      },
+      "pricing": {
+        "title": "Fair Pricing",
+        "desc": "Base platform fee + flexible add-ons based on your usage. You don't pay for features you don't need."
+      }
+    },
+    "terminal": {
+      "assistant_name": "Topik AI Assistant",
+      "status": "Ready for Action",
+      "line1": "Analyzing keywords...",
+      "line2": "Target Audience: B2B Decision Makers",
+      "line3": "Tone of Voice: Professional",
+      "line4": "Generating content...",
+      "line5": "Checking SEO parameters...",
+      "line6": "Status: Optimized",
+      "line7": "Publication: Scheduled"
+    },
+    "footer": {
+      "desc": "Platform for corporate content automation and monetization.",
+      "rights": "All rights reserved."
+    }
+  },
   "feedback": {
     "question": "Was this article helpful?",
     "subtitle": "Your feedback helps us improve content for others.",
@@ -374,18 +548,18 @@
   },
   "seo": {
     "default": {
-      "title": "Topiqu",
-      "description": "Welcome to the Topiqu blog.",
-      "keywords": "blog, AI, Topiqu",
-      "author": "Topiqu"
+      "title": "Topiqu | B2B Content Infrastructure",
+      "description": "Automated platform for content management and monetization. Leverage AI power, advanced analytics, and maximum performance for your growth.",
+      "keywords": "Topiqu, blog platform, AI content, monetization, SaaS infrastructure",
+      "author": "Topiqu Inc."
     },
     "tags": {
-      "title": "Articles tagged: {name}",
-      "description": "List of articles tagged with {name}."
+      "title": "Topic: {name} | Topiqu",
+      "description": "Browse the latest articles and insights on the topic of {name}."
     },
     "author": {
-      "title": "Articles by {name}",
-      "description": "List of articles written by {name}."
+      "title": "{name} - Author Profile | Topiqu",
+      "description": "Read all expert articles and posts written by {name}."
     }
   },
   "articles": {

@@ -64,7 +64,9 @@ html.dark
     [role='dialog'] *,
     [data-youtube-video],
     [data-youtube-video] *,
-    .pointer-events-none
+    .pointer-events-none,
+    .custom-ui,
+    .custom-ui *
   ) {
   background-color: #1f2937;
 }

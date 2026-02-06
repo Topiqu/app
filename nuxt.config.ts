@@ -41,7 +41,7 @@ export default defineNuxtConfig({
       asyncContext: true,
     },
     scheduledTasks: {
-      '*/1 * * * *': ['publish-check'],
+      '*/10 * * * *': ['publish-check'],
       '0 15 * * *': ['generate-article'],
       '*/30 * * * *': ['sentiment-analysis'],
       '0 3 * * * *': ['community-insights'],

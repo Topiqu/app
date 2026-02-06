@@ -6,8 +6,13 @@ export const useClientSite = async () => {
   if (import.meta.client && globalThis.gtagInit === undefined) globalThis.gtagInit = false
 
   const raw = useRequestURL().hostname ?? ''
-
   const hostname = raw?.split(':')[0]?.replace(/^www\./, '')
+
+  const ROOT_DOMAINS = ['topiqu.com']
+
+  if (ROOT_DOMAINS.includes(hostname ?? '')) {
+    return null
+  }
 
   const { data } = await useAsyncData(`clientsite-${hostname}`, () => $fetch(`/api/clients/slug/${hostname}`))
 
