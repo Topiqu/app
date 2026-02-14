@@ -5,7 +5,7 @@
         position: absolute;
         bottom: 0;
         left: 0;
-        background: red;
+        background: green;
         color: white;
         padding: 10px;
         font-size: 20px;
@@ -14,7 +14,7 @@
         font-weight: bold;
       "
     >
-      DEBUG URL: {{ siteLogo || 'UNDEFINED' }} | Base64 Length: {{ base64Logo ? base64Logo.length : '0' }}
+      SUCCESS: {{ base64Logo ? 'PNG Generated (' + base64Logo.length + ' chars)' : 'Converting...' }}
     </div>
 
     <div
@@ -70,6 +70,8 @@
 </template>
 
 <script setup lang="ts">
+import sharp from 'sharp'
+
 const props = defineProps<{
   title: string
   description?: string
@@ -89,10 +91,15 @@ const { data: base64Logo } = await useAsyncData(
         responseType: 'arrayBuffer',
         timeout: 5000,
       })
-      const buffer = Buffer.from(response as ArrayBuffer)
-      const base64 = buffer.toString('base64')
+
+      const webpBuffer = Buffer.from(response as ArrayBuffer)
+
+      const pngBuffer = await sharp(webpBuffer).toFormat('png').toBuffer()
+
+      const base64 = pngBuffer.toString('base64')
       return `data:image/png;base64,${base64}`
     } catch (e) {
+      console.error('OG CONVERSION ERROR:', e)
       return null
     }
   },
