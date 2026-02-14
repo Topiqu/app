@@ -8,19 +8,16 @@
 
     <div class="relative z-10 w-full h-full flex flex-col justify-between p-16">
       <div class="flex items-center gap-4">
-        <NuxtImg
-          v-if="siteLogo"
-          :src="siteLogo"
-          format="png"
+        <img
+          v-if="base64Logo"
+          :src="base64Logo"
           width="120"
           height="120"
-          style="width: 120px; height: 120px; object-fit: contain"
-          class="rounded-md"
+          style="width: 120px; height: 120px; object-fit: contain; border-radius: 6px"
         />
-
         <div
           v-else
-          class="h-14 w-14 rounded bg-white/10 flex items-center justify-center text-2xl font-bold backdrop-blur-sm border border-white/10"
+          class="h-[120px] w-[120px] rounded bg-white/10 flex items-center justify-center text-4xl font-bold backdrop-blur-sm border border-white/10"
         >
           {{ siteName[0] }}
         </div>
@@ -56,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   title: string
   description?: string
   siteName: string
@@ -64,4 +61,22 @@ defineProps<{
   themeColor: string
   domain: string
 }>()
+
+const { data: base64Logo } = await useAsyncData(
+  'fetch-logo',
+  async () => {
+    if (!props.siteLogo) return null
+
+    try {
+      const response = await $fetch(props.siteLogo, { responseType: 'arrayBuffer' })
+      const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
+      return `data:image/png;base64,${base64}`
+    } catch {
+      return null
+    }
+  },
+  {
+    watch: [() => props.siteLogo],
+  },
+)
 </script>
