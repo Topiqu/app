@@ -4,12 +4,19 @@
       class="absolute inset-0 w-full h-full opacity-40"
       :style="{ background: `linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%)` }"
     />
-
     <div class="absolute inset-0 bg-black/20" />
 
     <div class="relative z-10 w-full h-full flex flex-col justify-between p-16">
       <div class="flex items-center gap-4">
-        <img v-if="siteLogo" :src="siteLogo" class="h-14 w-auto object-contain rounded-md" />
+        <NuxtImg
+          v-if="siteLogo"
+          :src="siteLogo"
+          format="png"
+          width="100"
+          height="100"
+          class="h-14 w-auto object-contain rounded-md"
+        />
+
         <div
           v-else
           class="h-14 w-14 rounded bg-white/10 flex items-center justify-center text-2xl font-bold backdrop-blur-sm border border-white/10"
