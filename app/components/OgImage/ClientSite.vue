@@ -1,55 +1,58 @@
 <template>
-  <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white">
+  <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
     <div
       class="absolute inset-0 w-full h-full opacity-40"
       :style="{ background: `linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%)` }"
     />
     <div class="absolute inset-0 bg-black/20" />
 
-    <div class="relative z-10 w-full h-full flex flex-col p-16">
-      <div class="w-full flex justify-between items-start">
-        <div
-          class="flex items-center gap-3 opacity-80 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md"
-        >
-          <div class="w-2 h-2 rounded-full" :style="{ backgroundColor: themeColor }" />
-          <span class="text-lg font-bold tracking-widest uppercase">{{ siteName }}</span>
-        </div>
+    <div class="absolute top-16 left-16 z-20 flex items-center gap-3 opacity-90">
+      <div
+        class="w-3 h-3 rounded-full shadow-lg"
+        :style="{ backgroundColor: themeColor, boxShadow: `0 0 10px ${themeColor}` }"
+      />
+      <span class="text-xl font-bold tracking-widest uppercase opacity-80">{{ siteName }}</span>
+    </div>
 
-        <img
-          v-if="base64Logo"
-          :src="base64Logo"
-          width="120"
-          height="120"
-          style="width: 120px; height: 120px; object-fit: contain"
-        />
-        <div
-          v-else
-          class="h-[100px] w-[100px] rounded-lg bg-white/10 flex items-center justify-center text-4xl font-bold backdrop-blur-sm border border-white/10"
-        >
-          {{ siteName[0] }}
-        </div>
+    <div class="absolute top-16 right-16 z-20">
+      <img
+        v-if="base64Logo"
+        :src="base64Logo"
+        width="140"
+        height="140"
+        style="width: 140px; height: 140px; object-fit: contain"
+      />
+      <div
+        v-else
+        class="h-[120px] w-[120px] rounded-xl bg-white/5 flex items-center justify-center text-5xl font-bold backdrop-blur-md border border-white/10 shadow-2xl"
+      >
+        {{ siteName[0] }}
       </div>
+    </div>
 
-      <div class="flex flex-col gap-6 max-w-4xl mt-auto mb-20">
-        <h1 class="text-7xl font-black leading-tight text-white drop-shadow-xl tracking-tight">
+    <div class="relative z-10 flex flex-col justify-end h-full p-16 pb-24">
+      <div class="flex flex-col gap-6 max-w-4xl">
+        <h1 class="text-8xl font-black leading-[0.95] text-white drop-shadow-2xl tracking-tight">
           {{ title }}
         </h1>
-        <p v-if="description" class="text-3xl text-gray-300 line-clamp-2 leading-snug font-light">
+        <p v-if="description" class="text-4xl text-blue-100/80 line-clamp-2 leading-snug font-light max-w-5xl">
           {{ description }}
         </p>
-      </div>
-
-      <div class="absolute bottom-16 left-16 flex items-center">
-        <span class="text-xl font-medium opacity-70 tracking-wide">{{ domain }}</span>
       </div>
     </div>
 
     <div
-      class="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full blur-[120px] opacity-30 pointer-events-none mix-blend-screen"
+      class="absolute bottom-16 left-16 z-20 flex items-center px-6 py-3 rounded-full bg-white/5 border border-white/5 backdrop-blur-xl"
+    >
+      <span class="text-xl font-medium tracking-wide text-gray-300">{{ domain }}</span>
+    </div>
+
+    <div
+      class="absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full blur-[150px] opacity-25 pointer-events-none mix-blend-screen"
       :style="{ backgroundColor: themeColor }"
     />
     <div
-      class="absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-[100px] opacity-20 pointer-events-none"
+      class="absolute -bottom-40 -left-20 w-[600px] h-[600px] rounded-full blur-[120px] opacity-15 pointer-events-none"
       :style="{ backgroundColor: themeColor }"
     />
   </div>
