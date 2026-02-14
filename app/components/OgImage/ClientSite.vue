@@ -6,13 +6,13 @@
     />
     <div class="absolute inset-0 bg-black/20" />
 
-    <div class="relative z-10 w-full h-full flex flex-col justify-between p-16">
-      <div class="flex justify-between items-start w-full">
-        <div class="flex flex-col gap-2">
-          <div class="flex items-center gap-2 opacity-70">
-            <div class="w-2 h-2 rounded-full" :style="{ backgroundColor: themeColor }" />
-            <span class="text-xl font-bold tracking-widest uppercase">{{ siteName }}</span>
-          </div>
+    <div class="relative z-10 w-full h-full flex flex-col p-16">
+      <div class="w-full flex justify-between items-start">
+        <div
+          class="flex items-center gap-3 opacity-80 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md"
+        >
+          <div class="w-2 h-2 rounded-full" :style="{ backgroundColor: themeColor }" />
+          <span class="text-lg font-bold tracking-widest uppercase">{{ siteName }}</span>
         </div>
 
         <img
@@ -24,13 +24,13 @@
         />
         <div
           v-else
-          class="h-[100px] w-[100px] rounded bg-white/10 flex items-center justify-center text-4xl font-bold backdrop-blur-sm border border-white/10"
+          class="h-[100px] w-[100px] rounded-lg bg-white/10 flex items-center justify-center text-4xl font-bold backdrop-blur-sm border border-white/10"
         >
           {{ siteName[0] }}
         </div>
       </div>
 
-      <div class="flex flex-col gap-6 max-w-4xl mt-auto mb-auto">
+      <div class="flex flex-col gap-6 max-w-4xl mt-auto mb-20">
         <h1 class="text-7xl font-black leading-tight text-white drop-shadow-xl tracking-tight">
           {{ title }}
         </h1>
@@ -39,10 +39,8 @@
         </p>
       </div>
 
-      <div class="flex items-center mt-8">
-        <div class="px-5 py-2 rounded-lg bg-white/10 border border-white/10 backdrop-blur-md">
-          <span class="text-xl font-medium opacity-90 tracking-wide text-gray-200">{{ domain }}</span>
-        </div>
+      <div class="absolute bottom-16 left-16 flex items-center">
+        <span class="text-xl font-medium opacity-70 tracking-wide">{{ domain }}</span>
       </div>
     </div>
 
@@ -85,7 +83,7 @@ const { data: base64Logo } = await useAsyncData(
       const base64 = pngBuffer.toString('base64')
 
       return `data:image/png;base64,${base64}`
-    } catch {
+    } catch (e) {
       return null
     }
   },
