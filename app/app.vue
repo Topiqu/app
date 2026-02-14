@@ -80,11 +80,9 @@ const ogImageOptions = computed(() => {
     }
   }
   return {
-    component: 'NuxtSeo',
+    component: 'AppDefault',
     title: 'Topiqu',
-    description: 'Modern blogging platform',
-    theme: '#2563eb',
-    colorMode: 'dark',
+    description: 'Moderní blogovací platforma poháněná AI',
   }
 })
 
