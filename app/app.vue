@@ -67,16 +67,30 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-if (clientSite) {
-  defineOgImageComponent('ClientSite', {
-    title: clientSite.name,
-    description: clientSite.description || '',
-    siteName: clientSite.name,
-    siteLogo: clientSite.logoUrl || `${reqUrl.origin}/logo.png`,
-    themeColor: computedThemeColor.value,
-    domain: reqUrl.host,
-  })
+const ogImageOptions = computed(() => {
+  if (clientSite) {
+    return {
+      component: 'ClientSite',
+      title: clientSite.name,
+      description: clientSite.description || '',
+      siteName: clientSite.name,
+      siteLogo: clientSite.logoUrl || `${reqUrl.origin}/logo.png`,
+      themeColor: computedThemeColor.value,
+      domain: reqUrl.host,
+    }
+  }
+  return {
+    component: 'NuxtSeo',
+    title: 'Topiqu',
+    description: 'Modern blogging platform',
+    theme: '#2563eb',
+    colorMode: 'dark',
+  }
+})
 
+defineOgImageComponent(ogImageOptions.value.component, ogImageOptions.value)
+
+if (clientSite) {
   useHead({
     script: [
       {
