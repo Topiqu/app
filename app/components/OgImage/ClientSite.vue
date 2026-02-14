@@ -1,6 +1,23 @@
 <template>
   <div class="w-full h-full flex flex-col justify-between text-white relative overflow-hidden bg-[#0f172a]">
     <div
+      style="
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        background: red;
+        color: white;
+        padding: 10px;
+        font-size: 20px;
+        z-index: 9999;
+        width: 100%;
+        font-weight: bold;
+      "
+    >
+      DEBUG URL: {{ siteLogo || 'UNDEFINED' }} | Base64 Length: {{ base64Logo ? base64Logo.length : '0' }}
+    </div>
+
+    <div
       class="absolute inset-0 w-full h-full opacity-40"
       :style="{ background: `linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%)` }"
     />
@@ -65,29 +82,17 @@ const props = defineProps<{
 const { data: base64Logo } = await useAsyncData(
   'fetch-logo',
   async () => {
-    console.log('--- OG DEBUG START ---')
-    console.log('URL:', props.siteLogo)
-
-    if (!props.siteLogo) {
-      console.log('No URL provided')
-      return null
-    }
+    if (!props.siteLogo) return null
 
     try {
       const response = await $fetch(props.siteLogo, {
         responseType: 'arrayBuffer',
         timeout: 5000,
       })
-
       const buffer = Buffer.from(response as ArrayBuffer)
-      console.log('Downloaded bytes:', buffer.length)
-
       const base64 = buffer.toString('base64')
-      console.log('Base64 start:', base64.substring(0, 20))
-
       return `data:image/png;base64,${base64}`
-    } catch (e: any) {
-      console.error('OG ERROR:', e.message)
+    } catch (e) {
       return null
     }
   },
