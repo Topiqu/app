@@ -86,9 +86,6 @@ const ogImageOptions = computed(() => {
 })
 
 defineOgImageComponent(ogImageOptions.value.component, ogImageOptions.value)
-console.log('--- APP VUE DEBUG ---')
-console.log('Selected Component:', ogImageOptions.value.component)
-console.log('Client Data:', clientSite ? `Loaded, logoUrl: ${clientSite.logoUrl}` : 'NULL')
 
 if (clientSite) {
   useHead({

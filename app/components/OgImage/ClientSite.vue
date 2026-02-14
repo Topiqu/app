@@ -1,22 +1,5 @@
 <template>
-  <div class="w-full h-full flex flex-col justify-between text-white relative overflow-hidden bg-[#0f172a]">
-    <div
-      style="
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        background: green;
-        color: white;
-        padding: 10px;
-        font-size: 20px;
-        z-index: 9999;
-        width: 100%;
-        font-weight: bold;
-      "
-    >
-      SUCCESS: {{ base64Logo ? 'PNG Generated (' + base64Logo.length + ' chars)' : 'Converting...' }}
-    </div>
-
+  <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white">
     <div
       class="absolute inset-0 w-full h-full opacity-40"
       :style="{ background: `linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%)` }"
@@ -24,42 +7,47 @@
     <div class="absolute inset-0 bg-black/20" />
 
     <div class="relative z-10 w-full h-full flex flex-col justify-between p-16">
-      <div class="flex items-center gap-4">
+      <div class="flex justify-between items-start w-full">
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-2 opacity-70">
+            <div class="w-2 h-2 rounded-full" :style="{ backgroundColor: themeColor }" />
+            <span class="text-xl font-bold tracking-widest uppercase">{{ siteName }}</span>
+          </div>
+        </div>
+
         <img
           v-if="base64Logo"
           :src="base64Logo"
           width="120"
           height="120"
-          style="width: 120px; height: 120px; object-fit: contain; border-radius: 6px"
+          style="width: 120px; height: 120px; object-fit: contain"
         />
         <div
           v-else
-          class="h-[120px] w-[120px] rounded bg-white/10 flex items-center justify-center text-4xl font-bold backdrop-blur-sm border border-white/10"
+          class="h-[100px] w-[100px] rounded bg-white/10 flex items-center justify-center text-4xl font-bold backdrop-blur-sm border border-white/10"
         >
           {{ siteName[0] }}
         </div>
-        <span class="text-3xl font-semibold opacity-90 tracking-wide">{{ siteName }}</span>
       </div>
 
-      <div class="flex flex-col gap-6 max-w-5xl">
-        <h1 class="text-8xl font-black leading-[1.05] text-white drop-shadow-xl tracking-tight">
+      <div class="flex flex-col gap-6 max-w-4xl mt-auto mb-auto">
+        <h1 class="text-7xl font-black leading-tight text-white drop-shadow-xl tracking-tight">
           {{ title }}
         </h1>
-        <p v-if="description" class="text-4xl text-gray-200 line-clamp-3 leading-snug opacity-90 font-light max-w-4xl">
+        <p v-if="description" class="text-3xl text-gray-300 line-clamp-2 leading-snug font-light">
           {{ description }}
         </p>
       </div>
 
-      <div class="flex items-center mt-4">
-        <div class="flex items-center gap-3 px-6 py-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-          <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: themeColor }" />
-          <span class="text-2xl font-medium opacity-80 tracking-wide">{{ domain }}</span>
+      <div class="flex items-center mt-8">
+        <div class="px-5 py-2 rounded-lg bg-white/10 border border-white/10 backdrop-blur-md">
+          <span class="text-xl font-medium opacity-90 tracking-wide text-gray-200">{{ domain }}</span>
         </div>
       </div>
     </div>
 
     <div
-      class="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full blur-[120px] opacity-40 pointer-events-none mix-blend-screen"
+      class="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full blur-[120px] opacity-30 pointer-events-none mix-blend-screen"
       :style="{ backgroundColor: themeColor }"
     />
     <div
@@ -92,14 +80,12 @@ const { data: base64Logo } = await useAsyncData(
         timeout: 5000,
       })
 
-      const webpBuffer = Buffer.from(response as ArrayBuffer)
-
-      const pngBuffer = await sharp(webpBuffer).toFormat('png').toBuffer()
-
+      const inputBuffer = Buffer.from(response as ArrayBuffer)
+      const pngBuffer = await sharp(inputBuffer).toFormat('png').toBuffer()
       const base64 = pngBuffer.toString('base64')
+
       return `data:image/png;base64,${base64}`
-    } catch (e) {
-      console.error('OG CONVERSION ERROR:', e)
+    } catch {
       return null
     }
   },
