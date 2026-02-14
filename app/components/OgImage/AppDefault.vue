@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="w-full h-full flex flex-col justify-center items-center text-white bg-[#0f172a] relative overflow-hidden">
     <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-900/40" />
 
@@ -24,6 +24,19 @@
   </div>
 </template>
 
+<script setup lang="ts">
+defineProps<{
+  title?: string
+  description?: string
+}>()
+</script> -->
+<template>
+  <div class="w-full h-full flex flex-col justify-center items-center text-white bg-[#0f172a]">
+    <h1 class="text-7xl font-black text-white">
+      {{ title }}
+    </h1>
+  </div>
+</template>
 <script setup lang="ts">
 defineProps<{
   title?: string
