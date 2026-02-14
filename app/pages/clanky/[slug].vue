@@ -658,6 +658,9 @@ onMounted(() => {
   opacity: 0;
   transform: translateY(-6px);
 }
+.prose p {
+  line-height: 1.6;
+}
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-4px);
