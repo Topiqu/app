@@ -12,9 +12,10 @@
           v-if="siteLogo"
           :src="siteLogo"
           format="png"
-          width="100"
-          height="100"
-          class="h-14 w-auto object-contain rounded-md"
+          width="120"
+          height="120"
+          style="width: 120px; height: 120px; object-fit: contain"
+          class="rounded-md"
         />
 
         <div
