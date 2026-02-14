@@ -60,6 +60,11 @@ useSeoMeta({
   ogTitle: () => clientSite?.name || 'Topiqu',
   ogDescription: () => clientSite?.description || 'Moderní blogovací platforma',
   ogLocale: () => clientSite?.language || 'cs',
+  ogImageWidth: 1200,
+  ogImageHeight: 600,
+  twitterImageWidth: 1200,
+  twitterImageHeight: 600,
+  twitterCard: 'summary_large_image',
 })
 
 if (clientSite) {

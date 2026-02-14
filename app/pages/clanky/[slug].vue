@@ -369,6 +369,11 @@ useSeoMeta({
   ogDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
   ogUrl: () => (hasSeoPlan.value ? canonicalUrl.value : undefined),
   ogType: () => (hasSeoPlan.value ? 'article' : undefined),
+  ogImageWidth: 1200,
+  ogImageHeight: 600,
+  twitterImageWidth: 1200,
+  twitterImageHeight: 600,
+  twitterCard: 'summary_large_image',
   twitterTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
   twitterDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
 })
