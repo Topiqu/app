@@ -65,13 +65,29 @@ const props = defineProps<{
 const { data: base64Logo } = await useAsyncData(
   'fetch-logo',
   async () => {
-    if (!props.siteLogo) return null
+    console.log('--- OG DEBUG START ---')
+    console.log('URL:', props.siteLogo)
+
+    if (!props.siteLogo) {
+      console.log('No URL provided')
+      return null
+    }
 
     try {
-      const response = await $fetch(props.siteLogo, { responseType: 'arrayBuffer' })
-      const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
+      const response = await $fetch(props.siteLogo, {
+        responseType: 'arrayBuffer',
+        timeout: 5000,
+      })
+
+      const buffer = Buffer.from(response as ArrayBuffer)
+      console.log('Downloaded bytes:', buffer.length)
+
+      const base64 = buffer.toString('base64')
+      console.log('Base64 start:', base64.substring(0, 20))
+
       return `data:image/png;base64,${base64}`
-    } catch {
+    } catch (e: any) {
+      console.error('OG ERROR:', e.message)
       return null
     }
   },
