@@ -16,8 +16,8 @@
 
     <div class="absolute top-16 right-16 z-20">
       <img
-        v-if="proxyLogoUrl"
-        :src="proxyLogoUrl"
+        v-if="logoData"
+        :src="logoData"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -59,6 +59,8 @@
 </template>
 
 <script setup lang="ts">
+import { Buffer } from 'node:buffer'
+
 const props = defineProps<{
   title: string
   description?: string
@@ -67,9 +69,34 @@ const props = defineProps<{
   themeColor: string
   domain: string
 }>()
-const { origin } = useRequestURL()
-const proxyLogoUrl = computed(() => {
-  if (!props.siteLogo) return null
-  return `${origin}/api/og-proxy?url=${encodeURIComponent(props.siteLogo)}`
-})
+
+const fetchToDataUrl = async (url: string | undefined, debugLabel: string) => {
+  if (!url) {
+    console.log(`[OG DEBUG] ${debugLabel}: URL is missing/undefined`)
+    return undefined
+  }
+
+  console.log(`[OG DEBUG] ${debugLabel}: Starting fetch for ${url}`)
+
+  try {
+    const response = await $fetch('/api/og-proxy', {
+      query: { url },
+      responseType: 'arrayBuffer',
+    })
+
+    if (!response) {
+      console.error(`[OG DEBUG] ${debugLabel}: Response is empty`)
+      return undefined
+    }
+
+    const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
+    console.log(`[OG DEBUG] ${debugLabel}: Success, base64 length: ${base64.length}`)
+    return `data:image/png;base64,${base64}`
+  } catch (e) {
+    console.error(`[OG DEBUG] ${debugLabel}: FAILED.`, e)
+    return undefined
+  }
+}
+
+const logoData = await fetchToDataUrl(props.siteLogo, 'ClientSite Logo')
 </script>
