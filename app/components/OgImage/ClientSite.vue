@@ -86,7 +86,7 @@ const { data: base64Logo } = await useAsyncData(
       const base64 = pngBuffer.toString('base64')
 
       return `data:image/png;base64,${base64}`
-    } catch (e) {
+    } catch {
       return null
     }
   },
