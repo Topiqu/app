@@ -67,9 +67,9 @@ const props = defineProps<{
   themeColor: string
   domain: string
 }>()
-
+const { origin } = useRequestURL()
 const proxyLogoUrl = computed(() => {
   if (!props.siteLogo) return null
-  return `/api/og-proxy?url=${encodeURIComponent(props.siteLogo)}`
+  return `${origin}/api/og-proxy?url=${encodeURIComponent(props.siteLogo)}`
 })
 </script>
