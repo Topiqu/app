@@ -256,7 +256,6 @@ export default defineNuxtConfig({
   },
 
   site: {
-    url: 'https://topiqu.com',
     name: 'Topiqu AI Blog',
     description: 'Moderní blogovací platforma poháněná AI',
     defaultLocale: 'cs',
