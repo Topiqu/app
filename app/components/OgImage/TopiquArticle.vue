@@ -1,12 +1,13 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
     <img
-      v-if="bgBase64"
-      :src="bgBase64"
+      v-if="computedBgUrl"
+      :src="computedBgUrl"
       class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
     />
 
     <div
+      v-else
       class="absolute inset-0 w-full h-full opacity-40"
       :style="{ background: `linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%)` }"
     />
@@ -32,8 +33,8 @@
 
     <div class="absolute top-16 right-16">
       <img
-        v-if="logoBase64"
-        :src="logoBase64"
+        v-if="computedLogoUrl"
+        :src="computedLogoUrl"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -42,7 +43,7 @@
         v-else
         class="h-[120px] w-[120px] rounded-xl bg-white/5 flex items-center justify-center text-5xl font-bold backdrop-blur-md border border-white/10 shadow-2xl"
       >
-        {{ siteName[0] }}
+        {{ siteName ? siteName[0] : '' }}
       </div>
     </div>
 
@@ -66,8 +67,6 @@
 </template>
 
 <script setup lang="ts">
-import { Buffer } from 'node:buffer'
-
 const props = defineProps<{
   title: string
   description?: string
@@ -80,30 +79,62 @@ const props = defineProps<{
 
 const { origin } = useRequestURL()
 
-const fetchToDataUrl = async (targetUrl: string | undefined) => {
-  if (!targetUrl) return undefined
-  if (targetUrl.startsWith('data:')) return targetUrl
+const getProxyUrl = (url: string | undefined) => {
+  if (!url) return undefined
+  if (url.startsWith('data:')) return url
 
-  try {
-    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}`
-
-    const response = await $fetch(proxyUrl, {
-      responseType: 'arrayBuffer',
-      timeout: 5000,
-    })
-
-    if (!response) return undefined
-
-    const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
-    return `data:image/png;base64,${base64}`
-  } catch {
-    console.error(`Failed to load OG image: ${targetUrl}`)
-    return undefined
-  }
+  return `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
 }
 
-const [logoBase64, bgBase64] = await Promise.all([
-  fetchToDataUrl(props.siteLogo),
-  fetchToDataUrl(props.backgroundImage),
-])
+const computedLogoUrl = computed(() => getProxyUrl(props.siteLogo))
+const computedBgUrl = computed(() => getProxyUrl(props.backgroundImage))
 </script>
+
+<!-- <template>
+  <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
+    <div class="absolute top-16 right-16">
+      <img
+        v-if="computedLogoUrl"
+        :src="computedLogoUrl"
+        width="140"
+        height="140"
+        style="width: 140px; height: 140px; object-fit: contain"
+      />
+      <div
+        v-else
+        class="h-[120px] w-[120px] rounded-xl bg-white/5 flex items-center justify-center text-5xl font-bold backdrop-blur-md border border-white/10 shadow-2xl"
+      >
+        {{ siteName[0] }}
+      </div>
+    </div>
+    
+    </div>
+</template>
+
+<script setup lang="ts">
+// Žádný import Bufferu není potřeba!
+
+const props = defineProps<{
+  title: string
+  description?: string
+  siteName: string
+  siteLogo?: string
+  themeColor: string
+  domain: string
+}>()
+
+const { origin } = useRequestURL()
+
+// Pomocná funkce jen sestaví string, nic nestahuje = ŽÁDNÝ BLOCKING, ŽÁDNÝ LOOPBACK
+const getProxyUrl = (url: string | undefined) => {
+  if (!url) return undefined
+  if (url.startsWith('data:')) return url
+  
+  // Tady sestavíme absolutní URL k tvé proxy.
+  // Satori (v <template>) si na tuto URL sáhne samo zvenčí nebo interně, jak potřebuje.
+  return `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
+}
+
+const computedLogoUrl = computed(() => getProxyUrl(props.siteLogo))
+// const computedBgUrl = computed(() => getProxyUrl(props.backgroundImage)) // Pokud tam máš ten .webp
+</script> -->
