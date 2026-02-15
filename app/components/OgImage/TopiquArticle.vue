@@ -67,10 +67,10 @@ const props = defineProps<{
   themeColor?: string
   isPremium?: boolean
 }>()
-
+const { origin } = useRequestURL()
 const getProxyUrl = (url?: string) => {
   if (!url) return undefined
-  return `/api/og-proxy?url=${encodeURIComponent(url)}`
+  return `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
 }
 
 const images = computed(() => ({
