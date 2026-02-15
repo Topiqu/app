@@ -1,6 +1,10 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
-    <img v-if="bgUrl" :src="bgUrl" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105" />
+    <img
+      v-if="bgBase64"
+      :src="bgBase64"
+      class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
+    />
 
     <div
       class="absolute inset-0 w-full h-full opacity-40"
@@ -28,8 +32,8 @@
 
     <div class="absolute top-16 right-16">
       <img
-        v-if="logoUrl"
-        :src="logoUrl"
+        v-if="logoBase64"
+        :src="logoBase64"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -62,6 +66,9 @@
 </template>
 
 <script setup lang="ts">
+import sharp from 'sharp'
+import { Buffer } from 'node:buffer'
+
 const props = defineProps<{
   title: string
   description?: string
@@ -72,14 +79,27 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const { origin } = useRequestURL()
-
-const getProxyUrl = (url: string | undefined) => {
+const processImage = async (url: string | undefined) => {
   if (!url) return undefined
   if (url.startsWith('data:')) return url
-  return `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
+
+  try {
+    const response = await fetch(url)
+    if (!response.ok) return undefined
+
+    const arrayBuffer = await response.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    const pngBuffer = await sharp(buffer)
+      .resize(1200, 630, { fit: 'cover', withoutEnlargement: true })
+      .toFormat('png')
+      .toBuffer()
+
+    return `data:image/png;base64,${pngBuffer.toString('base64')}`
+  } catch {
+    return undefined
+  }
 }
 
-const logoUrl = computed(() => getProxyUrl(props.siteLogo))
-const bgUrl = computed(() => getProxyUrl(props.backgroundImage))
+const [logoBase64, bgBase64] = await Promise.all([processImage(props.siteLogo), processImage(props.backgroundImage)])
 </script>
