@@ -4,9 +4,19 @@
       class="absolute inset-0 w-full h-full opacity-40"
       :style="{ background: `linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%)` }"
     />
+
     <div class="absolute inset-0 bg-black/20" />
 
-    <div class="absolute top-16 left-16 z-20 flex items-center gap-3 opacity-90">
+    <div
+      class="absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full blur-[150px] opacity-25"
+      :style="{ backgroundColor: themeColor }"
+    />
+    <div
+      class="absolute -bottom-40 -left-20 w-[600px] h-[600px] rounded-full blur-[120px] opacity-15"
+      :style="{ backgroundColor: themeColor }"
+    />
+
+    <div class="absolute top-16 left-16 flex items-center gap-3 opacity-90">
       <div
         class="w-3 h-3 rounded-full shadow-lg"
         :style="{ backgroundColor: themeColor, boxShadow: `0 0 10px ${themeColor}` }"
@@ -14,7 +24,7 @@
       <span class="text-xl font-bold tracking-widest uppercase opacity-80">{{ siteName }}</span>
     </div>
 
-    <div class="absolute top-16 right-16 z-20">
+    <div class="absolute top-16 right-16">
       <img
         v-if="logoData"
         :src="logoData"
@@ -30,7 +40,7 @@
       </div>
     </div>
 
-    <div class="relative z-10 flex flex-col justify-end h-full p-16 pb-24">
+    <div class="relative flex flex-col justify-end h-full p-16 pb-24">
       <div class="flex flex-col gap-6 max-w-4xl">
         <h1 class="text-8xl font-black leading-[0.95] text-white drop-shadow-2xl tracking-tight">
           {{ title }}
@@ -42,19 +52,10 @@
     </div>
 
     <div
-      class="absolute bottom-16 left-16 z-20 flex items-center px-6 py-3 rounded-full bg-white/5 border border-white/5 backdrop-blur-xl"
+      class="absolute bottom-16 left-16 flex items-center px-6 py-3 rounded-full bg-white/5 border border-white/5 backdrop-blur-xl"
     >
       <span class="text-xl font-medium tracking-wide text-gray-300">{{ domain }}</span>
     </div>
-
-    <div
-      class="absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full blur-[150px] opacity-25 pointer-events-none mix-blend-screen"
-      :style="{ backgroundColor: themeColor }"
-    />
-    <div
-      class="absolute -bottom-40 -left-20 w-[600px] h-[600px] rounded-full blur-[120px] opacity-15 pointer-events-none"
-      :style="{ backgroundColor: themeColor }"
-    />
   </div>
 </template>
 
@@ -70,33 +71,24 @@ const props = defineProps<{
   domain: string
 }>()
 
-const fetchToDataUrl = async (url: string | undefined, debugLabel: string) => {
-  if (!url) {
-    console.log(`[OG DEBUG] ${debugLabel}: URL is missing/undefined`)
-    return undefined
-  }
-
-  console.log(`[OG DEBUG] ${debugLabel}: Starting fetch for ${url}`)
+const fetchToDataUrl = async (url: string | undefined) => {
+  if (!url) return undefined
 
   try {
+    const encodedUrl = encodeURIComponent(url)
     const response = await $fetch('/api/og-proxy', {
-      query: { url },
+      query: { url: encodedUrl },
       responseType: 'arrayBuffer',
     })
 
-    if (!response) {
-      console.error(`[OG DEBUG] ${debugLabel}: Response is empty`)
-      return undefined
-    }
+    if (!response) return undefined
 
     const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
-    console.log(`[OG DEBUG] ${debugLabel}: Success, base64 length: ${base64.length}`)
     return `data:image/png;base64,${base64}`
   } catch (e) {
-    console.error(`[OG DEBUG] ${debugLabel}: FAILED.`, e)
     return undefined
   }
 }
 
-const logoData = await fetchToDataUrl(props.siteLogo, 'ClientSite Logo')
+const logoData = await fetchToDataUrl(props.siteLogo)
 </script>
