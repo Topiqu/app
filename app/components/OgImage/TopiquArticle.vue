@@ -55,6 +55,8 @@
 </template>
 
 <script setup lang="ts">
+import { Buffer } from 'node:buffer'
+
 const props = defineProps<{
   title: string
   description?: string
@@ -67,15 +69,34 @@ const props = defineProps<{
   themeColor?: string
   isPremium?: boolean
 }>()
-const { origin } = useRequestURL()
-const getProxyUrl = (url?: string) => {
+
+const fetchToDataUrl = async (url?: string) => {
   if (!url) return undefined
-  return `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
+
+  try {
+    const response = await $fetch('/api/og-proxy', {
+      query: { url },
+      responseType: 'arrayBuffer',
+    })
+
+    if (!response) return undefined
+
+    const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
+    return `data:image/png;base64,${base64}`
+  } catch {
+    return undefined
+  }
 }
 
-const images = computed(() => ({
-  bg: getProxyUrl(props.backgroundImage),
-  logo: getProxyUrl(props.siteLogo),
-  author: getProxyUrl(props.authorImage),
-}))
+const [bgData, logoData, authorData] = await Promise.all([
+  fetchToDataUrl(props.backgroundImage),
+  fetchToDataUrl(props.siteLogo),
+  fetchToDataUrl(props.authorImage),
+])
+
+const images = {
+  bg: bgData,
+  logo: logoData,
+  author: authorData,
+}
 </script>
