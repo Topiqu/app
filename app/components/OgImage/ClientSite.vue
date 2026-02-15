@@ -71,13 +71,15 @@ const props = defineProps<{
   domain: string
 }>()
 
-const fetchToDataUrl = async (url: string | undefined) => {
-  if (!url) return undefined
+const { origin } = useRequestURL()
+
+const fetchToDataUrl = async (targetUrl: string | undefined) => {
+  if (!targetUrl) return undefined
+  if (targetUrl.startsWith('data:')) return targetUrl
 
   try {
-    const encodedUrl = encodeURIComponent(url)
-    const response = await $fetch('/api/og-proxy', {
-      query: { url: encodedUrl },
+    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}`
+    const response = await $fetch(proxyUrl, {
       responseType: 'arrayBuffer',
     })
 
@@ -85,7 +87,7 @@ const fetchToDataUrl = async (url: string | undefined) => {
 
     const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
     return `data:image/png;base64,${base64}`
-  } catch (e) {
+  } catch {
     return undefined
   }
 }

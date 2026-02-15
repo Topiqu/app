@@ -1,56 +1,47 @@
 <template>
-  <div class="w-full h-full flex flex-col justify-between text-white relative overflow-hidden bg-[#0f172a]">
-    <img v-if="images.bg" :src="images.bg" class="absolute inset-0 w-full h-full object-cover opacity-60" />
-    <div v-else class="absolute inset-0 w-full h-full bg-gradient-to-br from-[#5d42e8] to-[#1e40af]" />
+  <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
+    <div
+      v-if="bgData"
+      class="absolute inset-0 w-full h-full opacity-30 blur-sm scale-105"
+      :style="{
+        backgroundImage: `url(${bgData})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }"
+    />
+    <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/80 to-transparent" />
 
-    <div class="absolute inset-0 bg-black/40" />
+    <div class="absolute top-12 left-12 flex items-center gap-4">
+      <img
+        v-if="logoData"
+        :src="logoData"
+        width="60"
+        height="60"
+        style="width: 60px; height: 60px; object-fit: contain"
+      />
+      <span class="text-2xl font-bold tracking-wider uppercase opacity-90">{{ siteName }}</span>
+    </div>
 
-    <div class="relative z-10 w-full h-full flex flex-col justify-between p-16">
-      <div class="flex items-center gap-4">
-        <img v-if="images.logo" :src="images.logo" class="h-12 w-auto object-contain rounded-md" />
-        <div v-else class="h-12 w-12 rounded bg-white/20 flex items-center justify-center text-xl font-bold">
-          {{ siteName[0] }}
-        </div>
-        <span class="text-2xl font-semibold opacity-90 tracking-wide">{{ siteName }}</span>
-
-        <div
-          v-if="!isPremium"
-          class="ml-auto bg-[#5d42e8] px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider shadow-lg"
+    <div class="relative mt-auto p-16 pb-20 flex flex-col gap-8">
+      <div v-if="category" class="flex">
+        <span
+          class="px-4 py-1 rounded-md text-sm font-bold uppercase tracking-widest text-white shadow-xl"
+          :style="{ backgroundColor: themeColor }"
         >
-          Topiqu Blog
-        </div>
+          {{ category }}
+        </span>
       </div>
 
-      <div class="flex flex-col gap-6 max-w-4xl">
-        <h1 class="text-7xl font-black leading-[1.1] text-white drop-shadow-lg">
-          {{ title }}
-        </h1>
-        <p v-if="description" class="text-3xl text-gray-200 line-clamp-2 leading-snug opacity-90 font-light">
-          {{ description }}
-        </p>
-      </div>
+      <h1 class="text-7xl font-black leading-[1.1] tracking-tight drop-shadow-2xl">
+        {{ title }}
+      </h1>
 
-      <div class="flex items-center gap-6 mt-4">
-        <div class="flex items-center gap-3 bg-white/10 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md">
-          <img v-if="images.author" :src="images.author" class="w-10 h-10 rounded-full border-2 border-white/50" />
-          <div
-            v-else
-            class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 border-2 border-white/50"
-          />
-
-          <span class="text-xl font-medium">{{ authorName || 'Redaction' }}</span>
-        </div>
-
-        <div v-if="readingTime" class="flex items-center gap-2 text-xl opacity-80">
-          <div class="w-1.5 h-1.5 rounded-full bg-white/50" />
-          <span>{{ readingTime || 'Worth your time' }}</span>
+      <div class="flex items-center gap-6">
+        <div class="flex flex-col">
+          <span class="text-xl font-medium text-gray-300">{{ domain }}</span>
         </div>
       </div>
     </div>
-
-    <div
-      class="absolute -top-20 -right-20 w-96 h-96 bg-[#5d42e8] rounded-full blur-[100px] opacity-50 pointer-events-none"
-    />
   </div>
 </template>
 
@@ -59,28 +50,24 @@ import { Buffer } from 'node:buffer'
 
 const props = defineProps<{
   title: string
-  description?: string
   siteName: string
   siteLogo?: string
-  authorName?: string
-  authorImage?: string
-  readingTime?: string
   backgroundImage?: string
-  themeColor?: string
-  isPremium?: boolean
+  themeColor: string
+  domain: string
+  category?: string
 }>()
 
-const fetchToDataUrl = async (url?: string) => {
-  if (!url) return undefined
+const { origin } = useRequestURL()
 
+const fetchToDataUrl = async (targetUrl: string | undefined) => {
+  if (!targetUrl) return undefined
   try {
-    const response = await $fetch('/api/og-proxy', {
-      query: { url },
+    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}`
+    const response = await $fetch(proxyUrl, {
       responseType: 'arrayBuffer',
     })
-
     if (!response) return undefined
-
     const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
     return `data:image/png;base64,${base64}`
   } catch {
@@ -88,15 +75,5 @@ const fetchToDataUrl = async (url?: string) => {
   }
 }
 
-const [bgData, logoData, authorData] = await Promise.all([
-  fetchToDataUrl(props.backgroundImage),
-  fetchToDataUrl(props.siteLogo),
-  fetchToDataUrl(props.authorImage),
-])
-
-const images = {
-  bg: bgData,
-  logo: logoData,
-  author: authorData,
-}
+const [logoData, bgData] = await Promise.all([fetchToDataUrl(props.siteLogo), fetchToDataUrl(props.backgroundImage)])
 </script>
