@@ -66,7 +66,6 @@
 </template>
 
 <script setup lang="ts">
-import sharp from 'sharp'
 import { Buffer } from 'node:buffer'
 
 const props = defineProps<{
@@ -79,27 +78,27 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const processImage = async (url: string | undefined) => {
-  if (!url) return undefined
-  if (url.startsWith('data:')) return url
+const fetchToDataUrl = async (targetUrl: string | undefined) => {
+  if (!targetUrl) return undefined
+  if (targetUrl.startsWith('data:')) return targetUrl
 
   try {
-    const response = await fetch(url)
-    if (!response.ok) return undefined
+    const response = await $fetch('/api/og-proxy', {
+      query: { url: targetUrl },
+      responseType: 'arrayBuffer',
+    })
 
-    const arrayBuffer = await response.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    if (!response) return undefined
 
-    const pngBuffer = await sharp(buffer)
-      .resize(1200, 630, { fit: 'cover', withoutEnlargement: true })
-      .toFormat('png')
-      .toBuffer()
-
-    return `data:image/png;base64,${pngBuffer.toString('base64')}`
+    const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
+    return `data:image/png;base64,${base64}`
   } catch {
     return undefined
   }
 }
 
-const [logoBase64, bgBase64] = await Promise.all([processImage(props.siteLogo), processImage(props.backgroundImage)])
+const [logoBase64, bgBase64] = await Promise.all([
+  fetchToDataUrl(props.siteLogo),
+  fetchToDataUrl(props.backgroundImage),
+])
 </script>

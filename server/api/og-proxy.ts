@@ -18,14 +18,16 @@ export default defineEventHandler(async (event) => {
     const arrayBuffer = await response.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const pngBuffer = await sharp(buffer).toFormat('png').toBuffer()
+    const pngBuffer = await sharp(buffer)
+      .resize(1200, 630, { fit: 'cover', withoutEnlargement: true })
+      .toFormat('png')
+      .toBuffer()
 
     setHeader(event, 'Content-Type', 'image/png')
     setHeader(event, 'Cache-Control', 'public, max-age=31536000, immutable')
 
     return pngBuffer
-  } catch (error) {
-    console.error('OG Proxy Error:', error)
+  } catch {
     throw createError({ statusCode: 500, message: 'Image processing failed' })
   }
 })
