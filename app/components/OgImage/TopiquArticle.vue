@@ -1,13 +1,13 @@
 <template>
   <div class="w-full h-full flex flex-col justify-between text-white relative overflow-hidden bg-[#0f172a]">
-    <img v-if="images?.bg" :src="images.bg" class="absolute inset-0 w-full h-full object-cover opacity-60" />
+    <img v-if="images.bg" :src="images.bg" class="absolute inset-0 w-full h-full object-cover opacity-60" />
     <div v-else class="absolute inset-0 w-full h-full bg-gradient-to-br from-[#5d42e8] to-[#1e40af]" />
 
     <div class="absolute inset-0 bg-black/40" />
 
     <div class="relative z-10 w-full h-full flex flex-col justify-between p-16">
       <div class="flex items-center gap-4">
-        <img v-if="images?.logo" :src="images.logo" class="h-12 w-auto object-contain rounded-md" />
+        <img v-if="images.logo" :src="images.logo" class="h-12 w-auto object-contain rounded-md" />
         <div v-else class="h-12 w-12 rounded bg-white/20 flex items-center justify-center text-xl font-bold">
           {{ siteName[0] }}
         </div>
@@ -32,7 +32,7 @@
 
       <div class="flex items-center gap-6 mt-4">
         <div class="flex items-center gap-3 bg-white/10 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md">
-          <img v-if="images?.author" :src="images.author" class="w-10 h-10 rounded-full border-2 border-white/50" />
+          <img v-if="images.author" :src="images.author" class="w-10 h-10 rounded-full border-2 border-white/50" />
           <div
             v-else
             class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 border-2 border-white/50"
@@ -55,8 +55,6 @@
 </template>
 
 <script setup lang="ts">
-import sharp from 'sharp'
-
 const props = defineProps<{
   title: string
   description?: string
@@ -70,36 +68,14 @@ const props = defineProps<{
   isPremium?: boolean
 }>()
 
-const fetchAndConvertImage = async (url?: string) => {
-  if (!url) return null
-  try {
-    const response = await $fetch(url, {
-      responseType: 'arrayBuffer',
-      timeout: 4000,
-    })
-
-    const inputBuffer = Buffer.from(response as ArrayBuffer)
-    const pngBuffer = await sharp(inputBuffer).toFormat('png').toBuffer()
-    return `data:image/png;base64,${pngBuffer.toString('base64')}`
-  } catch (e) {
-    console.error(`Failed to process image: ${url}`, e)
-    return null
-  }
+const getProxyUrl = (url?: string) => {
+  if (!url) return undefined
+  return `/api/og-proxy?url=${encodeURIComponent(url)}`
 }
 
-const { data: images } = await useAsyncData(
-  'blog-card-images',
-  async () => {
-    const [bg, logo, author] = await Promise.all([
-      fetchAndConvertImage(props.backgroundImage),
-      fetchAndConvertImage(props.siteLogo),
-      fetchAndConvertImage(props.authorImage),
-    ])
-
-    return { bg, logo, author }
-  },
-  {
-    watch: [() => props.title],
-  },
-)
+const images = computed(() => ({
+  bg: getProxyUrl(props.backgroundImage),
+  logo: getProxyUrl(props.siteLogo),
+  author: getProxyUrl(props.authorImage),
+}))
 </script>

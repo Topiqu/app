@@ -16,8 +16,8 @@
 
     <div class="absolute top-16 right-16 z-20">
       <img
-        v-if="base64Logo"
-        :src="base64Logo"
+        v-if="proxyLogoUrl"
+        :src="proxyLogoUrl"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -59,8 +59,6 @@
 </template>
 
 <script setup lang="ts">
-import sharp from 'sharp'
-
 const props = defineProps<{
   title: string
   description?: string
@@ -70,28 +68,8 @@ const props = defineProps<{
   domain: string
 }>()
 
-const { data: base64Logo } = await useAsyncData(
-  'fetch-logo',
-  async () => {
-    if (!props.siteLogo) return null
-
-    try {
-      const response = await $fetch(props.siteLogo, {
-        responseType: 'arrayBuffer',
-        timeout: 5000,
-      })
-
-      const inputBuffer = Buffer.from(response as ArrayBuffer)
-      const pngBuffer = await sharp(inputBuffer).toFormat('png').toBuffer()
-      const base64 = pngBuffer.toString('base64')
-
-      return `data:image/png;base64,${base64}`
-    } catch {
-      return null
-    }
-  },
-  {
-    watch: [() => props.siteLogo],
-  },
-)
+const proxyLogoUrl = computed(() => {
+  if (!props.siteLogo) return null
+  return `/api/og-proxy?url=${encodeURIComponent(props.siteLogo)}`
+})
 </script>

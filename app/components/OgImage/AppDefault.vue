@@ -7,14 +7,12 @@
 
     <div class="relative z-10 flex flex-col items-center gap-6 p-12 text-center">
       <img
-        v-if="base64AppLogo"
-        :src="base64AppLogo"
+        :src="proxyAppLogo"
         width="120"
         height="120"
         class="mb-4"
         style="width: 120px; height: 120px; object-fit: contain"
       />
-      <div v-else class="mb-4 w-[120px] h-[120px] bg-white/10 rounded-full animate-pulse" />
 
       <h1 class="text-7xl font-black tracking-tight text-white drop-shadow-xl">
         {{ title }}
@@ -33,29 +31,11 @@
 </template>
 
 <script setup lang="ts">
-import sharp from 'sharp'
-
 defineProps<{
   title?: string
   description?: string
 }>()
 
 const APP_LOGO_URL = 'https://cdn.topiqu.com/app-logo.png'
-
-const { data: base64AppLogo } = await useAsyncData('default-card-logo', async () => {
-  try {
-    const response = await $fetch(APP_LOGO_URL, {
-      responseType: 'arrayBuffer',
-      timeout: 5000,
-    })
-
-    const inputBuffer = Buffer.from(response as ArrayBuffer)
-    const pngBuffer = await sharp(inputBuffer).toFormat('png').toBuffer()
-
-    return `data:image/png;base64,${pngBuffer.toString('base64')}`
-  } catch (e) {
-    console.error('Failed to load default app logo', e)
-    return null
-  }
-})
+const proxyAppLogo = `/api/og-proxy?url=${encodeURIComponent(APP_LOGO_URL)}`
 </script>
