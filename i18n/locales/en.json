@@ -609,6 +609,7 @@
     },
     "title": "Articles",
     "addArticle": "Add Article",
+    "updateArticle": "Update Article",
     "authorsArticles": "Articles by author",
     "explore": "Explore articles",
     "votes": "Votes",

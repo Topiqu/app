@@ -167,7 +167,9 @@
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-2">
         <Button variant="danger" size="lg" @click="close">{{ $t('common.close') }}</Button>
-        <Button :disabled="!editedArticle.title" size="lg" @click="onSubmit">{{ $t('articles.addArticle') }}</Button>
+        <Button :disabled="!editedArticle.title" size="lg" @click="onSubmit">{{
+          props.article ? $t('articles.updateArticle') : $t('articles.addArticle')
+        }}</Button>
       </div>
     </template>
   </Modal>
