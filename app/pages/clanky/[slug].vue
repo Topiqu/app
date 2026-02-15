@@ -412,12 +412,20 @@ useSeoMeta({
   twitterTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
   twitterDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
 })
-
+const ogDescription = computed(() => {
+  const text = articleDescription.value || ''
+  return (
+    text
+      .slice(0, 100)
+      .replace(/[\n\r]+/g, ' ')
+      .trim() + '...'
+  )
+})
 if (data.value) {
   if (hasSeoPlan.value) {
     defineOgImageComponent('TopiquArticle', {
       title: data.value.title,
-      description: articleDescription.value,
+      description: ogDescription.value,
       siteName: clientSite?.name || 'Blog',
       siteLogo: clientSite?.logoUrl || undefined,
       authorName: data.value.user?.username,
