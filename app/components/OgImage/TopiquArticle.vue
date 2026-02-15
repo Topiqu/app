@@ -1,14 +1,7 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
-    <div
-      v-if="bgData"
-      class="absolute inset-0 w-full h-full opacity-30 blur-sm scale-105"
-      :style="{
-        backgroundImage: `url(${bgData})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }"
-    />
+    <img v-if="bgData" :src="bgData" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105" />
+
     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/80 to-transparent" />
 
     <div class="absolute top-12 left-12 flex items-center gap-4">
@@ -60,20 +53,35 @@ const props = defineProps<{
 
 const { origin } = useRequestURL()
 
-const fetchToDataUrl = async (targetUrl: string | undefined) => {
+const fetchToDataUrl = async (targetUrl: string | undefined, type: string) => {
   if (!targetUrl) return undefined
+
+  if (targetUrl.startsWith('data:')) return targetUrl
+
   try {
     const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}`
+
+    console.log(`[OG ${type}] Fetching: ${proxyUrl}`)
+
     const response = await $fetch(proxyUrl, {
       responseType: 'arrayBuffer',
     })
-    if (!response) return undefined
+
+    if (!response) {
+      console.error(`[OG ${type}] Empty response`)
+      return undefined
+    }
+
     const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
     return `data:image/png;base64,${base64}`
-  } catch {
+  } catch (e) {
+    console.error(`[OG ${type}] Failed:`, e)
     return undefined
   }
 }
 
-const [logoData, bgData] = await Promise.all([fetchToDataUrl(props.siteLogo), fetchToDataUrl(props.backgroundImage)])
+const [logoData, bgData] = await Promise.all([
+  fetchToDataUrl(props.siteLogo, 'LOGO'),
+  fetchToDataUrl(props.backgroundImage, 'BG'),
+])
 </script>
