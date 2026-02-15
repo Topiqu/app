@@ -78,14 +78,18 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
+const { origin } = useRequestURL()
+
 const fetchToDataUrl = async (targetUrl: string | undefined) => {
   if (!targetUrl) return undefined
   if (targetUrl.startsWith('data:')) return targetUrl
 
   try {
-    const response = await $fetch('/api/og-proxy', {
-      query: { url: targetUrl },
+    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}`
+
+    const response = await $fetch(proxyUrl, {
       responseType: 'arrayBuffer',
+      timeout: 5000,
     })
 
     if (!response) return undefined
@@ -93,6 +97,7 @@ const fetchToDataUrl = async (targetUrl: string | undefined) => {
     const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
     return `data:image/png;base64,${base64}`
   } catch {
+    console.error(`Failed to load OG image: ${targetUrl}`)
     return undefined
   }
 }
