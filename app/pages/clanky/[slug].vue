@@ -1,36 +1,71 @@
 <template>
   <div v-if="data" class="min-h-screen p-8 md:p-12 relative">
     <div
-      class="fixed top-0 hidden sm:block left-0 w-full bg-white dark:bg-neutral-900 shadow-md z-25"
-      :class="isSticky ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'"
+      class="fixed top-0 left-0 right-0 w-full z-40 transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) border-b border-gray-200/50 dark:border-gray-800/50"
+      :class="[
+        isSticky ? 'translate-y-0 opacity-100 shadow-sm' : '-translate-y-full opacity-0',
+        'bg-white/95 backdrop-blur-md dark:bg-neutral-900/95',
+      ]"
     >
-      <div class="max-w-[1000px] mx-auto flex items-center justify-between px-4 py-4">
-        <NuxtLink
-          to="/admin"
-          class="group flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg"
-          :aria-label="$t('common.actions.backToList')"
-        >
-          <Icon name="mdi:arrow" class="w-6 h-6 mr-2 group-hover:-translate-x-1.5" />
-          {{ $t('common.actions.backToList') }}
-        </NuxtLink>
-        <div class="flex flex-col items-end">
-          <span v-if="data.series" class="text-xs font-bold text-blue-600 uppercase">
-            {{ data.series.name }} ({{ data.series.current }}/{{ data.series.total }})
-          </span>
-          <h1 class="text-xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+      <div class="max-w-[1000px] mx-auto h-16 px-4 grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
+        <div class="flex justify-start shrink-0">
+          <NuxtLink
+            to="/admin"
+            class="group inline-flex items-center gap-2 px-2 py-1.5 -ml-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-all"
+            :aria-label="$t('common.actions.backToList')"
+          >
+            <Icon name="mdi:arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+            <span class="hidden sm:inline text-sm font-semibold">{{ $t('common.actions.backToList') }}</span>
+          </NuxtLink>
+        </div>
+
+        <div class="flex items-center justify-center min-w-0 w-full gap-3">
+          <div
+            v-if="data.series"
+            class="flex items-center shrink-0 max-w-[40%] sm:max-w-none gap-1.5 px-2 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50"
+          >
+            <span class="text-[10px] font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300 truncate">
+              {{ data.series.name }}
+            </span>
+            <span class="w-px h-2.5 bg-blue-200 dark:bg-blue-700 shrink-0"></span>
+            <span class="text-[10px] font-bold text-blue-600 dark:text-blue-300 shrink-0">
+              {{ data.series.current }}/{{ data.series.total }}
+            </span>
+          </div>
+
+          <h1 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate leading-tight">
             {{ data.title }}
           </h1>
         </div>
+
+        <div class="flex justify-end items-center shrink-0">
+          <button
+            class="group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition-all duration-300 ease-out"
+            :class="[
+              data.likedByUser
+                ? 'border-red-200 bg-red-50 text-red-500 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400'
+                : 'border-gray-200 bg-transparent text-gray-400 hover:border-red-200 hover:bg-red-50 hover:text-red-500 dark:border-gray-700 dark:text-gray-500 dark:hover:border-red-900/50 dark:hover:bg-red-900/10 dark:hover:text-red-400',
+            ]"
+            @click="toggleLike"
+            :title="$t('common.actions.like')"
+          >
+            <Icon
+              :name="data.likedByUser ? 'mdi:heart' : 'mdi:heart-outline'"
+              class="w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-90"
+            />
+          </button>
+        </div>
       </div>
-      <div
-        v-if="isSticky"
-        class="h-1 bg-gradient-to-r"
-        :class="progressBarColor"
-        :style="{ width: `${progress}%` }"
-      ></div>
+
+      <div class="absolute bottom-0 left-0 w-full h-[3px] bg-gray-100 dark:bg-gray-800 overflow-hidden">
+        <div
+          class="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-150 ease-linear shadow-[0_0_8px_rgba(59,130,246,0.6)]"
+          :style="{ width: `${progress}%` }"
+        ></div>
+      </div>
     </div>
 
-    <div ref="container" class="max-w-[1000px] mx-auto flex flex-col gap-8 px-4 sm:px-0">
+    <div ref="container" class="max-w-[1000px] mx-auto flex flex-col gap-8 px-4 sm:px-0 pt-4">
       <nav v-if="breadcrumbs?.length" aria-label="Breadcrumb" class="w-full">
         <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
           <li v-for="(item, index) in breadcrumbs" :key="index" class="flex items-center gap-2">
@@ -657,28 +692,74 @@ onMounted(() => {
 <style>
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
+
 .fade-slide-enter-from {
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(10px);
 }
-.prose p {
-  line-height: 1.6;
-}
+
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(-10px);
 }
+
+.prose p {
+  line-height: 1.8;
+}
+
 .prose p:empty::before {
   content: '\200B';
   display: inline-block;
 }
+
 .prose p img {
+  border-radius: 0.75rem;
   padding-top: 12px;
   padding-bottom: 6px;
   max-height: 600px;
   cursor: pointer !important;
-  animation: fade-in 0.5s ease-out forwards;
+  opacity: 0;
+  animation: fade-in-image 0.6s ease-out forwards;
+}
+
+@keyframes fade-in-image {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 </style>
