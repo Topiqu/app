@@ -202,6 +202,12 @@ export default defineNuxtConfig({
     },
     xssValidator: false,
   },
+  routeRules: {
+    '/__og-image__/**': { security: { xssValidator: false, headers: false } },
+    '/**/__og-image__/**': { security: { xssValidator: false, headers: false } },
+    '/cs/clanky/**': { security: { xssValidator: false } },
+    '/en/articles/**': { security: { xssValidator: false } },
+  },
   i18n: {
     locales: [
       { code: 'en', iso: 'en-US', name: 'EN', file: 'en.json' },
