@@ -100,6 +100,7 @@ export default defineNuxtConfig({
     defaults: {
       component: 'NuxtSeo',
     },
+    debug: true,
     compatibility: {
       prerender: { chromium: false },
     },
