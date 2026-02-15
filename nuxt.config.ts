@@ -103,6 +103,7 @@ export default defineNuxtConfig({
     compatibility: {
       prerender: { chromium: false },
     },
+    runtimeCacheStorage: true,
   },
 
   typescript: {
