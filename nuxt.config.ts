@@ -170,7 +170,7 @@ export default defineNuxtConfig({
       crossOriginEmbedderPolicy: false,
       crossOriginOpenerPolicy: 'unsafe-none',
       contentSecurityPolicy: {
-        'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+        'img-src': ["'self'", 'data:', 'blob:', 'https:', 'https://wsrv.nl'],
         'frame-src': [
           'https://www.youtube.com',
           'https://www.youtube-nocookie.com',
@@ -187,6 +187,7 @@ export default defineNuxtConfig({
           'https://www.googletagmanager.com',
           'https://www.google-analytics.com',
           'https://api.giphy.com',
+          'https://wsrv.nl',
         ],
         'frame-ancestors': ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
         'script-src': [
