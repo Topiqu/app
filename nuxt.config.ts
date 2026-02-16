@@ -106,9 +106,6 @@ export default defineNuxtConfig({
       renderer: 'chromium',
     },
     debug: true,
-    compatibility: {
-      prerender: { chromium: false },
-    },
     runtimeCacheStorage: true,
   },
 
