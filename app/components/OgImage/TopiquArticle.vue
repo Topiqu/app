@@ -1,10 +1,6 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
-    <img
-      v-if="bgProxyUrl"
-      :src="bgProxyUrl"
-      class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
-    />
+    <img v-if="bgData" :src="bgData" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105" />
 
     <div
       v-else
@@ -32,15 +28,7 @@
     </div>
 
     <div class="absolute top-16 right-16">
-      <img
-        v-if="logoProxyUrl"
-        :src="logoProxyUrl"
-        width="140"
-        height="140"
-        style="width: 140px; height: 140px; object-fit: contain"
-      />
       <div
-        v-else
         class="h-[120px] w-[120px] rounded-xl bg-white/5 flex items-center justify-center text-5xl font-bold backdrop-blur-md border border-white/10 shadow-2xl"
       >
         {{ siteName[0] }}
@@ -67,6 +55,8 @@
 </template>
 
 <script setup lang="ts">
+import { Buffer } from 'node:buffer'
+
 const props = defineProps<{
   title: string
   description?: string
@@ -79,13 +69,18 @@ const props = defineProps<{
 
 const { origin } = useRequestURL()
 
-const getProxyUrl = (url?: string) => {
-  if (!url) return undefined
-  return `${origin}/api/og-proxy/${encodeURIComponent(url)}.png`
-}
+const bgData = await (async () => {
+  if (!props.backgroundImage) return undefined
 
-const bgProxyUrl = getProxyUrl(props.backgroundImage)
-const logoProxyUrl = getProxyUrl(props.siteLogo)
+  try {
+    const proxy = `${origin}/api/og-proxy?url=${encodeURIComponent(props.backgroundImage)}`
+    const arrayBuf = (await $fetch(proxy, { responseType: 'arrayBuffer' })) as ArrayBuffer
+    return `data:image/png;base64,${Buffer.from(arrayBuf).toString('base64')}`
+  } catch (e) {
+    console.error('BG fetch selhal', e)
+    return undefined
+  }
+})()
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
