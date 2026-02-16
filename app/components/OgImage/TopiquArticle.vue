@@ -63,6 +63,7 @@
 </template>
 
 <script setup lang="ts">
+import sharp from 'sharp'
 import { Buffer } from 'node:buffer'
 
 const props = defineProps<{
@@ -77,22 +78,31 @@ const props = defineProps<{
 
 const { origin } = useRequestURL()
 
-const toPngBase64 = async (url?: string) => {
+const toPngBase64 = async (url?: string, isLogo = false) => {
   if (!url) return undefined
-  if (url.startsWith('data:')) return url
+  if (url.startsWith('data:')) return url.trim()
 
   try {
     const proxy = `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
-    const buff = await $fetch(proxy, { responseType: 'arrayBuffer' })
-    return `data:image/png;base64,${Buffer.from(buff).toString('base64')}`
+    const arrayBuf = (await $fetch(proxy, { responseType: 'arrayBuffer' })) as ArrayBuffer
+
+    const buf = Buffer.from(arrayBuf)
+
+    const sharpBuf = await sharp(buf)
+      .resize(isLogo ? 280 : 1200, isLogo ? 280 : 1200, { fit: 'inside', withoutEnlargement: true })
+      .png({ quality: isLogo ? 90 : 80 })
+      .toBuffer()
+
+    const base64 = sharpBuf.toString('base64')
+    return `data:image/png;base64,${base64}`
   } catch (e) {
-    console.error('OG image fetch failed:', url, e)
+    console.error('Failed to load image', url, e)
     return undefined
   }
 }
 
 const bgData = await toPngBase64(props.backgroundImage)
-const logoData = await toPngBase64(props.siteLogo)
+const logoData = await toPngBase64(props.siteLogo, true)
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
