@@ -27,22 +27,6 @@
       <span class="text-xl font-bold tracking-widest uppercase opacity-80">{{ siteName }}</span>
     </div>
 
-    <div class="absolute top-16 right-16">
-      <img
-        v-if="logoData"
-        :src="logoData"
-        width="140"
-        height="140"
-        style="width: 140px; height: 140px; object-fit: contain"
-      />
-      <div
-        v-else
-        class="h-[120px] w-[120px] rounded-xl bg-white/5 flex items-center justify-center text-5xl font-bold backdrop-blur-md border border-white/10 shadow-2xl"
-      >
-        {{ siteName ? siteName[0] : '' }}
-      </div>
-    </div>
-
     <div class="relative flex flex-col justify-end h-full p-16 pb-24">
       <div class="flex flex-col gap-6 max-w-4xl">
         <h1 class="text-8xl font-black leading-[0.95] text-white drop-shadow-2xl tracking-tight">
@@ -69,7 +53,7 @@ const props = defineProps<{
   title: string
   description?: string
   siteName: string
-  siteLogo?: string
+  // siteLogo - ODEBRÁNO
   themeColor: string
   domain: string
   backgroundImage?: string
@@ -84,7 +68,7 @@ const fetchPngViaProxy = async (url: string | undefined) => {
 
     const response = await $fetch(wsrvUrl, {
       responseType: 'arrayBuffer',
-      timeout: 4000,
+      timeout: 2000,
     })
 
     if (!response) return undefined
@@ -92,15 +76,13 @@ const fetchPngViaProxy = async (url: string | undefined) => {
     const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
     return `data:image/png;base64,${base64}`
   } catch (e) {
-    console.error('Wsrv fetch failed:', e)
+    console.log('Background fetch skipped/failed (timeout or error)')
     return undefined
   }
 }
 
-const [logoData, bgData] = await Promise.all([
-  fetchPngViaProxy(props.siteLogo),
-  fetchPngViaProxy(props.backgroundImage),
-])
+// Stahujeme jen pozadí
+const bgData = await fetchPngViaProxy(props.backgroundImage)
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
