@@ -111,6 +111,12 @@ export default defineNuxtConfig({
     runtimeCacheStorage: true,
   },
 
+  image: {
+    quality: 90,
+    format: ['avif', 'webp', 'png'],
+    domains: ['cdn.topiqu.com', 'topiqu-storage-eu-frankfurt.s3.eu-central-1.amazonaws.com', 'wsrv.nl'],
+  },
+
   typescript: {
     tsConfig: {
       include: ['../types/**/*.d.ts', '../server/tasks/**/*.ts'],
@@ -133,12 +139,6 @@ export default defineNuxtConfig({
     provider: { type: 'authjs' },
     baseURL: process.env.AUTH_ORIGIN,
     originEnvKey: 'AUTH_ORIGIN',
-  },
-
-  image: {
-    quality: 90,
-    format: ['avif', 'webp', 'png'],
-    domains: ['cdn.topiqu.com', 'topiqu-storage-eu-frankfurt.s3.eu-central-1.amazonaws.com', 'wsrv.nl'],
   },
 
   nodemailer: {
