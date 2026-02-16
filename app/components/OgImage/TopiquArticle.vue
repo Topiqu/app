@@ -75,24 +75,29 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const fetchToDataUrl = async (url: string | undefined) => {
+const processImage = async (url: string | undefined) => {
   if (!url) return undefined
   if (url.startsWith('data:')) return url
 
   try {
-    const res = await $fetch('/api/og-proxy', {
-      query: { url },
-      responseType: 'arrayBuffer',
-    })
+    const sharpModule = await import('sharp')
+    const sharp = sharpModule.default || sharpModule
 
-    if (!res) return undefined
-    return `data:image/png;base64,${Buffer.from(res as ArrayBuffer).toString('base64')}`
+    const arrayBuffer = await $fetch(url, { responseType: 'arrayBuffer' })
+    const buffer = Buffer.from(arrayBuffer as ArrayBuffer)
+
+    const pngBuffer = await sharp(buffer)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .toFormat('png', { quality: 80 })
+      .toBuffer()
+
+    return `data:image/png;base64,${pngBuffer.toString('base64')}`
   } catch {
     return undefined
   }
 }
 
-const [logoData, bgData] = await Promise.all([fetchToDataUrl(props.siteLogo), fetchToDataUrl(props.backgroundImage)])
+const [logoData, bgData] = await Promise.all([processImage(props.siteLogo), processImage(props.backgroundImage)])
 </script>
 
 <!-- <template>
