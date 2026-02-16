@@ -1,6 +1,10 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
-    <img v-if="bgData" :src="bgData" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105" />
+    <img
+      v-if="bgProxyUrl"
+      :src="bgProxyUrl"
+      class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
+    />
 
     <div
       v-else
@@ -29,8 +33,8 @@
 
     <div class="absolute top-16 right-16">
       <img
-        v-if="logoData"
-        :src="logoData"
+        v-if="logoProxyUrl"
+        :src="logoProxyUrl"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -63,9 +67,6 @@
 </template>
 
 <script setup lang="ts">
-import sharp from 'sharp'
-import { Buffer } from 'node:buffer'
-
 const props = defineProps<{
   title: string
   description?: string
@@ -76,31 +77,14 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const { origin } = useRequestURL()
-
-const toPngBase64 = async (url?: string, isLogo = false) => {
+const getPngUrl = (url?: string) => {
   if (!url) return undefined
-  if (url.startsWith('data:')) return url.trim()
-
-  try {
-    const proxy = `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
-    const arrayBuf = (await $fetch(proxy, { responseType: 'arrayBuffer' })) as ArrayBuffer
-
-    const buf = Buffer.from(arrayBuf)
-
-    const sharpBuf = await sharp(buf)
-      .resize(isLogo ? 280 : 700, isLogo ? 280 : 700, { fit: 'inside', withoutEnlargement: true })
-      .png({ quality: isLogo ? 85 : 65 })
-      .toBuffer()
-
-    return `data:image/png;base64,${sharpBuf.toString('base64')}`
-  } catch (e) {
-    console.error('OG fetch failed', url, e)
-    return undefined
-  }
+  if (url.startsWith('data:')) return url
+  return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png&w=800&fit=inside&q=75&filename=og-bg.png`
 }
 
-const [logoData, bgData] = await Promise.all([toPngBase64(props.siteLogo, true), toPngBase64(props.backgroundImage)])
+const bgProxyUrl = getPngUrl(props.backgroundImage)
+const logoProxyUrl = getPngUrl(props.siteLogo)
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
