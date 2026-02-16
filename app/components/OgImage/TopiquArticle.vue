@@ -1,10 +1,6 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
-    <img
-      v-if="backgroundImage"
-      :src="getPngUrl(backgroundImage)"
-      class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
-    />
+    <img v-if="bgData" :src="bgData" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105" />
 
     <div
       v-else
@@ -33,8 +29,8 @@
 
     <div class="absolute top-16 right-16">
       <img
-        v-if="siteLogo"
-        :src="getPngUrl(siteLogo)"
+        v-if="logoData"
+        :src="logoData"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -67,6 +63,8 @@
 </template>
 
 <script setup lang="ts">
+import { Buffer } from 'node:buffer'
+
 const props = defineProps<{
   title: string
   description?: string
@@ -77,13 +75,28 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const getPngUrl = (url: string | undefined) => {
+const fetchViaProxy = async (url: string | undefined) => {
   if (!url) return undefined
   if (url.startsWith('data:')) return url
-  return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png&w=1200`
-}
-</script>
 
+  try {
+    const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png&w=1200`
+
+    const res = await $fetch(proxyUrl, {
+      responseType: 'arrayBuffer',
+      timeout: 4000,
+    })
+
+    const base64 = Buffer.from(res as ArrayBuffer).toString('base64')
+    return `data:image/png;base64,${base64}`
+  } catch (e) {
+    console.error('OG Image fetch failed:', e)
+    return undefined
+  }
+}
+
+const [logoData, bgData] = await Promise.all([fetchViaProxy(props.siteLogo), fetchViaProxy(props.backgroundImage)])
+</script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
     <div class="absolute top-16 right-16">
