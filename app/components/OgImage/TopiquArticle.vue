@@ -89,20 +89,18 @@ const toPngBase64 = async (url?: string, isLogo = false) => {
     const buf = Buffer.from(arrayBuf)
 
     const sharpBuf = await sharp(buf)
-      .resize(isLogo ? 280 : 1200, isLogo ? 280 : 1200, { fit: 'inside', withoutEnlargement: true })
-      .png({ quality: isLogo ? 90 : 80 })
+      .resize(isLogo ? 280 : 700, isLogo ? 280 : 700, { fit: 'inside', withoutEnlargement: true })
+      .png({ quality: isLogo ? 85 : 65 })
       .toBuffer()
 
-    const base64 = sharpBuf.toString('base64')
-    return `data:image/png;base64,${base64}`
+    return `data:image/png;base64,${sharpBuf.toString('base64')}`
   } catch (e) {
-    console.error('Failed to load image', url, e)
+    console.error('OG fetch failed', url, e)
     return undefined
   }
 }
 
-const bgData = await toPngBase64(props.backgroundImage)
-const logoData = await toPngBase64(props.siteLogo, true)
+const [logoData, bgData] = await Promise.all([toPngBase64(props.siteLogo, true), toPngBase64(props.backgroundImage)])
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
