@@ -1,6 +1,10 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
-    <img v-if="bgData" :src="bgData" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105" />
+    <img
+      v-if="bgBase64"
+      :src="bgBase64"
+      class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
+    />
 
     <div
       v-else
@@ -28,7 +32,15 @@
     </div>
 
     <div class="absolute top-16 right-16">
+      <img
+        v-if="logoBase64"
+        :src="logoBase64"
+        width="140"
+        height="140"
+        style="width: 140px; height: 140px; object-fit: contain"
+      />
       <div
+        v-else
         class="h-[120px] w-[120px] rounded-xl bg-white/5 flex items-center justify-center text-5xl font-bold backdrop-blur-md border border-white/10 shadow-2xl"
       >
         {{ siteName[0] }}
@@ -67,20 +79,24 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const { origin } = useRequestURL()
-
-const bgData = await (async () => {
-  if (!props.backgroundImage) return undefined
+const toBase64 = async (url: string | undefined) => {
+  if (!url) return undefined
+  if (url.startsWith('data:')) return url
 
   try {
-    const proxy = `${origin}/api/og-proxy?url=${encodeURIComponent(props.backgroundImage)}`
-    const arrayBuf = (await $fetch(proxy, { responseType: 'arrayBuffer' })) as ArrayBuffer
-    return `data:image/png;base64,${Buffer.from(arrayBuf).toString('base64')}`
-  } catch (e) {
-    console.error('BG fetch selhal', e)
+    const wsrvUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=jpg&w=1200&q=70`
+    const res = await fetch(wsrvUrl)
+    if (!res.ok) return undefined
+
+    const arrayBuffer = await res.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+    return `data:image/jpeg;base64,${buffer.toString('base64')}`
+  } catch {
     return undefined
   }
-})()
+}
+
+const [bgBase64, logoBase64] = await Promise.all([toBase64(props.backgroundImage), toBase64(props.siteLogo)])
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
