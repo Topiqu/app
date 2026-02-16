@@ -1,8 +1,8 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
     <img
-      v-if="bgProxyUrl"
-      :src="bgProxyUrl"
+      v-if="backgroundImage"
+      :src="backgroundImage"
       class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
     />
 
@@ -33,8 +33,8 @@
 
     <div class="absolute top-16 right-16">
       <img
-        v-if="logoData"
-        :src="logoData"
+        v-if="siteLogo"
+        :src="siteLogo"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -67,8 +67,6 @@
 </template>
 
 <script setup lang="ts">
-import { Buffer } from 'node:buffer'
-
 const props = defineProps<{
   title: string
   description?: string
@@ -78,32 +76,6 @@ const props = defineProps<{
   domain: string
   backgroundImage?: string
 }>()
-
-const { origin } = useRequestURL()
-
-const getProxyUrl = (url?: string) => {
-  if (!url) return undefined
-  if (url.startsWith('data:')) return url
-  return `${origin}/api/og-proxy?url=${encodeURIComponent(url)}&ext=png`
-}
-
-const bgProxyUrl = getProxyUrl(props.backgroundImage)
-
-const fetchToDataUrl = async (targetUrl: string | undefined) => {
-  if (!targetUrl) return undefined
-  if (targetUrl.startsWith('data:')) return targetUrl
-
-  try {
-    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}&ext=png`
-    const response = await $fetch(proxyUrl, { responseType: 'arrayBuffer' })
-    const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
-    return `data:image/png;base64,${base64}`
-  } catch {
-    return undefined
-  }
-}
-
-const logoData = await fetchToDataUrl(props.siteLogo)
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
