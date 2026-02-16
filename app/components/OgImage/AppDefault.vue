@@ -37,8 +37,5 @@ defineProps<{
 }>()
 
 const APP_LOGO_URL = 'https://cdn.topiqu.com/app-logo.png'
-
-const { origin } = useRequestURL()
-
-const proxyAppLogo = `${origin}/api/og-proxy/${encodeURIComponent(APP_LOGO_URL)}.png`
+const proxyAppLogo = `/api/og-proxy?url=${encodeURIComponent(APP_LOGO_URL)}`
 </script>

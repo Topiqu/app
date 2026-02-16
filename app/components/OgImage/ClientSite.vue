@@ -78,7 +78,7 @@ const fetchToDataUrl = async (targetUrl: string | undefined) => {
   if (targetUrl.startsWith('data:')) return targetUrl
 
   try {
-    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}.png`
+    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}`
     const response = await $fetch(proxyUrl, {
       responseType: 'arrayBuffer',
     })
