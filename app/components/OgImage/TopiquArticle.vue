@@ -75,29 +75,30 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const processImage = async (url: string | undefined) => {
+const fetchExternalImage = async (url: string | undefined) => {
   if (!url) return undefined
   if (url.startsWith('data:')) return url
 
   try {
-    const sharpModule = await import('sharp')
-    const sharp = sharpModule.default || sharpModule
+    const conversionUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png&w=1200`
 
-    const arrayBuffer = await $fetch(url, { responseType: 'arrayBuffer' })
-    const buffer = Buffer.from(arrayBuffer as ArrayBuffer)
+    const arrayBuffer = await $fetch(conversionUrl, {
+      responseType: 'arrayBuffer',
+      timeout: 5000,
+    })
 
-    const pngBuffer = await sharp(buffer)
-      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-      .toFormat('png', { quality: 80 })
-      .toBuffer()
-
-    return `data:image/png;base64,${pngBuffer.toString('base64')}`
-  } catch {
+    const base64 = Buffer.from(arrayBuffer as ArrayBuffer).toString('base64')
+    return `data:image/png;base64,${base64}`
+  } catch (e) {
+    console.error('Image fetch failed via wsrv:', e)
     return undefined
   }
 }
 
-const [logoData, bgData] = await Promise.all([processImage(props.siteLogo), processImage(props.backgroundImage)])
+const [logoData, bgData] = await Promise.all([
+  fetchExternalImage(props.siteLogo),
+  fetchExternalImage(props.backgroundImage),
+])
 </script>
 
 <!-- <template>
