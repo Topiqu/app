@@ -84,7 +84,7 @@ const { origin } = useRequestURL()
 const getProxyUrl = (url?: string) => {
   if (!url) return undefined
   if (url.startsWith('data:')) return url
-  return `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
+  return `${origin}/api/og-proxy?url=${encodeURIComponent(url)}&ext=png`
 }
 
 const bgProxyUrl = getProxyUrl(props.backgroundImage)
@@ -94,7 +94,7 @@ const fetchToDataUrl = async (targetUrl: string | undefined) => {
   if (targetUrl.startsWith('data:')) return targetUrl
 
   try {
-    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}`
+    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}&ext=png`
     const response = await $fetch(proxyUrl, { responseType: 'arrayBuffer' })
     const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
     return `data:image/png;base64,${base64}`
