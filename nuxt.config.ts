@@ -138,7 +138,7 @@ export default defineNuxtConfig({
   image: {
     quality: 90,
     format: ['avif', 'webp', 'png'],
-    domains: ['cdn.topiqu.com', 'topiqu-storage-eu-frankfurt.s3.eu-central-1.amazonaws.com'],
+    domains: ['cdn.topiqu.com', 'topiqu-storage-eu-frankfurt.s3.eu-central-1.amazonaws.com', 'wsrv.nl'],
   },
 
   nodemailer: {

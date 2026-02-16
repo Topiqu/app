@@ -1,6 +1,10 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
-    <img v-if="bgData" :src="bgData" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105" />
+    <img
+      v-if="backgroundImage"
+      :src="getPngUrl(backgroundImage)"
+      class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
+    />
 
     <div
       v-else
@@ -29,8 +33,8 @@
 
     <div class="absolute top-16 right-16">
       <img
-        v-if="logoData"
-        :src="logoData"
+        v-if="siteLogo"
+        :src="getPngUrl(siteLogo)"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -63,8 +67,6 @@
 </template>
 
 <script setup lang="ts">
-import { Buffer } from 'node:buffer'
-
 const props = defineProps<{
   title: string
   description?: string
@@ -75,30 +77,11 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const fetchExternalImage = async (url: string | undefined) => {
+const getPngUrl = (url: string | undefined) => {
   if (!url) return undefined
   if (url.startsWith('data:')) return url
-
-  try {
-    const conversionUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png&w=1200`
-
-    const arrayBuffer = await $fetch(conversionUrl, {
-      responseType: 'arrayBuffer',
-      timeout: 5000,
-    })
-
-    const base64 = Buffer.from(arrayBuffer as ArrayBuffer).toString('base64')
-    return `data:image/png;base64,${base64}`
-  } catch (e) {
-    console.error('Image fetch failed via wsrv:', e)
-    return undefined
-  }
+  return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png&w=1200`
 }
-
-const [logoData, bgData] = await Promise.all([
-  fetchExternalImage(props.siteLogo),
-  fetchExternalImage(props.backgroundImage),
-])
 </script>
 
 <!-- <template>
