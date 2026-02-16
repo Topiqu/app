@@ -1,8 +1,8 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
     <img
-      v-if="bgProxyUrl"
-      :src="bgProxyUrl"
+      v-if="backgroundImage"
+      :src="backgroundImage"
       class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
     />
 
@@ -33,8 +33,8 @@
 
     <div class="absolute top-16 right-16">
       <img
-        v-if="logoProxyUrl"
-        :src="logoProxyUrl"
+        v-if="siteLogo"
+        :src="siteLogo"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   title: string
   description?: string
   siteName: string
@@ -76,15 +76,6 @@ const props = defineProps<{
   domain: string
   backgroundImage?: string
 }>()
-
-const getPngUrl = (url?: string) => {
-  if (!url) return undefined
-  if (url.startsWith('data:')) return url
-  return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png&w=800&fit=inside&q=75&filename=og-bg.png`
-}
-
-const bgProxyUrl = getPngUrl(props.backgroundImage)
-const logoProxyUrl = getPngUrl(props.siteLogo)
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
