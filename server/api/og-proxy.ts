@@ -1,22 +1,22 @@
 import sharp from 'sharp'
 
 export default defineEventHandler(async (event) => {
-  const path = event.context.params?.url || ''
-  const imageUrl = decodeURIComponent(path.replace(/\.png$/, ''))
+  const query = getQuery(event)
+  const url = query.url as string
 
-  if (!imageUrl) {
+  if (!url) {
     throw createError({ statusCode: 400, message: 'Missing URL' })
   }
 
   try {
-    const response = await fetch(imageUrl)
+    const response = await fetch(url)
     if (!response.ok) throw new Error(`Fetch failed: ${response.status}`)
 
     const arrayBuffer = await response.arrayBuffer()
     const inputBuffer = Buffer.from(arrayBuffer)
 
     const buffer = await sharp(inputBuffer)
-      .toFormat('png')
+      .png({ quality: 85 })
       .resize(1200, 1200, {
         fit: 'inside',
         withoutEnlargement: true,

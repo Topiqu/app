@@ -73,24 +73,18 @@ const props = defineProps<{
 
 const { origin } = useRequestURL()
 
-const fetchToDataUrl = async (targetUrl: string | undefined) => {
-  if (!targetUrl) return undefined
-  if (targetUrl.startsWith('data:')) return targetUrl
+const toPngBase64 = async (url?: string) => {
+  if (!url) return undefined
+  if (url.startsWith('data:')) return url
 
   try {
-    const proxyUrl = `${origin}/api/og-proxy?url=${encodeURIComponent(targetUrl)}`
-    const response = await $fetch(proxyUrl, {
-      responseType: 'arrayBuffer',
-    })
-
-    if (!response) return undefined
-
-    const base64 = Buffer.from(response as ArrayBuffer).toString('base64')
-    return `data:image/png;base64,${base64}`
+    const proxy = `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
+    const buf = await $fetch(proxy, { responseType: 'arrayBuffer' })
+    return `data:image/png;base64,${Buffer.from(buf).toString('base64')}`
   } catch {
     return undefined
   }
 }
 
-const logoData = await fetchToDataUrl(props.siteLogo)
+const logoData = await toPngBase64(props.siteLogo)
 </script>
