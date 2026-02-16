@@ -103,9 +103,11 @@ export default defineNuxtConfig({
   ogImage: {
     defaults: {
       component: 'NuxtSeo',
-      renderer: 'chromium',
     },
     debug: true,
+    compatibility: {
+      prerender: { chromium: false },
+    },
     runtimeCacheStorage: true,
   },
 
