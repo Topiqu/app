@@ -1,8 +1,8 @@
 <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
     <img
-      v-if="backgroundImage"
-      :src="backgroundImage"
+      v-if="bgProxyUrl"
+      :src="bgProxyUrl"
       class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-105"
     />
 
@@ -33,8 +33,8 @@
 
     <div class="absolute top-16 right-16">
       <img
-        v-if="siteLogo"
-        :src="siteLogo"
+        v-if="logoProxyUrl"
+        :src="logoProxyUrl"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -76,6 +76,17 @@ const props = defineProps<{
   domain: string
   backgroundImage?: string
 }>()
+
+const { origin } = useRequestURL()
+
+const getProxyUrl = (url?: string) => {
+  if (!url) return undefined
+  if (url.startsWith('data:')) return url
+  return `${origin}/api/og-proxy/${encodeURIComponent(url)}.png`
+}
+
+const bgProxyUrl = getProxyUrl(props.backgroundImage)
+const logoProxyUrl = getProxyUrl(props.siteLogo)
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
