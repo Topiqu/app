@@ -216,6 +216,12 @@ export default NuxtAuthHandler({
   ],
   session: { strategy: 'jwt' },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      if (new URL(url).origin === baseUrl) return url
+      if (url.match(/^https:\/\/([\w-]+\.)?topiqu\.com/)) return url
+      return baseUrl
+    },
     async jwt({ token, user, account }) {
       if (account?.provider) {
         const existingUser = await prisma.user.findUnique({ where: { email: token.email ?? '' } })
