@@ -14,6 +14,10 @@ interface BaseOAuthProfile {
   picture?: string
 }
 
+const isProduction = process.env.NODE_ENV === 'production'
+// TODO: For strict multi-tenant (isolated accounts), set this to undefined to prevent session sharing across subdomains.
+const cookieDomain = isProduction ? '.topiqu.com' : undefined
+
 function mapProfile({ id, sub, login, name, email, avatar_url, picture }: BaseOAuthProfile) {
   return {
     id: (id ?? sub ?? login ?? '').toString(),
@@ -44,6 +48,7 @@ async function fetchGitHubProfile(tokens: any) {
   const profile = await fetch('https://api.github.com/user', {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
   }).then((res) => res.json())
+
   if (!profile.email) {
     const emails = await fetch('https://api.github.com/user/emails', {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
@@ -88,6 +93,8 @@ async function assignToken(token: any, user: any, plan: string, sessionId: strin
 }
 
 async function handleOAuthUser(token: any, existingUser: any, prisma: any, avatarValue: any) {
+  const event = useEvent()
+
   if (existingUser) {
     await prisma.user.update({
       where: { id: existingUser.id },
@@ -101,7 +108,6 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
           ?.plan ?? 'BASIC')
       : 'BASIC'
 
-    const event = useEvent()
     const sessionId = await generateSessionToken(existingUser, event.node.req)
     return assignToken(token, existingUser, plan, sessionId)
   } else {
@@ -120,7 +126,6 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
       },
     })
 
-    const event = useEvent()
     const sessionId = await generateSessionToken(newUser, event.node.req)
     return assignToken(token, newUser, 'BASIC', sessionId)
   }
@@ -128,11 +133,46 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
 
 export default NuxtAuthHandler({
   secret: useRuntimeConfig().auth.secret,
+  cookies: {
+    sessionToken: {
+      name: `${isProduction ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: isProduction,
+        domain: cookieDomain,
+      },
+    },
+    callbackUrl: {
+      name: `${isProduction ? '__Secure-' : ''}next-auth.callback-url`,
+      options: {
+        sameSite: 'lax',
+        path: '/',
+        secure: isProduction,
+        domain: cookieDomain,
+      },
+    },
+    csrfToken: {
+      name: `${isProduction ? '__Secure-' : ''}next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: isProduction,
+        domain: cookieDomain,
+      },
+    },
+  },
   providers: [
     Credentials({
       credentials: { email: { label: 'Email', type: 'email' }, password: { label: 'Heslo', type: 'password' } },
       async authorize(credentials, req) {
         const { email, password } = signInSchema.parse(credentials)
+
+        // TODO: For proper multi-tenant isolation:
+        // 1. Resolve 'clientSiteId' from req.headers.host (subdomain).
+        // 2. Filter user by { email, clientSiteId } to ensure unique accounts per site.
         const user = await prisma.user.findFirst({
           where: { email, deletedAt: null },
           select: {
@@ -147,6 +187,7 @@ export default NuxtAuthHandler({
         })
         if (!user || !user.password) return null
         if (!(await argon.verify(user.password, password))) return null
+
         let plan: string | null = null
         if (user.clientSiteId) {
           const clientSite = await prisma.clientSite.findFirst({
