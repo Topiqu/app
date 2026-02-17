@@ -129,7 +129,7 @@
             type="button"
             variant="neutral"
             class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-white! dark:bg-[#131314]! border border-[#747775] dark:border-[#8E918F] text-[#1F1F1F] dark:text-[#E3E3E3] text-sm font-roboto font-medium transition hover:bg-gray-50! dark:hover:bg-gray-800!"
-            @click="signInWithGoogle"
+            @click="handleSocialAuth('google')"
           >
             <img
               src="https://developers.google.com/identity/images/g-logo.png"
@@ -141,7 +141,7 @@
           <Button
             type="button"
             class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-[#24292e]! dark:bg-[#24292e]! border border-[#747775] dark:border-[#8E918F] text-white dark:text-white text-sm font-roboto font-medium transition hover:bg-[#2f363d]! dark:hover:bg-[#2f363d]!"
-            @click="signInWithGithub"
+            @click="handleSocialAuth('github')"
           >
             <img src="https://simpleicons.org/icons/github.svg" alt="GitHub logo" class="w-5 h-5 mr-2" />
             {{ $t('common.auth.signInWithGithub') }}
@@ -363,37 +363,29 @@ const verifyTotp = async () => {
   }
 }
 
-const signInWithGoogle = async () => {
+const handleSocialAuth = async (provider: 'google' | 'github') => {
   try {
-    const result = await signIn('google', {
-      callbackUrl:
-        (import.meta.dev ? 'http://localhost:3000' : 'https://topiqu.com') +
-        `${localePath({ name: 'autorizace' })}?redirect=${window.location + localePath({ name: 'autorizace' })}`,
-      external: true,
-    })
-    if (result?.error) return toast.error({ message: $t('common.auth.googleSignInFailed') })
-    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
-    await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { lastLogin: Date.now() },
-    })
-    setLocale(user.language)
-    theme.mode = user.theme
-    form.value = init
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
-  }
-}
+    const mainDomain = import.meta.dev ? 'localhost' : 'topiqu.com'
+    const isMainDomain = window.location.hostname === mainDomain
+    const finalRedirectUrl = window.location.href
 
-const signInWithGithub = async () => {
-  try {
-    const result = await signIn('github', {
-      callbackUrl:
-        (import.meta.dev ? 'http://localhost:3000' : 'https://topiqu.com') +
-        `${localePath({ name: 'autorizace' })}?redirect=${window.location + localePath({ name: 'autorizace' })}`,
+    if (!isMainDomain) {
+      const authBaseUrl = import.meta.dev ? 'http://localhost:3000' : 'https://topiqu.com'
+      const authUrl = `${authBaseUrl}/api/auth/signin/${provider}?callbackUrl=${encodeURIComponent(finalRedirectUrl)}`
+      window.location.href = authUrl
+      return
+    }
+
+    const result = await signIn(provider, {
+      callbackUrl: finalRedirectUrl,
       external: true,
     })
-    if (result?.error) return toast.error({ message: $t('common.auth.githubSignInFailed') })
+
+    if (result?.error) {
+      const errorKey = provider === 'google' ? 'common.auth.googleSignInFailed' : 'common.auth.githubSignInFailed'
+      return toast.error({ message: $t(errorKey) })
+    }
+
     const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
     await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
       method: 'PATCH',
