@@ -1,5 +1,8 @@
 export default defineEventHandler(async (event) => {
+  const query = getQuery(event)
   const { skip, take } = await getPagination(event)
+  const tag = query.tag as string | undefined
+
   const apiKey = getHeader(event, 'x-api-key')
 
   if (!apiKey) {
@@ -15,18 +18,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Invalid API Key' })
   }
 
-  const [total, articles] = await prisma.$transaction([
-    prisma.article.count({
-      where: {
-        clientSiteId: clientSite.id,
-        status: 'published',
+  const whereCondition = {
+    clientSiteId: clientSite.id,
+    status: 'published' as const,
+    ...(tag && {
+      tags: {
+        some: {
+          tag: {
+            slug: tag,
+          },
+        },
       },
     }),
+  }
+
+  const [total, articles] = await prisma.$transaction([
+    prisma.article.count({
+      where: whereCondition,
+    }),
     prisma.article.findMany({
-      where: {
-        clientSiteId: clientSite.id,
-        status: 'published',
-      },
+      where: whereCondition,
       skip,
       take,
       orderBy: { createdAt: 'desc' },
@@ -38,7 +49,16 @@ export default defineEventHandler(async (event) => {
         content: true,
         imageUrl: true,
         createdAt: true,
-        tags: true,
+        tags: {
+          select: {
+            tag: {
+              select: {
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
         user: {
           select: {
             username: true,
@@ -53,7 +73,7 @@ export default defineEventHandler(async (event) => {
     data: articles,
     meta: {
       total,
-      page: skip / take + 1,
+      page: Math.floor(skip / take) + 1,
       limit: take,
     },
   }
