@@ -59,7 +59,8 @@
 
       <div class="absolute bottom-0 left-0 w-full h-[3px] bg-gray-100 dark:bg-gray-800 overflow-hidden">
         <div
-          class="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-150 ease-linear shadow-[0_0_8px_rgba(59,130,246,0.6)]"
+          class="h-full bg-gradient-to-r transition-all duration-150 ease-linear shadow-sm"
+          :class="progressBarColor"
           :style="{ width: `${progress}%` }"
         ></div>
       </div>
