@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const { skip, take } = await getPagination(event)
-  const tag = query.tag as string | undefined
+  const tagQuery = query.tag as string | undefined
 
   const apiKey = getHeader(event, 'x-api-key')
 
@@ -18,17 +18,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Invalid API Key' })
   }
 
+  const tags = tagQuery
+    ? tagQuery
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean)
+    : []
+
   const whereCondition = {
     clientSiteId: clientSite.id,
     status: 'published' as const,
-    ...(tag && {
-      tags: {
-        some: {
-          tag: {
-            slug: tag,
+    ...(tags.length > 0 && {
+      AND: tags.map((t) => ({
+        tags: {
+          some: {
+            tag: {
+              slug: t,
+            },
           },
         },
-      },
+      })),
     }),
   }
 
