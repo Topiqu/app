@@ -21,152 +21,154 @@
         </div>
       </div>
     </div>
-    <NuxtLink
-      v-else
-      v-motion="{
-        initial: { opacity: 0, y: 50 },
-        visible: { opacity: 1, y: 0, transition: { duration: 500, delay: index! * 100 } },
-      }"
-      class="block"
-      :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })"
-    >
-      <NuxtImg
-        v-if="article?.imageUrl"
-        :src="article?.imageUrl"
-        :class="{
-          'w-full h-60 lg:h-80 aspect-[3/2] object-cover hover:scale-[1.02] hover:rotate-1 transition duration-500':
-            isFeatured,
-          'w-full h-48 aspect-[3/2] object-cover rounded-lg mb-4 hover:blur-[1px] transition duration-500': !isFeatured,
+    <template v-else>
+      <NuxtLink
+        v-motion="{
+          initial: { opacity: 0, y: 50 },
+          visible: { opacity: 1, y: 0, transition: { duration: 500, delay: (index ?? 0) * 100 } },
         }"
-        :alt="$t('articles.articleCard.imageAlt')"
-      />
-      <div
-        v-else
-        :class="{ 'w-full h-48 lg:h-64 aspect-[3/2]': isFeatured, 'w-full h-32 aspect-[3/2]': !isFeatured }"
-        class="bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg mb-4"
+        class="block"
+        :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })"
       >
-        <Icon
-          name="mdi:image-off"
-          :class="{ 'w-16 h-16': isFeatured, 'w-12 h-12': !isFeatured }"
-          class="text-gray-400"
+        <NuxtImg
+          v-if="article?.imageUrl"
+          :src="article?.imageUrl"
+          :class="{
+            'w-full h-60 lg:h-80 aspect-[3/2] object-cover hover:scale-[1.02] hover:rotate-1 transition duration-500':
+              isFeatured,
+            'w-full h-48 aspect-[3/2] object-cover rounded-lg mb-4 hover:blur-[1px] transition duration-500':
+              !isFeatured,
+          }"
+          :alt="$t('articles.articleCard.imageAlt')"
         />
-      </div>
-    </NuxtLink>
-    <div
-      :class="{
-        'flex flex-wrap gap-2 mt-3 ml-6': isFeatured,
-        'flex flex-wrap items-center gap-2 mt-2 ml-3 sm:ml-4': !isFeatured,
-      }"
-    >
-      <NuxtLink
-        v-for="tag in tags?.slice(0, 3)"
-        :key="tag.tag.id"
-        :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })"
-        :class="{ 'px-3 py-1.5 text-sm': isFeatured, 'px-2 py-1 text-xs': !isFeatured }"
-        class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full font-medium hover:bg-blue-200 dark:hover:bg-blue-800 hover:scale-95 transition duration-200 no-underline"
-      >
-        {{ tag.tag.name }}
-      </NuxtLink>
-      <span
-        v-if="tags && tags.length > 3"
-        :class="{ 'px-3 py-1.5 text-sm': isFeatured, 'px-2.5 py-1 text-xs': !isFeatured }"
-        class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full font-medium"
-      >
-        +{{ tags.length - 3 }}
-      </span>
-    </div>
-    <div :class="{ 'p-6': isFeatured, 'p-4 sm:p-5': !isFeatured }">
-      <NuxtLink :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })" class="no-underline">
-        <h3
-          :class="{ 'text-3xl lg:text-4xl font-bold': isFeatured, 'text-lg font-semibold': !isFeatured }"
-          class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
+        <div
+          v-else
+          :class="{ 'w-full h-48 lg:h-64 aspect-[3/2]': isFeatured, 'w-full h-32 aspect-[3/2]': !isFeatured }"
+          class="bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg mb-4"
         >
-          {{ article?.title }}
-        </h3>
+          <Icon
+            name="mdi:image-off"
+            :class="{ 'w-16 h-16': isFeatured, 'w-12 h-12': !isFeatured }"
+            class="text-gray-400"
+          />
+        </div>
       </NuxtLink>
       <div
         :class="{
-          'mt-8 text-base sm:text-lg line-clamp-4 text-gray-600 dark:text-gray-300 leading-7': isFeatured,
-          'mt-2 text-sm line-clamp-3 text-gray-600 dark:text-gray-300 leading-5': !isFeatured,
-        }"
-      >
-        {{ plainExcerpt }}
-      </div>
-      <NuxtLink
-        v-if="article?.excerpt || article?.content"
-        :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })"
-        :class="{
-          'mt-4 inline-block text-lg font-medium text-blue-600 dark:text-blue-400 hover:underline transition duration-200':
-            isFeatured,
-          'mt-4 inline-block text-blue-600 dark:text-blue-400 font-medium hover:underline transition duration-200':
-            !isFeatured,
-        }"
-      >
-        {{ $t('common.readMore') }}
-      </NuxtLink>
-      <div
-        :class="{ 'mt-6 text-base': isFeatured, 'mt-4 text-sm': !isFeatured }"
-        class="flex flex-col sm:flex-row justify-between gap-4"
-      >
-        <span>
-          <span
-            v-if="article?.createdAt"
-            :class="{ 'text-red-500 font-semibold': isToday(new Date(article!.createdAt)) }"
-          >
-            {{ formatDate(new Date(article.createdAt)) }}
-          </span>
-          <span class="text-gray-400">·</span>
-          {{ $t('articles.readingTime', [article?.readingTime ?? 5]) }}
-        </span>
-        <span v-tippy="$t('articles.articleCard.commentsAndLikesTooltip')" class="inline-flex items-center gap-1">
-          <MessageCircle
-            :class="{ 'w-5 h-5': isFeatured, 'w-4 h-4': !isFeatured }"
-            class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
-            :aria-label="$t('articles.articleCard.commentsAndLikesTooltip')"
-          />
-          {{ article?._count?.comments ?? 0 }}
-          <span class="px-1 text-gray-400">·</span>
-          <Heart
-            :class="{ 'w-5 h-5': isFeatured, 'w-4 h-4': !isFeatured }"
-            class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
-            :aria-label="$t('articles.articleCard.commentsAndLikesTooltip')"
-          />
-          {{ article?._count?.reactions ?? 0 }}
-          <span class="px-1 text-gray-400">·</span>
-          <Eye
-            :class="{ 'w-5 h-5': isFeatured, 'w-4 h-4': !isFeatured }"
-            class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
-            :aria-label="$t('articles.articleCard.commentsAndLikesTooltip')"
-          />
-          {{ article?.views ?? 0 }}
-        </span>
-      </div>
-      <div
-        :class="{
-          'flex flex-col items-start gap-2 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700': isFeatured,
-          'flex items-center gap-3 mt-3': !isFeatured,
+          'flex flex-wrap gap-2 mt-3 ml-6': isFeatured,
+          'flex flex-wrap items-center gap-2 mt-2 ml-3 sm:ml-4': !isFeatured,
         }"
       >
         <NuxtLink
-          :to="localePath({ name: 'autor-name', params: { name: article?.user?.username } })"
-          class="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900 rounded-lg p-2 transition duration-200"
+          v-for="tag in tags?.slice(0, 3)"
+          :key="tag.tag.id"
+          :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })"
+          :class="{ 'px-3 py-1.5 text-sm': isFeatured, 'px-2 py-1 text-xs': !isFeatured }"
+          class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full font-medium hover:bg-blue-200 dark:hover:bg-blue-800 hover:scale-95 transition duration-200 no-underline"
         >
-          <NuxtImg
-            v-if="article?.user?.avatarUrl"
-            :src="article?.user.avatarUrl"
-            :class="{ 'w-16 h-16': isFeatured, 'w-7 h-7': !isFeatured }"
-            class="rounded-full object-cover border border-gray-200 dark:border-gray-700"
-            :alt="$t('common.avatar.alt.author', [article?.user?.username || $t('articles.articleCard.noAuthor')])"
-          />
-          <span
-            :class="{ 'text-lg font-semibold': isFeatured, 'font-medium': !isFeatured }"
-            class="text-blue-600 dark:text-blue-400 transition duration-200"
-          >
-            {{ article?.user?.username ?? $t('articles.articleCard.noAuthor') }}
-          </span>
+          {{ tag.tag.name }}
         </NuxtLink>
+        <span
+          v-if="tags && tags.length > 3"
+          :class="{ 'px-3 py-1.5 text-sm': isFeatured, 'px-2.5 py-1 text-xs': !isFeatured }"
+          class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full font-medium"
+        >
+          +{{ tags.length - 3 }}
+        </span>
       </div>
-    </div>
+      <div :class="{ 'p-6': isFeatured, 'p-4 sm:p-5': !isFeatured }">
+        <NuxtLink :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })" class="no-underline">
+          <h3
+            :class="{ 'text-3xl lg:text-4xl font-bold': isFeatured, 'text-lg font-semibold': !isFeatured }"
+            class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
+          >
+            {{ article?.title }}
+          </h3>
+        </NuxtLink>
+        <div
+          :class="{
+            'mt-8 text-base sm:text-lg line-clamp-4 text-gray-600 dark:text-gray-300 leading-7': isFeatured,
+            'mt-2 text-sm line-clamp-3 text-gray-600 dark:text-gray-300 leading-5': !isFeatured,
+          }"
+        >
+          {{ plainExcerpt }}
+        </div>
+        <NuxtLink
+          v-if="article?.excerpt || article?.content"
+          :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })"
+          :class="{
+            'mt-4 inline-block text-lg font-medium text-blue-600 dark:text-blue-400 hover:underline transition duration-200':
+              isFeatured,
+            'mt-4 inline-block text-blue-600 dark:text-blue-400 font-medium hover:underline transition duration-200':
+              !isFeatured,
+          }"
+        >
+          {{ $t('common.readMore') }}
+        </NuxtLink>
+        <div
+          :class="{ 'mt-6 text-base': isFeatured, 'mt-4 text-sm': !isFeatured }"
+          class="flex flex-col sm:flex-row justify-between gap-4"
+        >
+          <span>
+            <span
+              v-if="article?.createdAt"
+              :class="{ 'text-red-500 font-semibold': isToday(new Date(article!.createdAt)) }"
+            >
+              {{ formatDate(new Date(article.createdAt)) }}
+            </span>
+            <span class="text-gray-400">·</span>
+            {{ $t('articles.readingTime', [article?.readingTime ?? 5]) }}
+          </span>
+          <span v-tippy="$t('articles.articleCard.commentsAndLikesTooltip')" class="inline-flex items-center gap-1">
+            <MessageCircle
+              :class="{ 'w-5 h-5': isFeatured, 'w-4 h-4': !isFeatured }"
+              class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
+              :aria-label="$t('articles.articleCard.commentsAndLikesTooltip')"
+            />
+            {{ article?._count?.comments ?? 0 }}
+            <span class="px-1 text-gray-400">·</span>
+            <Heart
+              :class="{ 'w-5 h-5': isFeatured, 'w-4 h-4': !isFeatured }"
+              class="hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
+              :aria-label="$t('articles.articleCard.commentsAndLikesTooltip')"
+            />
+            {{ article?._count?.reactions ?? 0 }}
+            <span class="px-1 text-gray-400">·</span>
+            <Eye
+              :class="{ 'w-5 h-5': isFeatured, 'w-4 h-4': !isFeatured }"
+              class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
+              :aria-label="$t('articles.articleCard.commentsAndLikesTooltip')"
+            />
+            {{ article?.views ?? 0 }}
+          </span>
+        </div>
+        <div
+          :class="{
+            'flex flex-col items-start gap-2 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700': isFeatured,
+            'flex items-center gap-3 mt-3': !isFeatured,
+          }"
+        >
+          <NuxtLink
+            :to="localePath({ name: 'autor-name', params: { name: article?.user?.username } })"
+            class="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900 rounded-lg p-2 transition duration-200"
+          >
+            <NuxtImg
+              v-if="article?.user?.avatarUrl"
+              :src="article?.user.avatarUrl"
+              :class="{ 'w-16 h-16': isFeatured, 'w-7 h-7': !isFeatured }"
+              class="rounded-full object-cover border border-gray-200 dark:border-gray-700"
+              :alt="$t('common.avatar.alt.author', [article?.user?.username || $t('articles.articleCard.noAuthor')])"
+            />
+            <span
+              :class="{ 'text-lg font-semibold': isFeatured, 'font-medium': !isFeatured }"
+              class="text-blue-600 dark:text-blue-400 transition duration-200"
+            >
+              {{ article?.user?.username ?? $t('articles.articleCard.noAuthor') }}
+            </span>
+          </NuxtLink>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 

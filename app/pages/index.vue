@@ -64,16 +64,27 @@
     </section>
 
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <ArticleSkeletonCard :pending="featPending" isFeatured :article="featured || undefined" :tags="featured?.tags" />
+      <ArticleSkeletonCard
+        :pending="featPending"
+        isFeatured
+        :article="featured || undefined"
+        :tags="featured?.tags"
+        :index="0"
+      />
       <div class="space-y-6">
-        <ArticleSkeletonCard
-          v-for="(rec, idx) in recommended"
-          :key="rec.id"
-          :pending="featPending"
-          :article="rec"
-          :tags="rec.tags"
-          :index="idx"
-        />
+        <template v-if="featPending">
+          <ArticleSkeletonCard v-for="i in 3" :key="`skel-rec-${i}`" :pending="true" :index="i - 1" />
+        </template>
+        <template v-else>
+          <ArticleSkeletonCard
+            v-for="(rec, idx) in recommended"
+            :key="rec.id"
+            :pending="false"
+            :article="rec"
+            :tags="rec.tags"
+            :index="idx"
+          />
+        </template>
       </div>
     </section>
 
@@ -121,7 +132,14 @@
           </div>
         </div>
         <div
-          v-if="filteredArticles.length"
+          v-if="pending && !filteredArticles.length"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          style="background-color: transparent !important"
+        >
+          <ArticleSkeletonCard v-for="i in 6" :key="`skel-feed-${i}`" :pending="true" :index="i - 1" />
+        </div>
+        <div
+          v-else-if="filteredArticles.length"
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           style="background-color: transparent !important"
         >
