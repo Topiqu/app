@@ -125,6 +125,99 @@
         "updateFailed": "Failed to update client"
       }
     },
+    "clientCreate": {
+      "title": "Client Management",
+      "fields": {
+        "name": {
+          "label": "Client Name",
+          "placeholder": "Client Name"
+        },
+        "domainType": {
+          "label": "Domain Type",
+          "options": {
+            "SUBDOMAIN": "Subdomain",
+            "CUSTOM": "Custom Domain"
+          }
+        },
+        "subdomain": {
+          "label": "Subdomain"
+        },
+        "customDomain": {
+          "label": "Custom Domain"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Client description (max 255 characters)"
+        },
+        "logo": {
+          "label": "Client Logo"
+        },
+        "audience": {
+          "label": "Target Audience",
+          "placeholder": "Target audience (e.g. young professionals)"
+        },
+        "adminEmail": {
+          "label": "Admin Email",
+          "placeholder": "Admin Email"
+        },
+        "adminUsername": {
+          "label": "Admin Username",
+          "placeholder": "Admin Username"
+        },
+        "adminPassword": {
+          "label": "Admin Password",
+          "placeholder": "Password (leave blank to auto-generate)"
+        },
+        "plan": {
+          "label": "Plan"
+        },
+        "generationFrequency": {
+          "label": "Generation Frequency"
+        },
+        "tokenLimit": {
+          "label": "Token Limit",
+          "placeholder": "Token Limit"
+        },
+        "focus": {
+          "label": "Company Focus",
+          "placeholder": "Company focus (e.g. technology, marketing)"
+        },
+        "keywords": {
+          "label": "Keywords",
+          "placeholder": "Keywords (comma-separated)",
+          "count": "Words: {0}"
+        }
+      },
+      "aiSettings": {
+        "title": "AI Author Settings",
+        "name": {
+          "label": "AI Name",
+          "placeholder": "Enter here..."
+        },
+        "avatar": {
+          "label": "AI Avatar"
+        },
+        "bio": {
+          "label": "AI Bio",
+          "placeholder": "AI author description (max 300 characters)"
+        }
+      },
+      "actions": {
+        "close": "Close",
+        "submit": "Add Client"
+      },
+      "messages": {
+        "success": "Client added successfully",
+        "createFailed": "Failed to add client",
+        "copyPassword": "Copy Password",
+        "passwordCopied": "Password copied to clipboard",
+        "clientCreatedTitle": "Client Created",
+        "clientCreatedHtml1": "Client was added successfully.",
+        "clientCreatedHtml2": "Generated password for admin:",
+        "clientCreatedHtml3": "Save this password or send it to the admin.",
+        "ok": "OK"
+      }
+    },
     "userCreate": {
       "title": "Add User",
       "assignNew": "Assign new author to client",

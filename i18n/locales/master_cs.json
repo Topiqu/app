@@ -125,6 +125,99 @@
         "updateFailed": "Nepodařilo se aktualizovat klienta"
       }
     },
+    "clientCreate": {
+      "title": "Správa klientů",
+      "fields": {
+        "name": {
+          "label": "Název klienta",
+          "placeholder": "Název klienta"
+        },
+        "domainType": {
+          "label": "Typ domény",
+          "options": {
+            "SUBDOMAIN": "Subdoména",
+            "CUSTOM": "Vlastní doména"
+          }
+        },
+        "subdomain": {
+          "label": "Subdoména"
+        },
+        "customDomain": {
+          "label": "Vlastní doména"
+        },
+        "description": {
+          "label": "Popis",
+          "placeholder": "Popis klienta (max. 255 znaků)"
+        },
+        "logo": {
+          "label": "Logo klienta"
+        },
+        "audience": {
+          "label": "Cílová skupina",
+          "placeholder": "Cílová skupina (např. mladí profesionálové)"
+        },
+        "adminEmail": {
+          "label": "Email admina",
+          "placeholder": "Email admina"
+        },
+        "adminUsername": {
+          "label": "Uživatelské jméno admina",
+          "placeholder": "Uživatelské jméno admina"
+        },
+        "adminPassword": {
+          "label": "Heslo admina",
+          "placeholder": "Heslo (nechte prázdné pro automatické generování)"
+        },
+        "plan": {
+          "label": "Plán"
+        },
+        "generationFrequency": {
+          "label": "Frekvence generování"
+        },
+        "tokenLimit": {
+          "label": "Limit tokenů",
+          "placeholder": "Limit tokenů"
+        },
+        "focus": {
+          "label": "Focus firmy",
+          "placeholder": "Focus firmy (např. technologie, marketing)"
+        },
+        "keywords": {
+          "label": "Klíčová slova",
+          "placeholder": "Klíčová slova (oddělená čárkou, např. seo, marketing, tech)",
+          "count": "Slova: {0}"
+        }
+      },
+      "aiSettings": {
+        "title": "Nastavení AI autora",
+        "name": {
+          "label": "Jméno AI",
+          "placeholder": "Zadejte zde..."
+        },
+        "avatar": {
+          "label": "Avatar AI"
+        },
+        "bio": {
+          "label": "Popis AI",
+          "placeholder": "Popis AI autora (max. 300 znaků)"
+        }
+      },
+      "actions": {
+        "close": "Zavřít",
+        "submit": "Přidat klienta"
+      },
+      "messages": {
+        "success": "Klient byl úspěšně přidán",
+        "createFailed": "Nepodařilo se přidat klienta",
+        "copyPassword": "Kopírovat heslo",
+        "passwordCopied": "Heslo zkopírováno do schránky",
+        "clientCreatedTitle": "Klient vytvořen",
+        "clientCreatedHtml1": "Klient byl úspěšně přidán.",
+        "clientCreatedHtml2": "Vygenerované heslo pro admina:",
+        "clientCreatedHtml3": "Uložte heslo nebo ho pošlete adminovi.",
+        "ok": "OK"
+      }
+    },
     "userCreate": {
       "title": "Přidat uživatele",
       "assignNew": "Přiřadit nového autora klientovi",
