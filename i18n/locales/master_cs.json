@@ -147,6 +147,38 @@
         "assigned": "Uživatel přiřazen ke klientovi",
         "assignFailed": "Přiřazení selhalo"
       }
+    },
+    "userList": {
+      "title": "Seznam uživatelů",
+      "searchPlaceholder": "Hledat podle jména nebo emailu...",
+      "loading": "Načítání...",
+      "loadingMore": "Načítání dalších...",
+      "noUsers": "Žádní uživatelé nenalezeni.",
+      "notAvailable": "Není k dispozici",
+      "labels": {
+        "user": "Uživatel",
+        "email": "Email",
+        "role": "Role",
+        "clientSite": "Klient",
+        "comments": "Komentáře",
+        "bio": "Bio"
+      },
+      "blockDialog": {
+        "title": "Zablokovat uživatele?",
+        "text": "Tímto zablokujete uživatele.",
+        "confirm": "Ano, zablokovat",
+        "cancel": "Ne"
+      },
+      "messages": {
+        "blocked": "Uživatel zablokován",
+        "blockFailed": "Zablokování selhalo",
+        "restored": "Uživatel obnoven",
+        "restoreFailed": "Obnovení selhalo",
+        "fetchFailed": "Načítání uživatelů selhalo"
+      },
+      "actions": {
+        "close": "Zavřít"
+      }
     }
   }
 }

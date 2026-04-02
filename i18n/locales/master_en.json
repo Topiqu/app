@@ -147,6 +147,38 @@
         "assigned": "User assigned to client",
         "assignFailed": "Assignment failed"
       }
+    },
+    "userList": {
+      "title": "User List",
+      "searchPlaceholder": "Search by name or email...",
+      "loading": "Loading...",
+      "loadingMore": "Loading more...",
+      "noUsers": "No users found.",
+      "notAvailable": "Not available",
+      "labels": {
+        "user": "User",
+        "email": "Email",
+        "role": "Role",
+        "clientSite": "Client",
+        "comments": "Comments",
+        "bio": "Bio"
+      },
+      "blockDialog": {
+        "title": "Block user?",
+        "text": "This will block the user.",
+        "confirm": "Yes, block",
+        "cancel": "No"
+      },
+      "messages": {
+        "blocked": "User blocked",
+        "blockFailed": "Blocking failed",
+        "restored": "User restored",
+        "restoreFailed": "Restoration failed",
+        "fetchFailed": "Failed to load users"
+      },
+      "actions": {
+        "close": "Close"
+      }
     }
   }
 }
