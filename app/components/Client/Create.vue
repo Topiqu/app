@@ -6,124 +6,165 @@
 
     <template #content>
       <div class="flex flex-col gap-6">
-        <FormField
-          v-model="newClient.name"
-          :label="$t('master.clientCreate.fields.name.label')"
-          :placeholder="$t('master.clientCreate.fields.name.placeholder')"
-          @input="updateDomainFields"
-        />
-        <div class="flex flex-col gap-3">
-          <FormLabel :text="$t('master.clientCreate.fields.domainType.label')" />
-          <FormSelect
-            v-model="newClient.domainType"
-            :items="[
-              { label: $t('master.clientCreate.fields.domainType.options.SUBDOMAIN'), value: 'SUBDOMAIN' },
-              { label: $t('master.clientCreate.fields.domainType.options.CUSTOM'), value: 'CUSTOM' },
-            ]"
-            :showValue="false"
-            @update:modelValue="updateDomainFields"
-          />
-        </div>
-        <FormField
-          v-if="newClient.domainType === 'SUBDOMAIN'"
-          v-model="newClient.subdomain"
-          :label="$t('master.clientCreate.fields.subdomain.label')"
-          :placeholder="subdomainPlaceholder"
-          @input="normalizeDomain('subdomain')"
-        />
-        <FormField
-          v-if="newClient.domainType === 'CUSTOM'"
-          v-model="newClient.customDomain"
-          :label="$t('master.clientCreate.fields.customDomain.label')"
-          :placeholder="customDomainPlaceholder"
-          @input="normalizeDomain('customDomain')"
-        />
-        <FormField
-          v-model="newClient.description"
-          type="textarea"
-          :label="$t('master.clientCreate.fields.description.label')"
-          :placeholder="$t('master.clientCreate.fields.description.placeholder')"
-          :maxLength="255"
-        />
-        <div class="flex flex-col gap-3">
-          <FormLabel :text="$t('master.clientCreate.fields.logo.label')" />
-          <FileUploader
-            :imageUrl="newClient.logoUrl"
-            type="client-logo"
-            @upload="((newClient.logoUrl = $event.url), (newClient.optimizedUrl = $event.optimizedUrl))"
-          />
-        </div>
-        <FormField
-          v-model="newClient.audience"
-          :label="$t('master.clientCreate.fields.audience.label')"
-          :placeholder="$t('master.clientCreate.fields.audience.placeholder')"
-        />
-        <FormField
-          v-model="newClient.email"
-          type="email"
-          :label="$t('master.clientCreate.fields.adminEmail.label')"
-          :placeholder="$t('master.clientCreate.fields.adminEmail.placeholder')"
-        />
-        <FormField
-          v-model="newClient.username"
-          :label="$t('master.clientCreate.fields.adminUsername.label')"
-          :placeholder="$t('master.clientCreate.fields.adminUsername.placeholder')"
-        />
-        <FormField
-          v-model="newClient.password"
-          type="password"
-          :label="$t('master.clientCreate.fields.adminPassword.label')"
-          :placeholder="$t('master.clientCreate.fields.adminPassword.placeholder')"
-        />
-        <div class="flex flex-col gap-3">
-          <FormLabel :text="$t('master.clientCreate.fields.plan.label')" />
-          <FormSelect
-            v-model="newClient.plan"
-            :items="[
-              { label: 'Basic', value: 'BASIC' },
-              { label: 'Pro', value: 'PRO' },
-              { label: 'Premium', value: 'PREMIUM' },
-              { label: 'Custom', value: 'CUSTOM' },
-            ]"
-            :showValue="false"
-          />
-        </div>
-        <div class="flex flex-col gap-3">
-          <FormLabel :text="$t('master.clientCreate.fields.generationFrequency.label')" />
-          <FormSelect
-            v-model="newClient.generationFrequency"
-            :items="[
-              { label: $t('master.clientEdit.fields.generationFrequency.options.NONE'), value: 'NONE' },
-              { label: $t('master.clientEdit.fields.generationFrequency.options.DAILY'), value: 'DAILY' },
-              { label: $t('master.clientEdit.fields.generationFrequency.options.WEEKLY'), value: 'WEEKLY' },
-            ]"
-            :showValue="false"
-          />
-        </div>
-        <FormField
-          v-model.number="newClient.tokenLimit"
-          type="number"
-          :label="$t('master.clientCreate.fields.tokenLimit.label')"
-          :placeholder="$t('master.clientCreate.fields.tokenLimit.placeholder')"
-          min="0"
-        />
-        <FormField
-          v-model="newClient.focus"
-          :label="$t('master.clientCreate.fields.focus.label')"
-          :placeholder="$t('master.clientCreate.fields.focus.placeholder')"
-        />
-        <div class="flex flex-col gap-3">
+        <!-- Basic Information -->
+        <div
+          class="flex flex-col gap-6 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30"
+        >
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+            <Icon name="mdi:information-outline" class="w-5 h-5 text-gray-500" />
+            {{ $t('master.clientCreate.sections.basic') }}
+          </h3>
           <FormField
-            v-model="keywordsInput"
-            type="textarea"
-            :label="$t('master.clientCreate.fields.keywords.label')"
-            :placeholder="$t('master.clientCreate.fields.keywords.placeholder')"
-            @input="updateKeywords"
+            v-model="newClient.name"
+            :label="$t('master.clientCreate.fields.name.label')"
+            :placeholder="$t('master.clientCreate.fields.name.placeholder')"
+            @input="updateDomainFields"
           />
-          <span class="text-sm text-gray-500 dark:text-gray-400 -mt-2">{{
-            $t('master.clientCreate.fields.keywords.count', [newClient.keywords.length])
-          }}</span>
+          <div class="flex flex-col gap-3">
+            <FormLabel :text="$t('master.clientCreate.fields.domainType.label')" />
+            <FormSelect
+              v-model="newClient.domainType"
+              :items="[
+                { label: $t('master.clientCreate.fields.domainType.options.SUBDOMAIN'), value: 'SUBDOMAIN' },
+                { label: $t('master.clientCreate.fields.domainType.options.CUSTOM'), value: 'CUSTOM' },
+              ]"
+              :showValue="false"
+              @update:modelValue="updateDomainFields"
+            />
+          </div>
+          <FormField
+            v-if="newClient.domainType === 'SUBDOMAIN'"
+            v-model="newClient.subdomain"
+            :label="$t('master.clientCreate.fields.subdomain.label')"
+            :placeholder="subdomainPlaceholder"
+            @input="normalizeDomain('subdomain')"
+          />
+          <FormField
+            v-if="newClient.domainType === 'CUSTOM'"
+            v-model="newClient.customDomain"
+            :label="$t('master.clientCreate.fields.customDomain.label')"
+            :placeholder="customDomainPlaceholder"
+            @input="normalizeDomain('customDomain')"
+          />
+          <div class="flex flex-col gap-3">
+            <FormLabel :text="$t('master.clientCreate.fields.logo.label')" />
+            <FileUploader
+              :imageUrl="newClient.logoUrl"
+              type="client-logo"
+              @upload="((newClient.logoUrl = $event.url), (newClient.optimizedUrl = $event.optimizedUrl))"
+            />
+          </div>
         </div>
+
+        <!-- Targeting & SEO -->
+        <div
+          class="flex flex-col gap-6 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30"
+        >
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+            <Icon name="mdi:target" class="w-5 h-5 text-gray-500" />
+            {{ $t('master.clientCreate.sections.seo') }}
+          </h3>
+          <FormField
+            v-model="newClient.description"
+            type="textarea"
+            :label="$t('master.clientCreate.fields.description.label')"
+            :placeholder="$t('master.clientCreate.fields.description.placeholder')"
+            :maxLength="255"
+          />
+          <FormField
+            v-model="newClient.audience"
+            :label="$t('master.clientCreate.fields.audience.label')"
+            :placeholder="$t('master.clientCreate.fields.audience.placeholder')"
+          />
+          <FormField
+            v-model="newClient.focus"
+            :label="$t('master.clientCreate.fields.focus.label')"
+            :placeholder="$t('master.clientCreate.fields.focus.placeholder')"
+          />
+          <div class="flex flex-col gap-3">
+            <FormField
+              v-model="keywordsInput"
+              type="textarea"
+              :label="$t('master.clientCreate.fields.keywords.label')"
+              :placeholder="$t('master.clientCreate.fields.keywords.placeholder')"
+              @input="updateKeywords"
+            />
+            <span class="text-sm text-gray-500 dark:text-gray-400 -mt-2">{{
+              $t('master.clientCreate.fields.keywords.count', [newClient.keywords.length])
+            }}</span>
+          </div>
+        </div>
+
+        <!-- Admin Account -->
+        <div
+          class="flex flex-col gap-6 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30"
+        >
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+            <Icon name="mdi:account-key-outline" class="w-5 h-5 text-gray-500" />
+            {{ $t('master.clientCreate.sections.admin') }}
+          </h3>
+          <FormField
+            v-model="newClient.email"
+            type="email"
+            :label="$t('master.clientCreate.fields.adminEmail.label')"
+            :placeholder="$t('master.clientCreate.fields.adminEmail.placeholder')"
+          />
+          <FormField
+            v-model="newClient.username"
+            :label="$t('master.clientCreate.fields.adminUsername.label')"
+            :placeholder="$t('master.clientCreate.fields.adminUsername.placeholder')"
+          />
+          <FormField
+            v-model="newClient.password"
+            type="password"
+            :label="$t('master.clientCreate.fields.adminPassword.label')"
+            :placeholder="$t('master.clientCreate.fields.adminPassword.placeholder')"
+          />
+        </div>
+
+        <!-- Subscription & AI Limits -->
+        <div
+          class="flex flex-col gap-6 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30"
+        >
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+            <Icon name="mdi:credit-card-outline" class="w-5 h-5 text-gray-500" />
+            {{ $t('master.clientCreate.sections.subscription') }}
+          </h3>
+          <div class="flex flex-col gap-3">
+            <FormLabel :text="$t('master.clientCreate.fields.plan.label')" />
+            <FormSelect
+              v-model="newClient.plan"
+              :items="[
+                { label: 'Basic', value: 'BASIC' },
+                { label: 'Pro', value: 'PRO' },
+                { label: 'Premium', value: 'PREMIUM' },
+                { label: 'Custom', value: 'CUSTOM' },
+              ]"
+              :showValue="false"
+            />
+          </div>
+          <div class="flex flex-col gap-3">
+            <FormLabel :text="$t('master.clientCreate.fields.generationFrequency.label')" />
+            <FormSelect
+              v-model="newClient.generationFrequency"
+              :items="[
+                { label: $t('master.clientEdit.fields.generationFrequency.options.NONE'), value: 'NONE' },
+                { label: $t('master.clientEdit.fields.generationFrequency.options.DAILY'), value: 'DAILY' },
+                { label: $t('master.clientEdit.fields.generationFrequency.options.WEEKLY'), value: 'WEEKLY' },
+              ]"
+              :showValue="false"
+            />
+          </div>
+          <FormField
+            v-model.number="newClient.tokenLimit"
+            type="number"
+            :label="$t('master.clientCreate.fields.tokenLimit.label')"
+            :placeholder="$t('master.clientCreate.fields.tokenLimit.placeholder')"
+            min="0"
+          />
+        </div>
+
+        <!-- AI Settings -->
         <div
           v-if="newClient.tokenLimit > 0"
           class="flex flex-col gap-6 p-6 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
