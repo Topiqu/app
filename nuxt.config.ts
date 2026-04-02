@@ -172,6 +172,7 @@ export default defineNuxtConfig({
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'blob:', 'https:', 'https://wsrv.nl'],
         'frame-src': [
+          "'self'",
           'https://www.youtube.com',
           'https://www.youtube-nocookie.com',
           'https://googleads.g.doubleclick.net',
@@ -216,9 +217,10 @@ export default defineNuxtConfig({
     '/en/articles/**': { security: { xssValidator: false } },
   },
   i18n: {
+    langDir: 'locales/',
     locales: [
-      { code: 'en', iso: 'en-US', name: 'EN', file: 'en.json' },
-      { code: 'cs', iso: 'cs-CZ', name: 'CZ', file: 'cs.json' },
+      { code: 'en', iso: 'en-US', name: 'EN', files: ['en.json', 'master_en.json'] },
+      { code: 'cs', iso: 'cs-CZ', name: 'CZ', files: ['cs.json', 'master_cs.json'] },
     ],
     vueI18n: './i18n/i18n.config.ts',
     defaultLocale: 'en',
