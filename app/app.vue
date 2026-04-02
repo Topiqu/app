@@ -87,6 +87,16 @@ const ogImageOptions = computed(() => {
 
 defineOgImageComponent(ogImageOptions.value.component, ogImageOptions.value)
 
+useHead({
+  link: [
+    {
+      rel: 'icon',
+      type: 'image/x-icon',
+      href: clientSite?.logoUrl || '/favicon.ico',
+    },
+  ],
+})
+
 if (clientSite) {
   useHead({
     script: [
