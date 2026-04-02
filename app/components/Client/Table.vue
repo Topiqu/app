@@ -1,15 +1,12 @@
 <template>
   <div class="mb-10 space-y-4 px-4 sm:px-6 lg:px-8">
     <div class="flex justify-center">
-      <div class="relative w-full max-w-xs sm:max-w-xl">
-        <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-          <Icon name="material-symbols:search-rounded" />
-        </span>
-        <input
+      <div class="w-full max-w-xs sm:max-w-xl">
+        <FormInput
           v-model="globalFilter"
           type="text"
-          placeholder="Hledat klienty..."
-          class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+          :placeholder="$t('master.clientTable.search')"
+          icon="material-symbols:search-rounded"
         />
       </div>
     </div>
@@ -39,7 +36,7 @@
                 </span>
               </span>
             </th>
-            <th class="px-2 sm:px-4 py-2 text-center min-h-[48px]">Akce</th>
+            <th class="px-2 sm:px-4 py-2 text-center min-h-[48px]">{{ $t('master.clientTable.headers.actions') }}</th>
           </tr>
         </thead>
         <tbody v-auto-animate class="text-gray-800 dark:text-gray-200 divide-y divide-gray-200">
@@ -56,7 +53,11 @@
                   class="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
                   :class="row.original.deletedAt ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'"
                 >
-                  {{ row.original.deletedAt ? 'Deaktivovaný' : 'Aktivní' }}
+                  {{
+                    row.original.deletedAt
+                      ? $t('master.clientTable.status.deactivated')
+                      : $t('master.clientTable.status.active')
+                  }}
                 </p>
               </div>
             </td>
@@ -80,7 +81,7 @@
           </tr>
         </tbody>
       </table>
-      <Pagination :page :totalPages :prevPage :nextPage class="mt-6" />
+      <Pagination :page="page" :totalPages="totalPages" :prevPage="prevPage" :nextPage="nextPage" class="mt-6" />
     </div>
     <div class="sm:hidden space-y-4">
       <div
@@ -101,7 +102,11 @@
                 class="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
                 :class="row.original.deletedAt ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'"
               >
-                {{ row.original.deletedAt ? 'Deaktivovaný' : 'Aktivní' }}
+                {{
+                  row.original.deletedAt
+                    ? $t('master.clientTable.status.deactivated')
+                    : $t('master.clientTable.status.active')
+                }}
               </p>
             </div>
           </div>
@@ -124,9 +129,11 @@
                   variant="danger"
                   @click="del(row.original.id, row.original.name)"
                 >
-                  Smazat/Deaktivovat
+                  {{ $t('master.clientTable.actions.deleteDeactivate') }}
                 </Button>
-                <Button v-else icon="mdi:lock-open" @click="restore(row.original.id)">Aktivovat</Button>
+                <Button v-else icon="mdi:lock-open" @click="restore(row.original.id)">
+                  {{ $t('master.clientTable.actions.activate') }}
+                </Button>
               </div>
             </div>
           </div>
@@ -150,6 +157,7 @@ import {
   useVueTable,
 } from '@tanstack/vue-table'
 
+const { t } = useI18n()
 const { onClientCreated, onClientDeleted } = useClientEvent()
 const toast = useToast()
 const route = useRoute()
@@ -188,26 +196,29 @@ const nextPage = () => {
 
 const columns = ref<ColumnDef<ClientSite>[]>([
   {
-    header: 'Název',
+    header: () => t('master.clientTable.headers.name'),
     accessorKey: 'name',
     id: 'name',
     cell: (info) => info.getValue(),
   },
   {
-    header: 'Subdoména',
+    header: () => t('master.clientTable.headers.subdomain'),
     accessorKey: 'subdomain',
     cell: (info) => info.getValue(),
   },
   {
-    header: 'Plán',
+    header: () => t('master.clientTable.headers.plan'),
     id: 'plan',
     accessorKey: 'plan',
     cell: (info) => info.getValue(),
   },
   {
-    header: 'Vytvořeno',
+    header: () => t('master.clientTable.headers.createdAt'),
     accessorKey: 'createdAt',
-    cell: (info) => new Date(info.getValue() as string).toLocaleString('cs-CZ'),
+    cell: (info) =>
+      new Date(info.getValue() as string).toLocaleString(
+        t('master.clientTable.headers.name') === 'Název' ? 'cs-CZ' : 'en-US',
+      ),
   },
 ])
 
@@ -249,14 +260,14 @@ onClickOutside(dropdownRef, () => {
 
 const del = async (id: string, name: string) => {
   const result = await Swal.fire({
-    title: `Co chcete udělat s klientem "${name}"?`,
-    text: 'Vyberte, zda chcete klienta deaktivovat nebo trvale smazat.',
+    title: t('master.clientTable.deleteDialog.title', { name }),
+    text: t('master.clientTable.deleteDialog.text'),
     icon: 'warning',
     showDenyButton: true,
     showCancelButton: true,
-    confirmButtonText: 'Trvale smazat',
-    denyButtonText: 'Deaktivovat',
-    cancelButtonText: 'Zrušit',
+    confirmButtonText: t('master.clientTable.deleteDialog.confirm'),
+    denyButtonText: t('master.clientTable.deleteDialog.deny'),
+    cancelButtonText: t('master.clientTable.deleteDialog.cancel'),
     background: '#fff',
     confirmButtonColor: '#ef4444',
     denyButtonColor: '#f97316',
@@ -267,21 +278,21 @@ const del = async (id: string, name: string) => {
     try {
       await $fetch(`/api/clients/${id}?hard=true` as `api/clients/:id`, { method: 'DELETE' })
 
-      toast.success({ message: 'Klient trvale smazán' })
+      toast.success({ message: t('master.clientTable.messages.permanentlyDeleted') })
 
       await refresh()
     } catch (e: any) {
-      toast.error({ message: e.data?.message || 'Smazání selhalo' })
+      toast.error({ message: e.data?.message || t('master.clientTable.messages.deleteFailed') })
     }
   } else if (result.isDenied) {
     try {
       await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'DELETE' })
 
-      toast.success({ message: 'Klient deaktivován' })
+      toast.success({ message: t('master.clientTable.messages.deactivated') })
 
       await refresh()
     } catch (e: any) {
-      toast.error({ message: e.data?.message || 'Deaktivace selhala' })
+      toast.error({ message: e.data?.message || t('master.clientTable.messages.deactivateFailed') })
     }
   }
 }
@@ -291,12 +302,12 @@ onClientDeleted(refresh)
 
 const restore = async (id: string) => {
   const result = await Swal.fire({
-    title: 'Aktivovat klienta?',
-    text: 'Klient bude aktivován.',
+    title: t('master.clientTable.activateDialog.title'),
+    text: t('master.clientTable.activateDialog.text'),
     icon: 'question',
     showCancelButton: true,
-    confirmButtonText: 'Ano, aktivovat',
-    cancelButtonText: 'Ne',
+    confirmButtonText: t('master.clientTable.activateDialog.confirm'),
+    cancelButtonText: t('master.clientTable.activateDialog.cancel'),
     background: '#fff',
     confirmButtonColor: '#22c55e',
     cancelButtonColor: '#6b7280',
@@ -306,11 +317,11 @@ const restore = async (id: string) => {
   try {
     await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'PATCH', body: { deletedAt: null } })
 
-    toast.success({ message: 'Klient aktivován' })
+    toast.success({ message: t('master.clientTable.messages.activated') })
 
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Aktivace selhala' })
+    toast.error({ message: e.data?.message || t('master.clientTable.messages.activateFailed') })
   }
 }
 

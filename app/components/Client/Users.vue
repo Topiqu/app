@@ -1,11 +1,11 @@
 <template>
-  <Modal v-model="open" title="Uživatelé klienta">
+  <Modal v-model="open" :title="$t('master.clientUsers.title')">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
 
     <template #content>
-      <div v-if="users.length === 0" class="text-center text-red-500">Žádní uživatelé nenalezeni</div>
+      <div v-if="users.length === 0" class="text-center text-red-500">{{ $t('master.clientUsers.empty') }}</div>
       <div class="flex justify-end mb-4">
         <LazyUserCreate
           v-slot="{ open: userCreateOpen }"
@@ -20,10 +20,10 @@
         <table class="min-w-full text-sm divide-y divide-gray-200 dark:divide-gray-600">
           <thead class="bg-gray-100 dark:bg-gray-700 text-left font-semibold text-gray-600 dark:text-gray-200">
             <tr>
-              <th class="px-4 py-2">Uživatelské jméno</th>
-              <th class="px-4 py-2">Email</th>
-              <th class="px-4 py-2">Role</th>
-              <th class="px-4 py-2">Akce</th>
+              <th class="px-4 py-2">{{ $t('master.clientUsers.headers.username') }}</th>
+              <th class="px-4 py-2">{{ $t('master.clientUsers.headers.email') }}</th>
+              <th class="px-4 py-2">{{ $t('master.clientUsers.headers.role') }}</th>
+              <th class="px-4 py-2">{{ $t('master.clientUsers.headers.actions') }}</th>
             </tr>
           </thead>
           <tbody class="text-gray-800 dark:text-gray-200">
@@ -47,7 +47,11 @@
                       : 'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-100'
                   "
                 >
-                  {{ user.deletedAt === null ? 'Aktivní' : 'Zablokovaný' }}
+                  {{
+                    user.deletedAt === null
+                      ? $t('master.clientUsers.status.active')
+                      : $t('master.clientUsers.status.blocked')
+                  }}
                 </div>
               </td>
               <td class="px-4 py-2 break-words max-w-[180px] text-center">
@@ -81,7 +85,7 @@
     </template>
 
     <template #footer="{ close }">
-      <Button variant="neutral" size="lg" @click="close">Zavřít</Button>
+      <Button variant="neutral" size="lg" @click="close">{{ $t('master.clientUsers.actions.close') }}</Button>
     </template>
   </Modal>
 </template>
@@ -89,6 +93,7 @@
 <script setup lang="ts">
 import Swal from 'sweetalert2'
 
+const { t } = useI18n()
 const props = defineProps<{ clientId: string }>()
 const open = defineModel<boolean>()
 const toast = useToast()
@@ -98,12 +103,12 @@ const { data: users, refresh } = await useFetch(`/api/users/${props.clientId}/by
 
 const del = async (id: string) => {
   const r = await Swal.fire({
-    title: 'Zablokovat uživatele?',
-    text: 'Tímto zablokujete uživatele.',
+    title: t('master.clientUsers.blockDialog.title'),
+    text: t('master.clientUsers.blockDialog.text'),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Ano, zablokovat',
-    cancelButtonText: 'Ne',
+    confirmButtonText: t('master.clientUsers.blockDialog.confirm'),
+    cancelButtonText: t('master.clientUsers.blockDialog.cancel'),
     background: '#fff',
     confirmButtonColor: '#ef4444',
     cancelButtonColor: '#6b7280',
@@ -111,10 +116,10 @@ const del = async (id: string) => {
   if (!r.isConfirmed) return
   try {
     await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
-    toast.success({ message: 'Uživatel zablokován' })
+    toast.success({ message: t('master.clientUsers.messages.blocked') })
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Zablokování selhalo' })
+    toast.error({ message: e.data?.message || t('master.clientUsers.messages.blockFailed') })
   }
 }
 
@@ -124,9 +129,9 @@ const restore = async (id: string) => {
     const user = users.value.find((u) => u.id === id)
     if (user) user.deletedAt = null
     await refresh()
-    toast.success({ message: 'Uživatel obnoven' })
+    toast.success({ message: t('master.clientUsers.messages.restored') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Obnovení selhalo' })
+    toast.error({ message: e.data?.message || t('master.clientUsers.messages.restoreFailed') })
   }
 }
 </script>

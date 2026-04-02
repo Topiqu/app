@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="open" title="Přidat uživatele">
+  <Modal v-model="open" :title="$t('master.userCreate.title')">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
@@ -7,50 +7,36 @@
     <template #content>
       <div class="flex flex-col gap-6">
         <div class="flex flex-col gap-4">
-          <h3 class="text-lg font-medium">Přiřadit nového autora klientovi</h3>
-          <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium">Uživatelské jméno</span>
-            <input
-              v-model="newUser.username"
-              placeholder="Uživatelské jméno"
-              class="p-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </label>
-          <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium">Email</span>
-            <input
-              v-model="newUser.email"
-              placeholder="Email"
-              class="p-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </label>
-          <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium">Heslo</span>
-            <input
-              v-model="newUser.password"
-              type="password"
-              placeholder="Heslo"
-              class="p-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </label>
+          <h3 class="text-lg font-medium">{{ $t('master.userCreate.assignNew') }}</h3>
+          <FormField
+            v-model="newUser.username"
+            :label="$t('master.userCreate.username')"
+            :placeholder="$t('master.userCreate.username')"
+          />
+          <FormField
+            v-model="newUser.email"
+            :label="$t('master.userCreate.email')"
+            :placeholder="$t('master.userCreate.email')"
+          />
+          <FormField
+            v-model="newUser.password"
+            type="password"
+            :label="$t('master.userCreate.password')"
+            :placeholder="$t('master.userCreate.password')"
+          />
           <button
             class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
             :disabled="!newUser.username || !newUser.email || !newUser.password"
             @click="createUser"
           >
-            Vytvořit
+            {{ $t('master.userCreate.createBtn') }}
           </button>
         </div>
 
         <div class="flex flex-col gap-4">
-          <h3 class="text-lg font-medium">Přidat existujícího uživatele</h3>
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Hledat podle jména nebo emailu..."
-            class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
-          />
-          <div v-if="loading && !users?.data.length" class="text-gray-600">Načítání...</div>
+          <h3 class="text-lg font-medium">{{ $t('master.userCreate.addExisting') }}</h3>
+          <FormField v-model="searchQuery" :placeholder="$t('master.userCreate.searchPlaceholder')" />
+          <div v-if="loading && !users?.data.length" class="text-gray-600">{{ $t('master.userCreate.loading') }}</div>
           <div v-else-if="error" class="text-red-600">{{ error }}</div>
           <div v-else ref="scrollParent" class="relative max-h-96 overflow-auto">
             <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
@@ -68,22 +54,22 @@
               >
                 <div>
                   <div>
-                    <span class="font-medium">Uživatel: </span>
-                    {{ filteredUsers[virtualRow.index]?.username ?? 'Není k dispozici' }}
+                    <span class="font-medium">{{ $t('master.userCreate.userLabel') }}</span>
+                    {{ filteredUsers[virtualRow.index]?.username ?? $t('master.userCreate.notAvailable') }}
                   </div>
                   <div>
-                    <span class="font-medium">Email: </span>
-                    {{ filteredUsers[virtualRow.index]?.email ?? 'Není k dispozici' }}
+                    <span class="font-medium">{{ $t('master.userCreate.emailLabel') }}</span>
+                    {{ filteredUsers[virtualRow.index]?.email ?? $t('master.userCreate.notAvailable') }}
                   </div>
                   <div>
-                    <span class="font-medium">Role: </span>
-                    {{ filteredUsers[virtualRow.index]?.role ?? 'Není k dispozici' }}
+                    <span class="font-medium">{{ $t('master.userCreate.roleLabel') }}</span>
+                    {{ filteredUsers[virtualRow.index]?.role ?? $t('master.userCreate.notAvailable') }}
                   </div>
                 </div>
                 <div class="flex gap-2">
                   <button
                     v-if="filteredUsers[virtualRow.index]?.deletedAt === null"
-                    class="w-10 h-10 bg-blue-200 rounded-full hover:bg-blue-300 transition-all duration-200"
+                    class="w-10 h-10 bg-blue-200 rounded-full hover:bg-blue-300 transition-all duration-200 flex justify-center items-center"
                     @click="assignToClientSite(filteredUsers[virtualRow.index]?.id)"
                   >
                     <Icon name="mdi:plus" class="w-5 h-5 text-black" />
@@ -91,7 +77,9 @@
                 </div>
               </div>
             </div>
-            <div v-if="!filteredUsers?.length" class="text-gray-600 px-2 py-4">Žádní uživatelé nenalezeni.</div>
+            <div v-if="!filteredUsers?.length" class="text-gray-600 px-2 py-4">
+              {{ $t('master.userCreate.noUsers') }}
+            </div>
           </div>
         </div>
       </div>
@@ -102,7 +90,7 @@
         class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105"
         @click="close"
       >
-        Zavřít
+        {{ $t('master.userCreate.close') }}
       </button>
     </template>
   </Modal>
@@ -116,6 +104,7 @@ const props = defineProps<{ clientId: string }>()
 const emit = defineEmits(['create'])
 
 const toast = useToast()
+const { t } = useI18n()
 const searchQuery = shallowRef<string>('')
 const scrollParent = useTemplateRef('scrollParent')
 
@@ -165,12 +154,12 @@ const createUser = async () => {
     if (!response) throw createError('Chyba')
 
     emit('create')
-    toast.success({ message: 'Uživatel vytvořen' })
+    toast.success({ message: t('master.userCreate.messages.created') })
     open.value = false
     newUser.value = { username: '', email: '', password: '', role: 'reader' }
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Vytvoření selhalo' })
+    toast.error({ message: e.data?.message || t('master.userCreate.messages.createFailed') })
   }
 }
 
@@ -184,11 +173,11 @@ const assignToClientSite = async (userId: string | undefined) => {
     })
     if (!response) throw createError('Chyba')
 
-    toast.success({ message: 'Uživatel přiřazen ke klientovi' })
+    toast.success({ message: t('master.userCreate.messages.assigned') })
     emit('create')
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Přiřazení selhalo' })
+    toast.error({ message: e.data?.message || t('master.userCreate.messages.assignFailed') })
   }
 }
 </script>

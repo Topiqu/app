@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="open" title="Úprava klienta">
+  <Modal v-model="open" :title="$t('master.clientEdit.title')">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
@@ -7,106 +7,93 @@
     <template #content>
       <div class="flex-1 overflow-y-auto pr-4">
         <div class="flex flex-col gap-6">
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Název klienta</span>
-            <input
-              v-model="editedClient.name"
-              placeholder="Název klienta"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Subdoména</span>
-            <input
-              v-model="editedClient.subdomain"
-              placeholder="Subdoména"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Popis</span>
-            <textarea
-              v-model="editedClient.description"
-              placeholder="Popis klienta (max. 255 znaků)"
-              maxlength="255"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md resize-y min-h-[100px]"
-            />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Logo klienta</span>
+          <FormField
+            v-model="editedClient.name"
+            :label="$t('master.clientEdit.fields.name.label')"
+            :placeholder="$t('master.clientEdit.fields.name.placeholder')"
+          />
+          <FormField
+            v-model="editedClient.subdomain"
+            :label="$t('master.clientEdit.fields.subdomain.label')"
+            :placeholder="$t('master.clientEdit.fields.subdomain.placeholder')"
+          />
+          <FormField
+            v-model="editedClient.description"
+            type="textarea"
+            :label="$t('master.clientEdit.fields.description.label')"
+            :placeholder="$t('master.clientEdit.fields.description.placeholder')"
+            :maxLength="255"
+          />
+          <div class="flex flex-col gap-3">
+            <FormLabel :text="$t('master.clientEdit.fields.logo.label')" />
             <FileUploader
               :imageUrl="editedClient.logoUrl"
               type="client-logo"
               @upload="((editedClient.logoUrl = $event.url), (editedClient.optimizedUrl = $event.optimizedUrl))"
             />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Cílová skupina</span>
-            <input
-              v-model="editedClient.audience"
-              placeholder="Cílová skupina (např. mladí profesionálové)"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Focus firmy</span>
-            <input
-              v-model="editedClient.focus"
-              placeholder="Focus firmy (např. technologie, marketing)"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Klíčová slova</span>
-            <textarea
+          </div>
+          <FormField
+            v-model="editedClient.audience"
+            :label="$t('master.clientEdit.fields.audience.label')"
+            :placeholder="$t('master.clientEdit.fields.audience.placeholder')"
+          />
+          <FormField
+            v-model="editedClient.focus"
+            :label="$t('master.clientEdit.fields.focus.label')"
+            :placeholder="$t('master.clientEdit.fields.focus.placeholder')"
+          />
+          <div class="flex flex-col gap-3">
+            <FormField
               v-model="keywordsInput"
-              placeholder="Klíčová slova (oddělená čárkou, např. seo, marketing, tech)"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+              type="textarea"
+              :label="$t('master.clientEdit.fields.keywords.label')"
+              :placeholder="$t('master.clientEdit.fields.keywords.placeholder')"
               @input="updateKeywords"
             />
-            <span class="text-sm text-gray-500 dark:text-gray-400">Slova: {{ editedClient.keywords.length }}</span>
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Plán</span>
-            <select
+            <span class="text-sm text-gray-500 dark:text-gray-400 -mt-2">{{
+              $t('master.clientEdit.fields.keywords.count', [editedClient.keywords.length])
+            }}</span>
+          </div>
+          <div class="flex flex-col gap-3">
+            <FormLabel :text="$t('master.clientEdit.fields.plan.label')" />
+            <FormSelect
               v-model="editedClient.plan"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            >
-              <option value="BASIC">Basic</option>
-              <option value="PRO">Pro</option>
-              <option value="PREMIUM">Premium</option>
-              <option value="CUSTOM">Custom</option>
-            </select>
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Frekvence generování</span>
-            <select
-              v-model="editedClient.generationFrequency"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            >
-              <option value="NONE">Žádná</option>
-              <option value="DAILY">Denní</option>
-              <option value="WEEKLY">Týdenní</option>
-            </select>
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80">Limit tokenů</span>
-            <input
-              v-model.number="editedClient.tokenLimit"
-              type="number"
-              placeholder="Limit tokenů"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-              min="0"
+              :items="[
+                { label: 'Basic', value: 'BASIC' },
+                { label: 'Pro', value: 'PRO' },
+                { label: 'Premium', value: 'PREMIUM' },
+                { label: 'Custom', value: 'CUSTOM' },
+              ]"
+              :showValue="false"
             />
-          </label>
+          </div>
+          <div class="flex flex-col gap-3">
+            <FormLabel :text="$t('master.clientEdit.fields.generationFrequency.label')" />
+            <FormSelect
+              v-model="editedClient.generationFrequency"
+              :items="[
+                { label: $t('master.clientEdit.fields.generationFrequency.options.NONE'), value: 'NONE' },
+                { label: $t('master.clientEdit.fields.generationFrequency.options.DAILY'), value: 'DAILY' },
+                { label: $t('master.clientEdit.fields.generationFrequency.options.WEEKLY'), value: 'WEEKLY' },
+              ]"
+              :showValue="false"
+            />
+          </div>
+          <FormField
+            v-model.number="editedClient.tokenLimit"
+            type="number"
+            :label="$t('master.clientEdit.fields.tokenLimit.label')"
+            :placeholder="$t('master.clientEdit.fields.tokenLimit.placeholder')"
+            min="0"
+          />
         </div>
       </div>
     </template>
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end flex-shrink-0">
-        <Button variant="neutral" size="lg" @click="close">Zavřít</Button>
-        <Button size="lg" :disabled="!isFormValid" @click="saveEdit">Uložit změny</Button>
+        <Button variant="neutral" size="lg" @click="close">{{ $t('master.clientEdit.actions.close') }}</Button>
+        <Button size="lg" :disabled="!isFormValid" @click="saveEdit">{{ $t('master.clientEdit.actions.save') }}</Button>
       </div>
     </template>
   </Modal>
@@ -122,6 +109,7 @@ const open = defineModel<boolean>()
 const emit = defineEmits(['saved'])
 
 const toast = useToast()
+const { t } = useI18n()
 
 const normalizeKeywords = (val: unknown): string[] => {
   return Array.isArray(val) ? val : []
@@ -170,15 +158,15 @@ const saveEdit = async () => {
     })
 
     if (response?.clientSite) {
-      toast.success({ message: 'Klient úspěšně aktualizován.' })
+      toast.success({ message: t('master.clientEdit.messages.success') })
       emit('saved')
       open.value = false
     } else {
-      throw new Error('Neplatná odpověď serveru')
+      throw new Error(t('master.clientEdit.messages.invalidResponse'))
     }
   } catch (error: any) {
     toast.error({
-      message: error?.data?.message || error.data?.message || 'Nepodařilo se aktualizovat klienta',
+      message: error?.data?.message || error.data?.message || t('master.clientEdit.messages.updateFailed'),
     })
   }
 }
