@@ -127,6 +127,12 @@
     },
     "clientCreate": {
       "title": "Client Management",
+      "sections": {
+        "basic": "Basic Information",
+        "seo": "Targeting & SEO",
+        "admin": "Admin Account",
+        "subscription": "Subscription & AI Limits"
+      },
       "fields": {
         "name": {
           "label": "Client Name",

@@ -127,6 +127,12 @@
     },
     "clientCreate": {
       "title": "Správa klientů",
+      "sections": {
+        "basic": "Základní informace",
+        "seo": "Cílení a SEO",
+        "admin": "Účet administrátora",
+        "subscription": "Předplatné a AI limity"
+      },
       "fields": {
         "name": {
           "label": "Název klienta",
