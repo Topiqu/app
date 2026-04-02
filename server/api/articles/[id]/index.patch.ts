@@ -1,7 +1,6 @@
-import type { NotificationType } from '@prisma/client'
-
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
+import { ArticleStatus, type NotificationType } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -20,13 +19,6 @@ export default defineEventHandler(async (event) => {
   const currentDate = new Date()
   const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59)
 
-  if (body.releaseAt) {
-    const releaseDate = new Date(body.releaseAt)
-    if (isNaN(releaseDate.getTime()) || releaseDate < currentDate || releaseDate > maxDate) {
-      throw createError({ statusCode: 400, message: t('common.errors.invalidReleaseDate')! })
-    }
-  }
-
   const previousArticle = await db.article.findUnique({
     where: { id },
     select: { status: true, releaseAt: true, articleSeriesId: true, seriesOrder: true },
@@ -34,12 +26,18 @@ export default defineEventHandler(async (event) => {
 
   if (!previousArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
-  if (
-    body.releaseAt &&
-    (previousArticle.status === 'published' ||
-      (previousArticle.releaseAt && new Date(previousArticle.releaseAt) < currentDate))
-  ) {
-    throw createError({ statusCode: 403, message: t('common.errors.releaseDateLocked')! })
+  if (previousArticle.status === ArticleStatus.published) {
+    delete body.releaseAt
+  }
+
+  if (body.releaseAt) {
+    const releaseDate = new Date(body.releaseAt)
+    const isUnchanged =
+      previousArticle.releaseAt && new Date(previousArticle.releaseAt).getTime() === releaseDate.getTime()
+
+    if (!isUnchanged && (isNaN(releaseDate.getTime()) || releaseDate < currentDate || releaseDate > maxDate)) {
+      throw createError({ statusCode: 400, message: t('common.errors.invalidReleaseDate')! })
+    }
   }
 
   let newSeriesOrder = previousArticle.seriesOrder
@@ -87,7 +85,9 @@ export default defineEventHandler(async (event) => {
   const data: any = {
     ...body,
     seriesOrder: newSeriesOrder,
-    releaseAt: body.releaseAt ? new Date(body.releaseAt) : undefined,
+  }
+  if ('releaseAt' in body) {
+    data.releaseAt = body.releaseAt ? new Date(body.releaseAt) : null
   }
   if (body.content) data.content = sanitizeHtml(content || '')
 
@@ -104,7 +104,7 @@ export default defineEventHandler(async (event) => {
     metadata: { articleId: id, updatedFields: Object.keys(body) },
   })
 
-  if (article.status === 'published' && previousArticle?.status === 'draft') {
+  if (article.status === ArticleStatus.published && previousArticle?.status === ArticleStatus.draft) {
     const followers = await db.follow.findMany({
       where: { followedId: article.userId, follower: { allowNotifs: true } },
       select: { followerId: true },
