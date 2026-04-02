@@ -1,0 +1,152 @@
+{
+  "master": {
+    "clientTable": {
+      "search": "Search clients...",
+      "headers": {
+        "name": "Name",
+        "subdomain": "Subdomain",
+        "plan": "Plan",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "deactivated": "Deactivated"
+      },
+      "actions": {
+        "deleteDeactivate": "Delete/Deactivate",
+        "activate": "Activate"
+      },
+      "deleteDialog": {
+        "title": "What do you want to do with client \"{name}\"?",
+        "text": "Choose whether to deactivate or permanently delete the client.",
+        "confirm": "Permanently delete",
+        "deny": "Deactivate",
+        "cancel": "Cancel"
+      },
+      "activateDialog": {
+        "title": "Activate client?",
+        "text": "The client will be activated.",
+        "confirm": "Yes, activate",
+        "cancel": "No"
+      },
+      "messages": {
+        "permanentlyDeleted": "Client permanently deleted",
+        "deleteFailed": "Deletion failed",
+        "deactivated": "Client deactivated",
+        "deactivateFailed": "Deactivation failed",
+        "activated": "Client activated",
+        "activateFailed": "Activation failed"
+      }
+    },
+    "clientUsers": {
+      "title": "Client Users",
+      "empty": "No users found",
+      "headers": {
+        "username": "Username",
+        "email": "Email",
+        "role": "Role",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "blocked": "Blocked"
+      },
+      "blockDialog": {
+        "title": "Block user?",
+        "text": "This will block the user.",
+        "confirm": "Yes, block",
+        "cancel": "No"
+      },
+      "messages": {
+        "blocked": "User blocked",
+        "blockFailed": "Blocking failed",
+        "restored": "User restored",
+        "restoreFailed": "Restoration failed"
+      },
+      "actions": {
+        "close": "Close"
+      }
+    },
+    "clientEdit": {
+      "title": "Edit Client",
+      "fields": {
+        "name": {
+          "label": "Client Name",
+          "placeholder": "Client Name"
+        },
+        "subdomain": {
+          "label": "Subdomain",
+          "placeholder": "Subdomain"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Client description (max. 255 characters)"
+        },
+        "logo": {
+          "label": "Client Logo"
+        },
+        "audience": {
+          "label": "Target Audience",
+          "placeholder": "Target audience (e.g. young professionals)"
+        },
+        "focus": {
+          "label": "Company Focus",
+          "placeholder": "Company focus (e.g. technology, marketing)"
+        },
+        "keywords": {
+          "label": "Keywords",
+          "placeholder": "Keywords (comma-separated, e.g. seo, marketing, tech)",
+          "count": "Words: {0}"
+        },
+        "plan": {
+          "label": "Plan"
+        },
+        "generationFrequency": {
+          "label": "Generation Frequency",
+          "options": {
+            "NONE": "None",
+            "DAILY": "Daily",
+            "WEEKLY": "Weekly"
+          }
+        },
+        "tokenLimit": {
+          "label": "Token Limit",
+          "placeholder": "Token Limit"
+        }
+      },
+      "actions": {
+        "close": "Close",
+        "save": "Save Changes"
+      },
+      "messages": {
+        "success": "Client updated successfully.",
+        "invalidResponse": "Invalid server response",
+        "updateFailed": "Failed to update client"
+      }
+    },
+    "userCreate": {
+      "title": "Add User",
+      "assignNew": "Assign new author to client",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "createBtn": "Create",
+      "addExisting": "Add existing user",
+      "searchPlaceholder": "Search by name or email...",
+      "loading": "Loading...",
+      "notAvailable": "Not available",
+      "userLabel": "User: ",
+      "emailLabel": "Email: ",
+      "roleLabel": "Role: ",
+      "noUsers": "No users found.",
+      "close": "Close",
+      "messages": {
+        "created": "User created",
+        "createFailed": "Creation failed",
+        "assigned": "User assigned to client",
+        "assignFailed": "Assignment failed"
+      }
+    }
+  }
+}

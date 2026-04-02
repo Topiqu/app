@@ -1,0 +1,152 @@
+{
+  "master": {
+    "clientTable": {
+      "search": "Hledat klienty...",
+      "headers": {
+        "name": "Název",
+        "subdomain": "Subdoména",
+        "plan": "Plán",
+        "createdAt": "Vytvořeno",
+        "actions": "Akce"
+      },
+      "status": {
+        "active": "Aktivní",
+        "deactivated": "Deaktivovaný"
+      },
+      "actions": {
+        "deleteDeactivate": "Smazat/Deaktivovat",
+        "activate": "Aktivovat"
+      },
+      "deleteDialog": {
+        "title": "Co chcete udělat s klientem \"{name}\"?",
+        "text": "Vyberte, zda chcete klienta deaktivovat nebo trvale smazat.",
+        "confirm": "Trvale smazat",
+        "deny": "Deaktivovat",
+        "cancel": "Zrušit"
+      },
+      "activateDialog": {
+        "title": "Aktivovat klienta?",
+        "text": "Klient bude aktivován.",
+        "confirm": "Ano, aktivovat",
+        "cancel": "Ne"
+      },
+      "messages": {
+        "permanentlyDeleted": "Klient trvale smazán",
+        "deleteFailed": "Smazání selhalo",
+        "deactivated": "Klient deaktivován",
+        "deactivateFailed": "Deaktivace selhala",
+        "activated": "Klient aktivován",
+        "activateFailed": "Aktivace selhala"
+      }
+    },
+    "clientUsers": {
+      "title": "Uživatelé klienta",
+      "empty": "Žádní uživatelé nenalezeni",
+      "headers": {
+        "username": "Uživatelské jméno",
+        "email": "Email",
+        "role": "Role",
+        "actions": "Akce"
+      },
+      "status": {
+        "active": "Aktivní",
+        "blocked": "Zablokovaný"
+      },
+      "blockDialog": {
+        "title": "Zablokovat uživatele?",
+        "text": "Tímto zablokujete uživatele.",
+        "confirm": "Ano, zablokovat",
+        "cancel": "Ne"
+      },
+      "messages": {
+        "blocked": "Uživatel zablokován",
+        "blockFailed": "Zablokování selhalo",
+        "restored": "Uživatel obnoven",
+        "restoreFailed": "Obnovení selhalo"
+      },
+      "actions": {
+        "close": "Zavřít"
+      }
+    },
+    "clientEdit": {
+      "title": "Úprava klienta",
+      "fields": {
+        "name": {
+          "label": "Název klienta",
+          "placeholder": "Název klienta"
+        },
+        "subdomain": {
+          "label": "Subdoména",
+          "placeholder": "Subdoména"
+        },
+        "description": {
+          "label": "Popis",
+          "placeholder": "Popis klienta (max. 255 znaků)"
+        },
+        "logo": {
+          "label": "Logo klienta"
+        },
+        "audience": {
+          "label": "Cílová skupina",
+          "placeholder": "Cílová skupina (např. mladí profesionálové)"
+        },
+        "focus": {
+          "label": "Focus firmy",
+          "placeholder": "Focus firmy (např. technologie, marketing)"
+        },
+        "keywords": {
+          "label": "Klíčová slova",
+          "placeholder": "Klíčová slova (oddělená čárkou, např. seo, marketing, tech)",
+          "count": "Slova: {0}"
+        },
+        "plan": {
+          "label": "Plán"
+        },
+        "generationFrequency": {
+          "label": "Frekvence generování",
+          "options": {
+            "NONE": "Žádná",
+            "DAILY": "Denní",
+            "WEEKLY": "Týdenní"
+          }
+        },
+        "tokenLimit": {
+          "label": "Limit tokenů",
+          "placeholder": "Limit tokenů"
+        }
+      },
+      "actions": {
+        "close": "Zavřít",
+        "save": "Uložit změny"
+      },
+      "messages": {
+        "success": "Klient úspěšně aktualizován.",
+        "invalidResponse": "Neplatná odpověď serveru",
+        "updateFailed": "Nepodařilo se aktualizovat klienta"
+      }
+    },
+    "userCreate": {
+      "title": "Přidat uživatele",
+      "assignNew": "Přiřadit nového autora klientovi",
+      "username": "Uživatelské jméno",
+      "email": "Email",
+      "password": "Heslo",
+      "createBtn": "Vytvořit",
+      "addExisting": "Přidat existujícího uživatele",
+      "searchPlaceholder": "Hledat podle jména nebo emailu...",
+      "loading": "Načítání...",
+      "notAvailable": "Není k dispozici",
+      "userLabel": "Uživatel: ",
+      "emailLabel": "Email: ",
+      "roleLabel": "Role: ",
+      "noUsers": "Žádní uživatelé nenalezeni.",
+      "close": "Zavřít",
+      "messages": {
+        "created": "Uživatel vytvořen",
+        "createFailed": "Vytvoření selhalo",
+        "assigned": "Uživatel přiřazen ke klientovi",
+        "assignFailed": "Přiřazení selhalo"
+      }
+    }
+  }
+}
