@@ -1,193 +1,170 @@
 <template>
-  <Modal v-model="open" title="Správa klientů">
+  <Modal v-model="open" :title="$t('master.clientCreate.title')">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
 
     <template #content>
       <div class="flex flex-col gap-6">
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Název klienta</span>
-          <input
-            v-model="newClient.name"
-            placeholder="Název klienta"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            @input="updateDomainFields"
-          />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Typ domény</span>
-          <select
+        <FormField
+          v-model="newClient.name"
+          :label="$t('master.clientCreate.fields.name.label')"
+          :placeholder="$t('master.clientCreate.fields.name.placeholder')"
+          @input="updateDomainFields"
+        />
+        <div class="flex flex-col gap-3">
+          <FormLabel :text="$t('master.clientCreate.fields.domainType.label')" />
+          <FormSelect
             v-model="newClient.domainType"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            @change="updateDomainFields"
-          >
-            <option value="SUBDOMAIN">Subdoména</option>
-            <option value="CUSTOM">Vlastní doména</option>
-          </select>
-        </label>
-        <label v-if="newClient.domainType === 'SUBDOMAIN'" class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Subdoména</span>
-          <input
-            v-model="newClient.subdomain"
-            :placeholder="subdomainPlaceholder"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            @input="normalizeDomain('subdomain')"
+            :items="[
+              { label: $t('master.clientCreate.fields.domainType.options.SUBDOMAIN'), value: 'SUBDOMAIN' },
+              { label: $t('master.clientCreate.fields.domainType.options.CUSTOM'), value: 'CUSTOM' },
+            ]"
+            :showValue="false"
+            @update:modelValue="updateDomainFields"
           />
-        </label>
-        <label v-if="newClient.domainType === 'CUSTOM'" class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Vlastní doména</span>
-          <input
-            v-model="newClient.customDomain"
-            :placeholder="customDomainPlaceholder"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            @input="normalizeDomain('customDomain')"
-          />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Popis</span>
-          <textarea
-            v-model="newClient.description"
-            placeholder="Popis klienta (max. 255 znaků)"
-            maxlength="255"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md resize-y min-h-[100px]"
-          />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Logo klienta</span>
+        </div>
+        <FormField
+          v-if="newClient.domainType === 'SUBDOMAIN'"
+          v-model="newClient.subdomain"
+          :label="$t('master.clientCreate.fields.subdomain.label')"
+          :placeholder="subdomainPlaceholder"
+          @input="normalizeDomain('subdomain')"
+        />
+        <FormField
+          v-if="newClient.domainType === 'CUSTOM'"
+          v-model="newClient.customDomain"
+          :label="$t('master.clientCreate.fields.customDomain.label')"
+          :placeholder="customDomainPlaceholder"
+          @input="normalizeDomain('customDomain')"
+        />
+        <FormField
+          v-model="newClient.description"
+          type="textarea"
+          :label="$t('master.clientCreate.fields.description.label')"
+          :placeholder="$t('master.clientCreate.fields.description.placeholder')"
+          :maxLength="255"
+        />
+        <div class="flex flex-col gap-3">
+          <FormLabel :text="$t('master.clientCreate.fields.logo.label')" />
           <FileUploader
             :imageUrl="newClient.logoUrl"
             type="client-logo"
             @upload="((newClient.logoUrl = $event.url), (newClient.optimizedUrl = $event.optimizedUrl))"
           />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Cílová skupina</span>
-          <input
-            v-model="newClient.audience"
-            placeholder="Cílová skupina (např. mladí profesionálové)"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-          />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Email admina</span>
-          <input
-            v-model="newClient.email"
-            placeholder="Email admina"
-            type="email"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-          />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Uživatelské jméno admina</span>
-          <input
-            v-model="newClient.username"
-            placeholder="Uživatelské jméno admina"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-          />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Heslo admina</span>
-          <input
-            v-model="newClient.password"
-            placeholder="Heslo (nechte prázdné pro automatické generování)"
-            type="password"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-          />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Plán</span>
-          <select
+        </div>
+        <FormField
+          v-model="newClient.audience"
+          :label="$t('master.clientCreate.fields.audience.label')"
+          :placeholder="$t('master.clientCreate.fields.audience.placeholder')"
+        />
+        <FormField
+          v-model="newClient.email"
+          type="email"
+          :label="$t('master.clientCreate.fields.adminEmail.label')"
+          :placeholder="$t('master.clientCreate.fields.adminEmail.placeholder')"
+        />
+        <FormField
+          v-model="newClient.username"
+          :label="$t('master.clientCreate.fields.adminUsername.label')"
+          :placeholder="$t('master.clientCreate.fields.adminUsername.placeholder')"
+        />
+        <FormField
+          v-model="newClient.password"
+          type="password"
+          :label="$t('master.clientCreate.fields.adminPassword.label')"
+          :placeholder="$t('master.clientCreate.fields.adminPassword.placeholder')"
+        />
+        <div class="flex flex-col gap-3">
+          <FormLabel :text="$t('master.clientCreate.fields.plan.label')" />
+          <FormSelect
             v-model="newClient.plan"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-          >
-            <option value="BASIC">Basic</option>
-            <option value="PRO">Pro</option>
-            <option value="PREMIUM">Premium</option>
-            <option value="CUSTOM">Custom</option>
-          </select>
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Frekvence generování</span>
-          <select
+            :items="[
+              { label: 'Basic', value: 'BASIC' },
+              { label: 'Pro', value: 'PRO' },
+              { label: 'Premium', value: 'PREMIUM' },
+              { label: 'Custom', value: 'CUSTOM' },
+            ]"
+            :showValue="false"
+          />
+        </div>
+        <div class="flex flex-col gap-3">
+          <FormLabel :text="$t('master.clientCreate.fields.generationFrequency.label')" />
+          <FormSelect
             v-model="newClient.generationFrequency"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-          >
-            <option value="NONE">Žádná</option>
-            <option value="DAILY">Denní</option>
-            <option value="WEEKLY">Týdenní</option>
-          </select>
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Limit tokenů</span>
-          <input
-            v-model.number="newClient.tokenLimit"
-            type="number"
-            placeholder="Limit tokenů"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            min="0"
+            :items="[
+              { label: $t('master.clientEdit.fields.generationFrequency.options.NONE'), value: 'NONE' },
+              { label: $t('master.clientEdit.fields.generationFrequency.options.DAILY'), value: 'DAILY' },
+              { label: $t('master.clientEdit.fields.generationFrequency.options.WEEKLY'), value: 'WEEKLY' },
+            ]"
+            :showValue="false"
           />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Focus firmy</span>
-          <input
-            v-model="newClient.focus"
-            placeholder="Focus firmy (např. technologie, marketing)"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-          />
-        </label>
-        <label class="flex flex-col gap-3">
-          <span class="text-sm font-medium uppercase tracking-wide opacity-80">Klíčová slova</span>
-          <textarea
+        </div>
+        <FormField
+          v-model.number="newClient.tokenLimit"
+          type="number"
+          :label="$t('master.clientCreate.fields.tokenLimit.label')"
+          :placeholder="$t('master.clientCreate.fields.tokenLimit.placeholder')"
+          min="0"
+        />
+        <FormField
+          v-model="newClient.focus"
+          :label="$t('master.clientCreate.fields.focus.label')"
+          :placeholder="$t('master.clientCreate.fields.focus.placeholder')"
+        />
+        <div class="flex flex-col gap-3">
+          <FormField
             v-model="keywordsInput"
-            placeholder="Klíčová slova (oddělená čárkou, např. seo, marketing, tech)"
-            class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md resize-y min-h-[100px]"
+            type="textarea"
+            :label="$t('master.clientCreate.fields.keywords.label')"
+            :placeholder="$t('master.clientCreate.fields.keywords.placeholder')"
             @input="updateKeywords"
           />
-          <span class="text-sm text-gray-500 dark:text-gray-400">Slova: {{ newClient.keywords.length }}</span>
-        </label>
+          <span class="text-sm text-gray-500 dark:text-gray-400 -mt-2">{{
+            $t('master.clientCreate.fields.keywords.count', [newClient.keywords.length])
+          }}</span>
+        </div>
         <div
           v-if="newClient.tokenLimit > 0"
           class="flex flex-col gap-6 p-6 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
         >
           <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
             <Icon name="mdi:robot" class="w-5 h-5" />
-            Nastavení AI autora
+            {{ $t('master.clientCreate.aiSettings.title') }}
           </h3>
-          <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Jméno AI</span>
-            <input
-              v-model="newClient.aiUser.name"
-              placeholder="Zadejte zde..."
-              class="p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm"
-            />
-          </label>
-          <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Avatar AI</span>
+          <FormField
+            v-model="newClient.aiUser.name"
+            :label="$t('master.clientCreate.aiSettings.name.label')"
+            :placeholder="$t('master.clientCreate.aiSettings.name.placeholder')"
+            inputClass="bg-white dark:bg-gray-800"
+          />
+          <div class="flex flex-col gap-3">
+            <FormLabel :text="$t('master.clientCreate.aiSettings.avatar.label')" />
             <FileUploader
               :imageUrl="newClient.aiUser.avatarUrl"
               type="user-avatar"
               :isAiUser="true"
               @upload="newClient.aiUser.avatarUrl = $event.url"
             />
-          </label>
-          <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Popis AI</span>
-            <textarea
-              v-model="newClient.aiUser.bio"
-              placeholder="Popis AI autora (max. 300 znaků)"
-              maxlength="300"
-              class="p-3 rounded-xl text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all duration-200 shadow-sm resize-y min-h-[100px]"
-            />
-          </label>
+          </div>
+          <FormField
+            v-model="newClient.aiUser.bio"
+            type="textarea"
+            :label="$t('master.clientCreate.aiSettings.bio.label')"
+            :placeholder="$t('master.clientCreate.aiSettings.bio.placeholder')"
+            :maxLength="300"
+            inputClass="bg-white dark:bg-gray-800"
+          />
         </div>
       </div>
     </template>
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
-        <Button variant="neutral" size="lg" @click="close">Zavřít</Button>
-        <Button size="lg" :disabled="!isFormValid" @click="createClient">Přidat klienta</Button>
+        <Button variant="neutral" size="lg" @click="close">{{ $t('master.clientCreate.actions.close') }}</Button>
+        <Button size="lg" :disabled="!isFormValid" @click="createClient">{{
+          $t('master.clientCreate.actions.submit')
+        }}</Button>
       </div>
     </template>
   </Modal>
@@ -196,6 +173,8 @@
 <script setup lang="ts">
 import Swal from 'sweetalert2'
 const { emitClientCreated } = useClientEvent()
+const { t } = useI18n()
+const toast = useToast()
 
 const open = defineModel<boolean>()
 const keywordsInput = shallowRef<string>('')
@@ -224,7 +203,6 @@ const initClient = () => ({
 })
 
 const newClient = ref(initClient())
-const toast = useToast()
 
 const normalizeString = (value: string) =>
   value
@@ -294,29 +272,29 @@ const createClient = async () => {
       response.user.password && response.user.password !== 'user submitted' ? response.user.password : null
     if (generatedPassword) {
       await Swal.fire({
-        title: 'Klient vytvořen',
+        title: t('master.clientCreate.messages.clientCreatedTitle'),
         html: `
-          <p>Klient byl úspěšně přidán.</p>
-          <p class="mt-2">Vygenerované heslo pro admina:</p>
+          <p>${t('master.clientCreate.messages.clientCreatedHtml1')}</p>
+          <p class="mt-2">${t('master.clientCreate.messages.clientCreatedHtml2')}</p>
           <input id="generated-password" value="${generatedPassword}" readonly class="w-full p-2 mt-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-900" />
           <button id="copy-password" class="mt-3 px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-all transform hover:scale-105">
-            Kopírovat heslo
+            ${t('master.clientCreate.messages.copyPassword')}
           </button>
-          <p class="mt-2 text-sm text-gray-500">Uložte heslo nebo ho pošlete adminovi.</p>
+          <p class="mt-2 text-sm text-gray-500">${t('master.clientCreate.messages.clientCreatedHtml3')}</p>
         `,
         icon: 'success',
-        confirmButtonText: 'OK',
+        confirmButtonText: t('master.clientCreate.messages.ok'),
         confirmButtonColor: '#22c55e',
         didOpen: () => {
           const copyButton = document.getElementById('copy-password')
           copyButton?.addEventListener('click', () => {
             navigator.clipboard.writeText(generatedPassword)
-            toast.success({ message: 'Heslo zkopírováno do schránky' })
+            toast.success({ message: t('master.clientCreate.messages.passwordCopied') })
           })
         },
       })
     } else {
-      toast.success({ message: 'Klient byl úspěšně přidán' })
+      toast.success({ message: t('master.clientCreate.messages.success') })
     }
     emitClientCreated()
     open.value = false
@@ -324,7 +302,7 @@ const createClient = async () => {
     keywordsInput.value = ''
   } catch (e: any) {
     toast.error({
-      message: e.data?.message || 'Nepodařilo se přidat klienta',
+      message: e.data?.message || t('master.clientCreate.messages.createFailed'),
     })
   }
 }
