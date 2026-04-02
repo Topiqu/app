@@ -1,73 +1,112 @@
 <template>
-  <Modal v-model="open" title="Seznam uživatelů">
+  <Modal v-model="open" :title="$t('master.userList.title')">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
 
     <template #content>
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Hledat podle jména nebo emailu..."
-        class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
-      />
+      <div class="flex flex-col gap-4">
+        <FormField v-model="searchQuery" :placeholder="$t('master.userList.searchPlaceholder')" icon="mdi:search" />
 
-      <div v-if="fetching && !users?.length" class="text-gray-600">Načítání...</div>
-      <div v-else-if="error" class="text-red-600">{{ error }}</div>
-      <div v-else class="relative">
-        <div v-for="user in users" :key="user.id" class="border-b py-2 px-1 flex justify-between items-center">
-          <div>
-            <div>
-              <span class="font-medium">Uživatel: </span>
-              {{ user.username ?? 'Není k dispozici' }}
-            </div>
-            <div>
-              <span class="font-medium">Email: </span>
-              {{ user.email ?? 'Není k dispozici' }}
-            </div>
-            <div>
-              <span class="font-medium">Role: </span>
-              {{ user.role ?? 'Není k dispozici' }}
+        <div v-if="fetching && !users?.length" class="flex justify-center p-8">
+          <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div v-else-if="error" class="text-red-500 bg-red-50 p-4 rounded-xl text-center font-medium">{{ error }}</div>
+        <div v-else class="relative">
+          <div class="flex flex-col gap-3">
+            <div
+              v-for="user in users"
+              :key="user.id"
+              class="flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200"
+              :class="{ 'opacity-75 grayscale': user.deletedAt !== null }"
+            >
+              <div class="flex items-center gap-4 min-w-0">
+                <UserPicture :url="user.avatarUrl" :name="user.username" size="lg" />
+                <div class="flex flex-col min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-gray-900 dark:text-white truncate">
+                      {{ user.username ?? $t('master.userList.notAvailable') }}
+                    </span>
+                    <span
+                      class="px-2 py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full"
+                      :class="{
+                        'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300': user.role === 'admin',
+                        'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300':
+                          user.role === 'superadmin',
+                        'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300':
+                          user.role === 'reader' || !user.role,
+                      }"
+                    >
+                      {{ user.role ?? $t('master.userList.notAvailable') }}
+                    </span>
+                  </div>
+                  <span class="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">
+                    <Icon name="mdi:email-outline" class="w-4 h-4 inline-block mr-1 align-text-bottom" />
+                    {{ user.email ?? $t('master.userList.notAvailable') }}
+                  </span>
+
+                  <div class="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <span
+                      v-if="user.clientSite?.name"
+                      class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md"
+                    >
+                      <Icon name="mdi:domain" class="w-3.5 h-3.5" />
+                      {{ user.clientSite.name }}
+                    </span>
+                    <span
+                      class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md"
+                      :title="$t('master.userList.labels.comments')"
+                    >
+                      <Icon name="mdi:comment-outline" class="w-3.5 h-3.5" />
+                      {{ user._count?.comments || 0 }}
+                    </span>
+                  </div>
+                  <p v-if="user.bio" class="text-xs text-gray-400 mt-2 line-clamp-1 italic">"{{ user.bio }}"</p>
+                </div>
+              </div>
+
+              <div v-if="session?.user?.role === 'superadmin'" class="flex gap-2 shrink-0 ml-4">
+                <Button
+                  v-if="user.deletedAt === null"
+                  variant="danger"
+                  icon="mdi:lock"
+                  class="rounded-full !p-2"
+                  @click="del(user.id)"
+                />
+                <Button
+                  v-else
+                  variant="warning"
+                  icon="mdi:lock-open"
+                  class="rounded-full !p-2"
+                  @click="restore(user.id)"
+                />
+              </div>
             </div>
           </div>
-          <div v-if="session?.user?.role === 'superadmin'" class="flex gap-2">
-            <button
-              v-if="user.deletedAt === null"
-              class="w-10 h-10 bg-gradient-to-r from-red-200 to-red-300 rounded-full hover:from-red-300 hover:to-red-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
-              @click="del(user.id)"
-            >
-              <Icon name="mdi:lock" class="w-5 h-5 text-black" />
-            </button>
-            <button
-              v-else
-              class="w-10 h-10 bg-gradient-to-r from-yellow-200 to-yellow-300 rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
-              @click="restore(user.id)"
-            >
-              <Icon name="mdi:lock-open" class="w-5 h-5 text-black" />
-            </button>
+          <div ref="sentinel" class="h-4"></div>
+          <div v-if="!users?.length" class="text-center text-gray-500 py-8">
+            <Icon name="mdi:account-off-outline" class="w-12 h-12 mb-3 text-gray-300 mx-auto" />
+            <p>{{ $t('master.userList.noUsers') }}</p>
+          </div>
+          <div v-if="fetching && users.length" class="flex justify-center py-4">
+            <div class="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
           </div>
         </div>
-        <div ref="sentinel" class="h-4"></div>
-        <div v-if="!users?.length" class="text-gray-600 px-2 py-4">Žádní uživatelé nenalezeni.</div>
-        <div v-if="fetching && users.length" class="text-center text-gray-600 py-4">Načítání dalších...</div>
       </div>
     </template>
 
     <template #footer="{ close }">
-      <button
-        class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm"
-        @click="close"
-      >
-        Zavřít
-      </button>
+      <Button variant="neutral" size="lg" @click="close">{{ $t('master.userList.actions.close') }}</Button>
     </template>
   </Modal>
 </template>
+
 <script setup lang="ts">
 import Swal from 'sweetalert2'
 
 const open = defineModel<boolean>()
 const toast = useToast()
+const { t } = useI18n()
 const searchQuery = shallowRef<string>('')
 const sentinel = useTemplateRef('sentinel')
 const { data: session } = useAuth()
@@ -99,7 +138,7 @@ watch(
   { immediate: true },
 )
 
-watch(error, (e) => e && toast.error({ message: e.data?.message || 'Načítání uživatelů selhalo' }))
+watch(error, (e) => e && toast.error({ message: e.data?.message || t('master.userList.messages.fetchFailed') }))
 
 watch(
   searchQuery,
@@ -123,12 +162,12 @@ useInfiniteScroll(
 const del = async (id: string | undefined) => {
   if (!id) return
   const r = await Swal.fire({
-    title: 'Zablokovat uživatele?',
-    text: 'Tímto zablokujete uživatele.',
+    title: t('master.userList.blockDialog.title'),
+    text: t('master.userList.blockDialog.text'),
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Ano, zablokovat',
-    cancelButtonText: 'Ne',
+    confirmButtonText: t('master.userList.blockDialog.confirm'),
+    cancelButtonText: t('master.userList.blockDialog.cancel'),
     background: '#fff',
     confirmButtonColor: '#ef4444',
     cancelButtonColor: '#6b7280',
@@ -136,10 +175,10 @@ const del = async (id: string | undefined) => {
   if (!r.isConfirmed) return
   try {
     await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
-    toast.success({ message: 'Uživatel zablokován' })
+    toast.success({ message: t('master.userList.messages.blocked') })
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Zablokování selhalo' })
+    toast.error({ message: e.data?.message || t('master.userList.messages.blockFailed') })
   }
 }
 
@@ -147,10 +186,10 @@ const restore = async (id: string | undefined) => {
   if (!id) return
   try {
     await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'PATCH', body: { deletedAt: null } })
-    toast.success({ message: 'Uživatel obnoven' })
+    toast.success({ message: t('master.userList.messages.restored') })
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Obnovení selhalo' })
+    toast.error({ message: e.data?.message || t('master.userList.messages.restoreFailed') })
   }
 }
 </script>
