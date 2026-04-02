@@ -169,12 +169,11 @@
     <hr class="border-gray-200 dark:border-gray-800 my-8" />
 
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-gray-100 dark:bg-gray-900 rounded-xl py-8 px-6">
+      <div v-if="latestPoll" class="bg-gray-100 dark:bg-gray-900 rounded-xl py-8 px-6">
         <h2 class="text-3xl font-bold text-center mb-6">{{ $t('articles.poll.hpTitle') }}</h2>
-        <ArticlePoll v-if="latestPoll" :poll="latestPoll" :articleId="latestPoll.articleId" />
-        <p v-else class="text-center text-lg text-gray">{{ $t('articles.poll.noPolls') }}</p>
+        <ArticlePoll :poll="latestPoll" :articleId="latestPoll.articleId" />
       </div>
-      <aside class="space-y-8">
+      <aside class="space-y-8" :class="{ 'lg:col-span-2': !latestPoll }">
         <div>
           <h3 class="text-xl font-bold mb-4">{{ $t('stats.topArticle.pluralTitle') }}</h3>
           <template v-if="topArticles.length">

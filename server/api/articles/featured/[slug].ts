@@ -13,12 +13,16 @@ export default defineEventHandler(async (event) => {
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   const monthAgo = new Date()
-  monthAgo.setDate(monthAgo.getDate() - 30)
+  monthAgo.setDate(monthAgo.getDate() - 360)
+
+  const totalArticles = await db.article.count({
+    where: { clientSiteId: clientSite.id },
+  })
 
   const articles = await db.article.findMany({
     where: {
       clientSiteId: clientSite.id,
-      createdAt: { gte: monthAgo },
+      ...(totalArticles < 150 ? {} : { createdAt: { gte: monthAgo } }),
     },
     include: {
       tags: { include: { tag: true } },
