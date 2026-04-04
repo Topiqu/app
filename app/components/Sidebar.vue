@@ -15,10 +15,12 @@
       "
     >
       <div v-if="auth?.user?.role === 'admin'" class="flex flex-col gap-4">
-        <Button icon="mdi:home" variant="neutral" @click="router.push('/admin')" />
-        <LazyArticleModal v-slot="{ open }" hydrateOnInteraction>
-          <Button icon="mdi:pencil" variant="neutral" @click="open.value = true" />
-        </LazyArticleModal>
+        <Button icon="mdi:home" variant="neutral" @click="router.push(localePath('/admin'))" />
+        <Button
+          icon="mdi:pencil"
+          variant="neutral"
+          @click="router.push(localePath({ name: 'admin-editor-id', params: { id: 'new' } }))"
+        />
         <LazyTagsCreate v-slot="{ open }" hydrateOnInteraction>
           <Button icon="mdi:tag-outline" variant="neutral" @click="open.value = true" />
         </LazyTagsCreate>
@@ -38,7 +40,7 @@
         </LazyClientPreferences>
       </div>
       <div v-if="auth?.user?.role === 'superadmin'" class="flex flex-col gap-4">
-        <Button icon="mdi:home" variant="neutral" @click="router.push('/master')" />
+        <Button icon="mdi:home" variant="neutral" @click="router.push(localePath('/master'))" />
         <LazyClientCreate v-slot="{ open }" hydrateOnInteraction>
           <Button icon="mdi:account-plus" variant="neutral" @click="open.value = true" />
         </LazyClientCreate>
@@ -72,6 +74,7 @@ const isOpen = defineModel<boolean>('isOpen')
 const { data: auth } = useAuth()
 
 const router = useRouter()
+const localePath = useLocalePath()
 
 const theme = useThemeStore()
 

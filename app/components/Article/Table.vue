@@ -114,12 +114,13 @@
                 variant="success"
                 @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
               />
+              <Button
+                :icon="'mdi:pencil'"
+                :disabled="row.original.status === 'archived'"
+                @click="router.push(localePath({ name: 'admin-editor-id', params: { id: row.original.slug } }))"
+              />
               <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
-                <Button
-                  :icon="'mdi:pencil'"
-                  :disabled="row.original.status === 'archived'"
-                  @click="open.value = true"
-                />
+                <Button icon="mdi:flash" :disabled="row.original.status === 'archived'" @click="open.value = true" />
               </LazyArticleModal>
               <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                 <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
@@ -227,10 +228,15 @@
                   variant="success"
                   @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
                 />
+                <Button
+                  :icon="'mdi:pencil'"
+                  :disabled="row.original.status === 'archived'"
+                  @click="router.push(localePath({ name: 'admin-editor-id', params: { id: row.original.slug } }))"
+                />
                 <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
                   <Button
                     v-tippy="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''"
-                    :icon="'mdi:pencil'"
+                    icon="mdi:flash"
                     :disabled="row.original.status === 'archived'"
                     @click="open.value = true"
                   />

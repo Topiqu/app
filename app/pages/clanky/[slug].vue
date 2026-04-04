@@ -46,8 +46,8 @@
                 ? 'border-red-200 bg-red-50 text-red-500 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400'
                 : 'border-gray-200 bg-transparent text-gray-400 hover:border-red-200 hover:bg-red-50 hover:text-red-500 dark:border-gray-700 dark:text-gray-500 dark:hover:border-red-900/50 dark:hover:bg-red-900/10 dark:hover:text-red-400',
             ]"
-            @click="toggleLike"
             :title="$t('common.actions.like')"
+            @click="toggleLike"
           >
             <Icon
               :name="data.likedByUser ? 'mdi:heart' : 'mdi:heart-outline'"
@@ -367,6 +367,7 @@ const route = useRoute(),
   toast = useToast(),
   clipboard = useClipboard(),
   localePath = useLocalePath()
+
 let fpPromise: Promise<any> | undefined
 const reqUrl = useRequestURL()
 
