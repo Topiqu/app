@@ -211,9 +211,14 @@ import 'tippy.js/dist/tippy.css'
 
 import TiptapImage from '~/components/File/TiptapImage.vue'
 
+// eslint-disable-next-line
+import { Indent } from '../../extensions/indent'
+// eslint-disable-next-line
 import Poll from '../../extensions/poll'
-import CommandList from './CommandList.vue'
+// eslint-disable-next-line
 import SlashCommand from '../../extensions/slashCommand'
+// eslint-disable-next-line
+import CommandList from './CommandList.vue'
 
 const config = useRuntimeConfig()
 
@@ -453,6 +458,7 @@ const editor = useEditor({
       ccLanguage: 'cs',
     }),
     Poll,
+    Indent,
     TextStyle,
     Color.configure({ types: ['textStyle'] }),
     FontFamily.configure({ types: ['textStyle'] }),
