@@ -1,15 +1,17 @@
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
-  if (!slug) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
+
+  if (!slug) {
+    throw createError({ statusCode: 400, message: 'Neplatný požadavek' })
+  }
 
   const clientSite = await prisma.clientSite.findFirst({
-    where: { name: slug },
+    where: process.env.NODE_ENV === 'production' ? { subdomain: slug } : { name: slug },
   })
-  // const clientSite = await prisma.clientSite.findFirst({
-  //   where: { subdomain: slug },
-  // }) // FOR PRODUCTION
 
-  if (!clientSite) throw createError({ statusCode: 404, message: 'Blog nenalezen' })
+  if (!clientSite) {
+    throw createError({ statusCode: 404, message: 'Blog nenalezen' })
+  }
 
   return clientSite
 })
