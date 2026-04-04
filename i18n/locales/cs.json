@@ -8,6 +8,7 @@
     "close": "Zavřít",
     "warning": "Upozornění",
     "unknown": "Neznámo",
+    "settings": "Nastavení článku",
     "remove": "Odebrat",
     "continue": "Pokračovat",
     "unsavedChanges": "Neuložené změny!",
@@ -207,7 +208,10 @@
       "content": "Obsah",
       "image": "Obrázek",
       "shortcode": "Shortcode",
-      "releaseDate": "Datum vydání"
+      "releaseDate": "Datum vydání",
+      "series": "Série",
+      "tags": "Štítky",
+      "aiGeneration": "AI Generování"
     },
     "messages": {
       "deleteConfirmTitle": "Opravdu chcete smazat?",

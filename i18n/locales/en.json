@@ -8,6 +8,7 @@
     "close": "Close",
     "warning": "Warning",
     "unknown": "Unknown",
+    "settings": "Article Settings",
     "continue": "Continue",
     "unsavedChanges": "Unsaved changes!",
     "showPassword": "Show password",
@@ -206,7 +207,10 @@
       "shortcode": "Shortcode",
       "releaseDate": "Release Date",
       "orDrag": "or drag and drop",
-      "pasteImage": "Paste image"
+      "pasteImage": "Paste image",
+      "series": "Series",
+      "tags": "Tags",
+      "aiGeneration": "AI Generation"
     },
     "messages": {
       "deleteConfirmTitle": "Are you sure you want to delete?",
@@ -371,7 +375,7 @@
     "showList": "Show full series",
     "hideList": "Hide series list"
   },
- "landing": {
+  "landing": {
     "hero": {
       "badge": "Content Marketing 2.0",
       "title_prefix": "Your Company Blog",
