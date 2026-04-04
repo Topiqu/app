@@ -15,7 +15,7 @@ export const Indent = Extension.create({
   addOptions() {
     return {
       types: ['paragraph', 'heading'],
-      indentSize: 2,
+      indentSize: 2, // rem
       maxLevel: 8,
     }
   },
@@ -29,7 +29,8 @@ export const Indent = Extension.create({
             default: 0,
             parseHTML: (element) => {
               const indent = element.getAttribute('data-indent')
-              return indent ? parseInt(indent, 10) : 0
+              const parsedIndent = indent ? parseInt(indent, 10) : 0
+              return Math.min(Math.max(parsedIndent, 0), this.options.maxLevel)
             },
             renderHTML: (attributes) => {
               if (!attributes.indent) {
@@ -47,72 +48,48 @@ export const Indent = Extension.create({
   },
 
   addCommands() {
+    const updateIndent =
+      (direction: 1 | -1, options: any) =>
+      ({ tr, state, dispatch }: any) => {
+        const { selection } = state
+        let indentUpdated = false
+
+        state.doc.nodesBetween(selection.from, selection.to, (node: any, pos: number) => {
+          if (options.types.includes(node.type.name)) {
+            const currentIndent = node.attrs.indent || 0
+            const newIndent = currentIndent + direction
+
+            if (newIndent >= 0 && newIndent <= options.maxLevel) {
+              if (dispatch) {
+                tr.setNodeMarkup(pos, undefined, {
+                  ...node.attrs,
+                  indent: newIndent,
+                })
+              }
+              indentUpdated = true
+            }
+          }
+        })
+
+        if (indentUpdated && dispatch) {
+          dispatch(tr)
+          return true
+        }
+
+        return false
+      }
+
     return {
-      indent:
-        () =>
-        ({ tr, state, dispatch }) => {
-          const { selection } = state
-          let indentUpdated = false
-
-          state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
-            if (this.options.types.includes(node.type.name)) {
-              const currentIndent = node.attrs.indent || 0
-              if (currentIndent < this.options.maxLevel) {
-                if (dispatch) {
-                  tr.setNodeMarkup(pos, undefined, {
-                    ...node.attrs,
-                    indent: currentIndent + 1,
-                  })
-                }
-                indentUpdated = true
-              }
-            }
-          })
-
-          if (indentUpdated && dispatch) {
-            dispatch(tr)
-            return true
-          }
-
-          return false
-        },
-
-      outdent:
-        () =>
-        ({ tr, state, dispatch }) => {
-          const { selection } = state
-          let indentUpdated = false
-
-          state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
-            if (this.options.types.includes(node.type.name)) {
-              const currentIndent = node.attrs.indent || 0
-              if (currentIndent > 0) {
-                if (dispatch) {
-                  tr.setNodeMarkup(pos, undefined, {
-                    ...node.attrs,
-                    indent: currentIndent - 1,
-                  })
-                }
-                indentUpdated = true
-              }
-            }
-          })
-
-          if (indentUpdated && dispatch) {
-            dispatch(tr)
-            return true
-          }
-
-          return false
-        },
+      indent: () => updateIndent(1, this.options),
+      outdent: () => updateIndent(-1, this.options),
     }
   },
 
   addKeyboardShortcuts() {
     return {
       Tab: () => {
-        if (this.editor.isActive('bulletList') || this.editor.isActive('orderedList')) {
-          return false
+        if (this.editor.isActive('listItem')) {
+          return this.editor.commands.sinkListItem('listItem')
         }
 
         const executed = this.editor.commands.indent()
@@ -124,8 +101,8 @@ export const Indent = Extension.create({
         return true
       },
       'Shift-Tab': () => {
-        if (this.editor.isActive('bulletList') || this.editor.isActive('orderedList')) {
-          return false
+        if (this.editor.isActive('listItem')) {
+          return this.editor.commands.liftListItem('listItem')
         }
         return this.editor.commands.outdent()
       },
