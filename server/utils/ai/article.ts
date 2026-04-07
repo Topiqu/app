@@ -8,6 +8,8 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
     keywords,
     audience,
     tags,
+    aiToneOfVoice,
+    aiControversyLevel,
   } = await prisma.clientSite.findFirstOrThrow({
     select: {
       tokenRemaining: true,
@@ -16,16 +18,37 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
       audience: true,
       tags: { select: { id: true, name: true } },
       plan: true,
+      aiToneOfVoice: true,
+      aiControversyLevel: true,
     },
     where: { id: clientSiteId },
   })
   if (!maxOutputTokens || maxOutputTokens < 0)
     throw createError({ statusCode: 403, statusMessage: 'Insufficient tokens' })
 
+  const getControversyPrompt = (level: string | null) => {
+    switch (level) {
+      case 'NONE':
+        return 'Avoid any controversial or polarizing topics completely. Keep the tone completely objective, safe, and universally acceptable.'
+      case 'LOW':
+        return 'You can lightly touch on thought-provoking topics, but maintain a balanced and highly neutral stance. Do not provoke or take extreme sides.'
+      case 'MEDIUM':
+        return 'Engage in healthy debate. Feel free to present strong arguments for different sides of a topic and do not shy away from expressing a well-reasoned, potentially polarizing viewpoint.'
+      case 'HIGH':
+        return "You are a highly controversial author, who isn't afraid of indulging in socially forbidden topics, argumenting for them meticulously in a passively-aggressive, yet believable manner. Challenge mainstream narratives aggressively."
+      default:
+        return ''
+    }
+  }
+
+  const controversyPrompt = getControversyPrompt(aiControversyLevel)
+
   const system = `
       You are a professional content writer focusing on ${focus || 'common topics'}.
       Write a detailed, well-structured article based on the user prompt aiming on ${audience || 'wide audience'}.
       Use appropriate headings, subheadings, and formatting.
+      ${aiToneOfVoice ? `Write in the following tone of voice: ${aiToneOfVoice}.` : ''}
+      ${controversyPrompt}
       Respond ONLY in valid JSON format with the structure:
       {
         "title": "catchy title 5-15 words",

@@ -1,6 +1,7 @@
 import type { SocialPlatform } from '@prisma/client'
 
 import { randomBytes } from 'crypto'
+import { models } from '~~/shared/zod'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -31,32 +32,32 @@ export default defineEventHandler(async (event) => {
     if (conflict) throw createError({ statusCode: 409, message: t('common.errors.subdomainExists')! })
   }
 
-  const allowedFields = [
-    'name',
-    'subdomain',
-    'plan',
-    'generationFrequency',
-    'tokenLimit',
-    'keywords',
-    'audience',
-    'language',
-    'theme',
-    'focus',
-    'logoUrl',
-    'autoRelease',
-    'gtagId',
-    'gamNetworkCode',
-    'allowAds',
-    'allowGtag',
-  ]
+  const UpdateSchema = models.ClientSiteScalarSchema.pick({
+    name: true,
+    subdomain: true,
+    plan: true,
+    generationFrequency: true,
+    tokenLimit: true,
+    keywords: true,
+    audience: true,
+    language: true,
+    theme: true,
+    focus: true,
+    logoUrl: true,
+    autoRelease: true,
+    gtagId: true,
+    gamNetworkCode: true,
+    allowAds: true,
+    allowGtag: true,
+    aiToneOfVoice: true,
+    aiControversyLevel: true,
+  }).partial()
 
-  const data: any = allowedFields.reduce(
-    (acc, field) => {
-      if (body[field] !== undefined) acc[field] = body[field]
-      return acc
-    },
-    {} as Record<string, any>,
-  )
+  const parsed = UpdateSchema.safeParse(body)
+  if (!parsed.success) {
+    throw createError({ statusCode: 400, message: parsed.error.message })
+  }
+  const data: any = { ...parsed.data }
 
   if (body.tokenLimit !== undefined) data.tokenRemaining = body.tokenLimit
   if (body.description !== undefined) data.description = body.description ? sanitizeHtml(body.description) : null
