@@ -1,70 +1,14 @@
 <template>
   <div v-if="data" class="min-h-screen p-8 md:p-12 relative">
-    <div
-      class="fixed top-0 left-0 right-0 w-full z-40 transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) border-b border-gray-200/50 dark:border-gray-800/50"
-      :class="[
-        isSticky ? 'translate-y-0 opacity-100 shadow-sm' : '-translate-y-full opacity-0',
-        'bg-white/95 backdrop-blur-md dark:bg-neutral-900/95',
-      ]"
-    >
-      <div class="max-w-[1000px] mx-auto h-16 px-4 grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
-        <div class="flex justify-start shrink-0">
-          <NuxtLink
-            to="/admin"
-            class="group inline-flex items-center gap-2 px-2 py-1.5 -ml-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-all"
-            :aria-label="$t('common.actions.backToList')"
-          >
-            <Icon name="mdi:arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1" />
-            <span class="hidden sm:inline text-sm font-semibold">{{ $t('common.actions.backToList') }}</span>
-          </NuxtLink>
-        </div>
-
-        <div class="flex items-center justify-center min-w-0 w-full gap-3">
-          <div
-            v-if="data.series"
-            class="flex items-center shrink-0 max-w-[40%] sm:max-w-none gap-1.5 px-2 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50"
-          >
-            <span class="text-[10px] font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300 truncate">
-              {{ data.series.name }}
-            </span>
-            <span class="w-px h-2.5 bg-blue-200 dark:bg-blue-700 shrink-0"></span>
-            <span class="text-[10px] font-bold text-blue-600 dark:text-blue-300 shrink-0">
-              {{ data.series.current }}/{{ data.series.total }}
-            </span>
-          </div>
-
-          <h1 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate leading-tight">
-            {{ data.title }}
-          </h1>
-        </div>
-
-        <div class="flex justify-end items-center shrink-0">
-          <button
-            class="group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition-all duration-300 ease-out"
-            :class="[
-              data.likedByUser
-                ? 'border-red-200 bg-red-50 text-red-500 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400'
-                : 'border-gray-200 bg-transparent text-gray-400 hover:border-red-200 hover:bg-red-50 hover:text-red-500 dark:border-gray-700 dark:text-gray-500 dark:hover:border-red-900/50 dark:hover:bg-red-900/10 dark:hover:text-red-400',
-            ]"
-            :title="$t('common.actions.like')"
-            @click="toggleLike"
-          >
-            <Icon
-              :name="data.likedByUser ? 'mdi:heart' : 'mdi:heart-outline'"
-              class="w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-90"
-            />
-          </button>
-        </div>
-      </div>
-
-      <div class="absolute bottom-0 left-0 w-full h-[3px] bg-gray-100 dark:bg-gray-800 overflow-hidden">
-        <div
-          class="h-full bg-gradient-to-r transition-all duration-150 ease-linear shadow-sm"
-          :class="progressBarColor"
-          :style="{ width: `${progress}%` }"
-        ></div>
-      </div>
-    </div>
+    <ArticleHeaderSticky
+      :isSticky="isSticky"
+      :progress="progress"
+      :title="data.title"
+      :likedByUser="data.likedByUser"
+      :series="data.series && data.series.name ? (data.series as any) : undefined"
+      :clientTheme="clientSite?.theme"
+      @like="toggleLike"
+    />
 
     <div ref="container" class="max-w-[1000px] mx-auto flex flex-col gap-8 px-4 sm:px-0 pt-4">
       <nav v-if="breadcrumbs?.length" aria-label="Breadcrumb" class="w-full">
@@ -94,77 +38,16 @@
         {{ $t('common.actions.backToList') }}
       </NuxtLink>
 
-      <div v-if="data.series" class="flex items-center gap-3">
-        <span
-          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800 uppercase"
-        >
-          <Icon name="mdi:bookshelf" class="w-3.5 h-3.5" />
-          {{ $t('series.label', 'Série') }}
-        </span>
-        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-          <span class="font-bold text-gray-900 dark:text-white">{{ data.series.name }}</span>
-          <span class="mx-2">•</span>
-          {{ $t('series.part', 'Část') }} {{ data.series.current }} / {{ data.series.total }}
-        </span>
-      </div>
-
-      <h1
-        class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-tight mb-3"
-      >
-        {{ data.title }}
-      </h1>
-
-      <div class="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-        <UserPicture :url="data.user?.avatarUrl" :size="'md'" :name="data.user.username" />
-        <div class="flex flex-col">
-          <div class="flex items-center gap-2">
-            <NuxtLink
-              :to="localePath({ name: 'autor-name', params: { name: data.user.username } })"
-              class="font-medium text-[17px] text-blue-600 hover:text-blue-800"
-            >
-              {{ data.user.username }}
-            </NuxtLink>
-            <span class="italic text-gray-400 text-sm">• {{ $t('articles.articleCard.author') }}</span>
-          </div>
-          <div class="flex items-center gap-2 mt-1">
-            <span
-              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
-            >
-              <Icon name="mdi:account-group" class="w-3.5 h-3.5" />{{ data.followerCount ?? 0 }}
-              {{ $t('profile.followers') }}
-            </span>
-            <button
-              v-if="session?.user && session.user.id !== data.user.id"
-              class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium text-gray-700 bg-white border-gray-200 hover:bg-gray-100 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
-              @click="toggleFollow"
-            >
-              <Icon
-                :name="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
-                class="w-3.5 h-3.5"
-                :class="isFollowing ? 'text-green-500' : 'text-gray-500'"
-              />
-              {{ isFollowing ? $t('profile.unfollow') : $t('profile.follow') }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <p
-        v-if="data.excerpt"
-        class="text-lg md:text-xl italic text-gray-700 dark:text-gray-200 leading-relaxed border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4 mb-3"
-      >
-        {{ data.excerpt }}
-      </p>
-
-      <NuxtImg
-        v-if="data.imageUrl"
-        :src="data.imageUrl"
-        :alt="$t('articles.articleCard.imageAlt')"
-        format="webp"
-        quality="85"
-        class="w-full max-h-[70vh] rounded-2xl object-contain bg-neutral-100 dark:bg-neutral-900 border border-gray-100/20"
-        loading="lazy"
-        placeholder
+      <ArticleHeaderHero
+        :title="data.title"
+        :author="data.user"
+        :followerCount="data.followerCount || 0"
+        :isFollowing="isFollowing"
+        :showFollowButton="!!session?.user && session.user.id !== data.user.id"
+        :excerpt="data.excerpt"
+        :imageUrl="data.imageUrl"
+        :series="data.series && data.series.name ? (data.series as any) : undefined"
+        @follow="toggleFollow"
       />
 
       <div v-if="hasTags" class="mt-4 flex flex-wrap gap-2.5">
@@ -178,71 +61,13 @@
         </NuxtLink>
       </div>
 
-      <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 mt-4">
-        <div class="flex flex-wrap items-center gap-4">
-          <template v-if="session?.user.role === 'admin' && session.user.id === data.user.id">
-            <div class="flex items-center gap-2">
-              <span class="font-medium">{{ $t('articles.columns.status') }}</span>
-              <ArticleStatusCell :onUpdate="debouncedSetStatus" :row="{ original: data }" />
-              <span v-if="data.status === 'published'" class="w-2 h-2 bg-green-500 rounded-full animate-pulse-slow" />
-            </div>
-            <span class="text-gray-300">|</span>
-            <div class="flex items-center gap-2">
-              <span>{{ $t('articles.comments.title') }}</span>
-              <button
-                role="switch"
-                :class="[
-                  'relative inline-flex h-5 w-10 items-center rounded-full',
-                  data.allowedComments ? 'bg-blue-600' : 'bg-gray-500 dark:bg-gray-600',
-                ]"
-                @click="((data.allowedComments = !data.allowedComments), toggleComments())"
-              >
-                <span
-                  :class="[
-                    'inline-block h-4 w-4 rounded-full bg-white',
-                    data.allowedComments ? 'translate-x-5' : 'translate-x-1',
-                  ]"
-                />
-              </button>
-            </div>
-            <span class="text-gray-300">|</span>
-          </template>
-          <div class="flex items-center gap-2">
-            <Icon name="mdi:calendar" class="w-4 h-4" />{{ formatDate(data.createdAt) }}
-          </div>
-          <span class="text-gray-300">|</span>
-          <div class="flex items-center gap-2">
-            <Icon name="mdi:clock-outline" class="w-4 h-4" />{{ $t('articles.readingTime', [data.readingTime]) }}
-          </div>
-        </div>
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-1">
-            <span>{{ formatNumber(data.views) }}x {{ $t('stats.totalViews.title') }}</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <Icon name="mdi:heart" class="w-4 h-4" :class="data.likedByUser ? 'text-red-500' : 'text-gray-500'" />
-            <span>{{ formatNumber(data.likes) }}</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <Icon name="mdi:share-variant" class="w-4 h-4 text-gray-500" /><span>{{ formatNumber(data.shared) }}</span>
-          </div>
-          <LazyArticleModal
-            v-if="session?.user.role === 'admin' && session.user.id === data.user.id"
-            v-slot="{ open }"
-            :article="data"
-            hydrateOnInteraction
-            @saved="refresh"
-          >
-            <button
-              class="flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400"
-              :aria-label="$t('common.actions.edit')"
-              @click="open.value = true"
-            >
-              <Icon name="mdi:pencil" class="w-5 h-5" />
-            </button>
-          </LazyArticleModal>
-        </div>
-      </div>
+      <ArticleActionsBar
+        :article="data"
+        :isAdmin="session?.user?.role === 'admin' && session.user.id === data.user.id"
+        :onStatusUpdate="debouncedSetStatus"
+        @toggleComments="toggleComments"
+        @refresh="refresh"
+      />
 
       <div class="flex justify-end gap-4 mt-10">
         <button
@@ -255,7 +80,7 @@
         <button
           :aria-label="$t('common.actions.copyLink')"
           class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:hover:border-blue-500"
-          @click="copyLink"
+          @click="copyLink(fullUrl)"
         >
           <Icon name="mdi:link-variant" class="w-5 h-5" />
         </button>
@@ -284,22 +109,25 @@
         <ArticleParsed :content="data.content" :articleId="data.id" />
       </div>
 
-      <ArticleSeries v-if="data.series" :series="data.series" />
+      <ArticleSeries v-if="data.series && data.series.name" :series="data.series as any" />
       <div
         class="mt-8 flex flex-col items-start justify-between gap-4 border-t border-gray-100 pt-8 sm:flex-row sm:items-center dark:border-gray-800"
       >
         <div class="flex shrink-0 items-center">
           <ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-2 text-gray-400 dark:text-gray-500" />
         </div>
-        <ArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
+        <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
       </div>
-      <VueEasyLightbox
+
+      <LazyArticleLightbox
+        v-if="lightboxVisible"
         :visible="lightboxVisible"
-        :imgs="images"
+        :images="images"
         :index="currentImageIndex"
         @hide="lightboxVisible = false"
       />
-      <ArticleRelated :articles="relatedArticles!" :pending />
+      <LazyArticleRelated :articles="relatedArticles!" :pending="pending" />
+
       <div v-if="data.sources?.length" class="w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
         <div
           class="flex items-center justify-between cursor-pointer text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400"
@@ -329,7 +157,12 @@
           </li>
         </ul>
       </div>
-      <CommentSection :articleId="data.id" :commCount="data.commentCount || 0" :allowComments="data.allowedComments" />
+
+      <LazyCommentSection
+        :articleId="data.id"
+        :commCount="data.commentCount || 0"
+        :allowComments="data.allowedComments"
+      />
       <ArticleTOC :content="data.content" />
     </div>
   </div>
@@ -337,43 +170,16 @@
 </template>
 
 <script setup lang="ts">
-import type { ArticleStatus, User } from '@zenstackhq/runtime/models'
+import type { User } from '@zenstackhq/runtime/models'
 
-import { formatDate } from '~~/shared/utils'
-import VueEasyLightbox from 'vue-easy-lightbox'
-import { formatNumber } from '~~/shared/utils/number'
-import FingerprintJS from '@fingerprintjs/fingerprintjs'
-
-import { themes } from '~/composables/theme'
-
-type Image = { src: string; alt?: string }
-const items = useBreadcrumbItems()
-const breadcrumbs = computed(() => {
-  return items.value.map((item, index) => {
-    if (index === 0) {
-      return { ...item, label: $t('common.actions.home') }
-    }
-
-    if (index === items.value.length - 1) {
-      return { ...item, label: data.value?.title }
-    }
-
-    if (item.label === 'Clanky') return { ...item, label: $t('articles.title'), to: '/' }
-
-    return item
-  })
-})
-const route = useRoute(),
-  toast = useToast(),
-  clipboard = useClipboard(),
-  localePath = useLocalePath()
-
-let fpPromise: Promise<any> | undefined
+const route = useRoute()
+const toast = useToast()
+const localePath = useLocalePath()
 const reqUrl = useRequestURL()
 
-const { data: session } = useAuth(),
-  clientSite = await useClientSite()
-const slug = computed(() => route.params.slug)
+const { data: session } = useAuth()
+const clientSite = await useClientSite()
+const slug = computed(() => route.params.slug as string)
 
 const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`, {
   query: { clientSiteId: clientSite?.id },
@@ -383,118 +189,25 @@ const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/
 
 const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/${slug.value}/related`, {
   lazy: true,
-  query: {
-    limit: 3,
-    clientSiteId: clientSite?.id,
-  },
+  query: { limit: 3, clientSiteId: clientSite?.id },
 })
+
 const canonicalUrl = computed(() => {
   if (!data.value?.slug) return ''
-  const path = localePath({ name: 'clanky-slug', params: { slug: data.value.slug } })
-  return `${reqUrl.protocol}//${reqUrl.host}${path}`
+  return `${reqUrl.protocol}//${reqUrl.host}${localePath({ name: 'clanky-slug', params: { slug: data.value.slug } })}`
 })
 
-const articleDescription = computed(
-  () => data.value?.excerpt?.slice(0, 160) || data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) || '',
-)
-const hasSeoPlan = computed(() => clientSite?.plan !== 'BASIC')
+// Extract SEO
+useArticleSeo(data, clientSite, canonicalUrl)
 
-useSeoMeta({
-  title: () => data.value?.title || 'Article',
-  description: () => (hasSeoPlan.value ? articleDescription.value : undefined),
-  ogTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
-  ogDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
-  ogUrl: () => (hasSeoPlan.value ? canonicalUrl.value : undefined),
-  ogType: () => (hasSeoPlan.value ? 'article' : undefined),
-  ogImageWidth: 1200,
-  ogImageHeight: 600,
-  twitterImageWidth: 1200,
-  twitterImageHeight: 600,
-  twitterCard: 'summary_large_image',
-  twitterTitle: () => (hasSeoPlan.value ? data.value?.title || 'Article' : undefined),
-  twitterDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
-})
-const ogDescription = computed(() => {
-  const text = articleDescription.value || ''
-  return (
-    text
-      .slice(0, 100)
-      .replace(/[\n\r]+/g, ' ')
-      .trim() + '...'
-  )
-})
-if (data.value) {
-  if (hasSeoPlan.value) {
-    defineOgImageComponent('TopiquArticle', {
-      title: data.value.title,
-      description: ogDescription.value,
-      siteName: clientSite?.name || 'Blog',
-      siteLogo: clientSite?.logoUrl || undefined,
-      authorName: data.value.user?.username,
-      authorImage: data.value.user?.avatarUrl || undefined,
-      readingTime: $t('articles.readingTime', [data.value.readingTime]),
-      backgroundImage: data.value.imageUrl || undefined,
-      isPremium: true,
-    })
-  } else {
-    defineOgImageComponent('TopiquArticle', {
-      title: data.value.title,
-      // description: 'Přečtěte si více na Topiqu.',
-      siteName: 'Topiqu',
-      // siteLogo: 'https://topiqu.com/logo-small.png',
-      authorName: data.value.user?.username,
-      backgroundImage: undefined,
-      isPremium: false,
-    })
-  }
-}
+// Tracking
+const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
 
-useHead({
-  link: [
-    {
-      rel: 'canonical',
-      href: canonicalUrl,
-    },
-  ],
-  script: [
-    {
-      type: 'application/ld+json',
-      innerHTML: computed(() =>
-        hasSeoPlan.value && data.value
-          ? JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'BlogPosting',
-              headline: data.value?.title,
-              description: articleDescription.value,
-              mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': canonicalUrl.value,
-              },
-              image: data.value?.imageUrl ? [data.value.imageUrl] : [],
-              datePublished: data.value?.createdAt,
-              dateModified: data.value?.updatedAt,
-              author: {
-                '@type': 'Person',
-                name: data.value?.user?.username || clientSite?.name,
-              },
-              publisher: {
-                '@type': 'Organization',
-                name: clientSite?.name,
-                logo: {
-                  '@type': 'ImageObject',
-                  url: clientSite?.logoUrl,
-                },
-              },
-            })
-          : '',
-      ),
-    },
-  ],
-})
+// Actions
+const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh)
 
-const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5),
-  isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
-
+// Follow Logic
+const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
 const toggleFollow = async () => {
   if (!session.value?.user || !data.value?.user.id) return toast.error({ message: $t('common.auth.loginPrompt') })
   try {
@@ -503,69 +216,51 @@ const toggleFollow = async () => {
         method: 'DELETE',
       })
       isFollowing.value = false
-      data.value.followerCount = response.followerCount ?? 0
+      if (data.value) data.value.followerCount = response.followerCount ?? 0
       toast.success({ message: $t('common.messages.successGeneral') })
     } else {
-      const response = await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
+      const response = await $fetch<{ followerCount: number }>(`/api/follows/`, {
+        method: 'POST',
+        body: { followedId: data.value.user.id },
+      })
       isFollowing.value = true
-      data.value.followerCount = response.followerCount ?? 0
+      if (data.value) data.value.followerCount = response.followerCount ?? 0
       toast.success({ message: $t('profile.messages.followSuccess', [data.value.user.username]) })
     }
     await refreshFollows()
-  } catch (e: any) {
-    if (e.data?.statusCode === 409) {
+  } catch (e: unknown) {
+    const err = e as { data?: { statusCode?: number; message?: string } }
+    if (err.data?.statusCode === 409) {
       isFollowing.value = true
-      const response = await $fetch(`/api/follows/`, { method: 'POST', body: { followedId: data.value.user.id } })
-      data.value.followerCount = response.followerCount ?? 0
+      const response = await $fetch<{ followerCount: number }>(`/api/follows/`, {
+        method: 'POST',
+        body: { followedId: data.value?.user.id },
+      })
+      if (data.value) data.value.followerCount = response.followerCount ?? 0
     } else {
       toast.error({
         message:
-          e.data?.message ||
+          err.data?.message ||
           (isFollowing.value ? $t('profile.messages.profileUpdateError') : $t('profile.messages.followFailed')),
       })
     }
   }
 }
 
-const share = async (platform: 'TWITTER' | 'LINKEDIN' | 'OTHER') => {
-  await $fetch(`/api/articles/${data.value?.id}/share`, { method: 'POST', body: { platform } })
-  data.value!.shared = (data.value!.shared || 0) + 1
-}
-
-const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
-const copyLink = async () => {
-  clipboard.copy(fullUrl.value)
-  toast.success({ message: $t('common.actions.copySuccess') })
-  await share('OTHER')
-}
-
-const getVisitorId = async () => {
-  if (!fpPromise) {
-    fpPromise = FingerprintJS.load()
-  }
-  const fp = await fpPromise
-  const result = await fp.get()
-  console.log(result)
-  return result.visitorId
-}
-
+// Like Logic
 const toggleLike = async () => {
   if (!data.value?.slug) return
-
   let visitorId = null
   if (!session.value?.user.id) {
     visitorId = await getVisitorId()
   }
 
   const key = `liked-${data.value.slug}`
-  const hasLiked = sessionStorage.getItem(key)
-
-  if (hasLiked && !session.value?.user.id) {
-    sessionStorage.removeItem(key)
-  }
+  const hasLiked = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(key) : null
+  if (hasLiked && !session.value?.user.id) sessionStorage.removeItem(key)
 
   try {
-    const res = await $fetch(`/api/articles/${data.value.id}/reaction`, {
+    const res = await $fetch<{ liked: boolean; likes: number }>(`/api/articles/${data.value.id}/reaction`, {
       method: 'POST',
       body: { visitorId },
     })
@@ -576,50 +271,38 @@ const toggleLike = async () => {
       triggerRef(data)
     }
 
-    if (res.liked && !session.value?.user.id) {
-      sessionStorage.setItem(key, 'true')
-    } else if (!res.liked && !session.value?.user.id) {
-      sessionStorage.removeItem(key)
-    }
+    if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
+    else if (!res.liked && !session.value?.user.id) sessionStorage.removeItem(key)
   } catch {
     toast.error({ message: $t('articles.comments.reactionFailed') })
-    if (hasLiked && !session.value?.user.id) {
-      sessionStorage.setItem(key, 'true')
-    }
+    if (hasLiked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
   }
 }
 
-const toggleComments = async () => {
-  if (!data.value?.id) return
-  try {
-    await $fetch(`/api/articles/${data.value.id}`, {
-      method: 'PATCH',
-      body: { allowedComments: data.value.allowedComments },
-    })
-    toast.success({
-      message: $t('articles.comments.toggleSuccess', [
-        data.value.allowedComments
-          ? $t('articles.comments.commentsEnabled')
-          : $t('articles.comments.commentsDisabledSuccess'),
-      ]),
-    })
-    await refresh()
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
-    data.value.allowedComments = !data.value.allowedComments
-  }
-}
+// UI State
+const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5)
+const hasTags = computed(() => !!data.value?.tags?.length)
+const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
+const items = useBreadcrumbItems()
+const breadcrumbs = computed(() => {
+  return items.value.map((item, index) => {
+    if (index === 0) return { ...item, label: $t('common.actions.home') }
+    if (index === items.value.length - 1) return { ...item, label: data.value?.title }
+    if (item.label === 'Clanky') return { ...item, label: $t('articles.title'), to: '/' }
+    return item
+  })
+})
 
-const content = useTemplateRef('content'),
-  progress = shallowRef<number>(0)
-const progressBarColor = computed(() =>
-  clientSite?.theme && Object.keys(themes).includes(clientSite.theme) ? themes[clientSite.theme] : themes.blue,
-)
+// Scroll & Sticky
+const isSticky = shallowRef(false)
+const progress = shallowRef(0)
+const container = useTemplateRef('container')
+const content = useTemplateRef('content')
 
 const handleContentScroll = () => {
   if (!content.value) return
-  const { top, height } = content.value.getBoundingClientRect(),
-    contentTop = top + window.scrollY
+  const { top, height } = content.value.getBoundingClientRect()
+  const contentTop = top + window.scrollY
   const scrollable = height - window.innerHeight
   if (scrollable > 0)
     progress.value = Math.min(
@@ -629,38 +312,26 @@ const handleContentScroll = () => {
   else progress.value = 0
 }
 
-const hasTags = computed(() => !!data.value?.tags?.length)
-
-const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
-  try {
-    await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
-    await refresh()
-    toast.success({
-      message: $t('articles.status.changeSuccess', [
-        status === 'draft' ? $t('articles.status.draft') : $t('articles.status.published'),
-      ]),
-    })
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.statusChangeFailed') })
-  }
-}, 100)
-
-const isSticky = shallowRef<boolean>(false),
-  container = useTemplateRef('container')
-const images = ref<Image[]>([]),
-  currentImageIndex = shallowRef<number>(0),
-  lightboxVisible = shallowRef<boolean>(false)
+// Lightbox
+type Image = { src: string; alt?: string }
+const images = ref<Image[]>([])
+const currentImageIndex = shallowRef(0)
+const lightboxVisible = shallowRef(false)
 
 onMounted(() => {
+  trackView()
+
   const onScroll = () => {
     if (!container.value || !content.value) return
     isSticky.value = window.scrollY > 100
     handleContentScroll()
   }
+
   const extractImages = () => {
     if (!content.value) return
     images.value = Array.from(content.value.querySelectorAll('img')).map((i) => ({ src: i.src, alt: i.alt || '' }))
   }
+
   const handleImageClick = (e: Event) => {
     const target = e.target as HTMLElement
     if (target.tagName !== 'IMG') return
@@ -670,32 +341,23 @@ onMounted(() => {
     currentImageIndex.value = idx
     lightboxVisible.value = true
   }
+
   if (data.value?.slug && !session.value?.user.id) {
     const likeKey = `liked-${data.value.slug}`
     const hasLikedLocal = sessionStorage.getItem(likeKey)
     if (hasLikedLocal && !data.value.likedByUser) {
       data.value.likedByUser = true
-      // triggerRef(data)
     }
   }
+
   setTimeout(extractImages, 100)
   window.addEventListener('scroll', onScroll)
   content.value?.addEventListener('click', handleImageClick)
+
   onUnmounted(() => {
     window.removeEventListener('scroll', onScroll)
     content.value?.removeEventListener('click', handleImageClick)
   })
-  if (!data.value?.id) return
-  const key = `viewed-${data.value.id}`,
-    last = sessionStorage.getItem(key),
-    now = Date.now()
-  if (last && now - Number(last) < 1000 * 60 * 30) return
-  try {
-    $fetch(`/api/articles/${data.value.id}/view`, { method: 'POST' })
-    sessionStorage.setItem(key, now.toString())
-  } catch (e: any) {
-    console.error('Failed to update article views:', e)
-  }
 })
 </script>
 
@@ -706,26 +368,21 @@ onMounted(() => {
     opacity 0.4s ease,
     transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-
 .fade-slide-enter-from {
   opacity: 0;
   transform: translateY(10px);
 }
-
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-10px);
 }
-
 .prose p {
   line-height: 1.8;
 }
-
 .prose p:empty::before {
   content: '\200B';
   display: inline-block;
 }
-
 .prose p img {
   border-radius: 0.75rem;
   padding-top: 12px;
@@ -735,7 +392,6 @@ onMounted(() => {
   opacity: 0;
   animation: fade-in-image 0.6s ease-out forwards;
 }
-
 @keyframes fade-in-image {
   from {
     opacity: 0;
@@ -746,29 +402,23 @@ onMounted(() => {
     transform: translateY(0);
   }
 }
-
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-
 .dark ::-webkit-scrollbar-thumb {
   background: #475569;
 }
-
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #64748b;
 }
