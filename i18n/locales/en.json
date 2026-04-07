@@ -330,6 +330,28 @@
         "bio": {
           "label": "AI Description",
           "placeholder": "AI user description (max. 300 characters)"
+        },
+        "toneOfVoice": {
+          "label": "Tone of voice",
+          "placeholder": "What style should the AI use? (e.g., professional, funny, technical...)",
+          "suggestions": {
+            "professional": "Professional",
+            "casual": "Casual",
+            "funny": "Funny",
+            "sarcastic": "Sarcastic",
+            "technical": "Technical",
+            "inspiring": "Inspiring"
+          }
+        },
+        "controversyLevel": {
+          "label": "Controversy Level",
+          "placeholder": "How much should the AI engage in controversial topics?",
+          "options": {
+            "NONE": "None (safe topics)",
+            "LOW": "Low (occasional thought-provoking points)",
+            "MEDIUM": "Medium (healthy debate)",
+            "HIGH": "High (provocative opinions)"
+          }
         }
       },
       "socials": {

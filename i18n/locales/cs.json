@@ -331,6 +331,28 @@
         "bio": {
           "label": "Popis AI",
           "placeholder": "Popis uživatele AI (max. 300 znaků)"
+        },
+        "toneOfVoice": {
+          "label": "Tone of voice",
+          "placeholder": "Jakým stylem má AI psát? (např. profesionálně, vtipně, odborně...)",
+          "suggestions": {
+            "professional": "Profesionální",
+            "casual": "Uvolněný",
+            "funny": "Vtipný",
+            "sarcastic": "Sarkastický",
+            "technical": "Odborný",
+            "inspiring": "Inspirativní"
+          }
+        },
+        "controversyLevel": {
+          "label": "Míra kontroverze",
+          "placeholder": "Jak moc se má AI pouštět do kontroverzních témat?",
+          "options": {
+            "NONE": "Žádná (bezpečná témata)",
+            "LOW": "Nízká (občasné zamyšlení)",
+            "MEDIUM": "Střední (zdravá diskuze)",
+            "HIGH": "Vysoká (provokativní názory)"
+          }
         }
       },
       "socials": {
