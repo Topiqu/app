@@ -382,6 +382,8 @@ model ClientSite extends Base {
     allowAds            Boolean             @default(false)
     allowGtag           Boolean?
     allowShapes         Boolean             @default(false)
+    aiToneOfVoice       String?
+    aiControversyLevel  String?
     communityInsight    Json?
     insightUpdatedAt    DateTime?
     billingPlan         BillingPlans        @default(MONTHLY)
