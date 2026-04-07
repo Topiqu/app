@@ -150,18 +150,23 @@
                 :username="form.aiUser.username"
                 :bio="form.aiUser.bio"
                 :avatarUrl="form.aiUser.avatarUrl"
+                :aiToneOfVoice="form.aiToneOfVoice"
+                :aiControversyLevel="form.aiControversyLevel"
                 :aiEnabled="activeFeatures.includes('AI')"
                 :sentimentEnabled="activeFeatures.includes('SENTIMENT')"
                 :articleCronsEnabled="activeFeatures.includes('ARTICLE_CRONS')"
-                :canEnableAi="allowedFeatures.AI"
-                :canEnableSentiment="allowedFeatures.SENTIMENT"
-                :canEnableArticleCrons="allowedFeatures.ARTICLE_CRONS"
+                :canEnableAi="allowedFeatures.AI ?? false"
+                :canEnableSentiment="allowedFeatures.SENTIMENT ?? false"
+                :canEnableArticleCrons="allowedFeatures.ARTICLE_CRONS ?? false"
                 :autoRelease="form.autoRelease"
-                :features
+                :features="features ?? []"
                 :currency="client?.currency ?? 'EUR'"
+                :billingPlan="client?.billingPlan ?? 'MONTHLY'"
                 @toggle:feature="toggleFeature"
                 @update:username="form.aiUser.username = $event"
                 @update:bio="form.aiUser.bio = $event"
+                @update:aiToneOfVoice="form.aiToneOfVoice = $event ?? ''"
+                @update:aiControversyLevel="form.aiControversyLevel = $event ?? ''"
                 @update:avatarUrl="
                   ((form.aiUser.avatarUrl = $event.avatarUrl),
                   (form.aiUser.optimizedAvatarUrl = $event.optimizedImageUrl))
@@ -302,6 +307,8 @@ const form = ref({
   optimizedUrl: '',
   socials: [] as { platform: SocialPlatform; url: string }[],
   aiUser: { username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' },
+  aiToneOfVoice: '',
+  aiControversyLevel: '',
   gtagId: '',
   gamNetworkCode: '',
   allowAds: false,
@@ -326,6 +333,8 @@ interface ClientSite
   socials: { platform: SocialPlatform; url: string }[]
   apiKey: string | null
   aiUser: { username: string; bio: string; avatarUrl: string } | null
+  aiToneOfVoice: string | null
+  aiControversyLevel: string | null
 }
 
 const { data: client, refresh, pending } = await useFetch<ClientSite>(`/api/clients/${auth.value?.user.clientSiteId}`)
@@ -427,6 +436,8 @@ watch(
         avatarUrl: c.aiUser?.avatarUrl ?? '',
         optimizedAvatarUrl: '',
       },
+      aiToneOfVoice: c.aiToneOfVoice ?? '',
+      aiControversyLevel: c.aiControversyLevel ?? '',
       gtagId: c.gtagId ?? '',
       gamNetworkCode: c.gamNetworkCode ?? '',
       autoRelease: c.autoRelease ?? false,
@@ -492,6 +503,8 @@ const confirmClose = async () => {
     JSON.stringify(form.value.keywords) !== JSON.stringify(client.value?.keywords ?? []) ||
     JSON.stringify(form.value.socials) !== JSON.stringify(client.value?.socials ?? []) ||
     form.value.allowGtag !== (client.value?.allowGtag ?? false) ||
+    form.value.aiToneOfVoice !== (client.value?.aiToneOfVoice ?? '') ||
+    form.value.aiControversyLevel !== (client.value?.aiControversyLevel ?? '') ||
     (client.value?.tokenLimit &&
       client.value.tokenLimit > 0 &&
       (form.value.aiUser.username !== (client.value.aiUser?.username ?? '') ||

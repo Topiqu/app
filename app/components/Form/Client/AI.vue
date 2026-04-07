@@ -216,6 +216,34 @@
             :maxLength="300"
           />
         </div>
+        <div class="flex flex-col gap-2">
+          <FormLabel :text="$t('common.preferences.aiAuthor.toneOfVoice.label')" />
+          <FormField
+            v-model="aiToneOfVoice"
+            type="text"
+            :placeholder="$t('common.preferences.aiAuthor.toneOfVoice.placeholder')"
+          />
+          <div class="flex flex-wrap gap-2 mt-1">
+            <Button
+              v-for="suggestion in toneSuggestions"
+              :key="suggestion"
+              variant="neutral"
+              class="!px-3 !py-1 !min-h-0 !h-auto !text-xs !font-medium !rounded-full transition-colors border"
+              :class="
+                aiToneOfVoice.includes(suggestion)
+                  ? 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60'
+                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700'
+              "
+              @click="toggleToneSuggestion(suggestion)"
+            >
+              {{ suggestion }}
+            </Button>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <FormLabel :text="$t('common.preferences.aiAuthor.controversyLevel.label')" />
+          <FormSelect v-model="aiControversyLevel" :items="controversyOptions" upwards />
+        </div>
       </div>
     </div>
 
@@ -232,10 +260,14 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
+
 const props = defineProps<{
   username: string
   bio: string
   avatarUrl: string
+  aiToneOfVoice?: string | null
+  aiControversyLevel?: string | null
   aiEnabled: boolean
   sentimentEnabled: boolean
   articleCronsEnabled: boolean
@@ -251,9 +283,11 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:username': [string]
   'update:bio': [string]
+  'update:aiToneOfVoice': [string | null]
+  'update:aiControversyLevel': [string | null]
   'update:avatarUrl': [{ avatarUrl: string; optimizedImageUrl: string }]
   'update:autoRelease': [boolean]
-  'toggle:feature': [{ code: string; enabled: boolean }]
+  'toggle:feature': [{ code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }]
 }>()
 
 const showAutoReleaseModal = shallowRef(false)
@@ -262,7 +296,47 @@ const rate = await useCurrencyRate(props.currency)
 
 const username = computed({ get: () => props.username, set: (v) => emit('update:username', v) })
 const bio = computed({ get: () => props.bio, set: (v) => emit('update:bio', v) })
-const avatarUrl = computed({ get: () => props.avatarUrl, set: (v) => emit('update:avatarUrl', { avatarUrl: v, optimizedImageUrl: optimizedImageUrl.value }) })
+const aiToneOfVoice = computed({
+  get: () => props.aiToneOfVoice ?? '',
+  set: (v) => emit('update:aiToneOfVoice', v || null),
+})
+
+const toggleToneSuggestion = (suggestion: string) => {
+  const current = aiToneOfVoice.value
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (current.includes(suggestion)) {
+    aiToneOfVoice.value = current.filter((s) => s !== suggestion).join(', ')
+  } else {
+    aiToneOfVoice.value = [...current, suggestion].join(', ')
+  }
+}
+
+const aiControversyLevel = computed({
+  get: () => props.aiControversyLevel ?? 'NONE',
+  set: (v) => emit('update:aiControversyLevel', v === 'NONE' ? null : v),
+})
+
+const controversyOptions = computed(() => [
+  { value: 'NONE', label: t('common.preferences.aiAuthor.controversyLevel.options.NONE') },
+  { value: 'LOW', label: t('common.preferences.aiAuthor.controversyLevel.options.LOW') },
+  { value: 'MEDIUM', label: t('common.preferences.aiAuthor.controversyLevel.options.MEDIUM') },
+  { value: 'HIGH', label: t('common.preferences.aiAuthor.controversyLevel.options.HIGH') },
+])
+
+const toneSuggestions = computed(() => [
+  t('common.preferences.aiAuthor.toneOfVoice.suggestions.professional'),
+  t('common.preferences.aiAuthor.toneOfVoice.suggestions.casual'),
+  t('common.preferences.aiAuthor.toneOfVoice.suggestions.funny'),
+  t('common.preferences.aiAuthor.toneOfVoice.suggestions.sarcastic'),
+  t('common.preferences.aiAuthor.toneOfVoice.suggestions.technical'),
+  t('common.preferences.aiAuthor.toneOfVoice.suggestions.inspiring'),
+])
+const avatarUrl = computed({
+  get: () => props.avatarUrl,
+  set: (v) => emit('update:avatarUrl', { avatarUrl: v, optimizedImageUrl: optimizedImageUrl.value }),
+})
 const optimizedImageUrl = shallowRef('')
 const togglePending = computed(() => props.togglePending ?? false)
 
@@ -279,14 +353,14 @@ const confirmAutoRelease = () => {
   showAutoReleaseModal.value = false
 }
 
-const toggle = (code: string) => {
+const toggle = (code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS') => {
   const current =
     { AI: props.aiEnabled, SENTIMENT: props.sentimentEnabled, ARTICLE_CRONS: props.articleCronsEnabled }[code] ?? false
   emit('toggle:feature', { code, enabled: !current })
 }
 
 const formatFeaturePrice = (code: string) => {
-  const monthlyCZK = props.features.find((f) => f.code === code)?.priceMonthly
+  const monthlyCZK = props.features?.find((f) => f.code === code)?.priceMonthly
   if (!monthlyCZK) return '–'
 
   const price = props.billingPlan === 'ANNUAL' ? monthlyCZK * 12 * 0.8 : monthlyCZK

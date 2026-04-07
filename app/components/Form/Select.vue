@@ -19,7 +19,8 @@
         leaveToClass="transform opacity-0 scale-95"
       >
         <ListboxOptions
-          class="mt-2 w-full flex flex-col gap-0.5 absolute right-0 overflow-hidden rounded-xl bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-black/30 shadow-lg focus:outline-none z-50"
+          class="w-full flex flex-col gap-0.5 absolute right-0 overflow-hidden rounded-xl bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-black/30 shadow-lg focus:outline-none z-50"
+          :class="upwards ? 'bottom-full mb-2' : 'mt-2'"
         >
           <ListboxOption v-for="{ label, icon, value } in items" v-slot="{ active, selected }" :key="value" :value>
             <Button
@@ -51,9 +52,14 @@ export type FormSelectItem = {
   value: string
 }
 
-const { items, showValue = true } = defineProps<{
+const {
+  items,
+  showValue = true,
+  upwards = false,
+} = defineProps<{
   items: FormSelectItem[]
   showValue?: boolean
+  upwards?: boolean
 }>()
 
 const modelValue = defineModel<FormSelectItem['value']>({ required: true })
