@@ -1,30 +1,25 @@
 import { generateObject } from 'ai'
 
 export const generateArticle = async (clientSiteId: string, prompt: string) => {
-  const {
-    tokenRemaining: maxOutputTokens,
-    plan,
-    focus,
-    keywords,
-    audience,
-    tags,
-    aiToneOfVoice,
-    aiControversyLevel,
-  } = await prisma.clientSite.findFirstOrThrow({
-    select: {
-      tokenRemaining: true,
-      focus: true,
-      keywords: true,
-      audience: true,
-      tags: { select: { id: true, name: true } },
-      plan: true,
-      aiToneOfVoice: true,
-      aiControversyLevel: true,
-    },
-    where: { id: clientSiteId },
-  })
-  if (!maxOutputTokens || maxOutputTokens < 0)
-    throw createError({ statusCode: 403, statusMessage: 'Insufficient tokens' })
+  const { tokenRemaining, plan, focus, keywords, audience, tags, aiToneOfVoice, aiControversyLevel } =
+    await prisma.clientSite.findFirstOrThrow({
+      select: {
+        tokenRemaining: true,
+        focus: true,
+        keywords: true,
+        audience: true,
+        tags: { select: { id: true, name: true } },
+        plan: true,
+        aiToneOfVoice: true,
+        aiControversyLevel: true,
+      },
+      where: { id: clientSiteId },
+    })
+
+  if (!tokenRemaining || tokenRemaining < 1500)
+    throw createError({ statusCode: 403, statusMessage: 'Insufficient tokens (minimum 1500 required)' })
+
+  const maxOutputTokens = Math.min(tokenRemaining, 6000)
 
   const getControversyPrompt = (level: string | null) => {
     switch (level) {
