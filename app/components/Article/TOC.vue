@@ -19,14 +19,15 @@
 
     <div
       :class="[
-        'fixed z-50 flex flex-col overflow-hidden bg-white/95 shadow-2xl ring-1 ring-gray-900/5 backdrop-blur-xl transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] sm:bg-transparent sm:shadow-none sm:ring-0 sm:backdrop-blur-none dark:bg-neutral-900/95 dark:ring-white/10 sm:dark:bg-transparent',
+        'fixed z-50 flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
+        'bg-white/95 backdrop-blur-xl shadow-2xl ring-1 ring-gray-900/5 dark:bg-neutral-900/95 dark:ring-white/10',
         isMobileOpen
           ? 'top-[9.5rem] right-6 w-[17rem] origin-top-right scale-100 rounded-2xl opacity-100 max-h-[60vh]'
-          : 'pointer-events-none top-[9.5rem] right-6 w-[17rem] origin-top-right scale-95 opacity-0 sm:pointer-events-auto sm:top-20 sm:bottom-auto sm:mt-0 sm:mr-12 sm:scale-100 sm:opacity-100 sm:max-h-[calc(100vh-8rem)] rounded-xl',
+          : 'pointer-events-none top-[9.5rem] right-6 w-[17rem] origin-top-right scale-95 opacity-0 sm:pointer-events-auto sm:top-24 sm:bottom-auto sm:right-8 lg:right-12 2xl:right-16 sm:mt-0 sm:scale-100 sm:opacity-100 sm:max-h-[calc(100vh-10rem)] rounded-2xl sm:bg-white/80 sm:dark:bg-neutral-900/80 sm:shadow-lg sm:ring-black/5 sm:dark:ring-white/5',
       ]"
     >
       <div
-        class="flex items-center justify-between border-b border-gray-100/50 px-5 py-3.5 sm:border-none sm:pb-3 dark:border-white/5"
+        class="flex items-center justify-between border-b border-gray-100/50 px-5 py-3.5 sm:pb-3 dark:border-white/5"
       >
         <h2 class="flex items-center gap-2.5 text-[13px] font-semibold tracking-wide text-gray-900 dark:text-gray-100">
           <Icon name="i-lucide:align-left" class="h-4 w-4 text-blue-600 dark:text-blue-500" />
@@ -44,7 +45,7 @@
         />
       </div>
 
-      <div class="overflow-y-auto px-5 pb-5 pt-2 sidebar">
+      <div class="overflow-y-auto px-5 pb-5 pt-3 sidebar">
         <nav id="toc" class="space-y-0.5 relative" @click="handleNavClick" />
       </div>
     </div>
@@ -170,22 +171,22 @@ onUnmounted(() => {
   background: transparent;
 }
 .sidebar::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
+  background-color: rgba(203, 213, 225, 0.6);
   border-radius: 4px;
 }
 .sidebar:hover::-webkit-scrollbar-thumb {
-  background-color: #94a3b8;
+  background-color: rgba(148, 163, 184, 0.8);
 }
 .dark .sidebar::-webkit-scrollbar-thumb {
-  background-color: #475569;
+  background-color: rgba(71, 85, 105, 0.6);
 }
 
 #toc {
-  border-left: 1px solid #e2e8f0;
+  border-left: 1px solid rgba(226, 232, 240, 0.5);
   position: relative;
 }
 .dark #toc {
-  border-left-color: #3f3f46;
+  border-left-color: rgba(63, 63, 70, 0.5);
 }
 
 #toc .toc-list {
@@ -232,11 +233,11 @@ onUnmounted(() => {
   font-weight: 500;
   color: #2563eb;
   border-left-color: #2563eb;
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
 }
 .dark #toc a.toc-link.active-current {
   color: #3b82f6;
   border-left-color: #3b82f6;
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
 }
 </style>
