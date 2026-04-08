@@ -1,7 +1,7 @@
 <mjml>
   <mj-head>
     <mj-preview>{t:verify.subject}</mj-preview>
-    <mj-font name="Montserrat" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" />
+    <mj-font name="Montserrat" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&amp;display=swap" />
     <mj-attributes>
       <mj-text font-family="Montserrat, Helvetica, Arial, sans-serif" color="#333333" line-height="24px" />
       <mj-button
