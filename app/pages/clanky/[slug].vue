@@ -10,165 +10,169 @@
       @like="toggleLike"
     />
 
-    <div ref="container" class="max-w-[1000px] mx-auto flex flex-col gap-8 px-4 sm:px-0 pt-4">
-      <nav v-if="breadcrumbs?.length" aria-label="Breadcrumb" class="w-full">
-        <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-          <li v-for="(item, index) in breadcrumbs" :key="index" class="flex items-center gap-2">
-            <Icon v-if="index > 0" name="mdi:chevron-right" class="w-4 h-4 text-gray-300 dark:text-gray-600" />
-            <NuxtLink
-              v-if="index < breadcrumbs.length - 1"
-              :to="item.to"
-              class="hover:text-blue-600 dark:hover:text-blue-400 font-medium"
-            >
-              {{ item.label }}
-            </NuxtLink>
-            <span v-else class="font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[200px] sm:max-w-[400px]">
-              {{ item.label }}
-            </span>
-          </li>
-        </ol>
-      </nav>
+    <div class="max-w-[1000px] mx-auto relative">
+      <div ref="container" class="w-full flex flex-col gap-8 px-4 sm:px-0 pt-4">
+        <nav v-if="breadcrumbs?.length" aria-label="Breadcrumb" class="w-full">
+          <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <li v-for="(item, index) in breadcrumbs" :key="index" class="flex items-center gap-2">
+              <Icon v-if="index > 0" name="mdi:chevron-right" class="w-4 h-4 text-gray-300 dark:text-gray-600" />
+              <NuxtLink
+                v-if="index < breadcrumbs.length - 1"
+                :to="item.to"
+                class="hover:text-blue-600 dark:hover:text-blue-400 font-medium"
+              >
+                {{ item.label }}
+              </NuxtLink>
+              <span
+                v-else
+                class="font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[200px] sm:max-w-[400px]"
+              >
+                {{ item.label }}
+              </span>
+            </li>
+          </ol>
+        </nav>
 
-      <NuxtLink
-        to="/admin"
-        class="group flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg"
-        :aria-label="$t('common.actions.backToList')"
-      >
-        <Icon name="mdi:arrow" class="w-6 h-6 mr-2 group-hover:-translate-x-1.5" />
-        {{ $t('common.actions.backToList') }}
-      </NuxtLink>
-
-      <ArticleHeaderHero
-        :title="data.title"
-        :author="data.user"
-        :followerCount="data.followerCount || 0"
-        :isFollowing="isFollowing"
-        :showFollowButton="!!session?.user && session.user.id !== data.user.id"
-        :excerpt="data.excerpt"
-        :imageUrl="data.imageUrl"
-        :series="data.series && data.series.name ? (data.series as any) : undefined"
-        @follow="toggleFollow"
-      />
-
-      <div v-if="hasTags" class="mt-4 flex flex-wrap gap-2.5">
         <NuxtLink
-          v-for="t in data.tags"
-          :key="t.tag.slug"
-          :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
-          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 hover:bg-gray-100 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+          to="/admin"
+          class="group flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg"
+          :aria-label="$t('common.actions.backToList')"
         >
-          <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />{{ t.tag.name }}
+          <Icon name="mdi:arrow" class="w-6 h-6 mr-2 group-hover:-translate-x-1.5" />
+          {{ $t('common.actions.backToList') }}
         </NuxtLink>
-      </div>
 
-      <ArticleActionsBar
-        :article="data"
-        :isAdmin="session?.user?.role === 'admin' && session.user.id === data.user.id"
-        :onStatusUpdate="debouncedSetStatus"
-        @toggleComments="toggleComments"
-        @refresh="refresh"
-      />
+        <ArticleHeaderHero
+          :title="data.title"
+          :author="data.user"
+          :followerCount="data.followerCount || 0"
+          :isFollowing="isFollowing"
+          :showFollowButton="!!session?.user && session.user.id !== data.user.id"
+          :excerpt="data.excerpt"
+          :imageUrl="data.imageUrl"
+          :series="data.series && data.series.name ? (data.series as any) : undefined"
+          @follow="toggleFollow"
+        />
 
-      <div class="flex justify-end gap-4 mt-10">
-        <button
-          :aria-label="$t('common.actions.like')"
-          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-red-400 dark:hover:border-red-400"
-          @click="toggleLike"
-        >
-          <Icon name="mdi:heart" class="w-5 h-5" :class="{ 'text-red-500 dark:text-red-400': data.likedByUser }" />
-        </button>
-        <button
-          :aria-label="$t('common.actions.copyLink')"
-          class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:hover:border-blue-500"
-          @click="copyLink(fullUrl)"
-        >
-          <Icon name="mdi:link-variant" class="w-5 h-5" />
-        </button>
-        <NuxtLink
-          :to="`https://x.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
-          target="_blank"
-          class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
-          @click="share('TWITTER')"
-        >
-          <Icon name="mdi:twitter" class="w-5 h-5" />
-        </NuxtLink>
-        <NuxtLink
-          :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
-          target="_blank"
-          class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
-          @click="share('LINKEDIN')"
-        >
-          <Icon name="mdi:linkedin" class="w-5 h-5" />
-        </NuxtLink>
-      </div>
-
-      <div
-        ref="content"
-        class="max-w-[1000px] bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 text-[17px] md:text-lg leading-[1.8] text-gray-800 space-y-6 prose prose-gray prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:prose-invert dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600"
-      >
-        <ArticleParsed :content="data.content" :articleId="data.id" />
-      </div>
-
-      <ArticleSeries v-if="data.series && data.series.name" :series="data.series as any" />
-      <div
-        class="mt-8 flex flex-col items-start justify-between gap-4 border-t border-gray-100 pt-8 sm:flex-row sm:items-center dark:border-gray-800"
-      >
-        <div class="flex shrink-0 items-center">
-          <ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-2 text-gray-400 dark:text-gray-500" />
+        <div v-if="hasTags" class="mt-4 flex flex-wrap gap-2.5">
+          <NuxtLink
+            v-for="t in data.tags"
+            :key="t.tag.slug"
+            :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
+            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 hover:bg-gray-100 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+          >
+            <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />{{ t.tag.name }}
+          </NuxtLink>
         </div>
-        <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
-      </div>
 
-      <LazyArticleLightbox
-        v-if="lightboxVisible"
-        :visible="lightboxVisible"
-        :images="images"
-        :index="currentImageIndex"
-        @hide="lightboxVisible = false"
-      />
-      <LazyArticleRelated :articles="relatedArticles!" :pending="pending" />
+        <ArticleActionsBar
+          :article="data"
+          :isAdmin="session?.user?.role === 'admin' && session.user.id === data.user.id"
+          :onStatusUpdate="debouncedSetStatus"
+          @toggleComments="toggleComments"
+          @refresh="refresh"
+        />
 
-      <div v-if="data.sources?.length" class="w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div class="flex justify-end gap-4 mt-10">
+          <button
+            :aria-label="$t('common.actions.like')"
+            class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-red-400 dark:hover:border-red-400"
+            @click="toggleLike"
+          >
+            <Icon name="mdi:heart" class="w-5 h-5" :class="{ 'text-red-500 dark:text-red-400': data.likedByUser }" />
+          </button>
+          <button
+            :aria-label="$t('common.actions.copyLink')"
+            class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:hover:border-blue-500"
+            @click="copyLink(fullUrl)"
+          >
+            <Icon name="mdi:link-variant" class="w-5 h-5" />
+          </button>
+          <NuxtLink
+            :to="`https://x.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
+            target="_blank"
+            class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
+            @click="share('TWITTER')"
+          >
+            <Icon name="mdi:twitter" class="w-5 h-5" />
+          </NuxtLink>
+          <NuxtLink
+            :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
+            target="_blank"
+            class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
+            @click="share('LINKEDIN')"
+          >
+            <Icon name="mdi:linkedin" class="w-5 h-5" />
+          </NuxtLink>
+        </div>
+
         <div
-          class="flex items-center justify-between cursor-pointer text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400"
-          @click="isOpen = !isOpen"
+          ref="content"
+          class="max-w-[1000px] bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 text-[17px] md:text-lg leading-[1.8] text-gray-800 space-y-6 prose prose-gray prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:prose-invert dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600"
         >
-          <div class="flex items-center gap-2">
-            <Icon name="mdi:book-open-page-variant" class="w-5 h-5 text-blue-500 dark:text-blue-400" />
-            {{ $t('articles.columns.sources') }} ({{ data.sources.length }})
-          </div>
-          <Icon name="mdi:chevron-down" class="w-5 h-5 text-gray-400" :class="{ 'rotate-180': isOpen }" />
+          <ArticleParsed :content="data.content" :articleId="data.id" />
         </div>
-        <ul v-if="isOpen" class="mt-4 space-y-3 pl-1">
-          <li v-for="source in data.sources" :key="source" class="flex items-center gap-3">
-            <LazyNuxtImg
-              :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
-              class="w-5 h-5 rounded-sm"
-              alt="favicon"
-            />
-            <NuxtLink
-              :to="source"
-              target="_blank"
-              rel="noreferrer"
-              class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline truncate max-w-[calc(100%-2.5rem)]"
-            >
-              {{ source }}
-            </NuxtLink>
-          </li>
-        </ul>
-      </div>
 
-      <LazyCommentSection
-        :articleId="data.id"
-        :commCount="data.commentCount || 0"
-        :allowComments="data.allowedComments"
-      />
+        <ArticleSeries v-if="data.series && data.series.name" :series="data.series as any" />
+        <div
+          class="mt-8 flex flex-col items-start justify-between gap-4 border-t border-gray-100 pt-8 sm:flex-row sm:items-center dark:border-gray-800"
+        >
+          <div class="flex shrink-0 items-center">
+            <ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-2 text-gray-400 dark:text-gray-500" />
+          </div>
+          <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
+        </div>
+
+        <LazyArticleLightbox
+          v-if="lightboxVisible"
+          :visible="lightboxVisible"
+          :images="images"
+          :index="currentImageIndex"
+          @hide="lightboxVisible = false"
+        />
+        <LazyArticleRelated :articles="relatedArticles!" :pending="pending" />
+
+        <div v-if="data.sources?.length" class="w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div
+            class="flex items-center justify-between cursor-pointer text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400"
+            @click="isOpen = !isOpen"
+          >
+            <div class="flex items-center gap-2">
+              <Icon name="mdi:book-open-page-variant" class="w-5 h-5 text-blue-500 dark:text-blue-400" />
+              {{ $t('articles.columns.sources') }} ({{ data.sources.length }})
+            </div>
+            <Icon name="mdi:chevron-down" class="w-5 h-5 text-gray-400" :class="{ 'rotate-180': isOpen }" />
+          </div>
+          <ul v-if="isOpen" class="mt-4 space-y-3 pl-1">
+            <li v-for="source in data.sources" :key="source" class="flex items-center gap-3">
+              <LazyNuxtImg
+                :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
+                class="w-5 h-5 rounded-sm"
+                alt="favicon"
+              />
+              <NuxtLink
+                :to="source"
+                target="_blank"
+                rel="noreferrer"
+                class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline truncate max-w-[calc(100%-2.5rem)]"
+              >
+                {{ source }}
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
+
+        <LazyCommentSection
+          :articleId="data.id"
+          :commCount="data.commentCount || 0"
+          :allowComments="data.allowedComments"
+        />
+      </div>
       <ArticleTOC :content="data.content" />
     </div>
   </div>
   <Status v-else-if="status" :status="status" :message="status === 'error' ? `${error?.message}` : ''" />
 </template>
-
 <script setup lang="ts">
 import type { User } from '@zenstackhq/runtime/models'
 
