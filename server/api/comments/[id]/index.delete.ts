@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
         userName: comment.user.username,
         commentContent: comment.content.slice(0, 50) + (comment.content.length > 50 ? '...' : ''),
         deleteReason,
-        logoUrl: 'https://via.placeholder.com/150x50',
+        logoUrl: 'https://cdn.topiqu.com/app-logo.png',
         unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${comment.user.email}`,
       },
     })

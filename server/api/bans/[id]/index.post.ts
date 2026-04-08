@@ -93,7 +93,7 @@ export default defineEventHandler(async (event) => {
         reason: reason.trim(),
         banDuration,
         introKey,
-        logoUrl: 'https://via.placeholder.com/150x50',
+        logoUrl: 'https://cdn.topiqu.com/app-logo.png',
         unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${comment.user.email}`,
       },
     })

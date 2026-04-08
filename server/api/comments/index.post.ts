@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
 
   const commentUrl = (id: string) => `${protocol}://${host}/clanky/${article.slug}#comment-${id}`
   const replyUrl = `${protocol}://${host}/clanky/${article.slug}/reply`
-  const logoUrl = 'https://via.placeholder.com/150x50'
+  const logoUrl = 'https://cdn.topiqu.com/app-logo.png'
 
   let content = body.content
 
