@@ -27,7 +27,7 @@ interface ClientSite {
   socials: { platform: SocialPlatform; url: string }[]
 }
 
-const { data: client, pending } = await useFetch<ClientSite>(`/api/clients/${props.clientSiteId}`, {
+const { data: client, pending } = await useFetch<ClientSite>(`/api/clients/${props.clientSiteId}/public`, {
   default: () => ({ socials: [] }),
 })
 
