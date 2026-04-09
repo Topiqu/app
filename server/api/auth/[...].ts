@@ -218,8 +218,14 @@ export default NuxtAuthHandler({
   callbacks: {
     async redirect({ url, baseUrl }) {
       if (url.startsWith('/')) return `${baseUrl}${url}`
-      if (new URL(url).origin === baseUrl) return url
-      if (url.match(/^https:\/\/([\w-]+\.)?topiqu\.com/)) return url
+      try {
+        const urlObj = new URL(url)
+        if (urlObj.origin === baseUrl) return url
+        if (urlObj.hostname.endsWith('topiqu.com')) return url
+        if (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') return url
+      } catch {
+        // invalid
+      }
       return baseUrl
     },
     async jwt({ token, user, account }) {

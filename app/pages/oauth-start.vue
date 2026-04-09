@@ -8,12 +8,23 @@
 const route = useRoute()
 const { signIn } = useAuth()
 
-onMounted(() => {
+onMounted(async () => {
   const provider = route.query.provider as string
   const callbackUrl = route.query.callbackUrl as string
 
   if (provider) {
-    signIn(provider, { callbackUrl, external: true })
+    try {
+      const result = await signIn(provider, { callbackUrl, redirect: false })
+
+      if (result?.url) {
+        window.location.href = result.url
+      } else {
+        window.location.href = '/'
+      }
+    } catch (e) {
+      console.error('OAuth redirect failed', e)
+      window.location.href = '/'
+    }
   } else {
     navigateTo('/')
   }
