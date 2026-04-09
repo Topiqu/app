@@ -7,40 +7,67 @@ export const generateSessionToken = async (
   user: Pick<User, 'id'>,
   req: Pick<RequestInternal, 'body' | 'query' | 'headers' | 'method'>,
 ) => {
-  const ip = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? ''
+  const ipHeader = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? ''
+  const ipAddress = ipHeader || null
+
   const userAgent = req.headers?.['user-agent'] ?? null
   const parser = new UAParser(userAgent)
   const { device, os, browser } = parser.getResult()
-  const geo = await resolveGeo(ip)
+
+  const deviceName = device?.model ?? device?.vendor ?? device?.type ?? 'Desktop'
+  const osName = os?.name ? `${os.name} ${os.version ?? ''}`.trim() : null
+  const browserName = browser?.name ? `${browser.name} ${browser.version ?? ''}`.trim() : null
+
   const existingSession = await prisma.session.findFirst({
     where: {
       userId: user.id,
-      ip,
       revoked: false,
-      device: device?.model ?? device?.vendor ?? device?.type ?? 'Desktop',
-      os: os?.name ? `${os.name} ${os.version ?? ''}`.trim() : null,
-      browser: browser?.name ? `${browser.name} ${browser.version ?? ''}`.trim() : null,
+      device: deviceName,
+      os: osName,
+      browser: browserName,
     },
-    select: { id: true },
+    select: { id: true, ip: true },
   })
 
   let sessionId: string
+
   if (existingSession) {
     sessionId = existingSession.id
 
+    const dataToUpdate: any = { lastUsedAt: new Date() }
+
+    if (existingSession.ip !== ipAddress) {
+      dataToUpdate.ip = ipAddress
+      if (ipAddress) {
+        const geo = await resolveGeo(ipAddress)
+        dataToUpdate.city = geo.city
+        dataToUpdate.region = geo.region
+        dataToUpdate.country = geo.country
+      } else {
+        dataToUpdate.city = null
+        dataToUpdate.region = null
+        dataToUpdate.country = null
+      }
+    }
+
     await prisma.session.update({
       where: { id: sessionId },
-      data: { lastUsedAt: new Date() },
+      data: dataToUpdate,
     })
   } else {
+    let geo: any = { city: null, region: null, country: null }
+    if (ipAddress) {
+      geo = await resolveGeo(ipAddress)
+    }
+
     const session = await prisma.session.create({
       data: {
         userId: user.id,
-        ip: ip ?? null,
-        userAgent: userAgent ?? null,
-        device: device?.model ?? device?.vendor ?? device?.type ?? 'Desktop',
-        os: os?.name ? `${os.name} ${os.version ?? ''}`.trim() : null,
-        browser: browser?.name ? `${browser.name} ${browser.version ?? ''}`.trim() : null,
+        ip: ipAddress,
+        userAgent: userAgent || null,
+        device: deviceName,
+        os: osName,
+        browser: browserName,
         city: geo.city,
         region: geo.region,
         country: geo.country,
@@ -54,15 +81,15 @@ export const generateSessionToken = async (
     await logAction({
       action: 'SESSION_CREATE',
       userId: user.id,
-      ip: ip ?? undefined,
+      ip: ipAddress ?? undefined,
       metadata: {
         sessionId,
-        device: device?.model ?? device?.vendor ?? device?.type ?? 'Desktop',
-        os: os?.name ? `${os.name} ${os.version ?? ''}`.trim() : undefined,
-        browser: browser?.name ? `${browser.name} ${browser.version ?? ''}`.trim() : undefined,
-        city: geo.city,
-        region: geo.region,
-        country: geo.country,
+        device: deviceName,
+        os: osName ?? undefined,
+        browser: browserName ?? undefined,
+        city: geo.city ?? undefined,
+        region: geo.region ?? undefined,
+        country: geo.country ?? undefined,
       },
     })
   }
