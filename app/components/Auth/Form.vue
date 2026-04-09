@@ -371,7 +371,7 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
 
     if (!isMainDomain) {
       const authBaseUrl = import.meta.dev ? 'http://localhost:3000' : 'https://topiqu.com'
-      const authUrl = `${authBaseUrl}${localePath('/oauth-start')}?provider=${provider}&callbackUrl=${encodeURIComponent(finalRedirectUrl)}`
+      const authUrl = `${authBaseUrl}/api/auth/signin/${provider}?callbackUrl=${encodeURIComponent(finalRedirectUrl)}`
       window.location.href = authUrl
       return
     }
