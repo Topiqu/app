@@ -260,6 +260,10 @@ export default defineNuxtConfig({
         cs: '/autorizace',
         en: '/auth',
       },
+      'oauth-start': {
+        cs: '/oauth-start',
+        en: '/oauth-start',
+      },
     },
   },
 
