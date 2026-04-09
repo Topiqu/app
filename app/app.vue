@@ -2,7 +2,7 @@
   <NuxtLoadingIndicator class="z-[9999]" :color="computedThemeColor" />
   <StatusBar />
 
-  <Landing v-if="!clientSite" />
+  <Landing v-if="!clientSite && !isOauthRoute" />
 
   <div v-else>
     <NuxtLayout>
@@ -15,6 +15,8 @@
 import type { themes } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
+const route = useRoute()
+const isOauthRoute = computed(() => route.path.includes('/oauth-start'))
 const clientSite = await useClientSite()
 const adChance = useAdChance()
 
