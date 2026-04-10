@@ -5,7 +5,6 @@ export function useArticleSeo(
   clientSite: MaybeRefOrGetter<any>,
   canonicalUrl: MaybeRefOrGetter<string>,
 ) {
-  const { t } = useI18n()
   const resolvedData = computed(() => toValue(data))
   const resolvedClientSite = computed(() => toValue(clientSite))
   const resolvedCanonicalUrl = computed(() => toValue(canonicalUrl))
@@ -34,45 +33,6 @@ export function useArticleSeo(
     twitterTitle: () => (hasSeoPlan.value ? resolvedData.value?.title || 'Article' : undefined),
     twitterDescription: () => (hasSeoPlan.value ? articleDescription.value : undefined),
   })
-
-  const ogDescription = computed(() => {
-    const text = articleDescription.value || ''
-    return (
-      text
-        .slice(0, 100)
-        .replace(/[\n\r]+/g, ' ')
-        .trim() + '...'
-    )
-  })
-
-  const ogImageOptions = computed(() => {
-    const site = resolvedClientSite.value
-    const article = resolvedData.value || {}
-
-    if (hasSeoPlan.value) {
-      return {
-        title: article.title || 'Article',
-        description: ogDescription.value,
-        siteName: site?.name || 'Blog',
-        siteLogo: site?.logoUrl || undefined,
-        authorName: article.user?.username,
-        authorImage: article.user?.avatarUrl || undefined,
-        readingTime: article.readingTime ? t('articles.readingTime', [article.readingTime]) : undefined,
-        backgroundImage: article.imageUrl || undefined,
-        isPremium: true,
-      }
-    }
-
-    return {
-      title: article.title || 'Article',
-      siteName: 'Topiqu',
-      authorName: article.user?.username,
-      backgroundImage: undefined,
-      isPremium: false,
-    }
-  })
-
-  defineOgImageComponent('TopiquArticle', ogImageOptions)
 
   useHead({
     link: [

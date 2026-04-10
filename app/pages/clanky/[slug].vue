@@ -201,8 +201,49 @@ const canonicalUrl = computed(() => {
   return `${reqUrl.protocol}//${reqUrl.host}${localePath({ name: 'clanky-slug', params: { slug: data.value.slug } })}`
 })
 
-// Extract SEO
 useArticleSeo(data, clientSite, canonicalUrl)
+
+const hasSeoPlan = computed(() => clientSite?.plan !== 'BASIC')
+const articleDescription = computed(
+  () => data.value?.excerpt?.slice(0, 160) || data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) || '',
+)
+const ogDescription = computed(() => {
+  const text = articleDescription.value || ''
+  return (
+    text
+      .slice(0, 100)
+      .replace(/[\n\r]+/g, ' ')
+      .trim() + '...'
+  )
+})
+
+const ogImageOptions = computed(() => {
+  const article = data.value
+
+  if (hasSeoPlan.value && article) {
+    return {
+      title: article.title || 'Article',
+      description: ogDescription.value,
+      siteName: clientSite?.name || 'Blog',
+      siteLogo: clientSite?.logoUrl || undefined,
+      authorName: article.user?.username,
+      authorImage: article.user?.avatarUrl || undefined,
+      readingTime: article.readingTime ? $t('articles.readingTime', [article.readingTime]) : undefined,
+      backgroundImage: article.imageUrl || undefined,
+      isPremium: true,
+    }
+  }
+
+  return {
+    title: article?.title || 'Article',
+    siteName: 'Topiqu',
+    authorName: article?.user?.username,
+    backgroundImage: undefined,
+    isPremium: false,
+  }
+})
+
+defineOgImageComponent('TopiquArticle', ogImageOptions)
 
 // Tracking
 const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
