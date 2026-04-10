@@ -173,6 +173,7 @@
   </div>
   <Status v-else-if="status" :status="status" :message="status === 'error' ? `${error?.message}` : ''" />
 </template>
+
 <script setup lang="ts">
 import type { User } from '@zenstackhq/runtime/models'
 
@@ -217,6 +218,11 @@ const ogDescription = computed(() => {
   )
 })
 
+const { data: proxyResponse } = await useFetch('/api/og-proxy', {
+  query: { url: data.value?.imageUrl },
+  immediate: !!data.value?.imageUrl,
+})
+
 const ogImageOptions = computed(() => {
   const article = data.value
 
@@ -229,7 +235,7 @@ const ogImageOptions = computed(() => {
       authorName: article.user?.username,
       authorImage: article.user?.avatarUrl || undefined,
       readingTime: article.readingTime ? $t('articles.readingTime', [article.readingTime]) : undefined,
-      backgroundImage: article.imageUrl || undefined,
+      backgroundImage: proxyResponse.value?.dataUrl || undefined,
       isPremium: true,
     }
   }
@@ -245,13 +251,10 @@ const ogImageOptions = computed(() => {
 
 defineOgImageComponent('TopiquArticle', ogImageOptions)
 
-// Tracking
 const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
 
-// Actions
 const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh)
 
-// Follow Logic
 const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
 const toggleFollow = async () => {
   if (!session.value?.user || !data.value?.user.id) return toast.error({ message: $t('common.auth.loginPrompt') })
@@ -292,7 +295,6 @@ const toggleFollow = async () => {
   }
 }
 
-// Like Logic
 const toggleLike = async () => {
   if (!data.value?.slug) return
   let visitorId = null
@@ -324,7 +326,6 @@ const toggleLike = async () => {
   }
 }
 
-// UI State
 const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5)
 const hasTags = computed(() => !!data.value?.tags?.length)
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
@@ -338,7 +339,6 @@ const breadcrumbs = computed(() => {
   })
 })
 
-// Scroll & Sticky
 const isSticky = shallowRef(false)
 const progress = shallowRef(0)
 const container = useTemplateRef('container')
@@ -357,7 +357,6 @@ const handleContentScroll = () => {
   else progress.value = 0
 }
 
-// Lightbox
 type Image = { src: string; alt?: string }
 const images = ref<Image[]>([])
 const currentImageIndex = shallowRef(0)

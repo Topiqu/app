@@ -26,8 +26,8 @@
 
     <div class="absolute top-16 right-16">
       <img
-        v-if="logoData"
-        :src="logoData"
+        v-if="siteLogo"
+        :src="siteLogo"
         width="140"
         height="140"
         style="width: 140px; height: 140px; object-fit: contain"
@@ -60,9 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { Buffer } from 'node:buffer'
-
-const props = defineProps<{
+defineProps<{
   title: string
   description?: string
   siteName: string
@@ -70,21 +68,4 @@ const props = defineProps<{
   themeColor: string
   domain: string
 }>()
-
-const { origin } = useRequestURL()
-
-const toPngBase64 = async (url?: string) => {
-  if (!url) return undefined
-  if (url.startsWith('data:')) return url
-
-  try {
-    const proxy = `${origin}/api/og-proxy?url=${encodeURIComponent(url)}`
-    const buf = await $fetch(proxy, { responseType: 'arrayBuffer' })
-    return `data:image/png;base64,${Buffer.from(buf).toString('base64')}`
-  } catch {
-    return undefined
-  }
-}
-
-const logoData = await toPngBase64(props.siteLogo)
 </script>

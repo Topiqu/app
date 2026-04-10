@@ -68,6 +68,13 @@ useSeoMeta({
   twitterImageHeight: 600,
   twitterCard: 'summary_large_image',
 })
+
+const targetLogoUrl = clientSite?.logoUrl || `${reqUrl.origin}/app-logo.png`
+const { data: proxyResponse } = await useFetch('/api/og-proxy', {
+  query: { url: targetLogoUrl },
+  immediate: true,
+})
+
 const ogImageOptions = computed(() => {
   if (clientSite) {
     return {
@@ -75,7 +82,7 @@ const ogImageOptions = computed(() => {
       title: clientSite.name,
       description: clientSite.description || '',
       siteName: clientSite.name,
-      siteLogo: clientSite.logoUrl || `${reqUrl.origin}/logo.png`,
+      siteLogo: proxyResponse.value?.dataUrl || targetLogoUrl,
       themeColor: computedThemeColor.value,
       domain: reqUrl.host,
     }
@@ -116,7 +123,7 @@ if (clientSite) {
               name: clientSite.name,
               logo: {
                 '@type': 'ImageObject',
-                url: clientSite.logoUrl || `${reqUrl.origin}/logo.png`,
+                url: clientSite.logoUrl || `${reqUrl.origin}/app-logo.png`,
               },
             },
             inLanguage: clientSite.language || 'en',
