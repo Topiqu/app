@@ -45,33 +45,34 @@ export function useArticleSeo(
     )
   })
 
-  watchEffect(() => {
-    if (!resolvedData.value) return
+  const ogImageOptions = computed(() => {
     const site = resolvedClientSite.value
-    const article = resolvedData.value
+    const article = resolvedData.value || {}
 
     if (hasSeoPlan.value) {
-      defineOgImageComponent('TopiquArticle', {
-        title: article.title,
+      return {
+        title: article.title || 'Article',
         description: ogDescription.value,
         siteName: site?.name || 'Blog',
         siteLogo: site?.logoUrl || undefined,
         authorName: article.user?.username,
         authorImage: article.user?.avatarUrl || undefined,
-        readingTime: t('articles.readingTime', [article.readingTime]),
+        readingTime: article.readingTime ? t('articles.readingTime', [article.readingTime]) : undefined,
         backgroundImage: article.imageUrl || undefined,
         isPremium: true,
-      })
-    } else {
-      defineOgImageComponent('TopiquArticle', {
-        title: article.title,
-        siteName: 'Topiqu',
-        authorName: article.user?.username,
-        backgroundImage: undefined,
-        isPremium: false,
-      })
+      }
+    }
+
+    return {
+      title: article.title || 'Article',
+      siteName: 'Topiqu',
+      authorName: article.user?.username,
+      backgroundImage: undefined,
+      isPremium: false,
     }
   })
+
+  defineOgImageComponent('TopiquArticle', ogImageOptions)
 
   useHead({
     link: [
