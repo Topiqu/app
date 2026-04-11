@@ -1,12 +1,10 @@
 <template>
-  <div class="w-full h-full flex bg-[#0f172a] overflow-hidden relative">
-    <img
-      v-if="compatibleImage"
-      :src="compatibleImage"
-      width="1200"
-      height="630"
-      style="width: 100%; height: 100%; object-fit: cover"
-    />
+  <div class="w-[1200px] h-[630px] flex flex-col bg-[#0f172a] text-white p-10">
+    <h1 class="text-4xl">DEBUG INFO:</h1>
+    <p class="text-2xl break-all">
+      {{ backgroundImage ? backgroundImage.substring(0, 50) + '...' : 'DATA NEDORAZILA (PRÁZDNÉ)' }}
+    </p>
+    <p class="text-xl mt-4">Celková délka stringu: {{ backgroundImage ? backgroundImage.length : 0 }} znaků</p>
   </div>
 </template>
 
