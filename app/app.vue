@@ -12,8 +12,6 @@
 </template>
 
 <script setup lang="ts">
-import { Buffer } from 'node:buffer'
-
 import type { themes } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
@@ -73,21 +71,6 @@ useSeoMeta({
 
 const targetLogoUrl = clientSite?.logoUrl || `${reqUrl.origin}/app-logo.png`
 
-const { data: base64Logo } = await useAsyncData(
-  'og-proxy-logo',
-  async () => {
-    if (!targetLogoUrl) return undefined
-    try {
-      const proxy = `/api/og-proxy?url=${encodeURIComponent(targetLogoUrl)}`
-      const buf = await $fetch<ArrayBuffer>(proxy, { responseType: 'arrayBuffer' })
-      return `data:image/png;base64,${Buffer.from(buf).toString('base64')}`
-    } catch {
-      return undefined
-    }
-  },
-  { server: true },
-)
-
 const ogImageOptions = computed(() => {
   if (clientSite) {
     return {
@@ -95,7 +78,7 @@ const ogImageOptions = computed(() => {
       title: clientSite.name,
       description: clientSite.description || '',
       siteName: clientSite.name,
-      siteLogo: base64Logo.value || targetLogoUrl,
+      siteLogo: targetLogoUrl,
       themeColor: computedThemeColor.value,
       domain: reqUrl.host,
     }

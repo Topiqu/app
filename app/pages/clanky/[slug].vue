@@ -177,8 +177,6 @@
 <script setup lang="ts">
 import type { User } from '@zenstackhq/runtime/models'
 
-import { Buffer } from 'node:buffer'
-
 const route = useRoute()
 const toast = useToast()
 const localePath = useLocalePath()
@@ -220,21 +218,6 @@ const ogDescription = computed(() => {
   )
 })
 
-const { data: base64Bg } = await useAsyncData(
-  `og-proxy-bg-${data.value?.id}`,
-  async () => {
-    if (!data.value?.imageUrl) return undefined
-    try {
-      const proxy = `/api/og-proxy?url=${encodeURIComponent(data.value.imageUrl)}`
-      const buf = await $fetch<ArrayBuffer>(proxy, { responseType: 'arrayBuffer' })
-      return `data:image/png;base64,${Buffer.from(buf).toString('base64')}`
-    } catch {
-      return undefined
-    }
-  },
-  { server: true },
-)
-
 const ogImageOptions = computed(() => {
   const article = data.value
 
@@ -247,7 +230,7 @@ const ogImageOptions = computed(() => {
       authorName: article.user?.username,
       authorImage: article.user?.avatarUrl || undefined,
       readingTime: article.readingTime ? $t('articles.readingTime', [article.readingTime]) : undefined,
-      backgroundImage: base64Bg.value || undefined,
+      backgroundImage: article.imageUrl || undefined,
       isPremium: true,
     }
   }
