@@ -1,5 +1,8 @@
 <template>
   <div v-if="data" class="min-h-screen p-8 md:p-12 relative">
+    <div class="bg-red-500 text-white p-4 font-bold">
+      TEST PROXY: {{ base64Bg ? base64Bg.substring(0, 50) + '...' : 'PROXY NULL' }}
+    </div>
     <ArticleHeaderSticky
       :isSticky="isSticky"
       :progress="progress"
