@@ -220,7 +220,7 @@ const ogDescription = computed(() => {
 
 const proxyUrl = computed(() => {
   if (!data.value?.imageUrl) return undefined
-  return `/api/og-proxy?url=${encodeURIComponent(data.value.imageUrl)}`
+  return `${reqUrl.protocol}//${reqUrl.host}/api/og-proxy?url=${encodeURIComponent(data.value.imageUrl)}`
 })
 
 const ogImageOptions = computed(() => {

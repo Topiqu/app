@@ -27,7 +27,6 @@ export default defineEventHandler(async (event) => {
       base64: `data:image/png;base64,${buffer.toString('base64')}`,
     }
   } catch (error) {
-    console.error('OG Proxy error:', error)
-    throw createError({ statusCode: 500, message: 'Failed to process image' })
+    throw createError({ statusCode: 500, message: `Failed to process image ${error}` })
   }
 })

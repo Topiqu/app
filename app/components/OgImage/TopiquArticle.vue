@@ -1,8 +1,8 @@
 <template>
   <div class="w-[1200px] h-[630px] flex bg-[#0f172a] relative overflow-hidden">
     <img
-      v-if="bgBase64"
-      :src="bgBase64"
+      v-if="data?.base64"
+      :src="data.base64"
       style="width: 1200px; height: 630px; object-fit: cover; position: absolute; top: 0; left: 0"
     />
   </div>
@@ -13,16 +13,10 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const bgBase64 = shallowRef<string | undefined>()
-
-if (props.backgroundImage) {
-  try {
-    const res = await $fetch<{ base64: string }>(props.backgroundImage)
-    bgBase64.value = res.base64
-  } catch (error) {
-    console.error('OG Image Component fetch error:', error)
-  }
-}
+const { data } = await useFetch<{ base64: string }>(props.backgroundImage as string, {
+  server: true,
+  immediate: true,
+})
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
