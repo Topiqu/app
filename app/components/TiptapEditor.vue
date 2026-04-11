@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2" @keydown.tab.exact.stop @keydown.shift.tab.exact.stop>
     <template v-if="editor">
       <div v-if="edit" class="flex flex-wrap items-center gap-1">
         <FileInput :uploadImage="uploadImage" @close="onFileInputClose" />
@@ -45,6 +45,8 @@
           :active="editor.isActive({ textAlign: a })"
           @click="runCmd((c) => c.setTextAlign(a))"
         />
+        <Button icon="mdi-format-indent-increase" @click="runCmd((c) => c.indent())" />
+        <Button icon="mdi-format-indent-decrease" @click="runCmd((c) => c.outdent())" />
         <Button icon="mdi-minus" @click="runCmd((c) => c.setHorizontalRule())" />
         <Button icon="mdi-undo" :disabled="!editor.can().undo()" @click="runCmd((c) => c.undo())" />
         <Button icon="mdi-redo" :disabled="!editor.can().redo()" @click="runCmd((c) => c.redo())" />
