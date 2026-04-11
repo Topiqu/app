@@ -2,7 +2,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-11-02',
 
   devtools: { enabled: true },
-
+  build: {
+    transpile: ['html-encoding-sniffer', '@exodus/bytes'],
+  },
   runtimeConfig: {
     public: {
       appVersion: '1.0.0 beta',
@@ -54,10 +56,9 @@ export default defineNuxtConfig({
       ],
       dirs: ['shared/zod/models', 'server/utils', '#auth'],
     },
-    // externals: {
-    //   trace: false,
-    //   external: ['sharp'],
-    // },
+    externals: {
+      inline: ['html-encoding-sniffer', '@exodus/bytes'],
+    },
     serverAssets: [
       { baseName: 'emails:locales', dir: '../emails/locales' },
       { baseName: 'emails:templates', dir: '../emails/templates' },
