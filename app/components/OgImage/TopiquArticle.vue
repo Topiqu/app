@@ -1,31 +1,30 @@
 <template>
-  <div class="w-full h-full flex relative bg-[#0f172a] text-white overflow-hidden">
+  <div class="w-full h-full flex bg-[#0f172a] overflow-hidden relative">
     <img
-      v-if="bgSrc"
-      :src="bgSrc"
+      v-if="compatibleImage"
+      :src="compatibleImage"
       width="1200"
       height="630"
-      class="absolute inset-0 w-full h-full opacity-60"
-      style="object-fit: cover"
+      style="width: 100%; height: 100%; object-fit: cover"
     />
-
-    <div class="relative z-10 flex flex-col justify-end p-16 w-full h-full">
-      <h1 class="text-6xl font-bold leading-tight" style="text-wrap: balance">
-        {{ title }}
-      </h1>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 const props = defineProps<{
-  title?: string
   backgroundImage?: string
 }>()
 
-const bgSrc = computed(() => {
+const img = useImage()
+
+const compatibleImage = computed(() => {
   if (!props.backgroundImage) return undefined
-  return props.backgroundImage
+
+  if (props.backgroundImage.startsWith('data:')) {
+    return props.backgroundImage
+  }
+
+  return img(props.backgroundImage, { format: 'png', width: 1200 })
 })
 </script>
 <!-- <template>
