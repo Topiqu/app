@@ -1,21 +1,31 @@
 <template>
-  <div class="w-full h-full flex relative bg-[#0f172a]">
-    <img v-if="bgSrc" :src="bgSrc" class="w-full h-full object-cover" />
+  <div class="w-full h-full flex relative bg-[#0f172a] text-white overflow-hidden">
+    <img
+      v-if="bgSrc"
+      :src="bgSrc"
+      width="1200"
+      height="630"
+      class="absolute inset-0 w-full h-full opacity-60"
+      style="object-fit: cover"
+    />
+
+    <div class="relative z-10 flex flex-col justify-end p-16 w-full h-full">
+      <h1 class="text-6xl font-bold leading-tight" style="text-wrap: balance">
+        {{ title }}
+      </h1>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 const props = defineProps<{
+  title?: string
   backgroundImage?: string
 }>()
 
-const { origin } = useRequestURL()
-
 const bgSrc = computed(() => {
   if (!props.backgroundImage) return undefined
-  if (props.backgroundImage.startsWith('data:')) return props.backgroundImage
-
-  return `${origin}/api/og-proxy?url=${encodeURIComponent(props.backgroundImage)}`
+  return props.backgroundImage
 })
 </script>
 <!-- <template>
