@@ -104,7 +104,6 @@ export default defineNuxtConfig({
     debug: process.env.NODE_ENV === 'development',
     runtimeCacheStorage: true,
   },
-
   image: {
     quality: 90,
     format: ['avif', 'webp', 'png'],

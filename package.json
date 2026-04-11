@@ -42,6 +42,7 @@
     "@sidebase/nuxt-auth": "^1.1.0",
     "@sparticuz/chromium": "^143.0.4",
     "@takumi-rs/core": "^1.0.4",
+    "@takumi-rs/core-linux-x64-gnu": "^1.0.4",
     "@takumi-rs/wasm": "^1.0.4",
     "@tanstack/vue-table": "^8.21.3",
     "@tanstack/vue-virtual": "^3.13.12",
