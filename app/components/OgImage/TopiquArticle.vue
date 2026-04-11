@@ -13,17 +13,17 @@ const props = defineProps<{
   backgroundImage?: string
 }>()
 
-const img = useImage()
+// const img = useImage()
 
-const compatibleImage = computed(() => {
-  if (!props.backgroundImage) return undefined
+// const compatibleImage = computed(() => {
+//   if (!props.backgroundImage) return undefined
 
-  if (props.backgroundImage.startsWith('data:')) {
-    return props.backgroundImage
-  }
+//   if (props.backgroundImage.startsWith('data:')) {
+//     return props.backgroundImage
+//   }
 
-  return img(props.backgroundImage, { format: 'png', width: 1200 })
-})
+//   return img(props.backgroundImage, { format: 'png', width: 1200 })
+// })
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
