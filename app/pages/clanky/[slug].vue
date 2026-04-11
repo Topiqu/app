@@ -224,16 +224,11 @@ const { data: base64Bg } = await useAsyncData(
     if (!data.value?.imageUrl) return undefined
     try {
       const proxy = `/api/og-proxy?url=${encodeURIComponent(data.value.imageUrl)}`
-      const buf = await $fetch<ArrayBuffer>(proxy, { responseType: 'arrayBuffer' })
+      const response = await $fetch<{ success: boolean; dataUrl: string }>(proxy)
 
-      const bytes = new Uint8Array(buf)
-      let binary = ''
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]!)
-      }
-
-      return `data:image/png;base64,${btoa(binary)}`
-    } catch {
+      return response.dataUrl
+    } catch (e) {
+      console.error('OG Proxy fetch error:', e)
       return undefined
     }
   },
