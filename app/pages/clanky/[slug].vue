@@ -218,11 +218,6 @@ const ogDescription = computed(() => {
   )
 })
 
-const proxyUrl = computed(() => {
-  if (!data.value?.imageUrl) return undefined
-  return `${reqUrl.protocol}//${reqUrl.host}/api/og-proxy?url=${encodeURIComponent(data.value.imageUrl)}`
-})
-
 const ogImageOptions = computed(() => {
   const article = data.value
 
@@ -235,7 +230,7 @@ const ogImageOptions = computed(() => {
       authorName: article.user?.username,
       authorImage: article.user?.avatarUrl || undefined,
       readingTime: article.readingTime ? $t('articles.readingTime', [article.readingTime]) : undefined,
-      backgroundImage: proxyUrl.value,
+      backgroundImage: article.imageUrl,
       isPremium: true,
     }
   }
@@ -244,12 +239,12 @@ const ogImageOptions = computed(() => {
     title: article?.title || 'Article',
     siteName: 'Topiqu',
     authorName: article?.user?.username,
-    backgroundImage: proxyUrl.value,
+    backgroundImage: article?.imageUrl,
     isPremium: false,
   }
 })
 
-defineOgImageComponent('TopiquArticle', ogImageOptions)
+defineOgImage('TopiquArticle', ogImageOptions.value)
 
 const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
 

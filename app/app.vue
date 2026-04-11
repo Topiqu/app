@@ -71,48 +71,25 @@ useSeoMeta({
 
 const targetLogoUrl = clientSite?.logoUrl || `${reqUrl.origin}/app-logo.png`
 
-const { data: base64Bg } = await useAsyncData(
-  `og-proxy-bg-${clientSite?.id}`,
-  async () => {
-    if (!clientSite?.logoUrl) return undefined
-    try {
-      const proxy = `/api/og-proxy?url=${encodeURIComponent(clientSite.logoUrl)}`
-      const buf = await $fetch<ArrayBuffer>(proxy, { responseType: 'arrayBuffer' })
-
-      const bytes = new Uint8Array(buf)
-      let binary = ''
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]!)
-      }
-
-      return `data:image/png;base64,${btoa(binary)}`
-    } catch {
-      return undefined
-    }
-  },
-  { server: true },
-)
-
 const ogImageOptions = computed(() => {
   if (clientSite) {
     return {
-      component: 'ClientSite',
       title: clientSite.name,
       description: clientSite.description || '',
       siteName: clientSite.name,
-      siteLogo: base64Bg.value || targetLogoUrl,
+      siteLogo: targetLogoUrl,
       themeColor: computedThemeColor.value,
       domain: reqUrl.host,
     }
   }
   return {
-    component: 'AppDefault',
     title: 'Topiqu',
     description: 'Moderní blogovací platforma poháněná AI',
   }
 })
 
-defineOgImageComponent(ogImageOptions.value.component, ogImageOptions.value)
+const ogComponentName = clientSite ? 'ClientSite' : 'AppDefault'
+defineOgImage(ogComponentName, ogImageOptions.value)
 
 useHead({
   link: [

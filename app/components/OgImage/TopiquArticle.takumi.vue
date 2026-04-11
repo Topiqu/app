@@ -1,22 +1,25 @@
 <template>
   <div class="w-[1200px] h-[630px] flex bg-[#0f172a] relative overflow-hidden">
     <img
-      v-if="data?.base64"
-      :src="data.base64"
+      v-if="backgroundImage"
+      :src="backgroundImage"
       style="width: 1200px; height: 630px; object-fit: cover; position: absolute; top: 0; left: 0"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  backgroundImage?: string
+defineProps<{
+  title?: string
+  description?: string
+  siteName?: string
+  siteLogo?: string
+  authorName?: string
+  authorImage?: string
+  readingTime?: string
+  backgroundImage?: string | null
+  isPremium?: boolean
 }>()
-
-const { data } = await useFetch<{ base64: string }>(props.backgroundImage as string, {
-  server: true,
-  immediate: true,
-})
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
