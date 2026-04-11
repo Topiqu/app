@@ -1,8 +1,5 @@
 <template>
   <div v-if="data" class="min-h-screen p-8 md:p-12 relative">
-    <div class="bg-red-500 text-white p-4 font-bold">
-      TEST PROXY: {{ base64Bg ? base64Bg.substring(0, 50) + '...' : 'PROXY NULL' }}
-    </div>
     <ArticleHeaderSticky
       :isSticky="isSticky"
       :progress="progress"
@@ -221,22 +218,10 @@ const ogDescription = computed(() => {
   )
 })
 
-const { data: base64Bg } = await useAsyncData(
-  `og-proxy-bg-${data.value?.id}`,
-  async () => {
-    if (!data.value?.imageUrl) return undefined
-    try {
-      const proxy = `/api/og-proxy?url=${encodeURIComponent(data.value.imageUrl)}`
-      const response = await $fetch<{ success: boolean; dataUrl: string }>(proxy)
-
-      return response.dataUrl
-    } catch (e) {
-      console.error('OG Proxy fetch error:', e)
-      return undefined
-    }
-  },
-  { server: true },
-)
+const proxyUrl = computed(() => {
+  if (!data.value?.imageUrl) return undefined
+  return `${reqUrl.protocol}//${reqUrl.host}/api/og-proxy?url=${encodeURIComponent(data.value.imageUrl)}`
+})
 
 const ogImageOptions = computed(() => {
   const article = data.value
@@ -250,7 +235,7 @@ const ogImageOptions = computed(() => {
       authorName: article.user?.username,
       authorImage: article.user?.avatarUrl || undefined,
       readingTime: article.readingTime ? $t('articles.readingTime', [article.readingTime]) : undefined,
-      backgroundImage: base64Bg.value || article.imageUrl || undefined,
+      backgroundImage: proxyUrl.value,
       isPremium: true,
     }
   }
@@ -259,7 +244,7 @@ const ogImageOptions = computed(() => {
     title: article?.title || 'Article',
     siteName: 'Topiqu',
     authorName: article?.user?.username,
-    backgroundImage: base64Bg.value || article?.imageUrl || undefined,
+    backgroundImage: proxyUrl.value,
     isPremium: false,
   }
 })

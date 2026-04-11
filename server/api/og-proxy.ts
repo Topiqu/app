@@ -23,12 +23,9 @@ export default defineEventHandler(async (event) => {
       })
       .toBuffer()
 
-    const base64String = buffer.toString('base64')
+    setResponseHeader(event, 'Content-Type', 'image/png')
 
-    return {
-      success: true,
-      dataUrl: `data:image/png;base64,${base64String}`,
-    }
+    return buffer
   } catch (error) {
     console.error('OG Proxy error:', error)
     throw createError({ statusCode: 500, message: 'Failed to process image' })

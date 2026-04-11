@@ -1,29 +1,19 @@
 <template>
-  <div class="w-[1200px] h-[630px] flex flex-col bg-[#0f172a] text-white p-10">
-    <h1 class="text-4xl">DEBUG INFO:</h1>
-    <p class="text-2xl break-all">
-      {{ backgroundImage ? backgroundImage.substring(0, 50) + '...' : 'DATA NEDORAZILA (PRÁZDNÉ)' }}
-    </p>
-    <p class="text-xl mt-4">Celková délka stringu: {{ backgroundImage ? backgroundImage.length : 0 }} znaků</p>
+  <div class="w-[1200px] h-[630px] flex bg-[#0f172a] relative overflow-hidden">
+    <img
+      v-if="backgroundImage"
+      :src="backgroundImage"
+      width="1200"
+      height="630"
+      style="object-fit: cover; width: 100%; height: 100%; position: absolute; top: 0; left: 0"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   backgroundImage?: string
 }>()
-
-// const img = useImage()
-
-// const compatibleImage = computed(() => {
-//   if (!props.backgroundImage) return undefined
-
-//   if (props.backgroundImage.startsWith('data:')) {
-//     return props.backgroundImage
-//   }
-
-//   return img(props.backgroundImage, { format: 'png', width: 1200 })
-// })
 </script>
 <!-- <template>
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
