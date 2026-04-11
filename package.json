@@ -107,7 +107,6 @@
     "zod": "4.1.12"
   },
   "devDependencies": {
-    "@takumi-rs/wasm": "^1.0.1",
     "@types/argon2-browser": "^1.18.4",
     "@types/google-publisher-tag": "^1.20251117.0",
     "@types/mjml": "^4.7.4",

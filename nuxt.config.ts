@@ -102,8 +102,6 @@ export default defineNuxtConfig({
   ],
   ogImage: {
     defaults: {
-      // @ts-expect-error - not typed yet
-      renderer: 'takumi',
       component: 'NuxtSeo',
     },
     debug: true,
