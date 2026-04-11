@@ -1,49 +1,59 @@
 <template>
-  <Listbox v-model="modelValue">
-    <div class="relative">
-      <ListboxButton
-        class="w-full px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between rounded-lg bg-[#f9fafb] dark:bg-neutral-700 text-gray-800 dark:text-white text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer input transition"
-      >
-        <span class="flex items-center gap-2">
-          <Icon v-if="item.icon" :name="item.icon" class="w-6 h-6" />
-          <span class="uppercase tracking-wide text-xs">{{ item.label || item.value }}</span>
-        </span>
-        <Icon name="mdi:chevron-down" class="w-4 h-4 text-gray-400" />
-      </ListboxButton>
-      <Transition
-        enterActiveClass="transition ease-out duration-150"
-        enterFromClass="transform opacity-0 scale-95"
-        enterToClass="transform opacity-100 scale-100"
-        leaveActiveClass="transition ease-in duration-100"
-        leaveFromClass="transform opacity-100 scale-100"
-        leaveToClass="transform opacity-0 scale-95"
-      >
-        <ListboxOptions
-          class="w-full flex flex-col gap-0.5 absolute right-0 overflow-hidden rounded-xl bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-black/30 shadow-lg focus:outline-none z-50"
-          :class="upwards ? 'bottom-full mb-2' : 'mt-2'"
+  <div class="w-full">
+    <Listbox v-model="modelValue">
+      <Float :placement="upwards ? 'top' : 'bottom'" :offset="8" portal adaptiveWidth class="w-full">
+        <ListboxButton
+          class="w-full px-4 py-2.5 sm:py-3 flex items-center justify-between rounded-xl bg-gray-100! dark:bg-neutral-800! hover:bg-gray-200/70! dark:hover:bg-neutral-700/70! text-gray-800 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer transition-all duration-200 border-none!"
         >
-          <ListboxOption v-for="{ label, icon, value } in items" v-slot="{ active, selected }" :key="value" :value>
-            <Button
-              class="w-full text-left bg-transparent border-none!"
-              variant="neutral"
-              :class="[{ 'bg-blue-50 dark:bg-gray-700': active }, selected ? 'font-semibold' : 'font-normal']"
+          <span class="flex items-center gap-2">
+            <Icon v-if="item.icon" :name="item.icon" class="w-6 h-6" />
+            <span class="uppercase tracking-wide text-xs">{{ item.label || item.value }}</span>
+          </span>
+          <Icon name="mdi:chevron-down" class="w-4 h-4 text-gray-400" />
+        </ListboxButton>
+        <Transition
+          enterActiveClass="transition ease-out duration-150"
+          enterFromClass="transform opacity-0 -translate-y-2"
+          enterToClass="transform opacity-100 translate-y-0"
+          leaveActiveClass="transition ease-in duration-100"
+          leaveFromClass="transform opacity-100 translate-y-0"
+          leaveToClass="transform opacity-0 -translate-y-2"
+        >
+          <ListboxOptions
+            class="w-full flex flex-col gap-0.5 overflow-hidden rounded-xl bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-black/30 shadow-lg focus:outline-none z-[9999]"
+          >
+            <ListboxOption
+              v-for="{ label, icon, value } in items"
+              v-slot="{ active, selected }"
+              :key="value"
+              :value="value"
             >
-              <Icon v-if="icon" :name="icon" class="w-7 h-7 mr-1" />
-              <div class="flex-1">
-                <div class="flex items-center justify-between">
-                  <span class="block text-sm text-gray-800 dark:text-gray-100">{{ label }}</span>
-                  <span v-if="showValue" class="uppercase text-xs text-gray-500 dark:text-gray-400">{{ value }}</span>
+              <button
+                type="button"
+                class="w-full text-left flex items-center px-3 py-2.5 transition-colors duration-150 rounded-lg border-none!"
+                :class="[
+                  active ? 'bg-blue-50/70! dark:bg-gray-700!' : 'bg-transparent!',
+                  selected ? 'font-semibold' : 'font-normal',
+                ]"
+              >
+                <Icon v-if="icon" :name="icon" class="w-6 h-6 mr-2 text-gray-500 dark:text-gray-400" />
+                <div class="flex-1">
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="block text-sm text-gray-800 dark:text-gray-100">{{ label }}</span>
+                    <span v-if="showValue" class="uppercase text-xs text-gray-500 dark:text-gray-400">{{ value }}</span>
+                  </div>
                 </div>
-              </div>
-            </Button>
-          </ListboxOption>
-        </ListboxOptions>
-      </Transition>
-    </div>
-  </Listbox>
+              </button>
+            </ListboxOption>
+          </ListboxOptions>
+        </Transition>
+      </Float>
+    </Listbox>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { Float } from '@headlessui-float/vue'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 
 export type FormSelectItem = {

@@ -9,23 +9,18 @@
     <template #content>
       <div class="mt-4">
         <div v-if="drafts.length" class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-          <div class="relative flex-1">
-            <Icon
-              name="mdi:magnify"
-              class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
-            />
-            <FormInput
-              v-model="searchQuery"
-              :placeholder="$t('common.search')"
-              class="w-full py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200"
-              :disabled="loading"
-              icon="mdi:magnify"
-            />
-          </div>
+          <FormInput
+            v-model="searchQuery"
+            :placeholder="$t('common.search')"
+            class="flex-1 w-full"
+            inputClass="rounded-xl bg-white dark:bg-gray-800"
+            :disabled="loading"
+            icon="mdi:magnify"
+          />
           <FormSelect
             v-model="sortOption"
             :items="sortItems"
-            class="w-full md:w-44"
+            class="w-full md:w-40"
             :disabled="loading"
             :showValue="false"
           />

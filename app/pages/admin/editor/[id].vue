@@ -34,9 +34,34 @@
 
         <div class="mt-4 prose dark:prose-invert max-w-none">
           <TiptapEditor v-model="editedArticle.content" edit class="min-h-[500px]" />
+
+          <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon="mdi:file-document-outline"
+              class="px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200 bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 hover:shadow-md dark:from-indigo-500 dark:to-purple-600 dark:hover:from-indigo-600 dark:hover:to-purple-700"
+              @click="draftsOpen = true"
+            >
+              {{ $t('articles.editor.drafts.loadDrafts') }}
+            </Button>
+            <span v-if="successMessage" class="text-sm text-green-600 dark:text-green-400 flex items-center">
+              <Icon name="mdi:check-circle" class="w-4 h-4 text-green-600 dark:text-green-400 mr-2" />{{
+                successMessage
+              }}
+            </span>
+          </div>
         </div>
       </div>
     </main>
+
+    <LazyArticleDrafts
+      v-model:open="draftsOpen"
+      :drafts="drafts"
+      :loading="loading"
+      @select="loadDraft"
+      @close="draftsOpen = false"
+    />
 
     <div
       v-if="sidebarOpen"
@@ -156,6 +181,14 @@ const optimizedImageUrl = shallowRef('')
 const customPrompt = shallowRef('')
 const aiGenerating = shallowRef(false)
 
+const { idle } = useIdle(5 * 60 * 1000)
+const { drafts, loading, draftsOpen, successMessage, loadDraft } = await useArticleDrafts(editedArticle, idle, {
+  onDraftLoaded: () => {
+    selectedSeries.value = null
+    articleTags.value = []
+  },
+})
+
 if (!isNew) {
   try {
     const data = await $fetch(`/api/articles/${route.params.id}`)
@@ -241,7 +274,12 @@ const onSubmit = async () => {
 }
 
 const goBack = async () => {
-  if (editedArticle.value.title || editedArticle.value.content) {
+  const hasChanges = isNew
+    ? editedArticle.value.title.length > 0 ||
+      (editedArticle.value.content !== '' && editedArticle.value.content !== '<p></p>')
+    : editedArticle.value.title !== article.value?.title || editedArticle.value.content !== article.value?.content
+
+  if (hasChanges) {
     const r = await Swal.fire({
       title: 'Discard changes?',
       icon: 'warning',
