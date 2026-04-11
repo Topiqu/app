@@ -218,6 +218,28 @@ const ogDescription = computed(() => {
   )
 })
 
+const { data: base64Bg } = await useAsyncData(
+  `og-proxy-bg-${data.value?.id}`,
+  async () => {
+    if (!data.value?.imageUrl) return undefined
+    try {
+      const proxy = `/api/og-proxy?url=${encodeURIComponent(data.value.imageUrl)}`
+      const buf = await $fetch<ArrayBuffer>(proxy, { responseType: 'arrayBuffer' })
+
+      const bytes = new Uint8Array(buf)
+      let binary = ''
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]!)
+      }
+
+      return `data:image/png;base64,${btoa(binary)}`
+    } catch {
+      return undefined
+    }
+  },
+  { server: true },
+)
+
 const ogImageOptions = computed(() => {
   const article = data.value
 
@@ -230,7 +252,7 @@ const ogImageOptions = computed(() => {
       authorName: article.user?.username,
       authorImage: article.user?.avatarUrl || undefined,
       readingTime: article.readingTime ? $t('articles.readingTime', [article.readingTime]) : undefined,
-      backgroundImage: article.imageUrl || undefined,
+      backgroundImage: base64Bg.value || article.imageUrl || undefined,
       isPremium: true,
     }
   }
@@ -239,7 +261,7 @@ const ogImageOptions = computed(() => {
     title: article?.title || 'Article',
     siteName: 'Topiqu',
     authorName: article?.user?.username,
-    backgroundImage: undefined,
+    backgroundImage: base64Bg.value || article?.imageUrl || undefined,
     isPremium: false,
   }
 })
