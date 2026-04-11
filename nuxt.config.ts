@@ -101,13 +101,7 @@ export default defineNuxtConfig({
     'nuxt-gtag',
   ],
   ogImage: {
-    defaults: {
-      component: 'NuxtSeo',
-    },
-    debug: true,
-    compatibility: {
-      prerender: { chromium: false },
-    },
+    debug: process.env.NODE_ENV === 'development',
     runtimeCacheStorage: true,
   },
 
