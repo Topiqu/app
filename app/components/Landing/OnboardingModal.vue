@@ -10,9 +10,19 @@
           <h2 class="text-3xl font-black text-slate-900 dark:text-white">
             {{ $t('landing.onboarding.title', 'Vytvořte si vlastní blog') }}
           </h2>
-          <button @click="open = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition">
+          <Button
+            @click="open = false"
+            style="
+              background: transparent !important;
+              border: none !important;
+              padding: 0 !important;
+              box-shadow: none !important;
+              color: currentColor !important;
+            "
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition cursor-pointer"
+          >
             <Icon name="mdi:close" size="24" />
-          </button>
+          </Button>
         </div>
 
         <div class="flex gap-4 mb-8">
@@ -42,20 +52,54 @@
               />
 
               <div>
-                <FormLabel :text="$t('landing.onboarding.subdomain', 'Subdoména')" />
+                <FormLabel :text="$t('master.clientCreate.fields.domainType.label', 'Typ domény')" />
+                <FormSelect
+                  v-model="form.domainType"
+                  :items="[
+                    {
+                      label: $t('master.clientCreate.fields.domainType.options.SUBDOMAIN', 'Subdoména (.topiqu.com)'),
+                      value: 'SUBDOMAIN',
+                    },
+                    {
+                      label: $t('master.clientCreate.fields.domainType.options.CUSTOM', 'Vlastní doména / CNAME'),
+                      value: 'CUSTOM',
+                    },
+                  ]"
+                  :showValue="false"
+                />
+              </div>
+
+              <div>
+                <FormLabel
+                  :text="
+                    form.domainType === 'SUBDOMAIN'
+                      ? $t('landing.onboarding.subdomain', 'Subdoména')
+                      : $t('landing.onboarding.customDomain', 'Vlastní doména')
+                  "
+                />
                 <div class="flex items-center gap-2">
                   <FormInput
                     v-model="form.subdomain"
                     required
                     icon="mdi:link"
-                    pattern="^[a-z0-9-]+$"
-                    :placeholder="$t('landing.onboarding.subdomainPlaceholder', 'muj-blog')"
+                    :placeholder="form.domainType === 'SUBDOMAIN' ? 'muj-blog' : 'blog.mojefirma.cz'"
                     inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
                   />
-                  <span class="text-slate-500 font-mono text-sm whitespace-nowrap">.topiqu.com</span>
+                  <span
+                    v-if="form.domainType === 'SUBDOMAIN'"
+                    class="text-slate-500 font-mono text-sm whitespace-nowrap"
+                    >.topiqu.com</span
+                  >
                 </div>
                 <p class="text-xs text-slate-500 mt-1.5">
-                  {{ $t('landing.onboarding.subdomainHint', 'Pouze malá písmena, čísla a pomlčky.') }}
+                  {{
+                    form.domainType === 'SUBDOMAIN'
+                      ? $t('landing.onboarding.subdomainHint', 'Pouze malá písmena, čísla a pomlčky.')
+                      : $t(
+                          'landing.onboarding.customDomainHint',
+                          'Zadejte vaši vlastní doménu (nutné nastavit CNAME záznam).',
+                        )
+                  }}
                 </p>
               </div>
 
@@ -157,7 +201,8 @@ const loading = shallowRef(false)
 const form = reactive({
   siteName: '',
   subdomain: '',
-  language: 'cs',
+  domainType: 'SUBDOMAIN',
+  language: 'en',
   username: '',
   email: '',
   password: '',

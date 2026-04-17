@@ -6,11 +6,12 @@ const schema = z.object({
   subdomain: z
     .string()
     .min(1)
-    .max(64)
-    .regex(/^[a-z0-9-]+$/),
+    .max(255)
+    .regex(/^[a-z0-9-.]+$/),
+  domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
   language: z.enum(['cs', 'en']),
   username: z.string().min(3).max(50),
-  email: z.email(),
+  email: z.string().email(),
   password: z.string().min(4).max(124),
 })
 
@@ -18,7 +19,9 @@ export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, schema.parse)
   const { translate: t } = await useServerI18n(event)
 
-  const existingSite = await prisma.clientSite.findUnique({ where: { subdomain: body.subdomain } })
+  const fullSubdomain = body.domainType === 'SUBDOMAIN' ? `${body.subdomain}.topiqu.com` : body.subdomain
+
+  const existingSite = await prisma.clientSite.findUnique({ where: { subdomain: fullSubdomain } })
   if (existingSite) {
     throw createError({ statusCode: 400, message: t('common.errors.subdomainExists') || 'Subdomain taken' })
   }
@@ -33,7 +36,7 @@ export default defineEventHandler(async (event) => {
   const clientSite = await prisma.clientSite.create({
     data: {
       name: body.siteName,
-      subdomain: body.subdomain,
+      subdomain: fullSubdomain,
       language: body.language,
       plan: 'PREMIUM',
       tokenRemaining: 25000,
@@ -57,6 +60,13 @@ export default defineEventHandler(async (event) => {
   const stripeSecret = process.env.STRIPE_SK
   const premiumPriceId = process.env.STRIPE_PREMIUM_PRICE_ID
 
+  const reqUrl = getRequestURL(event)
+  const host = reqUrl.host.includes('localhost') ? `localhost:${reqUrl.port}` : reqUrl.host.replace(/^www\./, '')
+  const origin =
+    body.domainType === 'SUBDOMAIN'
+      ? `${reqUrl.protocol}//${body.subdomain}.${host}`
+      : `${reqUrl.protocol}//${body.subdomain}` // Custom domain URL
+
   if (stripeSecret && premiumPriceId) {
     try {
       const stripe = new Stripe(stripeSecret)
@@ -71,10 +81,6 @@ export default defineEventHandler(async (event) => {
         where: { id: clientSite.id },
         data: { stripeCustomerId: customer.id },
       })
-
-      const reqUrl = getRequestURL(event)
-      const host = reqUrl.host.includes('localhost') ? `localhost:${reqUrl.port}` : reqUrl.host.replace(/^www\./, '')
-      const origin = `${reqUrl.protocol}//${body.subdomain}.${host}`
 
       const session = await stripe.checkout.sessions.create({
         customer: customer.id,
@@ -92,7 +98,5 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const reqUrl = getRequestURL(event)
-  const host = reqUrl.host.includes('localhost') ? `localhost:${reqUrl.port}` : reqUrl.host.replace(/^www\./, '')
-  return { url: `${reqUrl.protocol}//${body.subdomain}.${host}/autorizace?created=true` }
+  return { url: `${origin}/autorizace?created=true` }
 })
