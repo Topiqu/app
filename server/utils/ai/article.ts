@@ -1,7 +1,7 @@
 import { generateObject } from 'ai'
 
 export const generateArticle = async (clientSiteId: string, prompt: string) => {
-  const { tokenRemaining, plan, focus, keywords, audience, tags, aiToneOfVoice, aiControversyLevel } =
+  const { tokenRemaining, plan, focus, keywords, audience, tags, aiToneOfVoice, aiControversyLevel, communityInsight } =
     await prisma.clientSite.findFirstOrThrow({
       select: {
         tokenRemaining: true,
@@ -12,6 +12,7 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
         plan: true,
         aiToneOfVoice: true,
         aiControversyLevel: true,
+        communityInsight: true,
       },
       where: { id: clientSiteId },
     })
@@ -38,18 +39,23 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
 
   const controversyPrompt = getControversyPrompt(aiControversyLevel)
 
+  const communityPrompt = communityInsight
+    ? `\nCommunity Insights to consider:\n- Audience mood summary: ${(communityInsight as any).summary}\n- Frequently discussed points: ${((communityInsight as any).topPoints || []).join(', ')}\nEnsure the article subtly addresses or acknowledges these current community feelings and discussion points where relevant.`
+    : ''
+
   const system = `
       You are a professional content writer focusing on ${focus || 'common topics'}.
       Write a detailed, well-structured article based on the user prompt aiming on ${audience || 'wide audience'}.
       Use appropriate headings, subheadings, and formatting.
       ${aiToneOfVoice ? `Write in the following tone of voice: ${aiToneOfVoice}.` : ''}
-      ${controversyPrompt}
+      ${controversyPrompt}${communityPrompt}
       Respond ONLY in valid JSON format with the structure:
       {
         "title": "catchy title 5-15 words",
         "perex": "short introductory paragraph (3-4 sentences)",
-        "content": "article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.",
+        "content": "article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear. If relevant, include poll slots like [[POLL1]], [[POLL2]] to engage the audience.",
         "images": ["detailed description for IMAGE1", "detailed description for IMAGE2", ...],
+        "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
         "tags": ["ID's of relevant tags from the provided tags list, up to 5, that best fit the article topic"],
         "sources": ["source URL or reference 1", "source URL or reference 2", ...]
       }.
@@ -58,6 +64,7 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
       ${keywords && `Keywords: ${JSON.stringify(keywords)}`}.
       Write in the language of the prompt or the company's presentation language.
       If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding detailed, vivid descriptions in the images array for AI image generation. Use 0 images if not relevant.
+      If the article would benefit from interactive audience engagement, include 0-2 poll slots in appropriate places in the content using [[POLL1]], [[POLL2]], etc. Provide corresponding questions and options (2-5 options per poll) in the polls array.
       Include 0-5 credible sources (URLs or references) relevant to the article topic in the sources array, if necessary (ie. jokes, short skits, or others).
       Only select tags from this list: ${JSON.stringify(tags || [])}.
     `.trim()
@@ -83,11 +90,20 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
         .min(500)
         .max(20000)
         .describe(
-          'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, you can also add <br> tags at the end of each section/paragraph for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.',
+          'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, you can also add <br> tags at the end of each section/paragraph for v-html on frontend. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
         ),
       images: z
         .array(z.string().min(10).max(1000).describe('Detailed description for image generation'))
         .describe('Array of image descriptions corresponding to slots in content'),
+      polls: z
+        .array(
+          z.object({
+            question: z.string().min(5).max(255).describe('Poll question'),
+            options: z.array(z.string().min(1).max(255)).min(2).max(5).describe('Poll options (2-5)'),
+          }),
+        )
+        .optional()
+        .describe('Array of polls corresponding to slots in content'),
       tags: z
         .array(z.string())
         .max(5)
@@ -121,6 +137,15 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
       `[[IMAGE${idx + 1}]]`,
       `<p style="text-align: center;"><img src="${url}" alt="${desc}" /></p>`,
     )
+  }
+
+  if (object.polls) {
+    for (const [idx, poll] of object.polls.entries()) {
+      const pollId = crypto.randomUUID()
+      const escapedOptions = JSON.stringify(poll.options).replace(/"/g, '&quot;')
+      const pollHtml = `<div data-type="poll" data-id="${pollId}" data-question="${poll.question}" data-options="${escapedOptions}"></div>`
+      object.content = object.content.replace(`[[POLL${idx + 1}]]`, pollHtml)
+    }
   }
 
   return { ...object, articleImageUrl, usage }

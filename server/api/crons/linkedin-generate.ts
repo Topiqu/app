@@ -12,7 +12,10 @@ export default defineEventHandler(async (event) => {
     where: { status: 'PENDING' },
     include: {
       company: {
-        include: { brandProfile: true },
+        include: {
+          brandProfile: true,
+          clientSite: { select: { communityInsight: true } },
+        },
       },
     },
   })
@@ -24,7 +27,11 @@ export default defineEventHandler(async (event) => {
         data: { status: 'GENERATING' },
       })
 
-      const text = await generateContentForTask(task.topic, task.company.brandProfile)
+      const text = await generateContentForTask(
+        task.topic,
+        task.company.brandProfile,
+        task.company.clientSite?.communityInsight,
+      )
       const { score, flags } = checkPolicyAndScore(text, task.company.brandProfile)
 
       const draft = await prisma.draftPost.create({
