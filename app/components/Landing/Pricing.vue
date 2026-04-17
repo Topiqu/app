@@ -205,6 +205,7 @@
               variant="primary"
               animation="softpop"
               class="w-full !bg-gradient-to-r !from-violet-600 !to-indigo-600 hover:!from-violet-500 hover:!to-indigo-500 !shadow-lg !shadow-violet-500/30 !border-0 text-white py-6 rounded-xl"
+              @click="$emit('startOnboarding')"
             >
               {{ $t('landing.pricing.plans.premium.cta') }}
             </Button>
@@ -277,3 +278,9 @@
     </div>
   </section>
 </template>
+
+<script setup lang="ts">
+defineEmits<{
+  (e: 'startOnboarding'): void
+}>()
+</script>

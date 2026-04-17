@@ -15,7 +15,7 @@
     </div>
 
     <div class="relative z-10">
-      <LandingHero @scroll="scrollToSection" />
+      <LandingHero @scroll="scrollToSection" @startOnboarding="showOnboarding = true" />
 
       <section id="specs" class="py-24 px-6 relative border-t border-slate-200 dark:border-white/5">
         <div class="max-w-7xl mx-auto">
@@ -150,7 +150,7 @@
         </div>
       </section>
 
-      <LandingPricing />
+      <LandingPricing @startOnboarding="showOnboarding = true" />
 
       <LandingFaq />
 
@@ -169,12 +169,16 @@
         </div>
 
         <div class="flex justify-center gap-8 text-sm font-bold text-slate-700 dark:text-slate-300 mb-8">
-          <NuxtLink to="/terms" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{{
-            $t('common.links.terms')
-          }}</NuxtLink>
-          <NuxtLink to="/privacy" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{{
-            $t('common.links.privacy')
-          }}</NuxtLink>
+          <NuxtLink
+            :to="localePath('tos')"
+            class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            >{{ $t('common.links.terms') }}</NuxtLink
+          >
+          <NuxtLink
+            :to="localePath('privacy')"
+            class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            >{{ $t('common.links.privacy') }}</NuxtLink
+          >
           <NuxtLink
             to="/status"
             class="flex items-center gap-2 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
@@ -188,11 +192,18 @@
           &copy; {{ new Date().getFullYear() }} Topiqu {{ $t('landing.footer.rights') }}
         </p>
       </footer>
+
+      <LandingOnboardingModal v-model="showOnboarding" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
+const showOnboarding = ref(false)
+const localePath = useLocalePath()
+
 const scrollToSection = (id: string) => {
   const el = document.getElementById(id)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })

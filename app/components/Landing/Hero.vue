@@ -77,18 +77,17 @@
             </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <NuxtLink :to="localePath({ name: 'autorizace' })" class="w-full sm:w-auto">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  animation="softpop"
-                  icon="mdi:arrow-right"
-                  iconPosition="right"
-                  class="w-full sm:w-auto shadow-[0_20px_40px_-15px_rgba(79,70,229,0.4)]"
-                >
-                  {{ $t('common.actions.get_started') }}
-                </Button>
-              </NuxtLink>
+              <Button
+                variant="primary"
+                size="lg"
+                animation="softpop"
+                icon="mdi:arrow-right"
+                iconPosition="right"
+                class="w-full sm:w-auto shadow-[0_20px_40px_-15px_rgba(79,70,229,0.4)]"
+                @click="$emit('startOnboarding')"
+              >
+                {{ $t('common.actions.get_started') }}
+              </Button>
 
               <Button
                 variant="neutral"
@@ -173,6 +172,7 @@
 const localePath = useLocalePath()
 defineEmits<{
   (e: 'scroll', id: string): void
+  (e: 'startOnboarding'): void
 }>()
 </script>
 
