@@ -32,11 +32,9 @@
         <h1 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate leading-tight">
           {{ title }}
         </h1>
-      </div>
 
-      <div class="flex justify-end items-center shrink-0">
         <button
-          class="group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition-all duration-300 ease-out"
+          class="group relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full border transition-all duration-300 ease-out shrink-0"
           :class="[
             likedByUser
               ? 'border-red-200 bg-red-50 text-red-500 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400'
@@ -47,9 +45,13 @@
         >
           <Icon
             :name="likedByUser ? 'mdi:heart' : 'mdi:heart-outline'"
-            class="w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-90"
+            class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-90"
           />
         </button>
+      </div>
+
+      <div class="flex justify-end items-center shrink-0">
+        <!-- Ponecháno prázdné kvůli grid-cols-[1fr_auto_1fr] vycentrování -->
       </div>
     </div>
 

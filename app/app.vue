@@ -89,7 +89,7 @@ const ogImageOptions = computed(() => {
 })
 
 const ogComponentName = clientSite ? 'ClientSite' : 'AppDefault'
-defineOgImage(ogComponentName, ogImageOptions.value)
+defineOgImage({ component: ogComponentName, ...ogImageOptions.value })
 
 useHead({
   link: [
