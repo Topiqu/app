@@ -15,6 +15,9 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
 
+  delete body.id
+  delete body.optimizedUrl
+
   const clientSite = await db.clientSite.findUnique({
     where: { id },
     include: { socials: true, users: { where: { role: 'ai' }, take: 1 } },
@@ -43,6 +46,7 @@ export default defineEventHandler(async (event) => {
     language: true,
     theme: true,
     focus: true,
+    description: true,
     logoUrl: true,
     autoRelease: true,
     gtagId: true,

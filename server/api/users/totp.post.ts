@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     where: { email },
     select: { id: true, password: true, totpSecret: true },
   })
-  if (!user || !(await argon.verify(user.password!, password)))
+  if (!user || !user.password || !(await argon.verify(user.password, password)))
     throw createError({ statusCode: 401, message: t('common.errors.invalidCredentials')! })
 
   return { id: user.id, totpSecret: user.totpSecret }
