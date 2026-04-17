@@ -393,6 +393,9 @@ model ClientSite extends Base {
     lastInvoicedAt      DateTime?
     monthlyPayment      Int?                @default(0)
     annualPayment       Int?                @default(0)
+    stripeCustomerId    String?
+    stripeSubscriptionId String?
+    stripePriceId       String?
     enableAi            Boolean             @default(false)
     enableCron          Boolean             @default(false)
     enableSentiment     Boolean             @default(false)

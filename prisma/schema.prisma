@@ -381,61 +381,64 @@ model Social {
 }
 
 model ClientSite {
-  id                  String              @id() @default(uuid())
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime?           @updatedAt()
-  deletedAt           DateTime?
-  name                String              @unique()
-  subdomain           String              @unique()
-  plan                ClientPlan          @default(BASIC)
-  focus               String?
-  description         String?
-  logoUrl             String?
-  generationFrequency GenerationFrequency @default(NONE)
-  tokenLimit          Int?                @default(0)
-  tokenRemaining      Int?                @default(0)
-  totalUsage          Int?                @default(0)
-  autoRelease         Boolean             @default(false)
-  keywords            Json?
-  audience            String?
-  lastGeneratedAt     DateTime?
-  humanHourlyRate     Int                 @default(1400)
-  humanWordsPerHour   Int                 @default(400)
-  gtagId              String?
-  apiKey              String?
-  gamNetworkCode      String?
-  allowAds            Boolean             @default(false)
-  allowGtag           Boolean?
-  allowShapes         Boolean             @default(false)
-  aiToneOfVoice       String?
-  aiControversyLevel  String?
-  communityInsight    Json?
-  insightUpdatedAt    DateTime?
-  billingPlan         BillingPlans        @default(MONTHLY)
-  firstPaidAt         DateTime?
-  nextBillingAt       DateTime?
-  lastInvoicedAt      DateTime?
-  monthlyPayment      Int?                @default(0)
-  annualPayment       Int?                @default(0)
-  enableAi            Boolean             @default(false)
-  enableCron          Boolean             @default(false)
-  enableSentiment     Boolean             @default(false)
-  currency            String?             @default("USD")
-  lastPaidAt          DateTime?           @default(now())
-  lastTokenRefilled   DateTime?           @default(now())
-  language            Language            @default(en)
-  theme               Theme               @default(blue)
-  users               User[]
-  tags                Tag[]
-  articles            Article[]
-  articleSeries       ArticleSeries[]
-  articleDrafts       ArticleDraft[]
-  emojis              Emoji[]
-  userBans            UserBan[]
-  socials             Social[]
-  logs                Log[]               @relation("LogToClientSite")
-  features            ClientFeature[]
-  linkedinCompanies   LinkedinCompany[]
+  id                   String              @id() @default(uuid())
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime?           @updatedAt()
+  deletedAt            DateTime?
+  name                 String              @unique()
+  subdomain            String              @unique()
+  plan                 ClientPlan          @default(BASIC)
+  focus                String?
+  description          String?
+  logoUrl              String?
+  generationFrequency  GenerationFrequency @default(NONE)
+  tokenLimit           Int?                @default(0)
+  tokenRemaining       Int?                @default(0)
+  totalUsage           Int?                @default(0)
+  autoRelease          Boolean             @default(false)
+  keywords             Json?
+  audience             String?
+  lastGeneratedAt      DateTime?
+  humanHourlyRate      Int                 @default(1400)
+  humanWordsPerHour    Int                 @default(400)
+  gtagId               String?
+  apiKey               String?
+  gamNetworkCode       String?
+  allowAds             Boolean             @default(false)
+  allowGtag            Boolean?
+  allowShapes          Boolean             @default(false)
+  aiToneOfVoice        String?
+  aiControversyLevel   String?
+  communityInsight     Json?
+  insightUpdatedAt     DateTime?
+  billingPlan          BillingPlans        @default(MONTHLY)
+  firstPaidAt          DateTime?
+  nextBillingAt        DateTime?
+  lastInvoicedAt       DateTime?
+  monthlyPayment       Int?                @default(0)
+  annualPayment        Int?                @default(0)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  stripePriceId        String?
+  enableAi             Boolean             @default(false)
+  enableCron           Boolean             @default(false)
+  enableSentiment      Boolean             @default(false)
+  currency             String?             @default("USD")
+  lastPaidAt           DateTime?           @default(now())
+  lastTokenRefilled    DateTime?           @default(now())
+  language             Language            @default(en)
+  theme                Theme               @default(blue)
+  users                User[]
+  tags                 Tag[]
+  articles             Article[]
+  articleSeries        ArticleSeries[]
+  articleDrafts        ArticleDraft[]
+  emojis               Emoji[]
+  userBans             UserBan[]
+  socials              Social[]
+  logs                 Log[]               @relation("LogToClientSite")
+  features             ClientFeature[]
+  linkedinCompanies    LinkedinCompany[]
 
   @@index([subdomain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
 }
