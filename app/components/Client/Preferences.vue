@@ -144,6 +144,16 @@
             </div>
           </section>
 
+          <section v-if="auth?.user?.plan !== 'BASIC'">
+            <LazyFormClientLinkedIn
+              :clientSiteId="client?.id ?? ''"
+              :mode="form.linkedinMode"
+              :brandProfile="form.linkedinBrandProfile"
+              @update:mode="form.linkedinMode = $event"
+              @update:brandProfile="form.linkedinBrandProfile = $event"
+            />
+          </section>
+
           <section v-if="auth?.user?.plan !== 'BASIC' && client?.tokenLimit && client?.tokenLimit > 0">
             <div class="bg-white/5 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
               <LazyFormClientAI
@@ -315,6 +325,8 @@ const form = ref({
   apiKey: '',
   autoRelease: false,
   allowGtag: false,
+  linkedinMode: 'HitL' as 'HitL' | 'FullAuto',
+  linkedinBrandProfile: { tone: '', audience: '', doList: [] as string[], dontList: [] as string[] },
 })
 
 interface ClientSite
@@ -443,6 +455,13 @@ watch(
       autoRelease: c.autoRelease ?? false,
       allowAds: c.allowAds,
       allowGtag: c.allowGtag ?? false,
+      linkedinMode: (c as any).linkedinCompany?.mode ?? 'HitL',
+      linkedinBrandProfile: (c as any).linkedinCompany?.brandProfile ?? {
+        tone: '',
+        audience: '',
+        doList: [],
+        dontList: [],
+      },
     }
   },
   { immediate: true },
