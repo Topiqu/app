@@ -32,23 +32,17 @@
             </h3>
 
             <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{{
-                  $t('landing.onboarding.siteName', 'Název webu')
-                }}</label>
-                <FormInput
-                  v-model="form.siteName"
-                  required
-                  icon="mdi:web"
-                  :placeholder="$t('landing.onboarding.siteNamePlaceholder', 'Můj skvělý blog')"
-                  inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
-                />
-              </div>
+              <FormField
+                v-model="form.siteName"
+                required
+                icon="mdi:web"
+                :label="$t('landing.onboarding.siteName', 'Název webu')"
+                :placeholder="$t('landing.onboarding.siteNamePlaceholder', 'Můj skvělý blog')"
+                inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
+              />
 
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{{
-                  $t('landing.onboarding.subdomain', 'Subdoména')
-                }}</label>
+                <FormLabel :text="$t('landing.onboarding.subdomain', 'Subdoména')" />
                 <div class="flex items-center gap-2">
                   <FormInput
                     v-model="form.subdomain"
@@ -66,9 +60,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{{
-                  $t('landing.onboarding.language', 'Jazyk webu')
-                }}</label>
+                <FormLabel :text="$t('landing.onboarding.language', 'Jazyk webu')" />
                 <FormSelect
                   v-model="form.language"
                   :items="[
@@ -99,46 +91,34 @@
             </h3>
 
             <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{{
-                  $t('common.labels.username', 'Uživatelské jméno')
-                }}</label>
-                <FormInput
-                  v-model="form.username"
-                  required
-                  icon="mdi:account"
-                  placeholder="admin"
-                  inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
-                />
-              </div>
+              <FormField
+                v-model="form.username"
+                required
+                icon="mdi:account"
+                :label="$t('common.labels.username', 'Uživatelské jméno')"
+                placeholder="admin"
+                inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
+              />
 
-              <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{{
-                  $t('common.labels.email', 'Email')
-                }}</label>
-                <FormInput
-                  v-model="form.email"
-                  required
-                  type="email"
-                  icon="mdi:email"
-                  placeholder="admin@example.com"
-                  inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
-                />
-              </div>
+              <FormField
+                v-model="form.email"
+                required
+                type="email"
+                icon="mdi:email"
+                :label="$t('common.labels.email', 'Email')"
+                placeholder="admin@example.com"
+                inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
+              />
 
-              <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{{
-                  $t('common.labels.password', 'Heslo')
-                }}</label>
-                <FormInput
-                  v-model="form.password"
-                  required
-                  type="password"
-                  icon="mdi:lock"
-                  placeholder="••••••••"
-                  inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
-                />
-              </div>
+              <FormField
+                v-model="form.password"
+                required
+                type="password"
+                icon="mdi:lock"
+                :label="$t('common.labels.password', 'Heslo')"
+                placeholder="••••••••"
+                inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
+              />
             </div>
 
             <div class="flex gap-4 mt-8">
