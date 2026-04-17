@@ -3,8 +3,8 @@
     <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4">
       <Back />
       <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-center">
-        <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">{{ tagName }}</span>
         {{ $t('articles.tagsArticles') }}
+        <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">{{ tagName }}</span>
       </h1>
       <div class="flex flex-col sm:flex-row gap-4 pb-4 border-b border-gray-200 dark:border-neutral-700">
         <FormInput v-model="search" :placeholder="$t('articles.searchPlaceholder')" />
