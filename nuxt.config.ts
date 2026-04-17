@@ -258,6 +258,14 @@ export default defineNuxtConfig({
         cs: '/oauth-start',
         en: '/oauth-start',
       },
+      tos: {
+        cs: '/obchodni-podminky',
+        en: '/terms-of-service',
+      },
+      privacy: {
+        cs: '/ochrana-soukromi',
+        en: '/privacy-policy',
+      },
     },
   },
 
