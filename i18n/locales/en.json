@@ -559,6 +559,19 @@
       "line6": "Status: Optimized",
       "line7": "Publication: Scheduled"
     },
+    "onboarding": {
+      "title": "Create your own blog",
+      "siteInfo": "Site Information",
+      "siteName": "Site Name",
+      "siteNamePlaceholder": "My Awesome Blog",
+      "subdomain": "Subdomain",
+      "subdomainPlaceholder": "my-blog",
+      "subdomainHint": "Lowercase letters, numbers, and dashes only.",
+      "language": "Site Language",
+      "adminInfo": "Admin Account",
+      "startTrial": "Start 14-day Trial",
+      "trialHint": "You'll instantly receive 25,000 free tokens."
+    },
     "footer": {
       "desc": "Platform for corporate content automation and monetization.",
       "rights": "All rights reserved."
@@ -992,5 +1005,68 @@
     "amber": "Amber",
     "cyan": "Cyan",
     "violet": "Violet"
+  },
+  "legal": {
+    "lastUpdated": "Last updated: {date}",
+    "tos": {
+      "title": "Terms of Service",
+      "description": "Terms of service for our platform.",
+      "sections": [
+        {
+          "icon": "mdi:handshake",
+          "iconColor": "text-blue-500",
+          "title": "1. Acceptance of Terms",
+          "content": "By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using these particular services, you shall be subject to any posted guidelines or rules applicable to such services.<br><br>Any participation in this service will constitute acceptance of this agreement. If you do not agree to abide by the above, please do not use this service."
+        },
+        {
+          "icon": "mdi:shield-check",
+          "iconColor": "text-green-500",
+          "title": "2. Provision of Services",
+          "content": "You agree and acknowledge that we are entitled to modify, improve or discontinue any of our services at its sole discretion and without notice to you even if it may result in you being prevented from accessing any information contained in it. Furthermore, you agree and acknowledge that we are entitled to provide services to you through subsidiaries or affiliated entities."
+        },
+        {
+          "icon": "mdi:copyright",
+          "iconColor": "text-purple-500",
+          "title": "3. Proprietary Rights",
+          "content": "You acknowledge and agree that our website may contain proprietary and confidential information including trademarks, service marks and patents protected by intellectual property laws and international intellectual property treaties.<br><br>We authorize you to view and make a single copy of portions of its content for offline, personal, non-commercial use. Our content may not be sold, reproduced, or distributed without our written permission."
+        },
+        {
+          "icon": "mdi:gavel",
+          "iconColor": "text-red-500",
+          "title": "4. Termination of Agreement",
+          "content": "The Terms of this agreement will continue to apply in perpetuity until terminated by either party without notice at any time for any reason. Terms that are to continue in perpetuity shall be unaffected by the termination of this agreement."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "Privacy and data processing policy.",
+      "sections": [
+        {
+          "icon": "mdi:database-search",
+          "iconColor": "text-indigo-500",
+          "title": "1. Information We Collect",
+          "content": "We collect information to provide better services to all our users. We collect information in the following ways:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Information you give us.</strong> For example, our services require you to sign up for an account. When you do, we'll ask for personal information, like your name, email address, or telephone number.</li><li><strong>Information we get from your use of our services.</strong> We collect information about the services that you use and how you use them.</li></ul>"
+        },
+        {
+          "icon": "mdi:cogs",
+          "iconColor": "text-sky-500",
+          "title": "2. How We Use Information",
+          "content": "We use the information we collect from all of our services to provide, maintain, protect and improve them, to develop new ones, and to protect our users. We also use this information to offer you tailored content – like giving you more relevant search results and ads.<br><br>We will ask for your consent before using information for a purpose other than those that are set out in this Privacy Policy."
+        },
+        {
+          "icon": "mdi:share-variant",
+          "iconColor": "text-amber-500",
+          "title": "3. Information We Share",
+          "content": "We do not share personal information with companies, organizations and individuals outside of our company unless one of the following circumstances applies:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>With your consent.</strong> We will share personal information with companies, organizations or individuals outside of our company when we have your consent to do so.</li><li><strong>For legal reasons.</strong> We will share personal information if we have a good-faith belief that access, use, preservation or disclosure of the information is reasonably necessary.</li></ul>"
+        },
+        {
+          "icon": "mdi:lock",
+          "iconColor": "text-emerald-500",
+          "title": "4. Information Security",
+          "content": "We work hard to protect our users from unauthorized access to or unauthorized alteration, disclosure or destruction of information we hold. In particular:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>We encrypt many of our services using SSL.</li><li>We review our information collection, storage and processing practices, including physical security measures, to guard against unauthorized access to systems.</li></ul>"
+        }
+      ]
+    }
   }
 }

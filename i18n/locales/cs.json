@@ -560,6 +560,19 @@
       "line6": "Status: Optimalizováno",
       "line7": "Publikace: Naplánována"
     },
+    "onboarding": {
+      "title": "Vytvořte si vlastní blog",
+      "siteInfo": "Informace o webu",
+      "siteName": "Název webu",
+      "siteNamePlaceholder": "Můj skvělý blog",
+      "subdomain": "Subdoména",
+      "subdomainPlaceholder": "muj-blog",
+      "subdomainHint": "Pouze malá písmena, čísla a pomlčky.",
+      "language": "Jazyk webu",
+      "adminInfo": "Účet správce",
+      "startTrial": "Začít 14-denní Trial",
+      "trialHint": "Získáte rovnou 25 000 tokenů zdarma."
+    },
     "footer": {
       "desc": "Platforma pro automatizaci a monetizaci firemního obsahu.",
       "rights": "Všechna práva vyhrazena."
@@ -990,5 +1003,68 @@
     "amber": "Jantarová",
     "cyan": "Azurová",
     "violet": "Fialová"
+  },
+  "legal": {
+    "lastUpdated": "Naposledy aktualizováno: {date}",
+    "tos": {
+      "title": "Podmínky služby",
+      "description": "Podmínky používání naší platformy.",
+      "sections": [
+        {
+          "icon": "mdi:handshake",
+          "iconColor": "text-blue-500",
+          "title": "1. Souhlas s podmínkami",
+          "content": "Přístupem k této webové stránce a jejím používáním přijímáte a souhlasíte s tím, že budete vázáni podmínkami a ustanoveními této smlouvy. Při používání těchto konkrétních služeb navíc podléháte všem zveřejněným pokynům nebo pravidlům platným pro takové služby.<br><br>Jakákoli účast na této službě bude představovat přijetí této smlouvy. Pokud nesouhlasíte s dodržováním výše uvedeného, nepoužívejte tuto službu."
+        },
+        {
+          "icon": "mdi:shield-check",
+          "iconColor": "text-green-500",
+          "title": "2. Poskytování služeb",
+          "content": "Souhlasíte a berete na vědomí, že jsme oprávněni upravovat, vylepšovat nebo přerušovat jakékoli naše služby podle našeho vlastního uvážení a bez předchozího upozornění, a to i v případě, že to může mít za následek zamezení přístupu k jakýmkoli informacím obsaženým v těchto službách."
+        },
+        {
+          "icon": "mdi:copyright",
+          "iconColor": "text-purple-500",
+          "title": "3. Vlastnická práva",
+          "content": "Berete na vědomí a souhlasíte s tím, že naše webové stránky mohou obsahovat chráněné a důvěrné informace, včetně ochranných známek a patentů chráněných zákony o duševním vlastnictví.<br><br>Povolujeme vám prohlížet a vytvořit si jednu kopii částí obsahu pro offline, osobní a nekomerční použití. Náš obsah nesmí být prodáván, reprodukován nebo distribuován bez našeho písemného souhlasu."
+        },
+        {
+          "icon": "mdi:gavel",
+          "iconColor": "text-red-500",
+          "title": "4. Ukončení smlouvy",
+          "content": "Podmínky této smlouvy budou platit trvale, dokud nebudou některou ze stran kdykoli a z jakéhokoli důvodu vypovězeny bez předchozího upozornění. Podmínky, které mají platit trvale, nebudou ukončením této smlouvy dotčeny."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Ochrana soukromí",
+      "description": "Zásady zpracování a ochrany osobních dat.",
+      "sections": [
+        {
+          "icon": "mdi:database-search",
+          "iconColor": "text-indigo-500",
+          "title": "1. Informace, které shromažďujeme",
+          "content": "Shromažďujeme informace, abychom všem našim uživatelům mohli poskytovat lepší služby. Informace shromažďujeme následujícími způsoby:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Informace, které nám sdělíte.</strong> Naše služby například vyžadují, abyste si vytvořili účet. Při tom vás požádáme o osobní údaje.</li><li><strong>Informace, které získáme na základě vašeho používání našich služeb.</strong> Shromažďujeme informace o službách, které používáte, a o způsobu, jakým je používáte.</li></ul>"
+        },
+        {
+          "icon": "mdi:cogs",
+          "iconColor": "text-sky-500",
+          "title": "2. Jak informace používáme",
+          "content": "Informace shromážděné ze všech našich služeb používáme k jejich poskytování, údržbě, ochraně a vylepšování. Tyto informace také používáme k tomu, abychom vám nabídli přizpůsobený obsah – například relevantnější výsledky vyhledávání a reklamy.<br><br>Před použitím informací k jinému účelu vás požádáme o souhlas."
+        },
+        {
+          "icon": "mdi:share-variant",
+          "iconColor": "text-amber-500",
+          "title": "3. Informace, které sdílíme",
+          "content": "Osobní údaje nesdílíme se společnostmi a jednotlivci mimo naši společnost, pokud nenastane jedna z následujících okolností:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>S vaším souhlasem.</strong> Osobní údaje budeme sdílet se subjekty mimo naši společnost, pokud k tomu budeme mít váš souhlas.</li><li><strong>Z právních důvodů.</strong> Osobní údaje budeme sdílet, pokud jsme přesvědčeni, že přístup k informacím nebo jejich zpřístupnění je rozumně nutné.</li></ul>"
+        },
+        {
+          "icon": "mdi:lock",
+          "iconColor": "text-emerald-500",
+          "title": "4. Zabezpečení informací",
+          "content": "Usilovně pracujeme na ochraně našich uživatelů před neoprávněným přístupem nebo neoprávněnou úpravou informací, které uchováváme. Zejména:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Mnoho našich služeb šifrujeme pomocí SSL.</li><li>Přezkoumáváme naše postupy shromažďování a ukládání informací, abychom zabránili neoprávněnému přístupu do systémů.</li></ul>"
+        }
+      ]
+    }
   }
 }
