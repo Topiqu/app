@@ -2,10 +2,10 @@ import type { H3Event } from 'h3'
 
 import { zxcvbn } from '@zxcvbn-ts/core'
 
-export async function saveUserWithLogging(event: H3Event, data: any, isUpdate = false) {
+export async function saveUserWithLogging(event: H3Event, data: any, isUpdate = false, tx?: any) {
   const ip = getIp(event)
   const strength = data.password ? zxcvbn(data.password).score : null
-  const db = await getEnhancedPrisma((await getServerSession(event))?.user)
+  const db = tx || (await getEnhancedPrisma((await getServerSession(event))?.user))
   const user = isUpdate
     ? await db.user.update({
         where: { id: data.id },
