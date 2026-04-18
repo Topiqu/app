@@ -1,0 +1,8 @@
+{
+  "title": "Doména čeká na ověření",
+  "description": "Pro vaši vlastní doménu ({domain}) je potřeba nastavit CNAME záznam mířící na {target}.",
+  "verifyBtn": "Ověřit DNS",
+  "success": "Doména úspěšně ověřena!",
+  "notFound": "DNS záznam nebyl nalezen. Zkontrolujte CNAME.",
+  "error": "Nastala chyba při ověřování."
+}
