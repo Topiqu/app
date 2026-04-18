@@ -24,12 +24,24 @@ DROP INDEX "public"."ClientSite_subdomain_key";
 -- DropIndex
 DROP INDEX "public"."ClientSite_subdomain_name_plan_billingPlan_enableAi_enableC_idx";
 
--- AlterTable
+-- -------------------------------------------------------------------------
+-- BEZPEČNÁ MIGRACE DAT: subdomain -> domain
+-- 1. Přidáme nový sloupec jako volitelný (aby databáze nekřičela kvůli NULL)
+-- 2. Přelijeme do něj data
+-- 3. Zamkneme ho jako NOT NULL
+-- 4. Teprve teď můžeme starý sloupec smazat a přidat ostatní nové sloupce
+-- -------------------------------------------------------------------------
+ALTER TABLE "ClientSite" ADD COLUMN "domain" TEXT;
+UPDATE "ClientSite" SET "domain" = "subdomain";
+ALTER TABLE "ClientSite" ALTER COLUMN "domain" SET NOT NULL;
+
+-- Nyní aplikujeme zbytek tvých původních změn na ClientSite tabulku
 ALTER TABLE "ClientSite" DROP COLUMN "subdomain",
-ADD COLUMN     "domain" TEXT NOT NULL,
 ADD COLUMN     "stripeCustomerId" TEXT,
 ADD COLUMN     "stripePriceId" TEXT,
 ADD COLUMN     "stripeSubscriptionId" TEXT;
+-- -------------------------------------------------------------------------
+
 
 -- CreateTable
 CREATE TABLE "LinkedinCompany" (
