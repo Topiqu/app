@@ -64,53 +64,65 @@
             {{ $t('articles.userMenu.totalConsumed', [site?.totalUsage ?? 0]) }}
           </div>
         </div>
-        <div class="grid grid-cols-1 gap-4">
+        <div class="grid grid-cols-1 gap-3">
           <Button
             size="lg"
-            variant="primary"
-            class="w-full justify-between font-medium tracking-wide shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white"
+            variant="transparent"
+            class="relative w-full justify-between font-medium tracking-wide border-2 border-blue-500/20 hover:border-blue-500/50 bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 text-gray-700 dark:text-gray-200 transition-all duration-300 group"
             @click="buyTokens(10000, 2.99, 'Token Pack 10k')"
           >
             <span class="flex items-center gap-3">
-              <Icon name="mdi:package-variant" class="w-6 h-6" />
-              10 000 tokenů
+              <div
+                class="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform"
+              >
+                <Icon name="mdi:package-variant" class="w-5 h-5" />
+              </div>
+              <span class="font-semibold">{{ $t('common.tokens.pack10k') }}</span>
             </span>
-            <span class="text-xl font-bold">2,99 $</span>
+            <span class="text-lg font-bold text-gray-900 dark:text-white">2.99 $</span>
           </Button>
 
           <Button
             size="lg"
-            variant="primary"
-            class="w-full justify-between font-medium tracking-wide shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white"
+            variant="transparent"
+            class="relative w-full justify-between font-medium tracking-wide border-2 border-orange-500/30 hover:border-orange-500/60 bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 text-gray-700 dark:text-gray-200 transition-all duration-300 group shadow-sm hover:shadow-md"
             @click="buyTokens(25000, 4.99, 'Token Pack 25k')"
           >
             <span class="flex items-center gap-3">
-              <Icon name="mdi:star" class="w-6 h-6 text-yellow-300" />
-              25 000 tokenů
+              <div
+                class="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform"
+              >
+                <Icon name="mdi:star-half-full" class="w-5 h-5" />
+              </div>
+              <span class="font-semibold">{{ $t('common.tokens.pack25k') }}</span>
             </span>
-            <span class="text-xl font-bold">4,99 $</span>
+            <span class="text-lg font-bold text-gray-900 dark:text-white">4.99 $</span>
           </Button>
 
           <Button
             size="lg"
             variant="primary"
-            class="relative w-full justify-between font-bold tracking-wide shadow-2xl hover:shadow-3xl transition-all duration-300 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:via-pink-700 hover:to-rose-700 text-white overflow-hidden"
+            class="relative w-full justify-between font-bold tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:via-pink-700 hover:to-rose-700 text-white overflow-hidden group border-0"
             @click="buyTokens(50000, 9.99, 'Token Pack 50k')"
           >
-            <span class="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></span>
-            <span class="absolute -top-1 -right-1">
+            <span
+              class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+            ></span>
+            <span class="absolute -top-1 -right-1 z-10">
               <span
-                class="flex h-8 items-center gap-1.5 bg-yellow-400 text-purple-900 text-xs font-extrabold px-3 rounded-bl-lg rounded-tr-lg shadow-md"
+                class="flex h-7 items-center gap-1 bg-yellow-400 text-yellow-900 text-[10px] font-extrabold px-2.5 rounded-bl-lg rounded-tr-lg shadow-sm"
               >
-                <Icon name="mdi:star" class="w-4 h-4" />
-                NEJLEPŠÍ HODNOTA
+                <Icon name="mdi:star" class="w-3.5 h-3.5" />
+                {{ $t('common.tokens.bestValue') }}
               </span>
             </span>
-            <span class="flex items-center gap-3">
-              <Icon name="mdi:diamond" class="w-6 h-6" />
-              50 000 tokenů
+            <span class="flex items-center gap-3 relative z-10">
+              <div class="p-1.5 rounded-lg bg-white/20 text-white group-hover:scale-110 transition-transform">
+                <Icon name="mdi:diamond-stone" class="w-5 h-5" />
+              </div>
+              <span>{{ $t('common.tokens.pack50k') }}</span>
             </span>
-            <span class="text-2xl font-extrabold">9,99 $</span>
+            <span class="text-xl font-extrabold relative z-10">9.99 $</span>
           </Button>
 
           <Button
@@ -120,7 +132,7 @@
             @click="upgrade"
           >
             <Icon name="mdi:rocket-launch" class="w-6 h-6 mr-2" />
-            Přejít na PREMIUM
+            {{ $t('common.tokens.upgradeToPremium') }}
           </Button>
         </div>
 
