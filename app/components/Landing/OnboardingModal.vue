@@ -41,7 +41,7 @@
           ></div>
         </div>
 
-        <form @submit.prevent="step < 3 ? nextStep() : submit()">
+        <form @submit.prevent="handleSubmit">
           <div v-if="step === 1" class="space-y-8 animate-fade-in">
             <div class="space-y-3">
               <h3 class="text-2xl font-extrabold text-[#111] dark:text-white tracking-tight">
@@ -378,7 +378,6 @@ const form = reactive({
   password: '',
 })
 
-// Generate subdomain from siteName automatically if user hasn't typed their own
 watchEffect(() => {
   if (form.domainType === 'SUBDOMAIN' && !userEditedDomain.value && form.siteName) {
     form.domain = slugify(form.siteName, { lower: true, strict: true })
@@ -387,8 +386,12 @@ watchEffect(() => {
   }
 })
 
-const nextStep = () => {
-  if (step.value < 3) step.value++
+const handleSubmit = () => {
+  if (step.value < 3) {
+    step.value++
+  } else {
+    submit()
+  }
 }
 
 const submit = async () => {
