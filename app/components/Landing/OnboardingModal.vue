@@ -11,7 +11,7 @@
             class="text-3xl md:text-4xl font-black text-[#111] dark:text-white tracking-tighter leading-tight flex items-center gap-5"
           >
             <div
-              class="w-14 h-14 bg-[#FF4500] text-white rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0_0_rgba(17,17,17,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)] transform -rotate-3 transition-transform hover:rotate-0"
+              class="w-14 h-14 bg-[#D8B4FE] text-[#111] rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0_0_rgba(17,17,17,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)] transform -rotate-3 transition-transform hover:rotate-0"
             >
               <Icon name="mdi:rocket-launch" class="w-7 h-7" />
             </div>
@@ -77,7 +77,7 @@
                     class="relative flex flex-col items-start p-6 cursor-pointer rounded-3xl border-[3px] transition-all duration-200"
                     :class="
                       form.domainType === 'SUBDOMAIN'
-                        ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[6px_6px_0_0_#FF4500] -translate-y-1'
+                        ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[6px_6px_0_0_#67E8F9] -translate-y-1'
                         : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
                     "
                   >
@@ -85,8 +85,8 @@
                     <Icon
                       name="mdi:subdomain"
                       size="32"
-                      class="mb-4"
-                      :class="form.domainType === 'SUBDOMAIN' ? 'text-[#FF4500]' : 'text-[#888] dark:text-[#71717A]'"
+                      class="mb-4 transition-colors"
+                      :class="form.domainType === 'SUBDOMAIN' ? 'text-[#67E8F9]' : 'text-[#888] dark:text-[#71717A]'"
                     />
                     <span class="text-xl font-black leading-tight block">
                       {{ $t('landing.onboarding.subdomain', 'Subdoména') }}
@@ -98,7 +98,7 @@
                     class="relative flex flex-col items-start p-6 cursor-pointer rounded-3xl border-[3px] transition-all duration-200"
                     :class="
                       form.domainType === 'CUSTOM'
-                        ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[6px_6px_0_0_#FF4500] -translate-y-1'
+                        ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[6px_6px_0_0_#67E8F9] -translate-y-1'
                         : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
                     "
                   >
@@ -106,8 +106,8 @@
                     <Icon
                       name="mdi:earth"
                       size="32"
-                      class="mb-4"
-                      :class="form.domainType === 'CUSTOM' ? 'text-[#FF4500]' : 'text-[#888] dark:text-[#71717A]'"
+                      class="mb-4 transition-colors"
+                      :class="form.domainType === 'CUSTOM' ? 'text-[#67E8F9]' : 'text-[#888] dark:text-[#71717A]'"
                     />
                     <span class="text-xl font-black leading-tight block">
                       {{ $t('landing.onboarding.customDomain', 'Vlastní doména') }}
@@ -159,7 +159,7 @@
               type="submit"
               variant="primary"
               size="lg"
-              class="w-full mt-10 bg-[#FF4500] hover:bg-[#E03E00] text-white border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#B33100] active:shadow-none active:translate-y-[6px] transition-all"
+              class="w-full mt-10 bg-[#D8B4FE] hover:bg-[#C084FC] text-[#111] border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#A855F7] active:shadow-none active:translate-y-[6px] transition-all"
               icon="mdi:arrow-right"
               iconPosition="right"
             >
@@ -193,7 +193,7 @@
                     class="relative flex items-center p-5 cursor-pointer rounded-2xl border-[3px] transition-all duration-200"
                     :class="
                       form.language === 'cs'
-                        ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[4px_4px_0_0_#FF4500] -translate-y-1'
+                        ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[4px_4px_0_0_#F9A8D4] -translate-y-1'
                         : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
                     "
                   >
@@ -210,7 +210,7 @@
                     class="relative flex items-center p-5 cursor-pointer rounded-2xl border-[3px] transition-all duration-200"
                     :class="
                       form.language === 'en'
-                        ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[4px_4px_0_0_#FF4500] -translate-y-1'
+                        ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[4px_4px_0_0_#F9A8D4] -translate-y-1'
                         : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
                     "
                   >
@@ -256,7 +256,7 @@
                 type="submit"
                 variant="primary"
                 size="lg"
-                class="w-2/3 bg-[#111] hover:bg-[#222] dark:bg-white dark:hover:bg-[#F0F0F0] text-white dark:text-[#111] border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#FF4500] active:shadow-none active:translate-y-[6px] transition-all"
+                class="w-2/3 bg-[#111] hover:bg-[#222] dark:bg-white dark:hover:bg-[#F0F0F0] text-white dark:text-[#111] border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#F9A8D4] active:shadow-none active:translate-y-[6px] transition-all"
                 icon="mdi:arrow-right"
                 iconPosition="right"
               >
@@ -327,7 +327,7 @@
                 type="submit"
                 variant="primary"
                 size="lg"
-                class="w-2/3 bg-[#FF4500] hover:bg-[#E03E00] text-white border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#B33100] active:shadow-none active:translate-y-[6px] transition-all"
+                class="w-2/3 bg-[#67E8F9] hover:bg-[#22D3EE] text-[#111] border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#06B6D4] active:shadow-none active:translate-y-[6px] transition-all"
                 :loading="loading"
               >
                 <div class="flex items-center justify-center gap-3">
@@ -340,10 +340,10 @@
             </div>
 
             <div
-              class="bg-[#FFF5F0] dark:bg-[#2A1810] rounded-2xl p-5 mt-8 border-2 border-[#FFD8C2] dark:border-[#522916]"
+              class="bg-[#F3E8FF] dark:bg-[#2E1065] rounded-2xl p-5 mt-8 border-2 border-[#D8B4FE] dark:border-[#7E22CE]"
             >
               <p
-                class="text-center text-[#CC3700] dark:text-[#FF8A5C] font-black text-sm flex items-center justify-center gap-2 uppercase tracking-wide"
+                class="text-center text-[#7E22CE] dark:text-[#D8B4FE] font-black text-sm flex items-center justify-center gap-2 uppercase tracking-wide"
               >
                 <Icon name="mdi:sparkles" class="w-5 h-5" />
                 {{ $t('landing.onboarding.trialHintToken', 'Získáte rovnou 25 000 AI tokenů zdarma!') }}
