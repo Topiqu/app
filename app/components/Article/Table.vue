@@ -228,15 +228,10 @@
                   variant="success"
                   @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
                 />
-                <Button
-                  :icon="'mdi:pencil'"
-                  :disabled="row.original.status === 'archived'"
-                  @click="router.push(localePath({ name: 'admin-editor-id', params: { id: row.original.slug } }))"
-                />
                 <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
                   <Button
                     v-tippy="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''"
-                    icon="mdi:flash"
+                    icon="mdi:pencil"
                     :disabled="row.original.status === 'archived'"
                     @click="open.value = true"
                   />
