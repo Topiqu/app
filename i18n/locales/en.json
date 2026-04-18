@@ -590,7 +590,7 @@
       "adminInfo": "Admin Account",
       "adminInfoDesc": "We're almost done. Create your access credentials to the administration.",
       "usernamePlaceholder": "admin",
-      "emailPlaceholder": "admin@example.com",
+      "emailPlaceholder": "admin{'@'}example.com",
       "startTrial": "Start With Full Access",
       "trialHint": "You'll instantly receive 25,000 free tokens. You will be redirected to completion.",
       "trialHintToken": "You'll instantly receive 25,000 free AI tokens!"

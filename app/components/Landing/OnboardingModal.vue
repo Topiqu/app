@@ -298,7 +298,7 @@
                 type="email"
                 icon="mdi:email"
                 :label="$t('common.labels.email', 'Email')"
-                :placeholder="$t('landing.onboarding.emailPlaceholder', 'admin@example.com')"
+                :placeholder="$t('landing.onboarding.emailPlaceholder', 'admin@example.com').replace(`{'@'}`, '@')"
                 inputClass="w-full !bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent focus:!bg-white dark:focus:!bg-[#18181B] focus:!ring-4 focus:!ring-[#111] dark:focus:!ring-white transition-all text-lg font-bold rounded-2xl py-4"
               />
 
