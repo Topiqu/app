@@ -66,7 +66,7 @@
                 icon="mdi:web"
                 :label="$t('landing.onboarding.siteName', 'Název webu')"
                 :placeholder="$t('landing.onboarding.siteNamePlaceholder', 'Můj skvělý blog')"
-                inputClass="!bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50 transition-shadow hover:shadow-sm"
+                inputClass="w-full !bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50 transition-shadow hover:shadow-sm"
               />
 
               <div class="space-y-3">
@@ -139,6 +139,7 @@
                         : 'blog.mycompany.com'
                     "
                     inputClass="!bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 shadow-sm w-full focus:!ring-indigo-500/50 transition-all"
+                    class="w-full"
                     :class="{ 'rounded-r-none border-r-0 focus:z-20': form.domainType === 'SUBDOMAIN' }"
                   />
                   <div
@@ -182,67 +183,73 @@
             <div
               class="space-y-6 bg-slate-50/50 dark:bg-slate-800/20 p-6 rounded-2xl border border-slate-100 dark:border-slate-800/50"
             >
-              <div>
-                <FormLabel :text="$t('landing.onboarding.mainLanguage', 'Hlavní jazyk obsahu')" />
-                <div class="grid grid-cols-2 gap-3">
-                  <label
-                    class="relative flex items-center p-3 cursor-pointer rounded-xl border-2 transition-all"
-                    :class="
-                      form.language === 'cs'
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                    "
-                  >
-                    <input type="radio" v-model="form.language" value="cs" class="sr-only" />
-                    <span class="text-2xl mr-3">🇨🇿</span>
-                    <span class="font-medium text-slate-700 dark:text-slate-200">Čeština</span>
-                  </label>
-                  <label
-                    class="relative flex items-center p-3 cursor-pointer rounded-xl border-2 transition-all"
-                    :class="
-                      form.language === 'en'
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                    "
-                  >
-                    <input type="radio" v-model="form.language" value="en" class="sr-only" />
-                    <span class="text-2xl mr-3">🇬🇧</span>
-                    <span class="font-medium text-slate-700 dark:text-slate-200">English</span>
-                  </label>
+              <div class="space-y-6">
+                <div>
+                  <FormLabel :text="$t('landing.onboarding.mainLanguage', 'Hlavní jazyk obsahu')" />
+                  <div class="grid grid-cols-2 gap-3">
+                    <label
+                      class="relative flex items-center p-3 cursor-pointer rounded-xl border-2 transition-all"
+                      :class="
+                        form.language === 'cs'
+                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      "
+                    >
+                      <input type="radio" v-model="form.language" value="cs" class="sr-only" />
+                      <span class="text-2xl mr-3">🇨🇿</span>
+                      <span class="font-medium text-slate-700 dark:text-slate-200">{{
+                        $t('landing.onboarding.langCz', 'Čeština')
+                      }}</span>
+                    </label>
+                    <label
+                      class="relative flex items-center p-3 cursor-pointer rounded-xl border-2 transition-all"
+                      :class="
+                        form.language === 'en'
+                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      "
+                    >
+                      <input type="radio" v-model="form.language" value="en" class="sr-only" />
+                      <span class="text-2xl mr-3">🇬🇧</span>
+                      <span class="font-medium text-slate-700 dark:text-slate-200">{{
+                        $t('landing.onboarding.langEn', 'English')
+                      }}</span>
+                    </label>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <FormLabel :text="$t('landing.onboarding.mainColor', 'Hlavní barva brandu')" />
-                <div class="flex flex-wrap gap-3">
-                  <label
-                    v-for="color in ['blue', 'indigo', 'purple', 'pink', 'red', 'orange', 'green', 'teal']"
-                    :key="color"
-                    class="relative cursor-pointer group"
-                  >
-                    <input type="radio" v-model="form.theme" :value="color" class="sr-only" />
-                    <div
-                      class="w-10 h-10 rounded-full border-2 transition-all duration-300"
-                      :class="[
-                        `bg-${color}-500`,
-                        form.theme === color
-                          ? 'border-white dark:border-slate-900 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 ring-indigo-500 scale-110 shadow-md'
-                          : 'border-transparent hover:scale-110',
-                      ]"
-                    ></div>
-                  </label>
+                <div>
+                  <FormLabel :text="$t('landing.onboarding.mainColor', 'Hlavní barva brandu')" />
+                  <div class="flex flex-wrap gap-3">
+                    <label
+                      v-for="color in ['blue', 'indigo', 'purple', 'pink', 'red', 'orange', 'green', 'teal']"
+                      :key="color"
+                      class="relative cursor-pointer group"
+                    >
+                      <input type="radio" v-model="form.theme" :value="color" class="sr-only" />
+                      <div
+                        class="w-10 h-10 rounded-full border-2 transition-all duration-300"
+                        :class="[
+                          `bg-${color}-500`,
+                          form.theme === color
+                            ? 'border-white dark:border-slate-900 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 ring-indigo-500 scale-110 shadow-md'
+                            : 'border-transparent hover:scale-110',
+                        ]"
+                      ></div>
+                    </label>
+                  </div>
                 </div>
-              </div>
 
-              <FormField
-                v-model="form.focus"
-                icon="mdi:target"
-                :label="$t('landing.onboarding.siteFocus', 'Hlavní zaměření webu (volitelné)')"
-                :placeholder="
-                  $t('landing.onboarding.siteFocusPlaceholder', 'např. Technologie, Životní styl, Firemní blog...')
-                "
-                inputClass="!bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50"
-              />
+                <FormField
+                  v-model="form.focus"
+                  icon="mdi:target"
+                  :label="$t('landing.onboarding.siteFocus', 'Hlavní zaměření webu (volitelné)')"
+                  :placeholder="
+                    $t('landing.onboarding.siteFocusPlaceholder', 'např. Technologie, Životní styl, Firemní blog...')
+                  "
+                  inputClass="!bg-white w-full dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50"
+                />
+              </div>
             </div>
 
             <div class="flex gap-4 mt-8">
@@ -292,8 +299,8 @@
                 required
                 icon="mdi:account"
                 :label="$t('common.labels.username', 'Uživatelské jméno')"
-                placeholder="admin"
-                inputClass="!bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50 transition-shadow hover:shadow-sm"
+                :placeholder="$t('landing.onboarding.usernamePlaceholder', 'admin')"
+                inputClass="w-full !bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50 transition-shadow hover:shadow-sm"
               />
 
               <FormField
@@ -302,8 +309,8 @@
                 type="email"
                 icon="mdi:email"
                 :label="$t('common.labels.email', 'Email')"
-                placeholder="admin@example.com"
-                inputClass="!bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50 transition-shadow hover:shadow-sm"
+                :placeholder="$t('landing.onboarding.emailPlaceholder', 'admin@example.com')"
+                inputClass="w-full !bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50 transition-shadow hover:shadow-sm"
               />
 
               <FormField
@@ -313,7 +320,7 @@
                 icon="mdi:lock"
                 :label="$t('common.labels.password', 'Heslo')"
                 placeholder="••••••••"
-                inputClass="!bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50 transition-shadow hover:shadow-sm"
+                inputClass="w-full !bg-white dark:!bg-slate-900 !border-slate-200 dark:!border-slate-700 focus:!ring-indigo-500/50 transition-shadow hover:shadow-sm"
               />
             </div>
 
