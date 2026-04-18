@@ -2,7 +2,7 @@
   <NuxtLoadingIndicator class="z-[9999]" :color="computedThemeColor" />
   <StatusBar />
 
-  <Landing v-if="!clientSite && !isOauthRoute" />
+  <Landing v-if="isMainLanding" />
 
   <div v-else>
     <NuxtLayout>
@@ -16,9 +16,19 @@ import type { themes } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
 const route = useRoute()
-const isOauthRoute = computed(() => route.path.includes('/oauth-start'))
 const clientSite = await useClientSite()
 const adChance = useAdChance()
+
+const isMainLanding = computed(() => {
+  if (clientSite) return false
+
+  const name = String(route.name || '')
+  if (name.includes('autorizace') || name.includes('admin')) return false
+
+  if (route.path.includes('/oauth-start')) return false
+
+  return true
+})
 
 if (clientSite) {
   adChance?.assign(clientSite.id, clientSite.plan)

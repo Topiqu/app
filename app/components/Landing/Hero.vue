@@ -35,7 +35,10 @@
           <Button variant="transparent" borderless @click="$emit('scroll', 'faq')"> FAQ </Button>
 
           <NuxtLink :to="localePath({ name: 'autorizace' })" class="w-full sm:w-auto">
-            <Button variant="transparent" borderless>
+            <Button
+              variant="primary"
+              class="w-full shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 rounded-full px-6 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500"
+            >
               {{ $t('common.auth.login') }}
             </Button>
           </NuxtLink>
