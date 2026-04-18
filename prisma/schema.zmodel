@@ -362,7 +362,7 @@ model Social {
 
 model ClientSite extends Base {
     name                String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
-    subdomain           String              @unique @length(1, 64, "Subdoména musí mít 1–64 znaků")
+    domain               String              @unique @length(1, 64, "Doména musí mít 1–64 znaků")
     plan                ClientPlan          @default(BASIC)
     focus               String?
     description         String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
@@ -420,7 +420,7 @@ model ClientSite extends Base {
     @@allow('read', true)
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')
-    @@index([subdomain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
+    @@index([domain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
 }
 
 model Feature extends Base {
