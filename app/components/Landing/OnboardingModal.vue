@@ -5,9 +5,10 @@
     <div
       class="relative bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-fade-in-up border border-slate-200 dark:border-slate-800"
     >
-      <div class="p-8">
+      <div class="p-6 md:p-10">
         <div class="flex justify-between items-center mb-8">
-          <h2 class="text-3xl font-black text-slate-900 dark:text-white">
+          <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+            <Icon name="mdi:rocket-launch" class="text-indigo-500" />
             {{ $t('landing.onboarding.title', 'Vytvořte si vlastní blog') }}
           </h2>
           <Button
@@ -41,7 +42,7 @@
               {{ $t('landing.onboarding.siteInfo', 'Informace o webu') }}
             </h3>
 
-            <div class="space-y-4">
+            <div class="space-y-5">
               <FormField
                 v-model="form.siteName"
                 required
@@ -77,19 +78,21 @@
                       : $t('landing.onboarding.customDomain', 'Vlastní doména')
                   "
                 />
-                <div class="flex items-center gap-2">
+                <div class="flex items-center">
                   <FormInput
-                    v-model="form.subdomain"
+                    v-model="form.domain"
                     required
                     icon="mdi:link"
                     :placeholder="form.domainType === 'SUBDOMAIN' ? 'muj-blog' : 'blog.mojefirma.cz'"
-                    inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800"
+                    inputClass="!bg-slate-50 dark:!bg-slate-950 !border-slate-200 dark:!border-slate-800 shadow-inner w-full"
+                    :class="{ 'rounded-r-none': form.domainType === 'SUBDOMAIN' }"
                   />
-                  <span
+                  <div
                     v-if="form.domainType === 'SUBDOMAIN'"
-                    class="text-slate-500 font-mono text-sm whitespace-nowrap"
-                    >.topiqu.com</span
+                    class="flex items-center px-4 py-[11px] bg-slate-100 dark:bg-slate-800 border border-l-0 border-slate-200 dark:border-slate-800 rounded-r-lg -ml-px text-slate-500 font-mono text-sm whitespace-nowrap z-10"
                   >
+                    .topiqu.com
+                  </div>
                 </div>
                 <p class="text-xs text-slate-500 mt-1.5">
                   {{
@@ -120,7 +123,7 @@
               type="submit"
               variant="primary"
               size="lg"
-              class="w-full mt-8"
+              class="w-full mt-8 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all"
               icon="mdi:arrow-right"
               iconPosition="right"
             >
@@ -134,7 +137,7 @@
               {{ $t('landing.onboarding.adminInfo', 'Účet správce') }}
             </h3>
 
-            <div class="space-y-4">
+            <div class="space-y-5">
               <FormField
                 v-model="form.username"
                 required
@@ -165,7 +168,7 @@
               />
             </div>
 
-            <div class="flex gap-4 mt-8">
+            <div class="flex gap-4 mt-10">
               <Button type="button" variant="neutral" size="lg" class="w-1/3" @click="step = 1">
                 {{ $t('common.actions.back', 'Zpět') }}
               </Button>
@@ -173,7 +176,7 @@
                 type="button"
                 variant="primary"
                 size="lg"
-                class="w-2/3"
+                class="w-2/3 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all"
                 :loading="loading"
                 @click="submit"
                 icon="mdi:rocket-launch"
@@ -181,9 +184,19 @@
                 {{ $t('landing.onboarding.startTrial', 'Začít s plným přístupem') }}
               </Button>
             </div>
-            <p class="text-center text-xs text-slate-500 mt-4">
-              {{ $t('landing.onboarding.trialHint', 'Získáte 25 000 tokenů zdarma. Budete přesměrováni k dokončení.') }}
-            </p>
+            <div
+              class="bg-indigo-50 dark:bg-indigo-500/10 rounded-xl p-4 mt-6 border border-indigo-100 dark:border-indigo-500/20"
+            >
+              <p class="text-center text-sm text-indigo-800 dark:text-indigo-300 font-medium">
+                <Icon name="mdi:gift-outline" class="mr-1 inline -mt-0.5" />
+                {{
+                  $t(
+                    'landing.onboarding.trialHint',
+                    'Získáte rovnou 25 000 tokenů zdarma. Budete přesměrováni k dokončení.',
+                  )
+                }}
+              </p>
+            </div>
           </div>
         </form>
       </div>
@@ -200,7 +213,7 @@ const loading = shallowRef(false)
 
 const form = reactive({
   siteName: '',
-  subdomain: '',
+  domain: '',
   domainType: 'SUBDOMAIN',
   language: 'en',
   username: '',

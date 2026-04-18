@@ -34,10 +34,10 @@
           </div>
           <FormField
             v-if="newClient.domainType === 'SUBDOMAIN'"
-            v-model="newClient.subdomain"
-            :label="$t('master.clientCreate.fields.subdomain.label')"
+            v-model="newClient.domain"
+            :label="$t('master.clientCreate.fields.domain.label')"
             :placeholder="subdomainPlaceholder"
-            @input="normalizeDomain('subdomain')"
+            @input="normalizeDomain('domain')"
           />
           <FormField
             v-if="newClient.domainType === 'CUSTOM'"
@@ -224,7 +224,7 @@ const initClient = () => ({
   email: '',
   username: '',
   password: '',
-  subdomain: '',
+  domain: '',
   customDomain: '',
   domainType: 'SUBDOMAIN' as 'SUBDOMAIN' | 'CUSTOM',
   plan: 'BASIC' as 'BASIC' | 'PRO' | 'PREMIUM' | 'CUSTOM',
@@ -259,22 +259,22 @@ const customDomainPlaceholder = computed(() =>
 )
 
 const isFormValid = computed(() => {
-  const { name, subdomain, customDomain, domainType, email, tokenLimit, aiUser } = newClient.value
+  const { name, domain, customDomain, domainType, email, tokenLimit, aiUser } = newClient.value
   if (!name || !email) return false
-  if (domainType === 'SUBDOMAIN' && !subdomain) return false
+  if (domainType === 'SUBDOMAIN' && !domain) return false
   if (domainType === 'CUSTOM' && !customDomain) return false
   if (tokenLimit > 0 && !aiUser.name) return false
   return true
 })
 
-const normalizeDomain = (field: 'subdomain' | 'customDomain') => {
+const normalizeDomain = (field: 'domain' | 'customDomain') => {
   const value = newClient.value[field]
   if (value) newClient.value[field] = normalizeString(value)
 }
 
 const updateDomainFields = () => {
   const normalizedName = newClient.value.name ? normalizeString(newClient.value.name) : ''
-  newClient.value.subdomain = normalizedName ? `${normalizedName}.topiqu.com` : ''
+  newClient.value.domain = normalizedName ? `${normalizedName}.topiqu.com` : ''
   newClient.value.customDomain = normalizedName ? `blog.${normalizedName}.com` : ''
 }
 
@@ -304,8 +304,7 @@ const createClient = async () => {
         keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined,
         logoUrl: newClient.value.optimizedUrl || newClient.value.logoUrl,
         aiUser: newClient.value.tokenLimit > 0 ? newClient.value.aiUser : undefined,
-        subdomain:
-          newClient.value.domainType === 'SUBDOMAIN' ? newClient.value.subdomain : newClient.value.customDomain,
+        domain: newClient.value.domainType === 'SUBDOMAIN' ? newClient.value.domain : newClient.value.customDomain,
         customDomain: undefined,
       },
     })

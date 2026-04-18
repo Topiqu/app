@@ -13,9 +13,9 @@
             :placeholder="$t('master.clientEdit.fields.name.placeholder')"
           />
           <FormField
-            v-model="editedClient.subdomain"
-            :label="$t('master.clientEdit.fields.subdomain.label')"
-            :placeholder="$t('master.clientEdit.fields.subdomain.placeholder')"
+            v-model="editedClient.domain"
+            :label="$t('master.clientEdit.fields.domain.label')"
+            :placeholder="$t('master.clientEdit.fields.domain.placeholder')"
           />
           <FormField
             v-model="editedClient.description"
@@ -120,7 +120,7 @@ const keywordsInput = ref(normalizeKeywords(props.client.keywords).join(', '))
 const editedClient = ref({
   id: props.client.id,
   name: props.client.name,
-  subdomain: props.client.subdomain,
+  domain: props.client.domain,
   plan: props.client.plan,
   generationFrequency: props.client.generationFrequency,
   tokenLimit: props.client.tokenLimit,
@@ -133,8 +133,8 @@ const editedClient = ref({
 })
 
 const isFormValid = computed(() => {
-  const { name, subdomain } = editedClient.value
-  return !!name && !!subdomain
+  const { name, domain } = editedClient.value
+  return !!name && !!domain
 })
 
 const updateKeywords = () => {

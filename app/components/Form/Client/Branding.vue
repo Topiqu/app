@@ -124,7 +124,7 @@ const props = defineProps<{
   description: string
   socials: { platform: SocialPlatform; url: string }[]
   name: string
-  subdomain: string
+  domain: string
   currentTheme: string
 }>()
 
@@ -197,7 +197,7 @@ const platformPlaceholders = computed(() => ({
   INSTAGRAM: `https://instagram.com/${props.name ?? ''}`,
   LINKEDIN: `https://linkedin.com/company/${props.name ?? ''}`,
   YOUTUBE: `https://youtube.com/@${props.name ?? ''}`,
-  OTHER: `https://${props.subdomain ?? ''}.cz`,
+  OTHER: `https://${props.domain ?? ''}.cz`,
 }))
 
 const addSocial = (platform: SocialPlatform) => {

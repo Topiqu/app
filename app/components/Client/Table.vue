@@ -202,8 +202,8 @@ const columns = ref<ColumnDef<ClientSite>[]>([
     cell: (info) => info.getValue(),
   },
   {
-    header: () => t('master.clientTable.headers.subdomain'),
-    accessorKey: 'subdomain',
+    header: () => t('master.clientTable.headers.domain'),
+    accessorKey: 'domain',
     cell: (info) => info.getValue(),
   },
   {
