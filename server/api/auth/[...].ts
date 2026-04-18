@@ -15,7 +15,7 @@ interface BaseOAuthProfile {
 }
 
 const isProduction = process.env.NODE_ENV === 'production'
-// TODO: For strict multi-tenant (isolated accounts), set this to undefined to prevent session sharing across subdomains.
+// TODO: For strict multi-tenant (isolated accounts), set this to undefined to prevent session sharing across domains.
 const cookieDomain = isProduction ? '.topiqu.com' : undefined
 
 function mapProfile({ id, sub, login, name, email, avatar_url, picture }: BaseOAuthProfile) {
@@ -171,7 +171,7 @@ export default NuxtAuthHandler({
         const { email, password } = signInSchema.parse(credentials)
 
         // TODO: For proper multi-tenant isolation:
-        // 1. Resolve 'clientSiteId' from req.headers.host (subdomain).
+        // 1. Resolve 'clientSiteId' from req.headers.host (domain).
         // 2. Filter user by { email, clientSiteId } to ensure unique accounts per site.
         const user = await prisma.user.findFirst({
           where: { email, deletedAt: null },

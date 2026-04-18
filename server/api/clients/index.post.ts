@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(session)
   const body = await readBody(event)
 
-  if (!body.name || !body.email || !body.subdomain)
+  if (!body.name || !body.email || !body.domain)
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   if (body.tokenLimit > 0 && !body.aiUser?.name)
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
   const [existingUser, existingSubdomain] = await Promise.all([
     db.user.findUnique({ where: { email: body.email } }),
-    db.clientSite.findUnique({ where: { subdomain: body.subdomain } }),
+    db.clientSite.findUnique({ where: { domain: body.domain } }),
   ])
 
   if (existingUser) throw createError({ statusCode: 409, message: t('common.errors.alreadyExists')! })
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     const clientSite = await tx.clientSite.create({
       data: {
         name: body.name,
-        subdomain: body.subdomain,
+        domain: body.domain,
         plan: body.plan,
         generationFrequency: body.generationFrequency,
         tokenLimit: body.tokenLimit,
@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
     clientSite: {
       id: clientSite.id,
       name: clientSite.name,
-      subdomain: clientSite.subdomain,
+      domain: clientSite.domain,
       plan: clientSite.plan,
       generationFrequency: clientSite.generationFrequency,
       tokenLimit: clientSite.tokenLimit,

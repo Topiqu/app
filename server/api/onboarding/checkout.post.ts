@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 
 const schema = z.object({
   siteName: z.string().min(1).max(255),
-  subdomain: z
+  domain: z
     .string()
     .min(1)
     .max(255)
@@ -19,9 +19,9 @@ export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, schema.parse)
   const { translate: t } = await useServerI18n(event)
 
-  const fullSubdomain = body.domainType === 'SUBDOMAIN' ? `${body.subdomain}.topiqu.com` : body.subdomain
+  const fullSubdomain = body.domainType === 'SUBDOMAIN' ? `${body.domain}.topiqu.com` : body.domain
 
-  const existingSite = await prisma.clientSite.findUnique({ where: { subdomain: fullSubdomain } })
+  const existingSite = await prisma.clientSite.findUnique({ where: { domain: fullSubdomain } })
   if (existingSite) {
     throw createError({ statusCode: 400, message: t('common.errors.subdomainExists') || 'Subdomain taken' })
   }
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
   const clientSite = await prisma.clientSite.create({
     data: {
       name: body.siteName,
-      subdomain: fullSubdomain,
+      domain: fullSubdomain,
       language: body.language,
       plan: 'PREMIUM',
       tokenRemaining: 25000,
@@ -64,8 +64,8 @@ export default defineEventHandler(async (event) => {
   const host = reqUrl.host.includes('localhost') ? `localhost:${reqUrl.port}` : reqUrl.host.replace(/^www\./, '')
   const origin =
     body.domainType === 'SUBDOMAIN'
-      ? `${reqUrl.protocol}//${body.subdomain}.${host}`
-      : `${reqUrl.protocol}//${body.subdomain}` // Custom domain URL
+      ? `${reqUrl.protocol}//${body.domain}.${host}`
+      : `${reqUrl.protocol}//${body.domain}` // Custom domain URL
 
   if (stripeSecret && premiumPriceId) {
     try {

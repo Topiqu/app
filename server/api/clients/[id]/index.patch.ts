@@ -28,16 +28,16 @@ export default defineEventHandler(async (event) => {
   if (clientSite.deletedAt && body.deletedAt !== null)
     throw createError({ statusCode: 400, message: t('common.errors.clientDeactivated')! })
 
-  if (body.subdomain) {
+  if (body.domain) {
     const conflict = await db.clientSite.findFirst({
-      where: { subdomain: body.subdomain, id: { not: id } },
+      where: { domain: body.domain, id: { not: id } },
     })
     if (conflict) throw createError({ statusCode: 409, message: t('common.errors.subdomainExists')! })
   }
 
   const UpdateSchema = models.ClientSiteScalarSchema.pick({
     name: true,
-    subdomain: true,
+    domain: true,
     plan: true,
     generationFrequency: true,
     tokenLimit: true,

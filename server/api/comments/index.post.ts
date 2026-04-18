@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       slug: true,
       title: true,
-      clientSite: { select: { subdomain: true } },
+      clientSite: { select: { domain: true } },
       user: { select: { email: true, allowEmail: true } },
     },
   })
@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   if (activeBan) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const protocol = import.meta.dev ? 'http' : 'https'
-  const host = import.meta.dev ? 'localhost:3000' : `${article.clientSite.subdomain}`
+  const host = import.meta.dev ? 'localhost:3000' : `${article.clientSite.domain}`
 
   const commentUrl = (id: string) => `${protocol}://${host}/clanky/${article.slug}#comment-${id}`
   const replyUrl = `${protocol}://${host}/clanky/${article.slug}/reply`
