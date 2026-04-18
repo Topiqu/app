@@ -72,7 +72,7 @@
       "banReasonRequired": "Důvod banu je povinný.",
       "userAlreadyBanned": "Uživatel je již zabanován na této subdoméně.",
       "blogAlreadyDeactivated": "Blog je již deaktivován.",
-      "subdomainExists": "Subdoména je již obsazená.",
+      "subdomainExists": "Doména je již obsazená.",
       "streamCreationError": "Chyba při vytváření streamu: {error}.",
       "cannotFollowYourself": "Nemůžete sledovat sami sebe.",
       "alreadyFollowingUser": "Tohoto uživatele už sledujete.",

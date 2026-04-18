@@ -98,7 +98,7 @@
       "banReasonRequired": "Ban reason is required.",
       "userAlreadyBanned": "User is already banned on this subdomain.",
       "blogAlreadyDeactivated": "Blog is already deactivated.",
-      "subdomainExists": "Subdomain already taken.",
+      "subdomainExists": "Domain already taken.",
       "streamCreationError": "Error creating stream: {error}.",
       "cannotFollowYourself": "You cannot follow yourself.",
       "alreadyFollowingUser": "You are already following this user.",

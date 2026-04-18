@@ -4,7 +4,7 @@
       "search": "Hledat klienty...",
       "headers": {
         "name": "Název",
-        "subdomain": "Subdoména",
+        "domain": "Doména",
         "plan": "Plán",
         "createdAt": "Vytvořeno",
         "actions": "Akce"
@@ -75,9 +75,9 @@
           "label": "Název klienta",
           "placeholder": "Název klienta"
         },
-        "subdomain": {
-          "label": "Subdoména",
-          "placeholder": "Subdoména"
+        "domain": {
+          "label": "Doména",
+          "placeholder": "Doména"
         },
         "description": {
           "label": "Popis",
