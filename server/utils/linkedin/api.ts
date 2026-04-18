@@ -49,6 +49,34 @@ export async function refreshAccessToken(refreshToken: string, clientId: string,
   return response.json()
 }
 
+export async function getPersonalUrn(accessToken: string) {
+  const response = await fetch(`${baseUrl}/userinfo`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  if (!response.ok) throw new Error(`Failed to fetch user info: ${await response.text()}`)
+  const data = await response.json()
+
+  let urn = data.sub
+  if (urn && !urn.startsWith('urn:li:person:')) {
+    urn = `urn:li:person:${urn}`
+  }
+  return urn
+}
+
+export async function getPagesUrn(accessToken: string) {
+  const response = await fetch(`${baseUrl}/organizationalEntityAcls?q=roleAssignee`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'X-Restli-Protocol-Version': '2.0.0',
+    },
+  })
+  if (!response.ok) throw new Error(`Failed to fetch pages: ${await response.text()}`)
+  const data = await response.json()
+  const org = data.elements?.[0]?.organization
+  if (!org) throw new Error('No organization found for this user.')
+  return org
+}
+
 /**
  * Creates a post on LinkedIn
  */

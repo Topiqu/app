@@ -584,6 +584,7 @@ enum ApprovalDecision {
 model LinkedinCompany extends Base {
     name           String
     linkedinOrgId  String      @unique
+    type           String      @default("personal")
     mode           PublishMode @default(HitL)
     timezone       String      @default("UTC")
     cadence        String      @default("daily")

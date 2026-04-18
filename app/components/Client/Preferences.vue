@@ -148,8 +148,10 @@
             <LazyFormClientLinkedIn
               :clientSiteId="client?.id ?? ''"
               :mode="form.linkedinMode"
+              :type="form.linkedinCompanyType"
               :brandProfile="form.linkedinBrandProfile"
               @update:mode="form.linkedinMode = $event"
+              @update:type="form.linkedinCompanyType = $event"
               @update:brandProfile="form.linkedinBrandProfile = $event"
             />
           </section>
@@ -327,10 +329,13 @@ const form = ref({
   allowGtag: false,
   linkedinMode: 'HitL' as 'HitL' | 'FullAuto',
   linkedinBrandProfile: { tone: '', audience: '', doList: [] as string[], dontList: [] as string[] },
+  linkedinCompanyType: 'pages' as 'pages' | 'personal',
 })
 
-interface ClientSite
-  extends Omit<_ClientSite, 'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'lastTokenRefilled'> {
+interface ClientSite extends Omit<
+  _ClientSite,
+  'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'lastTokenRefilled'
+> {
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT' | null
   nextBillingAt: string | null
   lastGeneratedAt: string | null
@@ -455,13 +460,15 @@ watch(
       autoRelease: c.autoRelease ?? false,
       allowAds: c.allowAds,
       allowGtag: c.allowGtag ?? false,
-      linkedinMode: (c as any).linkedinCompany?.mode ?? 'HitL',
-      linkedinBrandProfile: (c as any).linkedinCompany?.brandProfile ?? {
+      // Default to picking the first linkedin company if there's an array now, or use the object directly if backend hasn't been updated yet
+      linkedinMode: ((c as any).linkedinCompanies?.[0] || (c as any).linkedinCompany)?.mode ?? 'HitL',
+      linkedinBrandProfile: ((c as any).linkedinCompanies?.[0] || (c as any).linkedinCompany)?.brandProfile ?? {
         tone: '',
         audience: '',
         doList: [],
         dontList: [],
       },
+      linkedinCompanyType: ((c as any).linkedinCompanies?.[0] || (c as any).linkedinCompany)?.type ?? 'pages',
     }
   },
   { immediate: true },
@@ -498,6 +505,10 @@ const savePreferences = async () => {
       method: 'PATCH',
       body: {
         ...form.value,
+        linkedinMode: form.value.linkedinMode,
+        linkedinBrandProfile: form.value.linkedinBrandProfile,
+        // The type is used by the backend to find/create the specific company record
+        linkedinCompanyType: form.value.linkedinCompanyType,
         logoUrl: form.value.optimizedUrl || form.value.logoUrl,
         socials: form.value.socials.filter((s) => s.url.trim()),
         aiUser: client.value?.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,

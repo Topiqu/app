@@ -9,20 +9,38 @@
         <p class="text-sm text-neutral-500">Configure your automated LinkedIn publishing settings.</p>
       </div>
 
-      <Button
-        v-if="!isConnected"
-        variant="primary"
-        @click="connectLinkedIn"
-        class="bg-[#0A66C2] hover:bg-[#004182] text-white"
-      >
-        <Icon name="mdi:linkedin" class="mr-2" />
-        Connect LinkedIn
-      </Button>
-      <div
-        v-else
-        class="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full"
-      >
-        <Icon name="mdi:check-circle" /> Connected
+      <div v-if="!isConnected" class="flex gap-2">
+        <Button
+          variant="primary"
+          @click="connectLinkedIn('personal')"
+          class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
+        >
+          <Icon name="mdi:account" class="mr-1" />
+          Connect Personal
+        </Button>
+        <Button
+          variant="primary"
+          @click="connectLinkedIn('pages')"
+          class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
+        >
+          <Icon name="mdi:domain" class="mr-1" />
+          Connect Page
+        </Button>
+      </div>
+      <div v-else class="flex flex-col items-end">
+        <div
+          class="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full"
+        >
+          <Icon name="mdi:check-circle" /> Connected ({{ localType }})
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button @click="connectLinkedIn('personal')" class="text-xs text-blue-600 hover:underline">
+            Switch to Personal
+          </button>
+          <button @click="connectLinkedIn('pages')" class="text-xs text-blue-600 hover:underline">
+            Switch to Page
+          </button>
+        </div>
       </div>
     </div>
 
@@ -81,11 +99,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
-
 const props = defineProps<{
   clientSiteId: string
   mode?: 'HitL' | 'FullAuto'
+  type?: 'pages' | 'personal'
   brandProfile?: {
     tone?: string
     audience?: string
@@ -94,27 +111,31 @@ const props = defineProps<{
   }
 }>()
 
-const emit = defineEmits(['update:mode', 'update:brandProfile'])
+const emit = defineEmits(['update:mode', 'update:brandProfile', 'update:type'])
 
-const isConnected = ref(false)
+const isConnected = shallowRef(false)
+const localType = shallowRef(props.type || 'pages')
 
-const localMode = ref(props.mode || 'HitL')
+const localMode = shallowRef(props.mode || 'HitL')
 const localBrandProfile = ref({
   tone: props.brandProfile?.tone || '',
   audience: props.brandProfile?.audience || '',
 })
 
-const localDoList = ref(props.brandProfile?.doList?.join(', ') || '')
-const localDontList = ref(props.brandProfile?.dontList?.join(', ') || '')
+const localDoList = shallowRef(props.brandProfile?.doList?.join(', ') || '')
+const localDontList = shallowRef(props.brandProfile?.dontList?.join(', ') || '')
 
-// We can check if it's connected by pinging an API or checking client stats
 onMounted(async () => {
   try {
-    const res = await $fetch('/api/companies/my-company')
+    const res = await $fetch('/api/companies/my-company', {
+      query: { type: localType.value },
+    })
     if (res && (res as any).accessToken) {
       isConnected.value = true
+      localType.value = (res as any).type || 'pages'
+      emit('update:type', localType.value)
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 })
@@ -126,8 +147,16 @@ watch(
   },
 )
 
+watch(
+  () => props.type,
+  (val) => {
+    if (val) localType.value = val
+  },
+)
+
 function emitUpdate() {
   emit('update:mode', localMode.value)
+  emit('update:type', localType.value)
   emit('update:brandProfile', {
     ...localBrandProfile.value,
     doList: localDoList.value
@@ -141,9 +170,9 @@ function emitUpdate() {
   })
 }
 
-function connectLinkedIn() {
-  // Store the current clientSiteId in a cookie so the callback knows which one to link
-  document.cookie = `current_client_site_id=${props.clientSiteId}; path=/; max-age=3600`
-  window.location.href = '/api/linkedin/connect'
+function connectLinkedIn(appType: 'personal' | 'pages') {
+  localType.value = appType
+  emit('update:type', appType)
+  window.location.href = `/api/linkedin/connect?appType=${appType}&clientSiteId=${props.clientSiteId}`
 }
 </script>

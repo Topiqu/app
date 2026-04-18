@@ -2,9 +2,12 @@ import prisma from '../../utils/prisma'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
+  const appType = body.type || 'pages'
 
-  // Grab the first company for MVP purposes
-  let company = await prisma.linkedinCompany.findFirst()
+  // Grab the first company for MVP purposes, filtered by type
+  let company = await prisma.linkedinCompany.findFirst({
+    where: { type: appType },
+  })
 
   if (!company) {
     // If we don't have a company yet, create a dummy one linked to the first client site
@@ -16,6 +19,7 @@ export default defineEventHandler(async (event) => {
         name: 'My Company',
         linkedinOrgId: '123456',
         clientSiteId: clientSite.id,
+        type: appType,
         mode: body.mode || 'HitL',
       },
     })

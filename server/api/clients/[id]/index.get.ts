@@ -26,7 +26,6 @@ export default defineEventHandler(async (event) => {
       },
       linkedinCompanies: {
         include: { brandProfile: true },
-        take: 1,
       },
     },
   })
@@ -50,7 +49,7 @@ export default defineEventHandler(async (event) => {
           avatarUrl: clientSite.users[0].avatarUrl,
         }
       : null,
-    linkedinCompany: clientSite.linkedinCompanies[0] || null,
+    linkedinCompanies: clientSite.linkedinCompanies,
     activeFeatures,
     allowedFeatures,
   }

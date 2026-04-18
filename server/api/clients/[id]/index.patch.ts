@@ -142,12 +142,25 @@ export default defineEventHandler(async (event) => {
 
   // LinkedIn Automation settings
   if (body.linkedinMode !== undefined) {
-    let company = await db.linkedinCompany.findFirst({ where: { clientSiteId: id } })
+    // Note: This endpoint currently updates the FIRST linkedin company it finds.
+    // If you need to specify which one (pages vs personal), you would need to pass the type in the body.
+    // For now, we'll try to find the 'pages' one first, then fallback to finding any.
+    let company = await db.linkedinCompany.findFirst({
+      where: { clientSiteId: id, type: 'pages' },
+    })
+
+    if (!company) {
+      company = await db.linkedinCompany.findFirst({
+        where: { clientSiteId: id },
+      })
+    }
+
     if (!company) {
       company = await db.linkedinCompany.create({
         data: {
           name: 'My Company',
           linkedinOrgId: 'placeholder', // actual sync comes later with oauth
+          type: 'pages', // Defaulting to pages if none exists
           mode: body.linkedinMode,
           clientSiteId: id,
         },
