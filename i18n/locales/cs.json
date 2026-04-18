@@ -568,10 +568,17 @@
       "subdomain": "Subdoména",
       "subdomainPlaceholder": "muj-blog",
       "subdomainHint": "Pouze malá písmena, čísla a pomlčky.",
+      "customDomain": "Vlastní doména",
+      "customDomainHint": "Zadejte vaši vlastní doménu. Následně si do DNS vaší domény přidejte CNAME záznam směrující na app.topiqu.com",
+      "domainType": "Typ domény",
+      "domainTypeOptions": {
+        "SUBDOMAIN": "Subdoména (.topiqu.com)",
+        "CUSTOM": "Vlastní doména / CNAME"
+      },
       "language": "Jazyk webu",
       "adminInfo": "Účet správce",
-      "startTrial": "Začít 14-denní Trial",
-      "trialHint": "Získáte rovnou 25 000 tokenů zdarma."
+      "startTrial": "Začít s plným přístupem",
+      "trialHint": "Získáte rovnou 25 000 tokenů zdarma. Budete přesměrováni k dokončení."
     },
     "footer": {
       "desc": "Platforma pro automatizaci a monetizaci firemního obsahu.",

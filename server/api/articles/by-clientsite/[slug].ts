@@ -29,7 +29,7 @@ function extractPollData(content: string, articleId: string) {
       pollId: idMatch ? idMatch[1] : crypto.randomUUID(),
       question: unescapeHtml(questionMatch[1]),
       options: Array.isArray(options) ? options : [],
-      articleId: articleId,
+      articleId,
     }
   } catch (e) {
     console.error('Failed to parse poll data', e)

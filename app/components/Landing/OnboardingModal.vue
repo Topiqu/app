@@ -52,16 +52,16 @@
               />
 
               <div>
-                <FormLabel :text="$t('master.clientCreate.fields.domainType.label', 'Typ domény')" />
+                <FormLabel :text="$t('landing.onboarding.domainType', 'Typ domény')" />
                 <FormSelect
                   v-model="form.domainType"
                   :items="[
                     {
-                      label: $t('master.clientCreate.fields.domainType.options.SUBDOMAIN', 'Subdoména (.topiqu.com)'),
+                      label: $t('landing.onboarding.domainTypeOptions.SUBDOMAIN', 'Subdoména (.topiqu.com)'),
                       value: 'SUBDOMAIN',
                     },
                     {
-                      label: $t('master.clientCreate.fields.domainType.options.CUSTOM', 'Vlastní doména / CNAME'),
+                      label: $t('landing.onboarding.domainTypeOptions.CUSTOM', 'Vlastní doména / CNAME'),
                       value: 'CUSTOM',
                     },
                   ]"
@@ -97,7 +97,7 @@
                       ? $t('landing.onboarding.subdomainHint', 'Pouze malá písmena, čísla a pomlčky.')
                       : $t(
                           'landing.onboarding.customDomainHint',
-                          'Zadejte vaši vlastní doménu (nutné nastavit CNAME záznam).',
+                          'Zadejte vaši vlastní doménu. Následně si do DNS vaší domény přidejte CNAME záznam směrující na app.topiqu.com',
                         )
                   }}
                 </p>
@@ -176,13 +176,13 @@
                 class="w-2/3"
                 :loading="loading"
                 @click="submit"
-                icon="mdi:credit-card-outline"
+                icon="mdi:rocket-launch"
               >
-                {{ $t('landing.onboarding.startTrial', 'Začít 14-denní Trial') }}
+                {{ $t('landing.onboarding.startTrial', 'Začít s plným přístupem') }}
               </Button>
             </div>
             <p class="text-center text-xs text-slate-500 mt-4">
-              {{ $t('landing.onboarding.trialHint', 'Budete přesměrováni na Stripe. Získáte 25 000 tokenů zdarma.') }}
+              {{ $t('landing.onboarding.trialHint', 'Získáte 25 000 tokenů zdarma. Budete přesměrováni k dokončení.') }}
             </p>
           </div>
         </form>
