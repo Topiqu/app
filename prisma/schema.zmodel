@@ -362,7 +362,8 @@ model Social {
 
 model ClientSite extends Base {
     name                String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
-    domain               String              @unique @length(1, 64, "Doména musí mít 1–64 znaků")
+    domain              String              @unique @length(1, 64, "Doména musí mít 1–64 znaků")
+    domainVerified      Boolean             @default(false)
     plan                ClientPlan          @default(BASIC)
     focus               String?
     description         String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
