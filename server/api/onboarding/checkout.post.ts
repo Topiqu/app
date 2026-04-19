@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const existingUser = await prisma.user.findFirst({
-    where: { OR: [{ email: body.email }, { username: body.username }] },
+    where: { email: body.email },
   })
   if (existingUser) {
     throw createError({ statusCode: 400, message: t('common.errors.alreadyExists') || 'User exists' })
