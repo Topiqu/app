@@ -81,15 +81,21 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
     return params ? str.replace(/{(\w+)}/g, (_, k) => params[k] ?? `{${k}}`) : str
   }
 
-  let rendered = mjmlTemplate
-  for (const [k, v] of Object.entries(data)) {
-    rendered = rendered.replace(new RegExp(`{\\s*${k}\\s*}`, 'g'), v)
+  const { html: rawHtml, errors } = mjml2html(mjmlTemplate, {
+    validationLevel: 'soft',
+  })
+
+  if (errors.length) {
+    console.error('[MJML Errors]:', errors)
+    throw createError('MJML compilation failed')
   }
 
-  rendered = rendered.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, data))
+  let finalHtml = rawHtml
+  for (const [k, v] of Object.entries(data)) {
+    finalHtml = finalHtml.replace(new RegExp(`{\\s*${k}\\s*}`, 'g'), v)
+  }
 
-  const { html, errors } = mjml2html(rendered)
-  if (errors.length) throw createError('MJML compilation failed')
+  finalHtml = finalHtml.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, data))
 
   const config = useRuntimeConfig()
   const client = getSesClient()
@@ -106,7 +112,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
       },
       Body: {
         Html: {
-          Data: html,
+          Data: finalHtml,
           Charset: 'UTF-8',
         },
         Text: {
