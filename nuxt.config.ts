@@ -13,11 +13,13 @@ export default defineNuxtConfig({
     openModerator: { apiKey: process.env.OPENMODERATOR_API_KEY },
     xai: { apiKey: process.env.XAI_API_KEY },
     auth: { secret: process.env.AUTH_SECRET },
-    awsAccessKeyId: '',
-    awsSecretAccessKey: '',
-    awsRegion: '',
-    awsS3BucketName: '',
-    cdnUrl: '',
+    email: {
+      from: process.env.EMAIL_FROM || `"TOPIQU BLOG" <${process.env.NUXT_MAIL_USER}>`,
+    },
+    awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    awsRegion: process.env.AWS_REGION || 'eu-central-1',
+    awsS3BucketName: process.env.AWS_S3_BUCKET_NAME || '',
   },
 
   $production: {
@@ -133,15 +135,6 @@ export default defineNuxtConfig({
     provider: { type: 'authjs' },
     baseURL: process.env.AUTH_ORIGIN,
     originEnvKey: 'AUTH_ORIGIN',
-  },
-
-  nodemailer: {
-    from: `"TOPIQU BLOG" ${process.env.NUXT_MAIL_USER}`,
-    service: 'gmail',
-    auth: {
-      user: process.env.NUXT_MAIL_USER,
-      pass: process.env.NUXT_MAIL_PASS,
-    },
   },
 
   qrcode: {
