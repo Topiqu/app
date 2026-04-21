@@ -16,7 +16,6 @@ const messageCache = new Map<Language, any>()
 const templateCache = new Map<string, string>()
 
 type Messages = ReturnType<(typeof messageCache)['get']>
-type Templates = ReturnType<(typeof templateCache)['get']>
 
 let sesClient: SESClient | null = null
 
@@ -47,17 +46,20 @@ export const getEmailLocaleMessages = async (locale: Language): Promise<Messages
   return messageCache.get(locale)
 }
 
-export const getEmailTemplate = async (id: string): Promise<Templates> => {
+export const getEmailTemplate = async (id: string): Promise<string> => {
   if (!templateCache.has(id)) {
     try {
-      const template = await useStorage('assets:emails:templates').getItem(`${id}.mjml`)
-      if (!template) throw createError(`Email template "${id}" not found in storage`)
-      templateCache.set(id, template.toString())
+      const item = await useStorage('assets:emails:templates').getItem(`${id}.mjml`)
+      if (!item) throw createError(`Email template "${id}" not found in storage`)
+
+      const template = typeof item === 'string' ? item : new TextDecoder().decode(new Uint8Array(item as any))
+
+      templateCache.set(id, template)
     } catch (error) {
       throw createError(`An error occured while trying to get email template "${id}": ${error}`)
     }
   }
-  return templateCache.get(id)
+  return templateCache.get(id) as string
 }
 
 export const sendEmail = async ({ event, to, template, data, lang: forcedLang }: EmailData) => {
