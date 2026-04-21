@@ -67,7 +67,6 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
   if (!messages) throw createError(`Email locale messages for "${lang}" not found`)
 
   const mjmlTemplate = await getEmailTemplate(template)
-  if (!mjmlTemplate) throw createError(`Email template "${template}" not found`)
 
   const translate = (key: string, params?: Record<string, string>): string => {
     const path = key.split('.')
@@ -81,15 +80,13 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
     return params ? str.replace(/{(\w+)}/g, (_, k) => params[k] ?? `{${k}}`) : str
   }
 
-  // 1. NEJPRVE NAHRADÍME DATA A PŘEKLADY V RAW MJML STRINGU
-  let parsedMjml = mjmlTemplate.toString() // Ujistíme se, že je to opravdu string
+  let parsedMjml = mjmlTemplate
 
   for (const [k, v] of Object.entries(data)) {
     parsedMjml = parsedMjml.replace(new RegExp(`{\\s*${k}\\s*}`, 'g'), v)
   }
   parsedMjml = parsedMjml.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, data))
 
-  // 2. KOMPILACE S VYLEPŠENÝM DEBUGGINGEM
   let finalHtml = ''
   try {
     const { html: rawHtml, errors } = mjml2html(parsedMjml, {
@@ -97,23 +94,19 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
     })
 
     if (errors.length) {
-      // Změněno na warn, validationLevel: 'soft' hází i zbytečnosti,
-      // kvůli kterým nechceme padat, ale chceme je vidět.
       console.warn('[MJML Validation Warnings]:', errors)
     }
 
     finalHtml = rawHtml
   } catch (error) {
-    // TADY JE TVŮJ NOVÝ DEBUGGER
     console.error('================ FATAL MJML ERROR ================')
     console.error('CHYBA:', error)
     console.error('--- CO SE PŘESNĚ POSLALO DO KOMPILÁTORU: ---')
-    console.error(parsedMjml) // Zkontroluj, jestli se ti tu nevypisuje "undefined", "[object Object]" nebo zkomolenina
+    console.error(parsedMjml)
     console.error('==================================================')
     throw createError('MJML compilation failed due to a syntax or parser error.')
   }
 
-  // 3. ODESLÁNÍ PŘES AWS SES (Tvoje původní logika)
   const config = useRuntimeConfig()
   const client = getSesClient()
 
