@@ -49,24 +49,26 @@ export const getEmailLocaleMessages = async (locale: Language): Promise<Messages
 export const getEmailTemplate = async (id: string): Promise<string> => {
   if (!templateCache.has(id)) {
     try {
-      const item = await useStorage('assets:emails:templates').getItem(`${id}.mjml`)
+      const item = await useStorage('assets:emails:templates').getItemRaw(`${id}.mjml`)
       if (!item) throw createError(`Email template "${id}" not found in storage`)
 
       let template = ''
 
       if (typeof item === 'string') {
-        if (item.startsWith('60,109,106') || item.startsWith('60, 109, 106')) {
-          const charArray = item.split(',').map((c) => parseInt(c.trim(), 10))
-          template = new TextDecoder().decode(new Uint8Array(charArray))
-        } else {
-          template = item
-        }
-      } else if (item instanceof Uint8Array || Array.isArray(item)) {
+        template = item
+      } else if (item && typeof item === 'object' && 'byteLength' in item) {
         template = new TextDecoder().decode(new Uint8Array(item as any))
-      } else if (typeof item === 'object' && item !== null && 'data' in item && Array.isArray((item as any).data)) {
+      } else if (item && typeof item === 'object' && 'data' in item && Array.isArray((item as any).data)) {
         template = new TextDecoder().decode(new Uint8Array((item as any).data))
+      } else if (Array.isArray(item)) {
+        template = new TextDecoder().decode(new Uint8Array(item))
       } else {
         template = String(item)
+      }
+
+      if (template.startsWith('60,109,106') || template.startsWith('60, 109, 106')) {
+        const arr = template.split(',').map((c) => parseInt(c.trim(), 10))
+        template = new TextDecoder().decode(new Uint8Array(arr))
       }
 
       templateCache.set(id, template)
