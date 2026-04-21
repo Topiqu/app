@@ -81,30 +81,45 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
     return params ? str.replace(/{(\w+)}/g, (_, k) => params[k] ?? `{${k}}`) : str
   }
 
-  const { html: rawHtml, errors } = mjml2html(mjmlTemplate, {
-    validationLevel: 'soft',
-  })
+  // 1. NEJPRVE NAHRADÍME DATA A PŘEKLADY V RAW MJML STRINGU
+  let parsedMjml = mjmlTemplate.toString() // Ujistíme se, že je to opravdu string
 
-  if (errors.length) {
-    console.error('[MJML Errors]:', errors)
-    throw createError('MJML compilation failed')
-  }
-
-  let finalHtml = rawHtml
   for (const [k, v] of Object.entries(data)) {
-    finalHtml = finalHtml.replace(new RegExp(`{\\s*${k}\\s*}`, 'g'), v)
+    parsedMjml = parsedMjml.replace(new RegExp(`{\\s*${k}\\s*}`, 'g'), v)
+  }
+  parsedMjml = parsedMjml.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, data))
+
+  // 2. KOMPILACE S VYLEPŠENÝM DEBUGGINGEM
+  let finalHtml = ''
+  try {
+    const { html: rawHtml, errors } = mjml2html(parsedMjml, {
+      validationLevel: 'soft',
+    })
+
+    if (errors.length) {
+      // Změněno na warn, validationLevel: 'soft' hází i zbytečnosti,
+      // kvůli kterým nechceme padat, ale chceme je vidět.
+      console.warn('[MJML Validation Warnings]:', errors)
+    }
+
+    finalHtml = rawHtml
+  } catch (error) {
+    // TADY JE TVŮJ NOVÝ DEBUGGER
+    console.error('================ FATAL MJML ERROR ================')
+    console.error('CHYBA:', error)
+    console.error('--- CO SE PŘESNĚ POSLALO DO KOMPILÁTORU: ---')
+    console.error(parsedMjml) // Zkontroluj, jestli se ti tu nevypisuje "undefined", "[object Object]" nebo zkomolenina
+    console.error('==================================================')
+    throw createError('MJML compilation failed due to a syntax or parser error.')
   }
 
-  finalHtml = finalHtml.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, data))
-
+  // 3. ODESLÁNÍ PŘES AWS SES (Tvoje původní logika)
   const config = useRuntimeConfig()
   const client = getSesClient()
 
   const command = new SendEmailCommand({
     Source: config.email.from,
-    Destination: {
-      ToAddresses: [to],
-    },
+    Destination: { ToAddresses: [to] },
     Message: {
       Subject: {
         Data: translate(`${template}.subject`, data),
