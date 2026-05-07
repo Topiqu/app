@@ -73,6 +73,7 @@
       "unprocessableEntity": "We don't understand this, like an AI with a bad prompt. Add more details and it'll work."
     },
     "errors": {
+      "general": "Something went wrong. Please try again.",
       "unauthorized": "Access denied.",
       "invalidRequest": "Invalid request.",
       "missingBlog": "Missing blog name.",

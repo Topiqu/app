@@ -21,15 +21,19 @@ export async function logAction(params: {
   clientSiteId?: string | null
   metadata?: Record<string, any>
   ip?: string
+  tx?: any
 }) {
-  let userId = params.userId
+  const { tx, ...rest } = params
+  const db = tx ?? prisma
+
+  let userId = rest.userId
   if (!userId) {
-    const systemUser = await prisma.user.findUnique({
+    const systemUser = await db.user.findUnique({
       where: { id: SYSTEM_USER_ID },
       select: { id: true },
     })
     if (!systemUser) {
-      await prisma.user.create({
+      await db.user.create({
         data: {
           id: SYSTEM_USER_ID,
           username: SYSTEM_USER_NAME,
@@ -42,23 +46,23 @@ export async function logAction(params: {
     userId = SYSTEM_USER_ID
   }
 
-  const prev = await prisma.log.findFirst({
+  const prev = await db.log.findFirst({
     orderBy: { createdAt: 'desc' },
     select: { hash: true },
   })
 
   const previousHash = prev?.hash ?? 'GENESIS'
-  const payload = canonicalize({ ...params, userId, previousHash, ts: Date.now() })
+  const payload = canonicalize({ ...rest, userId, previousHash, ts: Date.now() })
   const raw = JSON.stringify(payload)
   const hash = crypto.createHash('sha256').update(raw).digest('hex')
 
-  return prisma.log.create({
+  return db.log.create({
     data: {
-      action: params.action,
+      action: rest.action,
       userId,
-      clientSiteId: params.clientSiteId ?? null,
-      metadata: params.metadata ?? {},
-      ip: params.ip ?? null,
+      clientSiteId: rest.clientSiteId ?? null,
+      metadata: rest.metadata ?? {},
+      ip: rest.ip ?? null,
       previousHash,
       hash,
     },

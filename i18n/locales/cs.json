@@ -47,6 +47,7 @@
       "unprocessableEntity": "Tomuhle nerozumíme, jako AI na špatný prompt. Přidejte víc detailů a půjde to."
     },
     "errors": {
+      "general": "Něco se pokazilo. Zkuste to prosím znovu.",
       "unauthorized": "Přístup zamítnut.",
       "invalidRequest": "Neplatný požadavek.",
       "missingBlog": "Chybí název blogu.",

@@ -37,6 +37,7 @@ export async function saveUserWithLogging(event: H3Event, data: any, isUpdate = 
     clientSiteId: user.clientSiteId ?? null,
     ip,
     metadata: { username: user.username, email: user.email },
+    tx,
   })
 
   if (strength !== null) {
@@ -46,6 +47,7 @@ export async function saveUserWithLogging(event: H3Event, data: any, isUpdate = 
       clientSiteId: user.clientSiteId,
       ip,
       metadata: { passwordStrength: strength },
+      tx,
     })
   }
 

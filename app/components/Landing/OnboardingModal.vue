@@ -15,7 +15,7 @@
             >
               <Icon name="mdi:rocket-launch" class="w-7 h-7" />
             </div>
-            {{ $t('landing.onboarding.title', 'Vytvořte si vlastní blog') }}
+            {{ $t('landing.onboarding.title', 'Create your own blog') }}
           </h2>
           <Button
             @click="open = false"
@@ -54,13 +54,13 @@
             <div v-if="step === 1" :key="'step1'" class="space-y-8">
               <div class="space-y-3">
                 <h3 class="text-2xl font-extrabold text-[#111] dark:text-white tracking-tight">
-                  {{ $t('landing.onboarding.siteInfo', 'Informace o webu') }}
+                  {{ $t('landing.onboarding.siteInfo', 'Site info') }}
                 </h3>
                 <p class="text-[1.05rem] text-[#555] dark:text-[#A1A1AA] font-medium leading-relaxed">
                   {{
                     $t(
                       'landing.onboarding.siteInfoDesc',
-                      'Začněme tím nejdůležitějším – jak se bude váš projekt jmenovat a kde ho najdeme.',
+                      'Let’s start with the basics — what your project is called and where to find it.',
                     )
                   }}
                 </p>
@@ -71,14 +71,14 @@
                   v-model="form.siteName"
                   required
                   icon="mdi:web"
-                  :label="$t('landing.onboarding.siteName', 'Název webu')"
-                  :placeholder="$t('landing.onboarding.siteNamePlaceholder', 'Můj skvělý blog')"
+                  :label="$t('landing.onboarding.siteName', 'Site name')"
+                  :placeholder="$t('landing.onboarding.siteNamePlaceholder', 'My awesome blog')"
                   inputClass="w-full !bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent focus:!bg-white dark:focus:!bg-[#18181B] focus:!ring-4 focus:!ring-[#111] dark:focus:!ring-white transition-all text-lg font-bold rounded-2xl py-4"
                 />
 
                 <div class="space-y-4">
                   <FormLabel
-                    :text="$t('landing.onboarding.domainType', 'Typ domény')"
+                    :text="$t('landing.onboarding.domainType', 'Domain type')"
                     class="font-bold text-[#111] dark:text-white"
                   />
                   <div class="grid grid-cols-2 gap-4">
@@ -98,7 +98,7 @@
                         :class="form.domainType === 'SUBDOMAIN' ? 'text-[#67E8F9]' : 'text-[#888] dark:text-[#71717A]'"
                       />
                       <span class="text-xl font-black leading-tight block text-current">
-                        {{ $t('landing.onboarding.subdomain', 'Subdoména') }}
+                        {{ $t('landing.onboarding.subdomain', 'Subdomain') }}
                       </span>
                       <span class="text-sm font-bold opacity-70 block mt-1 text-current">.topiqu.com</span>
                     </label>
@@ -119,10 +119,10 @@
                         :class="form.domainType === 'CUSTOM' ? 'text-[#67E8F9]' : 'text-[#888] dark:text-[#71717A]'"
                       />
                       <span class="text-xl font-black leading-tight block text-current">
-                        {{ $t('landing.onboarding.customDomain', 'Vlastní doména') }}
+                        {{ $t('landing.onboarding.customDomain', 'Custom domain') }}
                       </span>
                       <span class="text-sm font-bold opacity-70 block mt-1 text-current">{{
-                        $t('landing.onboarding.customDomainExample', 'vlastni.cz')
+                        $t('landing.onboarding.customDomainExample', 'mysite.com')
                       }}</span>
                     </label>
                   </div>
@@ -133,8 +133,8 @@
                     class="font-bold text-[#111] dark:text-white"
                     :text="
                       form.domainType === 'SUBDOMAIN'
-                        ? $t('landing.onboarding.subdomain', 'Subdoména')
-                        : $t('landing.onboarding.customDomain', 'Vlastní doména')
+                        ? $t('landing.onboarding.subdomain', 'Subdomain')
+                        : $t('landing.onboarding.customDomain', 'Custom domain')
                     "
                   />
                   <div
@@ -179,13 +179,13 @@
             <div v-else-if="step === 2" :key="'step2'" class="space-y-8">
               <div class="space-y-3">
                 <h3 class="text-2xl font-extrabold text-[#111] dark:text-white tracking-tight">
-                  {{ $t('landing.onboarding.designFocus', 'Design & Zaměření') }}
+                  {{ $t('landing.onboarding.designFocus', 'Design & Focus') }}
                 </h3>
                 <p class="text-[1.05rem] text-[#555] dark:text-[#A1A1AA] font-medium leading-relaxed">
                   {{
                     $t(
                       'landing.onboarding.designFocusDesc',
-                      'Přizpůsobte si platformu svému brandu a definujte hlavní téma.',
+                      'Customize the platform to your brand and define the main topic.',
                     )
                   }}
                 </p>
@@ -194,7 +194,7 @@
               <div class="space-y-8">
                 <div>
                   <FormLabel
-                    :text="$t('landing.onboarding.mainLanguage', 'Hlavní jazyk obsahu')"
+                    :text="$t('landing.onboarding.mainLanguage', 'Main content language')"
                     class="font-bold text-[#111] dark:text-white mb-3 block"
                   />
                   <div class="grid grid-cols-2 gap-4">
@@ -213,7 +213,7 @@
                         >🇨🇿</span
                       >
                       <span class="font-black text-lg text-current">{{
-                        $t('landing.onboarding.langCz', 'Čeština')
+                        $t('landing.onboarding.langCz', 'Czech')
                       }}</span>
                     </label>
 
@@ -241,7 +241,7 @@
                 <div class="pt-2">
                   <FormColorPicker
                     v-model="form.theme"
-                    :label="$t('landing.onboarding.mainColor', 'Hlavní barva brandu')"
+                    :label="$t('landing.onboarding.mainColor', 'Main brand color')"
                     class="font-bold"
                   />
                 </div>
@@ -249,8 +249,8 @@
                 <FormField
                   v-model="form.focus"
                   icon="mdi:target"
-                  :label="$t('landing.onboarding.siteFocus', 'Hlavní zaměření webu (volitelné)')"
-                  :placeholder="$t('landing.onboarding.siteFocusPlaceholder', 'např. Technologie, Životní styl...')"
+                  :label="$t('landing.onboarding.siteFocus', 'Main site focus (optional)')"
+                  :placeholder="$t('landing.onboarding.siteFocusPlaceholder', 'e.g. Technology, Lifestyle...')"
                   inputClass="w-full !bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent focus:!bg-white dark:focus:!bg-[#18181B] focus:!ring-4 focus:!ring-[#111] dark:focus:!ring-white transition-all text-lg font-bold rounded-2xl py-4"
                 />
               </div>
@@ -263,7 +263,7 @@
                   class="w-1/3 bg-[#F0F0F0] hover:bg-[#E5E5E5] dark:bg-[#27272A] dark:hover:bg-[#3F3F46] text-[#111] dark:text-white border-none rounded-2xl py-5 text-lg font-black transition-colors"
                   @click="step = 1"
                 >
-                  {{ $t('common.actions.back', 'Zpět') }}
+                  {{ $t('common.actions.back', 'Back') }}
                 </Button>
                 <Button
                   type="submit"
@@ -274,7 +274,7 @@
                   iconPosition="right"
                 >
                   <span class="font-black tracking-wide">{{
-                    $t('landing.onboarding.continueToAccount', 'Pokračovat')
+                    $t('landing.onboarding.continueToAccount', 'Continue')
                   }}</span>
                 </Button>
               </div>
@@ -283,13 +283,13 @@
             <div v-else-if="step === 3" :key="'step3'" class="space-y-8">
               <div class="space-y-3">
                 <h3 class="text-2xl font-extrabold text-[#111] dark:text-white tracking-tight">
-                  {{ $t('landing.onboarding.adminInfo', 'Účet správce') }}
+                  {{ $t('landing.onboarding.adminInfo', 'Admin account') }}
                 </h3>
                 <p class="text-[1.05rem] text-[#555] dark:text-[#A1A1AA] font-medium leading-relaxed">
                   {{
                     $t(
                       'landing.onboarding.adminInfoDesc',
-                      'Už jsme skoro u konce. Vytvořte si přístupové údaje do administrace.',
+                      'Almost done. Create your admin credentials.',
                     )
                   }}
                 </p>
@@ -300,7 +300,7 @@
                   v-model="form.username"
                   required
                   icon="mdi:account"
-                  :label="$t('common.labels.username', 'Uživatelské jméno')"
+                  :label="$t('common.labels.username', 'Username')"
                   :placeholder="$t('landing.onboarding.usernamePlaceholder', 'admin')"
                   inputClass="w-full !bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent focus:!bg-white dark:focus:!bg-[#18181B] focus:!ring-4 focus:!ring-[#111] dark:focus:!ring-white transition-all text-lg font-bold rounded-2xl py-4"
                 />
@@ -331,7 +331,7 @@
                   class="w-1/3 bg-[#F0F0F0] hover:bg-[#E5E5E5] dark:bg-[#27272A] dark:hover:bg-[#3F3F46] text-[#111] dark:text-white border-none rounded-2xl py-5 text-lg font-black transition-colors"
                   @click="step = 2"
                 >
-                  {{ $t('common.actions.back', 'Zpět') }}
+                  {{ $t('common.actions.back', 'Back') }}
                 </Button>
                 <Button
                   type="submit"
@@ -343,7 +343,7 @@
                   <div class="flex items-center justify-center gap-3">
                     <Icon name="mdi:rocket-launch" class="w-6 h-6" />
                     <span class="font-black tracking-wide">{{
-                      $t('landing.onboarding.startTrial', 'Začít s plným přístupem')
+                      $t('landing.onboarding.startTrial', 'Start with full access')
                     }}</span>
                   </div>
                 </Button>
@@ -356,7 +356,7 @@
                   class="text-center text-[#7E22CE] dark:text-[#D8B4FE] font-black text-sm flex items-center justify-center gap-2 uppercase tracking-wide"
                 >
                   <Icon name="mdi:sparkles" class="w-5 h-5" />
-                  {{ $t('landing.onboarding.trialHintToken', 'Získáte rovnou 25 000 AI tokenů zdarma!') }}
+                  {{ $t('landing.onboarding.trialHintToken', 'You’ll get 25,000 AI tokens for free!') }}
                 </p>
               </div>
             </div>
@@ -427,11 +427,11 @@ const handleSubmit = () => {
 
 const submit = async () => {
   if (!form.username || !form.email || !form.password || form.password !== form.passwordConfirm) {
-    toast.error({ message: $t('common.auth.passwordsMismatch', 'Hesla se neshodují') })
+    toast.error({ message: $t('common.auth.passwordsMismatch', 'Passwords do not match') })
     return
   }
   if (zxcvbn(form.password).score < 3) {
-    toast.error({ message: $t('common.passwordSuggestions.weak', 'Slabé heslo') })
+    toast.error({ message: $t('common.passwordSuggestions.weak', 'Weak password') })
     return
   }
 
@@ -446,7 +446,7 @@ const submit = async () => {
       window.location.href = res.url
     }
   } catch (error: any) {
-    toast.error({ message: error.data?.message || 'Nastala chyba' })
+    toast.error({ message: error.data?.message || $t('common.errors.general', 'Something went wrong') })
   } finally {
     loading.value = false
   }
