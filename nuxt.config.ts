@@ -96,7 +96,6 @@ export default defineNuxtConfig({
     '@vite-pwa/nuxt',
     '@unlok-co/nuxt-stripe',
     'pinia-plugin-persistedstate/nuxt',
-    'nuxt-nodemailer',
     'nuxt-security',
     'nuxt-og-image',
     'nuxt-toast',
