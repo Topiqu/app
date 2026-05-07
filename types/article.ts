@@ -1,5 +1,5 @@
 import type { Article as _Article, ArticleStatus, AIInvolvement } from '@zenstackhq/runtime/models'
-
+//
 export type ArticleBase = _Article & {
   user: { id: string; username: string; email: string; avatarUrl: string | null }
   tags?: { tag: { id: string; name: string; slug: string } }[]
