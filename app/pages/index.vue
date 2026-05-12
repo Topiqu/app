@@ -234,9 +234,7 @@ const localePath = useLocalePath()
 const { locale } = useI18n()
 const clientSite = await useClientSite()
 
-const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
-  lazy: true,
-})
+const { data: feat, pending: featPending } = await useLazyFetch(`/api/articles/featured/${clientSite?.name}`, {server: false})
 const page = shallowRef<number>(1)
 const limit = shallowRef<number>(15)
 const selectedTag = shallowRef<string>('')
@@ -253,9 +251,8 @@ const {
   data: feed,
   refresh,
   pending,
-} = await useFetch(`/api/articles/by-clientsite/${clientSite?.name}`, {
+} = await useLazyFetch(`/api/articles/by-clientsite/${clientSite?.name}`, {
   query,
-  lazy: true,
   watch: false,
 })
 
