@@ -387,7 +387,7 @@ model ClientSite {
   deletedAt            DateTime?
   name                 String              @unique()
   domain               String              @unique()
-  domainVerified       Boolean             @default(true)
+  domainVerified       Boolean             @default(false)
   plan                 ClientPlan          @default(BASIC)
   focus                String?
   description          String?
