@@ -15,7 +15,11 @@
     "prettier:fix": "prettier --write --list-different .",
     "fmt": "bun lint:fix && bun prettier:fix",
     "zenstack:generate": "zenstack generate --schema ./prisma/schema.zmodel",
-    "prisma:deploy": "prisma migrate deploy"
+    "prisma:deploy": "prisma migrate deploy",
+    "db:seed": "bun run prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "bun run prisma/seed.ts"
   },
   "dependencies": {
     "@ai-sdk/vue": "^2.0.98",
