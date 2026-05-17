@@ -380,6 +380,13 @@
       "avoidSequences": "Vyhněte se sekvencím.",
       "tooShort": "Heslo je příliš krátké (min. {minLength} znaků)",
       "tooLong": "Heslo je příliš dlouhé (max. {maxLength} znaků)"
+    },
+    "tokens": {
+      "pack10k": "Balíček 10k tokenů",
+      "pack25k": "Balíček 25k tokenů",
+      "pack50k": "Balíček 50k tokenů",
+      "bestValue": "Nejvýhodnější",
+      "upgradeToPremium": "Povýšit na PREMIUM"
     }
   },
   "series": {
@@ -1089,6 +1096,12 @@
           "content": "Usilovně pracujeme na ochraně našich uživatelů před neoprávněným přístupem nebo neoprávněnou úpravou informací, které uchováváme. Zejména:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Mnoho našich služeb šifrujeme pomocí SSL.</li><li>Přezkoumáváme naše postupy shromažďování a ukládání informací, abychom zabránili neoprávněnému přístupu do systémů.</li></ul>"
         }
       ]
+    }
+  },
+  "admin": {
+    "upgrade": {
+      "title": "Používáte verzi zdarma",
+      "description": "Povýšením na PREMIUM získáte více tokenů, pokročilé analytiky a prémiové funkce."
     }
   }
 }

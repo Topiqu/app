@@ -379,6 +379,13 @@
       "avoidSequences": "Avoid sequences.",
       "tooShort": "Password is too short. (min. {minLength} characters)",
       "tooLong": "Password is too long. (max. {maxLength} characters)"
+    },
+    "tokens": {
+      "pack10k": "Token Pack 10k",
+      "pack25k": "Token Pack 25k",
+      "pack50k": "Token Pack 50k",
+      "bestValue": "Best value",
+      "upgradeToPremium": "Upgrade to PREMIUM"
     }
   },
   "series": {
@@ -1091,6 +1098,12 @@
           "content": "We work hard to protect our users from unauthorized access to or unauthorized alteration, disclosure or destruction of information we hold. In particular:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>We encrypt many of our services using SSL.</li><li>We review our information collection, storage and processing practices, including physical security measures, to guard against unauthorized access to systems.</li></ul>"
         }
       ]
+    }
+  },
+  "admin": {
+    "upgrade": {
+      "title": "You're on the free plan",
+      "description": "Unlock more tokens, advanced analytics and premium features by upgrading to PREMIUM."
     }
   }
 }
