@@ -230,7 +230,7 @@ const init = {
   passwordConfirm: '',
   code: '',
   totpCode: '',
-  totpSecret: '',
+  totpChallenge: '',
   userId: '',
 }
 const form = ref<typeof init>(init)
@@ -278,8 +278,8 @@ const submit = async () => {
         },
       })
       form.value.userId = totpData.id
-      if (totpData.totpSecret) {
-        form.value.totpSecret = totpData.totpSecret
+      if (totpData.requiresTotp && totpData.challenge) {
+        form.value.totpChallenge = totpData.challenge
         internalMode.value = 'totp'
       } else {
         await signIn('credentials', {
@@ -338,7 +338,7 @@ const verifyTotp = async () => {
     const token = form.value.totpCode.replace(/\s/g, '')
     const res = await $fetch('/api/users/verify-totp', {
       method: 'POST',
-      body: { token, secret: form.value.totpSecret },
+      body: { token, challenge: form.value.totpChallenge },
     })
     if (!res.isValid) throw createError({ statusCode: 400, message: 'Neplatný TOTP kód' })
     await signIn('credentials', {

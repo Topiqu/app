@@ -12,5 +12,10 @@ export default defineEventHandler(async (event) => {
   if (!user || !user.password || !(await argon.verify(user.password, password)))
     throw createError({ statusCode: 401, message: t('common.errors.invalidCredentials')! })
 
-  return { id: user.id, totpSecret: user.totpSecret }
+  const requiresTotp = !!user.totpSecret
+  return {
+    id: user.id,
+    requiresTotp,
+    challenge: requiresTotp ? signTotpChallenge(user.id) : null,
+  }
 })
