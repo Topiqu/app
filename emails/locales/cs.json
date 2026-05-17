@@ -20,7 +20,7 @@
       "link": "Odhlásit se"
     }
   },
-  "verify": {
+  "verificationCode": {
     "subject": "Ověřovací kód pro {userName}",
     "greeting": "Dobrý den, {userName},",
     "intro": "Pro dokončení akce {actionType} použijte následující ověřovací kód:",

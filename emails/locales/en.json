@@ -20,7 +20,7 @@
       "link": "Unsubscribe"
     }
   },
-  "verify": {
+  "verificationCode": {
     "subject": "Verification code for {userName}",
     "greeting": "Hello {userName},",
     "intro": "To complete your {actionType}, please use the following verification code:",
