@@ -1100,8 +1100,30 @@
   },
   "admin": {
     "upgrade": {
-      "title": "Používáte verzi zdarma",
-      "description": "Povýšením na PREMIUM získáte více tokenů, pokročilé analytiky a prémiové funkce."
+      "cta": "Přejít na {plan}",
+      "loading": "Otevírám platbu…",
+      "error": "Platbu se nepodařilo otevřít. Zkuste to prosím znovu.",
+      "toPro": {
+        "title": "Posuňte svůj blog s plánem PRO",
+        "description": "Odemkněte AI generování, pokročilé SEO a 70% revenue share.",
+        "features": [
+          "AI generování článků + měsíční balíček tokenů",
+          "Pokročilá SEO optimalizace",
+          "Import existujících článků",
+          "Revenue share 70 % ve váš prospěch"
+        ]
+      },
+      "toPremium": {
+        "title": "Maximální výkon s plánem PREMIUM",
+        "description": "Vše z PRO plus AI sentiment, prioritní indexace a 90% revenue share.",
+        "features": [
+          "AI Sentiment & automatické obrázky",
+          "Prioritní indexace a zdrojování",
+          "Vlastní emoji & branding",
+          "Prioritní podpora 24/7",
+          "Revenue share 90 % ve váš prospěch"
+        ]
+      }
     }
   }
 }

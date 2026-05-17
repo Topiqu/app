@@ -91,7 +91,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const stripeSecret = process.env.STRIPE_SK
-  const premiumPriceId = process.env.STRIPE_PREMIUM_PRICE_ID
+  const premiumPriceId = process.env.STRIPE_PRICE_PREMIUM
 
   const reqUrl = getRequestURL(event)
   const originUrl = process.env.APP_URL || `${reqUrl.protocol}//${fullSubdomain}`

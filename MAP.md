@@ -59,6 +59,38 @@ todo/           Working notes (non-code)
 - Migrations in `prisma/migrations/`.
 - `bun build` pipeline: `zenstack generate` → `prisma migrate deploy` → `nuxt build`.
 
+## 6a. Plan Matrix (`ClientSite.plan` — enum `ClientPlan`)
+
+Marketing names diverge from the DB enum: marketing **FREE** = enum **BASIC**. Enum is the source of truth (`prisma/schema.zmodel:84`), copy lives in `i18n/locales/{cs,en}.json → landing.pricing.plans.*`.
+
+| Capability                       | FREE (BASIC) | PRO                 | PREMIUM                  | CUSTOM             |
+| -------------------------------- | ------------ | ------------------- | ------------------------ | ------------------ |
+| Price (per month, CZK)           | 0            | 490                 | 990                      | On request (sales) |
+| Stripe checkout                  | —            | `STRIPE_PRICE_PRO`  | `STRIPE_PRICE_PREMIUM`   | Sales-led, no SKU  |
+| Revenue share (creator/platform) | 0 / 100      | 70 / 30             | 90 / 10                  | 100 / 0            |
+| Manual article writing           | ✅           | ✅                  | ✅                       | ✅                 |
+| Subdomain                        | ✅ (free)    | ✅                  | ✅                       | ✅ + apex domain   |
+| Custom (apex) domain             | ❌           | ❌                  | ❌                       | ✅                 |
+| White-label (no Topiqu branding) | ❌           | ❌                  | ❌                       | ✅                 |
+| AI article generation            | ❌           | ✅ (token bundle)   | ✅ (token bundle)        | ✅ (unlimited)     |
+| AI sentiment + auto images       | ❌           | ❌                  | ✅                       | ✅                 |
+| Advanced SEO optimization        | ❌           | ✅                  | ✅                       | ✅                 |
+| Article import                   | ❌           | ✅                  | ✅                       | ✅                 |
+| Priority indexing + sourcing     | ❌           | ❌                  | ✅                       | ✅                 |
+| Custom emojis & branding         | ❌           | ❌                  | ✅                       | ✅                 |
+| Custom ad banners                | ❌           | ❌                  | ❌                       | ✅                 |
+| Analytics                        | Basic        | Basic + GA4         | Basic + GA4              | Basic + GA4        |
+| Support                          | Community    | Standard            | Priority 24/7            | Dedicated          |
+
+Feature gates checked in code via `ClientSite.plan` plus per-feature booleans on the same model (`enableAi`, `enableSentiment`, `enableCron`, `allowAds`, `allowGtag`, `allowShapes`). The `BillingPlans` enum (`MONTHLY` / `ANNUAL`) is orthogonal to the plan tier.
+
+### Stripe wiring
+
+- Subscription checkout: `POST /api/stripe/subscribe` (mode `subscription`, Price IDs from env).
+- Token top-ups: `POST /api/stripe/checkout` (mode `payment`, ad-hoc `price_data`).
+- Webhook (`POST /api/stripe/webhook`) handles `checkout.session.completed` for both modes, `customer.subscription.deleted` (→ downgrade to BASIC), and `invoice.payment_succeeded` (→ bump `lastPaidAt` / `lastInvoicedAt`).
+- Required env: `STRIPE_SK`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_PREMIUM`.
+
 ## 7. Tooling
 
 - ESLint 9 (`@nuxt/eslint` + `eslint-plugin-perfectionist`), Prettier 3, Vitest (`@nuxt/test-utils`, jsdom, globals).
