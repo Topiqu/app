@@ -13,7 +13,6 @@ export default defineEventHandler(async (event) => {
   // const session = await requireAuthSession(event)
 
   await prisma.approval.create({
-    // @ts-ignore - using a dummy reviewerId since auth context varies
     data: {
       draftId: draft.id,
       reviewerId: 'system', // Replace with actual user ID from session
