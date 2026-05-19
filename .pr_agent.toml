@@ -1,0 +1,70 @@
+[config]
+response_language = "en-us"
+verbosity_level = 1
+
+[pr_reviewer]
+require_score_review = true
+require_tests_review = true
+require_security_review = true
+require_estimate_effort_to_review = true
+persistent_comment = true
+num_code_suggestions = 0
+extra_instructions = """
+Project stack: Nuxt 4, Vue 3.5 (Composition API + macros), TypeScript strict,
+UnoCSS, Pinia, ZenStack v2.22, @nuxtjs/i18n (en, cs), Vitest.
+
+Enforce these project conventions when reviewing:
+- Prefer Vue 3.5 macros (defineModel, defineSlots, useTemplateRef) and VueUse
+  composables over manual ref()/reactive() boilerplate.
+- Styling MUST use UnoCSS utilities. Flag any new <style> / <style scoped> block
+  unless strictly required (e.g. global resets in assets/scss/base.scss).
+- All user-facing strings in templates MUST use $t('key') with matching entries
+  in i18n locale files. Flag hardcoded English/Czech literals in templates.
+- Nuxt auto-imports should be used; flag redundant explicit imports of composables,
+  components, or utils that Nuxt auto-imports.
+- TypeScript strict mode: no `any`, no non-null assertions without justification.
+- Structural changes (new routes, stores, server routes, modules) require an
+  update to MAP.md. Flag PRs that add structure but leave MAP.md untouched.
+- Significant logic changes should be covered by Vitest tests.
+- Database schema changes (ZenStack .zmodel) must include a generated Prisma
+  migration. Flag schema edits without an accompanying migration.
+- Accessibility: semantic HTML and ARIA where applicable; flag div-soup.
+- Performance: flag obvious LCP/CLS/INP regressions (large client bundles,
+  unoptimized images not using <NuxtImg>, blocking work in onMounted).
+"""
+
+[pr_code_suggestions]
+num_code_suggestions = 4
+commitable_code_suggestions = false
+extra_instructions = """
+Favor suggestions that align the code with Nuxt 4 / Vue 3.5 idioms and the
+project conventions listed in the reviewer instructions. Do not suggest adding
+<style> blocks — UnoCSS only.
+"""
+
+[github_app]
+# Auto-actions on PR open. /improve and /describe are NOT auto-run; trigger
+# manually via PR comment when desired.
+pr_commands = [
+  "/review",
+]
+
+# Re-run only /review on push so the persistent review comment stays current.
+push_commands = [
+  "/review --pr_reviewer.num_code_suggestions=0",
+]
+
+[ignore]
+# Don't waste tokens reviewing generated/lock/build artifacts.
+glob = [
+  "bun.lock",
+  "package-lock.json",
+  "pnpm-lock.yaml",
+  "yarn.lock",
+  ".nuxt/**",
+  ".output/**",
+  "dist/**",
+  "node_modules/**",
+  "prisma/migrations/**/migration.sql",
+  "**/*.generated.ts",
+]

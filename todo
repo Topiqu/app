@@ -64,7 +64,22 @@ future:
   - 🔰 newsletter for pro+ clients
   - 🔰 multi agent writing (seo analyzer, copywriter, reviewer) with tools (debate, vote, merge, post)
   - 🟢 better gamification - badges, levels, site activity points
-  - 🟢 bullmq / railway / queue up cron jobs
+---
+queue (SQS migration):
+  - 🛑 decide: 1 web replica vs N (affects SNS fanout) + deploy target (ECS/EC2/VPS)
+  - 🛑 server/utils/queue.ts abstraction (SQS + in-memory) + LocalStack in docker-compose
+  - 🛑 Prisma models: ArticleJob, PdfJob
+  - 🛑 server/worker.ts entrypoint (4 paralelní pollery)
+  - 🛑 SQS queues + DLQ + IAM (infra/CDK)
+  - 🟡 migrate POST /articles/generate → enqueue (202 + jobId)
+  - 🟡 cron generate-article → fan-out only (enqueue N msgs)
+  - 🟡 split notifications worker (DB createMany + SSE publish)
+  - 🟡 unified SSE server-events channel (notifs + job status, cross-replica)
+  - 🟡 useJobStream composable + UI loading/error/retry states
+  - 🟡 GET /users/pdf → enqueue + pdf-worker (S3 upload + signed URL)
+  - 🟡 view counter: enqueue + 5min batch UPDATE worker
+  - 🟢 CloudWatch alarms (queue depth, DLQ > 0, retry 3× exp backoff)
+  - 🟢 vitest workers (in-memory queue) + LocalStack in CI + MAP.md
 ---
 done:
   - 🛑 nuxt-gtag
