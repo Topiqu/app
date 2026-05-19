@@ -213,11 +213,9 @@ import 'tippy.js/dist/tippy.css'
 
 import TiptapImage from '~/components/File/TiptapImage.vue'
 
-// eslint-disable-next-line
 import { Indent } from '../../extensions/indent'
 // eslint-disable-next-line
 import Poll from '../../extensions/poll'
-// eslint-disable-next-line
 import SlashCommand from '../../extensions/slashCommand'
 // eslint-disable-next-line
 import CommandList from './CommandList.vue'

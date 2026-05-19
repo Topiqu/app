@@ -18,7 +18,6 @@
             {{ $t('landing.onboarding.title', 'Create your own blog') }}
           </h2>
           <Button
-            @click="open = false"
             style="
               background: transparent !important;
               border: none !important;
@@ -27,6 +26,7 @@
               color: currentColor !important;
             "
             class="text-[#888] hover:text-[#111] dark:hover:text-white transition-colors cursor-pointer mt-1"
+            @click="open = false"
           >
             <Icon name="mdi:close" size="32" />
           </Button>
@@ -90,7 +90,7 @@
                           : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
                       "
                     >
-                      <input type="radio" v-model="form.domainType" value="SUBDOMAIN" class="sr-only" />
+                      <input v-model="form.domainType" type="radio" value="SUBDOMAIN" class="sr-only" />
                       <Icon
                         name="mdi:subdomain"
                         size="32"
@@ -111,7 +111,7 @@
                           : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
                       "
                     >
-                      <input type="radio" v-model="form.domainType" value="CUSTOM" class="sr-only" />
+                      <input v-model="form.domainType" type="radio" value="CUSTOM" class="sr-only" />
                       <Icon
                         name="mdi:earth"
                         size="32"
@@ -142,7 +142,6 @@
                   >
                     <FormField
                       v-model="form.domain"
-                      @input="userEditedDomain = true"
                       required
                       icon="mdi:link"
                       :placeholder="
@@ -153,6 +152,7 @@
                       inputClass="!bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent !ring-0 w-full text-lg font-bold py-4"
                       class="w-full"
                       :class="{ 'rounded-r-none': form.domainType === 'SUBDOMAIN' }"
+                      @input="userEditedDomain = true"
                     />
                     <div
                       v-if="form.domainType === 'SUBDOMAIN'"
@@ -206,7 +206,7 @@
                           : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
                       "
                     >
-                      <input type="radio" v-model="form.language" value="cs" class="sr-only" />
+                      <input v-model="form.language" type="radio" value="cs" class="sr-only" />
                       <span
                         class="text-4xl mr-4"
                         :class="{ 'grayscale-0': form.language === 'cs', grayscale: form.language !== 'cs' }"
@@ -225,7 +225,7 @@
                           : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
                       "
                     >
-                      <input type="radio" v-model="form.language" value="en" class="sr-only" />
+                      <input v-model="form.language" type="radio" value="en" class="sr-only" />
                       <span
                         class="text-4xl mr-4"
                         :class="{ 'grayscale-0': form.language === 'en', grayscale: form.language !== 'en' }"

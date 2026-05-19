@@ -12,16 +12,16 @@
       <div v-if="!isConnected" class="flex gap-2">
         <Button
           variant="primary"
-          @click="connectLinkedIn('personal')"
           class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
+          @click="connectLinkedIn('personal')"
         >
           <Icon name="mdi:account" class="mr-1" />
           Connect Personal
         </Button>
         <Button
           variant="primary"
-          @click="connectLinkedIn('pages')"
           class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
+          @click="connectLinkedIn('pages')"
         >
           <Icon name="mdi:domain" class="mr-1" />
           Connect Page
@@ -34,10 +34,10 @@
           <Icon name="mdi:check-circle" /> Connected ({{ localType }})
         </div>
         <div class="flex gap-2 mt-2">
-          <button @click="connectLinkedIn('personal')" class="text-xs text-blue-600 hover:underline">
+          <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('personal')">
             Switch to Personal
           </button>
-          <button @click="connectLinkedIn('pages')" class="text-xs text-blue-600 hover:underline">
+          <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('pages')">
             Switch to Page
           </button>
         </div>
@@ -52,11 +52,11 @@
         <h4 class="font-medium mb-3">Publishing Mode</h4>
         <div class="flex gap-4">
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" :value="'HitL'" v-model="localMode" @change="emitUpdate" />
+            <input v-model="localMode" type="radio" :value="'HitL'" @change="emitUpdate" />
             <span>Human in the Loop (HitL)</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" :value="'FullAuto'" v-model="localMode" @change="emitUpdate" />
+            <input v-model="localMode" type="radio" :value="'FullAuto'" @change="emitUpdate" />
             <span>Full Auto (Gated by Policy)</span>
           </label>
         </div>

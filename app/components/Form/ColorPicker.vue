@@ -3,7 +3,7 @@
     <FormLabel v-if="label" :text="label" />
     <div class="flex flex-wrap gap-3">
       <label v-for="color in colors || defaultColors" :key="color" class="relative cursor-pointer group">
-        <input type="radio" v-model="modelValue" :value="color" class="sr-only" />
+        <input v-model="modelValue" type="radio" :value="color" class="sr-only" />
         <div
           class="w-10 h-10 rounded-full border-2 transition-all duration-300 relative overflow-hidden"
           :class="[

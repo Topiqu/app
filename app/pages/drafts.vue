@@ -6,13 +6,13 @@
       <button
         v-for="status in ['ALL', 'DRAFT', 'AWAITING_APPROVAL', 'APPROVED', 'REJECTED', 'PUBLISHED']"
         :key="status"
-        @click="filterStatus = status === 'ALL' ? '' : status"
         class="px-3 py-1 rounded border"
         :class="
           filterStatus === status || (filterStatus === '' && status === 'ALL')
             ? 'bg-blue-600 text-white border-blue-600'
             : 'bg-white text-gray-700'
         "
+        @click="filterStatus = status === 'ALL' ? '' : status"
       >
         {{ status }}
       </button>
@@ -44,14 +44,14 @@
           </span>
         </div>
 
-        <div class="flex gap-2" v-if="draft.status === 'AWAITING_APPROVAL' || draft.status === 'DRAFT'">
-          <button @click="approveDraft(draft.id)" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        <div v-if="draft.status === 'AWAITING_APPROVAL' || draft.status === 'DRAFT'" class="flex gap-2">
+          <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" @click="approveDraft(draft.id)">
             Approve
           </button>
-          <button @click="rejectDraft(draft.id)" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+          <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" @click="rejectDraft(draft.id)">
             Reject
           </button>
-          <button @click="publishDraft(draft.id)" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" @click="publishDraft(draft.id)">
             Publish Now
           </button>
         </div>
