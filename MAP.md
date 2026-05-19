@@ -88,14 +88,16 @@ Feature gates checked in code via `ClientSite.plan` plus per-feature booleans on
 
 - Subscription checkout: `POST /api/stripe/subscribe` (mode `subscription`, Price IDs from env).
 - Token top-ups: `POST /api/stripe/checkout` (mode `payment`, ad-hoc `price_data`).
-- Webhook (`POST /api/stripe/webhook`) handles `checkout.session.completed` for both modes, `customer.subscription.deleted` (→ downgrade to BASIC), and `invoice.payment_succeeded` (→ bump `lastPaidAt` / `lastInvoicedAt`).
+- Webhook (`POST /api/stripe/webhook`) handles `checkout.session.completed` for both modes, `customer.subscription.deleted` (→ downgrade to BASIC), and `invoice.payment_succeeded` (→ bump `lastPaidAt` / `lastInvoicedAt`). Pure helpers (`extractSubscriptionId`, `isSubscribablePlan`) live in `server/utils/stripeWebhook.ts` so they are unit-testable; `extractSubscriptionId` reads `invoice.parent.subscription_details.subscription` (Stripe API `2025-03-31.basil` removed top-level `invoice.subscription`).
 - Required env: `STRIPE_SK`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_PREMIUM`.
 
 ## 7. Tooling
 
-- ESLint 9 (`@nuxt/eslint` + `eslint-plugin-perfectionist`), Prettier 3, Vitest (`@nuxt/test-utils`, jsdom, globals).
+- ESLint 9 (`@nuxt/eslint` + `eslint-plugin-perfectionist`), Prettier 3.
+- Testing: Vitest 4 with `@nuxt/test-utils`, `@vue/test-utils`, `happy-dom`, V8 coverage. Config in `vitest.config.ts` (node env by default, `nuxt` env for `app/**` and `tests/components/**`). Tests live in `tests/**`, co-located `*.test.ts` is also picked up. First suite: `tests/server/stripe/webhook.test.ts`.
+- Typecheck via `vue-tsc` (`bun run typecheck`); kept out of `build` for fast deploys, run separately in CI.
 - Package manager: **bun** (`bun.lock`).
-- Scripts: `dev`, `build`, `typecheck`, `lint(:fix)`, `prettier(:fix)`, `fmt`, `zenstack:generate`, `prisma:deploy`.
+- Scripts: `dev`, `build`, `typecheck`, `test`, `test:watch`, `test:coverage`, `lint(:fix)`, `prettier(:fix)`, `fmt`, `zenstack:generate`, `prisma:deploy`.
 
 ## 8. Notable Gaps / Observations
 

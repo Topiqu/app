@@ -1,8 +1,7 @@
 import type { ClientPlan } from '@prisma/client'
 
 import Stripe from 'stripe'
-
-const isSubscribablePlan = (value: unknown): value is 'PRO' | 'PREMIUM' => value === 'PRO' || value === 'PREMIUM'
+import { extractSubscriptionId, isSubscribablePlan } from '~~/server/utils/stripeWebhook'
 
 export default defineEventHandler(async (event) => {
   const body = await readRawBody(event, false)
@@ -75,7 +74,7 @@ export default defineEventHandler(async (event) => {
 
   if (stripeEvent.type === 'invoice.payment_succeeded') {
     const invoice = stripeEvent.data.object as Stripe.Invoice
-    const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
+    const subscriptionId = extractSubscriptionId(invoice)
     if (!subscriptionId) return { received: true }
 
     const subscription = await stripe.subscriptions.retrieve(subscriptionId)
