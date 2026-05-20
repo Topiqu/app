@@ -1,8 +1,10 @@
 {
-  "title": "Domain pending verification",
-  "description": "For your custom domain ({domain}), you need to point a CNAME record to {target}.",
-  "verifyBtn": "Verify DNS",
-  "success": "Domain successfully verified!",
-  "notFound": "DNS record not found. Please check your CNAME.",
-  "error": "An error occurred during verification."
+  "domainVerification": {
+    "title": "Domain pending verification",
+    "description": "For your custom domain ({domain}), you need to point a CNAME record to {target}.",
+    "verifyBtn": "Verify DNS",
+    "success": "Domain successfully verified!",
+    "notFound": "DNS record not found. Please check your CNAME.",
+    "error": "An error occurred during verification."
+  }
 }

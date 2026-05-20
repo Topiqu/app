@@ -1,0 +1,398 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error loading data",
+    "noResults": "No results found",
+    "noItems": "No items",
+    "readMore": "Read More",
+    "close": "Close",
+    "warning": "Warning",
+    "unknown": "Unknown",
+    "settings": "Article Settings",
+    "continue": "Continue",
+    "unsavedChanges": "Unsaved changes!",
+    "showPassword": "Show password",
+    "links": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "status": "System Status"
+    },
+    "search": "Search...",
+    "yes": "Yes",
+    "no": "No",
+    "none": "None",
+    "features": {
+      "ai": "AI Generation",
+      "aiDesc": "Content generation and AI enhancements",
+      "crons": "Scheduled Tasks",
+      "cronsDesc": "Automation for your blog – automatic article publishing, analysis, and more",
+      "sentiment": "Sentiment Analysis",
+      "sentimentDesc": "Detailed analysis of readers' mood and feedback",
+      "articleCrons": "Scheduled Article Generation",
+      "articleCronsDesc": "Automatic publishing of articles using AI based on your preferences"
+    },
+    "actions": {
+      "get_started": "Start Integration",
+      "learn_more": "View Documentation",
+      "view": "View",
+      "edit": "Edit",
+      "tags": "Tags",
+      "home": "Home",
+      "continue": "Continue",
+      "send": "Send",
+      "cancel": "Cancel",
+      "showDetails": "Show details",
+      "hideDetails": "Hide details",
+      "delete": "Delete",
+      "revoke": "Revoke",
+      "change": "Change",
+      "clickToUpload": "Click to upload",
+      "dropHere": "Drop file here",
+      "upload": "Select",
+      "saveChanges": "Save Changes",
+      "backToList": "Back to list",
+      "back": "Back",
+      "close": "Close",
+      "like": "Like",
+      "copyLink": "Copy link",
+      "shareX": "Share on X",
+      "shareLinkedIn": "Share on LinkedIn",
+      "copySuccess": "Successfully copied"
+    },
+    "errTypes": {
+      "notFound": "Couldn't find that. I must be blind.",
+      "unauthorized": "Stop, you can't go here. This is forbidden territory for unauthenticated adventurers.",
+      "forbidden": "There's barbed wire here – access denied, even for superadmins with cheat codes.",
+      "server": "The server took a coffee break. Try again later.",
+      "badRequest": "Your request is as confused as a draft article without a title – try writing it clearly.",
+      "tooManyRequests": "Spam alert! You're clicking faster than a speedrunner – take a break.",
+      "internalError": "Something exploded inside like a poorly written script. Our technomages are on it.",
+      "serviceUnavailable": "The service went on vacation. Refresh the page or have some tea in the meantime.",
+      "conflict": "The data is arguing like two editors over one article. Decide which version wins.",
+      "notAcceptable": "This is against the rules of the game. Edit the content and try again.",
+      "gatewayTimeout": "The gateway got stuck like a lagging server. Wait a moment and try again.",
+      "unprocessableEntity": "We don't understand this, like an AI with a bad prompt. Add more details and it'll work."
+    },
+    "errors": {
+      "general": "Something went wrong. Please try again.",
+      "unauthorized": "Access denied.",
+      "invalidRequest": "Invalid request.",
+      "missingBlog": "Missing blog name.",
+      "blogNotFound": "Blog not found.",
+      "tagNotFound": "Tag not found.",
+      "commentNotFound": "Comment not found.",
+      "banNotFound": "This user isn't banned.",
+      "commentsDisabled": "Comments are disabled for this article",
+      "alreadyExists": "This already exists.",
+      "forbidden": "Forbidden.",
+      "articleNotFound": "Article not found",
+      "authorNotFound": "Author not found",
+      "userNotFound": "User not found",
+      "adminNotFound": "Admin not found",
+      "articleIdRequired": "Article ID is required",
+      "articleEditForbidden": "You cannot edit this article",
+      "notificationIdRequired": "Notification ID is required",
+      "notificationNotFound": "Notification not found",
+      "invalidReleaseDate": "Invalid release date",
+      "missing": "Something is missing",
+      "alreadyVoted": "You have already voted in this poll",
+      "releaseDateLocked": "Cannot edit release date for a published article or one with a passed release date",
+      "banReasonRequired": "Ban reason is required.",
+      "userAlreadyBanned": "User is already banned on this subdomain.",
+      "blogAlreadyDeactivated": "Blog is already deactivated.",
+      "subdomainExists": "Domain already taken.",
+      "streamCreationError": "Error creating stream: {error}.",
+      "cannotFollowYourself": "You cannot follow yourself.",
+      "alreadyFollowingUser": "You are already following this user.",
+      "failedToLoad": "Failed to load",
+      "giphyCategoriesFailed": "Failed to fetch Giphy categories",
+      "giphyFetchFailed": "Failed to fetch GIFs",
+      "sessionNotFound": "Session not found",
+      "sessionAlreadyRevoked": "Session already revoked",
+      "missingSessionId": "Missing sessionId",
+      "sessionInvalidOrRevoked": "Session is invalid or revoked",
+      "followNotFound": "You are not following this user",
+      "invalidTotp": "Invalid TOTP code",
+      "passwordChangeFailed": "Password change failed",
+      "roleChangeForbidden": "Changing role is not allowed"
+    },
+    "notifications": {
+      "userLikedArticle": "{0} liked your article.",
+      "userLikedComment": "{user} liked your comment.",
+      "userCommentedArticle": "{0} commented on your article.",
+      "anonymousLikedArticle": "Someone liked your article.",
+      "userReportedComment": "{user} reported your comment on article: {article}",
+      "commentReported": "Comment reported",
+      "newFollower": "{user} started following you.",
+      "articlePublished": "Your article \"{0}\" has been successfully published!",
+      "newArticleFromFollowed": "{0} published a new article: {1}"
+    },
+    "avatar": {
+      "title": "Avatar",
+      "uploadAvatar": "Upload Avatar",
+      "alt": {
+        "profile": "Profile Picture",
+        "company": "Company Logo",
+        "author": "Author Avatar {0}"
+      },
+      "uploadSuccess": "Avatar uploaded",
+      "uploadError": "Upload failed",
+      "ai": {
+        "label": "AI Avatar"
+      }
+    },
+    "connection": {
+      "online": "You are back online",
+      "offline": "You are offline"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {0} of {1}"
+    },
+    "user": {
+      "joined": "Joined: {0}",
+      "violateRules": "Violating rules",
+      "viewProfile": "View Profile",
+      "notAvailable": "Not available"
+    },
+    "auth": {
+      "login": "Log In",
+      "register": "Register",
+      "loginPrompt": "Log in to access exclusive features and content.",
+      "loginToComment": "Log in to add a comment",
+      "welcome": "Welcome",
+      "password": "Password",
+      "changePassword": "Change password",
+      "oldPassword": "Old password",
+      "passwordConfirm": "Confirm Password",
+      "forgotPassword": "Forgot Password?",
+      "or": "OR",
+      "backToLogin": "Back to Login",
+      "forgotPasswordPrompt": "Enter your email to reset your password",
+      "sendCode": "Send Code",
+      "resetPasswordPrompt": "Enter the verification code and new password",
+      "newPassword": "New Password",
+      "resetPassword": "Reset Password",
+      "sendCodeFailed": "Failed to send code",
+      "resetPasswordSuccess": "Password successfully reset",
+      "resetPasswordFailed": "Password reset failed",
+      "signInWithGoogle": "Sign in with Google",
+      "signInWithGithub": "Sign in with GitHub",
+      "enterVerificationCode": "Enter the verification code sent to",
+      "verificationCode": "Verification Code",
+      "verificationCodePlaceholder": "8-digit code",
+      "verify": "Verify",
+      "passwordsMismatch": "Passwords do not match",
+      "registerFailed": "Registration failed",
+      "verificationCodeSent": "Verification code sent to your email",
+      "loginFailed": "Failed to log in",
+      "loginSuccess": "Login successful",
+      "verifySuccess": "Email verified",
+      "verifyFailed": "Verification failed",
+      "codeExpired": "Verification code has expired. Send a new one.",
+      "codeMismatch": "Incorrect code. Try again.",
+      "googleSignInFailed": "Google sign-in failed",
+      "githubSignInFailed": "GitHub sign-in failed",
+      "enterTotpCode": "Enter your TOTP code for",
+      "totpCode": "TOTP Code",
+      "totpCodePlaceholder": "6-digit code",
+      "verifyTotp": "Verify TOTP"
+    },
+    "labels": {
+      "username": "Username",
+      "email": "Email",
+      "article": "Article:",
+      "articleTitle": "Article title",
+      "articleExcerpt": "Brief article description (2-4 sentences)",
+      "tagName": "Tag Name",
+      "title": "Title",
+      "excerpt": "Excerpt",
+      "content": "Content",
+      "image": "Image",
+      "shortcode": "Shortcode",
+      "releaseDate": "Release Date",
+      "orDrag": "or drag and drop",
+      "pasteImage": "Paste image",
+      "series": "Series",
+      "tags": "Tags",
+      "aiGeneration": "AI Generation"
+    },
+    "messages": {
+      "deleteConfirmTitle": "Are you sure you want to delete?",
+      "deleteConfirmText": "This action cannot be undone.",
+      "deleteCancel": "Cancel",
+      "deleteSuccess": "Deleted successfully",
+      "featureDisabled": "Feature disabled",
+      "deleteFailed": "Deletion failed",
+      "statusChangeFailed": "Status change failed",
+      "operationFailed": "Operation failed",
+      "reportSuccess": "Reported successfully",
+      "reportFailed": "Reporting failed",
+      "idle": "Quiet along the way",
+      "idleTitle": "Hmmm, nothing's going on.",
+      "closeConfirmTitle": "Close dialog?",
+      "closeConfirmText": "All the changes made will be lost. Do you want to continue?",
+      "closeConfirmButton": "Yes, close",
+      "requiredField": "{0} is required",
+      "invalidDateRange": "Release date must be between {0} and {1}",
+      "draftSaved": "Draft saved",
+      "draftSaveFailed": "Failed to save draft",
+      "invalidImage": "Select a valid image",
+      "successGeneral": "Success",
+      "successGeneralTitle": "This operation was successful",
+      "saveSuccess": "Successfully saved",
+      "saveFailed": "Failed to save",
+      "invalidUrl": "Some URLs are invalid (must start with https://)",
+      "noClientId": "Missing client ID"
+    },
+    "sortOptions": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "mostInteresting": "Most interesting",
+      "mostViews": "Most views"
+    },
+    "created": "Created at:",
+    "deleted": "Deleted at:",
+    "cancelAction": "Cancel action",
+    "preferences": {
+      "title": "Your Preferences",
+      "currentPlan": "Current plan",
+      "nextPayment": "Next payment",
+      "savingsTitle": "Savings",
+      "external": "External services",
+      "explanation": "Preferences Explanation",
+      "monthlyTitle": "Monthly Price",
+      "annuallyTitle": "Yearly Price",
+      "api": {
+        "title": "API Access",
+        "description": "Generate a secure API key to access endpoints programmatically.",
+        "generate": "Generate Key",
+        "label": "Your API Key",
+        "revoke": "Revoke & Regenerate",
+        "copy": "Copy API Key",
+        "copied": "Copied",
+        "show": "Show API Key",
+        "hide": "Hide API Key",
+        "warning": "Keep this key secret. Do not share it in client-side code or public repositories."
+      },
+      "billing": {
+        "permanent": "– Lifetime access",
+        "annual": "– Annual billing",
+        "monthly": "– Monthly billing"
+      },
+      "validity": {
+        "permanent": "Lifetime access",
+        "unknown": "Validity unknown",
+        "until": "Valid until {date}"
+      },
+      "nextBilling": {
+        "annual": "in 12 months",
+        "monthly": "in 1 month"
+      },
+      "savings": "{amount} per year",
+      "monthly": "month",
+      "annually": "year",
+      "companyLogo": {
+        "label": "Company Logo",
+        "description": "PNG, JPEG, WebP, or SVG, min. 512x512px, max. 2 MB"
+      },
+      "companyDescription": {
+        "label": "Company Description",
+        "placeholder": "Company description (e.g., your mission or slogan)"
+      },
+      "focus": {
+        "label": "Focus",
+        "placeholder": "Focus (e.g., objective gaming journalism, emphasis on Unreal Engine)"
+      },
+      "audience": {
+        "label": "Target Audience",
+        "placeholder": "Target audience (e.g., young adults, professionals)"
+      },
+      "language": {
+        "label": "Language",
+        "placeholder": "Choose a language"
+      },
+      "theme": {
+        "label": "Theme",
+        "placeholder": "Choose a theme"
+      },
+      "keywords": {
+        "label": "Keywords",
+        "placeholder": "Keywords (comma-separated)",
+        "count": "Words: {0}"
+      },
+      "autoRelease": {
+        "title": "Automatic Publishing",
+        "desc": "Generated articles will be saved as drafts for approval.",
+        "warning": "Articles will be publicly published immediately after generation.",
+        "confirmTitle": "Enable Automatic Publishing?",
+        "confirmMessage": "Are you sure? AI may occasionally generate inaccuracies. We still recommend reviewing content before publication. If enabled, content will go live immediately without your approval."
+      },
+      "aiAuthor": {
+        "title": "AI Author Settings",
+        "username": {
+          "label": "AI Name",
+          "placeholder": "AI Name"
+        },
+        "bio": {
+          "label": "AI Description",
+          "placeholder": "AI user description (max. 300 characters)"
+        },
+        "toneOfVoice": {
+          "label": "Tone of voice",
+          "placeholder": "What style should the AI use? (e.g., professional, funny, technical...)",
+          "suggestions": {
+            "professional": "Professional",
+            "casual": "Casual",
+            "funny": "Funny",
+            "sarcastic": "Sarcastic",
+            "technical": "Technical",
+            "inspiring": "Inspiring"
+          }
+        },
+        "controversyLevel": {
+          "label": "Controversy Level",
+          "placeholder": "How much should the AI engage in controversial topics?",
+          "options": {
+            "NONE": "None (safe topics)",
+            "LOW": "Low (occasional thought-provoking points)",
+            "MEDIUM": "Medium (healthy debate)",
+            "HIGH": "High (provocative opinions)"
+          }
+        }
+      },
+      "socials": {
+        "label": "Social Networks",
+        "noSocials": "No social networks added yet."
+      }
+    },
+    "passwordSuggestions": {
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong",
+      "veryStrong": "Very strong",
+      "useLongerPassword": "Use a longer password.",
+      "addWords": "Add another word or two. Uncommon words are better.",
+      "avoidCommonPhrases": "Use a few words, avoid common phrases.",
+      "avoidRepeated": "Avoid repeated words and characters.",
+      "addUppercase": "Add some uppercase letters.",
+      "addLowercase": "Add some lowercase letters.",
+      "addNumbers": "Add some numbers.",
+      "addSpecialChars": "Add some special characters.",
+      "avoidDates": "Avoid dates and years that are associated with you.",
+      "avoidCommonWords": "Avoid common words and phrases.",
+      "avoidRecentYears": "Avoid recent years.",
+      "avoidSequences": "Avoid sequences.",
+      "tooShort": "Password is too short. (min. {minLength} characters)",
+      "tooLong": "Password is too long. (max. {maxLength} characters)"
+    },
+    "tokens": {
+      "pack10k": "Token Pack 10k",
+      "pack25k": "Token Pack 25k",
+      "pack50k": "Token Pack 50k",
+      "bestValue": "Best value",
+      "upgradeToPremium": "Upgrade to PREMIUM"
+    }
+  }
+}

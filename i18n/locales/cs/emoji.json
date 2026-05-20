@@ -1,0 +1,11 @@
+{
+  "emoji": {
+    "create": "Vytvořit emoji",
+    "shortcodePlaceholder": "např. úsměv",
+    "noEmojisFound": "Žádné emoji nenalezeny",
+    "createSuccess": "Emoji {0} přidáno",
+    "createFailed": "Přidání emoji selhalo",
+    "deleteSuccess": "Emoji smazáno",
+    "deleteFailed": "Smazání emoji selhalo"
+  }
+}

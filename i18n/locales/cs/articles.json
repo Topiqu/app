@@ -1,0 +1,237 @@
+{
+  "articles": {
+    "comments": {
+      "addGif": "Přidat GIF",
+      "title": "Komentáře",
+      "yourComment": "Váš komentář",
+      "commentPlaceholder": "Napište svůj komentář...",
+      "characterLimitReached": "Dosažen limit znaků!",
+      "replyingTo": "Odpovídáte na: {0}",
+      "submitReply": "Odeslat odpověď",
+      "reply": "Odpovědět",
+      "addComment": "Přidat komentář",
+      "commentsDisabled": "Komentování tohoto článku není povoleno",
+      "errorLoadingComments": "Nepodařilo se načíst komentáře: {0}",
+      "commentAdded": "Komentář přidán",
+      "replySubmitted": "Odpověď odeslána",
+      "reactionFailed": "Nepodařilo se přidat reakci",
+      "reportComment": "Nahlásit komentář",
+      "deleteComment": "Smazat",
+      "deleteCommentAdmin": "Smazat (admin)",
+      "deletedComment": "[Tento komentář byl smazán]",
+      "bannedUserComment": "[Komentář od zabanovaného uživatele]",
+      "bannedUser": "Zabanovaný uživatel",
+      "banUser": "Zabanovat uživatele",
+      "unbanUser": "Zrušit ban uživatele",
+      "banReason": "Důvod banu: {0}",
+      "banExpires": "do {0}",
+      "deleteModalTitle": "Smazat komentář",
+      "deleteReasonPlaceholder": "Důvod smazání...",
+      "banModalTitle": "Zabanovat uživatele",
+      "banReasonPlaceholder": "Důvod banu...",
+      "banReasonPrompt": "Zadejte důvod banu (bude odeslán uživateli):",
+      "banExpirationLabel": "Vypršení banu (volitelné):",
+      "banSuccess": "Uživatel zabanován",
+      "banFailed": "Banování selhalo",
+      "unbanSuccess": "Ban uživatele zrušen",
+      "unbanFailed": "Zrušení banu selhalo",
+      "commentsEnabled": "jsou povoleny",
+      "commentsDisabledSuccess": "jsou zakázány",
+      "toggleSuccess": "Komentáře {0}",
+      "likedByAuthor": "Líbí se autorovi ({0})",
+      "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?",
+      "noComments": "Žádné komentáře",
+      "commentsAction": "Přidejte se k diskuzi."
+    },
+    "title": "Články",
+    "addArticle": "Přidat článek",
+    "updateArticle": "Upravit článek",
+    "authorsArticles": "Články od autora",
+    "explore": "Prozkoumat články",
+    "votes": "Hlasů",
+    "tagsArticles": "Články se štítkem",
+    "searchPlaceholder": "Hledat články...",
+    "readingTime": "{0} min čtení",
+    "latestArticle": "Nejnovější článek:",
+    "noResults": {
+      "imageAlt": "Smutný Topík",
+      "message": "Achjo, cítím se tak zbytečný..."
+    },
+    "export": {
+      "title": {
+        "json": "Exportovat do JSON",
+        "csv": "Exportovat do CSV",
+        "pdf": "Exportovat do PDF"
+      },
+      "warning": {
+        "title": {
+          "json": "Export do JSON",
+          "csv": "Export do CSV",
+          "pdf": "Export do PDF"
+        },
+        "message": {
+          "json": "Chystáte se exportovat {count} článků do JSON souboru.",
+          "csv": "Chystáte se exportovat {count} článků do CSV souboru.",
+          "pdf": "Chystáte se exportovat {count} článků do PDF dokumentu."
+        },
+        "note": {
+          "json": "JSON může být velký, ale načítání je rychlé.",
+          "csv": "CSV je ideální pro tabulky, ale může být objemný.",
+          "pdf": "PDF generování může chvíli trvat kvůli obrázkům."
+        }
+      }
+    },
+    "columns": {
+      "title": "Název",
+      "content": "Obsah",
+      "imageUrl": "Obrázek",
+      "sources": "Zdroje",
+      "status": "Status",
+      "date": "Datum",
+      "actions": "Akce",
+      "createdAt": "Vytvořeno"
+    },
+    "sources": {
+      "placeholder": "Odkaz na zdroj (https://...)",
+      "imageUrl": "Odkaz na obrázek (https://...)",
+      "youtube": "Odkaz na YouTube video (https://...)"
+    },
+    "status": {
+      "published": "Publikováno",
+      "draft": "Koncept",
+      "archived": "Archivováno"
+    },
+    "tags": {
+      "title": "Štítky článku",
+      "addCustomTagPlaceholder": "Přidat vlastní štítek",
+      "selectExistingTag": "Vybrat existující štítek",
+      "addButton": "Přidat",
+      "closeButton": "Zavřít",
+      "addTagSuccess": "Štítek přidán",
+      "removeTagSuccess": "Štítek odstraněn",
+      "operationFailed": "Operace selhala",
+      "addCustomTagFailed": "Přidání vlastního štítku selhalo",
+      "manageTags": "Spravovat štítky",
+      "searchPlaceholder": "Hledat štítky...",
+      "noTagsFound": "Žádné štítky nenalezeny",
+      "deleteConfirmText": "Tímto se smaže štítek \"{0}\".",
+      "createSuccess": "Štítek úspěšně vytvořen",
+      "createFailed": "Vytvoření štítku selhalo",
+      "updateSuccess": "Štítek úspěšně aktualizován",
+      "updateFailed": "Aktualizace štítku selhala",
+      "noTagsSelected": "Žádné štítky nevybrány"
+    },
+    "statusCell": {
+      "scheduledTooltip": "Naplánováno na: {0}"
+    },
+    "tableOfContents": {
+      "title": "Obsah",
+      "noContent": "Žádný obsah k zobrazení"
+    },
+    "relatedArticles": {
+      "title": "Související články"
+    },
+    "preferencesExplanation": {
+      "title": "Vysvětlení předvoleb",
+      "focus": {
+        "title": "Zaměření",
+        "description": "Hlavní téma nebo směr obsahu. Pomáhá upřesnit tón a záměr výstupů.",
+        "example": "Např. 'Objektivní herní žurnalistika', 'Technologické novinky se zaměřením na Unreal Engine'."
+      },
+      "targetAudience": {
+        "title": "Cílová skupina",
+        "description": "Určuje, pro koho je obsah určen. Pomáhá přizpůsobit styl, jazyk a technickou úroveň.",
+        "example": "Např. 'Mladí dospělí 18–25 let', 'Vývojáři her a IT profesionálové'."
+      },
+      "keywords": {
+        "title": "Klíčová slova",
+        "description": "Výrazná témata nebo pojmy, která se mají častěji objevovat ve výstupech. Používají se také pro SEO.",
+        "example": "Např. 'Unreal Engine, AI ve hrách, RPG, svoboda hráče'."
+      }
+    },
+    "userMenu": {
+      "noBio": "Žádné bio",
+      "adminIn": "Administrátor v: {0}",
+      "noClientAssigned": "Nepřiřazen",
+      "currentPlan": "Současný plán",
+      "roughlyEstimated": "Přibližně {0} článků",
+      "userDataError": "Chyba při načítání uživatelských dat",
+      "remainingTokens": "Zbývající tokeny",
+      "totalConsumed": "Celkem spotřebováno: {0} tokenů",
+      "buyTokens": "Koupit tokeny",
+      "upgradeToPremium": "Povýšit na PREMIUM",
+      "recentActions": "Poslední akce",
+      "ga4Connected": "GA4 připojeno",
+      "gamConnected": "GAM připojeno",
+      "tip": "Tip",
+      "adjustPreferences": "Upravte preference pro lepší výsledky AI",
+      "articleGenerated": "Článek vygenerován",
+      "generationFailed": "Generování selhalo",
+      "articlePublished": "Článek publikován",
+      "articleSavedAsDraft": "Článek uložen jako koncept",
+      "insightGenerated": "Insight vytvořen",
+      "lowTokensWarning": "Málo tokenů!",
+      "lowTokensHint": "Zbývá méně než 10 % tokenů. Dokupte si balíček, ať nepřijdete o generování.",
+      "insightSkipped": "Insight přeskočen"
+    },
+    "dateFormats": {
+      "justNow": "Právě teď",
+      "minutesAgo": "Před {0} minutami",
+      "hoursAgo": "Před {0} hodinami",
+      "yesterday": "Včera, {0}",
+      "daysAgo": "Před {0} dny",
+      "weekAgo": "Před týdnem",
+      "thisYear": "MMM d, HH:mm",
+      "otherYear": "MMM d, yyyy, HH:mm"
+    },
+    "articleCard": {
+      "imageAlt": "Náhled článku",
+      "commentsAndLikesTooltip": "Komentáře a lajky",
+      "noAuthor": "Není uveden",
+      "author": "Autor článku"
+    },
+    "poll": {
+      "defaultQuestion": "Zadejte otázku",
+      "defaultOption": "Možnost 1",
+      "option": "Možnost {index}",
+      "questionPlaceholder": "Zadejte otázku",
+      "optionPlaceholder": "Možnost",
+      "hpTitle": "Nejnovější anketa",
+      "noPolls": "Žádné ankety",
+      "addOption": "Přidat možnost"
+    },
+    "activity": {
+      "tabs": {
+        "likedArticles": "Oblíbené články",
+        "comments": "Moje komentáře"
+      }
+    },
+    "editor": {
+      "title": "Upravit článek",
+      "modes": {
+        "manual": "Ruční psaní",
+        "import": "Importovat z JSON",
+        "ai": "AI generování"
+      },
+      "ai": {
+        "customPromptPlaceholder": "Zadejte pokyn pro generování článku AI...",
+        "notAvailable": "Generování AI není dostupné.",
+        "learnMore": "Zjistit více",
+        "generateButton": "Generovat obsah AI"
+      },
+      "drafts": {
+        "loadDrafts": "Načíst koncepty",
+        "selectDraftTitle": "Vybrat koncept",
+        "selectDraftPlaceholder": "Vyberte koncept",
+        "continueDraftPrompt": "Pokračovat v úpravě konceptu z {0}?",
+        "noDraftsFound": "Žádné koncepty nenalezeny",
+        "untitled": "Návrh bez názvu #{0}"
+      },
+      "releaseDateNote": "Slouží k nastavení data a času publikace článku. Nechte prázdné pro manuální vydání.",
+      "createSuccess": "Článek úspěšně vytvořen",
+      "createFailed": "Vytvoření článku selhalo",
+      "aiContentGenerated": "Obsah AI úspěšně vygenerován",
+      "aiContentFailed": "Generování obsahu AI selhalo"
+    }
+  }
+}

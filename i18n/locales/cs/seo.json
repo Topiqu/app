@@ -1,0 +1,18 @@
+{
+  "seo": {
+    "default": {
+      "title": "Topiqu | Infrastruktura pro B2B obsah",
+      "description": "Automatizovaná platforma pro správu a monetizaci obsahu. Využijte sílu AI, pokročilé analytiky a maximálního výkonu pro váš růst.",
+      "keywords": "Topiqu, blog platforma, AI content, monetizace, SaaS infrastruktura",
+      "author": "Topiqu Inc."
+    },
+    "tags": {
+      "title": "Téma: {name} | Topiqu",
+      "description": "Prohlédněte si nejnovější články a analýzy na téma {name}."
+    },
+    "author": {
+      "title": "{name} - Profil autora | Topiqu",
+      "description": "Přečtěte si všechny odborné články a příspěvky od autora {name}."
+    }
+  }
+}

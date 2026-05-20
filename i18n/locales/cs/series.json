@@ -1,0 +1,19 @@
+{
+  "series": {
+    "label": "Série",
+    "placeholder": "Vyber nebo vytvoř sérii...",
+    "part": "{count}. díl",
+    "createTitle": "Vytvořit novou sérii",
+    "nameLabel": "Název série",
+    "namePlaceholder": "Např. Jak vybrat nemovitost...",
+    "createNew": "Vytvořit novou sérii...",
+    "createFailed": "Nepodařilo se vytvořit sérii",
+    "continueReading": "Pokračovat v sérii",
+    "previous": "Předchozí",
+    "next": "Další část",
+    "nextPart": "Následující část",
+    "current": "Právě čtete",
+    "showList": "Zobrazit celou sérii",
+    "hideList": "Skrýt seznam dílů"
+  }
+}

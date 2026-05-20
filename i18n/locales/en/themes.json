@@ -1,0 +1,19 @@
+{
+  "themes": {
+    "blue": "Blue",
+    "green": "Green",
+    "red": "Red",
+    "purple": "Purple",
+    "orange": "Orange",
+    "teal": "Teal",
+    "yellow": "Yellow",
+    "pink": "Pink",
+    "indigo": "Indigo",
+    "gray": "Gray",
+    "lime": "Lime",
+    "sky": "Sky",
+    "amber": "Amber",
+    "cyan": "Cyan",
+    "violet": "Violet"
+  }
+}

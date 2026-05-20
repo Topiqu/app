@@ -1,0 +1,64 @@
+{
+  "stats": {
+    "title": "Blog Statistics",
+    "loading": "Loading data...",
+    "noArticles": {
+      "title": "Blog has no articles yet",
+      "description": "Statistics will be available after adding the first article"
+    },
+    "totalViews": {
+      "title": "Total Views",
+      "noViews": "No views yet"
+    },
+    "savedTime": {
+      "title": "Time Saved"
+    },
+    "savedAmount": {
+      "title": "Money Saved"
+    },
+    "articleCount": "Total articles",
+    "sentiment": {
+      "title": "Your community"
+    },
+    "totalShares": {
+      "title": "Total Shares",
+      "noShares": "No shares yet"
+    },
+    "topArticle": {
+      "title": "Most Read Article",
+      "pluralTitle": "Most Read Articles",
+      "noViews": "No article has been read yet"
+    },
+    "topTag": {
+      "title": "Most Popular Tag",
+      "noTags": "No tags used yet"
+    },
+    "topLikedArticle": {
+      "title": "Most Liked Article",
+      "likes": "likes",
+      "noLikes": "No article has been liked yet"
+    },
+    "topCommentedArticle": {
+      "title": "Most Commented Article",
+      "noComments": "No articles have comments yet"
+    },
+    "followerCount": "Follower Count",
+    "engagementRate": {
+      "title": "Engagement Rate",
+      "tooltip": "Engagement rate shows how actively readers interact with your articles. It is calculated as the average ratio of interactions (likes, comments, shares, and poll votes) to views for each article. A higher value indicates greater reader engagement."
+    },
+    "topAuthor": {
+      "title": "Most Active Author",
+      "noAuthors": "No author has contributed yet"
+    },
+    "upgradePrompt": {
+      "title": "Unlock Premium Statistics",
+      "description": "Gain deeper insights into your blog's performance with advanced charts, share analysis, engagement rate, and popular tags. Upgrade to PRO or PREMIUM to maximize your potential!",
+      "button": "Explore Plans"
+    },
+    "charts": {
+      "viewsLastWeek": "Views in the Last Week",
+      "shareDistribution": "Share Distribution by Platform"
+    }
+  }
+}

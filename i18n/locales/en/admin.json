@@ -1,0 +1,30 @@
+{
+  "admin": {
+    "upgrade": {
+      "cta": "Upgrade to {plan}",
+      "loading": "Opening checkout…",
+      "error": "Could not open checkout. Please try again.",
+      "toPro": {
+        "title": "Grow your blog with the PRO plan",
+        "description": "Unlock AI generation, advanced SEO and 70% revenue share.",
+        "features": [
+          "AI article generation + monthly token bundle",
+          "Advanced SEO optimization",
+          "Import of existing articles",
+          "70% revenue share in your favor"
+        ]
+      },
+      "toPremium": {
+        "title": "Maximum power with the PREMIUM plan",
+        "description": "Everything in PRO plus AI sentiment, priority indexing and 90% revenue share.",
+        "features": [
+          "AI Sentiment & automatic images",
+          "Priority indexing and sourcing",
+          "Custom emojis & branding",
+          "Priority 24/7 support",
+          "90% revenue share in your favor"
+        ]
+      }
+    }
+  }
+}

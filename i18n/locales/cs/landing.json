@@ -1,0 +1,238 @@
+{
+  "landing": {
+    "hero": {
+      "badge": "Content Marketing 2.0",
+      "title_prefix": "Váš firemní blog",
+      "title_suffix": "na autopilota",
+      "subtitle": "Zvyšte organický traffic a budujte brand bez nutnosti najímat armádu copywriterů. Kompletní publikační platforma, která se sama zaplatí z reklamních výnosů.",
+      "stats": {
+        "score": "SEO Performance",
+        "ads": "Revenue Share",
+        "billing": "Hybridní model",
+        "api": "Plná integrace"
+      }
+    },
+    "specs": {
+      "title": "Méně starostí, více výsledků",
+      "subtitle": "Topiqu není jen editor. Je to kompletní ekosystém, který řeší tvorbu, distribuci i monetizaci obsahu za vás.",
+      "ai": {
+        "badge": "Smart Content",
+        "title": "AI, která chápe váš byznys",
+        "desc": "Náš engine se naučí váš tone-of-voice a brand identitu. Generuje relevantní články, které skutečně přitahují zákazníky, ne jen generický text. Automaticky hlídá kvalitu diskuzí a sentiment komunity.",
+        "tags": {
+          "enhance": "Brand Voice",
+          "vibe": "Analýza sentimentu",
+          "helpfulness": "Hodnota pro čtenáře"
+        }
+      },
+      "monetization": {
+        "title": "Náklad, který se vrátí",
+        "desc": "Unikátní model sdílených příjmů z reklamy (GAM). Čím kvalitnější obsah a vyšší návštěvnost, tím více se vám vrací zpět. Váš blog se stává profitabilním kanálem."
+      },
+      "security": {
+        "title": "Enterprise standardy",
+        "list": {
+          "rbac": "Řízení přístupů týmů",
+          "mfa": "Dvoufázové ověření",
+          "hashing": "Šifrování dat klientů",
+          "antibot": "Ochrana proti spamu"
+        }
+      },
+      "api": {
+        "badge": "Plug & Play",
+        "title": "Nasazení v řádu minut",
+        "desc": "Žádný složitý vývoj. Vložte odkaz na web, použijte náš plugin nebo si vyžádejte data přes API a zobrazte je po svém. Plně přizpůsobitelný vzhled, barvy i doména."
+      }
+    },
+    "pricing": {
+      "title": "Ceník",
+      "subtitle": "Transparentní ceny. Žádné skryté poplatky. Vyberte si úroveň, která odpovídá vaší ambici.",
+      "revenue_share": "Revenue Share",
+      "month": "/měs",
+      "plans": {
+        "free": {
+          "badge": "Start",
+          "name": "Free",
+          "desc": "Ideální pro začátečníky a hobby projekty.",
+          "price": "0 Kč",
+          "features": {
+            "manual_writing": "Manuální psaní článků",
+            "subdomain": "Subdoména zdarma",
+            "no_ai": "Bez AI generování",
+            "basic_analytics": "Základní analytika"
+          },
+          "cta": "Začít zdarma"
+        },
+        "pro": {
+          "badge": "Creator",
+          "name": "Pro",
+          "desc": "Pro tvůrce, kteří chtějí růst s AI.",
+          "price": "490 Kč",
+          "features": {
+            "ai_tokens": "AI Generování + Tokeny",
+            "seo": "Pokročilá SEO optimalizace",
+            "import": "Import existujících článků",
+            "everything_free": "Vše z Free plánu"
+          },
+          "cta": "Vybrat Pro"
+        },
+        "premium": {
+          "badge": "Most Popular",
+          "name": "Premium",
+          "desc": "Maximální výkon a kompletní automatizace.",
+          "price": "990 Kč",
+          "features": {
+            "sentiment": "AI Sentiment & Obrázky",
+            "indexing": "Prioritní indexace & Zdrojování",
+            "branding": "Vlastní Emojis & Branding",
+            "support": "Prioritní podpora 24/7"
+          },
+          "cta": "Vybrat Premium"
+        },
+        "custom": {
+          "badge": "Enterprise",
+          "name": "Custom",
+          "desc": "White-label řešení bez jakýchkoliv limitů.",
+          "price": "Na míru",
+          "features": {
+            "domain": "Vlastní doména (Apex)",
+            "whitelabel": "Plný White-Label (bez brandingu)",
+            "banners": "Vlastní reklamní bannery",
+            "unlimited_ai": "Neomezené AI tokeny"
+          },
+          "cta": "Kontaktovat"
+        }
+      }
+    },
+    "faq": {
+      "badge": "Podpora & Nápověda",
+      "title": "Často kladené otázky",
+      "subtitle": "Vše co potřebujete vědět o platformě Topiqu. Od nastavení domény, přes AI generování, až po monetizaci.",
+      "cta_title": "Stále máte otázky?",
+      "cta_desc": "Náš tým podpory je tu pro vás 24/7.",
+      "cta_button": "Kontaktovat podporu",
+      "items": [
+        {
+          "q": "Jak funguje revenue share model?",
+          "a": "Topiqu odměňuje tvůrce na základě zvoleného plánu. U tarifu FREE jde 100% příjmů z reklamy na provoz platformy. Plán PRO nabízí dělení příjmů 70/30 ve váš prospěch a PREMIUM zvyšuje tento podíl na 90/10."
+        },
+        {
+          "q": "Mohu využívat Topiqu na vlastní doméně?",
+          "a": "Ano. Již od tarifu PRO můžete využívat vlastní subdoménu (např. blog.vasefirma.cz) pomocí CNAME záznamu. Tarif CUSTOM navíc odemyká možnost nasazení na apex doménu."
+        },
+        {
+          "q": "Je obsah generovaný AI bezpečný pro SEO?",
+          "a": "Rozhodně. Využíváme pokročilé modely Grok 4.1 Fast Reasoning pro generování obsahu, který je přísně optimalizován pro vyhledávače. Algoritmy automaticky strukturují články a hlídají klíčová slova."
+        },
+        {
+          "q": "Jaké analytické nástroje platforma nabízí?",
+          "a": "Kromě integrace GA4 poskytujeme vlastní detailní metriky pro B2B blogování. Sledujeme engagement rate, sentiment komunity v komentářích či aktivitu autorů."
+        },
+        {
+          "q": "Mohu přejít na vyšší tarif kdykoliv?",
+          "a": "Samozřejmě. Upgrade plánu je okamžitý a AI tokeny či nové funkce (jako vlastní doména) se vám zpřístupní ihned po potvrzení."
+        }
+      ]
+    },
+    "performance": {
+      "title": "Rychlost, kterou\nGoogle miluje.",
+      "subtitle": "Technologie ustupuje do pozadí. Důležitý je zážitek čtenáře a hodnocení vyhledávačů. My garantujeme obojí.",
+      "stack": {
+        "title": "Maximální výkon",
+        "desc": "Optimalizováno pro Core Web Vitals. Vaše články se načítají okamžitě, což zvyšuje konverze a snižuje bounce rate."
+      },
+      "analytics": {
+        "title": "Data pro rozhodování",
+        "desc": "Přehledné reporty o tom, co vaši čtenáři skutečně čtou. Engagement rate, sdílení a dopad na váš byznys v jedné dashboardu."
+      },
+      "pricing": {
+        "title": "Fér Ceník",
+        "desc": "Základní paušál za platformu + flexibilní navýšení podle toho, jak moc nástroje využíváte. Neplatíte za nic, co nepotřebujete."
+      }
+    },
+    "terminal": {
+      "assistant_name": "Topik AI Asistent",
+      "status": "Připraven k akci",
+      "line1": "Analýza klíčových slov...",
+      "line2": "Cílová skupina: B2B Decision Makers",
+      "line3": "Tón komunikace: Profesionální",
+      "line4": "Generování obsahu...",
+      "line5": "Kontrola SEO parametrů...",
+      "line6": "Status: Optimalizováno",
+      "line7": "Publikace: Naplánována"
+    },
+    "onboarding": {
+      "title": "Vytvořte si vlastní blog",
+      "siteInfo": "Informace o webu",
+      "siteInfoDesc": "Začněme tím nejdůležitějším – jak se bude váš projekt jmenovat a kde ho najdeme.",
+      "siteName": "Název webu",
+      "siteNamePlaceholder": "Můj skvělý blog",
+      "subdomain": "Subdoména",
+      "subdomainPlaceholder": "muj-blog",
+      "subdomainHint": "Pouze malá písmena, čísla a pomlčky.",
+      "domainPlaceholder": "my-awesome-site",
+      "customDomain": "Vlastní doména",
+      "customDomainHint": "Zadejte vaši vlastní doménu. Následně si do DNS vaší domény přidejte CNAME záznam směrující na app.topiqu.com",
+      "customDomainExample": "vlastni.cz",
+      "domainType": "Typ domény",
+      "domainTypeOptions": {
+        "SUBDOMAIN": "Subdoména (.topiqu.com)",
+        "CUSTOM": "Vlastní doména / CNAME"
+      },
+      "designFocus": "Design & Zaměření",
+      "designFocusDesc": "Přizpůsobte si platformu svému brandu a definujte hlavní téma.",
+      "mainLanguage": "Hlavní jazyk obsahu",
+      "langCz": "Čeština",
+      "langEn": "English",
+      "mainColor": "Hlavní barva brandu",
+      "siteFocus": "Hlavní zaměření webu (volitelné)",
+      "siteFocusPlaceholder": "např. Technologie, Životní styl...",
+      "continueToAccount": "Pokračovat",
+      "language": "Jazyk webu",
+      "adminInfo": "Účet správce",
+      "adminInfoDesc": "Už jsme skoro u konce. Vytvořte si přístupové údaje do administrace.",
+      "usernamePlaceholder": "admin",
+      "emailPlaceholder": "admin{'@'}example.com",
+      "startTrial": "Začít s plným přístupem",
+      "trialHint": "Získáte rovnou 25 000 tokenů zdarma. Budete přesměrováni k dokončení.",
+      "trialHintToken": "Získáte rovnou 25 000 AI tokenů zdarma!",
+      "stepLabel": "Krok {current} z {total}",
+      "domainStatus": {
+        "checking": "Ověřuji dostupnost…",
+        "available": "Doména je volná",
+        "taken": "Tato doména je již obsazená",
+        "invalid": "Neplatný formát. Pouze a-z, 0-9 a pomlčky.",
+        "tooShort": "Minimálně 3 znaky",
+        "reserved": "Tento název je rezervovaný",
+        "empty": ""
+      },
+      "summary": "Skoro hotovo!",
+      "summaryDesc": "Zkontrolujte si vše, než vám vytvoříme účet.",
+      "summarySite": "Název webu",
+      "summaryDomain": "Doména",
+      "summaryLanguage": "Jazyk obsahu",
+      "summaryColor": "Barva značky",
+      "summaryFocus": "Zaměření",
+      "summaryAdmin": "Uživatelské jméno správce",
+      "summaryEmail": "Email správce",
+      "focusNotSet": "—",
+      "acceptTos": "Souhlasím s {tos} a {privacy}.",
+      "acceptTosLabel": "obchodními podmínkami",
+      "acceptPrivacyLabel": "zásadami ochrany osobních údajů",
+      "tosRequired": "Pro pokračování musíte souhlasit s podmínkami",
+      "continueToSummary": "Pokračovat ke shrnutí",
+      "createAccount": "Vytvořit účet a pokračovat k platbě",
+      "continueToVerification": "Pokračovat k ověření",
+      "verifyTitle": "Ověření e-mailu",
+      "verifyDesc": "Poslali jsme 6místný kód na {email}. Zadej ho níže pro potvrzení.",
+      "verifyAndContinue": "Ověřit a pokračovat",
+      "resendCode": "Poslat nový kód",
+      "resendCodeIn": "Nový kód za {seconds}s",
+      "codeNotReceived": "Nedorazil kód?"
+    },
+    "footer": {
+      "desc": "Platforma pro automatizaci a monetizaci firemního obsahu.",
+      "rights": "Všechna práva vyhrazena."
+    }
+  }
+}

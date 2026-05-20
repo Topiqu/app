@@ -1,0 +1,19 @@
+{
+  "themes": {
+    "blue": "Modrá",
+    "green": "Zelená",
+    "red": "Červená",
+    "purple": "Fialová",
+    "orange": "Oranžová",
+    "teal": "Tyrkysová",
+    "yellow": "Žlutá",
+    "pink": "Růžová",
+    "indigo": "Indigo",
+    "gray": "Šedá",
+    "lime": "Limetková",
+    "sky": "Nebeská",
+    "amber": "Jantarová",
+    "cyan": "Azurová",
+    "violet": "Fialová"
+  }
+}

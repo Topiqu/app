@@ -1,0 +1,64 @@
+{
+  "stats": {
+    "title": "Statistiky blogu",
+    "loading": "Načítání dat...",
+    "noArticles": {
+      "title": "Blog zatím nemá žádné články",
+      "description": "Statistiky budou dostupné po přidání prvního článku"
+    },
+    "totalViews": {
+      "title": "Zobrazení",
+      "noViews": "Zatím žádná zobrazení"
+    },
+    "savedTime": {
+      "title": "Ušetřený čas"
+    },
+    "savedAmount": {
+      "title": "Ušetřené náklady"
+    },
+    "articleCount": "Počet článků",
+    "sentiment": {
+      "title": "Vaše komunita"
+    },
+    "totalShares": {
+      "title": "Sdílení",
+      "noShares": "Zatím žádné sdílení"
+    },
+    "topArticle": {
+      "title": "Nejčtenější článek",
+      "pluralTitle": "Nejčtenější články",
+      "noViews": "Zatím žádný článek nebyl přečten"
+    },
+    "topTag": {
+      "title": "Nejpopulárnější štítek",
+      "noTags": "Zatím nebyly použity žádné štítky"
+    },
+    "topLikedArticle": {
+      "title": "Nejlajkovanější článek",
+      "likes": "lajků",
+      "noLikes": "Zatím žádný článek nebyl lajkován"
+    },
+    "topCommentedArticle": {
+      "title": "Článek s nejvíce komentáři",
+      "noComments": "Zatím žádné články nemají komentáře"
+    },
+    "followerCount": "Počet sledujících",
+    "engagementRate": {
+      "title": "Míra zapojení",
+      "tooltip": "Míra zapojení ukazuje, jak aktivně čtenáři interagují s vašimi články. Vypočítává se jako průměrný poměr interakcí (lajky, komentáře, sdílení a hlasy v anketách) k zobrazením pro každý článek. Vyšší hodnota znamená větší zapojení čtenářů."
+    },
+    "topAuthor": {
+      "title": "Nejaktivnější autor",
+      "noAuthors": "Zatím žádný autor nepřispěl"
+    },
+    "upgradePrompt": {
+      "title": "Odemkněte prémiové statistiky",
+      "description": "Získejte hlubší přehled o výkonu vašeho blogu díky pokročilým grafům, analýze sdílení, míře zapojení a populárním štítkům. Upgradujte na PRO nebo PREMIUM a maximalizujte svůj potenciál!",
+      "button": "Prozkoumat plány"
+    },
+    "charts": {
+      "viewsLastWeek": "Zobrazení za poslední týden",
+      "shareDistribution": "Rozložení sdílení podle platformy"
+    }
+  }
+}

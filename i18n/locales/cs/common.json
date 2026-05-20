@@ -1,0 +1,399 @@
+{
+  "common": {
+    "loading": "Načítání...",
+    "error": "Chyba při načítání dat",
+    "noResults": "Žádné výsledky",
+    "noItems": "Žádné položky",
+    "readMore": "Číst více",
+    "close": "Zavřít",
+    "warning": "Upozornění",
+    "unknown": "Neznámo",
+    "settings": "Nastavení článku",
+    "remove": "Odebrat",
+    "continue": "Pokračovat",
+    "unsavedChanges": "Neuložené změny!",
+    "showPassword": "Zobrazit heslo",
+    "links": {
+      "terms": "Obchodní podmínky",
+      "privacy": "Ochrana soukromí",
+      "status": "Status systému"
+    },
+    "search": "Hledat...",
+    "yes": "Ano",
+    "no": "Ne",
+    "none": "Žádný",
+    "features": {
+      "ai": "AI Generování",
+      "aiDesc": "Generování obsahu a AI doplňky",
+      "crons": "Plánované úlohy",
+      "cronsDesc": "Automatizace pro Váš blog - automatické vydávání článků, analýzy a další",
+      "sentiment": "Analýza sentimentu",
+      "sentimentDesc": "Podrobná analýza nálady a zpětné vazby čtenářů",
+      "articleCrons": "Plánované generování článků",
+      "articleCronsDesc": "Automatické vydávání článků pomocí AI na základě vašich preferencí"
+    },
+    "errTypes": {
+      "notFound": "Tohle jsem nenašel, asi jsem slepý.",
+      "unauthorized": "Stát, sem nesmíš, to je zakázané území pro nepřihlášené dobrodruhy.",
+      "forbidden": "Tady je plot s ostnatým drátem – přístup zakázán, ani pro superadminy s cheat kódem.",
+      "server": "Server si vzal volno a šel na kafe. Zkuste to později.",
+      "badRequest": "Váš požadavek je zmatený jak draft článku bez nadpisu – zkuste to napsat jasněji.",
+      "tooManyRequests": "Spam alert! Klikáte rychleji než speedrunner – dejte si pauzu.",
+      "internalError": "Uvnitř to bouchlo jak špatně napsaný script. Naši technomágové už to řeší.",
+      "serviceUnavailable": "Služba odjela na dovolenou. Obnovte stránku nebo si zatím dejte čaj.",
+      "conflict": "Data se hádají jak dva editoři nad jedním článkem. Rozhodněte, která verze vyhraje.",
+      "notAcceptable": "Tohle je mimo pravidla hry. Upravte obsah a zkuste to znovu.",
+      "gatewayTimeout": "Brána se sekla jak lagující server. Počkejte chvilku a zkuste to znova.",
+      "unprocessableEntity": "Tomuhle nerozumíme, jako AI na špatný prompt. Přidejte víc detailů a půjde to."
+    },
+    "errors": {
+      "general": "Něco se pokazilo. Zkuste to prosím znovu.",
+      "unauthorized": "Přístup zamítnut.",
+      "invalidRequest": "Neplatný požadavek.",
+      "missingBlog": "Chybí název blogu.",
+      "blogNotFound": "Blog nenalezen.",
+      "tagNotFound": "Tag nenalezen.",
+      "commentNotFound": "Komentář nenalezen.",
+      "banNotFound": "Uživatel není zabanován.",
+      "commentsDisabled": "Komentáře jsou u tohoto článku vypnuty.",
+      "alreadyExists": "Toto již existuje.",
+      "forbidden": "Chybí oprávnění.",
+      "articleNotFound": "Článek nenalezen",
+      "authorNotFound": "Autor nenalezen",
+      "userNotFound": "Uživatel nenalezen",
+      "adminNotFound": "Admin nenalezen",
+      "articleIdRequired": "ID článku je povinné",
+      "articleEditForbidden": "Tento článek nemůžete upravovat",
+      "notificationIdRequired": "ID notifikace je povinné",
+      "notificationNotFound": "Notifikace nenalezena",
+      "invalidReleaseDate": "Neplatné datum vydání",
+      "missing": "Něco chybí",
+      "alreadyVoted": "Už jste hlasovali v této anketě",
+      "releaseDateLocked": "Nelze upravit datum vydání u publikovaného článku nebo článku s uplynulým datem vydání",
+      "banReasonRequired": "Důvod banu je povinný.",
+      "userAlreadyBanned": "Uživatel je již zabanován na této subdoméně.",
+      "blogAlreadyDeactivated": "Blog je již deaktivován.",
+      "subdomainExists": "Doména je již obsazená.",
+      "streamCreationError": "Chyba při vytváření streamu: {error}.",
+      "cannotFollowYourself": "Nemůžete sledovat sami sebe.",
+      "alreadyFollowingUser": "Tohoto uživatele už sledujete.",
+      "failedToLoad": "Nepodařilo se načíst",
+      "giphyCategoriesFailed": "Nepodařilo se načíst kategorie Giphy",
+      "giphyFetchFailed": "Nepodařilo se načíst GIFy",
+      "sessionNotFound": "Relace nenalezena",
+      "sessionAlreadyRevoked": "Relace již byla zrušena",
+      "missingSessionId": "Chybí sessionId",
+      "sessionInvalidOrRevoked": "Relace byla zrušena nebo neexistuje",
+      "invalidTotp": "Neplatný TOTP kód",
+      "passwordChangeFailed": "Změna hesla selhala",
+      "roleChangeForbidden": "Změna role není povolena",
+      "followNotFound": "Tento follow vztah neexistuje"
+    },
+    "notifications": {
+      "userLikedArticle": "{0} lajkl váš článek.",
+      "userLikedComment": "{user} lajkl váš komentář.",
+      "userCommentedArticle": "{0} okomentoval váš článek.",
+      "anonymousLikedArticle": "Někdo lajkl váš článek.",
+      "userReportedComment": "{user} nahlásil váš komentář k článku: {article}",
+      "commentReported": "Komentář nahlášen",
+      "newFollower": "{user} vás začal sledovat.",
+      "articlePublished": "Váš článek „{0}“ byl úspěšně publikován!",
+      "newArticleFromFollowed": "{0} publikoval nový článek: {1}"
+    },
+    "actions": {
+      "get_started": "Začít integraci",
+      "learn_more": "Dokumentace",
+      "view": "Zobrazit",
+      "edit": "Upravit",
+      "tags": "Štítky",
+      "home": "Domů",
+      "continue": "Pokračovat",
+      "send": "Odeslat",
+      "cancel": "Zrušit",
+      "showDetails": "Zobrazit detaily",
+      "hideDetails": "Skrýt detaily",
+      "delete": "Smazat",
+      "revoke": "Odebrat",
+      "change": "Změnit",
+      "clickToUpload": "Klikněte pro nahrání",
+      "dropHere": "Pusťte soubor zde",
+      "upload": "Vybrat",
+      "saveChanges": "Uložit změny",
+      "backToList": "Zpět na seznam",
+      "back": "Zpět",
+      "close": "Zavřít",
+      "like": "Lajknout",
+      "copyLink": "Kopírovat odkaz",
+      "shareX": "Sdílet na X",
+      "shareLinkedIn": "Sdílet na LinkedIn",
+      "copySuccess": "Odkaz úspěšně zkopírován"
+    },
+    "avatar": {
+      "title": "Avatar",
+      "uploadAvatar": "Nahrát avatar",
+      "alt": {
+        "profile": "Profilový obrázek",
+        "company": "Logo společnosti",
+        "author": "Avatar autora {0}"
+      },
+      "uploadSuccess": "Avatar nahrán",
+      "uploadError": "Nahrávání selhalo",
+      "ai": {
+        "label": "AI Avatar"
+      }
+    },
+    "connection": {
+      "online": "Jste zpět online",
+      "offline": "Jste offline"
+    },
+    "pagination": {
+      "previous": "Předchozí",
+      "next": "Další",
+      "pageInfo": "Strana {0} z {1}"
+    },
+    "user": {
+      "joined": "Přidal se: {0}",
+      "violateRules": "Porušení pravidel",
+      "viewProfile": "Zobrazit profil",
+      "notAvailable": "Není dostupné"
+    },
+    "auth": {
+      "login": "Přihlásit se",
+      "register": "Registrovat",
+      "loginPrompt": "Přihlaste se pro přístup k exkluzivním funkcím a obsahu.",
+      "loginToComment": "Přihlaste se pro přidání komentáře",
+      "welcome": "Vítejte",
+      "password": "Heslo",
+      "changePassword": "Změna hesla",
+      "oldPassword": "Staré heslo",
+      "passwordConfirm": "Potvrzení hesla",
+      "forgotPassword": "Zapomenuté heslo?",
+      "or": "NEBO",
+      "backToLogin": "Zpět na přihlášení",
+      "forgotPasswordPrompt": "Zadejte e-mail pro obnovu hesla",
+      "sendCode": "Odeslat kód",
+      "resetPasswordPrompt": "Zadejte ověřovací kód a nové heslo",
+      "newPassword": "Nové heslo",
+      "resetPassword": "Resetovat heslo",
+      "sendCodeFailed": "Nepodařilo se odeslat kód",
+      "resetPasswordSuccess": "Heslo úspěšně resetováno",
+      "resetPasswordFailed": "Reset hesla selhal",
+      "signInWithGoogle": "Přihlásit se přes Google",
+      "signInWithGithub": "Přihlásit se přes GitHub",
+      "enterVerificationCode": "Zadejte ověřovací kód odeslaný na",
+      "verificationCode": "Ověřovací kód",
+      "verificationCodePlaceholder": "8místný kód",
+      "verify": "Ověřit",
+      "passwordsMismatch": "Hesla se neshodují",
+      "registerFailed": "Registrace selhala",
+      "verificationCodeSent": "Ověřovací kód odeslán na váš e-mail",
+      "loginFailed": "Přihlášení selhalo",
+      "loginSuccess": "Přihlášení úspěšné",
+      "verifySuccess": "E-mail ověřen",
+      "verifyFailed": "Ověření selhalo",
+      "codeExpired": "Ověřovací kód vypršel. Pošli si nový.",
+      "codeMismatch": "Špatný kód. Zkus to znovu.",
+      "googleSignInFailed": "Přihlášení přes Google selhalo",
+      "githubSignInFailed": "Přihlášení přes GitHub selhalo",
+      "enterTotpCode": "Zadejte Váš kód pro ",
+      "totpCode": "TOTP kód",
+      "totpCodePlaceholder": "6místný kód",
+      "verifyTotp": "Ověřit TOTP"
+    },
+    "labels": {
+      "username": "Uživatelské jméno",
+      "email": "E-mail",
+      "article": "Článek:",
+      "articleTitle": "Název článku",
+      "articleExcerpt": "Krátký popisek článku (2-4 věty)",
+      "tagName": "Název štítku",
+      "orDrag": "nebo přetáhněte",
+      "pasteImage": "Vložit obrázek",
+      "title": "Název",
+      "excerpt": "Perex",
+      "content": "Obsah",
+      "image": "Obrázek",
+      "shortcode": "Shortcode",
+      "releaseDate": "Datum vydání",
+      "series": "Série",
+      "tags": "Štítky",
+      "aiGeneration": "AI Generování"
+    },
+    "messages": {
+      "deleteConfirmTitle": "Opravdu chcete smazat?",
+      "deleteConfirmText": "Tuto akci nelze vrátit zpět.",
+      "deleteCancel": "Zrušit",
+      "deleteSuccess": "Úspěšně smazáno",
+      "featureDisabled": "Funkce vypnuta",
+      "deleteFailed": "Smazání selhalo",
+      "statusChangeFailed": "Změna stavu selhala",
+      "operationFailed": "Požadavek selhal",
+      "reportSuccess": "Úspěšně nahlášeno",
+      "reportFailed": "Nahlášení selhalo",
+      "idle": "Ticho po pěšině",
+      "idleTitle": "Hmm, nic se neděje.",
+      "closeConfirmTitle": "Zavřít dialog?",
+      "closeConfirmText": "Všechny provedené změny budou ztraceny. Chcete pokračovat?",
+      "closeConfirmButton": "Ano, zavřít",
+      "requiredField": "{0} je povinný",
+      "invalidDateRange": "Datum vydání musí být mezi {0} a {1}",
+      "draftSaved": "Koncept uložen",
+      "draftSaveFailed": "Uložení konceptu selhalo",
+      "invalidImage": "Vyberte platný obrázek",
+      "successGeneral": "Úspěch",
+      "successGeneralTitle": "Tato operace byla úspěšná",
+      "saveSuccess": "Úspěšně uloženo",
+      "saveFailed": "Uložení selhalo",
+      "invalidUrl": "Některé adresy URL jsou neplatné (musí začínat https://)",
+      "noClientId": "Chybí ID klienta"
+    },
+    "sortOptions": {
+      "newest": "Nejnovější",
+      "oldest": "Nejstarší",
+      "mostInteresting": "Nejzajímavější",
+      "mostViews": "Nejvíce zhlédnutí"
+    },
+    "created": "Vytvořeno:",
+    "deleted": "Smazáno:",
+    "cancelAction": "Zrušit akci",
+    "preferences": {
+      "title": "Vaše preference",
+      "currentPlan": "Aktuální tarif",
+      "nextPayment": "Další platba",
+      "savingsTitle": "Úspora",
+      "external": "Externí služby",
+      "explanation": "Vysvětlení preferencí",
+      "monthlyTitle": "Měsíční cena",
+      "annuallyTitle": "Roční cena",
+      "api": {
+        "title": "API přístup",
+        "description": "Vygenerujte si bezpečný API klíč pro programatický přístup k endpointům.",
+        "generate": "Vygenerovat klíč",
+        "label": "Váš API klíč",
+        "revoke": "Zneplatnit a přegenerovat",
+        "copy": "Kopírovat API klíč",
+        "copied": "Zkopírováno",
+        "show": "Zobrazit API klíč",
+        "hide": "Skrýt API klíč",
+        "warning": "Tento klíč držte v tajnosti. Nesdílejte jej v klientském kódu ani veřejných repozitářích."
+      },
+      "billing": {
+        "permanent": "– Trvalý přístup",
+        "annual": "– Roční platba",
+        "monthly": "– Měsíční platba"
+      },
+      "validity": {
+        "permanent": "Trvalý přístup",
+        "unknown": "Platnost neurčena",
+        "until": "Platnost do {date}"
+      },
+      "nextBilling": {
+        "annual": "za 12 měsíců",
+        "monthly": "za měsíc"
+      },
+      "savings": "{amount} ročně",
+      "monthly": "měsíc",
+      "annually": "rok",
+      "companyLogo": {
+        "label": "Logo blogu",
+        "description": "PNG, JPEG, WebP nebo SVG, min. 512x512px, max. 2 MB"
+      },
+      "companyDescription": {
+        "label": "Popis blogu",
+        "placeholder": "Popis blogu (např. vaše mise nebo slogan)"
+      },
+      "focus": {
+        "label": "Zaměření",
+        "placeholder": "Zaměření (např. objektivní herní žurnalistika, důraz na Unreal Engine)"
+      },
+      "audience": {
+        "label": "Cílová skupina",
+        "placeholder": "Cílová skupina (např. mladí dospělí, profesionálové)"
+      },
+      "language": {
+        "label": "Jazyk",
+        "placeholder": "Vyberte jazyk"
+      },
+      "theme": {
+        "label": "Vzhled",
+        "placeholder": "Vyberte vzhled"
+      },
+      "keywords": {
+        "label": "Klíčová slova",
+        "placeholder": "Klíčová slova (oddělená čárkou)",
+        "count": "Počet slov: {0}"
+      },
+      "autoRelease": {
+        "title": "Automatické publikování",
+        "desc": "Vygenerované články se uloží jako koncepty ke schválení.",
+        "warning": "Články budou veřejně publikovány ihned po vygenerování.",
+        "confirmTitle": "Povolit automatické publikování?",
+        "confirmMessage": "Jste si jistí? AI může občas generovat nepřesnosti. Důrazně doporučujeme články před vydáním kontrolovat."
+      },
+      "aiAuthor": {
+        "title": "Nastavení AI autora",
+        "username": {
+          "label": "Jméno AI",
+          "placeholder": "Jméno AI"
+        },
+        "bio": {
+          "label": "Popis AI",
+          "placeholder": "Popis uživatele AI (max. 300 znaků)"
+        },
+        "toneOfVoice": {
+          "label": "Tone of voice",
+          "placeholder": "Jakým stylem má AI psát? (např. profesionálně, vtipně, odborně...)",
+          "suggestions": {
+            "professional": "Profesionální",
+            "casual": "Uvolněný",
+            "funny": "Vtipný",
+            "sarcastic": "Sarkastický",
+            "technical": "Odborný",
+            "inspiring": "Inspirativní"
+          }
+        },
+        "controversyLevel": {
+          "label": "Míra kontroverze",
+          "placeholder": "Jak moc se má AI pouštět do kontroverzních témat?",
+          "options": {
+            "NONE": "Žádná (bezpečná témata)",
+            "LOW": "Nízká (občasné zamyšlení)",
+            "MEDIUM": "Střední (zdravá diskuze)",
+            "HIGH": "Vysoká (provokativní názory)"
+          }
+        }
+      },
+      "socials": {
+        "label": "Sociální sítě",
+        "noSocials": "Zatím nebyly přidány žádné sociální sítě."
+      }
+    },
+    "passwordSuggestions": {
+      "weak": "Slabé",
+      "medium": "Střední",
+      "strong": "Silné",
+      "veryStrong": "Velmi silné",
+      "useLongerPassword": "Použijte delší heslo.",
+      "addWords": "Přidejte další jedno nebo dvě slova. Méně obvyklá slova jsou lepší.",
+      "avoidCommonPhrases": "Použijte několik slov, vyhněte se běžným frázím.",
+      "avoidRepeated": "Vyhněte se opakovaným slovům a znakům.",
+      "addUppercase": "Přidejte velká písmena.",
+      "addLowercase": "Přidejte malá písmena.",
+      "addNumbers": "Přidejte čísla.",
+      "addSpecialChars": "Přidejte speciální znaky.",
+      "avoidDates": "Vyhněte se datům a letopočtům spojeným s vámi.",
+      "avoidCommonWords": "Vyhněte se běžným slovům a frázím.",
+      "avoidRecentYears": "Vyhněte se nedávným rokům.",
+      "avoidSequences": "Vyhněte se sekvencím.",
+      "tooShort": "Heslo je příliš krátké (min. {minLength} znaků)",
+      "tooLong": "Heslo je příliš dlouhé (max. {maxLength} znaků)"
+    },
+    "tokens": {
+      "pack10k": "Balíček 10k tokenů",
+      "pack25k": "Balíček 25k tokenů",
+      "pack50k": "Balíček 50k tokenů",
+      "bestValue": "Nejvýhodnější",
+      "upgradeToPremium": "Povýšit na PREMIUM"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "emoji": {
+    "create": "Create Emoji",
+    "shortcodePlaceholder": "e.g., smile",
+    "noEmojisFound": "No emojis found",
+    "createSuccess": "Emoji {0} added",
+    "createFailed": "Failed to add emoji",
+    "deleteSuccess": "Emoji deleted",
+    "deleteFailed": "Failed to delete emoji"
+  }
+}

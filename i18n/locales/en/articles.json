@@ -1,0 +1,237 @@
+{
+  "articles": {
+    "comments": {
+      "addGif": "Add GIF",
+      "title": "Comments",
+      "yourComment": "Your comment",
+      "commentPlaceholder": "Write your comment...",
+      "characterLimitReached": "Character limit reached!",
+      "replyingTo": "Replying to: {0}",
+      "submitReply": "Submit reply",
+      "reply": "Reply",
+      "addComment": "Add comment",
+      "commentsDisabled": "Commenting on this article is not allowed",
+      "errorLoadingComments": "Failed to load comments: {0}",
+      "commentAdded": "Comment added",
+      "replySubmitted": "Reply submitted",
+      "reactionFailed": "Failed to add reaction",
+      "reportComment": "Report comment",
+      "deleteComment": "Delete",
+      "deleteCommentAdmin": "Delete (admin)",
+      "deletedComment": "[This comment has been deleted]",
+      "bannedUserComment": "[Comment from banned user]",
+      "bannedUser": "Banned user",
+      "banUser": "Ban user",
+      "unbanUser": "Unban user",
+      "banReason": "Ban reason: {0}",
+      "banExpires": "until {0}",
+      "deleteModalTitle": "Delete comment",
+      "deleteReasonPlaceholder": "Reason for deletion...",
+      "banModalTitle": "Ban user",
+      "banReasonPlaceholder": "Reason for ban...",
+      "banReasonPrompt": "Enter the reason for the ban (will be sent to the user):",
+      "banExpirationLabel": "Ban expiration (optional):",
+      "banSuccess": "User banned",
+      "banFailed": "Ban failed",
+      "unbanSuccess": "User unbanned",
+      "unbanFailed": "Unban failed",
+      "commentsEnabled": "are enabled",
+      "commentsDisabledSuccess": "are disabled",
+      "toggleSuccess": "Comments {0}",
+      "likedByAuthor": "Liked by author ({0})",
+      "reportCommentConfirm": "Are you sure you want to report this comment?",
+      "noComments": "No comments",
+      "commentsAction": "You have yet to comment something"
+    },
+    "title": "Articles",
+    "addArticle": "Add Article",
+    "updateArticle": "Update Article",
+    "authorsArticles": "Articles by author",
+    "explore": "Explore articles",
+    "votes": "Votes",
+    "tagsArticles": "Articles with tag",
+    "searchPlaceholder": "Search articles...",
+    "latestArticle": "Latest article:",
+    "readingTime": "{0} min read",
+    "noResults": {
+      "imageAlt": "Sad Topík",
+      "message": "Oh no, I feel useless..."
+    },
+    "export": {
+      "title": {
+        "json": "Export to JSON",
+        "csv": "Export to CSV",
+        "pdf": "Export to PDF"
+      },
+      "warning": {
+        "title": {
+          "json": "JSON Export",
+          "csv": "CSV Export",
+          "pdf": "PDF Export"
+        },
+        "message": {
+          "json": "You are about to export {count} articles to a JSON file.",
+          "csv": "You are about to export {count} articles to a CSV file.",
+          "pdf": "You are about to export {count} articles to a PDF document."
+        },
+        "note": {
+          "json": "JSON can be large but loads quickly.",
+          "csv": "CSV is ideal for spreadsheets but may be bulky.",
+          "pdf": "PDF generation may take a while due to images."
+        }
+      }
+    },
+    "columns": {
+      "title": "Title",
+      "content": "Content",
+      "imageUrl": "Image",
+      "sources": "Sources",
+      "status": "Status",
+      "date": "Date",
+      "actions": "Actions",
+      "createdAt": "Created At"
+    },
+    "sources": {
+      "placeholder": "Source link (https://...)",
+      "imageUrl": "Image link (https://...)",
+      "youtube": "YouTube video link (https://...)"
+    },
+    "status": {
+      "published": "Published",
+      "draft": "Draft",
+      "archived": "Archived"
+    },
+    "tags": {
+      "title": "Article Tags",
+      "addCustomTagPlaceholder": "Add custom tag",
+      "selectExistingTag": "Select existing tag",
+      "addButton": "Add",
+      "closeButton": "Close",
+      "addTagSuccess": "Tag added",
+      "removeTagSuccess": "Tag removed",
+      "operationFailed": "Operation failed",
+      "addCustomTagFailed": "Adding custom tag failed",
+      "manageTags": "Manage Tags",
+      "searchPlaceholder": "Search tags...",
+      "noTagsFound": "No tags found",
+      "deleteConfirmText": "This will delete the tag \"{0}\".",
+      "createSuccess": "Tag created successfully",
+      "createFailed": "Failed to create tag",
+      "updateSuccess": "Tag updated successfully",
+      "updateFailed": "Failed to update tag",
+      "noTagsSelected": "No tags selected"
+    },
+    "statusCell": {
+      "scheduledTooltip": "Scheduled for: {0}"
+    },
+    "tableOfContents": {
+      "title": "Content",
+      "noContent": "No content to display"
+    },
+    "relatedArticles": {
+      "title": "Related Articles"
+    },
+    "preferencesExplanation": {
+      "title": "Preferences Explanation",
+      "focus": {
+        "title": "Focus",
+        "description": "The main theme or direction of the content. Helps refine the tone and intent of the outputs.",
+        "example": "E.g., 'Objective gaming journalism', 'Tech news with a focus on Unreal Engine'."
+      },
+      "targetAudience": {
+        "title": "Target Audience",
+        "description": "Defines who the content is for. Helps tailor the style, language, and technical level.",
+        "example": "E.g., 'Young adults 18–25 years', 'Game developers and IT professionals'."
+      },
+      "keywords": {
+        "title": "Keywords",
+        "description": "Prominent topics or terms to appear more frequently in outputs. Also used for SEO.",
+        "example": "E.g., 'Unreal Engine, AI in games, RPG, player freedom'."
+      }
+    },
+    "userMenu": {
+      "noBio": "No bio",
+      "adminIn": "Administrator in: {0}",
+      "noClientAssigned": "Not assigned",
+      "currentPlan": "Current plan",
+      "roughlyEstimated": "Roughly {0} articles",
+      "userDataError": "Error loading user data",
+      "remainingTokens": "Remaining tokens",
+      "totalConsumed": "Total consumed: {0} tokens",
+      "buyTokens": "Buy tokens",
+      "upgradeToPremium": "Upgrade to PREMIUM",
+      "recentActions": "Recent actions",
+      "ga4Connected": "GA4 connected",
+      "gamConnected": "GAM connected",
+      "tip": "Tip",
+      "adjustPreferences": "Adjust preferences for better AI results",
+      "articleGenerated": "Article generated",
+      "generationFailed": "Generation failed",
+      "articlePublished": "Article published",
+      "articleSavedAsDraft": "Article saved as draft",
+      "insightGenerated": "Insight generated",
+      "lowTokensWarning": "Low on tokens!",
+      "lowTokensHint": "Less than 10 % tokens remaining. Top up your package to keep generating.",
+      "insightSkipped": "Insight skipped"
+    },
+    "dateFormats": {
+      "justNow": "Just now",
+      "minutesAgo": "{0} minutes ago",
+      "hoursAgo": "{0} hours ago",
+      "yesterday": "Yesterday, {0}",
+      "daysAgo": "{0} days ago",
+      "weekAgo": "A week ago",
+      "thisYear": "MMM d, HH:mm",
+      "otherYear": "MMM d, yyyy, HH:mm"
+    },
+    "articleCard": {
+      "imageAlt": "Article Preview",
+      "commentsAndLikesTooltip": "Comments and Likes",
+      "noAuthor": "Not Specified",
+      "author": "Article author"
+    },
+    "poll": {
+      "defaultQuestion": "Enter a question",
+      "defaultOption": "Option 1",
+      "option": "Option {index}",
+      "questionPlaceholder": "Enter a question",
+      "optionPlaceholder": "Option",
+      "hpTitle": "Hot Poll",
+      "noPolls": "No Poll",
+      "addOption": "Add option"
+    },
+    "activity": {
+      "tabs": {
+        "likedArticles": "Liked Articles",
+        "comments": "My Comments"
+      }
+    },
+    "editor": {
+      "title": "Edit Article",
+      "modes": {
+        "manual": "Manual Writing",
+        "import": "JSON Import",
+        "ai": "AI Generation"
+      },
+      "ai": {
+        "customPromptPlaceholder": "Enter a prompt for AI article generation...",
+        "notAvailable": "AI generation is not available.",
+        "learnMore": "Learn More",
+        "generateButton": "Generate AI Content"
+      },
+      "drafts": {
+        "loadDrafts": "Load Drafts",
+        "selectDraftTitle": "Select Draft",
+        "selectDraftPlaceholder": "Select a draft",
+        "continueDraftPrompt": "Continue editing draft from {0}?",
+        "noDraftsFound": "No drafts found",
+        "untitled": "Untitled draft #{0}"
+      },
+      "releaseDateNote": "Used to set the article's publication date and time. Leave empty for manual release.",
+      "createSuccess": "Article created successfully",
+      "createFailed": "Failed to create article",
+      "aiContentGenerated": "AI content generated successfully",
+      "aiContentFailed": "Failed to generate AI content"
+    }
+  }
+}
