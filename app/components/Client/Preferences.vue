@@ -7,13 +7,16 @@
     <template #close>
       <div class="flex items-center gap-1">
         <LazyClientHint v-if="auth?.user?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
-          <button
-            class="flex items-center justify-center p-2 rounded-full bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 border-none outline-none cursor-pointer"
+          <Button
+            square
+            borderless
+            size="sm"
+            variant="neutral"
+            icon="mdi:information-outline"
+            :aria="$t('common.preferences.explanation')"
             :title="$t('common.preferences.explanation')"
             @click="clientHintOpen.value = true"
-          >
-            <Icon name="mdi:information-outline" class="size-6 text-gray-600 dark:text-gray-300" />
-          </button>
+          />
         </LazyClientHint>
       </div>
     </template>
@@ -24,7 +27,9 @@
       </div>
 
       <div v-else class="flex gap-8">
-        <div class="flex-1 space-y-8 overflow-y-auto max-h-[70vh] pr-4">
+        <div
+          class="flex-1 space-y-8 overflow-y-auto max-h-[70vh] pr-4 [mask-image:linear-gradient(to_bottom,transparent,black_24px,black_calc(100%-24px),transparent)]"
+        >
           <LazyFormClientBranding
             :logoUrl="form.logoUrl"
             :description="form.description"
@@ -57,11 +62,13 @@
               {{ $t('common.preferences.external') }}
             </h3>
 
-            <div class="bg-white/5 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10 space-y-6">
-              <div class="flex items-center justify-between">
+            <div
+              class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm space-y-6"
+            >
+              <label class="flex items-center justify-between gap-4 cursor-pointer">
                 <span class="font-medium">Google Analytics</span>
-                <FormField v-model="form.allowGtag" type="checkbox" label="" class="cursor-pointer" />
-              </div>
+                <FormField v-model="form.allowGtag" type="checkbox" aria-label="Enable Google Analytics" class="w-auto" />
+              </label>
               <Transition name="fade">
                 <FormField
                   v-if="form.allowGtag"
@@ -72,11 +79,11 @@
                 />
               </Transition>
 
-              <div class="pt-4 border-t border-white/10">
-                <div class="flex items-center justify-between mb-3">
+              <div class="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                <label class="flex items-center justify-between gap-4 mb-3 cursor-pointer">
                   <span class="font-medium">Google Ads</span>
-                  <FormField v-model="form.allowAds" type="checkbox" label="" class="cursor-pointer" />
-                </div>
+                  <FormField v-model="form.allowAds" type="checkbox" aria-label="Enable Google Ads" class="w-auto" />
+                </label>
                 <Transition name="fade">
                   <FormField
                     v-if="form.allowAds"
@@ -97,7 +104,7 @@
             </h3>
 
             <div
-              class="bg-white/5 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10 transition-all hover:border-white/20"
+              class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm"
             >
               <div v-if="!form.apiKey" class="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="text-sm text-neutral-600 dark:text-neutral-400">
@@ -110,30 +117,38 @@
               </div>
 
               <div v-else class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <label class="text-xs font-bold uppercase tracking-wider text-neutral-500">
-                    {{ $t('common.preferences.api.label') }}
-                  </label>
-                </div>
+                <FormLabel :text="$t('common.preferences.api.label')" class="text-xs font-bold uppercase tracking-wider text-neutral-500" />
 
-                <div class="relative group">
-                  <div
-                    class="w-full bg-neutral-100 dark:bg-black/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-4 pr-12 py-3 font-mono text-sm text-neutral-800 dark:text-neutral-200 truncate transition-colors group-hover:border-purple-500/30"
-                  >
-                    {{ form.apiKey }}
-                  </div>
+                <div class="relative">
+                  <FormInput
+                    :modelValue="form.apiKey"
+                    :type="apiVisible ? 'text' : 'password'"
+                    readonly
+                    :inputClass="'font-mono pr-20!'"
+                  />
 
-                  <button
-                    class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors text-neutral-500 dark:text-neutral-400"
-                    :title="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
-                    @click="copyApi(form.apiKey)"
-                  >
-                    <Icon
-                      :name="apiCopied ? 'mdi:check' : 'mdi:content-copy'"
-                      class="size-5 transition-all duration-300"
-                      :class="apiCopied ? 'text-emerald-500 scale-110' : ''"
+                  <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <Button
+                      square
+                      borderless
+                      size="sm"
+                      variant="neutral"
+                      :icon="apiVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'"
+                      :aria="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
+                      :title="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
+                      @click="apiVisible = !apiVisible"
                     />
-                  </button>
+                    <Button
+                      square
+                      borderless
+                      size="sm"
+                      variant="neutral"
+                      :icon="apiCopied ? 'mdi:check' : 'mdi:content-copy'"
+                      :aria="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
+                      :title="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
+                      @click="copyApi(form.apiKey)"
+                    />
+                  </div>
                 </div>
 
                 <div class="flex items-start gap-2 text-xs text-neutral-500 dark:text-neutral-500">
@@ -157,7 +172,9 @@
           </section>
 
           <section v-if="auth?.user?.plan !== 'BASIC' && client?.tokenLimit && client?.tokenLimit > 0">
-            <div class="bg-white/5 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <div
+              class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm"
+            >
               <LazyFormClientAI
                 :username="form.aiUser.username"
                 :bio="form.aiUser.bio"
@@ -307,6 +324,7 @@ const toast = useToast()
 const { data: auth } = useAuth()
 const open = defineModel<boolean>()
 const { copy: copyApi, copied: apiCopied } = useClipboard({ legacy: true })
+const apiVisible = shallowRef(false)
 
 const form = ref({
   focus: '',

@@ -121,6 +121,7 @@
       "saveChanges": "Uložit změny",
       "backToList": "Zpět na seznam",
       "back": "Zpět",
+      "close": "Zavřít",
       "like": "Lajknout",
       "copyLink": "Kopírovat odkaz",
       "shareX": "Sdílet na X",
@@ -200,6 +201,8 @@
       "verifyTotp": "Ověřit TOTP"
     },
     "labels": {
+      "username": "Uživatelské jméno",
+      "email": "E-mail",
       "article": "Článek:",
       "articleTitle": "Název článku",
       "articleExcerpt": "Krátký popisek článku (2-4 věty)",
@@ -270,6 +273,8 @@
         "revoke": "Zneplatnit a přegenerovat",
         "copy": "Kopírovat API klíč",
         "copied": "Zkopírováno",
+        "show": "Zobrazit API klíč",
+        "hide": "Skrýt API klíč",
         "warning": "Tento klíč držte v tajnosti. Nesdílejte jej v klientském kódu ani veřejných repozitářích."
       },
       "billing": {

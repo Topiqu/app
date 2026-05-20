@@ -31,7 +31,7 @@
 
 ## Modernization & Best Practices
 
-- **Reactivity:** Avoid unnecessary `ref()` / `reactive()` when possible. Prefer VueUse composables, Vue macros (`defineModel`, `defineOptions`, `defineSlots`, `useTemplateRef`, etc.), and built-in Nuxt/Vue features.
+- **Reactivity:** Avoid unnecessary `ref()` / `reactive()` when possible. Prefer VueUse composables, Vue macros (`defineModel`, `defineOptions`, `defineSlots`, `useTemplateRef`, `shallowReactive` etc.), and built-in Nuxt/Vue features (such as `<NuxtTime>`, `<NuxtRouteAnnouncer>`, `useLazyFetch`, or our custom made components => `<FormField>`, `<FormInput>`, etc.).
 - **Performance:** Strong focus on Core Web Vitals (LCP, CLS, INP). Use `@nuxt/image`, lazy loading, proper code splitting, and minimal client-side JavaScript.
 - **Accessibility (A11y):** Always use semantic HTML and proper ARIA attributes.
 

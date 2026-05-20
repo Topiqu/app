@@ -52,6 +52,7 @@
       "saveChanges": "Save Changes",
       "backToList": "Back to list",
       "back": "Back",
+      "close": "Close",
       "like": "Like",
       "copyLink": "Copy link",
       "shareX": "Share on X",
@@ -199,6 +200,8 @@
       "verifyTotp": "Verify TOTP"
     },
     "labels": {
+      "username": "Username",
+      "email": "Email",
       "article": "Article:",
       "articleTitle": "Article title",
       "articleExcerpt": "Brief article description (2-4 sentences)",
@@ -269,6 +272,8 @@
         "revoke": "Revoke & Regenerate",
         "copy": "Copy API Key",
         "copied": "Copied",
+        "show": "Show API Key",
+        "hide": "Hide API Key",
         "warning": "Keep this key secret. Do not share it in client-side code or public repositories."
       },
       "billing": {

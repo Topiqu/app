@@ -1,13 +1,23 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-    <div class="absolute inset-0 bg-[#EBE9E4] dark:bg-[#0C0C0C] transition-opacity"></div>
+  <div
+    v-if="open"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="onboarding-title"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+    @click.self="open = false"
+  >
+    <div class="absolute inset-0 bg-[#EBE9E4] dark:bg-[#0C0C0C] transition-opacity" @click="open = false"></div>
 
     <div
-      class="relative bg-[#FAFAFA] dark:bg-[#18181B] rounded-[2.5rem] w-full max-w-2xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.8)] overflow-hidden animate-fade-in-up max-h-[90vh] overflow-y-auto"
+      ref="panelRef"
+      tabindex="-1"
+      class="relative bg-[#FAFAFA] dark:bg-[#18181B] rounded-[2.5rem] w-full max-w-2xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.8)] overflow-hidden animate-fade-in-up max-h-[90vh] overflow-y-auto focus:outline-none"
     >
       <div class="p-8 md:p-12">
         <div class="flex justify-between items-start mb-8 gap-6">
           <h2
+            id="onboarding-title"
             class="text-3xl md:text-4xl font-black text-[#111] dark:text-white tracking-tighter leading-tight flex items-center gap-5"
           >
             <div
@@ -17,23 +27,32 @@
             </div>
             {{ $t('landing.onboarding.title') }}
           </h2>
-          <Button
-            style="
-              background: transparent !important;
-              border: none !important;
-              padding: 0 !important;
-              box-shadow: none !important;
-              color: currentColor !important;
-            "
-            class="text-[#888] hover:text-[#111] dark:hover:text-white transition-colors cursor-pointer mt-1"
-            @click="open = false"
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-xs font-black uppercase tracking-widest text-[#888] dark:text-[#71717A] whitespace-nowrap">
+              {{ $t('landing.onboarding.stepLabel', { current: step, total: TOTAL_STEPS }) }}
+            </span>
+            <Button
+              square
+              borderless
+              size="sm"
+              variant="transparent"
+              icon="mdi:close"
+              :aria="$t('common.actions.close')"
+              :title="$t('common.actions.close')"
+              class="text-[#888] hover:text-[#111] dark:hover:text-white"
+              @click="open = false"
             />
-          <span class="text-xs font-black uppercase tracking-widest text-[#888] dark:text-[#71717A] mt-3 whitespace-nowrap">
-            {{ $t('landing.onboarding.stepLabel', { current: step, total: TOTAL_STEPS }) }}
-          </span>
+          </div>
         </div>
 
-        <div class="flex gap-2 mb-12">
+        <div
+          class="flex gap-2 mb-12"
+          role="progressbar"
+          :aria-valuenow="step"
+          :aria-valuemin="1"
+          :aria-valuemax="TOTAL_STEPS"
+          :aria-label="$t('landing.onboarding.stepLabel', { current: step, total: TOTAL_STEPS })"
+        >
           <div
             v-for="s in TOTAL_STEPS"
             :key="s"
@@ -77,7 +96,7 @@
                     :text="$t('landing.onboarding.domainType')"
                     class="font-bold text-[#111] dark:text-white"
                   />
-                  <div class="grid grid-cols-2 gap-4">
+                  <div class="grid grid-cols-2 gap-4" role="radiogroup" :aria-label="$t('landing.onboarding.domainType')">
                     <label
                       class="relative flex flex-col items-start p-6 cursor-pointer rounded-3xl border-[3px] transition-all duration-200"
                       :class="
@@ -159,6 +178,8 @@
                   </div>
                   <div
                     v-if="form.domain && domainStatus !== 'idle'"
+                    role="status"
+                    aria-live="polite"
                     class="flex items-center gap-2 text-sm font-bold pt-1"
                     :class="domainStatusColor"
                   >
@@ -197,7 +218,7 @@
                     :text="$t('landing.onboarding.mainLanguage')"
                     class="font-bold text-[#111] dark:text-white mb-3 block"
                   />
-                  <div class="grid grid-cols-2 gap-4">
+                  <div class="grid grid-cols-2 gap-4" role="radiogroup" :aria-label="$t('landing.onboarding.mainLanguage')">
                     <label
                       class="relative flex items-center p-5 cursor-pointer rounded-2xl border-[3px] transition-all duration-200"
                       :class="
@@ -461,6 +482,25 @@ const localePath = useLocalePath()
 const step = shallowRef(1)
 const loading = shallowRef(false)
 const userEditedDomain = shallowRef(false)
+const panelRef = useTemplateRef<HTMLElement>('panelRef')
+
+const isLocked = useScrollLock(import.meta.client ? document.body : null)
+watch(open, (v) => {
+  isLocked.value = !!v
+})
+
+onKeyStroke('Escape', () => {
+  if (open.value) open.value = false
+})
+
+watch([open, step], async ([isOpen]) => {
+  if (!isOpen) return
+  await nextTick()
+  const firstInput = panelRef.value?.querySelector<HTMLElement>(
+    'input:not([type="hidden"]):not([disabled]):not([readonly]), textarea, select, [contenteditable="true"]',
+  )
+  firstInput?.focus()
+})
 
 type DomainStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'tooShort' | 'reserved' | 'empty'
 const domainStatus = shallowRef<DomainStatus>('idle')
