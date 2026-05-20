@@ -18,6 +18,16 @@ export default defineEventHandler(async (event) => {
   delete body.id
   delete body.optimizedUrl
 
+  const {
+    socials,
+    aiUser,
+    apiKey: _apiKey,
+    linkedinMode,
+    linkedinBrandProfile,
+    linkedinCompanyType: _linkedinCompanyType,
+    ...scalarBody
+  } = body
+
   const clientSite = await db.clientSite.findUnique({
     where: { id },
     include: { socials: true, users: { where: { role: 'ai' }, take: 1 } },
@@ -57,20 +67,21 @@ export default defineEventHandler(async (event) => {
     aiControversyLevel: true,
   }).partial()
 
-  const parsed = UpdateSchema.safeParse(body)
+  const parsed = UpdateSchema.safeParse(scalarBody)
   if (!parsed.success) {
     throw createError({ statusCode: 400, message: parsed.error.message })
   }
   const data: any = { ...parsed.data }
 
-  if (body.tokenLimit !== undefined) data.tokenRemaining = body.tokenLimit
-  if (body.description !== undefined) data.description = body.description ? sanitizeHtml(body.description) : null
-  if (body.deletedAt !== undefined) data.deletedAt = body.deletedAt === null ? null : new Date()
+  if (scalarBody.tokenLimit !== undefined) data.tokenRemaining = scalarBody.tokenLimit
+  if (scalarBody.description !== undefined)
+    data.description = scalarBody.description ? sanitizeHtml(scalarBody.description) : null
+  if (scalarBody.deletedAt !== undefined) data.deletedAt = scalarBody.deletedAt === null ? null : new Date()
 
-  const aiUserPayload = body.aiUser
+  const aiUserPayload = aiUser
   const currentAiUser = clientSite.users[0]
   const hasAiPayload = aiUserPayload && Object.values(aiUserPayload).some((v) => v !== '')
-  const effectiveTokenLimit = body.tokenLimit ?? clientSite.tokenLimit ?? 0
+  const effectiveTokenLimit = scalarBody.tokenLimit ?? clientSite.tokenLimit ?? 0
 
   if (hasAiPayload && effectiveTokenLimit > 0) {
     const aiData = {
@@ -105,7 +116,7 @@ export default defineEventHandler(async (event) => {
         metadata: { aiUserId: newAi.id },
       })
     }
-  } else if (body.tokenLimit === 0 && currentAiUser) {
+  } else if (scalarBody.tokenLimit === 0 && currentAiUser) {
     await db.user.delete({ where: { id: currentAiUser.id } })
     await logAction({
       action: 'AI_USER_DELETE',
@@ -116,8 +127,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (body.socials) {
-    const incoming = body.socials as { platform: SocialPlatform; url: string }[]
+  if (socials) {
+    const incoming = socials as { platform: SocialPlatform; url: string }[]
     const existing = clientSite.socials
     const operations = []
 
@@ -140,8 +151,7 @@ export default defineEventHandler(async (event) => {
     if (operations.length) await Promise.all(operations)
   }
 
-  // LinkedIn Automation settings
-  if (body.linkedinMode !== undefined) {
+  if (linkedinMode !== undefined) {
     // Note: This endpoint currently updates the FIRST linkedin company it finds.
     // If you need to specify which one (pages vs personal), you would need to pass the type in the body.
     // For now, we'll try to find the 'pages' one first, then fallback to finding any.
@@ -161,32 +171,32 @@ export default defineEventHandler(async (event) => {
           name: 'My Company',
           linkedinOrgId: 'placeholder', // actual sync comes later with oauth
           type: 'pages', // Defaulting to pages if none exists
-          mode: body.linkedinMode,
+          mode: linkedinMode,
           clientSiteId: id,
         },
       })
     } else {
       company = await db.linkedinCompany.update({
         where: { id: company.id },
-        data: { mode: body.linkedinMode },
+        data: { mode: linkedinMode },
       })
     }
 
-    if (body.linkedinBrandProfile) {
+    if (linkedinBrandProfile) {
       await db.brandProfile.upsert({
         where: { companyId: company.id },
         create: {
           companyId: company.id,
-          tone: body.linkedinBrandProfile.tone,
-          audience: body.linkedinBrandProfile.audience,
-          doList: body.linkedinBrandProfile.doList,
-          dontList: body.linkedinBrandProfile.dontList,
+          tone: linkedinBrandProfile.tone,
+          audience: linkedinBrandProfile.audience,
+          doList: linkedinBrandProfile.doList,
+          dontList: linkedinBrandProfile.dontList,
         },
         update: {
-          tone: body.linkedinBrandProfile.tone,
-          audience: body.linkedinBrandProfile.audience,
-          doList: body.linkedinBrandProfile.doList,
-          dontList: body.linkedinBrandProfile.dontList,
+          tone: linkedinBrandProfile.tone,
+          audience: linkedinBrandProfile.audience,
+          doList: linkedinBrandProfile.doList,
+          dontList: linkedinBrandProfile.dontList,
         },
       })
     }
