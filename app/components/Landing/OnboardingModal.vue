@@ -7,7 +7,10 @@
     class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
     @click.self="open = false"
   >
-    <div class="absolute inset-0 bg-[#EBE9E4] dark:bg-[#0C0C0C] transition-opacity" @click="open = false"></div>
+    <div
+      class="absolute inset-0 bg-[#EBE9E4] dark:bg-[#0C0C0C] transition-opacity"
+      @click="open = false"
+    ></div>
 
     <div
       ref="panelRef"
@@ -71,396 +74,11 @@
             leaveFromClass="opacity-100"
             leaveToClass="opacity-0"
           >
-            <div v-if="step === 1" :key="'step1'" class="space-y-8">
-              <div class="space-y-3">
-                <h3 class="text-2xl font-extrabold text-[#111] dark:text-white tracking-tight">
-                  {{ $t('landing.onboarding.siteInfo') }}
-                </h3>
-                <p class="text-[1.05rem] text-[#555] dark:text-[#A1A1AA] font-medium leading-relaxed">
-                  {{ $t('landing.onboarding.siteInfoDesc') }}
-                </p>
-              </div>
-
-              <div class="space-y-8">
-                <FormField
-                  v-model="form.siteName"
-                  required
-                  icon="mdi:web"
-                  :label="$t('landing.onboarding.siteName')"
-                  :placeholder="$t('landing.onboarding.siteNamePlaceholder')"
-                  inputClass="w-full !bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent focus:!bg-white dark:focus:!bg-[#18181B] focus:!ring-4 focus:!ring-[#111] dark:focus:!ring-white transition-all text-lg font-bold rounded-2xl py-4"
-                />
-
-                <div class="space-y-4">
-                  <FormLabel
-                    :text="$t('landing.onboarding.domainType')"
-                    class="font-bold text-[#111] dark:text-white"
-                  />
-                  <div class="grid grid-cols-2 gap-4" role="radiogroup" :aria-label="$t('landing.onboarding.domainType')">
-                    <label
-                      class="relative flex flex-col items-start p-6 cursor-pointer rounded-3xl border-[3px] transition-all duration-200"
-                      :class="
-                        form.domainType === 'SUBDOMAIN'
-                          ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[6px_6px_0_0_#67E8F9] -translate-y-1'
-                          : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
-                      "
-                    >
-                      <input v-model="form.domainType" type="radio" value="SUBDOMAIN" class="sr-only" />
-                      <Icon
-                        name="mdi:subdomain"
-                        size="32"
-                        class="mb-4 transition-colors"
-                        :class="form.domainType === 'SUBDOMAIN' ? 'text-[#67E8F9]' : 'text-[#888] dark:text-[#71717A]'"
-                      />
-                      <span class="text-xl font-black leading-tight block text-current">
-                        {{ $t('landing.onboarding.subdomain') }}
-                      </span>
-                      <span class="text-sm font-bold opacity-70 block mt-1 text-current">.topiqu.com</span>
-                    </label>
-
-                    <label
-                      class="relative flex flex-col items-start p-6 cursor-pointer rounded-3xl border-[3px] transition-all duration-200"
-                      :class="
-                        form.domainType === 'CUSTOM'
-                          ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[6px_6px_0_0_#67E8F9] -translate-y-1'
-                          : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
-                      "
-                    >
-                      <input v-model="form.domainType" type="radio" value="CUSTOM" class="sr-only" />
-                      <Icon
-                        name="mdi:earth"
-                        size="32"
-                        class="mb-4 transition-colors"
-                        :class="form.domainType === 'CUSTOM' ? 'text-[#67E8F9]' : 'text-[#888] dark:text-[#71717A]'"
-                      />
-                      <span class="text-xl font-black leading-tight block text-current">
-                        {{ $t('landing.onboarding.customDomain') }}
-                      </span>
-                      <span class="text-sm font-bold opacity-70 block mt-1 text-current">{{
-                        $t('landing.onboarding.customDomainExample')
-                      }}</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div class="space-y-2 transition-all duration-300">
-                  <FormLabel
-                    class="font-bold text-[#111] dark:text-white"
-                    :text="
-                      form.domainType === 'SUBDOMAIN'
-                        ? $t('landing.onboarding.subdomain')
-                        : $t('landing.onboarding.customDomain')
-                    "
-                  />
-                  <div
-                    class="flex items-stretch rounded-2xl overflow-hidden focus-within:ring-4 focus-within:ring-[#111] dark:focus-within:ring-white transition-all"
-                  >
-                    <FormField
-                      v-model="form.domain"
-                      required
-                      icon="mdi:link"
-                      :placeholder="
-                        form.domainType === 'SUBDOMAIN'
-                          ? $t('landing.onboarding.domainPlaceholder')
-                          : 'blog.mycompany.com'
-                      "
-                      inputClass="!bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent !ring-0 w-full text-lg font-bold py-4"
-                      class="w-full"
-                      :class="{ 'rounded-r-none': form.domainType === 'SUBDOMAIN' }"
-                      @input="userEditedDomain = true"
-                    />
-                    <div
-                      v-if="form.domainType === 'SUBDOMAIN'"
-                      class="flex items-center px-6 bg-[#E5E5E5] dark:bg-[#3F3F46] text-[#111] dark:text-white font-mono text-base font-black whitespace-nowrap"
-                    >
-                      .topiqu.com
-                    </div>
-                  </div>
-                  <div
-                    v-if="form.domain && domainStatus !== 'idle'"
-                    role="status"
-                    aria-live="polite"
-                    class="flex items-center gap-2 text-sm font-bold pt-1"
-                    :class="domainStatusColor"
-                  >
-                    <Icon :name="domainStatusIcon" class="w-4 h-4 shrink-0" :class="{ 'animate-spin': domainStatus === 'checking' }" />
-                    <span>{{ $t(`landing.onboarding.domainStatus.${domainStatus}`) }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                :disabled="!canAdvanceStep1"
-                class="w-full mt-10 bg-[#D8B4FE] hover:bg-[#C084FC] text-[#111] border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#A855F7] active:shadow-none active:translate-y-[6px] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0 disabled:active:shadow-[0_6px_0_0_#A855F7]"
-                icon="mdi:arrow-right"
-                iconPosition="right"
-              >
-                <span class="font-black tracking-wide">{{ $t('common.actions.continue') }}</span>
-              </Button>
-            </div>
-
-            <div v-else-if="step === 2" :key="'step2'" class="space-y-8">
-              <div class="space-y-3">
-                <h3 class="text-2xl font-extrabold text-[#111] dark:text-white tracking-tight">
-                  {{ $t('landing.onboarding.designFocus') }}
-                </h3>
-                <p class="text-[1.05rem] text-[#555] dark:text-[#A1A1AA] font-medium leading-relaxed">
-                  {{ $t('landing.onboarding.designFocusDesc') }}
-                </p>
-              </div>
-
-              <div class="space-y-8">
-                <div>
-                  <FormLabel
-                    :text="$t('landing.onboarding.mainLanguage')"
-                    class="font-bold text-[#111] dark:text-white mb-3 block"
-                  />
-                  <div class="grid grid-cols-2 gap-4" role="radiogroup" :aria-label="$t('landing.onboarding.mainLanguage')">
-                    <label
-                      class="relative flex items-center p-5 cursor-pointer rounded-2xl border-[3px] transition-all duration-200"
-                      :class="
-                        form.language === 'cs'
-                          ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[4px_4px_0_0_#F9A8D4] -translate-y-1'
-                          : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
-                      "
-                    >
-                      <input v-model="form.language" type="radio" value="cs" class="sr-only" />
-                      <span
-                        class="text-4xl mr-4"
-                        :class="{ 'grayscale-0': form.language === 'cs', grayscale: form.language !== 'cs' }"
-                        >🇨🇿</span
-                      >
-                      <span class="font-black text-lg text-current">{{ $t('landing.onboarding.langCz') }}</span>
-                    </label>
-
-                    <label
-                      class="relative flex items-center p-5 cursor-pointer rounded-2xl border-[3px] transition-all duration-200"
-                      :class="
-                        form.language === 'en'
-                          ? 'border-[#111] bg-[#111] text-white dark:border-white dark:bg-white dark:text-[#111] shadow-[4px_4px_0_0_#F9A8D4] -translate-y-1'
-                          : 'border-[#E5E5E5] dark:border-[#3F3F46] bg-transparent text-[#555] dark:text-[#A1A1AA] hover:border-[#CCC] dark:hover:border-[#52525B]'
-                      "
-                    >
-                      <input v-model="form.language" type="radio" value="en" class="sr-only" />
-                      <span
-                        class="text-4xl mr-4"
-                        :class="{ 'grayscale-0': form.language === 'en', grayscale: form.language !== 'en' }"
-                        >🇬🇧</span
-                      >
-                      <span class="font-black text-lg text-current">{{ $t('landing.onboarding.langEn') }}</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div class="pt-2">
-                  <FormColorPicker
-                    v-model="form.theme"
-                    :label="$t('landing.onboarding.mainColor')"
-                    class="font-bold"
-                  />
-                </div>
-
-                <FormField
-                  v-model="form.focus"
-                  icon="mdi:target"
-                  :label="$t('landing.onboarding.siteFocus')"
-                  :placeholder="$t('landing.onboarding.siteFocusPlaceholder')"
-                  inputClass="w-full !bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent focus:!bg-white dark:focus:!bg-[#18181B] focus:!ring-4 focus:!ring-[#111] dark:focus:!ring-white transition-all text-lg font-bold rounded-2xl py-4"
-                />
-              </div>
-
-              <div class="flex gap-4 mt-10">
-                <Button
-                  type="button"
-                  variant="neutral"
-                  size="lg"
-                  class="w-1/3 bg-[#F0F0F0] hover:bg-[#E5E5E5] dark:bg-[#27272A] dark:hover:bg-[#3F3F46] text-[#111] dark:text-white border-none rounded-2xl py-5 text-lg font-black transition-colors"
-                  @click="step = 1"
-                >
-                  {{ $t('common.actions.back') }}
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  class="w-2/3 bg-[#111] hover:bg-[#222] dark:bg-white dark:hover:bg-[#F0F0F0] text-white dark:text-[#111] border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#F9A8D4] active:shadow-none active:translate-y-[6px] transition-all"
-                  icon="mdi:arrow-right"
-                  iconPosition="right"
-                >
-                  <span class="font-black tracking-wide">{{ $t('landing.onboarding.continueToAccount') }}</span>
-                </Button>
-              </div>
-            </div>
-
-            <div v-else-if="step === 3" :key="'step3'" class="space-y-8">
-              <div class="space-y-3">
-                <h3 class="text-2xl font-extrabold text-[#111] dark:text-white tracking-tight">
-                  {{ $t('landing.onboarding.adminInfo') }}
-                </h3>
-                <p class="text-[1.05rem] text-[#555] dark:text-[#A1A1AA] font-medium leading-relaxed">
-                  {{ $t('landing.onboarding.adminInfoDesc') }}
-                </p>
-              </div>
-
-              <div class="space-y-6">
-                <FormField
-                  v-model="form.username"
-                  required
-                  icon="mdi:account"
-                  :label="$t('common.labels.username')"
-                  :placeholder="$t('landing.onboarding.usernamePlaceholder')"
-                  inputClass="w-full !bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent focus:!bg-white dark:focus:!bg-[#18181B] focus:!ring-4 focus:!ring-[#111] dark:focus:!ring-white transition-all text-lg font-bold rounded-2xl py-4"
-                />
-
-                <FormField
-                  v-model="form.email"
-                  required
-                  type="email"
-                  icon="mdi:email"
-                  :label="$t('common.labels.email')"
-                  :placeholder="$t('landing.onboarding.emailPlaceholder').replace(`{'@'}`, '@')"
-                  inputClass="w-full !bg-[#F0F0F0] dark:!bg-[#27272A] !border-transparent focus:!bg-white dark:focus:!bg-[#18181B] focus:!ring-4 focus:!ring-[#111] dark:focus:!ring-white transition-all text-lg font-bold rounded-2xl py-4"
-                />
-
-                <UserPassword v-model="form.password" />
-                <UserPassword
-                  v-model="form.passwordConfirm"
-                  isConfirm
-                  :isValid="form.password === form.passwordConfirm"
-                />
-              </div>
-
-              <div class="flex gap-4 mt-10">
-                <Button
-                  type="button"
-                  variant="neutral"
-                  size="lg"
-                  class="w-1/3 bg-[#F0F0F0] hover:bg-[#E5E5E5] dark:bg-[#27272A] dark:hover:bg-[#3F3F46] text-[#111] dark:text-white border-none rounded-2xl py-5 text-lg font-black transition-colors"
-                  @click="step = 2"
-                >
-                  {{ $t('common.actions.back') }}
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  :disabled="!canAdvanceStep3"
-                  class="w-2/3 bg-[#111] hover:bg-[#222] dark:bg-white dark:hover:bg-[#F0F0F0] text-white dark:text-[#111] border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#F9A8D4] active:shadow-none active:translate-y-[6px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  icon="mdi:arrow-right"
-                  iconPosition="right"
-                >
-                  <span class="font-black tracking-wide">{{ $t('landing.onboarding.continueToSummary') }}</span>
-                </Button>
-              </div>
-            </div>
-
-            <div v-else-if="step === 4" :key="'step4'" class="space-y-8">
-              <div class="space-y-3">
-                <h3 class="text-2xl font-extrabold text-[#111] dark:text-white tracking-tight">
-                  {{ $t('landing.onboarding.summary') }}
-                </h3>
-                <p class="text-[1.05rem] text-[#555] dark:text-[#A1A1AA] font-medium leading-relaxed">
-                  {{ $t('landing.onboarding.summaryDesc') }}
-                </p>
-              </div>
-
-              <div
-                class="rounded-3xl border-[3px] border-[#E5E5E5] dark:border-[#3F3F46] divide-y-[3px] divide-[#E5E5E5] dark:divide-[#3F3F46] overflow-hidden"
-              >
-                <div
-                  v-for="row in summaryRows"
-                  :key="row.label"
-                  class="flex items-center gap-4 px-5 py-4 bg-[#FAFAFA] dark:bg-[#18181B]"
-                >
-                  <Icon :name="row.icon" class="w-5 h-5 text-[#888] dark:text-[#71717A] shrink-0" />
-                  <span class="text-sm font-bold text-[#888] dark:text-[#71717A] uppercase tracking-wide w-40 shrink-0">
-                    {{ row.label }}
-                  </span>
-                  <span class="font-black text-[#111] dark:text-white truncate flex items-center gap-2">
-                    <span
-                      v-if="row.swatch"
-                      class="inline-block w-5 h-5 rounded-full border-2 border-[#E5E5E5] dark:border-[#3F3F46]"
-                      :style="{ backgroundColor: row.swatch }"
-                    ></span>
-                    {{ row.value }}
-                  </span>
-                </div>
-              </div>
-
-              <label
-                class="flex items-start gap-3 p-5 rounded-2xl cursor-pointer border-[3px] transition-colors"
-                :class="
-                  form.acceptTos
-                    ? 'border-[#111] dark:border-white bg-[#F3E8FF] dark:bg-[#2E1065]'
-                    : 'border-[#E5E5E5] dark:border-[#3F3F46] hover:border-[#CCC] dark:hover:border-[#52525B]'
-                "
-              >
-                <input v-model="form.acceptTos" type="checkbox" class="mt-1 w-5 h-5 accent-[#7E22CE] cursor-pointer" />
-                <span class="text-sm font-bold text-[#111] dark:text-white leading-relaxed">
-                  <i18n-t keypath="landing.onboarding.acceptTos" tag="span">
-                    <template #tos>
-                      <NuxtLink
-                        :to="localePath('/tos')"
-                        target="_blank"
-                        class="underline text-[#7E22CE] dark:text-[#D8B4FE] hover:opacity-80"
-                        @click.stop
-                      >
-                        {{ $t('landing.onboarding.acceptTosLabel') }}
-                      </NuxtLink>
-                    </template>
-                    <template #privacy>
-                      <NuxtLink
-                        :to="localePath('/privacy')"
-                        target="_blank"
-                        class="underline text-[#7E22CE] dark:text-[#D8B4FE] hover:opacity-80"
-                        @click.stop
-                      >
-                        {{ $t('landing.onboarding.acceptPrivacyLabel') }}
-                      </NuxtLink>
-                    </template>
-                  </i18n-t>
-                </span>
-              </label>
-
-              <div class="flex gap-4 mt-4">
-                <Button
-                  type="button"
-                  variant="neutral"
-                  size="lg"
-                  class="w-1/3 bg-[#F0F0F0] hover:bg-[#E5E5E5] dark:bg-[#27272A] dark:hover:bg-[#3F3F46] text-[#111] dark:text-white border-none rounded-2xl py-5 text-lg font-black transition-colors"
-                  @click="step = 3"
-                >
-                  {{ $t('common.actions.back') }}
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  :loading="loading"
-                  :disabled="!form.acceptTos || loading"
-                  class="w-2/3 bg-[#67E8F9] hover:bg-[#22D3EE] text-[#111] border-none rounded-2xl py-5 text-lg shadow-[0_6px_0_0_#06B6D4] active:shadow-none active:translate-y-[6px] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0"
-                >
-                  <div class="flex items-center justify-center gap-3">
-                    <Icon name="mdi:rocket-launch" class="w-6 h-6" />
-                    <span class="font-black tracking-wide">{{ $t('landing.onboarding.createAccount') }}</span>
-                  </div>
-                </Button>
-              </div>
-
-              <div
-                class="bg-[#F3E8FF] dark:bg-[#2E1065] rounded-2xl p-5 border-2 border-[#D8B4FE] dark:border-[#7E22CE]"
-              >
-                <p
-                  class="text-center text-[#7E22CE] dark:text-[#D8B4FE] font-black text-sm flex items-center justify-center gap-2 uppercase tracking-wide"
-                >
-                  <Icon name="mdi:sparkles" class="w-5 h-5" />
-                  {{ $t('landing.onboarding.trialHintToken') }}
-                </p>
-              </div>
-            </div>
+            <LandingOnboardingStepSite v-if="step === 1" key="step1" />
+            <LandingOnboardingStepDesign v-else-if="step === 2" key="step2" />
+            <LandingOnboardingStepAccount v-else-if="step === 3" key="step3" />
+            <LandingOnboardingStepVerify v-else-if="step === 4" key="step4" />
+            <LandingOnboardingStepSummary v-else-if="step === 5" key="step5" />
           </Transition>
         </form>
       </div>
@@ -472,40 +90,56 @@
 import slugify from 'slugify'
 import { zxcvbn } from '@zxcvbn-ts/core'
 
-const TOTAL_STEPS = 4
+import { onboardingKey, type DomainStatus, type OnboardingForm } from '~/composables/useOnboarding'
+
+const TOTAL_STEPS = 5
 
 const open = defineModel<boolean>()
 const toast = useToast()
 const { t: $t } = useI18n()
-const localePath = useLocalePath()
 
 const step = shallowRef(1)
 const loading = shallowRef(false)
 const userEditedDomain = shallowRef(false)
 const panelRef = useTemplateRef<HTMLElement>('panelRef')
+let codeInputEl: HTMLInputElement | null = null
+const registerCodeInput = (el: HTMLInputElement | null) => {
+  codeInputEl = el
+}
 
-const isLocked = useScrollLock(import.meta.client ? document.body : null)
-watch(open, (v) => {
-  isLocked.value = !!v
+const challenge = shallowRef<string | null>(null)
+const verifiedToken = shallowRef<string | null>(null)
+const code = shallowRef('')
+const codeSending = shallowRef(false)
+const codeVerifying = shallowRef(false)
+const codeError = shallowRef('')
+const resendCooldown = shallowRef(0)
+let cooldownTimer: ReturnType<typeof setInterval> | null = null
+
+const startResendCooldown = (seconds = 60) => {
+  resendCooldown.value = seconds
+  if (cooldownTimer) clearInterval(cooldownTimer)
+  cooldownTimer = setInterval(() => {
+    resendCooldown.value -= 1
+    if (resendCooldown.value <= 0 && cooldownTimer) {
+      clearInterval(cooldownTimer)
+      cooldownTimer = null
+    }
+  }, 1000)
+}
+onScopeDispose(() => {
+  if (cooldownTimer) clearInterval(cooldownTimer)
 })
 
-onKeyStroke('Escape', () => {
-  if (open.value) open.value = false
-})
+const onCodeInput = (ev: Event) => {
+  const target = ev.target as HTMLInputElement
+  const digitsOnly = target.value.replace(/\D/g, '').slice(0, 6)
+  if (digitsOnly !== target.value) target.value = digitsOnly
+  code.value = digitsOnly
+  if (codeError.value) codeError.value = ''
+}
 
-watch([open, step], async ([isOpen]) => {
-  if (!isOpen) return
-  await nextTick()
-  const firstInput = panelRef.value?.querySelector<HTMLElement>(
-    'input:not([type="hidden"]):not([disabled]):not([readonly]), textarea, select, [contenteditable="true"]',
-  )
-  firstInput?.focus()
-})
-
-type DomainStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'tooShort' | 'reserved' | 'empty'
-const domainStatus = shallowRef<DomainStatus>('idle')
-
-const form = reactive({
+const form = reactive<OnboardingForm>({
   siteName: '',
   domain: '',
   domainType: 'SUBDOMAIN',
@@ -518,6 +152,8 @@ const form = reactive({
   passwordConfirm: '',
   acceptTos: false,
 })
+
+const domainStatus = shallowRef<DomainStatus>('idle')
 
 const fullDomainPreview = computed(() =>
   form.domainType === 'SUBDOMAIN' ? `${form.domain}.topiqu.com` : form.domain,
@@ -571,7 +207,6 @@ watch(
     domainStatus.value = 'checking'
     runDomainCheck(d, type)
   },
-  { immediate: false },
 )
 
 const domainStatusIcon = computed(() => {
@@ -601,7 +236,10 @@ const summaryRows = computed(() => [
   { label: $t('landing.onboarding.summaryDomain'), value: fullDomainPreview.value, icon: 'mdi:link' },
   {
     label: $t('landing.onboarding.summaryLanguage'),
-    value: form.language === 'cs' ? `🇨🇿 ${$t('landing.onboarding.langCz')}` : `🇬🇧 ${$t('landing.onboarding.langEn')}`,
+    value:
+      form.language === 'cs'
+        ? `🇨🇿 ${$t('landing.onboarding.langCz')}`
+        : `🇬🇧 ${$t('landing.onboarding.langEn')}`,
     icon: 'mdi:translate',
   },
   {
@@ -631,6 +269,92 @@ const canAdvanceStep3 = computed(
     form.password === form.passwordConfirm,
 )
 
+const canAdvanceStep4 = computed(() => !!challenge.value && code.value.length === 6)
+
+watch(
+  () => form.email,
+  () => {
+    challenge.value = null
+    verifiedToken.value = null
+    code.value = ''
+    codeError.value = ''
+  },
+)
+
+const sendCode = async () => {
+  if (codeSending.value || resendCooldown.value > 0) return
+  if (!form.email) return
+  codeSending.value = true
+  codeError.value = ''
+  try {
+    const res = await $fetch<{ challenge: string }>('/api/onboarding/send-code', {
+      method: 'POST',
+      body: { email: form.email, language: form.language },
+    })
+    challenge.value = res.challenge
+    code.value = ''
+    verifiedToken.value = null
+    startResendCooldown(60)
+    toast.success({ message: $t('common.auth.verificationCodeSent') })
+    nextTick(() => codeInputEl?.focus())
+  } catch (error: any) {
+    toast.error({ message: error.data?.message || $t('common.auth.sendCodeFailed') })
+  } finally {
+    codeSending.value = false
+  }
+}
+
+const verifyCode = async () => {
+  if (codeVerifying.value) return
+  if (!challenge.value || code.value.length !== 6) return
+  codeVerifying.value = true
+  codeError.value = ''
+  try {
+    const res = await $fetch<{ verifiedToken: string }>('/api/onboarding/verify-code', {
+      method: 'POST',
+      body: { email: form.email, code: code.value, challenge: challenge.value },
+    })
+    verifiedToken.value = res.verifiedToken
+    step.value = 5
+  } catch (error: any) {
+    const reason = error.data?.data?.reason
+    if (reason === 'expired') {
+      codeError.value = $t('common.auth.codeExpired')
+      challenge.value = null
+    } else if (reason === 'mismatch') {
+      codeError.value = $t('common.auth.codeMismatch')
+    } else {
+      codeError.value = error.data?.message || $t('common.auth.verifyFailed')
+    }
+  } finally {
+    codeVerifying.value = false
+  }
+}
+
+watch(step, (newStep, oldStep) => {
+  if (newStep === 4 && oldStep !== 4 && !challenge.value && !verifiedToken.value) {
+    sendCode()
+  }
+})
+
+const isLocked = useScrollLock(import.meta.client ? document.body : null)
+watch(open, (v) => {
+  isLocked.value = !!v
+})
+
+onKeyStroke('Escape', () => {
+  if (open.value) open.value = false
+})
+
+watch([open, step], async ([isOpen]) => {
+  if (!isOpen) return
+  await nextTick()
+  const firstInput = panelRef.value?.querySelector<HTMLElement>(
+    'input:not([type="hidden"]):not([disabled]):not([readonly]), textarea, select, [contenteditable="true"]',
+  )
+  firstInput?.focus()
+})
+
 const handleSubmit = () => {
   if (step.value === 1) {
     if (!canAdvanceStep1.value) return
@@ -644,6 +368,11 @@ const handleSubmit = () => {
   if (step.value === 3) {
     if (!canAdvanceStep3.value) return
     step.value = 4
+    return
+  }
+  if (step.value === 4) {
+    if (!canAdvanceStep4.value) return
+    verifyCode()
     return
   }
   submit()
@@ -662,6 +391,11 @@ const submit = async () => {
     toast.error({ message: $t('common.passwordSuggestions.weak') })
     return
   }
+  if (!verifiedToken.value) {
+    toast.error({ message: $t('common.auth.verifyFailed') })
+    step.value = 4
+    return
+  }
 
   loading.value = true
   try {
@@ -677,6 +411,7 @@ const submit = async () => {
         username: form.username,
         email: form.email,
         password: form.password,
+        verifiedToken: verifiedToken.value,
       },
     })
 
@@ -689,6 +424,38 @@ const submit = async () => {
     loading.value = false
   }
 }
+
+provide(onboardingKey, {
+  form,
+  step,
+  totalSteps: TOTAL_STEPS,
+  loading,
+  userEditedDomain,
+  domainStatus,
+  domainStatusIcon,
+  domainStatusColor,
+  fullDomainPreview,
+  challenge,
+  verifiedToken,
+  code,
+  codeSending,
+  codeVerifying,
+  codeError,
+  resendCooldown,
+  canAdvanceStep1,
+  canAdvanceStep3,
+  canAdvanceStep4,
+  summaryRows,
+  close: () => {
+    open.value = false
+  },
+  goBack: (to: number) => {
+    step.value = to
+  },
+  onCodeInput,
+  sendCode,
+  registerCodeInput,
+})
 </script>
 
 <style scoped>
@@ -704,19 +471,5 @@ const submit = async () => {
 }
 .animate-fade-in-up {
   animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateX(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out forwards;
 }
 </style>
