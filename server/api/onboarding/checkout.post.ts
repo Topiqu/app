@@ -1,7 +1,11 @@
 import Stripe from 'stripe'
 import argon2 from 'argon2'
+import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
 import { saveUserWithLogging } from '~~/server/utils/userLog'
+import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
+
+const LOGIN_TOKEN_TTL_MS = 5 * 60 * 1000
 
 const schema = z.object({
   siteName: z.string().min(1).max(255),
@@ -16,13 +20,23 @@ const schema = z.object({
   username: z.string().min(3).max(50),
   email: z.email(),
   password: z.string().min(8).max(124),
+  verifiedToken: z.string().min(1),
 })
 
 export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, schema.parse)
   const { translate: t } = await useServerI18n(event)
 
+  if (!verifyVerifiedToken(body.verifiedToken, body.email)) {
+    throw createError({
+      statusCode: 400,
+      message: t('common.auth.codeExpired') || 'Email not verified. Restart the verification step.',
+    })
+  }
+
   const fullSubdomain = body.domainType === 'SUBDOMAIN' ? `${body.domain}.topiqu.com` : body.domain
+  const loginToken = randomBytes(32).toString('hex')
+  const loginTokenExpiresAt = new Date(Date.now() + LOGIN_TOKEN_TTL_MS)
 
   const existingSite = await prisma.clientSite.findUnique({ where: { domain: fullSubdomain } })
   if (existingSite) {
@@ -67,6 +81,9 @@ export default defineEventHandler(async (event) => {
           role: 'admin',
           clientSiteId: site.id,
           language: body.language,
+          emailVerified: true,
+          onboardingLoginToken: loginToken,
+          onboardingLoginTokenExpiresAt: loginTokenExpiresAt,
         },
         false,
         tx,
@@ -118,8 +135,8 @@ export default defineEventHandler(async (event) => {
         mode: 'subscription',
         line_items: [{ price: premiumPriceId, quantity: 1 }],
         subscription_data: { trial_period_days: 14 },
-        success_url: `${originUrl}/autorizace?created=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${originUrl}/autorizace?created=true`,
+        success_url: `${originUrl}/${body.language}/autorizace?created=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${originUrl}/${body.language}/autorizace?created=true`,
       })
 
       await logAction({
@@ -136,9 +153,9 @@ export default defineEventHandler(async (event) => {
       return { url: session.url }
     } catch (error) {
       console.error('Stripe error:', error)
-      return { url: `${originUrl}/autorizace?created=true&stripe_error=true` }
+      return { url: `${originUrl}/${body.language}/autorizace?created=true&stripe_error=true` }
     }
   }
 
-  return { url: `${originUrl}/autorizace?created=true` }
+  return { url: `${originUrl}/${body.language}/autorizace?created=true` }
 })

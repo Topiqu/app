@@ -314,6 +314,8 @@ model User {
   verification     VerificationCode?
   totpSecret       String?
   totpTempSecret   String?
+  onboardingLoginToken          String?
+  onboardingLoginTokenExpiresAt DateTime?
   emailVerified    Boolean           @default(false)
   allowNotifs      Boolean           @default(true)
   allowEmail       Boolean           @default(true)

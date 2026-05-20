@@ -291,6 +291,8 @@ model User extends Base {
     verification     VerificationCode?
     totpSecret       String?           @omit
     totpTempSecret   String?           @omit
+    onboardingLoginToken          String?   @omit
+    onboardingLoginTokenExpiresAt DateTime?
     emailVerified    Boolean           @default(false)
     allowNotifs      Boolean           @default(true)
     allowEmail       Boolean           @default(true)
