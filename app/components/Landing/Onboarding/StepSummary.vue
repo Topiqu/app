@@ -73,7 +73,7 @@
         variant="neutral"
         size="lg"
         class="w-1/3 bg-[#F0F0F0] hover:bg-[#E5E5E5] dark:bg-[#27272A] dark:hover:bg-[#3F3F46] text-[#111] dark:text-white border-none rounded-2xl py-5 text-lg font-black transition-colors"
-        @click="goBack(4)"
+        @click="goBack(5)"
       >
         {{ $t('common.actions.back') }}
       </Button>
@@ -108,7 +108,6 @@
 </template>
 
 <script setup lang="ts">
-const { t: $t } = useI18n()
 const localePath = useLocalePath()
 const { form, loading, summaryRows, goBack } = useOnboarding()
 </script>
