@@ -5,12 +5,10 @@ always:
 ---
 now:
   - 🛑 GAM + total ad revenue overview & logging
-  - 🛑 AWS S3 Bucket integration
-  - 🛑 AWS SES integration
-  - 🛑 AWS Rekognition integration
   - 🛑 AWS Comprehend integration
   - 🛑 dynamic pricing (clientpreferences)
   - 🟡 Stripe integration for token refill
+  - 🛑 move Stripe / AWS / xAI / Upstash / LinkedIn / Giphy from NW to personal acc
   - 🟡 AI Inolvement with article (cron based = fully AI, AI generated/enhanced = partially AI, no AI used = 100% human)
   - 🟢 replace sweetalert modals with custom ModalMini component
   - 🟢 implement in clientpreferences humanHourlyRate / humanWordsPerHour
@@ -89,6 +87,9 @@ done:
   - 🛑 add sessionId for oauth providers in nuxt auth callback
   - 🛑 useClientSite composable - return language/cliensite details based on host header
   - 🛑 all clientsite endpoints should use host header instead of clientsite slug/route params
+  - 🛑 AWS S3 Bucket integration
+  - 🛑 AWS SES integration
+  - 🛑 AWS Rekognition integration
   - 🛑 fix issue in users/[id]/patch : {
   "error": true,
   "url": "http://localhost:3000/api/users/f0ddd9fb-42af-4fe9-ab4e-4dd9257b632a",
