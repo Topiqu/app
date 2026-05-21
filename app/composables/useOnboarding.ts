@@ -22,6 +22,8 @@ export interface OnboardingForm {
   password: string
   passwordConfirm: string
   acceptTos: boolean
+  website: string
+  selectedPlan: 'PRO' | 'PREMIUM' | null
 }
 
 export interface OnboardingContext {
