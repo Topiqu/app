@@ -193,6 +193,8 @@
       "verifyFailed": "Ověření selhalo",
       "codeExpired": "Ověřovací kód vypršel. Pošli si nový.",
       "codeMismatch": "Špatný kód. Zkus to znovu.",
+      "disposableEmail": "Jednorázové e-mailové adresy nejsou povoleny.",
+      "accountTooNew": "Počkej prosím chvíli, než tuto akci provedeš.",
       "googleSignInFailed": "Přihlášení přes Google selhalo",
       "githubSignInFailed": "Přihlášení přes GitHub selhalo",
       "enterTotpCode": "Zadejte Váš kód pro ",

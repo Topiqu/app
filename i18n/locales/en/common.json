@@ -192,6 +192,8 @@
       "verifyFailed": "Verification failed",
       "codeExpired": "Verification code has expired. Send a new one.",
       "codeMismatch": "Incorrect code. Try again.",
+      "disposableEmail": "Disposable email addresses are not allowed.",
+      "accountTooNew": "Please wait a moment before performing this action.",
       "googleSignInFailed": "Google sign-in failed",
       "githubSignInFailed": "GitHub sign-in failed",
       "enterTotpCode": "Enter your TOTP code for",

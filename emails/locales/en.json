@@ -25,6 +25,10 @@
     "greeting": "Hello {userName},",
     "intro": "To complete your {actionType}, please use the following verification code:",
     "expiration": "This code is valid for 24 hours. If you did not request this, you can safely ignore this email.",
+    "actions": {
+      "signup": "account creation",
+      "emailVerification": "email verification"
+    },
     "unsubscribe": {
       "text": "Don't want to receive notifications?",
       "link": "Unsubscribe"

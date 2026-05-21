@@ -215,6 +215,55 @@
       "summaryFocus": "Focus",
       "summaryAdmin": "Admin username",
       "summaryEmail": "Admin email",
+      "summaryPlan": "Plan after trial",
+      "choosePlan": "Choose your plan",
+      "choosePlanDesc": "You get 14 days of PREMIUM free. Pick what you continue with — you can switch any time.",
+      "planSelected": "Selected",
+      "planFreeAfterTrial": "Free (after trial)",
+      "continueWithFree": "Continue with Free",
+      "continueWithPlan": "Continue with {plan}",
+      "planTrialBanner": "14 days of PREMIUM free · no card required · cancel anytime",
+      "planNavPrev": "Previous plan",
+      "planNavNext": "Next plan",
+      "planNavLabel": "Browse plans",
+      "planActiveAnnounce": "Selected plan: {plan}",
+      "planGoTo": "Go to {plan} plan",
+      "plans": {
+        "free": {
+          "tagline": "For hobby projects & first steps",
+          "description": "Publish manually with zero commitment. The easiest way to try the platform out.",
+          "features": {
+            "editor": "Manual article editor",
+            "subdomain": "Free subdomain (.topiqu.com)",
+            "analytics": "Basic analytics & comments",
+            "community": "Access to community topics",
+            "noCard": "No payment, no card"
+          }
+        },
+        "pro": {
+          "tagline": "Grow with AI & built-in SEO",
+          "description": "For creators who want to publish consistently and climb the rankings. AI writes, you decide.",
+          "features": {
+            "tokens": "25,000 AI tokens per month",
+            "seo": "Advanced SEO optimization",
+            "import": "Import existing articles",
+            "revenue": "70/30 revenue share in your favor",
+            "support": "Email support within 24 h"
+          }
+        },
+        "premium": {
+          "tagline": "Max AI & full automation",
+          "description": "Fully automated content on autopilot. Sentiment, image generation, priority indexing.",
+          "highlight": "14 days free · no commitment",
+          "features": {
+            "unlimited": "Unlimited article generation",
+            "sentiment": "AI Sentiment & image generation",
+            "indexing": "Priority Google indexing",
+            "branding": "Custom emoji & branding",
+            "support": "90/10 revenue share + 24/7 support"
+          }
+        }
+      },
       "focusNotSet": "—",
       "acceptTos": "I agree to the {tos} and {privacy}.",
       "acceptTosLabel": "Terms of Service",

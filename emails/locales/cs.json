@@ -25,6 +25,10 @@
     "greeting": "Dobrý den, {userName},",
     "intro": "Pro dokončení akce {actionType} použijte následující ověřovací kód:",
     "expiration": "Tento kód je platný 24 hodin. Pokud jste tuto žádost neodeslali, můžete tento e-mail ignorovat.",
+    "actions": {
+      "signup": "vytvoření účtu",
+      "emailVerification": "ověření e-mailu"
+    },
     "unsubscribe": {
       "text": "Nechcete dostávat notifikace?",
       "link": "Odhlásit se"

@@ -215,6 +215,55 @@
       "summaryFocus": "Zaměření",
       "summaryAdmin": "Uživatelské jméno správce",
       "summaryEmail": "Email správce",
+      "summaryPlan": "Tarif po triálu",
+      "choosePlan": "Vyber si plán",
+      "choosePlanDesc": "14 dní máš PREMIUM zdarma. Po triálu pokračuješ na vybraném plánu – přepnout můžeš kdykoli.",
+      "planSelected": "Vybráno",
+      "planFreeAfterTrial": "Free (po triálu)",
+      "continueWithFree": "Pokračovat s Free",
+      "continueWithPlan": "Pokračovat s {plan}",
+      "planTrialBanner": "14 dní PREMIUM zdarma · bez karty · zrušíš kdykoli",
+      "planNavPrev": "Předchozí plán",
+      "planNavNext": "Další plán",
+      "planNavLabel": "Procházet plány",
+      "planActiveAnnounce": "Vybraný plán: {plan}",
+      "planGoTo": "Přejít na plán {plan}",
+      "plans": {
+        "free": {
+          "tagline": "Pro hobby a první kroky",
+          "description": "Publikuj manuálně, bez závazku. Ideální způsob, jak si platformu osahat.",
+          "features": {
+            "editor": "Manuální editor článků",
+            "subdomain": "Subdoména zdarma (.topiqu.com)",
+            "analytics": "Základní analytika a komentáře",
+            "community": "Přístup ke komunitním tématům",
+            "noCard": "Bez platby a bez karty"
+          }
+        },
+        "pro": {
+          "tagline": "Růst s AI a vlastním SEO",
+          "description": "Pro tvůrce, kteří chtějí pravidelně publikovat a stoupat ve vyhledávači. AI píše, ty rozhoduješ.",
+          "features": {
+            "tokens": "25 000 AI tokenů měsíčně",
+            "seo": "Pokročilá SEO optimalizace",
+            "import": "Import existujících článků",
+            "revenue": "Revenue share 70/30 ve tvůj prospěch",
+            "support": "E-mailová podpora do 24 h"
+          }
+        },
+        "premium": {
+          "tagline": "Maximum AI a automatizace",
+          "description": "Plně automatizovaný obsah na autopilotu. Sentiment, generování obrázků i prioritní indexace.",
+          "highlight": "14 dní zdarma · bez závazku",
+          "features": {
+            "unlimited": "Neomezené generování článků",
+            "sentiment": "AI Sentiment a generování obrázků",
+            "indexing": "Prioritní indexace na Google",
+            "branding": "Vlastní emoji a branding",
+            "support": "Revenue share 90/10 + podpora 24/7"
+          }
+        }
+      },
       "focusNotSet": "—",
       "acceptTos": "Souhlasím s {tos} a {privacy}.",
       "acceptTosLabel": "obchodními podmínkami",
