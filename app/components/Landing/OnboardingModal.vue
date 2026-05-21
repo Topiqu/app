@@ -65,21 +65,35 @@
         </div>
 
         <form @submit.prevent="handleSubmit">
-          <Transition
-            mode="out-in"
-            enterActiveClass="transition-opacity duration-300 ease-out"
-            enterFromClass="opacity-0"
-            enterToClass="opacity-100"
-            leaveActiveClass="transition-opacity duration-200 ease-in"
-            leaveFromClass="opacity-100"
-            leaveToClass="opacity-0"
-          >
-            <LandingOnboardingStepSite v-if="step === 1" key="step1" />
-            <LandingOnboardingStepDesign v-else-if="step === 2" key="step2" />
-            <LandingOnboardingStepAccount v-else-if="step === 3" key="step3" />
-            <LandingOnboardingStepVerify v-else-if="step === 4" key="step4" />
-            <LandingOnboardingStepSummary v-else-if="step === 5" key="step5" />
-          </Transition>
+          <FormField
+            v-model="form.website"
+            label="Website"
+            type="text"
+            name="website"
+            aria-hidden="true"
+            tabindex="-1"
+            autocomplete="off"
+            class="absolute -left-[9999px] top-auto w-px h-px overflow-hidden"
+          />
+          <TurnstileWidget v-model="turnstileToken" />
+          <div class="relative min-h-[680px]">
+            <Transition
+              mode="out-in"
+              enterActiveClass="transition-opacity duration-300 ease-out"
+              enterFromClass="opacity-0"
+              enterToClass="opacity-100"
+              leaveActiveClass="transition-opacity duration-200 ease-in"
+              leaveFromClass="opacity-100"
+              leaveToClass="opacity-0"
+            >
+              <LazyLandingOnboardingStepSite v-if="step === 1" key="step1" hydrateOnIdle />
+              <LazyLandingOnboardingStepDesign v-else-if="step === 2" key="step2" hydrateOnIdle />
+              <LazyLandingOnboardingStepAccount v-else-if="step === 3" key="step3" hydrateOnIdle />
+              <LazyLandingOnboardingStepPlan v-else-if="step === 4" key="step4" hydrateOnIdle />
+              <LazyLandingOnboardingStepVerify v-else-if="step === 5" key="step5" hydrateOnIdle />
+              <LazyLandingOnboardingStepSummary v-else-if="step === 6" key="step6" hydrateOnIdle />
+            </Transition>
+          </div>
         </form>
       </div>
     </div>
@@ -92,7 +106,7 @@ import { zxcvbn } from '@zxcvbn-ts/core'
 
 import { onboardingKey, type DomainStatus, type OnboardingForm } from '~/composables/useOnboarding'
 
-const TOTAL_STEPS = 5
+const TOTAL_STEPS = 6
 
 const open = defineModel<boolean>()
 const toast = useToast()
@@ -109,6 +123,7 @@ const registerCodeInput = (el: HTMLInputElement | null) => {
 
 const challenge = shallowRef<string | null>(null)
 const verifiedToken = shallowRef<string | null>(null)
+const turnstileToken = shallowRef('')
 const code = shallowRef('')
 const codeSending = shallowRef(false)
 const codeVerifying = shallowRef(false)
@@ -139,7 +154,7 @@ const onCodeInput = (ev: Event) => {
   if (codeError.value) codeError.value = ''
 }
 
-const form = reactive<OnboardingForm>({
+const form = shallowReactive<OnboardingForm>({
   siteName: '',
   domain: '',
   domainType: 'SUBDOMAIN',
@@ -151,6 +166,8 @@ const form = reactive<OnboardingForm>({
   password: '',
   passwordConfirm: '',
   acceptTos: false,
+  website: '',
+  selectedPlan: null,
 })
 
 const domainStatus = shallowRef<DomainStatus>('idle')
@@ -209,26 +226,28 @@ watch(
   },
 )
 
-const domainStatusIcon = computed(() => {
-  switch (domainStatus.value) {
-    case 'checking':
-      return 'mdi:loading'
-    case 'available':
-      return 'mdi:check-circle'
-    default:
-      return 'mdi:alert-circle'
-  }
-})
+const DOMAIN_STATUS_ICON: Record<DomainStatus, string> = {
+  idle: 'mdi:alert-circle',
+  checking: 'mdi:loading',
+  available: 'mdi:check-circle',
+  taken: 'mdi:alert-circle',
+  invalid: 'mdi:alert-circle',
+  tooShort: 'mdi:alert-circle',
+  reserved: 'mdi:alert-circle',
+  empty: 'mdi:alert-circle',
+}
 
+const DOMAIN_STATUS_COLOR: Record<'available' | 'checking' | 'error', string> = {
+  available: 'text-[#16A34A] dark:text-[#86EFAC]',
+  checking: 'text-[#888] dark:text-[#71717A]',
+  error: 'text-[#DC2626] dark:text-[#FCA5A5]',
+}
+
+const domainStatusIcon = computed(() => DOMAIN_STATUS_ICON[domainStatus.value])
 const domainStatusColor = computed(() => {
-  switch (domainStatus.value) {
-    case 'available':
-      return 'text-[#16A34A] dark:text-[#86EFAC]'
-    case 'checking':
-      return 'text-[#888] dark:text-[#71717A]'
-    default:
-      return 'text-[#DC2626] dark:text-[#FCA5A5]'
-  }
+  if (domainStatus.value === 'available') return DOMAIN_STATUS_COLOR.available
+  if (domainStatus.value === 'checking') return DOMAIN_STATUS_COLOR.checking
+  return DOMAIN_STATUS_COLOR.error
 })
 
 const summaryRows = computed(() => [
@@ -255,6 +274,13 @@ const summaryRows = computed(() => [
   },
   { label: $t('landing.onboarding.summaryAdmin'), value: form.username, icon: 'mdi:account' },
   { label: $t('landing.onboarding.summaryEmail'), value: form.email, icon: 'mdi:email' },
+  {
+    label: $t('landing.onboarding.summaryPlan'),
+    value: form.selectedPlan
+      ? $t(`landing.pricing.plans.${form.selectedPlan.toLowerCase()}.name`)
+      : $t('landing.onboarding.planFreeAfterTrial'),
+    icon: 'mdi:crown-outline',
+  },
 ])
 
 const canAdvanceStep1 = computed(
@@ -289,7 +315,12 @@ const sendCode = async () => {
   try {
     const res = await $fetch<{ challenge: string }>('/api/onboarding/send-code', {
       method: 'POST',
-      body: { email: form.email, language: form.language },
+      body: {
+        email: form.email,
+        language: form.language,
+        website: form.website,
+        turnstileToken: turnstileToken.value,
+      },
     })
     challenge.value = res.challenge
     code.value = ''
@@ -315,7 +346,7 @@ const verifyCode = async () => {
       body: { email: form.email, code: code.value, challenge: challenge.value },
     })
     verifiedToken.value = res.verifiedToken
-    step.value = 5
+    step.value = 6
   } catch (error: any) {
     const reason = error.data?.data?.reason
     if (reason === 'expired') {
@@ -332,7 +363,7 @@ const verifyCode = async () => {
 }
 
 watch(step, (newStep, oldStep) => {
-  if (newStep === 4 && oldStep !== 4 && !challenge.value && !verifiedToken.value) {
+  if (newStep === 5 && oldStep !== 5 && !challenge.value && !verifiedToken.value) {
     sendCode()
   }
 })
@@ -340,6 +371,10 @@ watch(step, (newStep, oldStep) => {
 const isLocked = useScrollLock(import.meta.client ? document.body : null)
 watch(open, (v) => {
   isLocked.value = !!v
+  if (v) {
+    preloadStep(step.value)
+    preloadStep(step.value + 1)
+  }
 })
 
 onKeyStroke('Escape', () => {
@@ -355,27 +390,38 @@ watch([open, step], async ([isOpen]) => {
   firstInput?.focus()
 })
 
+const STEP_COMPONENTS = [
+  'LandingOnboardingStepSite',
+  'LandingOnboardingStepDesign',
+  'LandingOnboardingStepAccount',
+  'LandingOnboardingStepPlan',
+  'LandingOnboardingStepVerify',
+  'LandingOnboardingStepSummary',
+] as const
+
+const preloadStep = (n: number) => {
+  const name = STEP_COMPONENTS[n - 1]
+  if (name) preloadComponents(name)
+}
+
+const goTo = (n: number) => () => {
+  step.value = n
+  preloadStep(n + 1)
+}
+
+const stepFlow = {
+  1: { canAdvance: canAdvanceStep1, next: goTo(2) },
+  2: { next: goTo(3) },
+  3: { canAdvance: canAdvanceStep3, next: goTo(4) },
+  4: { next: goTo(5) },
+  5: { canAdvance: canAdvanceStep4, next: () => verifyCode() },
+  6: { next: () => submit() },
+} satisfies Record<number, { canAdvance?: { value: boolean }; next: () => void | Promise<void> }>
+
 const handleSubmit = () => {
-  if (step.value === 1) {
-    if (!canAdvanceStep1.value) return
-    step.value = 2
-    return
-  }
-  if (step.value === 2) {
-    step.value = 3
-    return
-  }
-  if (step.value === 3) {
-    if (!canAdvanceStep3.value) return
-    step.value = 4
-    return
-  }
-  if (step.value === 4) {
-    if (!canAdvanceStep4.value) return
-    verifyCode()
-    return
-  }
-  submit()
+  const current = stepFlow[step.value as keyof typeof stepFlow]
+  if (!current || ('canAdvance' in current && !current.canAdvance.value)) return
+  current.next()
 }
 
 const submit = async () => {
@@ -393,7 +439,7 @@ const submit = async () => {
   }
   if (!verifiedToken.value) {
     toast.error({ message: $t('common.auth.verifyFailed') })
-    step.value = 4
+    step.value = 5
     return
   }
 
@@ -412,6 +458,7 @@ const submit = async () => {
         email: form.email,
         password: form.password,
         verifiedToken: verifiedToken.value,
+        selectedPlan: form.selectedPlan,
       },
     })
 
