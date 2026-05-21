@@ -1,66 +1,38 @@
 <template>
-  <main
-    class="sm:min-w-md md:min-w-lg lg:min-w-xl xl:min-w-2xl max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-12"
-  >
-    <section class="text-center py-2 sm:py-3 space-y-2 relative">
-      <div class="absolute top-2 right-2">
-        <div
-          class="w-12 h-12 flex flex-col items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm"
-        >
-          <span class="text-base font-semibold text-gray-900 dark:text-gray-100 leading-none">
-            {{ new Date().getDate() }}
-          </span>
-          <span class="text-[0.65rem] uppercase tracking-wide text-gray-500 dark:text-gray-400">
-            {{ new Date().toLocaleDateString(locale, { month: 'short' }) }}
-          </span>
-        </div>
-      </div>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-12">
+    <section class="text-center py-6 sm:py-10 space-y-4">
       <NuxtImg
         v-if="clientSite?.logoUrl"
         :src="clientSite.logoUrl"
-        class="w-16 h-16 mx-auto mb-2 rounded-full object-contain border border-gray-200 dark:border-gray-700"
+        class="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full object-contain border border-gray-200 dark:border-gray-700"
         :alt="$t('common.avatar.alt.company')"
       />
-      <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">
+      <div class="space-y-3">
+        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 dark:text-gray-100 text-balance">
           {{ clientSite?.name ?? $t('common.labels.title') }}
         </h1>
-        <div class="w-8 h-1 bg-blue-500 mx-auto mt-2 rounded"></div>
+        <div class="w-12 h-0.5 bg-blue-500 mx-auto rounded-full" />
       </div>
-      <p class="mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-xl mx-auto leading-relaxed">
-        {{ clientSite?.description ?? $t('common.preferences.companyDescription.placeholder') }}
+      <p
+        v-if="clientSite?.description"
+        class="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed text-balance"
+      >
+        {{ clientSite.description }}
       </p>
-      <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+      <div
+        v-if="allArticles.length && latestArticleSlug"
+        class="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2"
+      >
         <span>{{ $t('stats.articleCount', { count: allArticles.length }) }}</span>
-        <span>•</span>
+        <span aria-hidden="true">·</span>
         <span>{{ $t('articles.latestArticle') }}</span>
         <NuxtLink
-          :to="localePath({ name: 'clanky-slug', params: { slug: latestArticleSlug ?? '' } })"
-          class="underline underline-offset-2 hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[180px]"
+          :to="localePath({ name: 'clanky-slug', params: { slug: latestArticleSlug } })"
+          class="font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[200px]"
         >
           {{ latestArticleTitle }}
         </NuxtLink>
       </div>
-      <div class="mt-3 max-w-2xl mx-auto">
-        <div class="flex flex-wrap justify-center gap-1.5">
-          <NuxtLink
-            :to="localePath({ name: 'stitky-slug', params: { slug: '' } })"
-            class="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700 transition"
-          >
-            {{ $t('articles.title') }}
-          </NuxtLink>
-          <NuxtLink
-            v-for="tag in tags"
-            :key="tag.id"
-            :to="localePath({ name: 'stitky-slug', params: { slug: tag.name } })"
-            class="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700 transition"
-            role="listitem"
-          >
-            {{ tag.name }}
-          </NuxtLink>
-        </div>
-      </div>
-      <hr class="mt-4 border-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
     </section>
 
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -88,139 +60,133 @@
       </div>
     </section>
 
-    <hr class="border-gray-200 dark:border-gray-800 my-8" />
+    <section id="articles" class="space-y-6">
+      <div class="flex items-baseline justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-3">
+        <h2 class="text-3xl font-bold tracking-tight">{{ $t('articles.title') }}</h2>
+      </div>
 
-    <section id="articles" class="bg-gray-100 dark:bg-gray-900 rounded-xl py-8 px-6">
-      <div class="max-w-5xl mx-auto" style="background-color: transparent !important">
-        <div class="flex flex-col items-center mb-6 gap-4" style="background-color: transparent !important">
-          <h2 class="text-3xl font-bold">{{ $t('articles.title') }}</h2>
-        </div>
-        <div class="w-full mb-6" style="background-color: transparent !important">
-          <div class="flex flex-col items-center gap-4" style="background-color: transparent !important">
-            <div class="w-full max-w-3xl">
-              <label for="article-search" class="sr-only">{{ $t('articles.searchPlaceholder') }}</label>
-              <div class="relative w-full group">
-                <span
-                  class="absolute inset-y-0 left-4 flex items-center text-gray-400 group-focus-within:text-blue-500 transition-colors"
-                >
-                  <Icon name="material-symbols:search-rounded" class="w-5 h-5 z-50" />
-                </span>
-                <input
-                  id="article-search"
-                  v-model="searchQuery"
-                  type="search"
-                  :placeholder="$t('articles.searchPlaceholder')"
-                  :aria-label="$t('articles.searchPlaceholder')"
-                  class="w-full pl-12 pr-10 py-3 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-400/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:shadow-lg transition-all duration-200"
-                />
-              </div>
-            </div>
-            <div class="w-full flex flex-wrap justify-center gap-2" style="background-color: transparent !important">
-              <Button :variant="selectedTag === '' ? 'primary' : 'neutral'" @click="selectedTag = ''">
-                {{ $t('articles.title') }}
-              </Button>
-              <Button
-                v-for="tag in tags"
-                :key="tag.id"
-                role="listitem"
-                :variant="selectedTag === tag.name ? 'primary' : 'neutral'"
-                @click="selectedTag = selectedTag === tag.name ? '' : tag.name"
-              >
-                {{ tag.name }}
-              </Button>
-            </div>
-          </div>
-        </div>
-        <div
-          v-if="pending && !filteredArticles.length"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          style="background-color: transparent !important"
-        >
-          <ArticleSkeletonCard v-for="i in 6" :key="`skel-feed-${i}`" :pending="true" :index="i - 1" />
-        </div>
-        <div
-          v-else-if="filteredArticles.length"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          style="background-color: transparent !important"
-        >
-          <ArticleSkeletonCard
-            v-for="(article, idx) in filteredArticles"
-            :key="article.id"
-            :pending="pending"
-            :article="article"
-            :tags="article.tags"
-            :index="idx"
+      <div
+        class="sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-white/90 dark:bg-gray-950/90 backdrop-blur border-b border-gray-200 dark:border-gray-800 space-y-3"
+      >
+        <div class="relative w-full group">
+          <label for="article-search" class="sr-only">{{ $t('articles.searchPlaceholder') }}</label>
+          <span
+            class="absolute inset-y-0 left-3 flex items-center text-gray-400 group-focus-within:text-blue-500 transition-colors pointer-events-none"
+          >
+            <Icon name="material-symbols:search-rounded" class="w-5 h-5" />
+          </span>
+          <input
+            id="article-search"
+            v-model="searchQuery"
+            type="search"
+            :placeholder="$t('articles.searchPlaceholder')"
+            :aria-label="$t('articles.searchPlaceholder')"
+            class="w-full pl-11 pr-4 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-400/30 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-150"
           />
         </div>
-        <p v-else class="text-center text-lg text-gray">{{ $t('articles.noResults.message') }}</p>
-        <div v-if="hasMore" class="mt-8 text-center" style="background-color: transparent !important">
-          <button
-            :disabled="pending"
-            class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold text-lg hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700 transition duration-300 disabled:opacity-50"
-            @click="loadMore"
+        <div class="flex flex-nowrap overflow-x-auto gap-2 -mx-1 px-1 pb-1">
+          <Button
+            size="sm"
+            :variant="selectedTag === '' ? 'primary' : 'neutral'"
+            class="flex-shrink-0"
+            @click="selectedTag = ''"
           >
-            <span v-if="pending" class="animate-spin inline-block mr-2">↻</span>
-            {{ $t('common.pagination.next') }}
-          </button>
+            {{ $t('articles.title') }}
+          </Button>
+          <Button
+            v-for="tag in tags"
+            :key="tag.id"
+            size="sm"
+            :variant="selectedTag === tag.name ? 'primary' : 'neutral'"
+            class="flex-shrink-0"
+            @click="selectedTag = selectedTag === tag.name ? '' : tag.name"
+          >
+            {{ tag.name }}
+          </Button>
         </div>
+      </div>
+
+      <div v-if="pending && !filteredArticles.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ArticleSkeletonCard v-for="i in 6" :key="`skel-feed-${i}`" :pending="true" :index="i - 1" />
+      </div>
+      <div v-else-if="filteredArticles.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ArticleSkeletonCard
+          v-for="(article, idx) in filteredArticles"
+          :key="article.id"
+          :pending="pending"
+          :article="article"
+          :tags="article.tags"
+          :index="idx"
+        />
+      </div>
+      <p v-else class="text-center text-lg text-gray-500 dark:text-gray-400 py-12">
+        {{ $t('articles.noResults.message') }}
+      </p>
+
+      <div v-if="hasMore" class="text-center pt-4">
+        <Button :disabled="pending" :loading="pending" @click="loadMore">
+          {{ $t('common.pagination.next') }}
+        </Button>
       </div>
     </section>
 
-    <hr class="border-gray-200 dark:border-gray-800 my-8" />
-
-    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div v-if="latestPoll" class="bg-gray-100 dark:bg-gray-900 rounded-xl py-8 px-6">
-        <h2 class="text-3xl font-bold text-center mb-6">{{ $t('articles.poll.hpTitle') }}</h2>
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div v-if="latestPoll" class="space-y-4">
+        <h2 class="text-2xl font-bold tracking-tight border-l-4 border-blue-500 pl-3">
+          {{ $t('articles.poll.hpTitle') }}
+        </h2>
         <ArticlePoll :poll="latestPoll" :articleId="latestPoll.articleId" />
       </div>
-      <aside class="space-y-8" :class="{ 'lg:col-span-2': !latestPoll }">
-        <div>
-          <h3 class="text-xl font-bold mb-4">{{ $t('stats.topArticle.pluralTitle') }}</h3>
-          <template v-if="topArticles.length">
-            <NuxtLink
-              v-for="(top, idx) in topArticles"
-              :key="top.id"
-              :to="localePath({ name: 'clanky-slug', params: { slug: top?.slug } })"
-              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 mb-4 flex items-center gap-4 hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-blue-600/20 transition duration-300 group no-underline relative"
+      <aside class="space-y-4" :class="{ 'lg:col-span-2': !latestPoll }">
+        <h3 class="text-2xl font-bold tracking-tight border-l-4 border-blue-500 pl-3">
+          {{ $t('stats.topArticle.pluralTitle') }}
+        </h3>
+        <template v-if="topArticles.length">
+          <NuxtLink
+            v-for="(top, idx) in topArticles"
+            :key="top.id"
+            :to="localePath({ name: 'clanky-slug', params: { slug: top?.slug } })"
+            class="flex items-center gap-4 p-3 -mx-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 transition no-underline group"
+          >
+            <span
+              class="flex-shrink-0 w-8 text-2xl font-black text-blue-500 dark:text-blue-400 text-center tabular-nums"
             >
-              <div
-                class="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/20 dark:to-blue-600/5 opacity-0 group-hover:opacity-50 transition duration-300 z-10"
-              />
-              <NuxtImg
-                v-if="top.imageUrl"
-                :src="top.imageUrl"
-                class="w-16 h-16 object-cover rounded-lg group-hover:shadow-md transition duration-500 relative z-20"
-                :alt="$t('articles.articleCard.imageAlt')"
-              />
-              <div v-else class="w-16 h-16 bg-gray-100 dark:bg-gray-700 flex items-center justify-center rounded-lg">
-                <Icon name="mdi:image-off" class="w-8 h-8 text-gray-400" />
+              {{ idx + 1 }}
+            </span>
+            <NuxtImg
+              v-if="top.imageUrl"
+              :src="top.imageUrl"
+              class="w-16 h-16 object-cover rounded-lg"
+              :alt="$t('articles.articleCard.imageAlt')"
+            />
+            <div
+              v-else
+              class="flex-shrink-0 w-16 h-16 bg-gray-100 dark:bg-gray-800 flex items-center justify-center rounded-lg"
+            >
+              <Icon name="mdi:image-off" class="w-8 h-8 text-gray-400" />
+            </div>
+            <div class="min-w-0">
+              <h4
+                class="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition line-clamp-2"
+              >
+                {{ top.title }}
+              </h4>
+              <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ formatDate(top.createdAt ?? undefined) }}
               </div>
-              <div class="relative z-20">
-                <h4
-                  class="text-base font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition duration-200"
-                >
-                  #{{ idx + 1 }} {{ top.title }}
-                </h4>
-                <div class="mt-1 text-sm">
-                  {{ formatDate(top.createdAt ?? undefined) }}
-                </div>
-              </div>
-            </NuxtLink>
-          </template>
-          <p v-else class="text-gray">{{ $t('articles.noResults.message') }}</p>
-        </div>
+            </div>
+          </NuxtLink>
+        </template>
+        <p v-else class="text-gray-500 dark:text-gray-400">{{ $t('articles.noResults.message') }}</p>
       </aside>
     </section>
 
-    <hr class="border-gray-200 dark:border-gray-800 my-8" />
-
-    <section
-      v-if="!auth"
-      class="text-center bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-xl py-12 shadow-lg"
-    >
-      <h3 class="text-2xl font-bold">{{ $t('common.auth.loginPrompt') }}</h3>
-      <p class="mt-3 max-w-xl mx-auto text-lg">{{ $t('common.auth.loginToComment') }}</p>
-      <div class="mt-6 flex justify-center"><AuthForm /></div>
+    <section v-if="!auth" class="border-t border-gray-200 dark:border-gray-800 pt-12 pb-4 text-center space-y-4">
+      <h3 class="text-3xl font-bold tracking-tight">{{ $t('common.auth.loginPrompt') }}</h3>
+      <p class="max-w-xl mx-auto text-lg text-gray-600 dark:text-gray-300">
+        {{ $t('common.auth.loginToComment') }}
+      </p>
+      <div class="flex justify-center pt-2"><AuthForm /></div>
     </section>
   </main>
 </template>
@@ -231,10 +197,9 @@ import { formatDate } from '~~/shared/utils'
 
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
-const { locale } = useI18n()
 const clientSite = await useClientSite()
 
-const { data: feat, pending: featPending } = await useLazyFetch(`/api/articles/featured/${clientSite?.name}`, {server: false})
+const { data: feat, pending: featPending } = await useLazyFetch(`/api/articles/featured/${clientSite?.name}`)
 const page = shallowRef<number>(1)
 const limit = shallowRef<number>(15)
 const selectedTag = shallowRef<string>('')
