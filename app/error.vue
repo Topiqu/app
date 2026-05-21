@@ -2,24 +2,29 @@
   <NuxtLayout name="default">
     <Status
       type="error"
-      :title="errorTitle"
-      :message="errorMessage"
+      :title="title"
+      :message="message"
       :actionTo="'/'"
-      :actionText="$t('common.actions.home')"
-      :errorCode="statusCode"
-      :stackTrace="isDev ? stackTrace : undefined"
+      :actionText="t('common.actions.home')"
+      :errorCode="status"
+      :stackTrace="stack"
       @action="handleClearError"
     />
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
-const error = useError()
-const isDev = process.env.NODE_ENV === 'development'
+import type { NuxtError } from '#app'
 
-const statusCode = computed(() => error.value?.statusCode ?? 500)
-const errorMessage = computed(() => error.value?.message || '')
-const stackTrace = computed(() => error.value?.stack || '')
+const props = defineProps({
+  error: Object as () => NuxtError,
+})
+
+const { t } = useI18n()
+
+const status = computed(() => props.error?.statusCode ?? props.error?.status ?? 500)
+const message = computed(() => props.error?.message ?? '')
+const stack = computed(() => (import.meta.dev ? props.error?.stack : undefined))
 
 const errorTitleMap: Record<number, string> = {
   400: 'common.errTypes.badRequest',
@@ -35,12 +40,19 @@ const errorTitleMap: Record<number, string> = {
   504: 'common.errTypes.gatewayTimeout',
 }
 
-const errorTitle = computed(() => {
-  const key = errorTitleMap[statusCode.value] || 'common.errTypes.internalError'
-  return $t(key)
+const title = computed(() =>
+  t(errorTitleMap[status.value] ?? 'common.errTypes.internalError'),
+)
+
+if (import.meta.server) {
+  const event = useRequestEvent()
+  if (event) setResponseStatus(event, status.value)
+}
+
+useSeoMeta({
+  title: () => `${status.value} — ${title.value}`,
+  robots: 'noindex, nofollow',
 })
 
-const handleClearError = () => {
-  clearError({ redirect: '/' })
-}
+const handleClearError = () => clearError({ redirect: '/' })
 </script>
