@@ -17,8 +17,9 @@ export default defineEventHandler(async (event) => {
   await db.clientSite.update({
     where: { id: user.clientSiteId },
     data: {
-      firstPaidAt: new Date(), // aby se modál dál nezobrazoval
-      tokenLimit: 100, // drastické omezení pro free verzi
+      plan: 'BASIC',
+      firstPaidAt: new Date(),
+      tokenLimit: 100,
     },
   })
 

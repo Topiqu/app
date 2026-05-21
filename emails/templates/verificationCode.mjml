@@ -2,110 +2,94 @@
   <mj-head>
     <mj-preview>{t:verificationCode.subject}</mj-preview>
     <mj-font
-      name="Montserrat"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&amp;display=swap"
+      name="Inter"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&amp;display=swap"
     />
     <mj-attributes>
-      <mj-text font-family="Montserrat, Helvetica, Arial, sans-serif" color="#333333" line-height="24px" />
-      <mj-button
-        font-family="Montserrat, Helvetica, Arial, sans-serif"
-        background-color="#2563eb"
-        color="#ffffff"
-        font-size="16px"
-        font-weight="600"
-        border-radius="8px"
-        padding="18px 30px"
-      />
-      <mj-section padding="20px" background-color="#ffffff" border-radius="12px" border="1px solid #e5e7eb" />
+      <mj-all font-family="Inter, Helvetica, Arial, sans-serif" />
+      <mj-text color="#18181B" line-height="1.55" font-size="15px" />
+      <mj-section padding="0" />
       <mj-column width="100%" />
     </mj-attributes>
     <mj-style inline="inline">
-      .header-text {
-        font-size: 18px;
+      .panel {
+        border-radius: 24px;
+        box-shadow: 0 10px 30px -12px rgba(17, 17, 17, 0.18);
+      }
+      .code-pill {
+        font-size: 38px;
+        font-weight: 900;
+        letter-spacing: 12px;
+        color: #18181B;
+        background: linear-gradient(135deg, #EDE9FE 0%, #E0E7FF 100%);
+        border: 2px solid #C4B5FD;
+        border-radius: 18px;
+        padding: 22px 16px;
+        text-align: center;
+        font-family: 'SF Mono', Menlo, Consolas, monospace;
+      }
+      .greeting {
+        font-size: 20px;
+        font-weight: 800;
+        color: #18181B;
+        letter-spacing: -0.01em;
+      }
+      .lead {
+        font-size: 15px;
+        color: #3F3F46;
+      }
+      .meta {
+        font-size: 13px;
+        color: #71717A;
+      }
+      .footer {
+        font-size: 12px;
+        color: #A1A1AA;
+      }
+      .footer a {
+        color: #7C3AED;
+        text-decoration: none;
         font-weight: 600;
       }
-      .code-text {
-        font-size: 36px;
-        font-weight: 700;
-        font-family: Courier, monospace;
-        color: #2563eb;
-        text-align: center;
-        background-color: #f9fafb;
-        border-radius: 8px;
-        padding: 24px;
-        letter-spacing: 2px;
-      }
-      .info-text {
-        font-size: 14px;
-        color: #666666;
-      }
-      .code-column {
-        margin: 0 auto;
-      }
-      @media (max-width: 480px) {
-        .code-text {
-          font-size: 28px !important;
-          padding: 20px !important;
-        }
-        .info-text {
-          font-size: 12px !important;
-        }
-      }
       @media (prefers-color-scheme: dark) {
-        .header-text,
-        .info-text {
-          color: #dddddd !important;
-        }
-        .code-text {
-          color: #60a5fa !important;
-          background-color: #2d2d2d !important;
-        }
-        body {
-          background-color: #111111 !important;
-        }
-        .section-bg {
-          background-color: #1f1f1f !important;
+        body, .body-bg { background-color: #0C0C0C !important; }
+        .panel-bg { background-color: #18181B !important; }
+        .greeting { color: #FAFAFA !important; }
+        .lead { color: #D4D4D8 !important; }
+        .meta { color: #A1A1AA !important; }
+        .footer { color: #71717A !important; }
+        .code-pill {
+          color: #FAFAFA !important;
+          background: linear-gradient(135deg, rgba(124, 58, 237, 0.18) 0%, rgba(79, 70, 229, 0.18) 100%) !important;
+          border-color: rgba(167, 139, 250, 0.45) !important;
         }
       }
     </mj-style>
   </mj-head>
-  <mj-body background-color="#f4f4f4" width="700px">
-    <mj-wrapper padding="20px 0">
-      <mj-section padding="0">
+  <mj-body background-color="#F4F4F5" css-class="body-bg" width="640px">
+    <mj-wrapper padding="32px 16px">
+      <mj-section padding="0 0 20px">
         <mj-column>
-          <mj-image src="{logoUrl}" alt="Logo aplikace" width="150px" padding="10px" />
+          <mj-image src="{logoUrl}" alt="topiqu" width="120px" align="center" padding="0" />
         </mj-column>
       </mj-section>
-      <mj-section background-color="#2563eb">
+
+      <mj-section css-class="panel panel-bg" background-color="#FFFFFF" padding="40px 32px">
         <mj-column>
-          <mj-text align="center" color="#ffffff" font-size="20px" font-weight="600">{t:verificationCode.subject}</mj-text>
+          <mj-text css-class="greeting" padding="0 0 8px">{t:verificationCode.greeting}</mj-text>
+          <mj-text css-class="lead" padding="0 0 28px">{t:verificationCode.intro}</mj-text>
+
+          <mj-text css-class="code-pill" padding="0 0 24px">{verificationCode}</mj-text>
+
+          <mj-text css-class="meta" padding="0">{t:verificationCode.expiration}</mj-text>
         </mj-column>
       </mj-section>
-      <mj-section>
+
+      <mj-section padding="24px 0 0">
         <mj-column>
-          <mj-divider border-color="#e5e7eb" border-width="1px" />
-        </mj-column>
-      </mj-section>
-      <mj-section css-class="section-bg">
-        <mj-column>
-          <mj-text css-class="header-text">{t:verificationCode.greeting}</mj-text>
-          <mj-text css-class="info-text">{t:verificationCode.intro}</mj-text>
-        </mj-column>
-      </mj-section>
-      <mj-section background-color="#ffffff" padding="30px" border-radius="12px">
-        <mj-column>
-          <mj-text css-class="code-text" align="center">{verificationCode}</mj-text>
-        </mj-column>
-      </mj-section>
-      <mj-section css-class="section-bg" padding="20px 0 30px">
-        <mj-column>
-          <mj-text css-class="info-text">{t:verificationCode.expiration}</mj-text>
-        </mj-column>
-      </mj-section>
-      <mj-section background-color="#f4f4f4" padding="10px">
-        <mj-column>
-          <mj-text font-size="12px" color="#666666" align="center">
-            {t:verificationCode.unsubscribe.text} <a href="{unsubscribeUrl}">{t:verificationCode.unsubscribe.link}</a>
+          <mj-text css-class="footer" align="center" padding="0">
+            {t:verificationCode.unsubscribe.text}
+            <a href="{unsubscribeUrl}">{t:verificationCode.unsubscribe.link}</a>
           </mj-text>
         </mj-column>
       </mj-section>

@@ -6,6 +6,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
   }
 
+  await ensureMinAccountAge(event, user.id)
+
   const { prompt } = await readValidatedBody(
     event,
     z.object({

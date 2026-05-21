@@ -21,6 +21,7 @@ const schema = z.object({
   email: z.email(),
   password: z.string().min(8).max(124),
   verifiedToken: z.string().min(1),
+  selectedPlan: z.enum(['PRO', 'PREMIUM']).nullable().optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -107,55 +108,66 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const stripeSecret = process.env.STRIPE_SK
-  const premiumPriceId = process.env.STRIPE_PRICE_PREMIUM
-
   const reqUrl = getRequestURL(event)
   const originUrl = process.env.APP_URL || `${reqUrl.protocol}//${fullSubdomain}`
+  const dashboardUrl = `${originUrl}/${body.language}/autorizace?created=true&token=${loginToken}`
 
-  if (stripeSecret && premiumPriceId) {
-    try {
-      const stripe = new Stripe(stripeSecret)
-
-      const customer = await stripe.customers.create({
-        email: body.email,
-        name: body.username,
-        metadata: { clientSiteId },
-      })
-
-      await prisma.clientSite.update({
-        where: { id: clientSiteId },
-        data: { stripeCustomerId: customer.id },
-      })
-
-      const session = await stripe.checkout.sessions.create({
-        customer: customer.id,
-        client_reference_id: clientSiteId,
-        payment_method_types: ['card'],
-        mode: 'subscription',
-        line_items: [{ price: premiumPriceId, quantity: 1 }],
-        subscription_data: { trial_period_days: 14 },
-        success_url: `${originUrl}/${body.language}/autorizace?created=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${originUrl}/${body.language}/autorizace?created=true`,
-      })
-
-      await logAction({
-        action: 'STRIPE_CHECKOUT_CREATED',
-        clientSiteId,
-        metadata: {
-          sessionId: session.id,
-          customerId: customer.id,
-          mode: 'subscription',
-        },
-        ip: getIp(event) || 'unknown',
-      })
-
-      return { url: session.url }
-    } catch (error) {
-      console.error('Stripe error:', error)
-      return { url: `${originUrl}/${body.language}/autorizace?created=true&stripe_error=true` }
-    }
+  if (!body.selectedPlan) {
+    return { url: dashboardUrl }
   }
 
-  return { url: `${originUrl}/${body.language}/autorizace?created=true` }
+  const stripeSecret = process.env.STRIPE_SK
+  const priceId =
+    body.selectedPlan === 'PRO' ? process.env.STRIPE_PRICE_PRO : process.env.STRIPE_PRICE_PREMIUM
+
+  if (!stripeSecret || !priceId) {
+    return { url: dashboardUrl }
+  }
+
+  try {
+    const stripe = new Stripe(stripeSecret)
+
+    const customer = await stripe.customers.create({
+      email: body.email,
+      name: body.username,
+      metadata: { clientSiteId },
+    })
+
+    await prisma.clientSite.update({
+      where: { id: clientSiteId },
+      data: { stripeCustomerId: customer.id },
+    })
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customer.id,
+      client_reference_id: clientSiteId,
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      line_items: [{ price: priceId, quantity: 1 }],
+      subscription_data: {
+        trial_period_days: 14,
+        metadata: { plan: body.selectedPlan, clientSiteId },
+      },
+      metadata: { plan: body.selectedPlan, clientSiteId },
+      success_url: `${originUrl}/${body.language}/autorizace?created=true&token=${loginToken}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: dashboardUrl,
+    })
+
+    await logAction({
+      action: 'STRIPE_CHECKOUT_CREATED',
+      clientSiteId,
+      metadata: {
+        sessionId: session.id,
+        customerId: customer.id,
+        mode: 'subscription',
+        plan: body.selectedPlan,
+      },
+      ip: getIp(event) || 'unknown',
+    })
+
+    return { url: session.url }
+  } catch (error) {
+    console.error('Stripe error:', error)
+    return { url: `${dashboardUrl}&stripe_error=true` }
+  }
 })
