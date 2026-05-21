@@ -94,21 +94,30 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
       value = value?.[segment]
       if (value === undefined) break
     }
-    const str = typeof value === 'string' ? value : ''
+    let str = typeof value === 'string' ? value : ''
     if (!str) return key
-    return params ? str.replace(/{(\w+)}/g, (_, k) => params[k] ?? `{${k}}`) : str
+    if (params) {
+      str = str.replace(/{(\w+)}/g, (_, k) => params[k] ?? `{${k}}`)
+    }
+    return str.replace(/\{t:([^}]+)\}/g, (_, k: string) => translate(k, params))
+  }
+
+  const cdnUrl = useRuntimeConfig().public.cdnUrl
+  const enrichedData: Record<string, string> = {
+    logoUrl: `${cdnUrl}/app-logo.png`,
+    ...data,
   }
 
   let parsedMjml = mjmlTemplate
 
-  for (const [k, v] of Object.entries(data)) {
+  for (const [k, v] of Object.entries(enrichedData)) {
     parsedMjml = parsedMjml.replace(new RegExp(`{\\s*${k}\\s*}`, 'g'), v)
   }
-  parsedMjml = parsedMjml.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, data))
+  parsedMjml = parsedMjml.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, enrichedData))
 
   let finalHtml = ''
   try {
-    const { html: rawHtml, errors } = mjml2html(parsedMjml, {
+    const { html: rawHtml, errors } = await mjml2html(parsedMjml, {
       validationLevel: 'soft',
     })
 

@@ -18,7 +18,11 @@ export default defineEventHandler(async (e) => {
   await sendEmail({
     to: user.email,
     template: 'verificationCode',
-    data: { verificationCode: code },
+    data: {
+      verificationCode: code,
+      userName: user.name ?? '',
+      actionType: '{t:verificationCode.actions.emailVerification}',
+    },
   })
 
   return { success: true, message: t('common.auth.verificationCodeSent')! }

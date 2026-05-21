@@ -17,28 +17,27 @@ export default defineEventHandler(async (event) => {
 
   if (stripeEvent.type === 'checkout.session.completed') {
     const session = stripeEvent.data.object as Stripe.Checkout.Session
-    const clientSiteId = session.client_reference_id
-
+    const clientSiteId = session.client_reference_id ?? session.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
 
     if (session.mode === 'subscription') {
-      const plan = session.metadata?.plan
-      if (!isSubscribablePlan(plan)) return { received: true }
-
-      const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
+      const subscriptionId =
+        typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
       const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
       const subscription = subscriptionId ? await stripe.subscriptions.retrieve(subscriptionId) : null
       const priceId = subscription?.items.data[0]?.price.id ?? null
 
+      const isTrialing = subscription?.status === 'trialing'
+      const plan = session.metadata?.plan
+      const promote = !isTrialing && isSubscribablePlan(plan)
+
       await prisma.clientSite.update({
         where: { id: clientSiteId },
         data: {
-          plan: plan as ClientPlan,
+          ...(promote ? { plan: plan as ClientPlan, firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
           stripeCustomerId: customerId ?? undefined,
           stripeSubscriptionId: subscriptionId ?? undefined,
           stripePriceId: priceId ?? undefined,
-          firstPaidAt: { set: new Date() },
-          lastPaidAt: new Date(),
         },
       })
       return { received: true }
@@ -51,6 +50,29 @@ export default defineEventHandler(async (event) => {
         data: {
           tokenRemaining: { increment: tokens },
           totalUsage: { increment: tokens },
+        },
+      })
+    }
+    return { received: true }
+  }
+
+  if (stripeEvent.type === 'customer.subscription.updated') {
+    const subscription = stripeEvent.data.object as Stripe.Subscription
+    const previous = stripeEvent.data.previous_attributes as Partial<Stripe.Subscription> | undefined
+    const clientSiteId = subscription.metadata?.clientSiteId
+    if (!clientSiteId) return { received: true }
+
+    const trialEnded = previous?.status === 'trialing' && subscription.status === 'active'
+    const plan = subscription.metadata?.plan
+
+    if (trialEnded && isSubscribablePlan(plan)) {
+      await prisma.clientSite.update({
+        where: { id: clientSiteId },
+        data: {
+          plan: plan as ClientPlan,
+          firstPaidAt: { set: new Date() },
+          lastPaidAt: new Date(),
+          stripePriceId: subscription.items.data[0]?.price.id ?? undefined,
         },
       })
     }
