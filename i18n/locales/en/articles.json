@@ -46,6 +46,16 @@
     "title": "Articles",
     "addArticle": "Add Article",
     "updateArticle": "Update Article",
+    "saveAsDraft": "Save as draft",
+    "createAndPublish": "Create & publish",
+    "publishNow": "Publish",
+    "saveChanges": "Save changes",
+    "releaseQuick": {
+      "now": "Now",
+      "inHour": "In 1 hour",
+      "tomorrow": "Tomorrow morning",
+      "clear": "Clear"
+    },
     "authorsArticles": "Articles by author",
     "explore": "Explore articles",
     "votes": "Votes",

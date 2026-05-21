@@ -240,7 +240,7 @@ const showDeleteModal = shallowRef(false)
 const showBanModal = shallowRef(false)
 const deleteReason = shallowRef('')
 const banReason = shallowRef('')
-const banExpiresAt = shallowRef<Date | undefined>(undefined)
+const banExpiresAt = shallowRef<string | null>(null)
 
 const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}/author`, {
   key: `author-${props.comment.article.userId}`,
@@ -304,12 +304,12 @@ const banUser = async () => {
   try {
     await $fetch(`/api/bans/${props.comment.id}`, {
       method: 'POST',
-      body: { reason: banReason.value, expiresAt: banExpiresAt.value?.toISOString() ?? null },
+      body: { reason: banReason.value, expiresAt: banExpiresAt.value ? new Date(banExpiresAt.value).toISOString() : null },
     })
     toast.success({ message: $t('articles.comments.banSuccess') })
     showBanModal.value = false
     banReason.value = ''
-    banExpiresAt.value = undefined
+    banExpiresAt.value = null
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('articles.comments.banFailed') })
   }

@@ -248,7 +248,13 @@
       "saveSuccess": "Úspěšně uloženo",
       "saveFailed": "Uložení selhalo",
       "invalidUrl": "Některé adresy URL jsou neplatné (musí začínat https://)",
-      "noClientId": "Chybí ID klienta"
+      "noClientId": "Chybí ID klienta",
+      "savedAgo": "Uloženo",
+      "savingNow": "Ukládá se…",
+      "unsaved": "Neuloženo",
+      "discardChangesTitle": "Zahodit změny?",
+      "discardChangesText": "Všechny neuložené změny budou ztraceny.",
+      "discardConfirm": "Zahodit"
     },
     "sortOptions": {
       "newest": "Nejnovější",

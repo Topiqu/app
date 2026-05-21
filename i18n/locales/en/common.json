@@ -247,7 +247,13 @@
       "saveSuccess": "Successfully saved",
       "saveFailed": "Failed to save",
       "invalidUrl": "Some URLs are invalid (must start with https://)",
-      "noClientId": "Missing client ID"
+      "noClientId": "Missing client ID",
+      "savedAgo": "Saved",
+      "savingNow": "Saving…",
+      "unsaved": "Unsaved",
+      "discardChangesTitle": "Discard changes?",
+      "discardChangesText": "All unsaved changes will be lost.",
+      "discardConfirm": "Discard"
     },
     "sortOptions": {
       "newest": "Newest",

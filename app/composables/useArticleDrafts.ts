@@ -16,6 +16,8 @@ export const useArticleDrafts = async (
 
   const successMessage = shallowRef('')
   const draftsOpen = shallowRef(false)
+  const lastSavedAt = shallowRef<Date | null>(null)
+  const saving = shallowRef(false)
 
   const {
     data: drafts,
@@ -51,6 +53,7 @@ export const useArticleDrafts = async (
       return
     }
 
+    saving.value = true
     try {
       await $fetch('/api/articles/draft', {
         method: 'POST',
@@ -62,11 +65,14 @@ export const useArticleDrafts = async (
         },
       })
 
+      lastSavedAt.value = new Date()
       successMessage.value = t('common.messages.draftSaved')
       await refresh()
       setTimeout(() => (successMessage.value = ''), 8000)
     } catch {
       toast.error({ message: t('common.messages.draftSaveFailed') })
+    } finally {
+      saving.value = false
     }
   }, 8000)
 
@@ -103,6 +109,8 @@ export const useArticleDrafts = async (
     loading,
     draftsOpen,
     successMessage,
+    lastSavedAt,
+    saving,
     loadDraft,
     refreshDrafts: refresh,
   }

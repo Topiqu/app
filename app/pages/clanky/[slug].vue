@@ -244,7 +244,7 @@ const ogImageOptions = computed(() => {
   }
 })
 
-defineOgImage({ component: 'TopiquArticle', ...ogImageOptions.value })
+defineOgImage('TopiquArticle', ogImageOptions.value)
 
 const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
 

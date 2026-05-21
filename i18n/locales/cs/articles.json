@@ -46,6 +46,16 @@
     "title": "Články",
     "addArticle": "Přidat článek",
     "updateArticle": "Upravit článek",
+    "saveAsDraft": "Uložit jako koncept",
+    "createAndPublish": "Vytvořit a publikovat",
+    "publishNow": "Publikovat",
+    "saveChanges": "Uložit změny",
+    "releaseQuick": {
+      "now": "Hned",
+      "inHour": "Za hodinu",
+      "tomorrow": "Zítra ráno",
+      "clear": "Vymazat"
+    },
     "authorsArticles": "Články od autora",
     "explore": "Prozkoumat články",
     "votes": "Hlasů",
