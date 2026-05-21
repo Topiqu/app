@@ -21,7 +21,7 @@
       />
       <circle r="6" cx="20" cy="20" fill="white" />
     </svg>
-    <span>
+    <span class="hidden sm:block whitespace-nowrap">
       {{ chars }} / {{ limit }}<br />
       {{ words }} {{ $t('articles.editor.toolbar.words') }}
     </span>

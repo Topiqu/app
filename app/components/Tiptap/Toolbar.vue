@@ -1,8 +1,12 @@
 <template>
   <div
-    class="sticky top-0 z-10 flex flex-col gap-1 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-gray-200 dark:border-neutral-800 py-1.5"
+    class="sticky top-0 z-10 flex flex-col gap-1 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-gray-200 dark:border-neutral-800 py-1.5 px-1 sm:px-2"
   >
-    <div role="toolbar" :aria-label="$t('articles.editor.title')" class="flex flex-wrap items-center gap-1">
+    <div
+      role="toolbar"
+      :aria-label="$t('articles.editor.title')"
+      class="flex sm:flex-wrap items-center gap-0.5 sm:gap-1 overflow-x-auto sm:overflow-visible touch-pan-x scroll-smooth [&::-webkit-scrollbar]:hidden [scrollbar-width:none] [&>*]:shrink-0"
+    >
       <Button
         icon="mdi-undo"
         :title="sk($t('articles.editor.toolbar.undo'), 'Mod+Z')"
@@ -18,7 +22,7 @@
         @click="run((c) => c.redo())"
       />
 
-      <span class="w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
+      <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
 
       <Button
         icon="mdi-format-paragraph"
@@ -37,7 +41,7 @@
         @click="run((c) => c.toggleHeading({ level: n as Level }))"
       />
 
-      <span class="w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
+      <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
 
       <Button
         icon="mdi-format-list-bulleted"
@@ -54,7 +58,7 @@
         @click="run((c) => c.toggleOrderedList())"
       />
 
-      <span class="w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
+      <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
 
       <FileInput :uploadImage="onUploadFile" @close="emit('focusEditor')" />
       <Button
@@ -92,7 +96,11 @@
         @click="showMore = !showMore"
       />
 
-      <TiptapCharacterCount :editor :limit class="ml-auto" />
+      <div
+        class="ml-auto pl-2 sm:pl-0 max-sm:sticky max-sm:right-0 max-sm:bg-gradient-to-l max-sm:from-white max-sm:via-white max-sm:to-transparent dark:max-sm:from-neutral-900 dark:max-sm:via-neutral-900"
+      >
+        <TiptapCharacterCount :editor :limit />
+      </div>
     </div>
 
     <Transition
@@ -105,7 +113,7 @@
     >
       <div
         v-if="showMore"
-        class="flex flex-wrap items-center gap-1 p-2 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700"
+        class="flex sm:flex-wrap items-center gap-0.5 sm:gap-1 p-2 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700 overflow-x-auto sm:overflow-visible touch-pan-x [&::-webkit-scrollbar]:hidden [scrollbar-width:none] [&>*]:shrink-0"
       >
         <Button
           v-for="n in [4, 5, 6]"
@@ -117,7 +125,7 @@
           @click="run((c) => c.toggleHeading({ level: n as Level }))"
         />
 
-        <span class="w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
+        <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
 
         <Button
           icon="mdi-format-quote-open"
@@ -134,7 +142,7 @@
           @click="run((c) => c.unsetBlockquote())"
         />
 
-        <span class="w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
+        <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
 
         <Button
           v-for="a in alignments"
@@ -158,7 +166,7 @@
           @click="run((c) => c.outdent())"
         />
 
-        <span class="w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
+        <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
 
         <Button
           icon="mdi-minus"
@@ -173,9 +181,9 @@
           @click="run((c) => c.clearNodes())"
         />
 
-        <span class="w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
+        <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
 
-        <div class="min-w-40">
+        <div class="w-32 sm:w-40">
           <FormSelect v-model="fontFamily" :items="fontItems" :showValue="false" />
         </div>
 
