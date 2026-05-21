@@ -1,11 +1,11 @@
 <template>
   <div
-    class="sticky top-0 z-10 flex flex-col gap-1 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-gray-200 dark:border-neutral-800 py-1.5 px-1 sm:px-2"
+    class="sticky top-0 z-10 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-gray-200 dark:border-neutral-800 py-1.5 px-1 sm:px-2"
   >
     <div
       role="toolbar"
       :aria-label="$t('articles.editor.title')"
-      class="flex sm:flex-wrap items-center gap-0.5 sm:gap-1 overflow-x-auto sm:overflow-visible touch-pan-x scroll-smooth [&::-webkit-scrollbar]:hidden [scrollbar-width:none] [&>*]:shrink-0"
+      class="flex flex-wrap items-center gap-1 sm:gap-1.5"
     >
       <Button
         icon="mdi-undo"
@@ -22,26 +22,9 @@
         @click="run((c) => c.redo())"
       />
 
-      <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
-
-      <Button
-        icon="mdi-format-paragraph"
-        :title="sk($t('articles.editor.toolbar.paragraph'), 'Mod+Alt+0')"
-        :aria="$t('articles.editor.toolbar.paragraph')"
-        :active="editor.isActive('paragraph')"
-        @click="run((c) => c.setParagraph())"
-      />
-      <Button
-        v-for="n in 3"
-        :key="`h${n}`"
-        :icon="`mdi-format-header-${n}`"
-        :title="sk($t('articles.editor.toolbar.heading', { level: n }), `Mod+Alt+${n}`)"
-        :aria="$t('articles.editor.toolbar.heading', { level: n })"
-        :active="editor.isActive('heading', { level: n as Level })"
-        @click="run((c) => c.toggleHeading({ level: n as Level }))"
-      />
-
-      <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
+      <div class="w-40">
+        <FormSelect v-model="headingValue" :items="headingItems" :showValue="false" />
+      </div>
 
       <Button
         icon="mdi-format-list-bulleted"
@@ -57,8 +40,13 @@
         :active="editor.isActive('orderedList')"
         @click="run((c) => c.toggleOrderedList())"
       />
-
-      <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
+      <Button
+        icon="mdi-format-quote-open"
+        :title="$t('articles.editor.toolbar.blockquote')"
+        :aria="$t('articles.editor.toolbar.blockquote')"
+        :active="editor.isActive('blockquote')"
+        @click="toggleBlockquote"
+      />
 
       <FileInput :uploadImage="onUploadFile" @close="emit('focusEditor')" />
       <Button
@@ -88,108 +76,44 @@
       />
 
       <Button
-        icon="mdi:dots-horizontal"
-        :title="$t('articles.editor.toolbar.more')"
-        :aria="$t('articles.editor.toolbar.more')"
-        :active="showMore"
-        :aria-expanded="showMore"
-        @click="showMore = !showMore"
+        v-for="a in alignments"
+        :key="a"
+        :icon="`mdi-format-align-${a}`"
+        :title="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
+        :aria="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
+        :active="editor.isActive({ textAlign: a })"
+        @click="run((c) => c.setTextAlign(a))"
+      />
+      <Button
+        icon="mdi-format-indent-increase"
+        :title="$t('articles.editor.toolbar.indent')"
+        :aria="$t('articles.editor.toolbar.indent')"
+        @click="run((c) => c.indent())"
+      />
+      <Button
+        icon="mdi-format-indent-decrease"
+        :title="$t('articles.editor.toolbar.outdent')"
+        :aria="$t('articles.editor.toolbar.outdent')"
+        @click="run((c) => c.outdent())"
       />
 
-      <div
-        class="ml-auto pl-2 sm:pl-0 max-sm:sticky max-sm:right-0 max-sm:bg-gradient-to-l max-sm:from-white max-sm:via-white max-sm:to-transparent dark:max-sm:from-neutral-900 dark:max-sm:via-neutral-900"
-      >
-        <TiptapCharacterCount :editor :limit />
-      </div>
+      <Button
+        icon="mdi-minus"
+        :title="$t('articles.editor.toolbar.horizontalRule')"
+        :aria="$t('articles.editor.toolbar.horizontalRule')"
+        @click="run((c) => c.setHorizontalRule())"
+      />
+      <Button
+        icon="mdi-format-clear"
+        :title="$t('articles.editor.toolbar.clearFormatting')"
+        :aria="$t('articles.editor.toolbar.clearFormatting')"
+        @click="run((c) => c.clearNodes())"
+      />
+
+      <TiptapColorPicker v-model="textColor" />
+
+      <TiptapCharacterCount :editor :limit class="ml-auto" />
     </div>
-
-    <Transition
-      enterActiveClass="transition-all duration-200 ease-out overflow-hidden"
-      leaveActiveClass="transition-all duration-150 ease-in overflow-hidden"
-      enterFromClass="max-h-0 opacity-0"
-      enterToClass="max-h-40 opacity-100"
-      leaveFromClass="max-h-40 opacity-100"
-      leaveToClass="max-h-0 opacity-0"
-    >
-      <div
-        v-if="showMore"
-        class="flex sm:flex-wrap items-center gap-0.5 sm:gap-1 p-2 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700 overflow-x-auto sm:overflow-visible touch-pan-x [&::-webkit-scrollbar]:hidden [scrollbar-width:none] [&>*]:shrink-0"
-      >
-        <Button
-          v-for="n in [4, 5, 6]"
-          :key="`h${n}`"
-          :icon="`mdi-format-header-${n}`"
-          :title="sk($t('articles.editor.toolbar.heading', { level: n }), `Mod+Alt+${n}`)"
-          :aria="$t('articles.editor.toolbar.heading', { level: n })"
-          :active="editor.isActive('heading', { level: n as Level })"
-          @click="run((c) => c.toggleHeading({ level: n as Level }))"
-        />
-
-        <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
-
-        <Button
-          icon="mdi-format-quote-open"
-          :title="$t('articles.editor.toolbar.blockquote')"
-          :aria="$t('articles.editor.toolbar.blockquote')"
-          :disabled="!editor.can().setBlockquote()"
-          @click="run((c) => c.setParagraph().setBlockquote())"
-        />
-        <Button
-          icon="mdi-format-quote-close"
-          :title="$t('articles.editor.toolbar.removeBlockquote')"
-          :aria="$t('articles.editor.toolbar.removeBlockquote')"
-          :disabled="!editor.can().unsetBlockquote()"
-          @click="run((c) => c.unsetBlockquote())"
-        />
-
-        <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
-
-        <Button
-          v-for="a in alignments"
-          :key="a"
-          :icon="`mdi-format-align-${a}`"
-          :title="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
-          :aria="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
-          :active="editor.isActive({ textAlign: a })"
-          @click="run((c) => c.setTextAlign(a))"
-        />
-        <Button
-          icon="mdi-format-indent-increase"
-          :title="$t('articles.editor.toolbar.indent')"
-          :aria="$t('articles.editor.toolbar.indent')"
-          @click="run((c) => c.indent())"
-        />
-        <Button
-          icon="mdi-format-indent-decrease"
-          :title="$t('articles.editor.toolbar.outdent')"
-          :aria="$t('articles.editor.toolbar.outdent')"
-          @click="run((c) => c.outdent())"
-        />
-
-        <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
-
-        <Button
-          icon="mdi-minus"
-          :title="$t('articles.editor.toolbar.horizontalRule')"
-          :aria="$t('articles.editor.toolbar.horizontalRule')"
-          @click="run((c) => c.setHorizontalRule())"
-        />
-        <Button
-          icon="mdi-format-clear"
-          :title="$t('articles.editor.toolbar.clearFormatting')"
-          :aria="$t('articles.editor.toolbar.clearFormatting')"
-          @click="run((c) => c.clearNodes())"
-        />
-
-        <span class="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
-
-        <div class="w-32 sm:w-40">
-          <FormSelect v-model="fontFamily" :items="fontItems" :showValue="false" />
-        </div>
-
-        <TiptapColorPicker v-model="textColor" />
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -203,12 +127,12 @@ const { editor, limit } = defineProps<{ editor: Editor; limit: number }>()
 
 const emit = defineEmits<{
   (e: 'openLink', payload: { type: 'link' | 'image' | 'youtube'; url?: string }): void
+  (e: 'insertPoll'): void
   (e: 'uploadFile', files: FileList | null): void
-  (e: 'insertPoll' | 'focusEditor'): void
+  (e: 'focusEditor'): void
 }>()
 
 const sk = useTiptapShortcuts()
-const showMore = shallowRef(false)
 const alignments = ['left', 'center', 'right', 'justify'] as const
 
 const run = (fn: (c: ChainedCommands) => ChainedCommands) => {
@@ -219,22 +143,34 @@ const onUploadFile = async (files: FileList | null) => {
   emit('uploadFile', files)
 }
 
-const fontItems = computed<FormSelectItem[]>(() => [
-  { value: '', label: $t('articles.editor.toolbar.fontDefault') },
-  { value: 'Arial', label: 'Arial' },
-  { value: 'serif', label: 'Serif' },
-  { value: 'monospace', label: 'Monospace' },
-  { value: 'Georgia', label: 'Georgia' },
-  { value: 'Times New Roman', label: 'Times New Roman' },
+const headingItems = computed<FormSelectItem[]>(() => [
+  { value: 'p', label: $t('articles.editor.toolbar.paragraph'), icon: 'mdi-format-paragraph' },
+  { value: 'h1', label: $t('articles.editor.toolbar.heading', { level: 1 }), icon: 'mdi-format-header-1' },
+  { value: 'h2', label: $t('articles.editor.toolbar.heading', { level: 2 }), icon: 'mdi-format-header-2' },
+  { value: 'h3', label: $t('articles.editor.toolbar.heading', { level: 3 }), icon: 'mdi-format-header-3' },
+  { value: 'h4', label: $t('articles.editor.toolbar.heading', { level: 4 }), icon: 'mdi-format-header-4' },
+  { value: 'h5', label: $t('articles.editor.toolbar.heading', { level: 5 }), icon: 'mdi-format-header-5' },
+  { value: 'h6', label: $t('articles.editor.toolbar.heading', { level: 6 }), icon: 'mdi-format-header-6' },
 ])
 
-const fontFamily = computed({
-  get: () => editor.getAttributes('textStyle').fontFamily || '',
-  set: (v: string) => run((c) => (v ? c.setFontFamily(v) : c.unsetFontFamily())),
+const headingValue = computed({
+  get: () => {
+    for (let n = 1 as Level; n <= 6; n++) if (editor.isActive('heading', { level: n })) return `h${n}`
+    return 'p'
+  },
+  set: (v: string) => {
+    if (v === 'p') return run((c) => c.setParagraph())
+    run((c) => c.toggleHeading({ level: Number(v.slice(1)) as Level }))
+  },
 })
 
 const textColor = computed({
   get: () => editor.getAttributes('textStyle').color || '',
   set: (v: string) => run((c) => (v ? c.setColor(v) : c.unsetColor())),
 })
+
+const toggleBlockquote = () => {
+  if (editor.isActive('blockquote')) run((c) => c.unsetBlockquote())
+  else run((c) => c.setParagraph().setBlockquote())
+}
 </script>
