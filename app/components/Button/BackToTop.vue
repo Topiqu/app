@@ -1,19 +1,29 @@
 <template>
   <Teleport to="body">
-    <Transition name="fade-scale">
-      <div v-if="isVisible" class="fixed bottom-12 right-8 z-50">
-        <Button
-          :class="[
-            'w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer',
-            clientThemeGradient,
-            'focus:outline-none focus:ring-2 focus:ring-offset-2',
-          ]"
-          icon="i-lucide:arrow-up"
-          size="lg"
-          aria="Back to Top"
-          @click="scrollToTop"
-        />
-      </div>
+    <Transition
+      enterActiveClass="motion-safe:transition motion-safe:duration-300 motion-safe:ease-out"
+      leaveActiveClass="motion-safe:transition motion-safe:duration-200 motion-safe:ease-in"
+      enterFromClass="opacity-0 motion-safe:translate-y-3 motion-safe:scale-90"
+      leaveToClass="opacity-0 motion-safe:translate-y-3 motion-safe:scale-90"
+    >
+      <Button
+        v-if="isVisible"
+        :class="[
+          'fixed bottom-8 right-6 sm:bottom-12 sm:right-8 z-30',
+          'w-11 h-11 sm:w-12 sm:h-12 rounded-full',
+          'bg-gradient-to-br shadow-lg shadow-black/10 dark:shadow-black/40',
+          'ring-1 ring-white/10 backdrop-blur-sm',
+          'motion-safe:transition-transform motion-safe:duration-200',
+          'hover:scale-105 active:scale-95',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950',
+          themeGradient,
+          themeRing,
+        ]"
+        icon="i-lucide:arrow-up"
+        size="lg"
+        :aria="$t('common.actions.backToTop')"
+        @click="scrollToTop"
+      />
     </Transition>
   </Teleport>
 </template>
@@ -21,29 +31,44 @@
 <script setup lang="ts">
 import { themes } from '~/composables/theme'
 
-const isVisible = computed(() => y.value > 300)
-const { y } = useScroll(window)
-
 const clientSite = await useClientSite()
+const { height } = useWindowSize()
+const reduced = usePreferredReducedMotion()
 
-const clientThemeGradient = computed(
-  () =>
-    `bg-gradient-to-r ${themes[clientSite?.theme as keyof typeof themes] ?? 'from-blue-600 to-indigo-900 dark:from-blue-800 dark:to-indigo-950'}`,
-)
+const { y } = useWindowScroll({
+  behavior: () => (reduced.value === 'reduce' ? 'auto' : 'smooth'),
+})
+
+const threshold = computed(() => Math.max(400, height.value * 0.6))
+const isVisible = computed(() => y.value > threshold.value)
+
+const themeKey = computed(() => {
+  const t = clientSite?.theme as keyof typeof themes | undefined
+  return t && t in themes ? t : 'blue'
+})
+
+const themeGradient = computed(() => themes[themeKey.value])
+
+const ringByTheme: Record<keyof typeof themes, string> = {
+  blue: 'focus-visible:ring-blue-500',
+  green: 'focus-visible:ring-green-500',
+  red: 'focus-visible:ring-red-500',
+  purple: 'focus-visible:ring-purple-500',
+  orange: 'focus-visible:ring-orange-500',
+  teal: 'focus-visible:ring-teal-500',
+  yellow: 'focus-visible:ring-yellow-500',
+  pink: 'focus-visible:ring-pink-500',
+  indigo: 'focus-visible:ring-indigo-500',
+  gray: 'focus-visible:ring-gray-500',
+  lime: 'focus-visible:ring-lime-500',
+  sky: 'focus-visible:ring-sky-500',
+  amber: 'focus-visible:ring-amber-500',
+  cyan: 'focus-visible:ring-cyan-500',
+  violet: 'focus-visible:ring-violet-500',
+}
+const themeRing = computed(() => ringByTheme[themeKey.value])
 
 const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  y.value = 0
 }
 </script>
-
-<style scoped>
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-  transition: all 0.3s ease;
-}
-.fade-scale-enter-from,
-.fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.8);
-}
-</style>
