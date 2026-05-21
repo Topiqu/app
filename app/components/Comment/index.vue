@@ -5,7 +5,7 @@
   >
     <div class="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-2 z-10">
       <Button
-        v-if="canReport"
+        v-if="perms.report"
         square
         borderless
         size="sm"
@@ -17,7 +17,7 @@
         @click="report"
       />
       <Button
-        v-if="canBan"
+        v-if="perms.ban"
         square
         borderless
         size="sm"
@@ -33,12 +33,12 @@
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 sm:pr-4 md:pr-6">
       <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
         <UserCard v-if="userCardProps" :user="userCardProps" />
-        <span v-else-if="isBanned" class="font-semibold text-red-500">
+        <span v-else-if="perms.isBanned" class="font-semibold text-red-500">
           {{ $t('articles.comments.bannedUser') }}
-          <span v-if="comment.user?.banDetails?.reason && isAdmin">
+          <span v-if="comment.user?.banDetails?.reason && perms.isAdmin">
             ({{ $t('articles.comments.banReason', [comment.user.banDetails.reason]) }})
           </span>
-          <span v-if="comment.user?.banDetails?.expiresAt && isAdmin">
+          <span v-if="comment.user?.banDetails?.expiresAt && perms.isAdmin">
             {{ $t('articles.comments.banExpires', [new Date(comment.user.banDetails.expiresAt).toLocaleString()]) }}
           </span>
         </span>
@@ -47,7 +47,7 @@
 
       <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
         <Button
-          v-if="canReply"
+          v-if="perms.reply"
           size="sm"
           variant="neutral"
           icon="mdi:reply"
@@ -57,7 +57,7 @@
           <span class="hidden sm:inline">{{ $t('articles.comments.reply') }}</span>
         </Button>
         <Button
-          v-if="canDeleteOwn"
+          v-if="perms.deleteOwn"
           size="sm"
           variant="neutral"
           icon="mdi:delete"
@@ -68,7 +68,7 @@
           <span class="hidden sm:inline">{{ $t('articles.comments.deleteComment') }}</span>
         </Button>
         <Button
-          v-else-if="canModerateDelete"
+          v-else-if="perms.moderateDelete"
           size="sm"
           variant="neutral"
           icon="mdi:delete"
@@ -79,7 +79,7 @@
           <span class="hidden sm:inline">{{ $t('articles.comments.deleteCommentAdmin') }}</span>
         </Button>
         <Button
-          v-if="canUnban"
+          v-if="perms.unban"
           size="sm"
           variant="neutral"
           icon="mdi:account-check"
@@ -96,15 +96,15 @@
 
     <p
       class="mt-2 sm:mt-3 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
-      :class="{ 'text-gray-400 italic': comment.deletedAt || isBanned }"
+      :class="{ 'text-gray-400 italic': comment.deletedAt || perms.isBanned }"
     >
       {{ displayContent }}
     </p>
 
-    <Gif v-if="comment.gifUrl && !comment.deletedAt && !isBanned" :content="comment.gifUrl" class="mt-2" />
+    <Gif v-if="comment.gifUrl && !comment.deletedAt && !perms.isBanned" :content="comment.gifUrl" class="mt-2" />
 
     <div
-      v-if="!comment.deletedAt && !isBanned"
+      v-if="!comment.deletedAt && !perms.isBanned"
       class="mt-4 sm:mt-5 flex items-center justify-between flex-wrap gap-2 sm:gap-3 pb-2 sm:pb-4 md:pb-6"
     >
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -234,38 +234,26 @@ const emit = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-const { data: session } = useAuth()
 const toast = useToast()
 
 const showDeleteModal = shallowRef(false)
 const showBanModal = shallowRef(false)
 const deleteReason = shallowRef('')
 const banReason = shallowRef('')
-const banExpiresAt = shallowRef<Date | null>(null)
+const banExpiresAt = shallowRef<Date | undefined>(undefined)
 
 const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}/author`, {
   key: `author-${props.comment.article.userId}`,
 })
 
-const user = computed(() => session.value?.user)
-const userId = computed(() => user.value?.id)
-const isAdmin = computed(() => user.value?.role === 'admin')
-const isOwn = computed(() => userId.value === props.comment.userId)
-const isSameSite = computed(() => user.value?.clientSiteId === props.comment.article?.clientSiteId)
-const isBanned = computed(() => !!props.comment.user?.isBanned)
-const isAuthor = computed(() => userId.value === props.comment.article.userId)
-
-const canReport = computed(() => !!user.value && !props.comment.deletedAt && !isBanned.value && !isOwn.value)
-const canBan = computed(() => !!user.value && isAdmin.value && isSameSite.value && !isOwn.value && !isBanned.value)
-const canUnban = computed(() => !!user.value && isAdmin.value && isSameSite.value && !isOwn.value && isBanned.value)
-const canReply = computed(() => !!user.value && !props.isReplying && !isBanned.value)
-const canDeleteOwn = computed(() => !!user.value && isOwn.value)
-const canModerateDelete = computed(() => !!user.value && isAdmin.value && isAuthor.value && !isBanned.value)
+const commentRef = computed(() => props.comment)
+const isReplyingRef = computed(() => props.isReplying)
+const perms = useCommentPermissions(commentRef, isReplyingRef)
 
 const displayContent = computed(() =>
   props.comment.deletedAt
     ? $t('articles.comments.deletedComment')
-    : isBanned.value
+    : perms.isBanned
       ? $t('articles.comments.bannedUserComment')
       : props.comment.content,
 )
@@ -290,8 +278,10 @@ const userCardProps = computed(() => {
   }
 })
 
-const commentRef = computed(() => props.comment)
-const { state, updateReaction, handleEmojiReaction } = useCommentReactions(commentRef, { isAuthor, currentUserId: userId })
+const { state, updateReaction, handleEmojiReaction } = useCommentReactions(commentRef, {
+  isAuthor: toRef(perms, 'isAuthor'),
+  currentUserId: computed(() => perms.user?.id),
+})
 
 const report = async () => {
   if (!confirm($t('articles.comments.reportCommentConfirm'))) return
@@ -319,7 +309,7 @@ const banUser = async () => {
     toast.success({ message: $t('articles.comments.banSuccess') })
     showBanModal.value = false
     banReason.value = ''
-    banExpiresAt.value = null
+    banExpiresAt.value = undefined
   } catch (e: any) {
     toast.error({ message: e.data?.message || $t('articles.comments.banFailed') })
   }
