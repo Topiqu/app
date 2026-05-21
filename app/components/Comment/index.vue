@@ -4,179 +4,144 @@
     class="relative w-full min-w-fit bg-white pt-2 pb-0.5 pl-2 pr-0.5 sm:pt-4 sm:pb-1 sm:pl-4 sm:pr-1 md:pt-6 md:pb-1.5 md:pl-6 md:pr-1.5 rounded-3xl shadow border border-gray-200"
   >
     <div class="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-2 z-10">
-      <button
-        v-if="
-          session?.user && comment.deletedAt === null && !comment.user?.isBanned && session.user.id !== comment.userId
-        "
-        class="p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none"
-        :aria-label="$t('articles.comments.reportComment')"
+      <Button
+        v-if="canReport"
+        square
+        borderless
+        size="sm"
+        variant="transparent"
+        icon="mdi:flag-outline"
+        class="!bg-transparent text-gray-400 hover:text-yellow-500 dark:text-gray-500 dark:hover:text-yellow-400"
+        :aria="$t('articles.comments.reportComment')"
         :title="$t('articles.comments.reportComment')"
-        @click="report(comment)"
-      >
-        <Icon
-          name="mdi:flag-outline"
-          class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 dark:text-gray-500 hover:text-yellow-500 dark:hover:text-yellow-400 cursor-pointer"
-        />
-      </button>
-      <button
-        v-if="
-          session?.user &&
-          session.user.role === 'admin' &&
-          session.user.clientSiteId === comment.article?.clientSiteId &&
-          session.user.id !== comment.userId &&
-          !comment.user?.isBanned
-        "
-        class="p-0 m-0 bg-transparent hover:bg-transparent border-none outline-none"
-        :aria-label="$t('articles.comments.banUser')"
+        @click="report"
+      />
+      <Button
+        v-if="canBan"
+        square
+        borderless
+        size="sm"
+        variant="transparent"
+        icon="mdi:account-cancel"
+        class="!bg-transparent text-orange-500 hover:text-orange-600"
+        :aria="$t('articles.comments.banUser')"
         :title="$t('articles.comments.banUser')"
-        @click="openBanModal(comment)"
-      >
-        <Icon
-          name="mdi:account-cancel"
-          class="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 hover:text-orange-600 cursor-pointer"
-        />
-      </button>
+        @click="showBanModal = true"
+      />
     </div>
 
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 sm:pr-4 md:pr-6">
       <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
-        <UserCard
-          v-if="comment.user && !comment.user.isBanned"
-          :user="{
-            id: comment.userId,
-            username: comment.user.username,
-            email: comment.user.email!,
-            createdAt: comment.user.createdAt,
-            avatarUrl: comment.user.avatarUrl,
-            bio: comment.user.bio,
-            lastLogin: comment.user.lastLogin,
-            commentsCount: comment.user.commentsCount,
-            likesCount: comment.user.likesCount,
-            dislikesCount: comment.user.dislikesCount,
-            followers: comment.user.followers,
-            following: comment.user.following,
-            role: comment.user.role,
-          }"
-        />
-        <span v-else-if="comment.user?.isBanned" class="font-semibold text-red-500">
+        <UserCard v-if="userCardProps" :user="userCardProps" />
+        <span v-else-if="isBanned" class="font-semibold text-red-500">
           {{ $t('articles.comments.bannedUser') }}
-          <span v-if="comment.user.banDetails?.reason && session?.user.role == 'admin'">
+          <span v-if="comment.user?.banDetails?.reason && isAdmin">
             ({{ $t('articles.comments.banReason', [comment.user.banDetails.reason]) }})
           </span>
-          <span v-if="comment.user.banDetails?.expiresAt && session?.user.role == 'admin'">
+          <span v-if="comment.user?.banDetails?.expiresAt && isAdmin">
             {{ $t('articles.comments.banExpires', [new Date(comment.user.banDetails.expiresAt).toLocaleString()]) }}
           </span>
         </span>
         <span v-else class="font-semibold text-gray-800">{{ $t('common.user.notAvailable') }}</span>
       </div>
+
       <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
-        <button
-          v-if="session?.user && !isReplying && !comment.user?.isBanned"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          :aria-label="$t('articles.comments.submitReply')"
-          @click="$emit('reply', comment)"
+        <Button
+          v-if="canReply"
+          size="sm"
+          variant="neutral"
+          icon="mdi:reply"
+          :aria="$t('articles.comments.submitReply')"
+          @click="emit('reply', comment)"
         >
-          <Icon name="mdi:reply" class="w-4 h-4 text-gray-600" />
           <span class="hidden sm:inline">{{ $t('articles.comments.reply') }}</span>
-        </button>
-        <button
-          v-if="session?.user && session.user.id === comment.userId"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          :aria-label="$t('articles.comments.deleteComment')"
-          @click="$emit('delete', comment, null)"
+        </Button>
+        <Button
+          v-if="canDeleteOwn"
+          size="sm"
+          variant="neutral"
+          icon="mdi:delete"
+          class="[&_.iconify]:text-red-500"
+          :aria="$t('articles.comments.deleteComment')"
+          @click="emit('delete', comment, null)"
         >
-          <Icon name="mdi:delete" class="w-4 h-4 text-red-500" />
           <span class="hidden sm:inline">{{ $t('articles.comments.deleteComment') }}</span>
-        </button>
-        <button
-          v-else-if="
-            session?.user &&
-            session.user.role === 'admin' &&
-            session.user.id === comment.article?.userId &&
-            !comment.user?.isBanned
-          "
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          :aria-label="$t('articles.comments.deleteCommentAdmin')"
-          @click="showDeleteModal(comment)"
+        </Button>
+        <Button
+          v-else-if="canModerateDelete"
+          size="sm"
+          variant="neutral"
+          icon="mdi:delete"
+          class="[&_.iconify]:text-red-500"
+          :aria="$t('articles.comments.deleteCommentAdmin')"
+          @click="showDeleteModal = true"
         >
-          <Icon name="mdi:delete" class="w-4 h-4 text-red-500" />
           <span class="hidden sm:inline">{{ $t('articles.comments.deleteCommentAdmin') }}</span>
-        </button>
-        <button
-          v-if="
-            session?.user &&
-            session.user.role === 'admin' &&
-            session.user.clientSiteId === comment.article?.clientSiteId &&
-            session.user.id !== comment.userId &&
-            comment.user?.isBanned
-          "
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-xl shadow-sm border border-gray-200 bg-gray-50 cursor-pointer"
-          :aria-label="$t('articles.comments.unbanUser')"
-          @click="unbanUser(comment)"
+        </Button>
+        <Button
+          v-if="canUnban"
+          size="sm"
+          variant="neutral"
+          icon="mdi:account-check"
+          class="[&_.iconify]:text-green-500"
+          :aria="$t('articles.comments.unbanUser')"
+          @click="unbanUser"
         >
-          <Icon name="mdi:account-check" class="w-4 h-4 text-green-500" />
           <span class="hidden sm:inline">{{ $t('articles.comments.unbanUser') }}</span>
-        </button>
+        </Button>
       </div>
     </div>
-    <div class="text-xs sm:text-sm text-gray-500 mt-2">
-      {{ formatDate(comment.createdAt) }}
-    </div>
+
+    <div class="text-xs sm:text-sm text-gray-500 mt-2">{{ formatDate(comment.createdAt) }}</div>
+
     <p
       class="mt-2 sm:mt-3 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
-      :class="{ 'text-gray-400 italic': comment.deletedAt || comment.user?.isBanned }"
+      :class="{ 'text-gray-400 italic': comment.deletedAt || isBanned }"
     >
-      {{
-        comment.deletedAt
-          ? $t('articles.comments.deletedComment')
-          : comment.user?.isBanned
-            ? $t('articles.comments.bannedUserComment')
-            : comment.content
-      }}
+      {{ displayContent }}
     </p>
-    <Gif
-      v-if="comment.gifUrl && !comment.deletedAt && !comment.user?.isBanned"
-      :content="comment.gifUrl"
-      class="mt-2"
-    />
+
+    <Gif v-if="comment.gifUrl && !comment.deletedAt && !isBanned" :content="comment.gifUrl" class="mt-2" />
+
     <div
-      v-if="!comment.deletedAt && !comment.user?.isBanned"
+      v-if="!comment.deletedAt && !isBanned"
       class="mt-4 sm:mt-5 flex items-center justify-between flex-wrap gap-2 sm:gap-3 pb-2 sm:pb-4 md:pb-6"
     >
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-        <button
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 cursor-pointer bg-gray-100"
-          :class="local.userReaction?.type === 'LIKE' ? 'bg-green-100 text-green-600' : 'text-gray-600'"
+        <Button
+          size="sm"
+          variant="neutral"
+          icon="mdi:thumb-up-outline"
+          :class="state.userReaction?.type === 'LIKE' ? '!bg-green-100 !text-green-600' : 'text-gray-600'"
           @click="updateReaction('LIKE')"
         >
-          <Icon name="mdi:thumb-up-outline" class="w-4 h-4 sm:w-5 sm:h-5" />
-          <span>{{ local.likes }}</span>
-        </button>
-        <button
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 cursor-pointer bg-gray-100"
-          :class="local.userReaction?.type === 'DISLIKE' ? 'bg-red-100 text-red-600' : 'text-gray-600'"
+          <span>{{ state.likes }}</span>
+        </Button>
+        <Button
+          size="sm"
+          variant="neutral"
+          icon="mdi:thumb-down-outline"
+          :class="state.userReaction?.type === 'DISLIKE' ? '!bg-red-100 !text-red-600' : 'text-gray-600'"
           @click="updateReaction('DISLIKE')"
         >
-          <Icon name="mdi:thumb-down-outline" class="w-4 h-4 sm:w-5 sm:h-5" />
-          <span>{{ local.dislikes }}</span>
-        </button>
+          <span>{{ state.dislikes }}</span>
+        </Button>
 
-        <div v-if="local.emojiReactions?.length" class="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <div
-            v-for="reaction in local.emojiReactions"
-            :key="reaction.emojiId"
-            v-tippy="{ content: reaction.emoji.shortcode, placement: 'top' }"
-            class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100 text-gray-600"
-          >
-            <img :src="reaction.emoji.imageUrl" :alt="reaction.emoji.shortcode" class="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>{{ reaction.count }}</span>
-          </div>
+        <div
+          v-for="r in state.emojiReactions"
+          :key="r.emojiId"
+          v-tippy="{ content: r.emoji.shortcode, placement: 'top' }"
+          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100 text-gray-600"
+        >
+          <img :src="r.emoji.imageUrl" :alt="r.emoji.shortcode" class="w-4 h-4 sm:w-5 sm:h-5" />
+          <span>{{ r.count }}</span>
         </div>
       </div>
+
       <div class="flex items-center gap-2 sm:gap-3">
         <LazyEmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="handleEmojiReaction" />
         <div
-          v-if="local.isLikedByAuthor"
+          v-if="state.isLikedByAuthor"
           v-tippy="{
             content: $t('articles.comments.likedByAuthor', [authorData?.username || $t('common.user.notAvailable')]),
             placement: 'top',
@@ -184,7 +149,7 @@
           class="flex items-center gap-1"
         >
           <Icon name="mdi:heart" class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-          <UserPicture :url="authorData?.avatarUrl" :size="'mn'" :name="authorData?.username" />
+          <UserPicture :url="authorData?.avatarUrl" size="mn" :name="authorData?.username" />
         </div>
       </div>
     </div>
@@ -194,64 +159,62 @@
         v-for="reply in comment.replies"
         :key="reply.id"
         :comment="reply"
-        :isReplying="isReplying"
-        :depth="depth < 12 ? depth + 1 : depth"
-        @reply="$emit('reply', $event)"
-        @delete="(comment, reason) => $emit('delete', comment, reason)"
-        @like="$emit('like', $event)"
-        @dislike="$emit('dislike', $event)"
-        @refresh="$emit('refresh')"
+        :isReplying
+        :depth="Math.min(depth + 1, 12)"
+        @reply="emit('reply', $event)"
+        @delete="(c, r) => emit('delete', c, r)"
+        @like="emit('like', $event)"
+        @dislike="emit('dislike', $event)"
+        @refresh="emit('refresh')"
       />
     </div>
 
     <ModalMini
-      v-if="showModal && selectedComment?.id === comment.id"
-      v-model:open="showModal"
+      v-if="showDeleteModal"
+      v-model:open="showDeleteModal"
       :title="$t('articles.comments.deleteModalTitle')"
       :message="$t('common.messages.deleteConfirmText')"
-      :icon="'mdi:delete'"
+      icon="mdi:delete"
       :cancelText="$t('common.messages.deleteCancel')"
       :confirmText="$t('articles.comments.deleteComment')"
-      @confirm="emitDelete(comment, deleteReason)"
-      @cancel="((showModal = false), (deleteReason = ''))"
+      @confirm="confirmDelete"
+      @cancel="showDeleteModal = false"
     >
       <template #content>
-        <textarea
+        <FormInput
           v-model="deleteReason"
-          class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm resize-y min-h-[100px]"
+          type="textarea"
           :placeholder="$t('articles.comments.deleteReasonPlaceholder')"
-          maxlength="255"
+          :maxLength="255"
         />
       </template>
     </ModalMini>
 
     <ModalMini
-      v-if="showBanModal && selectedComment?.id === comment.id"
+      v-if="showBanModal"
       v-model:open="showBanModal"
       :title="$t('articles.comments.banModalTitle')"
       :message="$t('articles.comments.banReasonPrompt')"
-      :icon="'mdi:account-cancel'"
+      icon="mdi:account-cancel"
       :cancelText="$t('common.messages.deleteCancel')"
       :confirmText="$t('articles.comments.banUser')"
-      @confirm="banUser(comment)"
-      @cancel="((showBanModal = false), (banReason = ''), (banExpiresAt = ''))"
+      @confirm="banUser"
+      @cancel="showBanModal = false"
     >
       <template #content>
-        <textarea
+        <FormInput
           v-model="banReason"
-          class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-y min-h-[100px]"
-          :placeholder="$t('articles.comments.banReasonPlaceholder')"
-          maxlength="255"
+          type="textarea"
           required
+          :placeholder="$t('articles.comments.banReasonPlaceholder')"
+          :maxLength="255"
         />
-        <div class="mt-4">
-          <label class="text-sm text-gray-600">{{ $t('articles.comments.banExpirationLabel') }}</label>
-          <input
-            v-model="banExpiresAt"
-            type="datetime-local"
-            class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mt-2"
-          />
-        </div>
+        <FormField
+          v-model="banExpiresAt"
+          type="datetime-local"
+          class="mt-4"
+          :label="$t('articles.comments.banExpirationLabel')"
+        />
       </template>
     </ModalMini>
   </div>
@@ -264,186 +227,111 @@ import { formatDate } from '~~/shared/utils'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 
-type ReactionType = 'LIKE' | 'DISLIKE'
-type EmojiReaction = {
-  emojiId: string
-  count: number
-  emoji: { imageUrl: string; shortcode: string }
-  hasReacted?: boolean
-}
-
 const props = defineProps<{ comment: CommentWithReplies; isReplying: boolean; depth: number }>()
 const emit = defineEmits<{
   (e: 'reply' | 'like' | 'dislike', c: CommentWithReplies): void
   (e: 'delete', c: CommentWithReplies, reason: string | null): void
   (e: 'refresh'): void
-  (
-    e: 'reaction',
-    d: {
-      commentId: string
-      emojiId: string
-      shortcode: string
-      imageUrl: string
-      userId: string
-      hasReacted: boolean
-      revert?: boolean
-    },
-  ): void
 }>()
 
 const { data: session } = useAuth()
 const toast = useToast()
-const showModal = shallowRef(false)
+
+const showDeleteModal = shallowRef(false)
 const showBanModal = shallowRef(false)
-const selectedComment = shallowRef<CommentWithReplies | null>(null)
 const deleteReason = shallowRef('')
 const banReason = shallowRef('')
-const banExpiresAt = shallowRef('')
+const banExpiresAt = shallowRef<Date | null>(null)
+
 const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}/author`, {
   key: `author-${props.comment.article.userId}`,
 })
 
-const local = reactive({
-  likes: props.comment.likes ?? 0,
-  dislikes: props.comment.dislikes ?? 0,
-  userReaction: props.comment.userReaction as { type: ReactionType } | null,
-  emojiReactions: [...(props.comment.emojiReactions ?? [])] as EmojiReaction[],
-  isLikedByAuthor: props.comment.isLikedByAuthor,
-})
+const user = computed(() => session.value?.user)
+const userId = computed(() => user.value?.id)
+const isAdmin = computed(() => user.value?.role === 'admin')
+const isOwn = computed(() => userId.value === props.comment.userId)
+const isSameSite = computed(() => user.value?.clientSiteId === props.comment.article?.clientSiteId)
+const isBanned = computed(() => !!props.comment.user?.isBanned)
+const isAuthor = computed(() => userId.value === props.comment.article.userId)
 
-watch(
-  () => props.comment,
-  (c) =>
-    Object.assign(local, {
-      likes: c.likes ?? 0,
-      dislikes: c.dislikes ?? 0,
-      userReaction: c.userReaction as { type: ReactionType } | null,
-      emojiReactions: [...(c.emojiReactions ?? [])] as EmojiReaction[],
-      isLikedByAuthor: c.isLikedByAuthor,
-    }),
-  { deep: true },
+const canReport = computed(() => !!user.value && !props.comment.deletedAt && !isBanned.value && !isOwn.value)
+const canBan = computed(() => !!user.value && isAdmin.value && isSameSite.value && !isOwn.value && !isBanned.value)
+const canUnban = computed(() => !!user.value && isAdmin.value && isSameSite.value && !isOwn.value && isBanned.value)
+const canReply = computed(() => !!user.value && !props.isReplying && !isBanned.value)
+const canDeleteOwn = computed(() => !!user.value && isOwn.value)
+const canModerateDelete = computed(() => !!user.value && isAdmin.value && isAuthor.value && !isBanned.value)
+
+const displayContent = computed(() =>
+  props.comment.deletedAt
+    ? $t('articles.comments.deletedComment')
+    : isBanned.value
+      ? $t('articles.comments.bannedUserComment')
+      : props.comment.content,
 )
 
-const isAuthor = computed(() => session.value?.user?.id === props.comment.article.userId)
-
-const confirmAction = (msg: string) => confirm($t(msg))
-const fetchSafe = async (url: string, opts: any, onFail: string) => {
-  try {
-    await $fetch(url, opts)
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t(onFail) })
-    throw e
+const userCardProps = computed(() => {
+  const u = props.comment.user
+  if (!u || u.isBanned) return null
+  return {
+    id: props.comment.userId,
+    username: u.username,
+    email: u.email!,
+    createdAt: u.createdAt,
+    avatarUrl: u.avatarUrl,
+    bio: u.bio,
+    lastLogin: u.lastLogin,
+    commentsCount: u.commentsCount,
+    likesCount: u.likesCount,
+    dislikesCount: u.dislikesCount,
+    followers: u.followers,
+    following: u.following,
+    role: u.role,
   }
-}
+})
 
-const report = async (c: CommentWithReplies) => {
-  if (!confirmAction('articles.comments.reportCommentConfirm')) return
+const commentRef = computed(() => props.comment)
+const { state, updateReaction, handleEmojiReaction } = useCommentReactions(commentRef, { isAuthor, currentUserId: userId })
+
+const report = async () => {
+  if (!confirm($t('articles.comments.reportCommentConfirm'))) return
   try {
-    await $fetch('/api/notifications', { method: 'POST', body: { commentId: c.id } })
+    await $fetch('/api/notifications', { method: 'POST', body: { commentId: props.comment.id } })
     toast.success({ message: $t('common.messages.reportSuccess') })
   } catch {
     toast.error({ message: $t('common.messages.reportFailed') })
   }
 }
 
-const showDeleteModal = (c: CommentWithReplies) => {
-  selectedComment.value = c
-  showModal.value = true
-}
-const openBanModal = (c: CommentWithReplies) => {
-  selectedComment.value = c
-  showBanModal.value = true
-}
-const emitDelete = (c: CommentWithReplies, reason: string) => {
-  emit('delete', c, reason)
-  showModal.value = false
+const confirmDelete = () => {
+  emit('delete', props.comment, deleteReason.value)
+  showDeleteModal.value = false
   deleteReason.value = ''
 }
 
-const banUser = async (c: CommentWithReplies) => {
+const banUser = async () => {
   if (!banReason.value.trim()) return
-  await fetchSafe(
-    `/api/bans/${c.id}`,
-    { method: 'POST', body: { reason: banReason.value, expiresAt: banExpiresAt.value || null } },
-    'articles.comments.banFailed',
-  )
-  toast.success({ message: $t('articles.comments.banSuccess') })
-  showBanModal.value = false
-}
-
-const unbanUser = async (c: CommentWithReplies) => {
-  await fetchSafe(`/api/bans/${c.id}`, { method: 'DELETE' }, 'articles.comments.unbanFailed')
-  toast.success({ message: $t('articles.comments.unbanSuccess') })
-  emit('refresh')
-}
-
-const updateReaction = async (type: ReactionType) => {
-  const prev = local.userReaction?.type
-  const isOff = prev === type
-  const opposite = !!prev && prev !== type
-  const counts: Record<ReactionType, 'likes' | 'dislikes'> = { LIKE: 'likes', DISLIKE: 'dislikes' }
-
-  if (opposite && prev) local[counts[prev as ReactionType]]--
-  local[counts[type]] += isOff ? -1 : 1
-  local.userReaction = isOff ? null : { type }
-
-  if (isAuthor.value) local.isLikedByAuthor = type === 'LIKE' && !isOff
-
   try {
-    await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: props.comment.id, type } })
-  } catch {
-    if (opposite && prev) local[counts[prev as ReactionType]]++
-    local[counts[type]] += isOff ? 1 : -1
-    local.userReaction = prev ? { type: prev } : null
-    if (isAuthor.value) local.isLikedByAuthor = local.userReaction?.type === 'LIKE'
-    toast.error({ message: $t('articles.comments.reactionFailed') })
+    await $fetch(`/api/bans/${props.comment.id}`, {
+      method: 'POST',
+      body: { reason: banReason.value, expiresAt: banExpiresAt.value?.toISOString() ?? null },
+    })
+    toast.success({ message: $t('articles.comments.banSuccess') })
+    showBanModal.value = false
+    banReason.value = ''
+    banExpiresAt.value = null
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || $t('articles.comments.banFailed') })
   }
 }
 
-const handleEmojiReaction = (data: {
-  commentId: string
-  emojiId: string
-  shortcode: string
-  imageUrl: string
-  userId: string
-  revert?: boolean
-}) => {
-  if (data.commentId !== props.comment.id) return
-  if (!session.value?.user) return
-
-  const currentUserId = session.value.user.id
-  if (data.userId !== currentUserId) return
-
-  const idx = local.emojiReactions.findIndex((x) => x.emojiId === data.emojiId)
-  const r = local.emojiReactions[idx]
-
-  if (r) {
-    if (data.revert) {
-      if (r.hasReacted) {
-        r.hasReacted = false
-        r.count = Math.max(0, r.count - 1)
-        if (r.count === 0) local.emojiReactions.splice(idx, 1)
-      }
-    } else {
-      if (!r.hasReacted) {
-        r.hasReacted = true
-        r.count += 1
-      } else {
-        r.hasReacted = false
-        r.count = Math.max(0, r.count - 1)
-        if (r.count === 0) local.emojiReactions.splice(idx, 1)
-      }
-    }
-    return
-  }
-
-  if (!data.revert) {
-    local.emojiReactions.push({
-      emojiId: data.emojiId,
-      emoji: { shortcode: data.shortcode, imageUrl: data.imageUrl },
-      count: 1,
-      hasReacted: true,
-    })
+const unbanUser = async () => {
+  try {
+    await $fetch(`/api/bans/${props.comment.id}`, { method: 'DELETE' })
+    toast.success({ message: $t('articles.comments.unbanSuccess') })
+    emit('refresh')
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || $t('articles.comments.unbanFailed') })
   }
 }
 </script>
