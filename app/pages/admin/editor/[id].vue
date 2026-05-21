@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1 flex flex-col w-full max-w-5xl mx-auto px-4 pt-20 pb-12 transition-all duration-300">
+  <div class="flex-1 flex flex-col w-full max-w-5xl mx-auto px-4 pt-20 pb-12">
     <header
       class="sticky top-0 z-20 -mx-4 px-4 py-3 mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200/70 dark:border-gray-800/70 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl"
     >
@@ -8,13 +8,7 @@
         <h1 class="text-lg font-bold truncate">
           {{ isNew ? $t('articles.addArticle') : $t('articles.updateArticle') }}
         </h1>
-        <span
-          class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
-          :class="statusPillClass"
-        >
-          <Icon :name="statusIcon" class="w-3.5 h-3.5" />
-          {{ statusLabel }}
-        </span>
+        <ArticleStatusPill class="hidden sm:inline-flex" :status="editedArticle.status" />
       </div>
 
       <div class="flex items-center gap-3 ml-auto">
@@ -82,10 +76,9 @@
 
           <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
             <Button
-              variant="secondary"
               size="sm"
               icon="mdi:file-document-outline"
-              class="px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200 bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 hover:shadow-md dark:from-indigo-500 dark:to-purple-600 dark:hover:from-indigo-600 dark:hover:to-purple-700"
+              class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 dark:from-indigo-500 dark:to-purple-600 dark:hover:from-indigo-600 dark:hover:to-purple-700 border-transparent!"
               @click="draftsOpen = true"
             >
               {{ $t('articles.editor.drafts.loadDrafts') }}
@@ -108,26 +101,7 @@
       @close="draftsOpen = false"
     />
 
-    <button
-      v-if="sidebarOpen"
-      type="button"
-      class="fixed inset-0 z-[1000] bg-black/40 backdrop-blur-sm cursor-default"
-      :aria-label="$t('common.actions.close') || 'Close'"
-      @click="sidebarOpen = false"
-    />
-
-    <aside
-      role="dialog"
-      aria-modal="true"
-      :aria-label="$t('common.settings')"
-      class="w-full max-w-md sm:w-96 lg:w-[450px] border-l border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-y-auto transition-transform duration-300 flex flex-col fixed right-0 top-0 h-full shadow-2xl z-[1010]"
-      :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full'"
-    >
-      <div class="sticky top-0 z-10 px-6 py-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur">
-        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ $t('common.settings') }}</h2>
-        <Button icon="mdi:close" variant="neutral" :aria="$t('common.actions.close') || 'Close'" @click="sidebarOpen = false" />
-      </div>
-
+    <ModalSlideOver v-model="sidebarOpen" :title="$t('common.settings')" width="lg">
       <div class="p-6 flex flex-col gap-6">
         <section class="flex flex-col gap-3">
           <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
@@ -160,7 +134,7 @@
           </button>
           <div
             v-if="aiOpen"
-            class="flex flex-col gap-3 p-4 rounded-2xl border border-purple-200 dark:border-purple-900 bg-purple-50/40 dark:bg-purple-950/20"
+            class="flex flex-col gap-3 p-4 rounded-2xl border border-purple-200 dark:border-purple-900 bg-purple-50 dark:bg-purple-950/60"
           >
             <FormField
               v-model="customPrompt"
@@ -230,7 +204,7 @@
           </div>
         </section>
       </div>
-    </aside>
+    </ModalSlideOver>
 
     <Modal
       v-model="discardConfirmOpen"
@@ -320,30 +294,6 @@ if (!isNew) {
     router.push('/admin')
   }
 }
-
-const statusPillClass = computed(() => {
-  switch (editedArticle.value.status) {
-    case 'published':
-      return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-    case 'archived':
-      return 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-    default:
-      return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-  }
-})
-
-const statusIcon = computed(() => {
-  switch (editedArticle.value.status) {
-    case 'published':
-      return 'mdi:check-circle-outline'
-    case 'archived':
-      return 'mdi:archive-outline'
-    default:
-      return 'mdi:circle-edit-outline'
-  }
-})
-
-const statusLabel = computed(() => t(`articles.status.${editedArticle.value.status}`))
 
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 
@@ -479,10 +429,6 @@ const confirmDiscard = () => {
   discardConfirmOpen.value = false
   router.push('/admin')
 }
-
-onKeyStroke('Escape', () => {
-  if (sidebarOpen.value) sidebarOpen.value = false
-})
 
 watch(
   () => editedArticle.value.title,

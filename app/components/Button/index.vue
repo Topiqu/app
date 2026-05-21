@@ -4,8 +4,8 @@
     :disabled="disabled || loading"
     :aria-label="aria || (typeof $attrs.title === 'string' ? $attrs.title : undefined)"
     :class="[
-      'flex items-center justify-center backdrop-blur-sm',
-      'focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
+      'flex items-center justify-center',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2',
       { ' transition-all hover:scale-105 active:scale-[0.95]': animation !== 'explode' },
       borderless
         ? 'border-none shadow-none'
@@ -31,7 +31,7 @@
       active
         ? {
             'bg-blue-400': variant === 'primary',
-            'bg-gray-400': variant === 'secondary',
+            'bg-gray-300 dark:bg-gray-600': variant === 'secondary',
             'bg-red-400': variant === 'danger',
             'bg-green-400': variant === 'success',
             'bg-yellow-400': variant === 'warning',
@@ -40,7 +40,7 @@
           }
         : {
             'bg-blue-600': variant === 'primary',
-            'bg-gray-600': variant === 'secondary',
+            'bg-gray-200 dark:bg-gray-700': variant === 'secondary',
             'bg-red-600': variant === 'danger',
             'bg-green-600': variant === 'success',
             'bg-yellow-600': variant === 'warning',
@@ -49,7 +49,7 @@
           },
       {
         'text-white hover:bg-blue-800': variant === 'primary',
-        'text-black hover:bg-gray-800': variant === 'secondary',
+        'text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600': variant === 'secondary',
         'text-white hover:bg-red-800': variant === 'danger',
         'text-white hover:bg-green-800': variant === 'success',
         'text-white hover:bg-yellow-800': variant === 'warning',
