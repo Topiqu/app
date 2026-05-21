@@ -9,7 +9,9 @@ export default defineNuxtConfig({
     public: {
       appVersion: '1.0.0 beta',
       cdnUrl: process.env.CDN_URL || 'https://cdn.topiqu.com',
+      turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || '',
     },
+    turnstile: { secretKey: process.env.TURNSTILE_SECRET_KEY || '' },
     openModerator: { apiKey: process.env.OPENMODERATOR_API_KEY },
     xai: { apiKey: process.env.XAI_API_KEY },
     auth: { secret: process.env.AUTH_SECRET },
@@ -167,6 +169,7 @@ export default defineNuxtConfig({
           'https://fundingchoicesmessages.google.com',
           'https://pagead2.googlesyndication.com',
           'https://ep2.adtrafficquality.google',
+          'https://challenges.cloudflare.com',
         ],
         'connect-src': [
           "'self'",
@@ -191,6 +194,7 @@ export default defineNuxtConfig({
           'https://adservice.google.com',
           'https://fundingchoicesmessages.google.com',
           'https://ep2.adtrafficquality.google',
+          'https://challenges.cloudflare.com',
         ],
       },
     },
@@ -201,6 +205,12 @@ export default defineNuxtConfig({
     '/**/__og-image__/**': { security: { xssValidator: false, headers: false } },
     '/cs/clanky/**': { security: { xssValidator: false } },
     '/en/articles/**': { security: { xssValidator: false } },
+    '/api/onboarding/send-code': {
+      security: { rateLimiter: { tokensPerInterval: 5, interval: 60 * 60 * 1000 } },
+    },
+    '/api/onboarding/verify-code': {
+      security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 60 * 1000 } },
+    },
   },
   i18n: {
     langDir: 'locales/',
