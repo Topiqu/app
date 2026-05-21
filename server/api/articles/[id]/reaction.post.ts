@@ -1,11 +1,3 @@
-import type { EventStream } from 'h3'
-
-interface GlobalThis {
-  eventStreams?: Map<string, Set<EventStream>>
-}
-
-declare const globalThis: GlobalThis
-
 const BodySchema = z.object({
   visitorId: z.string().optional().nullable(),
 })
@@ -66,12 +58,7 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    const streamKey = `notifications:${article.userId}`
-    const streams = globalThis.eventStreams?.get(streamKey)
-    if (streams) {
-      const serialized = JSON.stringify({ ...notification, count: 1 })
-      streams.forEach((stream) => stream.push(serialized))
-    }
+    await realtime.publish(`notifications:${article.userId}`, 'notification.created', { ...notification, count: 1 })
   }
 
   const count = await db.articleReaction.count({ where: { articleId: id } })

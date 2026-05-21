@@ -1,11 +1,3 @@
-import type { EventStream } from 'h3'
-
-interface GlobalThis {
-  eventStreams?: Map<string, Set<EventStream>>
-}
-
-declare const globalThis: GlobalThis
-
 export default defineTask({
   meta: {
     name: 'publish-check',
@@ -52,14 +44,11 @@ export default defineTask({
         ),
       )
 
-      authorNotifications.forEach((notification) => {
-        const streamKey = `notifications:${notification.userId}`
-        const streams = globalThis.eventStreams?.get(streamKey)
-        if (streams) {
-          const serialized = JSON.stringify({ ...notification, count: 1 })
-          streams.forEach((stream) => stream.push(serialized))
-        }
-      })
+      await Promise.all(
+        authorNotifications.map((n) =>
+          realtime.publish(`notifications:${n.userId}`, 'notification.created', { ...n, count: 1 }),
+        ),
+      )
 
       const notifications = []
       for (const a of articles) {
@@ -81,14 +70,11 @@ export default defineTask({
       for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
         const batch = notifications.slice(i, i + BATCH_SIZE)
         await ctx.notification.createMany({ data: batch, skipDuplicates: true })
-        batch.forEach((notification) => {
-          const streamKey = `notifications:${notification.userId}`
-          const streams = globalThis.eventStreams?.get(streamKey)
-          if (streams) {
-            const serialized = JSON.stringify({ ...notification, count: 1 })
-            streams.forEach((stream) => stream.push(serialized))
-          }
-        })
+        await Promise.all(
+          batch.map((n) =>
+            realtime.publish(`notifications:${n.userId}`, 'notification.created', { ...n, count: 1 }),
+          ),
+        )
       }
 
       return { result: { count: update.count, timestamp: now.toISOString() } }

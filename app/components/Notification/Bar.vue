@@ -17,6 +17,12 @@
       >
         {{ unreadCount }}
       </span>
+      <span
+        class="absolute bottom-0 right-0 w-2 h-2 rounded-full ring-1 ring-white dark:ring-neutral-900"
+        :class="sseDot.color"
+        :title="`Notifikace: ${sseDot.label}${sseRetries > 0 ? ` (pokus #${sseRetries})` : ''}`"
+        :aria-label="`Realtime status: ${sseDot.label}`"
+      />
       <Transition
         enterActiveClass="transition ease-out duration-200"
         enterFromClass="opacity-0 scale-95"
@@ -195,11 +201,26 @@ const url = computed(() => `/api/notifications?page=${page.value}&limit=${limit}
 const { data: auth } = useAuth()
 const { data: fetchedData, error, refresh } = await useFetch<FetchResponse>(url)
 
-let eventSource: EventSource | null = null
+const sseUrl = computed(() => (auth?.value?.user ? '/api/notifications/sse' : undefined))
 
-const sseUrl = computed(() => {
-  const base = import.meta.env.PROD ? `https://${window.location.host}` : 'http://localhost:3000'
-  return `${base}/api/notifications/sse`
+const { status: sseStatus, isStale: sseStale, reconnectAttempts: sseRetries } = useRealtime(sseUrl, {
+  enabled: () => !!auth?.value?.user,
+  handlers: {
+    'notification.created': (n: Notif) => {
+      if (!n?.id || !['COMMENT', 'LIKE', 'FOLLOW', 'MENTION', 'ARTICLE_PUBLISHED', 'SYSTEM'].includes(n.type)) return
+      data.value = [n, ...data.value]
+      unreadCount.value = data.value.filter((x) => !x.isRead).length
+      useToast().success({ message: `Nová notifikace: ${n.message}` })
+    },
+  },
+  debug: import.meta.dev,
+})
+
+const sseDot = computed(() => {
+  if (sseStale.value) return { color: 'bg-amber-500', label: 'stale' }
+  if (sseStatus.value === 'OPEN') return { color: 'bg-green-500', label: 'live' }
+  if (sseStatus.value === 'CONNECTING') return { color: 'bg-yellow-500 animate-pulse', label: 'connecting' }
+  return { color: 'bg-red-500', label: 'offline' }
 })
 
 watch(
@@ -265,31 +286,9 @@ watch(
   () => auth?.value?.user,
   async (u) => {
     if (u && import.meta.client) {
-      if (eventSource) return
       page.value = 1
       await refresh()
-      eventSource = new EventSource(sseUrl.value)
-      eventSource.onmessage = (event) => {
-        try {
-          const n = JSON.parse(event.data)
-          if (!n.id || !['COMMENT', 'LIKE', 'FOLLOW', 'MENTION', 'ARTICLE_PUBLISHED', 'SYSTEM'].includes(n.type)) {
-            return
-          }
-          data.value = [n as Notif, ...data.value]
-          unreadCount.value = data.value.filter((n) => !n.isRead).length
-          useToast().success({ message: `Nová notifikace: ${n.message}` })
-        } catch (err: any) {
-          useToast().error({ message: `Chyba při zpracování notifikace ${err.data.message || 'Neznámá chyba'}` })
-        }
-      }
-      eventSource.onerror = () => {
-        useToast().error({ message: 'Nepodařilo se připojit k notifikacím' })
-        eventSource?.close()
-        eventSource = null
-      }
     } else {
-      eventSource?.close()
-      eventSource = null
       data.value = []
       unreadCount.value = 0
     }
@@ -321,5 +320,4 @@ watch(
 )
 
 onClickOutside(dropdown, () => (show.value = false), { ignore: [btn] })
-onUnmounted(() => eventSource?.close())
 </script>

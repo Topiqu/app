@@ -1,11 +1,3 @@
-import type { EventStream } from 'h3'
-
-interface GlobalThis {
-  eventStreams?: Map<string, Set<EventStream>>
-}
-
-declare const globalThis: GlobalThis
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
 
@@ -47,12 +39,7 @@ export default defineEventHandler(async (event) => {
         type: 'LIKE',
       },
     })
-    const streamKey = `notifications:${comment.userId}`
-    const streams = globalThis.eventStreams?.get(streamKey)
-    if (streams) {
-      const serialized = JSON.stringify({ ...notification, count: 1 })
-      streams.forEach((stream) => stream.push(serialized))
-    }
+    await realtime.publish(`notifications:${comment.userId}`, 'notification.created', { ...notification, count: 1 })
   }
 
   const count = await db.commentReaction.count({ where: { commentId: body.commentId } })
