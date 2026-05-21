@@ -2,8 +2,8 @@
   <NuxtLayout name="default">
     <Status
       type="error"
-      :title="title"
-      :message="message"
+      :title
+      :message
       :actionTo="'/'"
       :actionText="t('common.actions.home')"
       :errorCode="status"
