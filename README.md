@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://topiqu.com" target="_blank">
-    <img align="center" src="https://skillicons.dev/icons?i=nuxt,vue,vite,ts,unocss,prisma,postgres,docker,aws,stripe" /><br/><br/>
+    <img align="center" src="https://skillicons.dev/icons?i=nuxt,vue,vite,ts,bun,sass,prisma,postgres,docker,aws,stripe" /><br/><br/>
     <span>Topiqu AI Blog</span>
   </a>
 </h1>
