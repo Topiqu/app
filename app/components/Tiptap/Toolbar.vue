@@ -127,9 +127,8 @@ const { editor, limit } = defineProps<{ editor: Editor; limit: number }>()
 
 const emit = defineEmits<{
   (e: 'openLink', payload: { type: 'link' | 'image' | 'youtube'; url?: string }): void
-  (e: 'insertPoll'): void
   (e: 'uploadFile', files: FileList | null): void
-  (e: 'focusEditor'): void
+  (e: 'insertPoll' | 'focusEditor'): void
 }>()
 
 const sk = useTiptapShortcuts()
