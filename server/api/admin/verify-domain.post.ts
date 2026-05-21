@@ -1,23 +1,19 @@
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  if (!session?.user?.id) throw createError({ statusCode: 401, message: 'Unauthorized' })
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true, clientSiteId: true },
-  })
-
-  if (!user || !user.clientSiteId || (user.role !== 'admin' && user.role !== 'superadmin')) {
+  const user = (await getServerSession(event))?.user
+  if (!user?.id) throw createError({ statusCode: 401, message: 'Unauthorized' })
+  if (!user.clientSiteId || (user.role !== 'admin' && user.role !== 'superadmin')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const clientSite = await prisma.clientSite.findUnique({
+  const db = await getEnhancedPrisma(user)
+
+  const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId },
     select: { domain: true, domainVerified: true },
   })
 
   if (!clientSite) throw createError({ statusCode: 404, message: 'Client site not found' })
-  if (clientSite.domainVerified) return { verified: true } // Already verified
+  if (clientSite.domainVerified) return { verified: true }
 
   try {
     const dnsRes = await $fetch<{ Status: number; Answer?: { data: string }[] }>(
@@ -25,11 +21,10 @@ export default defineEventHandler(async (event) => {
       { headers: { accept: 'application/dns-json' } },
     )
 
-    // Look for our base domain in the CNAME targets
     const validCname = dnsRes.Answer?.some((a) => a.data.includes(process.env.BASE_DOMAIN || 'topiqu.com'))
 
     if (validCname) {
-      await prisma.clientSite.update({
+      await db.clientSite.update({
         where: { id: user.clientSiteId },
         data: { domainVerified: true },
       })
