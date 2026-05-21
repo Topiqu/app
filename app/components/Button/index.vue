@@ -28,34 +28,7 @@
               'h-10 px-4 py-2 gap-1.5 rounded-xl': size === 'md',
               'h-12 px-6 py-3 gap-2 rounded-2xl': size === 'lg',
             },
-      active
-        ? {
-            'bg-blue-400': variant === 'primary',
-            'bg-gray-300 dark:bg-gray-600': variant === 'secondary',
-            'bg-red-400': variant === 'danger',
-            'bg-green-400': variant === 'success',
-            'bg-yellow-400': variant === 'warning',
-            'bg-teal-400': variant === 'info',
-            'bg-white/80': variant === 'neutral',
-          }
-        : {
-            'bg-blue-600': variant === 'primary',
-            'bg-gray-200 dark:bg-gray-700': variant === 'secondary',
-            'bg-red-600': variant === 'danger',
-            'bg-green-600': variant === 'success',
-            'bg-yellow-600': variant === 'warning',
-            'bg-teal-600': variant === 'info',
-            'bg-white': variant === 'neutral',
-          },
-      {
-        'text-white hover:bg-blue-800': variant === 'primary',
-        'text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600': variant === 'secondary',
-        'text-white hover:bg-red-800': variant === 'danger',
-        'text-white hover:bg-green-800': variant === 'success',
-        'text-white hover:bg-yellow-800': variant === 'warning',
-        'text-white hover:bg-teal-800': variant === 'info',
-        'text-gray-600': variant === 'neutral',
-      },
+      variantClass,
       animation !== 'none' && animating && animationClass(animation),
     ]"
     @click="handleClick"
@@ -132,6 +105,8 @@ const animationClass = (anim: string) => {
   }
 }
 
+type Variant = 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral' | 'transparent'
+
 const {
   icon = '',
   iconPosition = 'left',
@@ -150,7 +125,7 @@ const {
   icon?: string
   iconPosition?: 'left' | 'right' | 'center'
   size?: 'sm' | 'md' | 'lg'
-  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral' | 'transparent'
+  variant?: Variant
   type?: 'button' | 'submit' | 'reset'
   active?: boolean
   disabled?: boolean
@@ -161,4 +136,52 @@ const {
   animation?: 'none' | 'fadeout' | 'logout' | 'explode' | 'softpop'
   onClick?: (event: MouseEvent) => void
 }>()
+
+const variantTable: Record<Variant, { base: string; active: string; text: string }> = {
+  primary: {
+    base: 'bg-blue-600',
+    active: 'bg-blue-400',
+    text: 'text-white hover:bg-blue-800',
+  },
+  secondary: {
+    base: 'bg-gray-200 dark:bg-gray-700',
+    active: 'bg-gray-300 dark:bg-gray-600',
+    text: 'text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600',
+  },
+  danger: {
+    base: 'bg-red-600',
+    active: 'bg-red-400',
+    text: 'text-white hover:bg-red-800',
+  },
+  success: {
+    base: 'bg-green-600',
+    active: 'bg-green-400',
+    text: 'text-white hover:bg-green-800',
+  },
+  warning: {
+    base: 'bg-yellow-600',
+    active: 'bg-yellow-400',
+    text: 'text-white hover:bg-yellow-800',
+  },
+  info: {
+    base: 'bg-teal-600',
+    active: 'bg-teal-400',
+    text: 'text-white hover:bg-teal-800',
+  },
+  neutral: {
+    base: 'bg-white',
+    active: 'bg-white/80',
+    text: 'text-gray-600',
+  },
+  transparent: {
+    base: 'bg-transparent',
+    active: 'bg-gray-200/60 dark:bg-gray-700/60',
+    text: 'hover:bg-gray-100/70 dark:hover:bg-gray-800/60',
+  },
+}
+
+const variantClass = computed(() => {
+  const v = variantTable[variant]
+  return `${active ? v.active : v.base} ${v.text}`
+})
 </script>
