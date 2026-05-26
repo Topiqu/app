@@ -8,8 +8,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing URL' })
   }
 
+  const safeUrl = assertAllowedUrl(url)
+
   try {
-    const response = await fetch(url)
+    const response = await fetch(safeUrl, { redirect: 'error', signal: AbortSignal.timeout(5000) })
     if (!response.ok) throw new Error(`Fetch failed: ${response.status}`)
 
     const arrayBuffer = await response.arrayBuffer()
