@@ -16,6 +16,7 @@ Single source of truth for the structure of **topiqu-blog** (rasg-blog).
 - **SEO:** `@nuxtjs/seo`, `nuxt-og-image`, `nuxt-gtag`.
 - **Security:** `nuxt-security`, `isomorphic-dompurify`, `content-checker`, `@zxcvbn-ts/core`, fingerprintjs.
 - **Email:** `mjml` templates in `emails/`, sent via SES (`server/utils/sendEmail.ts`).
+- **Observability:** `@sentry/nuxt` (error tracking + session replay), ingested by **Better Stack**.
 
 ## 2. Top-Level Layout
 
@@ -63,24 +64,24 @@ todo/           Working notes (non-code)
 
 Marketing names diverge from the DB enum: marketing **FREE** = enum **BASIC**. Enum is the source of truth (`prisma/schema.zmodel:84`), copy lives in `i18n/locales/{cs,en}.json → landing.pricing.plans.*`.
 
-| Capability                       | FREE (BASIC) | PRO                 | PREMIUM                  | CUSTOM             |
-| -------------------------------- | ------------ | ------------------- | ------------------------ | ------------------ |
-| Price (per month, CZK)           | 0            | 490                 | 990                      | On request (sales) |
-| Stripe checkout                  | —            | `STRIPE_PRICE_PRO`  | `STRIPE_PRICE_PREMIUM`   | Sales-led, no SKU  |
-| Revenue share (creator/platform) | 0 / 100      | 70 / 30             | 90 / 10                  | 100 / 0            |
-| Manual article writing           | ✅           | ✅                  | ✅                       | ✅                 |
-| Subdomain                        | ✅ (free)    | ✅                  | ✅                       | ✅ + apex domain   |
-| Custom (apex) domain             | ❌           | ❌                  | ❌                       | ✅                 |
-| White-label (no Topiqu branding) | ❌           | ❌                  | ❌                       | ✅                 |
-| AI article generation            | ❌           | ✅ (token bundle)   | ✅ (token bundle)        | ✅ (unlimited)     |
-| AI sentiment + auto images       | ❌           | ❌                  | ✅                       | ✅                 |
-| Advanced SEO optimization        | ❌           | ✅                  | ✅                       | ✅                 |
-| Article import                   | ❌           | ✅                  | ✅                       | ✅                 |
-| Priority indexing + sourcing     | ❌           | ❌                  | ✅                       | ✅                 |
-| Custom emojis & branding         | ❌           | ❌                  | ✅                       | ✅                 |
-| Custom ad banners                | ❌           | ❌                  | ❌                       | ✅                 |
-| Analytics                        | Basic        | Basic + GA4         | Basic + GA4              | Basic + GA4        |
-| Support                          | Community    | Standard            | Priority 24/7            | Dedicated          |
+| Capability                       | FREE (BASIC) | PRO                | PREMIUM                | CUSTOM             |
+| -------------------------------- | ------------ | ------------------ | ---------------------- | ------------------ |
+| Price (per month, CZK)           | 0            | 490                | 990                    | On request (sales) |
+| Stripe checkout                  | —            | `STRIPE_PRICE_PRO` | `STRIPE_PRICE_PREMIUM` | Sales-led, no SKU  |
+| Revenue share (creator/platform) | 0 / 100      | 70 / 30            | 90 / 10                | 100 / 0            |
+| Manual article writing           | ✅           | ✅                 | ✅                     | ✅                 |
+| Subdomain                        | ✅ (free)    | ✅                 | ✅                     | ✅ + apex domain   |
+| Custom (apex) domain             | ❌           | ❌                 | ❌                     | ✅                 |
+| White-label (no Topiqu branding) | ❌           | ❌                 | ❌                     | ✅                 |
+| AI article generation            | ❌           | ✅ (token bundle)  | ✅ (token bundle)      | ✅ (unlimited)     |
+| AI sentiment + auto images       | ❌           | ❌                 | ✅                     | ✅                 |
+| Advanced SEO optimization        | ❌           | ✅                 | ✅                     | ✅                 |
+| Article import                   | ❌           | ✅                 | ✅                     | ✅                 |
+| Priority indexing + sourcing     | ❌           | ❌                 | ✅                     | ✅                 |
+| Custom emojis & branding         | ❌           | ❌                 | ✅                     | ✅                 |
+| Custom ad banners                | ❌           | ❌                 | ❌                     | ✅                 |
+| Analytics                        | Basic        | Basic + GA4        | Basic + GA4            | Basic + GA4        |
+| Support                          | Community    | Standard           | Priority 24/7          | Dedicated          |
 
 Feature gates checked in code via `ClientSite.plan` plus per-feature booleans on the same model (`enableAi`, `enableSentiment`, `enableCron`, `allowAds`, `allowGtag`, `allowShapes`). The `BillingPlans` enum (`MONTHLY` / `ANNUAL`) is orthogonal to the plan tier.
 
@@ -108,24 +109,22 @@ Feature gates checked in code via `ClientSite.plan` plus per-feature booleans on
 
 ---
 
-## 9. Seniority Judgment
+## 9. Observability — Error Tracking & Session Replay
 
-**Overall level: upper-mid / senior in scope, mid in discipline.**
+### Why we adopted this
 
-**Senior signals**
+The app had **zero runtime observability**: when something broke for a real user (Nitro API, Tiptap editor, Stripe flow) we had no stack trace, no breadcrumb, no replay — only Vercel logs after the fact. As we move toward **AWS SQS** for async work, this gap gets worse: unlike an append-log bus (Kafka / Redpanda) you cannot rewind an SQS queue, so the _only_ durable record of what happened to a failed job is whatever we capture at the moment it fails. We need stack traces + distributed traces emitted in-flight, plus front-end session replay to reconstruct user-facing bugs, that weren't captured by unit tests.
 
-- Modern, coherent stack: Nuxt 4 + ZenStack + Pinia + UnoCSS + Vercel AI SDK, no legacy drag.
-- Clear separation of concerns: `app` / `server` / `shared` / `prisma` / `extensions` are clean boundaries; zod schemas centralized and segmented; server `utils/` cleanly factored.
-- Domain-grouped components and API routes (92 SFCs, 124 endpoints) without obvious dumping grounds.
-- Strict TS, ESLint + Prettier + perfectionist plugin, ZenStack-driven model authoring, custom Tiptap extensions, OG image / PDF generation, MJML email pipeline — non-trivial engineering surface area.
-- Security-aware: argon2, OTP, DOMPurify, zxcvbn, nuxt-security, content-checker.
+### Why Sentry SDK + Better Stack (not Sentry SaaS)
 
-**Junior / debt signals**
+- **No vendor lock-in.** Better Stack's error tracking speaks the **Sentry SDK protocol**, so we instrument with the official `@sentry/nuxt` SDK and only point the DSN at Better Stack. Switching to (or back to) Sentry SaaS is a one-line env change — no code rewrite.
+- **Cost at scale.** Pricing diverges sharply at volume (SQS will generate many backend events); Better Stack is ~6× cheaper per unit ingest, while both are free at our current size.
+- **Unified data layer.** Better Stack co-locates error tracking, logs, uptime, and incident management — more value per integration than errors-only Sentry, given we had none of these.
 
-- **Zero tests** despite Vitest set up and the project's own convention demanding coverage — the biggest single discipline gap.
-- `todo/` checked into the repo; uncommitted generated `schema.prisma` in the working tree.
-- A `testOg.vue` page and `_test/` server folder shipped alongside production code suggest in-repo scratch surfaces.
-- `nuxt-toast`, `sweetalert2`, and custom notification components coexist — minor stack sprawl.
-- Heavy dependency footprint (Tiptap, AI, AWS, Stripe, PDF, Playwright, Chromium, jspdf + pdfkit) — pragmatic but increases maintenance load; some duplication (`jspdf` and `pdfkit`; `argon2` and `argon2-browser`).
+### Files / wiring
 
-**Verdict:** the architecture and stack choices read as the work of a competent senior Nuxt developer; the missing test suite and a few in-repo scratch artifacts pull the engineering *practice* down a notch. Solid mid-senior product codebase, not yet staff-grade rigor.
+- `sentry.client.config.ts`, `sentry.server.config.ts` (project root) — SDK init, loaded early by the module. Read DSN + sampling from `runtimeConfig.public.sentry`. Empty DSN disables the SDK (local / CI).
+- `nuxt.config.ts` — registers `@sentry/nuxt/module`; `runtimeConfig.public.sentry` (DSN/env/sample rates, overridable via `NUXT_PUBLIC_SENTRY_*`); `sentry.sourceMapsUploadOptions` (build-time, skipped without `SENTRY_AUTH_TOKEN`); `sourcemap.client: 'hidden'`.
+- `.env.example` — `NUXT_PUBLIC_SENTRY_DSN`, `SENTRY_URL/ORG/PROJECT/AUTH_TOKEN`.
+- Replay masks all text + media (`maskAllText`, `blockAllMedia`) for GDPR.
+- CSP: works as-is — `nuxt-security` `connect-src` allows `https:`, replay worker uses existing `blob:` in `script-src`.

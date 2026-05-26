@@ -9,6 +9,7 @@ now:
   - 🛑 dynamic pricing (clientpreferences)
   - 🟡 Stripe integration for token refill
   - 🛑 move Stripe / AWS / xAI / Upstash / LinkedIn / Giphy from NW to personal acc
+  - 🛑 Sentry/Better Stack: add keys (NUXT_PUBLIC_SENTRY_DSN + SENTRY_URL/ORG/PROJECT/AUTH_TOKEN) to Vercel + CI secret
   - 🟡 AI Inolvement with article (cron based = fully AI, AI generated/enhanced = partially AI, no AI used = 100% human)
   - 🟢 replace sweetalert modals with custom ModalMini component
   - 🟢 implement in clientpreferences humanHourlyRate / humanWordsPerHour
@@ -16,6 +17,7 @@ now:
 test:
   - 🛑 google ads
   - 🛑 google analytics
+  - 🛑 Sentry/Better Stack: verify event + session replay delivery (test throw on FE + Nitro)
   - 🛑 OAuth ?redirect param
   - 🛑 fix auth errors with zod id param
   - 🛑 notifications should also be localised
