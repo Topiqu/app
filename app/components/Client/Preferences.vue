@@ -35,7 +35,7 @@
             :description="form.description"
             :socials="form.socials"
             :name="client?.name ?? ''"
-            :subdomain="client?.subdomain ?? ''"
+            :domain="client?.domain ?? ''"
             :currentTheme="form.theme"
             @update:logoUrl="((form.logoUrl = $event.url), (form.optimizedUrl = $event.optimizedUrl))"
             @update:description="form.description = $event"
