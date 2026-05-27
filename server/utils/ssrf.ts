@@ -1,13 +1,10 @@
 // SSRF guard for server-side outbound fetches. Centralized so every feature
-// that fetches a user-supplied URL (image proxy now, imports later) shares one
-// allowlist instead of re-implementing validation.
+// that fetches a user-supplied URL shares one allowlist instead of
+// re-implementing validation.
+import { IMAGE_HOSTS } from '~~/shared/utils/imageHosts'
 
-// Mirrors `image.domains` in nuxt.config.ts. Extend here as new sources appear.
-export const ALLOWED_IMAGE_HOSTS = new Set([
-  'cdn.topiqu.com',
-  'topiqu-storage-eu-frankfurt.s3.eu-central-1.amazonaws.com',
-  'wsrv.nl',
-])
+// Derived from the shared SSOT also feeding `image.domains` in nuxt.config.ts.
+export const ALLOWED_IMAGE_HOSTS = new Set<string>(IMAGE_HOSTS)
 
 /**
  * Validates a user-supplied URL before the server fetches it. Allows only https

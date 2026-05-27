@@ -7,9 +7,9 @@ now:
   - 🛑 GAM + total ad revenue overview & logging
   - 🛑 AWS Comprehend integration
   - 🛑 dynamic pricing (clientpreferences)
-  - 🟡 Stripe integration for token refill
   - 🛑 move Stripe / AWS / xAI / Upstash / LinkedIn / Giphy from NW to personal acc
   - 🛑 Sentry/Better Stack: add keys (NUXT_PUBLIC_SENTRY_DSN + SENTRY_URL/ORG/PROJECT/AUTH_TOKEN) to Vercel + CI secret
+  - 🟡 Stripe integration for token refill
   - 🟡 AI Inolvement with article (cron based = fully AI, AI generated/enhanced = partially AI, no AI used = 100% human)
   - 🟢 replace sweetalert modals with custom ModalMini component
   - 🟢 implement in clientpreferences humanHourlyRate / humanWordsPerHour

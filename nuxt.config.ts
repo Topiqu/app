@@ -1,3 +1,5 @@
+import { IMAGE_HOSTS } from './shared/utils/imageHosts'
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
 
@@ -129,7 +131,7 @@ export default defineNuxtConfig({
   image: {
     quality: 90,
     format: ['avif', 'webp', 'png'],
-    domains: ['cdn.topiqu.com', 'topiqu-storage-eu-frankfurt.s3.eu-central-1.amazonaws.com', 'wsrv.nl'],
+    domains: [...IMAGE_HOSTS],
   },
 
   typescript: {
