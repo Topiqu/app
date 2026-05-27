@@ -57,63 +57,71 @@ export default defineEventHandler(async (event) => {
 
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
-  const rows = await db.article.findMany({
-    where: {
-      clientSiteId: clientSite.id,
-      ...(tag && {
-        tags: { some: { tag: { name: { equals: tag, mode: 'insensitive' } } } },
-      }),
-      ...(search && {
-        OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { excerpt: { contains: search, mode: 'insensitive' } },
-          { content: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
-    },
-    take: take + 1,
-    skip,
-    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-    include: {
-      tags: { include: { tag: true } },
-      user: { select: { id: true, username: true, email: true, role: true, avatarUrl: true } },
-      _count: { select: { comments: true, reactions: true } },
-    },
-  })
+  const buildFeed = async () => {
+    const rows = await db.article.findMany({
+      where: {
+        clientSiteId: clientSite.id,
+        ...(tag && {
+          tags: { some: { tag: { name: { equals: tag, mode: 'insensitive' } } } },
+        }),
+        ...(search && {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { excerpt: { contains: search, mode: 'insensitive' } },
+            { content: { contains: search, mode: 'insensitive' } },
+          ],
+        }),
+      },
+      take: take + 1,
+      skip,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      include: {
+        tags: { include: { tag: true } },
+        user: { select: { id: true, username: true, email: true, role: true, avatarUrl: true } },
+        _count: { select: { comments: true, reactions: true } },
+      },
+    })
 
-  const allTags = await db.article
-    .findMany({
+    const allTags = await db.article
+      .findMany({
+        where: {
+          clientSiteId: clientSite.id,
+          status: 'published',
+        },
+        include: {
+          tags: { include: { tag: true } },
+        },
+      })
+      .then((articles) => [
+        ...new Map(
+          articles.flatMap((a) => a.tags).map((t) => [t.tag.id, { id: t.tag.id, name: t.tag.name, slug: t.tag.slug }]),
+        ).values(),
+      ])
+
+    const latestPollArticle = await db.article.findFirst({
       where: {
         clientSiteId: clientSite.id,
         status: 'published',
+        content: { contains: 'data-type="poll"' },
       },
-      include: {
-        tags: { include: { tag: true } },
-      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, content: true },
     })
-    .then((articles) => [
-      ...new Map(
-        articles.flatMap((a) => a.tags).map((t) => [t.tag.id, { id: t.tag.id, name: t.tag.name, slug: t.tag.slug }]),
-      ).values(),
-    ])
 
-  const latestPollArticle = await db.article.findFirst({
-    where: {
-      clientSiteId: clientSite.id,
-      status: 'published',
-      content: { contains: 'data-type="poll"' },
-    },
-    orderBy: { createdAt: 'desc' },
-    select: { id: true, content: true },
-  })
+    let latestPoll = null
+    if (latestPollArticle) {
+      latestPoll = extractPollData(latestPollArticle.content, latestPollArticle.id)
+    }
 
-  let latestPoll = null
-  if (latestPollArticle) {
-    latestPoll = extractPollData(latestPollArticle.content, latestPollArticle.id)
+    const hasMore = rows.length > take
+    const items = hasMore ? rows.slice(0, take) : rows
+
+    return { items, hasMore, tags: allTags, latestPoll: latestPoll ?? '' }
   }
 
-  const hasMore = rows.length > take
-  const items = hasMore ? rows.slice(0, take) : rows
+  if (user || search) return buildFeed()
 
-  return { items, hasMore, tags: allTags, latestPoll: latestPoll ?? '' }
+  const gen = await getGen(`feed:${clientSite.id}`)
+  const key = `feed:v${gen}:${clientSite.id}:tag=${tag ?? '_all'}:skip=${skip}:take=${take}`
+  return cached(key, 60, buildFeed)
 })
