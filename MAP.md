@@ -13,6 +13,7 @@ Single source of truth for the structure of **topiqu-blog** (rasg-blog).
 - **Editor:** Tiptap 3 (custom extensions in `extensions/`: `Poll`, `slashCommand`, `indent`).
 - **AI:** Vercel `ai` SDK with `@ai-sdk/xai` + Vue bindings.
 - **Cloud / Infra:** AWS S3, Rekognition, SES; Stripe (`@unlok-co/nuxt-stripe`); Vercel deploy (`vercel.json`); PWA (`@vite-pwa/nuxt`); Playwright + `@sparticuz/chromium` for OG / PDF rendering (`@takumi-rs/*`, `pdfkit`, `jspdf`).
+- **Cache / Redis:** Upstash Redis (HTTP/REST, serverless-friendly) — cross-instance cache-aside in `server/utils/cache.ts`. Provisioned via the **Vercel Upstash marketplace integration**, which injects `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`. **Vercel-coupled dependency:** on a hosting migration these creds must be re-provisioned/rotated (and the integration replaced by direct Upstash or another Redis-compatible provider). The cache degrades gracefully — missing creds disable caching, they don't break requests.
 - **SEO:** `@nuxtjs/seo`, `nuxt-og-image`, `nuxt-gtag`.
 - **Security:** `nuxt-security`, `isomorphic-dompurify`, `content-checker`, `@zxcvbn-ts/core`, fingerprintjs.
 - **Email:** `mjml` templates in `emails/`, sent via SES (`server/utils/sendEmail.ts`).

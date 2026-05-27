@@ -125,3 +125,16 @@ done:
   - 🟢 fix background floating objects z-index
   - 🟢 user page - enhance/improve styling & ui for hero section
   - 🟢 rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one
+  - 🔰 generic canary / feature-flag primitive (modular + scalable) - reusable, not cache-specific. Best practices:
+      * deterministic bucketing hash(subject + flagKey) % 100 < rollout (NOT Math.random) -> sticky per subject, no flapping; salt by flagKey
+      * SSR/client consistency: same deterministic hash from a stable subject so server & client agree (avoids hydration mismatch when a flag affects render)
+      * config separate from code & changeable at runtime -> rollout state in Redis (Upstash), env/in-code default as fallback chain (Redis -> env -> default OFF); kill switch field for instant rollback, no redeploy
+      * evaluate() returns { enabled, variant, reason: KILL_SWITCH|DENY|ALLOW|PERCENTAGE|DEFAULT } not bool, for observability
+      * default-safe: unknown flag / provider error -> safe default (OFF for risky new paths); cache outage must not flip a flag on
+      * pluggable FlagProvider (swap Env/Redis -> LaunchDarkly/OpenFeature later w/o touching call sites); pluggable subject dimension (requestId/sessionId/userId/clientSiteId; per-tenant rollout is the multi-tenant win)
+      * support weighted multivariant (A/B/C), allow/deny lists
+      * layout: shared/canary/{types,evaluate}.ts (pure deterministic core, FNV-1a, unit-tested, shared client+server) ; server/utils/canary.ts (provider + 30s in-memory config cache so we don't hit Redis per request + canary() + withShadow()) ; app/composables/useCanary.ts (client eval over SSR-hydrated flags)
+      * withShadow(flag, subject, { primary, candidate }) -> runs both, returns primary, logs diff = generic version of the cached-vs-live leak check
+      * observability: emit each evaluation (flag, variant, reason, hashed subject) to logs AND Sentry (breadcrumb/tag or measurement) so we can correlate canary cohort vs rest, and a bad variant surfaces in error tracking
+      * first consumer: wrap the feed-cache (server/api/articles/by-clientsite/[slug].ts) so canary actually drives the cache we added, not theory
+  - 🔰 server cache follow-ups - once canary trusted: drop temp [cache] HIT/MISS logs (server/utils/cache.ts), broaden anon-only -> all non-privileged readers, wire bumpGen('feed:'+clientSiteId) into article mutations (create/patch/delete/publish) for instant invalidation; size TTLs from HIT/MISS logs + Upstash command count.
