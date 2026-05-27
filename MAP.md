@@ -38,7 +38,7 @@ todo/           Working notes (non-code)
 - `pages/` — 14 route files; Czech-language URLs (`autor`, `autorizace`, `clanky`, `stitky`, `uzivatel`, `master`, `drafts`). Admin section under `admin/`.
 - `components/` — 92 SFCs, grouped by domain:
   `Admin/`, `Article/`, `Auth/`, `Button/`, `Charts.vue`, `Client/`, `Comment/`, `Dropdown/`, `Emoji/`, `File/`, `Form/`, `Gif/`, `Landing/`, `Modal/`, `Notification/`, `OgImage/`, `Stats/`, `Status/`, `Tags/`, `Tasks/`, `User/`, plus the shared Tiptap editor `TiptapEditor.vue`.
-- `composables/` — 13 hooks (article SEO/tracking/drafts/actions/events, ads/GAM, currency, profile, image retry, client-site events, theme).
+- `composables/` — 12 hooks (article SEO/tracking/drafts/actions/events, ads/GAM, currency, profile, image retry, client-site events, theme).
 - `stores/` — Pinia (`theme.ts`); persistence handled per-store via plugin.
 - `layouts/`, `middleware/`, `error.vue`, `app.vue` — standard Nuxt scaffolding.
 
@@ -47,7 +47,12 @@ todo/           Working notes (non-code)
 - `api/` — 124 route handlers grouped by resource:
   `admin`, `articles` (CRUD, search, drafts, featured, generate, by-clientsite), `auth`, `bans`, `clients`, `comments`, `companies`, `crons`, `currency`, `drafts`, `emojis`, `external`, `features`, `follows`, `gifs`, `linkedin`, `notifications`, `onboarding`, `publish`, `series`, `sessions`, `stats`, `stripe`, `tags`, `users`, plus standalone `upload.ts`, and an `_test/` sandbox.
 - `tasks/` — Nitro scheduled tasks.
-- `utils/` — Cross-cutting helpers: `prisma.ts`, `zenstack.ts`, `session.ts`, `sendEmail.ts`, `sanitize.ts`, `geo.ts`, `ip.ts`, `metrics.ts`, `paginator.ts`, `log.ts`, `userLog.ts`, `consumeTokens.ts`, `tokenRatio.ts`, `unsplash.ts`, `pdfFont.ts`, `i18n.ts`, plus `ai/` and `linkedin/` subdirs.
+- `utils/` — Cross-cutting helpers: `prisma.ts`, `zenstack.ts`, `session.ts`, `sendEmail.ts`, `sanitize.ts`, `geo.ts`, `ip.ts`, `metrics.ts`, `paginator.ts`, `log.ts`, `userLog.ts`, `consumeTokens.ts`, `tokenRatio.ts`, `unsplash.ts`, `pdfFont.ts`, `i18n.ts`, `notificationsPoll.ts` (pure cursor/query helpers for the notifications poll endpoint), plus `ai/` and `linkedin/` subdirs.
+
+### Notifications delivery
+
+- Notifications are persisted in the DB (source of truth) and delivered to the client by **polling**, not push. The client (`Notification/Bar.vue`) polls `GET /api/notifications/poll?since=<ISO cursor>` every 10s (paused while the tab is hidden) and merges anything newer.
+- This replaced an in-memory SSE channel (`server/utils/realtime.ts` + `/api/notifications/sse` + the `useRealtime` composable), which is unviable on serverless/Vercel: held connections incur per-request/wall-clock billing and isolated function memory means a `publish` in one function never reaches a subscriber in another. That whole layer was removed; reviving push would mean a managed WebSocket provider (Ably/Pusher) or a long-running process off Vercel, not a serverless patch. Cursor semantics live in `server/utils/notificationsPoll.ts` and are unit-tested.
 
 ## 5. Shared (`shared/`)
 

@@ -32,14 +32,13 @@ export default defineEventHandler(async (event) => {
   })
 
   if (body.type === 'LIKE' && comment.userId && comment.userId !== user.id) {
-    const notification = await prisma.notification.create({
+    await prisma.notification.create({
       data: {
         message: t('notifications.userLikedComment', { user: user.name || 'Anonymous' })!,
         userId: comment.userId,
         type: 'LIKE',
       },
     })
-    await realtime.publish(`notifications:${comment.userId}`, 'notification.created', { ...notification, count: 1 })
   }
 
   const count = await db.commentReaction.count({ where: { commentId: body.commentId } })

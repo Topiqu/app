@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
 
   const url = `${import.meta.dev ? 'http://localhost:3000' : 'https://topiqu.com'}/clanky/${comment.article.slug}#comment-${comment.id}`
 
-  const notification = await prisma.notification.create({
+  await prisma.notification.create({
     data: {
       message: t('notifications.userReportedComment', {
         user: user.name || 'Anonymous',
@@ -38,8 +38,6 @@ export default defineEventHandler(async (event) => {
       type: 'SYSTEM',
     },
   })
-
-  await realtime.publish(`notifications:${admin.id}`, 'notification.created', { ...notification, count: 1 })
 
   return { message: t('notifications.commentReported')! }
 })

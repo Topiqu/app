@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (article.userId && article.userId !== user?.id) {
-    const notification = await prisma.notification.create({
+    await prisma.notification.create({
       data: {
         message: user?.name
           ? t('common.notifications.userLikedArticle', [user.name])!
@@ -57,8 +57,6 @@ export default defineEventHandler(async (event) => {
         type: 'LIKE',
       },
     })
-
-    await realtime.publish(`notifications:${article.userId}`, 'notification.created', { ...notification, count: 1 })
   }
 
   const count = await db.articleReaction.count({ where: { articleId: id } })
