@@ -19,9 +19,9 @@
       </span>
       <span
         class="absolute bottom-0 right-0 w-2 h-2 rounded-full ring-1 ring-white dark:ring-neutral-900"
-        :class="sseDot.color"
-        :title="`Notifikace: ${sseDot.label}${sseRetries > 0 ? ` (pokus #${sseRetries})` : ''}`"
-        :aria-label="`Realtime status: ${sseDot.label}`"
+        :class="pollActive ? 'bg-green-500' : 'bg-gray-400'"
+        :title="`Notifikace: ${pollActive ? 'aktivní' : 'pozastaveno'}`"
+        :aria-label="`Notifikace polling: ${pollActive ? 'active' : 'paused'}`"
       />
       <Transition
         enterActiveClass="transition ease-out duration-200"
@@ -201,27 +201,39 @@ const url = computed(() => `/api/notifications?page=${page.value}&limit=${limit}
 const { data: auth } = useAuth()
 const { data: fetchedData, error, refresh } = await useFetch<FetchResponse>(url)
 
-const sseUrl = computed(() => (auth?.value?.user ? '/api/notifications/sse' : undefined))
+const POLL_INTERVAL_MS = 10_000
+const pollEnabled = computed(() => !!auth?.value?.user)
+const visibility = useDocumentVisibility()
+const pollActive = computed(() => pollEnabled.value && visibility.value === 'visible')
 
-const { status: sseStatus, isStale: sseStale, reconnectAttempts: sseRetries } = useRealtime(sseUrl, {
-  enabled: () => !!auth?.value?.user,
-  handlers: {
-    'notification.created': (n: Notif) => {
-      if (!n?.id || !['COMMENT', 'LIKE', 'FOLLOW', 'MENTION', 'ARTICLE_PUBLISHED', 'SYSTEM'].includes(n.type)) return
-      data.value = [n, ...data.value]
-      unreadCount.value = data.value.filter((x) => !x.isRead).length
-      useToast().success({ message: `Nová notifikace: ${n.message}` })
-    },
+const poll = async () => {
+  if (!pollEnabled.value) return
+  try {
+    const res = await $fetch<{ notifications: Notif[]; unreadCount: number }>('/api/notifications/poll', {
+      query: { since: data.value[0]?.createdAt ?? undefined },
+    })
+    const known = new Set(data.value.map((n) => n.id))
+    const fresh = res.notifications.filter((n) => n?.id && !known.has(n.id))
+    if (fresh.length) {
+      data.value = [...fresh, ...data.value]
+      for (const n of fresh) useToast().success({ message: `Nová notifikace: ${n.message}` })
+    }
+    unreadCount.value = res.unreadCount
+  } catch {
+    // next tick retries
+  }
+}
+
+const { pause, resume } = useIntervalFn(poll, POLL_INTERVAL_MS, { immediate: false })
+
+watch(
+  pollActive,
+  (active) => {
+    if (active) resume()
+    else pause()
   },
-  debug: import.meta.dev,
-})
-
-const sseDot = computed(() => {
-  if (sseStale.value) return { color: 'bg-amber-500', label: 'stale' }
-  if (sseStatus.value === 'OPEN') return { color: 'bg-green-500', label: 'live' }
-  if (sseStatus.value === 'CONNECTING') return { color: 'bg-yellow-500 animate-pulse', label: 'connecting' }
-  return { color: 'bg-red-500', label: 'offline' }
-})
+  { immediate: true },
+)
 
 watch(
   fetchedData,

@@ -1,3 +1,5 @@
+import { IMAGE_HOSTS } from './shared/utils/imageHosts'
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
 
@@ -10,6 +12,12 @@ export default defineNuxtConfig({
       appVersion: '1.0.0 beta',
       cdnUrl: process.env.CDN_URL || 'https://cdn.topiqu.com',
       turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || '',
+      sentry: {
+        dsn: '',
+        environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
+        tracesSampleRate: 0.1,
+        replaysSessionSampleRate: 0.1,
+      },
     },
     turnstile: { secretKey: process.env.TURNSTILE_SECRET_KEY || '' },
     openModerator: { apiKey: process.env.OPENMODERATOR_API_KEY },
@@ -103,7 +111,19 @@ export default defineNuxtConfig({
     'nuxt-toast',
     'nuxt-qrcode',
     'nuxt-gtag',
+    '@sentry/nuxt/module',
   ],
+
+  sentry: {
+    sourceMapsUploadOptions: {
+      url: process.env.SENTRY_URL,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    },
+  },
+
+  sourcemap: { client: 'hidden' },
   ogImage: {
     debug: process.env.NODE_ENV === 'development',
     runtimeCacheStorage: true,
@@ -111,7 +131,7 @@ export default defineNuxtConfig({
   image: {
     quality: 90,
     format: ['avif', 'webp', 'png'],
-    domains: ['cdn.topiqu.com', 'topiqu-storage-eu-frankfurt.s3.eu-central-1.amazonaws.com', 'wsrv.nl'],
+    domains: [...IMAGE_HOSTS],
   },
 
   typescript: {

@@ -68,7 +68,7 @@
 const filterStatus = shallowRef('')
 const { data: drafts, pending, error, refresh } = await useFetch('/api/drafts')
 
-const filteredDrafts = computed(() => {
+const filteredDrafts = computed<any[]>(() => {
   if (!drafts.value) return []
   if (!filterStatus.value) return drafts.value
   return drafts.value.filter((d: any) => d.status === filterStatus.value)

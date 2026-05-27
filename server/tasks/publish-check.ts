@@ -31,7 +31,7 @@ export default defineTask({
         ),
       )
 
-      const authorNotifications = await Promise.all(
+      await Promise.all(
         articles.map((a) =>
           ctx.notification.create({
             data: {
@@ -41,12 +41,6 @@ export default defineTask({
               type: 'ARTICLE_PUBLISHED',
             },
           }),
-        ),
-      )
-
-      await Promise.all(
-        authorNotifications.map((n) =>
-          realtime.publish(`notifications:${n.userId}`, 'notification.created', { ...n, count: 1 }),
         ),
       )
 
@@ -70,11 +64,6 @@ export default defineTask({
       for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
         const batch = notifications.slice(i, i + BATCH_SIZE)
         await ctx.notification.createMany({ data: batch, skipDuplicates: true })
-        await Promise.all(
-          batch.map((n) =>
-            realtime.publish(`notifications:${n.userId}`, 'notification.created', { ...n, count: 1 }),
-          ),
-        )
       }
 
       return { result: { count: update.count, timestamp: now.toISOString() } }

@@ -7,7 +7,7 @@
 
     <div class="relative z-10 flex flex-col items-center gap-6 p-12 text-center">
       <img
-        :src="proxyAppLogo"
+        :src="appLogo"
         width="120"
         height="120"
         class="mb-4"
@@ -36,6 +36,5 @@ defineProps<{
   description?: string
 }>()
 
-const APP_LOGO_URL = 'https://cdn.topiqu.com/app-logo.png'
-const proxyAppLogo = `/api/og-proxy?url=${encodeURIComponent(APP_LOGO_URL)}`
+const appLogo = 'https://cdn.topiqu.com/app-logo.png'
 </script>

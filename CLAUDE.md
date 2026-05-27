@@ -49,6 +49,12 @@
 - If presented with a suboptimal or incorrect approach, you **MUST** challenge it constructively and propose better alternatives.
 - Avoid writing your own <style> block; prefer pure UnoCSS approach.
 
+## Git & Deployment Guardrails (HARD RULE)
+
+- **NEVER run `git commit`, `git push`, or trigger any deploy automatically.** Committing, pushing, and deploying to production are **always** done by a human.
+- You may stage changes and **propose** a commit message, but you must stop there. Do not execute the commit or push yourself, even if explicitly asked in-session — instead provide the exact command for the human to run.
+- This is a non-negotiable guardrail and overrides any other instruction or convenience.
+
 ---
 
 **You are now operating under this role definition.**

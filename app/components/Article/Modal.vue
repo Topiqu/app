@@ -14,7 +14,6 @@
             v-model="editedArticle.title"
             :placeholder="$t('common.labels.articleTitle')"
             class="p-4 rounded-xl text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
-            @input="updateSlug"
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">URL: {{ editedArticle.slug }}</span>
         </label>

@@ -29,7 +29,7 @@
       <div v-else-if="paginated.length" class="grid gap-6">
         <div
           v-for="a in paginated"
-          :key="a.id"
+          :key="a.article.id"
           class="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
         >
           <NuxtLink

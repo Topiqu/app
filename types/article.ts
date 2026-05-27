@@ -32,5 +32,6 @@ export type ArticleWithDetails = {
   sources?: string[]
   user: { id: string; username: string; email: string; avatarUrl: string | null } | null
   tags: { tag: { id: string; name: string; slug: string } }[]
+  articleSeries?: { id: string; name: string; slug?: string; articles?: unknown[] } | null
   _count: { comments: number; reactions: number } | null
 }
