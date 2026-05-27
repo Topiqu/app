@@ -15,9 +15,9 @@
       <div
         class="relative overflow-hidden bg-gray-50/50 dark:bg-gray-900/20"
         :style="{
-          width: slotWidth,
+          width: props.width || '100%',
           minHeight: loading ? reservedHeight : 'auto',
-          height: slotHeight,
+          height: props.sizes === 'fluid' ? 'auto' : props.height || 'auto',
         }"
       >
         <div
@@ -50,7 +50,7 @@ const loading = shallowRef(true)
 const isEmpty = shallowRef(false)
 const { defineSlot, destroySlots } = useGamAds()
 
-const internalSlotId = props.slotId ?? `gpt-ad-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+const internalSlotId = props.slotId ?? useId()
 
 const reservedHeight = computed(() => {
   if (props.height) return props.height
@@ -64,9 +64,6 @@ const reservedHeight = computed(() => {
   }
   return 'auto'
 })
-
-const slotWidth = computed(() => props.width || '100%')
-const slotHeight = computed(() => (props.sizes === 'fluid' ? 'auto' : props.height || 'auto'))
 
 onMounted(async () => {
   if (window.googletag && window.googletag.cmd) {
