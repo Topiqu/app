@@ -10,14 +10,6 @@
 
 <script setup lang="ts">
 defineProps<{
-  title?: string
-  description?: string
-  siteName?: string
-  siteLogo?: string
-  authorName?: string
-  authorImage?: string
-  readingTime?: string
   backgroundImage?: string | null
-  isPremium?: boolean
 }>()
 </script>
