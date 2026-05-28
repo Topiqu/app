@@ -57,6 +57,15 @@ export default defineEventHandler(async (event) => {
     },
   })
 
+  const contentWithPolls = await syncArticlePolls(
+    db as unknown as Parameters<typeof syncArticlePolls>[0],
+    article.id,
+    article.content,
+  )
+  if (contentWithPolls !== article.content) {
+    await db.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
+  }
+
   await logAction({
     action: 'ARTICLE_CREATED',
     userId: user.id,

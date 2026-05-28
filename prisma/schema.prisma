@@ -201,6 +201,7 @@ model Article {
   shares           ArticleShare[]
   feedbacks        ArticleFeedback[]
   pollResults      PollResult[]
+  polls            Poll[]
   notifications    Notification[]    @relation("ArticleNotifications")
   sources          String[]
   prompt           String?
@@ -479,18 +480,53 @@ model ClientFeature {
 }
 
 model PollResult {
-  id        String    @id() @default(uuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt()
+  id        String     @id() @default(uuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime?  @updatedAt()
   deletedAt DateTime?
   articleId String
+  article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  pollId    String
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  optionId  String
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
   userId    String?
-  pollId    String?
   sessionId String?
-  response  String
-  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
-  @@index([articleId, response])
+  @@unique([pollId, userId])
+  @@unique([pollId, sessionId])
+  @@index([pollId])
+  @@index([optionId])
+  @@index([articleId])
+}
+
+model Poll {
+  id        String       @id() @default(uuid())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime?    @updatedAt()
+  deletedAt DateTime?
+  articleId String
+  article   Article      @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  question  String
+  order     Int          @default(0)
+  options   PollOption[]
+  results   PollResult[]
+
+  @@index([articleId])
+}
+
+model PollOption {
+  id        String       @id() @default(uuid())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime?    @updatedAt()
+  deletedAt DateTime?
+  pollId    String
+  poll      Poll         @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  label     String
+  order     Int          @default(0)
+  results   PollResult[]
+
+  @@index([pollId])
 }
 
 model UserBan {

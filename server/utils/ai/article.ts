@@ -192,7 +192,8 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
   if (object.polls) {
     for (const [idx, poll] of object.polls.entries()) {
       const pollId = crypto.randomUUID()
-      const escapedOptions = JSON.stringify(poll.options).replace(/"/g, '&quot;')
+      const optionObjects = poll.options.map((label: string) => ({ label }))
+      const escapedOptions = JSON.stringify(optionObjects).replace(/"/g, '&quot;')
       const pollHtml = `<div data-type="poll" data-id="${pollId}" data-question="${poll.question}" data-options="${escapedOptions}"></div>`
       object.content = object.content.replace(`[[POLL${idx + 1}]]`, pollHtml)
     }

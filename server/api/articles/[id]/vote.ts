@@ -10,31 +10,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   }
 
-  const article = await prisma.article.findUnique({
-    where: { id },
-    select: { id: true },
-  })
-
-  if (!article) {
-    throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
-  }
-
   const sessionId = user?.id ? null : getCookie(event, 'anon_session') || randomUUID()
   if (!user?.id && sessionId) setCookie(event, 'anon_session', sessionId, { maxAge: 30 * 24 * 60 * 60 })
 
-  const results = await prisma.pollResult.findMany({
+  const grouped = await prisma.pollResult.groupBy({
+    by: ['optionId'],
     where: { pollId: pollId as string },
-    select: { id: true, response: true, userId: true, sessionId: true },
+    _count: { optionId: true },
   })
 
-  const voteCounts = results.reduce<Record<string, number>>(
-    (acc, r) => ({ ...acc, [r.response]: (acc[r.response] || 0) + 1 }),
+  const voteCounts = grouped.reduce<Record<string, number>>(
+    (acc, g) => ({ ...acc, [g.optionId]: g._count.optionId }),
     {},
   )
 
-  const userVote = results.find((r) =>
-    user?.id ? r.userId === user.id && r.sessionId === null : r.sessionId === sessionId && r.userId === null,
-  )
+  const userVote = await prisma.pollResult.findFirst({
+    where: user?.id
+      ? { pollId: pollId as string, userId: user.id }
+      : { pollId: pollId as string, sessionId, userId: null },
+    select: { optionId: true },
+  })
 
-  return { pollResult: userVote ? userVote.response : null, voteCounts }
+  return { pollResult: userVote ? userVote.optionId : null, voteCounts }
 })

@@ -2,6 +2,7 @@ import { Node } from '@tiptap/core'
 import { VueNodeViewRenderer } from '@tiptap/vue-3'
 
 import Poll from './Poll.vue'
+import { normalizePollOptions } from '../shared/utils/polls'
 
 export default Node.create({
   name: 'poll',
@@ -9,9 +10,10 @@ export default Node.create({
   atom: true,
   addAttributes() {
     return {
-      id: { default: crypto.randomUUID() },
+      id: { default: null },
+      pollId: { default: null },
       question: { default: 'Q1' },
-      options: { default: ['A1'] },
+      options: { default: [{ label: 'A1' }] },
     }
   },
   parseHTML() {
@@ -21,30 +23,30 @@ export default Node.create({
         getAttrs: (elm) => {
           let options
           try {
-            options = JSON.parse(elm.getAttribute('data-options') || '[]')
+            options = normalizePollOptions(JSON.parse(elm.getAttribute('data-options') || '[]'))
           } catch {
-            options = ['A1']
+            options = [{ label: 'A1' }]
           }
           return {
-            id: elm.getAttribute('data-id') || crypto.randomUUID(),
+            id: elm.getAttribute('data-id') || null,
+            pollId: elm.getAttribute('data-poll-id') || null,
             question: elm.getAttribute('data-question') || 'Q1',
-            options: options.length ? options : ['A1'],
+            options: options.length ? options : [{ label: 'A1' }],
           }
         },
       },
     ]
   },
   renderHTML({ HTMLAttributes }) {
-    const options = HTMLAttributes.options?.length ? HTMLAttributes.options : ['A1']
-    return [
-      'div',
-      {
-        'data-type': 'poll',
-        'data-id': HTMLAttributes.id || crypto.randomUUID(),
-        'data-question': HTMLAttributes.question?.trim() || 'Q1',
-        'data-options': JSON.stringify(options),
-      },
-    ]
+    const options = normalizePollOptions(HTMLAttributes.options)
+    const attrs: Record<string, string> = {
+      'data-type': 'poll',
+      'data-question': HTMLAttributes.question?.trim() || 'Q1',
+      'data-options': JSON.stringify(options.length ? options : [{ label: 'A1' }]),
+    }
+    if (HTMLAttributes.id) attrs['data-id'] = HTMLAttributes.id
+    if (HTMLAttributes.pollId) attrs['data-poll-id'] = HTMLAttributes.pollId
+    return ['div', attrs]
   },
   addNodeView() {
     return VueNodeViewRenderer(Poll)

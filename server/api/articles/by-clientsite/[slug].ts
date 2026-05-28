@@ -1,3 +1,5 @@
+import { normalizePollOptions } from '~~/shared/utils/polls'
+
 function unescapeHtml(safe: string | undefined): string {
   if (!safe) return ''
   return safe
@@ -14,6 +16,7 @@ function extractPollData(content: string, articleId: string) {
 
   const tag = pollMatch[0]
 
+  const pollIdMatch = tag.match(/data-poll-id="([^"]*)"/)
   const idMatch = tag.match(/data-id="([^"]*)"/)
   const questionMatch = tag.match(/data-question="([^"]*)"/)
   const optionsMatch = tag.match(/data-options="([^"]*)"/)
@@ -22,13 +25,13 @@ function extractPollData(content: string, articleId: string) {
 
   try {
     const rawOptions = unescapeHtml(optionsMatch[1])
-    const options = JSON.parse(rawOptions)
+    const options = normalizePollOptions(JSON.parse(rawOptions))
 
     return {
       type: 'poll',
-      pollId: idMatch ? idMatch[1] : crypto.randomUUID(),
+      pollId: pollIdMatch ? pollIdMatch[1] : idMatch ? idMatch[1] : crypto.randomUUID(),
       question: unescapeHtml(questionMatch[1]),
-      options: Array.isArray(options) ? options : [],
+      options,
       articleId,
     }
   } catch (e) {

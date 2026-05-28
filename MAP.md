@@ -66,6 +66,15 @@ todo/           Working notes (non-code)
 - Migrations in `prisma/migrations/`.
 - `bun build` pipeline: `zenstack generate` → `prisma migrate deploy` → `nuxt build`.
 
+### Polls
+
+- Fully normalized: `Poll` (question, order) → `PollOption` (label, order) → `PollResult` (vote). All cascade-delete from `Article`. `PollResult` references both `Poll` and the chosen `PollOption` by **real FK** (+ `articleId` kept denormalized so engagement stats use `Article._count.pollResults`). Two `@@unique` constraints — `(pollId, userId)` and `(pollId, sessionId)` — enforce one vote per identity at the DB layer.
+- Poll blocks are authored as Tiptap nodes (`extensions/poll.ts` + `extensions/Poll.vue`) and serialized into `Article.content` as `<div data-type="poll" data-poll-id data-question data-options>`, where `data-options` is a JSON array of `{ id, label }`.
+- On article create/edit, `server/utils/articlePolls.ts → syncArticlePolls` reconciles the embedded blocks with the `Poll`/`PollOption` rows and stamps each block with server-assigned ids (poll id on the block, option ids inside `data-options`). Question/labels stay mirrored in the HTML so the editor round-trips and client rendering needs no DB read; the DB holds the stable ids votes key off. Option/label normalization lives in `shared/utils/polls.ts` (`normalizePollOptions`).
+- Votes key off **`optionId`** (not the label text), so renaming an option never splits counts and removing one cleans up its votes via cascade. Vote endpoints: `server/api/articles/[id]/vote.ts` (GET counts via `groupBy`) + `vote.post.ts` (cast; relies on the unique constraint → P2002 → 409).
+- Render: `Article/Parsed.vue` (client-side parse) → `Article/Poll.vue` (votes by `optionId`); homepage "latest poll" via `extractPollData` in `by-clientsite/[slug].ts`. All prefer `data-poll-id`, falling back to legacy `data-id`.
+- **Legacy note:** the `20260527130000_polls_normalized` migration wipes any pre-existing `PollResult` rows (old text-based votes couldn't be remapped to option ids without parsing HTML) — a one-time, intentional reset.
+
 ## 6a. Plan Matrix (`ClientSite.plan` — enum `ClientPlan`)
 
 Marketing names diverge from the DB enum: marketing **FREE** = enum **BASIC**. Enum is the source of truth (`prisma/schema.zmodel:84`), copy lives in `i18n/locales/{cs,en}.json → landing.pricing.plans.*`.
