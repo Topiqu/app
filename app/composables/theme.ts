@@ -31,3 +31,29 @@ export const themes: {
   cyan: 'from-cyan-500 to-teal-800 dark:from-cyan-700 dark:to-teal-900',
   violet: 'from-violet-600 to-purple-900 dark:from-violet-800 dark:to-purple-950',
 }
+
+export type ThemeKey = keyof typeof themes
+
+/**
+ * focus-visible ring color per theme. Kept as explicit class strings (never
+ * `ring-${theme}-500`) so UnoCSS can statically detect them. `satisfies`
+ * enforces exactly one entry per theme — add a theme to `themes` above and TS
+ * flags the missing ring here instead of it silently disappearing at runtime.
+ */
+export const themeRings = {
+  blue: 'focus-visible:ring-blue-500',
+  green: 'focus-visible:ring-green-500',
+  red: 'focus-visible:ring-red-500',
+  purple: 'focus-visible:ring-purple-500',
+  orange: 'focus-visible:ring-orange-500',
+  teal: 'focus-visible:ring-teal-500',
+  yellow: 'focus-visible:ring-yellow-500',
+  pink: 'focus-visible:ring-pink-500',
+  indigo: 'focus-visible:ring-indigo-500',
+  gray: 'focus-visible:ring-gray-500',
+  lime: 'focus-visible:ring-lime-500',
+  sky: 'focus-visible:ring-sky-500',
+  amber: 'focus-visible:ring-amber-500',
+  cyan: 'focus-visible:ring-cyan-500',
+  violet: 'focus-visible:ring-violet-500',
+} satisfies Record<ThemeKey, string>
