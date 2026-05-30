@@ -14,6 +14,7 @@ export default defineEventHandler(() => {
   return {
     branch: run('git rev-parse --abbrev-ref HEAD'),
     hash: run('git rev-parse --short HEAD'),
+    hashFull: run('git rev-parse HEAD'),
     dirty: run('git status --porcelain').length > 0,
   }
 })
