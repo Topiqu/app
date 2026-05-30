@@ -10,6 +10,7 @@
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose stop",
     "db:reset": "docker compose down -v && docker compose up -d --wait",
+    "db:fresh": "bun db:reset && bun prisma:deploy && bun db:seed",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck",
