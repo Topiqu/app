@@ -38,10 +38,11 @@ todo/           Working notes (non-code)
 
 - `pages/` — 14 route files; Czech-language URLs (`autor`, `autorizace`, `clanky`, `stitky`, `uzivatel`, `master`, `drafts`). Admin section under `admin/`.
 - `components/` — 92 SFCs, grouped by domain:
-  `Admin/`, `Article/`, `Auth/`, `Button/`, `Charts.vue`, `Client/`, `Comment/`, `Dropdown/`, `Emoji/`, `File/`, `Form/`, `Gif/`, `Landing/`, `Modal/`, `Notification/`, `OgImage/`, `Stats/`, `Status/`, `Tags/`, `Tasks/`, `User/`, plus the shared Tiptap editor `TiptapEditor.vue`.
-- `composables/` — 12 hooks (article SEO/tracking/drafts/actions/events, ads/GAM, currency, profile, image retry, client-site events, theme).
+  `Admin/`, `Article/`, `Auth/`, `Button/`, `Charts.vue`, `Client/`, `Comment/`, `Dev/`, `Dropdown/`, `Emoji/`, `File/`, `Form/`, `Gif/`, `Landing/`, `Modal/`, `Notification/`, `OgImage/`, `Stats/`, `Status/`, `Tags/`, `Tasks/`, `User/`, plus the shared Tiptap editor `TiptapEditor.vue`.
+- `composables/` — 13 hooks (article SEO/tracking/drafts/actions/events, ads/GAM, currency, profile, image retry, client-site events, theme, dev view override).
 - `stores/` — Pinia (`theme.ts`); persistence handled per-store via plugin.
 - `layouts/`, `middleware/`, `error.vue`, `app.vue` — standard Nuxt scaffolding.
+- `assets/styles/` — global SCSS (entry `base.scss`, loaded via `nuxt.config.css`). App-surface element rules (`div`/`button`/text/forms/`[role=dialog]`) are scoped under `:where(#__nuxt, #headlessui-portal-root)` so they cannot bleed into body-teleported overlays (DevConsole, BackToTop); `:where()` keeps specificity neutral, so in-app rendering is unchanged. Third-party widget overrides (iziToast, swal2, tippy, YouTube) live isolated in `_vendor.scss` and stay global because those libs portal into `<body>`. Theme tokens in `_variables.scss`.
 
 ## 4. Server Layer (`server/`)
 
@@ -49,6 +50,13 @@ todo/           Working notes (non-code)
   `admin`, `articles` (CRUD, search, drafts, featured, generate, by-clientsite), `auth`, `bans`, `clients`, `comments`, `companies`, `crons`, `currency`, `drafts`, `emojis`, `external`, `features`, `follows`, `gifs`, `linkedin`, `notifications`, `onboarding`, `publish`, `series`, `sessions`, `stats`, `stripe`, `tags`, `users`, plus standalone `upload.ts`, and an `_test/` sandbox.
 - `tasks/` — Nitro scheduled tasks.
 - `utils/` — Cross-cutting helpers: `prisma.ts`, `zenstack.ts`, `session.ts`, `sendEmail.ts`, `sanitize.ts`, `geo.ts`, `ip.ts`, `metrics.ts`, `paginator.ts`, `log.ts`, `userLog.ts`, `consumeTokens.ts`, `tokenRatio.ts`, `unsplash.ts`, `pdfFont.ts`, `i18n.ts`, `notificationsPoll.ts` (pure cursor/query helpers for the notifications poll endpoint), plus `ai/` and `linkedin/` subdirs.
+
+### Local DevConsole
+
+- `components/Dev/Console.vue` — a draggable, dev-only floating panel (Teleport to body, `useDraggable` + `useLocalStorage` for persisted position/collapse). Rendered in `app.vue` via Nuxt's `<DevOnly>`, so it is stripped from production builds. Complements (does not replace) Nuxt DevTools.
+- Capabilities: force the rendered view (`auto`/`landing`/`tenant`) so the Landing↔tenant split can be exercised on `localhost`; impersonate seed users (reader/admin/super) via the real `signIn('credentials')` flow with seed creds; show git branch/short-hash/dirty flag and the resolved tenant + plan. Toggle/hide via `Ctrl+Shift+D` (a corner launcher restores it); drag snaps to the nearest edge and clamps to the viewport.
+- View override lives in `composables/useDevView.ts` (cookie-backed for SSR consistency). `app.vue#isMainLanding` honors it only behind `import.meta.dev`. Git context comes from `server/api/_dev/meta.get.ts`, a dev-only endpoint (404s in production).
+- Dev resolver note: `server/api/clients/slug/[slug].ts` matches `{ OR: [domain, name] }` outside production so `localhost` (seeded `ClientSite.domain = localhost`) resolves to a tenant; production still matches `domain` only.
 
 ### Notifications delivery
 

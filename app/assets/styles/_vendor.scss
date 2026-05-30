@@ -1,0 +1,100 @@
+@use '_variables.scss' as *;
+
+.iziToast-wrapper {
+  background-color: transparent !important;
+}
+
+.iziToast-capsule {
+  background-color: transparent;
+}
+
+.iziToast {
+  background-color: transparent;
+  color: #000000;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+}
+
+.iziToast-color-green {
+  border-left-color: #4caf50;
+}
+
+html.dark .iziToast {
+  color: #e5e7eb;
+  border: 1px solid #4b5563;
+}
+
+html.dark .iziToast-color-green {
+  border-left-color: #66bb6a;
+}
+
+.swal2-popup {
+  background-color: $input-bg !important;
+  color: $dialog-text !important;
+  border-radius: 0.5rem !important;
+}
+
+html.dark .swal2-popup button.swal2-confirm.swal2-styled {
+  background: var(--swal2-confirm-button-background-color, #ef4444) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+html.dark .swal2-popup button.swal2-deny.swal2-styled,
+html.dark .swal2-popup button.swal2-cancel.swal2-styled {
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.swal2-container {
+  background-color: transparent !important;
+}
+
+.tippy-box {
+  background-color: $input-bg !important;
+  color: $dialog-text !important;
+  border: 1px solid $border-color !important;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+html.dark .tippy-box,
+html.dark .tippy-box .tippy-content,
+html.dark .tippy-box .tippy-arrow {
+  background-color: #374151 !important;
+  color: $input-text !important;
+  border-color: #4b5563 !important;
+}
+
+[data-youtube-video] {
+  width: 100%;
+  max-width: 100%;
+  height: 0;
+  padding-bottom: 56.25%;
+  position: relative;
+}
+
+[data-youtube-video] .youtube-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (max-width: 768px) {
+  [data-youtube-video] {
+    padding-bottom: 56.25%;
+  }
+
+  [data-youtube-video] .youtube-video {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+html.dark [data-youtube-video],
+html.dark [data-youtube-video] * {
+  background-color: transparent !important;
+}
