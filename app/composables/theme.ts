@@ -34,12 +34,6 @@ export const themes: {
 
 export type ThemeKey = keyof typeof themes
 
-/**
- * focus-visible ring color per theme. Kept as explicit class strings (never
- * `ring-${theme}-500`) so UnoCSS can statically detect them. `satisfies`
- * enforces exactly one entry per theme — add a theme to `themes` above and TS
- * flags the missing ring here instead of it silently disappearing at runtime.
- */
 export const themeRings = {
   blue: 'focus-visible:ring-blue-500',
   green: 'focus-visible:ring-green-500',

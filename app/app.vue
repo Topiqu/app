@@ -9,6 +9,10 @@
       <NuxtPage />
     </NuxtLayout>
   </div>
+
+  <DevOnly>
+    <DevConsole />
+  </DevOnly>
 </template>
 
 <script setup lang="ts">
@@ -19,7 +23,13 @@ const route = useRoute()
 const clientSite = await useClientSite()
 const adChance = useAdChance()
 
+const devView = import.meta.dev ? useDevView() : undefined
+
 const isMainLanding = computed(() => {
+  if (import.meta.dev && devView && devView.value !== 'auto') {
+    return devView.value === 'landing'
+  }
+
   if (clientSite) return false
 
   const name = String(route.name || '')
