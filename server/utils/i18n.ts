@@ -6,15 +6,37 @@ const messageCache = new Map<Locale, any>()
 
 type Messages = ReturnType<(typeof messageCache)['get']>
 
+const isPlainObject = (value: unknown): value is Record<string, any> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const deepMerge = (target: Record<string, any>, source: Record<string, any>) => {
+  for (const key of Object.keys(source)) {
+    const next = source[key]
+    target[key] = isPlainObject(next) && isPlainObject(target[key]) ? deepMerge(target[key], next) : next
+  }
+  return target
+}
+
+const loadLocaleMessages = async (locale: Locale): Promise<Messages> => {
+  const storage = useStorage('assets:i18n:locales')
+  const keys = await storage.getKeys()
+  const localeKeys = keys.filter((key) => key.startsWith(`${locale}:`) || key === `master_${locale}.json`)
+
+  const merged: Record<string, any> = {}
+  for (const key of localeKeys) {
+    const part = (await storage.getItem(key)) as Record<string, any> | null
+    if (isPlainObject(part)) deepMerge(merged, part)
+  }
+
+  return merged
+}
+
 export const getServerLocaleMessages = async (locale: Locale): Promise<Messages> => {
-  if (!messageCache.has(locale))
-    try {
-      const messages = await useStorage('assets:i18n:locales').getItem(`${locale}.json`)
-      messageCache.set(locale, messages)
-    } catch {
-      const fallback = await useStorage('assets:i18n:locales').getItem(`en.json`)
-      messageCache.set(locale, fallback)
-    }
+  if (!messageCache.has(locale)) {
+    let messages = await loadLocaleMessages(locale)
+    if (!Object.keys(messages).length && locale !== 'en') messages = await loadLocaleMessages('en')
+    messageCache.set(locale, messages)
+  }
 
   return messageCache.get(locale)
 }
