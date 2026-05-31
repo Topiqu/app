@@ -27,7 +27,7 @@ const draftWithToken = {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  delete process.env.GLOBAL_KILL_SWITCH
+  vi.unstubAllEnvs()
   prismaMock.draftPost.findUniqueOrThrow.mockResolvedValue(draftWithToken)
 })
 
@@ -72,7 +72,7 @@ describe('executePublish — atomic claim', () => {
   })
 
   it('refuses to claim when the global kill switch is active', async () => {
-    process.env.GLOBAL_KILL_SWITCH = 'true'
+    vi.stubEnv('GLOBAL_KILL_SWITCH', 'true')
 
     await expect(executePublish('draft-1', ['APPROVED'])).rejects.toThrow('emergency stop')
 

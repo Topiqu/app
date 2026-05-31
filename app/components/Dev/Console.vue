@@ -26,21 +26,17 @@
             <Icon name="i-lucide:grip-vertical" class="-ml-1 h-4 w-4 shrink-0 text-gray-400 dark:text-gray-600" />
             <template v-if="collapsed">
               <span class="flex min-w-0 items-center gap-1.5 text-[10px] font-medium">
-                <span
-                  :class="view === 'auto' ? 'text-gray-400 dark:text-gray-500' : 'text-amber-600 dark:text-amber-400'"
-                  >{{ view }}</span
-                >
-                <span class="text-gray-300 dark:text-gray-700">·</span>
+                <Icon
+                  :name="activeView.icon"
+                  class="h-3 w-3 shrink-0"
+                  :class="view === 'auto' ? 'text-gray-400 dark:text-gray-500' : 'text-amber-500'"
+                />
                 <span class="truncate text-gray-700 dark:text-gray-200">{{ clientSite?.name || 'landing' }}</span>
                 <template v-if="clientSite">
                   <span class="text-gray-300 dark:text-gray-700">·</span>
                   <span class="shrink-0 font-mono uppercase text-sky-600 dark:text-sky-400">{{ clientSite.plan }}</span>
                 </template>
-                <span
-                  class="h-1.5 w-1.5 shrink-0 rounded-full"
-                  :class="health?.db ? 'bg-emerald-500' : 'bg-red-500'"
-                  title="db"
-                />
+                <span class="h-1.5 w-1.5 shrink-0 rounded-full" :class="dbDot" title="db" />
                 <span
                   v-if="meta?.dirty"
                   class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"
@@ -56,22 +52,13 @@
           <span class="flex shrink-0 items-center gap-0.5">
             <button
               type="button"
-              class="grid h-6 w-6 place-items-center rounded border-0 bg-transparent text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+              :class="headerBtn"
               :aria-label="collapsed ? 'Expand' : 'Collapse'"
               @click="collapsed = !collapsed"
             >
-              <Icon
-                name="i-lucide:chevron-down"
-                class="h-4 w-4 transition-transform"
-                :class="collapsed ? '' : 'rotate-180'"
-              />
+              <Icon name="i-lucide:chevron-down" class="h-4 w-4 transition-transform" :class="collapsed ? '' : 'rotate-180'" />
             </button>
-            <button
-              type="button"
-              class="grid h-6 w-6 place-items-center rounded border-0 bg-transparent text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-              aria-label="Hide DevConsole"
-              @click="visible = false"
-            >
+            <button type="button" :class="headerBtn" aria-label="Hide DevConsole" @click="visible = false">
               <Icon name="i-lucide:x" class="h-4 w-4" />
             </button>
           </span>
@@ -83,20 +70,19 @@
         >
           <div class="overflow-hidden">
             <div class="space-y-3 px-3 py-3">
-              <div class="space-y-1.5">
-                <p class="text-[10px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  Render view
-                </p>
-                <div class="grid grid-cols-3 gap-1">
+              <section class="space-y-1.5">
+                <p :class="labelCls">Render view</p>
+                <div class="grid grid-cols-3" :class="segGroup">
                   <button
                     v-for="v in views"
-                    :key="v"
+                    :key="v.id"
                     type="button"
-                    class="rounded-md border-0 px-2 py-1 text-[11px] capitalize transition-colors"
-                    :class="chip(view === v)"
-                    @click="view = v"
+                    class="flex items-center justify-center gap-1 rounded-md border-0 px-2 py-1 text-[11px] capitalize transition-colors"
+                    :class="seg(view === v.id)"
+                    @click="view = v.id"
                   >
-                    {{ v }}
+                    <Icon :name="v.icon" class="h-3 w-3 shrink-0" />
+                    {{ v.id }}
                   </button>
                 </div>
                 <p
@@ -106,66 +92,55 @@
                   <Icon name="i-lucide:triangle-alert" class="h-3 w-3 shrink-0" />
                   forcing <b class="font-semibold">{{ view }}</b> — overrides resolver
                 </p>
-              </div>
+              </section>
 
-              <div v-if="clientSite" class="space-y-1.5 border-t border-gray-200 pt-3 dark:border-gray-800">
-                <p class="text-[10px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Plan</p>
-                <div class="grid grid-cols-2 gap-1">
+              <section v-if="clientSite" class="space-y-1.5 border-t border-gray-200 pt-3 dark:border-gray-800">
+                <p :class="labelCls">Plan</p>
+                <div class="grid grid-cols-2" :class="segGroup">
                   <button
                     v-for="p in plans"
                     :key="p"
                     type="button"
                     :disabled="busy"
                     class="rounded-md border-0 px-2 py-1 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-                    :class="chip(clientSite.plan === p)"
+                    :class="seg(clientSite.plan === p)"
                     @click="switchPlan(p)"
                   >
                     {{ p }}
                   </button>
                 </div>
-              </div>
+              </section>
 
-              <div class="space-y-1.5 border-t border-gray-200 pt-3 dark:border-gray-800">
-                <p class="text-[10px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  Impersonate
-                </p>
-                <div class="grid grid-cols-3 gap-1">
+              <section class="space-y-1.5 border-t border-gray-200 pt-3 dark:border-gray-800">
+                <p :class="labelCls">Impersonate</p>
+                <div class="grid grid-cols-3" :class="segGroup">
                   <button
                     v-for="u in seedUsers"
                     :key="u.email"
                     type="button"
                     :disabled="busy"
-                    class="rounded-md border-0 px-2 py-1 text-[11px] capitalize transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-                    :class="
-                      currentUser === u.email
-                        ? 'bg-sky-600 font-medium text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                    "
+                    class="flex items-center justify-center gap-1 rounded-md border-0 px-2 py-1 text-[11px] capitalize transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                    :class="seg(currentUser === u.email)"
                     @click="impersonate(u.email)"
                   >
+                    <Icon :name="u.icon" class="h-3 w-3 shrink-0" />
                     {{ u.label }}
                   </button>
                 </div>
-                <p class="truncate text-[10px] text-gray-500 dark:text-gray-400">
-                  session: <span class="font-mono text-gray-700 dark:text-gray-200">{{ currentUser }}</span>
+                <p class="flex items-center gap-1 truncate text-[10px] text-gray-500 dark:text-gray-400">
+                  <Icon
+                    :name="isGuest ? 'i-lucide:user-x' : 'i-lucide:user-check'"
+                    class="h-3 w-3 shrink-0"
+                    :class="isGuest ? '' : 'text-emerald-500'"
+                  />
+                  <span class="truncate font-mono text-gray-700 dark:text-gray-200">{{ currentUser }}</span>
                 </p>
-              </div>
+              </section>
 
-              <div class="space-y-1.5 border-t border-gray-200 pt-3 dark:border-gray-800">
-                <p class="text-[10px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Locale</p>
-                <div class="grid grid-cols-2 gap-1">
-                  <button
-                    v-for="l in locales"
-                    :key="l"
-                    type="button"
-                    class="rounded-md border-0 px-2 py-1 text-[11px] uppercase transition-colors"
-                    :class="chip(locale === l)"
-                    @click="setLocale(l)"
-                  >
-                    {{ l }}
-                  </button>
-                </div>
-              </div>
+              <section class="space-y-1.5 border-t border-gray-200 pt-3 dark:border-gray-800">
+                <p :class="labelCls">Locale</p>
+                <LangSwitcher v-model:language="language" class="w-full" />
+              </section>
 
               <dl class="space-y-1.5 border-t border-gray-200 pt-3 text-[11px] dark:border-gray-800">
                 <div class="flex items-center justify-between gap-2">
@@ -228,10 +203,7 @@
                 <div class="flex items-center justify-between gap-2">
                   <dt class="text-gray-500 dark:text-gray-400">db</dt>
                   <dd class="flex items-center gap-1.5">
-                    <span
-                      class="h-1.5 w-1.5 shrink-0 rounded-full"
-                      :class="health?.db ? 'bg-emerald-500' : 'bg-red-500'"
-                    />
+                    <span class="h-1.5 w-1.5 shrink-0 rounded-full" :class="dbDot" />
                     <span class="font-mono text-gray-700 dark:text-gray-200">{{
                       health ? (health.db ? `${health.latency}ms` : 'down') : '…'
                     }}</span>
@@ -249,24 +221,37 @@
 <script setup lang="ts">
 import type { DevView } from '~/composables/useDevView'
 
-const chip = (active: boolean) =>
+const labelCls = 'text-[10px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400'
+const headerBtn =
+  'grid h-6 w-6 place-items-center rounded border-0 bg-transparent text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'
+const segGroup = 'gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-gray-800/60'
+const seg = (active: boolean) =>
   active
-    ? 'bg-gray-900 font-semibold text-white dark:bg-gray-100 dark:text-gray-900'
-    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+    ? 'bg-white font-medium text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+    : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
 
-const views: DevView[] = ['auto', 'landing', 'tenant']
+const views = [
+  { id: 'auto', icon: 'i-lucide:wand-sparkles' },
+  { id: 'landing', icon: 'i-lucide:globe' },
+  { id: 'tenant', icon: 'i-lucide:building-2' },
+] satisfies { id: DevView; icon: string }[]
 const view = useDevView()
+const activeView = computed(() => views.find((v) => v.id === view.value) ?? views[0]!)
 
 const plans = ['BASIC', 'PRO', 'PREMIUM', 'CUSTOM'] as const
 
 const { locale, setLocale } = useI18n()
-const locales = ['en', 'cs'] as const
+const language = computed<Language>({
+  get: () => locale.value as Language,
+  set: (value) => setLocale(value),
+})
 
 const clientSite = await useClientSite()
-const { data: meta } = await useFetch('/api/_dev/meta', { lazy: true, server: false })
-const { data: health, refresh: refreshHealth } = await useFetch('/api/_dev/health', { lazy: true, server: false })
+const { data: meta } = useLazyFetch('/api/_dev/meta', { server: false })
+const { data: health, refresh: refreshHealth } = useLazyFetch('/api/_dev/health', { server: false })
 useIntervalFn(() => refreshHealth(), 5000)
 
+const dbDot = computed(() => (health.value?.db ? 'bg-emerald-500' : 'bg-red-500'))
 const commitUrl = computed(() =>
   meta.value?.remote && meta.value?.hashFull ? `${meta.value.remote}/commit/${meta.value.hashFull}` : '',
 )
@@ -276,14 +261,17 @@ const copyCommit = () => meta.value?.hashFull && copy(meta.value.hashFull)
 
 const { data: auth, signIn } = useAuth()
 const currentUser = computed(() => (auth.value as { user?: { email?: string } } | null)?.user?.email ?? 'guest')
+const isGuest = computed(() => currentUser.value === 'guest')
 
 const seedUsers = [
-  { label: 'reader', email: 'reader@test.local' },
-  { label: 'admin', email: 'admin@test.local' },
-  { label: 'super', email: 'super@test.local' },
+  { label: 'reader', email: 'reader@test.local', icon: 'i-lucide:eye' },
+  { label: 'admin', email: 'admin@test.local', icon: 'i-lucide:shield' },
+  { label: 'super', email: 'super@test.local', icon: 'i-lucide:crown' },
 ]
 const busy = shallowRef(false)
+
 const impersonate = async (email: string) => {
+  if (currentUser.value === email) return
   busy.value = true
   try {
     await signIn('credentials', { email, password: 'test1234', redirect: false })
