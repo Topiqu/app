@@ -49,7 +49,7 @@ todo/           Working notes (non-code)
 - `api/` — 124 route handlers grouped by resource:
   `admin`, `articles` (CRUD, search, drafts, featured, generate, by-clientsite), `auth`, `bans`, `clients`, `comments`, `companies`, `crons`, `currency`, `drafts`, `emojis`, `external`, `features`, `follows`, `gifs`, `linkedin`, `notifications`, `onboarding`, `publish`, `series`, `sessions`, `stats`, `stripe`, `tags`, `users`, plus standalone `upload.ts`, and an `_test/` sandbox.
 - `tasks/` — Nitro scheduled tasks.
-- `utils/` — Cross-cutting helpers: `prisma.ts`, `zenstack.ts`, `session.ts`, `sendEmail.ts`, `sanitize.ts`, `geo.ts`, `ip.ts`, `metrics.ts`, `paginator.ts`, `log.ts`, `userLog.ts`, `consumeTokens.ts`, `tokenRatio.ts`, `unsplash.ts`, `pdfFont.ts`, `i18n.ts`, `notificationsPoll.ts` (pure cursor/query helpers for the notifications poll endpoint), plus `ai/` and `linkedin/` subdirs.
+- `utils/` — Cross-cutting helpers: `prisma.ts`, `zenstack.ts`, `session.ts`, `sendEmail.ts`, `sanitize.ts`, `geo.ts`, `ip.ts`, `metrics.ts`, `paginator.ts`, `log.ts`, `userLog.ts`, `consumeTokens.ts`, `tokenRatio.ts`, `unsplash.ts`, `pdfFont.ts`, `i18n.ts`, `notificationsPoll.ts` (pure cursor/query helpers for the notifications poll endpoint), plus `ai/` and `linkedin/` subdirs. `linkedin/publisher.ts` publishes drafts to LinkedIn behind an atomic claim (`executePublish` flips `DraftStatus` → `PUBLISHING` via a guarded `updateMany`, so concurrent cron runs / manual triggers can never double-post; `PublishedPost.draftId` unique is the DB backstop). `publishApprovedDraft` is the cron/manual entry for human-approved drafts; `publishDecisionAndExecute` is the post-generation auto-publish-or-review decision.
 
 ### Local DevConsole
 

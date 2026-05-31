@@ -604,6 +604,7 @@ enum DraftStatus {
     DRAFT
     AWAITING_APPROVAL
     APPROVED
+    PUBLISHING
     REJECTED
     PUBLISHED
     FAILED
