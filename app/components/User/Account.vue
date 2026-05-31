@@ -127,7 +127,9 @@
                 <Icon name="mdi:thumb-up" class="w-4 h-4" />
                 <span class="font-bold text-sm">{{ userData?.likesCount || 0 }}</span>
               </div>
-              <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Likes</span>
+              <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{{
+                $t('common.user.likes')
+              }}</span>
             </div>
             <div
               class="group flex flex-col items-center justify-center p-3 bg-white dark:bg-[#121212] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-default"
@@ -136,7 +138,9 @@
                 <Icon name="mdi:thumb-down" class="w-4 h-4" />
                 <span class="font-bold text-sm">{{ userData?.dislikesCount || 0 }}</span>
               </div>
-              <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Dislikes</span>
+              <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{{
+                $t('common.user.dislikes')
+              }}</span>
             </div>
             <div
               class="group flex flex-col items-center justify-center p-3 bg-white dark:bg-[#121212] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-default"
@@ -145,7 +149,9 @@
                 <Icon name="mdi:comment" class="w-4 h-4" />
                 <span class="font-bold text-sm">{{ userData?.commentsCount || 0 }}</span>
               </div>
-              <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Comments</span>
+              <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{{
+                $t('common.user.comments')
+              }}</span>
             </div>
           </div>
 

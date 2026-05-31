@@ -156,7 +156,10 @@
       "joined": "Joined: {0}",
       "violateRules": "Violating rules",
       "viewProfile": "View Profile",
-      "notAvailable": "Not available"
+      "notAvailable": "Not available",
+      "likes": "Likes",
+      "dislikes": "Dislikes",
+      "comments": "Comments"
     },
     "auth": {
       "login": "Log In",

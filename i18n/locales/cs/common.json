@@ -157,7 +157,10 @@
       "joined": "Přidal se: {0}",
       "violateRules": "Porušení pravidel",
       "viewProfile": "Zobrazit profil",
-      "notAvailable": "Není dostupné"
+      "notAvailable": "Není dostupné",
+      "likes": "Líbí se",
+      "dislikes": "Nelíbí se",
+      "comments": "Komentáře"
     },
     "auth": {
       "login": "Přihlásit se",
