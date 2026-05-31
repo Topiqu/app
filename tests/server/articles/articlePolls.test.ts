@@ -11,7 +11,7 @@ const makeDb = (polls: Array<{ id: string; options: string[] }> = []) => {
   const db = {
     poll: {
       findFirst: vi.fn(async ({ where }: any) =>
-        pollMap.has(where.id) ? { id: where.id, options: pollMap.get(where.id) } : null,
+        pollMap.has(where.id) ? { id: where.id, options: pollMap.get(where.id)! } : null,
       ),
       create: vi.fn(async () => ({ id: `new-poll-${++createdPolls}` })),
       update: vi.fn(async () => ({})),
