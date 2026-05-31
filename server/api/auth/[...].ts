@@ -243,6 +243,12 @@ export default NuxtAuthHandler({
         token.plan = user.plan
         token.avatarUrl = user.avatarUrl
         token.sessionId = user.sessionId
+      } else if (token.clientSiteId) {
+        const fresh = await prisma.clientSite.findUnique({
+          where: { id: token.clientSiteId as string },
+          select: { plan: true },
+        })
+        if (fresh) token.plan = fresh.plan
       }
       return token
     },

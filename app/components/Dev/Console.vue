@@ -259,7 +259,7 @@ const commitUrl = computed(() =>
 const { copy, copied } = useClipboard({ copiedDuring: 1200 })
 const copyCommit = () => meta.value?.hashFull && copy(meta.value.hashFull)
 
-const { data: auth, signIn } = useAuth()
+const { data: auth, signIn, getSession } = useAuth()
 const currentUser = computed(() => (auth.value as { user?: { email?: string } } | null)?.user?.email ?? 'guest')
 const isGuest = computed(() => currentUser.value === 'guest')
 
@@ -286,6 +286,7 @@ const switchPlan = async (plan: (typeof plans)[number]) => {
   busy.value = true
   try {
     await $fetch('/api/_dev/plan', { method: 'PATCH', body: { id: clientSite.id, plan } })
+    await getSession()
     reloadNuxtApp({ force: true })
   } catch {
     busy.value = false

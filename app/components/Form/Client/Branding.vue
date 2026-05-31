@@ -61,8 +61,8 @@
             class="text-white"
             :class="
               localSocials.some((s) => s.platform === platform)
-                ? 'bg-gray-200 dark:bg-gray-700 opacity-50'
-                : `${platformStyles[platform].bg}!`
+                ? '!bg-gray-200 dark:!bg-gray-700 opacity-50'
+                : platformStyles[platform].bg
             "
             @click="addSocial(platform)"
           />
@@ -160,32 +160,32 @@ const platformIcons: Record<SocialPlatform, string> = {
 
 const platformStyles: Record<SocialPlatform, { bg: string; border: string; text: string }> = {
   FACEBOOK: {
-    bg: 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
+    bg: '!bg-blue-600 hover:!bg-blue-700 dark:!bg-blue-500 dark:hover:!bg-blue-600',
     border: 'border-blue-600 dark:border-blue-500',
     text: 'text-blue-600 dark:text-blue-500',
   },
   TWITTER: {
-    bg: 'bg-black hover:bg-gray-800',
+    bg: '!bg-black hover:!bg-gray-800',
     border: 'border-black dark:border-gray-200',
     text: 'text-black dark:text-gray-200',
   },
   INSTAGRAM: {
-    bg: 'bg-pink-500 hover:bg-pink-600 dark:bg-pink-400 dark:hover:bg-pink-500',
+    bg: '!bg-pink-500 hover:!bg-pink-600 dark:!bg-pink-400 dark:hover:!bg-pink-500',
     border: 'border-pink-500 dark:border-pink-400',
     text: 'text-pink-500 dark:text-pink-400',
   },
   LINKEDIN: {
-    bg: 'bg-blue-800 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-800',
+    bg: '!bg-blue-800 hover:!bg-blue-900 dark:!bg-blue-700 dark:hover:!bg-blue-800',
     border: 'border-blue-800 dark:border-blue-700',
     text: 'text-blue-800 dark:text-blue-700',
   },
   YOUTUBE: {
-    bg: 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600',
+    bg: '!bg-red-600 hover:!bg-red-700 dark:!bg-red-500 dark:hover:!bg-red-600',
     border: 'border-red-600 dark:border-red-500',
     text: 'text-red-600 dark:text-red-500',
   },
   OTHER: {
-    bg: 'bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600',
+    bg: '!bg-gray-600 hover:!bg-gray-700 dark:!bg-gray-500 dark:hover:!bg-gray-600',
     border: 'border-gray-600 dark:border-gray-500',
     text: 'text-gray-600 dark:text-gray-500',
   },

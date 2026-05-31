@@ -6,7 +6,7 @@
 
     <template #close>
       <div class="flex items-center gap-1">
-        <LazyClientHint v-if="auth?.user?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
+        <LazyClientHint v-if="client?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
           <Button
             square
             borderless
@@ -44,8 +44,8 @@
           />
 
           <LazyFormClientContent
-            v-if="auth?.user?.plan !== 'BASIC'"
-            :plan="auth?.user?.plan ?? 'BASIC'"
+            v-if="client?.plan !== 'BASIC'"
+            :plan="client?.plan ?? 'BASIC'"
             :focus="form.focus"
             :audience="form.audience"
             :language="form.language"
@@ -56,7 +56,7 @@
             @update:keywords="form.keywords = $event"
           />
 
-          <section v-if="auth?.user?.plan !== 'BASIC'">
+          <section v-if="client?.plan !== 'BASIC'">
             <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
               <Icon name="mdi:google-analytics" class="w-5 h-5 text-orange-500" />
               {{ $t('common.preferences.external') }}
@@ -97,7 +97,7 @@
             </div>
           </section>
 
-          <section v-if="auth?.user?.plan !== 'BASIC'">
+          <section v-if="client?.plan !== 'BASIC'">
             <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
               <Icon name="mdi:key-chain-variant" class="w-5 h-5 text-purple-500" />
               {{ $t('common.preferences.api.title') }}
@@ -159,7 +159,7 @@
             </div>
           </section>
 
-          <section v-if="auth?.user?.plan !== 'BASIC'">
+          <section v-if="client?.plan !== 'BASIC'">
             <LazyFormClientLinkedIn
               :clientSiteId="client?.id ?? ''"
               :mode="form.linkedinMode"
@@ -171,7 +171,7 @@
             />
           </section>
 
-          <section v-if="auth?.user?.plan !== 'BASIC' && client?.tokenLimit && client?.tokenLimit > 0">
+          <section v-if="client?.plan !== 'BASIC' && client?.tokenLimit && client?.tokenLimit > 0">
             <div
               class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm"
             >
