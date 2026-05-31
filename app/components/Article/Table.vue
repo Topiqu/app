@@ -215,7 +215,7 @@
             </button>
             <div
               v-if="openDropdown === row.id"
-              class="absolute z-[10000] right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
+              class="absolute z-popover right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
             >
               <div class="py-1 flex flex-col gap-1">
                 <Button

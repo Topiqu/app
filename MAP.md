@@ -67,6 +67,7 @@ todo/           Working notes (non-code)
 
 - `zod/` — split into `common/`, `enums/`, `input/`, `models/`, `objects/` with a barrel `index.ts`. Schemas reused by both client forms and server validation.
 - `utils/` — pure helpers shared by app + server.
+  - `z-layers.ts` — single source of truth for stacking order (`Z_LAYERS`): `header` 100 → `overlay` 1000 (modals/slide-overs/sidebar/fixed chrome) → `devtools` 5000 → `popover` 9000 (dropdowns/selects/pickers) → `top` 9500 (global loading bar). Fed into `uno.config.ts` `theme.zIndex` as `z-<name>` utilities; the raw numbers are imported where a numeric prop is needed (`Form/Select.vue` → `<Float :zIndex>`). Always layer via these tokens, never a fresh `z-[…]`.
 
 ## 6. Data Model
 

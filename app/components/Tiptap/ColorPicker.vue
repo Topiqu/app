@@ -10,7 +10,7 @@
 
       <PopoverPanel
         v-slot="{ close }"
-        class="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 shadow-2xl rounded-2xl p-3 z-[9999] w-56 flex flex-col gap-3"
+        class="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 shadow-2xl rounded-2xl p-3 z-popover w-56 flex flex-col gap-3"
       >
         <div class="grid grid-cols-5 gap-1.5">
           <button

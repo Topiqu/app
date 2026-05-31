@@ -1,5 +1,5 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+  <div v-if="open" class="fixed inset-0 z-overlay flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md"></div>
 
     <div

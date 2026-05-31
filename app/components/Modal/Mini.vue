@@ -1,6 +1,6 @@
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog as="div" class="relative z-[1000]" :initialFocus="initialFocusRef" @close="close">
+    <Dialog as="div" class="relative z-overlay" :initialFocus="initialFocusRef" @close="close">
       <TransitionChild
         as="template"
         enter="ease-out duration-200"

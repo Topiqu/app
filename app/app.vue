@@ -1,5 +1,5 @@
 <template>
-  <NuxtLoadingIndicator class="z-[9999]" :color="computedThemeColor" />
+  <NuxtLoadingIndicator class="z-top" :color="computedThemeColor" />
   <StatusBar />
 
   <Landing v-if="isMainLanding" />

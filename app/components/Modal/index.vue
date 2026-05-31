@@ -1,7 +1,7 @@
 <template>
   <slot v-bind="actions" />
   <TransitionRoot appear :show="open" as="template">
-    <Dialog as="div" class="relative z-[1000]" @close="close">
+    <Dialog as="div" class="relative z-overlay" @close="close">
       <TransitionChild
         as="template"
         enter="ease-out duration-300"

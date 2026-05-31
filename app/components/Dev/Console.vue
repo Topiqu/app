@@ -4,7 +4,7 @@
       <button
         v-if="!visible"
         type="button"
-        class="fixed bottom-4 left-4 z-[99999] grid h-9 w-9 place-items-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-md transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+        class="fixed bottom-4 left-4 z-devtools grid h-9 w-9 place-items-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-md transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
         aria-label="Open DevConsole"
         @click="visible = true"
       >
@@ -15,7 +15,7 @@
         v-else
         ref="panel"
         :style="style"
-        class="fixed z-[99999] w-60 select-none overflow-hidden rounded-xl border border-gray-200 bg-white text-gray-700 shadow-xl dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+        class="fixed z-devtools w-60 select-none overflow-hidden rounded-xl border border-gray-200 bg-white text-gray-700 shadow-xl dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
         :class="{ 'transition-[left,top] duration-300 ease-out': !isDragging }"
       >
         <header
