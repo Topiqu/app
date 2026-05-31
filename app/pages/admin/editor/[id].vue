@@ -24,7 +24,7 @@
           />
           <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
           <template v-else-if="lastSavedAt">
-            {{ $t('common.messages.savedAgo') }}&nbsp;<NuxtTime :datetime="lastSavedAt" relative />
+            {{ $t('common.messages.savedAgo') }}&nbsp;<NuxtTime :datetime="lastSavedAt" relative :locale />
           </template>
           <template v-else>{{ $t('common.messages.unsaved') }}</template>
         </div>
@@ -198,7 +198,13 @@
             <Button size="sm" variant="neutral" @click="setReleaseQuick('tomorrow')">
               {{ $t('articles.releaseQuick.tomorrow') }}
             </Button>
-            <Button v-if="editedArticle.releaseAt" size="sm" variant="neutral" icon="mdi:close" @click="setReleaseQuick('clear')">
+            <Button
+              v-if="editedArticle.releaseAt"
+              size="sm"
+              variant="neutral"
+              icon="mdi:close"
+              @click="setReleaseQuick('clear')"
+            >
               {{ $t('articles.releaseQuick.clear') }}
             </Button>
           </div>
@@ -233,7 +239,7 @@ definePageMeta({ middleware: 'admin' })
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { emitArticleCreated, emitArticleUpdated } = useArticleEvent()
 
 const isNew = route.params.id === 'new'
@@ -346,7 +352,9 @@ const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
     d.setHours(8, 0, 0, 0)
   }
   d.setSeconds(0, 0)
-  editedArticle.value.releaseAt = new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16) as any
+  editedArticle.value.releaseAt = new Date(d.getTime() - d.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16) as any
 }
 
 const generateAIContent = async () => {
@@ -412,9 +420,7 @@ const hasChanges = computed(() => {
       (editedArticle.value.content !== '' && editedArticle.value.content !== '<p></p>')
     )
   }
-  return (
-    editedArticle.value.title !== article.value?.title || editedArticle.value.content !== article.value?.content
-  )
+  return editedArticle.value.title !== article.value?.title || editedArticle.value.content !== article.value?.content
 })
 
 const goBack = () => {

@@ -92,13 +92,22 @@
               </div>
             </div>
           </div>
-          <div v-else class="flex justify-center">
-            <NuxtImg src="/topik_normal_rm.png" :alt="$t('articles.noResults.imageAlt')" class="w-16" />
+          <div v-else class="flex flex-col items-center gap-3">
+            <NuxtImg
+              src="/topik_normal_rm.png"
+              :alt="$t('articles.noResults.imageAlt')"
+              class="w-20 select-none drop-shadow-md"
+            />
             <Button
-              icon="mdi:lightning-bolt"
-              class="text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+              icon="mdi:creation"
+              size="lg"
+              borderless
+              class="group relative w-full overflow-hidden text-white bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500 hover:from-blue-600 hover:via-indigo-600 hover:to-fuchsia-600 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 dark:shadow-indigo-900/40"
               @click="generateAIContent"
             >
+              <span
+                class="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+              />
               {{ $t('articles.editor.ai.generateButton') }}
             </Button>
           </div>
