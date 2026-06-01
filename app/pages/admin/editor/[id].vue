@@ -212,20 +212,18 @@
       </div>
     </ModalSlideOver>
 
-    <Modal
-      v-model="discardConfirmOpen"
+    <ModalMini
+      v-model:open="discardConfirmOpen"
+      icon="mdi:alert-circle-outline"
       :title="$t('common.messages.discardChangesTitle')"
-      :description="$t('common.messages.discardChangesText')"
+      :message="$t('common.messages.discardChangesText')"
     >
-      <template #footer="{ close }">
-        <div class="flex gap-3">
-          <Button variant="neutral" @click="close">{{ $t('common.actions.cancel') }}</Button>
-          <Button variant="danger" icon="mdi:trash-can-outline" @click="confirmDiscard">
-            {{ $t('common.messages.discardConfirm') }}
-          </Button>
-        </div>
+      <template #actions>
+        <Button variant="danger" size="sm" icon="mdi:trash-can-outline" @click="confirmDiscard">
+          {{ $t('common.messages.discardConfirm') }}
+        </Button>
       </template>
-    </Modal>
+    </ModalMini>
   </div>
 </template>
 
