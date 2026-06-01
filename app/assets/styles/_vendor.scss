@@ -28,29 +28,6 @@ html.dark .iziToast-color-green {
   border-left-color: #66bb6a;
 }
 
-.swal2-popup {
-  background-color: $input-bg !important;
-  color: $dialog-text !important;
-  border-radius: 0.5rem !important;
-}
-
-html.dark .swal2-popup button.swal2-confirm.swal2-styled {
-  background: var(--swal2-confirm-button-background-color, #ef4444) !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
-}
-
-html.dark .swal2-popup button.swal2-deny.swal2-styled,
-html.dark .swal2-popup button.swal2-cancel.swal2-styled {
-  background: #ffffff !important;
-  color: #1f2937 !important;
-  border: 1px solid #d1d5db !important;
-}
-
-.swal2-container {
-  background-color: transparent !important;
-}
-
 .tippy-box {
   background-color: $input-bg !important;
   color: $dialog-text !important;

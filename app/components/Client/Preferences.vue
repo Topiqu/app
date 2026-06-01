@@ -310,19 +310,20 @@
       </div>
     </template>
   </Modal>
+  <ModalMini ref="discardDialog" />
 </template>
 
 <script setup lang="ts">
 import type { ThemeSchema, LanguageSchema } from '~~/shared/zod/enums'
 import type { SocialPlatform, ClientSite as _ClientSite } from '@prisma/client'
 
-import Swal from 'sweetalert2'
 import { cs, enUS } from 'date-fns/locale'
 import { format, parseISO } from 'date-fns'
 
 const toast = useToast()
 const { data: auth } = useAuth()
 const open = defineModel<boolean>()
+const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
 const { copy: copyApi, copied: apiCopied } = useClipboard({ legacy: true })
 const apiVisible = shallowRef(false)
 
@@ -561,16 +562,15 @@ const confirmClose = async () => {
 
   if (!changed) return (open.value = false)
 
-  const r = await Swal.fire({
+  const r = await discardDialog.value?.ask({
     title: $t('common.messages.closeConfirmTitle'),
-    text: $t('common.messages.closeConfirmText'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: $t('common.messages.closeConfirmButton'),
-    cancelButtonText: $t('common.messages.deleteCancel'),
-    confirmButtonColor: '#ef4444',
+    message: $t('common.messages.closeConfirmText'),
+    icon: 'mdi:alert-outline',
+    confirmText: $t('common.messages.closeConfirmButton'),
+    cancelText: $t('common.messages.deleteCancel'),
+    variant: 'danger',
   })
-  if (r.isConfirmed) open.value = false
+  if (r === 'ok') open.value = false
 }
 const generateApiKey = async () => {
   if (!auth.value?.user.clientSiteId) return

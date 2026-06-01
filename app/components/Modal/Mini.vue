@@ -36,11 +36,11 @@
               parentWidth ?? 'max-w-lg',
             ]"
           >
-            <div v-if="icon || $slots.icon" class="flex-shrink-0 hidden sm:block">
+            <div v-if="displayIcon || $slots.icon" class="flex-shrink-0 hidden sm:block">
               <slot name="icon">
                 <Icon
-                  v-if="icon"
-                  :name="icon"
+                  v-if="displayIcon"
+                  :name="displayIcon"
                   size="26"
                   aria-hidden="true"
                   class="text-gray-500 dark:text-gray-300"
@@ -49,12 +49,12 @@
             </div>
 
             <div class="flex-grow flex flex-col gap-1 min-w-0">
-              <div v-if="title || icon || $slots.icon" class="flex items-center gap-2 pr-10">
+              <div v-if="displayTitle || displayIcon || $slots.icon" class="flex items-center gap-2 pr-10">
                 <div class="flex-shrink-0 sm:hidden">
                   <slot name="icon">
                     <Icon
-                      v-if="icon"
-                      :name="icon"
+                      v-if="displayIcon"
+                      :name="displayIcon"
                       size="22"
                       aria-hidden="true"
                       class="text-gray-500 dark:text-gray-300"
@@ -62,17 +62,17 @@
                   </slot>
                 </div>
                 <DialogTitle
-                  v-if="title"
+                  v-if="displayTitle"
                   class="text-lg font-semibold bg-gradient-to-r from-gray-800 to-gray-500 dark:from-gray-100 dark:to-gray-400 bg-clip-text text-transparent break-words"
                 >
-                  {{ title }}
+                  {{ displayTitle }}
                 </DialogTitle>
               </div>
               <DialogDescription
-                v-if="message"
+                v-if="displayMessage"
                 class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed break-words"
               >
-                {{ message }}
+                {{ displayMessage }}
               </DialogDescription>
               <div class="mt-1">
                 <slot name="content" />
@@ -82,53 +82,53 @@
             <div class="flex-shrink-0 flex sm:flex-col items-stretch sm:items-center gap-2 sm:ml-2">
               <slot name="actions">
                 <Button
-                  v-if="cancelText"
+                  v-if="displayCancelText"
                   size="sm"
                   variant="warning"
                   icon="mdi:close"
                   animation="softpop"
-                  :aria="cancelText"
-                  :title="cancelText"
+                  :aria="displayCancelText"
+                  :title="displayCancelText"
                   class="sm:hidden flex-1 !text-gray-700 dark:!text-gray-300 hover:!bg-gray-100/60 dark:hover:!bg-white/10"
                   @click="cancel"
                 >
-                  {{ cancelText }}
+                  {{ displayCancelText }}
                 </Button>
                 <Button
-                  v-if="cancelText"
+                  v-if="displayCancelText"
                   square
                   size="sm"
                   variant="warning"
                   icon="mdi:close"
                   animation="softpop"
-                  :aria="cancelText"
-                  :title="cancelText"
+                  :aria="displayCancelText"
+                  :title="displayCancelText"
                   class="hidden sm:flex !text-gray-700 dark:!text-gray-300 hover:!bg-gray-100/60 dark:hover:!bg-white/10"
                   @click="cancel"
                 />
 
                 <Button
-                  v-if="confirmText"
+                  v-if="displayConfirmText"
                   size="sm"
-                  variant="primary"
+                  :variant="confirmVariant"
                   icon="mdi:check"
                   animation="softpop"
-                  :aria="confirmText"
-                  :title="confirmText"
+                  :aria="displayConfirmText"
+                  :title="displayConfirmText"
                   class="sm:hidden flex-1 !text-white hover:!brightness-110 dark:hover:!brightness-125"
                   @click="confirm"
                 >
-                  {{ confirmText }}
+                  {{ displayConfirmText }}
                 </Button>
                 <Button
-                  v-if="confirmText"
+                  v-if="displayConfirmText"
                   square
                   size="sm"
-                  variant="primary"
+                  :variant="confirmVariant"
                   icon="mdi:check"
                   animation="softpop"
-                  :aria="confirmText"
-                  :title="confirmText"
+                  :aria="displayConfirmText"
+                  :title="displayConfirmText"
                   class="hidden sm:flex !text-white hover:!brightness-110 dark:hover:!brightness-125"
                   @click="confirm"
                 />
@@ -138,7 +138,7 @@
             <div class="absolute top-2 right-2 sm:top-3 sm:right-3">
               <slot name="close">
                 <Button
-                  v-if="!cancelText"
+                  v-if="!displayCancelText"
                   square
                   variant="transparent"
                   size="sm"
@@ -168,18 +168,39 @@ import {
   TransitionRoot,
 } from '@headlessui/vue'
 
-const props = defineProps<{
-  title?: string
-  message?: string
-  icon?: string
-  confirmText?: string
-  cancelText?: string
-  parentWidth?: string
-}>()
+type Variant = 'default' | 'danger' | 'success'
+
+const props = withDefaults(
+  defineProps<{
+    title?: string
+    message?: string
+    icon?: string
+    confirmText?: string
+    cancelText?: string
+    parentWidth?: string
+    variant?: Variant
+  }>(),
+  { variant: 'default' },
+)
 
 const emit = defineEmits<{ confirm: []; cancel: [] }>()
 
 const isOpen = defineModel<boolean>('open', { default: false })
+
+const { ask, overrides, resolveAsk } = useModalResponse(isOpen)
+
+const displayTitle = computed(() => overrides.value.title ?? props.title)
+const displayMessage = computed(() => overrides.value.message ?? props.message)
+const displayIcon = computed(() => overrides.value.icon ?? props.icon)
+const displayConfirmText = computed(() => overrides.value.confirmText ?? props.confirmText)
+const displayCancelText = computed(() => overrides.value.cancelText ?? props.cancelText)
+const displayVariant = computed(() => overrides.value.variant ?? props.variant)
+
+const confirmVariant = computed(() =>
+  displayVariant.value === 'danger' ? 'danger' : displayVariant.value === 'success' ? 'success' : 'primary',
+)
+
+defineExpose({ ask })
 
 const slots = useSlots()
 const panelRef = useTemplateRef<{ el?: HTMLElement } | HTMLElement>('panelRef')
@@ -200,11 +221,13 @@ const close = () => (isOpen.value = false)
 
 const cancel = () => {
   emit('cancel')
+  resolveAsk('no')
   close()
 }
 
 const confirm = () => {
   emit('confirm')
+  resolveAsk('ok')
   close()
 }
 
@@ -212,7 +235,7 @@ const onEnter = (event: KeyboardEvent) => {
   const target = event.target as HTMLElement | null
   if (target?.tagName === 'TEXTAREA' || target?.getAttribute('contenteditable') === 'true') return
   if (event.isComposing) return
-  if (slots.actions || !props.confirmText) return
+  if (slots.actions || !displayConfirmText.value) return
   event.preventDefault()
   confirm()
 }

@@ -271,13 +271,13 @@
 
     <Pagination :page :totalPages :prevPage :nextPage class="mt-6" />
   </div>
+  <ModalMini ref="deleteDialog" />
 </template>
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
-import Swal from 'sweetalert2'
 import { format } from 'date-fns'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
@@ -295,6 +295,7 @@ const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 const { onArticleCreated, emitArticleDeleted } = useArticleEvent()
+const deleteDialog = useTemplateRef<ModalMiniRef>('deleteDialog')
 const localePath = useLocalePath()
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
@@ -364,16 +365,15 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
 }, 100)
 
 async function del(id: string) {
-  const confirm = await Swal.fire({
+  const r = await deleteDialog.value?.ask({
     title: $t('common.messages.deleteConfirmTitle'),
-    text: $t('common.messages.deleteConfirmText'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: $t('common.actions.delete'),
-    cancelButtonText: $t('common.messages.deleteCancel'),
-    confirmButtonColor: '#ef4444',
+    message: $t('common.messages.deleteConfirmText'),
+    icon: 'mdi:alert-outline',
+    confirmText: $t('common.actions.delete'),
+    cancelText: $t('common.messages.deleteCancel'),
+    variant: 'danger',
   })
-  if (!confirm.isConfirmed) return
+  if (r !== 'ok') return
 
   try {
     await $fetch(`/api/articles/${id}`, { method: 'DELETE' })

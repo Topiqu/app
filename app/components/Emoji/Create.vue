@@ -70,15 +70,16 @@
       </div>
     </template>
   </Modal>
+  <ModalMini ref="discardDialog" />
 </template>
 
 <script setup lang="ts">
-import Swal from 'sweetalert2'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 
 const toast = useToast()
 const open = defineModel<boolean>()
+const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
 const shortcode = shallowRef<string>('')
 const imageUrl = shallowRef<string | null>(null)
 const optimizedImageUrl = shallowRef<string | null>(null)
@@ -138,15 +139,14 @@ const deleteEmoji = async (id: string) => {
 
 const confirmClose = async () => {
   if (!shortcode.value && !imageUrl.value) return (open.value = false)
-  const r = await Swal.fire({
+  const r = await discardDialog.value?.ask({
     title: $t('common.messages.closeConfirmTitle'),
-    text: $t('common.messages.closeConfirmText'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: $t('common.messages.closeConfirmButton'),
-    cancelButtonText: $t('common.messages.deleteCancel'),
-    confirmButtonColor: '#ef4444',
+    message: $t('common.messages.closeConfirmText'),
+    icon: 'mdi:alert-outline',
+    confirmText: $t('common.messages.closeConfirmButton'),
+    cancelText: $t('common.messages.deleteCancel'),
+    variant: 'danger',
   })
-  if (r.isConfirmed) open.value = false
+  if (r === 'ok') open.value = false
 }
 </script>

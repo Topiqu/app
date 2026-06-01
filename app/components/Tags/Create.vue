@@ -81,14 +81,15 @@
       </Button>
     </template>
   </Modal>
+  <ModalMini ref="deleteDialog" />
 </template>
 
 <script setup lang="ts">
 import slugify from 'slugify'
-import Swal from 'sweetalert2'
 
 const toast = useToast()
 const open = defineModel<boolean>()
+const deleteDialog = useTemplateRef<ModalMiniRef>('deleteDialog')
 const { data: tags, refresh } = await useFetch('/api/tags', { default: () => [] })
 let newTag = reactive({ name: '', slug: '' })
 const searchQuery = shallowRef('')
@@ -126,16 +127,15 @@ const createTag = async () => {
 }
 
 const confirmDelete = async (name: string) => {
-  const result = await Swal.fire({
+  const r = await deleteDialog.value?.ask({
     title: $t('common.messages.deleteConfirmTitle'),
-    text: $t('articles.tags.deleteConfirmText', [name]),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: $t('common.actions.delete'),
-    cancelButtonText: $t('common.messages.deleteCancel'),
-    confirmButtonColor: '#ef4444',
+    message: $t('articles.tags.deleteConfirmText', [name]),
+    icon: 'mdi:alert-outline',
+    confirmText: $t('common.actions.delete'),
+    cancelText: $t('common.messages.deleteCancel'),
+    variant: 'danger',
   })
-  return result.isConfirmed
+  return r === 'ok'
 }
 
 const deleteTag = async (id: string, name: string) => {

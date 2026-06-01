@@ -1,7 +1,5 @@
 import type { User, Session as _Session } from '@prisma/client'
 
-import Swal from 'sweetalert2'
-
 export type Session = Omit<_Session, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastUsedAt'> & {
   lastUsedAt?: string
 }
@@ -47,15 +45,6 @@ export function useProfile() {
   }
 
   async function deactivateAccount() {
-    const result = await Swal.fire({
-      title: t('profile.deactivateAccountConfirmTitle'),
-      text: t('profile.deactivateAccountConfirmText'),
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: t('common.actions.confirm'),
-      cancelButtonText: t('common.messages.cancel'),
-    })
-    if (!result.isConfirmed) return
     if (!user.value?.user?.id) throw new Error('User not authenticated')
     await $fetch(`/api/users/${user.value.user.id}` as `/api/users/:id`, {
       method: 'PATCH',

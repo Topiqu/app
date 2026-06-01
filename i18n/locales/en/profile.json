@@ -51,6 +51,8 @@
     "emailNotificationsDescription": "Receive messages via email",
     "registrationDate": "Registration Date",
     "deactivateAccount": "Deactivate account",
+    "deactivateAccountConfirmTitle": "Deactivate account?",
+    "deactivateAccountConfirmText": "Your account will be deactivated and you will be signed out. This action cannot be easily undone. Do you want to continue?",
     "messages": {
       "profileUpdateSuccess": "Profile updated",
       "profileUpdateError": "Update failed",

@@ -39,10 +39,10 @@ todo/           Working notes (non-code)
 - `pages/` — 14 route files; Czech-language URLs (`autor`, `autorizace`, `clanky`, `stitky`, `uzivatel`, `master`, `drafts`). Admin section under `admin/`.
 - `components/` — 92 SFCs, grouped by domain:
   `Admin/`, `Article/`, `Auth/`, `Button/`, `Charts.vue`, `Client/`, `Comment/`, `Dev/`, `Dropdown/`, `Emoji/`, `File/`, `Form/`, `Gif/`, `Landing/`, `Modal/`, `Notification/`, `OgImage/`, `Stats/`, `Status/`, `Tags/`, `Tasks/`, `User/`, plus the shared Tiptap editor `TiptapEditor.vue`.
-- `composables/` — 13 hooks (article SEO/tracking/drafts/actions/events, ads/GAM, currency, profile, image retry, client-site events, theme, dev view override).
+- `composables/` — 14 hooks (article SEO/tracking/drafts/actions/events, ads/GAM, currency, profile, image retry, client-site events, theme, dev view override, modal response — `useModalResponse` powers `Modal/Mini.vue`'s imperative `ask()` returning `Promise<'ok'|'no'>`).
 - `stores/` — Pinia (`theme.ts`); persistence handled per-store via plugin.
 - `layouts/`, `middleware/`, `error.vue`, `app.vue` — standard Nuxt scaffolding.
-- `assets/styles/` — global SCSS (entry `base.scss`, loaded via `nuxt.config.css`). App-surface element rules (`div`/`button`/text/forms/`[role=dialog]`) are scoped under `:where(#__nuxt, #headlessui-portal-root)` so they cannot bleed into body-teleported overlays (DevConsole, BackToTop); `:where()` keeps specificity neutral, so in-app rendering is unchanged. Third-party widget overrides (iziToast, swal2, tippy, YouTube) live isolated in `_vendor.scss` and stay global because those libs portal into `<body>`. Theme tokens in `_variables.scss`.
+- `assets/styles/` — global SCSS (entry `base.scss`, loaded via `nuxt.config.css`). App-surface element rules (`div`/`button`/text/forms/`[role=dialog]`) are scoped under `:where(#__nuxt, #headlessui-portal-root)` so they cannot bleed into body-teleported overlays (DevConsole, BackToTop); `:where()` keeps specificity neutral, so in-app rendering is unchanged. Third-party widget overrides (iziToast, tippy, YouTube) live isolated in `_vendor.scss` and stay global because those libs portal into `<body>`. Theme tokens in `_variables.scss`.
 
 ## 4. Server Layer (`server/`)
 

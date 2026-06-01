@@ -187,19 +187,20 @@
       </div>
     </template>
   </Modal>
+  <ModalMini ref="discardDialog" />
 </template>
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
-import Swal from 'sweetalert2'
 
 import Modal from '~/components/Modal/index.vue'
 
 const toast = useToast()
 const { data: auth } = useAuth()
 const open = defineModel<boolean>()
+const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
 const { idle } = useIdle(5 * 60 * 1000)
 const { emitArticleCreated, emitArticleUpdated } = useArticleEvent()
 const client = await useClientSite()
@@ -420,16 +421,15 @@ const confirmClose = async () => {
     open.value = false
     return
   }
-  const r = await Swal.fire({
+  const r = await discardDialog.value?.ask({
     title: $t('common.messages.closeConfirmTitle'),
-    text: $t('common.messages.closeConfirmText'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: $t('common.messages.closeConfirmButton'),
-    cancelButtonText: $t('common.messages.deleteCancel'),
-    confirmButtonColor: '#ef4444',
+    message: $t('common.messages.closeConfirmText'),
+    icon: 'mdi:alert-outline',
+    confirmText: $t('common.messages.closeConfirmButton'),
+    cancelText: $t('common.messages.deleteCancel'),
+    variant: 'danger',
   })
-  if (r.isConfirmed) open.value = false
+  if (r === 'ok') open.value = false
 }
 
 const showReleaseAt = computed(
