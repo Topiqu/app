@@ -8,7 +8,9 @@ now:
   - 🛑 AWS Comprehend integration
   - 🛑 dynamic pricing (clientpreferences)
   - 🛑 move Stripe / AWS / xAI / Upstash / LinkedIn / Giphy from NW to personal acc
-  - 🛑 Sentry/Better Stack: add keys (NUXT_PUBLIC_SENTRY_DSN + SENTRY_URL/ORG/PROJECT/AUTH_TOKEN) to Vercel + CI secret
+  - 🛑 Sentry/Better Stack: add keys to Vercel + CI secret (NUXT_PUBLIC_SENTRY_DSN + SENTRY_URL/ORG/PROJECT/AUTH_TOKEN ; BETTERSTACK_SOURCE_TOKEN=2qYuohMH4XKWEgi9MeJczhS6 + BETTERSTACK_INGEST_HOST=s2479774.eu-fsn-3.betterstackdata.com)
+  - 🟡 Better Stack: BLOCKED on live domain — enable uptime monitor (topiqu.com/api/health, keyword "status":"ok") + create 4 heartbeats (publish-check 10m / generate-article daily / sentiment-analysis 30m / community-insights 1h), then put ping URLs in BETTERSTACK_HEARTBEAT_* env
+  - 🟡 Better Stack: BLOCKED on heartbeat URLs — wire withHeartbeat() into the 4 server/tasks (helper ready in server/utils/monitoring.ts, no-op without env)
   - 🟡 Stripe integration for token refill
   - 🟡 AI Inolvement with article (cron based = fully AI, AI generated/enhanced = partially AI, no AI used = 100% human)
   - 🟢 replace sweetalert modals with custom ModalMini component

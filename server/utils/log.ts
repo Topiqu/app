@@ -56,7 +56,7 @@ export async function logAction(params: {
   const raw = JSON.stringify(payload)
   const hash = crypto.createHash('sha256').update(raw).digest('hex')
 
-  return db.log.create({
+  const entry = await db.log.create({
     data: {
       action: rest.action,
       userId,
@@ -67,4 +67,14 @@ export async function logAction(params: {
       hash,
     },
   })
+
+  await logger.info(`audit:${rest.action}`, {
+    source: 'audit',
+    action: rest.action,
+    userId,
+    clientSiteId: rest.clientSiteId ?? null,
+    metadata: rest.metadata ?? {},
+  })
+
+  return entry
 }
