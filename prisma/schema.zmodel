@@ -274,6 +274,7 @@ model Log {
     clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade, name: "LogToClientSite")
     metadata     Json?
     createdAt    DateTime    @default(now())
+    ts           DateTime
     ip           String?
     previousHash String?
     hash         String
