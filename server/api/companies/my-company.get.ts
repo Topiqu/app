@@ -1,17 +1,27 @@
-import prisma from '../../utils/prisma'
-
 export default defineEventHandler(async (event) => {
-  // Mocking auth / client site ID logic for the MVP since we don't have full auth setup in this plan
-  // Typically: const session = await requireAuthSession(event); const clientSiteId = session.user.clientSiteId
+  const { translate: t } = await useServerI18n(event)
+  const user = (await getServerSession(event))?.user
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
-  const query = getQuery(event)
-  const appType = (query.type as string) || 'pages'
+  const appType = (getQuery(event).type as string) || 'pages'
+  const db = await getEnhancedPrisma(user)
 
-  // Just grab the first company for MVP purposes, optionally filtered by type
-  const company = await prisma.linkedinCompany.findFirst({
-    where: { type: appType },
-    include: { brandProfile: true },
+  const company = await db.linkedinCompany.findFirst({
+    where: { clientSiteId: user.clientSiteId, type: appType },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      mode: true,
+      timezone: true,
+      cadence: true,
+      linkedinOrgId: true,
+      tokenExpiresAt: true,
+      brandProfile: true,
+    },
   })
+  if (!company) return {}
 
-  return company || {}
+  const { tokenExpiresAt, ...safe } = company
+  return { ...safe, connected: !!tokenExpiresAt }
 })

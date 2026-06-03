@@ -1,51 +1,34 @@
-import prisma from '../../utils/prisma'
-
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+  const user = (await getServerSession(event))?.user
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+
   const body = await readBody(event)
   const appType = body.type || 'pages'
+  const db = await getEnhancedPrisma(user)
 
-  // Grab the first company for MVP purposes, filtered by type
-  let company = await prisma.linkedinCompany.findFirst({
-    where: { type: appType },
+  const existing = await db.linkedinCompany.findFirst({
+    where: { clientSiteId: user.clientSiteId, type: appType },
+    select: { id: true },
   })
+  if (!existing) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
-  if (!company) {
-    // If we don't have a company yet, create a dummy one linked to the first client site
-    const clientSite = await prisma.clientSite.findFirst()
-    if (!clientSite) throw createError({ statusCode: 400, message: 'No client site found to attach company to' })
-
-    company = await prisma.linkedinCompany.create({
-      data: {
-        name: 'My Company',
-        linkedinOrgId: '123456',
-        clientSiteId: clientSite.id,
-        type: appType,
-        mode: body.mode || 'HitL',
-      },
-    })
-  } else {
-    company = await prisma.linkedinCompany.update({
-      where: { id: company.id },
-      data: { mode: body.mode },
-    })
-  }
+  const company = await db.linkedinCompany
+    .update({ where: { id: existing.id }, data: { mode: body.mode } })
+    .catch(() => null)
+  if (!company) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   if (body.brandProfile) {
-    await prisma.brandProfile.upsert({
+    const data = {
+      tone: body.brandProfile.tone,
+      audience: body.brandProfile.audience,
+      doList: body.brandProfile.doList,
+      dontList: body.brandProfile.dontList,
+    }
+    await db.brandProfile.upsert({
       where: { companyId: company.id },
-      create: {
-        companyId: company.id,
-        tone: body.brandProfile.tone,
-        audience: body.brandProfile.audience,
-        doList: body.brandProfile.doList,
-        dontList: body.brandProfile.dontList,
-      },
-      update: {
-        tone: body.brandProfile.tone,
-        audience: body.brandProfile.audience,
-        doList: body.brandProfile.doList,
-        dontList: body.brandProfile.dontList,
-      },
+      create: { companyId: company.id, ...data },
+      update: data,
     })
   }
 

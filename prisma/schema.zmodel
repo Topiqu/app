@@ -623,8 +623,8 @@ model LinkedinCompany extends Base {
     mode           PublishMode   @default(HitL)
     timezone       String        @default("UTC")
     cadence        String        @default("daily")
-    accessToken    String?
-    refreshToken   String?
+    accessToken    String?       @omit
+    refreshToken   String?       @omit
     tokenExpiresAt DateTime?
 
     clientSiteId   String
