@@ -1,8 +1,26 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { RekognitionClient, DetectModerationLabelsCommand, DetectLabelsCommand } from '@aws-sdk/client-rekognition'
 
+const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'webp', 'gif']
+const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+
+const safeExt = (name?: string) => {
+  const ext = (name?.split('.').pop() || '').toLowerCase()
+  return ALLOWED_EXT.includes(ext) ? ext : 'webp'
+}
+
+const sanitizeFilename = (raw: string) => {
+  const base = raw.split(/[/\\]/).pop() || ''
+  const stem = base.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 80)
+  return `${stem || `content-${Date.now()}`}.${safeExt(base)}`
+}
+
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const config = useRuntimeConfig()
+  const user = (await getServerSession(event))?.user
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+
   const files = await readMultipartFormData(event)
 
   if (!files || files.length === 0) {
@@ -12,6 +30,9 @@ export default defineEventHandler(async (event) => {
   const file = files[0]
   if (!file?.type?.startsWith('image/')) {
     throw createError({ statusCode: 400, statusMessage: 'File must be an image' })
+  }
+  if (file.data.length > MAX_UPLOAD_BYTES) {
+    throw createError({ statusCode: 413, statusMessage: 'File too large' })
   }
 
   const credentials = {
@@ -61,8 +82,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const customFilename = files.find((f) => f.name === 'customFilename')?.data.toString()
-  const fileExt = file.filename?.split('.').pop() || 'webp'
-  const filename = customFilename || `content-${Date.now()}.${fileExt}`
+  const filename = customFilename ? sanitizeFilename(customFilename) : `content-${Date.now()}.${safeExt(file.filename)}`
   const optimizedFilename = filename.replace(/\.[^/.]+$/, '.webp')
 
   const command = new PutObjectCommand({
