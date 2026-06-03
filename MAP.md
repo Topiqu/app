@@ -36,7 +36,7 @@ todo/           Working notes (non-code)
 
 ## 3. App Layer (`app/`)
 
-- `pages/` — 14 route files; Czech-language URLs (`autor`, `autorizace`, `clanky`, `stitky`, `uzivatel`, `master`, `drafts`). Admin section under `admin/`.
+- `pages/` — 14 route files; Czech-language URLs (`autor`, `autorizace`, `clanky`, `stitky`, `uzivatel`, `master`, `drafts`). Admin section under `admin/`. The `stitky/[slug]` and `autor/[name]` listings share one presentational component `Article/Collection.vue` (search/sort bar + skeleton + horizontal card grid + `hasMore`-driven pagination); each page only owns its fetch, header, and SEO/JSON-LD.
 - `components/` — 92 SFCs, grouped by domain:
   `Admin/`, `Article/`, `Auth/`, `Button/`, `Charts.vue`, `Client/`, `Comment/`, `Dev/`, `Dropdown/`, `Emoji/`, `File/`, `Form/`, `Gif/`, `Landing/`, `Modal/`, `Notification/`, `OgImage/`, `Stats/`, `Status/`, `Tags/`, `Tasks/`, `User/`, plus the shared Tiptap editor `TiptapEditor.vue`.
 - `composables/` — 14 hooks (article SEO/tracking/drafts/actions/events, ads/GAM, currency, profile, image retry, client-site events, theme, dev view override, modal response — `useModalResponse` powers `Modal/Mini.vue`'s imperative `ask()` returning `Promise<'ok'|'no'>`).
@@ -66,6 +66,7 @@ todo/           Working notes (non-code)
 ## 5. Shared (`shared/`)
 
 - `zod/` — split into `common/`, `enums/`, `input/`, `models/`, `objects/` with a barrel `index.ts`. Schemas reused by both client forms and server validation.
+- `types/` — hand-written cross-cut TS types. `article.ts → ArticleCardData` is the row shape consumed by `Article/Collection.vue` (shared by the `stitky` and `autor` listing pages).
 - `utils/` — pure helpers shared by app + server.
   - `z-layers.ts` — single source of truth for stacking order (`Z_LAYERS`): `header` 100 → `overlay` 1000 (modals/slide-overs/sidebar/fixed chrome) → `devtools` 5000 → `popover` 9000 (dropdowns/selects/pickers) → `top` 9500 (global loading bar). Fed into `uno.config.ts` `theme.zIndex` as `z-<name>` utilities; the raw numbers are imported where a numeric prop is needed (`Form/Select.vue` → `<Float :zIndex>`). Always layer via these tokens, never a fresh `z-[…]`.
 
