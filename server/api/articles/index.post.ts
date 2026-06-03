@@ -9,6 +9,9 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
 
+  if (!isCdnImageUrl(body.imageUrl))
+    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+
   let seriesOrder = 0
   if (body.articleSeriesId) {
     const lastArticle = await db.article.findFirst({
