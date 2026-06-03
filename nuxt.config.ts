@@ -236,6 +236,12 @@ export default defineNuxtConfig({
     '/api/onboarding/verify-code': {
       security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 60 * 1000 } },
     },
+    '/api/auth/callback/credentials': {
+      security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 1000 } },
+    },
+    '/api/users/totp': {
+      security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 1000 } },
+    },
   },
   i18n: {
     langDir: 'locales/',

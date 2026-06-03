@@ -1,6 +1,7 @@
 import type { OAuthConfig, OAuthUserConfig } from 'next-auth/providers/oauth'
 
 import argon from 'argon2'
+import { authenticator } from 'otplib'
 import { NuxtAuthHandler } from '#auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
@@ -169,6 +170,7 @@ export default NuxtAuthHandler({
       credentials: { email: { label: 'Email', type: 'email' }, password: { label: 'Heslo', type: 'password' } },
       async authorize(credentials, req) {
         const { email, password } = signInSchema.parse(credentials)
+        const totp = typeof (credentials as any)?.totp === 'string' ? (credentials as any).totp : undefined
 
         // TODO: For proper multi-tenant isolation:
         // 1. Resolve 'clientSiteId' from req.headers.host (domain).
@@ -183,10 +185,16 @@ export default NuxtAuthHandler({
             clientSiteId: true,
             email: true,
             avatarUrl: true,
+            totpSecret: true,
           },
         })
         if (!user || !user.password) return null
         if (!(await argon.verify(user.password, password))) return null
+
+        if (user.totpSecret) {
+          const code = (totp ?? '').replace(/\s/g, '')
+          if (!code || !authenticator.verify({ token: code, secret: user.totpSecret })) return null
+        }
 
         let plan: string | null = null
         if (user.clientSiteId) {

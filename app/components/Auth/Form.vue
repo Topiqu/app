@@ -344,6 +344,7 @@ const verifyTotp = async () => {
     await signIn('credentials', {
       email: form.value.email,
       password: form.value.password,
+      totp: token,
       redirect: false,
     })
     const user = await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`)

@@ -15,6 +15,7 @@ now:
   - 🟡 AI Inolvement with article (cron based = fully AI, AI generated/enhanced = partially AI, no AI used = 100% human)
   - 🟢 replace sweetalert modals with custom ModalMini component
   - 🟢 implement in clientpreferences humanHourlyRate / humanWordsPerHour
+  - 🟡 per-account login lockout (BLOCKED on KV/Redis) — email-keyed exp. backoff + Turnstile on auth/callback/credentials + users/totp; per-IP rate-limit alone is botnet/proxy-bypassable
 ---
 test:
   - 🛑 google ads
