@@ -9,9 +9,9 @@ Single source of truth for the structure of **topiqu-blog** (rasg-blog).
 - **State:** Pinia (`@pinia/nuxt`) + `pinia-plugin-persistedstate`.
 - **i18n:** `@nuxtjs/i18n` (`en`, `cs`).
 - **Auth:** `@sidebase/nuxt-auth` + `@auth/prisma-adapter`, argon2 hashing, OTP (`otplib`).
-- **DB / ORM:** Prisma 6 + ZenStack v2 (`prisma/schema.zmodel` → generated `schema.prisma`, ~50 models).
+- **DB / ORM:** Prisma 6 + ZenStack v2 (domain-split `prisma/schema.zmodel` + `prisma/models/*.zmodel` → generated `schema.prisma`, ~50 models). See §6.
 - **Editor:** Tiptap 3 (custom extensions in `extensions/`: `Poll`, `slashCommand`, `indent`).
-- **AI:** Vercel `ai` SDK with `@ai-sdk/xai` + Vue bindings.
+- **AI:** Vercel `ai` SDK with `@ai-sdk/xai` (`grok-4-1-fast`) + Vue bindings — article generation, sentiment, and per-language article translation (§6 → *Article Translations*).
 - **Cloud / Infra:** AWS S3, Rekognition, SES; Stripe (`@unlok-co/nuxt-stripe`); Vercel deploy (`vercel.json`); PWA (`@vite-pwa/nuxt`); Playwright + `@sparticuz/chromium` for OG / PDF rendering (`@takumi-rs/*`, `pdfkit`, `jspdf`).
 - **Cache / Redis:** Upstash Redis (HTTP/REST, serverless-friendly) — cross-instance cache-aside in `server/utils/cache.ts`. Provisioned via the **Vercel Upstash marketplace integration**, which injects `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`. **Vercel-coupled dependency:** on a hosting migration these creds must be re-provisioned/rotated (and the integration replaced by direct Upstash or another Redis-compatible provider). The cache degrades gracefully — missing creds disable caching, they don't break requests.
 - **SEO:** `@nuxtjs/seo`, `nuxt-og-image`, `nuxt-gtag`.
@@ -72,7 +72,7 @@ todo/           Working notes (non-code)
 
 ## 6. Data Model
 
-- Authored in `prisma/schema.zmodel` (ZenStack) — generates `schema.prisma` (~694 lines, ~50 models/enums).
+- Authored in ZenStack, **split by domain**: a thin root `prisma/schema.zmodel` (generator/datasource/plugins + `import`s) pulls in `prisma/models/*.zmodel` (`base`, `article`, `poll`, `client`, `user`, `comment`, `notification`, `linkedin`, `log`). Enums colocate with their domain; cross-domain enums + abstract `Base`/`Ownable` live in `base.zmodel`. Generates `schema.prisma`. Imports must be at the top of each file; cross-file relations need explicit `import`s (ZenStack resolves symbols only over a file's transitive imports).
 - Migrations in `prisma/migrations/`.
 - `bun build` pipeline: `zenstack generate` → `prisma migrate deploy` → `nuxt build`.
 
@@ -84,6 +84,16 @@ todo/           Working notes (non-code)
 - Votes key off **`optionId`** (not the label text), so renaming an option never splits counts and removing one cleans up its votes via cascade. Vote endpoints: `server/api/articles/[id]/vote.ts` (GET counts via `groupBy`) + `vote.post.ts` (cast; relies on the unique constraint → P2002 → 409).
 - Render: `Article/Parsed.vue` (client-side parse) → `Article/Poll.vue` (votes by `optionId`); homepage "latest poll" via `extractPollData` in `by-clientsite/[slug].ts`. All prefer `data-poll-id`, falling back to legacy `data-id`.
 - **Legacy note:** the `20260527130000_polls_normalized` migration wipes any pre-existing `PollResult` rows (old text-based votes couldn't be remapped to option ids without parsing HTML) — a one-time, intentional reset.
+
+### Article Translations
+
+Automated AI translations turn the mono-lingual `Article` into a multi-lingual one via an `ArticleTranslation` **sidecar** (1:N from `Article`, cascade; denormalized `clientSiteId`). The source `Article` stays the canonical carrier of the primary language + all language-neutral data (views, comments, reactions, polls-as-entities, series); translations are pure per-language renditions. Migration `20260604120000_article_translations`.
+
+- **Lifecycle as queue.** `status`: `PENDING → TRANSLATING → READY → PUBLISHED` (+ `STALE` on source edit, `FAILED`). Body fields (`slug`/`title`/`content`) are **nullable** — a queued row is a translation *request* without a body until the cron fills it. `@@unique([articleId, language])` (one row per language) + `@@unique([slug, clientSiteId, language])` (localized slug namespace, separate from the source's `@@unique([slug, clientSiteId])` — locale-scoped routing means they never collide).
+- **Config (`ClientSite`).** `translationMode` (`OFF`/`MANUAL`/`AUTO`/`HYBRID`) + `translationLanguages[]` (empty = all supported langs except primary). Set in the AI preferences form (`Form/Client/AI.vue` → `common.preferences.translation.*`). Feature-gated `enableAi` + plan `PRO`/`PREMIUM`/`CUSTOM`.
+- **Engine (deterministic).** `server/utils/ai/translate.ts → generateTranslation` uses `grok-4-1-fast`. Poll/embed/img blocks are **masked out with cheerio** before the model sees them (`maskContentBlocks`) — `data-poll-id`/`optionId` never travel through the LLM as free text; poll question+labels are translated as ordered structured fields and zipped back onto server-held ids on `rebuildContent`. Twitter embeds + images restored verbatim. Pure of billing — caller charges via `consumeClientTokens('TRANSLATE_ARTICLE')` (always; CUSTOM's unlimited bundle makes it effectively free without special-casing).
+- **Two trigger paths.** (1) On-demand `POST /api/articles/[id]/translate` (MANUAL/HYBRID); (2) cron `server/tasks/translate-pending.ts` (every 5 min) drains `PENDING`/`STALE` with a **per-row atomic claim** (guarded `updateMany` → `TRANSLATING`) so concurrent runs never double-translate — AUTO → `PUBLISHED`, HYBRID → `READY` (awaiting review), out-of-budget rows release back to `PENDING`. Enqueue/STALE is wired into all four publish paths via `server/utils/ai/translationQueue.ts → syncArticleTranslationQueue` (`articles/index.post`, `[id]/index.patch`, `publish-check`, `generate-article`). STALE keys off an explicit content-change signal, not `Article.updatedAt` (bumped by the view counter), to avoid token churn.
+- **Shared slug dedupe.** `server/utils/ai/translationSlug.ts → dedupeTranslationSlug` (used by both endpoint and cron). SEO rendering: see §8.
 
 ## 6a. Plan Matrix (`ClientSite.plan` — enum `ClientPlan`)
 
@@ -127,11 +137,11 @@ Feature gates checked in code via `ClientSite.plan` plus per-feature booleans on
 
 ## 8. Notable Gaps / Observations
 
-- **No tests present** despite Vitest being configured and CLAUDE.md mandating coverage. `*.test.ts` / `*.spec.ts` count: 0.
+- **Test coverage is partial.** Vitest suites exist under `tests/server/**` (stripe webhook, linkedin publisher, notifications poll, articlePolls, AI translation mask/rebuild + slug dedupe + queue) — server-side pure logic is covered; component/page coverage is still thin.
 - `todo/` directory carries working notes inside the repo.
 - One uncommitted change at snapshot time: `prisma/schema.prisma` (regenerated artifact).
 - Mixed-locale routing (Czech slugs in `pages/`) — intentional, paired with `@nuxtjs/i18n`.
-- **No real `hreflang` on articles — content is mono-lingual.** `Article` has a single `title`/`content`/`slug` (no translations); `clientSite.language` is one enum per tenant. The `/cs/clanky/[slug]` and `/en/articles/[slug]` URLs are i18n route aliases rendering the *same* content (only UI chrome is translated via `$t()`). Emitting `hreflang` alternates here would mislead Google (claims a translation that doesn't exist), so i18n `useLocaleHead({ seo: true })` is deliberately **not** enabled. Interim mitigation: article canonical cross-points to the tenant's primary-language path (`localePath(..., clientSite.language)` in `pages/clanky/[slug].vue`) to collapse the duplicate-URL pair. Real `hreflang` + per-locale self-canonical only becomes correct once article translations exist (see translation epic: `ArticleTranslation` sidecar + status-gated indexing).
+- **Article translations + real `hreflang` (implemented).** Articles are translated per-language via the `ArticleTranslation` sidecar (see §6 → *Article Translations*). `pages/clanky/[slug].vue` resolves content locale-scoped (primary language → source `Article`; other locale → its `PUBLISHED` translation, falling back to the source as a legacy i18n alias when none exists). Once ≥1 translation is published, the page emits real `hreflang` + `x-default` and self-canonicalises per locale; with no translation it still collapses the duplicate `/cs`↔`/en` alias URLs onto the primary-language path (the original mono-lingual mitigation). hreflang is therefore only emitted for translations that actually exist, never speculatively.
 
 ---
 
