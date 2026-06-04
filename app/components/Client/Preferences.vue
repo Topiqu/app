@@ -188,6 +188,9 @@
                 :canEnableSentiment="allowedFeatures.SENTIMENT ?? false"
                 :canEnableArticleCrons="allowedFeatures.ARTICLE_CRONS ?? false"
                 :autoRelease="form.autoRelease"
+                :language="form.language"
+                :translationMode="form.translationMode"
+                :translationLanguages="form.translationLanguages"
                 :features="features ?? []"
                 :currency="client?.currency ?? 'EUR'"
                 :billingPlan="client?.billingPlan ?? 'MONTHLY'"
@@ -201,6 +204,8 @@
                   (form.aiUser.optimizedAvatarUrl = $event.optimizedImageUrl))
                 "
                 @update:autoRelease="form.autoRelease = $event"
+                @update:translationMode="form.translationMode = $event"
+                @update:translationLanguages="form.translationLanguages = $event"
               />
             </div>
           </section>
@@ -345,6 +350,8 @@ const form = ref({
   allowAds: false,
   apiKey: '',
   autoRelease: false,
+  translationMode: 'OFF' as 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID',
+  translationLanguages: [] as string[],
   allowGtag: false,
   linkedinMode: 'HitL' as 'HitL' | 'FullAuto',
   linkedinBrandProfile: { tone: '', audience: '', doList: [] as string[], dontList: [] as string[] },
@@ -477,6 +484,8 @@ watch(
       gtagId: c.gtagId ?? '',
       gamNetworkCode: c.gamNetworkCode ?? '',
       autoRelease: c.autoRelease ?? false,
+      translationMode: c.translationMode ?? 'OFF',
+      translationLanguages: c.translationLanguages ?? [],
       allowAds: c.allowAds,
       allowGtag: c.allowGtag ?? false,
       // Default to picking the first linkedin company if there's an array now, or use the object directly if backend hasn't been updated yet

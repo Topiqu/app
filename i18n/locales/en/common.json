@@ -342,6 +342,24 @@
         "confirmTitle": "Enable Automatic Publishing?",
         "confirmMessage": "Are you sure? AI may occasionally generate inaccuracies. We still recommend reviewing content before publication. If enabled, content will go live immediately without your approval."
       },
+      "translation": {
+        "title": "Automatic Translations",
+        "desc": "Translate published articles into other languages with AI.",
+        "mode": {
+          "label": "Translation mode",
+          "options": {
+            "OFF": "Off",
+            "MANUAL": "Manual only",
+            "AUTO": "Automatic (translate & publish)",
+            "HYBRID": "Hybrid (translate, hold for review)"
+          }
+        },
+        "targetLangs": {
+          "label": "Target languages",
+          "empty": "No other languages available for your primary language."
+        },
+        "tokenWarning": "Automatic translation consumes tokens for every published article, per target language — just like AI generation."
+      },
       "aiAuthor": {
         "title": "AI Author Settings",
         "username": {
