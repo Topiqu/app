@@ -1,3 +1,5 @@
+import type { ClientSite } from '@prisma/client'
+
 declare global {
   var gtagInit: boolean | undefined
 }
@@ -14,9 +16,13 @@ export const useClientSite = async () => {
     return null
   }
 
-  const { data } = await useAsyncData(`clientsite-${hostname}`, () => $fetch(`/api/clients/slug/${hostname}`), {
-    getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
-  })
+  const { data } = await useAsyncData(
+    `clientsite-${hostname}`,
+    () => $fetch<ClientSite>(`/api/clients/slug/${hostname}` as string),
+    {
+      getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
+    },
+  )
 
   const gtagId = data.value?.gtagId
 
