@@ -131,6 +131,7 @@ Feature gates checked in code via `ClientSite.plan` plus per-feature booleans on
 - `todo/` directory carries working notes inside the repo.
 - One uncommitted change at snapshot time: `prisma/schema.prisma` (regenerated artifact).
 - Mixed-locale routing (Czech slugs in `pages/`) — intentional, paired with `@nuxtjs/i18n`.
+- **No real `hreflang` on articles — content is mono-lingual.** `Article` has a single `title`/`content`/`slug` (no translations); `clientSite.language` is one enum per tenant. The `/cs/clanky/[slug]` and `/en/articles/[slug]` URLs are i18n route aliases rendering the *same* content (only UI chrome is translated via `$t()`). Emitting `hreflang` alternates here would mislead Google (claims a translation that doesn't exist), so i18n `useLocaleHead({ seo: true })` is deliberately **not** enabled. Interim mitigation: article canonical cross-points to the tenant's primary-language path (`localePath(..., clientSite.language)` in `pages/clanky/[slug].vue`) to collapse the duplicate-URL pair. Real `hreflang` + per-locale self-canonical only becomes correct once article translations exist (see translation epic: `ArticleTranslation` sidecar + status-gated indexing).
 
 ---
 

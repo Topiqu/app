@@ -197,9 +197,12 @@ const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/$
   query: { limit: 3, clientSiteId: clientSite?.id },
 })
 
+const canonicalOrigin = `${import.meta.dev ? reqUrl.protocol : 'https:'}//${reqUrl.host.replace(/^www\./, '')}`
+
 const canonicalUrl = computed(() => {
   if (!data.value?.slug) return ''
-  return `${reqUrl.protocol}//${reqUrl.host}${localePath({ name: 'clanky-slug', params: { slug: data.value.slug } })}`
+  const primaryLocale = clientSite?.language ?? 'en'
+  return `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: data.value.slug } }, primaryLocale)}`
 })
 
 useArticleSeo(data, clientSite, canonicalUrl)
