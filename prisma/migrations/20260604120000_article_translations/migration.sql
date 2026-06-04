@@ -2,6 +2,8 @@
 -- Translations are a 1:N branch off Article (cascade), with denormalized clientSiteId
 -- for tenant-scoped slug uniqueness and indexing. Public reads are gated to PUBLISHED
 -- via ZenStack policy; status drives the SEO indexing/hreflang lifecycle.
+-- Body fields (slug/title/content) are nullable: a PENDING/TRANSLATING/FAILED row is a
+-- queue entry without a body yet — it gains one only once translation completes.
 
 -- CreateEnum
 CREATE TYPE "TranslationMode" AS ENUM ('OFF', 'MANUAL', 'AUTO', 'HYBRID');
@@ -25,10 +27,10 @@ CREATE TABLE "ArticleTranslation" (
     "articleId" TEXT NOT NULL,
     "clientSiteId" TEXT NOT NULL,
     "language" "Language" NOT NULL,
-    "slug" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
+    "slug" TEXT,
+    "title" TEXT,
     "excerpt" TEXT,
-    "content" TEXT NOT NULL,
+    "content" TEXT,
     "status" "TranslationStatus" NOT NULL DEFAULT 'PENDING',
     "source" "TranslationSource" NOT NULL DEFAULT 'AI',
     "model" TEXT,

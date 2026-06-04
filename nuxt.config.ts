@@ -64,6 +64,7 @@ export default defineNuxtConfig({
       '0 15 * * *': ['generate-article'],
       '*/30 * * * *': ['sentiment-analysis'],
       '0 3 * * * *': ['community-insights'],
+      '*/5 * * * *': ['translate-pending'],
     },
     preset: 'bun',
     imports: {

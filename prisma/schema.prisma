@@ -345,10 +345,10 @@ model ArticleTranslation {
   clientSiteId String
   clientSite   ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   language     Language
-  slug         String
-  title        String
+  slug         String?
+  title        String?
   excerpt      String?
-  content      String
+  content      String?
   status       TranslationStatus @default(PENDING)
   source       TranslationSource @default(AI)
   model        String?

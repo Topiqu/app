@@ -101,10 +101,10 @@ model ArticleTranslation extends Base {
     clientSiteId String
     clientSite   ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     language     Language
-    slug         String            @length(1, 100, "Slug musí mít 1–100 znaků")
-    title        String            @length(1, 255, "Titulek musí mít 1–255 znaků")
+    slug         String?           @length(1, 100, "Slug musí mít 1–100 znaků")
+    title        String?           @length(1, 255, "Titulek musí mít 1–255 znaků")
     excerpt      String?           @length(0, 500, "Perex může mít max. 500 znaků")
-    content      String            @length(1, 50000, "Překlad překročil délku znaků")
+    content      String?           @length(1, 50000, "Překlad překročil délku znaků")
     status       TranslationStatus @default(PENDING)
     source       TranslationSource @default(AI)
     model        String?           @length(0, 64)
