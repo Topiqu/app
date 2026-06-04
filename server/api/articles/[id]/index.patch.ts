@@ -110,6 +110,10 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  if (article.status === ArticleStatus.published) {
+    await syncArticleTranslationQueue(db, article.id, user.clientSiteId, { contentChanged: 'content' in data })
+  }
+
   await logAction({
     action: 'ARTICLE_UPDATE',
     userId: user.id,

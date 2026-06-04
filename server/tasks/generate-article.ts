@@ -143,6 +143,8 @@ const processClient = async (client: any) => {
   })
 
   if (status === 'published') {
+    await syncArticleTranslationQueue(prisma, article.id, clientSiteId)
+
     await logAction({
       action: 'CRON_ARTICLE_PUBLISHED',
       userId: article.userId,

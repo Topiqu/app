@@ -20,6 +20,10 @@ export default defineTask({
         data: { status: 'published', releaseAt: null },
       })
 
+      for (const a of articles) {
+        await syncArticleTranslationQueue(ctx, a.id, a.clientSiteId)
+      }
+
       await Promise.all(
         articles.map((a) =>
           logAction({

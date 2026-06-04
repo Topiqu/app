@@ -69,6 +69,10 @@ export default defineEventHandler(async (event) => {
     await db.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
   }
 
+  if (article.status === 'published') {
+    await syncArticleTranslationQueue(db, article.id, user.clientSiteId)
+  }
+
   await logAction({
     action: 'ARTICLE_CREATED',
     userId: user.id,
