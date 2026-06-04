@@ -13,12 +13,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum ArticleStatus {
-  draft
-  published
-  archived
-}
-
 enum ThemeOption {
   light
   dark
@@ -54,6 +48,47 @@ enum Theme {
   violet
 }
 
+enum ArticleStatus {
+  draft
+  published
+  archived
+}
+
+enum AIInvolvement {
+  NONE
+  ASSIST
+  FULL
+}
+
+enum TranslationMode {
+  OFF
+  MANUAL
+  AUTO
+  HYBRID
+}
+
+enum TranslationStatus {
+  PENDING
+  TRANSLATING
+  READY
+  PUBLISHED
+  FAILED
+  STALE
+}
+
+enum TranslationSource {
+  AI
+  HUMAN
+}
+
+enum SharePlatform {
+  TWITTER
+  FACEBOOK
+  LINKEDIN
+  EMAIL
+  OTHER
+}
+
 enum GenerationFrequency {
   NONE
   DAILY
@@ -65,12 +100,6 @@ enum FeatureCodes {
   CRONS
   SENTIMENT
   ARTICLE_CRONS
-}
-
-enum AIInvolvement {
-  NONE
-  ASSIST
-  FULL
 }
 
 enum ClientPlan {
@@ -86,20 +115,6 @@ enum BillingPlans {
   PERMANENT
 }
 
-enum ReactionType {
-  LIKE
-  DISLIKE
-}
-
-enum NotificationType {
-  COMMENT
-  LIKE
-  FOLLOW
-  MENTION
-  ARTICLE_PUBLISHED
-  SYSTEM
-}
-
 enum SocialPlatform {
   FACEBOOK
   TWITTER
@@ -109,12 +124,9 @@ enum SocialPlatform {
   OTHER
 }
 
-enum SharePlatform {
-  TWITTER
-  FACEBOOK
-  LINKEDIN
-  EMAIL
-  OTHER
+enum ReactionType {
+  LIKE
+  DISLIKE
 }
 
 enum SentimentStatus {
@@ -151,6 +163,117 @@ enum ApprovalDecision {
   REJECT
 }
 
+enum NotificationType {
+  COMMENT
+  LIKE
+  FOLLOW
+  MENTION
+  ARTICLE_PUBLISHED
+  SYSTEM
+}
+
+model User {
+  id                            String            @id() @default(uuid())
+  createdAt                     DateTime          @default(now())
+  updatedAt                     DateTime?         @updatedAt()
+  deletedAt                     DateTime?
+  username                      String            @unique()
+  email                         String            @unique()
+  password                      String?
+  bio                           String?
+  role                          UserRole          @default(reader)
+  avatarUrl                     String?
+  verification                  VerificationCode?
+  totpSecret                    String?
+  totpTempSecret                String?
+  onboardingLoginToken          String?
+  onboardingLoginTokenExpiresAt DateTime?
+  emailVerified                 Boolean           @default(false)
+  allowNotifs                   Boolean           @default(true)
+  allowEmail                    Boolean           @default(true)
+  lastLogin                     DateTime?         @default(now())
+  language                      Language          @default(en)
+  sessions                      Session[]         @relation("UserSessions")
+  clientSiteId                  String?
+  theme                         ThemeOption       @default(light)
+  clientSite                    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  articles                      Article[]
+  articleDrafts                 ArticleDraft[]
+  comments                      Comment[]
+  notifications                 Notification[]
+  reactions                     CommentReaction[]
+  feedbacks                     ArticleFeedback[]
+  emojiReactions                EmojiReaction[]
+  articleReactions              ArticleReaction[]
+  followers                     Follow[]          @relation("Follower")
+  following                     Follow[]          @relation("Followed")
+  bans                          UserBan[]         @relation("BannedUser")
+  bansIssued                    UserBan[]         @relation("BannedBy")
+  logs                          Log[]             @relation("LogToUser")
+  approvals                     Approval[]
+
+  @@index([username, email, role, language, allowNotifs])
+}
+
+model Session {
+  id         String    @id() @default(uuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt()
+  deletedAt  DateTime?
+  ip         String?
+  userAgent  String?
+  device     String?
+  os         String?
+  browser    String?
+  city       String?
+  region     String?
+  country    String?
+  lastUsedAt DateTime  @default(now())
+  revoked    Boolean   @default(false)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
+
+  @@index([userId, lastUsedAt])
+}
+
+model Follow {
+  followerId String
+  followedId String
+  follower   User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followed   User     @relation("Followed", fields: [followedId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([followerId, followedId])
+}
+
+model UserBan {
+  id           String     @id() @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt()
+  deletedAt    DateTime?
+  userId       String
+  user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
+  clientSiteId String
+  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  reason       String?
+  bannedById   String
+  bannedBy     User       @relation("BannedBy", fields: [bannedById], references: [id], onDelete: Cascade)
+  expiresAt    DateTime?
+}
+
+model VerificationCode {
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id() @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt()
+  deletedAt DateTime?
+  code      String
+  expiresAt DateTime
+
+  @@unique([userId])
+}
+
 model ArticleDraft {
   userId       String
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -170,32 +293,32 @@ model ArticleDraft {
 
 model Article {
   userId           String
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  id               String            @id() @default(uuid())
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime?         @updatedAt()
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String               @id() @default(uuid())
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime?            @updatedAt()
   deletedAt        DateTime?
   slug             String
   title            String
   excerpt          String?
   content          String
   imageUrl         String?
-  status           ArticleStatus     @default(draft)
+  status           ArticleStatus        @default(draft)
   clientSiteId     String
-  clientSite       ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-  views            Int               @default(0)
-  shared           Int               @default(0)
-  aiInvolvement    AIInvolvement     @default(NONE)
+  clientSite       ClientSite           @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  views            Int                  @default(0)
+  shared           Int                  @default(0)
+  aiInvolvement    AIInvolvement        @default(NONE)
   readingTime      Int?
   totalWords       Int?
-  savedAmount      Float             @default(0.0)
-  savedTimeMinutes Int               @default(0)
+  savedAmount      Float                @default(0.0)
+  savedTimeMinutes Int                  @default(0)
   publishedAt      DateTime?
   articleSeriesId  String?
-  articleSeries    ArticleSeries?    @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
-  seriesOrder      Int?              @default(0)
+  articleSeries    ArticleSeries?       @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
+  seriesOrder      Int?                 @default(0)
   releaseAt        DateTime?
-  allowedComments  Boolean           @default(true)
+  allowedComments  Boolean              @default(true)
   tags             ArticleTag[]
   comments         Comment[]
   reactions        ArticleReaction[]
@@ -203,12 +326,39 @@ model Article {
   feedbacks        ArticleFeedback[]
   pollResults      PollResult[]
   polls            Poll[]
-  notifications    Notification[]    @relation("ArticleNotifications")
+  notifications    Notification[]       @relation("ArticleNotifications")
+  translations     ArticleTranslation[]
   sources          String[]
   prompt           String?
 
   @@unique([slug, clientSiteId])
   @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])
+}
+
+model ArticleTranslation {
+  id           String            @id() @default(uuid())
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime?         @updatedAt()
+  deletedAt    DateTime?
+  articleId    String
+  article      Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  clientSiteId String
+  clientSite   ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  language     Language
+  slug         String
+  title        String
+  excerpt      String?
+  content      String
+  status       TranslationStatus @default(PENDING)
+  source       TranslationSource @default(AI)
+  model        String?
+  usage        Json?
+  error        String?
+  translatedAt DateTime?
+
+  @@unique([articleId, language])
+  @@unique([slug, clientSiteId, language])
+  @@index([clientSiteId, status, language])
 }
 
 model ArticleSeries {
@@ -288,95 +438,6 @@ model ArticleReaction {
   @@unique([articleId, userId, sessionId])
 }
 
-model Log {
-  id           String      @id() @default(uuid())
-  action       String
-  userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade, name: "LogToUser")
-  clientSiteId String?
-  clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade, name: "LogToClientSite")
-  metadata     Json?
-  createdAt    DateTime    @default(now())
-  ts           DateTime
-  ip           String?
-  previousHash String?
-  hash         String
-}
-
-model User {
-  id                            String            @id() @default(uuid())
-  createdAt                     DateTime          @default(now())
-  updatedAt                     DateTime?         @updatedAt()
-  deletedAt                     DateTime?
-  username                      String            @unique()
-  email                         String            @unique()
-  password                      String?
-  bio                           String?
-  role                          UserRole          @default(reader)
-  avatarUrl                     String?
-  verification                  VerificationCode?
-  totpSecret                    String?
-  totpTempSecret                String?
-  onboardingLoginToken          String?
-  onboardingLoginTokenExpiresAt DateTime?
-  emailVerified                 Boolean           @default(false)
-  allowNotifs                   Boolean           @default(true)
-  allowEmail                    Boolean           @default(true)
-  lastLogin                     DateTime?         @default(now())
-  language                      Language          @default(en)
-  sessions                      Session[]         @relation("UserSessions")
-  clientSiteId                  String?
-  theme                         ThemeOption       @default(light)
-  clientSite                    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-  articles                      Article[]
-  articleDrafts                 ArticleDraft[]
-  comments                      Comment[]
-  notifications                 Notification[]
-  reactions                     CommentReaction[]
-  feedbacks                     ArticleFeedback[]
-  emojiReactions                EmojiReaction[]
-  articleReactions              ArticleReaction[]
-  followers                     Follow[]          @relation("Follower")
-  following                     Follow[]          @relation("Followed")
-  bans                          UserBan[]         @relation("BannedUser")
-  bansIssued                    UserBan[]         @relation("BannedBy")
-  logs                          Log[]             @relation("LogToUser")
-  approvals                     Approval[]
-
-  @@index([username, email, role, language, allowNotifs])
-}
-
-model Session {
-  id         String    @id() @default(uuid())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime? @updatedAt()
-  deletedAt  DateTime?
-  ip         String?
-  userAgent  String?
-  device     String?
-  os         String?
-  browser    String?
-  city       String?
-  region     String?
-  country    String?
-  lastUsedAt DateTime  @default(now())
-  revoked    Boolean   @default(false)
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
-
-  @@index([userId, lastUsedAt])
-}
-
-model Follow {
-  followerId String
-  followedId String
-  follower   User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
-  followed   User     @relation("Followed", fields: [followedId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-
-  @@id([followerId, followedId])
-}
-
 model Social {
   id           String         @id() @default(uuid())
   platform     SocialPlatform
@@ -386,54 +447,56 @@ model Social {
 }
 
 model ClientSite {
-  id                   String              @id() @default(uuid())
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime?           @updatedAt()
+  id                   String               @id() @default(uuid())
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime?            @updatedAt()
   deletedAt            DateTime?
-  name                 String              @unique()
-  domain               String              @unique()
-  domainVerified       Boolean             @default(false)
-  plan                 ClientPlan          @default(BASIC)
+  name                 String               @unique()
+  domain               String               @unique()
+  domainVerified       Boolean              @default(false)
+  plan                 ClientPlan           @default(BASIC)
   focus                String?
   description          String?
   logoUrl              String?
-  generationFrequency  GenerationFrequency @default(NONE)
-  tokenLimit           Int?                @default(0)
-  tokenRemaining       Int?                @default(0)
-  totalUsage           Int?                @default(0)
-  autoRelease          Boolean             @default(false)
+  generationFrequency  GenerationFrequency  @default(NONE)
+  tokenLimit           Int?                 @default(0)
+  tokenRemaining       Int?                 @default(0)
+  totalUsage           Int?                 @default(0)
+  autoRelease          Boolean              @default(false)
   keywords             Json?
   audience             String?
   lastGeneratedAt      DateTime?
-  humanHourlyRate      Int                 @default(1400)
-  humanWordsPerHour    Int                 @default(400)
+  humanHourlyRate      Int                  @default(1400)
+  humanWordsPerHour    Int                  @default(400)
   gtagId               String?
   apiKey               String?
   gamNetworkCode       String?
-  allowAds             Boolean             @default(false)
+  allowAds             Boolean              @default(false)
   allowGtag            Boolean?
-  allowShapes          Boolean             @default(false)
+  allowShapes          Boolean              @default(false)
   aiToneOfVoice        String?
   aiControversyLevel   String?
   communityInsight     Json?
   insightUpdatedAt     DateTime?
-  billingPlan          BillingPlans        @default(MONTHLY)
+  billingPlan          BillingPlans         @default(MONTHLY)
   firstPaidAt          DateTime?
   nextBillingAt        DateTime?
   lastInvoicedAt       DateTime?
-  monthlyPayment       Int?                @default(0)
-  annualPayment        Int?                @default(0)
+  monthlyPayment       Int?                 @default(0)
+  annualPayment        Int?                 @default(0)
   stripeCustomerId     String?
   stripeSubscriptionId String?
   stripePriceId        String?
-  enableAi             Boolean             @default(false)
-  enableCron           Boolean             @default(false)
-  enableSentiment      Boolean             @default(false)
-  currency             String?             @default("USD")
-  lastPaidAt           DateTime?           @default(now())
-  lastTokenRefilled    DateTime?           @default(now())
-  language             Language            @default(en)
-  theme                Theme               @default(blue)
+  enableAi             Boolean              @default(false)
+  enableCron           Boolean              @default(false)
+  enableSentiment      Boolean              @default(false)
+  currency             String?              @default("USD")
+  lastPaidAt           DateTime?            @default(now())
+  lastTokenRefilled    DateTime?            @default(now())
+  language             Language             @default(en)
+  theme                Theme                @default(blue)
+  translationMode      TranslationMode      @default(OFF)
+  translationLanguages Language[]
   users                User[]
   tags                 Tag[]
   articles             Article[]
@@ -442,9 +505,10 @@ model ClientSite {
   emojis               Emoji[]
   userBans             UserBan[]
   socials              Social[]
-  logs                 Log[]               @relation("LogToClientSite")
+  logs                 Log[]                @relation("LogToClientSite")
   features             ClientFeature[]
   linkedinCompanies    LinkedinCompany[]
+  articleTranslations  ArticleTranslation[]
 
   @@index([domain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
 }
@@ -479,71 +543,6 @@ model ClientFeature {
   @@unique([clientSiteId, featureId])
   @@index([clientSiteId])
   @@index([billingLockedUntil])
-}
-
-model PollResult {
-  id        String     @id() @default(uuid())
-  createdAt DateTime   @default(now())
-  updatedAt DateTime?  @updatedAt()
-  deletedAt DateTime?
-  articleId String
-  article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  pollId    String
-  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
-  optionId  String
-  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  userId    String?
-  sessionId String?
-
-  @@unique([pollId, userId])
-  @@unique([pollId, sessionId])
-  @@index([pollId])
-  @@index([optionId])
-  @@index([articleId])
-}
-
-model Poll {
-  id        String       @id() @default(uuid())
-  createdAt DateTime     @default(now())
-  updatedAt DateTime?    @updatedAt()
-  deletedAt DateTime?
-  articleId String
-  article   Article      @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  question  String
-  order     Int          @default(0)
-  options   PollOption[]
-  results   PollResult[]
-
-  @@index([articleId])
-}
-
-model PollOption {
-  id        String       @id() @default(uuid())
-  createdAt DateTime     @default(now())
-  updatedAt DateTime?    @updatedAt()
-  deletedAt DateTime?
-  pollId    String
-  poll      Poll         @relation(fields: [pollId], references: [id], onDelete: Cascade)
-  label     String
-  order     Int          @default(0)
-  results   PollResult[]
-
-  @@index([pollId])
-}
-
-model UserBan {
-  id           String     @id() @default(uuid())
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime?  @updatedAt()
-  deletedAt    DateTime?
-  userId       String
-  user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
-  clientSiteId String
-  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-  reason       String?
-  bannedById   String
-  bannedBy     User       @relation("BannedBy", fields: [bannedById], references: [id], onDelete: Cascade)
-  expiresAt    DateTime?
 }
 
 model Comment {
@@ -601,34 +600,6 @@ model EmojiReaction {
   emoji     Emoji   @relation(fields: [emojiId], references: [id], onDelete: Cascade)
 
   @@id([userId, commentId, emojiId])
-}
-
-model VerificationCode {
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  id        String    @id() @default(uuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt()
-  deletedAt DateTime?
-  code      String
-  expiresAt DateTime
-
-  @@unique([userId])
-}
-
-model Notification {
-  userId    String
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  id        String           @id() @default(uuid())
-  createdAt DateTime         @default(now())
-  updatedAt DateTime?        @updatedAt()
-  deletedAt DateTime?
-  message   String
-  isRead    Boolean          @default(false)
-  type      NotificationType
-  articleId String?
-  link      String?
-  article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
 }
 
 model LinkedinCompany {
@@ -731,4 +702,84 @@ model PostMetric {
   reactions       Int           @default(0)
   comments        Int           @default(0)
   capturedAt      DateTime      @default(now())
+}
+
+model Log {
+  id           String      @id() @default(uuid())
+  action       String
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade, name: "LogToUser")
+  clientSiteId String?
+  clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade, name: "LogToClientSite")
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+  ts           DateTime
+  ip           String?
+  previousHash String?
+  hash         String
+}
+
+model Notification {
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String           @id() @default(uuid())
+  createdAt DateTime         @default(now())
+  updatedAt DateTime?        @updatedAt()
+  deletedAt DateTime?
+  message   String
+  isRead    Boolean          @default(false)
+  type      NotificationType
+  articleId String?
+  link      String?
+  article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
+}
+
+model PollResult {
+  id        String     @id() @default(uuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime?  @updatedAt()
+  deletedAt DateTime?
+  articleId String
+  article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  pollId    String
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  optionId  String
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  userId    String?
+  sessionId String?
+
+  @@unique([pollId, userId])
+  @@unique([pollId, sessionId])
+  @@index([pollId])
+  @@index([optionId])
+  @@index([articleId])
+}
+
+model Poll {
+  id        String       @id() @default(uuid())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime?    @updatedAt()
+  deletedAt DateTime?
+  articleId String
+  article   Article      @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  question  String
+  order     Int          @default(0)
+  options   PollOption[]
+  results   PollResult[]
+
+  @@index([articleId])
+}
+
+model PollOption {
+  id        String       @id() @default(uuid())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime?    @updatedAt()
+  deletedAt DateTime?
+  pollId    String
+  poll      Poll         @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  label     String
+  order     Int          @default(0)
+  results   PollResult[]
+
+  @@index([pollId])
 }

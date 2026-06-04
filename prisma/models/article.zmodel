@@ -1,0 +1,193 @@
+import "./base"
+import "./client"
+import "./user"
+import "./comment"
+import "./notification"
+import "./poll"
+
+enum ArticleStatus {
+    draft
+    published
+    archived
+}
+
+enum AIInvolvement {
+    NONE
+    ASSIST
+    FULL
+}
+
+enum TranslationMode {
+    OFF
+    MANUAL
+    AUTO
+    HYBRID
+}
+
+enum TranslationStatus {
+    PENDING
+    TRANSLATING
+    READY
+    PUBLISHED
+    FAILED
+    STALE
+}
+
+enum TranslationSource {
+    AI
+    HUMAN
+}
+
+enum SharePlatform {
+    TWITTER
+    FACEBOOK
+    LINKEDIN
+    EMAIL
+    OTHER
+}
+
+model ArticleDraft extends Base, Ownable {
+    title        String
+    excerpt      String?
+    content      String
+    imageUrl     String?
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    @@allow('all', auth().id == userId || auth().role == 'admin')
+    @@index([userId, updatedAt])
+}
+model Article extends Base, Ownable {
+    slug             String            @length(1, 100, "Slug musí mít 1–100 znaků")
+    title            String            @length(1, 255, "Titulek musí mít 1–255 znaků")
+    excerpt          String?           @length(0, 500, "Perex může mít max. 500 znaků")
+    content          String            @length(1, 50000, "Článek překročil délku znaků")
+    imageUrl         String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    status           ArticleStatus     @default(draft)
+    clientSiteId     String
+    clientSite       ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    views            Int               @default(0)
+    shared           Int               @default(0)
+    aiInvolvement    AIInvolvement     @default(NONE)
+    readingTime      Int?
+    totalWords       Int?
+    savedAmount      Float             @default(0.0)
+    savedTimeMinutes Int               @default(0)
+    publishedAt      DateTime?
+    articleSeriesId  String?
+    articleSeries    ArticleSeries?    @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
+    seriesOrder      Int?              @default(0)
+    releaseAt        DateTime?
+    allowedComments  Boolean           @default(true)
+    tags             ArticleTag[]
+    comments         Comment[]
+    reactions        ArticleReaction[]
+    shares           ArticleShare[]
+    feedbacks        ArticleFeedback[]
+    pollResults      PollResult[]
+    polls            Poll[]
+    notifications    Notification[]    @relation("ArticleNotifications")
+    translations     ArticleTranslation[]
+    sources          String[]
+    prompt           String?           @length(0, 5000)
+    @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+    @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
+    @@unique([slug, clientSiteId])
+    @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])
+}
+
+model ArticleTranslation extends Base {
+    articleId    String
+    article      Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    clientSiteId String
+    clientSite   ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    language     Language
+    slug         String            @length(1, 100, "Slug musí mít 1–100 znaků")
+    title        String            @length(1, 255, "Titulek musí mít 1–255 znaků")
+    excerpt      String?           @length(0, 500, "Perex může mít max. 500 znaků")
+    content      String            @length(1, 50000, "Překlad překročil délku znaků")
+    status       TranslationStatus @default(PENDING)
+    source       TranslationSource @default(AI)
+    model        String?           @length(0, 64)
+    usage        Json?
+    error        String?           @length(0, 1000)
+    translatedAt DateTime?
+    @@unique([articleId, language])
+    @@unique([slug, clientSiteId, language])
+    @@allow('read', status == 'PUBLISHED' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+    @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
+    @@index([clientSiteId, status, language])
+}
+
+model ArticleSeries extends Base {
+    name         String     @length(1, 255, "Název série musí mít 1–255 znaků")
+    slug         String     @length(1, 100, "Slug série musí mít 1–100 znaků")
+    description  String?    @length(0, 500)
+    imageUrl     String?    @length(0, 255)
+
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
+    articles     Article[]
+
+    @@unique([slug, clientSiteId])
+    @@allow('read', true)
+    @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
+}
+
+model ArticleShare extends Base {
+    articleId String
+    article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    platform  SharePlatform
+    @@allow('create', true)
+    @@allow('read', true)
+    @@allow('delete', auth().role == 'admin')
+}
+
+model Tag extends Base {
+    slug         String       @length(1, 64, "Slug tagu musí mít 1–64 znaků")
+    name         String       @length(1, 64, "Název tagu musí mít 1–64 znaků")
+    clientSiteId String?
+    clientSite   ClientSite?  @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    articles     ArticleTag[]
+    @@allow('read', true)
+    @@allow('all', auth().role == 'admin')
+}
+
+model ArticleTag {
+    articleId String
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    tagId     String
+    tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+    @@id([articleId, tagId])
+    @@allow('read', true)
+    @@allow('all', auth().role == 'admin')
+}
+
+model ArticleFeedback extends Base {
+    articleId String
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+    isHelpful Boolean
+    reason    String? @length(0, 500)
+
+    userId    String?
+    user      User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+    sessionId String?
+
+    @@unique([articleId, userId, sessionId])
+
+    @@allow('create, read', true)
+    @@allow('update', auth().id == userId)
+}
+model ArticleReaction extends Base {
+    articleId String
+    article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    userId    String?
+    user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    sessionId String?
+    @@unique([articleId, userId, sessionId])
+    @@allow('create', true)
+    @@allow('read', true)
+    @@allow('delete', auth().id == userId || auth().role == 'admin')
+}

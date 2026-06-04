@@ -1,0 +1,99 @@
+import "./base"
+import "./article"
+import "./client"
+import "./comment"
+import "./notification"
+import "./linkedin"
+import "./log"
+
+model User extends Base {
+    username                      String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
+    email                         String            @unique @length(3, 255, "Email musí mít 3–255 znaků")
+    password                      String?           @omit @length(4, 124, "Heslo musí mít 4–124 znaků")
+    bio                           String?           @length(0, 300, "Bio může mít max. 300 znaků")
+    role                          UserRole          @default(reader)
+    avatarUrl                     String?
+    verification                  VerificationCode?
+    totpSecret                    String?           @omit
+    totpTempSecret                String?           @omit
+    onboardingLoginToken          String?           @omit
+    onboardingLoginTokenExpiresAt DateTime?
+    emailVerified                 Boolean           @default(false)
+    allowNotifs                   Boolean           @default(true)
+    allowEmail                    Boolean           @default(true)
+    lastLogin                     DateTime?         @default(now())
+    language                      Language          @default(en)
+    sessions                      Session[]         @relation("UserSessions")
+    clientSiteId                  String?
+    theme                         ThemeOption       @default(light)
+    clientSite                    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    articles                      Article[]
+    articleDrafts                 ArticleDraft[]
+    comments                      Comment[]
+    notifications                 Notification[]
+    reactions                     CommentReaction[]
+    feedbacks                     ArticleFeedback[]
+    emojiReactions                EmojiReaction[]
+    articleReactions              ArticleReaction[]
+    followers                     Follow[]          @relation("Follower")
+    following                     Follow[]          @relation("Followed")
+    bans                          UserBan[]         @relation("BannedUser")
+    bansIssued                    UserBan[]         @relation("BannedBy")
+    logs                          Log[]             @relation("LogToUser")
+    approvals                     Approval[]
+    @@allow('read', true)
+    @@allow('create', true)
+    @@allow('update', auth().id == id || auth().role == 'superadmin')
+    @@allow('all', auth().role == 'admin' || auth().role == 'superadmin')
+    @@index([username, email, role, language, allowNotifs])
+}
+
+model Session extends Base {
+    ip         String?  @length(0, 45)
+    userAgent  String?  @length(0, 500)
+    device     String?  @length(0, 100)
+    os         String?  @length(0, 100)
+    browser    String?  @length(0, 100)
+    city       String?  @length(0, 100)
+    region     String?  @length(0, 100)
+    country    String?  @length(0, 100)
+    lastUsedAt DateTime @default(now())
+    revoked    Boolean  @default(false)
+    userId     String
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
+    @@allow('all', auth().id == userId || auth().role == 'superadmin')
+    @@index([userId, lastUsedAt])
+}
+
+model Follow {
+    followerId String
+    followedId String
+    follower   User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+    followed   User     @relation("Followed", fields: [followedId], references: [id], onDelete: Cascade)
+    createdAt  DateTime @default(now())
+    @@id([followerId, followedId])
+    @@allow('create', auth().id == followerId)
+    @@allow('delete', auth().id == followerId || auth().role == 'admin')
+    @@allow('read', true)
+}
+
+model UserBan extends Base {
+    userId       String
+    user         User       @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    reason       String?    @length(0, 255, "Důvod banu může mít max. 255 znaků")
+    bannedById   String
+    bannedBy     User       @relation("BannedBy", fields: [bannedById], references: [id], onDelete: Cascade)
+    expiresAt    DateTime?
+    @@allow('read', true)
+    @@allow('create, update, delete', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@allow('all', auth().role == 'superadmin')
+}
+
+model VerificationCode extends Base, Ownable {
+    code      String   @length(8, 8, "Kód musí mít přesně 8 znaků")
+    expiresAt DateTime
+    @@unique([userId])
+    @@allow('all', true)
+}

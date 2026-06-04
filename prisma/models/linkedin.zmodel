@@ -1,0 +1,130 @@
+import "./base"
+import "./client"
+import "./user"
+
+enum PublishMode {
+    HitL
+    FullAuto
+}
+
+enum ContentTaskStatus {
+    PENDING
+    GENERATING
+    COMPLETED
+    FAILED
+}
+
+enum DraftStatus {
+    DRAFT
+    AWAITING_APPROVAL
+    APPROVED
+    PUBLISHING
+    REJECTED
+    PUBLISHED
+    FAILED
+}
+
+enum ApprovalDecision {
+    APPROVE
+    REJECT
+}
+
+model LinkedinCompany extends Base {
+    name           String
+    linkedinOrgId  String        @unique
+    type           String        @default("personal")
+    mode           PublishMode   @default(HitL)
+    timezone       String        @default("UTC")
+    cadence        String        @default("daily")
+    accessToken    String?       @omit
+    refreshToken   String?       @omit
+    tokenExpiresAt DateTime?
+
+    clientSiteId   String
+    clientSite     ClientSite    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
+    brandProfile   BrandProfile?
+    contentTasks   ContentTask[]
+
+    @@allow('all', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('read', auth().clientSiteId == clientSiteId)
+}
+
+model BrandProfile extends Base {
+    companyId String          @unique
+    company   LinkedinCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+    tone      String?
+    audience  String?
+    doList    String[]
+    dontList  String[]
+    examples  String[]
+
+    @@allow('all', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == company.clientSiteId))
+    @@allow('read', auth().clientSiteId == company.clientSiteId)
+}
+
+model ContentTask extends Base {
+    companyId String
+    company   LinkedinCompany   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+    topic     String
+    dueAt     DateTime
+    status    ContentTaskStatus @default(PENDING)
+
+    drafts    DraftPost[]
+
+    @@allow('all', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == company.clientSiteId))
+    @@allow('read', auth().clientSiteId == company.clientSiteId)
+}
+
+model DraftPost extends Base {
+    taskId      String
+    task        ContentTask    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+    text        String
+    score       Int            @default(0)
+    policyFlags Json?
+    status      DraftStatus    @default(DRAFT)
+
+    approvals   Approval[]
+    published   PublishedPost?
+
+    @@allow('all', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == task.company.clientSiteId))
+    @@allow('read', auth().clientSiteId == task.company.clientSiteId)
+}
+
+model Approval extends Base {
+    draftId    String
+    draft      DraftPost        @relation(fields: [draftId], references: [id], onDelete: Cascade)
+    reviewerId String
+    reviewer   User             @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+    decision   ApprovalDecision
+    notes      String?
+    decidedAt  DateTime         @default(now())
+
+    @@allow('all', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == draft.task.company.clientSiteId))
+    @@allow('read', auth().clientSiteId == draft.task.company.clientSiteId)
+}
+
+model PublishedPost extends Base {
+    draftId        String       @unique
+    draft          DraftPost    @relation(fields: [draftId], references: [id], onDelete: Cascade)
+    linkedinPostId String       @unique
+    publishedAt    DateTime     @default(now())
+
+    metrics        PostMetric[]
+
+    @@allow('all', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == draft.task.company.clientSiteId))
+    @@allow('read', auth().clientSiteId == draft.task.company.clientSiteId)
+}
+
+model PostMetric extends Base {
+    publishedPostId String
+    publishedPost   PublishedPost @relation(fields: [publishedPostId], references: [id], onDelete: Cascade)
+    impressions     Int           @default(0)
+    clicks          Int           @default(0)
+    reactions       Int           @default(0)
+    comments        Int           @default(0)
+    capturedAt      DateTime      @default(now())
+
+    @@allow('all', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == publishedPost.draft.task.company.clientSiteId))
+    @@allow('read', auth().clientSiteId == publishedPost.draft.task.company.clientSiteId)
+}

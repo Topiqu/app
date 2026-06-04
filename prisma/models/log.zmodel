@@ -1,0 +1,21 @@
+import "./base"
+import "./client"
+import "./user"
+
+model Log {
+    id           String      @id @default(uuid())
+    action       String
+    userId       String
+    user         User        @relation(fields: [userId], references: [id], onDelete: Cascade, name: "LogToUser")
+    clientSiteId String?
+    clientSite   ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Cascade, name: "LogToClientSite")
+    metadata     Json?
+    createdAt    DateTime    @default(now())
+    ts           DateTime
+    ip           String?
+    previousHash String?
+    hash         String
+    @@allow('create', true)
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId) || (auth().id == userId))
+    @@deny('update,delete', true)
+}

@@ -1,0 +1,22 @@
+import "./base"
+import "./article"
+
+enum NotificationType {
+    COMMENT
+    LIKE
+    FOLLOW
+    MENTION
+    ARTICLE_PUBLISHED
+    SYSTEM
+}
+
+model Notification extends Base, Ownable {
+    message   String           @length(1, 255, "Zpráva notifikace musí mít 1–255 znaků")
+    isRead    Boolean          @default(false)
+    type      NotificationType
+    articleId String?
+    link      String?
+    article   Article?         @relation("ArticleNotifications", fields: [articleId], references: [id], onDelete: Cascade)
+    @@allow('read, delete, update', auth().id == userId)
+    @@allow('create', auth() != null && user.allowNotifs == true)
+}
