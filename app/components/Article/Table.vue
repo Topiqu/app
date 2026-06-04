@@ -278,7 +278,6 @@
 import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
-import { format } from 'date-fns'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
   type ColumnDef,
@@ -297,6 +296,7 @@ const toast = useToast()
 const { onArticleCreated, emitArticleDeleted } = useArticleEvent()
 const deleteDialog = useTemplateRef<ModalMiniRef>('deleteDialog')
 const localePath = useLocalePath()
+const { formatTime } = useTime()
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
 const globalFilter = shallowRef((route.query.query as string) || '')
@@ -407,7 +407,7 @@ const columns: ColumnDef<ArticleWithDetails>[] = [
   {
     header: $t('articles.columns.date'),
     accessorKey: 'createdAt',
-    cell: (info) => format(new Date(info.getValue() as string), 'dd.MM.yyyy, HH:mm'),
+    cell: (info) => formatTime(info.getValue() as string, 'shortDatetime'),
     sortingFn: (rowA, rowB, columnId) => {
       const dateA = new Date(rowA.getValue(columnId) as string).getTime()
       const dateB = new Date(rowB.getValue(columnId) as string).getTime()

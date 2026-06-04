@@ -24,7 +24,7 @@
           />
           <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
           <template v-else-if="lastSavedAt">
-            {{ $t('common.messages.savedAgo') }}&nbsp;<NuxtTime :datetime="lastSavedAt" relative :locale />
+            {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
           </template>
           <template v-else>{{ $t('common.messages.unsaved') }}</template>
         </div>
@@ -237,7 +237,7 @@ definePageMeta({ middleware: 'admin' })
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const { emitArticleCreated, emitArticleUpdated } = useArticleEvent()
 
 const isNew = route.params.id === 'new'
