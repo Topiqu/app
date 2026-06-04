@@ -280,10 +280,8 @@
 </template>
 
 <script setup lang="ts">
-import { format } from 'date-fns'
 import equal from 'fast-deep-equal'
 import { Save } from 'lucide-vue-next'
-import { enUS, cs } from 'date-fns/locale'
 import { formatDate } from '~~/shared/utils'
 import { TransitionRoot } from '@headlessui/vue'
 
@@ -308,7 +306,8 @@ const confirmDeactivate = async () => {
 }
 const localePath = useLocalePath()
 const toast = useToast()
-const { setLocale, locale } = useI18n()
+const { setLocale } = useI18n()
+const { formatTime } = useTime()
 const route = useRoute()
 
 if (!user.value) {
@@ -365,9 +364,7 @@ const isPasswordFormValid = computed(() => {
 
 const formattedCreatedAt = computed(() => {
   if (!profileForm.createdAt) return ''
-  const dateLocale = locale.value === 'en' ? enUS : cs
-  const exactDateFormat = locale.value === 'en' ? 'MM/dd/yyyy' : 'd.M.yyyy'
-  return `${formatDate(profileForm.createdAt)} (${format(profileForm.createdAt, exactDateFormat, { locale: dateLocale })})`
+  return `${formatDate(profileForm.createdAt)} (${formatTime(profileForm.createdAt, 'short')})`
 })
 const {
   data: userData,

@@ -322,10 +322,8 @@
 import type { ThemeSchema, LanguageSchema } from '~~/shared/zod/enums'
 import type { SocialPlatform, ClientSite as _ClientSite } from '@prisma/client'
 
-import { cs, enUS } from 'date-fns/locale'
-import { format, parseISO } from 'date-fns'
-
 const toast = useToast()
+const { formatTime } = useTime()
 const { data: auth } = useAuth()
 const open = defineModel<boolean>()
 const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
@@ -400,16 +398,14 @@ const validityText = computed(() => {
   if (!client.value) return ''
   if (client.value.billingPlan === 'PERMANENT') return $t('common.preferences.validity.permanent')
   if (!client.value.nextBillingAt) return $t('common.preferences.validity.unknown')
-  const date = parseISO(client.value.nextBillingAt)
-  const locale = client.value.language === 'cs' ? cs : enUS
-  return $t('common.preferences.validity.until', { date: format(date, 'd. M. yyyy', { locale }) })
+  return $t('common.preferences.validity.until', {
+    date: formatTime(client.value.nextBillingAt, 'short', client.value.language),
+  })
 })
 
 const nextBillingDate = computed(() => {
   if (!client.value?.nextBillingAt) return '–'
-  const date = parseISO(client.value.nextBillingAt)
-  const locale = client.value.language === 'cs' ? cs : enUS
-  return format(date, 'd. M. yyyy', { locale })
+  return formatTime(client.value.nextBillingAt, 'short', client.value.language)
 })
 
 const nextBillingAmountText = computed(() => {

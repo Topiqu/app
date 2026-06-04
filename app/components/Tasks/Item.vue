@@ -3,9 +3,9 @@
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
         <span :class="{ 'line-through': task.completed }">{{ task.title }}</span>
-        <span v-if="task.completed" class="text-green-500 ml-2">(Dokončeno)</span>
+        <span v-if="task.completed" class="text-green-500 ml-2">({{ $t('common.tasks.completed') }})</span>
         <span v-if="task.dueDate" class="text-sm ml-2">
-          {{ format(new Date(task.dueDate), 'd. MMMM yyyy', { locale: cs }) }}
+          <AppTime :datetime="task.dueDate" preset="date" />
         </span>
       </div>
       <div class="flex gap-2 items-center">
@@ -16,7 +16,9 @@
             :class="task.completed ? 'text-green-500' : 'text-gray-400'"
           />
         </button>
-        <button class="text-blue-500 hover:underline text-sm" @click="tagsOpen = true">Tagy</button>
+        <button class="text-blue-500 hover:underline text-sm" @click="tagsOpen = true">
+          {{ $t('common.tasks.tags') }}
+        </button>
       </div>
     </div>
 
@@ -27,8 +29,6 @@
 </template>
 
 <script setup lang="ts">
-import { format } from 'date-fns'
-import { cs } from 'date-fns/locale'
 import { TransitionRoot } from '@headlessui/vue'
 
 defineProps<{

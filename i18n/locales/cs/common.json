@@ -425,6 +425,10 @@
       "pack50k": "Balíček 50k tokenů",
       "bestValue": "Nejvýhodnější",
       "upgradeToPremium": "Povýšit na PREMIUM"
+    },
+    "tasks": {
+      "completed": "Dokončeno",
+      "tags": "Štítky"
     }
   }
 }
