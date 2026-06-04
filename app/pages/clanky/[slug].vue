@@ -186,8 +186,10 @@ const { data: session } = useAuth()
 const clientSite = await useClientSite()
 const slug = computed(() => route.params.slug as string)
 
+const { locale } = useI18n()
+
 const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`, {
-  query: { clientSiteId: clientSite?.id },
+  query: { clientSiteId: clientSite?.id, locale: locale.value },
 })
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
@@ -199,13 +201,30 @@ const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/$
 
 const canonicalOrigin = `${import.meta.dev ? reqUrl.protocol : 'https:'}//${reqUrl.host.replace(/^www\./, '')}`
 
+const primaryLocale = computed(() => clientSite?.language ?? 'en')
+
+// Real alternates only exist once translations are PUBLISHED (source + each translation).
+const alternates = computed<{ language: 'cs' | 'en'; slug: string }[]>(() => data.value?.alternates ?? [])
+const hasTranslations = computed(() => alternates.value.length >= 2)
+
+const alternateLinks = computed(() =>
+  hasTranslations.value
+    ? alternates.value.map((alt) => ({
+        hreflang: alt.language,
+        href: `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: alt.slug } }, alt.language)}`,
+      }))
+    : [],
+)
+
 const canonicalUrl = computed(() => {
   if (!data.value?.slug) return ''
-  const primaryLocale = clientSite?.language ?? 'en'
-  return `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: data.value.slug } }, primaryLocale)}`
+  // With real translations, each locale self-canonicalises; otherwise collapse the
+  // duplicate i18n-alias URLs onto the primary-language path (mono-lingual mitigation).
+  const lang = hasTranslations.value ? (data.value.language ?? primaryLocale.value) : primaryLocale.value
+  return `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: data.value.slug } }, lang)}`
 })
 
-useArticleSeo(data, clientSite, canonicalUrl)
+useArticleSeo(data, clientSite, canonicalUrl, alternateLinks)
 
 const ogImageOptions = computed(() => ({ backgroundImage: data.value?.imageUrl }))
 
