@@ -34,6 +34,24 @@ export const themes: {
 
 export type ThemeKey = keyof typeof themes
 
+export const themeColors = {
+  blue: '#2563eb',
+  green: '#16a34a',
+  red: '#dc2626',
+  purple: '#7c3aed',
+  orange: '#f97316',
+  teal: '#0d9488',
+  yellow: '#eab308',
+  pink: '#ec4899',
+  indigo: '#4f46e5',
+  gray: '#6b7280',
+  lime: '#65a30d',
+  sky: '#0ea5e9',
+  amber: '#f59e0b',
+  cyan: '#06b6d4',
+  violet: '#8b5cf6',
+} satisfies Record<ThemeKey, string>
+
 export const themeRings = {
   blue: 'focus-visible:ring-blue-500',
   green: 'focus-visible:ring-green-500',
