@@ -26,8 +26,9 @@ const adChance = useAdChance()
 const i18nHead = useLocaleHead()
 
 const devView = import.meta.dev ? useDevView() : undefined
+const isProd = useRuntimeConfig().public.appEnv === 'production'
 
-const isMainLanding = computed(() => {
+const isLandingSurface = computed(() => {
   if (import.meta.dev && devView && devView.value !== 'auto') {
     return devView.value === 'landing'
   }
@@ -41,6 +42,12 @@ const isMainLanding = computed(() => {
 
   return true
 })
+
+if (isProd && isLandingSurface.value) {
+  await navigateTo('https://landing.topiqu.com', { external: true, redirectCode: 302 })
+}
+
+const isMainLanding = computed(() => !isProd && isLandingSurface.value)
 
 if (clientSite) {
   adChance?.assign(clientSite.id, clientSite.plan)

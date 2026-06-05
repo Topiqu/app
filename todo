@@ -4,6 +4,7 @@ always:
   - 🛑 test out before marking done
 ---
 now:
+  - 🛑 root Feed page na apex (topiqu.com) — "best of" články napříč všemi tenants; nahradí prod redirect apexu na landing.topiqu.com (app.vue#isLandingSurface), který je dočasný než Feed vznikne
   - 🛑 GAM + total ad revenue overview & logging
   - 🛑 AWS Comprehend integration
   - 🛑 dynamic pricing (clientpreferences)
