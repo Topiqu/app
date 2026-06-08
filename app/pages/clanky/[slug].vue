@@ -123,13 +123,7 @@
           <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
         </div>
 
-        <LazyArticleLightbox
-          v-if="lightboxVisible"
-          :visible="lightboxVisible"
-          :images="images"
-          :index="currentImageIndex"
-          @hide="lightboxVisible = false"
-        />
+        <LazyArticleLightbox :sourceRef="content" />
         <LazyArticleRelated :articles="relatedArticles!" :pending="pending" />
 
         <div v-if="data.sources?.length" class="w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -336,11 +330,6 @@ const handleContentScroll = () => {
   else progress.value = 0
 }
 
-type Image = { src: string; alt?: string }
-const images = ref<Image[]>([])
-const currentImageIndex = shallowRef(0)
-const lightboxVisible = shallowRef(false)
-
 onMounted(() => {
   trackView()
 
@@ -348,21 +337,6 @@ onMounted(() => {
     if (!container.value || !content.value) return
     isSticky.value = window.scrollY > 100
     handleContentScroll()
-  }
-
-  const extractImages = () => {
-    if (!content.value) return
-    images.value = Array.from(content.value.querySelectorAll('img')).map((i) => ({ src: i.src, alt: i.alt || '' }))
-  }
-
-  const handleImageClick = (e: Event) => {
-    const target = e.target as HTMLElement
-    if (target.tagName !== 'IMG') return
-    const i = target as HTMLImageElement
-    const idx = images.value.findIndex((x) => x.src === i.src)
-    if (idx === -1) return
-    currentImageIndex.value = idx
-    lightboxVisible.value = true
   }
 
   if (data.value?.slug && !session.value?.user.id) {
@@ -373,13 +347,10 @@ onMounted(() => {
     }
   }
 
-  setTimeout(extractImages, 100)
   window.addEventListener('scroll', onScroll)
-  content.value?.addEventListener('click', handleImageClick)
 
   onUnmounted(() => {
     window.removeEventListener('scroll', onScroll)
-    content.value?.removeEventListener('click', handleImageClick)
   })
 })
 </script>
