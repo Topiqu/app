@@ -1,5 +1,5 @@
 import prisma from '../../utils/prisma'
-import { publishDecisionAndExecute } from '../../utils/linkedin/publisher'
+import { publishApprovedDraft } from '../../utils/linkedin/publisher'
 
 export default defineEventHandler(async (event) => {
   if (getHeader(event, 'Authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -8,15 +8,19 @@ export default defineEventHandler(async (event) => {
 
   const drafts = await prisma.draftPost.findMany({
     where: { status: 'APPROVED' },
+    select: { id: true },
   })
 
-  for (const draft of drafts) {
-    try {
-      await publishDecisionAndExecute(draft.id)
-    } catch (err) {
-      console.error(`Failed to publish draft ${draft.id}`, err)
-    }
-  }
+  const results = await Promise.allSettled(drafts.map((d) => publishApprovedDraft(d.id)))
 
-  return { success: true, count: drafts.length }
+  let published = 0
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') {
+      if (r.value.status === 'published') published++
+    } else {
+      console.error(`Failed to publish draft ${drafts[i]!.id}`, r.reason)
+    }
+  })
+
+  return { success: true, scanned: drafts.length, published }
 })

@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
     <Listbox v-slot="{ open }" v-model="modelValue">
-      <Float :placement="upwards ? 'top' : 'bottom'" :offset="8" portal adaptiveWidth class="w-full">
+      <Float :placement="upwards ? 'top' : 'bottom'" :offset="8" :zIndex="Z_LAYERS.popover" portal adaptiveWidth class="w-full">
         <ListboxButton
           class="w-full px-4 py-2.5 sm:py-3 flex items-center justify-between rounded-xl !bg-white dark:!bg-gray-800 !border !border-gray-200 dark:!border-gray-700 !shadow-sm hover:!bg-gray-50 dark:hover:!bg-gray-700/50 hover:!border-gray-300 dark:hover:!border-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium focus:outline-none focus:!border-indigo-500 focus:!ring-2 focus:!ring-indigo-500/30 cursor-pointer transition-all duration-300 group"
           :class="{ '!border-indigo-500 !ring-2 !ring-indigo-500/30': open }"
@@ -33,7 +33,7 @@
           leaveToClass="opacity-0 scale-95 -translate-y-2"
         >
           <ListboxOptions
-            class="w-full flex flex-col gap-1 p-1 overflow-hidden rounded-xl !bg-white/90 dark:!bg-gray-800/90 backdrop-blur-md !border !border-gray-200/50 dark:!border-gray-700/50 shadow-2xl focus:outline-none z-[9999]"
+            class="w-full flex flex-col gap-1 p-1 overflow-hidden rounded-xl !bg-white/90 dark:!bg-gray-800/90 backdrop-blur-md !border !border-gray-200/50 dark:!border-gray-700/50 shadow-2xl focus:outline-none"
           >
             <ListboxOption
               v-for="{ label, icon, value } in items"
@@ -89,6 +89,7 @@
 
 <script setup lang="ts">
 import { Float } from '@headlessui-float/vue'
+import { Z_LAYERS } from '~~/shared/utils/z-layers'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 
 export type FormSelectItem = {

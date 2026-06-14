@@ -1,0 +1,36 @@
+name: Qodo Review
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: qodo-review-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  review:
+    name: AI code review
+    runs-on: ubuntu-latest
+    # Forked PRs don't receive repo secrets, so QODO_API_KEY is absent there.
+    # Skip instead of failing a run that can never authenticate.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Review agent: https://github.com/qodo-ai/agents/tree/main/agents/code-review
+      - name: Qodo code review
+        uses: qodo-ai/qodo-gen-cli@v1
+        with:
+          prompt: code-review
+        env:
+          QODO_API_KEY: ${{ secrets.QODO_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}

@@ -24,7 +24,7 @@
           />
           <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
           <template v-else-if="lastSavedAt">
-            {{ $t('common.messages.savedAgo') }}&nbsp;<NuxtTime :datetime="lastSavedAt" relative />
+            {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
           </template>
           <template v-else>{{ $t('common.messages.unsaved') }}</template>
         </div>
@@ -198,7 +198,13 @@
             <Button size="sm" variant="neutral" @click="setReleaseQuick('tomorrow')">
               {{ $t('articles.releaseQuick.tomorrow') }}
             </Button>
-            <Button v-if="editedArticle.releaseAt" size="sm" variant="neutral" icon="mdi:close" @click="setReleaseQuick('clear')">
+            <Button
+              v-if="editedArticle.releaseAt"
+              size="sm"
+              variant="neutral"
+              icon="mdi:close"
+              @click="setReleaseQuick('clear')"
+            >
               {{ $t('articles.releaseQuick.clear') }}
             </Button>
           </div>
@@ -206,20 +212,18 @@
       </div>
     </ModalSlideOver>
 
-    <Modal
-      v-model="discardConfirmOpen"
+    <ModalMini
+      v-model:open="discardConfirmOpen"
+      icon="mdi:alert-circle-outline"
       :title="$t('common.messages.discardChangesTitle')"
-      :description="$t('common.messages.discardChangesText')"
+      :message="$t('common.messages.discardChangesText')"
     >
-      <template #footer="{ close }">
-        <div class="flex gap-3">
-          <Button variant="neutral" @click="close">{{ $t('common.actions.cancel') }}</Button>
-          <Button variant="danger" icon="mdi:trash-can-outline" @click="confirmDiscard">
-            {{ $t('common.messages.discardConfirm') }}
-          </Button>
-        </div>
+      <template #actions>
+        <Button variant="danger" size="sm" icon="mdi:trash-can-outline" @click="confirmDiscard">
+          {{ $t('common.messages.discardConfirm') }}
+        </Button>
       </template>
-    </Modal>
+    </ModalMini>
   </div>
 </template>
 
@@ -346,7 +350,9 @@ const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
     d.setHours(8, 0, 0, 0)
   }
   d.setSeconds(0, 0)
-  editedArticle.value.releaseAt = new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16) as any
+  editedArticle.value.releaseAt = new Date(d.getTime() - d.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16) as any
 }
 
 const generateAIContent = async () => {
@@ -412,9 +418,7 @@ const hasChanges = computed(() => {
       (editedArticle.value.content !== '' && editedArticle.value.content !== '<p></p>')
     )
   }
-  return (
-    editedArticle.value.title !== article.value?.title || editedArticle.value.content !== article.value?.content
-  )
+  return editedArticle.value.title !== article.value?.title || editedArticle.value.content !== article.value?.content
 })
 
 const goBack = () => {

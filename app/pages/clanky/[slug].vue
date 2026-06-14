@@ -123,13 +123,7 @@
           <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
         </div>
 
-        <LazyArticleLightbox
-          v-if="lightboxVisible"
-          :visible="lightboxVisible"
-          :images="images"
-          :index="currentImageIndex"
-          @hide="lightboxVisible = false"
-        />
+        <LazyArticleLightbox :sourceRef="content" />
         <LazyArticleRelated :articles="relatedArticles!" :pending="pending" />
 
         <div v-if="data.sources?.length" class="w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -186,8 +180,10 @@ const { data: session } = useAuth()
 const clientSite = await useClientSite()
 const slug = computed(() => route.params.slug as string)
 
+const { locale } = useI18n()
+
 const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`, {
-  query: { clientSiteId: clientSite?.id },
+  query: { clientSiteId: clientSite?.id, locale: locale.value },
 })
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
@@ -197,52 +193,34 @@ const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/$
   query: { limit: 3, clientSiteId: clientSite?.id },
 })
 
+const canonicalOrigin = `${import.meta.dev ? reqUrl.protocol : 'https:'}//${reqUrl.host.replace(/^www\./, '')}`
+
+const primaryLocale = computed(() => clientSite?.language ?? 'en')
+
+// Real alternates only exist once translations are PUBLISHED (source + each translation).
+const alternates = computed<{ language: 'cs' | 'en'; slug: string }[]>(() => data.value?.alternates ?? [])
+const hasTranslations = computed(() => alternates.value.length >= 2)
+
+const alternateLinks = computed(() =>
+  hasTranslations.value
+    ? alternates.value.map((alt) => ({
+        hreflang: alt.language,
+        href: `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: alt.slug } }, alt.language)}`,
+      }))
+    : [],
+)
+
 const canonicalUrl = computed(() => {
   if (!data.value?.slug) return ''
-  return `${reqUrl.protocol}//${reqUrl.host}${localePath({ name: 'clanky-slug', params: { slug: data.value.slug } })}`
+  // With real translations, each locale self-canonicalises; otherwise collapse the
+  // duplicate i18n-alias URLs onto the primary-language path (mono-lingual mitigation).
+  const lang = hasTranslations.value ? (data.value.language ?? primaryLocale.value) : primaryLocale.value
+  return `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: data.value.slug } }, lang)}`
 })
 
-useArticleSeo(data, clientSite, canonicalUrl)
+useArticleSeo(data, clientSite, canonicalUrl, alternateLinks)
 
-const hasSeoPlan = computed(() => clientSite?.plan !== 'BASIC')
-const articleDescription = computed(
-  () => data.value?.excerpt?.slice(0, 160) || data.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) || '',
-)
-const ogDescription = computed(() => {
-  const text = articleDescription.value || ''
-  return (
-    text
-      .slice(0, 100)
-      .replace(/[\n\r]+/g, ' ')
-      .trim() + '...'
-  )
-})
-
-const ogImageOptions = computed(() => {
-  const article = data.value
-
-  if (hasSeoPlan.value && article) {
-    return {
-      title: article.title || 'Article',
-      description: ogDescription.value,
-      siteName: clientSite?.name || 'Blog',
-      siteLogo: clientSite?.logoUrl || undefined,
-      authorName: article.user?.username,
-      authorImage: article.user?.avatarUrl || undefined,
-      readingTime: article.readingTime ? $t('articles.readingTime', [article.readingTime]) : undefined,
-      backgroundImage: article.imageUrl,
-      isPremium: true,
-    }
-  }
-
-  return {
-    title: article?.title || 'Article',
-    siteName: 'Topiqu',
-    authorName: article?.user?.username,
-    backgroundImage: article?.imageUrl,
-    isPremium: false,
-  }
-})
+const ogImageOptions = computed(() => ({ backgroundImage: data.value?.imageUrl }))
 
 defineOgImage('TopiquArticle', ogImageOptions.value)
 
@@ -352,11 +330,6 @@ const handleContentScroll = () => {
   else progress.value = 0
 }
 
-type Image = { src: string; alt?: string }
-const images = ref<Image[]>([])
-const currentImageIndex = shallowRef(0)
-const lightboxVisible = shallowRef(false)
-
 onMounted(() => {
   trackView()
 
@@ -364,21 +337,6 @@ onMounted(() => {
     if (!container.value || !content.value) return
     isSticky.value = window.scrollY > 100
     handleContentScroll()
-  }
-
-  const extractImages = () => {
-    if (!content.value) return
-    images.value = Array.from(content.value.querySelectorAll('img')).map((i) => ({ src: i.src, alt: i.alt || '' }))
-  }
-
-  const handleImageClick = (e: Event) => {
-    const target = e.target as HTMLElement
-    if (target.tagName !== 'IMG') return
-    const i = target as HTMLImageElement
-    const idx = images.value.findIndex((x) => x.src === i.src)
-    if (idx === -1) return
-    currentImageIndex.value = idx
-    lightboxVisible.value = true
   }
 
   if (data.value?.slug && !session.value?.user.id) {
@@ -389,13 +347,10 @@ onMounted(() => {
     }
   }
 
-  setTimeout(extractImages, 100)
   window.addEventListener('scroll', onScroll)
-  content.value?.addEventListener('click', handleImageClick)
 
   onUnmounted(() => {
     window.removeEventListener('scroll', onScroll)
-    content.value?.removeEventListener('click', handleImageClick)
   })
 })
 </script>

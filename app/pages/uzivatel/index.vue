@@ -183,7 +183,7 @@
                     :disabled="isLoading"
                     class="w-full inline-flex justify-center items-center px-4 py-2 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-gray-300 rounded-lg hover:text-white disabled:opacity-50 transition-colors text-sm cursor-pointer touch-manipulation"
                     :variant="'danger'"
-                    @click="deactivateAccount"
+                    @click="confirmDeactivate"
                   >
                     <Icon name="mdi:account-cancel" class="w-4 h-4 mr-2" />
                     {{ $t('profile.deactivateAccount') }}
@@ -275,14 +275,13 @@
       </div>
     </TransitionRoot>
     <LazyUserFollowDialog v-model="showDialog" :type="dialogType" />
+    <ModalMini ref="deactivateDialog" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { format } from 'date-fns'
 import equal from 'fast-deep-equal'
 import { Save } from 'lucide-vue-next'
-import { enUS, cs } from 'date-fns/locale'
 import { formatDate } from '~~/shared/utils'
 import { TransitionRoot } from '@headlessui/vue'
 
@@ -292,9 +291,23 @@ const BIO_MAX_LENGTH = 300
 
 const { data: user, signOut } = useAuth()
 const { saveProfile, changePassword, deactivateAccount } = useProfile()
+const deactivateDialog = useTemplateRef<ModalMiniRef>('deactivateDialog')
+
+const confirmDeactivate = async () => {
+  const r = await deactivateDialog.value?.ask({
+    title: $t('profile.deactivateAccountConfirmTitle'),
+    message: $t('profile.deactivateAccountConfirmText'),
+    icon: 'mdi:alert-outline',
+    confirmText: $t('common.actions.confirm'),
+    cancelText: $t('common.messages.cancel'),
+    variant: 'danger',
+  })
+  if (r === 'ok') await deactivateAccount()
+}
 const localePath = useLocalePath()
 const toast = useToast()
-const { setLocale, locale } = useI18n()
+const { setLocale } = useI18n()
+const { formatTime } = useTime()
 const route = useRoute()
 
 if (!user.value) {
@@ -351,9 +364,7 @@ const isPasswordFormValid = computed(() => {
 
 const formattedCreatedAt = computed(() => {
   if (!profileForm.createdAt) return ''
-  const dateLocale = locale.value === 'en' ? enUS : cs
-  const exactDateFormat = locale.value === 'en' ? 'MM/dd/yyyy' : 'd.M.yyyy'
-  return `${formatDate(profileForm.createdAt)} (${format(profileForm.createdAt, exactDateFormat, { locale: dateLocale })})`
+  return `${formatDate(profileForm.createdAt)} (${formatTime(profileForm.createdAt, 'short')})`
 })
 const {
   data: userData,

@@ -1,0 +1,43 @@
+import "./base"
+import "./article"
+
+model PollResult extends Base {
+    articleId String
+    article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    pollId    String
+    poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+    optionId  String
+    option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+    userId    String?
+    sessionId String?
+    @@allow('create, read', true)
+    @@allow('delete', auth().role == 'admin')
+    @@unique([pollId, userId])
+    @@unique([pollId, sessionId])
+    @@index([pollId])
+    @@index([optionId])
+    @@index([articleId])
+}
+
+model Poll extends Base {
+    articleId String
+    article   Article      @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    question  String       @length(1, 500, "Otázka může mít max. 500 znaků")
+    order     Int          @default(0)
+    options   PollOption[]
+    results   PollResult[]
+    @@allow('read', true)
+    @@allow('all', auth().role == 'admin' && article.clientSiteId == auth().clientSiteId)
+    @@index([articleId])
+}
+
+model PollOption extends Base {
+    pollId  String
+    poll    Poll         @relation(fields: [pollId], references: [id], onDelete: Cascade)
+    label   String       @length(1, 255, "Možnost musí mít 1–255 znaků")
+    order   Int          @default(0)
+    results PollResult[]
+    @@allow('read', true)
+    @@allow('all', auth().role == 'admin' && poll.article.clientSiteId == auth().clientSiteId)
+    @@index([pollId])
+}

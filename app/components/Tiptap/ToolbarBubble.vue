@@ -2,6 +2,7 @@
   <BubbleMenu
     :editor="editor"
     :options="{ placement: 'top', size: { padding: { top: 8, right: 12, bottom: 8, left: 12 } } }"
+    class="z-popover"
   >
     <div
       role="toolbar"

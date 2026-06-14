@@ -247,6 +247,53 @@
       </div>
     </div>
 
+    <div
+      class="flex flex-col gap-6 p-8 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
+      :class="!aiEnabled && 'opacity-60 pointer-events-none'"
+    >
+      <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+        <Icon name="mdi:translate" class="w-6 h-6" />
+        {{ $t('common.preferences.translation.title') }}
+      </h3>
+      <p class="text-xs text-gray-600 dark:text-gray-400 -mt-4">{{ $t('common.preferences.translation.desc') }}</p>
+
+      <div class="flex flex-col gap-2">
+        <FormLabel :text="$t('common.preferences.translation.mode.label')" />
+        <FormSelect v-model="translationMode" :items="translationModeOptions" upwards />
+      </div>
+
+      <div v-if="translationMode !== 'OFF'" class="flex flex-col gap-2">
+        <FormLabel :text="$t('common.preferences.translation.targetLangs.label')" />
+        <div v-if="targetLangOptions.length" class="flex flex-wrap gap-2">
+          <Button
+            v-for="lang in targetLangOptions"
+            :key="lang"
+            variant="neutral"
+            class="!px-3 !py-1 !min-h-0 !h-auto !text-xs !font-medium !rounded-full transition-colors border"
+            :class="
+              translationLanguages.includes(lang)
+                ? 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300'
+                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
+            "
+            @click="toggleTargetLang(lang)"
+          >
+            {{ $t(`languages.${lang}`) }}
+          </Button>
+        </div>
+        <p v-else class="text-xs text-gray-500">{{ $t('common.preferences.translation.targetLangs.empty') }}</p>
+      </div>
+
+      <div
+        v-if="translationMode === 'AUTO' || translationMode === 'HYBRID'"
+        class="flex items-start gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800"
+      >
+        <Icon name="mdi:alert-outline" class="w-5 h-5 mt-0.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+        <p class="text-xs leading-tight text-amber-800 dark:text-amber-200">
+          {{ $t('common.preferences.translation.tokenWarning') }}
+        </p>
+      </div>
+    </div>
+
     <ModalMini
       v-model:open="showAutoReleaseModal"
       :title="$t('common.preferences.autoRelease.confirmTitle')"
@@ -279,6 +326,9 @@ const props = defineProps<{
   currency: string
   features: { code: string; priceMonthly: number; priceAnnual?: number | null }[]
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT'
+  language: string
+  translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
+  translationLanguages: string[]
 }>()
 const emit = defineEmits<{
   'update:username': [string]
@@ -287,8 +337,36 @@ const emit = defineEmits<{
   'update:aiControversyLevel': [string | null]
   'update:avatarUrl': [{ avatarUrl: string; optimizedImageUrl: string }]
   'update:autoRelease': [boolean]
+  'update:translationMode': ['OFF' | 'MANUAL' | 'AUTO' | 'HYBRID']
+  'update:translationLanguages': [string[]]
   'toggle:feature': [{ code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }]
 }>()
+
+const SUPPORTED_LANGUAGES = ['cs', 'en']
+
+const translationMode = computed({
+  get: () => props.translationMode,
+  set: (v) => emit('update:translationMode', v),
+})
+
+const translationModeOptions = computed(() =>
+  (['OFF', 'MANUAL', 'AUTO', 'HYBRID'] as const).map((value) => ({
+    value,
+    label: t(`common.preferences.translation.mode.options.${value}`),
+  })),
+)
+
+const targetLangOptions = computed(() => SUPPORTED_LANGUAGES.filter((lang) => lang !== props.language))
+
+const translationLanguages = computed(() => props.translationLanguages)
+
+const toggleTargetLang = (lang: string) => {
+  const current = props.translationLanguages
+  emit(
+    'update:translationLanguages',
+    current.includes(lang) ? current.filter((l) => l !== lang) : [...current, lang],
+  )
+}
 
 const showAutoReleaseModal = shallowRef(false)
 

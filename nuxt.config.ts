@@ -1,5 +1,9 @@
 import { IMAGE_HOSTS } from './shared/utils/imageHosts'
 
+const APP_ENV =
+  process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
+const IS_PROD = APP_ENV === 'production'
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
 
@@ -10,13 +14,14 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       appVersion: '1.0.0 beta',
+      appEnv: APP_ENV,
       cdnUrl: process.env.CDN_URL || 'https://cdn.topiqu.com',
       turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || '',
       sentry: {
-        dsn: '',
-        environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
-        tracesSampleRate: 0.1,
-        replaysSessionSampleRate: 0.1,
+        dsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',
+        environment: APP_ENV,
+        tracesSampleRate: IS_PROD ? 0.2 : 1.0,
+        replaysSessionSampleRate: IS_PROD ? 0.1 : 0,
       },
     },
     turnstile: { secretKey: process.env.TURNSTILE_SECRET_KEY || '' },
@@ -59,6 +64,7 @@ export default defineNuxtConfig({
       '0 15 * * *': ['generate-article'],
       '*/30 * * * *': ['sentiment-analysis'],
       '0 3 * * * *': ['community-insights'],
+      '*/5 * * * *': ['translate-pending'],
     },
     preset: 'bun',
     imports: {
@@ -230,6 +236,12 @@ export default defineNuxtConfig({
     },
     '/api/onboarding/verify-code': {
       security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 60 * 1000 } },
+    },
+    '/api/auth/callback/credentials': {
+      security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 1000 } },
+    },
+    '/api/users/totp': {
+      security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 1000 } },
     },
   },
   i18n: {

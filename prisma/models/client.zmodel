@@ -1,0 +1,153 @@
+import "./base"
+import "./article"
+import "./user"
+import "./comment"
+import "./linkedin"
+import "./log"
+
+enum GenerationFrequency {
+    NONE
+    DAILY
+    WEEKLY
+}
+
+enum FeatureCodes {
+    AI
+    CRONS
+    SENTIMENT
+    ARTICLE_CRONS
+}
+
+enum ClientPlan {
+    BASIC
+    PRO
+    PREMIUM
+    CUSTOM
+}
+
+enum BillingPlans {
+    MONTHLY
+    ANNUAL
+    PERMANENT
+}
+
+enum SocialPlatform {
+    FACEBOOK
+    TWITTER
+    INSTAGRAM
+    LINKEDIN
+    YOUTUBE
+    OTHER
+}
+
+model Social {
+    id           String         @id @default(uuid())
+    platform     SocialPlatform
+    url          String         @length(1, 255)
+    clientSiteId String
+    clientSite   ClientSite     @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    @@allow('read', true)
+    @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
+
+model ClientSite extends Base {
+    name                 String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
+    domain               String              @unique @length(1, 64, "Doména musí mít 1–64 znaků")
+    domainVerified       Boolean             @default(false)
+    plan                 ClientPlan          @default(BASIC)
+    focus                String?
+    description          String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
+    logoUrl              String?             @length(0, 255, "URL loga musí mít max. 255 znaků")
+    generationFrequency  GenerationFrequency @default(NONE)
+    tokenLimit           Int?                @default(0)
+    tokenRemaining       Int?                @default(0)
+    totalUsage           Int?                @default(0)
+    autoRelease          Boolean             @default(false)
+    keywords             Json?
+    audience             String?
+    lastGeneratedAt      DateTime?
+    humanHourlyRate      Int                 @default(1400)
+    humanWordsPerHour    Int                 @default(400)
+    gtagId               String?
+    apiKey               String?
+    gamNetworkCode       String?
+    allowAds             Boolean             @default(false)
+    allowGtag            Boolean?
+    allowShapes          Boolean             @default(false)
+    aiToneOfVoice        String?
+    aiControversyLevel   String?
+    communityInsight     Json?
+    insightUpdatedAt     DateTime?
+    billingPlan          BillingPlans        @default(MONTHLY)
+    firstPaidAt          DateTime?
+    nextBillingAt        DateTime?
+    lastInvoicedAt       DateTime?
+    monthlyPayment       Int?                @default(0)
+    annualPayment        Int?                @default(0)
+    stripeCustomerId     String?
+    stripeSubscriptionId String?
+    stripePriceId        String?
+    enableAi             Boolean             @default(false)
+    enableCron           Boolean             @default(false)
+    enableSentiment      Boolean             @default(false)
+    currency             String?             @default('USD')
+    lastPaidAt           DateTime?           @default(now())
+    lastTokenRefilled    DateTime?           @default(now())
+    language             Language            @default(en)
+    theme                Theme               @default(blue)
+    translationMode      TranslationMode     @default(OFF)
+    translationLanguages Language[]
+
+    users                User[]
+    tags                 Tag[]
+    articles             Article[]
+    articleSeries        ArticleSeries[]
+    articleDrafts        ArticleDraft[]
+    emojis               Emoji[]
+    userBans             UserBan[]
+    socials              Social[]
+    logs                 Log[]               @relation("LogToClientSite")
+    features             ClientFeature[]
+    linkedinCompanies    LinkedinCompany[]
+    articleTranslations  ArticleTranslation[]
+
+    @@allow('read', true)
+    @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
+    @@allow('all', auth().role == 'superadmin')
+    @@index([domain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
+}
+
+model Feature extends Base {
+    code           FeatureCodes    @unique
+    name           String
+    priceMonthly   Int
+    priceAnnual    Int?
+    tier           String?
+
+    clientFeatures ClientFeature[]
+
+    @@allow('read', true)
+    @@allow('all', auth().role == 'superadmin')
+}
+
+model ClientFeature extends Base {
+    clientSiteId       String
+    featureId          String
+    feature            Feature    @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+    activatedAt        DateTime   @default(now())
+    deactivatedAt      DateTime?
+    billingLockedUntil DateTime
+
+    isActive           Boolean    @default(true)
+
+    clientSite         ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
+    @@unique([clientSiteId, featureId])
+    @@index([clientSiteId])
+    @@index([billingLockedUntil])
+
+    @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('create, update', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@allow('delete', auth().role == 'superadmin')
+}

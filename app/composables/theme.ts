@@ -31,3 +31,41 @@ export const themes: {
   cyan: 'from-cyan-500 to-teal-800 dark:from-cyan-700 dark:to-teal-900',
   violet: 'from-violet-600 to-purple-900 dark:from-violet-800 dark:to-purple-950',
 }
+
+export type ThemeKey = keyof typeof themes
+
+export const themeColors = {
+  blue: '#2563eb',
+  green: '#16a34a',
+  red: '#dc2626',
+  purple: '#7c3aed',
+  orange: '#f97316',
+  teal: '#0d9488',
+  yellow: '#eab308',
+  pink: '#ec4899',
+  indigo: '#4f46e5',
+  gray: '#6b7280',
+  lime: '#65a30d',
+  sky: '#0ea5e9',
+  amber: '#f59e0b',
+  cyan: '#06b6d4',
+  violet: '#8b5cf6',
+} satisfies Record<ThemeKey, string>
+
+export const themeRings = {
+  blue: 'focus-visible:ring-blue-500',
+  green: 'focus-visible:ring-green-500',
+  red: 'focus-visible:ring-red-500',
+  purple: 'focus-visible:ring-purple-500',
+  orange: 'focus-visible:ring-orange-500',
+  teal: 'focus-visible:ring-teal-500',
+  yellow: 'focus-visible:ring-yellow-500',
+  pink: 'focus-visible:ring-pink-500',
+  indigo: 'focus-visible:ring-indigo-500',
+  gray: 'focus-visible:ring-gray-500',
+  lime: 'focus-visible:ring-lime-500',
+  sky: 'focus-visible:ring-sky-500',
+  amber: 'focus-visible:ring-amber-500',
+  cyan: 'focus-visible:ring-cyan-500',
+  violet: 'focus-visible:ring-violet-500',
+} satisfies Record<ThemeKey, string>

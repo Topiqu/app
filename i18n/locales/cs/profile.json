@@ -48,6 +48,8 @@
     "emailNotificationsDescription": "Přijímat zprávy e-mailem",
     "registrationDate": "Datum registrace",
     "deactivateAccount": "Deaktivovat účet",
+    "deactivateAccountConfirmTitle": "Deaktivovat účet?",
+    "deactivateAccountConfirmText": "Váš účet bude deaktivován a budete odhlášeni. Tuto akci nelze snadno vrátit. Chcete pokračovat?",
     "messages": {
       "profileUpdateSuccess": "Profil aktualizován",
       "profileUpdateError": "Aktualizace selhala",

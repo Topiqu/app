@@ -141,12 +141,54 @@
       </div>
     </div>
   </div>
+  <ModalMini
+    v-model:open="deleteOpen"
+    :title="deleteTarget ? t('master.clientTable.deleteDialog.title', { name: deleteTarget.name }) : ''"
+    :message="t('master.clientTable.deleteDialog.text')"
+    icon="mdi:alert-outline"
+  >
+    <template #actions>
+      <Button
+        size="sm"
+        variant="warning"
+        icon="mdi:close"
+        animation="softpop"
+        :aria="t('master.clientTable.deleteDialog.cancel')"
+        :title="t('master.clientTable.deleteDialog.cancel')"
+        @click="deleteOpen = false"
+      >
+        {{ t('master.clientTable.deleteDialog.cancel') }}
+      </Button>
+      <Button
+        size="sm"
+        variant="info"
+        icon="mdi:archive-arrow-down"
+        animation="softpop"
+        :aria="t('master.clientTable.deleteDialog.deny')"
+        :title="t('master.clientTable.deleteDialog.deny')"
+        @click="performDelete('soft')"
+      >
+        {{ t('master.clientTable.deleteDialog.deny') }}
+      </Button>
+      <Button
+        size="sm"
+        variant="danger"
+        icon="mdi:delete-forever"
+        animation="softpop"
+        :aria="t('master.clientTable.deleteDialog.confirm')"
+        :title="t('master.clientTable.deleteDialog.confirm')"
+        @click="performDelete('hard')"
+      >
+        {{ t('master.clientTable.deleteDialog.confirm') }}
+      </Button>
+    </template>
+  </ModalMini>
+  <ModalMini ref="activateDialog" />
 </template>
 
 <script setup lang="ts">
 import type { ClientSite } from '@zenstackhq/runtime/models'
 
-import Swal from 'sweetalert2'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
   type ColumnDef,
@@ -160,6 +202,9 @@ import {
 const { t } = useI18n()
 const { onClientCreated, onClientDeleted } = useClientEvent()
 const toast = useToast()
+const activateDialog = useTemplateRef<ModalMiniRef>('activateDialog')
+const deleteOpen = shallowRef<boolean>(false)
+const deleteTarget = shallowRef<{ id: string; name: string } | null>(null)
 const route = useRoute()
 const router = useRouter()
 const openDropdown = ref<string | null>(null)
@@ -258,38 +303,27 @@ onClickOutside(dropdownRef, () => {
   dropdownRef.value = null
 })
 
-const del = async (id: string, name: string) => {
-  const result = await Swal.fire({
-    title: t('master.clientTable.deleteDialog.title', { name }),
-    text: t('master.clientTable.deleteDialog.text'),
-    icon: 'warning',
-    showDenyButton: true,
-    showCancelButton: true,
-    confirmButtonText: t('master.clientTable.deleteDialog.confirm'),
-    denyButtonText: t('master.clientTable.deleteDialog.deny'),
-    cancelButtonText: t('master.clientTable.deleteDialog.cancel'),
-    background: '#fff',
-    confirmButtonColor: '#ef4444',
-    denyButtonColor: '#f97316',
-    cancelButtonColor: '#6b7280',
-  })
+const del = (id: string, name: string) => {
+  deleteTarget.value = { id, name }
+  deleteOpen.value = true
+}
 
-  if (result.isConfirmed) {
+const performDelete = async (mode: 'hard' | 'soft') => {
+  const target = deleteTarget.value
+  deleteOpen.value = false
+  if (!target) return
+  if (mode === 'hard') {
     try {
-      await $fetch(`/api/clients/${id}?hard=true` as `api/clients/:id`, { method: 'DELETE' })
-
+      await $fetch(`/api/clients/${target.id}?hard=true` as `api/clients/:id`, { method: 'DELETE' })
       toast.success({ message: t('master.clientTable.messages.permanentlyDeleted') })
-
       await refresh()
     } catch (e: any) {
       toast.error({ message: e.data?.message || t('master.clientTable.messages.deleteFailed') })
     }
-  } else if (result.isDenied) {
+  } else {
     try {
-      await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'DELETE' })
-
+      await $fetch(`/api/clients/${target.id}` as `api/clients/:id`, { method: 'DELETE' })
       toast.success({ message: t('master.clientTable.messages.deactivated') })
-
       await refresh()
     } catch (e: any) {
       toast.error({ message: e.data?.message || t('master.clientTable.messages.deactivateFailed') })
@@ -301,18 +335,15 @@ onClientCreated(refresh)
 onClientDeleted(refresh)
 
 const restore = async (id: string) => {
-  const result = await Swal.fire({
+  const r = await activateDialog.value?.ask({
     title: t('master.clientTable.activateDialog.title'),
-    text: t('master.clientTable.activateDialog.text'),
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: t('master.clientTable.activateDialog.confirm'),
-    cancelButtonText: t('master.clientTable.activateDialog.cancel'),
-    background: '#fff',
-    confirmButtonColor: '#22c55e',
-    cancelButtonColor: '#6b7280',
+    message: t('master.clientTable.activateDialog.text'),
+    icon: 'mdi:help-circle-outline',
+    confirmText: t('master.clientTable.activateDialog.confirm'),
+    cancelText: t('master.clientTable.activateDialog.cancel'),
+    variant: 'success',
   })
-  if (!result.isConfirmed) return
+  if (r !== 'ok') return
 
   try {
     await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'PATCH', body: { deletedAt: null } })

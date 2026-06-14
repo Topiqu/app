@@ -4,10 +4,12 @@ export function useArticleSeo(
   data: MaybeRefOrGetter<any>,
   clientSite: MaybeRefOrGetter<any>,
   canonicalUrl: MaybeRefOrGetter<string>,
+  alternates: MaybeRefOrGetter<{ hreflang: string; href: string }[]> = [],
 ) {
   const resolvedData = computed(() => toValue(data))
   const resolvedClientSite = computed(() => toValue(clientSite))
   const resolvedCanonicalUrl = computed(() => toValue(canonicalUrl))
+  const resolvedAlternates = computed(() => toValue(alternates) ?? [])
 
   const hasSeoPlan = computed(() => resolvedClientSite.value?.plan !== 'BASIC')
 
@@ -35,11 +37,12 @@ export function useArticleSeo(
   })
 
   useHead({
-    link: [
-      {
-        rel: 'canonical',
-        href: resolvedCanonicalUrl,
-      },
+    link: () => [
+      { rel: 'canonical', href: resolvedCanonicalUrl.value },
+      ...resolvedAlternates.value.map((alt) => ({ rel: 'alternate', hreflang: alt.hreflang, href: alt.href })),
+      ...(resolvedAlternates.value.length
+        ? [{ rel: 'alternate', hreflang: 'x-default', href: resolvedAlternates.value[0]!.href }]
+        : []),
     ],
     script: [
       {

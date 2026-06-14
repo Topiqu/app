@@ -9,7 +9,7 @@
   >
     <div
       v-show="isOpen"
-      class="sidebar fixed z-[1000] bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4 rounded-md"
+      class="sidebar fixed z-overlay bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4 rounded-md"
       :class="
         isMobile ? 'top-0 left-0 w-28 max-w-[90%] h-full p-1 gap-2' : 'top-1/2 left-8 w-14 p-2 gap-4 -translate-y-1/2'
       "

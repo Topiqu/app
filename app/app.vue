@@ -1,25 +1,38 @@
 <template>
-  <NuxtLoadingIndicator class="z-[9999]" :color="computedThemeColor" />
+  <NuxtLoadingIndicator class="z-top" :color="computedThemeColor" />
+  <NuxtRouteAnnouncer />
   <StatusBar />
 
   <Landing v-if="isMainLanding" />
 
-  <div v-else>
+  <template v-else>
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-  </div>
+  </template>
+
+  <DevOnly>
+    <DevConsole />
+  </DevOnly>
 </template>
 
 <script setup lang="ts">
-import type { themes } from '~/composables/theme'
+import { themeColors, type ThemeKey } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
 const route = useRoute()
 const clientSite = await useClientSite()
 const adChance = useAdChance()
+const i18nHead = useLocaleHead()
 
-const isMainLanding = computed(() => {
+const devView = import.meta.dev ? useDevView() : undefined
+const isProd = useRuntimeConfig().public.appEnv === 'production'
+
+const isLandingSurface = computed(() => {
+  if (import.meta.dev && devView && devView.value !== 'auto') {
+    return devView.value === 'landing'
+  }
+
   if (clientSite) return false
 
   const name = String(route.name || '')
@@ -30,34 +43,19 @@ const isMainLanding = computed(() => {
   return true
 })
 
+if (isProd && isLandingSurface.value) {
+  await navigateTo('https://landing.topiqu.com', { external: true, redirectCode: 302 })
+}
+
+const isMainLanding = computed(() => !isProd && isLandingSurface.value)
+
 if (clientSite) {
   adChance?.assign(clientSite.id, clientSite.plan)
 }
 
-const themeColors: Record<keyof typeof themes, string> = {
-  blue: '#2563eb',
-  green: '#16a34a',
-  red: '#dc2626',
-  purple: '#7c3aed',
-  orange: '#f97316',
-  teal: '#0d9488',
-  yellow: '#eab308',
-  pink: '#ec4899',
-  indigo: '#4f46e5',
-  gray: '#6b7280',
-  lime: '#65a30d',
-  sky: '#0ea5e9',
-  amber: '#f59e0b',
-  cyan: '#06b6d4',
-  violet: '#8b5cf6',
-}
-
-const computedThemeColor = computed(() => {
-  if (!clientSite) return themeColors.blue
-  return clientSite.theme && Object.keys(themeColors).includes(clientSite.theme)
-    ? themeColors[clientSite.theme as keyof typeof themes]
-    : themeColors.blue
-})
+const computedThemeColor = computed(
+  () => themeColors[clientSite?.theme as ThemeKey] ?? themeColors.blue,
+)
 
 useSeoMeta({
   title: () => clientSite?.name || 'Topiqu',
@@ -71,7 +69,7 @@ useSeoMeta({
   author: () => clientSite?.name || 'Topiqu',
   ogTitle: () => clientSite?.name || 'Topiqu',
   ogDescription: () => clientSite?.description || 'Moderní blogovací platforma',
-  ogLocale: () => clientSite?.language || 'cs',
+  ogLocale: () => (clientSite?.language === 'cs' ? 'cs_CZ' : 'en_US'),
   ogImageWidth: 1200,
   ogImageHeight: 600,
   twitterImageWidth: 1200,
@@ -81,38 +79,40 @@ useSeoMeta({
 
 const targetLogoUrl = clientSite?.logoUrl || `${reqUrl.origin}/app-logo.png`
 
-const ogImageOptions = computed(() => {
-  if (clientSite) {
-    return {
-      title: clientSite.name,
-      description: clientSite.description || '',
-      siteName: clientSite.name,
-      siteLogo: targetLogoUrl,
-      themeColor: computedThemeColor.value,
-      domain: reqUrl.host,
-    }
-  }
-  return {
+if (clientSite) {
+  defineOgImage('ClientSite', {
+    title: clientSite.name,
+    description: clientSite.description || '',
+    siteName: clientSite.name,
+    siteLogo: targetLogoUrl,
+    themeColor: computedThemeColor.value,
+    domain: reqUrl.host,
+  })
+} else {
+  defineOgImage('AppDefault', {
     title: 'Topiqu',
     description: 'Moderní blogovací platforma poháněná AI',
-  }
-})
-
-if (clientSite) {
-  defineOgImage('ClientSite', ogImageOptions.value)
-} else {
-  defineOgImage('AppDefault', ogImageOptions.value)
+  })
 }
 
-useHead({
+useHead(() => ({
+  htmlAttrs: {
+    lang: i18nHead.value.htmlAttrs?.lang,
+    dir: i18nHead.value.htmlAttrs?.dir as 'ltr' | 'rtl' | 'auto' | undefined,
+  },
   link: [
+    ...(i18nHead.value.link || []),
     {
       rel: 'icon',
       type: 'image/x-icon',
       href: clientSite?.logoUrl || '/favicon.ico',
     },
   ],
-})
+  meta: [
+    ...(i18nHead.value.meta || []),
+    { name: 'theme-color', content: computedThemeColor.value },
+  ],
+}))
 
 if (clientSite) {
   useHead({

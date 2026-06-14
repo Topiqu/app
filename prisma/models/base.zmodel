@@ -1,0 +1,48 @@
+import "./user"
+
+enum ThemeOption {
+    light
+    dark
+}
+
+enum UserRole {
+    admin
+    superadmin
+    reader
+    ai
+}
+
+enum Language {
+    cs
+    en
+}
+
+enum Theme {
+    blue
+    green
+    red
+    purple
+    orange
+    teal
+    yellow
+    pink
+    indigo
+    gray
+    lime
+    sky
+    amber
+    cyan
+    violet
+}
+
+abstract model Base {
+    id        String    @id @default(uuid())
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+    deletedAt DateTime? @omit
+}
+
+abstract model Ownable {
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
   })
 
   const body = await readValidatedBody(event, PatchSchema.parse)
-  const { oldPass, totpAction, totpCode, ...data } = body
+  const { oldPass, totpAction, totpCode, totpSecret, ...data } = body
 
   if (totpAction === 'enable') {
     if (oldPasswordDb?.totpSecret) {
@@ -79,6 +79,12 @@ export default defineEventHandler(async (event) => {
 
   if (user.role !== 'superadmin' && body.role && body.role !== user.role)
     throw createError({ statusCode: 403, message: t('common.errors.roleChangeForbidden')! })
+
+  if (user.role !== 'superadmin' && body.clientSiteId !== undefined && body.clientSiteId !== user.clientSiteId)
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+
+  if (user.role !== 'superadmin' && body.email !== undefined && body.email !== user.email)
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const currentUser = await db.user.findUnique({ where: { id } })
 

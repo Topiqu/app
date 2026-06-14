@@ -88,32 +88,29 @@
       <Button variant="neutral" size="lg" @click="close">{{ $t('master.clientUsers.actions.close') }}</Button>
     </template>
   </Modal>
+  <ModalMini ref="blockDialog" />
 </template>
 
 <script setup lang="ts">
-import Swal from 'sweetalert2'
-
 const { t } = useI18n()
 const props = defineProps<{ clientId: string }>()
 const open = defineModel<boolean>()
+const blockDialog = useTemplateRef<ModalMiniRef>('blockDialog')
 const toast = useToast()
 const { data: users, refresh } = await useFetch(`/api/users/${props.clientId}/by-clientside`, {
   default: () => [],
 })
 
 const del = async (id: string) => {
-  const r = await Swal.fire({
+  const r = await blockDialog.value?.ask({
     title: t('master.clientUsers.blockDialog.title'),
-    text: t('master.clientUsers.blockDialog.text'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: t('master.clientUsers.blockDialog.confirm'),
-    cancelButtonText: t('master.clientUsers.blockDialog.cancel'),
-    background: '#fff',
-    confirmButtonColor: '#ef4444',
-    cancelButtonColor: '#6b7280',
+    message: t('master.clientUsers.blockDialog.text'),
+    icon: 'mdi:alert-outline',
+    confirmText: t('master.clientUsers.blockDialog.confirm'),
+    cancelText: t('master.clientUsers.blockDialog.cancel'),
+    variant: 'danger',
   })
-  if (!r.isConfirmed) return
+  if (r !== 'ok') return
   try {
     await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
     toast.success({ message: t('master.clientUsers.messages.blocked') })

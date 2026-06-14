@@ -1,4 +1,5 @@
 @use '_variables.scss' as *;
+@use 'vendor';
 
 * {
   margin: 0;
@@ -8,191 +9,92 @@
   scroll-behavior: smooth;
 }
 
-blockquote {
-  margin: revert;
-  padding: revert;
-  border: revert;
-  border-left: 4px solid #3b82f6;
-  background-color: #f9fafb;
-  padding: 12px 16px;
-  margin: 16px 0;
-  color: #1f2937;
-  font-style: italic;
-  border-radius: 4px;
+:where(#__nuxt, #headlessui-portal-root) {
+  blockquote {
+    margin: revert;
+    padding: revert;
+    border: revert;
+    border-left: 4px solid #3b82f6;
+    background-color: #f9fafb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    color: #1f2937;
+    font-style: italic;
+    border-radius: 4px;
+  }
+
+  main {
+    flex-grow: 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span,
+  label,
+  a {
+    color: $input-text;
+  }
+
+  input,
+  textarea,
+  select,
+  .input {
+    background-color: $input-bg !important;
+    color: $input-text !important;
+    border: 1px solid $border-color !important;
+    border-radius: 6px !important;
+  }
+
+  [role='dialog'] {
+    background-color: transparent !important;
+  }
+
+  [role='dialog'] [id^='headlessui-dialog-panel'] {
+    background-color: $input-bg !important;
+    color: $input-text !important;
+  }
+
+  button:hover {
+    background-color: #d4d5d6;
+  }
 }
 
-html.dark blockquote {
-  background-color: #374151;
-  color: #e5e7eb;
-  border-left: 4px solid #60a5fa;
-}
+html.dark :where(#__nuxt, #headlessui-portal-root) {
+  blockquote {
+    background-color: #374151;
+    color: #e5e7eb;
+    border-left: 4px solid #60a5fa;
+  }
 
-main {
-  flex-grow: 1;
-}
-
-h1,
-h2,
-h3,
-h4,
-p,
-span,
-label {
-  color: $input-text;
-}
-
-a {
-  color: $input-text;
-}
-
-input,
-textarea,
-select,
-.input {
-  background-color: $input-bg !important;
-  color: $input-text !important;
-  border: 1px solid $border-color !important;
-  border-radius: 6px !important;
-}
-
-html.dark
   div:not(
-    .iziToast,
-    .iziToast-capsule,
-    .iziToast-wrapper *,
-    [role='dialog'],
-    [role='dialog'] *,
-    [data-youtube-video],
-    [data-youtube-video] *,
-    .pointer-events-none,
-    .custom-ui,
-    .custom-ui *
-  ) {
-  background-color: #1f2937;
-}
-
-.iziToast-wrapper {
-  background-color: transparent !important;
-}
-
-.iziToast-capsule {
-  background-color: transparent;
-}
-
-.iziToast {
-  background-color: transparent;
-  color: #000000;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-}
-
-.iziToast-color-green {
-  border-left-color: #4caf50;
-}
-
-html.dark .iziToast {
-  color: #e5e7eb;
-  border: 1px solid #4b5563;
-}
-
-html.dark .iziToast-color-green {
-  border-left-color: #66bb6a;
-}
-
-[role='dialog'] {
-  background-color: transparent !important;
-}
-
-[role='dialog'] [id^='headlessui-dialog-panel'] {
-  background-color: $input-bg !important;
-  color: $input-text !important;
-}
-
-html.dark [role='dialog'] [id^='headlessui-dialog-panel'] {
-  background-color: #374151 !important;
-  color: $input-text !important;
-}
-
-.swal2-popup {
-  background-color: $input-bg !important;
-  color: $dialog-text !important;
-  border-radius: 0.5rem !important;
-}
-
-html.dark .swal2-popup button.swal2-confirm.swal2-styled {
-  background: var(--swal2-confirm-button-background-color, #ef4444) !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
-}
-
-html.dark .swal2-popup button.swal2-deny.swal2-styled,
-html.dark .swal2-popup button.swal2-cancel.swal2-styled {
-  background: #ffffff !important;
-  color: #1f2937 !important;
-  border: 1px solid #d1d5db !important;
-}
-
-.swal2-container {
-  background-color: transparent !important;
-}
-
-html.dark button {
-  background-color: #374151;
-  color: $dialog-text;
-}
-
-button:hover {
-  background-color: #d4d5d6;
-}
-
-html.dark button:hover {
-  background-color: #2f3b4c;
-}
-
-.tippy-box {
-  background-color: $input-bg !important;
-  color: $dialog-text !important;
-  border: 1px solid $border-color !important;
-  border-radius: 0.5rem;
-  padding: 0.25rem 0.5rem;
-}
-
-html.dark .tippy-box,
-html.dark .tippy-box .tippy-content,
-html.dark .tippy-box .tippy-arrow {
-  background-color: #374151 !important;
-  color: $input-text !important;
-  border-color: #4b5563 !important;
-}
-
-[data-youtube-video] {
-  width: 100%;
-  max-width: 100%;
-  height: 0;
-  padding-bottom: 56.25%;
-  position: relative;
-}
-
-[data-youtube-video] .youtube-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-@media (max-width: 768px) {
-  [data-youtube-video] {
-    padding-bottom: 56.25%;
+      .iziToast,
+      .iziToast-capsule,
+      .iziToast-wrapper *,
+      [role='dialog'],
+      [role='dialog'] *,
+      [data-youtube-video],
+      [data-youtube-video] *,
+      .pointer-events-none,
+      .custom-ui,
+      .custom-ui *
+    ) {
+    background-color: #1f2937;
   }
 
-  [data-youtube-video] .youtube-video {
-    width: 100% !important;
-    height: 100% !important;
+  [role='dialog'] [id^='headlessui-dialog-panel'] {
+    background-color: #374151 !important;
+    color: $input-text !important;
   }
-}
 
-html.dark [data-youtube-video],
-html.dark [data-youtube-video] * {
-  background-color: transparent !important;
+  button {
+    background-color: #374151;
+    color: $dialog-text;
+  }
+
+  button:hover {
+    background-color: #2f3b4c;
+  }
 }

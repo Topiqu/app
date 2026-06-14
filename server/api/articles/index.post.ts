@@ -9,6 +9,9 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
 
+  if (!isCdnImageUrl(body.imageUrl))
+    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+
   let seriesOrder = 0
   if (body.articleSeriesId) {
     const lastArticle = await db.article.findFirst({
@@ -56,6 +59,19 @@ export default defineEventHandler(async (event) => {
       tags: tagsRelation,
     },
   })
+
+  const contentWithPolls = await syncArticlePolls(
+    db as unknown as Parameters<typeof syncArticlePolls>[0],
+    article.id,
+    article.content,
+  )
+  if (contentWithPolls !== article.content) {
+    await db.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
+  }
+
+  if (article.status === 'published') {
+    await syncArticleTranslationQueue(db, article.id, user.clientSiteId)
+  }
 
   await logAction({
     action: 'ARTICLE_CREATED',

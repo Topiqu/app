@@ -1,21 +1,20 @@
-import prisma from '../../../utils/prisma'
-
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const id = getRouterParam(event, 'id')
+  const user = (await getServerSession(event))?.user
 
-  const draft = await prisma.draftPost.update({
-    where: { id },
-    data: { status: 'APPROVED' },
-  })
+  if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
+  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
-  // We record the approval decision
-  // Assuming auth is set up and we have a user
-  // const session = await requireAuthSession(event)
+  const db = await getEnhancedPrisma(user)
 
-  await prisma.approval.create({
+  const draft = await db.draftPost.update({ where: { id }, data: { status: 'APPROVED' } }).catch(() => null)
+  if (!draft) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+
+  await db.approval.create({
     data: {
       draftId: draft.id,
-      reviewerId: 'system', // Replace with actual user ID from session
+      reviewerId: user.id,
       decision: 'APPROVE',
     },
   })

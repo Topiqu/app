@@ -35,7 +35,7 @@
           <FormField
             v-if="newClient.domainType === 'SUBDOMAIN'"
             v-model="newClient.domain"
-            :label="$t('master.clientCreate.fields.domain.label')"
+            :label="$t('master.clientCreate.fields.subdomain.label')"
             :placeholder="subdomainPlaceholder"
             @input="normalizeDomain('domain')"
           />
@@ -209,15 +209,45 @@
       </div>
     </template>
   </Modal>
+  <ModalMini ref="passwordDialog">
+    <template #content>
+      <div class="space-y-2">
+        <p>{{ t('master.clientCreate.messages.clientCreatedHtml1') }}</p>
+        <p>{{ t('master.clientCreate.messages.clientCreatedHtml2') }}</p>
+        <div class="flex gap-2 items-center">
+          <input
+            :value="passwordDialogValue"
+            readonly
+            class="flex-1 p-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-900"
+          />
+          <Button
+            size="sm"
+            variant="primary"
+            icon="mdi:content-copy"
+            :aria="t('master.clientCreate.messages.copyPassword')"
+            :title="t('master.clientCreate.messages.copyPassword')"
+            @click="copyPassword"
+          />
+        </div>
+        <p class="text-sm text-gray-500">{{ t('master.clientCreate.messages.clientCreatedHtml3') }}</p>
+      </div>
+    </template>
+  </ModalMini>
 </template>
 
 <script setup lang="ts">
-import Swal from 'sweetalert2'
 const { emitClientCreated } = useClientEvent()
 const { t } = useI18n()
 const toast = useToast()
 
 const open = defineModel<boolean>()
+const passwordDialog = useTemplateRef<ModalMiniRef>('passwordDialog')
+const passwordDialogValue = shallowRef('')
+
+const copyPassword = () => {
+  navigator.clipboard.writeText(passwordDialogValue.value)
+  toast.success({ message: t('master.clientCreate.messages.passwordCopied') })
+}
 const keywordsInput = shallowRef<string>('')
 const initClient = () => ({
   name: '',
@@ -311,27 +341,12 @@ const createClient = async () => {
     const generatedPassword =
       response.user.password && response.user.password !== 'user submitted' ? response.user.password : null
     if (generatedPassword) {
-      await Swal.fire({
+      passwordDialogValue.value = generatedPassword
+      await passwordDialog.value?.ask({
         title: t('master.clientCreate.messages.clientCreatedTitle'),
-        html: `
-          <p>${t('master.clientCreate.messages.clientCreatedHtml1')}</p>
-          <p class="mt-2">${t('master.clientCreate.messages.clientCreatedHtml2')}</p>
-          <input id="generated-password" value="${generatedPassword}" readonly class="w-full p-2 mt-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-900" />
-          <button id="copy-password" class="mt-3 px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-all transform hover:scale-105">
-            ${t('master.clientCreate.messages.copyPassword')}
-          </button>
-          <p class="mt-2 text-sm text-gray-500">${t('master.clientCreate.messages.clientCreatedHtml3')}</p>
-        `,
-        icon: 'success',
-        confirmButtonText: t('master.clientCreate.messages.ok'),
-        confirmButtonColor: '#22c55e',
-        didOpen: () => {
-          const copyButton = document.getElementById('copy-password')
-          copyButton?.addEventListener('click', () => {
-            navigator.clipboard.writeText(generatedPassword)
-            toast.success({ message: t('master.clientCreate.messages.passwordCopied') })
-          })
-        },
+        icon: 'mdi:check-circle-outline',
+        confirmText: t('master.clientCreate.messages.ok'),
+        variant: 'success',
       })
     } else {
       toast.success({ message: t('master.clientCreate.messages.success') })

@@ -1,21 +1,22 @@
 import { randomUUID } from 'crypto'
+import { Prisma } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   const { id } = getRouterParams(event)
-  const { pollId, response } = await readBody(event)
+  const { pollId, optionId } = await readBody(event)
 
-  if (!pollId || !id || !response) {
+  if (!pollId || !id || !optionId) {
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   }
 
-  const article = await prisma.article.findUnique({
-    where: { id },
+  const option = await prisma.pollOption.findFirst({
+    where: { id: optionId, pollId, poll: { articleId: id } },
     select: { id: true },
   })
 
-  if (!article) {
+  if (!option) {
     throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
   }
 
@@ -24,27 +25,27 @@ export default defineEventHandler(async (event) => {
     setCookie(event, 'anon_session', sessionId, { maxAge: 30 * 24 * 60 * 60 })
   }
 
-  const where = user?.id ? { pollId, userId: user.id, sessionId: null } : { pollId, userId: null, sessionId }
-
-  const existingVote = await prisma.pollResult.findFirst({ where })
-
-  if (existingVote) {
-    throw createError({ statusCode: 409, message: t('common.errors.alreadyVoted')! })
+  try {
+    await prisma.pollResult.create({
+      data: { articleId: id, pollId, optionId, userId: user?.id || null, sessionId },
+    })
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      throw createError({ statusCode: 409, message: t('common.errors.alreadyVoted')! })
+    }
+    throw e
   }
 
-  const pollResult = await prisma.pollResult.create({
-    data: { articleId: id, pollId, userId: user?.id || null, sessionId, response },
-  })
-
-  const results = await prisma.pollResult.findMany({
+  const grouped = await prisma.pollResult.groupBy({
+    by: ['optionId'],
     where: { pollId },
-    select: { id: true, response: true, userId: true, sessionId: true },
+    _count: { optionId: true },
   })
 
-  const voteCounts = results.reduce<Record<string, number>>(
-    (acc, r) => ({ ...acc, [r.response]: (acc[r.response] || 0) + 1 }),
+  const voteCounts = grouped.reduce<Record<string, number>>(
+    (acc, g) => ({ ...acc, [g.optionId]: g._count.optionId }),
     {},
   )
 
-  return { pollResult: pollResult.response, voteCounts }
+  return { pollResult: optionId, voteCounts }
 })

@@ -49,6 +49,18 @@
 - If presented with a suboptimal or incorrect approach, you **MUST** challenge it constructively and propose better alternatives.
 - Avoid writing your own <style> block; prefer pure UnoCSS approach.
 
+## Security (ALWAYS-ON MINDSET)
+
+Treat every change through an OWASP lens. In this codebase the #1 risk class is **Broken Access Control**, not injection — guard it relentlessly.
+
+- **Authorization on every mutation.** Each non-public route handler **MUST** resolve the session (`getServerSession`) and reject unauthenticated/unauthorized requests. There is no global server middleware — a forgotten check = an open door. IDs from `getRouterParam`/body are attacker-controlled (IDOR).
+- **Tenant isolation via ZenStack, not memory.** For request-scoped data access, use `getEnhancedPrisma(user)` so `@@allow` policies enforce tenant/role at runtime. Reserve raw `prisma` for deliberately system-scoped work (crons, webhooks, OAuth callbacks) — never as the default in a user-facing route. Never trust a manual `where` clause as the only isolation.
+- **Never leak secrets.** Tokens/secrets (`accessToken`, `refreshToken`, `password`, `totpSecret`, …) must be `@omit`-ed in the zmodel and excluded via explicit `select`. Never return a full DB row to the client.
+- **Enforce auth where state is created, not on the client.** Security checks (2FA, ownership) belong server-side at the boundary (e.g. inside next-auth `authorize()`), never as a frontend-only gate the client can skip.
+- **Inputs are not identifiers.** Never build storage keys, paths, queries, or commands from raw user input — server-generate identifiers, or sanitize hard (whitelist charset/extension, strip path separators, pin a prefix). Watch for key/path injection.
+- **Low-entropy secrets need a pepper.** HMAC short codes/OTPs with `AUTH_SECRET`; don't ship a brute-forceable hash to the client. Rate-limit (per-IP) + per-account lockout on auth/oracle endpoints.
+- When you spot any of the above while working, **challenge it and fix or flag it** — don't pass silently.
+
 ## Git & Deployment Guardrails (HARD RULE)
 
 - **NEVER run `git commit`, `git push`, or trigger any deploy automatically.** Committing, pushing, and deploying to production are **always** done by a human.

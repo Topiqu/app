@@ -6,7 +6,7 @@
 
     <template #close>
       <div class="flex items-center gap-1">
-        <LazyClientHint v-if="auth?.user?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
+        <LazyClientHint v-if="client?.plan !== 'BASIC'" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
           <Button
             square
             borderless
@@ -44,8 +44,8 @@
           />
 
           <LazyFormClientContent
-            v-if="auth?.user?.plan !== 'BASIC'"
-            :plan="auth?.user?.plan ?? 'BASIC'"
+            v-if="client?.plan !== 'BASIC'"
+            :plan="client?.plan ?? 'BASIC'"
             :focus="form.focus"
             :audience="form.audience"
             :language="form.language"
@@ -56,7 +56,7 @@
             @update:keywords="form.keywords = $event"
           />
 
-          <section v-if="auth?.user?.plan !== 'BASIC'">
+          <section v-if="client?.plan !== 'BASIC'">
             <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
               <Icon name="mdi:google-analytics" class="w-5 h-5 text-orange-500" />
               {{ $t('common.preferences.external') }}
@@ -97,7 +97,7 @@
             </div>
           </section>
 
-          <section v-if="auth?.user?.plan !== 'BASIC'">
+          <section v-if="client?.plan !== 'BASIC'">
             <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
               <Icon name="mdi:key-chain-variant" class="w-5 h-5 text-purple-500" />
               {{ $t('common.preferences.api.title') }}
@@ -159,7 +159,7 @@
             </div>
           </section>
 
-          <section v-if="auth?.user?.plan !== 'BASIC'">
+          <section v-if="client?.plan !== 'BASIC'">
             <LazyFormClientLinkedIn
               :clientSiteId="client?.id ?? ''"
               :mode="form.linkedinMode"
@@ -171,7 +171,7 @@
             />
           </section>
 
-          <section v-if="auth?.user?.plan !== 'BASIC' && client?.tokenLimit && client?.tokenLimit > 0">
+          <section v-if="client?.plan !== 'BASIC' && client?.tokenLimit && client?.tokenLimit > 0">
             <div
               class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm"
             >
@@ -188,6 +188,9 @@
                 :canEnableSentiment="allowedFeatures.SENTIMENT ?? false"
                 :canEnableArticleCrons="allowedFeatures.ARTICLE_CRONS ?? false"
                 :autoRelease="form.autoRelease"
+                :language="form.language"
+                :translationMode="form.translationMode"
+                :translationLanguages="form.translationLanguages"
                 :features="features ?? []"
                 :currency="client?.currency ?? 'EUR'"
                 :billingPlan="client?.billingPlan ?? 'MONTHLY'"
@@ -201,6 +204,8 @@
                   (form.aiUser.optimizedAvatarUrl = $event.optimizedImageUrl))
                 "
                 @update:autoRelease="form.autoRelease = $event"
+                @update:translationMode="form.translationMode = $event"
+                @update:translationLanguages="form.translationLanguages = $event"
               />
             </div>
           </section>
@@ -310,19 +315,18 @@
       </div>
     </template>
   </Modal>
+  <ModalMini ref="discardDialog" />
 </template>
 
 <script setup lang="ts">
 import type { ThemeSchema, LanguageSchema } from '~~/shared/zod/enums'
 import type { SocialPlatform, ClientSite as _ClientSite } from '@prisma/client'
 
-import Swal from 'sweetalert2'
-import { cs, enUS } from 'date-fns/locale'
-import { format, parseISO } from 'date-fns'
-
 const toast = useToast()
+const { formatTime } = useTime()
 const { data: auth } = useAuth()
 const open = defineModel<boolean>()
+const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
 const { copy: copyApi, copied: apiCopied } = useClipboard({ legacy: true })
 const apiVisible = shallowRef(false)
 
@@ -344,6 +348,8 @@ const form = ref({
   allowAds: false,
   apiKey: '',
   autoRelease: false,
+  translationMode: 'OFF' as 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID',
+  translationLanguages: [] as string[],
   allowGtag: false,
   linkedinMode: 'HitL' as 'HitL' | 'FullAuto',
   linkedinBrandProfile: { tone: '', audience: '', doList: [] as string[], dontList: [] as string[] },
@@ -392,16 +398,14 @@ const validityText = computed(() => {
   if (!client.value) return ''
   if (client.value.billingPlan === 'PERMANENT') return $t('common.preferences.validity.permanent')
   if (!client.value.nextBillingAt) return $t('common.preferences.validity.unknown')
-  const date = parseISO(client.value.nextBillingAt)
-  const locale = client.value.language === 'cs' ? cs : enUS
-  return $t('common.preferences.validity.until', { date: format(date, 'd. M. yyyy', { locale }) })
+  return $t('common.preferences.validity.until', {
+    date: formatTime(client.value.nextBillingAt, 'short', client.value.language),
+  })
 })
 
 const nextBillingDate = computed(() => {
   if (!client.value?.nextBillingAt) return '–'
-  const date = parseISO(client.value.nextBillingAt)
-  const locale = client.value.language === 'cs' ? cs : enUS
-  return format(date, 'd. M. yyyy', { locale })
+  return formatTime(client.value.nextBillingAt, 'short', client.value.language)
 })
 
 const nextBillingAmountText = computed(() => {
@@ -476,6 +480,8 @@ watch(
       gtagId: c.gtagId ?? '',
       gamNetworkCode: c.gamNetworkCode ?? '',
       autoRelease: c.autoRelease ?? false,
+      translationMode: c.translationMode ?? 'OFF',
+      translationLanguages: c.translationLanguages ?? [],
       allowAds: c.allowAds,
       allowGtag: c.allowGtag ?? false,
       // Default to picking the first linkedin company if there's an array now, or use the object directly if backend hasn't been updated yet
@@ -561,16 +567,15 @@ const confirmClose = async () => {
 
   if (!changed) return (open.value = false)
 
-  const r = await Swal.fire({
+  const r = await discardDialog.value?.ask({
     title: $t('common.messages.closeConfirmTitle'),
-    text: $t('common.messages.closeConfirmText'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: $t('common.messages.closeConfirmButton'),
-    cancelButtonText: $t('common.messages.deleteCancel'),
-    confirmButtonColor: '#ef4444',
+    message: $t('common.messages.closeConfirmText'),
+    icon: 'mdi:alert-outline',
+    confirmText: $t('common.messages.closeConfirmButton'),
+    cancelText: $t('common.messages.deleteCancel'),
+    variant: 'danger',
   })
-  if (r.isConfirmed) open.value = false
+  if (r === 'ok') open.value = false
 }
 const generateApiKey = async () => {
   if (!auth.value?.user.clientSiteId) return

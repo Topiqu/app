@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed top-0 left-0 p-2 h-16 w-full flex items-center justify-between max-md:bg-gray-100/60 max-md:backdrop-blur-sm !dark:bg-transparent pointer-events-none [&>*]:pointer-events-auto z-[999]"
+    class="fixed top-0 left-0 p-2 h-16 w-full flex items-center justify-between max-md:bg-gray-100/60 max-md:backdrop-blur-sm !dark:bg-transparent pointer-events-none [&>*]:pointer-events-auto z-header"
   >
     <Button
       v-if="auth && isAdmin"

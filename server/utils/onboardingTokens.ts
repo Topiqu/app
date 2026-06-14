@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 
-const CHALLENGE_TTL_MS = 15 * 60 * 1000
+const CHALLENGE_TTL_MS = 5 * 60 * 1000
 const VERIFIED_TTL_MS = 30 * 60 * 1000
 
 const getSecret = () => {
@@ -29,7 +29,7 @@ const verify = (token: string): Record<string, any> | null => {
 }
 
 const hashCode = (email: string, code: string) =>
-  crypto.createHash('sha256').update(`${email.toLowerCase()}:${code}`).digest('hex')
+  crypto.createHmac('sha256', getSecret()).update(`${email.toLowerCase()}:${code}`).digest('hex')
 
 export const issueChallenge = (email: string, code: string) => {
   const payload = JSON.stringify({

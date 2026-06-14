@@ -13,7 +13,7 @@ const insightSchema = z.object({
   topPoints: z.array(z.string().max(75)).max(3).optional(),
 })
 
-export default defineTask({
+export default defineMonitoredTask({
   meta: {
     name: 'community-insights',
     description: 'Daily AI community health report for PREMIUM/CUSTOM clients',

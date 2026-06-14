@@ -65,6 +65,8 @@ export default defineEventHandler(async (event) => {
     allowGtag: true,
     aiToneOfVoice: true,
     aiControversyLevel: true,
+    translationMode: true,
+    translationLanguages: true,
   }).partial()
 
   const parsed = UpdateSchema.safeParse(scalarBody)

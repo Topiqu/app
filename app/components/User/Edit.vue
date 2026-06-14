@@ -66,19 +66,20 @@
       </div>
     </template>
   </Modal>
+  <ModalMini ref="discardDialog" />
 </template>
 
 <script setup lang="ts">
-import Swal from 'sweetalert2'
-
 const props = defineProps<{
   user: { id: string; username: string; email: string; role?: string }
 }>()
 const emit = defineEmits(['saved'])
 const open = defineModel<boolean>()
 const toast = useToast()
+const { t } = useI18n()
+const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
 
-const editedUser = ref({
+const editedUser = shallowRef({
   id: props.user.id,
   username: props.user.username,
   email: props.user.email,
@@ -115,15 +116,14 @@ const confirmClose = async () => {
     open.value = false
     return
   }
-  const r = await Swal.fire({
-    title: 'Zavřít dialog?',
-    text: 'Úprava uživatele bude zrušena. Opravdu chcete pokračovat?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Ano, zavřít',
-    cancelButtonText: 'Ne',
-    confirmButtonColor: '#ef4444',
+  const r = await discardDialog.value?.ask({
+    title: t('common.messages.closeConfirmTitle'),
+    message: t('common.messages.closeConfirmText'),
+    icon: 'mdi:alert-outline',
+    confirmText: t('common.messages.closeConfirmButton'),
+    cancelText: t('common.messages.deleteCancel'),
+    variant: 'danger',
   })
-  if (r.isConfirmed) open.value = false
+  if (r === 'ok') open.value = false
 }
 </script>

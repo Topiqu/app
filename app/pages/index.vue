@@ -193,6 +193,8 @@
 
 <script setup lang="ts">
 import 'tippy.js/dist/tippy.css'
+import type { PollOptionData } from '~~/shared/utils/polls'
+
 import { formatDate } from '~~/shared/utils'
 
 const { data: auth } = useAuth()
@@ -223,9 +225,13 @@ const {
 
 const articleMap = ref<Map<string, NonNullable<typeof feed.value>['items'][number]>>(new Map())
 const hasMore = shallowRef<boolean>(true)
-const latestPoll = ref<{ type: string; pollId: string; question: string; options: string[]; articleId: string } | null>(
-  null,
-)
+const latestPoll = ref<{
+  type: string
+  pollId: string
+  question: string
+  options: PollOptionData[]
+  articleId: string
+} | null>(null)
 
 watch(
   feed,

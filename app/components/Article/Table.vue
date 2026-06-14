@@ -215,7 +215,7 @@
             </button>
             <div
               v-if="openDropdown === row.id"
-              class="absolute z-[10000] right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
+              class="absolute z-popover right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
             >
               <div class="py-1 flex flex-col gap-1">
                 <Button
@@ -271,14 +271,13 @@
 
     <Pagination :page :totalPages :prevPage :nextPage class="mt-6" />
   </div>
+  <ModalMini ref="deleteDialog" />
 </template>
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
-import Swal from 'sweetalert2'
-import { format } from 'date-fns'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
   type ColumnDef,
@@ -295,7 +294,9 @@ const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 const { onArticleCreated, emitArticleDeleted } = useArticleEvent()
+const deleteDialog = useTemplateRef<ModalMiniRef>('deleteDialog')
 const localePath = useLocalePath()
+const { formatTime } = useTime()
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
 const globalFilter = shallowRef((route.query.query as string) || '')
@@ -364,16 +365,15 @@ const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatu
 }, 100)
 
 async function del(id: string) {
-  const confirm = await Swal.fire({
+  const r = await deleteDialog.value?.ask({
     title: $t('common.messages.deleteConfirmTitle'),
-    text: $t('common.messages.deleteConfirmText'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: $t('common.actions.delete'),
-    cancelButtonText: $t('common.messages.deleteCancel'),
-    confirmButtonColor: '#ef4444',
+    message: $t('common.messages.deleteConfirmText'),
+    icon: 'mdi:alert-outline',
+    confirmText: $t('common.actions.delete'),
+    cancelText: $t('common.messages.deleteCancel'),
+    variant: 'danger',
   })
-  if (!confirm.isConfirmed) return
+  if (r !== 'ok') return
 
   try {
     await $fetch(`/api/articles/${id}`, { method: 'DELETE' })
@@ -407,7 +407,7 @@ const columns: ColumnDef<ArticleWithDetails>[] = [
   {
     header: $t('articles.columns.date'),
     accessorKey: 'createdAt',
-    cell: (info) => format(new Date(info.getValue() as string), 'dd.MM.yyyy, HH:mm'),
+    cell: (info) => formatTime(info.getValue() as string, 'shortDatetime'),
     sortingFn: (rowA, rowB, columnId) => {
       const dateA = new Date(rowA.getValue(columnId) as string).getTime()
       const dateB = new Date(rowB.getValue(columnId) as string).getTime()

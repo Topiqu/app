@@ -1,8 +1,13 @@
 import { defineConfig } from 'unocss'
 import presetWind3 from '@unocss/preset-wind3'
 
+import { Z_LAYERS } from './shared/utils/z-layers'
+
 export default defineConfig({
   presets: [presetWind3()],
+  theme: {
+    zIndex: Object.fromEntries(Object.entries(Z_LAYERS).map(([name, value]) => [name, String(value)])),
+  },
   safelist: [
     'from-blue-600',
     'to-indigo-900',

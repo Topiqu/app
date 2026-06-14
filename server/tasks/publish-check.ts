@@ -1,4 +1,4 @@
-export default defineTask({
+export default defineMonitoredTask({
   meta: {
     name: 'publish-check',
     description: 'Publishes scheduled articles and notifies users',
@@ -19,6 +19,10 @@ export default defineTask({
         where: { id: { in: articleIds }, status: 'draft' },
         data: { status: 'published', releaseAt: null },
       })
+
+      for (const a of articles) {
+        await syncArticleTranslationQueue(ctx, a.id, a.clientSiteId)
+      }
 
       await Promise.all(
         articles.map((a) =>

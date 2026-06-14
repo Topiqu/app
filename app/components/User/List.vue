@@ -99,12 +99,12 @@
       <Button variant="neutral" size="lg" @click="close">{{ $t('master.userList.actions.close') }}</Button>
     </template>
   </Modal>
+  <ModalMini ref="blockDialog" />
 </template>
 
 <script setup lang="ts">
-import Swal from 'sweetalert2'
-
 const open = defineModel<boolean>()
+const blockDialog = useTemplateRef<ModalMiniRef>('blockDialog')
 const toast = useToast()
 const { t } = useI18n()
 const searchQuery = shallowRef<string>('')
@@ -161,18 +161,15 @@ useInfiniteScroll(
 
 const del = async (id: string | undefined) => {
   if (!id) return
-  const r = await Swal.fire({
+  const r = await blockDialog.value?.ask({
     title: t('master.userList.blockDialog.title'),
-    text: t('master.userList.blockDialog.text'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: t('master.userList.blockDialog.confirm'),
-    cancelButtonText: t('master.userList.blockDialog.cancel'),
-    background: '#fff',
-    confirmButtonColor: '#ef4444',
-    cancelButtonColor: '#6b7280',
+    message: t('master.userList.blockDialog.text'),
+    icon: 'mdi:alert-outline',
+    confirmText: t('master.userList.blockDialog.confirm'),
+    cancelText: t('master.userList.blockDialog.cancel'),
+    variant: 'danger',
   })
-  if (!r.isConfirmed) return
+  if (r !== 'ok') return
   try {
     await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
     toast.success({ message: t('master.userList.messages.blocked') })

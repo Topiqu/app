@@ -157,7 +157,10 @@
       "joined": "Přidal se: {0}",
       "violateRules": "Porušení pravidel",
       "viewProfile": "Zobrazit profil",
-      "notAvailable": "Není dostupné"
+      "notAvailable": "Není dostupné",
+      "likes": "Líbí se",
+      "dislikes": "Nelíbí se",
+      "comments": "Komentáře"
     },
     "auth": {
       "login": "Přihlásit se",
@@ -340,6 +343,24 @@
         "confirmTitle": "Povolit automatické publikování?",
         "confirmMessage": "Jste si jistí? AI může občas generovat nepřesnosti. Důrazně doporučujeme články před vydáním kontrolovat."
       },
+      "translation": {
+        "title": "Automatické překlady",
+        "desc": "Překládejte publikované články do dalších jazyků pomocí AI.",
+        "mode": {
+          "label": "Režim překladu",
+          "options": {
+            "OFF": "Vypnuto",
+            "MANUAL": "Pouze ručně",
+            "AUTO": "Automaticky (přeložit a publikovat)",
+            "HYBRID": "Hybridně (přeložit, podržet ke kontrole)"
+          }
+        },
+        "targetLangs": {
+          "label": "Cílové jazyky",
+          "empty": "Pro váš primární jazyk nejsou k dispozici žádné další jazyky."
+        },
+        "tokenWarning": "Automatický překlad spotřebovává tokeny za každý publikovaný článek a cílový jazyk – stejně jako generování AI."
+      },
       "aiAuthor": {
         "title": "Nastavení AI autora",
         "username": {
@@ -404,6 +425,10 @@
       "pack50k": "Balíček 50k tokenů",
       "bestValue": "Nejvýhodnější",
       "upgradeToPremium": "Povýšit na PREMIUM"
+    },
+    "tasks": {
+      "completed": "Dokončeno",
+      "tags": "Štítky"
     }
   }
 }

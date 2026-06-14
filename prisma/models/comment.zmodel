@@ -1,0 +1,68 @@
+import "./base"
+import "./article"
+import "./client"
+import "./user"
+
+enum ReactionType {
+    LIKE
+    DISLIKE
+}
+
+enum SentimentStatus {
+    PENDING
+    SKIPPED
+    PROCESSED
+    ERROR
+}
+
+model Comment extends Base, Ownable {
+    content         String            @length(1, 1000, "Komentář musí mít 1–1000 znaků")
+    gifUrl          String?           @length(0, 350, "URL GIFu musí mít max. 350 znaků")
+    articleId       String
+    article         Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    parentId        String?
+    parent          Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+    reactions       CommentReaction[]
+    emojiReactions  EmojiReaction[]
+    replies         Comment[]         @relation("CommentReplies")
+    sentiment       Json?
+    sentimentStatus SentimentStatus   @default(PENDING)
+
+    @@allow('read', true)
+    @@allow('create', auth() != null)
+    @@allow('update,delete', auth().id == userId || auth().role == 'admin')
+    @@index([sentimentStatus])
+}
+
+model CommentReaction extends Ownable {
+    commentId String
+    type      ReactionType
+    comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
+    @@id([userId, commentId])
+    @@allow('create', auth().id != null)
+    @@allow('update', auth().id == userId)
+    @@allow('delete', auth().id == userId || auth().role == 'admin')
+    @@allow('read', true)
+}
+
+model Emoji extends Base {
+    shortcode      String          @length(1, 50, "Shortcode musí mít 1–50 znaků")
+    imageUrl       String          @length(1, 255, "URL obrázku musí mít 1–255 znaků")
+    clientSiteId   String
+    clientSite     ClientSite      @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    emojiReactions EmojiReaction[]
+    @@allow('read', true)
+    @@unique([shortcode, clientSiteId])
+    @@allow('create, update, delete', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+}
+
+model EmojiReaction extends Ownable {
+    commentId String
+    emojiId   String
+    comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+    emoji     Emoji   @relation(fields: [emojiId], references: [id], onDelete: Cascade)
+    @@id([userId, commentId, emojiId])
+    @@allow('create', auth().id != null)
+    @@allow('delete', auth().id == userId || auth().role == 'admin')
+    @@allow('read', true)
+}

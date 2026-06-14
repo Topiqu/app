@@ -130,7 +130,7 @@ onMounted(async () => {
     const res = await $fetch('/api/companies/my-company', {
       query: { type: localType.value },
     })
-    if (res && (res as any).accessToken) {
+    if (res && (res as any).connected) {
       isConnected.value = true
       localType.value = (res as any).type || 'pages'
       emit('update:type', localType.value)

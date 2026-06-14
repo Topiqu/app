@@ -30,7 +30,7 @@
       class="flex items-center gap-3 border border-transparent rounded-xl px-4 py-3 bg-gray-50 transition-all duration-250 hover:border-gray-300 hover:shadow-sm dark:bg-slate-800 dark:border-slate-700"
     >
       <FormInput
-        v-model="localOptions[i]"
+        v-model="opt.label"
         :placeholder="$t('articles.poll.optionPlaceholder')"
         class="flex-1 bg-transparent border-none outline-none text-[0.95rem] text-inherit placeholder:text-gray-400 dark:text-gray-200"
         @input="syncOptions"
@@ -70,18 +70,22 @@ const props = defineProps(nodeViewProps)
 
 const { node, updateAttributes, deleteNode } = props
 
+const defaultOption = () => ({ label: $t('articles.poll.defaultOption') })
+
 const localQuestion = shallowRef(node.attrs.question || $t('articles.poll.defaultQuestion'))
-const localOptions = ref([...(node.attrs.options?.length ? node.attrs.options : [$t('articles.poll.defaultOption')])])
+const localOptions = shallowRef(
+  node.attrs.options?.length ? node.attrs.options.map((o) => ({ ...o })) : [defaultOption()],
+)
 const localId = shallowRef(node.attrs.id || crypto.randomUUID())
 
 const syncQuestion = () => {
   const question = localQuestion.value.trim() || $t('articles.poll.defaultQuestion')
-  const validOptions = localOptions.value.length ? localOptions.value : [$t('articles.poll.defaultOption')]
+  const validOptions = localOptions.value.length ? localOptions.value : [defaultOption()]
   updateAttributes({ question, id: localId.value, options: validOptions })
 }
 
 const syncOptions = () => {
-  const validOptions = localOptions.value.length ? localOptions.value : [$t('articles.poll.defaultOption')]
+  const validOptions = localOptions.value.length ? localOptions.value : [defaultOption()]
   localOptions.value = validOptions
   updateAttributes({
     question: localQuestion.value.trim() || $t('articles.poll.defaultQuestion'),
@@ -91,7 +95,7 @@ const syncOptions = () => {
 }
 
 const add = () => {
-  localOptions.value = [...localOptions.value, '']
+  localOptions.value = [...localOptions.value, { label: '' }]
   syncOptions()
 }
 
