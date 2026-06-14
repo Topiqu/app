@@ -1,6 +1,6 @@
 import { consumeClientTokens } from '~~/server/utils/consumeTokens'
 
-export default defineTask({
+export default defineMonitoredTask({
   meta: {
     name: 'sentiment-analysis',
     description: 'Batch sentiment analysis with plan-based schema (PRO: basic, PREMIUM+: advanced)',

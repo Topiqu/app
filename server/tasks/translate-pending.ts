@@ -4,7 +4,7 @@ const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 const BATCH_SIZE = 10
 const MIN_TRANSLATION_TOKENS = 500
 
-export default defineTask({
+export default defineMonitoredTask({
   meta: {
     name: 'translate-pending',
     description: 'Translate queued ArticleTranslation rows (PENDING/STALE) via xAI; AUTO publishes, HYBRID holds for review',

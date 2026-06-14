@@ -30,3 +30,21 @@ export async function withHeartbeat<T>(taskName: string, run: () => Promise<T>):
     throw error
   }
 }
+
+/**
+ * Drop-in replacement for `defineTask` that pings the matching Better Stack
+ * heartbeat (`BETTERSTACK_HEARTBEAT_<NAME>`) on every run — success or fail.
+ * Wrapping at task level covers both the Nitro-scheduled path and manual
+ * `runTask()` cron routes. No-ops when the heartbeat env var is unset.
+ */
+export function defineMonitoredTask(def: Parameters<typeof defineTask>[0]): ReturnType<typeof defineTask> {
+  const name = def.meta?.name
+  const run = def.run
+  return defineTask({
+    ...def,
+    async run(ctx) {
+      if (!name || !run) return run?.(ctx)
+      return withHeartbeat(name, () => run(ctx))
+    },
+  })
+}

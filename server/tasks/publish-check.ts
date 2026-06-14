@@ -1,4 +1,4 @@
-export default defineTask({
+export default defineMonitoredTask({
   meta: {
     name: 'publish-check',
     description: 'Publishes scheduled articles and notifies users',

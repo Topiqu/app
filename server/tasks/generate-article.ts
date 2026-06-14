@@ -239,7 +239,7 @@ const processClient = async (client: any) => {
   }
 }
 
-export default defineTask({
+export default defineMonitoredTask({
   meta: {
     name: 'generate-article',
     description: 'Generates articles using AI',
