@@ -78,20 +78,30 @@ export const generateSessionToken = async (
 
     sessionId = session.id
 
-    await logAction({
-      action: 'SESSION_CREATE',
-      userId: user.id,
-      ip: ipAddress ?? undefined,
-      metadata: {
+    try {
+      await logAction({
+        action: 'SESSION_CREATE',
+        userId: user.id,
+        ip: ipAddress ?? undefined,
+        metadata: {
+          sessionId,
+          device: deviceName,
+          os: osName ?? undefined,
+          browser: browserName ?? undefined,
+          city: geo.city ?? undefined,
+          region: geo.region ?? undefined,
+          country: geo.country ?? undefined,
+        },
+      })
+    } catch (err) {
+      await logger.error('audit:SESSION_CREATE failed', {
+        source: 'audit',
+        action: 'SESSION_CREATE',
+        userId: user.id,
         sessionId,
-        device: deviceName,
-        os: osName ?? undefined,
-        browser: browserName ?? undefined,
-        city: geo.city ?? undefined,
-        region: geo.region ?? undefined,
-        country: geo.country ?? undefined,
-      },
-    })
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
   }
 
   return sessionId
