@@ -159,8 +159,7 @@ export default defineNuxtConfig({
   },
 
   auth: {
-    provider: { type: 'authjs' },
-    baseURL: process.env.AUTH_ORIGIN,
+    provider: { type: 'authjs', trustHost: true },
     originEnvKey: 'AUTH_ORIGIN',
   },
 
