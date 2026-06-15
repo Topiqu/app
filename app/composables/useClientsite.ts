@@ -10,7 +10,7 @@ export const useClientSite = async () => {
   const raw = useRequestURL().hostname ?? ''
   const hostname = raw?.split(':')[0]?.replace(/^www\./, '')
 
-  const ROOT_DOMAINS = ['topiqu.com']
+  const ROOT_DOMAINS = ['topiqu.com', 'app.topiqu.com']
 
   if (ROOT_DOMAINS.includes(hostname ?? '')) {
     return null

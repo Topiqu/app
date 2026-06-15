@@ -26,11 +26,20 @@ const adChance = useAdChance()
 const i18nHead = useLocaleHead()
 
 const devView = import.meta.dev ? useDevView() : undefined
+const localePath = useLocalePath()
+
+const isAppHost = reqUrl.hostname.replace(/^www\./, '') === 'app.topiqu.com'
+
+if (isAppHost && String(route.name || '').startsWith('index')) {
+  await navigateTo(localePath('autorizace'))
+}
 
 const isMainLanding = computed(() => {
   if (import.meta.dev && devView && devView.value !== 'auto') {
     return devView.value === 'landing'
   }
+
+  if (isAppHost) return false
 
   if (clientSite) return false
 

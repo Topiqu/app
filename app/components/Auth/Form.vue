@@ -366,12 +366,12 @@ const verifyTotp = async () => {
 
 const handleSocialAuth = async (provider: 'google' | 'github') => {
   try {
-    const mainDomain = import.meta.dev ? 'localhost' : 'topiqu.com'
+    const mainDomain = import.meta.dev ? 'localhost' : 'app.topiqu.com'
     const isMainDomain = window.location.hostname === mainDomain
     const finalRedirectUrl = window.location.href
 
     if (!isMainDomain) {
-      const authBaseUrl = import.meta.dev ? 'http://localhost:3000' : 'https://topiqu.com'
+      const authBaseUrl = import.meta.dev ? 'http://localhost:3000' : 'https://app.topiqu.com'
       const authUrl = `${authBaseUrl}${localePath('/oauth-start')}?provider=${provider}&callbackUrl=${encodeURIComponent(finalRedirectUrl)}`
       window.location.href = authUrl
       return
