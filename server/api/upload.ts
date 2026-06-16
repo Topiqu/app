@@ -101,8 +101,8 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      url: `${config.cdnUrl}/uploads/${filename}`,
-      optimizedUrl: `${config.cdnUrl}/optimized/${optimizedFilename}`,
+      url: `${config.public.cdnUrl}/uploads/${filename}`,
+      optimizedUrl: `${config.public.cdnUrl}/optimized/${optimizedFilename}`,
       filename,
       tags: detectedTagsString.split(',').filter(Boolean),
     }
