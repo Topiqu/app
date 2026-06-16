@@ -28,7 +28,7 @@ export async function logAction(params: {
   const { tx, ...rest } = params
 
   const write = async (db: any) => {
-    await db.$queryRaw`SELECT pg_advisory_xact_lock(${LOG_LOCK_KEY}::bigint)`
+    await db.$executeRaw`SELECT pg_advisory_xact_lock(${LOG_LOCK_KEY}::bigint)`
 
     let userId = rest.userId
     if (!userId) {
