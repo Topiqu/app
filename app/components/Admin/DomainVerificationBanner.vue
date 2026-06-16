@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="!clientSite?.domainVerified"
+    v-if="isCustomDomain && !clientSite?.domainVerified"
     class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 justify-between"
   >
     <div class="flex items-center gap-3">
@@ -28,6 +28,13 @@
 const clientSite = await useClientSite()
 const pending = shallowRef(false)
 const toast = useToast()
+
+const baseDomain = useRuntimeConfig().public.baseDomain
+const isCustomDomain = computed(() => {
+  const domain = clientSite?.domain?.toLowerCase()
+  if (!domain) return false
+  return domain !== baseDomain && !domain.endsWith(`.${baseDomain}`)
+})
 
 const verify = async () => {
   if (!clientSite) return
