@@ -122,7 +122,7 @@
         <section class="flex flex-col gap-3">
           <button
             type="button"
-            class="flex items-center justify-between w-full text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200"
+            class="flex items-center justify-between w-full -mx-2 px-2 py-1.5 rounded-lg text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200 bg-transparent! hover:bg-gray-100! dark:hover:bg-gray-800! transition-colors"
             :aria-expanded="aiOpen"
             @click="aiOpen = !aiOpen"
           >
