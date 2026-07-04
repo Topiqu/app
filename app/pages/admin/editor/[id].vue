@@ -355,18 +355,25 @@ const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
     .slice(0, 16) as any
 }
 
+const { streamGenerate } = useArticleGeneration()
+
 const generateAIContent = async () => {
   aiGenerating.value = true
   try {
-    const response = await $fetch('/api/articles/generate', {
-      method: 'POST',
-      body: { prompt: customPrompt.value || 'Empty...' },
-    })
-    Object.assign(editedArticle.value, {
-      title: response.title,
-      excerpt: response.perex,
-      content: response.content,
-      imageUrl: response.articleImageUrl,
+    await streamGenerate(customPrompt.value || 'Empty...', {
+      onPartial: (partial) => {
+        if (partial.title != null) editedArticle.value.title = partial.title
+        if (partial.perex != null) editedArticle.value.excerpt = partial.perex
+        if (partial.content != null) editedArticle.value.content = partial.content
+      },
+      onFinal: (article) => {
+        Object.assign(editedArticle.value, {
+          title: article.title,
+          excerpt: article.perex,
+          content: article.content,
+          imageUrl: article.articleImageUrl,
+        })
+      },
     })
     toast.success({ message: 'AI Content Generated' })
   } catch {

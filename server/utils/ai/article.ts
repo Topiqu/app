@@ -1,8 +1,53 @@
-import { generateObject } from 'ai'
+import { generateObject, streamObject } from 'ai'
 
 import { fetchUnsplashImage } from '../unsplash'
 
-export const generateArticle = async (clientSiteId: string, prompt: string) => {
+const articleSchema = z.object({
+  title: z.string().min(5).max(500).describe('Catchy title 5-15 words'),
+  perex: z.string().min(20).max(1000).describe('Short introductory paragraph (3-4 sentences)'),
+  content: z
+    .string()
+    .min(500)
+    .max(20000)
+    .describe(
+      'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, you can also add <br> tags at the end of each section/paragraph for v-html on frontend. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
+    ),
+  coverImage: z
+    .object({
+      type: z.enum(['unsplash', 'generate']),
+      query: z.string().min(2).max(1000),
+    })
+    .describe('Cover image instruction'),
+  images: z
+    .array(
+      z.object({
+        type: z.enum(['unsplash', 'generate']),
+        query: z.string().min(2).max(1000),
+      }),
+    )
+    .describe('Array of image instructions corresponding to slots in content'),
+  polls: z
+    .array(
+      z.object({
+        question: z.string().min(5).max(255).describe('Poll question'),
+        options: z.array(z.string().min(1).max(255)).min(2).max(5).describe('Poll options (2-5)'),
+      }),
+    )
+    .optional()
+    .describe('Array of polls corresponding to slots in content'),
+  tags: z
+    .array(z.string())
+    .max(5)
+    .describe("ID's of relevant tags from the provided tags list that best fit the article topic"),
+  sources: z
+    .array(z.string().min(1).max(1000).describe('Source URL or reference'))
+    .max(5)
+    .describe('Array of credible sources relevant to the article topic'),
+})
+
+type ArticleObject = (typeof articleSchema)['_output']
+
+const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
   const { tokenRemaining, plan, focus, keywords, audience, tags, aiToneOfVoice, aiControversyLevel, communityInsight } =
     await prisma.clientSite.findFirstOrThrow({
       select: {
@@ -83,7 +128,9 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
       Only select tags from this list: ${JSON.stringify(tags || [])}.
     `.trim()
 
-  const { object, usage } = await generateObject({
+  const searchOn = plan === 'PREMIUM' || (plan === 'CUSTOM' && maxOutputTokens > 5000)
+
+  return {
     model: xai('grok-4-1-fast'),
     maxOutputTokens,
     system,
@@ -91,55 +138,16 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
     providerOptions: {
       xai: {
         searchParameters: {
-          mode: plan === 'PREMIUM' || (plan === 'CUSTOM' && maxOutputTokens > 5000) ? 'on' : 'off',
-          maxSearchResults: plan === 'PREMIUM' || (plan === 'CUSTOM' && maxOutputTokens > 5000) ? 10 : 5,
+          mode: searchOn ? 'on' : 'off',
+          maxSearchResults: searchOn ? 10 : 5,
         },
       },
     },
-    schema: z.object({
-      title: z.string().min(5).max(500).describe('Catchy title 5-15 words'),
-      perex: z.string().min(20).max(1000).describe('Short introductory paragraph (3-4 sentences)'),
-      content: z
-        .string()
-        .min(500)
-        .max(20000)
-        .describe(
-          'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, you can also add <br> tags at the end of each section/paragraph for v-html on frontend. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
-        ),
-      coverImage: z
-        .object({
-          type: z.enum(['unsplash', 'generate']),
-          query: z.string().min(2).max(1000),
-        })
-        .describe('Cover image instruction'),
-      images: z
-        .array(
-          z.object({
-            type: z.enum(['unsplash', 'generate']),
-            query: z.string().min(2).max(1000),
-          }),
-        )
-        .describe('Array of image instructions corresponding to slots in content'),
-      polls: z
-        .array(
-          z.object({
-            question: z.string().min(5).max(255).describe('Poll question'),
-            options: z.array(z.string().min(1).max(255)).min(2).max(5).describe('Poll options (2-5)'),
-          }),
-        )
-        .optional()
-        .describe('Array of polls corresponding to slots in content'),
-      tags: z
-        .array(z.string())
-        .max(5)
-        .describe("ID's of relevant tags from the provided tags list that best fit the article topic"),
-      sources: z
-        .array(z.string().min(1).max(1000).describe('Source URL or reference'))
-        .max(5)
-        .describe('Array of credible sources relevant to the article topic'),
-    }),
-  })
+    schema: articleSchema,
+  } as const
+}
 
+export const finalizeArticle = async (object: ArticleObject) => {
   const generateImageOptions = {
     outputDir: 'article-images',
     filenamePrefix: 'article',
@@ -199,5 +207,20 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
     }
   }
 
-  return { ...object, articleImageUrl, usage }
+  return { ...object, articleImageUrl }
+}
+
+export const generateArticle = async (clientSiteId: string, prompt: string) => {
+  const config = await buildArticleConfig(clientSiteId, prompt)
+  const { object, usage } = await generateObject(config)
+  const finalized = await finalizeArticle(object)
+
+  return { ...finalized, usage }
+}
+
+export const streamArticle = async (clientSiteId: string, prompt: string) => {
+  const config = await buildArticleConfig(clientSiteId, prompt)
+  const result = streamObject(config)
+
+  return { result, finalize: finalizeArticle }
 }

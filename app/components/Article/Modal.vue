@@ -385,24 +385,31 @@ const playSuccessSound = () => {
   audio.play().catch(() => {})
 }
 
+const { streamGenerate } = useArticleGeneration()
+
 const generateAIContent = async () => {
   aiGenerating.value = true
   try {
-    const response = await $fetch('/api/articles/generate', {
-      method: 'POST',
-      body: { prompt: customPrompt.value || 'Empty...' },
+    await streamGenerate(customPrompt.value || 'Empty...', {
+      onPartial: (partial) => {
+        if (partial.title != null) editedArticle.value.title = partial.title
+        if (partial.perex != null) editedArticle.value.excerpt = partial.perex
+        if (partial.content != null) editedArticle.value.content = partial.content
+      },
+      onFinal: (article) => {
+        Object.assign(editedArticle.value, {
+          title: article.title,
+          excerpt: article.perex,
+          content: article.content,
+          imageUrl: article.articleImageUrl,
+          sources: article.sources || [],
+          savedAmount: article.metrics.savedAmount,
+          savedTimeMinutes: article.metrics.savedTimeMinutes,
+          aiInvolvement: article.aiInvolvement || 'FULL',
+        })
+        articleTags.value = article.tags ?? []
+      },
     })
-    Object.assign(editedArticle.value, {
-      title: response.title,
-      excerpt: response.perex,
-      content: response.content,
-      imageUrl: response.articleImageUrl,
-      sources: response.sources || [],
-      savedAmount: response.metrics.savedAmount,
-      savedTimeMinutes: response.metrics.savedTimeMinutes,
-      aiInvolvement: response.aiInvolvement || 'FULL',
-    })
-    articleTags.value = response.tags ?? []
     playSuccessSound()
     toast.success({ message: $t('articles.editor.aiContentGenerated') })
   } catch {

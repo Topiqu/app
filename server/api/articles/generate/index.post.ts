@@ -24,27 +24,43 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
   }
 
-  const { usage, ...article } = await generateArticle(user.clientSiteId, prompt)
+  const clientSiteId = user.clientSiteId
+  const { result, finalize } = await streamArticle(clientSiteId, prompt)
 
-  const metrics = calculateArticleMetrics(article.content, client.humanHourlyRate, client.humanWordsPerHour)
+  setResponseHeader(event, 'Content-Type', 'application/x-ndjson; charset=utf-8')
+  setResponseHeader(event, 'Cache-Control', 'no-cache, no-transform')
+  setResponseHeader(event, 'X-Accel-Buffering', 'no')
 
-  await consumeClientTokens(
-    user.clientSiteId,
-    usage.totalTokens || 0,
-    'GENERATE_ARTICLE',
-    {
-      ...article,
-      usage,
-      metrics,
-      aiInvolvement: 'FULL',
-      createdAt: new Date(),
+  const encoder = new TextEncoder()
+  const send = (controller: ReadableStreamDefaultController, payload: unknown) =>
+    controller.enqueue(encoder.encode(`${JSON.stringify(payload)}\n`))
+
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const partial of result.partialObjectStream) {
+          send(controller, { type: 'partial', object: partial })
+        }
+
+        const object = await result.object
+        const usage = await result.usage
+        const finalized = await finalize(object)
+        const metrics = calculateArticleMetrics(finalized.content, client.humanHourlyRate, client.humanWordsPerHour)
+
+        await consumeClientTokens(
+          clientSiteId,
+          usage.totalTokens || 0,
+          'GENERATE_ARTICLE',
+          { ...finalized, usage, metrics, aiInvolvement: 'FULL', createdAt: new Date() },
+          event,
+        )
+
+        send(controller, { type: 'final', article: { ...finalized, metrics, aiInvolvement: 'FULL' } })
+      } catch (error: any) {
+        send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })
+      } finally {
+        controller.close()
+      }
     },
-    event,
-  )
-
-  return {
-    ...article,
-    metrics,
-    aiInvolvement: 'FULL',
-  }
+  })
 })
