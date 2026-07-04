@@ -147,7 +147,9 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
   } as const
 }
 
-export const finalizeArticle = async (object: ArticleObject) => {
+type FinalizeImage = { slot: number; html: string }
+
+export const finalizeArticle = async (object: ArticleObject, onImage?: (image: FinalizeImage) => void) => {
   const generateImageOptions = {
     outputDir: 'article-images',
     filenamePrefix: 'article',
@@ -172,29 +174,33 @@ export const finalizeArticle = async (object: ArticleObject) => {
     articleImageUrl = url
   }
 
+  const buildImageHtml = (url: string, desc: string, attribution: string) =>
+    `<p style="text-align: center;"><img src="${url}" alt="${desc}" />${attribution}</p>`
+
   const generatedImages = await Promise.all(
     object.images.map(async (img, idx) => {
+      let html: string
       if (img.type === 'unsplash') {
         const unsplashRes = await fetchUnsplashImage(img.query)
         if (unsplashRes) {
-          return {
-            url: unsplashRes.url,
-            desc: img.query,
-            attribution: `<br><small style="color: gray;">Zdroj: <a href="${unsplashRes.authorUrl}?utm_source=rasg&utm_medium=referral" target="_blank">${unsplashRes.authorName}</a> na Unsplash</small>`,
-          }
+          const attribution = `<br><small style="color: gray;">Zdroj: <a href="${unsplashRes.authorUrl}?utm_source=rasg&utm_medium=referral" target="_blank">${unsplashRes.authorName}</a> na Unsplash</small>`
+          html = buildImageHtml(unsplashRes.url, img.query, attribution)
+          const image = { slot: idx + 1, html }
+          onImage?.(image)
+          return image
         }
       }
       // fallback to AI generation
       const { url } = await generateImage(img.query, { ...generateImageOptions, filenameSuffix: idx.toString() })
-      return { url, desc: img.query, attribution: '' }
+      html = buildImageHtml(url, img.query, '')
+      const image = { slot: idx + 1, html }
+      onImage?.(image)
+      return image
     }),
   )
 
-  for (const [idx, { url, desc, attribution }] of generatedImages.entries()) {
-    object.content = object.content.replace(
-      `[[IMAGE${idx + 1}]]`,
-      `<p style="text-align: center;"><img src="${url}" alt="${desc}" />${attribution}</p>`,
-    )
+  for (const { slot, html } of generatedImages) {
+    object.content = object.content.replace(`[[IMAGE${slot}]]`, html)
   }
 
   if (object.polls) {
@@ -218,9 +224,9 @@ export const generateArticle = async (clientSiteId: string, prompt: string) => {
   return { ...finalized, usage }
 }
 
-export const streamArticle = async (clientSiteId: string, prompt: string) => {
+export const streamArticle = async (clientSiteId: string, prompt: string, abortSignal?: AbortSignal) => {
   const config = await buildArticleConfig(clientSiteId, prompt)
-  const result = streamObject(config)
+  const result = streamObject({ ...config, abortSignal })
 
   return { result, finalize: finalizeArticle }
 }

@@ -25,26 +25,49 @@ export default defineEventHandler(async (event) => {
   }
 
   const clientSiteId = user.clientSiteId
-  const { result, finalize } = await streamArticle(clientSiteId, prompt)
+  const abortController = new AbortController()
+  let textDone = false
+
+  // Client disconnect (tab close) or explicit Stop → cancel the LLM, but only while it's
+  // still writing. Once the text is done we always finish finalize + billing server-side,
+  // so a drop near the end can never skip the charge.
+  const onClose = () => {
+    if (!textDone) abortController.abort()
+  }
+  event.node.req.on('close', onClose)
+
+  const { result, finalize } = await streamArticle(clientSiteId, prompt, abortController.signal)
 
   setResponseHeader(event, 'Content-Type', 'application/x-ndjson; charset=utf-8')
   setResponseHeader(event, 'Cache-Control', 'no-cache, no-transform')
   setResponseHeader(event, 'X-Accel-Buffering', 'no')
 
   const encoder = new TextEncoder()
-  const send = (controller: ReadableStreamDefaultController, payload: unknown) =>
-    controller.enqueue(encoder.encode(`${JSON.stringify(payload)}\n`))
+  let clientAlive = true
+  const send = (controller: ReadableStreamDefaultController, payload: unknown) => {
+    if (!clientAlive) return
+    try {
+      controller.enqueue(encoder.encode(`${JSON.stringify(payload)}\n`))
+    } catch {
+      clientAlive = false
+    }
+  }
 
   return new ReadableStream({
     async start(controller) {
       try {
+        send(controller, { type: 'phase', phase: 'writing' })
+
         for await (const partial of result.partialObjectStream) {
           send(controller, { type: 'partial', object: partial })
         }
+        textDone = true
 
         const object = await result.object
         const usage = await result.usage
-        const finalized = await finalize(object)
+
+        send(controller, { type: 'phase', phase: 'images' })
+        const finalized = await finalize(object, (image) => send(controller, { type: 'image', ...image }))
         const metrics = calculateArticleMetrics(finalized.content, client.humanHourlyRate, client.humanWordsPerHour)
 
         await consumeClientTokens(
@@ -57,10 +80,28 @@ export default defineEventHandler(async (event) => {
 
         send(controller, { type: 'final', article: { ...finalized, metrics, aiInvolvement: 'FULL' } })
       } catch (error: any) {
-        send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })
+        if (abortController.signal.aborted) {
+          // Stopped mid-generation: bill best-effort for the partial usage we actually spent.
+          const usage = await result.usage.catch(() => null)
+          if (usage?.totalTokens) {
+            await consumeClientTokens(clientSiteId, usage.totalTokens, 'GENERATE_ARTICLE', { aborted: true }, event).catch(
+              () => {},
+            )
+          }
+        } else {
+          send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })
+        }
       } finally {
-        controller.close()
+        event.node.req.off('close', onClose)
+        try {
+          controller.close()
+        } catch {
+          // already closed by the client
+        }
       }
+    },
+    cancel() {
+      if (!textDone) abortController.abort()
     },
   })
 })

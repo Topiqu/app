@@ -267,7 +267,12 @@
         "customPromptPlaceholder": "Enter a prompt for AI article generation...",
         "notAvailable": "AI generation is not available.",
         "learnMore": "Learn More",
-        "generateButton": "Generate AI Content"
+        "generateButton": "Generate AI Content",
+        "stopButton": "Stop",
+        "generating": "Writing…",
+        "phaseWriting": "Writing…",
+        "phaseImages": "Generating images…",
+        "aiContentStopped": "Generation stopped"
       },
       "drafts": {
         "loadDrafts": "Load Drafts",

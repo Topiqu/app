@@ -69,8 +69,15 @@
               />
             </div>
           </label>
-          <div v-if="aiGenerating" class="flex justify-center">
+          <div v-if="aiGenerating" class="flex flex-col items-center gap-3">
             <NuxtImg src="/topik_premysli_rm.png" :alt="$t('articles.noResults.imageAlt')" class="w-16 animate-pulse" />
+            <span class="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-300">
+              <Icon name="mdi:loading" class="w-4 h-4 animate-spin" />
+              {{ aiPhase === 'images' ? $t('articles.editor.ai.phaseImages') : $t('articles.editor.ai.phaseWriting') }}
+            </span>
+            <Button icon="mdi:stop" borderless class="bg-red-500 text-white hover:bg-red-600" @click="stopGeneration">
+              {{ $t('articles.editor.ai.stopButton') }}
+            </Button>
           </div>
           <div
             v-else-if="auth?.user.plan === 'BASIC' || client?.tokenRemaining === 0"
@@ -385,16 +392,22 @@ const playSuccessSound = () => {
   audio.play().catch(() => {})
 }
 
-const { streamGenerate } = useArticleGeneration()
+const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
+const aiPhase = shallowRef<'writing' | 'images'>('writing')
 
 const generateAIContent = async () => {
   aiGenerating.value = true
+  aiPhase.value = 'writing'
   try {
-    await streamGenerate(customPrompt.value || 'Empty...', {
+    const outcome = await streamGenerate(customPrompt.value || 'Empty...', {
       onPartial: (partial) => {
         if (partial.title != null) editedArticle.value.title = partial.title
         if (partial.perex != null) editedArticle.value.excerpt = partial.perex
         if (partial.content != null) editedArticle.value.content = partial.content
+      },
+      onPhase: (phase) => (aiPhase.value = phase),
+      onImage: ({ slot, html }) => {
+        editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
       },
       onFinal: (article) => {
         Object.assign(editedArticle.value, {
@@ -410,8 +423,12 @@ const generateAIContent = async () => {
         articleTags.value = article.tags ?? []
       },
     })
-    playSuccessSound()
-    toast.success({ message: $t('articles.editor.aiContentGenerated') })
+    if (outcome === 'aborted') {
+      toast.info({ message: $t('articles.editor.ai.aiContentStopped') })
+    } else {
+      playSuccessSound()
+      toast.success({ message: $t('articles.editor.aiContentGenerated') })
+    }
   } catch {
     toast.error({ message: $t('articles.editor.aiContentFailed') })
   } finally {

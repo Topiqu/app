@@ -143,14 +143,22 @@
               inputClass="!min-h-[100px] !bg-white dark:!bg-gray-800"
             />
             <Button
+              v-if="!aiGenerating"
               icon="mdi:lightning-bolt"
-              :loading="aiGenerating"
               class="w-full text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 shadow-md border-transparent!"
-              :disabled="aiGenerating"
               @click="generateAIContent"
             >
               {{ $t('articles.editor.ai.generateButton') }}
             </Button>
+            <div v-else class="flex items-center gap-2">
+              <span class="flex-1 flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
+                <Icon name="mdi:loading" class="w-4 h-4 animate-spin" />
+                {{ aiPhase === 'images' ? $t('articles.editor.ai.phaseImages') : $t('articles.editor.ai.phaseWriting') }}
+              </span>
+              <Button icon="mdi:stop" class="border-transparent! bg-red-500 text-white hover:bg-red-600" @click="stopGeneration">
+                {{ $t('articles.editor.ai.stopButton') }}
+              </Button>
+            </div>
           </div>
         </section>
 
@@ -355,16 +363,22 @@ const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
     .slice(0, 16) as any
 }
 
-const { streamGenerate } = useArticleGeneration()
+const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
+const aiPhase = shallowRef<'writing' | 'images'>('writing')
 
 const generateAIContent = async () => {
   aiGenerating.value = true
+  aiPhase.value = 'writing'
   try {
-    await streamGenerate(customPrompt.value || 'Empty...', {
+    const outcome = await streamGenerate(customPrompt.value || 'Empty...', {
       onPartial: (partial) => {
         if (partial.title != null) editedArticle.value.title = partial.title
         if (partial.perex != null) editedArticle.value.excerpt = partial.perex
         if (partial.content != null) editedArticle.value.content = partial.content
+      },
+      onPhase: (phase) => (aiPhase.value = phase),
+      onImage: ({ slot, html }) => {
+        editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
       },
       onFinal: (article) => {
         Object.assign(editedArticle.value, {
@@ -375,7 +389,8 @@ const generateAIContent = async () => {
         })
       },
     })
-    toast.success({ message: 'AI Content Generated' })
+    if (outcome === 'aborted') toast.info({ message: 'AI Generation Stopped' })
+    else toast.success({ message: 'AI Content Generated' })
   } catch {
     toast.error({ message: 'AI Generation Failed' })
   } finally {

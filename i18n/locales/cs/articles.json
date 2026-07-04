@@ -267,7 +267,12 @@
         "customPromptPlaceholder": "Zadejte pokyn pro generování článku AI...",
         "notAvailable": "Generování AI není dostupné.",
         "learnMore": "Zjistit více",
-        "generateButton": "Generovat obsah AI"
+        "generateButton": "Generovat obsah AI",
+        "stopButton": "Zastavit",
+        "generating": "Píšu…",
+        "phaseWriting": "Píšu…",
+        "phaseImages": "Generuji obrázky…",
+        "aiContentStopped": "Generování zastaveno"
       },
       "drafts": {
         "loadDrafts": "Načíst koncepty",
