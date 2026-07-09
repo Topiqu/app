@@ -70,6 +70,7 @@ future:
   - 🟢 better gamification - badges, levels, site activity points
 ---
 queue (SQS migration):
+  - 🛑 serverless → self-hosted migration — see MIGRATION.md (phased: Phase 0 decouple in-place / Phase 1 containerize+cutover / Phase 2 reclaim push+workers / Phase 3 scale-out). First commit = server/utils/redis.ts + queue.ts abstractions w tests
   - 🛑 decide: 1 web replica vs N (affects SNS fanout) + deploy target (ECS/EC2/VPS)
   - 🛑 server/utils/queue.ts abstraction (SQS + in-memory) + LocalStack in docker-compose
   - 🛑 Prisma models: ArticleJob, PdfJob

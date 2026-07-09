@@ -1,60 +1,64 @@
-import prisma from '../../utils/prisma'
 import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
+import { verifyOAuthState } from '../../utils/linkedin/oauthState'
 
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+  const user = (await getServerSession(event))?.user
+  if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
+    throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  }
+
   const query = getQuery(event)
-  const code = query.code as string
-  const state = query.state as string
-  const error = query.error as string
-
-  if (error) {
-    return `LinkedIn Auth Error: ${error}`
+  if (query.error) {
+    return sendRedirect(event, '/master?tab=preferences&linkedin=error')
   }
 
-  const [appType, clientSiteId, csrfHash] = state.split('|')
+  const code = query.code as string | undefined
+  const state = query.state as string | undefined
+  const savedState = getCookie(event, 'linkedin_oauth_state')
+  deleteCookie(event, 'linkedin_oauth_state')
 
-  const savedHash = getCookie(event, 'linkedin_oauth_hash')
-  if (csrfHash !== savedHash) {
-    throw createError({ statusCode: 400, message: 'Invalid state parameter' })
+  if (!code || !state || !savedState || state !== savedState) {
+    throw createError({ statusCode: 400, message: 'Invalid OAuth state' })
   }
 
-  if (!clientSiteId || !appType) {
-    throw createError({ statusCode: 400, message: 'Chybí klientská data ve state' })
+  const payload = verifyOAuthState(state)
+  if (!payload) {
+    throw createError({ statusCode: 400, message: 'Invalid OAuth state' })
   }
 
-  const config = useRuntimeConfig()
-  let clientId, clientSecret
+  const { clientSiteId, appType } = payload
 
-  if (appType === 'pages') {
-    clientId = process.env.LINKEDIN_CLIENT_ID_COMPANY
-    clientSecret = process.env.LINKEDIN_CLIENT_SECRET_COMPANY
-  } else {
-    clientId = process.env.LINKEDIN_CLIENT_ID_PERSONAL
-    clientSecret = process.env.LINKEDIN_CLIENT_SECRET_PERSONAL
+  if (user.role !== 'superadmin' && clientSiteId !== user.clientSiteId) {
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
   }
 
-  const redirectUri = config.public.siteUrl
-    ? `${config.public.siteUrl}/api/linkedin/callback`
-    : 'http://localhost:3000/api/linkedin/callback'
-
+  const clientId =
+    appType === 'pages'
+      ? process.env.LINKEDIN_CLIENT_ID_COMPANY
+      : process.env.LINKEDIN_CLIENT_ID_PERSONAL
+  const clientSecret =
+    appType === 'pages'
+      ? process.env.LINKEDIN_CLIENT_SECRET_COMPANY
+      : process.env.LINKEDIN_CLIENT_SECRET_PERSONAL
   if (!clientId || !clientSecret) {
     throw createError({ statusCode: 500, message: 'LinkedIn credentials not configured' })
   }
+
+  const config = useRuntimeConfig()
+  const redirectUri = config.public.siteUrl
+    ? `${config.public.siteUrl}/api/linkedin/callback`
+    : 'http://localhost:3000/api/linkedin/callback'
 
   try {
     const tokenData = await getAccessToken(code, redirectUri, clientId, clientSecret)
     const accessToken = tokenData.access_token
 
-    let fetchedUrn = ''
-    if (appType === 'personal') {
-      fetchedUrn = await getPersonalUrn(accessToken)
-    } else {
-      fetchedUrn = await getPagesUrn(accessToken)
-    }
+    const fetchedUrn =
+      appType === 'personal' ? await getPersonalUrn(accessToken) : await getPagesUrn(accessToken)
 
-    const company = await prisma.linkedinCompany.findFirst({
-      where: { clientSiteId, type: appType },
-    })
+    const db = await getEnhancedPrisma(user)
+    const company = await db.linkedinCompany.findFirst({ where: { clientSiteId, type: appType } })
 
     const dbData = {
       name: appType === 'pages' ? 'Connected LinkedIn Page' : 'Connected Personal Profile',
@@ -67,12 +71,9 @@ export default defineEventHandler(async (event) => {
     }
 
     if (!company) {
-      await prisma.linkedinCompany.create({ data: dbData })
+      await db.linkedinCompany.create({ data: dbData })
     } else {
-      await prisma.linkedinCompany.update({
-        where: { id: company.id },
-        data: dbData,
-      })
+      await db.linkedinCompany.update({ where: { id: company.id }, data: dbData })
     }
 
     return sendRedirect(event, '/master?tab=preferences')

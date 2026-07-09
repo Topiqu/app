@@ -2,6 +2,7 @@ import type { DraftStatus } from '@prisma/client'
 
 import prisma from '../prisma'
 import { createPost } from './api'
+import { getValidAccessToken } from './token'
 
 const PUBLISHABLE_FROM: DraftStatus[] = ['DRAFT', 'AWAITING_APPROVAL', 'APPROVED', 'REJECTED', 'FAILED']
 
@@ -23,9 +24,9 @@ export async function executePublish(draftId: string, fromStatuses: DraftStatus[
     })
 
     const { company } = draft.task
-    if (!company.accessToken) throw new Error('No LinkedIn access token for company.')
+    const accessToken = await getValidAccessToken(company)
 
-    const urn = await createPost(company.accessToken, company.linkedinOrgId, draft.text)
+    const urn = await createPost(accessToken, company.linkedinOrgId, draft.text)
 
     await prisma.$transaction([
       prisma.publishedPost.create({ data: { draftId, linkedinPostId: urn } }),

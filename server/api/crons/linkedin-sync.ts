@@ -1,5 +1,6 @@
 import prisma from '../../utils/prisma'
 import { getPostMetrics } from '../../utils/linkedin/api'
+import { getValidAccessToken } from '../../utils/linkedin/token'
 
 export default defineEventHandler(async (event) => {
   if (getHeader(event, 'Authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -18,12 +19,20 @@ export default defineEventHandler(async (event) => {
     },
   })
 
+  const tokenCache = new Map<string, string>()
+
   for (const post of posts) {
     const company = post.draft.task.company
     if (!company.accessToken) continue
 
     try {
-      const metrics = await getPostMetrics(company.accessToken, post.linkedinPostId)
+      let accessToken = tokenCache.get(company.id)
+      if (!accessToken) {
+        accessToken = await getValidAccessToken(company)
+        tokenCache.set(company.id, accessToken)
+      }
+
+      const metrics = await getPostMetrics(accessToken, post.linkedinPostId)
 
       await prisma.postMetric.create({
         data: {
