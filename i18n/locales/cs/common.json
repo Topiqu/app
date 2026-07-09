@@ -271,6 +271,14 @@
     "cancelAction": "Zrušit akci",
     "preferences": {
       "title": "Vaše preference",
+      "unsaved": "Neuložené změny",
+      "tabs": {
+        "branding": "Branding",
+        "content": "Obsah",
+        "integrations": "Integrace",
+        "ai": "AI",
+        "billing": "Fakturace"
+      },
       "currentPlan": "Aktuální tarif",
       "nextPayment": "Další platba",
       "savingsTitle": "Úspora",

@@ -270,6 +270,14 @@
     "cancelAction": "Cancel action",
     "preferences": {
       "title": "Your Preferences",
+      "unsaved": "Unsaved changes",
+      "tabs": {
+        "branding": "Branding",
+        "content": "Content",
+        "integrations": "Integrations",
+        "ai": "AI",
+        "billing": "Billing"
+      },
       "currentPlan": "Current plan",
       "nextPayment": "Next payment",
       "savingsTitle": "Savings",

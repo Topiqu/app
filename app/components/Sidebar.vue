@@ -35,9 +35,7 @@
         <LazyStatsDialog v-slot="{ open }" hydrateOnInteraction>
           <Button icon="mdi:chart-bar" variant="neutral" @click="open.value = true" />
         </LazyStatsDialog>
-        <LazyClientPreferences v-slot="{ open }" hydrateOnInteraction>
-          <Button icon="mdi:cog" variant="neutral" @click="open.value = true" />
-        </LazyClientPreferences>
+        <Button icon="mdi:cog" variant="neutral" @click="router.push(localePath('/settings'))" />
       </div>
       <div v-if="auth?.user?.role === 'superadmin'" class="flex flex-col gap-4">
         <Button icon="mdi:home" variant="neutral" @click="router.push(localePath('/master'))" />

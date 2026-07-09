@@ -28,7 +28,7 @@
       <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
         {{ $t('common.preferences.theme.label') }}
       </span>
-      <div class="grid grid-cols-5 gap-6 max-w-sm justify-items-center">
+      <div class="grid grid-cols-5 gap-4 sm:gap-6 max-w-xs sm:max-w-sm mx-auto justify-items-center">
         <Button
           v-for="theme in themes"
           :key="theme"
