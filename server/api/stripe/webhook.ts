@@ -1,7 +1,7 @@
 import type { ClientPlan } from '@prisma/client'
 
 import Stripe from 'stripe'
-import { extractSubscriptionId, isSubscribablePlan } from '~~/server/utils/stripeWebhook'
+import { extractSubscriptionId, isSubscribablePlan, planFromPriceId } from '~~/server/utils/stripeWebhook'
 
 export default defineEventHandler(async (event) => {
   const body = await readRawBody(event, false)
@@ -28,13 +28,14 @@ export default defineEventHandler(async (event) => {
       const priceId = subscription?.items.data[0]?.price.id ?? null
 
       const isTrialing = subscription?.status === 'trialing'
-      const plan = session.metadata?.plan
-      const promote = !isTrialing && isSubscribablePlan(plan)
+      const metadataPlan = session.metadata?.plan
+      const derivedPlan = planFromPriceId(priceId) ?? (isSubscribablePlan(metadataPlan) ? metadataPlan : null)
+      const promote = !isTrialing && !!derivedPlan
 
       await prisma.clientSite.update({
         where: { id: clientSiteId },
         data: {
-          ...(promote ? { plan: plan as ClientPlan, firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
+          ...(promote ? { plan: derivedPlan as ClientPlan, firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
           stripeCustomerId: customerId ?? undefined,
           stripeSubscriptionId: subscriptionId ?? undefined,
           stripePriceId: priceId ?? undefined,
@@ -62,17 +63,19 @@ export default defineEventHandler(async (event) => {
     const clientSiteId = subscription.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
 
+    const currentPriceId = subscription.items.data[0]?.price.id ?? null
+    const metadataPlan = subscription.metadata?.plan
+    const derivedPlan = planFromPriceId(currentPriceId) ?? (isSubscribablePlan(metadataPlan) ? metadataPlan : null)
     const trialEnded = previous?.status === 'trialing' && subscription.status === 'active'
-    const plan = subscription.metadata?.plan
 
-    if (trialEnded && isSubscribablePlan(plan)) {
+    // Fires on both trial-end promotion and portal-driven plan changes (PRO↔PREMIUM).
+    if (subscription.status === 'active' && derivedPlan) {
       await prisma.clientSite.update({
         where: { id: clientSiteId },
         data: {
-          plan: plan as ClientPlan,
-          firstPaidAt: { set: new Date() },
-          lastPaidAt: new Date(),
-          stripePriceId: subscription.items.data[0]?.price.id ?? undefined,
+          plan: derivedPlan as ClientPlan,
+          stripePriceId: currentPriceId ?? undefined,
+          ...(trialEnded ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
         },
       })
     }

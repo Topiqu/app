@@ -301,7 +301,12 @@
       "billing": {
         "permanent": "– Trvalý přístup",
         "annual": "– Roční platba",
-        "monthly": "– Měsíční platba"
+        "monthly": "– Měsíční platba",
+        "tokenBalance": "Zůstatek tokenů",
+        "buyTokens": "Dokoupit tokeny",
+        "manage": "Spravovat předplatné a faktury",
+        "upgrade": "Přejít na {plan}",
+        "actionFailed": "Platbu se nepodařilo zahájit. Zkuste to prosím znovu."
       },
       "validity": {
         "permanent": "Trvalý přístup",

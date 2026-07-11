@@ -69,7 +69,7 @@
             size="lg"
             variant="transparent"
             class="relative w-full justify-between font-medium tracking-wide border-2 border-blue-500/20 hover:border-blue-500/50 bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 text-gray-700 dark:text-gray-200 transition-all duration-300 group"
-            @click="buyTokens(10000, 2.99, 'Token Pack 10k')"
+            @click="buyTokens('10000')"
           >
             <span class="flex items-center gap-3">
               <div
@@ -86,7 +86,7 @@
             size="lg"
             variant="transparent"
             class="relative w-full justify-between font-medium tracking-wide border-2 border-orange-500/30 hover:border-orange-500/60 bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 text-gray-700 dark:text-gray-200 transition-all duration-300 group shadow-sm hover:shadow-md"
-            @click="buyTokens(25000, 4.99, 'Token Pack 25k')"
+            @click="buyTokens('25000')"
           >
             <span class="flex items-center gap-3">
               <div
@@ -103,7 +103,7 @@
             size="lg"
             variant="primary"
             class="relative w-full justify-between font-bold tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:via-pink-700 hover:to-rose-700 text-white overflow-hidden group border-0"
-            @click="buyTokens(50000, 9.99, 'Token Pack 50k')"
+            @click="buyTokens('50000')"
           >
             <span
               class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
@@ -278,14 +278,11 @@ const formatAction = (a: string) => {
   return m[a] || a
 }
 
-const buyTokens = async (tokens: number, priceUsd: number, name: string) => {
+const buyTokens = async (pack: string) => {
   const res = await $fetch('/api/stripe/checkout', {
     method: 'POST',
     body: {
-      tokens,
-      priceUsd,
-      name,
-      clientSiteId: site.value?.id,
+      pack,
       origin: window.location.origin,
     },
   })

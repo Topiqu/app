@@ -8,12 +8,19 @@ const PRICE_BY_PLAN: Record<Exclude<ClientPlan, 'BASIC' | 'CUSTOM'>, string | un
 }
 
 export default defineEventHandler(async (event) => {
-  const { plan, clientSiteId, origin } = await readBody<{
+  const user = (await getServerSession(event))?.user
+  if (!user) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
+  const { plan, clientSiteId: bodyClientSiteId, origin } = await readBody<{
     plan: 'PRO' | 'PREMIUM'
-    clientSiteId: string
+    clientSiteId?: string
     origin: string
   }>(event)
 
+  // clientSiteId is derived from the session; only a superadmin may act on another site.
+  const clientSiteId = user.role === 'superadmin' && bodyClientSiteId ? bodyClientSiteId : user.clientSiteId
   if (!plan || !clientSiteId || !origin) {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
   }
@@ -39,8 +46,8 @@ export default defineEventHandler(async (event) => {
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [{ price, quantity: 1 }],
-    success_url: `${origin}/admin?upgrade=success`,
-    cancel_url: `${origin}/admin?upgrade=cancel`,
+    success_url: `${origin}/settings?tab=billing`,
+    cancel_url: `${origin}/settings?tab=billing`,
     client_reference_id: clientSiteId,
     customer: clientSite.stripeCustomerId ?? undefined,
     metadata: { plan, clientSiteId },

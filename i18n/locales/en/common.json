@@ -300,7 +300,12 @@
       "billing": {
         "permanent": "– Lifetime access",
         "annual": "– Annual billing",
-        "monthly": "– Monthly billing"
+        "monthly": "– Monthly billing",
+        "tokenBalance": "Token balance",
+        "buyTokens": "Buy tokens",
+        "manage": "Manage subscription & invoices",
+        "upgrade": "Upgrade to {plan}",
+        "actionFailed": "Could not start the payment flow. Please try again."
       },
       "validity": {
         "permanent": "Lifetime access",
