@@ -23,6 +23,7 @@ export const sanitizeHtml = (dirty: string) => {
       'start',
       'data-youtube-video',
       'alt',
+      'title',
     ],
   })
 }
