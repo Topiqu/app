@@ -6,11 +6,9 @@ const MIN_TRANSLATION_TOKENS = 500
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const id = getRouterParam(event, 'id')
-  const user = (await getServerSession(event))?.user
-
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
-  if (!user || !user.clientSiteId || user.role !== 'admin')
-    throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+
+  const user = await requireUser(event, { role: 'admin', clientSite: true })
 
   await ensureMinAccountAge(event, user.id)
 

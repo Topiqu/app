@@ -1,12 +1,7 @@
 import type { SharePlatform } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
-  const { translate: t } = await useServerI18n(event)
-  const session = await getServerSession(event)
-  const user = session?.user
-
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
-  if (!user.clientSiteId) throw createError({ statusCode: 403, message: t('common.errors.missing')! })
+  const user = await requireUser(event, { clientSite: true })
 
   const db = await getEnhancedPrisma(user)
 
