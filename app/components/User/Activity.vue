@@ -87,7 +87,7 @@
               loading="lazy"
             />
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ $t('common.noResults') }}</p>
-            <NuxtLink :to="localePath('/')" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
+            <NuxtLink :to="localePath({ name: 'index' })" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
               {{ $t('articles.explore') }}
             </NuxtLink>
           </div>
@@ -203,7 +203,7 @@
               loading="lazy"
             />
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ $t('common.noResults') }}</p>
-            <NuxtLink :to="localePath('/')" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
+            <NuxtLink :to="localePath({ name: 'index' })" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
               {{ $t('articles.comments.commentsAction') }}
             </NuxtLink>
           </div>

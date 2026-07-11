@@ -45,7 +45,7 @@
         <i18n-t keypath="landing.onboarding.acceptTos" tag="span">
           <template #tos>
             <NuxtLink
-              :to="localePath('/tos')"
+              :to="localePath({ name: 'tos' })"
               target="_blank"
               class="underline text-[#7E22CE] dark:text-[#D8B4FE] hover:opacity-80"
               @click.stop
@@ -55,7 +55,7 @@
           </template>
           <template #privacy>
             <NuxtLink
-              :to="localePath('/privacy')"
+              :to="localePath({ name: 'privacy' })"
               target="_blank"
               class="underline text-[#7E22CE] dark:text-[#D8B4FE] hover:opacity-80"
               @click.stop

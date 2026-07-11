@@ -295,9 +295,9 @@ const submit = async () => {
         setLocale(user.language)
         theme.mode = user.theme
         toast.success({ message: $t('common.auth.loginSuccess') })
-        if (user.role === 'superadmin') navigateTo('/master')
-        else if (user.role === 'admin') navigateTo('/admin')
-        else navigateTo(localePath('uzivatel/'))
+        if (user.role === 'superadmin') navigateTo(localePath({ name: 'master' }))
+        else if (user.role === 'admin') navigateTo(localePath({ name: 'admin' }))
+        else navigateTo(localePath({ name: 'uzivatel' }))
         form.value = init
       }
     }
@@ -326,7 +326,7 @@ const verify = async () => {
     setLocale(user.language)
     theme.mode = user.theme
     toast.success({ message: $t('common.auth.verifySuccess') })
-    navigateTo(localePath('/'))
+    navigateTo(localePath({ name: 'index' }))
   } catch (e: any) {
     toast.error({ message: e.message || $t('common.auth.verifyFailed') })
   }
@@ -354,9 +354,9 @@ const verifyTotp = async () => {
     })
     setLocale(user.language)
     theme.mode = user.theme
-    if (user.role === 'superadmin') navigateTo('/master')
-    else if (user.role === 'admin') navigateTo('/admin')
-    else navigateTo(localePath('uzivatel/'))
+    if (user.role === 'superadmin') navigateTo(localePath({ name: 'master' }))
+    else if (user.role === 'admin') navigateTo(localePath({ name: 'admin' }))
+    else navigateTo(localePath({ name: 'uzivatel' }))
     form.value = init
     internalMode.value = 'login'
   } catch (e: any) {
@@ -372,7 +372,7 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
 
     if (!isMainDomain) {
       const authBaseUrl = import.meta.dev ? 'http://localhost:3000' : 'https://app.topiqu.com'
-      const authUrl = `${authBaseUrl}${localePath('/oauth-start')}?provider=${provider}&callbackUrl=${encodeURIComponent(finalRedirectUrl)}`
+      const authUrl = `${authBaseUrl}${localePath({ name: 'oauth-start' })}?provider=${provider}&callbackUrl=${encodeURIComponent(finalRedirectUrl)}`
       window.location.href = authUrl
       return
     }

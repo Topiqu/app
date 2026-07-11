@@ -59,9 +59,10 @@ const open = defineModel<boolean>()
 
 const emit = defineEmits(['continueFree'])
 
+const localePath = useLocalePath()
 const goToBilling = () => {
   open.value = false
-  navigateTo('/admin?tab=preferences')
+  navigateTo(localePath({ name: 'settings', query: { tab: 'billing' } }))
 }
 
 const continueFree = () => {

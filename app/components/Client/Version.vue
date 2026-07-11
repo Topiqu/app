@@ -289,7 +289,8 @@ const buyTokens = async (pack: string) => {
   if (res.url) window.location.href = res.url
 }
 
-const upgrade = () => navigateTo('/pricing?plan=PREMIUM')
+const localePath = useLocalePath()
+const upgrade = () => navigateTo(localePath({ name: 'settings', query: { tab: 'billing' } }))
 
 const trigger = useTemplateRef('trigger')
 const panel = useTemplateRef('panel')

@@ -31,7 +31,7 @@ const localePath = useLocalePath()
 const isAppHost = reqUrl.hostname.replace(/^www\./, '') === 'app.topiqu.com'
 
 if (isAppHost && String(route.name || '').startsWith('index')) {
-  await navigateTo(localePath('autorizace'))
+  await navigateTo(localePath({ name: 'autorizace' }))
 }
 
 const isMainLanding = computed(() => {

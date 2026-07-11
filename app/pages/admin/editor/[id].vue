@@ -244,6 +244,7 @@ definePageMeta({ middleware: 'admin' })
 
 const route = useRoute()
 const router = useRouter()
+const localePath = useLocalePath()
 const toast = useToast()
 const { t } = useI18n()
 const { emitArticleCreated, emitArticleUpdated } = useArticleEvent()
@@ -303,7 +304,7 @@ if (!isNew) {
   } catch (e: any) {
     console.error(e)
     toast.error({ message: 'Failed to load article' })
-    router.push('/admin')
+    router.push(localePath({ name: 'admin' }))
   }
 }
 
@@ -427,7 +428,7 @@ const submit = async (targetStatus: 'draft' | 'published') => {
       toast.success({ message: 'Article updated' })
       emitArticleUpdated()
     }
-    router.push('/admin')
+    router.push(localePath({ name: 'admin' }))
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Error saving article' })
   }
@@ -448,12 +449,12 @@ const goBack = () => {
     discardConfirmOpen.value = true
     return
   }
-  router.push('/admin')
+  router.push(localePath({ name: 'admin' }))
 }
 
 const confirmDiscard = () => {
   discardConfirmOpen.value = false
-  router.push('/admin')
+  router.push(localePath({ name: 'admin' }))
 }
 
 watch(

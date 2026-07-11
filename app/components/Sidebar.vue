@@ -15,7 +15,7 @@
       "
     >
       <div v-if="auth?.user?.role === 'admin'" class="flex flex-col gap-4">
-        <Button icon="mdi:home" variant="neutral" @click="router.push(localePath('/admin'))" />
+        <Button icon="mdi:home" variant="neutral" @click="router.push(localePath({ name: 'admin' }))" />
         <Button
           icon="mdi:pencil"
           variant="neutral"
@@ -35,10 +35,10 @@
         <LazyStatsDialog v-slot="{ open }" hydrateOnInteraction>
           <Button icon="mdi:chart-bar" variant="neutral" @click="open.value = true" />
         </LazyStatsDialog>
-        <Button icon="mdi:cog" variant="neutral" @click="router.push(localePath('/settings'))" />
+        <Button icon="mdi:cog" variant="neutral" @click="router.push(localePath({ name: 'settings' }))" />
       </div>
       <div v-if="auth?.user?.role === 'superadmin'" class="flex flex-col gap-4">
-        <Button icon="mdi:home" variant="neutral" @click="router.push(localePath('/master'))" />
+        <Button icon="mdi:home" variant="neutral" @click="router.push(localePath({ name: 'master' }))" />
         <LazyClientCreate v-slot="{ open }" hydrateOnInteraction>
           <Button icon="mdi:account-plus" variant="neutral" @click="open.value = true" />
         </LazyClientCreate>

@@ -8,6 +8,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
 
   devtools: { enabled: true },
+  experimental: {
+    typedPages: true,
+  },
   build: {
     transpile: ['html-encoding-sniffer', '@exodus/bytes'],
   },

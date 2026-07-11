@@ -170,12 +170,12 @@
 
         <div class="flex justify-center gap-8 text-sm font-bold text-slate-700 dark:text-slate-300 mb-8">
           <NuxtLink
-            :to="localePath('tos')"
+            :to="localePath({ name: 'tos' })"
             class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >{{ $t('common.links.terms') }}</NuxtLink
           >
           <NuxtLink
-            :to="localePath('privacy')"
+            :to="localePath({ name: 'privacy' })"
             class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >{{ $t('common.links.privacy') }}</NuxtLink
           >
