@@ -30,7 +30,9 @@
       "sentiment": "Sentiment Analysis",
       "sentimentDesc": "Detailed analysis of readers' mood and feedback",
       "articleCrons": "Scheduled Article Generation",
-      "articleCronsDesc": "Automatic publishing of articles using AI based on your preferences"
+      "articleCronsDesc": "Automatic publishing of articles using AI based on your preferences",
+      "disableAiTitle": "Disable AI?",
+      "disableAiMessage": "Disabling AI will also disable sentiment analysis and scheduled article generation, which depend on it."
     },
     "actions": {
       "get_started": "Start Integration",
@@ -42,6 +44,8 @@
       "continue": "Continue",
       "send": "Send",
       "cancel": "Cancel",
+      "enable": "Enable",
+      "disable": "Disable",
       "showDetails": "Show details",
       "hideDetails": "Hide details",
       "delete": "Delete",
@@ -116,7 +120,9 @@
       "followNotFound": "You are not following this user",
       "invalidTotp": "Invalid TOTP code",
       "passwordChangeFailed": "Password change failed",
-      "roleChangeForbidden": "Changing role is not allowed"
+      "roleChangeForbidden": "Changing role is not allowed",
+      "featureNotInPlan": "This feature is not available on your plan",
+      "aiRequired": "Enable AI first"
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",

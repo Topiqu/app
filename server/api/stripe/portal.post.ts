@@ -1,5 +1,3 @@
-import Stripe from 'stripe'
-
 export default defineEventHandler(async (event) => {
   const session = (await getServerSession(event))?.user
   if (!session) {
@@ -25,7 +23,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'No active subscription' })
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SK!)
+  const stripe = useStripe()
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: clientSite.stripeCustomerId,
     return_url: `${origin}/settings?tab=billing`,

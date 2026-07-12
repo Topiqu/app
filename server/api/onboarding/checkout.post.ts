@@ -1,4 +1,3 @@
-import Stripe from 'stripe'
 import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
@@ -125,7 +124,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const stripe = new Stripe(stripeSecret)
+    const stripe = useStripe()
 
     const customer = await stripe.customers.create({
       email: body.email,

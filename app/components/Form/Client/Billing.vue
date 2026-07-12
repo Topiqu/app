@@ -143,8 +143,9 @@
 </template>
 
 <script setup lang="ts">
-import type { ClientSite } from '~/utils/buildClientSettingsForm'
 import { TOKEN_PACK_LIST } from '~~/shared/utils/tokenPacks'
+
+import type { ClientSite } from '~/utils/buildClientSettingsForm'
 
 const { client, rate } = defineProps<{ client: ClientSite | null; rate: number }>()
 
@@ -224,37 +225,31 @@ const nextBillingAmountText = computed(() => {
 const formatSavings = computed(() => {
   if (!client?.monthlyPayment) return ''
 
-  const monthlyCzk = client.monthlyPayment
-  const yearlyCzk = monthlyCzk * 12
-  const savingsCzk = Math.round(yearlyCzk * 0.2)
-
-  const savingsInClientCurrency = client.currency === 'CZK' ? savingsCzk : savingsCzk / rate
+  const savingsUsd = Math.round(client.monthlyPayment * 12 * 0.2)
 
   return new Intl.NumberFormat(client.language === 'cs' ? 'cs-CZ' : 'en-US', {
     style: 'currency',
-    currency: client.currency ?? 'EUR',
+    currency: client.currency ?? 'USD',
     currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: client.currency === 'CZK' ? 0 : 2,
-  }).format(savingsInClientCurrency)
+  }).format(savingsUsd * rate)
 })
 
 const formatPrice = (type: 'monthly' | 'annual') => {
-  const monthlyCzk = client?.monthlyPayment ?? 0
-  if (monthlyCzk === 0) return '–'
+  const monthlyUsd = client?.monthlyPayment ?? 0
+  if (monthlyUsd === 0) return '–'
 
-  let amountCzk = type === 'monthly' ? monthlyCzk : monthlyCzk * 12
+  let amountUsd = type === 'monthly' ? monthlyUsd : monthlyUsd * 12
 
   if (type === 'annual' && client?.billingPlan === 'ANNUAL') {
-    amountCzk = Math.round(amountCzk * 0.8)
+    amountUsd = Math.round(amountUsd * 0.8)
   }
-
-  const finalAmount = client?.currency === 'CZK' ? amountCzk : amountCzk / rate
 
   return new Intl.NumberFormat(client?.language === 'cs' ? 'cs-CZ' : 'en-US', {
     style: 'currency',
-    currency: client?.currency ?? 'EUR',
+    currency: client?.currency ?? 'USD',
     currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: client?.currency === 'CZK' ? 0 : 2,
-  }).format(finalAmount)
+  }).format(amountUsd * rate)
 }
 </script>

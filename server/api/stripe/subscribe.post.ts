@@ -1,10 +1,6 @@
-import type { ClientPlan } from '@prisma/client'
-
-import Stripe from 'stripe'
-
-const PRICE_BY_PLAN: Record<Exclude<ClientPlan, 'BASIC' | 'CUSTOM'>, string | undefined> = {
-  PRO: process.env.STRIPE_PRICE_PRO,
-  PREMIUM: process.env.STRIPE_PRICE_PREMIUM,
+const PRICE_BY_PLAN: Record<'PRO' | 'PREMIUM', Record<'month' | 'year', string | undefined>> = {
+  PRO: { month: process.env.STRIPE_PRICE_PRO, year: process.env.STRIPE_PRICE_PRO_ANNUAL },
+  PREMIUM: { month: process.env.STRIPE_PRICE_PREMIUM, year: process.env.STRIPE_PRICE_PREMIUM_ANNUAL },
 }
 
 export default defineEventHandler(async (event) => {
@@ -13,13 +9,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }
 
-  const { plan, clientSiteId: bodyClientSiteId, origin } = await readBody<{
+  const { plan, interval: bodyInterval, clientSiteId: bodyClientSiteId, origin } = await readBody<{
     plan: 'PRO' | 'PREMIUM'
+    interval?: 'month' | 'year'
     clientSiteId?: string
     origin: string
   }>(event)
 
-  // clientSiteId is derived from the session; only a superadmin may act on another site.
   const clientSiteId = user.role === 'superadmin' && bodyClientSiteId ? bodyClientSiteId : user.clientSiteId
   if (!plan || !clientSiteId || !origin) {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
@@ -28,20 +24,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Plan not subscribable via Stripe' })
   }
 
-  const price = PRICE_BY_PLAN[plan]
-  if (!price) {
-    throw createError({ statusCode: 500, message: `Missing STRIPE_PRICE_${plan} env` })
-  }
-
   const clientSite = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
-    select: { id: true, plan: true, stripeCustomerId: true },
+    select: { id: true, plan: true, billingPlan: true, stripeCustomerId: true },
   })
   if (!clientSite) {
     throw createError({ statusCode: 404, message: 'ClientSite not found' })
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SK!)
+  const interval: 'month' | 'year' = bodyInterval ?? (clientSite.billingPlan === 'ANNUAL' ? 'year' : 'month')
+  const price = PRICE_BY_PLAN[plan][interval]
+  if (!price) {
+    throw createError({ statusCode: 500, message: `Missing Stripe price for ${plan}/${interval}` })
+  }
+
+  const stripe = useStripe()
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     payment_method_types: ['card'],
@@ -50,9 +47,9 @@ export default defineEventHandler(async (event) => {
     cancel_url: `${origin}/settings?tab=billing`,
     client_reference_id: clientSiteId,
     customer: clientSite.stripeCustomerId ?? undefined,
-    metadata: { plan, clientSiteId },
+    metadata: { plan, clientSiteId, interval },
     subscription_data: {
-      metadata: { plan, clientSiteId },
+      metadata: { plan, clientSiteId, interval },
     },
   })
 

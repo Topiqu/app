@@ -1,10 +1,11 @@
 export const useCurrencyRate = async (target: string) => {
-  if (target.toUpperCase() === 'CZK') return 1
+  const code = (target || 'USD').toUpperCase()
+  if (code === 'USD') return 1
 
   const { data } = await useFetch('/api/currency', {
     method: 'POST',
-    body: { target: target.toUpperCase() },
-    key: `rate-${target.toUpperCase()}`,
+    body: { target: code },
+    key: `rate-${code}`,
     default: () => ({ rate: 1 }),
     server: false,
   })

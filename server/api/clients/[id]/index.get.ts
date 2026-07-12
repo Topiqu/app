@@ -34,11 +34,7 @@ export default defineEventHandler(async (event) => {
 
   const activeFeatures = clientSite.features.map((cf) => cf.feature.code)
 
-  const allowedFeatures = {
-    AI: ['PRO', 'PREMIUM', 'CUSTOM'].includes(clientSite.plan),
-    SENTIMENT: ['PREMIUM', 'CUSTOM'].includes(clientSite.plan),
-    ARTICLE_CRONS: ['PRO', 'PREMIUM', 'CUSTOM'].includes(clientSite.plan),
-  }
+  const allowedFeatures = getAllowedFeatures(clientSite.plan)
 
   return {
     ...clientSite,

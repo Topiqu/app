@@ -1,4 +1,3 @@
-import Stripe from 'stripe'
 import { getTokenPack } from '~~/shared/utils/tokenPacks'
 
 export default defineEventHandler(async (event) => {
@@ -25,7 +24,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Unknown token pack' })
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SK!)
+  const stripe = useStripe()
   const stripeSession = await stripe.checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card'],

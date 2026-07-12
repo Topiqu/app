@@ -303,6 +303,17 @@
       :cancelText="$t('common.actions.cancel')"
       @confirm="confirmAutoRelease"
     />
+
+    <ModalMini
+      v-model:open="showAiDisableModal"
+      :title="$t('common.features.disableAiTitle')"
+      :message="$t('common.features.disableAiMessage')"
+      icon="mdi:alert-rhombus-outline"
+      variant="danger"
+      :confirmText="$t('common.actions.disable')"
+      :cancelText="$t('common.actions.cancel')"
+      @confirm="confirmAiDisable"
+    />
   </div>
 </template>
 
@@ -369,6 +380,7 @@ const toggleTargetLang = (lang: string) => {
 }
 
 const showAutoReleaseModal = shallowRef(false)
+const showAiDisableModal = shallowRef(false)
 
 const rate = await useCurrencyRate(props.currency)
 
@@ -434,15 +446,25 @@ const confirmAutoRelease = () => {
 const toggle = (code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS') => {
   const current =
     { AI: props.aiEnabled, SENTIMENT: props.sentimentEnabled, ARTICLE_CRONS: props.articleCronsEnabled }[code] ?? false
+
+  if (code === 'AI' && current && (props.sentimentEnabled || props.articleCronsEnabled)) {
+    showAiDisableModal.value = true
+    return
+  }
+
   emit('toggle:feature', { code, enabled: !current })
 }
 
-const formatFeaturePrice = (code: string) => {
-  const monthlyCZK = props.features?.find((f) => f.code === code)?.priceMonthly
-  if (!monthlyCZK) return '–'
+const confirmAiDisable = () => {
+  emit('toggle:feature', { code: 'AI', enabled: false })
+  showAiDisableModal.value = false
+}
 
-  const price = props.billingPlan === 'ANNUAL' ? monthlyCZK * 12 * 0.8 : monthlyCZK
-  const final = props.currency === 'CZK' ? price : price / rate
+const formatFeaturePrice = (code: string) => {
+  const monthlyUsd = props.features?.find((f) => f.code === code)?.priceMonthly
+  if (!monthlyUsd) return '–'
+
+  const price = props.billingPlan === 'ANNUAL' ? monthlyUsd * 12 * 0.8 : monthlyUsd
 
   return new Intl.NumberFormat(props.currency === 'CZK' ? 'cs-CZ' : undefined, {
     style: 'currency',
@@ -450,6 +472,6 @@ const formatFeaturePrice = (code: string) => {
     currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: props.currency === 'CZK' ? 0 : 2,
     maximumFractionDigits: 2,
-  }).format(final)
+  }).format(price * rate)
 }
 </script>

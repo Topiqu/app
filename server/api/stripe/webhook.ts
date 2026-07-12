@@ -6,7 +6,7 @@ import { extractSubscriptionId, isSubscribablePlan, planFromPriceId } from '~~/s
 export default defineEventHandler(async (event) => {
   const body = await readRawBody(event, false)
   const sig = getHeader(event, 'stripe-signature')
-  const stripe = new Stripe(process.env.STRIPE_SK!)
+  const stripe = useStripe()
 
   let stripeEvent
   try {
