@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
-  const user = await requireUser(event, { role: 'admin', clientSite: true })
+  const user = await requireUser(event, { minRole: 'admin', clientSite: true })
 
   await ensureMinAccountAge(event, user.id)
 

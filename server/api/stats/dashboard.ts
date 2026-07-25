@@ -1,9 +1,7 @@
 import type { SharePlatform } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
-  const user = await requireUser(event, { clientSite: true })
-
-  const db = await getEnhancedPrisma(user)
+  const { user, db } = await requireDb(event, { clientSite: true })
 
   const [
     counts,
