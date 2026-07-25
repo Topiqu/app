@@ -132,6 +132,50 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
   }
 }
 
+async function authorizeWithOnboardingToken(loginToken: string, req: any) {
+  const user = await prisma.user.findFirst({
+    where: { onboardingLoginToken: loginToken, deletedAt: null },
+    select: {
+      id: true,
+      username: true,
+      role: true,
+      clientSiteId: true,
+      email: true,
+      avatarUrl: true,
+      onboardingLoginTokenExpiresAt: true,
+    },
+  })
+  if (!user || !user.onboardingLoginTokenExpiresAt || user.onboardingLoginTokenExpiresAt < new Date()) return null
+
+  const consumed = await prisma.user.updateMany({
+    where: { id: user.id, onboardingLoginToken: loginToken },
+    data: { onboardingLoginToken: null, onboardingLoginTokenExpiresAt: null, lastLogin: new Date() },
+  })
+  if (consumed.count === 0) return null
+
+  let plan = 'BASIC'
+  if (user.clientSiteId) {
+    const clientSite = await prisma.clientSite.findFirst({
+      where: { id: user.clientSiteId },
+      select: { plan: true },
+    })
+    plan = clientSite?.plan ?? 'BASIC'
+  }
+
+  const sessionId = await generateSessionToken(user, req)
+
+  return {
+    id: user.id,
+    name: user.username,
+    email: user.email,
+    role: user.role,
+    clientSiteId: user.clientSiteId ?? '',
+    plan,
+    avatarUrl: user.avatarUrl,
+    sessionId,
+  }
+}
+
 export default NuxtAuthHandler({
   secret: useRuntimeConfig().auth.secret,
   cookies: {
@@ -169,6 +213,10 @@ export default NuxtAuthHandler({
     Credentials({
       credentials: { email: { label: 'Email', type: 'email' }, password: { label: 'Heslo', type: 'password' } },
       async authorize(credentials, req) {
+        const loginToken =
+          typeof (credentials as any)?.loginToken === 'string' ? (credentials as any).loginToken : undefined
+        if (loginToken) return authorizeWithOnboardingToken(loginToken, req)
+
         const { email, password } = signInSchema.parse(credentials)
         const totp = typeof (credentials as any)?.totp === 'string' ? (credentials as any).totp : undefined
 

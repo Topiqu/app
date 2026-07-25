@@ -4,7 +4,7 @@ import { logAction } from '~~/server/utils/log'
 import { saveUserWithLogging } from '~~/server/utils/userLog'
 import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
 
-const LOGIN_TOKEN_TTL_MS = 5 * 60 * 1000
+const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
 
 const schema = z.object({
   siteName: z.string().min(1).max(255),

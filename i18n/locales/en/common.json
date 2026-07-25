@@ -199,6 +199,7 @@
       "verificationCodeSent": "Verification code sent to your email",
       "loginFailed": "Failed to log in",
       "loginSuccess": "Login successful",
+      "onboardingLoginExpired": "Your account is ready, but auto sign-in expired. Please log in manually.",
       "verifySuccess": "Email verified",
       "verifyFailed": "Verification failed",
       "codeExpired": "Verification code has expired. Send a new one.",

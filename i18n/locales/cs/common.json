@@ -200,6 +200,7 @@
       "verificationCodeSent": "Ověřovací kód odeslán na váš e-mail",
       "loginFailed": "Přihlášení selhalo",
       "loginSuccess": "Přihlášení úspěšné",
+      "onboardingLoginExpired": "Účet je vytvořený, ale automatické přihlášení vypršelo. Přihlaste se prosím ručně.",
       "verifySuccess": "E-mail ověřen",
       "verifyFailed": "Ověření selhalo",
       "codeExpired": "Ověřovací kód vypršel. Pošli si nový.",
