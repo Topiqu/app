@@ -48,10 +48,10 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      meta: [{ name: 'google-adsense-account', content: 'ca-pub-9286243311790870' }],
+      meta: [{ name: 'google-adsense-account', content: 'ca-pub-9731440718321055' }],
       script: [
         {
-          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9286243311790870',
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9731440718321055',
           async: true,
           crossorigin: 'anonymous',
         },
@@ -69,6 +69,7 @@ export default defineNuxtConfig({
       '*/30 * * * *': ['sentiment-analysis'],
       '0 3 * * * *': ['community-insights'],
       '*/5 * * * *': ['translate-pending'],
+      '0 4 * * *': ['gam-sync'],
     },
     preset: 'bun',
     imports: {
