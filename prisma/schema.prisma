@@ -163,6 +163,13 @@ enum ApprovalDecision {
   REJECT
 }
 
+enum AdPayoutStatus {
+  PENDING
+  PAYABLE
+  PAID
+  VOID
+}
+
 enum NotificationType {
   COMMENT
   LIKE
@@ -509,6 +516,7 @@ model ClientSite {
   features             ClientFeature[]
   linkedinCompanies    LinkedinCompany[]
   articleTranslations  ArticleTranslation[]
+  adEarnings           AdEarning[]
 
   @@index([domain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
 }
@@ -717,6 +725,30 @@ model Log {
   ip           String?
   previousHash String?
   hash         String
+}
+
+model AdEarning {
+  id            String         @id() @default(uuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime?      @updatedAt()
+  deletedAt     DateTime?
+  clientSiteId  String
+  clientSite    ClientSite     @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  periodStart   DateTime
+  periodEnd     DateTime
+  currency      String         @default("USD")
+  plan          ClientPlan
+  shareRatio    Float
+  grossCents    Int            @default(0)
+  clientCents   Int            @default(0)
+  platformCents Int            @default(0)
+  source        String         @default("GAM")
+  payoutStatus  AdPayoutStatus @default(PENDING)
+  payoutRef     String?
+
+  @@unique([clientSiteId, periodStart, periodEnd])
+  @@index([payoutStatus])
+  @@index([clientSiteId, periodStart])
 }
 
 model Notification {

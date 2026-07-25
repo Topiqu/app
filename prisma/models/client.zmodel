@@ -4,6 +4,7 @@ import "./user"
 import "./comment"
 import "./linkedin"
 import "./log"
+import "./ads"
 
 enum GenerationFrequency {
     NONE
@@ -110,6 +111,7 @@ model ClientSite extends Base {
     features             ClientFeature[]
     linkedinCompanies    LinkedinCompany[]
     articleTranslations  ArticleTranslation[]
+    adEarnings           AdEarning[]
 
     @@allow('read', true)
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))

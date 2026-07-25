@@ -52,7 +52,7 @@ const isMainLanding = computed(() => {
 })
 
 if (clientSite) {
-  adChance?.assign(clientSite.id, clientSite.plan)
+  adChance.assign(clientSite.id, clientSite.plan)
 }
 
 const computedThemeColor = computed(

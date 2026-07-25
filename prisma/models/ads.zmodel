@@ -1,0 +1,30 @@
+import "./base"
+import "./client"
+
+enum AdPayoutStatus {
+    PENDING
+    PAYABLE
+    PAID
+    VOID
+}
+
+model AdEarning extends Base {
+    clientSiteId  String
+    clientSite    ClientSite     @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    periodStart   DateTime
+    periodEnd     DateTime
+    currency      String         @default("USD")
+    plan          ClientPlan
+    shareRatio    Float
+    grossCents    Int            @default(0)
+    clientCents   Int            @default(0)
+    platformCents Int            @default(0)
+    source        String         @default("GAM")
+    payoutStatus  AdPayoutStatus @default(PENDING)
+    payoutRef     String?
+    @@unique([clientSiteId, periodStart, periodEnd])
+    @@index([payoutStatus])
+    @@index([clientSiteId, periodStart])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+    @@allow('all', auth().role == 'superadmin')
+}
