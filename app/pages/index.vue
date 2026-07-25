@@ -124,10 +124,7 @@
       <p v-else-if="hasFilters" class="text-center text-lg text-gray-500 dark:text-gray-400 py-12">
         {{ $t('articles.noResults.message') }}
       </p>
-      <div v-else class="text-center py-12 space-y-2">
-        <p class="text-xl font-semibold text-gray-700 dark:text-gray-200">{{ $t('articles.empty.title') }}</p>
-        <p class="text-lg text-gray-500 dark:text-gray-400">{{ $t('articles.empty.message') }}</p>
-      </div>
+      <ArticleEmptyState v-else :isOwner="isOwner" />
 
       <div v-if="hasMore" class="text-center pt-4">
         <Button :disabled="pending" :loading="pending" @click="loadMore">
@@ -204,7 +201,7 @@ const { data: auth } = useAuth()
 const localePath = useLocalePath()
 const clientSite = await useClientSite()
 
-const { data: feat, pending: featPending } = await useLazyFetch(`/api/articles/featured/${clientSite?.name}`)
+const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`)
 const page = shallowRef<number>(1)
 const limit = shallowRef<number>(15)
 const selectedTag = shallowRef<string>('')
@@ -282,6 +279,19 @@ const latestArticle = computed(
 const hasFilters = computed(() => Boolean(searchQuery.value || selectedTag.value))
 const hasContent = computed(() => allArticles.value.length > 0)
 const hasHighlights = computed(() => featPending.value || Boolean(featured.value) || recommended.value.length > 0)
+
+const isOwner = computed(() => {
+  const user = auth.value?.user
+  if (!user) return false
+  if (user.role === 'superadmin') return true
+  return user.role === 'admin' && Boolean(clientSite?.id) && user.clientSiteId === clientSite?.id
+})
+
+const hasPublishedArticles = computed(() => (feat.value?.totalArticles ?? 0) > 0)
+
+useSeoMeta({
+  robots: () => (hasPublishedArticles.value ? 'index, follow' : 'noindex, follow'),
+})
 
 const loadMore = async () => {
   if (!hasMore.value) return

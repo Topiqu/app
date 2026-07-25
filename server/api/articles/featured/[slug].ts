@@ -41,5 +41,5 @@ export default defineEventHandler(async (event) => {
 
   const [featured, ...recommended] = sortedArticles.length ? sortedArticles.slice(0, 3) : sortedArticles
 
-  return { featured, recommended }
+  return { featured, recommended, totalArticles }
 })

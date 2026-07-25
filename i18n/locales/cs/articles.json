@@ -69,7 +69,13 @@
     },
     "empty": {
       "title": "Zatím tu nic není",
-      "message": "První článek se právě chystá. Vrať se za chvíli."
+      "message": "První článek se právě chystá. Vrať se za chvíli.",
+      "owner": {
+        "title": "Tvůj blog zatím nemá žádný článek",
+        "message": "Návštěvníkům se tady ukáže jen prázdná stránka, dokud nevyjde první článek. Můžeš ho napsat sám, nebo si ho nechat vygenerovat v editoru.",
+        "writeCta": "Napsat první článek",
+        "adminCta": "Přejít do administrace"
+      }
     },
     "export": {
       "title": {

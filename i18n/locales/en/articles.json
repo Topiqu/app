@@ -69,7 +69,13 @@
     },
     "empty": {
       "title": "Nothing here yet",
-      "message": "The first article is on its way. Check back soon."
+      "message": "The first article is on its way. Check back soon.",
+      "owner": {
+        "title": "Your blog has no articles yet",
+        "message": "Visitors will only see an empty page until the first article goes out. Write it yourself, or have it generated for you in the editor.",
+        "writeCta": "Write the first article",
+        "adminCta": "Go to admin"
+      }
     },
     "export": {
       "title": {
