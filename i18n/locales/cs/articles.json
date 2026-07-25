@@ -67,6 +67,10 @@
       "imageAlt": "Smutný Topík",
       "message": "Achjo, cítím se tak zbytečný..."
     },
+    "empty": {
+      "title": "Zatím tu nic není",
+      "message": "První článek se právě chystá. Vrať se za chvíli."
+    },
     "export": {
       "title": {
         "json": "Exportovat do JSON",

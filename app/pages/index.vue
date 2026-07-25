@@ -20,30 +20,31 @@
         {{ clientSite.description }}
       </p>
       <div
-        v-if="allArticles.length && latestArticleSlug"
+        v-if="latestArticle"
         class="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2"
       >
         <span>{{ $t('stats.articleCount', { count: allArticles.length }) }}</span>
         <span aria-hidden="true">·</span>
         <span>{{ $t('articles.latestArticle') }}</span>
         <NuxtLink
-          :to="localePath({ name: 'clanky-slug', params: { slug: latestArticleSlug } })"
+          :to="localePath({ name: 'clanky-slug', params: { slug: latestArticle.slug } })"
           class="font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[200px]"
         >
-          {{ latestArticleTitle }}
+          {{ latestArticle.title }}
         </NuxtLink>
       </div>
     </section>
 
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <section v-if="hasHighlights" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <ArticleSkeletonCard
+        v-if="featPending || featured"
         :pending="featPending"
         isFeatured
         :article="featured || undefined"
         :tags="featured?.tags"
         :index="0"
       />
-      <div class="space-y-6">
+      <div v-if="featPending || recommended.length" class="space-y-6">
         <template v-if="featPending">
           <ArticleSkeletonCard v-for="i in 3" :key="`skel-rec-${i}`" :pending="true" :index="i - 1" />
         </template>
@@ -66,6 +67,7 @@
       </div>
 
       <div
+        v-if="hasContent || hasFilters"
         class="sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-white/90 dark:bg-gray-950/90 backdrop-blur border-b border-gray-200 dark:border-gray-800 space-y-3"
       >
         <div class="relative w-full group">
@@ -119,9 +121,13 @@
           :index="idx"
         />
       </div>
-      <p v-else class="text-center text-lg text-gray-500 dark:text-gray-400 py-12">
+      <p v-else-if="hasFilters" class="text-center text-lg text-gray-500 dark:text-gray-400 py-12">
         {{ $t('articles.noResults.message') }}
       </p>
+      <div v-else class="text-center py-12 space-y-2">
+        <p class="text-xl font-semibold text-gray-700 dark:text-gray-200">{{ $t('articles.empty.title') }}</p>
+        <p class="text-lg text-gray-500 dark:text-gray-400">{{ $t('articles.empty.message') }}</p>
+      </div>
 
       <div v-if="hasMore" class="text-center pt-4">
         <Button :disabled="pending" :loading="pending" @click="loadMore">
@@ -130,54 +136,51 @@
       </div>
     </section>
 
-    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div v-if="latestPoll" class="space-y-4">
+    <section v-if="latestPoll || topArticles.length" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div v-if="latestPoll" class="space-y-4" :class="{ 'lg:col-span-2': !topArticles.length }">
         <h2 class="text-2xl font-bold tracking-tight border-l-4 border-blue-500 pl-3">
           {{ $t('articles.poll.hpTitle') }}
         </h2>
         <ArticlePoll :poll="latestPoll" :articleId="latestPoll.articleId" />
       </div>
-      <aside class="space-y-4" :class="{ 'lg:col-span-2': !latestPoll }">
+      <aside v-if="topArticles.length" class="space-y-4" :class="{ 'lg:col-span-2': !latestPoll }">
         <h3 class="text-2xl font-bold tracking-tight border-l-4 border-blue-500 pl-3">
           {{ $t('stats.topArticle.pluralTitle') }}
         </h3>
-        <template v-if="topArticles.length">
-          <NuxtLink
-            v-for="(top, idx) in topArticles"
-            :key="top.id"
-            :to="localePath({ name: 'clanky-slug', params: { slug: top?.slug } })"
-            class="flex items-center gap-4 p-3 -mx-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 transition no-underline group"
+        <NuxtLink
+          v-for="(top, idx) in topArticles"
+          :key="top.id"
+          :to="localePath({ name: 'clanky-slug', params: { slug: top.slug } })"
+          class="flex items-center gap-4 p-3 -mx-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 transition no-underline group"
+        >
+          <span
+            class="flex-shrink-0 w-8 text-2xl font-black text-blue-500 dark:text-blue-400 text-center tabular-nums"
           >
-            <span
-              class="flex-shrink-0 w-8 text-2xl font-black text-blue-500 dark:text-blue-400 text-center tabular-nums"
+            {{ idx + 1 }}
+          </span>
+          <NuxtImg
+            v-if="top.imageUrl"
+            :src="top.imageUrl"
+            class="w-16 h-16 object-cover rounded-lg"
+            :alt="$t('articles.articleCard.imageAlt')"
+          />
+          <div
+            v-else
+            class="flex-shrink-0 w-16 h-16 bg-gray-100 dark:bg-gray-800 flex items-center justify-center rounded-lg"
+          >
+            <Icon name="mdi:image-off" class="w-8 h-8 text-gray-400" />
+          </div>
+          <div class="min-w-0">
+            <h4
+              class="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition line-clamp-2"
             >
-              {{ idx + 1 }}
-            </span>
-            <NuxtImg
-              v-if="top.imageUrl"
-              :src="top.imageUrl"
-              class="w-16 h-16 object-cover rounded-lg"
-              :alt="$t('articles.articleCard.imageAlt')"
-            />
-            <div
-              v-else
-              class="flex-shrink-0 w-16 h-16 bg-gray-100 dark:bg-gray-800 flex items-center justify-center rounded-lg"
-            >
-              <Icon name="mdi:image-off" class="w-8 h-8 text-gray-400" />
+              {{ top.title }}
+            </h4>
+            <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ formatDate(top.createdAt ?? undefined) }}
             </div>
-            <div class="min-w-0">
-              <h4
-                class="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition line-clamp-2"
-              >
-                {{ top.title }}
-              </h4>
-              <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {{ formatDate(top.createdAt ?? undefined) }}
-              </div>
-            </div>
-          </NuxtLink>
-        </template>
-        <p v-else class="text-gray-500 dark:text-gray-400">{{ $t('articles.noResults.message') }}</p>
+          </div>
+        </NuxtLink>
       </aside>
     </section>
 
@@ -271,20 +274,14 @@ const topArticles = computed(() =>
     : [],
 )
 const filteredArticles = computed(() => allArticles.value.filter((a) => a.id !== featured.value?.id))
-const latestArticleTitle = computed(() => {
-  if (!allArticles.value.length) return $t('common.noItems')
-  const latestArticle = [...allArticles.value].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  )[0]
-  return latestArticle?.title ?? $t('common.noItems')
-})
-const latestArticleSlug = computed(() => {
-  if (!allArticles.value.length) return null
-  const latestArticle = [...allArticles.value].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  )[0]
-  return latestArticle?.slug ?? null
-})
+const latestArticle = computed(
+  () =>
+    [...allArticles.value].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ?? null,
+)
+
+const hasFilters = computed(() => Boolean(searchQuery.value || selectedTag.value))
+const hasContent = computed(() => allArticles.value.length > 0)
+const hasHighlights = computed(() => featPending.value || Boolean(featured.value) || recommended.value.length > 0)
 
 const loadMore = async () => {
   if (!hasMore.value) return

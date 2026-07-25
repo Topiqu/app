@@ -67,6 +67,10 @@
       "imageAlt": "Sad Topík",
       "message": "Oh no, I feel useless..."
     },
+    "empty": {
+      "title": "Nothing here yet",
+      "message": "The first article is on its way. Check back soon."
+    },
     "export": {
       "title": {
         "json": "Export to JSON",
