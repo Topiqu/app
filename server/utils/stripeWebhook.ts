@@ -8,8 +8,9 @@ export const isSubscribablePlan = (value: unknown): value is 'PRO' | 'PREMIUM' =
 // so the price ID is the only trustworthy source of the current plan.
 export const planFromPriceId = (priceId: string | null | undefined): 'PRO' | 'PREMIUM' | null => {
   if (!priceId) return null
-  if (priceId === process.env.STRIPE_PRICE_PRO) return 'PRO'
-  if (priceId === process.env.STRIPE_PRICE_PREMIUM) return 'PREMIUM'
+  if (priceId === process.env.STRIPE_PRICE_PRO || priceId === process.env.STRIPE_PRICE_PRO_ANNUAL) return 'PRO'
+  if (priceId === process.env.STRIPE_PRICE_PREMIUM || priceId === process.env.STRIPE_PRICE_PREMIUM_ANNUAL)
+    return 'PREMIUM'
   return null
 }
 

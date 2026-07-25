@@ -308,6 +308,8 @@
         "permanent": "– Lifetime access",
         "annual": "– Annual billing",
         "monthly": "– Monthly billing",
+        "intervalMonthly": "Monthly",
+        "intervalAnnual": "Annual",
         "tokenBalance": "Token balance",
         "buyTokens": "Buy tokens",
         "manage": "Manage subscription & invoices",

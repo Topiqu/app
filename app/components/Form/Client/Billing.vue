@@ -122,6 +122,40 @@
         </div>
       </div>
 
+      <div v-if="upgradeTarget" class="flex items-center gap-1 self-start rounded-full bg-neutral-100 dark:bg-neutral-800 p-1">
+        <button
+          type="button"
+          class="rounded-full px-3 py-1 text-xs font-medium transition"
+          :class="
+            checkoutInterval === 'month'
+              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+              : 'text-neutral-500 dark:text-neutral-400'
+          "
+          :aria-pressed="checkoutInterval === 'month'"
+          @click="checkoutInterval = 'month'"
+        >
+          {{ $t('common.preferences.billing.intervalMonthly') }}
+        </button>
+        <button
+          type="button"
+          class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition"
+          :class="
+            checkoutInterval === 'year'
+              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+              : 'text-neutral-500 dark:text-neutral-400'
+          "
+          :aria-pressed="checkoutInterval === 'year'"
+          @click="checkoutInterval = 'year'"
+        >
+          {{ $t('common.preferences.billing.intervalAnnual') }}
+          <span
+            class="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400"
+          >
+            -20 %
+          </span>
+        </button>
+      </div>
+
       <div class="flex flex-col sm:flex-row gap-3 pt-1">
         <Button
           v-if="hasSubscription"
@@ -154,6 +188,7 @@ const { formatTime } = useTime()
 
 const tokenPacks = TOKEN_PACK_LIST
 const pendingAction = ref<string | null>(null)
+const checkoutInterval = ref<'month' | 'year'>(client?.billingPlan === 'ANNUAL' ? 'year' : 'month')
 
 const tokenPercent = computed(() => {
   const limit = client?.tokenLimit ?? 0
@@ -191,7 +226,7 @@ const buyTokens = (pack: string) => redirectTo('/api/stripe/checkout', `pack-${p
 const openPortal = () => redirectTo('/api/stripe/portal', 'portal', {})
 const upgrade = () => {
   if (!upgradeTarget.value) return
-  redirectTo('/api/stripe/subscribe', 'upgrade', { plan: upgradeTarget.value })
+  redirectTo('/api/stripe/subscribe', 'upgrade', { plan: upgradeTarget.value, interval: checkoutInterval.value })
 }
 
 const billingPlanText = computed(() => {

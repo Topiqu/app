@@ -309,6 +309,8 @@
         "permanent": "– Trvalý přístup",
         "annual": "– Roční platba",
         "monthly": "– Měsíční platba",
+        "intervalMonthly": "Měsíčně",
+        "intervalAnnual": "Ročně",
         "tokenBalance": "Zůstatek tokenů",
         "buyTokens": "Dokoupit tokeny",
         "manage": "Spravovat předplatné a faktury",
