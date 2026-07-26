@@ -11,8 +11,8 @@
 
     <div ref="trigger" class="relative flex items-center gap-1.5 cursor-pointer select-none" @click="show = !show">
       <span :class="planColor">{{ site?.plan ?? $t('articles.userMenu.noClientAssigned') }}</span>
-      <span v-if="site?.tokenRemaining != null" v-tippy="tokenTooltip" class="text-xs">
-        (<span :class="tokenColor">{{ site.tokenRemaining }}/{{ site.tokenLimit }}</span
+      <span v-if="status?.tokenRemaining != null" v-tippy="tokenTooltip" class="text-xs">
+        (<span :class="tokenColor">{{ status.tokenRemaining }}/{{ status.tokenLimit }}</span
         >)
       </span>
       <Icon name="mdi:chevron-up" :class="['w-3 h-3 transition-transform duration-200', isOpen && 'rotate-180']" />
@@ -51,7 +51,7 @@
         <div class="space-y-2">
           <h3 class="font-semibold text-gray-900 dark:text-gray-100">{{ $t('articles.userMenu.remainingTokens') }}</h3>
           <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-            <span>{{ site?.tokenRemaining ?? 0 }} / {{ site?.tokenLimit ?? 20000 }}</span>
+            <span>{{ status?.tokenRemaining ?? 0 }} / {{ status?.tokenLimit ?? 20000 }}</span>
             <span>{{ $t('articles.userMenu.roughlyEstimated', [estimatedArticles]) }}</span>
           </div>
           <div class="h-2 bg-gray-200/80 dark:bg-gray-700/80 rounded-full overflow-hidden">
@@ -61,7 +61,7 @@
             />
           </div>
           <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-            {{ $t('articles.userMenu.totalConsumed', [site?.totalUsage ?? 0]) }}
+            {{ $t('articles.userMenu.totalConsumed', [status?.totalUsage ?? 0]) }}
           </div>
         </div>
         <div class="grid grid-cols-1 gap-3">
@@ -208,6 +208,7 @@ import 'tippy.js/dist/tippy.css'
 const config = useRuntimeConfig()
 const { data: session } = useAuth()
 const { data: site } = await useFetch(`/api/clients/${session.value?.user.id}/by-userid`)
+const status = await useClientSiteStatus()
 
 const page = shallowRef(1)
 const logs = reactive<{ items: any[]; hasMore: boolean }>({ items: [], hasMore: false })
@@ -238,10 +239,10 @@ const loadMore = async () => {
 }
 
 const remainingPercent = computed(() =>
-  Math.max(0, ((site.value?.tokenRemaining ?? 0) / (site.value?.tokenLimit ?? 20000)) * 100),
+  Math.max(0, ((status?.tokenRemaining ?? 0) / (status?.tokenLimit ?? 20000)) * 100),
 )
 const isLowTokens = computed(() => remainingPercent.value <= 20)
-const estimatedArticles = computed(() => Math.floor((site.value?.tokenRemaining ?? 0) / 5000))
+const estimatedArticles = computed(() => Math.floor((status?.tokenRemaining ?? 0) / 5000))
 const tokenTooltip = computed(() => $t('articles.userMenu.roughlyEstimated', [estimatedArticles.value]))
 
 const planColor = computed(() => ({

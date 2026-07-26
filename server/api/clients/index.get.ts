@@ -1,9 +1,7 @@
 export default defineEventHandler(async (event) => {
-  const user = (await getServerSession(event))?.user
+  const { db } = await requireDb(event, { role: 'superadmin' })
   const { skip, take } = await getPagination(event)
   const query = getQuery(event).query as string | undefined
-
-  const db = await getEnhancedPrisma(user)
 
   const [data, total] = await Promise.all([
     db.clientSite.findMany({

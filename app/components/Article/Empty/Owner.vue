@@ -126,6 +126,7 @@ import { buildEmptySetupSteps, emptySetupProgress } from '~~/shared/utils/emptyS
 const { site } = defineProps<{ site?: EmptySiteInfo | null }>()
 
 const localePath = useLocalePath()
+const status = await useClientSiteStatus()
 
 const rowClass =
   'flex items-center gap-4 rounded-2xl px-2 py-3.5 no-underline transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50'
@@ -149,7 +150,7 @@ const stepMeta: Record<EmptySetupStepId, { icon: string; to: () => RouteLocation
   },
 }
 
-const steps = computed(() => buildEmptySetupSteps(site))
+const steps = computed(() => buildEmptySetupSteps({ ...site, focus: status?.focus, audience: status?.audience }))
 const progress = computed(() => emptySetupProgress(steps.value))
 const rows = computed(() => steps.value.map((step) => ({ ...step, ...stepMeta[step.id], to: stepMeta[step.id].to() })))
 </script>

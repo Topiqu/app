@@ -1,7 +1,19 @@
-import type { ClientSite } from '@prisma/client'
+import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
 declare global {
   var gtagInit: boolean | undefined
+}
+
+export interface ClientSiteStatus {
+  id: string
+  plan: string
+  tokenLimit: number | null
+  tokenRemaining: number | null
+  totalUsage: number | null
+  createdAt: string
+  firstPaidAt: string | null
+  focus: string | null
+  audience: string | null
 }
 
 export const useClientSite = async () => {
@@ -18,7 +30,7 @@ export const useClientSite = async () => {
 
   const { data } = await useAsyncData(
     `clientsite-${hostname}`,
-    () => $fetch<ClientSite>(`/api/clients/slug/${hostname}` as string),
+    () => $fetch<PublicClientSite>(`/api/clients/slug/${hostname}` as string),
     {
       getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
     },
@@ -31,6 +43,14 @@ export const useClientSite = async () => {
     initialize(gtagId)
     globalThis.gtagInit = true
   }
+
+  return data.value
+}
+
+export const useClientSiteStatus = async () => {
+  const { data } = await useAsyncData('clientsite-status', () =>
+    $fetch<ClientSiteStatus | null>('/api/clients/status').catch(() => null),
+  )
 
   return data.value
 }

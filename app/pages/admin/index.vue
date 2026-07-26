@@ -11,14 +11,15 @@
 <script lang="ts" setup>
 definePageMeta({ middleware: 'admin' })
 const client = await useClientSite()
+const status = await useClientSiteStatus()
 
 useSeoMeta({ title: `${client?.name} - ${$t('admin.title', 'Administrace')}` })
 
 const isOpen = shallowRef(false)
 
 onMounted(() => {
-  if (client?.plan === 'BASIC' && !client?.firstPaidAt && client?.createdAt) {
-    const createdDate = new Date(client.createdAt)
+  if (status?.plan === 'BASIC' && !status.firstPaidAt && status.createdAt) {
+    const createdDate = new Date(status.createdAt)
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - createdDate.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))

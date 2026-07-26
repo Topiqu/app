@@ -1,12 +1,12 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
-
-  if (!user || !['superadmin', 'admin'].includes(user.role))
-    throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  const user = await requireUser(event, { minRole: 'admin' })
 
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
+
+  if (user.role !== 'superadmin' && id !== user.clientSiteId)
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id },

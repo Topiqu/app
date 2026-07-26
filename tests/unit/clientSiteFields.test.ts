@@ -1,8 +1,12 @@
+import { Prisma } from '@prisma/client'
 import { describe, expect, it } from 'vitest'
 import {
+  CLIENT_SITE_SECRET_FIELDS,
   PRIVILEGED_CLIENT_SITE_FIELDS,
+  PUBLIC_CLIENT_SITE_FIELDS,
   TENANT_EDITABLE_CLIENT_SITE_FIELDS,
   fieldMask,
+  publicClientSiteSelect,
 } from '~~/shared/utils/clientSiteFields'
 
 describe('client site field partition', () => {
@@ -35,5 +39,52 @@ describe('client site field partition', () => {
     const privileged = fieldMask(PRIVILEGED_CLIENT_SITE_FIELDS)
     const shared = Object.keys(tenant).filter((key) => key in privileged)
     expect(shared).toEqual([])
+  })
+})
+
+describe('public client site read projection', () => {
+  const model = Prisma.dmmf.datamodel.models.find((m) => m.name === 'ClientSite')!
+  const scalars = model.fields.filter((f) => f.kind !== 'object').map((f) => f.name)
+
+  it('never exposes credentials, billing identifiers or quota internals', () => {
+    for (const field of [
+      'apiKey',
+      'stripeCustomerId',
+      'stripeSubscriptionId',
+      'stripePriceId',
+      'tokenLimit',
+      'tokenRemaining',
+      'totalUsage',
+      'monthlyPayment',
+      'annualPayment',
+      'communityInsight',
+    ]) {
+      expect(CLIENT_SITE_SECRET_FIELDS).toContain(field)
+      expect(PUBLIC_CLIENT_SITE_FIELDS).not.toContain(field)
+      expect(publicClientSiteSelect).not.toHaveProperty(field)
+    }
+  })
+
+  it('keeps the public and non-public sets disjoint', () => {
+    const overlap = PUBLIC_CLIENT_SITE_FIELDS.filter((field) =>
+      (CLIENT_SITE_SECRET_FIELDS as readonly string[]).includes(field),
+    )
+    expect(overlap).toEqual([])
+  })
+
+  it('only lists fields that actually exist on the model', () => {
+    for (const field of [...PUBLIC_CLIENT_SITE_FIELDS, ...CLIENT_SITE_SECRET_FIELDS]) {
+      expect(scalars).toContain(field)
+    }
+  })
+
+  it('is a whitelist, so a newly added model field stays private until listed', () => {
+    const classified = new Set<string>([...PUBLIC_CLIENT_SITE_FIELDS, ...CLIENT_SITE_SECRET_FIELDS])
+    const unclassified = scalars.filter((field) => !classified.has(field))
+
+    expect(Object.keys(publicClientSiteSelect)).toEqual([...PUBLIC_CLIENT_SITE_FIELDS])
+    for (const field of unclassified) {
+      expect(publicClientSiteSelect).not.toHaveProperty(field)
+    }
   })
 })
