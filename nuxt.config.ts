@@ -4,6 +4,23 @@ const APP_ENV =
   process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
 const IS_PROD = APP_ENV === 'production'
 
+const CONSENT_REGIONS = [
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
+  'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES',
+  'SE', 'IS', 'LI', 'NO', 'GB', 'CH',
+]
+
+const CONSENT_DEFAULT = {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied',
+  functionality_storage: 'granted',
+  security_storage: 'granted',
+  wait_for_update: 500,
+  region: CONSENT_REGIONS,
+} as const
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
 
@@ -124,6 +141,10 @@ export default defineNuxtConfig({
     'nuxt-gtag',
     '@sentry/nuxt/module',
   ],
+
+  gtag: {
+    initCommands: [['consent', 'default', { ...CONSENT_DEFAULT }]],
+  },
 
   sentry: {
     sourceMapsUploadOptions: {
