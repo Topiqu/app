@@ -76,7 +76,7 @@
                 />
               </Transition>
 
-              <div class="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <div v-if="isSuperadmin" class="pt-4 border-t border-neutral-200 dark:border-neutral-700">
                 <label class="flex items-center justify-between gap-4 mb-3 cursor-pointer">
                   <span class="font-medium">Google Ads</span>
                   <FormField v-model="form.allowAds" type="checkbox" aria-label="Enable Google Ads" class="w-auto" />
@@ -247,8 +247,10 @@
 
 <script setup lang="ts">
 import equal from 'fast-deep-equal'
-import { buildClientSettingsForm, type ClientSite } from '~/utils/buildClientSettingsForm'
+
 import type { SettingsTab } from '~/components/Settings/Nav.vue'
+
+import { buildClientSettingsForm, type ClientSite } from '~/utils/buildClientSettingsForm'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -261,6 +263,7 @@ const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
 const apiVisible = shallowRef(false)
 
 const clientId = computed(() => auth.value?.user.clientSiteId)
+const isSuperadmin = computed(() => auth.value?.user.role === 'superadmin')
 
 const { data: client, refresh } = await useFetch<ClientSite>(`/api/clients/${auth.value?.user.clientSiteId}`)
 const { data: features } = await useFetch(`/api/features`)

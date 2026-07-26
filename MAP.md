@@ -109,6 +109,8 @@ Automated AI translations turn the mono-lingual `Article` into a multi-lingual o
 
 Marketing names diverge from the DB enum: marketing **FREE** = enum **BASIC**. Enum is the source of truth (`prisma/schema.zmodel:84`), copy lives in `i18n/locales/{cs,en}.json → landing.pricing.plans.*`.
 
+**Who may write which `ClientSite` field.** `shared/utils/clientSiteFields.ts` is the single source: `PRIVILEGED_CLIENT_SITE_FIELDS` (`plan`, `tokenLimit`, `gamNetworkCode`, `allowAds`) are **superadmin-only**; everything in `TENANT_EDITABLE_CLIENT_SITE_FIELDS` is fair game for a site's own admin. `server/api/clients/[id]/index.patch.ts` builds two zod picks from those lists and parses the privileged one only for superadmins, so a tenant's extra keys are silently stripped rather than rejected. The partition is pinned by `tests/unit/clientSiteFields.test.ts` (the field lists carry no zod/ZenStack import precisely so the test does not depend on generated `shared/zod`). Reactivating a soft-deleted site (`deletedAt: null`) is superadmin-only too; self-deactivation stays open. Side effects must read the **parsed** value, never raw body — `requestedTokenLimit`, not `scalarBody.tokenLimit`.
+
 | Capability                       | FREE (BASIC) | PRO                | PREMIUM                | CUSTOM             |
 | -------------------------------- | ------------ | ------------------ | ---------------------- | ------------------ |
 | Price (per month, CZK)           | 0            | 490                | 990                    | On request (sales) |

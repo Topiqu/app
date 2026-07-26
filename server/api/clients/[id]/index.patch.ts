@@ -2,6 +2,11 @@ import type { SocialPlatform } from '@prisma/client'
 
 import { randomBytes } from 'crypto'
 import { models } from '~~/shared/zod'
+import {
+  PRIVILEGED_CLIENT_SITE_FIELDS,
+  TENANT_EDITABLE_CLIENT_SITE_FIELDS,
+  fieldMask,
+} from '~~/shared/utils/clientSiteFields'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -45,29 +50,15 @@ export default defineEventHandler(async (event) => {
     if (conflict) throw createError({ statusCode: 409, message: t('common.errors.subdomainExists')! })
   }
 
-  const UpdateSchema = models.ClientSiteScalarSchema.pick({
-    name: true,
-    domain: true,
-    plan: true,
-    generationFrequency: true,
-    tokenLimit: true,
-    keywords: true,
-    audience: true,
-    language: true,
-    theme: true,
-    focus: true,
-    description: true,
-    logoUrl: true,
-    autoRelease: true,
-    gtagId: true,
-    gamNetworkCode: true,
-    allowAds: true,
-    allowGtag: true,
-    aiToneOfVoice: true,
-    aiControversyLevel: true,
-    translationMode: true,
-    translationLanguages: true,
-  }).partial()
+  const isSuperadmin = user.role === 'superadmin'
+
+  const UpdateSchema = models.ClientSiteScalarSchema.pick(
+    fieldMask(TENANT_EDITABLE_CLIENT_SITE_FIELDS),
+  ).partial()
+
+  const PrivilegedSchema = models.ClientSiteScalarSchema.pick(
+    fieldMask(PRIVILEGED_CLIENT_SITE_FIELDS),
+  ).partial()
 
   const parsed = UpdateSchema.safeParse(scalarBody)
   if (!parsed.success) {
@@ -75,15 +66,28 @@ export default defineEventHandler(async (event) => {
   }
   const data: any = { ...parsed.data }
 
-  if (scalarBody.tokenLimit !== undefined) data.tokenRemaining = scalarBody.tokenLimit
+  if (isSuperadmin) {
+    const privileged = PrivilegedSchema.safeParse(scalarBody)
+    if (!privileged.success) {
+      throw createError({ statusCode: 400, message: privileged.error.message })
+    }
+    Object.assign(data, privileged.data)
+    if (privileged.data.tokenLimit !== undefined) data.tokenRemaining = privileged.data.tokenLimit
+  }
+
   if (scalarBody.description !== undefined)
     data.description = scalarBody.description ? sanitizeHtml(scalarBody.description) : null
-  if (scalarBody.deletedAt !== undefined) data.deletedAt = scalarBody.deletedAt === null ? null : new Date()
+  if (scalarBody.deletedAt !== undefined) {
+    if (scalarBody.deletedAt === null && !isSuperadmin)
+      throw createError({ statusCode: 403, message: t('common.errors.unauthorized')! })
+    data.deletedAt = scalarBody.deletedAt === null ? null : new Date()
+  }
 
   const aiUserPayload = aiUser
   const currentAiUser = clientSite.users[0]
   const hasAiPayload = aiUserPayload && Object.values(aiUserPayload).some((v) => v !== '')
-  const effectiveTokenLimit = scalarBody.tokenLimit ?? clientSite.tokenLimit ?? 0
+  const requestedTokenLimit = isSuperadmin ? scalarBody.tokenLimit : undefined
+  const effectiveTokenLimit = requestedTokenLimit ?? clientSite.tokenLimit ?? 0
 
   if (hasAiPayload && effectiveTokenLimit > 0) {
     const aiData = {
@@ -118,7 +122,7 @@ export default defineEventHandler(async (event) => {
         metadata: { aiUserId: newAi.id },
       })
     }
-  } else if (scalarBody.tokenLimit === 0 && currentAiUser) {
+  } else if (requestedTokenLimit === 0 && currentAiUser) {
     await db.user.delete({ where: { id: currentAiUser.id } })
     await logAction({
       action: 'AI_USER_DELETE',
