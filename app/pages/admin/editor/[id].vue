@@ -251,7 +251,7 @@ const { emitArticleCreated, emitArticleUpdated } = useArticleEvent()
 
 const isNew = route.params.id === 'new'
 const sidebarOpen = shallowRef(false)
-const aiOpen = shallowRef(false)
+const aiOpen = shallowRef(route.query.ai === '1')
 const discardConfirmOpen = shallowRef(false)
 
 const article = shallowRef<ArticleWithDetails | undefined>(undefined)

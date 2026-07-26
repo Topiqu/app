@@ -1,5 +1,7 @@
 <template>
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-12">
+  <ArticleEmptyPage v-if="isBlankSite" :site="clientSite" :isOwner="isOwner" />
+
+  <main v-else class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-12">
     <section class="text-center py-6 sm:py-10 space-y-4">
       <NuxtImg
         v-if="clientSite?.logoUrl"
@@ -61,7 +63,7 @@
       </div>
     </section>
 
-    <section id="articles" class="space-y-6">
+    <section v-if="showFeed" id="articles" class="space-y-6">
       <div class="flex items-baseline justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-3">
         <h2 class="text-3xl font-bold tracking-tight">{{ $t('articles.title') }}</h2>
       </div>
@@ -121,10 +123,9 @@
           :index="idx"
         />
       </div>
-      <p v-else-if="hasFilters" class="text-center text-lg text-gray-500 dark:text-gray-400 py-12">
+      <p v-else class="text-center text-lg text-gray-500 dark:text-gray-400 py-12">
         {{ $t('articles.noResults.message') }}
       </p>
-      <ArticleEmptyState v-else :isOwner="isOwner" />
 
       <div v-if="hasMore" class="text-center pt-4">
         <Button :disabled="pending" :loading="pending" @click="loadMore">
@@ -214,6 +215,8 @@ const query = computed(() => ({
   ...(searchQuery.value ? { query: searchQuery.value } : {}),
 }))
 
+const isBlankSite = (feat.value?.totalArticles ?? 0) === 0
+
 const {
   data: feed,
   refresh,
@@ -221,6 +224,7 @@ const {
 } = await useLazyFetch(`/api/articles/by-clientsite/${clientSite?.name}`, {
   query,
   watch: false,
+  immediate: !isBlankSite,
 })
 
 const articleMap = ref<Map<string, NonNullable<typeof feed.value>['items'][number]>>(new Map())
@@ -278,6 +282,7 @@ const latestArticle = computed(
 
 const hasFilters = computed(() => Boolean(searchQuery.value || selectedTag.value))
 const hasContent = computed(() => allArticles.value.length > 0)
+const showFeed = computed(() => pending.value || hasFilters.value || filteredArticles.value.length > 0)
 const hasHighlights = computed(() => featPending.value || Boolean(featured.value) || recommended.value.length > 0)
 
 const isOwner = computed(() => {

@@ -68,13 +68,37 @@
       "message": "Oh no, I feel useless..."
     },
     "empty": {
+      "badge": "Coming soon",
       "title": "Nothing here yet",
       "message": "The first article is on its way. Check back soon.",
       "owner": {
-        "title": "Your blog has no articles yet",
-        "message": "Visitors will only see an empty page until the first article goes out. Write it yourself, or have it generated for you in the editor.",
+        "badge": "Only you can see this",
+        "title": "Your blog is ready for its first article",
+        "message": "Visitors land on this page and search engines are told not to index it until the first article goes out. Write it yourself, or have it generated for you.",
         "writeCta": "Write the first article",
-        "adminCta": "Go to admin"
+        "aiCta": "Generate with AI",
+        "adminCta": "Go to admin",
+        "checklistTitle": "Launch checklist",
+        "progress": "{done} of {total} done",
+        "locked": "Available on a higher plan",
+        "steps": {
+          "article": {
+            "title": "Publish the first article",
+            "description": "Everything else on the blog builds on it."
+          },
+          "branding": {
+            "title": "Finish the branding",
+            "description": "Add a logo and a short description of the blog."
+          },
+          "voice": {
+            "title": "Set the tone and audience",
+            "description": "Tell the AI who it writes for and what the blog is about."
+          },
+          "domain": {
+            "title": "Verify the domain",
+            "description": "Point your domain at the blog and confirm the DNS record."
+          }
+        }
       }
     },
     "export": {
