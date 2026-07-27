@@ -426,7 +426,7 @@ async function updateProfile() {
   })
   draft.clear()
   isDirty.value = false
-  otpauthUrl.value = (await useFetch(`/api/users/${user.value?.user?.id}/account`)).data.value?.otpauthUrl || ''
+  otpauthUrl.value = userData.value?.otpauthUrl || ''
   isLoading.value = false
 }
 

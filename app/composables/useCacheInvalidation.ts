@@ -7,6 +7,7 @@ export const useCacheInvalidation = () => {
   const invalidateArticleLists = () => queryCache.invalidateQueries({ key: queryKeys.articles.lists })
   const invalidateArticleDetail = (articleId: string) =>
     queryCache.invalidateQueries({ key: queryKeys.articles.detail(articleId) })
+  const invalidateTags = () => queryCache.invalidateQueries({ key: queryKeys.tags.all })
   const invalidateStats = () => queryCache.invalidateQueries({ key: queryKeys.stats.all })
   const invalidateArticlesAndStats = () => Promise.all([invalidateArticles(), invalidateStats()])
   const invalidateClients = () => queryCache.invalidateQueries({ key: queryKeys.clients.all })
@@ -15,6 +16,7 @@ export const useCacheInvalidation = () => {
     invalidateArticles,
     invalidateArticleLists,
     invalidateArticleDetail,
+    invalidateTags,
     invalidateStats,
     invalidateArticlesAndStats,
     invalidateClients,

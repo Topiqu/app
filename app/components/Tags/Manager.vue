@@ -75,14 +75,27 @@ const emit = defineEmits<{
   'create:tag': [tagId: string]
 }>()
 
-const toast = useToast()
-const { data: allTags, refresh } = await useFetch('/api/tags', { default: () => [] })
+type TagOption = { id: string; name: string }
+type ArticleTagRow = { tagId: string; tag: { id: string; name: string } }
 
-const { data: articleTags } = useFetch(() => `/api/articles/${props.article?.id}/tags`, {
-  default: () => [],
-  immediate: !!props.article?.id,
-  watch: [() => props.article?.id],
+const toast = useToast()
+const requestFetch = useRequestFetch()
+const { invalidateTags } = useCacheInvalidation()
+
+const { data: allTags } = useQuery({
+  key: () => queryKeys.tags.list,
+  query: () => requestFetch<TagOption[]>('/api/tags'),
+  placeholderData: () => [],
 })
+
+const { data: articleTags } = useQuery({
+  key: () => queryKeys.articles.tags(props.article?.id ?? ''),
+  query: () => requestFetch<ArticleTagRow[]>(`/api/articles/${props.article!.id}/tags`),
+  enabled: () => !!props.article?.id,
+  placeholderData: () => [],
+})
+
+const tagOptions = computed(() => allTags.value ?? [])
 
 const selectedTagId = shallowRef('')
 const newTagName = shallowRef('')
@@ -92,10 +105,10 @@ const tagBuffer = shallowReactive<{ id: string; name: string }[]>([])
 watch(
   articleTags,
   (newVal) => {
-    if (newVal && newVal.length > 0) {
-      tagBuffer.length = 0
-      newVal.forEach((t) => tagBuffer.push({ id: t.tagId, name: t.tag.name }))
-    }
+    if (!props.article?.id) return
+    const rows = newVal ?? []
+    tagBuffer.length = 0
+    rows.forEach((t) => tagBuffer.push({ id: t.tagId, name: t.tag.name }))
   },
   { immediate: true },
 )
@@ -103,8 +116,8 @@ watch(
 watch(
   () => props.initialTags,
   (newIds) => {
-    if (!props.article?.id && newIds && allTags.value.length) {
-      const tagsToAdd = allTags.value.filter((t) => newIds.includes(t.id))
+    if (!props.article?.id && newIds && tagOptions.value.length) {
+      const tagsToAdd = tagOptions.value.filter((t) => newIds.includes(t.id))
       tagsToAdd.forEach((t) => {
         if (!tagBuffer.some((b) => b.id === t.id)) {
           tagBuffer.push({ id: t.id, name: t.name })
@@ -115,11 +128,11 @@ watch(
   { deep: true },
 )
 
-const availableTags = computed(() => allTags.value.filter((t) => !tagBuffer.some((b) => b.id === t.id)))
+const availableTags = computed(() => tagOptions.value.filter((t) => !tagBuffer.some((b) => b.id === t.id)))
 
 const addExisting = () => {
   if (!selectedTagId.value) return
-  const tag = allTags.value.find((t) => t.id === selectedTagId.value)
+  const tag = tagOptions.value.find((t) => t.id === selectedTagId.value)
   if (tag && !tagBuffer.some((b) => b.id === tag.id)) {
     tagBuffer.push({ id: tag.id, name: tag.name })
     emit('add:tag', tag.id)
@@ -138,7 +151,7 @@ const createNew = async () => {
     tagBuffer.push({ id, name })
     emit('create:tag', id)
     newTagName.value = ''
-    await refresh()
+    await invalidateTags()
   } catch (e: any) {
     toast.error({ message: $t('articles.tags.createFailed') + e.data?.message })
   }

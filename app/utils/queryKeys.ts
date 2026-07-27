@@ -7,6 +7,10 @@ export const queryKeys = {
     tags: (articleId: string) => ['articles', 'detail', articleId, 'tags'] as const,
     availableTags: (articleId: string) => ['articles', 'detail', articleId, 'available-tags'] as const,
   },
+  tags: {
+    all: ['tags'] as const,
+    list: ['tags', 'list'] as const,
+  },
   clients: {
     all: ['clients'] as const,
     lists: ['clients', 'list'] as const,

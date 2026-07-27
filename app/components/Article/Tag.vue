@@ -59,13 +59,12 @@
 
 <script setup lang="ts">
 import slugify from 'slugify'
-import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 
 const toast = useToast()
 const open = defineModel<boolean>()
 const props = defineProps<{ articleId: string }>()
 
-const queryCache = useQueryCache()
+const { invalidateArticleDetail, invalidateTags: invalidateTagLibrary } = useCacheInvalidation()
 const requestFetch = useRequestFetch()
 
 const newTag = shallowReactive<{ name: string; slug: string }>({ name: '', slug: '' })
@@ -86,7 +85,7 @@ const { data: availableTags } = useQuery({
   placeholderData: () => [],
 })
 
-const invalidateTags = () => queryCache.invalidateQueries({ key: queryKeys.articles.detail(props.articleId) })
+const invalidateTags = () => invalidateArticleDetail(props.articleId)
 
 const updateSlug = () => (newTag.slug = slugify(newTag.name, { lower: true, strict: true, trim: true }))
 
@@ -130,7 +129,7 @@ const { mutate: createAndAddTag, isLoading: isCreating } = useMutation({
     toast.success({ message: $t('articles.tags.addTagSuccess') })
   },
   onError: (e: any) => toast.error({ message: e.data?.message || $t('articles.tags.addCustomTagFailed') }),
-  onSettled: invalidateTags,
+  onSettled: () => Promise.all([invalidateTags(), invalidateTagLibrary()]),
 })
 
 const isBusy = computed(() => isAdding.value || isRemoving.value || isCreating.value)

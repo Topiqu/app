@@ -65,10 +65,22 @@ describe('stats query keys', () => {
   })
 })
 
+describe('tag query keys', () => {
+  it('invalidating the tags root reaches the tag library list', () => {
+    expect(isPrefixOf(queryKeys.tags.all, queryKeys.tags.list)).toBe(true)
+  })
+
+  it('keeps the tag library separate from an article tag assignment', () => {
+    expect(isPrefixOf(queryKeys.tags.all, queryKeys.articles.tags('a1'))).toBe(false)
+    expect(isPrefixOf(queryKeys.articles.detail('a1'), queryKeys.tags.list)).toBe(false)
+  })
+})
+
 describe('cross-domain isolation', () => {
   it('never lets one domain invalidate another', () => {
     expect(isPrefixOf(queryKeys.articles.all, queryKeys.clients.list(1, ''))).toBe(false)
     expect(isPrefixOf(queryKeys.clients.all, queryKeys.articles.list(1, ''))).toBe(false)
     expect(isPrefixOf(queryKeys.stats.all, queryKeys.articles.list(1, ''))).toBe(false)
+    expect(isPrefixOf(queryKeys.tags.all, queryKeys.clients.list(1, ''))).toBe(false)
   })
 })
