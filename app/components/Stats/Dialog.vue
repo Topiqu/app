@@ -310,22 +310,32 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack/types'
+
+import { useQuery } from '@pinia/colada'
 import { directive as vTippy } from 'vue-tippy'
+
+type DashboardStats = InternalApi['/api/stats/dashboard']['default']
+type CommunityInsight = InternalApi['/api/clients/sentiment']['get']
 
 const open = defineModel<boolean>()
 const { data: authData } = useAuth()
-const { onArticleCreated, onArticleDeleted } = useArticleEvent()
+const requestFetch = useRequestFetch()
 
 const clientSite = await useClientSite()
 
 const isBasicPlan = computed(() => authData.value?.user.plan === 'BASIC')
 const showTopTags = shallowRef(false)
 
-const { data: dashboard, pending, refresh } = await useFetch('/api/stats/dashboard', { lazy: true })
+const { data: dashboard, isPending: pending } = useQuery({
+  key: () => queryKeys.stats.dashboard,
+  query: () => requestFetch<DashboardStats>('/api/stats/dashboard'),
+})
 
-const { data: rawInsight, refresh: refreshInsight } = await useFetch('/api/clients/sentiment', {
-  lazy: true,
-  immediate: !isBasicPlan.value,
+const { data: rawInsight } = useQuery({
+  key: () => queryKeys.stats.sentiment,
+  query: () => requestFetch<CommunityInsight>('/api/clients/sentiment'),
+  enabled: () => !isBasicPlan.value,
 })
 
 const formatDuration = (totalMinutes: number) => {
@@ -408,15 +418,6 @@ const shareChartData = computed(() => ({
     },
   ],
 }))
-
-const refreshAll = () => {
-  refresh()
-  if (!isBasicPlan.value) refreshInsight()
-}
-
-onMounted(refreshAll)
-onArticleCreated(refreshAll)
-onArticleDeleted(refreshAll)
 </script>
 
 <style scoped>

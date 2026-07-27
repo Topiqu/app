@@ -40,14 +40,14 @@
         <Button
           v-if="isNew || editedArticle.status === 'draft'"
           variant="secondary"
-          :disabled="!editedArticle.title"
+          :disabled="!editedArticle.title || submitting"
           @click="submit('draft')"
         >
           {{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}
         </Button>
 
         <Button
-          :disabled="!editedArticle.title"
+          :disabled="!editedArticle.title || submitting"
           class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-transparent! hover:from-blue-600 hover:to-indigo-700"
           @click="submit('published')"
         >
@@ -153,9 +153,15 @@
             <div v-else class="flex items-center gap-2">
               <span class="flex-1 flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
                 <Icon name="mdi:loading" class="w-4 h-4 animate-spin" />
-                {{ aiPhase === 'images' ? $t('articles.editor.ai.phaseImages') : $t('articles.editor.ai.phaseWriting') }}
+                {{
+                  aiPhase === 'images' ? $t('articles.editor.ai.phaseImages') : $t('articles.editor.ai.phaseWriting')
+                }}
               </span>
-              <Button icon="mdi:stop" class="border-transparent! bg-red-500 text-white hover:bg-red-600" @click="stopGeneration">
+              <Button
+                icon="mdi:stop"
+                class="border-transparent! bg-red-500 text-white hover:bg-red-600"
+                @click="stopGeneration"
+              >
                 {{ $t('articles.editor.ai.stopButton') }}
               </Button>
             </div>
@@ -247,12 +253,13 @@ const router = useRouter()
 const localePath = useLocalePath()
 const toast = useToast()
 const { t } = useI18n()
-const { emitArticleCreated, emitArticleUpdated } = useArticleEvent()
+const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
 
 const isNew = route.params.id === 'new'
 const sidebarOpen = shallowRef(false)
 const aiOpen = shallowRef(route.query.ai === '1')
 const discardConfirmOpen = shallowRef(false)
+const submitting = shallowRef(false)
 
 const article = shallowRef<ArticleWithDetails | undefined>(undefined)
 
@@ -400,6 +407,7 @@ const generateAIContent = async () => {
 }
 
 const submit = async (targetStatus: 'draft' | 'published') => {
+  if (submitting.value) return
   if (!editedArticle.value.title) return toast.error({ message: 'Title is required' })
 
   const willPublishNow = targetStatus === 'published' && !editedArticle.value.releaseAt
@@ -418,19 +426,22 @@ const submit = async (targetStatus: 'draft' | 'published') => {
     releaseAt,
   }
 
+  submitting.value = true
   try {
     if (isNew) {
       await $fetch('/api/articles', { method: 'POST', body: payload })
       toast.success({ message: targetStatus === 'published' ? 'Article published' : 'Draft created' })
-      emitArticleCreated()
+      await invalidateArticlesAndStats()
     } else {
       await $fetch(`/api/articles/${article.value!.id}`, { method: 'PATCH', body: payload })
       toast.success({ message: 'Article updated' })
-      emitArticleUpdated()
+      await invalidateArticles()
     }
     router.push(localePath({ name: 'admin' }))
   } catch (e: any) {
     toast.error({ message: e.data?.message || 'Error saving article' })
+  } finally {
+    submitting.value = false
   }
 }
 

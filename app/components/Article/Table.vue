@@ -11,11 +11,15 @@
       />
     </div>
 
-    <div v-if="articles.data.length" class="flex justify-end gap-2 mb-4">
+    <div v-if="rows.length" class="flex justify-end gap-2 mb-4">
       <Exports :articles="visibleRows" />
     </div>
 
-    <div class="overflow-x-auto rounded border border-gray-300 sm:block hidden">
+    <div
+      class="overflow-x-auto rounded border border-gray-300 sm:block hidden transition-opacity duration-200"
+      :class="isRefetching ? 'opacity-50 pointer-events-none' : ''"
+      :aria-busy="isRefetching"
+    >
       <table class="w-full table-auto text-sm divide-y divide-gray-200">
         <thead class="bg-gray-100 text-left font-semibold text-black">
           <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
@@ -44,7 +48,17 @@
           </tr>
         </thead>
         <tbody v-auto-animate class="text-gray-800">
-          <tr v-if="articles.data.length === 0" class="text-center">
+          <template v-if="isPending">
+            <tr v-for="n in SKELETON_ROWS" :key="`skeleton-${n}`" class="animate-pulse">
+              <td v-for="col in 5" :key="col" class="px-4 py-4 min-h-[72px]">
+                <div
+                  class="rounded bg-gray-200 dark:bg-gray-700 mx-auto"
+                  :class="col === 1 ? 'w-16 h-16 rounded-lg' : 'h-4 w-full max-w-[160px]'"
+                />
+              </td>
+            </tr>
+          </template>
+          <tr v-else-if="rows.length === 0" class="text-center">
             <td colspan="5" class="px-4 py-10">
               <NuxtImg src="/topik_smutny_rm.png" :alt="$t('articles.noResults.imageAlt')" class="mx-auto w-32" />
               <p class="mt-4 text-xl text-gray-500 dark:text-gray-300">{{ $t('articles.noResults.message') }}</p>
@@ -114,7 +128,12 @@
                 variant="success"
                 @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
               />
-              <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
+              <LazyArticleModal
+                v-slot="{ open }"
+                :article="row.original"
+                hydrateOnInteraction
+                @saved="invalidateArticleLists"
+              >
                 <Button icon="mdi:pencil" :disabled="row.original.status === 'archived'" @click="open.value = true" />
               </LazyArticleModal>
               <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
@@ -154,7 +173,24 @@
       </table>
     </div>
 
-    <div v-if="articles.data.length > 0" class="sm:hidden space-y-4">
+    <div v-if="isPending" class="sm:hidden space-y-4">
+      <div
+        v-for="n in SKELETON_ROWS"
+        :key="`skeleton-card-${n}`"
+        class="p-4 rounded-lg border border-gray-300 shadow-sm animate-pulse space-y-3"
+      >
+        <div class="w-16 h-16 rounded-lg bg-gray-200 dark:bg-gray-700" />
+        <div class="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
+        <div class="h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
+      </div>
+    </div>
+
+    <div
+      v-else-if="rows.length > 0"
+      class="sm:hidden space-y-4 transition-opacity duration-200"
+      :class="isRefetching ? 'opacity-50 pointer-events-none' : ''"
+      :aria-busy="isRefetching"
+    >
       <div
         v-for="row in table.getRowModel().rows"
         :key="row.id"
@@ -223,7 +259,12 @@
                   variant="success"
                   @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
                 />
-                <LazyArticleModal v-slot="{ open }" :article="row.original" hydrateOnInteraction @saved="refresh">
+                <LazyArticleModal
+                  v-slot="{ open }"
+                  :article="row.original"
+                  hydrateOnInteraction
+                  @saved="invalidateArticleLists"
+                >
                   <Button
                     v-tippy="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''"
                     icon="mdi:pencil"
@@ -278,6 +319,7 @@
 import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
+import { useMutation, useQuery } from '@pinia/colada'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
   type ColumnDef,
@@ -293,23 +335,33 @@ import ArticleStatusCell from '~/components/Article/StatusCell.vue'
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
-const { onArticleCreated, emitArticleDeleted } = useArticleEvent()
+const { invalidateArticleLists, invalidateArticlesAndStats } = useCacheInvalidation()
 const deleteDialog = useTemplateRef<ModalMiniRef>('deleteDialog')
 const localePath = useLocalePath()
 const { formatTime } = useTime()
+const requestFetch = useRequestFetch()
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
+const SKELETON_ROWS = 5
 const globalFilter = shallowRef((route.query.query as string) || '')
-const { data: articles, refresh } = await useFetch<{ data: ArticleWithDetails[]; total: number }>(
-  () =>
-    `/api/articles/search?page=${page.value}&limit=${limit}${globalFilter.value ? `&query=${encodeURIComponent(globalFilter.value)}` : ''}`,
-  {
-    default: () => ({ data: [], total: 0 }),
-    watch: [page, globalFilter],
-  },
-)
+const debouncedFilter = refDebounced(globalFilter, 400)
 
-const totalPages = computed(() => Math.ceil((articles.value?.total || 0) / limit))
+const {
+  data: articles,
+  asyncStatus,
+  isPending,
+} = useQuery({
+  key: () => queryKeys.articles.list(page.value, debouncedFilter.value),
+  query: () =>
+    requestFetch<{ data: ArticleWithDetails[]; total: number }>(
+      `/api/articles/search?page=${page.value}&limit=${limit}${debouncedFilter.value ? `&query=${encodeURIComponent(debouncedFilter.value)}` : ''}`,
+    ),
+  placeholderData: (previous) => previous,
+})
+
+const rows = computed(() => articles.value?.data ?? [])
+const totalPages = computed(() => Math.ceil((articles.value?.total ?? 0) / limit))
+const isRefetching = computed(() => asyncStatus.value === 'loading' && !isPending.value)
 
 const prevPage = () => {
   if (page.value > 1) {
@@ -325,12 +377,10 @@ const nextPage = () => {
   }
 }
 
-const debouncedRefresh = useDebounceFn(() => {
+watch(debouncedFilter, () => {
   page.value = 1
   router.push({ query: { ...route.query, page: 1, query: globalFilter.value || undefined } })
-}, 400)
-
-watch(globalFilter, debouncedRefresh)
+})
 
 const openDropdown = shallowRef<string | null>(null)
 const dropdownRef = ref<HTMLElement | null>(null)
@@ -352,17 +402,26 @@ onClickOutside(dropdownRef, () => {
   dropdownRef.value = null
 })
 
-const debouncedSetStatus = useDebounceFn(async (id: string, status: ArticleStatus) => {
-  try {
-    await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
-    await refresh()
-    toast.success({
-      message: 'Status ' + $t(`articles.status.${status}`).toLocaleLowerCase(),
-    })
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('articles.messages.statusChangeFailed') })
-  }
-}, 100)
+const { mutate: setStatus } = useMutation({
+  mutation: async ({ id, status }: { id: string; status: ArticleStatus }) => {
+    await $fetch(`/api/articles/${id}` as `/api/articles/:id`, { method: 'PATCH', body: { status } })
+  },
+  onSuccess: (_data, { status }) =>
+    toast.success({ message: 'Status ' + $t(`articles.status.${status}`).toLocaleLowerCase() }),
+  onError: (e: any) => toast.error({ message: e.data?.message || $t('articles.messages.statusChangeFailed') }),
+  onSettled: invalidateArticleLists,
+})
+
+const debouncedSetStatus = useDebounceFn((id: string, status: ArticleStatus) => setStatus({ id, status }), 100)
+
+const { mutate: deleteArticle, isLoading: isDeleting } = useMutation({
+  mutation: async (id: string) => {
+    await $fetch(`/api/articles/${id}` as `/api/articles/:id`, { method: 'DELETE' })
+  },
+  onSuccess: () => toast.success({ message: $t('articles.messages.deleteSuccess') }),
+  onError: (e: any) => toast.error({ message: e.data?.message || $t('articles.messages.deleteFailed') }),
+  onSettled: invalidateArticlesAndStats,
+})
 
 async function del(id: string) {
   const r = await deleteDialog.value?.ask({
@@ -373,16 +432,9 @@ async function del(id: string) {
     cancelText: $t('common.messages.deleteCancel'),
     variant: 'danger',
   })
-  if (r !== 'ok') return
+  if (r !== 'ok' || isDeleting.value) return
 
-  try {
-    await $fetch(`/api/articles/${id}`, { method: 'DELETE' })
-    toast.success({ message: $t('articles.messages.deleteSuccess') })
-    emitArticleDeleted()
-    refresh()
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('articles.messages.deleteFailed') })
-  }
+  deleteArticle(id)
 }
 
 const columns: ColumnDef<ArticleWithDetails>[] = [
@@ -418,7 +470,7 @@ const columns: ColumnDef<ArticleWithDetails>[] = [
 
 const table = useVueTable({
   get data() {
-    return articles.value?.data || []
+    return rows.value
   },
   columns,
   state: {
@@ -434,8 +486,6 @@ const table = useVueTable({
 
 const { exportJson, exportCsv, exportPdf } = useExport()
 const visibleRows = computed(() => table.getFilteredRowModel().rows.map((r) => r.original))
-
-onArticleCreated(refresh)
 
 function toggleDropdown(id: string) {
   if (openDropdown.value === id) {

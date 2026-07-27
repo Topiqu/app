@@ -203,7 +203,7 @@
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
         <Button variant="neutral" size="lg" @click="close">{{ $t('master.clientCreate.actions.close') }}</Button>
-        <Button size="lg" :disabled="!isFormValid" @click="createClient">{{
+        <Button size="lg" :disabled="!isFormValid || creating" @click="createClient">{{
           $t('master.clientCreate.actions.submit')
         }}</Button>
       </div>
@@ -236,7 +236,7 @@
 </template>
 
 <script setup lang="ts">
-const { emitClientCreated } = useClientEvent()
+const { invalidateClients } = useCacheInvalidation()
 const { t } = useI18n()
 const toast = useToast()
 
@@ -315,8 +315,11 @@ const updateKeywords = () => {
     .filter((k) => k.length > 0)
 }
 
+const creating = shallowRef(false)
+
 const createClient = async () => {
-  if (!isFormValid.value) return
+  if (!isFormValid.value || creating.value) return
+  creating.value = true
   try {
     interface CreateClientResponse {
       user: {
@@ -351,7 +354,7 @@ const createClient = async () => {
     } else {
       toast.success({ message: t('master.clientCreate.messages.success') })
     }
-    emitClientCreated()
+    await invalidateClients()
     open.value = false
     Object.assign(newClient.value, initClient())
     keywordsInput.value = ''
@@ -359,6 +362,8 @@ const createClient = async () => {
     toast.error({
       message: e.data?.message || t('master.clientCreate.messages.createFailed'),
     })
+  } finally {
+    creating.value = false
   }
 }
 </script>

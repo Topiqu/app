@@ -12,7 +12,14 @@
           class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-blue-800 text-sm font-medium"
         >
           {{ tag.tag.name }}
-          <Button icon="mdi:close" size="sm" variant="danger" class="!rounded-full" @click="removeTag(tag.tagId)" />
+          <Button
+            icon="mdi:close"
+            size="sm"
+            variant="danger"
+            :disabled="isBusy"
+            class="!rounded-full"
+            @click="removeTag(tag.tagId)"
+          />
         </div>
       </div>
       <div class="flex flex-col gap-4 mt-6">
@@ -23,7 +30,9 @@
             class="flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             @input="updateSlug"
           />
-          <Button @click="addCustomTag">{{ $t('articles.tags.addButton') }}</Button>
+          <Button :disabled="isBusy || !newTag.name.trim()" @click="addCustomTag">{{
+            $t('articles.tags.addButton')
+          }}</Button>
         </div>
         <div class="flex gap-2">
           <select
@@ -35,7 +44,9 @@
               {{ tag.name }}
             </option>
           </select>
-          <Button @click="addExistingTag">{{ $t('articles.tags.addButton') }}</Button>
+          <Button :disabled="isBusy || !selectedTagId" @click="addExistingTag">{{
+            $t('articles.tags.addButton')
+          }}</Button>
         </div>
       </div>
     </template>
@@ -48,65 +59,91 @@
 
 <script setup lang="ts">
 import slugify from 'slugify'
+import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 
 const toast = useToast()
 const open = defineModel<boolean>()
 const props = defineProps<{ articleId: string }>()
 
-const { onArticleUpdated } = useArticleEvent()
+const queryCache = useQueryCache()
+const requestFetch = useRequestFetch()
 
-let newTag = shallowReactive<{ name: string; slug: string }>({ name: '', slug: '' })
+const newTag = shallowReactive<{ name: string; slug: string }>({ name: '', slug: '' })
 const selectedTagId = shallowRef<string>('')
 
-const { data: articleTags, refresh: refreshTags } = useFetch(
-  `/api/articles/${props.articleId}/tags` as `/api/articles/:id/tags`,
-  { default: () => [] },
-)
+type ArticleTagRow = { tagId: string; tag: { id: string; name: string } }
+type AvailableTag = { id: string; name: string }
 
-const { data: availableTags, refresh: refreshAvailableTags } = useFetch(
-  `/api/articles/${props.articleId}/available-tags` as `/api/articles/:id/available-tags`,
-  { default: () => [] },
-)
-
-onArticleUpdated(() => {
-  refreshTags()
-  refreshAvailableTags()
+const { data: articleTags } = useQuery({
+  key: () => queryKeys.articles.tags(props.articleId),
+  query: () => requestFetch<ArticleTagRow[]>(`/api/articles/${props.articleId}/tags`),
+  placeholderData: () => [],
 })
+
+const { data: availableTags } = useQuery({
+  key: () => queryKeys.articles.availableTags(props.articleId),
+  query: () => requestFetch<AvailableTag[]>(`/api/articles/${props.articleId}/available-tags`),
+  placeholderData: () => [],
+})
+
+const invalidateTags = () => queryCache.invalidateQueries({ key: queryKeys.articles.detail(props.articleId) })
 
 const updateSlug = () => (newTag.slug = slugify(newTag.name, { lower: true, strict: true, trim: true }))
 
-const apiCall = async (url: string, method: 'POST' | 'DELETE', body?: any) => {
-  try {
-    await $fetch(url, { method, body })
-    await Promise.all([refreshTags(), refreshAvailableTags()])
-    toast.success({
-      message: method === 'POST' ? $t('articles.tags.addTagSuccess') : $t('articles.tags.removeTagSuccess'),
-    })
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('articles.tags.operationFailed') })
-  }
-}
+const onTagError = (e: any) => toast.error({ message: e.data?.message || $t('articles.tags.operationFailed') })
 
-const addCustomTag = async () => {
-  if (!newTag.name.trim()) return
-  updateSlug()
-  try {
+const { mutate: addTag, isLoading: isAdding } = useMutation({
+  mutation: async (tagId: string) => {
+    await $fetch(`/api/articles/${props.articleId}/tags` as `/api/articles/:id/tags`, {
+      method: 'POST',
+      body: { tagId },
+    })
+  },
+  onSuccess: () => toast.success({ message: $t('articles.tags.addTagSuccess') }),
+  onError: onTagError,
+  onSettled: invalidateTags,
+})
+
+const { mutate: removeTag, isLoading: isRemoving } = useMutation({
+  mutation: async (tagId: string) => {
+    await $fetch(`/api/articles/${props.articleId}/tags/${tagId}`, { method: 'DELETE' })
+  },
+  onSuccess: () => toast.success({ message: $t('articles.tags.removeTagSuccess') }),
+  onError: onTagError,
+  onSettled: invalidateTags,
+})
+
+const { mutate: createAndAddTag, isLoading: isCreating } = useMutation({
+  mutation: async () => {
     const tag = await $fetch('/api/tags', {
       method: 'POST',
       body: { name: newTag.name.trim(), slug: newTag.slug },
     })
-    await apiCall(`/api/articles/${props.articleId}/tags`, 'POST', { tagId: tag.id })
-    newTag = { name: '', slug: '' }
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('articles.tags.addCustomTagFailed') })
-  }
+    await $fetch(`/api/articles/${props.articleId}/tags` as `/api/articles/:id/tags`, {
+      method: 'POST',
+      body: { tagId: tag.id },
+    })
+  },
+  onSuccess: () => {
+    newTag.name = ''
+    newTag.slug = ''
+    toast.success({ message: $t('articles.tags.addTagSuccess') })
+  },
+  onError: (e: any) => toast.error({ message: e.data?.message || $t('articles.tags.addCustomTagFailed') }),
+  onSettled: invalidateTags,
+})
+
+const isBusy = computed(() => isAdding.value || isRemoving.value || isCreating.value)
+
+const addCustomTag = () => {
+  if (!newTag.name.trim() || isBusy.value) return
+  updateSlug()
+  createAndAddTag()
 }
 
-const addExistingTag = async () => {
-  if (!selectedTagId.value) return
-  await apiCall(`/api/articles/${props.articleId}/tags`, 'POST', { tagId: selectedTagId.value })
+const addExistingTag = () => {
+  if (!selectedTagId.value || isBusy.value) return
+  addTag(selectedTagId.value)
   selectedTagId.value = ''
 }
-
-const removeTag = async (id: string) => await apiCall(`/api/articles/${props.articleId}/tags/${id}`, 'DELETE')
 </script>

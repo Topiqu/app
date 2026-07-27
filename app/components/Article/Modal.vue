@@ -209,7 +209,7 @@ const { data: auth } = useAuth()
 const open = defineModel<boolean>()
 const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
 const { idle } = useIdle(5 * 60 * 1000)
-const { emitArticleCreated, emitArticleUpdated } = useArticleEvent()
+const { invalidateArticles, invalidateArticleDetail, invalidateArticlesAndStats } = useCacheInvalidation()
 const client = await useClientSite()
 const status = await useClientSiteStatus()
 const emit = defineEmits(['saved'])
@@ -312,7 +312,7 @@ const addTagToArticle = async (tagId: string) => {
   if (props.article?.id) {
     await $fetch(`/api/articles/${props.article.id}/tags`, { method: 'POST', body: { tagId } })
     toast.success({ message: $t('articles.tags.addTagSuccess') })
-    emitArticleUpdated()
+    await invalidateArticleDetail(props.article.id)
   } else {
     if (!articleTags.value.includes(tagId)) articleTags.value.push(tagId)
   }
@@ -322,7 +322,7 @@ const deleteTagFromArticle = async (tagId: string) => {
   if (props.article?.id) {
     await $fetch(`/api/articles/${props.article.id}/tags/${tagId}`, { method: 'DELETE' })
     toast.success({ message: $t('articles.tags.removeTagSuccess') })
-    emitArticleUpdated()
+    await invalidateArticleDetail(props.article.id)
   } else {
     articleTags.value = articleTags.value.filter((id) => id !== tagId)
   }
@@ -352,7 +352,7 @@ const createArticle = async () => {
     Object.assign(editedArticle.value, init())
     articleTags.value = []
     selectedSeries.value = null
-    emitArticleCreated()
+    await invalidateArticlesAndStats()
     open.value = false
   } catch (error: any) {
     toast.error({ message: $t('articles.editor.createFailed') + error.data?.message })
@@ -376,7 +376,7 @@ const saveEdit = async () => {
         articleSeriesId: selectedSeries.value?.id || null,
       },
     })
-    emitArticleUpdated()
+    await invalidateArticles()
     toast.success({ message: $t('common.messages.saveSuccess') })
     open.value = false
     emit('saved')

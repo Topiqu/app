@@ -10,7 +10,11 @@
         />
       </div>
     </div>
-    <div class="overflow-x-auto rounded border border-gray-300 sm:block hidden">
+    <div
+      class="overflow-x-auto rounded border border-gray-300 sm:block hidden transition-opacity duration-200"
+      :class="isRefetching ? 'opacity-50 pointer-events-none' : ''"
+      :aria-busy="isRefetching"
+    >
       <table class="w-full table-auto text-sm divide-y divide-gray-200">
         <thead class="bg-gray-100 text-left font-semibold text-black">
           <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
@@ -67,7 +71,7 @@
               <LazyClientUsers v-slot="{ open }" :clientId="row.original.id" hydrateOnInteraction>
                 <Button icon="mdi:eye" variant="success" @click="open.value = true" />
               </LazyClientUsers>
-              <LazyClientEdit v-slot="{ open }" :client="row.original" hydrateOnInteraction @saved="refresh">
+              <LazyClientEdit v-slot="{ open }" :client="row.original" hydrateOnInteraction @saved="invalidateClients">
                 <Button icon="mdi:pencil" variant="primary" @click="open.value = true" />
               </LazyClientEdit>
               <Button
@@ -83,7 +87,11 @@
       </table>
       <Pagination :page="page" :totalPages="totalPages" :prevPage="prevPage" :nextPage="nextPage" class="mt-6" />
     </div>
-    <div class="sm:hidden space-y-4">
+    <div
+      class="sm:hidden space-y-4 transition-opacity duration-200"
+      :class="isRefetching ? 'opacity-50 pointer-events-none' : ''"
+      :aria-busy="isRefetching"
+    >
       <div
         v-for="row in table.getRowModel().rows"
         :key="row.id"
@@ -120,7 +128,12 @@
                 <LazyClientUsers v-slot="{ open }" :clientId="row.original.id" hydrateOnInteraction>
                   <Button icon="mdi:eye" variant="success" @click="open.value = true" />
                 </LazyClientUsers>
-                <LazyClientEdit v-slot="{ open }" :client="row.original" hydrateOnInteraction @saved="refresh">
+                <LazyClientEdit
+                  v-slot="{ open }"
+                  :client="row.original"
+                  hydrateOnInteraction
+                  @saved="invalidateClients"
+                >
                   <Button icon="mdi:pencil" variant="primary" @click="open.value = true" />
                 </LazyClientEdit>
                 <Button
@@ -189,6 +202,7 @@
 <script setup lang="ts">
 import type { ClientSite } from '@zenstackhq/runtime/models'
 
+import { useQuery } from '@pinia/colada'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
   type ColumnDef,
@@ -200,7 +214,8 @@ import {
 } from '@tanstack/vue-table'
 
 const { t } = useI18n()
-const { onClientCreated, onClientDeleted } = useClientEvent()
+const { invalidateClients } = useCacheInvalidation()
+const requestFetch = useRequestFetch()
 const toast = useToast()
 const activateDialog = useTemplateRef<ModalMiniRef>('activateDialog')
 const deleteOpen = shallowRef<boolean>(false)
@@ -213,17 +228,25 @@ const dropdownRef = ref<HTMLElement | null>(null)
 const limit = 20
 const page = shallowRef(Number(route.query.page) || 1)
 const globalFilter = shallowRef((route.query.query as string) || '')
+const debouncedFilter = refDebounced(globalFilter, 400)
 
-const { data: clients, refresh } = await useFetch<{ data: ClientSite[]; total: number }>(
-  () =>
-    `/api/clients?page=${page.value}&limit=${limit}${globalFilter.value ? `&query=${encodeURIComponent(globalFilter.value)}` : ''}`,
-  {
-    default: () => ({ data: [], total: 0 }),
-    watch: [page, globalFilter],
-  },
-)
+const { data: clients, asyncStatus } = useQuery({
+  key: () => queryKeys.clients.list(page.value, debouncedFilter.value),
+  query: () =>
+    requestFetch<{ data: ClientSite[]; total: number }>(
+      `/api/clients?page=${page.value}&limit=${limit}${debouncedFilter.value ? `&query=${encodeURIComponent(debouncedFilter.value)}` : ''}`,
+    ),
+  placeholderData: (previous) => previous,
+})
 
+const rows = computed(() => clients.value?.data ?? [])
 const totalPages = computed(() => Math.ceil((clients.value?.total || 0) / limit))
+const isRefetching = computed(() => asyncStatus.value === 'loading')
+
+watch(debouncedFilter, () => {
+  page.value = 1
+  router.push({ query: { ...route.query, page: undefined, query: debouncedFilter.value || undefined } })
+})
 
 const prevPage = () => {
   if (page.value > 1) {
@@ -269,7 +292,7 @@ const columns = ref<ColumnDef<ClientSite>[]>([
 
 const table = useVueTable({
   get data() {
-    return clients.value.data || []
+    return rows.value
   },
   get columns() {
     return columns.value
@@ -316,23 +339,22 @@ const performDelete = async (mode: 'hard' | 'soft') => {
     try {
       await $fetch(`/api/clients/${target.id}?hard=true` as `api/clients/:id`, { method: 'DELETE' })
       toast.success({ message: t('master.clientTable.messages.permanentlyDeleted') })
-      await refresh()
     } catch (e: any) {
       toast.error({ message: e.data?.message || t('master.clientTable.messages.deleteFailed') })
+    } finally {
+      await invalidateClients()
     }
   } else {
     try {
       await $fetch(`/api/clients/${target.id}` as `api/clients/:id`, { method: 'DELETE' })
       toast.success({ message: t('master.clientTable.messages.deactivated') })
-      await refresh()
     } catch (e: any) {
       toast.error({ message: e.data?.message || t('master.clientTable.messages.deactivateFailed') })
+    } finally {
+      await invalidateClients()
     }
   }
 }
-
-onClientCreated(refresh)
-onClientDeleted(refresh)
 
 const restore = async (id: string) => {
   const r = await activateDialog.value?.ask({
@@ -349,10 +371,10 @@ const restore = async (id: string) => {
     await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'PATCH', body: { deletedAt: null } })
 
     toast.success({ message: t('master.clientTable.messages.activated') })
-
-    await refresh()
   } catch (e: any) {
     toast.error({ message: e.data?.message || t('master.clientTable.messages.activateFailed') })
+  } finally {
+    await invalidateClients()
   }
 }
 
