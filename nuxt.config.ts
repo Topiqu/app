@@ -76,6 +76,7 @@ export default defineNuxtConfig({
     turnstile: { secretKey: process.env.TURNSTILE_SECRET_KEY || '' },
     openModerator: { apiKey: process.env.OPENMODERATOR_API_KEY },
     xai: { apiKey: process.env.XAI_API_KEY },
+    googleAi: { apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY },
     auth: { secret: process.env.AUTH_SECRET },
     email: {
       from: process.env.EMAIL_FROM || `"TOPIQU BLOG" <${process.env.NUXT_MAIL_USER}>`,
