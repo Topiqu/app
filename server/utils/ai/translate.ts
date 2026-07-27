@@ -184,7 +184,7 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
   const targetName = LANGUAGE_NAMES[targetLang]
   const { masked, verbatim, polls, images, attrs } = maskContentBlocks(article.content)
 
-  const system = `
+  const instructions = `
     You are a professional translator. Translate the supplied article into ${targetName}.
     Rules:
     - Preserve ALL HTML tags, attributes, and overall structure exactly.
@@ -198,9 +198,9 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
   `.trim()
 
   const { object, usage } = await generateObject({
-    model: xai('grok-4-1-fast'),
+    model: aiModel('translation'),
     maxOutputTokens: Math.min(20000, Math.ceil(masked.length / 3) + 1000),
-    system,
+    instructions,
     prompt: JSON.stringify({
       title: article.title,
       excerpt: article.excerpt ?? '',

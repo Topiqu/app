@@ -51,6 +51,12 @@ test:
   - 🟢 remake ArticleModal Drafts with ModalMini
 ---
 optional:
+  - deps to upgrade
+    - 🛑 @sidebase/nuxt-auth 1.2.0 -> 1.3.1 — pulls @auth/core 0.41.3, fixes critical auth bypass GHSA-7rqj-j65f-68wh (exact-pinned, bun update won't do it)
+    - 🟡 @pinia/nuxt 0.11.3 -> 1.0.1
+    - 🟢 ua-parser-js -> 2.0.10
+    - 🔰 @prisma/client 6 -> 7 — NO
+  - 🟡 gemini-3.1-pro-preview is a preview id (server/utils/ai/modelRegistry.ts) — recheck before GA/retirement
   - further clientsite customization
     - 🛑 more color variety
     - 🟡 background shapes/patterns

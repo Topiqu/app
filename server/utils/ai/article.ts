@@ -1,4 +1,4 @@
-import { generateObject, streamObject } from 'ai'
+import { generateObject, generateText, streamObject } from 'ai'
 
 import { fetchUnsplashImage } from '../unsplash'
 
@@ -47,6 +47,35 @@ const articleSchema = z.object({
 
 type ArticleObject = (typeof articleSchema)['_output']
 
+const researchTopic = async (prompt: string, maxSearchResults: number) => {
+  try {
+    const { text } = await generateText({
+      model: aiModel('articleResearch'),
+      instructions: `
+        You are a research assistant preparing grounding material for another writer.
+        Search the live web and the X network for the user's topic.
+        Return a compact brief: 5-10 verified facts, each on its own line.
+        Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
+        Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
+        Do not write an article, an intro, or any prose beyond the facts.
+      `.trim(),
+      prompt,
+      maxOutputTokens: 1200,
+      providerOptions: {
+        xai: {
+          searchParameters: { mode: 'on', maxSearchResults },
+        },
+      },
+    })
+
+    return text.trim() || null
+  } catch (e: any) {
+    console.error('[ai/article] research step failed, continuing ungrounded:', e?.message || e)
+
+    return null
+  }
+}
+
 const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
   const { tokenRemaining, plan, focus, keywords, audience, tags, aiToneOfVoice, aiControversyLevel, communityInsight } =
     await prisma.clientSite.findFirstOrThrow({
@@ -86,16 +115,23 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
 
   const controversyPrompt = getControversyPrompt(aiControversyLevel)
 
+  const searchOn = plan === 'PREMIUM' || (plan === 'CUSTOM' && maxOutputTokens > 5000)
+  const research = searchOn ? await researchTopic(prompt, 10) : null
+
+  const researchPrompt = research
+    ? `\nResearch brief (gathered from live web/X search — this is your only factual grounding):\n${research}\nEvery entry in "sources" MUST be a URL that appears verbatim in this brief. If the brief lists no URLs, return an empty sources array. Never invent or reconstruct a source URL.`
+    : `\nYou have no live search results for this article. Return an empty "sources" array rather than inventing URLs.`
+
   const communityPrompt = communityInsight
     ? `\nCommunity Insights to consider:\n- Audience mood summary: ${(communityInsight as any).summary}\n- Frequently discussed points: ${((communityInsight as any).topPoints || []).join(', ')}\nEnsure the article subtly addresses or acknowledges these current community feelings and discussion points where relevant.`
     : ''
 
-  const system = `
+  const instructions = `
       You are a professional content writer focusing on ${focus || 'common topics'}.
       Write a detailed, well-structured article based on the user prompt aiming on ${audience || 'wide audience'}.
       Use appropriate headings, subheadings, and formatting.
       ${aiToneOfVoice ? `Write in the following tone of voice: ${aiToneOfVoice}.` : ''}
-      ${controversyPrompt}${communityPrompt}
+      ${controversyPrompt}${communityPrompt}${researchPrompt}
       Respond ONLY in valid JSON format with the structure:
       {
         "title": "catchy title 5-15 words",
@@ -128,23 +164,13 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
       Only select tags from this list: ${JSON.stringify(tags || [])}.
     `.trim()
 
-  const searchOn = plan === 'PREMIUM' || (plan === 'CUSTOM' && maxOutputTokens > 5000)
-
   return {
-    model: xai('grok-4-1-fast'),
+    model: aiModel('articleWriter'),
     maxOutputTokens,
-    system,
+    instructions,
     prompt,
-    providerOptions: {
-      xai: {
-        searchParameters: {
-          mode: searchOn ? 'on' : 'off',
-          maxSearchResults: searchOn ? 10 : 5,
-        },
-      },
-    },
     schema: articleSchema,
-  } as const
+  } as const;
 }
 
 type FinalizeImage = { slot: number; html: string }

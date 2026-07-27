@@ -95,7 +95,7 @@ export default defineMonitoredTask({
             content: sanitizeHtml(translated.content),
             status: finalStatus,
             source: 'AI',
-            model: 'grok-4-1-fast',
+            model: aiModelId('translation'),
             usage,
             error: null,
             translatedAt: new Date(),

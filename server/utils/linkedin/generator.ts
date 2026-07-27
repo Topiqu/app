@@ -1,6 +1,6 @@
 import { generateText } from 'ai'
 
-import xai from '../ai/xai'
+import { aiModel } from '../ai/models'
 
 export async function generateContentForTask(topic: string, brandProfile: any, communityInsight?: any) {
   const tone = brandProfile?.tone || 'professional'
@@ -30,7 +30,7 @@ export async function generateContentForTask(topic: string, brandProfile: any, c
   `.trim()
 
   const { text } = await generateText({
-    model: xai('grok-4-1-fast'),
+    model: aiModel('linkedinPost'),
     prompt,
   })
 

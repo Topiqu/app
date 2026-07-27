@@ -28,8 +28,8 @@ export const detectSentiment = async (text: string, plan: ClientPlan) => {
   const schema = plan === 'PREMIUM' ? premiumSchema : basicSchema
 
   const { object, usage } = await generateObject({
-    model: xai('grok-4-1-fast-reasoning'),
-    system:
+    model: aiModel('sentiment'),
+    instructions:
       plan === 'PREMIUM'
         ? `Analyze sentiment with 5-tier label, emotion breakdown, toxicity, helpfulness, sarcasm. Extract main point in ≤75 chars. Score -1 to 1. Return ONLY valid JSON.`
         : `Analyze sentiment with 3-tier label. Score -1 to 1. Return ONLY valid JSON.`,

@@ -1,8 +1,6 @@
-import type { Tool } from 'ai'
+import { tool } from 'ai'
 
-export const generateImageTool: Tool = {
-  id: `internal.image` as `${string}.${string}`,
-  name: 'Image',
+export const generateImageTool = tool({
   description: 'Generate an image based on a given prompt. Input should be a text prompt describing the desired image.',
   inputSchema: z.object({ prompt: z.string() }),
   outputSchema: z.object({ prompt: z.string(), url: z.string() }),
@@ -10,4 +8,4 @@ export const generateImageTool: Tool = {
     const { url } = await generateImage(prompt)
     return { prompt, url }
   },
-}
+})

@@ -1,6 +1,16 @@
 import { join } from 'path'
 import { mkdir, writeFile } from 'fs/promises'
-import { experimental_generateImage as generateImg } from 'ai'
+import { generateImage as generateImg } from 'ai'
+
+const IMAGE_EXTENSIONS: Record<string, string> = {
+  'image/webp': 'webp',
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/gif': 'gif',
+  'image/avif': 'avif',
+}
+
+export const imageExtension = (mediaType: string) => IMAGE_EXTENSIONS[mediaType.trim().toLowerCase()] ?? 'png'
 
 export const generateImage = async (
   prompt: string,
@@ -13,7 +23,7 @@ export const generateImage = async (
   const { outputDir = 'article-images', filenamePrefix = 'article', filenameSuffix } = opts
 
   const output = await generateImg({
-    model: xai.image('grok-2-image'),
+    model: aiImageModel('articleImage'),
     prompt: prompt.trim().slice(0, 1024),
     maxImagesPerCall: 1,
     n: 1,
@@ -23,7 +33,7 @@ export const generateImage = async (
     (filenamePrefix ? filenamePrefix + '-' : '') +
     `${Date.now()}` +
     (filenameSuffix ? '-' + filenameSuffix : ``) +
-    `.webp`
+    `.${imageExtension(output.image.mediaType)}`
   const uploadDir = join(process.cwd(), `public/${outputDir}`)
   await mkdir(uploadDir, { recursive: true })
   const filePath = join(uploadDir, filename)
