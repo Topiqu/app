@@ -58,6 +58,14 @@
               </td>
             </tr>
           </template>
+          <tr v-else-if="loadFailed" class="text-center">
+            <td colspan="5" class="px-4 py-10">
+              <Icon name="mdi:alert-circle-outline" class="w-12 h-12 text-red-500 mx-auto" />
+              <p class="mt-4 text-xl text-gray-700 dark:text-gray-200">{{ $t('common.messages.loadFailedTitle') }}</p>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $t('common.messages.loadFailedText') }}</p>
+              <Button class="mt-4" icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
+            </td>
+          </tr>
           <tr v-else-if="rows.length === 0" class="text-center">
             <td colspan="5" class="px-4 py-10">
               <NuxtImg src="/topik_smutny_rm.png" :alt="$t('articles.noResults.imageAlt')" class="mx-auto w-32" />
@@ -183,6 +191,13 @@
         <div class="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
         <div class="h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
       </div>
+    </div>
+
+    <div v-else-if="loadFailed" class="sm:hidden p-6 rounded-lg border border-red-300 text-center space-y-2">
+      <Icon name="mdi:alert-circle-outline" class="w-10 h-10 text-red-500 mx-auto" />
+      <p class="text-lg text-gray-700 dark:text-gray-200">{{ $t('common.messages.loadFailedTitle') }}</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('common.messages.loadFailedText') }}</p>
+      <Button icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
     </div>
 
     <div
@@ -319,7 +334,6 @@
 import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
-import { useMutation, useQuery } from '@pinia/colada'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
   type ColumnDef,
@@ -350,6 +364,8 @@ const {
   data: articles,
   asyncStatus,
   isPending,
+  error,
+  refetch,
 } = useQuery({
   key: () => queryKeys.articles.list(page.value, debouncedFilter.value),
   query: () =>
@@ -362,6 +378,7 @@ const {
 const rows = computed(() => articles.value?.data ?? [])
 const totalPages = computed(() => Math.ceil((articles.value?.total ?? 0) / limit))
 const isRefetching = computed(() => asyncStatus.value === 'loading' && !isPending.value)
+const loadFailed = computed(() => !!error.value && rows.value.length === 0)
 
 const prevPage = () => {
   if (page.value > 1) {

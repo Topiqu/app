@@ -264,7 +264,10 @@
       "unsaved": "Unsaved",
       "discardChangesTitle": "Discard changes?",
       "discardChangesText": "All unsaved changes will be lost.",
-      "discardConfirm": "Discard"
+      "discardConfirm": "Discard",
+      "loadFailedTitle": "Loading failed",
+      "loadFailedText": "We could not load the data. Please try again.",
+      "retry": "Try again"
     },
     "sortOptions": {
       "newest": "Newest",

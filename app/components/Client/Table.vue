@@ -44,7 +44,15 @@
           </tr>
         </thead>
         <tbody v-auto-animate class="text-gray-800 dark:text-gray-200 divide-y divide-gray-200">
-          <tr v-for="row in table.getRowModel().rows" :key="row.id">
+          <tr v-if="loadFailed" class="text-center">
+            <td colspan="5" class="px-4 py-10">
+              <Icon name="mdi:alert-circle-outline" class="w-12 h-12 text-red-500 mx-auto" />
+              <p class="mt-4 text-xl text-gray-700 dark:text-gray-200">{{ $t('common.messages.loadFailedTitle') }}</p>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $t('common.messages.loadFailedText') }}</p>
+              <Button class="mt-4" icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
+            </td>
+          </tr>
+          <tr v-for="row in table.getRowModel().rows" v-else :key="row.id">
             <td
               v-for="cell in row.getVisibleCells()"
               :key="cell.id"
@@ -87,7 +95,15 @@
       </table>
       <Pagination :page="page" :totalPages="totalPages" :prevPage="prevPage" :nextPage="nextPage" class="mt-6" />
     </div>
+    <div v-if="loadFailed" class="sm:hidden p-6 rounded-lg border border-red-300 text-center space-y-2">
+      <Icon name="mdi:alert-circle-outline" class="w-10 h-10 text-red-500 mx-auto" />
+      <p class="text-lg text-gray-700 dark:text-gray-200">{{ $t('common.messages.loadFailedTitle') }}</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('common.messages.loadFailedText') }}</p>
+      <Button icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
+    </div>
+
     <div
+      v-else
       class="sm:hidden space-y-4 transition-opacity duration-200"
       :class="isRefetching ? 'opacity-50 pointer-events-none' : ''"
       :aria-busy="isRefetching"
@@ -202,7 +218,6 @@
 <script setup lang="ts">
 import type { ClientSite } from '@zenstackhq/runtime/models'
 
-import { useQuery } from '@pinia/colada'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import {
   type ColumnDef,
@@ -230,7 +245,12 @@ const page = shallowRef(Number(route.query.page) || 1)
 const globalFilter = shallowRef((route.query.query as string) || '')
 const debouncedFilter = refDebounced(globalFilter, 400)
 
-const { data: clients, asyncStatus } = useQuery({
+const {
+  data: clients,
+  asyncStatus,
+  error,
+  refetch,
+} = useQuery({
   key: () => queryKeys.clients.list(page.value, debouncedFilter.value),
   query: () =>
     requestFetch<{ data: ClientSite[]; total: number }>(
@@ -242,6 +262,7 @@ const { data: clients, asyncStatus } = useQuery({
 const rows = computed(() => clients.value?.data ?? [])
 const totalPages = computed(() => Math.ceil((clients.value?.total || 0) / limit))
 const isRefetching = computed(() => asyncStatus.value === 'loading')
+const loadFailed = computed(() => !!error.value && rows.value.length === 0)
 
 watch(debouncedFilter, () => {
   page.value = 1

@@ -265,7 +265,10 @@
       "unsaved": "Neuloženo",
       "discardChangesTitle": "Zahodit změny?",
       "discardChangesText": "Všechny neuložené změny budou ztraceny.",
-      "discardConfirm": "Zahodit"
+      "discardConfirm": "Zahodit",
+      "loadFailedTitle": "Načtení se nezdařilo",
+      "loadFailedText": "Data se nepodařilo načíst. Zkuste to prosím znovu.",
+      "retry": "Zkusit znovu"
     },
     "sortOptions": {
       "newest": "Nejnovější",

@@ -12,6 +12,17 @@
         </div>
       </div>
 
+      <div v-else-if="loadFailed" class="text-center py-8">
+        <div class="flex flex-col items-center gap-3">
+          <Icon name="mdi:alert-circle-outline" class="w-12 h-12 text-red-500" />
+          <p class="text-xl font-medium text-gray-700 dark:text-gray-200">
+            {{ $t('common.messages.loadFailedTitle') }}
+          </p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('common.messages.loadFailedText') }}</p>
+          <Button icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
+        </div>
+      </div>
+
       <div v-else-if="stats.articleCount === 0" class="text-center py-8">
         <div class="flex flex-col items-center gap-4 text-gray-500">
           <Icon name="mdi:book-off" class="w-12 h-12 text-gray-400" />
@@ -312,7 +323,6 @@
 <script setup lang="ts">
 import type { InternalApi } from 'nitropack/types'
 
-import { useQuery } from '@pinia/colada'
 import { directive as vTippy } from 'vue-tippy'
 
 type DashboardStats = InternalApi['/api/stats/dashboard']['default']
@@ -327,10 +337,17 @@ const clientSite = await useClientSite()
 const isBasicPlan = computed(() => authData.value?.user.plan === 'BASIC')
 const showTopTags = shallowRef(false)
 
-const { data: dashboard, isPending: pending } = useQuery({
+const {
+  data: dashboard,
+  isPending: pending,
+  error,
+  refetch,
+} = useQuery({
   key: () => queryKeys.stats.dashboard,
   query: () => requestFetch<DashboardStats>('/api/stats/dashboard'),
 })
+
+const loadFailed = computed(() => !!error.value && !dashboard.value)
 
 const { data: rawInsight } = useQuery({
   key: () => queryKeys.stats.sentiment,
