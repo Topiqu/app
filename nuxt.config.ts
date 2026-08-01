@@ -77,6 +77,7 @@ export default defineNuxtConfig({
     openModerator: { apiKey: process.env.OPENMODERATOR_API_KEY },
     xai: { apiKey: process.env.XAI_API_KEY },
     googleAi: { apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY },
+    openAi: { apiKey: process.env.OPENAI_API_KEY },
     auth: { secret: process.env.AUTH_SECRET },
     email: {
       from: process.env.EMAIL_FROM || `"TOPIQU BLOG" <${process.env.NUXT_MAIL_USER}>`,
@@ -89,7 +90,10 @@ export default defineNuxtConfig({
 
   $production: {
     nitro: {
-      preset: 'vercel',
+      // Vercel stays the default until the Dokploy cutover is proven (MIGRATION.md §1.1).
+      // The Docker build sets NITRO_PRESET=node-server; an explicit config value would
+      // otherwise win over the env var, so it is read here rather than hardcoded.
+      preset: process.env.NITRO_PRESET || 'vercel',
     },
   },
   app: {
@@ -113,7 +117,7 @@ export default defineNuxtConfig({
       '*/10 * * * *': ['publish-check'],
       '0 15 * * *': ['generate-article'],
       '*/30 * * * *': ['sentiment-analysis'],
-      '0 3 * * * *': ['community-insights'],
+      '0 3 * * *': ['community-insights'],
       '*/5 * * * *': ['translate-pending'],
       '0 4 * * *': ['gam-sync'],
     },

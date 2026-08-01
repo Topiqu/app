@@ -176,7 +176,7 @@ export const rebuildContent = (
 }
 
 /**
- * Translates an article into `targetLang` via xAI, preserving structure and poll/
+ * Translates an article into `targetLang` via `aiModel('translation')`, preserving structure and poll/
  * embed integrity (ids never reach the model). Pure of billing — the caller charges
  * tokens from the returned `usage` via `consumeClientTokens`.
  */

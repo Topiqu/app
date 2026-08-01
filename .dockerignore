@@ -1,0 +1,41 @@
+# Build outputs — regenerated inside the image
+.output
+.nuxt
+.nitro
+.data
+.cache
+dist
+shared/zod
+
+# Dependencies — reinstalled from the lockfile
+node_modules
+
+# Secrets — env is injected by the host (Dokploy), never baked into a layer
+.env
+.env.*
+!.env.example
+.vercel
+
+# VCS / CI / editor
+.git
+.github
+.vscode
+.idea
+.fleet
+.claude
+.qodo
+
+# Docs & local tooling
+*.md
+todo
+docker-compose.yml
+.pr_agent.toml
+
+# Tests — not needed at runtime, and CI already gates them
+tests
+vitest.config.ts
+
+# Misc
+.DS_Store
+logs
+*.log

@@ -5,6 +5,7 @@ import {
   AI_IMAGE_MODELS,
   AI_MODELS,
   aiImageModelId,
+  aiImageModelProvider,
   aiModelId,
   aiModelProvider,
 } from '../../server/utils/ai/modelRegistry'
@@ -24,6 +25,9 @@ const RETIRED_MODEL_IDS = [
   'grok-2-image',
 ]
 
+// Google shuts the Imagen family down on 2026-08-17; nothing may point at it.
+const RETIRED_MODEL_PATTERNS = [/^imagen-/]
+
 describe('AI model registry', () => {
   it('never points a task at a model xAI retired on 2026-05-15', () => {
     for (const [task, { id }] of ALL_ENTRIES) {
@@ -31,9 +35,17 @@ describe('AI model registry', () => {
     }
   })
 
+  it('never points a task at a model Google is retiring on 2026-08-17', () => {
+    for (const [task, { id }] of ALL_ENTRIES) {
+      for (const pattern of RETIRED_MODEL_PATTERNS) {
+        expect(pattern.test(id), `task "${task}" uses retired model "${id}"`).toBe(false)
+      }
+    }
+  })
+
   it('declares a known provider and a non-empty id for every task', () => {
     for (const [task, { provider, id }] of ALL_ENTRIES) {
-      expect(['xai', 'google'], `task "${task}"`).toContain(provider)
+      expect(['xai', 'google', 'openai'], `task "${task}"`).toContain(provider)
       expect(id.trim(), `task "${task}"`).not.toBe('')
     }
   })
@@ -48,12 +60,14 @@ describe('AI model registry', () => {
     expect(aiModelProvider('articleWriter')).toBe('google')
   })
 
-  it('generates article images with Imagen 4', () => {
-    expect(aiImageModelId('articleImage')).toMatch(/^imagen-4\./)
+  it('generates article images with a Gemini image model on the Google provider', () => {
+    expect(aiImageModelProvider('articleImage')).toBe('google')
+    expect(aiImageModelId('articleImage')).toMatch(/^gemini-.*-image$/)
   })
 
-  it('keeps the token-heavy translation task on the cheapest provider', () => {
-    expect(aiModelProvider('translation')).toBe('xai')
+  it('keeps the token-heavy translation task on a low-cost tier', () => {
+    expect(aiModelProvider('translation')).toBe('openai')
+    expect(aiModelId('translation')).toBe('gpt-5.6-luna')
   })
 })
 

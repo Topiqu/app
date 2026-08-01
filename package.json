@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "bun zenstack:generate && bun prisma:deploy && nuxt build",
+    "build:docker": "bun zenstack:generate && nuxt build",
+    "release": "bun prisma:deploy",
     "postinstall": "nuxt prepare",
     "predev": "docker compose up -d --wait",
     "dev": "nuxt dev",
@@ -31,6 +33,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "4.0.24",
+    "@ai-sdk/openai": "4.0.27",
     "@ai-sdk/vue": "4.0.37",
     "@ai-sdk/xai": "4.0.18",
     "@auth/core": "0.34.3",
@@ -106,7 +109,6 @@
     "otplib": "^12.0.1",
     "pdfkit": "^0.17.2",
     "pinia-plugin-persistedstate": "^4.7.1",
-    "playwright-core": "^1.58.2",
     "slugify": "^1.6.6",
     "tippy.js": "^6.3.7",
     "tocbot": "^4.36.4",

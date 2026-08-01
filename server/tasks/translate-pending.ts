@@ -7,7 +7,8 @@ const MIN_TRANSLATION_TOKENS = 500
 export default defineMonitoredTask({
   meta: {
     name: 'translate-pending',
-    description: 'Translate queued ArticleTranslation rows (PENDING/STALE) via xAI; AUTO publishes, HYBRID holds for review',
+    description:
+      'Translate queued ArticleTranslation rows (PENDING/STALE) via the registry translation model; AUTO publishes, HYBRID holds for review',
   },
   async run() {
     const now = new Date()
@@ -66,7 +67,7 @@ export default defineMonitoredTask({
       }
 
       // Out of budget: release the claim back to PENDING so it retries once the tenant tops up,
-      // instead of paying xAI for a translation we can't charge for.
+      // instead of paying the translation provider for a translation we can't charge for.
       if (!row.clientSite.tokenRemaining || row.clientSite.tokenRemaining < MIN_TRANSLATION_TOKENS) {
         await prisma.articleTranslation.update({ where: { id }, data: { status: 'PENDING' } })
         skipped++
