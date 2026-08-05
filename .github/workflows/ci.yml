@@ -14,8 +14,7 @@ concurrency:
 env:
   # Mock DB port, because quality doesn't use the DB
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rasg_test?schema=public
-  DIRECT_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rasg_test?schema=public
-  NUXT_TELEMETRY_DISABLED: '1'
+  NUXT_TELEMETRY_DISABLED: "1"
   NODE_ENV: test
   AUTH_SECRET: ci-mock-auth-secret-not-for-production
   AUTH_ORIGIN: http://localhost:3000
