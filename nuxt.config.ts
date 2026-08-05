@@ -88,14 +88,6 @@ export default defineNuxtConfig({
     awsS3BucketName: process.env.AWS_S3_BUCKET_NAME || '',
   },
 
-  $production: {
-    nitro: {
-      // Vercel stays the default until the Dokploy cutover is proven (MIGRATION.md §1.1).
-      // The Docker build sets NITRO_PRESET=node-server; an explicit config value would
-      // otherwise win over the env var, so it is read here rather than hardcoded.
-      preset: process.env.NITRO_PRESET || 'vercel',
-    },
-  },
   app: {
     head: {
       meta: [{ name: 'google-adsense-account', content: 'ca-pub-9731440718321055' }],
