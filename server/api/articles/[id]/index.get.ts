@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   const sessionId = getCookie(event, 'anon_session')
   const { clientSiteId, locale } = getQuery<{ clientSiteId: string; locale?: Language }>(event)
+  if (!clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
