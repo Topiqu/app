@@ -5,6 +5,7 @@
     "noResults": "No results found",
     "noItems": "No items",
     "readMore": "Read More",
+    "readMoreAbout": "about the article {title}",
     "close": "Close",
     "closeDialog": "Close dialog",
     "warning": "Warning",

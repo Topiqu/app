@@ -174,7 +174,7 @@ import type { User } from '@zenstackhq/runtime/models'
 const route = useRoute()
 const toast = useToast()
 const localePath = useLocalePath()
-const reqUrl = useRequestURL()
+const canonicalOrigin = useCanonicalOrigin()
 
 const { data: session } = useAuth()
 const clientSite = await useClientSite()
@@ -192,8 +192,6 @@ const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/$
   lazy: true,
   query: { limit: 3, clientSiteId: clientSite?.id },
 })
-
-const canonicalOrigin = `${import.meta.dev ? reqUrl.protocol : 'https:'}//${reqUrl.host.replace(/^www\./, '')}`
 
 const primaryLocale = computed(() => clientSite?.language ?? 'en')
 

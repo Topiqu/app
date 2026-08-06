@@ -12,7 +12,7 @@ A modern full-stack TypeScript blogging platform. Topiqu pairs a rich Tiptap-bas
 ## ✨ Features
 
 - 📝 **Rich Editor** — Tiptap 3 with custom extensions (`Poll`, `slashCommand`, `indent`), autosave, drafts, and quick release flow
-- 🤖 **AI (xAI / Grok)** — article generation, content enhancement, sentiment analysis, auto-image suggestions and LinkedIn post generator via `@ai-sdk/xai`; token consumption metered per `ClientSite` plan
+- 🤖 **AI (OpenAI)** — article generation, content enhancement, sentiment analysis, auto-image suggestions and LinkedIn post generator via `@ai-sdk/openai`; token consumption metered per `ClientSite` plan
 - 🔔 **Realtime** — Server-Sent Events notification system with an event publisher
 - 🏢 **Multi-tenant client sites** — per-tenant subdomains, custom apex domains with DNS (CNAME) verification, plan-gated white-labeling
 - 💳 **Billing** — Stripe subscriptions (`PRO` / `PREMIUM`) + ad-hoc token top-ups, webhook-driven plan changes, monthly / annual cycles
@@ -42,7 +42,7 @@ A modern full-stack TypeScript blogging platform. Topiqu pairs a rich Tiptap-bas
 | **ORM / Schema** | [Prisma 6](https://www.prisma.io) + [ZenStack v2](https://zenstack.dev) (access policy) |
 | **Database**     | PostgreSQL (via Docker Compose)                                                         |
 | **Editor**       | [Tiptap 3](https://tiptap.dev) with custom extensions                                   |
-| **AI**           | [Vercel AI SDK](https://sdk.vercel.ai) + [`@ai-sdk/xai`](https://x.ai) (Grok)           |
+| **AI**           | [Vercel AI SDK](https://sdk.vercel.ai) + [`@ai-sdk/openai`](https://platform.openai.com) |
 | **Billing**      | [Stripe](https://stripe.com) via `@unlok-co/nuxt-stripe` (subscriptions + token top-ups)|
 | **SEO**          | `@nuxtjs/seo`, `nuxt-og-image`, `nuxt-gtag`                                             |
 | **Cloud**        | AWS (S3, Rekognition, SES), Stripe, Vercel                                              |

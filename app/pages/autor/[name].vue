@@ -38,7 +38,7 @@
 import type { ArticleCardData } from '~~/shared/types/article'
 
 const route = useRoute()
-const reqUrl = useRequestURL()
+const canonicalOrigin = useCanonicalOrigin()
 const localePath = useLocalePath()
 
 const username = computed(() => decodeURIComponent(route.params.name as string).trim())
@@ -91,7 +91,7 @@ watch(page, debouncedRefresh)
 
 const canonicalUrl = computed(() => {
   const path = localePath({ name: 'autor-name', params: { name: username.value } })
-  return `${reqUrl.protocol}//${reqUrl.host}${path}`
+  return `${canonicalOrigin}${path}`
 })
 
 const hasSeoPlan = computed(() => clientSite?.plan !== 'BASIC')
