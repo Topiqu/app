@@ -16,8 +16,6 @@ interface BaseOAuthProfile {
 }
 
 const isProduction = process.env.NODE_ENV === 'production'
-// TODO: For strict multi-tenant (isolated accounts), set this to undefined to prevent session sharing across domains.
-const cookieDomain = isProduction ? '.topiqu.com' : undefined
 
 function mapProfile({ id, sub, login, name, email, avatar_url, picture }: BaseOAuthProfile) {
   return {
@@ -180,13 +178,13 @@ export default NuxtAuthHandler({
   secret: useRuntimeConfig().auth.secret,
   cookies: {
     sessionToken: {
-      name: `${isProduction ? '__Secure-' : ''}next-auth.session-token`,
+      name: sessionCookieName,
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
         secure: isProduction,
-        domain: cookieDomain,
+        domain: sessionCookieDomain,
       },
     },
     callbackUrl: {
@@ -195,7 +193,7 @@ export default NuxtAuthHandler({
         sameSite: 'lax',
         path: '/',
         secure: isProduction,
-        domain: cookieDomain,
+        domain: sessionCookieDomain,
       },
     },
     csrfToken: {
@@ -205,7 +203,7 @@ export default NuxtAuthHandler({
         sameSite: 'lax',
         path: '/',
         secure: isProduction,
-        domain: cookieDomain,
+        domain: sessionCookieDomain,
       },
     },
   },
