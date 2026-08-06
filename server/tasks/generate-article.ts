@@ -281,6 +281,7 @@ export default defineMonitoredTask({
       where: {
         tokenRemaining: { gt: 7000 },
         generationFrequency: { in: ['DAILY', 'WEEKLY'] },
+        ...activeFeatureFilter('ARTICLE_CRONS'),
         OR: [
           { lastGeneratedAt: null },
           {

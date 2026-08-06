@@ -88,9 +88,6 @@ model ClientSite extends Base {
     stripeCustomerId     String?
     stripeSubscriptionId String?
     stripePriceId        String?
-    enableAi             Boolean             @default(false)
-    enableCron           Boolean             @default(false)
-    enableSentiment      Boolean             @default(false)
     currency             String?             @default('USD')
     lastPaidAt           DateTime?           @default(now())
     lastTokenRefilled    DateTime?           @default(now())
@@ -116,7 +113,7 @@ model ClientSite extends Base {
     @@allow('read', true)
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')
-    @@index([domain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
+    @@index([domain, name, plan, billingPlan])
 }
 
 model Feature extends Base {

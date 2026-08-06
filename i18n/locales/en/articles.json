@@ -57,6 +57,54 @@
       "clear": "Clear"
     },
     "articlesCount": "No articles yet | {count} article | {count} articles",
+    "translations": {
+      "title": "Translations",
+      "awaitingReview": "nothing to review | {count} awaiting review | {count} awaiting review",
+      "status": {
+        "MISSING": "Not translated",
+        "PENDING": "Queued",
+        "TRANSLATING": "Translating",
+        "READY": "Awaiting review",
+        "PUBLISHED": "Published",
+        "FAILED": "Failed",
+        "STALE": "Source changed"
+      },
+      "source": {
+        "AI": "Machine translated",
+        "HUMAN": "Edited by a human"
+      },
+      "empty": {
+        "MISSING": "This article has no translation into this language yet.",
+        "PENDING": "Queued for translation — the scheduled task will pick it up shortly.",
+        "TRANSLATING": "Translation in progress.",
+        "FAILED": "The last translation attempt failed. Try again.",
+        "STALE": "The source article changed; this translation will be regenerated.",
+        "READY": "This translation has no body yet.",
+        "PUBLISHED": "This translation has no body yet."
+      },
+      "fields": {
+        "title": "Title",
+        "excerpt": "Excerpt",
+        "content": "Content"
+      },
+      "actions": {
+        "approve": "Approve & publish",
+        "translate": "Translate now",
+        "retranslate": "Translate again",
+        "discard": "Discard"
+      },
+      "discardTitle": "Discard this translation?",
+      "discardMessage": "The translated text will be deleted. The article itself is not affected, and it can be translated again later.",
+      "messages": {
+        "published": "Translation published",
+        "translated": "Translation generated",
+        "discarded": "Translation discarded"
+      },
+      "reviewQueue": {
+        "title": "Nothing awaiting review | {count} translation awaiting review | {count} translations awaiting review",
+        "desc": "Hybrid mode holds machine translations back until you approve them. Open the article to review and publish."
+      }
+    },
     "explore": "Explore articles",
     "votes": "Votes",
     "searchPlaceholder": "Search articles...",

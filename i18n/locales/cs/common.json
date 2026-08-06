@@ -33,6 +33,7 @@
       "sentimentDesc": "Podrobná analýza nálady a zpětné vazby čtenářů",
       "articleCrons": "Plánované generování článků",
       "articleCronsDesc": "Automatické vydávání článků pomocí AI na základě vašich preferencí",
+      "includedInPlan": "Součástí tvého tarifu",
       "disableAiTitle": "Vypnout AI?",
       "disableAiMessage": "Vypnutím AI se vypne i analýza sentimentu a plánované generování článků, které AI vyžadují."
     },

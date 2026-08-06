@@ -6,6 +6,7 @@ import {
   getDependents,
   getMissingDependencies,
   isAlaCartePlan,
+  planFeatureSync,
 } from '../../../server/utils/planFeatures'
 
 describe('getAllowedFeatures', () => {
@@ -63,6 +64,46 @@ describe('billableMonthlyTotal (à-la-carte only)', () => {
 
   it('CUSTOM on PERMANENT billing is comped to 0', () => {
     expect(billableMonthlyTotal('CUSTOM', 'PERMANENT', [29, 19, 19])).toBe(0)
+  })
+})
+
+describe('planFeatureSync (plan grant provisioning)', () => {
+  it('provisions everything a fresh PREMIUM site is owed', () => {
+    expect(planFeatureSync('PREMIUM', [])).toEqual({
+      activate: ['AI', 'SENTIMENT', 'ARTICLE_CRONS'],
+      deactivate: [],
+    })
+  })
+
+  it('activates AI before its dependents', () => {
+    const { activate } = planFeatureSync('PRO', [])
+    expect(activate[0]).toBe('AI')
+  })
+
+  it('is a no-op once the plan is already fully provisioned', () => {
+    expect(planFeatureSync('PRO', ['AI', 'ARTICLE_CRONS'])).toEqual({ activate: [], deactivate: [] })
+  })
+
+  it('revokes what a downgrade no longer covers', () => {
+    expect(planFeatureSync('PRO', ['AI', 'SENTIMENT', 'ARTICLE_CRONS'])).toEqual({
+      activate: [],
+      deactivate: ['SENTIMENT'],
+    })
+    expect(planFeatureSync('BASIC', ['AI', 'SENTIMENT', 'ARTICLE_CRONS'])).toEqual({
+      activate: [],
+      deactivate: ['AI', 'SENTIMENT', 'ARTICLE_CRONS'],
+    })
+  })
+
+  it('never leaves a dependent active without AI', () => {
+    const { deactivate } = planFeatureSync('BASIC', ['AI', 'SENTIMENT'])
+    expect(deactivate).toContain('AI')
+    expect(deactivate).toContain('SENTIMENT')
+  })
+
+  it('leaves CUSTOM alone — it is à la carte, not plan-granted', () => {
+    expect(planFeatureSync('CUSTOM', [])).toEqual({ activate: [], deactivate: [] })
+    expect(planFeatureSync('CUSTOM', ['AI'])).toEqual({ activate: [], deactivate: [] })
   })
 })
 

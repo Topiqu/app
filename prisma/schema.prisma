@@ -4,8 +4,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -493,9 +493,6 @@ model ClientSite {
   stripeCustomerId     String?
   stripeSubscriptionId String?
   stripePriceId        String?
-  enableAi             Boolean              @default(false)
-  enableCron           Boolean              @default(false)
-  enableSentiment      Boolean              @default(false)
   currency             String?              @default("USD")
   lastPaidAt           DateTime?            @default(now())
   lastTokenRefilled    DateTime?            @default(now())
@@ -517,7 +514,7 @@ model ClientSite {
   articleTranslations  ArticleTranslation[]
   adEarnings           AdEarning[]
 
-  @@index([domain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
+  @@index([domain, name, plan, billingPlan])
 }
 
 model Feature {

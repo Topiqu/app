@@ -32,6 +32,7 @@
       "sentimentDesc": "Detailed analysis of readers' mood and feedback",
       "articleCrons": "Scheduled Article Generation",
       "articleCronsDesc": "Automatic publishing of articles using AI based on your preferences",
+      "includedInPlan": "Included in your plan",
       "disableAiTitle": "Disable AI?",
       "disableAiMessage": "Disabling AI will also disable sentiment analysis and scheduled article generation, which depend on it."
     },

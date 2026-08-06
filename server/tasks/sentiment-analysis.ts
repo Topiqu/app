@@ -15,7 +15,7 @@ export default defineMonitoredTask({
           sentimentStatus: 'PENDING',
           deletedAt: null,
           article: {
-            clientSite: { plan: { in: ['PRO', 'PREMIUM'] } },
+            clientSite: activeFeatureFilter('SENTIMENT'),
           },
         },
         take: batchSize,

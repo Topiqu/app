@@ -2,6 +2,14 @@ import type { Language, TranslationMode } from '@prisma/client'
 
 const ALL_LANGUAGES: Language[] = ['cs', 'en']
 
+export const resolveTargetLanguages = (clientSite: {
+  language: Language
+  translationLanguages: Language[]
+}): Language[] => {
+  const configured = clientSite.translationLanguages.length ? clientSite.translationLanguages : ALL_LANGUAGES
+  return configured.filter((language) => language !== clientSite.language)
+}
+
 type QueueDb = {
   clientSite: {
     findUnique: (args: any) => Promise<{
@@ -39,8 +47,7 @@ export const syncArticleTranslationQueue = async (
   if (!clientSite) return
   if (clientSite.translationMode !== 'AUTO' && clientSite.translationMode !== 'HYBRID') return
 
-  const configured = clientSite.translationLanguages.length ? clientSite.translationLanguages : ALL_LANGUAGES
-  const targets = configured.filter((language) => language !== clientSite.language)
+  const targets = resolveTargetLanguages(clientSite)
   if (!targets.length) return
 
   const existing = await db.articleTranslation.findMany({ where: { articleId }, select: { language: true } })
@@ -49,7 +56,13 @@ export const syncArticleTranslationQueue = async (
 
   if (missing.length) {
     await db.articleTranslation.createMany({
-      data: missing.map((language) => ({ articleId, clientSiteId, language, status: 'PENDING' as const, source: 'AI' as const })),
+      data: missing.map((language) => ({
+        articleId,
+        clientSiteId,
+        language,
+        status: 'PENDING' as const,
+        source: 'AI' as const,
+      })),
       skipDuplicates: true,
     })
   }

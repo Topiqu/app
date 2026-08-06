@@ -215,6 +215,10 @@ export default defineEventHandler(async (event) => {
     include: { socials: true, users: { where: { role: 'ai' }, take: 1 } },
   })
 
+  if (updatedSite.plan !== clientSite.plan) {
+    await prisma.$transaction((tx) => syncPlanFeatures(tx, id, updatedSite.plan))
+  }
+
   await logAction({
     action: 'CLIENT_SITE_UPDATE',
     userId: user.id,

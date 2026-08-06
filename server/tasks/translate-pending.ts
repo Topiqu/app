@@ -19,9 +19,9 @@ export default defineMonitoredTask({
         deletedAt: null,
         article: { status: 'published', deletedAt: null },
         clientSite: {
-          enableAi: true,
           plan: { in: TRANSLATION_PLANS },
           translationMode: { in: ['AUTO', 'HYBRID'] },
+          ...activeFeatureFilter('AI'),
         },
       },
       take: BATCH_SIZE,

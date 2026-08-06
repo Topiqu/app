@@ -5,8 +5,22 @@ const prisma = new PrismaClient()
 
 const TEST_PASSWORD = 'test1234'
 
+const FEATURE_CATALOG = [
+  { code: 'AI' as const, name: 'AI Generation', priceMonthly: 29 },
+  { code: 'SENTIMENT' as const, name: 'Sentiment Analysis', priceMonthly: 19 },
+  { code: 'ARTICLE_CRONS' as const, name: 'Scheduled Article Generation', priceMonthly: 19 },
+]
+
 async function main() {
   const passwordHash = await argon.hash(TEST_PASSWORD)
+
+  for (const feature of FEATURE_CATALOG) {
+    await prisma.feature.upsert({
+      where: { code: feature.code },
+      update: {},
+      create: feature,
+    })
+  }
 
   const site = await prisma.clientSite.upsert({
     where: { name: 'topiqu-dev' },
