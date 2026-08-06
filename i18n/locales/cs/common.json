@@ -93,7 +93,9 @@
       "roleChangeForbidden": "Změna role není povolena",
       "featureNotInPlan": "Tato funkce není dostupná ve vašem tarifu",
       "aiRequired": "Nejdřív zapněte AI",
-      "followNotFound": "Tento follow vztah neexistuje"
+      "followNotFound": "Tento follow vztah neexistuje",
+      "invalidCredentials": "Nesprávný e-mail nebo heslo.",
+      "emailNotVerified": "Nejdřív potvrď svůj e-mail. Poslali jsme ti nový ověřovací kód."
     },
     "notifications": {
       "userLikedArticle": "{0} lajkl váš článek.",

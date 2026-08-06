@@ -124,7 +124,9 @@
       "passwordChangeFailed": "Password change failed",
       "roleChangeForbidden": "Changing role is not allowed",
       "featureNotInPlan": "This feature is not available on your plan",
-      "aiRequired": "Enable AI first"
+      "aiRequired": "Enable AI first",
+      "invalidCredentials": "Incorrect email or password.",
+      "emailNotVerified": "Please confirm your email first. We have sent you a new verification code."
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",

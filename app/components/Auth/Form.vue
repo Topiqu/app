@@ -302,6 +302,11 @@ const submit = async () => {
       }
     }
   } catch (e: any) {
+    if (e.data?.data?.code === 'email_not_verified') {
+      await $fetch('/api/auth/resend-verification', { method: 'POST', body: { email: form.value.email } })
+      verifyMode.value = true
+      return toast.error({ message: $t('common.errors.emailNotVerified') })
+    }
     toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
   }
 }
