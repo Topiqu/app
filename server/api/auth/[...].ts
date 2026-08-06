@@ -11,6 +11,7 @@ interface BaseOAuthProfile {
   login?: string
   name?: string
   email?: string | null
+  email_verified?: unknown
   avatar_url?: string
   picture?: string
 }
@@ -38,7 +39,7 @@ function GoogleProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>)
     authorization: { params: { scope: 'openid email profile' } },
     idToken: true,
     checks: ['pkce', 'state'],
-    profile: (profile) => mapProfile(profile),
+    profile: (profile) => mapProfile({ ...profile, email: verifiedGoogleEmail(profile) }),
     ...options,
   }
 }
@@ -48,16 +49,13 @@ async function fetchGitHubProfile(tokens: any) {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
   }).then((res) => res.json())
 
-  if (!profile.email) {
-    const emails = await fetch('https://api.github.com/user/emails', {
-      headers: { Authorization: `Bearer ${tokens.access_token}` },
-    }).then((res) => res.json())
-    profile.email =
-      emails.find((e: { primary: boolean; verified: boolean }) => e.primary && e.verified)?.email ??
-      emails[0]?.email ??
-      null
-  }
-  return profile
+  const emails = await fetch('https://api.github.com/user/emails', {
+    headers: { Authorization: `Bearer ${tokens.access_token}` },
+  })
+    .then((res) => res.json())
+    .catch(() => [])
+
+  return { ...profile, email: verifiedGitHubEmail(emails) }
 }
 
 function GitHubProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>): OAuthConfig<P> {
@@ -284,7 +282,11 @@ export default NuxtAuthHandler({
     },
     async jwt({ token, user, account }) {
       if (account?.provider) {
-        const existingUser = await prisma.user.findUnique({ where: { email: token.email ?? '' } })
+        if (!token.email) throw new Error('oauth_email_unverified')
+
+        const existingUser = await prisma.user.findFirst({ where: { email: token.email, deletedAt: null } })
+        if (!canLinkOAuthIdentity(existingUser)) throw new Error('oauth_local_account_unverified')
+
         const avatarValue = token.picture ?? token.image
         token = await handleOAuthUser(token, existingUser, prisma, avatarValue)
         token.provider = account.provider
