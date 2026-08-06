@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { syncArticleTranslationQueue } from '../../../server/utils/ai/translationQueue'
+import { resolveTargetLanguages, syncArticleTranslationQueue } from '../../../server/utils/ai/translationQueue'
 
 const makeDb = (
   clientSite: { language: string; translationMode: string; translationLanguages: string[] } | null,
@@ -12,6 +12,22 @@ const makeDb = (
     createMany: vi.fn(async () => ({ count: 0 })),
     updateMany: vi.fn(async () => ({ count: 0 })),
   },
+})
+
+describe('resolveTargetLanguages', () => {
+  it('treats an empty config as "every supported language", not "none"', () => {
+    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: [] })).toEqual(['en'])
+    expect(resolveTargetLanguages({ language: 'en', translationLanguages: [] })).toEqual(['cs'])
+  })
+
+  it('honours an explicit config', () => {
+    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: ['en'] })).toEqual(['en'])
+  })
+
+  it('never targets the site’s own primary language', () => {
+    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: ['cs'] })).toEqual([])
+    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: ['cs', 'en'] })).toEqual(['en'])
+  })
 })
 
 describe('syncArticleTranslationQueue', () => {

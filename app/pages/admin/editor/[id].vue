@@ -124,6 +124,11 @@
       <hr class="border-gray-200 dark:border-gray-800" />
 
       <TiptapEditor v-model="editedArticle.content" edit contentClass="min-h-[60vh]" />
+
+      <template v-if="!isNew && article?.id">
+        <hr class="border-gray-200 dark:border-gray-800" />
+        <LazyArticleTranslations :articleId="article.id" />
+      </template>
     </main>
 
     <LazyArticleDrafts

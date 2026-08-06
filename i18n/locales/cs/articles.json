@@ -57,6 +57,54 @@
       "clear": "Vymazat"
     },
     "articlesCount": "Zatím žádné články | {count} článek | {count} články | {count} článků",
+    "translations": {
+      "title": "Překlady",
+      "awaitingReview": "nic ke kontrole | {count} čeká na kontrolu | {count} čekají na kontrolu | {count} čeká na kontrolu",
+      "status": {
+        "MISSING": "Nepřeloženo",
+        "PENDING": "Ve frontě",
+        "TRANSLATING": "Překládá se",
+        "READY": "Čeká na kontrolu",
+        "PUBLISHED": "Publikováno",
+        "FAILED": "Selhalo",
+        "STALE": "Zdroj se změnil"
+      },
+      "source": {
+        "AI": "Strojový překlad",
+        "HUMAN": "Upraveno člověkem"
+      },
+      "empty": {
+        "MISSING": "Tento článek zatím nemá překlad do tohoto jazyka.",
+        "PENDING": "Zařazeno do fronty — naplánovaná úloha překlad brzy zpracuje.",
+        "TRANSLATING": "Překlad právě probíhá.",
+        "FAILED": "Poslední pokus o překlad selhal. Zkus to znovu.",
+        "STALE": "Zdrojový článek se změnil, překlad se vygeneruje znovu.",
+        "READY": "Tento překlad zatím nemá obsah.",
+        "PUBLISHED": "Tento překlad zatím nemá obsah."
+      },
+      "fields": {
+        "title": "Titulek",
+        "excerpt": "Perex",
+        "content": "Obsah"
+      },
+      "actions": {
+        "approve": "Schválit a publikovat",
+        "translate": "Přeložit teď",
+        "retranslate": "Přeložit znovu",
+        "discard": "Zahodit"
+      },
+      "discardTitle": "Zahodit tento překlad?",
+      "discardMessage": "Přeložený text se smaže. Samotného článku se to nedotkne a překlad lze kdykoli vygenerovat znovu.",
+      "messages": {
+        "published": "Překlad publikován",
+        "translated": "Překlad vygenerován",
+        "discarded": "Překlad zahozen"
+      },
+      "reviewQueue": {
+        "title": "Nic nečeká na kontrolu | {count} překlad čeká na kontrolu | {count} překlady čekají na kontrolu | {count} překladů čeká na kontrolu",
+        "desc": "Hybridní režim drží strojové překlady zpět, dokud je neschválíš. Otevři článek a překlad zkontroluj a publikuj."
+      }
+    },
     "explore": "Prozkoumat články",
     "votes": "Hlasů",
     "searchPlaceholder": "Hledat články...",
