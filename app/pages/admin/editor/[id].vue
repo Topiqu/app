@@ -168,6 +168,8 @@ const toast = useToast()
 const { t } = useI18n()
 const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
 
+const clientSite = await useClientSite()
+
 const isNew = route.params.id === 'new'
 const discardConfirmOpen = shallowRef(false)
 const submitting = shallowRef(false)
@@ -204,7 +206,9 @@ const { drafts, loading, draftsOpen, lastSavedAt, saving, loadDraft } = await us
 
 if (!isNew) {
   try {
-    const data = await $fetch(`/api/articles/${route.params.id}`)
+    const data = await $fetch<any>(`/api/articles/${route.params.id}`, {
+      query: { clientSiteId: clientSite?.id },
+    })
     article.value = data as any
     editedArticle.value = {
       ...article.value,

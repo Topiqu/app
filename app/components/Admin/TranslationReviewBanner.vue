@@ -17,7 +17,7 @@
     <ul class="flex flex-col gap-2">
       <li v-for="row in translations" :key="row.id">
         <NuxtLink
-          :to="localePath({ name: 'admin-editor-id', params: { id: row.article.id } })"
+          :to="localePath({ name: 'admin-editor-id', params: { id: row.article.slug } })"
           class="flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-amber-200 dark:border-amber-800 no-underline hover:border-amber-400 dark:hover:border-amber-600 transition-colors"
         >
           <span
