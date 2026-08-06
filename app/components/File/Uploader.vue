@@ -6,24 +6,35 @@
         class="relative w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shadow-sm group/preview"
       >
         <div
+          v-if="!compact"
           class="absolute inset-0 bg-cover bg-center blur-xl opacity-50 dark:opacity-30"
           :style="{ backgroundImage: `url(${previewUrl})` }"
         />
 
-        <div class="relative z-10 p-6 flex flex-col items-center gap-4">
+        <div class="relative z-10 flex flex-col items-center gap-4" :class="{ 'p-6': !compact }">
           <NuxtImg
             :src="previewUrl"
-            class="max-h-64 w-auto object-contain rounded-lg shadow-lg ring-1 ring-black/5"
+            :class="
+              compact
+                ? 'w-full h-40 object-cover'
+                : 'max-h-64 w-auto object-contain rounded-lg shadow-lg ring-1 ring-black/5'
+            "
             :alt="$t('articles.articleCard.imageAlt')"
           />
 
-          <div class="flex gap-2">
+          <div
+            class="flex gap-2"
+            :class="{
+              'absolute top-2 right-2 opacity-0 max-md:opacity-100 group-hover/preview:opacity-100 focus-within:opacity-100 transition-opacity':
+                compact,
+            }"
+          >
             <Button
               variant="neutral"
               size="sm"
               icon="mdi:refresh"
               class="bg-white/90 backdrop-blur hover:text-blue-600"
-              @click="cancelUpload"
+              @click="open({ accept: 'image/*' })"
             >
               {{ $t('common.actions.change') }}
             </Button>
@@ -47,10 +58,34 @@
 
       <div
         v-else-if="isProcessing"
-        class="w-full h-48 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse flex flex-col items-center justify-center gap-3 border border-transparent"
+        class="w-full rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse flex flex-col items-center justify-center gap-3 border border-transparent"
+        :class="compact ? 'h-14' : 'h-48'"
       >
-        <Icon name="mdi:image-filter-hdr" class="w-10 h-10 text-gray-300 dark:text-gray-600" />
-        <span class="text-xs font-medium text-gray-400">{{ $t('common.loading') }}</span>
+        <Icon
+          name="mdi:image-filter-hdr"
+          class="text-gray-300 dark:text-gray-600"
+          :class="compact ? 'w-5 h-5' : 'w-10 h-10'"
+        />
+        <span v-if="!compact" class="text-xs font-medium text-gray-400">{{ $t('common.loading') }}</span>
+      </div>
+
+      <div
+        v-else-if="compact"
+        class="w-full h-14 flex items-center justify-center gap-2 rounded-2xl border border-dashed transition-colors cursor-pointer text-xs font-medium"
+        :class="[
+          isDragging && !disabled
+            ? 'border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-300'
+            : 'border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/60',
+          disabled ? 'opacity-50 cursor-not-allowed' : '',
+        ]"
+        @dragover.prevent="!disabled && (isDragging = true)"
+        @dragenter.prevent="!disabled && (isDragging = true)"
+        @dragleave.prevent="isDragging = false"
+        @drop.prevent="onDrop"
+        @click="!disabled && open({ accept: 'image/*' })"
+      >
+        <Icon name="mdi:image-plus-outline" class="w-4 h-4 shrink-0" />
+        {{ isDragging ? $t('common.actions.dropHere') : $t('common.actions.clickToUpload') }}
       </div>
 
       <div
@@ -108,6 +143,7 @@ const props = defineProps<{
   shortcode?: string
   disabled?: boolean
   isAiUser?: boolean
+  compact?: boolean
   maxSize?: number
   minSize?: number
   maxWidth?: number

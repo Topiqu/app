@@ -7,6 +7,14 @@ export default defineConfig({
   presets: [presetWind3()],
   theme: {
     zIndex: Object.fromEntries(Object.entries(Z_LAYERS).map(([name, value]) => [name, String(value)])),
+    animation: {
+      keyframes: {
+        'progress-slide': '{0%{transform:translateX(-110%)}100%{transform:translateX(410%)}}',
+      },
+      durations: { 'progress-slide': '1.4s' },
+      timingFns: { 'progress-slide': 'cubic-bezier(0.4,0,0.2,1)' },
+      counts: { 'progress-slide': 'infinite' },
+    },
   },
   safelist: [
     'from-blue-600',
