@@ -349,7 +349,12 @@
       "createFailed": "Vytvoření článku selhalo",
       "aiContentGenerated": "Obsah AI úspěšně vygenerován",
       "aiContentFailed": "Generování obsahu AI selhalo",
-      "loadFailed": "Načtení článku selhalo"
+      "loadFailed": "Načtení článku selhalo",
+      "metaBar": "Metadata článku",
+      "addTag": "Přidat tag",
+      "searchTags": "Najít nebo vytvořit tag…",
+      "createTag": "Vytvořit „{name}“",
+      "publishImmediately": "Ihned"
     }
   }
 }

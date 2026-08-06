@@ -12,10 +12,10 @@
         leaveActiveClass="transition duration-75 ease-in"
         leaveFromClass="transform scale-100 opacity-100"
         leaveToClass="transform scale-95 opacity-0"
-        class="z-50"
+        class="z-popover"
       >
         <MenuItems
-          class="w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 focus:outline-none"
+          class="w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-800 rounded-xl bg-white dark:bg-gray-900 shadow-xl ring-1 ring-black/5 dark:ring-white/10 focus:outline-none"
         >
           <div v-for="(items, key) in groups" :key class="px-1 py-1">
             <MenuItem v-for="item in items" :key="item.id" v-slot="{ active }" :disabled="item.disabled">
@@ -24,15 +24,15 @@
                   :is="item.href ? NuxtLink : 'button'"
                   :to="item.href"
                   :class="[
-                    active ? 'bg-violet-600! text-white!' : 'bg-transparent! text-gray-900!',
-                    'group flex w-full items-center rounded-md px-2 py-2 text-sm border-none',
+                    active ? 'bg-violet-600! text-white!' : 'bg-transparent! text-gray-900! dark:text-gray-100!',
+                    'group flex w-full items-center rounded-md px-2 py-2 text-sm border-none text-left',
                   ]"
                   @click="item.onClick"
                 >
                   <Icon
                     v-if="item.icon"
                     :name="item.icon"
-                    :class="[active ? 'text-violet-200' : 'text-violet-600', 'mr-2 h-5 w-5']"
+                    :class="[active ? 'text-violet-200' : 'text-violet-600 dark:text-violet-400', 'mr-2 h-5 w-5']"
                     aria-hidden="true"
                   />
                   {{ item.label }}

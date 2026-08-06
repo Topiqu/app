@@ -349,7 +349,12 @@
       "createFailed": "Failed to create article",
       "aiContentGenerated": "AI content generated successfully",
       "aiContentFailed": "Failed to generate AI content",
-      "loadFailed": "Failed to load the article"
+      "loadFailed": "Failed to load the article",
+      "metaBar": "Article metadata",
+      "addTag": "Add tag",
+      "searchTags": "Find or create a tag…",
+      "createTag": "Create “{name}”",
+      "publishImmediately": "Immediately"
     }
   }
 }
