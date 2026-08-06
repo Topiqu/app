@@ -1,39 +1,43 @@
 <template>
   <div
-    class="fixed bottom-3 right-3 flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400 bg-white/80 dark:bg-neutral-900/80 px-3 py-1.5 rounded-full shadow-md border z-overlay border-gray-200/70 dark:border-neutral-700/70 backdrop-blur-md"
+    class="fixed bottom-3 right-3 z-overlay flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-[0_8px_28px_-10px_rgba(0,0,0,0.35)] ring-1 ring-black/5 backdrop-blur-xl dark:bg-neutral-900/85 dark:text-gray-400 dark:ring-white/10"
   >
-    <span>
+    <span class="flex items-center gap-1">
       Topiqu AI Blog
-      <span v-if="site?.name" class="ml-1 font-semibold italic text-gray-800 dark:text-gray-200">{{ site.name }}</span>
-      {{ config.public.appVersion }}
+      <span v-if="site?.name" class="font-semibold italic text-gray-800 dark:text-gray-200">{{ site.name }}</span>
+      <span class="tabular-nums text-gray-400 dark:text-gray-500">{{ config.public.appVersion }}</span>
     </span>
-    <span class="text-gray-400">|</span>
 
-    <div ref="trigger" class="relative flex items-center gap-1.5 cursor-pointer select-none" @click="show = !show">
-      <span :class="planColor">{{ site?.plan ?? $t('articles.userMenu.noClientAssigned') }}</span>
-      <span v-if="status?.tokenRemaining != null" v-tippy="tokenTooltip" class="text-xs">
-        (<span :class="tokenColor">{{ status.tokenRemaining }}/{{ status.tokenLimit }}</span
-        >)
+    <span class="h-3 w-px bg-gray-300/80 dark:bg-neutral-700" />
+
+    <button
+      ref="trigger"
+      type="button"
+      :aria-expanded="isOpen"
+      :aria-label="$t('articles.userMenu.remainingTokens')"
+      class="flex items-center gap-1.5 rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-violet-500"
+      @click="show = !show"
+    >
+      <span :class="['rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide', planChip]">
+        {{ site?.plan ?? $t('articles.userMenu.noClientAssigned') }}
       </span>
-      <Icon name="mdi:chevron-up" :class="['w-3 h-3 transition-transform duration-200', isOpen && 'rotate-180']" />
 
-      <Transition
-        enterActiveClass="transition ease-out duration-300"
-        enterFromClass="opacity-0 scale-50"
-        enterToClass="opacity-100 scale-100"
-        leaveActiveClass="transition ease-in duration-200"
-        leaveFromClass="opacity-100 scale-100"
-        leaveToClass="opacity-0 scale-50"
-      >
-        <div
-          v-if="isLowTokens"
-          v-tippy="$t('articles.userMenu.lowTokensWarning')"
-          class="pointer-events-none absolute -top-3 -right-3 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-lg animate-pulse"
-        >
-          <Icon name="mdi:alert" class="w-4 h-4" />
-        </div>
-      </Transition>
-    </div>
+      <span v-if="hasTokenPlan" v-tippy="tokenTooltip" class="flex items-center gap-1.5">
+        <span v-if="isLowTokens" class="relative flex h-1.5 w-1.5">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+          <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" />
+        </span>
+        <span class="tabular-nums">
+          <span :class="tokenColor">{{ fmt(tokenRemaining) }}</span>
+          <span class="text-gray-400 dark:text-gray-600">/{{ fmt(tokenLimit) }}</span>
+        </span>
+      </span>
+
+      <Icon
+        name="mdi:chevron-up"
+        :class="['h-3 w-3 text-gray-400 transition-transform duration-200', isOpen && 'rotate-180']"
+      />
+    </button>
 
     <Transition
       enterActiveClass="transition ease-out duration-200"
@@ -46,155 +50,175 @@
       <div
         v-if="isOpen"
         ref="panel"
-        class="absolute bottom-full right-0 mb-2 w-80 p-5 rounded-2xl shadow-xl bg-white/90 dark:bg-neutral-900/95 backdrop-blur-xl border border-gray-200/60 dark:border-neutral-700/60 text-[13px] space-y-5"
+        :aria-label="$t('articles.userMenu.remainingTokens')"
+        role="region"
+        class="absolute bottom-full right-0 mb-2 w-[21rem] max-w-[calc(100vw_-_1.5rem)] origin-bottom-right divide-y divide-gray-200/70 rounded-2xl bg-white/95 p-4 text-left shadow-[0_24px_60px_-20px_rgba(0,0,0,0.45)] ring-1 ring-black/5 backdrop-blur-xl dark:divide-white/10 dark:bg-neutral-900/95 dark:ring-white/10"
       >
-        <div class="space-y-2">
-          <h3 class="font-semibold text-gray-900 dark:text-gray-100">{{ $t('articles.userMenu.remainingTokens') }}</h3>
-          <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-            <span>{{ status?.tokenRemaining ?? 0 }} / {{ status?.tokenLimit ?? 20000 }}</span>
-            <span>{{ $t('articles.userMenu.roughlyEstimated', [estimatedArticles]) }}</span>
+        <section v-if="hasTokenPlan" class="space-y-2.5 pb-4">
+          <div class="flex items-baseline justify-between gap-2">
+            <h3 class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-500">
+              {{ $t('articles.userMenu.remainingTokens') }}
+            </h3>
+            <span class="shrink-0 text-[11px] text-gray-500 dark:text-gray-400">
+              {{ $t('articles.userMenu.roughlyEstimated', [estimatedArticles]) }}
+            </span>
           </div>
-          <div class="h-2 bg-gray-200/80 dark:bg-gray-700/80 rounded-full overflow-hidden">
+
+          <div class="flex items-baseline gap-1.5">
+            <span :class="['text-2xl font-semibold leading-none tracking-tight tabular-nums', headlineColor]">
+              {{ fmt(tokenRemaining) }}
+            </span>
+            <span class="text-xs tabular-nums text-gray-400 dark:text-gray-500">/ {{ fmt(tokenLimit) }}</span>
+          </div>
+
+          <div class="h-1.5 overflow-hidden rounded-full bg-gray-200/80 dark:bg-white/10">
             <div
-              class="h-full bg-gradient-to-r from-green-500/90 via-teal-500/90 to-cyan-500/90 rounded-full transition-all duration-300"
-              :style="{ width: remainingPercent + '%' }"
+              :class="['h-full rounded-full transition-[width] duration-700 ease-out', barColor]"
+              :style="{ width: `${remainingPercent}%` }"
             />
           </div>
-          <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-            {{ $t('articles.userMenu.totalConsumed', [status?.totalUsage ?? 0]) }}
-          </div>
-        </div>
-        <div class="grid grid-cols-1 gap-3">
-          <Button
-            size="lg"
-            variant="transparent"
-            class="relative w-full justify-between font-medium tracking-wide border-2 border-blue-500/20 hover:border-blue-500/50 bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 text-gray-700 dark:text-gray-200 transition-all duration-300 group"
-            @click="buyTokens('10000')"
-          >
-            <span class="flex items-center gap-3">
-              <div
-                class="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform"
-              >
-                <Icon name="mdi:package-variant" class="w-5 h-5" />
-              </div>
-              <span class="font-semibold">{{ $t('common.tokens.pack10k') }}</span>
-            </span>
-            <span class="text-lg font-bold text-gray-900 dark:text-white">2.99 $</span>
-          </Button>
 
-          <Button
-            size="lg"
-            variant="transparent"
-            class="relative w-full justify-between font-medium tracking-wide border-2 border-orange-500/30 hover:border-orange-500/60 bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 text-gray-700 dark:text-gray-200 transition-all duration-300 group shadow-sm hover:shadow-md"
-            @click="buyTokens('25000')"
-          >
-            <span class="flex items-center gap-3">
-              <div
-                class="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform"
-              >
-                <Icon name="mdi:star-half-full" class="w-5 h-5" />
-              </div>
-              <span class="font-semibold">{{ $t('common.tokens.pack25k') }}</span>
-            </span>
-            <span class="text-lg font-bold text-gray-900 dark:text-white">4.99 $</span>
-          </Button>
+          <p class="text-[11px] text-gray-500 dark:text-gray-500">
+            {{ $t('articles.userMenu.totalConsumed', [fmt(totalUsage)]) }}
+          </p>
+        </section>
 
-          <Button
-            size="lg"
-            variant="primary"
-            class="relative w-full justify-between font-bold tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:via-pink-700 hover:to-rose-700 text-white overflow-hidden group border-0"
-            @click="buyTokens('50000')"
-          >
-            <span
-              class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-            ></span>
-            <span class="absolute -top-1 -right-1 z-10">
+        <section class="space-y-2 py-4">
+          <h4 class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-500">
+            {{ $t('articles.userMenu.buyTokens') }}
+          </h4>
+
+          <div class="space-y-1.5">
+            <button
+              v-for="pack in packs"
+              :key="pack.id"
+              type="button"
+              :disabled="pendingPack !== null"
+              :class="[
+                'group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left ring-1 outline-none transition duration-200 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-60',
+                pack.featured
+                  ? 'bg-violet-50/80 ring-violet-400/50 hover:bg-violet-100/70 hover:ring-violet-500/70 dark:bg-violet-500/10 dark:ring-violet-400/30 dark:hover:bg-violet-500/15'
+                  : 'bg-gray-50/80 ring-gray-200/80 hover:bg-gray-100/80 hover:ring-gray-300 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:ring-white/20',
+              ]"
+              @click="buyTokens(pack.id)"
+            >
               <span
-                class="flex h-7 items-center gap-1 bg-yellow-400 text-yellow-900 text-[10px] font-extrabold px-2.5 rounded-bl-lg rounded-tr-lg shadow-sm"
+                :class="[
+                  'grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-transform duration-200 group-hover:scale-105',
+                  pack.featured
+                    ? 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-[0_4px_12px_-4px_rgba(139,92,246,0.7)]'
+                    : 'bg-white text-gray-500 ring-1 ring-gray-200/80 dark:bg-white/5 dark:text-gray-400 dark:ring-white/10',
+                ]"
               >
-                <Icon name="mdi:star" class="w-3.5 h-3.5" />
-                {{ $t('common.tokens.bestValue') }}
+                <Icon v-if="pendingPack === pack.id" name="i-lucide:loader" class="h-4 w-4 animate-spin" />
+                <Icon v-else :name="pack.icon" class="h-4 w-4" />
               </span>
-            </span>
-            <span class="flex items-center gap-3 relative z-10">
-              <div class="p-1.5 rounded-lg bg-white/20 text-white group-hover:scale-110 transition-transform">
-                <Icon name="mdi:diamond-stone" class="w-5 h-5" />
-              </div>
-              <span>{{ $t('common.tokens.pack50k') }}</span>
-            </span>
-            <span class="text-xl font-extrabold relative z-10">9.99 $</span>
-          </Button>
 
-          <Button
-            v-if="site?.plan === 'BASIC'"
-            size="lg"
-            class="w-full border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors duration-300"
-            @click="upgrade"
+              <span class="min-w-0 flex-1">
+                <span class="flex items-center gap-1.5">
+                  <span class="truncate text-[13px] font-semibold text-gray-900 dark:text-gray-100">
+                    {{ pack.name }}
+                  </span>
+                  <span
+                    v-if="pack.featured"
+                    class="shrink-0 rounded-full bg-violet-500/15 px-1.5 py-px text-[9px] font-bold uppercase tracking-wider text-violet-700 dark:bg-violet-400/20 dark:text-violet-200"
+                  >
+                    {{ $t('common.tokens.bestValue') }}
+                  </span>
+                </span>
+                <span class="mt-0.5 block text-[11px] text-gray-500 dark:text-gray-400">
+                  {{ $t('articles.userMenu.roughlyEstimated', [pack.articles]) }}
+                </span>
+              </span>
+
+              <span class="shrink-0 text-sm font-semibold tabular-nums text-gray-900 dark:text-white">
+                {{ pack.price }}
+              </span>
+            </button>
+
+            <button
+              v-if="upgradeTarget"
+              type="button"
+              class="group flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-emerald-700 ring-1 ring-emerald-500/40 outline-none transition duration-200 hover:bg-emerald-50 hover:ring-emerald-500/70 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-emerald-300 dark:ring-emerald-400/30 dark:hover:bg-emerald-500/10"
+              @click="upgrade"
+            >
+              <Icon
+                name="mdi:rocket-launch"
+                class="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5"
+              />
+              {{ $t('common.preferences.billing.upgrade', { plan: upgradeTarget }) }}
+            </button>
+          </div>
+        </section>
+
+        <section v-if="isLowTokens" class="py-4">
+          <div
+            class="flex gap-2.5 rounded-xl bg-red-50 px-3 py-2.5 ring-1 ring-red-500/20 dark:bg-red-500/10 dark:ring-red-400/20"
           >
-            <Icon name="mdi:rocket-launch" class="w-6 h-6 mr-2" />
-            {{ $t('common.tokens.upgradeToPremium') }}
-          </Button>
-        </div>
+            <Icon name="mdi:alert" class="mt-px h-4 w-4 shrink-0 text-red-500 dark:text-red-400" />
+            <p class="text-[11px] leading-relaxed text-red-800 dark:text-red-200">
+              <strong class="font-semibold">{{ $t('articles.userMenu.lowTokensWarning') }}</strong>
+              {{ $t('articles.userMenu.lowTokensHint', { percent: LOW_TOKEN_PERCENT }) }}
+            </p>
+          </div>
+        </section>
 
-        <div class="space-y-2">
-          <h4 class="font-medium text-gray-700 dark:text-gray-300">{{ $t('articles.userMenu.recentActions') }}</h4>
-          <div class="max-h-48 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+        <section class="space-y-2 py-4">
+          <h4 class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-500">
+            {{ $t('articles.userMenu.recentActions') }}
+          </h4>
+
+          <div class="custom-scrollbar max-h-44 space-y-0.5 overflow-y-auto pr-1">
             <div
               v-for="log in logs.items"
               :key="log.id"
-              class="flex items-center justify-between py-2 px-3 rounded-xl transition-all duration-150 hover:bg-gray-50/70 dark:hover:bg-neutral-800/70 group border border-transparent hover:border-gray-200/50 dark:hover:border-neutral-700/50"
+              class="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-gray-100/80 dark:hover:bg-white/5"
             >
-              <div class="flex items-center gap-2.5">
-                <div
-                  class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
-                >
-                  <Icon :name="getLogIcon(log.action)" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <div class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ formatAction(log.action) }}</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-500">{{ formatDate(log.createdAt) }}</div>
-                </div>
-              </div>
+              <span :class="['grid h-7 w-7 shrink-0 place-items-center rounded-md', logTone(log.action)]">
+                <Icon :name="getLogIcon(log.action)" class="h-3.5 w-3.5" />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-xs font-medium text-gray-800 dark:text-gray-200">
+                  {{ formatAction(log.action) }}
+                </span>
+                <span class="block text-[10px] text-gray-500 dark:text-gray-500">{{ formatDate(log.createdAt) }}</span>
+              </span>
             </div>
-            <Button
+
+            <button
               v-if="logs.hasMore"
-              class="w-full py-2 text-xs font-medium"
-              variant="transparent"
-              animation="softpop"
+              type="button"
+              class="w-full rounded-lg py-1.5 text-[11px] font-medium text-gray-500 outline-none transition-colors hover:bg-gray-100/80 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-violet-500 dark:hover:bg-white/5 dark:hover:text-gray-300"
               @click="loadMore"
             >
               {{ $t('common.pagination.next') }}
-            </Button>
+            </button>
           </div>
-        </div>
+        </section>
 
-        <div class="flex items-center gap-4 text-xs">
-          <div v-if="site?.gtagId" class="flex items-center gap-1.5 text-green-600 dark:text-green-400">
-            <Icon name="mdi:google-analytics" class="w-4 h-4" />
-            <span>{{ $t('articles.userMenu.ga4Connected') }}</span>
+        <section class="space-y-2.5 pt-4">
+          <div v-if="site?.gtagId || site?.gamNetworkCode" class="flex flex-wrap items-center gap-1.5">
+            <span
+              v-if="site?.gtagId"
+              class="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300"
+            >
+              <Icon name="mdi:google-analytics" class="h-3 w-3" />
+              {{ $t('articles.userMenu.ga4Connected') }}
+            </span>
+            <span
+              v-if="site?.gamNetworkCode"
+              class="inline-flex items-center gap-1 rounded-md bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 dark:text-indigo-300"
+            >
+              <Icon name="mdi:google-ads" class="h-3 w-3" />
+              {{ $t('articles.userMenu.gamConnected') }}
+            </span>
           </div>
-          <div v-if="site?.gamNetworkCode" class="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
-            <Icon name="mdi:google-ads" class="w-4 h-4" />
-            <span>{{ $t('articles.userMenu.gamConnected') }}</span>
-          </div>
-        </div>
 
-        <div
-          v-if="isLowTokens"
-          class="p-4 bg-red-50 dark:bg-red-900/30 rounded-xl border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200"
-        >
-          <strong class="flex items-center gap-2">
-            <Icon name="mdi:alert" class="w-5 h-5" />
-            {{ $t('articles.userMenu.lowTokensWarning') }}
-          </strong>
-          <span class="block mt-1 text-xs">{{ $t('articles.userMenu.lowTokensHint') }}</span>
-        </div>
-
-        <div
-          class="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl text-xs text-blue-800 dark:text-blue-200 border border-blue-200/40 dark:border-blue-700/40"
-        >
-          <strong>{{ $t('articles.userMenu.tip') }}:</strong> {{ $t('articles.userMenu.adjustPreferences') }}
-        </div>
+          <p class="border-l-2 border-blue-500/40 pl-2.5 text-[11px] leading-relaxed text-gray-600 dark:text-gray-400">
+            <strong class="font-semibold text-gray-800 dark:text-gray-200">{{ $t('articles.userMenu.tip') }}:</strong>
+            {{ $t('articles.userMenu.adjustPreferences') }}
+          </p>
+        </section>
       </div>
     </Transition>
   </div>
@@ -204,11 +228,17 @@
 import { formatDate } from '~~/shared/utils'
 import { directive as vTippy } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
+import { getUpgradeTarget } from '~~/shared/utils/plans'
+
+import { buildTokenPackViews, TOKENS_PER_ARTICLE } from '~/utils/tokenPackPresentation'
+
+const LOW_TOKEN_PERCENT = 20
 
 const config = useRuntimeConfig()
+const { locale } = useI18n()
 const { data: session } = useAuth()
 const { data: site } = await useFetch(`/api/clients/${session.value?.user.id}/by-userid`)
-const status = await useClientSiteStatus()
+const { data: status } = await useClientSiteStatus()
 
 const page = shallowRef(1)
 const logs = reactive<{ items: any[]; hasMore: boolean }>({ items: [], hasMore: false })
@@ -238,27 +268,51 @@ const loadMore = async () => {
   await refresh()
 }
 
+const numberFormat = computed(() => new Intl.NumberFormat(locale.value))
+const fmt = (n: number) => numberFormat.value.format(n)
+
+const packs = computed(() => buildTokenPackViews($t, locale.value))
+
+const tokenRemaining = computed(() => status.value?.tokenRemaining ?? 0)
+const tokenLimit = computed(() => status.value?.tokenLimit ?? 0)
+const totalUsage = computed(() => status.value?.totalUsage ?? 0)
+const hasTokenPlan = computed(() => tokenLimit.value > 0)
+
 const remainingPercent = computed(() =>
-  Math.max(0, ((status?.tokenRemaining ?? 0) / (status?.tokenLimit ?? 20000)) * 100),
+  hasTokenPlan.value ? Math.min(100, Math.max(0, (tokenRemaining.value / tokenLimit.value) * 100)) : 0,
 )
-const isLowTokens = computed(() => remainingPercent.value <= 20)
-const estimatedArticles = computed(() => Math.floor((status?.tokenRemaining ?? 0) / 5000))
+const isLowTokens = computed(() => hasTokenPlan.value && remainingPercent.value <= LOW_TOKEN_PERCENT)
+const estimatedArticles = computed(() => Math.floor(tokenRemaining.value / TOKENS_PER_ARTICLE))
 const tokenTooltip = computed(() => $t('articles.userMenu.roughlyEstimated', [estimatedArticles.value]))
 
-const planColor = computed(() => ({
-  'text-green-700 dark:text-green-400': site.value?.plan === 'BASIC',
-  'text-blue-700 dark:text-blue-400': site.value?.plan === 'PRO',
-  'text-yellow-700 bg-yellow-50 dark:text-yellow-300 dark:bg-yellow-900/30 px-1.5 py-0.5 rounded':
-    site.value?.plan === 'PREMIUM',
-  'text-orange-700 bg-orange-50 dark:text-orange-300 dark:bg-orange-900/30 px-1.5 py-0.5 rounded font-bold':
-    site.value?.plan === 'CUSTOM',
-  'font-semibold': true,
-}))
-const tokenColor = computed(() => ({
-  'text-red-700 dark:text-red-400': isLowTokens.value,
-  'text-green-700 dark:text-green-400': !isLowTokens.value,
-  'font-semibold': true,
-}))
+const barColor = computed(() =>
+  remainingPercent.value <= LOW_TOKEN_PERCENT
+    ? 'bg-gradient-to-r from-red-500 to-rose-500'
+    : remainingPercent.value <= 40
+      ? 'bg-gradient-to-r from-amber-400 to-orange-500'
+      : 'bg-gradient-to-r from-emerald-400 to-teal-500',
+)
+const headlineColor = computed(() =>
+  isLowTokens.value ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white',
+)
+const tokenColor = computed(() =>
+  isLowTokens.value ? 'font-semibold text-red-600 dark:text-red-400' : 'font-semibold text-gray-700 dark:text-gray-300',
+)
+
+const planChip = computed(() => {
+  switch (site.value?.plan) {
+    case 'BASIC':
+      return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+    case 'PRO':
+      return 'bg-blue-500/10 text-blue-700 dark:text-blue-300'
+    case 'PREMIUM':
+      return 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+    case 'CUSTOM':
+      return 'bg-orange-500/15 text-orange-700 dark:text-orange-300'
+    default:
+      return 'bg-gray-500/10 text-gray-600 dark:text-gray-300'
+  }
+})
 
 const getLogIcon = (a: string) =>
   a.startsWith('CRON_ARTICLE') || a === 'CRON_GENERATE_ARTICLE'
@@ -266,6 +320,11 @@ const getLogIcon = (a: string) =>
     : a === 'CRON_GENERATE_ARTICLE_FAILED'
       ? 'mdi:alert-circle'
       : 'mdi:lightbulb-on'
+
+const logTone = (a: string) =>
+  a.endsWith('_FAILED')
+    ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+    : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'
 
 const formatAction = (a: string) => {
   const m: Record<string, string> = {
@@ -279,16 +338,24 @@ const formatAction = (a: string) => {
   return m[a] || a
 }
 
+const pendingPack = shallowRef<string | null>(null)
+
 const buyTokens = async (pack: string) => {
-  const res = await $fetch('/api/stripe/checkout', {
-    method: 'POST',
-    body: {
-      pack,
-      origin: window.location.origin,
-    },
-  })
-  if (res.url) window.location.href = res.url
+  if (pendingPack.value) return
+  pendingPack.value = pack
+  try {
+    const res = await $fetch('/api/stripe/checkout', {
+      method: 'POST',
+      body: { pack, origin: window.location.origin },
+    })
+    if (res.url) window.location.href = res.url
+    else pendingPack.value = null
+  } catch {
+    pendingPack.value = null
+  }
 }
+
+const upgradeTarget = computed(() => getUpgradeTarget(site.value?.plan, status.value?.hasActiveSubscription))
 
 const localePath = useLocalePath()
 const upgrade = () => navigateTo(localePath({ name: 'settings', query: { tab: 'billing' } }))

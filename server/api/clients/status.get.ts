@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
 
   if (!user.clientSiteId) return null
 
-  return db.clientSite.findUnique({
+  const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId },
     select: {
       id: true,
@@ -15,6 +15,13 @@ export default defineEventHandler(async (event) => {
       firstPaidAt: true,
       focus: true,
       audience: true,
+      stripeSubscriptionId: true,
     },
   })
+
+  if (!clientSite) return null
+
+  const { stripeSubscriptionId, ...status } = clientSite
+
+  return { ...status, hasActiveSubscription: !!stripeSubscriptionId }
 })
