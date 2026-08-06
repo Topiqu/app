@@ -22,10 +22,10 @@ export const generateImage = async (
 ) => {
   const { outputDir = 'article-images', filenamePrefix = 'article', filenameSuffix } = opts
 
-  // Gemini image models (:generateContent) ignore `n` / `maxImagesPerCall` — one image per call.
   const output = await generateImg({
     model: aiImageModel('articleImage'),
     prompt: prompt.trim().slice(0, 1024),
+    providerOptions: { openai: { quality: 'medium' } },
   })
 
   const filename =

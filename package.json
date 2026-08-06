@@ -26,16 +26,16 @@
     "fmt": "bun lint:fix && bun prettier:fix",
     "zenstack:generate": "zenstack generate --schema ./prisma/schema.zmodel",
     "prisma:deploy": "prisma migrate deploy",
-    "db:seed": "bun run prisma/seed.ts"
+    "db:seed": "bun run prisma/seed.ts",
+    "ai:smoke": "bun run scripts/ai-smoke.ts",
+    "db:seed-tokens": "bun run scripts/seed-tokens.ts"
   },
   "prisma": {
     "seed": "bun run prisma/seed.ts"
   },
   "dependencies": {
-    "@ai-sdk/google": "4.0.24",
     "@ai-sdk/openai": "4.0.27",
     "@ai-sdk/vue": "4.0.37",
-    "@ai-sdk/xai": "4.0.18",
     "@auth/core": "0.34.3",
     "@auth/prisma-adapter": "^2.11.1",
     "@aws-sdk/client-rekognition": "^3.971.0",
@@ -146,6 +146,7 @@
   "overrides": {
     "next-auth": "4.21.1",
     "parse5": "7.3.0",
-    "estree-walker": "2.0.2"
+    "estree-walker": "2.0.2",
+    "@ai-sdk/provider-utils": "5.0.18"
   }
 }

@@ -47,13 +47,13 @@ const articleSchema = z.object({
 
 type ArticleObject = (typeof articleSchema)['_output']
 
-const researchTopic = async (prompt: string, maxSearchResults: number) => {
+const researchTopic = async (prompt: string) => {
   try {
     const { text } = await generateText({
       model: aiModel('articleResearch'),
       instructions: `
         You are a research assistant preparing grounding material for another writer.
-        Search the live web and the X network for the user's topic.
+        Search the live web for the user's topic.
         Return a compact brief: 5-10 verified facts, each on its own line.
         Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
         Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
@@ -61,11 +61,7 @@ const researchTopic = async (prompt: string, maxSearchResults: number) => {
       `.trim(),
       prompt,
       maxOutputTokens: 1200,
-      providerOptions: {
-        xai: {
-          searchParameters: { mode: 'on', maxSearchResults },
-        },
-      },
+      tools: { web_search: aiWebSearchTool() },
     })
 
     return text.trim() || null
@@ -116,10 +112,10 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
   const controversyPrompt = getControversyPrompt(aiControversyLevel)
 
   const searchOn = plan === 'PREMIUM' || (plan === 'CUSTOM' && maxOutputTokens > 5000)
-  const research = searchOn ? await researchTopic(prompt, 10) : null
+  const research = searchOn ? await researchTopic(prompt) : null
 
   const researchPrompt = research
-    ? `\nResearch brief (gathered from live web/X search — this is your only factual grounding):\n${research}\nEvery entry in "sources" MUST be a URL that appears verbatim in this brief. If the brief lists no URLs, return an empty sources array. Never invent or reconstruct a source URL.`
+    ? `\nResearch brief (gathered from live web search — this is your only factual grounding):\n${research}\nEvery entry in "sources" MUST be a URL that appears verbatim in this brief. If the brief lists no URLs, return an empty sources array. Never invent or reconstruct a source URL.`
     : `\nYou have no live search results for this article. Return an empty "sources" array rather than inventing URLs.`
 
   const communityPrompt = communityInsight

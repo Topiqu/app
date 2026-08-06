@@ -17,6 +17,8 @@
 </template>
 
 <script setup lang="ts">
+import { toAbsoluteUrl } from '~~/shared/utils/seo'
+
 import { themeColors, type ThemeKey } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
@@ -24,6 +26,13 @@ const route = useRoute()
 const clientSite = await useClientSite()
 const adChance = useAdChance()
 const i18nHead = useLocaleHead()
+const canonicalOrigin = useCanonicalOrigin()
+
+const i18nLinks = computed(() =>
+  (i18nHead.value.link ?? []).map((link) =>
+    typeof link.href === 'string' ? { ...link, href: toAbsoluteUrl(link.href, canonicalOrigin) } : link,
+  ),
+)
 
 const devView = import.meta.dev ? useDevView() : undefined
 const localePath = useLocalePath()
@@ -103,7 +112,7 @@ useHead(() => ({
     dir: i18nHead.value.htmlAttrs?.dir as 'ltr' | 'rtl' | 'auto' | undefined,
   },
   link: [
-    ...(i18nHead.value.link || []),
+    ...i18nLinks.value,
     {
       rel: 'icon',
       type: 'image/x-icon',
@@ -126,7 +135,7 @@ if (clientSite) {
             '@context': 'https://schema.org',
             '@type': 'WebSite',
             name: clientSite.name,
-            url: reqUrl.origin,
+            url: canonicalOrigin,
             description: clientSite.description,
             publisher: {
               '@type': 'Organization',

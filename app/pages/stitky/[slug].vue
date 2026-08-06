@@ -24,7 +24,7 @@ import type { ArticleCardData } from '~~/shared/types/article'
 import slugify from 'slugify'
 
 const route = useRoute()
-const reqUrl = useRequestURL()
+const canonicalOrigin = useCanonicalOrigin()
 const localePath = useLocalePath()
 
 const tagSlug = computed(() =>
@@ -75,7 +75,7 @@ watch(page, debouncedRefresh)
 
 const canonicalUrl = computed(() => {
   const path = localePath({ name: 'stitky-slug', params: { slug: tagSlug.value } })
-  return `${reqUrl.protocol}//${reqUrl.host}${path}`
+  return `${canonicalOrigin}${path}`
 })
 
 const hasSeoPlan = computed(() => clientSite?.plan !== 'BASIC')
@@ -108,7 +108,7 @@ useHead({
                 itemListElement: tag.value.articles.map((item: { slug: string }, index: number) => ({
                   '@type': 'ListItem',
                   position: index + 1,
-                  url: `${reqUrl.protocol}//${reqUrl.host}${localePath({ name: 'clanky-slug', params: { slug: item.slug } })}`,
+                  url: `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: item.slug } })}`,
                 })),
               },
             })

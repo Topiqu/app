@@ -104,6 +104,7 @@
           }"
         >
           {{ $t('common.readMore') }}
+          <span class="sr-only">{{ $t('common.readMoreAbout', { title: article?.title }) }}</span>
         </NuxtLink>
         <div
           :class="{ 'mt-6 text-base': isFeatured, 'mt-4 text-sm': !isFeatured }"
