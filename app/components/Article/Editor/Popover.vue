@@ -3,6 +3,7 @@
     <ArticleEditorChip
       :active
       :icon
+      :size
       :aria-label="label"
       :aria-expanded="open"
       aria-haspopup="dialog"
@@ -12,8 +13,8 @@
       <slot name="trigger" />
       <Icon
         name="mdi:chevron-down"
-        class="w-3 h-3 shrink-0 transition-transform"
-        :class="{ 'rotate-180': open }"
+        class="shrink-0 transition-transform opacity-60"
+        :class="[size === 'md' ? 'w-3.5 h-3.5' : 'w-3 h-3', { 'rotate-180': open }]"
         aria-hidden="true"
       />
     </ArticleEditorChip>
@@ -30,7 +31,7 @@
         v-if="open"
         role="dialog"
         :aria-label="label"
-        class="absolute top-full z-30 mt-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl shadow-black/5"
+        class="absolute top-full z-popover mt-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl ring-1 ring-black/5 dark:ring-white/10"
         :class="align === 'right' ? 'right-0' : 'left-0'"
         @keydown.escape="open = false"
       >
@@ -41,11 +42,12 @@
 </template>
 
 <script setup lang="ts">
-const { align = 'left' } = defineProps<{
+const { align = 'left', size = 'sm' } = defineProps<{
   label: string
   icon?: string
   active?: boolean
   align?: 'left' | 'right'
+  size?: 'sm' | 'md'
 }>()
 
 const open = shallowRef(false)

@@ -9,18 +9,18 @@
         <button
           v-if="compact"
           type="button"
-          class="inline-flex items-center gap-1 h-6 px-2.5 rounded-full border text-[11px] font-medium transition-colors max-w-48"
+          class="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-medium transition-colors max-w-56"
           :class="
             modelValue
               ? 'bg-indigo-600! hover:bg-indigo-700! border-indigo-600! text-white!'
-              : 'bg-transparent! hover:bg-gray-100! dark:hover:bg-gray-800! border-gray-200! dark:border-gray-700! text-gray-600! dark:text-gray-400!'
+              : 'bg-white! dark:bg-gray-900! hover:bg-gray-50! dark:hover:bg-gray-800! border-gray-300! dark:border-gray-700! text-gray-700! dark:text-gray-200!'
           "
         >
-          <Icon name="mdi:bookmark-multiple-outline" class="w-3 h-3 shrink-0" aria-hidden="true" />
-          <span class="truncate">{{ modelValue ? modelValue.name : $t('common.labels.series') }}</span>
+          <Icon name="mdi:bookmark-multiple-outline" class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          <span class="truncate">{{ modelValue ? modelValue.name : $t('series.placeholder') }}</span>
           <Icon
             name="mdi:chevron-down"
-            class="w-3 h-3 shrink-0 transition-transform"
+            class="w-3.5 h-3.5 shrink-0 transition-transform opacity-60"
             :class="{ 'rotate-180': open }"
             aria-hidden="true"
           />
