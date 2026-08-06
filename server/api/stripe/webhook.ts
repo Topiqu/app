@@ -1,6 +1,6 @@
+import type Stripe from 'stripe'
 import type { ClientPlan } from '@prisma/client'
 
-import Stripe from 'stripe'
 import { extractSubscriptionId, isSubscribablePlan, planFromPriceId } from '~~/server/utils/stripeWebhook'
 
 export default defineEventHandler(async (event) => {
@@ -21,8 +21,7 @@ export default defineEventHandler(async (event) => {
     if (!clientSiteId) return { received: true }
 
     if (session.mode === 'subscription') {
-      const subscriptionId =
-        typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
+      const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
       const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
       const subscription = subscriptionId ? await stripe.subscriptions.retrieve(subscriptionId) : null
       const priceId = subscription?.items.data[0]?.price.id ?? null
@@ -32,14 +31,20 @@ export default defineEventHandler(async (event) => {
       const derivedPlan = planFromPriceId(priceId) ?? (isSubscribablePlan(metadataPlan) ? metadataPlan : null)
       const promote = !isTrialing && !!derivedPlan
 
-      await prisma.clientSite.update({
-        where: { id: clientSiteId },
-        data: {
-          ...(promote ? { plan: derivedPlan as ClientPlan, firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
-          stripeCustomerId: customerId ?? undefined,
-          stripeSubscriptionId: subscriptionId ?? undefined,
-          stripePriceId: priceId ?? undefined,
-        },
+      await prisma.$transaction(async (tx) => {
+        await tx.clientSite.update({
+          where: { id: clientSiteId },
+          data: {
+            ...(promote
+              ? { plan: derivedPlan as ClientPlan, firstPaidAt: { set: new Date() }, lastPaidAt: new Date() }
+              : {}),
+            stripeCustomerId: customerId ?? undefined,
+            stripeSubscriptionId: subscriptionId ?? undefined,
+            stripePriceId: priceId ?? undefined,
+          },
+        })
+
+        if (promote) await syncPlanFeatures(tx, clientSiteId, derivedPlan as ClientPlan)
       })
       return { received: true }
     }
@@ -70,13 +75,17 @@ export default defineEventHandler(async (event) => {
 
     // Fires on both trial-end promotion and portal-driven plan changes (PRO↔PREMIUM).
     if (subscription.status === 'active' && derivedPlan) {
-      await prisma.clientSite.update({
-        where: { id: clientSiteId },
-        data: {
-          plan: derivedPlan as ClientPlan,
-          stripePriceId: currentPriceId ?? undefined,
-          ...(trialEnded ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
-        },
+      await prisma.$transaction(async (tx) => {
+        await tx.clientSite.update({
+          where: { id: clientSiteId },
+          data: {
+            plan: derivedPlan as ClientPlan,
+            stripePriceId: currentPriceId ?? undefined,
+            ...(trialEnded ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
+          },
+        })
+
+        await syncPlanFeatures(tx, clientSiteId, derivedPlan as ClientPlan)
       })
     }
     return { received: true }
@@ -87,13 +96,17 @@ export default defineEventHandler(async (event) => {
     const clientSiteId = subscription.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
 
-    await prisma.clientSite.update({
-      where: { id: clientSiteId },
-      data: {
-        plan: 'BASIC',
-        stripeSubscriptionId: null,
-        stripePriceId: null,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.clientSite.update({
+        where: { id: clientSiteId },
+        data: {
+          plan: 'BASIC',
+          stripeSubscriptionId: null,
+          stripePriceId: null,
+        },
+      })
+
+      await syncPlanFeatures(tx, clientSiteId, 'BASIC')
     })
   }
 

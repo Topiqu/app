@@ -63,9 +63,6 @@ export default defineEventHandler(async (event) => {
           plan: 'BASIC', // Will be updated by Stripe Webhook
           tokenRemaining: 25000,
           tokenLimit: 25000,
-          enableAi: true,
-          enableCron: true,
-          enableSentiment: true,
           firstPaidAt: null, // Set in Stripe Webhook
         },
       })

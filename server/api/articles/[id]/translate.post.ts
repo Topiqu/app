@@ -21,11 +21,11 @@ export default defineEventHandler(async (event) => {
 
   const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId },
-    select: { enableAi: true, plan: true, language: true, tokenRemaining: true },
+    select: { plan: true, language: true, tokenRemaining: true },
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
 
-  if (!clientSite.enableAi || !TRANSLATION_PLANS.includes(clientSite.plan))
+  if (!TRANSLATION_PLANS.includes(clientSite.plan) || !(await hasActiveFeature(db, user.clientSiteId, 'AI')))
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const sourceLang = clientSite.language
