@@ -2,7 +2,7 @@ import { generateObject, generateText, streamObject } from 'ai'
 
 import { fetchUnsplashImage } from '../unsplash'
 
-const articleSchema = z.object({
+export const articleSchema = z.object({
   title: z.string().min(5).max(500).describe('Catchy title 5-15 words'),
   perex: z.string().min(20).max(1000).describe('Short introductory paragraph (3-4 sentences)'),
   content: z
@@ -33,8 +33,7 @@ const articleSchema = z.object({
         options: z.array(z.string().min(1).max(255)).min(2).max(5).describe('Poll options (2-5)'),
       }),
     )
-    .optional()
-    .describe('Array of polls corresponding to slots in content'),
+    .describe('Array of polls corresponding to slots in content, empty array if none'),
   tags: z
     .array(z.string())
     .max(5)
@@ -150,7 +149,7 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
       - Use 'generate': ONLY as a last resort for highly specific, non-existent concepts, humor, or abstract ideas that cannot be found on Unsplash (e.g. "AI eating old code"). Provide a detailed generation prompt. Do NOT generate real people or politicians.
       
       If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.
-      If the article would benefit from interactive audience engagement, include 0-2 poll slots in appropriate places in the content using [[POLL1]], [[POLL2]], etc. Provide corresponding questions and options (2-5 options per poll) in the polls array.
+      If the article would benefit from interactive audience engagement, include 0-2 poll slots in appropriate places in the content using [[POLL1]], [[POLL2]], etc. Provide corresponding questions and options (2-5 options per poll) in the polls array. Return an empty polls array if none are relevant.
       
       Twitter/X Embeds:
       If you find a highly relevant post on the X network (Twitter) to illustrate the article, DO NOT just return the URL. Instead, return it wrapped in this exact HTML format:
