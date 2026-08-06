@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed bottom-3 right-3 z-overlay flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-[0_8px_28px_-10px_rgba(0,0,0,0.35)] ring-1 ring-black/5 backdrop-blur-xl dark:bg-neutral-900/85 dark:text-gray-400 dark:ring-white/10"
+    class="fixed bottom-3 right-3 z-overlay flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-[0_8px_28px_-10px_rgba(0,0,0,0.35)] backdrop-blur-xl dark:bg-neutral-900/85 dark:text-gray-400 dark:ring-1 dark:ring-white/10"
   >
     <span class="flex items-center gap-1">
       Topiqu AI Blog
@@ -8,7 +8,7 @@
       <span class="tabular-nums text-gray-400 dark:text-gray-500">{{ config.public.appVersion }}</span>
     </span>
 
-    <span class="h-3 w-px bg-gray-300/80 dark:bg-neutral-700" />
+    <span class="h-3 w-px bg-gray-200 dark:bg-neutral-700/70" />
 
     <button
       ref="trigger"
@@ -18,7 +18,7 @@
       class="flex items-center gap-1.5 rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-violet-500"
       @click="show = !show"
     >
-      <span :class="['rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide', planChip]">
+      <span :class="['text-[10px] font-bold uppercase tracking-wide', planChip]">
         {{ site?.plan ?? $t('articles.userMenu.noClientAssigned') }}
       </span>
 
@@ -302,15 +302,15 @@ const tokenColor = computed(() =>
 const planChip = computed(() => {
   switch (site.value?.plan) {
     case 'BASIC':
-      return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+      return 'text-emerald-600 dark:text-emerald-400'
     case 'PRO':
-      return 'bg-blue-500/10 text-blue-700 dark:text-blue-300'
+      return 'text-blue-600 dark:text-blue-400'
     case 'PREMIUM':
-      return 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+      return 'text-amber-600 dark:text-amber-400'
     case 'CUSTOM':
-      return 'bg-orange-500/15 text-orange-700 dark:text-orange-300'
+      return 'text-orange-600 dark:text-orange-400'
     default:
-      return 'bg-gray-500/10 text-gray-600 dark:text-gray-300'
+      return 'text-gray-500 dark:text-gray-400'
   }
 })
 
