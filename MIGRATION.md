@@ -27,16 +27,16 @@ Phase 3+ and only if scale demands them.
 
 ## 1. Current serverless-coupling inventory (grounded in code)
 
-| Coupling point | Where | Migration impact |
-| --- | --- | --- |
-| Nitro preset `vercel` (prod) | `nuxt.config.ts:43` (`$production`) | Switch to `node-server`; `bun` preset already the default |
-| Vercel cron (single) | `vercel.json` `crons` — only `publish-check` **daily** | **Broken today**: `nuxt.config.ts:63` declares 5 `scheduledTasks` (`publish-check` 10m, `generate-article`, `sentiment-analysis` 30m, `community-insights`, `translate-pending` 5m) that Vercel never runs; `community-insights` cron `'0 3 * * * *'` has **6 fields** (invalid). Native scheduler fixes all of it. |
-| Upstash Redis over HTTP/REST | `server/utils/cache.ts` (`@upstash/redis`) | Swap for TCP Redis (`ioredis`) behind the same `cached`/`bumpGen`/`getGen` interface; injected creds (`UPSTASH_REDIS_REST_*`) become a self-hosted `REDIS_URL` |
-| Notifications = polling (no push) | `MAP.md §4`; `Notification/Bar.vue` polls `/api/notifications/poll` every 10s | Long-running process re-enables SSE/WebSocket push (removed SSE layer can return) |
-| Disconnect-safe billing complexity | `server/utils/ai/article.ts` + `POST /api/articles/generate` (commit `3fb6139`) | Persistent process lets us simplify abort/billing once streams aren't fighting serverless connection teardown |
-| No long-running worker | `todo` "queue (SQS migration)" epic | `server/worker.ts` (poller) finally has a home; unblocks fan-out generation + push |
-| Vercel edge cache / previews / rollbacks | Vercel platform | Cloudflare CDN + Dokploy preview deployments + Swarm rollback — closer to parity than a hand-rolled box would be |
-| `vercel.json` response headers | `/_nuxt/*` cache-control, `manifest.webmanifest` + `sitemap.xml` content-type | Nitro `node-server` already sets immutable cache headers on `/_nuxt/*`; the content-type overrides must be re-expressed as Nitro `routeRules` before cutover |
+| Coupling point                           | Where                                                                           | Migration impact                                                                                                                                                                                                                                                                                                    |
+| ---------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nitro preset `vercel` (prod)             | `nuxt.config.ts:43` (`$production`)                                             | Switch to `node-server`; `bun` preset already the default                                                                                                                                                                                                                                                           |
+| Vercel cron (single)                     | `vercel.json` `crons` — only `publish-check` **daily**                          | **Broken today**: `nuxt.config.ts:63` declares 5 `scheduledTasks` (`publish-check` 10m, `generate-article`, `sentiment-analysis` 30m, `community-insights`, `translate-pending` 5m) that Vercel never runs; `community-insights` cron `'0 3 * * * *'` has **6 fields** (invalid). Native scheduler fixes all of it. |
+| Upstash Redis over HTTP/REST             | `server/utils/cache.ts` (`@upstash/redis`)                                      | Swap for TCP Redis (`ioredis`) behind the same `cached`/`bumpGen`/`getGen` interface; injected creds (`UPSTASH_REDIS_REST_*`) become a self-hosted `REDIS_URL`                                                                                                                                                      |
+| Notifications = polling (no push)        | `MAP.md §4`; `Notification/Bar.vue` polls `/api/notifications/poll` every 10s   | Long-running process re-enables SSE/WebSocket push (removed SSE layer can return)                                                                                                                                                                                                                                   |
+| Disconnect-safe billing complexity       | `server/utils/ai/article.ts` + `POST /api/articles/generate` (commit `3fb6139`) | Persistent process lets us simplify abort/billing once streams aren't fighting serverless connection teardown                                                                                                                                                                                                       |
+| No long-running worker                   | `todo` "queue (SQS migration)" epic                                             | `server/worker.ts` (poller) finally has a home; unblocks fan-out generation + push                                                                                                                                                                                                                                  |
+| Vercel edge cache / previews / rollbacks | Vercel platform                                                                 | Cloudflare CDN + Dokploy preview deployments + Swarm rollback — closer to parity than a hand-rolled box would be                                                                                                                                                                                                    |
+| `vercel.json` response headers           | `/_nuxt/*` cache-control, `manifest.webmanifest` + `sitemap.xml` content-type   | Nitro `node-server` already sets immutable cache headers on `/_nuxt/*`; the content-type overrides must be re-expressed as Nitro `routeRules` before cutover                                                                                                                                                        |
 
 **No browser runtime needed.** Both PDF routes (`server/api/articles/export-pdf.post.ts`,
 `server/api/users/pdf.get.ts`) are pure `pdfkit` — no Playwright, no Chromium. OG images use
@@ -125,7 +125,7 @@ Exit criteria: all tests green on Vercel; no behavioral change in prod.
   hand-written proxy config. What still needs deciding is **wildcard TLS for the
   `*.topiqu.com` tenant subdomains**, which Dokploy's default per-domain HTTP-01 flow does
   not cover. Options, in preference order:
-  1. **Cloudflare proxied + Origin CA certificate** (SSL mode *Full (Strict)*). One
+  1. **Cloudflare proxied + Origin CA certificate** (SSL mode _Full (Strict)_). One
      long-lived wildcard origin cert that Traefik just serves. Cloudflare is wanted in front
      anyway for edge caching (1.6), so this adds no new moving part. **Recommended.**
   2. **Traefik `certResolver` with a Let's Encrypt DNS-01 challenge** (Cloudflare API
@@ -137,6 +137,7 @@ Exit criteria: all tests green on Vercel; no behavioral change in prod.
   Whichever is chosen, the old Caddy `on_demand_tls` + `/api/tls-check` design is **dropped**
   — Traefik has no on-demand TLS equivalent, and with a wildcard cert the open cert-minting
   vector it guarded against no longer exists.
+
 - **1.5 Process supervision — provided by Dokploy.** Swarm restarts services; configure the
   update policy for zero-downtime deploys with automatic rollback:
   `{"Parallelism": 1, "Delay": 10000000000, "FailureAction": "rollback", "Order": "start-first"}`.
@@ -198,13 +199,13 @@ decommissioned (keep it dormant one billing cycle as instant rollback).
 
 Ballpark monthly, assuming current low-to-moderate traffic:
 
-| Item | Vercel serverless (now) | Self-hosted target |
-| --- | --- | --- |
-| Compute | Pro seat + per-invocation + wall-clock (AI streaming is the expensive path) | 1 VPS, e.g. Hetzner CCX23 (4 dedicated vCPU / 16 GB) ≈ €30, or CPX41 shared ≈ €25. Dokploy itself is free/self-hosted |
-| Redis | Upstash pay-per-request | Self-hosted on the box (€0 incremental) |
-| CDN / edge | Included | Cloudflare Free, or Pro ≈ $20 |
-| Postgres | (already managed) | unchanged |
-| Bandwidth | Vercel egress pricing | Cloudflare-fronted (cheaper egress) |
+| Item       | Vercel serverless (now)                                                     | Self-hosted target                                                                                                    |
+| ---------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Compute    | Pro seat + per-invocation + wall-clock (AI streaming is the expensive path) | 1 VPS, e.g. Hetzner CCX23 (4 dedicated vCPU / 16 GB) ≈ €30, or CPX41 shared ≈ €25. Dokploy itself is free/self-hosted |
+| Redis      | Upstash pay-per-request                                                     | Self-hosted on the box (€0 incremental)                                                                               |
+| CDN / edge | Included                                                                    | Cloudflare Free, or Pro ≈ $20                                                                                         |
+| Postgres   | (already managed)                                                           | unchanged                                                                                                             |
+| Bandwidth  | Vercel egress pricing                                                       | Cloudflare-fronted (cheaper egress)                                                                                   |
 
 **Assumptions to verify:** pull the actual Vercel usage breakdown (functions GB-hours,
 edge requests, bandwidth) — the win is largest if AI-streaming wall-clock is a big line
@@ -244,24 +245,24 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
-  localstack:            # future SQS provider
+  localstack: # future SQS provider
     image: localstack/localstack
     environment: { SERVICES: sqs }
 ```
 
 ## 5. Risk register
 
-| Risk | Severity | Mitigation |
-| --- | --- | --- |
-| Loss of auto-scale — one tenant goes viral, single box saturates | High | Cloudflare edge-cache anon traffic hard (ties into the feed-cache/canary epic in `todo` "done"); size the VPS with headroom; Phase 3 horizontal scale ready via `queue.ts` |
+| Risk                                                                                                                                                                      | Severity | Mitigation                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Loss of auto-scale — one tenant goes viral, single box saturates                                                                                                          | High     | Cloudflare edge-cache anon traffic hard (ties into the feed-cache/canary epic in `todo` "done"); size the VPS with headroom; Phase 3 horizontal scale ready via `queue.ts`                                                                                                                                           |
 | **`scheduledTasks` fire once per replica** — scale `web` to 2 and `generate-article` produces two articles, `gam-sync` double-counts revenue, billing tasks double-charge | **High** | Decide **before** scaling: keep `web` at 1 replica, or move tasks into the single-replica `worker` service (Phase 0.3), or drop `nitro.scheduledTasks` for Dokploy Schedule Jobs hitting a `CRON_SECRET`-guarded endpoint. Dokploy makes scaling a one-click action, which is exactly why this must be settled first |
-| Wildcard TLS for `*.topiqu.com` not covered by Dokploy's per-domain HTTP-01 flow | High | Phase 1.4 — Cloudflare Origin CA wildcard cert under Full (Strict) is the recommended path |
-| Losing preview deploys + instant rollback (DX) | Low/Med | Dokploy preview deployments on a wildcard domain + Swarm `FailureAction: rollback`; keep the dormant Vercel project one cycle as the outer rollback |
-| OAuth/session cookie regression across `*.topiqu.com` | Medium | Cookie domain `.topiqu.com` unchanged; verify redirect-URI host is still `app.topiqu.com` (`MAP.md §4`) before DNS cutover |
-| Chromium image bloat / PDF route regressions | Medium | Pin chromium; smoke-test both PDF routes in CI on the built image |
-| You now own OS patching / uptime / security surface | Medium | Better Stack uptime + heartbeats (already in `todo`, unblocked by a live box); unattended-upgrades; minimal image |
-| Secret sprawl during cutover | Medium | Single `EnvironmentFile`; rotate all Vercel-injected creds; never bake secrets into the image |
-| DB connection pool exhaustion (persistent process vs per-invocation) | Low/Med | Prisma pool sizing + PgBouncer if managed PG needs it (serverless used per-invocation connections) |
+| Wildcard TLS for `*.topiqu.com` not covered by Dokploy's per-domain HTTP-01 flow                                                                                          | High     | Phase 1.4 — Cloudflare Origin CA wildcard cert under Full (Strict) is the recommended path                                                                                                                                                                                                                           |
+| Losing preview deploys + instant rollback (DX)                                                                                                                            | Low/Med  | Dokploy preview deployments on a wildcard domain + Swarm `FailureAction: rollback`; keep the dormant Vercel project one cycle as the outer rollback                                                                                                                                                                  |
+| OAuth/session cookie regression across `*.topiqu.com`                                                                                                                     | Medium   | Cookie domain `.topiqu.com` unchanged; verify redirect-URI host is still `app.topiqu.com` (`MAP.md §4`) before DNS cutover                                                                                                                                                                                           |
+| Chromium image bloat / PDF route regressions                                                                                                                              | Medium   | Pin chromium; smoke-test both PDF routes in CI on the built image                                                                                                                                                                                                                                                    |
+| You now own OS patching / uptime / security surface                                                                                                                       | Medium   | Better Stack uptime + heartbeats (already in `todo`, unblocked by a live box); unattended-upgrades; minimal image                                                                                                                                                                                                    |
+| Secret sprawl during cutover                                                                                                                                              | Medium   | Single `EnvironmentFile`; rotate all Vercel-injected creds; never bake secrets into the image                                                                                                                                                                                                                        |
+| DB connection pool exhaustion (persistent process vs per-invocation)                                                                                                      | Low/Med  | Prisma pool sizing + PgBouncer if managed PG needs it (serverless used per-invocation connections)                                                                                                                                                                                                                   |
 
 ## 6. Rollback strategy
 
