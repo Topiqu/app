@@ -230,10 +230,13 @@ export default NuxtAuthHandler({
             email: true,
             avatarUrl: true,
             totpSecret: true,
+            emailVerified: true,
           },
         })
         if (!user || !user.password) return null
         if (!(await argon.verify(user.password, password))) return null
+
+        if (!user.emailVerified) throw new Error('email_not_verified')
 
         if (user.totpSecret) {
           const code = (totp ?? '').replace(/\s/g, '')
@@ -281,7 +284,7 @@ export default NuxtAuthHandler({
       return baseUrl
     },
     async jwt({ token, user, account }) {
-      if (account?.provider) {
+      if (isOAuthSignIn(account)) {
         if (!token.email) throw new Error('oauth_email_unverified')
 
         const existingUser = await prisma.user.findFirst({ where: { email: token.email, deletedAt: null } })

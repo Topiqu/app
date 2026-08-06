@@ -2,7 +2,31 @@ import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { canLinkOAuthIdentity, verifiedGitHubEmail, verifiedGoogleEmail } from '../../../server/utils/oauthIdentity'
+import {
+  canLinkOAuthIdentity,
+  isOAuthSignIn,
+  verifiedGitHubEmail,
+  verifiedGoogleEmail,
+} from '../../../server/utils/oauthIdentity'
+
+describe('isOAuthSignIn', () => {
+  it('rejects the credentials account next-auth builds in callback.js', () => {
+    expect(isOAuthSignIn({ providerAccountId: 'u1', type: 'credentials', provider: 'credentials' })).toBe(false)
+  })
+
+  it('accepts a real OAuth account', () => {
+    expect(isOAuthSignIn({ provider: 'google', type: 'oauth', providerAccountId: '123' })).toBe(true)
+  })
+
+  it('rejects a missing account, as on token refresh', () => {
+    expect(isOAuthSignIn(undefined)).toBe(false)
+    expect(isOAuthSignIn(null)).toBe(false)
+  })
+
+  it('is not fooled by a truthy provider alone', () => {
+    expect(isOAuthSignIn({ provider: 'credentials' } as { type?: string })).toBe(false)
+  })
+})
 
 describe('verifiedGitHubEmail', () => {
   it('accepts the primary verified address', () => {
@@ -91,5 +115,10 @@ describe('the OAuth handler wires the guards in', () => {
   it('gates account linking and excludes soft-deleted accounts', () => {
     expect(source).toContain('canLinkOAuthIdentity(existingUser)')
     expect(source).toContain('findFirst({ where: { email: token.email, deletedAt: null } })')
+  })
+
+  it('gates the OAuth branch on account.type, never on the truthy account.provider', () => {
+    expect(source).toContain('isOAuthSignIn(account)')
+    expect(source).not.toContain('if (account?.provider)')
   })
 })
