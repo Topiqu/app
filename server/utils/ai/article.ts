@@ -71,7 +71,18 @@ const researchTopic = async (prompt: string) => {
   }
 }
 
-const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
+/**
+ * `undefined` researches the prompt itself (the manual editor flow, where the prompt *is* the
+ * topic). `false` skips the step. `{ query }` researches that query instead — the cron passes
+ * this, because its prompt is a template, not a topic.
+ */
+export type ResearchOption = { query: string } | false | undefined
+
+const buildArticleConfig = async (
+  clientSiteId: string,
+  prompt: string,
+  { research: researchOption }: { research?: ResearchOption } = {},
+) => {
   const { tokenRemaining, plan, focus, keywords, audience, tags, aiToneOfVoice, aiControversyLevel, communityInsight } =
     await prisma.clientSite.findFirstOrThrow({
       select: {
@@ -111,7 +122,8 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
   const controversyPrompt = getControversyPrompt(aiControversyLevel)
 
   const searchOn = plan === 'PREMIUM' || (plan === 'CUSTOM' && maxOutputTokens > 5000)
-  const research = searchOn ? await researchTopic(prompt) : null
+  const researchQuery = researchOption === undefined ? prompt : researchOption ? researchOption.query : null
+  const research = searchOn && researchQuery ? await researchTopic(researchQuery) : null
 
   const researchPrompt = research
     ? `\nResearch brief (gathered from live web search — this is your only factual grounding):\n${research}\nEvery entry in "sources" MUST be a URL that appears verbatim in this brief. If the brief lists no URLs, return an empty sources array. Never invent or reconstruct a source URL.`
@@ -251,8 +263,8 @@ export const finalizeArticle = async (object: ArticleObject, onImage?: (image: F
   return { ...object, articleImageUrl }
 }
 
-export const generateArticle = async (clientSiteId: string, prompt: string) => {
-  const config = await buildArticleConfig(clientSiteId, prompt)
+export const generateArticle = async (clientSiteId: string, prompt: string, opts?: { research?: ResearchOption }) => {
+  const config = await buildArticleConfig(clientSiteId, prompt, opts)
   const { object, usage } = await generateObject(config)
   const finalized = await finalizeArticle(object)
 

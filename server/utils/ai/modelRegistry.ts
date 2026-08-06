@@ -1,6 +1,7 @@
 export type AiProvider = 'openai'
 
 export const AI_MODELS = {
+  topicSelection: { provider: 'openai', id: 'gpt-5.6-luna' },
   articleResearch: { provider: 'openai', id: 'gpt-5.6-luna' },
   articleWriter: { provider: 'openai', id: 'gpt-5.6-luna' },
   linkedinPost: { provider: 'openai', id: 'gpt-5.6-luna' },
