@@ -15,16 +15,18 @@
         class="z-popover"
       >
         <MenuItems
-          class="w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-800 rounded-xl bg-white dark:bg-gray-900 shadow-xl ring-1 ring-black/5 dark:ring-white/10 focus:outline-none"
+          class="w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-800 rounded-xl bg-white! dark:bg-gray-900! shadow-xl ring-1 ring-black/5 dark:ring-white/10 focus:outline-none"
         >
-          <div v-for="(items, key) in groups" :key class="px-1 py-1">
+          <div v-for="(items, key) in groups" :key class="px-1 py-1 bg-transparent!">
             <MenuItem v-for="item in items" :key="item.id" v-slot="{ active }" :disabled="item.disabled">
-              <div>
+              <div class="bg-transparent!">
                 <component
                   :is="item.href ? NuxtLink : 'button'"
                   :to="item.href"
                   :class="[
-                    active ? 'bg-violet-600! text-white!' : 'bg-transparent! text-gray-900! dark:text-gray-100!',
+                    active
+                      ? 'bg-violet-600! text-white!'
+                      : 'bg-transparent! text-gray-900! dark:text-gray-100! hover:bg-gray-100! dark:hover:bg-gray-800!',
                     'group flex w-full items-center rounded-md px-2 py-2 text-sm border-none text-left',
                   ]"
                   @click="item.onClick"
