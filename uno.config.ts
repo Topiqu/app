@@ -16,16 +16,15 @@ export default defineConfig({
           'line-height': '1.6',
         },
         'thead th': {
-          'background-color': 'var(--un-prose-bg-soft)',
+          'background-color': 'rgb(128 128 128 / 0.12)',
           'font-weight': '600',
           'text-align': 'left',
-        },
-        'th, td': {
           padding: '0.625em 0.875em',
-          border: '1px solid var(--un-prose-borders)',
+          border: '1px solid var(--un-prose-th-borders)',
         },
-        'tbody tr:last-child td': {
-          'border-bottom-width': '1px',
+        'tbody td': {
+          padding: '0.625em 0.875em',
+          border: '1px solid var(--un-prose-td-borders)',
         },
       },
     }),
