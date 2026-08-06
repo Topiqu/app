@@ -10,7 +10,7 @@ export const articleSchema = z.object({
     .min(500)
     .max(20000)
     .describe(
-      'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, you can also add <br> tags at the end of each section/paragraph for v-html on frontend. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
+      'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, ul/ol/li and table/thead/tbody/tr/th/td, you can also add <br> tags at the end of each section/paragraph for v-html on frontend. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
     ),
   coverImage: z
     .object({
@@ -131,7 +131,7 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
       {
         "title": "catchy title 5-15 words",
         "perex": "short introductory paragraph (3-4 sentences)",
-        "content": "article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear. If relevant, include poll slots like [[POLL1]], [[POLL2]] to engage the audience.",
+        "content": "article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, lists and tables for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear. If relevant, include poll slots like [[POLL1]], [[POLL2]] to engage the audience.",
         "coverImage": {"type": "unsplash", "query": "search keyword OR generation prompt"},
         "images": [{"type": "unsplash", "query": "keyword for IMAGE1"}, {"type": "generate", "query": "prompt for IMAGE2"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
@@ -151,6 +151,11 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
       If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.
       If the article would benefit from interactive audience engagement, include 0-2 poll slots in appropriate places in the content using [[POLL1]], [[POLL2]], etc. Provide corresponding questions and options (2-5 options per poll) in the polls array. Return an empty polls array if none are relevant.
       
+      Tables:
+      When the article compares options or presents figures (prices, budgets, specs, timelines), render them as a real HTML table, never as tab- or pipe-separated text.
+      Use proper markup: <table><thead><tr><th>…</th></tr></thead><tbody><tr><td>…</td></tr></tbody></table>.
+      Keep tables to a maximum of 4 columns so they stay readable on mobile, and never put an image, a poll slot or a nested table inside a cell.
+
       Twitter/X Embeds:
       If you find a highly relevant post on the X network (Twitter) to illustrate the article, DO NOT just return the URL. Instead, return it wrapped in this exact HTML format:
       <blockquote class="twitter-tweet"><a href="[INSERT TWEET URL HERE]"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
@@ -165,7 +170,7 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
     instructions,
     prompt,
     schema: articleSchema,
-  } as const;
+  } as const
 }
 
 type FinalizeImage = { slot: number; html: string }
@@ -174,6 +179,18 @@ export const finalizeArticle = async (object: ArticleObject, onImage?: (image: F
   const generateImageOptions = {
     outputDir: 'article-images',
     filenamePrefix: 'article',
+  }
+
+  // A failed image must never cost the author the whole article, so every generation
+  // is best-effort: we log and carry on with one image fewer.
+  const tryGenerateImage = async (prompt: string, opts?: { filenameSuffix?: string }) => {
+    try {
+      const { url } = await generateImage(prompt, { ...generateImageOptions, ...opts })
+      return url
+    } catch (error) {
+      console.error('Article image generation failed:', error)
+      return null
+    }
   }
 
   let articleImageUrl = ''
@@ -186,53 +203,50 @@ export const finalizeArticle = async (object: ArticleObject, onImage?: (image: F
     }
     // Fallback or generate
     if (!articleImageUrl) {
-      const { url } = await generateImage(object.coverImage.query, generateImageOptions)
-      articleImageUrl = url
+      articleImageUrl = (await tryGenerateImage(object.coverImage.query)) ?? ''
     }
   } else {
     // Legacy fallback just in case AI omits it
-    const { url } = await generateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024), generateImageOptions)
-    articleImageUrl = url
+    articleImageUrl = (await tryGenerateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024))) ?? ''
   }
 
   const buildImageHtml = (url: string, desc: string, attribution: string) =>
     `<p style="text-align: center;"><img src="${url}" alt="${desc}" />${attribution}</p>`
 
-  const generatedImages = await Promise.all(
+  const settledImages = await Promise.all(
     object.images.map(async (img, idx) => {
-      let html: string
       if (img.type === 'unsplash') {
         const unsplashRes = await fetchUnsplashImage(img.query)
         if (unsplashRes) {
           const attribution = `<br><small style="color: gray;">Zdroj: <a href="${unsplashRes.authorUrl}?utm_source=rasg&utm_medium=referral" target="_blank">${unsplashRes.authorName}</a> na Unsplash</small>`
-          html = buildImageHtml(unsplashRes.url, img.query, attribution)
-          const image = { slot: idx + 1, html }
+          const image = { slot: idx + 1, html: buildImageHtml(unsplashRes.url, img.query, attribution) }
           onImage?.(image)
           return image
         }
       }
       // fallback to AI generation
-      const { url } = await generateImage(img.query, { ...generateImageOptions, filenameSuffix: idx.toString() })
-      html = buildImageHtml(url, img.query, '')
-      const image = { slot: idx + 1, html }
+      const url = await tryGenerateImage(img.query, { filenameSuffix: idx.toString() })
+      if (!url) return null
+      const image = { slot: idx + 1, html: buildImageHtml(url, img.query, '') }
       onImage?.(image)
       return image
     }),
   )
 
-  for (const { slot, html } of generatedImages) {
-    object.content = object.content.replace(`[[IMAGE${slot}]]`, html)
-  }
+  const generatedImages = settledImages.filter((image) => image !== null)
 
-  if (object.polls) {
-    for (const [idx, poll] of object.polls.entries()) {
-      const pollId = crypto.randomUUID()
-      const optionObjects = poll.options.map((label: string) => ({ label }))
-      const escapedOptions = JSON.stringify(optionObjects).replace(/"/g, '&quot;')
-      const pollHtml = `<div data-type="poll" data-id="${pollId}" data-question="${poll.question}" data-options="${escapedOptions}"></div>`
-      object.content = object.content.replace(`[[POLL${idx + 1}]]`, pollHtml)
+  object.content = applyContentSlots(object.content, 'IMAGE', generatedImages)
+
+  const polls = (object.polls ?? []).map((poll, idx) => {
+    const pollId = crypto.randomUUID()
+    const optionObjects = poll.options.map((label: string) => ({ label }))
+    const escapedOptions = JSON.stringify(optionObjects).replace(/"/g, '&quot;')
+    return {
+      slot: idx + 1,
+      html: `<div data-type="poll" data-id="${pollId}" data-question="${poll.question}" data-options="${escapedOptions}"></div>`,
     }
-  }
+  })
+  object.content = applyContentSlots(object.content, 'POLL', polls)
 
   return { ...object, articleImageUrl }
 }
