@@ -35,6 +35,49 @@ const processClient = async (client: any) => {
   const clientSiteId = client.id
   const defaultLang = client.language
 
+  const topicInput = {
+    focus: client.focus,
+    audience: client.audience,
+    keywords: client.keywords,
+    language: defaultLang,
+    recentExcerpts: client.articles.map((a: any) => a.excerpt).filter(Boolean),
+    suggestion: client.communityInsight?.suggestion,
+  }
+
+  // Topic first, then the article. The writer used to receive the whole selection template as its
+  // prompt, which meant the research step searched the template instead of a subject — and ran
+  // before any subject existed. Picking here also lets the model say whether the topic actually
+  // needs live facts, so evergreen pieces skip the web-search call entirely.
+  let topic: ArticleTopic | null = null
+  let topicTokens = 0
+  try {
+    const picked = await pickArticleTopic(topicInput)
+    topic = picked.topic
+    topicTokens = picked.usage.totalTokens ?? 0
+  } catch (err) {
+    await logAction({
+      action: 'CRON_TOPIC_SELECTION_FAILED',
+      clientSiteId,
+      metadata: { error: (err as any).message },
+    })
+  }
+
+  // If selection failed we fall back to the previous behaviour — the writer picks the topic
+  // itself from the same rules — rather than skipping the client's run entirely.
+  const topicBlock = topic
+    ? `## TOPIC
+  Topic: ${topic.topic}
+  Angle: ${topic.angle}`
+    : `## TOPIC RULES
+  - Do NOT create an article that is semantically similar to previous ones.
+  - Similarity = same topic, argument, or thesis, not wording.
+  - Past article summaries (avoid these topics):
+  ${topicInput.recentExcerpts.map((excerpt: string) => `- ${excerpt}`).join('\n') || 'none'}
+
+  ## COMMUNITY INSIGHT (optional)
+  ${topicInput.suggestion || 'none'}
+  If relevant AND non-duplicate, prefer it as topic.`
+
   const prompt = `
   Generate a blog article for the client.
 
@@ -42,20 +85,7 @@ const processClient = async (client: any) => {
   Focus: ${client.focus || 'general topics'}
   Keywords: ${client.keywords?.join(', ') ?? 'none'}
 
-  ## TOPIC RULES
-  - Do NOT create an article that is semantically similar to previous ones.
-  - Similarity = same topic, argument, or thesis, not wording.
-  - Past article summaries (avoid these topics):
-  ${client.articles.map((a: any) => `- ${a.excerpt}`).join('\n') || 'none'}
-
-  Before writing, choose a topic and confirm it is:
-  1) Meaningfully different
-  2) Not rephrased
-  3) Adds a new angle or unanswered question
-  
-  ## COMMUNITY INSIGHT (optional)
-  ${client.communityInsight?.suggestion || 'none'}
-  If relevant AND non-duplicate, prefer it as topic.
+  ${topicBlock}
 
   ## ARTICLE REQUIREMENTS
   - Catchy title
@@ -72,17 +102,20 @@ const processClient = async (client: any) => {
 
   let generated: any, usage: any
   try {
-    ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt))
+    // Never `undefined` here: that would research the prompt, and the prompt is a template.
+    ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt, {
+      research: topic ? researchRequest(topic) : false,
+    }))
   } catch (err) {
     await logAction({
       action: 'CRON_GENERATE_ARTICLE_FAILED',
       clientSiteId,
-      metadata: { error: (err as any).message },
+      metadata: { error: (err as any).message, topic: topic?.topic },
     })
     return
   }
 
-  const tokens = usage.totalTokens ?? 0
+  const tokens = (usage.totalTokens ?? 0) + topicTokens
   if (tokens <= 0) return
 
   try {
@@ -104,7 +137,13 @@ const processClient = async (client: any) => {
   await logAction({
     action: 'CRON_GENERATE_ARTICLE',
     clientSiteId,
-    metadata: { ...generated, usage, metrics },
+    metadata: {
+      ...generated,
+      usage,
+      metrics,
+      topic: topic ? { ...topic, researched: researchRequest(topic) !== false } : null,
+      topicTokens,
+    },
   })
 
   const status = client.autoRelease ? 'published' : 'draft'
