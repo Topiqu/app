@@ -113,13 +113,19 @@ const processClient = async (client: any) => {
     const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
 
     const article = await ctx.article.create({
-      select: { id: true, title: true, userId: true, user: { select: { username: true, language: true, role: true } } },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        userId: true,
+        user: { select: { username: true, language: true, role: true } },
+      },
       data: {
         title: generated.title,
         excerpt: generated.perex,
         slug,
         userId: client.users[0]?.id || 'system',
-        content: generated.content,
+        content: sanitizeHtml(generated.content),
         clientSiteId,
         status,
         aiInvolvement: 'FULL',
@@ -136,6 +142,15 @@ const processClient = async (client: any) => {
 
     return article
   })
+
+  const contentWithPolls = await syncArticlePolls(
+    prisma as unknown as Parameters<typeof syncArticlePolls>[0],
+    article.id,
+    article.content,
+  )
+  if (contentWithPolls !== article.content) {
+    await prisma.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
+  }
 
   await prisma.clientSite.update({
     where: { id: clientSiteId },

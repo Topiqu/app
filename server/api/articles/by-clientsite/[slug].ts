@@ -17,11 +17,10 @@ function extractPollData(content: string, articleId: string) {
   const tag = pollMatch[0]
 
   const pollIdMatch = tag.match(/data-poll-id="([^"]*)"/)
-  const idMatch = tag.match(/data-id="([^"]*)"/)
   const questionMatch = tag.match(/data-question="([^"]*)"/)
   const optionsMatch = tag.match(/data-options="([^"]*)"/)
 
-  if (!questionMatch || !optionsMatch) return null
+  if (!pollIdMatch || !questionMatch || !optionsMatch) return null
 
   try {
     const rawOptions = unescapeHtml(optionsMatch[1])
@@ -29,7 +28,7 @@ function extractPollData(content: string, articleId: string) {
 
     return {
       type: 'poll',
-      pollId: pollIdMatch ? pollIdMatch[1] : idMatch ? idMatch[1] : crypto.randomUUID(),
+      pollId: pollIdMatch[1],
       question: unescapeHtml(questionMatch[1]),
       options,
       articleId,
