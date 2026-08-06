@@ -64,7 +64,12 @@
             >
               <label class="flex items-center justify-between gap-4 cursor-pointer">
                 <span class="font-medium">Google Analytics</span>
-                <FormField v-model="form.allowGtag" type="checkbox" aria-label="Enable Google Analytics" class="w-auto" />
+                <FormField
+                  v-model="form.allowGtag"
+                  type="checkbox"
+                  aria-label="Enable Google Analytics"
+                  class="w-auto"
+                />
               </label>
               <Transition name="fade">
                 <FormField
@@ -194,6 +199,7 @@
               :translationLanguages="form.translationLanguages"
               :features="features ?? []"
               :currency="client?.currency ?? 'EUR'"
+              :plan="client?.plan ?? 'BASIC'"
               :billingPlan="client?.billingPlan ?? 'MONTHLY'"
               @toggle:feature="toggleFeature"
               @update:username="form.aiUser.username = $event"
@@ -300,7 +306,8 @@ const tabs = computed<SettingsTab[]>(() => {
     t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'mdi:puzzle-outline' })
   }
   if (hasAi.value) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
-  if (showBilling.value) t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'mdi:credit-card-outline' })
+  if (showBilling.value)
+    t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'mdi:credit-card-outline' })
   return t
 })
 
