@@ -2,10 +2,16 @@
   <div class="min-h-screen bg-gradient-to-br">
     <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4">
       <Back />
-      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-center">
-        {{ $t('articles.tagsArticles') }}
-        <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">{{ tagName }}</span>
-      </h1>
+      <header class="flex flex-col items-center gap-1 text-center">
+        <h1
+          class="text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"
+        >
+          <span aria-hidden="true" class="opacity-60">#</span>{{ tagName }}
+        </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          {{ $t('articles.articlesCount', tag.total, { count: tag.total }) }}
+        </p>
+      </header>
       <ArticleCollection
         v-model:search="search"
         v-model:sort="sort"
@@ -55,7 +61,7 @@ const {
 } = await useFetch(`/api/tags/slug/${tagSlug.value}`, {
   key: `tag-${tagSlug.value}`,
   query,
-  default: () => ({ id: '', name: '', slug: '', articles: [], hasMore: false }),
+  default: () => ({ id: '', name: '', slug: '', articles: [], hasMore: false, total: 0 }),
   watch: false,
 })
 

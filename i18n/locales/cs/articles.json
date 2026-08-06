@@ -56,10 +56,9 @@
       "tomorrow": "Zítra ráno",
       "clear": "Vymazat"
     },
-    "authorsArticles": "Články od autora",
+    "articlesCount": "Zatím žádné články | {count} článek | {count} články | {count} článků",
     "explore": "Prozkoumat články",
     "votes": "Hlasů",
-    "tagsArticles": "Články se štítkem",
     "searchPlaceholder": "Hledat články...",
     "readingTime": "{0} min čtení",
     "latestArticle": "Nejnovější článek:",

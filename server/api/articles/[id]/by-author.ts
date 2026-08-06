@@ -18,24 +18,31 @@ export default defineEventHandler(async (event) => {
 
   const [field, order] = (sort as string).split(':') as ['createdAt' | 'title', 'asc' | 'desc']
 
-  const articles = await db.article.findMany({
-    where: {
-      userId: author.id,
-      status:
-        (user?.role === 'admin' && user?.clientSiteId == author.clientSiteId) || user?.role === 'superadmin'
-          ? undefined
-          : 'published',
-      ...(search ? { title: { contains: search, mode: 'insensitive' } } : {}),
-    },
-    take: take + 1,
-    skip,
-    orderBy: { [field]: order },
-    include: {
-      user: { select: { username: true } },
-      tags: { include: { tag: true } },
-      _count: { select: { reactions: true } },
-    },
-  })
+  const visibleWhere = {
+    userId: author.id,
+    status:
+      (user?.role === 'admin' && user?.clientSiteId == author.clientSiteId) || user?.role === 'superadmin'
+        ? undefined
+        : ('published' as const),
+  }
+
+  const [articles, total] = await Promise.all([
+    db.article.findMany({
+      where: {
+        ...visibleWhere,
+        ...(search ? { title: { contains: search, mode: 'insensitive' } } : {}),
+      },
+      take: take + 1,
+      skip,
+      orderBy: { [field]: order },
+      include: {
+        user: { select: { username: true } },
+        tags: { include: { tag: true } },
+        _count: { select: { reactions: true } },
+      },
+    }),
+    db.article.count({ where: visibleWhere }),
+  ])
 
   const hasMore = articles.length > take
   const items = hasMore ? articles.slice(0, take) : articles
@@ -54,5 +61,6 @@ export default defineEventHandler(async (event) => {
       },
     })),
     hasMore,
+    total,
   }
 })

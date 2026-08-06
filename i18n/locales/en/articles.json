@@ -56,10 +56,9 @@
       "tomorrow": "Tomorrow morning",
       "clear": "Clear"
     },
-    "authorsArticles": "Articles by author",
+    "articlesCount": "No articles yet | {count} article | {count} articles",
     "explore": "Explore articles",
     "votes": "Votes",
-    "tagsArticles": "Articles with tag",
     "searchPlaceholder": "Search articles...",
     "latestArticle": "Latest article:",
     "readingTime": "{0} min read",

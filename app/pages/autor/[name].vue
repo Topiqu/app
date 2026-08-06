@@ -2,25 +2,27 @@
   <div class="min-h-screen bg-gradient-to-br">
     <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4">
       <Back />
-      <div class="text-center">
-        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-          {{ $t('articles.authorsArticles') }}
-          <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+      <header class="flex flex-col items-center gap-4 text-center">
+        <UserPicture
+          :url="author.avatarUrl"
+          :name="authorName"
+          size="xl"
+          class="ring-4 ring-white dark:ring-neutral-900 shadow-lg"
+        />
+        <div class="flex flex-col items-center gap-1">
+          <h1
+            class="text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"
+          >
             {{ authorName }}
-          </span>
-        </h1>
-        <div class="flex flex-col items-center mt-4 gap-2">
-          <NuxtImg
-            v-if="author.avatarUrl"
-            :src="author.avatarUrl"
-            :alt="$t('common.avatar.alt.author', [authorName])"
-            class="w-16 h-16 rounded-full border border-gray-200 dark:border-neutral-700 object-cover"
-          />
-          <p v-if="author.bio" class="text-gray-600 dark:text-gray-400 max-w-lg">
-            {{ author.bio }}
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {{ $t('articles.articlesCount', author.total, { count: author.total }) }}
           </p>
         </div>
-      </div>
+        <p v-if="author.bio" class="text-gray-600 dark:text-gray-400 max-w-lg text-pretty">
+          {{ author.bio }}
+        </p>
+      </header>
 
       <ArticleCollection
         v-model:search="search"
@@ -69,6 +71,7 @@ const {
     username: '',
     articles: [],
     hasMore: false,
+    total: 0,
     bio: '',
     avatarUrl: '',
   }),

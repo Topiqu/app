@@ -41,7 +41,7 @@
 <script lang="ts" setup>
 const props = defineProps<{
   url?: string | null
-  size?: 'mn' | 'sm' | 'md' | 'lg' | 'hg'
+  size?: 'mn' | 'sm' | 'md' | 'lg' | 'hg' | 'xl'
   name?: string | null
 }>()
 
@@ -57,6 +57,8 @@ const sizeClasses = computed(() => {
       return 'w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-xl'
     case 'hg':
       return 'w-16 h-16 sm:w-20 sm:h-20 text-2xl sm:text-3xl'
+    case 'xl':
+      return 'w-24 h-24 sm:w-28 sm:h-28 text-3xl sm:text-4xl'
     default:
       return 'w-10 h-10 text-sm sm:text-base'
   }

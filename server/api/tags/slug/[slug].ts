@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
           article: {
             include: {
               tags: { include: { tag: true } },
-              user: { omit: { password: true } },
+              user: { select: { username: true } },
               _count: { select: { reactions: true } },
             },
           },
@@ -57,7 +57,10 @@ export default defineEventHandler(async (event) => {
   const hasMore = tag.articles.length > take
   const items = hasMore ? tag.articles.slice(0, take) : tag.articles
 
+  const total = await db.article.count({ where: { tags: { some: { tagId: tag.id } } } })
+
   return {
+    total,
     ...tag,
     articles: items.map((a) => ({
       ...a.article,
