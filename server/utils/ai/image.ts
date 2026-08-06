@@ -1,5 +1,3 @@
-import { join } from 'path'
-import { mkdir, writeFile } from 'fs/promises'
 import { generateImage as generateImg } from 'ai'
 
 const IMAGE_EXTENSIONS: Record<string, string> = {
@@ -33,11 +31,8 @@ export const generateImage = async (
     `${Date.now()}` +
     (filenameSuffix ? '-' + filenameSuffix : ``) +
     `.${imageExtension(output.image.mediaType)}`
-  const uploadDir = join(process.cwd(), `public/${outputDir}`)
-  await mkdir(uploadDir, { recursive: true })
-  const filePath = join(uploadDir, filename)
-  await writeFile(filePath, output.image.uint8Array)
-  const url = `/${outputDir}/${filename}`
+
+  const url = await putToCdn(`${outputDir}/${filename}`, output.image.uint8Array, output.image.mediaType)
 
   return { ...output, url }
 }

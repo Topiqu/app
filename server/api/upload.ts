@@ -1,4 +1,3 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { RekognitionClient, DetectModerationLabelsCommand, DetectLabelsCommand } from '@aws-sdk/client-rekognition'
 
 const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'webp', 'gif']
@@ -11,7 +10,10 @@ const safeExt = (name?: string) => {
 
 const sanitizeFilename = (raw: string) => {
   const base = raw.split(/[/\\]/).pop() || ''
-  const stem = base.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 80)
+  const stem = base
+    .replace(/\.[^/.]+$/, '')
+    .replace(/[^a-zA-Z0-9._-]/g, '')
+    .slice(0, 80)
   return `${stem || `content-${Date.now()}`}.${safeExt(base)}`
 }
 
@@ -42,7 +44,6 @@ export default defineEventHandler(async (event) => {
 
   const region = config.awsRegion
 
-  const s3 = new S3Client({ region, credentials })
   const rekognition = new RekognitionClient({ region, credentials })
 
   try {
@@ -85,23 +86,15 @@ export default defineEventHandler(async (event) => {
   const filename = customFilename ? sanitizeFilename(customFilename) : `content-${Date.now()}.${safeExt(file.filename)}`
   const optimizedFilename = filename.replace(/\.[^/.]+$/, '.webp')
 
-  const command = new PutObjectCommand({
-    Bucket: config.awsS3BucketName,
-    Key: `uploads/${filename}`,
-    Body: file.data,
-    ContentType: file.type,
-    Metadata: {
+  try {
+    const url = await putToCdn(`uploads/${filename}`, file.data, file.type, {
       'rekognition-tags': detectedTagsString,
       'original-name': file.filename ? encodeURIComponent(file.filename) : 'unknown',
-    },
-  })
-
-  try {
-    await s3.send(command)
+    })
 
     return {
       success: true,
-      url: `${config.public.cdnUrl}/uploads/${filename}`,
+      url,
       optimizedUrl: `${config.public.cdnUrl}/optimized/${optimizedFilename}`,
       filename,
       tags: detectedTagsString.split(',').filter(Boolean),
