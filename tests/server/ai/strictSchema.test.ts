@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { zodSchema } from '@ai-sdk/provider-utils'
 
+import { topicSchema } from '../../../server/utils/ai/topic'
 import { articleSchema } from '../../../server/utils/ai/article'
 import { insightSchema } from '../../../server/utils/ai/insight'
 import { translationSchema } from '../../../server/utils/ai/translate'
@@ -42,6 +43,7 @@ describe('OpenAI strict structured-output compatibility', () => {
     ['articleSchema', articleSchema],
     ['translationSchema', translationSchema],
     ['insightSchema', insightSchema],
+    ['topicSchema', topicSchema],
   ])('%s converts to a strict-safe JSON schema', (_name, schema) => {
     const jsonSchema = zodSchema(schema).jsonSchema as JsonSchemaNode
 

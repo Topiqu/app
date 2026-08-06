@@ -24,6 +24,7 @@ export const sanitizeHtml = (dirty: string) => {
       'data-youtube-video',
       'alt',
       'title',
+      'colwidth',
     ],
   })
 }
