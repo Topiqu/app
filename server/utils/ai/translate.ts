@@ -175,6 +175,31 @@ export const rebuildContent = (
   return out
 }
 
+export const translationSchema = z.object({
+  title: z.string().min(1).max(255).describe('Translated title'),
+  excerpt: z.string().max(500).describe('Translated excerpt, empty string if the source excerpt was empty'),
+  content: z.string().min(1).describe('Translated HTML with all placeholder tokens preserved'),
+  polls: z
+    .array(
+      z.object({
+        question: z.string().describe('Translated poll question'),
+        options: z.array(z.string()).describe('Translated option labels, same order as input'),
+      }),
+    )
+    .describe('Translated polls in the same order as provided'),
+  images: z
+    .array(
+      z.object({
+        alt: z.string().describe('Translated image alt text, empty if source was empty'),
+        title: z.string().describe('Translated image title, empty if source was empty'),
+      }),
+    )
+    .describe('Translated image alt/title in the same order as provided'),
+  attrs: z
+    .array(z.string())
+    .describe('Translated human-readable attribute texts (title/aria-label), same order as input'),
+})
+
 /**
  * Translates an article into `targetLang` via `aiModel('translation')`, preserving structure and poll/
  * embed integrity (ids never reach the model). Pure of billing — the caller charges
@@ -209,30 +234,7 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
       images: images.map((img) => ({ alt: img.alt ?? '', title: img.title ?? '' })),
       attrs,
     }),
-    schema: z.object({
-      title: z.string().min(1).max(255).describe('Translated title'),
-      excerpt: z.string().max(500).optional().describe('Translated excerpt'),
-      content: z.string().min(1).describe('Translated HTML with all placeholder tokens preserved'),
-      polls: z
-        .array(
-          z.object({
-            question: z.string().describe('Translated poll question'),
-            options: z.array(z.string()).describe('Translated option labels, same order as input'),
-          }),
-        )
-        .describe('Translated polls in the same order as provided'),
-      images: z
-        .array(
-          z.object({
-            alt: z.string().describe('Translated image alt text, empty if source was empty'),
-            title: z.string().describe('Translated image title, empty if source was empty'),
-          }),
-        )
-        .describe('Translated image alt/title in the same order as provided'),
-      attrs: z
-        .array(z.string())
-        .describe('Translated human-readable attribute texts (title/aria-label), same order as input'),
-    }),
+    schema: translationSchema,
   })
 
   const rebuiltPolls: ExtractedPoll[] = polls.map((poll, i) => {
