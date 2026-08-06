@@ -117,7 +117,7 @@
             @click="buyTokens(pack.id)"
           >
             <Icon name="mdi:lightning-bolt" class="mr-1.5 size-4 text-amber-500" />
-            {{ (pack.tokens / 1000).toLocaleString() }}k · ${{ pack.priceUsd }}
+            {{ (pack.tokens / 1000).toLocaleString(locale) }}k · {{ formatTokenPackPrice(pack, locale) }}
           </Button>
         </div>
       </div>
@@ -177,13 +177,15 @@
 </template>
 
 <script setup lang="ts">
-import { TOKEN_PACK_LIST } from '~~/shared/utils/tokenPacks'
+import { getUpgradeTarget } from '~~/shared/utils/plans'
+import { TOKEN_PACK_LIST, formatTokenPackPrice } from '~~/shared/utils/tokenPacks'
 
 import type { ClientSite } from '~/utils/buildClientSettingsForm'
 
 const { client, rate } = defineProps<{ client: ClientSite | null; rate: number }>()
 
 const toast = useToast()
+const { locale } = useI18n()
 const { formatTime } = useTime()
 
 const tokenPacks = TOKEN_PACK_LIST
@@ -198,14 +200,7 @@ const tokenPercent = computed(() => {
 
 const hasSubscription = computed(() => !!client?.stripeCustomerId)
 
-const upgradeTarget = computed<'PRO' | 'PREMIUM' | null>(() => {
-  // A fresh Stripe subscription checkout is only for sites without an active one;
-  // subscribers change plans through the portal to keep proration correct.
-  if (client?.stripeSubscriptionId) return null
-  if (client?.plan === 'BASIC') return 'PRO'
-  if (client?.plan === 'PRO') return 'PREMIUM'
-  return null
-})
+const upgradeTarget = computed(() => getUpgradeTarget(client?.plan, !!client?.stripeSubscriptionId))
 
 const redirectTo = async (url: string, action: string, body: Record<string, unknown>) => {
   pendingAction.value = action

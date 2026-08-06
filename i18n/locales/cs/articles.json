@@ -215,7 +215,7 @@
       "articleSavedAsDraft": "Článek uložen jako koncept",
       "insightGenerated": "Insight vytvořen",
       "lowTokensWarning": "Málo tokenů!",
-      "lowTokensHint": "Zbývá méně než 10 % tokenů. Dokupte si balíček, ať nepřijdete o generování.",
+      "lowTokensHint": "Zbývá méně než {percent} % tokenů. Dokupte si balíček, ať nepřijdete o generování.",
       "insightSkipped": "Insight přeskočen"
     },
     "dateFormats": {

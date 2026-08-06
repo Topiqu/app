@@ -448,8 +448,7 @@
       "pack10k": "Token Pack 10k",
       "pack25k": "Token Pack 25k",
       "pack50k": "Token Pack 50k",
-      "bestValue": "Best value",
-      "upgradeToPremium": "Upgrade to PREMIUM"
+      "bestValue": "Best value"
     },
     "tasks": {
       "completed": "Completed",

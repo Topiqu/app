@@ -15,3 +15,8 @@ export const TOKEN_PACK_LIST: TokenPack[] = Object.values(TOKEN_PACKS)
 
 export const getTokenPack = (id: unknown): TokenPack | null =>
   typeof id === 'string' && id in TOKEN_PACKS ? TOKEN_PACKS[id]! : null
+
+export const formatTokenPackPrice = (pack: TokenPack, locale: string): string =>
+  new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol' }).format(
+    pack.priceUsd,
+  )

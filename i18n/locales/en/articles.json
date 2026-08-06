@@ -215,7 +215,7 @@
       "articleSavedAsDraft": "Article saved as draft",
       "insightGenerated": "Insight generated",
       "lowTokensWarning": "Low on tokens!",
-      "lowTokensHint": "Less than 10 % tokens remaining. Top up your package to keep generating.",
+      "lowTokensHint": "Less than {percent} % tokens remaining. Top up your package to keep generating.",
       "insightSkipped": "Insight skipped"
     },
     "dateFormats": {

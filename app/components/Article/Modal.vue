@@ -80,7 +80,7 @@
             </Button>
           </div>
           <div
-            v-else-if="auth?.user.plan === 'BASIC' || status?.tokenRemaining === 0"
+            v-else-if="auth?.user.plan === 'BASIC' || tokensExhausted"
             class="relative p-4 rounded-xl bg-white dark:bg-gray-800 border-t-4 border-gradient-to-r from-blue-500 to-indigo-600 shadow-sm hover:shadow-md transition-all duration-300"
           >
             <div class="flex items-center gap-3 pl-10">
@@ -211,7 +211,8 @@ const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
 const { idle } = useIdle(5 * 60 * 1000)
 const { invalidateArticles, invalidateArticleDetail, invalidateArticlesAndStats } = useCacheInvalidation()
 const client = await useClientSite()
-const status = await useClientSiteStatus()
+const { data: status } = await useClientSiteStatus()
+const tokensExhausted = computed(() => (status.value?.tokenRemaining ?? 0) <= 0)
 const emit = defineEmits(['saved'])
 const props = defineProps<{ article?: ArticleWithDetails }>()
 

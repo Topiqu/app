@@ -14,6 +14,7 @@ export interface ClientSiteStatus {
   firstPaidAt: string | null
   focus: string | null
   audience: string | null
+  hasActiveSubscription: boolean
 }
 
 export const useClientSite = async () => {
@@ -47,10 +48,8 @@ export const useClientSite = async () => {
   return data.value
 }
 
-export const useClientSiteStatus = async () => {
-  const { data } = await useAsyncData('clientsite-status', () =>
-    $fetch<ClientSiteStatus | null>('/api/clients/status').catch(() => null),
-  )
+export const useClientSiteStatus = () => {
+  const requestFetch = useRequestFetch()
 
-  return data.value
+  return useAsyncData('clientsite-status', () => requestFetch<ClientSiteStatus | null>('/api/clients/status'))
 }
