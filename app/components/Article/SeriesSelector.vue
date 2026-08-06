@@ -1,12 +1,33 @@
 <template>
-  <div class="flex flex-col gap-2 w-full">
-    <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400 ml-1">
+  <div :class="compact ? 'inline-flex items-center' : 'flex flex-col gap-2 w-full'">
+    <span v-if="!compact" class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400 ml-1">
       {{ $t('series.label') }}
     </span>
 
-    <Dropdown :groups="dropdownGroups" class="w-full">
+    <Dropdown :groups="dropdownGroups" :class="compact ? '' : 'w-full'">
       <template #default="{ open }">
         <button
+          v-if="compact"
+          type="button"
+          class="inline-flex items-center gap-1 h-6 px-2.5 rounded-full border text-[11px] font-medium transition-colors max-w-48"
+          :class="
+            modelValue
+              ? 'bg-indigo-600! hover:bg-indigo-700! border-indigo-600! text-white!'
+              : 'bg-transparent! hover:bg-gray-100! dark:hover:bg-gray-800! border-gray-200! dark:border-gray-700! text-gray-600! dark:text-gray-400!'
+          "
+        >
+          <Icon name="mdi:bookmark-multiple-outline" class="w-3 h-3 shrink-0" aria-hidden="true" />
+          <span class="truncate">{{ modelValue ? modelValue.name : $t('common.labels.series') }}</span>
+          <Icon
+            name="mdi:chevron-down"
+            class="w-3 h-3 shrink-0 transition-transform"
+            :class="{ 'rotate-180': open }"
+            aria-hidden="true"
+          />
+        </button>
+
+        <button
+          v-else
           type="button"
           class="relative w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200 ease-in-out bg-white dark:bg-neutral-900 border rounded-xl shadow-sm outline-none group"
           :class="[
@@ -32,6 +53,7 @@
     </Dropdown>
 
     <transition
+      v-if="!compact"
       enterActiveClass="transition duration-200 ease-out"
       enterFromClass="opacity-0 -translate-y-2"
       enterToClass="opacity-100 translate-y-0"
@@ -101,6 +123,8 @@
 import slugify from 'slugify'
 
 const modelValue = defineModel<any>({ default: null })
+
+defineProps<{ compact?: boolean }>()
 
 const { data: series, refresh } = await useLazyFetch<any[]>('/api/series', {
   server: false,

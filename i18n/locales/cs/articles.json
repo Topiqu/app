@@ -306,7 +306,35 @@
         "generating": "Píšu…",
         "phaseWriting": "Píšu…",
         "phaseImages": "Generuji obrázky…",
-        "aiContentStopped": "Generování zastaveno"
+        "aiContentStopped": "Generování zastaveno",
+        "topicLabel": "Téma článku",
+        "topicPlaceholder": "O čem má článek být? Doplň úhel pohledu, publikum nebo klíčové body…",
+        "step": {
+          "writing": "Píšu",
+          "images": "Obrázky"
+        },
+        "formats": {
+          "howto": {
+            "label": "Návod",
+            "template": "Napiš praktický návod krok za krokem na téma:"
+          },
+          "news": {
+            "label": "Zpráva",
+            "template": "Napiš zpravodajský článek na téma:"
+          },
+          "listicle": {
+            "label": "Žebříček",
+            "template": "Napiš článek ve formě seznamu na téma:"
+          },
+          "opinion": {
+            "label": "Názor",
+            "template": "Napiš názorový komentář na téma:"
+          },
+          "deepDive": {
+            "label": "Analýza",
+            "template": "Napiš hloubkovou analýzu tématu:"
+          }
+        }
       },
       "drafts": {
         "loadDrafts": "Načíst koncepty",
@@ -320,7 +348,8 @@
       "createSuccess": "Článek úspěšně vytvořen",
       "createFailed": "Vytvoření článku selhalo",
       "aiContentGenerated": "Obsah AI úspěšně vygenerován",
-      "aiContentFailed": "Generování obsahu AI selhalo"
+      "aiContentFailed": "Generování obsahu AI selhalo",
+      "loadFailed": "Načtení článku selhalo"
     }
   }
 }

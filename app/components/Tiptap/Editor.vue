@@ -22,7 +22,11 @@
       >
         <EditorContent
           :editor
-          :class="['h-96 p-4 bg-white border border-gray-300 overflow-y-auto', { 'rounded-lg shadow-sm': edit }]"
+          :class="[
+            'p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-neutral-700',
+            contentClass || 'h-96 overflow-y-auto',
+            { 'rounded-lg shadow-sm': edit },
+          ]"
           @click.stop.prevent="handleEditorClick"
         />
         <TiptapDropOverlay :active="isDragging && edit" />
@@ -51,9 +55,14 @@ import { EditorContent } from '@tiptap/vue-3'
 const content = defineModel<string | null>({ default: '<p></p>' })
 const edit = defineModel<boolean>('edit', { default: false })
 
-const { fallback = 'No content available', limit = 8192 } = defineProps<{
+const {
+  fallback = 'No content available',
+  limit = 8192,
+  contentClass = '',
+} = defineProps<{
   fallback?: string
   limit?: number
+  contentClass?: string
 }>()
 
 watch(content, (v) => v || (content.value = '<p></p>'))
@@ -186,7 +195,7 @@ const editor = useTiptapInstance({
 const uploadImage = useTiptapImageUpload(editor, promptAlt)
 </script>
 
-<style scoped>
+<style>
 div.tiptap.ProseMirror {
   width: 100%;
   height: 100%;
@@ -197,14 +206,88 @@ div.tiptap.ProseMirror {
   height: auto;
   object-fit: contain;
 }
+.ProseMirror {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #1f2937;
+}
+html.dark .ProseMirror {
+  color: #e5e7eb;
+}
 .ProseMirror p,
 .ProseMirror h1,
 .ProseMirror h2,
 .ProseMirror h3,
 .ProseMirror h4,
 .ProseMirror h5,
-.ProseMirror h6 {
-  color: #000;
+.ProseMirror h6,
+.ProseMirror ul,
+.ProseMirror ol {
+  color: inherit;
+}
+.ProseMirror > * + * {
+  margin-top: 1.25rem;
+}
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4 {
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.ProseMirror > h1 + *,
+.ProseMirror > h2 + *,
+.ProseMirror > h3 + *,
+.ProseMirror > h4 + * {
+  margin-top: 0.75rem;
+}
+.ProseMirror > * + h1,
+.ProseMirror > * + h2,
+.ProseMirror > * + h3,
+.ProseMirror > * + h4 {
+  margin-top: 2rem;
+}
+.ProseMirror h1 {
+  font-size: 1.875rem;
+}
+.ProseMirror h2 {
+  font-size: 1.5rem;
+}
+.ProseMirror h3 {
+  font-size: 1.25rem;
+}
+.ProseMirror h4 {
+  font-size: 1.125rem;
+}
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+}
+.ProseMirror ul {
+  list-style: disc;
+}
+.ProseMirror ol {
+  list-style: decimal;
+}
+.ProseMirror li + li {
+  margin-top: 0.375rem;
+}
+.ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+html.dark .ProseMirror a {
+  color: #60a5fa;
+}
+.ProseMirror hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 2rem 0;
+}
+html.dark .ProseMirror hr {
+  border-top-color: #374151;
 }
 .ProseMirror blockquote.blockquote {
   border-left: 4px solid #3b82f6;

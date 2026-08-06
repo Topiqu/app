@@ -52,7 +52,7 @@
         ref="panel"
         :aria-label="$t('articles.userMenu.remainingTokens')"
         role="region"
-        class="absolute bottom-full right-0 mb-2 w-[21rem] max-w-[calc(100vw_-_1.5rem)] origin-bottom-right divide-y divide-gray-200/70 rounded-2xl bg-white/95 p-4 text-left shadow-[0_24px_60px_-20px_rgba(0,0,0,0.45)] ring-1 ring-black/5 backdrop-blur-xl dark:divide-white/10 dark:bg-neutral-900/95 dark:ring-white/10"
+        class="absolute bottom-full right-0 mb-2 w-[21rem] max-w-[calc(100vw_-_1.5rem)] origin-bottom-right divide-y divide-gray-200 rounded-2xl bg-white/95 p-4 text-left shadow-[0_24px_60px_-20px_rgba(0,0,0,0.45)] ring-1 ring-black/5 backdrop-blur-xl dark:divide-neutral-700 dark:bg-neutral-900/95 dark:ring-white/10"
       >
         <section v-if="hasTokenPlan" class="space-y-2.5 pb-4">
           <div class="flex items-baseline justify-between gap-2">
@@ -71,7 +71,7 @@
             <span class="text-xs tabular-nums text-gray-400 dark:text-gray-500">/ {{ fmt(tokenLimit) }}</span>
           </div>
 
-          <div class="h-1.5 overflow-hidden rounded-full bg-gray-200/80 dark:bg-white/10">
+          <div class="h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-neutral-700">
             <div
               :class="['h-full rounded-full transition-[width] duration-700 ease-out', barColor]"
               :style="{ width: `${remainingPercent}%` }"
@@ -95,10 +95,10 @@
               type="button"
               :disabled="pendingPack !== null"
               :class="[
-                'group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left ring-1 outline-none transition duration-200 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-60',
+                'group relative flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left shadow-[0_2px_6px_rgba(0,0,0,0.05),0_1px_1px_rgba(0,0,0,0.03)] outline-none transition duration-200 hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-60',
                 pack.featured
-                  ? 'bg-violet-50/80 ring-violet-400/50 hover:bg-violet-100/70 hover:ring-violet-500/70 dark:bg-violet-500/10 dark:ring-violet-400/30 dark:hover:bg-violet-500/15'
-                  : 'bg-gray-50/80 ring-gray-200/80 hover:bg-gray-100/80 hover:ring-gray-300 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:ring-white/20',
+                  ? 'border-violet-400 bg-violet-50 hover:bg-violet-100/70 dark:border-violet-500/50 dark:bg-violet-500/10 dark:hover:bg-violet-500/15'
+                  : 'border-gray-200 bg-white hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800/50 dark:hover:bg-neutral-800',
               ]"
               @click="buyTokens(pack.id)"
             >
@@ -107,7 +107,7 @@
                   'grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-transform duration-200 group-hover:scale-105',
                   pack.featured
                     ? 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-[0_4px_12px_-4px_rgba(139,92,246,0.7)]'
-                    : 'bg-white text-gray-500 ring-1 ring-gray-200/80 dark:bg-white/5 dark:text-gray-400 dark:ring-white/10',
+                    : 'border border-gray-200 bg-gray-50 text-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-400',
                 ]"
               >
                 <Icon v-if="pendingPack === pack.id" name="i-lucide:loader" class="h-4 w-4 animate-spin" />
@@ -136,24 +136,21 @@
               </span>
             </button>
 
-            <button
+            <Button
               v-if="upgradeTarget"
-              type="button"
-              class="group flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-emerald-700 ring-1 ring-emerald-500/40 outline-none transition duration-200 hover:bg-emerald-50 hover:ring-emerald-500/70 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-emerald-300 dark:ring-emerald-400/30 dark:hover:bg-emerald-500/10"
+              variant="transparent"
+              icon="mdi:rocket-launch"
+              class="w-full text-[13px] font-semibold text-emerald-700 dark:text-emerald-300"
               @click="upgrade"
             >
-              <Icon
-                name="mdi:rocket-launch"
-                class="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5"
-              />
               {{ $t('common.preferences.billing.upgrade', { plan: upgradeTarget }) }}
-            </button>
+            </Button>
           </div>
         </section>
 
         <section v-if="isLowTokens" class="py-4">
           <div
-            class="flex gap-2.5 rounded-xl bg-red-50 px-3 py-2.5 ring-1 ring-red-500/20 dark:bg-red-500/10 dark:ring-red-400/20"
+            class="flex gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 dark:border-red-500/30 dark:bg-red-500/10"
           >
             <Icon name="mdi:alert" class="mt-px h-4 w-4 shrink-0 text-red-500 dark:text-red-400" />
             <p class="text-[11px] leading-relaxed text-red-800 dark:text-red-200">
@@ -172,7 +169,7 @@
             <div
               v-for="log in logs.items"
               :key="log.id"
-              class="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-gray-100/80 dark:hover:bg-white/5"
+              class="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-neutral-800"
             >
               <span :class="['grid h-7 w-7 shrink-0 place-items-center rounded-md', logTone(log.action)]">
                 <Icon :name="getLogIcon(log.action)" class="h-3.5 w-3.5" />
@@ -185,14 +182,17 @@
               </span>
             </div>
 
-            <button
+            <Button
               v-if="logs.hasMore"
-              type="button"
-              class="w-full rounded-lg py-1.5 text-[11px] font-medium text-gray-500 outline-none transition-colors hover:bg-gray-100/80 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-violet-500 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              size="sm"
+              variant="transparent"
+              animation="softpop"
+              borderless
+              class="w-full text-[11px] font-medium text-gray-500 dark:text-gray-400"
               @click="loadMore"
             >
               {{ $t('common.pagination.next') }}
-            </button>
+            </Button>
           </div>
         </section>
 
@@ -324,7 +324,7 @@ const getLogIcon = (a: string) =>
 const logTone = (a: string) =>
   a.endsWith('_FAILED')
     ? 'bg-red-500/10 text-red-600 dark:text-red-400'
-    : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'
+    : 'bg-gray-100 text-gray-500 dark:bg-neutral-800 dark:text-gray-400'
 
 const formatAction = (a: string) => {
   const m: Record<string, string> = {

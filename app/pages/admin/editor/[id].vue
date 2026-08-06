@@ -1,54 +1,56 @@
 <template>
-  <div class="flex-1 flex flex-col w-full max-w-5xl mx-auto px-4 pt-20 pb-12">
+  <div
+    class="custom-ui flex-1 flex flex-col w-full max-w-3xl mx-auto px-4 pt-16 pb-24"
+    style="--tiptap-toolbar-top: 8rem"
+  >
     <header
-      class="sticky top-0 z-20 -mx-4 px-4 py-3 mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200/70 dark:border-gray-800/70 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl"
+      class="sticky top-16 z-20 -mx-4 px-4 mb-8 h-16 flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 bg-gray-100/85 dark:bg-gray-800/85 backdrop-blur-xl"
     >
-      <div class="flex items-center gap-3 min-w-0">
-        <Button icon="mdi:arrow-left" variant="neutral" :aria="$t('common.actions.back') || 'Back'" @click="goBack" />
-        <h1 class="text-lg font-bold truncate">
+      <Button
+        icon="mdi:arrow-left"
+        variant="neutral"
+        size="sm"
+        :aria="$t('common.actions.back')"
+        :title="$t('common.actions.back')"
+        @click="goBack"
+      />
+
+      <div class="flex flex-col min-w-0 gap-0.5">
+        <h1 class="truncate text-sm font-semibold leading-tight">
           {{ isNew ? $t('articles.addArticle') : $t('articles.updateArticle') }}
         </h1>
-        <ArticleStatusPill class="hidden sm:inline-flex" :status="editedArticle.status" />
+        <div class="flex items-center gap-2 min-w-0">
+          <ArticleStatusPill :status="editedArticle.status" />
+          <span
+            v-if="autosaveVisible"
+            class="hidden sm:flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400"
+            aria-live="polite"
+          >
+            <Icon :name="saving ? 'mdi:cloud-sync' : 'mdi:cloud-check'" class="w-3.5 h-3.5 shrink-0" />
+            <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
+            <template v-else-if="lastSavedAt">
+              {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
+            </template>
+          </span>
+        </div>
       </div>
 
-      <div class="flex items-center gap-3 ml-auto">
-        <div
-          v-if="autosaveVisible"
-          class="hidden md:flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400"
-          aria-live="polite"
-        >
-          <Icon
-            :name="saving ? 'mdi:cloud-sync' : 'mdi:cloud-check'"
-            class="w-4 h-4"
-            :class="{ 'animate-spin': saving }"
-          />
-          <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
-          <template v-else-if="lastSavedAt">
-            {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
-          </template>
-          <template v-else>{{ $t('common.messages.unsaved') }}</template>
-        </div>
-
-        <Button
-          icon="mdi:cog"
-          variant="neutral"
-          :aria="$t('common.settings')"
-          :title="$t('common.settings')"
-          @click="sidebarOpen = true"
-        />
-
+      <div class="ml-auto flex items-center gap-2">
         <Button
           v-if="isNew || editedArticle.status === 'draft'"
           variant="secondary"
+          icon="mdi:content-save-outline"
+          class="max-sm:px-2!"
           :disabled="!editedArticle.title || submitting"
           @click="submit('draft')"
         >
-          {{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}
+          <span class="max-sm:hidden">{{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}</span>
         </Button>
 
         <Button
           :disabled="!editedArticle.title || submitting"
-          class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-transparent! hover:from-blue-600 hover:to-indigo-700"
+          :loading="submitting"
+          class="bg-indigo-600! hover:bg-indigo-700! text-white! border-transparent!"
           @click="submit('published')"
         >
           {{ publishLabel }}
@@ -56,41 +58,69 @@
       </div>
     </header>
 
-    <main class="flex-1 w-full">
-      <div class="flex flex-col gap-6">
-        <FormField
+    <main class="flex flex-col min-w-0 gap-5">
+      <ArticleEditorAiComposer
+        :autofocus="route.query.ai === '1'"
+        @partial="applyAiPartial"
+        @image="applyAiImage"
+        @final="applyAiFinal"
+      />
+
+      <FileUploader
+        compact
+        type="article-image"
+        :imageUrl="editedArticle.imageUrl"
+        :maxWidth="3840"
+        :maxHeight="2160"
+        @upload="handleUpload"
+      />
+
+      <div class="flex flex-col gap-4">
+        <input
           v-model="editedArticle.title"
           :placeholder="$t('common.labels.articleTitle')"
-          inputClass="text-4xl font-black !bg-transparent !border-none !outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 w-full !px-0 !focus:ring-0 border-l-4! border-transparent! focus:border-indigo-500! pl-4!"
-          @input="updateSlug"
+          :aria-label="$t('common.labels.articleTitle')"
+          class="w-full bg-transparent! border-none! rounded-none! px-0! py-0! text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15] placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0"
         />
-        <FormField
-          v-model="editedArticle.excerpt"
-          type="textarea"
+
+        <textarea
+          ref="excerptRef"
+          v-model="excerptText"
+          rows="2"
           :placeholder="$t('common.labels.articleExcerpt')"
-          inputClass="text-xl !bg-transparent !border-none !outline-none text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-600 w-full resize-none !min-h-[80px] !px-0 !focus:ring-0"
+          :aria-label="$t('common.labels.articleExcerpt')"
+          class="w-full resize-none bg-transparent! border-none! rounded-none! px-0! py-0! text-lg leading-relaxed text-gray-600! dark:text-gray-300! placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0"
         />
 
-        <div class="mt-4 prose dark:prose-invert max-w-none">
-          <TiptapEditor v-model="editedArticle.content" edit class="min-h-[500px]" />
-
-          <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
-            <Button
-              size="sm"
-              icon="mdi:file-document-outline"
-              class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 dark:from-indigo-500 dark:to-purple-600 dark:hover:from-indigo-600 dark:hover:to-purple-700 border-transparent!"
-              @click="draftsOpen = true"
-            >
-              {{ $t('articles.editor.drafts.loadDrafts') }}
-            </Button>
-            <span v-if="successMessage" class="text-sm text-green-600 dark:text-green-400 flex items-center">
-              <Icon name="mdi:check-circle" class="w-4 h-4 text-green-600 dark:text-green-400 mr-2" />{{
-                successMessage
-              }}
-            </span>
-          </div>
+        <div
+          v-if="editedArticle.slug || editedArticle.excerpt"
+          class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 dark:text-gray-500"
+        >
+          <span v-if="editedArticle.slug" class="inline-flex items-center gap-1 min-w-0">
+            <Icon name="mdi:link-variant" class="w-3.5 h-3.5 shrink-0" />
+            <span class="truncate">/{{ editedArticle.slug }}</span>
+          </span>
+          <span v-if="editedArticle.excerpt" class="tabular-nums">
+            {{ editedArticle.excerpt.length }} {{ $t('articles.editor.toolbar.characters') }}
+          </span>
         </div>
       </div>
+
+      <ArticleEditorMetaBar
+        v-model:series="selectedSeries"
+        v-model:tags="articleTags"
+        v-model:releaseAt="editedArticle.releaseAt"
+      />
+
+      <div v-if="!article && drafts?.length" class="flex items-center">
+        <ArticleEditorChip icon="mdi:file-document-outline" @click="draftsOpen = true">
+          {{ $t('articles.editor.drafts.loadDrafts') }}
+        </ArticleEditorChip>
+      </div>
+
+      <hr class="border-gray-200 dark:border-gray-800" />
+
+      <TiptapEditor v-model="editedArticle.content" edit contentClass="min-h-[60vh]" />
     </main>
 
     <LazyArticleDrafts
@@ -100,131 +130,6 @@
       @select="loadDraft"
       @close="draftsOpen = false"
     />
-
-    <ModalSlideOver v-model="sidebarOpen" :title="$t('common.settings')" width="lg">
-      <div class="p-6 flex flex-col gap-6">
-        <section class="flex flex-col gap-3">
-          <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
-            <Icon name="mdi:image-outline" class="w-4 h-4 text-indigo-500" />
-            {{ $t('common.labels.image') }}
-          </h3>
-          <FileUploader type="article-image" :maxWidth="3840" :maxHeight="2160" @upload="handleUpload" />
-          <NuxtImg
-            v-if="editedArticle.imageUrl"
-            :src="editedArticle.imageUrl"
-            class="w-full h-32 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
-            loading="lazy"
-          />
-        </section>
-
-        <hr class="border-gray-200 dark:border-gray-800" />
-
-        <section class="flex flex-col gap-3">
-          <button
-            type="button"
-            class="flex items-center justify-between w-full -mx-2 px-2 py-1.5 rounded-lg text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200 bg-transparent! hover:bg-gray-100! dark:hover:bg-gray-800! transition-colors"
-            :aria-expanded="aiOpen"
-            @click="aiOpen = !aiOpen"
-          >
-            <span class="flex items-center gap-2">
-              <Icon name="mdi:sparkles" class="w-4 h-4 text-purple-500" />
-              {{ $t('common.labels.aiGeneration') }}
-            </span>
-            <Icon :name="aiOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="w-5 h-5" />
-          </button>
-          <div
-            v-if="aiOpen"
-            class="flex flex-col gap-3 p-4 rounded-2xl border border-purple-200 dark:border-purple-900 bg-purple-50 dark:bg-purple-950/60"
-          >
-            <FormField
-              v-model="customPrompt"
-              type="textarea"
-              :placeholder="$t('articles.editor.ai.customPromptPlaceholder')"
-              inputClass="!min-h-[100px] !bg-white dark:!bg-gray-800"
-            />
-            <Button
-              v-if="!aiGenerating"
-              icon="mdi:lightning-bolt"
-              class="w-full text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 shadow-md border-transparent!"
-              @click="generateAIContent"
-            >
-              {{ $t('articles.editor.ai.generateButton') }}
-            </Button>
-            <div v-else class="flex items-center gap-2">
-              <span class="flex-1 flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
-                <Icon name="mdi:loading" class="w-4 h-4 animate-spin" />
-                {{
-                  aiPhase === 'images' ? $t('articles.editor.ai.phaseImages') : $t('articles.editor.ai.phaseWriting')
-                }}
-              </span>
-              <Button
-                icon="mdi:stop"
-                class="border-transparent! bg-red-500 text-white hover:bg-red-600"
-                @click="stopGeneration"
-              >
-                {{ $t('articles.editor.ai.stopButton') }}
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        <hr class="border-gray-200 dark:border-gray-800" />
-
-        <section class="flex flex-col gap-3">
-          <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
-            <Icon name="mdi:bookmark-multiple-outline" class="w-4 h-4 text-teal-500" />
-            {{ $t('common.labels.series') }}
-          </h3>
-          <ArticleSeriesSelector v-model="selectedSeries" />
-        </section>
-
-        <hr class="border-gray-200 dark:border-gray-800" />
-
-        <section class="flex flex-col gap-3">
-          <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
-            <Icon name="mdi:tag-multiple-outline" class="w-4 h-4 text-amber-500" />
-            {{ $t('common.labels.tags') }}
-          </h3>
-          <TagsManager
-            :article="article"
-            :initialTags="articleTags"
-            @add:tag="addTag"
-            @create:tag="addTag"
-            @delete:tag="removeTag"
-          />
-        </section>
-
-        <hr class="border-gray-200 dark:border-gray-800" />
-
-        <section class="flex flex-col gap-3">
-          <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
-            <Icon name="mdi:calendar-clock" class="w-4 h-4 text-blue-500" />
-            {{ $t('common.labels.releaseDate') }}
-          </h3>
-          <FormField v-model="releaseAtInput" type="datetime-local" />
-          <div class="flex flex-wrap gap-2">
-            <Button size="sm" variant="neutral" @click="setReleaseQuick('now')">
-              {{ $t('articles.releaseQuick.now') }}
-            </Button>
-            <Button size="sm" variant="neutral" @click="setReleaseQuick('inHour')">
-              {{ $t('articles.releaseQuick.inHour') }}
-            </Button>
-            <Button size="sm" variant="neutral" @click="setReleaseQuick('tomorrow')">
-              {{ $t('articles.releaseQuick.tomorrow') }}
-            </Button>
-            <Button
-              v-if="editedArticle.releaseAt"
-              size="sm"
-              variant="neutral"
-              icon="mdi:close"
-              @click="setReleaseQuick('clear')"
-            >
-              {{ $t('articles.releaseQuick.clear') }}
-            </Button>
-          </div>
-        </section>
-      </div>
-    </ModalSlideOver>
 
     <ModalMini
       v-model:open="discardConfirmOpen"
@@ -256,8 +161,6 @@ const { t } = useI18n()
 const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
 
 const isNew = route.params.id === 'new'
-const sidebarOpen = shallowRef(false)
-const aiOpen = shallowRef(route.query.ai === '1')
 const discardConfirmOpen = shallowRef(false)
 const submitting = shallowRef(false)
 
@@ -282,20 +185,14 @@ const editedArticle = ref(init())
 const selectedSeries = shallowRef<any>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
-const customPrompt = shallowRef('')
-const aiGenerating = shallowRef(false)
 
 const { idle } = useIdle(5 * 60 * 1000)
-const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDraft } = await useArticleDrafts(
-  editedArticle,
-  idle,
-  {
-    onDraftLoaded: () => {
-      selectedSeries.value = null
-      articleTags.value = []
-    },
+const { drafts, loading, draftsOpen, lastSavedAt, saving, loadDraft } = await useArticleDrafts(editedArticle, idle, {
+  onDraftLoaded: () => {
+    selectedSeries.value = null
+    articleTags.value = []
   },
-)
+})
 
 if (!isNew) {
   try {
@@ -310,10 +207,21 @@ if (!isNew) {
     articleTags.value = articleData?.tags?.map((t: any) => t.tag?.id || t.id) || []
   } catch (e: any) {
     console.error(e)
-    toast.error({ message: 'Failed to load article' })
+    toast.error({ message: t('articles.editor.loadFailed') })
     router.push(localePath({ name: 'admin' }))
   }
 }
+
+const { textarea: excerptRef, input: excerptText } = useTextareaAutosize({ styleProp: 'minHeight' })
+
+watch(excerptText, (value) => (editedArticle.value.excerpt = value))
+watch(
+  () => editedArticle.value.excerpt,
+  (value) => {
+    if ((value ?? '') !== excerptText.value) excerptText.value = value ?? ''
+  },
+  { immediate: true },
+)
 
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 
@@ -323,92 +231,35 @@ const publishLabel = computed(() => {
   return t('articles.publishNow')
 })
 
-const releaseAtInput = computed<string | null>({
-  get: () => {
-    const v = editedArticle.value.releaseAt as unknown as string | Date | null
-    if (!v) return null
-    if (typeof v === 'string') return v.slice(0, 16)
-    const d = v as Date
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
-  },
-  set: (v) => {
-    ;(editedArticle.value as any).releaseAt = v
-  },
-})
-
-const updateSlug = () => {
-  if (isNew) {
-    editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })
-  }
-}
-
 const handleUpload = (file: { url: string; optimizedUrl: string }) => {
   editedArticle.value.imageUrl = file.url
   optimizedImageUrl.value = file.optimizedUrl
 }
 
-const addTag = (id: string) => {
-  if (!articleTags.value.includes(id)) articleTags.value.push(id)
-}
-const removeTag = (id: string) => {
-  articleTags.value = articleTags.value.filter((t) => t !== id)
-}
-
-const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
-  if (kind === 'clear') {
-    editedArticle.value.releaseAt = null
-    return
-  }
-  const d = new Date()
-  if (kind === 'inHour') d.setHours(d.getHours() + 1)
-  if (kind === 'tomorrow') {
-    d.setDate(d.getDate() + 1)
-    d.setHours(8, 0, 0, 0)
-  }
-  d.setSeconds(0, 0)
-  editedArticle.value.releaseAt = new Date(d.getTime() - d.getTimezoneOffset() * 60_000)
-    .toISOString()
-    .slice(0, 16) as any
+const applyAiPartial = (partial: { title?: string; perex?: string; content?: string }) => {
+  if (partial.title != null) editedArticle.value.title = partial.title
+  if (partial.perex != null) editedArticle.value.excerpt = partial.perex
+  if (partial.content != null) editedArticle.value.content = partial.content
 }
 
-const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
-const aiPhase = shallowRef<'writing' | 'images'>('writing')
+const applyAiImage = ({ slot, html }: { slot: number; html: string }) => {
+  editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
+}
 
-const generateAIContent = async () => {
-  aiGenerating.value = true
-  aiPhase.value = 'writing'
-  try {
-    const outcome = await streamGenerate(customPrompt.value || 'Empty...', {
-      onPartial: (partial) => {
-        if (partial.title != null) editedArticle.value.title = partial.title
-        if (partial.perex != null) editedArticle.value.excerpt = partial.perex
-        if (partial.content != null) editedArticle.value.content = partial.content
-      },
-      onPhase: (phase) => (aiPhase.value = phase),
-      onImage: ({ slot, html }) => {
-        editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
-      },
-      onFinal: (article) => {
-        Object.assign(editedArticle.value, {
-          title: article.title,
-          excerpt: article.perex,
-          content: article.content,
-          imageUrl: article.articleImageUrl,
-        })
-      },
-    })
-    if (outcome === 'aborted') toast.info({ message: 'AI Generation Stopped' })
-    else toast.success({ message: 'AI Content Generated' })
-  } catch {
-    toast.error({ message: 'AI Generation Failed' })
-  } finally {
-    aiGenerating.value = false
-  }
+const applyAiFinal = (generated: Record<string, any>) => {
+  optimizedImageUrl.value = ''
+  Object.assign(editedArticle.value, {
+    title: generated.title,
+    excerpt: generated.perex,
+    content: generated.content,
+    imageUrl: generated.articleImageUrl,
+  })
 }
 
 const submit = async (targetStatus: 'draft' | 'published') => {
   if (submitting.value) return
-  if (!editedArticle.value.title) return toast.error({ message: 'Title is required' })
+  if (!editedArticle.value.title)
+    return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
 
   const willPublishNow = targetStatus === 'published' && !editedArticle.value.releaseAt
   const releaseAt = editedArticle.value.releaseAt
@@ -430,16 +281,16 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   try {
     if (isNew) {
       await $fetch('/api/articles', { method: 'POST', body: payload })
-      toast.success({ message: targetStatus === 'published' ? 'Article published' : 'Draft created' })
+      toast.success({ message: t('articles.editor.createSuccess') })
       await invalidateArticlesAndStats()
     } else {
       await $fetch(`/api/articles/${article.value!.id}`, { method: 'PATCH', body: payload })
-      toast.success({ message: 'Article updated' })
+      toast.success({ message: t('common.messages.saveSuccess') })
       await invalidateArticles()
     }
     router.push(localePath({ name: 'admin' }))
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Error saving article' })
+    toast.error({ message: e.data?.message || t('common.messages.saveFailed') })
   } finally {
     submitting.value = false
   }

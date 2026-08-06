@@ -217,28 +217,35 @@
       </div>
     </div>
 
-    <div class="pointer-events-none sticky bottom-4 z-10 flex justify-center sm:justify-end">
-      <Transition
-        enterActiveClass="transition duration-200 ease-out"
-        enterFromClass="opacity-0 translate-y-2"
-        enterToClass="opacity-100 translate-y-0"
-        leaveActiveClass="transition duration-150 ease-in"
-        leaveFromClass="opacity-100 translate-y-0"
-        leaveToClass="opacity-0 translate-y-2"
-      >
-        <div
-          v-if="isDirty"
-          class="pointer-events-auto flex items-center gap-3 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 bg-white/95 dark:bg-neutral-900/95 backdrop-blur py-2 pl-4 pr-2 shadow-xl"
+    <div class="pointer-events-none fixed inset-x-0 bottom-4 z-header flex justify-center px-4 sm:px-6">
+      <div class="w-full max-w-5xl flex justify-center sm:justify-end">
+        <Transition
+          enterActiveClass="transition duration-200 ease-out"
+          enterFromClass="opacity-0 translate-y-2"
+          enterToClass="opacity-100 translate-y-0"
+          leaveActiveClass="transition duration-150 ease-in"
+          leaveFromClass="opacity-100 translate-y-0"
+          leaveToClass="opacity-0 translate-y-2"
         >
-          <span class="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
-            <span class="size-2 rounded-full bg-amber-500 animate-pulse" />
-            {{ $t('common.preferences.unsaved') }}
-          </span>
-          <Button size="sm" @click="savePreferences">
-            {{ $t('common.actions.saveChanges') }}
-          </Button>
-        </div>
-      </Transition>
+          <div
+            v-if="isDirty"
+            class="pointer-events-auto flex items-center gap-3 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 bg-white/95 dark:bg-neutral-900/95 backdrop-blur py-2 pl-4 pr-2 shadow-xl mr-14 sm:mr-16 xl:mr-0"
+          >
+            <span class="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+              <span class="size-2 rounded-full bg-amber-500 animate-pulse" />
+              {{ $t('common.preferences.unsaved') }}
+            </span>
+            <div class="flex items-center gap-1.5">
+              <Button size="sm" variant="transparent" @click="resetForm">
+                {{ $t('common.actions.reset') }}
+              </Button>
+              <Button size="sm" @click="savePreferences">
+                {{ $t('common.actions.saveChanges') }}
+              </Button>
+            </div>
+          </div>
+        </Transition>
+      </div>
     </div>
 
     <ModalMini ref="discardDialog" />
@@ -346,6 +353,19 @@ const savePreferences = async () => {
   } catch {
     toast.error({ message: $t('common.messages.saveFailed') })
   }
+}
+
+const resetForm = async () => {
+  const r = await discardDialog.value?.ask({
+    title: $t('common.messages.discardChangesTitle'),
+    message: $t('common.messages.discardChangesText'),
+    icon: 'mdi:backup-restore',
+    confirmText: $t('common.messages.discardConfirm'),
+    cancelText: $t('common.messages.deleteCancel'),
+    variant: 'danger',
+  })
+  if (r !== 'ok') return
+  form.value = structuredClone(toRaw(pristine.value))
 }
 
 const generateApiKey = async () => {

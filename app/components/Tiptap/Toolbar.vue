@@ -1,12 +1,8 @@
 <template>
   <div
-    class="sticky top-0 z-10 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-gray-200 dark:border-neutral-800 py-1.5 px-1 sm:px-2"
+    class="sticky top-[var(--tiptap-toolbar-top,0px)] z-10 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-gray-200 dark:border-neutral-800 py-1.5 px-1 sm:px-2"
   >
-    <div
-      role="toolbar"
-      :aria-label="$t('articles.editor.title')"
-      class="flex flex-wrap items-center gap-1 sm:gap-1.5"
-    >
+    <div role="toolbar" :aria-label="$t('articles.editor.title')" class="flex flex-wrap items-center gap-1 sm:gap-1.5">
       <Button
         icon="mdi-undo"
         :title="sk($t('articles.editor.toolbar.undo'), 'Mod+Z')"

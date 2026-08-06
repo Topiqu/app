@@ -65,6 +65,11 @@ export const CLIENT_SITE_SECRET_FIELDS = [
   'humanWordsPerHour',
 ] as const
 
+export const pickFields = <T extends readonly string[]>(source: Record<string, unknown>, fields: T) =>
+  Object.fromEntries(
+    fields.filter((field) => source[field] !== undefined).map((field) => [field, source[field]]),
+  ) as Partial<Record<T[number], unknown>>
+
 export const fieldMask = <T extends readonly string[]>(fields: T) =>
   Object.fromEntries(fields.map((field) => [field, true])) as { [K in T[number]]: true }
 

@@ -306,7 +306,35 @@
         "generating": "Writing…",
         "phaseWriting": "Writing…",
         "phaseImages": "Generating images…",
-        "aiContentStopped": "Generation stopped"
+        "aiContentStopped": "Generation stopped",
+        "topicLabel": "Article topic",
+        "topicPlaceholder": "What should the article be about? Add angle, audience or key points…",
+        "step": {
+          "writing": "Writing",
+          "images": "Images"
+        },
+        "formats": {
+          "howto": {
+            "label": "How-to",
+            "template": "Write a practical step-by-step guide about:"
+          },
+          "news": {
+            "label": "News",
+            "template": "Write a news report about:"
+          },
+          "listicle": {
+            "label": "Listicle",
+            "template": "Write a list-based article about:"
+          },
+          "opinion": {
+            "label": "Opinion",
+            "template": "Write an opinion piece arguing about:"
+          },
+          "deepDive": {
+            "label": "Deep dive",
+            "template": "Write an in-depth analysis of:"
+          }
+        }
       },
       "drafts": {
         "loadDrafts": "Load Drafts",
@@ -320,7 +348,8 @@
       "createSuccess": "Article created successfully",
       "createFailed": "Failed to create article",
       "aiContentGenerated": "AI content generated successfully",
-      "aiContentFailed": "Failed to generate AI content"
+      "aiContentFailed": "Failed to generate AI content",
+      "loadFailed": "Failed to load the article"
     }
   }
 }

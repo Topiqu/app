@@ -15,7 +15,7 @@
         class="z-50"
       >
         <MenuItems
-          class="w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
+          class="w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 focus:outline-none"
         >
           <div v-for="(items, key) in groups" :key class="px-1 py-1">
             <MenuItem v-for="item in items" :key="item.id" v-slot="{ active }" :disabled="item.disabled">

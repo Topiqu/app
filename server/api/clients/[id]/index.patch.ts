@@ -6,6 +6,7 @@ import {
   PRIVILEGED_CLIENT_SITE_FIELDS,
   TENANT_EDITABLE_CLIENT_SITE_FIELDS,
   fieldMask,
+  pickFields,
 } from '~~/shared/utils/clientSiteFields'
 
 export default defineEventHandler(async (event) => {
@@ -60,14 +61,14 @@ export default defineEventHandler(async (event) => {
     fieldMask(PRIVILEGED_CLIENT_SITE_FIELDS),
   ).partial()
 
-  const parsed = UpdateSchema.safeParse(scalarBody)
+  const parsed = UpdateSchema.safeParse(pickFields(scalarBody, TENANT_EDITABLE_CLIENT_SITE_FIELDS))
   if (!parsed.success) {
     throw createError({ statusCode: 400, message: parsed.error.message })
   }
   const data: any = { ...parsed.data }
 
   if (isSuperadmin) {
-    const privileged = PrivilegedSchema.safeParse(scalarBody)
+    const privileged = PrivilegedSchema.safeParse(pickFields(scalarBody, PRIVILEGED_CLIENT_SITE_FIELDS))
     if (!privileged.success) {
       throw createError({ statusCode: 400, message: privileged.error.message })
     }
