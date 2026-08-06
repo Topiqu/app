@@ -13,6 +13,8 @@
       </span>
     </header>
 
+    <p class="text-xs text-gray-500 dark:text-gray-400 -mt-2">{{ $t('articles.translations.desc') }}</p>
+
     <div class="flex flex-wrap gap-2">
       <Button
         v-for="lang in targetLanguages"
@@ -65,11 +67,14 @@
         {{ $t(`articles.translations.empty.${active?.status ?? 'MISSING'}`) }}
       </p>
 
-      <div class="flex flex-wrap gap-2 pt-1">
+      <div
+        class="sticky bottom-0 -mx-5 -mb-5 px-5 py-3 flex flex-wrap items-center gap-2 rounded-b-2xl border-t border-gray-200 dark:border-neutral-700 bg-white/85 dark:bg-neutral-900/85 backdrop-blur-xl"
+      >
         <Button
-          v-if="hasBody && isDirty"
+          v-if="hasBody"
           size="sm"
           icon="mdi:content-save-outline"
+          :disabled="!isDirty"
           :loading="pending === 'save'"
           @click="save()"
         >
@@ -104,6 +109,15 @@
         >
           {{ $t('articles.translations.actions.discard') }}
         </Button>
+
+        <span
+          v-if="hasBody && isDirty"
+          class="ml-auto inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400"
+          aria-live="polite"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          {{ $t('articles.translations.unsaved') }}
+        </span>
       </div>
     </div>
 
@@ -121,70 +135,42 @@
 </template>
 
 <script setup lang="ts">
-type TranslationStatus = 'PENDING' | 'TRANSLATING' | 'READY' | 'PUBLISHED' | 'FAILED' | 'STALE'
-
-type Translation = {
-  id: string
-  language: string
-  slug: string | null
-  title: string | null
-  excerpt: string | null
-  content: string | null
-  status: TranslationStatus
-  source: 'AI' | 'HUMAN'
-  error: string | null
-  translatedAt: string | Date | null
-}
+import {
+  isTranslationDirty,
+  resolveActiveLanguage,
+  translationDraft,
+  translationHasBody,
+  type TranslationStatus,
+} from '~~/shared/utils/articleTranslations'
 
 const props = defineProps<{ articleId: string }>()
 
 const toast = useToast()
 const { t } = useI18n()
 
-const { data, refresh } = await useFetch<{
-  translations: Translation[]
-  targetLanguages: string[]
-  translationMode: string
-}>(`/api/articles/${props.articleId}/translations`, {
-  key: `article-translations-${props.articleId}`,
-  default: () => ({ translations: [], targetLanguages: [], translationMode: 'OFF' }),
-})
-
-const targetLanguages = computed(() => data.value.targetLanguages)
-const byLanguage = computed(() => Object.fromEntries(data.value.translations.map((row) => [row.language, row])))
-const reviewCount = computed(() => data.value.translations.filter((row) => row.status === 'READY').length)
+const { translations, targetLanguages, byLanguage, reviewCount, refresh } = useArticleTranslations(props.articleId)
 
 const activeLang = shallowRef('')
 watchEffect(() => {
-  if (!targetLanguages.value.length) return
-  if (!targetLanguages.value.includes(activeLang.value)) {
-    activeLang.value =
-      data.value.translations.find((row) => row.status === 'READY')?.language ?? targetLanguages.value[0]!
-  }
+  activeLang.value = resolveActiveLanguage(translations.value, targetLanguages.value, activeLang.value)
 })
 
-const active = computed<Translation | undefined>(() => byLanguage.value[activeLang.value])
-const hasBody = computed(() => Boolean(active.value?.title && active.value?.content))
+const active = computed(() => byLanguage.value[activeLang.value])
+const hasBody = computed(() => translationHasBody(active.value))
 
-const draft = ref({ title: '', excerpt: '', content: '' })
-const pristine = ref({ title: '', excerpt: '', content: '' })
+const draft = ref(translationDraft())
+const pristine = ref(translationDraft())
 
 watch(
   active,
   (row) => {
-    const next = { title: row?.title ?? '', excerpt: row?.excerpt ?? '', content: row?.content ?? '' }
-    draft.value = { ...next }
-    pristine.value = { ...next }
+    draft.value = translationDraft(row)
+    pristine.value = translationDraft(row)
   },
   { immediate: true },
 )
 
-const isDirty = computed(
-  () =>
-    draft.value.title !== pristine.value.title ||
-    draft.value.excerpt !== pristine.value.excerpt ||
-    draft.value.content !== pristine.value.content,
-)
+const isDirty = computed(() => isTranslationDirty(draft.value, pristine.value))
 
 const pending = shallowRef<'save' | 'publish' | 'translate' | 'discard' | null>(null)
 const discardOpen = shallowRef(false)

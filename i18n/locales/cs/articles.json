@@ -59,6 +59,9 @@
     "articlesCount": "Zatím žádné články | {count} článek | {count} články | {count} článků",
     "translations": {
       "title": "Překlady",
+      "desc": "Přeložené verze tohoto článku. Každý jazyk se kontroluje a publikuje zvlášť.",
+      "jump": "Přejít na překlady",
+      "unsaved": "Neuložené změny",
       "awaitingReview": "nic ke kontrole | {count} čeká na kontrolu | {count} čekají na kontrolu | {count} čeká na kontrolu",
       "status": {
         "MISSING": "Nepřeloženo",
