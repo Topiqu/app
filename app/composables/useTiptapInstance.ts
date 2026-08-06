@@ -12,6 +12,7 @@ import { TextAlign } from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { Typography } from '@tiptap/extension-typography'
 import { Blockquote } from '@tiptap/extension-blockquote'
+import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 import { Dropcursor } from '@tiptap/extension-dropcursor'
 import { FontFamily } from '@tiptap/extension-font-family'
 import { useEditor, VueNodeViewRenderer } from '@tiptap/vue-3'
@@ -65,6 +66,10 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
         allowFullscreen: true,
         ccLanguage: 'cs',
       }),
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Poll,
       Indent,
       TextStyle,

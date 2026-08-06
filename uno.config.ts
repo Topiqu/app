@@ -1,10 +1,35 @@
 import { defineConfig } from 'unocss'
 import presetWind3 from '@unocss/preset-wind3'
+import presetTypography from '@unocss/preset-typography'
 
 import { Z_LAYERS } from './shared/utils/z-layers'
 
 export default defineConfig({
-  presets: [presetWind3()],
+  presets: [
+    presetWind3(),
+    presetTypography({
+      cssExtend: {
+        table: {
+          width: '100%',
+          'margin-block': '1.5em',
+          'font-size': '0.95em',
+          'line-height': '1.6',
+        },
+        'thead th': {
+          'background-color': 'var(--un-prose-bg-soft)',
+          'font-weight': '600',
+          'text-align': 'left',
+        },
+        'th, td': {
+          padding: '0.625em 0.875em',
+          border: '1px solid var(--un-prose-borders)',
+        },
+        'tbody tr:last-child td': {
+          'border-bottom-width': '1px',
+        },
+      },
+    }),
+  ],
   theme: {
     zIndex: Object.fromEntries(Object.entries(Z_LAYERS).map(([name, value]) => [name, String(value)])),
     animation: {

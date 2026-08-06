@@ -23,8 +23,11 @@ const parse = () => {
       parsedContent.length,
       ...Array.from(d.body.childNodes).map((n) => {
         const el = n as Element
+        if (el.nodeName === 'TABLE') {
+          return { type: 'html', html: `<div class="overflow-x-auto">${el.outerHTML}</div>` }
+        }
         if (el.nodeName === 'DIV' && el.getAttribute('data-type') === 'poll') {
-          const pollId = el.getAttribute('data-poll-id') || el.getAttribute('data-id')
+          const pollId = el.getAttribute('data-poll-id')
           if (!pollId) {
             // Server-side syncArticlePolls must stamp data-poll-id; without it the
             // vote endpoint has no FK target, so degrade to raw HTML instead of
