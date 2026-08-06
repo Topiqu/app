@@ -76,11 +76,14 @@
       />
 
       <div class="flex flex-col gap-4">
-        <input
-          v-model="editedArticle.title"
+        <textarea
+          ref="titleRef"
+          v-model="titleText"
+          rows="1"
           :placeholder="$t('common.labels.articleTitle')"
           :aria-label="$t('common.labels.articleTitle')"
-          class="w-full bg-transparent! border-none! rounded-none! px-0! py-0! text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15] placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0"
+          class="w-full resize-none overflow-hidden break-words bg-transparent! border-none! rounded-none! px-0! py-0! text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15] placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0"
+          @keydown.enter.prevent
         />
 
         <textarea
@@ -212,7 +215,21 @@ if (!isNew) {
   }
 }
 
+const { textarea: titleRef, input: titleText } = useTextareaAutosize({ styleProp: 'minHeight' })
 const { textarea: excerptRef, input: excerptText } = useTextareaAutosize({ styleProp: 'minHeight' })
+
+watch(titleText, (value) => {
+  const single = value.replace(/\s*\n+\s*/g, ' ')
+  if (single !== value) titleText.value = single
+  editedArticle.value.title = single
+})
+watch(
+  () => editedArticle.value.title,
+  (value) => {
+    if ((value ?? '') !== titleText.value) titleText.value = value ?? ''
+  },
+  { immediate: true },
+)
 
 watch(excerptText, (value) => (editedArticle.value.excerpt = value))
 watch(
@@ -243,7 +260,7 @@ const applyAiPartial = (partial: { title?: string; perex?: string; content?: str
 }
 
 const applyAiImage = ({ slot, html }: { slot: number; html: string }) => {
-  editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
+  editedArticle.value.content = replaceSlot(editedArticle.value.content ?? '', 'IMAGE', slot, html)
 }
 
 const applyAiFinal = (generated: Record<string, any>) => {
