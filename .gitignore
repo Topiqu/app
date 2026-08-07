@@ -7,6 +7,13 @@
 dist
 shared/zod
 
+# Playwright generated artifacts and local visual baselines
+test-results
+playwright-report
+blob-report
+**/*-snapshots/
+tests/e2e/.auth
+
 # Node dependencies
 node_modules
 
