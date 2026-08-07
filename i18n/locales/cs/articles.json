@@ -106,7 +106,8 @@
       "reviewQueue": {
         "title": "Nic nečeká na kontrolu | {count} překlad čeká na kontrolu | {count} překlady čekají na kontrolu | {count} překladů čeká na kontrolu",
         "desc": "Hybridní režim drží strojové překlady zpět, dokud je neschválíš. Otevři článek a překlad zkontroluj a publikuj."
-      }
+      },
+      "viewLive": "Zobrazit živou stránku"
     },
     "explore": "Prozkoumat články",
     "votes": "Hlasů",
@@ -183,7 +184,8 @@
       "status": "Status",
       "date": "Datum",
       "actions": "Akce",
-      "createdAt": "Vytvořeno"
+      "createdAt": "Vytvořeno",
+      "languages": "Jazyky"
     },
     "sources": {
       "placeholder": "Odkaz na zdroj (https://...)",
@@ -405,6 +407,12 @@
       "searchTags": "Najít nebo vytvořit tag…",
       "createTag": "Vytvořit „{name}“",
       "publishImmediately": "Ihned"
+    },
+    "messages": {
+      "archivedCannotEdit": "Archivované články nelze upravovat",
+      "statusChangeFailed": "Stav se nepodařilo změnit",
+      "deleteSuccess": "Článek smazán",
+      "deleteFailed": "Článek se nepodařilo smazat"
     }
   }
 }

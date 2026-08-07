@@ -56,7 +56,8 @@
       "notificationsUpdateSuccess": "Nastavení oznámení uloženo",
       "notificationsUpdateError": "Uložení nastavení oznámení selhalo",
       "followSuccess": "Nyní sledujete {0}",
-      "unfollowSuccess": "Přestali jste sledovat {0}"
+      "unfollowSuccess": "Přestali jste sledovat {0}",
+      "followFailed": "Autora se nepodařilo sledovat"
     },
     "checks": {
       "emailVerified": "E-mail je ověřen",

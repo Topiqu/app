@@ -39,6 +39,17 @@
       </div>
 
       <div class="ml-auto flex items-center gap-2">
+        <NuxtLink
+          v-if="livePath"
+          :to="livePath"
+          target="_blank"
+          class="hidden sm:inline-flex items-center justify-center w-8 h-8 rounded-lg no-underline text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+          :title="$t('articles.translations.viewLive')"
+          :aria-label="$t('articles.translations.viewLive')"
+        >
+          <Icon name="mdi:open-in-new" class="w-4 h-4" />
+        </NuxtLink>
+
         <ArticleEditorLanguageTabs
           v-if="tr.enabled"
           v-model="tr.activeLang"
@@ -340,6 +351,18 @@ if (!isNew) {
 const tr = reactive(useArticleTranslations(article.value?.id))
 const primaryLanguage = clientSite?.language ?? 'en'
 const discardTranslationOpen = shallowRef(false)
+
+// `?lang=` lets the admin table deep-link straight to a language. The primary language is the
+// source tab, which the composable represents as an empty string.
+const requestedLang = route.query.lang as string | undefined
+if (requestedLang && requestedLang !== primaryLanguage) tr.activeLang = requestedLang
+
+/** Public URL of whichever language is on screen — only once it has a slug to point at. */
+const livePath = computed(() => {
+  if (isNew || !activeSlug.value) return ''
+  const language = tr.isSource ? primaryLanguage : tr.activeLang
+  return localePath({ name: 'clanky-slug', params: { slug: activeSlug.value } }, language)
+})
 
 const translationBadge = computed(() => translationStatusBadge(tr.active?.status))
 const activeSlug = computed(() => (tr.isSource ? editedArticle.value.slug : (tr.active?.slug ?? '')))

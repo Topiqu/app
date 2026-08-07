@@ -345,6 +345,7 @@ import {
 } from '@tanstack/vue-table'
 
 import ArticleStatusCell from '~/components/Article/StatusCell.vue'
+import ArticleLanguageLinks, { type LanguageLink } from '~/components/Article/LanguageLinks.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -354,6 +355,23 @@ const deleteDialog = useTemplateRef<ModalMiniRef>('deleteDialog')
 const localePath = useLocalePath()
 const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
+const clientSite = await useClientSite()
+const primaryLanguage = clientSite?.language ?? 'en'
+
+/**
+ * Source first, then every language that actually has a translation row. A configured-but-never
+ * translated language is deliberately absent: the column answers "which versions exist", and an
+ * empty placeholder for each unused language would just add noise to every row.
+ */
+const languageLinks = (article: ArticleWithDetails): LanguageLink[] => [
+  { language: primaryLanguage, slug: article.slug },
+  ...(article.translations ?? []).map((tr) => ({
+    language: tr.language,
+    slug: tr.slug ?? article.slug,
+    status: tr.status as LanguageLink['status'],
+  })),
+]
+
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
 const SKELETON_ROWS = 5
@@ -471,6 +489,18 @@ const columns: ColumnDef<ArticleWithDetails>[] = [
       h(ArticleStatusCell, {
         row,
         onUpdate: (id: string, status: ArticleStatus) => debouncedSetStatus(id, status),
+      }),
+  },
+  {
+    header: $t('articles.columns.languages'),
+    id: 'languages',
+    enableSorting: false,
+    cell: ({ row }) =>
+      h(ArticleLanguageLinks, {
+        target: 'editor',
+        articleRef: row.original.slug,
+        current: primaryLanguage,
+        links: languageLinks(row.original),
       }),
   },
   {
