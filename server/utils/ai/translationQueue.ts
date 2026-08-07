@@ -16,6 +16,9 @@ type QueueDb = {
       language: Language
       translationMode: TranslationMode
       translationLanguages: Language[]
+      // Optional so a concrete Prisma client (whose row type has no `features`) still fits
+      // the structural contract; the select always asks for it, and a missing value fails closed.
+      features?: { id: string }[]
     } | null>
   }
   articleTranslation: {
@@ -26,13 +29,12 @@ type QueueDb = {
 }
 
 /**
- * Keeps an article's translation queue in sync with its source for AUTO/HYBRID tenants.
- * Enqueues a PENDING row for every target language that has none yet; when the source
- * content changed, flips existing READY/PUBLISHED translations to STALE so the cron
- * re-translates them. No-op for OFF/MANUAL tenants — those translate on explicit request.
+ * The AI-feature check is not redundant with `translate-pending`: that task refuses to drain
+ * the queue anyway, so enqueuing regardless would pile up invisible PENDING rows on every
+ * publish — which a later re-subscribe drains as one burst of months-old translations.
  *
- * STALE is driven by an explicit content-change signal (not `Article.updatedAt`, which the
- * view counter also bumps) to avoid re-charging tokens on every page view.
+ * `contentChanged` is an explicit signal rather than `Article.updatedAt`, which the view
+ * counter also bumps — that would re-charge translation tokens on every page view.
  */
 export const syncArticleTranslationQueue = async (
   db: QueueDb,
@@ -42,9 +44,15 @@ export const syncArticleTranslationQueue = async (
 ): Promise<void> => {
   const clientSite = await db.clientSite.findUnique({
     where: { id: clientSiteId },
-    select: { language: true, translationMode: true, translationLanguages: true },
+    select: {
+      language: true,
+      translationMode: true,
+      translationLanguages: true,
+      features: { where: { isActive: true, feature: { code: 'AI' } }, select: { id: true }, take: 1 },
+    },
   })
   if (!clientSite) return
+  if (!clientSite.features?.length) return
   if (clientSite.translationMode !== 'AUTO' && clientSite.translationMode !== 'HYBRID') return
 
   const targets = resolveTargetLanguages(clientSite)
