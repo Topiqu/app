@@ -36,6 +36,23 @@ export const isTranslationDirty = (draft: TranslationDraft, pristine: Translatio
 export const countAwaitingReview = (rows: ArticleTranslationRow[]) =>
   rows.filter((row) => row.status === 'READY').length
 
+/** Dot on a language tab. No status = no row yet, so the language is untranslated. */
+export const translationStatusDot = (status?: TranslationStatus) => {
+  if (status === 'PUBLISHED') return 'bg-emerald-500'
+  if (status === 'READY') return 'bg-amber-500'
+  if (status === 'FAILED') return 'bg-red-500'
+  if (status === 'STALE') return 'bg-orange-500'
+  if (status) return 'bg-blue-500'
+  return 'bg-gray-300 dark:bg-gray-600'
+}
+
+export const translationStatusBadge = (status?: TranslationStatus) => {
+  if (status === 'PUBLISHED') return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
+  if (status === 'READY') return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+  if (status === 'FAILED') return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
+  return 'bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-gray-300'
+}
+
 /**
  * The READY candidate is restricted to configured targets: a leftover translation for a
  * language dropped from settings has no tab, so picking it would point the panel at nothing.
