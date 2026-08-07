@@ -48,7 +48,9 @@
     border-radius: 6px !important;
   }
 
-  [role='dialog'] {
+  // Only HeadlessUI's Dialog root is a full-screen wrapper that must stay see-through;
+  // matching every role="dialog" would strip the background off our own popovers too.
+  [role='dialog'][id^='headlessui-dialog-'] {
     background-color: transparent !important;
   }
 
@@ -70,17 +72,17 @@ html.dark :where(#__nuxt, #headlessui-portal-root) {
   }
 
   div:not(
-      .iziToast,
-      .iziToast-capsule,
-      .iziToast-wrapper *,
-      [role='dialog'],
-      [role='dialog'] *,
-      [data-youtube-video],
-      [data-youtube-video] *,
-      .pointer-events-none,
-      .custom-ui,
-      .custom-ui *
-    ) {
+    .iziToast,
+    .iziToast-capsule,
+    .iziToast-wrapper *,
+    [role='dialog'],
+    [role='dialog'] *,
+    [data-youtube-video],
+    [data-youtube-video] *,
+    .pointer-events-none,
+    .custom-ui,
+    .custom-ui *
+  ) {
     background-color: #1f2937;
   }
 
