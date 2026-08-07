@@ -171,6 +171,8 @@
 <script setup lang="ts">
 import type { User } from '@zenstackhq/runtime/models'
 
+import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
+
 const route = useRoute()
 const toast = useToast()
 const localePath = useLocalePath()
@@ -185,6 +187,18 @@ const { locale } = useI18n()
 const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`, {
   query: { clientSiteId: clientSite?.id, locale: locale.value },
 })
+
+// Landing on this locale with another language's slug (browser-language detection, an old link,
+// a hand-edited URL) silently renders the source body. Send it to the real translation instead.
+// Deliberately 302, not 301: a translation can be unpublished or discarded, and a cached
+// permanent redirect would then pin visitors to a URL that 404s.
+const redirectSlug = localeRedirectSlug(locale.value, data.value?.language, data.value?.alternates ?? [])
+if (redirectSlug) {
+  await navigateTo(localePath({ name: 'clanky-slug', params: { slug: redirectSlug } }), {
+    redirectCode: 302,
+    replace: true,
+  })
+}
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 

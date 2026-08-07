@@ -5,7 +5,8 @@ export default defineMonitoredTask({
   },
   async run() {
     const now = new Date()
-    return prisma.$transaction(async (ctx) => {
+    const touched = new Set<string>()
+    const result = await prisma.$transaction(async (ctx) => {
       // console.log('now', now.toISOString())
       const articles = await ctx.article.findMany({
         where: { status: 'draft', releaseAt: { not: null, lte: now } },
@@ -19,6 +20,8 @@ export default defineMonitoredTask({
         where: { id: { in: articleIds }, status: 'draft' },
         data: { status: 'published', releaseAt: null },
       })
+
+      for (const a of articles) touched.add(a.clientSiteId)
 
       for (const a of articles) {
         await syncArticleTranslationQueue(ctx, a.id, a.clientSiteId)
@@ -72,5 +75,9 @@ export default defineMonitoredTask({
 
       return { result: { count: update.count, timestamp: now.toISOString() } }
     })
+
+    // After commit — a rolled-back publish must not flush anyone's listings.
+    await Promise.all([...touched].map(invalidateFeed))
+    return result
   },
 })

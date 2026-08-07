@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const db = await getEnhancedPrisma(user)
-  await db.article.delete({ where: { id } })
+  const deleted = await db.article.delete({ where: { id } })
+  if (deleted.status === 'published') await invalidateFeed(deleted.clientSiteId)
   return { success: true }
 })

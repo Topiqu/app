@@ -24,6 +24,27 @@ export const overlayTranslation = <T extends LocalizableArticle>(article: T, ove
   return { ...article, slug: overlay.slug, title: overlay.title, excerpt: overlay.excerpt ?? article.excerpt }
 }
 
+export interface ArticleAlternate {
+  language: string
+  slug: string
+}
+
+/**
+ * The slug identifies the language version — the locale prefix only picks which table is read.
+ * Opening `/en/<source-slug>` therefore misses the translation lookup and falls back to the
+ * source body; if a PUBLISHED translation for that locale exists, its slug is where the request
+ * should have gone. Returns that slug, or `null` when the page is already correct.
+ */
+export const localeRedirectSlug = (
+  locale: string | undefined,
+  resolvedLanguage: string | undefined,
+  alternates: ArticleAlternate[],
+): string | null => {
+  if (!locale || !resolvedLanguage || locale === resolvedLanguage) return null
+
+  return alternates.find((alt) => alt.language === locale)?.slug ?? null
+}
+
 export const overlayTranslations = <T extends LocalizableArticle>(
   articles: T[],
   overlays: TranslationOverlay[],
