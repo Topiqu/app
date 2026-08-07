@@ -119,7 +119,9 @@ export default defineNuxtConfig({
       dirs: ['shared/zod/models', 'server/utils', '#auth'],
     },
     externals: {
-      inline: ['html-encoding-sniffer', '@exodus/bytes'],
+      // ultrahtml: the tracer copies only dist/index.js, so nuxt-og-image's
+      // `ultrahtml/selector` import 500s every /_og/ route at runtime.
+      inline: ['html-encoding-sniffer', '@exodus/bytes', 'ultrahtml'],
     },
     serverAssets: [
       { baseName: 'emails:locales', dir: '../emails/locales' },
