@@ -7,12 +7,13 @@
 
 ### **Welcome** to <a href="https://topiqu.com" target="_blank">**Topiqu AI Blog**</a>! 👋
 
-A modern full-stack TypeScript blogging platform. Topiqu pairs a rich Tiptap-based editor with xAI-powered content generation, real-time SSE notifications, multi-tenant client sites with custom domains, Stripe billing, and a robust permission layer authored in ZenStack.
+A modern full-stack TypeScript blogging platform. Topiqu pairs a rich Tiptap-based editor with OpenAI-powered content generation and per-language article translation, real-time SSE notifications, multi-tenant client sites with custom domains, Stripe billing, and a robust permission layer authored in ZenStack.
 
 ## ✨ Features
 
 - 📝 **Rich Editor** — Tiptap 3 with custom extensions (`Poll`, `slashCommand`, `indent`), autosave, drafts, and quick release flow
 - 🤖 **AI (OpenAI)** — article generation, content enhancement, sentiment analysis, auto-image suggestions and LinkedIn post generator via `@ai-sdk/openai`; token consumption metered per `ClientSite` plan
+- 🌍 **Article translations** — per-language `ArticleTranslation` sidecar with `OFF` / `MANUAL` / `AUTO` / `HYBRID` modes; HYBRID holds machine translations at `READY` for human review before publishing. Language is a tab in the editor, listings and article pages resolve per locale, and real `hreflang` + per-locale canonicals are emitted once a translation is published
 - 🔔 **Realtime** — Server-Sent Events notification system with an event publisher
 - 🏢 **Multi-tenant client sites** — per-tenant subdomains, custom apex domains with DNS (CNAME) verification, plan-gated white-labeling
 - 💳 **Billing** — Stripe subscriptions (`PRO` / `PREMIUM`) + ad-hoc token top-ups, webhook-driven plan changes, monthly / annual cycles
@@ -22,32 +23,36 @@ A modern full-stack TypeScript blogging platform. Topiqu pairs a rich Tiptap-bas
 - 🎨 **Theming** — UnoCSS utility-first, SCSS partials, persisted theme store, custom emojis & branding (plan-gated)
 - 🔎 **SEO** — `@nuxtjs/seo`, dynamic OG images via Takumi, sitemap, schema.org metadata, priority indexing & sourcing per plan
 - 📊 **Analytics & Charts** — Chart.js + vue-chartjs, `nuxt-gtag` (GA4), GAM ad integration, `allowAds` plan gate
-- 📄 **PDF / OG rendering** — Playwright + `@sparticuz/chromium`, Takumi, pdfkit, jspdf, `nuxt-og-image`
+- 📄 **PDF / OG rendering** — no browser runtime: OG images via `@takumi-rs/*` (Rust/WASM) + `nuxt-og-image`, PDF export via `pdfkit`
+- ⚡ **Caching** — Redis cache-aside (`server/utils/cache.ts`) with generation-counter invalidation; degrades gracefully to no caching when unconfigured
+- 🩺 **Observability** — `@sentry/nuxt` error tracking + session replay, ingested by Better Stack
 - 📧 **Transactional Email** — MJML templates rendered and sent via AWS SES
 - ☁️ **AWS** — S3 storage (uploads), Rekognition (image moderation), SES (mail)
-- ⏱️ **Scheduled tasks** — Nitro `tasks/` for community insights, cron-driven jobs (`enableCron` gate)
+- ⏱️ **Scheduled tasks** — Nitro `tasks/` for community insights, article generation and draining the translation queue (`enableCron` gate)
 - 📱 **PWA** — Installable, offline-capable via `@vite-pwa/nuxt`
 - 🧩 **Headless UI** — `@headlessui/vue` + `@floating-ui/dom` + Tippy.js for accessible overlays, dropdowns, dialogs
 - ... and more
 
 ## 🧱 Tech Stack
 
-| Layer            | Technology                                                                              |
-| ---------------- | --------------------------------------------------------------------------------------- |
-| **Framework**    | [Nuxt 4](https://nuxt.com) (Vue 3.5, Composition API)                                   |
-| **Language**     | TypeScript (strict)                                                                     |
-| **Styling**      | [UnoCSS](https://unocss.dev) + SCSS                                                     |
-| **i18n**         | [`@nuxtjs/i18n`](https://i18n.nuxtjs.org) — `en`, `cs`                                  |
-| **Auth**         | [`@sidebase/nuxt-auth`](https://auth.sidebase.io) + Prisma adapter                      |
-| **ORM / Schema** | [Prisma 6](https://www.prisma.io) + [ZenStack v2](https://zenstack.dev) (access policy) |
-| **Database**     | PostgreSQL (via Docker Compose)                                                         |
-| **Editor**       | [Tiptap 3](https://tiptap.dev) with custom extensions                                   |
-| **AI**           | [Vercel AI SDK](https://sdk.vercel.ai) + [`@ai-sdk/openai`](https://platform.openai.com) |
-| **Billing**      | [Stripe](https://stripe.com) via `@unlok-co/nuxt-stripe` (subscriptions + token top-ups)|
-| **SEO**          | `@nuxtjs/seo`, `nuxt-og-image`, `nuxt-gtag`                                             |
-| **Cloud**        | AWS (S3, Rekognition, SES), Stripe, Vercel                                              |
-| **Testing**      | [Vitest](https://vitest.dev) + `@nuxt/test-utils` + `happy-dom`                         |
-| **Tooling**      | ESLint, Prettier, vue-tsc                                                               |
+| Layer             | Technology                                                                                                  |
+| ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Framework**     | [Nuxt 4](https://nuxt.com) (Vue 3.5, Composition API)                                                       |
+| **Language**      | TypeScript (strict)                                                                                         |
+| **Styling**       | [UnoCSS](https://unocss.dev) + SCSS                                                                         |
+| **i18n**          | [`@nuxtjs/i18n`](https://i18n.nuxtjs.org) — `en`, `cs`                                                      |
+| **Auth**          | [`@sidebase/nuxt-auth`](https://auth.sidebase.io) + Prisma adapter                                          |
+| **ORM / Schema**  | [Prisma 6](https://www.prisma.io) + [ZenStack v2](https://zenstack.dev) (access policy)                     |
+| **Database**      | PostgreSQL (via Docker Compose)                                                                             |
+| **Editor**        | [Tiptap 3](https://tiptap.dev) with custom extensions                                                       |
+| **AI**            | [Vercel AI SDK](https://sdk.vercel.ai) + [`@ai-sdk/openai`](https://platform.openai.com)                    |
+| **Billing**       | [Stripe](https://stripe.com) via `@unlok-co/nuxt-stripe` (subscriptions + token top-ups)                    |
+| **SEO**           | `@nuxtjs/seo`, `nuxt-og-image`, `nuxt-gtag`                                                                 |
+| **Cache**         | Redis — cache-aside + generation counters (`server/utils/cache.ts`)                                         |
+| **Observability** | [`@sentry/nuxt`](https://sentry.io) → Better Stack                                                          |
+| **Cloud**         | AWS (S3, Rekognition, SES), Stripe; self-hosted on a VPS via Dokploy (Docker Swarm + Traefik)               |
+| **Testing**       | [Vitest](https://vitest.dev) + `@nuxt/test-utils` (`jsdom` environment)                                     |
+| **Tooling**       | ESLint, Prettier, vue-tsc                                                                                   |
 
 ## 📂 Project Structure
 
@@ -58,6 +63,7 @@ shared/      Cross-cutting code (zod schemas, utils) shared by app & server
 prisma/      ZenStack source (schema.zmodel), generated Prisma schema, migrations
 extensions/  Custom Tiptap editor extensions
 emails/      MJML email templates
+scripts/     Dev-only verification scripts (ai:smoke, db:seed-tokens)
 i18n/        Locale files (en, cs)
 types/       Ambient TS types
 public/      Static assets
@@ -71,7 +77,7 @@ See [`MAP.md`](./MAP.md) for the complete architecture reference — it is the s
 
 - 📦 [Bun](https://bun.sh) (recommended) — Node-compatible package manager & runtime
 - 🐳 [Docker](https://www.docker.com) — used by `predev` to spin up PostgreSQL
-- 🔑 A configured `.env` (Auth, AWS, Stripe, AI keys, etc.)
+- 🔑 A configured `.env` — copy [`.env.example`](./.env.example) and fill it in (Auth, AWS, Stripe, AI keys, etc.)
 
 **Install & run in dev mode**
 
@@ -88,18 +94,30 @@ bun dev                # spins up Postgres via docker, starts Nuxt dev server
 bun db:up      # start Postgres container
 bun db:down    # stop Postgres container
 bun db:reset   # wipe volumes & restart fresh
+bun db:fresh   # reset + migrate + seed
 bun db:seed    # seed initial data
+```
+
+**Dev verification scripts** — see [`MAP.md`](./MAP.md) §1
+
+```bash
+bun ai:smoke        # hit OpenAI directly with the ids in modelRegistry.ts (no DB, no dev server)
+bun db:seed-tokens  # top a local ClientSite up to 50k tokens so the generate-article cron picks it up
 ```
 
 **Build**
 
 ```bash
-bun run build  # server build (zenstack generate + prisma deploy + nuxt build)
-bun generate   # static site generation
-bun preview    # preview production build
+bun run build   # server build (zenstack generate + prisma deploy + nuxt build)
+bun build:docker # container build (skips prisma deploy — see Dockerfile)
+bun generate    # static site generation
+bun preview     # preview production build
 ```
 
 ## 🧪 Testing
+
+Run `bun zenstack:generate` first on a fresh checkout — part of the suite imports the generated
+`shared/zod` models, and those tests fail to load without it. No database is required.
 
 ```bash
 bun test           # run vitest once
@@ -129,6 +147,7 @@ bun fmt            # lint:fix + prettier:fix
 - **Vue SFC order:** `<template>` first, then `<script setup lang="ts">`, then `<style>` (avoid `<style>` blocks whenever possible — prefer pure UnoCSS).
 - **Server API:** prefer the ZenStack-enhanced client (`getEnhancedPrisma(user)`) over raw `prisma` so access policies from `schema.zmodel` are enforced — fall back to raw `prisma` only when policies must be bypassed intentionally.
 - **Error responses:** use `createError({ statusCode, message })` with i18n keys via `useServerI18n` where applicable.
+- **Naming & comments:** name things after what they literally are (mirror the domain vocabulary), skip ceremony words (`enforce…Invariant`, `…Handler`, `…Manager`), and keep a comment only when it says something the code cannot. Architectural prose belongs in `MAP.md`.
 - **Don't "modernize" without reason** — keep changes terse and scoped to the task; refactors require explicit approval.
 - Significant changes should be covered by Vitest tests.
 

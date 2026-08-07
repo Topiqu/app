@@ -9,14 +9,18 @@ now:
   - 🛑 AWS Comprehend integration
   - 🛑 dynamic pricing (clientpreferences)
   - 🛑 move Stripe / AWS / xAI / Upstash / LinkedIn / Giphy from NW to personal acc
-  - 🛑 Sentry/Better Stack: add keys to Vercel + CI secret (NUXT_PUBLIC_SENTRY_DSN + SENTRY_URL/ORG/PROJECT/AUTH_TOKEN ; BETTERSTACK_SOURCE_TOKEN=2qYuohMH4XKWEgi9MeJczhS6 + BETTERSTACK_INGEST_HOST=s2479774.eu-fsn-3.betterstackdata.com)
-  - 🟡 Better Stack: BLOCKED on live domain — enable uptime monitor (topiqu.com/api/health, keyword "status":"ok") + create 4 heartbeats (publish-check 10m / generate-article daily / sentiment-analysis 30m / community-insights 1h), then put ping URLs in BETTERSTACK_HEARTBEAT_* env
+  - 🛑 Sentry/Better Stack: add keys to Dokploy env (build args/secrets — SENTRY_AUTH_TOKEN must be a Build Secret, not a Build Arg) + CI secret (NUXT_PUBLIC_SENTRY_DSN + SENTRY_URL/ORG/PROJECT/AUTH_TOKEN ; BETTERSTACK_SOURCE_TOKEN=2qYuohMH4XKWEgi9MeJczhS6 + BETTERSTACK_INGEST_HOST=s2479774.eu-fsn-3.betterstackdata.com)
+  - 🛑 Better Stack: UNBLOCKED (live domain since the Dokploy cutover) — enable uptime monitor on app.topiqu.com/api/health, keyword "status":"ok" (NOT topiqu.com — the apex is the separate landing project and has no /api/health) + create heartbeats for all SIX tasks now that they actually fire natively (publish-check 10m / generate-article daily / sentiment-analysis 30m / community-insights daily / translate-pending 5m / gam-sync daily), then put ping URLs in BETTERSTACK_HEARTBEAT_* env
   - 🟡 Better Stack: BLOCKED on heartbeat URLs — wire withHeartbeat() into the 4 server/tasks (helper ready in server/utils/monitoring.ts, no-op without env)
   - 🟡 Stripe integration for token refill
   - 🟡 AI Inolvement with article (cron based = fully AI, AI generated/enhanced = partially AI, no AI used = 100% human)
   - 🟢 replace sweetalert modals with custom ModalMini component
   - 🟢 implement in clientpreferences humanHourlyRate / humanWordsPerHour
-  - 🟡 per-account login lockout (BLOCKED on KV/Redis) — email-keyed exp. backoff + Turnstile on auth/callback/credentials + users/totp; per-IP rate-limit alone is botnet/proxy-bypassable
+  - 🛑 cache is dead in prod — the Vercel Upstash marketplace integration died with the Vercel project, so UPSTASH_REDIS_REST_* are gone and cached() silently degrades to a direct call on every request (server/utils/cache.ts:15 warns once at startup). Fix = add Valkey to the Dokploy stack (valkey/valkey:8.1-alpine, --maxmemory-policy volatile-lru --save "", port unpublished) + rewrite cache.ts onto ioredis/REDIS_URL + bun remove @upstash/redis. WATCH: ioredis does NOT auto-JSON like Upstash — the client wrapper must own stringify/parse or cached() stores "[object Object]"
+  - 🛑 verify APP_ENV in the running container — nuxt.config.ts:3 is APP_ENV || VERCEL_ENV || NODE_ENV || 'development'; VERCEL_ENV is gone and the Dockerfile sets NODE_ENV=production only in the prerelease stage, which release (FROM base) does not inherit. If it resolved to 'development' we're paying 5× Sentry traces (1.0 vs 0.2), losing session replays, and tagging prod errors as environment=development. Check: docker exec <c> printenv | grep -E "APP_ENV|NODE_ENV"
+  - 🛑 delete vercel.json — dead weight since cutover; if the manifest.webmanifest / sitemap.xml content-type overrides still matter, re-express them as nitro routeRules first
+  - 🟡 document the wildcard TLS mechanism for *.topiqu.com in MAP.md §4 (Cloudflare Origin CA / DNS-01 / tunnel?) — it works, but nothing records how
+  - 🟡 per-account login lockout (was BLOCKED on KV/Redis — unblocks as soon as Valkey lands) — email-keyed exp. backoff + Turnstile on auth/callback/credentials + users/totp; per-IP rate-limit alone is botnet/proxy-bypassable
 ---
 test:
   - 🛑 google ads
@@ -76,8 +80,9 @@ future:
   - 🟢 better gamification - badges, levels, site activity points
 ---
 queue (SQS migration):
-  - 🛑 serverless → self-hosted migration — see MIGRATION.md (phased: Phase 0 decouple in-place / Phase 1 containerize+cutover / Phase 2 reclaim push+workers / Phase 3 scale-out). First commit = server/utils/redis.ts + queue.ts abstractions w tests
-  - 🛑 decide: 1 web replica vs N (affects SNS fanout) + deploy target (ECS/EC2/VPS)
+  - ✅ serverless → self-hosted migration DONE (Dokploy/VPS, 2026-08) — MIGRATION.md deleted, runtime facts now in MAP.md §1/§4/§8
+  - 🛑 decide: 1 web replica vs N — BLOCKING before anyone scales web in Dokploy: all 6 nitro scheduledTasks now fire natively PER REPLICA, so 2 replicas = 2 generated articles + double-counted gam-sync revenue. Options: pin web=1 / move tasks to single-replica worker / swap for Dokploy Schedule Jobs + CRON_SECRET endpoint
+  - 🛑 decide: queue in Redis Streams vs Postgres SKIP LOCKED — ArticleJob/PdfJob are Prisma models and PG is already managed+backed up; Streams adds a second stateful system and forces persistence config on the cache instance. Decide before writing queue.ts
   - 🛑 server/utils/queue.ts abstraction (SQS + in-memory) + LocalStack in docker-compose
   - 🛑 Prisma models: ArticleJob, PdfJob
   - 🛑 server/worker.ts entrypoint (4 paralelní pollery)
