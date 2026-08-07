@@ -37,6 +37,25 @@
 
       <div class="ml-auto flex items-center gap-2">
         <Button
+          v-if="translationsEnabled"
+          variant="secondary"
+          size="sm"
+          icon="mdi:translate"
+          class="max-sm:px-2!"
+          :aria="$t('articles.translations.jump')"
+          :title="$t('articles.translations.jump')"
+          @click="scrollToTranslations"
+        >
+          <span class="max-sm:hidden">{{ $t('articles.translations.title') }}</span>
+          <span
+            v-if="translationReviewCount"
+            class="min-w-4 px-1 rounded-full text-[10px] font-semibold leading-4 bg-amber-500 text-white"
+          >
+            {{ translationReviewCount }}
+          </span>
+        </Button>
+
+        <Button
           v-if="isNew || editedArticle.status === 'draft'"
           variant="secondary"
           icon="mdi:content-save-outline"
@@ -125,10 +144,11 @@
 
       <TiptapEditor v-model="editedArticle.content" edit contentClass="min-h-[60vh]" />
 
-      <template v-if="!isNew && article?.id">
+      <!-- scroll-mt clears both sticky bars (4rem global header + 4rem page header) -->
+      <div v-if="!isNew && article?.id" ref="translationsSection" class="flex flex-col gap-5 scroll-mt-36">
         <hr class="border-gray-200 dark:border-gray-800" />
         <LazyArticleTranslations :articleId="article.id" />
-      </template>
+      </div>
     </main>
 
     <LazyArticleDrafts
@@ -223,6 +243,12 @@ if (!isNew) {
     router.push(localePath({ name: 'admin' }))
   }
 }
+
+// The panel sits below an unbounded editor body, so this is the only always-visible hint it exists.
+const { reviewCount: translationReviewCount, enabled: translationsEnabled } = useArticleTranslations(article.value?.id)
+
+const translationsSection = useTemplateRef<HTMLElement>('translationsSection')
+const scrollToTranslations = () => translationsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
 const { textarea: titleRef, input: titleText } = useTextareaAutosize({ styleProp: 'minHeight' })
 const { textarea: excerptRef, input: excerptText } = useTextareaAutosize({ styleProp: 'minHeight' })

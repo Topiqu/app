@@ -49,6 +49,13 @@
 - If presented with a suboptimal or incorrect approach, you **MUST** challenge it constructively and propose better alternatives.
 - Avoid writing your own <style> block; prefer pure UnoCSS approach.
 
+### Naming & Comments (keep it short)
+
+- **Name things after what they literally are.** Mirror the domain vocabulary — if the enum says `CUSTOM`, the predicate is `isCustomPlan`, not `isAlaCartePlan`. Inventing a synonym forces every reader to map your word back onto the value they can already see.
+- **No ceremony words.** `enforce…Invariant`, `…Handler`, `…Manager`, `…Helper`, `perform…`, `…Wrapper` add length without meaning. `enforceAutoReleaseInvariant` → `syncAutoRelease`. Prefer the shortest name that stays accurate — but do not trade accuracy for brevity (a function that conditionally clears a flag is not `blockAutoRelease`).
+- **A comment earns its place by saying what the code cannot.** Keep the non-obvious fact, the hazard, the reason a clause that looks redundant isn't. Delete anything that paraphrases the signature or restates the name.
+- **Prose belongs in `MAP.md`.** Architectural narrative, rationale for a design, history of a bug — those go in `MAP.md`, not in a JSDoc block above every function. A 9-line comment above a 4-line function is a smell; 2–3 lines is usually the ceiling.
+
 ## Security (ALWAYS-ON MINDSET)
 
 Treat every change through an OWASP lens. In this codebase the #1 risk class is **Broken Access Control**, not injection — guard it relentlessly.
