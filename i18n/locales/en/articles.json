@@ -106,7 +106,8 @@
       "reviewQueue": {
         "title": "Nothing awaiting review | {count} translation awaiting review | {count} translations awaiting review",
         "desc": "Hybrid mode holds machine translations back until you approve them. Open the article to review and publish."
-      }
+      },
+      "viewLive": "View live page"
     },
     "explore": "Explore articles",
     "votes": "Votes",
@@ -183,7 +184,8 @@
       "status": "Status",
       "date": "Date",
       "actions": "Actions",
-      "createdAt": "Created At"
+      "createdAt": "Created At",
+      "languages": "Languages"
     },
     "sources": {
       "placeholder": "Source link (https://...)",
@@ -405,6 +407,12 @@
       "searchTags": "Find or create a tag…",
       "createTag": "Create “{name}”",
       "publishImmediately": "Immediately"
+    },
+    "messages": {
+      "archivedCannotEdit": "Archived articles cannot be edited",
+      "statusChangeFailed": "Could not change the status",
+      "deleteSuccess": "Article deleted",
+      "deleteFailed": "Could not delete the article"
     }
   }
 }

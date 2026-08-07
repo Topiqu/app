@@ -42,6 +42,9 @@ export default defineEventHandler(async (event: H3Event) => {
       orderBy: { createdAt: 'desc' },
       skip,
       take,
+      // Feeds the admin table's language column. Drafts are visible here on purpose — this is
+      // the owning admin's own list, and "awaiting review" is the whole point of the column.
+      include: { translations: { select: { language: true, status: true, slug: true } } },
     }),
     db.article.count({
       where: {

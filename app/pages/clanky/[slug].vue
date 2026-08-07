@@ -54,6 +54,9 @@
           @follow="toggleFollow"
         />
 
+        <!-- Only renders with a real published translation, so a language here never falls back. -->
+        <ArticleLanguageLinks v-if="hasTranslations" class="mt-4" :links="alternates" :current="data.language" />
+
         <div v-if="hasTags" class="mt-4 flex flex-wrap gap-2.5">
           <NuxtLink
             v-for="t in data.tags"
