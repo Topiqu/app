@@ -1,12 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
+  annualFromMonthly,
+  billableFeatureWhere,
   billableMonthlyTotal,
+  syncAutoRelease,
   getAllowedFeatures,
   getDependents,
   getMissingDependencies,
-  isAlaCartePlan,
+  isCustomPlan,
   planFeatureSync,
+  recalcFeatureBilling,
 } from '../../../server/utils/planFeatures'
 
 describe('getAllowedFeatures', () => {
@@ -107,11 +111,113 @@ describe('planFeatureSync (plan grant provisioning)', () => {
   })
 })
 
-describe('isAlaCartePlan', () => {
+describe('annualFromMonthly', () => {
+  it('applies the 20 % annual discount', () => {
+    expect(annualFromMonthly(100, 'ANNUAL')).toBe(960)
+  })
+
+  it('is a plain ×12 on monthly and permanent billing', () => {
+    expect(annualFromMonthly(100, 'MONTHLY')).toBe(1200)
+    expect(annualFromMonthly(0, 'PERMANENT')).toBe(0)
+  })
+
+  it('rounds rather than leaking fractional currency', () => {
+    expect(Number.isInteger(annualFromMonthly(29, 'ANNUAL'))).toBe(true)
+  })
+})
+
+describe('billableFeatureWhere', () => {
+  const now = new Date('2026-08-07T00:00:00.000Z')
+
+  // Plan-granted rows carry `billingLockedUntil = now` (the window is meaningless for an
+  // included feature), so filtering on the window alone billed a PREMIUM→CUSTOM tenant
+  // nothing for the three features they kept.
+  it('bills a feature that is on, regardless of an expired lock window', () => {
+    expect(billableFeatureWhere('cs1', now).OR).toContainEqual({ isActive: true })
+  })
+
+  it('still bills a switched-off feature inside its anti-gaming window', () => {
+    expect(billableFeatureWhere('cs1', now).OR).toContainEqual({ billingLockedUntil: { gt: now } })
+  })
+
+  it('scopes to the tenant', () => {
+    expect(billableFeatureWhere('cs1', now).clientSiteId).toBe('cs1')
+  })
+})
+
+describe('syncAutoRelease', () => {
+  const makeTx = () => ({ clientSite: { updateMany: vi.fn(async () => ({ count: 1 })) } })
+
+  it('switches autoRelease off once scheduled generation is gone', async () => {
+    const tx = makeTx()
+    await syncAutoRelease(tx as any, 'cs1', ['AI'])
+
+    expect(tx.clientSite.updateMany).toHaveBeenCalledWith({
+      where: { id: 'cs1', autoRelease: true },
+      data: { autoRelease: false },
+    })
+  })
+
+  it('leaves autoRelease alone while ARTICLE_CRONS is active', async () => {
+    const tx = makeTx()
+    await syncAutoRelease(tx as any, 'cs1', ['AI', 'ARTICLE_CRONS'])
+
+    expect(tx.clientSite.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('clears it on a full revocation', async () => {
+    const tx = makeTx()
+    await syncAutoRelease(tx as any, 'cs1', [])
+
+    expect(tx.clientSite.updateMany).toHaveBeenCalled()
+  })
+})
+
+describe('recalcFeatureBilling', () => {
+  const now = new Date('2026-08-07T00:00:00.000Z')
+
+  const makeTx = (billed: Array<{ feature: { priceMonthly: number } }> = []) => ({
+    clientFeature: { findMany: vi.fn(async () => billed) },
+    clientSite: { updateMany: vi.fn(async () => ({ count: 1 })) },
+  })
+
+  it('bills a CUSTOM tenant for every feature still switched on', async () => {
+    const tx = makeTx([{ feature: { priceMonthly: 20 } }, { feature: { priceMonthly: 9 } }])
+    const result = await recalcFeatureBilling(tx as any, 'cs1', 'CUSTOM', 'MONTHLY', now)
+
+    expect(result).toEqual({ monthlyPayment: 29, annualPayment: 348 })
+    expect(tx.clientFeature.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: billableFeatureWhere('cs1', now) }),
+    )
+  })
+
+  it('zeroes the stored price on a plan downgrade — the plan itself is the Stripe charge', async () => {
+    const tx = makeTx([{ feature: { priceMonthly: 20 } }])
+    const result = await recalcFeatureBilling(tx as any, 'cs1', 'BASIC', 'MONTHLY', now)
+
+    expect(result).toEqual({ monthlyPayment: 0, annualPayment: 0 })
+    expect(tx.clientFeature.findMany).not.toHaveBeenCalled()
+    expect(tx.clientSite.updateMany).toHaveBeenCalledWith({
+      where: { id: 'cs1' },
+      data: { monthlyPayment: 0, annualPayment: 0 },
+    })
+  })
+
+  it('comps a PERMANENT CUSTOM contract to zero', async () => {
+    const tx = makeTx([{ feature: { priceMonthly: 20 } }])
+
+    expect(await recalcFeatureBilling(tx as any, 'cs1', 'CUSTOM', 'PERMANENT', now)).toEqual({
+      monthlyPayment: 0,
+      annualPayment: 0,
+    })
+  })
+})
+
+describe('isCustomPlan', () => {
   it('only CUSTOM is à la carte', () => {
-    expect(isAlaCartePlan('CUSTOM')).toBe(true)
-    expect(isAlaCartePlan('PRO')).toBe(false)
-    expect(isAlaCartePlan('PREMIUM')).toBe(false)
-    expect(isAlaCartePlan('BASIC')).toBe(false)
+    expect(isCustomPlan('CUSTOM')).toBe(true)
+    expect(isCustomPlan('PRO')).toBe(false)
+    expect(isCustomPlan('PREMIUM')).toBe(false)
+    expect(isCustomPlan('BASIC')).toBe(false)
   })
 })

@@ -8,6 +8,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid id or plan' })
   }
 
-  await prisma.clientSite.update({ where: { id: body.id }, data: { plan: body.plan as (typeof PLANS)[number] } })
+  const plan = body.plan as (typeof PLANS)[number]
+  const id = body.id
+
+  // Same transition path as the Stripe webhook / superadmin edit, or a locally switched
+  // plan leaves features and billing behind and dev stops reproducing production.
+  await prisma.$transaction(async (tx) => {
+    await tx.clientSite.update({ where: { id }, data: { plan } })
+    await syncPlanFeatures(tx, id, plan)
+  })
+
   return { ok: true }
 })

@@ -101,29 +101,19 @@ export default defineEventHandler(async (event) => {
         where: { clientSiteId: clientId, isActive: true },
         select: { feature: { select: { code: true } } },
       })
-      .then((r) => r.map((x) => x.feature.code))
+      .then((r) => r.map((x) => x.feature.code as FeatureCode))
 
-    let monthlyTotal = 0
-    if (isAlaCartePlan(before.plan)) {
-      const billed = await tx.clientFeature.findMany({
-        where: { clientSiteId: clientId, billingLockedUntil: { gt: now } },
-        include: { feature: { select: { priceMonthly: true } } },
-      })
-      monthlyTotal = billableMonthlyTotal(
-        before.plan,
-        before.billingPlan,
-        billed.map((cf) => cf.feature.priceMonthly),
-      )
-    }
+    await syncAutoRelease(tx, clientId, activeFeatures)
 
-    const annualTotal = before.billingPlan === 'ANNUAL' ? Math.round(monthlyTotal * 12 * 0.8) : monthlyTotal * 12
+    const { monthlyPayment, annualPayment } = await recalcFeatureBilling(
+      tx,
+      clientId,
+      before.plan,
+      before.billingPlan,
+      now,
+    )
 
-    await tx.clientSite.update({
-      where: { id: clientId },
-      data: { monthlyPayment: monthlyTotal, annualPayment: annualTotal },
-    })
-
-    return { activeFeatures, monthlyPayment: monthlyTotal, annualPayment: annualTotal }
+    return { activeFeatures, monthlyPayment, annualPayment }
   })
 
   await logAction({
