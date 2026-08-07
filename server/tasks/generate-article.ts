@@ -198,6 +198,7 @@ const processClient = async (client: any) => {
 
   if (status === 'published') {
     await syncArticleTranslationQueue(prisma, article.id, clientSiteId)
+    await invalidateFeed(clientSiteId)
 
     await logAction({
       action: 'CRON_ARTICLE_PUBLISHED',
@@ -299,7 +300,7 @@ export default defineMonitoredTask({
     description: 'Generates articles using AI',
   },
   async run() {
-    const now = Date.now()
+    const now = new Date()
 
     const clients = await prisma.clientSite.findMany({
       select: {
@@ -325,11 +326,11 @@ export default defineMonitoredTask({
           { lastGeneratedAt: null },
           {
             generationFrequency: 'DAILY',
-            lastGeneratedAt: { lte: new Date(now - 24 * 60 * 60 * 1000) },
+            lastGeneratedAt: { lte: generationDueBefore(now, 'DAILY') },
           },
           {
             generationFrequency: 'WEEKLY',
-            lastGeneratedAt: { lte: new Date(now - 7 * 24 * 60 * 60 * 1000) },
+            lastGeneratedAt: { lte: generationDueBefore(now, 'WEEKLY') },
           },
         ],
       },
@@ -342,6 +343,6 @@ export default defineMonitoredTask({
       await Promise.allSettled(batch.map(processClient))
     }
 
-    return { result: { count: clients.length, timestamp: new Date(now).toISOString() } }
+    return { result: { count: clients.length, timestamp: now.toISOString() } }
   },
 })
