@@ -1,7 +1,48 @@
+import { createRequire } from 'node:module'
+import { defineNuxtModule } from 'nuxt/kit'
+
 import { IMAGE_HOSTS } from './shared/utils/imageHosts'
 
 const APP_ENV = process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
 const IS_PROD = APP_ENV === 'production'
+const IS_BROWSER_TEST = Boolean(process.env.TEST_DATABASE_URL)
+const USE_PRODUCTION_SECURITY = IS_PROD && !IS_BROWSER_TEST
+const SITE_URL = (() => {
+  try {
+    return new URL(process.env.NUXT_PUBLIC_SITE_URL || 'https://topiqu.com').origin
+  } catch {
+    return 'https://topiqu.com'
+  }
+})()
+
+// Nuxt 4.4 ships its Volar plugins with its private Vue Router 5 dependency,
+// while the application intentionally keeps Vue Router 4 as its public runtime API.
+const requireFromNuxt = createRequire(createRequire(import.meta.url).resolve('nuxt/package.json'))
+const routerVolarPlugins = {
+  'vue-router/volar/sfc-route-blocks': requireFromNuxt.resolve('vue-router/volar/sfc-route-blocks'),
+  'vue-router/volar/sfc-typed-router': requireFromNuxt.resolve('vue-router/volar/sfc-typed-router'),
+}
+const routerVolarBridge = defineNuxtModule({
+  meta: { name: 'topiqu-router-volar-bridge' },
+  setup(_options, nuxt) {
+    nuxt.hook('modules:done', () => {
+      nuxt.hook('prepare:types', ({ tsConfig }) => {
+        const plugins = tsConfig.vueCompilerOptions?.plugins
+        if (!plugins) return
+
+        tsConfig.vueCompilerOptions!.plugins = plugins.map((plugin) => {
+          if (typeof plugin === 'string') return routerVolarPlugins[plugin as keyof typeof routerVolarPlugins] ?? plugin
+          if (plugin && typeof plugin === 'object' && 'name' in plugin) {
+            const name = String(plugin.name)
+            const resolved = routerVolarPlugins[name as keyof typeof routerVolarPlugins]
+            return resolved ? { ...plugin, name: resolved } : plugin
+          }
+          return plugin
+        })
+      })
+    })
+  },
+})
 
 const CONSENT_REGIONS = [
   'AT',
@@ -52,7 +93,7 @@ const CONSENT_DEFAULT = {
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
 
-  devtools: { enabled: true },
+  devtools: { enabled: !IS_BROWSER_TEST },
   experimental: {
     typedPages: true,
   },
@@ -63,8 +104,10 @@ export default defineNuxtConfig({
     public: {
       appVersion: '1.0.0 beta',
       appEnv: APP_ENV,
+      browserTest: IS_BROWSER_TEST,
       cdnUrl: process.env.CDN_URL || 'https://cdn.topiqu.com',
       baseDomain: process.env.BASE_DOMAIN || 'topiqu.com',
+      baseUrl: SITE_URL,
       turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || '',
       sentry: {
         dsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',
@@ -105,24 +148,23 @@ export default defineNuxtConfig({
       tasks: true,
       asyncContext: true,
     },
-    scheduledTasks: {
-      '*/10 * * * *': ['publish-check'],
-      '0 15 * * *': ['generate-article'],
-      '*/30 * * * *': ['sentiment-analysis'],
-      '0 3 * * *': ['community-insights'],
-      '*/5 * * * *': ['translate-pending'],
-      '0 4 * * *': ['gam-sync'],
-    },
+    scheduledTasks: IS_PROD
+      ? {
+          '*/10 * * * *': ['publish-check'],
+          '0 15 * * *': ['generate-article'],
+          '*/30 * * * *': ['sentiment-analysis'],
+          '0 3 * * *': ['community-insights'],
+          '*/5 * * * *': ['translate-pending'],
+          '0 4 * * *': ['gam-sync'],
+        }
+      : undefined,
     preset: 'bun',
     imports: {
-      presets: [
-        { from: 'zod', imports: [{ name: 'z' }] },
-        { from: '#auth', imports: ['getServerSession'] },
-      ],
+      presets: [{ from: '#auth', imports: ['getServerSession'] }],
       dirs: ['shared/zod/models', 'server/utils', '#auth'],
     },
     externals: {
-      inline: ['html-encoding-sniffer', '@exodus/bytes'],
+      inline: ['html-encoding-sniffer', '@exodus/bytes', 'uncrypto', '@upstash/redis', 'vue', '@vue/server-renderer'],
     },
     serverAssets: [
       { baseName: 'emails:locales', dir: '../emails/locales' },
@@ -132,10 +174,12 @@ export default defineNuxtConfig({
   },
 
   imports: {
-    presets: [{ from: 'zod', imports: [{ name: 'z' }] }],
     dirs: ['shared/zod/models', 'utils', '#auth', 'server/shared/consts'],
   },
   vite: {
+    optimizeDeps: {
+      include: ['@fingerprintjs/fingerprintjs', 'chart.js', 'fast-deep-equal', 'vue-chartjs', 'vue-qrcode-reader'],
+    },
     resolve: {
       alias: {
         '.prisma/client/index-browser': './node_modules/@prisma/client/index-browser.js',
@@ -145,15 +189,13 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/eslint',
+    '@nuxt/ui',
     '@nuxtjs/i18n',
-    '@nuxt/fonts',
-    '@nuxt/icon',
     '@nuxt/image',
     '@nuxt/scripts',
     '@nuxtjs/seo',
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
-    '@unocss/nuxt',
     '@vueuse/nuxt',
     '@vueuse/motion/nuxt',
     '@sidebase/nuxt-auth',
@@ -161,11 +203,10 @@ export default defineNuxtConfig({
     '@unlok-co/nuxt-stripe',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-security',
-    'nuxt-og-image',
-    'nuxt-toast',
     'nuxt-qrcode',
     'nuxt-gtag',
     '@sentry/nuxt/module',
+    routerVolarBridge,
   ],
 
   gtag: {
@@ -183,6 +224,7 @@ export default defineNuxtConfig({
 
   sourcemap: { client: 'hidden' },
   ogImage: {
+    enabled: IS_PROD,
     debug: process.env.NODE_ENV === 'development',
     runtimeCacheStorage: true,
   },
@@ -203,7 +245,47 @@ export default defineNuxtConfig({
 
   eslint: { config: { typescript: true } },
 
-  css: ['~/assets/styles/base.scss'],
+  css: ['~/assets/styles/main.css'],
+
+  icon: {
+    provider: 'none',
+    clientBundle: {
+      icons: [
+        'mdi:arrow-down',
+        'mdi:check-all',
+        'mdi:chevron-down',
+        'mdi:chevron-double-left',
+        'mdi:chevron-double-right',
+        'mdi:chevron-left',
+        'mdi:chevron-right',
+        'mdi:chevron-up',
+        'mdi:dots-horizontal',
+        'mdi:file-outline',
+        'mdi:folder-open-outline',
+        'mdi:folder-outline',
+        'mdi:format-align-center',
+        'mdi:format-align-justify',
+        'mdi:format-align-left',
+        'mdi:format-align-right',
+        'mdi:lightbulb-outline',
+        'mdi:monitor',
+        'mdi:open-in-new',
+        'mdi:page-layout-sidebar-left',
+        'mdi:pound',
+        'mdi:upload',
+        'mdi:weather-night',
+        'mdi:weather-sunny',
+      ],
+      scan: true,
+    },
+  },
+
+  colorMode: {
+    classSuffix: '',
+    preference: 'system',
+    fallback: 'light',
+    storageKey: 'topiqu-color-mode',
+  },
 
   stripe: {
     client: { key: process.env.STRIPE_PK, options: { locale: 'cs' } },
@@ -227,14 +309,16 @@ export default defineNuxtConfig({
   security: {
     rateLimiter: {
       interval: 10 * 1000,
-      tokensPerInterval: 70,
+      tokensPerInterval: IS_BROWSER_TEST ? 10_000 : 300,
     },
     headers: {
       referrerPolicy: 'origin',
       xFrameOptions: false,
+      strictTransportSecurity: USE_PRODUCTION_SECURITY ? { maxAge: 15_552_000, includeSubdomains: true } : false,
       crossOriginEmbedderPolicy: false,
       crossOriginOpenerPolicy: 'unsafe-none',
       contentSecurityPolicy: {
+        'upgrade-insecure-requests': USE_PRODUCTION_SECURITY,
         'img-src': ["'self'", 'data:', 'blob:', 'https:', 'https://wsrv.nl'],
         'frame-src': [
           "'self'",
@@ -289,18 +373,19 @@ export default defineNuxtConfig({
       security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 60 * 1000 } },
     },
     '/api/auth/callback/credentials': {
-      security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 1000 } },
+      security: { rateLimiter: { tokensPerInterval: IS_BROWSER_TEST ? 10_000 : 10, interval: 60 * 1000 } },
     },
     '/api/users/totp': {
       security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 1000 } },
     },
   },
   i18n: {
+    baseUrl: SITE_URL,
     langDir: 'locales/',
     locales: [
       {
         code: 'en',
-        iso: 'en-US',
+        language: 'en-US',
         name: 'EN',
         files: [
           'en/common.json',
@@ -322,7 +407,7 @@ export default defineNuxtConfig({
       },
       {
         code: 'cs',
-        iso: 'cs-CZ',
+        language: 'cs-CZ',
         name: 'CZ',
         files: [
           'cs/common.json',
@@ -343,7 +428,7 @@ export default defineNuxtConfig({
         ],
       },
     ],
-    vueI18n: './i18n/i18n.config.ts',
+    vueI18n: './i18n.config.ts',
     defaultLocale: 'en',
     strategy: 'prefix',
     detectBrowserLanguage: {
@@ -397,6 +482,7 @@ export default defineNuxtConfig({
   },
 
   site: {
+    url: SITE_URL,
     name: 'Topiqu AI Blog',
     description: 'Moderní blogovací platforma poháněná AI',
     defaultLocale: 'cs',
