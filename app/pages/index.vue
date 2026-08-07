@@ -200,9 +200,12 @@ import { formatDate } from '~~/shared/utils'
 
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
+const { locale } = useI18n()
 const clientSite = await useClientSite()
 
-const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`)
+const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
+  query: { locale },
+})
 const page = shallowRef<number>(1)
 const limit = shallowRef<number>(15)
 const selectedTag = shallowRef<string>('')
@@ -211,6 +214,7 @@ const searchQuery = shallowRef<string>('')
 const query = computed(() => ({
   page: page.value,
   limit: limit.value,
+  locale: locale.value,
   ...(selectedTag.value ? { tag: selectedTag.value } : {}),
   ...(searchQuery.value ? { query: searchQuery.value } : {}),
 }))
