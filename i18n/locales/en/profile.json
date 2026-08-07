@@ -59,7 +59,8 @@
       "notificationsUpdateSuccess": "Notification settings saved",
       "notificationsUpdateError": "Failed to save notifications",
       "followSuccess": "You're now following {0}",
-      "unfollowSuccess": "You've stopped following {0}"
+      "unfollowSuccess": "You've stopped following {0}",
+      "followFailed": "Could not follow this author"
     },
     "checks": {
       "emailVerified": "Email is verified",
