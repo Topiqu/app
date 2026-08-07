@@ -4,10 +4,12 @@ export default defineEventHandler(async (event) => {
   const name = decodeURIComponent(getRouterParam(event, 'slug')!).trim()
   if (!name) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
+  const locale = getQuery(event).locale as string | undefined
+
   const db = await getEnhancedPrisma(user)
   const clientSite = await db.clientSite.findUnique({
     where: { name },
-    select: { id: true },
+    select: { id: true, language: true },
   })
 
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
@@ -39,7 +41,13 @@ export default defineEventHandler(async (event) => {
     return bScore - aScore || b.createdAt.getTime() - a.createdAt.getTime()
   })
 
-  const [featured, ...recommended] = sortedArticles.length ? sortedArticles.slice(0, 3) : sortedArticles
+  const localized = await localizeArticles(db, sortedArticles.slice(0, 3), {
+    clientSiteId: clientSite.id,
+    locale,
+    primaryLanguage: clientSite.language,
+  })
+
+  const [featured, ...recommended] = localized
 
   return { featured, recommended, totalArticles }
 })

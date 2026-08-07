@@ -20,7 +20,10 @@
           {{ isNew ? $t('articles.addArticle') : $t('articles.updateArticle') }}
         </h1>
         <div class="flex items-center gap-2 min-w-0">
-          <ArticleStatusPill :status="editedArticle.status" />
+          <ArticleStatusPill v-if="tr.isSource" :status="editedArticle.status" />
+          <span v-else class="px-2 py-0.5 rounded-full text-[11px] font-medium" :class="translationBadge">
+            {{ $t(`articles.translations.status.${tr.active?.status ?? 'MISSING'}`) }}
+          </span>
           <span
             v-if="autosaveVisible"
             class="hidden sm:flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400"
@@ -36,63 +39,139 @@
       </div>
 
       <div class="ml-auto flex items-center gap-2">
-        <Button
-          v-if="translationsEnabled"
-          variant="secondary"
-          size="sm"
-          icon="mdi:translate"
-          class="max-sm:px-2!"
-          :aria="$t('articles.translations.jump')"
-          :title="$t('articles.translations.jump')"
-          @click="scrollToTranslations"
-        >
-          <span class="max-sm:hidden">{{ $t('articles.translations.title') }}</span>
-          <span
-            v-if="translationReviewCount"
-            class="min-w-4 px-1 rounded-full text-[10px] font-semibold leading-4 bg-amber-500 text-white"
+        <ArticleEditorLanguageTabs
+          v-if="tr.enabled"
+          v-model="tr.activeLang"
+          class="max-sm:hidden"
+          :primaryLanguage="primaryLanguage"
+          :targetLanguages="tr.targetLanguages"
+          :byLanguage="tr.byLanguage"
+        />
+
+        <template v-if="tr.isSource">
+          <Button
+            v-if="isNew || editedArticle.status === 'draft'"
+            variant="secondary"
+            icon="mdi:content-save-outline"
+            class="max-sm:px-2!"
+            :disabled="!editedArticle.title || submitting"
+            @click="submit('draft')"
           >
-            {{ translationReviewCount }}
-          </span>
-        </Button>
+            <span class="max-sm:hidden">{{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}</span>
+          </Button>
 
-        <Button
-          v-if="isNew || editedArticle.status === 'draft'"
-          variant="secondary"
-          icon="mdi:content-save-outline"
-          class="max-sm:px-2!"
-          :disabled="!editedArticle.title || submitting"
-          @click="submit('draft')"
-        >
-          <span class="max-sm:hidden">{{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}</span>
-        </Button>
+          <Button
+            :disabled="!editedArticle.title || submitting"
+            :loading="submitting"
+            class="bg-indigo-600! hover:bg-indigo-700! text-white! border-transparent!"
+            @click="submit('published')"
+          >
+            {{ publishLabel }}
+          </Button>
+        </template>
 
-        <Button
-          :disabled="!editedArticle.title || submitting"
-          :loading="submitting"
-          class="bg-indigo-600! hover:bg-indigo-700! text-white! border-transparent!"
-          @click="submit('published')"
-        >
-          {{ publishLabel }}
-        </Button>
+        <template v-else>
+          <Button
+            v-if="tr.hasBody"
+            variant="secondary"
+            icon="mdi:content-save-outline"
+            class="max-sm:px-2!"
+            :disabled="!tr.isDirty"
+            :loading="tr.pending === 'save'"
+            @click="tr.save()"
+          >
+            <span class="max-sm:hidden">{{ $t('common.actions.save') }}</span>
+          </Button>
+
+          <Button
+            v-if="tr.hasBody && tr.active?.status !== 'PUBLISHED'"
+            :loading="tr.pending === 'publish'"
+            class="bg-indigo-600! hover:bg-indigo-700! text-white! border-transparent!"
+            @click="tr.save('PUBLISHED')"
+          >
+            {{ $t('articles.translations.actions.approve') }}
+          </Button>
+        </template>
       </div>
     </header>
 
-    <main class="flex flex-col min-w-0 gap-5">
-      <ArticleEditorAiComposer
-        :autofocus="route.query.ai === '1'"
-        @partial="applyAiPartial"
-        @image="applyAiImage"
-        @final="applyAiFinal"
-      />
+    <ArticleEditorLanguageTabs
+      v-if="tr.enabled"
+      v-model="tr.activeLang"
+      class="sm:hidden self-start mb-4"
+      :primaryLanguage="primaryLanguage"
+      :targetLanguages="tr.targetLanguages"
+      :byLanguage="tr.byLanguage"
+    />
 
-      <FileUploader
-        compact
-        type="article-image"
-        :imageUrl="editedArticle.imageUrl"
-        :maxWidth="3840"
-        :maxHeight="2160"
-        @upload="handleUpload"
-      />
+    <main class="flex flex-col min-w-0 gap-5">
+      <!-- Language-neutral surfaces belong to the article, so they only exist on the source tab. -->
+      <template v-if="tr.isSource">
+        <ArticleEditorAiComposer
+          :autofocus="route.query.ai === '1'"
+          @partial="applyAiPartial"
+          @image="applyAiImage"
+          @final="applyAiFinal"
+        />
+
+        <FileUploader
+          compact
+          type="article-image"
+          :imageUrl="editedArticle.imageUrl"
+          :maxWidth="3840"
+          :maxHeight="2160"
+          @upload="handleUpload"
+        />
+      </template>
+
+      <div
+        v-else
+        class="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-xs"
+      >
+        <span v-if="tr.active?.source" class="text-gray-500 dark:text-gray-400">
+          {{ $t(`articles.translations.source.${tr.active.source}`) }}
+        </span>
+        <AppTime
+          v-if="tr.active?.translatedAt"
+          :datetime="tr.active.translatedAt"
+          preset="shortDatetime"
+          class="text-gray-500 dark:text-gray-400"
+        />
+        <span v-if="tr.isDirty" class="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          {{ $t('articles.translations.unsaved') }}
+        </span>
+
+        <div class="ml-auto flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="neutral"
+            icon="mdi:auto-fix"
+            :loading="tr.pending === 'translate'"
+            @click="tr.translateNow()"
+          >
+            {{
+              tr.active
+                ? $t('articles.translations.actions.retranslate')
+                : $t('articles.translations.actions.translate')
+            }}
+          </Button>
+          <Button
+            v-if="tr.active"
+            size="sm"
+            variant="danger"
+            icon="mdi:trash-can-outline"
+            :loading="tr.pending === 'discard'"
+            @click="discardTranslationOpen = true"
+          >
+            {{ $t('articles.translations.actions.discard') }}
+          </Button>
+        </div>
+      </div>
+
+      <p v-if="!tr.isSource && tr.active?.error" class="text-xs text-red-600 dark:text-red-400">
+        {{ tr.active.error }}
+      </p>
 
       <div class="flex flex-col gap-4">
         <textarea
@@ -101,7 +180,7 @@
           rows="1"
           :placeholder="$t('common.labels.articleTitle')"
           :aria-label="$t('common.labels.articleTitle')"
-          class="w-full resize-none overflow-hidden break-words bg-transparent! border-none! rounded-none! px-0! py-0! text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15] placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0"
+          class="w-full resize-none overflow-hidden break-words bg-transparent! rounded-none! px-0! pt-0! pb-1! text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15] placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0 transition-colors border-x-0! border-t-0! border-b-2! border-solid! border-transparent! hover:border-gray-300! dark:hover:border-gray-700! focus:border-indigo-500!"
           @keydown.enter.prevent
         />
 
@@ -111,45 +190,56 @@
           rows="2"
           :placeholder="$t('common.labels.articleExcerpt')"
           :aria-label="$t('common.labels.articleExcerpt')"
-          class="w-full resize-none bg-transparent! border-none! rounded-none! px-0! py-0! text-lg leading-relaxed text-gray-600! dark:text-gray-300! placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0"
+          class="w-full resize-none bg-transparent! rounded-none! px-0! pt-0! pb-1! text-lg leading-relaxed text-gray-600! dark:text-gray-300! placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0 transition-colors border-x-0! border-t-0! border-b! border-solid! border-transparent! hover:border-gray-300! dark:hover:border-gray-700! focus:border-indigo-500!"
         />
 
         <div
-          v-if="editedArticle.slug || editedArticle.excerpt"
+          v-if="activeSlug || excerptText"
           class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 dark:text-gray-500"
         >
-          <span v-if="editedArticle.slug" class="inline-flex items-center gap-1 min-w-0">
+          <span v-if="activeSlug" class="inline-flex items-center gap-1 min-w-0">
             <Icon name="mdi:link-variant" class="w-3.5 h-3.5 shrink-0" />
-            <span class="truncate">/{{ editedArticle.slug }}</span>
+            <span class="truncate">/{{ activeSlug }}</span>
           </span>
-          <span v-if="editedArticle.excerpt" class="tabular-nums">
-            {{ editedArticle.excerpt.length }} {{ $t('articles.editor.toolbar.characters') }}
+          <span v-if="excerptText" class="tabular-nums">
+            {{ excerptText.length }} {{ $t('articles.editor.toolbar.characters') }}
           </span>
         </div>
       </div>
 
-      <ArticleEditorMetaBar
-        v-model:series="selectedSeries"
-        v-model:tags="articleTags"
-        v-model:releaseAt="editedArticle.releaseAt"
-      />
+      <template v-if="tr.isSource">
+        <ArticleEditorMetaBar
+          v-model:series="selectedSeries"
+          v-model:tags="articleTags"
+          v-model:releaseAt="editedArticle.releaseAt"
+        />
 
-      <div v-if="!article && drafts?.length" class="flex items-center">
-        <ArticleEditorChip icon="mdi:file-document-outline" @click="draftsOpen = true">
-          {{ $t('articles.editor.drafts.loadDrafts') }}
-        </ArticleEditorChip>
-      </div>
+        <div v-if="!article && drafts?.length" class="flex items-center">
+          <ArticleEditorChip icon="mdi:file-document-outline" @click="draftsOpen = true">
+            {{ $t('articles.editor.drafts.loadDrafts') }}
+          </ArticleEditorChip>
+        </div>
+      </template>
 
       <hr class="border-gray-200 dark:border-gray-800" />
 
-      <TiptapEditor v-model="editedArticle.content" edit contentClass="min-h-[60vh]" />
+      <TiptapEditor v-if="bodyEditable" v-model="bodyModel" edit contentClass="min-h-[60vh]" />
 
-      <!-- scroll-mt clears both sticky bars (4rem global header + 4rem page header) -->
-      <div v-if="!isNew && article?.id" ref="translationsSection" class="flex flex-col gap-5 scroll-mt-36">
-        <hr class="border-gray-200 dark:border-gray-800" />
-        <LazyArticleTranslations :articleId="article.id" />
-      </div>
+      <p v-else class="text-sm text-gray-500 dark:text-gray-400">
+        {{ $t(`articles.translations.empty.${tr.active?.status ?? 'MISSING'}`) }}
+      </p>
     </main>
+
+    <ModalMini
+      v-model:open="discardTranslationOpen"
+      icon="mdi:alert-circle-outline"
+      variant="danger"
+      :title="$t('articles.translations.discardTitle')"
+      :message="$t('articles.translations.discardMessage')"
+      :confirmText="$t('articles.translations.actions.discard')"
+      :cancelText="$t('common.actions.cancel')"
+      @confirm="tr.discard()"
+    />
 
     <LazyArticleDrafts
       v-model:open="draftsOpen"
@@ -178,6 +268,7 @@
 import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
+import { translationStatusBadge } from '~~/shared/utils/articleTranslations'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -244,11 +335,39 @@ if (!isNew) {
   }
 }
 
-// The panel sits below an unbounded editor body, so this is the only always-visible hint it exists.
-const { reviewCount: translationReviewCount, enabled: translationsEnabled } = useArticleTranslations(article.value?.id)
+// Language is a dimension of the article, not a separate screen: `tr.activeLang === ''` edits
+// the source, anything else edits that translation through the same fields.
+const tr = reactive(useArticleTranslations(article.value?.id))
+const primaryLanguage = clientSite?.language ?? 'en'
+const discardTranslationOpen = shallowRef(false)
 
-const translationsSection = useTemplateRef<HTMLElement>('translationsSection')
-const scrollToTranslations = () => translationsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+const translationBadge = computed(() => translationStatusBadge(tr.active?.status))
+const activeSlug = computed(() => (tr.isSource ? editedArticle.value.slug : (tr.active?.slug ?? '')))
+const bodyEditable = computed(() => tr.isSource || tr.hasBody)
+
+const bodyModel = computed({
+  get: () => (tr.isSource ? editedArticle.value.content : tr.draft.content),
+  set: (value: string) => {
+    if (tr.isSource) editedArticle.value.content = value
+    else tr.draft.content = value
+  },
+})
+
+const titleModel = computed({
+  get: () => (tr.isSource ? editedArticle.value.title : tr.draft.title),
+  set: (value: string) => {
+    if (tr.isSource) editedArticle.value.title = value
+    else tr.draft.title = value
+  },
+})
+
+const excerptModel = computed({
+  get: () => (tr.isSource ? editedArticle.value.excerpt : tr.draft.excerpt),
+  set: (value: string) => {
+    if (tr.isSource) editedArticle.value.excerpt = value
+    else tr.draft.excerpt = value
+  },
+})
 
 const { textarea: titleRef, input: titleText } = useTextareaAutosize({ styleProp: 'minHeight' })
 const { textarea: excerptRef, input: excerptText } = useTextareaAutosize({ styleProp: 'minHeight' })
@@ -256,19 +375,19 @@ const { textarea: excerptRef, input: excerptText } = useTextareaAutosize({ style
 watch(titleText, (value) => {
   const single = value.replace(/\s*\n+\s*/g, ' ')
   if (single !== value) titleText.value = single
-  editedArticle.value.title = single
+  titleModel.value = single
 })
 watch(
-  () => editedArticle.value.title,
+  titleModel,
   (value) => {
     if ((value ?? '') !== titleText.value) titleText.value = value ?? ''
   },
   { immediate: true },
 )
 
-watch(excerptText, (value) => (editedArticle.value.excerpt = value))
+watch(excerptText, (value) => (excerptModel.value = value))
 watch(
-  () => editedArticle.value.excerpt,
+  excerptModel,
   (value) => {
     if ((value ?? '') !== excerptText.value) excerptText.value = value ?? ''
   },
@@ -349,6 +468,8 @@ const submit = async (targetStatus: 'draft' | 'published') => {
 }
 
 const hasChanges = computed(() => {
+  // A rewritten translation is unsaved work too — leaving would drop it just as silently.
+  if (tr.isDirty) return true
   if (isNew) {
     return (
       editedArticle.value.title.length > 0 ||

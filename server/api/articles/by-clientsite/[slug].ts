@@ -50,11 +50,12 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const tag = query.tag as string | undefined
   const search = query.query as string | undefined
+  const locale = query.locale as string | undefined
 
   const db = await getEnhancedPrisma(user)
   const clientSite = await db.clientSite.findUnique({
     where: { name: slug },
-    select: { id: true },
+    select: { id: true, language: true },
   })
 
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
@@ -116,7 +117,11 @@ export default defineEventHandler(async (event) => {
     }
 
     const hasMore = rows.length > take
-    const items = hasMore ? rows.slice(0, take) : rows
+    const items = await localizeArticles(db, hasMore ? rows.slice(0, take) : rows, {
+      clientSiteId: clientSite.id,
+      locale,
+      primaryLanguage: clientSite.language,
+    })
 
     return { items, hasMore, tags: allTags, latestPoll: latestPoll ?? '' }
   }
@@ -124,6 +129,7 @@ export default defineEventHandler(async (event) => {
   if (user || search) return buildFeed()
 
   const gen = await getGen(`feed:${clientSite.id}`)
-  const key = `feed:v${gen}:${clientSite.id}:tag=${tag ?? '_all'}:skip=${skip}:take=${take}`
+  // `locale` is part of the key — the payload is localized, so two locales must not share it.
+  const key = `feed:v${gen}:${clientSite.id}:tag=${tag ?? '_all'}:skip=${skip}:take=${take}:loc=${locale ?? '_def'}`
   return cached(key, 60, buildFeed)
 })

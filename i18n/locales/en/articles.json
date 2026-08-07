@@ -59,8 +59,8 @@
     "articlesCount": "No articles yet | {count} article | {count} articles",
     "translations": {
       "title": "Translations",
-      "desc": "Translated versions of this article. Each language is reviewed and published on its own.",
-      "jump": "Jump to translations",
+      "languageTabs": "Article language",
+      "sourceTab": "Source language",
       "unsaved": "Unsaved changes",
       "awaitingReview": "nothing to review | {count} awaiting review | {count} awaiting review",
       "status": {
