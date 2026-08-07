@@ -128,8 +128,9 @@ export default defineEventHandler(async (event) => {
 
   if (user || search) return buildFeed()
 
-  const gen = await getGen(`feed:${clientSite.id}`)
+  const gen = await feedGen(clientSite.id)
   // `locale` is part of the key — the payload is localized, so two locales must not share it.
   const key = `feed:v${gen}:${clientSite.id}:tag=${tag ?? '_all'}:skip=${skip}:take=${take}:loc=${locale ?? '_def'}`
-  return cached(key, 60, buildFeed)
+  // 10 min is only safe because every article mutation calls invalidateFeed().
+  return cached(key, 600, buildFeed)
 })

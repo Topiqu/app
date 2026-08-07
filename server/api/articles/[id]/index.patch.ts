@@ -114,6 +114,12 @@ export default defineEventHandler(async (event) => {
     await syncArticleTranslationQueue(db, article.id, user.clientSiteId, { contentChanged: 'content' in data })
   }
 
+  // Covers publishing, unpublishing and edits to an already-live article. A
+  // draft-only edit is not in any listing, so it must not flush the tenant's cache.
+  if (article.status === ArticleStatus.published || previousArticle.status === ArticleStatus.published) {
+    await invalidateFeed(user.clientSiteId)
+  }
+
   await logAction({
     action: 'ARTICLE_UPDATE',
     userId: user.id,
