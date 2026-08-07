@@ -348,14 +348,16 @@ if (!isNew) {
 
 // Language is a dimension of the article, not a separate screen: `tr.activeLang === ''` edits
 // the source, anything else edits that translation through the same fields.
-const tr = reactive(useArticleTranslations(article.value?.id))
 const primaryLanguage = clientSite?.language ?? 'en'
-const discardTranslationOpen = shallowRef(false)
 
 // `?lang=` lets the admin table deep-link straight to a language. The primary language is the
-// source tab, which the composable represents as an empty string.
+// source tab, which the composable represents as an empty string. Seeded at construction rather
+// than assigned afterwards, so nothing can reconcile it away before the payload lands.
 const requestedLang = route.query.lang as string | undefined
-if (requestedLang && requestedLang !== primaryLanguage) tr.activeLang = requestedLang
+const initialLang = !isNew && requestedLang && requestedLang !== primaryLanguage ? requestedLang : ''
+
+const tr = reactive(useArticleTranslations(article.value?.id, initialLang))
+const discardTranslationOpen = shallowRef(false)
 
 /** Public URL of whichever language is on screen — only once it has a slug to point at. */
 const livePath = computed(() => {

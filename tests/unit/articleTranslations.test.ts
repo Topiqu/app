@@ -103,4 +103,12 @@ describe('active language', () => {
   it('returns nothing when the site has no target languages', () => {
     expect(resolveActiveLanguage([], [], 'en')).toBe('')
   })
+
+  it('discards the current language on empty targets — callers must not run this before the fetch lands', () => {
+    // This is a real trap, not a curiosity: an unloaded payload is indistinguishable from a site
+    // with no targets, so reconciling too early wiped a `?lang=` deep link back to the source tab.
+    // `useArticleTranslations` therefore gates the reconciling watchEffect on `status === 'success'`.
+    expect(resolveActiveLanguage([], [], 'en')).toBe('')
+    expect(resolveActiveLanguage([], ['en'], 'en')).toBe('en')
+  })
 })

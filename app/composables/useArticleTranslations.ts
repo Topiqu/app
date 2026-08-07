@@ -18,12 +18,13 @@ export interface ArticleTranslationsPayload {
  * being edited, its draft, and the four actions that act on it. `activeLang === ''` selects
  * the source article, so the page can branch on one flag instead of tracking two ideas of
  * "current language". `articleId` is optional for `/new`, where there is nothing to translate.
+ * `initialLang` seeds the tab (the admin table deep-links with `?lang=`).
  */
-export const useArticleTranslations = (articleId?: string) => {
+export const useArticleTranslations = (articleId?: string, initialLang = '') => {
   const toast = useToast()
   const { t } = useI18n()
 
-  const { data, refresh } = useFetch<ArticleTranslationsPayload>(`/api/articles/${articleId}/translations`, {
+  const { data, refresh, status } = useFetch<ArticleTranslationsPayload>(`/api/articles/${articleId}/translations`, {
     key: `article-translations-${articleId ?? 'none'}`,
     immediate: Boolean(articleId),
     default: (): ArticleTranslationsPayload => ({ translations: [], targetLanguages: [], translationMode: 'OFF' }),
@@ -45,13 +46,18 @@ export const useArticleTranslations = (articleId?: string) => {
   /** Whether this site translates at all — no tabs render without a target. */
   const enabled = computed(() => targetLanguages.value.length > 0)
 
-  const activeLang = shallowRef('')
+  const activeLang = shallowRef(initialLang)
   const isSource = computed(() => !activeLang.value)
   const active = computed(() => (activeLang.value ? byLanguage.value[activeLang.value] : undefined))
 
-  /** Drop back to the source if the selected language stops being a configured target. */
+  /**
+   * Drop back to the source if the selected language stops being a configured target — but only
+   * once the payload is in. An empty `targetLanguages` means both "this site has no targets" and
+   * "not fetched yet", and reconciling against the second silently discarded a `?lang=` deep link
+   * before the request resolved.
+   */
   watchEffect(() => {
-    if (!activeLang.value) return
+    if (status.value !== 'success' || !activeLang.value) return
     activeLang.value = resolveActiveLanguage(translations.value, targetLanguages.value, activeLang.value)
   })
 
