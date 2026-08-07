@@ -27,11 +27,7 @@ export const translationDraft = (row?: ArticleTranslationRow | null): Translatio
   content: row?.content ?? '',
 })
 
-/**
- * There is something to edit — and therefore something to save — only once a body exists.
- * A queued / in-flight / failed translation has a row but no text, so the editing fields
- * and the save+approve actions have nothing to act on.
- */
+/** A queued/in-flight/failed translation has a row but no text — nothing to edit or save. */
 export const translationHasBody = (row?: ArticleTranslationRow | null) => Boolean(row?.title && row?.content)
 
 export const isTranslationDirty = (draft: TranslationDraft, pristine: TranslationDraft) =>
@@ -41,11 +37,8 @@ export const countAwaitingReview = (rows: ArticleTranslationRow[]) =>
   rows.filter((row) => row.status === 'READY').length
 
 /**
- * Which language tab to open. Keep the author's current choice while it is still a
- * configured target, otherwise land on whatever needs a human (READY) and fall back
- * to the first target. The READY candidate is itself restricted to configured targets —
- * a leftover translation for a language that was removed from the site settings has no
- * tab to select, so selecting it would leave the panel pointing at nothing.
+ * The READY candidate is restricted to configured targets: a leftover translation for a
+ * language dropped from settings has no tab, so picking it would point the panel at nothing.
  */
 export const resolveActiveLanguage = (
   rows: ArticleTranslationRow[],

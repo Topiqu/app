@@ -7,13 +7,9 @@ export interface ArticleTranslationsPayload {
 }
 
 /**
- * One keyed fetch of an article's translations, shared by the editor page header
- * (the jump hint + review badge) and by `Article/Translations.vue` further down the
- * page. Both callers pass the same `key`, so the pair costs a single request and a
- * save inside the panel refreshes the header badge for free.
- *
- * `articleId` is optional because the editor also runs on `/new`, where there is no
- * article to translate yet — the request is simply never made.
+ * Shared by the editor's header chip and the panel below it. Same `key` in both, so the pair
+ * costs one request and a save in the panel refreshes the header badge. `articleId` is
+ * optional for `/new`, where there is nothing to translate yet.
  */
 export const useArticleTranslations = (articleId?: string) => {
   const { data, refresh } = useFetch<ArticleTranslationsPayload>(`/api/articles/${articleId}/translations`, {

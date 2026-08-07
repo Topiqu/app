@@ -144,7 +144,7 @@
 
       <TiptapEditor v-model="editedArticle.content" edit contentClass="min-h-[60vh]" />
 
-      <!-- scroll-mt clears both sticky bars (global header 4rem + page header 4rem) -->
+      <!-- scroll-mt clears both sticky bars (4rem global header + 4rem page header) -->
       <div v-if="!isNew && article?.id" ref="translationsSection" class="flex flex-col gap-5 scroll-mt-36">
         <hr class="border-gray-200 dark:border-gray-800" />
         <LazyArticleTranslations :articleId="article.id" />
@@ -244,9 +244,7 @@ if (!isNew) {
   }
 }
 
-// The panel itself lives at the very bottom of an unbounded page, so the header carries
-// the only always-visible hint that it exists (plus its review badge). Same fetch key as
-// the panel — one request, and saving down there updates the badge up here.
+// The panel sits below an unbounded editor body, so this is the only always-visible hint it exists.
 const { reviewCount: translationReviewCount, enabled: translationsEnabled } = useArticleTranslations(article.value?.id)
 
 const translationsSection = useTemplateRef<HTMLElement>('translationsSection')
