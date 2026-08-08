@@ -351,6 +351,10 @@
         "import": "JSON Import",
         "ai": "AI Generation"
       },
+      "preview": {
+        "toggle": "Preview article",
+        "empty": "This article has no content yet — switch back to writing to start."
+      },
       "ai": {
         "customPromptPlaceholder": "Enter a prompt for AI article generation...",
         "notAvailable": "AI generation is not available.",

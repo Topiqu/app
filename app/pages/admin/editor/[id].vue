@@ -50,6 +50,18 @@
           <Icon name="mdi:open-in-new" class="w-4 h-4" />
         </NuxtLink>
 
+        <button
+          type="button"
+          class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-transparent! hover:bg-gray-200! dark:hover:bg-gray-700! text-gray-500 dark:text-gray-400"
+          :class="{ 'bg-gray-200! dark:bg-gray-700! text-gray-900! dark:text-gray-100!': previewing }"
+          :aria-pressed="previewing"
+          :title="$t('articles.editor.preview.toggle')"
+          :aria-label="$t('articles.editor.preview.toggle')"
+          @click="previewing = !previewing"
+        >
+          <Icon :name="previewing ? 'mdi:pencil-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
+        </button>
+
         <ArticleEditorLanguageTabs
           v-if="tr.enabled"
           v-model="tr.activeLang"
@@ -115,7 +127,19 @@
       :byLanguage="tr.byLanguage"
     />
 
-    <main class="flex flex-col min-w-0 gap-5">
+    <ArticleEditorPreview
+      v-if="previewing"
+      :title="titleModel"
+      :excerpt="excerptModel"
+      :content="bodyModel"
+      :imageUrl="editedArticle.imageUrl"
+      :articleId="article?.id"
+      :tags="articleTags"
+      :sources="editedArticle.sources"
+      :series="previewSeries"
+    />
+
+    <main v-else class="flex flex-col min-w-0 gap-5">
       <!-- Language-neutral surfaces belong to the article, so they only exist on the source tab.
            Starters come first because they all answer the same question — where does the first
            draft come from — and they retreat to a single chip once that question is answered. -->
@@ -256,7 +280,9 @@
 
       <hr class="border-gray-200 dark:border-gray-800" />
 
-      <TiptapEditor v-if="bodyEditable" v-model="bodyModel" edit contentClass="min-h-[60vh]" />
+      <!-- Lazy so the title, excerpt and strip are interactive before the editor bundle lands —
+           and so a translation tab with no body never pays for it at all. -->
+      <LazyTiptapEditor v-if="bodyEditable" v-model="bodyModel" edit contentClass="min-h-[60vh]" />
 
       <p v-else class="text-sm text-gray-500 dark:text-gray-400">
         {{ $t(`articles.translations.empty.${tr.active?.status ?? 'MISSING'}`) }}
@@ -445,6 +471,25 @@ watch(
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 
 const isBlank = computed(() => isBlankArticle(editedArticle.value))
+
+const previewing = shallowRef(false)
+
+// `Hero.vue` wants the part number, which only the selected series knows. A new article lands
+// after the ones already in the series, so its own position is one past the end.
+const previewSeries = computed(() => {
+  const series = selectedSeries.value
+  if (!series?.name) return null
+  const total = (series.articles?.length ?? 0) + 1
+
+  return { name: series.name, current: total, total }
+})
+
+// Escape leaves the preview, the way Escape leaves any mode. No chord to enter it: Ctrl+Shift+P
+// is Firefox's private window and Ctrl+Alt+P is AltGr on a Czech layout, so the header button
+// is the only affordance that works everywhere.
+onKeyStroke('Escape', () => {
+  if (previewing.value) previewing.value = false
+})
 
 const jsonInput = useTemplateRef<HTMLInputElement>('jsonInput')
 const aiAutofocus = shallowRef(route.query.ai === '1')

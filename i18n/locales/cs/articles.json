@@ -351,6 +351,10 @@
         "import": "Importovat z JSON",
         "ai": "AI generování"
       },
+      "preview": {
+        "toggle": "Náhled článku",
+        "empty": "Článek zatím nemá obsah — přepni zpět na psaní a začni."
+      },
       "ai": {
         "customPromptPlaceholder": "Zadejte pokyn pro generování článku AI...",
         "notAvailable": "Generování AI není dostupné.",
