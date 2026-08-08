@@ -211,6 +211,7 @@ model User {
   feedbacks                     ArticleFeedback[]
   emojiReactions                EmojiReaction[]
   articleReactions              ArticleReaction[]
+  articleShares                 ArticleShare[]
   followers                     Follow[]          @relation("Follower")
   following                     Follow[]          @relation("Followed")
   bans                          UserBan[]         @relation("BannedUser")
@@ -391,6 +392,11 @@ model ArticleShare {
   articleId String
   article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
   platform  SharePlatform
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+
+  @@unique([articleId, platform, userId, sessionId])
 }
 
 model Tag {
@@ -472,7 +478,7 @@ model ClientSite {
   keywords             Json?
   audience             String?
   lastGeneratedAt      DateTime?
-  humanHourlyRate      Int                  @default(1400)
+  humanHourlyRateUsd   Int                  @default(60)
   humanWordsPerHour    Int                  @default(400)
   gtagId               String?
   apiKey               String?

@@ -132,7 +132,7 @@ const processClient = async (client: any) => {
     return
   }
 
-  const metrics = calculateArticleMetrics(generated.content, client.humanHourlyRate, client.humanWordsPerHour)
+  const metrics = calculateArticleMetrics(generated.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
 
   await logAction({
     action: 'CRON_GENERATE_ARTICLE',
@@ -305,7 +305,7 @@ export default defineMonitoredTask({
     const clients = await prisma.clientSite.findMany({
       select: {
         id: true,
-        humanHourlyRate: true,
+        humanHourlyRateUsd: true,
         humanWordsPerHour: true,
         autoRelease: true,
         audience: true,

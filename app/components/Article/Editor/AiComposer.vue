@@ -113,15 +113,29 @@
           <span class="pl-1 text-[11px] text-gray-400 dark:text-gray-500 select-none">
             <kbd class="font-sans">{{ shortcutHint }}</kbd>
           </span>
-          <Button
-            size="sm"
-            icon="mdi:auto-fix"
-            :disabled="!canGenerate"
-            class="shrink-0 bg-indigo-600! hover:bg-indigo-700! text-white! border-transparent!"
-            @click="generate"
-          >
-            {{ $t('articles.editor.ai.generateButton') }}
-          </Button>
+          <div class="flex items-center gap-2 shrink-0">
+            <ArticleEditorChip v-if="canUndoEnhance" icon="mdi:undo-variant" size="md" @click="undoEnhance">
+              {{ $t('articles.editor.ai.enhanceUndo') }}
+            </ArticleEditorChip>
+            <ArticleEditorChip
+              v-else
+              :icon="enhancing ? 'mdi:loading' : 'mdi:creation-outline'"
+              size="md"
+              :disabled="!canEnhance"
+              @click="enhance"
+            >
+              {{ $t('articles.editor.ai.enhance') }}
+            </ArticleEditorChip>
+            <Button
+              size="sm"
+              icon="mdi:auto-fix"
+              :disabled="!canGenerate"
+              class="bg-indigo-600! hover:bg-indigo-700! text-white! border-transparent!"
+              @click="generate"
+            >
+              {{ $t('articles.editor.ai.generateButton') }}
+            </Button>
+          </div>
         </template>
       </div>
     </div>
@@ -150,6 +164,10 @@ const steps: Phase[] = ['writing', 'images']
 const formats = computed(() => AI_FORMATS.map((id) => ({ id, label: t(`articles.editor.ai.formats.${id}.label`) })))
 
 const focused = shallowRef(false)
+const enhancing = shallowRef(false)
+/** The author's own wording, kept while the enhanced version is still untouched on screen. */
+const originalTopic = shallowRef<string | null>(null)
+const enhancedTopic = shallowRef<string | null>(null)
 const format = shallowRef<AiFormat | null>(null)
 const phase = shallowRef<Phase>('writing')
 const streamedWords = shallowRef(0)
@@ -166,6 +184,10 @@ const shortcutHint = shallowRef('Ctrl ↵')
 
 const elapsed = computed(() => formatElapsed(elapsedMs.value))
 const canGenerate = computed(() => topic.value.trim().length > 0 && !generating.value)
+const canEnhance = computed(() => canGenerate.value && !enhancing.value)
+// Undo survives only while the enhanced text is untouched — once the author edits it, the
+// wording is theirs and reverting would throw away their work instead of the model's.
+const canUndoEnhance = computed(() => originalTopic.value !== null && topic.value === enhancedTopic.value)
 const stepState = (step: Phase) =>
   step === phase.value ? 'active' : steps.indexOf(step) < steps.indexOf(phase.value) ? 'done' : 'pending'
 
@@ -173,6 +195,36 @@ onMounted(() => {
   if (/mac|iphone|ipad/i.test(navigator.userAgent)) shortcutHint.value = '⌘ ↵'
   if (autofocus) textarea.value?.focus()
 })
+
+// Enhancing overwrites what the author typed, so the original stays recoverable until they
+// edit the field themselves — at which point the enhanced text is theirs and undo is meaningless.
+const enhance = async () => {
+  if (!canEnhance.value) return
+
+  const before = topic.value
+  enhancing.value = true
+  try {
+    const { prompt } = await $fetch<{ prompt: string }>('/api/articles/generate/enhance', {
+      method: 'POST',
+      body: { prompt: before },
+    })
+    if (!prompt) return
+    topic.value = prompt
+    originalTopic.value = before
+    enhancedTopic.value = prompt
+  } catch (e: any) {
+    toast.error({ message: e.data?.message || t('articles.editor.ai.enhanceFailed') })
+  } finally {
+    enhancing.value = false
+  }
+}
+
+const undoEnhance = () => {
+  if (originalTopic.value === null) return
+  topic.value = originalTopic.value
+  originalTopic.value = null
+  enhancedTopic.value = null
+}
 
 const generate = async () => {
   if (!canGenerate.value) return

@@ -10,12 +10,14 @@
 
     <span class="h-3 w-px bg-gray-200 dark:bg-neutral-700/70" />
 
+    <!-- No UnoCSS reset is loaded, so the UA button chrome and base.scss's global `button` rules
+         have to be cancelled here; the dark: duplicates exist only to out-specify those rules. -->
     <button
       ref="trigger"
       type="button"
       :aria-expanded="isOpen"
       :aria-label="$t('articles.userMenu.remainingTokens')"
-      class="flex items-center gap-1.5 rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-violet-500"
+      class="-mx-1 flex appearance-none items-center gap-1.5 rounded-full border-0 bg-transparent px-1 text-inherit outline-none transition-opacity duration-200 hover:bg-transparent hover:opacity-70 focus-visible:ring-2 focus-visible:ring-violet-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:bg-transparent dark:hover:bg-transparent dark:focus-visible:ring-offset-neutral-900"
       @click="show = !show"
     >
       <span :class="['text-[10px] font-bold uppercase tracking-wide', planChip]">

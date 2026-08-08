@@ -16,6 +16,12 @@
     "savedAmount": {
       "title": "Ušetřené náklady"
     },
+    "savings": {
+      "words": "0 slov | {count} slovo | {count} slova | {count} slov",
+      "timeBasis": "{words} ÷ {speed} slov/h",
+      "amountBasis": "{time} × {rate}/h",
+      "tooltip": "Počítáme jen články, které napsala AI a nikdo je ručně neupravil — po první úpravě se článek přestane započítávat. Jejich slova vydělíme rychlostí psaní ({speed} slov/h) a výsledný čas vynásobíme hodinovou sazbou copywritera ({rate}/h). Je to odhad, ne fakturovaná částka."
+    },
     "articleCount": "Počet článků",
     "sentiment": {
       "title": "Vaše komunita"
@@ -57,8 +63,19 @@
       "button": "Prozkoumat plány"
     },
     "charts": {
-      "viewsLastWeek": "Zobrazení za poslední týden",
-      "shareDistribution": "Rozložení sdílení podle platformy"
+      "viewsByPublishDay": "Zobrazení článků vydaných za poslední týden",
+      "shareDistribution": "Rozložení sdílení podle platformy",
+      "toggleType": "Přepnout typ grafu",
+      "showTable": "Zobrazit jako tabulku",
+      "day": "Den",
+      "platform": "Platforma"
+    },
+    "platforms": {
+      "TWITTER": "X / Twitter",
+      "LINKEDIN": "LinkedIn",
+      "FACEBOOK": "Facebook",
+      "EMAIL": "E-mail",
+      "OTHER": "Ostatní"
     }
   }
 }

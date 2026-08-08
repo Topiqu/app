@@ -136,14 +136,11 @@
                 variant="success"
                 @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
               />
-              <LazyArticleModal
-                v-slot="{ open }"
-                :article="row.original"
-                hydrateOnInteraction
-                @saved="invalidateArticleLists"
-              >
-                <Button icon="mdi:pencil" :disabled="row.original.status === 'archived'" @click="open.value = true" />
-              </LazyArticleModal>
+              <Button
+                icon="mdi:pencil"
+                :disabled="row.original.status === 'archived'"
+                @click="openEditor(row.original.slug)"
+              />
               <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                 <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
               </LazyArticleTag>
@@ -274,19 +271,12 @@
                   variant="success"
                   @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
                 />
-                <LazyArticleModal
-                  v-slot="{ open }"
-                  :article="row.original"
-                  hydrateOnInteraction
-                  @saved="invalidateArticleLists"
-                >
-                  <Button
-                    v-tippy="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''"
-                    icon="mdi:pencil"
-                    :disabled="row.original.status === 'archived'"
-                    @click="open.value = true"
-                  />
-                </LazyArticleModal>
+                <Button
+                  v-tippy="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''"
+                  icon="mdi:pencil"
+                  :disabled="row.original.status === 'archived'"
+                  @click="openEditor(row.original.slug)"
+                />
                 <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                   <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
                 </LazyArticleTag>
@@ -357,6 +347,9 @@ const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
 const clientSite = await useClientSite()
 const primaryLanguage = clientSite?.language ?? 'en'
+
+// The editor resolves an article by its source slug, not its id — see `GET /api/articles/[id]`.
+const openEditor = (slug: string) => router.push(localePath({ name: 'admin-editor-id', params: { id: slug } }))
 
 /**
  * Source first, then every language that actually has a translation row. A configured-but-never

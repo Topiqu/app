@@ -49,6 +49,7 @@
     "saveAsDraft": "Uložit jako koncept",
     "createAndPublish": "Vytvořit a publikovat",
     "publishNow": "Publikovat",
+    "schedule": "Naplánovat",
     "saveChanges": "Uložit změny",
     "releaseQuick": {
       "now": "Hned",
@@ -188,6 +189,7 @@
       "languages": "Jazyky"
     },
     "sources": {
+      "add": "Přidat zdroj",
       "placeholder": "Odkaz na zdroj (https://...)",
       "imageUrl": "Odkaz na obrázek (https://...)",
       "youtube": "Odkaz na YouTube video (https://...)"
@@ -359,6 +361,9 @@
         "phaseWriting": "Píšu…",
         "phaseImages": "Generuji obrázky…",
         "aiContentStopped": "Generování zastaveno",
+        "enhance": "Vylepšit zadání",
+        "enhanceUndo": "Vrátit původní",
+        "enhanceFailed": "Vylepšení zadání se nepovedlo",
         "topicLabel": "Téma článku",
         "topicPlaceholder": "O čem má článek být? Doplň úhel pohledu, publikum nebo klíčové body…",
         "step": {

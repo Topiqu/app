@@ -84,28 +84,20 @@
           >
             <Icon name="mdi:heart" class="w-5 h-5" :class="{ 'text-red-500 dark:text-red-400': data.likedByUser }" />
           </button>
-          <button
-            :aria-label="$t('common.actions.copyLink')"
-            class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:hover:border-blue-500"
-            @click="copyLink(fullUrl)"
-          >
+          <button :aria-label="$t('common.actions.copyLink')" :class="shareButton" @click="copyLink(fullUrl)">
             <Icon name="mdi:link-variant" class="w-5 h-5" />
           </button>
           <NuxtLink
-            :to="`https://x.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
-            target="_blank"
-            class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
-            @click="share('TWITTER')"
+            v-for="target in shareTargets"
+            :key="target.platform"
+            :to="target.href"
+            :target="target.platform === 'EMAIL' ? undefined : '_blank'"
+            :rel="target.platform === 'EMAIL' ? undefined : 'noopener'"
+            :aria-label="$t(target.label)"
+            :class="shareButton"
+            @click="share(target.platform)"
           >
-            <Icon name="mdi:twitter" class="w-5 h-5" />
-          </NuxtLink>
-          <NuxtLink
-            :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
-            target="_blank"
-            class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
-            @click="share('LINKEDIN')"
-          >
-            <Icon name="mdi:linkedin" class="w-5 h-5" />
+            <Icon :name="target.icon" class="w-5 h-5" />
           </NuxtLink>
         </div>
 
@@ -187,8 +179,13 @@ const slug = computed(() => route.params.slug as string)
 
 const { locale } = useI18n()
 
+// `deep` is false by default in Nuxt 4, i.e. `data` is a shallowRef. The engagement counters
+// (likes, shared, followerCount) are written back into this payload after each action, and a
+// shallow ref does not track those nested writes — `ArticleActionsBar` receives the same object
+// identity, so `hasPropsChanged` bails and the counts only appeared after a page refresh.
 const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`, {
   query: { clientSiteId: clientSite?.id, locale: locale.value },
+  deep: true,
 })
 
 // Landing on this locale with another language's slug (browser-language detection, an old link,
@@ -241,7 +238,7 @@ defineOgImage('TopiquArticle', ogImageOptions.value)
 
 const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
 
-const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh)
+const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh, getVisitorId)
 
 const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
 const toggleFollow = async () => {
@@ -303,7 +300,6 @@ const toggleLike = async () => {
     if (data.value) {
       data.value.likedByUser = res.liked
       data.value.likes = res.likes
-      triggerRef(data)
     }
 
     if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
@@ -317,6 +313,45 @@ const toggleLike = async () => {
 const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5)
 const hasTags = computed(() => !!data.value?.tags?.length)
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
+
+// One string for the five round action buttons; the two link variants used to differ only by
+// arbitrary dark-mode hexes standing in for the gray scale everything else uses.
+const shareButton =
+  'flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:hover:border-blue-500'
+
+const shareTargets = computed(() => {
+  // The old links interpolated fullUrl raw, so any article URL carrying a query string
+  // truncated at the first ampersand once the network parsed it.
+  const url = encodeURIComponent(fullUrl.value)
+  const title = encodeURIComponent(data.value?.title ?? '')
+
+  return [
+    {
+      platform: 'TWITTER',
+      icon: 'mdi:twitter',
+      label: 'common.actions.shareX',
+      href: `https://x.com/share?text=${title}&url=${url}`,
+    },
+    {
+      platform: 'LINKEDIN',
+      icon: 'mdi:linkedin',
+      label: 'common.actions.shareLinkedIn',
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+    },
+    {
+      platform: 'FACEBOOK',
+      icon: 'mdi:facebook',
+      label: 'common.actions.shareFacebook',
+      href: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+    },
+    {
+      platform: 'EMAIL',
+      icon: 'mdi:email-outline',
+      label: 'common.actions.shareEmail',
+      href: `mailto:?subject=${title}&body=${url}`,
+    },
+  ] as const
+})
 const items = useBreadcrumbItems()
 const breadcrumbs = computed(() => {
   return items.value.map((item, index) => {

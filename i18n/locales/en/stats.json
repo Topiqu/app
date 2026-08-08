@@ -16,6 +16,12 @@
     "savedAmount": {
       "title": "Money Saved"
     },
+    "savings": {
+      "words": "No words yet | {count} word | {count} words",
+      "timeBasis": "{words} ÷ {speed} words/h",
+      "amountBasis": "{time} × {rate}/h",
+      "tooltip": "Only articles written entirely by AI and never hand-edited are counted — an article stops counting the moment you edit it. Their words are divided by a writing speed of {speed} words/h, and the resulting time is priced at a copywriter's hourly rate of {rate}/h. It's an estimate, not an invoice."
+    },
     "articleCount": "Total articles",
     "sentiment": {
       "title": "Your community"
@@ -57,8 +63,19 @@
       "button": "Explore Plans"
     },
     "charts": {
-      "viewsLastWeek": "Views in the Last Week",
-      "shareDistribution": "Share Distribution by Platform"
+      "viewsByPublishDay": "Views on articles published this week",
+      "shareDistribution": "Share Distribution by Platform",
+      "toggleType": "Switch chart type",
+      "showTable": "Show as a table",
+      "day": "Day",
+      "platform": "Platform"
+    },
+    "platforms": {
+      "TWITTER": "X / Twitter",
+      "LINKEDIN": "LinkedIn",
+      "FACEBOOK": "Facebook",
+      "EMAIL": "Email",
+      "OTHER": "Other"
     }
   }
 }

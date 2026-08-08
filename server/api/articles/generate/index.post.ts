@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
   const client = await prisma.clientSite.findUnique({
     where: { id: user.clientSiteId },
-    select: { humanHourlyRate: true, humanWordsPerHour: true },
+    select: { humanHourlyRateUsd: true, humanWordsPerHour: true },
   })
 
   if (!client) {
@@ -68,7 +68,7 @@ export default defineEventHandler(async (event) => {
 
         send(controller, { type: 'phase', phase: 'images' })
         const finalized = await finalize(object, (image) => send(controller, { type: 'image', ...image }))
-        const metrics = calculateArticleMetrics(finalized.content, client.humanHourlyRate, client.humanWordsPerHour)
+        const metrics = calculateArticleMetrics(finalized.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
 
         await consumeClientTokens(
           clientSiteId,

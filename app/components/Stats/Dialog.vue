@@ -63,7 +63,10 @@
               {{ $t('stats.savedTime.title') }}
             </div>
             <p class="text-2xl font-bold text-violet-600">
-              {{ formatDuration(stats.savedTimeMinutes) }}
+              {{ formatDuration(stats.savings.minutes) }}
+            </p>
+            <p v-if="stats.savings.words" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {{ $t('stats.savings.timeBasis', { words: wordCount, speed: stats.savings.wordsPerHour }) }}
             </p>
           </div>
 
@@ -73,9 +76,20 @@
             <div class="flex items-center gap-2 text-sm font-medium text-gray-500">
               <Icon name="mdi:cash-multiple" class="w-5 h-5 text-emerald-600" />
               {{ $t('stats.savedAmount.title') }}
+              <span v-tippy="{ content: savingsTooltip, theme: 'light', placement: 'top' }" class="inline-flex">
+                <Icon name="mdi:help-circle-outline" class="w-4 h-4 text-gray-400 cursor-help" />
+              </span>
             </div>
             <p class="text-2xl font-bold text-emerald-600">
-              {{ formatMoney(stats.savedAmount) }}
+              {{ formatMoney(stats.savings.amountUsd) }}
+            </p>
+            <p v-if="stats.savings.words" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {{
+                $t('stats.savings.amountBasis', {
+                  time: formatDuration(stats.savings.minutes),
+                  rate: formatMoney(stats.savings.hourlyRateUsd),
+                })
+              }}
             </p>
           </div>
 
@@ -303,12 +317,23 @@
 
         <Charts
           v-if="!pending && stats.articleCount > 0 && !isBasicPlan"
-          :chartData="chartData"
-          :title="$t('stats.charts.viewsLastWeek')"
+          kind="trend"
+          :title="$t('stats.charts.viewsByPublishDay')"
+          :label="$t('stats.totalViews.title')"
+          :categoryHeading="$t('stats.charts.day')"
+          :labels="viewsChart.labels"
+          :values="viewsChart.values"
         />
-        <div v-if="!pending && stats.articleCount > 0 && stats.totalShares > 0 && !isBasicPlan" class="mt-8">
-          <Charts :chartData="shareChartData" :title="$t('stats.charts.shareDistribution')" />
-        </div>
+        <Charts
+          v-if="!pending && stats.articleCount > 0 && stats.totalShares > 0 && !isBasicPlan"
+          kind="breakdown"
+          :title="$t('stats.charts.shareDistribution')"
+          :label="$t('stats.totalShares.title')"
+          :categoryHeading="$t('stats.charts.platform')"
+          :labels="shareChart.labels"
+          :values="shareChart.values"
+          :icons="shareChart.icons"
+        />
       </div>
     </template>
 
@@ -324,15 +349,19 @@
 import type { InternalApi } from 'nitropack/types'
 
 import { directive as vTippy } from 'vue-tippy'
+import { DEFAULT_HOURLY_RATE_USD, DEFAULT_WORDS_PER_HOUR } from '~~/shared/utils/savings'
 
 type DashboardStats = InternalApi['/api/stats/dashboard']['default']
 type CommunityInsight = InternalApi['/api/clients/sentiment']['get']
 
 const open = defineModel<boolean>()
 const { data: authData } = useAuth()
+const { locale, t } = useI18n()
 const requestFetch = useRequestFetch()
 
 const clientSite = await useClientSite()
+const currency = clientSite?.currency || 'USD'
+const fxRate = await useCurrencyRate(currency)
 
 const isBasicPlan = computed(() => authData.value?.user.plan === 'BASIC')
 const showTopTags = shallowRef(false)
@@ -364,15 +393,15 @@ const formatDuration = (totalMinutes: number) => {
   return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
 }
 
-const formatMoney = (amount: number) => {
-  const currency = clientSite?.currency || 'USD'
-
-  return new Intl.NumberFormat('en-US', {
+// Savings arrive in USD (the platform's money base) and are converted for display, the same
+// way Billing.vue and AI.vue do it.
+const formatMoney = (usd: number) =>
+  new Intl.NumberFormat(locale.value, {
     style: 'currency',
     currency,
+    currencyDisplay: 'narrowSymbol',
     maximumFractionDigits: 0,
-  }).format(amount)
-}
+  }).format(usd * fxRate)
 
 const insight = computed(() => {
   if (!rawInsight.value) return null
@@ -382,8 +411,13 @@ const insight = computed(() => {
 const stats = computed(() => ({
   totalViews: dashboard.value?.totalViews || 0,
   articleCount: dashboard.value?.articleCount || 0,
-  savedAmount: dashboard.value?.savedAmount || 0,
-  savedTimeMinutes: dashboard.value?.savedTimeMinutes || 0,
+  savings: dashboard.value?.savings ?? {
+    words: 0,
+    minutes: 0,
+    amountUsd: 0,
+    hourlyRateUsd: DEFAULT_HOURLY_RATE_USD,
+    wordsPerHour: DEFAULT_WORDS_PER_HOUR,
+  },
   totalShares: dashboard.value?.totalShares || 0,
   sharesDistribution: dashboard.value?.sharesDistribution || {
     TWITTER: 0,
@@ -405,35 +439,46 @@ const stats = computed(() => ({
   topAuthor: dashboard.value?.topAuthor,
 }))
 
-const chartData = computed(() => ({
-  labels: dashboard.value?.viewsHistory?.map((v: any) => v.date) || [],
-  datasets: [
-    {
-      label: $t('stats.totalViews.title'),
-      data: dashboard.value?.viewsHistory?.map((v: any) => v.views) || [],
-      backgroundColor: ['#3B82F6', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6'],
-      borderColor: '#3b82f6',
-      fill: false,
-    },
-  ],
-}))
+const wordCount = computed(() => {
+  const count = stats.value.savings.words
+  return t('stats.savings.words', { count }, { plural: count })
+})
 
-const shareChartData = computed(() => ({
-  labels: ['Twitter', 'LinkedIn', 'Facebook', 'Email', 'Other'],
-  datasets: [
-    {
-      label: $t('stats.totalShares.title'),
-      data: [
-        stats.value.sharesDistribution.TWITTER || 0,
-        stats.value.sharesDistribution.LINKEDIN || 0,
-        stats.value.sharesDistribution.FACEBOOK || 0,
-        stats.value.sharesDistribution.OTHER || 0,
-      ],
-      backgroundColor: ['#1DA1F2', '#0077B5', '#1877F2', '#34A853', '#6b6b6b'],
-      borderColor: '#ffffff',
-      fill: false,
-    },
-  ],
+const savingsTooltip = computed(() =>
+  $t('stats.savings.tooltip', {
+    speed: stats.value.savings.wordsPerHour,
+    rate: formatMoney(stats.value.savings.hourlyRateUsd),
+  }),
+)
+
+const dayLabel = computed(() => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'numeric' }))
+
+const viewsChart = computed(() => {
+  const history = dashboard.value?.viewsHistory ?? []
+
+  return {
+    labels: history.map((v) => dayLabel.value.format(new Date(`${v.date}T00:00:00Z`))),
+    values: history.map((v) => v.views),
+  }
+})
+
+// Every platform, always, in this order — a platform must keep its colour even in a week
+// nobody used it. The previous version omitted EMAIL from the data while keeping its label,
+// so every slice from Email onwards showed another platform's count.
+const SHARE_PLATFORMS = ['TWITTER', 'LINKEDIN', 'FACEBOOK', 'EMAIL', 'OTHER'] as const
+
+const PLATFORM_ICONS: Record<(typeof SHARE_PLATFORMS)[number], string> = {
+  TWITTER: 'mdi:alpha-x-circle',
+  LINKEDIN: 'mdi:linkedin',
+  FACEBOOK: 'mdi:facebook',
+  EMAIL: 'mdi:email-outline',
+  OTHER: 'mdi:link-variant',
+}
+
+const shareChart = computed(() => ({
+  labels: SHARE_PLATFORMS.map((platform) => $t(`stats.platforms.${platform}`)),
+  values: SHARE_PLATFORMS.map((platform) => stats.value.sharesDistribution[platform] || 0),
+  icons: SHARE_PLATFORMS.map((platform) => PLATFORM_ICONS[platform]),
 }))
 </script>
 

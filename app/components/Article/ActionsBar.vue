@@ -50,21 +50,15 @@
         <Icon name="mdi:share-variant" class="w-4 h-4 text-gray-500" /><span>{{ formatNumber(article.shared) }}</span>
       </div>
 
-      <LazyArticleModal
+      <NuxtLink
         v-if="isAdmin"
-        v-slot="{ open }"
-        :article="article"
-        hydrateOnInteraction
-        @saved="$emit('refresh')"
+        :to="localePath({ name: 'admin-editor-id', params: { id: article.slug } })"
+        class="flex items-center justify-center w-9 h-9 rounded-full no-underline bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+        :aria-label="$t('common.actions.edit')"
+        :title="$t('common.actions.edit')"
       >
-        <button
-          class="flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400"
-          :aria-label="$t('common.actions.edit')"
-          @click="open.value = true"
-        >
-          <Icon name="mdi:pencil" class="w-5 h-5" />
-        </button>
-      </LazyArticleModal>
+        <Icon name="mdi:pencil" class="w-5 h-5" />
+      </NuxtLink>
     </div>
   </div>
 </template>
@@ -72,6 +66,8 @@
 <script setup lang="ts">
 import { formatDate } from '~~/shared/utils'
 import { formatNumber } from '~~/shared/utils/number'
+
+const localePath = useLocalePath()
 
 defineProps<{
   article: any
