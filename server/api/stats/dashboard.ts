@@ -1,12 +1,28 @@
 import type { SharePlatform } from '@prisma/client'
 
+import { writingSavings } from '~~/shared/utils/savings'
+
+// UTC day keys, oldest first — the raw query below buckets on DATE_TRUNC, which is UTC too.
+const lastSevenDays = () => {
+  const today = new Date()
+  today.setUTCHours(0, 0, 0, 0)
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(today)
+    day.setUTCDate(day.getUTCDate() - (6 - i))
+    return day.toISOString().slice(0, 10)
+  })
+}
+
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { clientSite: true })
 
   const [
-    counts,
-    totalViews,
-    roiMetrics,
+    articleCount,
+    followerCount,
+    viewsAggregate,
+    aiWords,
+    rates,
     viewsLast7Days,
     tagsResult,
     topArticle,
@@ -20,14 +36,25 @@ export default defineEventHandler(async (event) => {
     db.follow.count({ where: { followed: { clientSiteId: user.clientSiteId } } }),
     db.article.aggregate({
       where: { clientSiteId: user.clientSiteId },
-      _sum: { views: true, savedAmount: true, savedTimeMinutes: true },
+      _sum: { views: true },
+    }),
+    // Only fully AI-written articles count as saved work: the editor demotes an article to
+    // ASSIST the moment a human edits its body.
+    db.article.aggregate({
+      where: { clientSiteId: user.clientSiteId, aiInvolvement: 'FULL' },
+      _sum: { totalWords: true },
+    }),
+    db.clientSite.findUnique({
+      where: { id: user.clientSiteId! },
+      select: { humanHourlyRateUsd: true, humanWordsPerHour: true },
     }),
     db.$queryRaw`
-      SELECT DATE_TRUNC('day', "createdAt") AS date, SUM(views) AS views
+      SELECT DATE_TRUNC('day', COALESCE("publishedAt", "createdAt")) AS date, SUM(views) AS views
       FROM "Article"
       WHERE "clientSiteId" = ${user.clientSiteId}
-      AND "createdAt" >= ${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)}
-      GROUP BY DATE_TRUNC('day', "createdAt")
+      AND "status" = 'published'
+      AND COALESCE("publishedAt", "createdAt") >= ${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)}
+      GROUP BY DATE_TRUNC('day', COALESCE("publishedAt", "createdAt"))
       ORDER BY date
     `,
     db.tag.findMany({
@@ -91,12 +118,22 @@ export default defineEventHandler(async (event) => {
   const engagementRate =
     engagementRates.length > 0 ? engagementRates.reduce((s, r) => s + r, 0) / engagementRates.length : 0
 
+  const viewsByDay = new Map(
+    (viewsLast7Days as { date: Date; views: bigint | number }[]).map((row) => [
+      row.date.toISOString().slice(0, 10),
+      Number(row.views) || 0,
+    ]),
+  )
+
+  // Derived on read, not read back from Article.savedAmount: those columns froze a rate (and a
+  // currency) at generation time, so a rate correction never reached articles already written.
+  const savings = writingSavings(aiWords._sum.totalWords || 0, rates?.humanHourlyRateUsd, rates?.humanWordsPerHour)
+
   return {
-    articleCount: counts,
-    followerCount: totalViews,
-    totalViews: roiMetrics._sum.views || 0,
-    savedAmount: roiMetrics._sum.savedAmount || 0,
-    savedTimeMinutes: roiMetrics._sum.savedTimeMinutes || 0,
+    articleCount,
+    followerCount,
+    totalViews: viewsAggregate._sum.views || 0,
+    savings,
     engagementRate,
     totalShares: Object.values(distribution).reduce((a, b) => a + b, 0),
     sharesDistribution: distribution,
@@ -127,9 +164,11 @@ export default defineEventHandler(async (event) => {
       }))
       .sort((a, b) => b.views - a.views)
       .slice(0, 3),
-    viewsHistory: (viewsLast7Days as any[]).map((v) => ({
-      date: v.date.toISOString().slice(5, 10),
-      views: Number(v.views) || 0,
+    // Every day in the window, not just the ones that happen to have a row — a sparse axis
+    // made a two-article week look like a dense trend. Dates stay ISO; the client localises.
+    viewsHistory: lastSevenDays().map((date) => ({
+      date,
+      views: Number(viewsByDay.get(date) ?? 0),
     })),
   }
 })

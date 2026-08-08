@@ -61,7 +61,7 @@ export const CLIENT_SITE_SECRET_FIELDS = [
   'audience',
   'aiToneOfVoice',
   'aiControversyLevel',
-  'humanHourlyRate',
+  'humanHourlyRateUsd',
   'humanWordsPerHour',
 ] as const
 
