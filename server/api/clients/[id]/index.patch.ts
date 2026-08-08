@@ -158,54 +158,33 @@ export default defineEventHandler(async (event) => {
     if (operations.length) await Promise.all(operations)
   }
 
+  // The settings form always sends `linkedinMode`, so this runs for tenants that never connected
+  // LinkedIn too. There is nothing to set a publish mode on until they do — the row is created by
+  // the OAuth callback, which is the only place a real `linkedinOrgId` comes from. This used to
+  // fabricate one with `linkedinOrgId: 'placeholder'`, which the unique index let exactly one
+  // tenant get away with; everyone else's settings save died on P2002.
   if (linkedinMode !== undefined) {
-    // Note: This endpoint currently updates the FIRST linkedin company it finds.
-    // If you need to specify which one (pages vs personal), you would need to pass the type in the body.
-    // For now, we'll try to find the 'pages' one first, then fallback to finding any.
-    let company = await db.linkedinCompany.findFirst({
-      where: { clientSiteId: id, type: 'pages' },
-    })
+    // Prefers the 'pages' company; a tenant with only a personal profile falls back to that.
+    const company =
+      (await db.linkedinCompany.findFirst({ where: { clientSiteId: id, type: 'pages' } })) ??
+      (await db.linkedinCompany.findFirst({ where: { clientSiteId: id } }))
 
-    if (!company) {
-      company = await db.linkedinCompany.findFirst({
-        where: { clientSiteId: id },
-      })
-    }
+    if (company) {
+      await db.linkedinCompany.update({ where: { id: company.id }, data: { mode: linkedinMode } })
 
-    if (!company) {
-      company = await db.linkedinCompany.create({
-        data: {
-          name: 'My Company',
-          linkedinOrgId: 'placeholder', // actual sync comes later with oauth
-          type: 'pages', // Defaulting to pages if none exists
-          mode: linkedinMode,
-          clientSiteId: id,
-        },
-      })
-    } else {
-      company = await db.linkedinCompany.update({
-        where: { id: company.id },
-        data: { mode: linkedinMode },
-      })
-    }
-
-    if (linkedinBrandProfile) {
-      await db.brandProfile.upsert({
-        where: { companyId: company.id },
-        create: {
-          companyId: company.id,
+      if (linkedinBrandProfile) {
+        const profile = {
           tone: linkedinBrandProfile.tone,
           audience: linkedinBrandProfile.audience,
           doList: linkedinBrandProfile.doList,
           dontList: linkedinBrandProfile.dontList,
-        },
-        update: {
-          tone: linkedinBrandProfile.tone,
-          audience: linkedinBrandProfile.audience,
-          doList: linkedinBrandProfile.doList,
-          dontList: linkedinBrandProfile.dontList,
-        },
-      })
+        }
+        await db.brandProfile.upsert({
+          where: { companyId: company.id },
+          create: { companyId: company.id, ...profile },
+          update: profile,
+        })
+      }
     }
   }
 
