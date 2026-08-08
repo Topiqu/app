@@ -21,10 +21,15 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
+const config = useRuntimeConfig()
+
+onMounted(() => {
+  document.documentElement.dataset.topiquHydrated = 'true'
+})
 
 const status = computed(() => props.error?.statusCode ?? props.error?.status ?? 500)
 const message = computed(() => props.error?.message ?? '')
-const stack = computed(() => (import.meta.dev ? props.error?.stack : undefined))
+const stack = computed(() => (import.meta.dev && !config.public.browserTest ? props.error?.stack : undefined))
 
 const errorTitleMap: Record<number, string> = {
   400: 'common.errTypes.badRequest',
@@ -40,9 +45,7 @@ const errorTitleMap: Record<number, string> = {
   504: 'common.errTypes.gatewayTimeout',
 }
 
-const title = computed(() =>
-  t(errorTitleMap[status.value] ?? 'common.errTypes.internalError'),
-)
+const title = computed(() => t(errorTitleMap[status.value] ?? 'common.errTypes.internalError'))
 
 if (import.meta.server) {
   const event = useRequestEvent()

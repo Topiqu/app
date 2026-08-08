@@ -1,36 +1,47 @@
 <template>
-  <NuxtLoadingIndicator class="z-top" :color="computedThemeColor" />
-  <NuxtRouteAnnouncer />
-  <StatusBar />
+  <UApp :locale="uiLocale">
+    <NuxtLoadingIndicator class="z-top" :color="computedThemeColor" />
+    <NuxtRouteAnnouncer />
+    <StatusBar />
 
-  <Landing v-if="isMainLanding" />
+    <Landing v-if="isMainLanding" />
 
-  <template v-else>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-  </template>
+    <template v-else>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </template>
 
-  <DevOnly>
-    <DevConsole />
-  </DevOnly>
+    <DevOnly v-if="!isBrowserTest">
+      <DevConsole />
+    </DevOnly>
+  </UApp>
 </template>
 
 <script setup lang="ts">
-import { themeColors, type ThemeKey } from '~/composables/theme'
+import { cs, en } from '@nuxt/ui/locale'
+
+import { resolveTenantTheme, themeColors } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
-const route = useRoute()
+const router = useRouter()
 const clientSite = await useClientSite()
 const adChance = useAdChance()
 const i18nHead = useLocaleHead()
+const { locale } = useI18n()
+const uiLocale = computed(() => (locale.value === 'cs' ? cs : en))
+const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)
+
+onMounted(() => {
+  document.documentElement.dataset.topiquHydrated = 'true'
+})
 
 const devView = import.meta.dev ? useDevView() : undefined
 const localePath = useLocalePath()
 
 const isAppHost = reqUrl.hostname.replace(/^www\./, '') === 'app.topiqu.com'
 
-if (isAppHost && String(route.name || '').startsWith('index')) {
+if (isAppHost && String(router.currentRoute.value.name || '').startsWith('index')) {
   await navigateTo(localePath({ name: 'autorizace' }))
 }
 
@@ -43,7 +54,9 @@ const isMainLanding = computed(() => {
 
   if (clientSite) return false
 
+  const route = router.currentRoute.value
   const name = String(route.name || '')
+  if (!name.startsWith('index')) return false
   if (name.includes('autorizace') || name.includes('admin')) return false
 
   if (route.path.includes('/oauth-start')) return false
@@ -55,19 +68,11 @@ if (clientSite) {
   adChance.assign(clientSite.id, clientSite.plan)
 }
 
-const computedThemeColor = computed(
-  () => themeColors[clientSite?.theme as ThemeKey] ?? themeColors.blue,
-)
+const computedThemeColor = computed(() => themeColors[resolveTenantTheme(clientSite?.theme)])
 
 useSeoMeta({
   title: () => clientSite?.name || 'Topiqu',
   description: () => clientSite?.description || 'Moderní blogovací platforma',
-  keywords: () =>
-    Array.isArray(clientSite?.keywords)
-      ? clientSite.keywords.join(', ')
-      : typeof clientSite?.keywords === 'string'
-        ? clientSite.keywords
-        : 'blog, ai, platforma',
   author: () => clientSite?.name || 'Topiqu',
   ogTitle: () => clientSite?.name || 'Topiqu',
   ogDescription: () => clientSite?.description || 'Moderní blogovací platforma',
@@ -106,12 +111,19 @@ useHead(() => ({
     ...(i18nHead.value.link || []),
     {
       rel: 'icon',
-      type: 'image/x-icon',
-      href: clientSite?.logoUrl || '/favicon.ico',
+      href: clientSite?.faviconUrl || clientSite?.logoUrl || '/favicon.ico',
     },
   ],
   meta: [
     ...(i18nHead.value.meta || []),
+    {
+      name: 'keywords',
+      content: Array.isArray(clientSite?.keywords)
+        ? clientSite.keywords.join(', ')
+        : typeof clientSite?.keywords === 'string'
+          ? clientSite.keywords
+          : 'blog, ai, platforma',
+    },
     { name: 'theme-color', content: computedThemeColor.value },
   ],
 }))
