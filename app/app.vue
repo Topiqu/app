@@ -3,13 +3,9 @@
   <NuxtRouteAnnouncer />
   <StatusBar />
 
-  <Landing v-if="isMainLanding" />
-
-  <template v-else>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-  </template>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
 
   <DevOnly>
     <DevConsole />
@@ -34,7 +30,6 @@ const i18nLinks = computed(() =>
   ),
 )
 
-const devView = import.meta.dev ? useDevView() : undefined
 const localePath = useLocalePath()
 
 const isAppHost = reqUrl.hostname.replace(/^www\./, '') === 'app.topiqu.com'
@@ -42,23 +37,6 @@ const isAppHost = reqUrl.hostname.replace(/^www\./, '') === 'app.topiqu.com'
 if (isAppHost && String(route.name || '').startsWith('index')) {
   await navigateTo(localePath({ name: 'autorizace' }))
 }
-
-const isMainLanding = computed(() => {
-  if (import.meta.dev && devView && devView.value !== 'auto') {
-    return devView.value === 'landing'
-  }
-
-  if (isAppHost) return false
-
-  if (clientSite) return false
-
-  const name = String(route.name || '')
-  if (name.includes('autorizace') || name.includes('admin')) return false
-
-  if (route.path.includes('/oauth-start')) return false
-
-  return true
-})
 
 if (clientSite) {
   adChance.assign(clientSite.id, clientSite.plan)

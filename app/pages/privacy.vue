@@ -18,7 +18,7 @@
             </span>
           </h1>
           <p class="text-gray-500 dark:text-gray-400">
-            {{ $t('legal.lastUpdated', { date: '1. 1. 2026' }) }}
+            {{ $t('legal.lastUpdated', { date: $t('legal.updatedAt') }) }}
           </p>
         </div>
 
@@ -55,9 +55,16 @@
 </template>
 
 <script setup lang="ts">
-const { t, tm } = useI18n()
+const { t, tm, rt } = useI18n()
 
-const sections = computed(() => tm('legal.privacy.sections') as any[])
+const sections = computed(() =>
+  (tm('legal.privacy.sections') as any[]).map((s) => ({
+    icon: rt(s.icon),
+    iconColor: rt(s.iconColor),
+    title: rt(s.title),
+    content: rt(s.content),
+  })),
+)
 
 useSeoMeta({
   title: () => t('legal.privacy.title'),

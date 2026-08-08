@@ -1,63 +1,167 @@
 {
   "legal": {
     "lastUpdated": "Naposledy aktualizováno: {date}",
+    "updatedAt": "8. 8. 2026",
+    "placeholderNote": "Před zveřejněním doplnit: [[JMENO]], [[ICO]], [[HOSTING]], [[HOSTING_REGION]]. Adresa sídla se záměrně neuvádí — odkazuje se na ARES a sdělujeme ji na vyžádání.",
     "tos": {
-      "title": "Podmínky služby",
-      "description": "Podmínky používání naší platformy.",
+      "title": "Obchodní podmínky",
+      "description": "Podmínky užívání platformy Topiqu, předplatného a obsahu generovaného umělou inteligencí.",
       "sections": [
         {
-          "icon": "mdi:handshake",
+          "icon": "mdi:office-building",
           "iconColor": "text-blue-500",
-          "title": "1. Souhlas s podmínkami",
-          "content": "Přístupem k této webové stránce a jejím používáním přijímáte a souhlasíte s tím, že budete vázáni podmínkami a ustanoveními této smlouvy. Při používání těchto konkrétních služeb navíc podléháte všem zveřejněným pokynům nebo pravidlům platným pro takové služby.<br><br>Jakákoli účast na této službě bude představovat přijetí této smlouvy. Pokud nesouhlasíte s dodržováním výše uvedeného, nepoužívejte tuto službu."
+          "title": "1. Poskytovatel a rozsah podmínek",
+          "content": "Službu Topiqu („služba“) provozuje <strong>[[JMENO]]</strong>, podnikatel — fyzická osoba zapsaná v živnostenském rejstříku, IČO <strong>[[ICO]]</strong> („poskytovatel“, „my“).<br><br>Údaje o sídle a rozsahu podnikání jsou v aktuálním znění veřejně dostupné v registru ARES: <a href='https://ares.gov.cz/ekonomicke-subjekty?ico=[[ICO]]' target='_blank' rel='noopener noreferrer' class='text-blue-600 dark:text-blue-400 underline'>ares.gov.cz</a>. Adresu sídla vám na požádání kdykoli sdělíme na e-mailu níže.<br><br>Kontakt: <a href='mailto:support@topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support@topiqu.com</a><br><br>Tyto podmínky upravují smlouvu mezi poskytovatelem a vámi jako uživatelem („uživatel“, „vy“) o užívání služby, včetně webu, editoru, generování obsahu pomocí AI, publikování na propojené sociální účty a placených tarifů. Vytvořením účtu vyjadřujete souhlas s těmito podmínkami a se <a href='/cs/ochrana-soukromi' class='text-blue-600 dark:text-blue-400 underline'>zásadami ochrany osobních údajů</a>.<br><br>Užíváte-li službu v rámci své podnikatelské činnosti, ustanovení určená výhradně spotřebitelům (čl. 4 a část čl. 12) se na vás nevztahují."
         },
         {
-          "icon": "mdi:shield-check",
-          "iconColor": "text-green-500",
-          "title": "2. Poskytování služeb",
-          "content": "Souhlasíte a berete na vědomí, že jsme oprávněni upravovat, vylepšovat nebo přerušovat jakékoli naše služby podle našeho vlastního uvážení a bez předchozího upozornění, a to i v případě, že to může mít za následek zamezení přístupu k jakýmkoli informacím obsaženým v těchto službách."
+          "icon": "mdi:account-key",
+          "iconColor": "text-indigo-500",
+          "title": "2. Účet a registrace",
+          "content": "K užívání služby je nutné vytvořit účet a uvést platnou e-mailovou adresu. Musí vám být alespoň 16 let, jinak potřebujete souhlas zákonného zástupce.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Odpovídáte za utajení svých přihlašovacích údajů a za veškerou aktivitu pod svým účtem.</li><li>Zavazujete se uvádět pravdivé údaje a udržovat je aktuální.</li><li>Doporučujeme zapnout dvoufaktorové ověření, které služba podporuje.</li><li>Účet je osobní. V rámci limitů svého tarifu můžete přizvat další uživatele, nesmíte však sdílet jedny přihlašovací údaje.</li></ul><br>Máte-li podezření na neoprávněný přístup, informujte nás bez zbytečného odkladu na <a href='mailto:support@topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support@topiqu.com</a>."
         },
         {
-          "icon": "mdi:copyright",
+          "icon": "mdi:credit-card-outline",
+          "iconColor": "text-emerald-500",
+          "title": "3. Tarify, ceny a platby",
+          "content": "Služba je nabízena v bezplatné verzi a v placených tarifech (aktuálně <strong>PRO</strong> a <strong>PREMIUM</strong>) s měsíční nebo roční fakturací. K placeným tarifům lze dokoupit jednorázové tokenové balíčky spotřebovávané generováním pomocí AI.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Platí ceny zobrazené v okamžiku objednávky. Ceny jsou uvedeny včetně DPH, je-li DPH uplatňována.</li><li>Platby zpracovává <strong>Stripe Payments Europe, Ltd.</strong> Úplné údaje o platební kartě neukládáme.</li><li>Předplatné se <strong>automaticky obnovuje</strong> na stejné období, dokud jej nezrušíte. Zrušit lze kdykoli v nastavení účtu, s účinností ke konci probíhajícího zúčtovacího období.</li><li>Tokeny se spotřebovávají užitím, po dobu existence účtu nepropadají a po spotřebování je nelze vrátit.</li><li>Neproběhne-li platba, můžeme po upozornění pozastavit přístup k placeným funkcím.</li></ul><br>Ceny můžeme měnit s oznámením nejméně 30 dnů předem na váš registrační e-mail. Změna se uplatní od dalšího zúčtovacího období; nesouhlasíte-li, můžete předplatné před jeho začátkem zrušit."
+        },
+        {
+          "icon": "mdi:keyboard-return",
+          "iconColor": "text-amber-500",
+          "title": "4. Odstoupení od smlouvy (spotřebitelé)",
+          "content": "Jste-li spotřebitel, máte právo odstoupit od smlouvy do <strong>14 dnů</strong> od jejího uzavření bez udání důvodu, a to oznámením na <a href='mailto:support@topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support@topiqu.com</a>.<br><br><strong>Důležité upozornění:</strong> služba představuje digitální obsah dodávaný bezodkladně. Zaškrtnutím příslušného pole v objednávce výslovně žádáte, aby plnění začalo již v průběhu lhůty pro odstoupení, a berete na vědomí, že tím <strong>ztrácíte právo na odstoupení</strong> poté, co byla služba zcela poskytnuta — v souladu s § 1837 občanského zákoníku.<br><br>Bylo-li plnění zahájeno, ale v okamžiku odstoupení dosud nebylo dokončeno, uhradíte nám poměrnou část za dosud poskytnuté plnění. Vrácení peněz proběhne stejným platebním prostředkem do 14 dnů."
+        },
+        {
+          "icon": "mdi:file-document-edit",
           "iconColor": "text-purple-500",
-          "title": "3. Vlastnická práva",
-          "content": "Berete na vědomí a souhlasíte s tím, že naše webové stránky mohou obsahovat chráněné a důvěrné informace, včetně ochranných známek a patentů chráněných zákony o duševním vlastnictví.<br><br>Povolujeme vám prohlížet a vytvořit si jednu kopii částí obsahu pro offline, osobní a nekomerční použití. Náš obsah nesmí být prodáván, reprodukován nebo distribuován bez našeho písemného souhlasu."
+          "title": "5. Váš obsah",
+          "content": "Články, obrázky a další materiály, které nahrajete nebo pomocí služby vytvoříte („váš obsah“), zůstávají <strong>plně ve vašem vlastnictví</strong>. Nečiníme si k nim žádný vlastnický nárok.<br><br>Udělujete nám nevýhradní, bezúplatnou licenci k hostování, ukládání, rozmnožování, úpravě a přenosu vašeho obsahu <strong>výhradně v rozsahu nezbytném pro provoz služby</strong> — tedy k vykreslení vašeho webu, tvorbě překladů, generování AI návrhů, o která požádáte, a k publikování na sociální účty, které jste propojili. Licence zaniká smazáním obsahu nebo účtu, s výjimkou záloh, které expirují ve lhůtách uvedených v zásadách ochrany osobních údajů.<br><br>Prohlašujete, že k svému obsahu máte potřebná práva a že neporušuje práva třetích osob."
+        },
+        {
+          "icon": "mdi:robot-outline",
+          "iconColor": "text-cyan-500",
+          "title": "6. Obsah generovaný umělou inteligencí",
+          "content": "Služba využívá jazykové modely třetích stran ke generování, překladu, vylepšení a analýze textu a k návrhům obrázků. Generování řídíte vy; výstup se považuje za váš obsah.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Výstup AI může být nesprávný.</strong> Může obsahovat věcné chyby, smyšlené citace, zastaralé údaje nebo zkreslení. Za kontrolu a ověření obsahu před publikací odpovídáte výhradně vy.</li><li><strong>Nezaručujeme originalitu ani výlučnost.</strong> Podobné zadání může jiným uživatelům vygenerovat podobný výstup. Neručíme za to, že je výstup původní, že neporušuje práva třetích osob ani že je chráněn autorským právem.</li><li><strong>Vydavatelem jste vy.</strong> Odpovědnost za publikovaný obsah — včetně difamace, porušení práv duševního vlastnictví a povinností podle předpisů o reklamě — nesete vy.</li><li>Automatické režimy publikování se provádějí pod vaším účtem a na váš pokyn. Nastavte si takový režim kontroly, který vám vyhovuje.</li></ul><br>AI funkce nesmí být použity ke tvorbě protiprávního obsahu, dezinformací vydávaných za fakta ani obsahu vydávajícího se za skutečnou osobu."
+        },
+        {
+          "icon": "mdi:share-variant",
+          "iconColor": "text-sky-500",
+          "title": "7. Propojené sociální účty",
+          "content": "Můžete propojit osobní profil nebo firemní stránku na LinkedInu, aby služba mohla publikovat vaším jménem a načítat statistiky zapojení u příspěvků, které vytvořila.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Musíte mít potřebná oprávnění k publikování na propojený účet. U firemní stránky to znamená být jejím oprávněným správcem.</li><li>Užívání LinkedInu se nadále řídí jeho vlastními podmínkami. Tyto podmínky je nenahrazují.</li><li>Propojení můžete kdykoli zrušit v nastavení a nezávisle na tom odvolat náš přístup přímo v nastavení svého účtu na LinkedInu. Zrušením propojení se uložené přístupové tokeny smažou.</li><li>Neodpovídáme za změny, výpadky, limity ani zásahy do účtu na straně platformy třetí strany.</li></ul>"
+        },
+        {
+          "icon": "mdi:cancel",
+          "iconColor": "text-red-500",
+          "title": "8. Zakázané užívání",
+          "content": "Službu nesmíte používat k tomu, abyste:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>zveřejňovali protiprávní, klamavý, difamační obsah nebo obsah porušující práva třetích osob;</li><li>zveřejňovali obsah diskriminační, obtěžující nebo sexuálně zneužívající nezletilé;</li><li>rozesílali spam nebo se podíleli na koordinovaném neautentickém chování na propojených platformách;</li><li>obcházeli limity tarifu, rychlostní limity nebo měření spotřeby tokenů;</li><li>zkoumali, skenovali nebo napadali službu či se pokoušeli získat přístup k datům jiných zákazníků;</li><li>službu automatizovaně stahovali nebo přeprodávali přístup bez naší písemné dohody;</li><li>nahrávali škodlivý kód nebo jej prostřednictvím služby šířili.</li></ul><br>Účty porušující tento článek můžeme pozastavit nebo zrušit. Není-li porušení závažné a lze-li je napravit, zpravidla vás nejprve upozorníme a poskytneme přiměřenou lhůtu k nápravě."
+        },
+        {
+          "icon": "mdi:server-network",
+          "iconColor": "text-teal-500",
+          "title": "9. Dostupnost a změny služby",
+          "content": "Usilujeme o vysokou dostupnost, službu však poskytujeme <strong>bez garantované úrovně dostupnosti</strong>, není-li s vámi samostatně písemně sjednáno SLA.<br><br>Funkce můžeme měnit, přidávat i ukončovat. U změn, které podstatně omezí funkčnost placeného tarifu, vás upozorníme nejméně 30 dnů předem a můžete předplatné zrušit s poměrným vrácením nevyčerpané předplacené částky.<br><br>Plánovanou údržbu oznámíme předem, je-li to rozumně možné. Výpadky na straně třetích stran (platební brána, poskytovatel AI, sociální platformy, hosting) nejsou v naší moci."
+        },
+        {
+          "icon": "mdi:scale-balance",
+          "iconColor": "text-orange-500",
+          "title": "10. Odpovědnost",
+          "content": "Žádné ustanovení těchto podmínek neomezuje odpovědnost, kterou omezit nelze — zejména za újmu způsobenou úmyslně nebo z hrubé nedbalosti a za újmu na přirozených právech člověka.<br><br>V ostatním platí:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Neodpovídáme za nepřímou či následnou škodu, ušlý zisk, ušlé tržby ani ztrátu dobré pověsti.</li><li>Neodpovídáme za újmu vzniklou z výstupu AI, který jste publikovali bez kontroly, z obsahu, k jehož publikování jste nebyli oprávněni, ani ze zásahu platformy třetí strany vůči vám.</li><li>Vůči podnikatelům je naše souhrnná odpovědnost za jakékoli období 12 měsíců omezena do výše úhrad, které jste nám za toto období zaplatili.</li></ul><br>Za zálohy obsahu zásadního pro vaše podnikání odpovídáte vy; k tomu slouží funkce exportu."
+        },
+        {
+          "icon": "mdi:door-open",
+          "iconColor": "text-rose-500",
+          "title": "11. Trvání a ukončení",
+          "content": "Smlouvu můžete kdykoli ukončit zrušením předplatného a smazáním účtu v nastavení.<br><br>My můžeme smlouvu vypovědět s 30denní výpovědní dobou, nebo s okamžitou účinností při závažném porušení čl. 8, při neuhrazení platby po upomínce nebo vyžaduje-li to právní předpis.<br><br>Ukončením zaniká vaše právo službu užívat. Před smazáním účtu si obsah vyexportujte — po smazání jsou data odstraněna ve lhůtách uvedených v <a href='/cs/ochrana-soukromi' class='text-blue-600 dark:text-blue-400 underline'>zásadách ochrany osobních údajů</a> a nelze je obnovit. Ukončíme-li smlouvu bez důvodu na vaší straně, vrátíme poměrnou část nevyčerpaného předplatného."
         },
         {
           "icon": "mdi:gavel",
-          "iconColor": "text-red-500",
-          "title": "4. Ukončení smlouvy",
-          "content": "Podmínky této smlouvy budou platit trvale, dokud nebudou některou ze stran kdykoli a z jakéhokoli důvodu vypovězeny bez předchozího upozornění. Podmínky, které mají platit trvale, nebudou ukončením této smlouvy dotčeny."
+          "iconColor": "text-slate-500",
+          "title": "12. Rozhodné právo a řešení sporů",
+          "content": "Tyto podmínky se řídí právem České republiky s vyloučením kolizních norem. U spotřebitelů tato volba nezbavuje ochrany, kterou poskytují kogentní ustanovení práva státu jejich obvyklého bydliště.<br><br>K řešení sporů jsou příslušné soudy České republiky. Spotřebitel může žalovat i být žalován v místě svého bydliště.<br><br><strong>Mimosoudní řešení sporů:</strong> spotřebitel se může obrátit na Českou obchodní inspekci, Štěpánská 796/44, 110 00 Praha 1, <a href='https://www.coi.cz' target='_blank' rel='noopener noreferrer' class='text-blue-600 dark:text-blue-400 underline'>www.coi.cz</a>. Vždy jsme však připraveni pokusit se stížnost vyřešit nejprve přímo — pište na <a href='mailto:support@topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support@topiqu.com</a>."
+        },
+        {
+          "icon": "mdi:update",
+          "iconColor": "text-gray-500",
+          "title": "13. Změny podmínek",
+          "content": "Tyto podmínky můžeme aktualizovat. O podstatné změně vás informujeme e-mailem a v aplikaci nejméně <strong>30 dnů</strong> před nabytím účinnosti.<br><br>Nesouhlasíte-li se změnou, můžete smlouvu před její účinností ukončit a získat poměrné vrácení nevyčerpaného předplatného. Pokračováním v užívání služby po dni účinnosti změnu přijímáte.<br><br>Bude-li některé ustanovení shledáno neplatným, zůstávají ostatní v platnosti."
         }
       ]
     },
     "privacy": {
-      "title": "Ochrana soukromí",
-      "description": "Zásady zpracování a ochrany osobních dat.",
+      "title": "Ochrana osobních údajů",
+      "description": "Jak Topiqu shromažďuje, používá, sdílí a uchovává osobní údaje včetně dat z propojených účtů LinkedIn.",
       "sections": [
         {
-          "icon": "mdi:database-search",
+          "icon": "mdi:office-building",
           "iconColor": "text-indigo-500",
-          "title": "1. Informace, které shromažďujeme",
-          "content": "Shromažďujeme informace, abychom všem našim uživatelům mohli poskytovat lepší služby. Informace shromažďujeme následujícími způsoby:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Informace, které nám sdělíte.</strong> Naše služby například vyžadují, abyste si vytvořili účet. Při tom vás požádáme o osobní údaje.</li><li><strong>Informace, které získáme na základě vašeho používání našich služeb.</strong> Shromažďujeme informace o službách, které používáte, a o způsobu, jakým je používáte.</li></ul>"
+          "title": "1. Kdo jsme",
+          "content": "Správcem vašich osobních údajů je <strong>[[JMENO]]</strong>, podnikatel — fyzická osoba zapsaná v živnostenském rejstříku, IČO <strong>[[ICO]]</strong>, Česká republika. Údaje o sídle jsou veřejně dostupné v registru ARES: <a href='https://ares.gov.cz/ekonomicke-subjekty?ico=[[ICO]]' target='_blank' rel='noopener noreferrer' class='text-indigo-600 dark:text-indigo-400 underline'>ares.gov.cz</a>; na požádání je sdělíme i přímo.<br><br>Kontakt ve věcech ochrany údajů: <a href='mailto:privacy@topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy@topiqu.com</a><br><br>Nejmenovali jsme pověřence pro ochranu osobních údajů a nemáme tuto povinnost: naše zpracování nepředstavuje rozsáhlé systematické monitorování osob a zvláštní kategorie údajů nezpracováváme jako hlavní činnost. Na uvedené adrese se vždy dovoláte konkrétního člověka.<br><br>Tyto zásady se vztahují na web Topiqu, registrační proces i samotnou aplikaci včetně webu, který v ní provozujete."
         },
         {
-          "icon": "mdi:cogs",
+          "icon": "mdi:database-search",
           "iconColor": "text-sky-500",
-          "title": "2. Jak informace používáme",
-          "content": "Informace shromážděné ze všech našich služeb používáme k jejich poskytování, údržbě, ochraně a vylepšování. Tyto informace také používáme k tomu, abychom vám nabídli přizpůsobený obsah – například relevantnější výsledky vyhledávání a reklamy.<br><br>Před použitím informací k jinému účelu vás požádáme o souhlas."
+          "title": "2. Jaké údaje zpracováváme",
+          "content": "Shromažďujeme jen to, co služba potřebuje k fungování:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Údaje o účtu</strong> — uživatelské jméno, e-mail, heslo (ukládáme výhradně jako otisk Argon2, nikdy v čitelné podobě), volitelně bio a avatar, jazyk a motiv rozhraní, nastavení notifikací.</li><li><strong>Ověřovací údaje</strong> — ověřovací kódy zasílané e-mailem a při zapnutí dvoufaktorového ověření příslušný tajný klíč.</li><li><strong>Údaje o relacích a bezpečnosti</strong> — IP adresa, user agent, zařízení, operační systém, prohlížeč a přibližná lokalita odvozená z IP (město, region, země). Díky tomu vidíte v přehledu aktivních relací neznámá přihlášení a můžete je zrušit.</li><li><strong>Auditní log</strong> — bezpečnostně významné akce s časovým razítkem, vaším ID a IP adresou, uložené v řetězci otisků odolném proti zpětné úpravě.</li><li><strong>Obsah</strong> — články, koncepty, překlady, komentáře, reakce, ankety a nahraná média.</li><li><strong>Fakturační údaje</strong> — tarif, zúčtovací období, identifikátory transakcí a faktury. Údaje o kartě zpracovává Stripe a na naše servery se nedostanou.</li><li><strong>Údaje z propojených účtů</strong> — viz čl. 4.</li><li><strong>Registrační údaje</strong> — název webu, požadovaná doména, uživatelské jméno a e-mail zadané ještě před vznikem účtu.</li></ul><br>Osobní údaje <strong>neprodáváme</strong> a z vašeho obsahu nevytváříme reklamní profily."
+        },
+        {
+          "icon": "mdi:scale-balance",
+          "iconColor": "text-emerald-500",
+          "title": "3. Účel a právní základ zpracování",
+          "content": "Podle čl. 6 odst. 1 GDPR:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Plnění smlouvy</strong> (čl. 6/1/b) — zřízení a provoz účtu, hostování a publikování obsahu, generování pomocí AI na vaši žádost, publikování na propojené účty, fakturace.</li><li><strong>Oprávněný zájem</strong> (čl. 6/1/f) — zabezpečení a dostupnost služby, prevence zneužití a podvodů, diagnostika chyb, ochrana právních nároků. Tyto zájmy jsme poměřili s vašimi právy; kdykoli můžete vznést námitku (čl. 9).</li><li><strong>Souhlas</strong> (čl. 6/1/a) — analytické a reklamní cookies a marketingové e-maily. Souhlas lze kdykoli odvolat, aniž je dotčeno předchozí zpracování.</li><li><strong>Právní povinnost</strong> (čl. 6/1/c) — uchovávání účetních a daňových dokladů.</li></ul>"
+        },
+        {
+          "icon": "mdi:linkedin",
+          "iconColor": "text-blue-600",
+          "title": "4. Propojení s LinkedInem",
+          "content": "Rozhodnete-li se propojit osobní profil nebo firemní stránku na LinkedInu, zpracováváme následující údaje <strong>výhradně za účelem publikování vaším jménem a zpětného vyhodnocení výsledků</strong>:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Váš identifikátor na LinkedInu (URN)</strong> — member URN u osobního profilu nebo organization URN u firemní stránky. Je nezbytný pro volání publikačního API a je jediným identifikátorem profilu, který uchováváme.</li><li><strong>Přístupový a obnovovací token</strong> včetně platnosti, uložené šifrovaně, nikdy nedostupné prohlížeči ani jinému zákazníkovi.</li><li><strong>Zobrazovaný název</strong> propojeného profilu či stránky, abyste v rozhraní odlišili jednotlivá propojení.</li><li><strong>Příspěvky, které za vás publikujeme</strong>, a jejich ukazatele zapojení (reakce, komentáře), které agregujeme do vašich statistik.</li></ul><br><strong>Požadovaná oprávnění.</strong> U osobního profilu: <code>openid</code>, <code>profile</code>, <code>email</code>, <code>w_member_social</code>. U firemní stránky: <code>w_organization_social</code>, <code>r_organization_social</code>, <code>rw_organization_admin</code>. Nežádáme o žádné oprávnění, které nevyužíváme.<br><br><strong>Doba uchování.</strong> V souladu s podmínkami LinkedIn API neuchováváme profilová data z LinkedInu déle než <strong>24 hodin</strong> a data o sociální aktivitě déle než <strong>48 hodin</strong>. Ukazatele zapojení v této lhůtě redukujeme na souhrnné čítače a zdrojové záznamy zahazujeme. Tokeny a URN uchováváme pouze po dobu trvání propojení, protože bez nich publikování nefunguje.<br><br><strong>Nikdy</strong> nečteme vaši schránku, kontakty ani feed na LinkedInu, neimportujeme vaše spojení a data z LinkedInu nepoužíváme k trénování AI modelů ani k reklamě.<br><br><strong>Jak propojení zrušit.</strong> Zrušte je v nastavení Topiqu — tokeny i URN se okamžitě smažou. Náš přístup můžete nezávisle odvolat kdykoli v <em>LinkedIn → Nastavení a soukromí → Ochrana dat → Další aplikace → Povolené služby</em>. O smazání všeho, co z propojení uchováváme, si můžete napsat na <a href='mailto:privacy@topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy@topiqu.com</a>; vyřídíme to bez zbytečného odkladu, nejpozději do 30 dnů."
+        },
+        {
+          "icon": "mdi:robot-outline",
+          "iconColor": "text-cyan-500",
+          "title": "5. Zpracování pomocí AI",
+          "content": "Když použijete funkci generování, překladu, vylepšení nebo analýzy, odešle se příslušný text poskytovateli AI (OpenAI), který vytvoří výsledek.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Využíváme API poskytovatele za podmínek, podle nichž se vstupy a výstupy <strong>nepoužívají k trénování jeho modelů</strong>.</li><li>Do promptů prosím nevkládejte osobní údaje třetích osob, přihlašovací údaje ani důvěrné materiály. Co se odešle, určujete vy.</li><li>Výsledný obsah ukládáme do vašeho pracovního prostoru spolu s čítačem spotřeby tokenů pro fakturaci. Samostatnou kopii promptů nad rámec vykreslení vašich konceptů neuchováváme.</li><li>Žádná AI funkce nečiní rozhodnutí s právními účinky vůči vaší osobě. Automatické režimy publikování vykonávají vámi nastavené pokyny a lze je kdykoli přepnout na ruční kontrolu.</li></ul>"
+        },
+        {
+          "icon": "mdi:cookie",
+          "iconColor": "text-amber-500",
+          "title": "6. Cookies a analytika",
+          "content": "<strong>Nezbytné</strong> (souhlas se nevyžaduje): cookies relace a přihlášení, token CSRF, volba jazyka (<code>i18n_lang</code>) a Cloudflare Turnstile, který na registračních formulářích odlišuje lidi od robotů.<br><br><strong>Analytické a reklamní</strong> (vyžadují souhlas, výchozí stav odepřeno): Google Analytics a reklamní systémy Google. V EHP, Spojeném království a Švýcarsku běží v režimu <strong>Google Consent Mode v2</strong> s úložištěm pro reklamu i analytiku nastaveným na <em>denied</em>, dokud souhlas neudělíte — do té doby se žádná analytická ani reklamní cookie nezapíše.<br><br>Souhlas se vybírá na dvou místech podle toho, kde se nacházíte:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Na <strong>topiqu.com</strong> — cookie lištou na tomto webu. Při odmítnutí se analytický skript vůbec nenačte.</li><li>Na <strong>blogu provozovaném přes Topiqu</strong> — Google-certifikovanou platformou pro správu souhlasu (IAB TCF v2.2) zobrazenou na daném blogu. Správcem těchto voleb je provozovatel blogu.</li></ul><br>Volbu můžete kdykoli změnit nebo odvolat: na topiqu.com odkazem <em>Nastavení cookies</em> v patičce, na blogu odkazem, který k tomu daná platforma nabízí. Odvolání působí do budoucna.<br><br>Pro zapamatování předvoleb rozhraní používáme také <code>localStorage</code> prohlížeče. Tyto údaje vaše zařízení neopouštějí."
         },
         {
           "icon": "mdi:share-variant",
-          "iconColor": "text-amber-500",
-          "title": "3. Informace, které sdílíme",
-          "content": "Osobní údaje nesdílíme se společnostmi a jednotlivci mimo naši společnost, pokud nenastane jedna z následujících okolností:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>S vaším souhlasem.</strong> Osobní údaje budeme sdílet se subjekty mimo naši společnost, pokud k tomu budeme mít váš souhlas.</li><li><strong>Z právních důvodů.</strong> Osobní údaje budeme sdílet, pokud jsme přesvědčeni, že přístup k informacím nebo jejich zpřístupnění je rozumně nutné.</li></ul>"
+          "iconColor": "text-orange-500",
+          "title": "7. Komu údaje předáváme",
+          "content": "Vaše údaje neprodáváme a nezpřístupňujeme je nikomu kromě níže uvedených zpracovatelů, z nichž každý je vázán smlouvou o zpracování podle čl. 28 GDPR:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Stripe</strong> — zpracování plateb a fakturace (IE / USA)</li><li><strong>OpenAI</strong> — generování, překlad a analýza pomocí AI (USA)</li><li><strong>LinkedIn</strong> — publikování na účty, které propojíte (IE / USA)</li><li><strong>Amazon Web Services</strong> — úložiště nahraných médií a odesílání transakčních e-mailů; region Frankfurt (EU)</li><li><strong>Cloudflare</strong> — CDN, ochrana proti robotům a síťová bezpečnost (USA)</li><li><strong>Sentry</strong> — monitoring chyb a diagnostika (USA)</li><li><strong>Google</strong> — analytika a reklama, <em>pouze s vaším souhlasem</em> (USA)</li><li><strong>[[HOSTING]]</strong> — provoz aplikace, databáze a cache ([[HOSTING_REGION]])</li></ul><br>Údaje můžeme zpřístupnit také tam, kde to ukládá zákon, nebo za účelem určení a obhajoby právních nároků. Obdržíme-li žádost orgánu veřejné moci, poskytneme pouze to, co je právně vyžadováno, a je-li nám to dovoleno, budeme vás informovat.<br><br><strong>Předávání mimo EHP.</strong> Někteří zpracovatelé sídlí ve Spojených státech. Tato předání se opírají o standardní smluvní doložky EU, případně o rámec EU–US Data Privacy Framework."
+        },
+        {
+          "icon": "mdi:timer-sand",
+          "iconColor": "text-violet-500",
+          "title": "8. Jak dlouho údaje uchováváme",
+          "content": "Uchováváme co nejméně:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Účet a obsah</strong> — po dobu existence účtu, poté smazání do 30 dnů od zrušení účtu.</li><li><strong>Zálohy</strong> — rotující, přepsané do 35 dnů.</li><li><strong>Relace</strong> — 90 dnů od posledního použití, nebo okamžitě při jejich zrušení.</li><li><strong>Bezpečnostní auditní log</strong> — 12 měsíců.</li><li><strong>Profilová data z LinkedInu</strong> — max. 24 hodin; <strong>data o sociální aktivitě</strong> — max. 48 hodin; tokeny a URN — pouze po dobu trvání propojení.</li><li><strong>E-mailové ověřovací kódy</strong> — řádově minuty; po použití či expiraci se zahazují.</li><li><strong>Účetní a daňové doklady</strong> — 10 let, jak vyžadují české právní předpisy.</li><li><strong>Analytika</strong> — 14 měsíců, a to pouze při udělení souhlasu.</li></ul>"
+        },
+        {
+          "icon": "mdi:account-check",
+          "iconColor": "text-green-500",
+          "title": "9. Vaše práva",
+          "content": "Podle GDPR máte právo na:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Přístup</strong> — získat kopii údajů, které o vás vedeme (čl. 15)</li><li><strong>Opravu</strong> — nechat opravit nepřesné údaje (čl. 16)</li><li><strong>Výmaz</strong> — nechat údaje smazat (čl. 17)</li><li><strong>Omezení zpracování</strong> (čl. 18)</li><li><strong>Přenositelnost</strong> — získat údaje ve strojově čitelném formátu či je nechat předat jinému poskytovateli (čl. 20)</li><li><strong>Námitku</strong> — proti zpracování založenému na oprávněném zájmu (čl. 21)</li><li><strong>Odvolání souhlasu</strong> — kdykoli, bez vlivu na předchozí zpracování (čl. 7 odst. 3)</li></ul><br>Většinu z toho zvládnete sami: na stránce profilu můžete údaje upravit, exportovat i účet smazat. Jinak pište na <a href='mailto:privacy@topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy@topiqu.com</a>. Odpovídáme do jednoho měsíce; vyřízení je bezplatné, ledaže by šlo o žádost zjevně nedůvodnou nebo nepřiměřenou.<br><br><strong>Právo podat stížnost.</strong> Můžete se obrátit na Úřad pro ochranu osobních údajů, Pplk. Sochora 27, 170 00 Praha 7, <a href='https://www.uoou.cz' target='_blank' rel='noopener noreferrer' class='text-indigo-600 dark:text-indigo-400 underline'>www.uoou.cz</a>, případně na dozorový úřad ve státě svého bydliště."
         },
         {
           "icon": "mdi:lock",
           "iconColor": "text-emerald-500",
-          "title": "4. Zabezpečení informací",
-          "content": "Usilovně pracujeme na ochraně našich uživatelů před neoprávněným přístupem nebo neoprávněnou úpravou informací, které uchováváme. Zejména:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Mnoho našich služeb šifrujeme pomocí SSL.</li><li>Přezkoumáváme naše postupy shromažďování a ukládání informací, abychom zabránili neoprávněnému přístupu do systémů.</li></ul>"
+          "title": "10. Zabezpečení",
+          "content": "Opatření, která skutečně provozujeme:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>TLS při přenosu a šifrování přihlašovacích údajů a tokenů třetích stran v úložišti.</li><li>Hesla hashovaná algoritmem Argon2. Vaše heslo nedokážeme přečíst.</li><li>Volitelné dvoufaktorové ověření (TOTP).</li><li>Autorizační pravidla na úrovni řádků, která vynucují oddělení zákazníků přímo v databázi, nikoli jen v aplikačním kódu.</li><li>Přístupové tokeny a tajné klíče vyloučené ze všech API odpovědí.</li><li>Auditní log bezpečnostně významných akcí zřetězený otisky, odolný proti zpětné úpravě.</li><li>Rychlostní limity a ochrana proti robotům na přihlašovacích endpointech.</li></ul><br>Žádný systém není dokonale bezpečný. Dojde-li k porušení zabezpečení s pravděpodobným vysokým rizikem pro vaše práva, informujeme vás bez zbytečného odkladu a dozorový úřad do 72 hodin."
+        },
+        {
+          "icon": "mdi:account-child",
+          "iconColor": "text-pink-500",
+          "title": "11. Děti",
+          "content": "Služba není určena dětem mladším 16 let a jejich osobní údaje vědomě neshromažďujeme. Máte-li za to, že nám dítě údaje poskytlo, napište na <a href='mailto:privacy@topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy@topiqu.com</a> a údaje smažeme."
+        },
+        {
+          "icon": "mdi:update",
+          "iconColor": "text-gray-500",
+          "title": "12. Změny těchto zásad",
+          "content": "Tyto zásady můžeme aktualizovat. Aktuální verze je vždy na této adrese s datem poslední revize v záhlaví.<br><br>O podstatných změnách — nový účel, nová kategorie údajů nebo nový zpracovatel ve třetí zemi — vás informujeme e-mailem nebo v aplikaci nejméně 30 dnů předem. Vyžaduje-li změna souhlas, vyžádáme si jej před nabytím účinnosti.<br><br>Dotazy: <a href='mailto:privacy@topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy@topiqu.com</a>"
         }
       ]
     }

@@ -31,7 +31,7 @@
                   class="h-3 w-3 shrink-0"
                   :class="view === 'auto' ? 'text-gray-400 dark:text-gray-500' : 'text-amber-500'"
                 />
-                <span class="truncate text-gray-700 dark:text-gray-200">{{ clientSite?.name || 'landing' }}</span>
+                <span class="truncate text-gray-700 dark:text-gray-200">{{ clientSite?.name || 'platform' }}</span>
                 <template v-if="clientSite">
                   <span class="text-gray-300 dark:text-gray-700">·</span>
                   <span class="shrink-0 font-mono uppercase text-sky-600 dark:text-sky-400">{{ clientSite.plan }}</span>
@@ -196,7 +196,7 @@
                       class="truncate"
                       :class="clientSite ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'"
                     >
-                      {{ clientSite?.name || 'landing' }}
+                      {{ clientSite?.name || 'platform' }}
                     </span>
                   </dd>
                 </div>
@@ -232,7 +232,6 @@ const seg = (active: boolean) =>
 
 const views = [
   { id: 'auto', icon: 'i-lucide:wand-sparkles' },
-  { id: 'landing', icon: 'i-lucide:globe' },
   { id: 'tenant', icon: 'i-lucide:building-2' },
 ] satisfies { id: DevView; icon: string }[]
 const view = useDevView()

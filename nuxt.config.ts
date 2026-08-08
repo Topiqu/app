@@ -310,7 +310,6 @@ export default defineNuxtConfig({
         files: [
           'en/common.json',
           'en/series.json',
-          'en/landing.json',
           'en/feedback.json',
           'en/seo.json',
           'en/articles.json',
@@ -332,7 +331,6 @@ export default defineNuxtConfig({
         files: [
           'cs/common.json',
           'cs/series.json',
-          'cs/landing.json',
           'cs/feedback.json',
           'cs/seo.json',
           'cs/articles.json',
