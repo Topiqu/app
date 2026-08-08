@@ -31,6 +31,34 @@ const generateUniqueSlug = async (ctx: any, title: string, clientSiteId: string)
   return `${base}-${max + 1}`
 }
 
+const MIN_TOKENS = 7000
+
+/** Why each scheduled site was left out of this run — `not_due` is the only benign answer. */
+const skippedSites = async (pickedIds: string[], now: Date) => {
+  const scheduled = await prisma.clientSite.findMany({
+    where: { generationFrequency: { in: ['DAILY', 'WEEKLY'] }, id: { notIn: pickedIds } },
+    select: {
+      id: true,
+      name: true,
+      tokenRemaining: true,
+      lastGeneratedAt: true,
+      generationFrequency: true,
+      features: { where: { isActive: true, feature: { code: 'ARTICLE_CRONS' } }, select: { id: true } },
+    },
+  })
+
+  return scheduled.map((site) => ({
+    clientSiteId: site.id,
+    name: site.name,
+    lastGeneratedAt: site.lastGeneratedAt?.toISOString() ?? null,
+    reason: !site.features.length
+      ? 'feature_inactive'
+      : (site.tokenRemaining ?? 0) <= MIN_TOKENS
+        ? 'insufficient_tokens'
+        : 'not_due',
+  }))
+}
+
 const processClient = async (client: any) => {
   const clientSiteId = client.id
   const defaultLang = client.language
@@ -319,7 +347,7 @@ export default defineMonitoredTask({
         users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
       },
       where: {
-        tokenRemaining: { gt: 7000 },
+        tokenRemaining: { gt: MIN_TOKENS },
         generationFrequency: { in: ['DAILY', 'WEEKLY'] },
         ...activeFeatureFilter('ARTICLE_CRONS'),
         OR: [
@@ -336,6 +364,13 @@ export default defineMonitoredTask({
       },
     })
 
+    // The `where` above drops a client without leaving a trace, so a site that stopped generating
+    // looks exactly like a site with nothing due. Name the reason instead of guessing it later.
+    const skipped = await skippedSites(
+      clients.map((client) => client.id),
+      now,
+    )
+
     const BATCH_SIZE = 5
 
     for (let i = 0; i < clients.length; i += BATCH_SIZE) {
@@ -343,6 +378,6 @@ export default defineMonitoredTask({
       await Promise.allSettled(batch.map(processClient))
     }
 
-    return { result: { count: clients.length, timestamp: now.toISOString() } }
+    return { result: { count: clients.length, skipped, timestamp: now.toISOString() } }
   },
 })

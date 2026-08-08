@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   AI_FORMATS,
+  canManageArticle,
   composeAiPrompt,
   countHtmlWords,
   formatElapsed,
@@ -12,6 +13,29 @@ import {
   toDateTimeLocal,
   wrapIndex,
 } from '../../shared/utils/articleEditor'
+
+describe('canManageArticle', () => {
+  const article = { clientSiteId: 'site-1' }
+
+  it('admits any admin of the owning tenant, author or not', () => {
+    expect(canManageArticle({ role: 'admin', clientSiteId: 'site-1' }, article)).toBe(true)
+  })
+
+  it('refuses another tenant, a non-admin and an absent session', () => {
+    expect(canManageArticle({ role: 'admin', clientSiteId: 'site-2' }, article)).toBe(false)
+    expect(canManageArticle({ role: 'user', clientSiteId: 'site-1' }, article)).toBe(false)
+    expect(canManageArticle(null, article)).toBe(false)
+  })
+
+  it('refuses superadmin, which the ZenStack rule does not cover either', () => {
+    expect(canManageArticle({ role: 'superadmin', clientSiteId: 'site-1' }, article)).toBe(false)
+  })
+
+  it('never matches two missing tenants against each other', () => {
+    expect(canManageArticle({ role: 'admin', clientSiteId: null }, { clientSiteId: null })).toBe(false)
+    expect(canManageArticle({ role: 'admin' }, {})).toBe(false)
+  })
+})
 
 describe('composeAiPrompt', () => {
   it('returns the bare topic when no format is selected', () => {

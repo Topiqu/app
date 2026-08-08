@@ -70,7 +70,7 @@
 
         <ArticleActionsBar
           :article="data"
-          :isAdmin="session?.user?.role === 'admin' && session.user.id === data.user.id"
+          :isAdmin="canManageArticle(session?.user, data)"
           :onStatusUpdate="debouncedSetStatus"
           @toggleComments="toggleComments"
           @refresh="refresh"
@@ -166,6 +166,7 @@
 <script setup lang="ts">
 import type { User } from '@zenstackhq/runtime/models'
 
+import { canManageArticle } from '~~/shared/utils/articleEditor'
 import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
 import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
 
@@ -205,7 +206,7 @@ const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/
 
 const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/${slug.value}/related`, {
   lazy: true,
-  query: { limit: 3, clientSiteId: clientSite?.id },
+  query: { limit: 3, clientSiteId: clientSite?.id, locale: locale.value },
 })
 
 const primaryLocale = computed(() => clientSite?.language ?? 'en')

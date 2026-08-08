@@ -1,3 +1,5 @@
+import type { Language } from '@prisma/client'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -6,20 +8,36 @@ export default defineEventHandler(async (event) => {
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const { take } = await getPagination(event)
-  const { clientSiteId } = getQuery<{ clientSiteId: string }>(event)
-  const { tags } = await prisma.article.findUniqueOrThrow({
-    where: { slug_clientSiteId: { slug, clientSiteId } },
-    select: { tags: { select: { tagId: true } } },
-  })
+  const { clientSiteId, locale } = getQuery<{ clientSiteId?: string; locale?: Language }>(event)
+  if (!clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
-  const tagIds = tags.map((tag) => tag.tagId)
+  const clientSite = await prisma.clientSite.findUnique({
+    where: { id: clientSiteId },
+    select: { language: true },
+  })
+  if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
+
+  const primaryLanguage = clientSite.language
+  const isAdmin = user?.role === 'admin'
+
+  const current = await resolveArticleBySlug<{ id: string; tags: { tagId: string }[] }>(
+    prisma,
+    { slug, clientSiteId, locale, primaryLanguage, isAdmin },
+    { id: true, tags: { select: { tagId: true } } },
+  )
+
+  if (!current) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+
+  const tagIds = current.tags.map((tag) => tag.tagId)
   if (tagIds.length === 0) return []
 
   const candidates = await prisma.article.findMany({
     where: {
-      slug: { not: slug },
+      // Tag.clientSiteId is nullable, so a global tag matches across tenants without this.
+      clientSiteId,
+      id: { not: current.id },
       tags: { some: { tagId: { in: tagIds } } },
-      ...(user?.role === 'admin' ? {} : { status: 'published' }),
+      ...(isAdmin ? {} : { status: 'published' }),
     },
     include: {
       tags: { include: { tag: true } },
@@ -38,5 +56,5 @@ export default defineEventHandler(async (event) => {
     .sort((a, b) => b.matchCount - a.matchCount)
     .slice(0, take)
 
-  return articles
+  return localizeArticles(prisma, articles, { clientSiteId, locale, primaryLanguage })
 })

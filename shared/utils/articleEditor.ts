@@ -37,6 +37,17 @@ export const toDateTimeLocal = (value?: string | Date | null) => {
 }
 
 /**
+ * Mirrors `Article`'s ZenStack rule (`admin && clientSiteId == auth().clientSiteId`) — authorship
+ * is deliberately not part of it, so a tenant's admins can edit each other's articles and the
+ * AI author's articles, which no human owns. A stricter client gate only hides a button the
+ * server would have accepted. Superadmin is excluded because the policy excludes it too.
+ */
+export const canManageArticle = (
+  user: { role?: string | null; clientSiteId?: string | null } | null | undefined,
+  article: { clientSiteId?: string | null } | null | undefined,
+) => !!user && user.role === 'admin' && !!user.clientSiteId && user.clientSiteId === article?.clientSiteId
+
+/**
  * Nothing written yet. TipTap normalises an emptied body to `<p></p>` rather than `''`, so both
  * spellings have to count as empty — which is why this lives in one place instead of being
  * re-typed wherever the editor asks the question.

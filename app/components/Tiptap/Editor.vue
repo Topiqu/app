@@ -24,6 +24,7 @@
           :editor
           :class="[
             'p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-neutral-700',
+            EDITOR_TABLE_CLASS,
             contentClass || 'h-96 overflow-y-auto',
             { 'rounded-lg shadow-sm': edit },
           ]"
@@ -51,6 +52,8 @@
 import type { ChainedCommands } from '@tiptap/vue-3'
 
 import { EditorContent } from '@tiptap/vue-3'
+
+import { EDITOR_TABLE_CLASS } from '~~/shared/utils/articleProse'
 
 const content = defineModel<string | null>({ default: '<p></p>' })
 const edit = defineModel<boolean>('edit', { default: false })

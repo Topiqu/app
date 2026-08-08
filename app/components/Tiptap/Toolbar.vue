@@ -70,6 +70,24 @@
         :aria="$t('articles.editor.toolbar.insertPoll')"
         @click="emit('insertPoll')"
       />
+      <Button
+        icon="mdi-table-plus"
+        :title="$t('articles.editor.toolbar.insertTable')"
+        :aria="$t('articles.editor.toolbar.insertTable')"
+        @click="run((c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }))"
+      />
+
+      <!-- Row/column commands are meaningless outside a table and would just be six dead buttons. -->
+      <template v-if="editor.isActive('table')">
+        <Button
+          v-for="cmd in tableCommands"
+          :key="cmd.key"
+          :icon="cmd.icon"
+          :title="$t(`articles.editor.toolbar.${cmd.key}`)"
+          :aria="$t(`articles.editor.toolbar.${cmd.key}`)"
+          @click="run(cmd.run)"
+        />
+      </template>
 
       <Button
         v-for="a in alignments"
@@ -129,6 +147,15 @@ const emit = defineEmits<{
 
 const sk = useTiptapShortcuts()
 const alignments = ['left', 'center', 'right', 'justify'] as const
+
+const tableCommands = [
+  { key: 'addColumnAfter', icon: 'mdi-table-column-plus-after', run: (c: ChainedCommands) => c.addColumnAfter() },
+  { key: 'deleteColumn', icon: 'mdi-table-column-remove', run: (c: ChainedCommands) => c.deleteColumn() },
+  { key: 'addRowAfter', icon: 'mdi-table-row-plus-after', run: (c: ChainedCommands) => c.addRowAfter() },
+  { key: 'deleteRow', icon: 'mdi-table-row-remove', run: (c: ChainedCommands) => c.deleteRow() },
+  { key: 'toggleHeaderRow', icon: 'mdi-table-headers-eye', run: (c: ChainedCommands) => c.toggleHeaderRow() },
+  { key: 'deleteTable', icon: 'mdi-table-remove', run: (c: ChainedCommands) => c.deleteTable() },
+] as const
 
 const run = (fn: (c: ChainedCommands) => ChainedCommands) => {
   fn(editor.chain().focus()).run()

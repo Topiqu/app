@@ -9,6 +9,7 @@
 
 <script setup lang="ts">
 import { normalizePollOptions, type PollOptionData } from '~~/shared/utils/polls'
+import { ARTICLE_TABLE_CLASS } from '~~/shared/utils/articleProse'
 
 const props = defineProps<{ content: string; articleId: string }>()
 const parsedContent = reactive<any[]>([])
@@ -24,7 +25,7 @@ const parse = () => {
       ...Array.from(d.body.childNodes).map((n) => {
         const el = n as Element
         if (el.nodeName === 'TABLE') {
-          return { type: 'html', html: `<div class="overflow-x-auto">${el.outerHTML}</div>` }
+          return { type: 'html', html: `<div class="${ARTICLE_TABLE_CLASS}">${el.outerHTML}</div>` }
         }
         if (el.nodeName === 'DIV' && el.getAttribute('data-type') === 'poll') {
           const pollId = el.getAttribute('data-poll-id')

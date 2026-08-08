@@ -5,12 +5,28 @@ import presetTypography from '@unocss/preset-typography'
 import { Z_LAYERS } from './shared/utils/z-layers'
 
 export default defineConfig({
+  // Vite's pipeline scans .vue/.tsx but not plain .ts, and @unocss/nuxt only ever widens the
+  // exclude list — so a class list that lives in a shared module generates no CSS at all.
+  // `ARTICLE_PROSE_CLASS` hit exactly that: moving it out of the page component silently took
+  // every `prose` rule with it, leaving tables at browser defaults (no borders, no padding).
+  content: {
+    pipeline: {
+      include: [
+        /\.(vue|svelte|[jt]sx|vine\.ts|mdx?|astro|elm|php|phtml|marko|html)($|\?)/,
+        /shared\/.*\.ts($|\?)/,
+      ],
+    },
+  },
   presets: [
     presetWind3(),
     presetTypography({
       cssExtend: {
+        // Baseline for tables `Article/Parsed.vue` does not claim (anything not a direct child of
+        // body); top-level ones get ARTICLE_TABLE_CLASS and leave prose via `not-prose`. Without
+        // `border-collapse` the per-cell borders below double up on every shared edge.
         table: {
           width: '100%',
+          'border-collapse': 'collapse',
           'margin-block': '1.5em',
           'font-size': '0.95em',
           'line-height': '1.6',
