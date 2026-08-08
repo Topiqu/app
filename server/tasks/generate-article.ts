@@ -1,6 +1,7 @@
 import type { EventStream } from 'h3'
 
 import slugify from 'slugify'
+import { linkableSources } from '~~/shared/utils/articleSources'
 import { consumeClientTokens } from '~~/server/utils/consumeTokens'
 
 interface GlobalThis {
@@ -196,6 +197,9 @@ const processClient = async (client: any) => {
         clientSiteId,
         status,
         aiInvolvement: 'FULL',
+        // The streaming path carries these through `applyAiFinal`; the cron writes the row itself
+        // and dropped them, so every cron article shipped with a NULL `sources` column.
+        sources: linkableSources(generated.sources),
         totalWords: metrics.totalWords,
         savedAmount: metrics.savedAmount,
         savedTimeMinutes: metrics.savedTimeMinutes,

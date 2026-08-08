@@ -148,7 +148,7 @@ const buildArticleConfig = async (
         "images": [{"type": "unsplash", "query": "keyword for IMAGE1"}, {"type": "generate", "query": "prompt for IMAGE2"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
         "tags": ["ID's of relevant tags from the provided tags list, up to 5, that best fit the article topic"],
-        "sources": ["source URL or reference 1", "source URL or reference 2", ...]
+        "sources": ["full source URL 1", "full source URL 2", ...]
       }.
       The title must be engaging.
       Naturally incorporate keywords if provided.
@@ -172,7 +172,7 @@ const buildArticleConfig = async (
       If you find a highly relevant post on the X network (Twitter) to illustrate the article, DO NOT just return the URL. Instead, return it wrapped in this exact HTML format:
       <blockquote class="twitter-tweet"><a href="[INSERT TWEET URL HERE]"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
       
-      Include 0-5 credible sources (URLs or references) relevant to the article topic in the sources array, if necessary (ie. jokes, short skits, or others).
+      The research rule above is the only authority on "sources" — never add an entry it does not permit.
       Only select tags from this list: ${JSON.stringify(tags || [])}.
     `.trim()
 
