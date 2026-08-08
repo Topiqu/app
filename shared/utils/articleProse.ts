@@ -5,13 +5,22 @@
  */
 export const ARTICLE_PROSE_CLASS = [
   'max-w-[1000px] bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100',
-  'text-[17px] md:text-lg leading-[1.8] text-gray-800 space-y-6',
+  // No `space-y-*` here. It needs two direct children and `Article/Parsed.vue` renders one root,
+  // so it is inert — but its selector is 0,3,0 against prose's 0,2,0, so the day that root is
+  // flattened it silently overrides every margin below and a h2 spaces like a paragraph.
+  'text-[17px] md:text-lg leading-[1.8] text-gray-800',
   'prose prose-gray prose-a:text-blue-600 hover:prose-a:text-blue-800',
   'prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl',
   'prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic',
   // Indent lives on the list, not the item: `prose-li:ml-6` stacked on the preset's own
   // `padding-inline-start` and the marker ended up ~52px in, from two rules in two places.
   'prose-ul:list-disc prose-ol:list-decimal',
+  // The preset sizes these for a 65ch essay: 2em around every image, 3em around every rule.
+  'prose-img:my-6 prose-figure:my-6 prose-hr:my-10',
+  // Blank lines the editor emits as `<p></p>`. They were the article's only spacing while
+  // base.scss's `* { margin: 0 }` stood unopposed; against real prose margins each one costs a
+  // line box plus two margins that no longer collapse through it.
+  '[&_p:empty]:hidden',
   'dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:prose-invert',
   'dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600',
 ].join(' ')

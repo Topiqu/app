@@ -422,13 +422,6 @@ onMounted(() => {
   opacity: 0;
   transform: translateY(-10px);
 }
-.prose p {
-  line-height: 1.8;
-}
-.prose p:empty::before {
-  content: '\200B';
-  display: inline-block;
-}
 .prose p img {
   border-radius: 0.75rem;
   padding-top: 12px;

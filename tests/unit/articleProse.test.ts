@@ -40,6 +40,33 @@ describe('ARTICLE_PROSE_CLASS', () => {
     expect(css).toMatch(/:where\(ol\)[^{]*\{[^}]*padding-inline-start:/)
   })
 
+  // Inert today only because `Article/Parsed.vue` renders a single root: `space-y-*` needs two
+  // direct children. Its selector is 0,3,0 against prose's 0,2,0, so re-adding it the day that
+  // root is flattened would outrank every margin below — a h2 would space like a paragraph.
+  it('leaves the vertical rhythm to prose', () => {
+    expect(ARTICLE_PROSE_CLASS).not.toMatch(/\bspace-y-/)
+  })
+
+  // The blank `<p></p>` the editor emits. It was the body's only spacing while base.scss's global
+  // `* { margin: 0 }` stood unopposed; against real prose margins it stopped self-collapsing and
+  // each blank line cost a line box plus two margins on top.
+  it('drops the editor blank lines', async () => {
+    const uno = await createGenerator(unoConfig)
+    const { css } = await uno.generate(ARTICLE_PROSE_CLASS, { preflights: false })
+
+    expect(css).toMatch(/p:empty\{display:none/)
+  })
+
+  // Preset defaults are sized for a 65ch essay: 2em around an image, 3em around a rule.
+  it('tightens the block margins the preset sizes for a wider column', () => {
+    expect(ARTICLE_PROSE_CLASS).toContain('prose-img:my-6')
+    expect(ARTICLE_PROSE_CLASS).toContain('prose-hr:my-10')
+  })
+
+  it('emits CSS for every token', async () => {
+    expect(await tokensWithoutCss(ARTICLE_PROSE_CLASS)).toEqual([])
+  })
+
   it('collapses to a single line of classes', () => {
     expect(ARTICLE_PROSE_CLASS).not.toMatch(/[\n\r]/)
     expect(ARTICLE_PROSE_CLASS.split(' ').filter(Boolean).length).toBeGreaterThan(10)
