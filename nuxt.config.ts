@@ -172,6 +172,12 @@ export default defineNuxtConfig({
   },
 
   sentry: {
+    // Without this the server SDK never initializes and only browser errors reach Better Stack.
+    // The documented alternative is `--import ./server/sentry.server.config.mjs` at startup, which
+    // is a Node flag — the container entrypoint is `bun --bun server/index.mjs`. Costs us
+    // db/native-module tracing spans (http traces and errors still arrive); do not add `--import`
+    // alongside it or the SDK initializes twice.
+    autoInjectServerSentry: 'top-level-import',
     sourceMapsUploadOptions: {
       url: process.env.SENTRY_URL,
       org: process.env.SENTRY_ORG,
