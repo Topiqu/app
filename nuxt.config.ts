@@ -61,7 +61,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      appVersion: '1.0.0 beta',
+      appVersion: '1.0.0',
       appEnv: APP_ENV,
       cdnUrl: process.env.CDN_URL || 'https://cdn.topiqu.com',
       baseDomain: process.env.BASE_DOMAIN || 'topiqu.com',
