@@ -52,7 +52,7 @@
 import type { ChainedCommands } from '@tiptap/vue-3'
 
 import { EditorContent } from '@tiptap/vue-3'
-
+import { pollOptionsAttr } from '~~/shared/utils/polls'
 import { EDITOR_TABLE_CLASS } from '~~/shared/utils/articleProse'
 
 const content = defineModel<string | null>({ default: '<p></p>' })
@@ -161,20 +161,21 @@ const validateContent = (html: string) => {
   let changed = false
   doc.querySelectorAll('div[data-type="poll"]').forEach((p) => {
     const q = (p.getAttribute('data-question') ?? '').trim() || $t('articles.poll.defaultQuestion')
-    let o: string[] = []
+    let raw: unknown = []
     try {
-      o = JSON.parse(p.getAttribute('data-options')!)
+      raw = JSON.parse(p.getAttribute('data-options') ?? '[]')
     } catch (e) {
       console.error(e)
     }
-    o =
-      Array.isArray(o) && o.length
-        ? o.map((x) => String(x ?? '').trim() || $t('articles.poll.defaultOption'))
-        : [$t('articles.poll.defaultOption')]
-    if (q !== p.getAttribute('data-question') || JSON.stringify(o) !== p.getAttribute('data-options')) {
+
+    // This used to run `String(x)` per entry, assuming the legacy string[] shape: on every
+    // keystroke it rewrote each label as "[object Object]" and dropped the option id.
+    const options = pollOptionsAttr(raw, $t('articles.poll.defaultOption'))
+
+    if (q !== p.getAttribute('data-question') || options !== p.getAttribute('data-options')) {
       changed = true
       p.setAttribute('data-question', q)
-      p.setAttribute('data-options', JSON.stringify(o))
+      p.setAttribute('data-options', options)
     }
   })
   return changed ? doc.body.innerHTML : html
