@@ -116,23 +116,39 @@
     />
 
     <main class="flex flex-col min-w-0 gap-5">
-      <!-- Language-neutral surfaces belong to the article, so they only exist on the source tab. -->
+      <!-- Language-neutral surfaces belong to the article, so they only exist on the source tab.
+           Starters come first because they all answer the same question — where does the first
+           draft come from — and they retreat to a single chip once that question is answered. -->
       <template v-if="tr.isSource">
         <ArticleEditorAiComposer
-          :autofocus="route.query.ai === '1'"
+          v-if="aiOpen"
+          :autofocus="aiAutofocus"
           @partial="applyAiPartial"
           @image="applyAiImage"
           @final="applyAiFinal"
         />
 
-        <FileUploader
-          compact
-          type="article-image"
-          :imageUrl="editedArticle.imageUrl"
-          :maxWidth="3840"
-          :maxHeight="2160"
-          @upload="handleUpload"
-        />
+        <div v-if="!aiOpen || isBlank" class="flex flex-wrap items-center gap-2">
+          <ArticleEditorChip v-if="!aiOpen" icon="mdi:auto-fix" size="md" @click="openAi">
+            {{ $t('common.labels.aiGeneration') }}
+          </ArticleEditorChip>
+
+          <template v-if="isBlank">
+            <ArticleEditorChip
+              v-if="!article && drafts?.length"
+              icon="mdi:file-document-outline"
+              size="md"
+              @click="draftsOpen = true"
+            >
+              {{ $t('articles.editor.drafts.loadDrafts') }}
+            </ArticleEditorChip>
+
+            <ArticleEditorChip icon="mdi:import" size="md" @click="jsonInput?.click()">
+              {{ $t('articles.editor.modes.import') }}
+            </ArticleEditorChip>
+            <input ref="jsonInput" type="file" accept=".json" class="hidden" @change="importJson" />
+          </template>
+        </div>
       </template>
 
       <div
@@ -218,18 +234,24 @@
         </div>
       </div>
 
+      <!-- Cover sits below the excerpt because that is where it appears in `Hero.vue`: the editor
+           now reads in the same order as the published article. -->
       <template v-if="tr.isSource">
+        <FileUploader
+          compact
+          type="article-image"
+          :imageUrl="editedArticle.imageUrl"
+          :maxWidth="3840"
+          :maxHeight="2160"
+          @upload="handleUpload"
+        />
+
         <ArticleEditorMetaBar
           v-model:series="selectedSeries"
           v-model:tags="articleTags"
           v-model:releaseAt="editedArticle.releaseAt"
+          v-model:sources="editedArticle.sources"
         />
-
-        <div v-if="!article && drafts?.length" class="flex items-center">
-          <ArticleEditorChip icon="mdi:file-document-outline" @click="draftsOpen = true">
-            {{ $t('articles.editor.drafts.loadDrafts') }}
-          </ArticleEditorChip>
-        </div>
       </template>
 
       <hr class="border-gray-200 dark:border-gray-800" />
@@ -320,6 +342,7 @@ const optimizedImageUrl = shallowRef('')
 
 const { idle } = useIdle(5 * 60 * 1000)
 const { drafts, loading, draftsOpen, lastSavedAt, saving, loadDraft } = await useArticleDrafts(editedArticle, idle, {
+  enabled: isNew,
   onDraftLoaded: () => {
     selectedSeries.value = null
     articleTags.value = []
@@ -421,11 +444,50 @@ watch(
 
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 
-const publishLabel = computed(() => {
-  if (isNew) return t('articles.createAndPublish')
-  if (editedArticle.value.status === 'published') return t('articles.saveChanges')
-  return t('articles.publishNow')
-})
+const isBlank = computed(() => isBlankArticle(editedArticle.value))
+
+const jsonInput = useTemplateRef<HTMLInputElement>('jsonInput')
+const aiAutofocus = shallowRef(route.query.ai === '1')
+// Expanded while there is nothing to lose, or on the `?ai=1` deep link. Generation rewrites the
+// whole article, so a permanently open composer serves no mid-article iteration — it just pushed
+// the title below the fold on every visit.
+const aiOpen = shallowRef(isBlank.value || route.query.ai === '1')
+
+const openAi = () => {
+  aiAutofocus.value = true
+  aiOpen.value = true
+}
+
+const importJson = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  try {
+    const [data] = JSON.parse(await file.text())
+    if (!data) throw new Error('empty')
+
+    Object.assign(editedArticle.value, {
+      title: data.title ?? '',
+      excerpt: data.excerpt ?? '',
+      content: data.content ?? '',
+      slug: data.slug ?? slugify(data.title ?? '', { lower: true, strict: true, trim: true }),
+      imageUrl: data.imageUrl ?? '',
+      sources: Array.isArray(data.sources) ? data.sources : [],
+      releaseAt: data.releaseAt ? toDateTimeLocal(new Date(data.releaseAt)) : null,
+      savedAmount: 0,
+      savedTimeMinutes: 0,
+      aiInvolvement: 'NONE',
+    })
+    toast.success({ message: t('common.messages.successGeneral') })
+  } catch {
+    toast.error({ message: t('common.error') })
+  } finally {
+    input.value = ''
+  }
+}
+
+const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
 
 const handleUpload = (file: { url: string; optimizedUrl: string }) => {
   editedArticle.value.imageUrl = file.url
@@ -442,6 +504,8 @@ const applyAiImage = ({ slot, html }: { slot: number; html: string }) => {
   editedArticle.value.content = replaceSlot(editedArticle.value.content ?? '', 'IMAGE', slot, html)
 }
 
+// The payload carries citations and effort metrics the editor has no other way to obtain —
+// dropping them here shipped AI articles with no sources and a zeroed AI disclosure.
 const applyAiFinal = (generated: Record<string, any>) => {
   optimizedImageUrl.value = ''
   Object.assign(editedArticle.value, {
@@ -449,7 +513,16 @@ const applyAiFinal = (generated: Record<string, any>) => {
     excerpt: generated.perex,
     content: generated.content,
     imageUrl: generated.articleImageUrl,
+    sources: generated.sources ?? [],
+    savedAmount: generated.metrics?.savedAmount ?? 0,
+    savedTimeMinutes: generated.metrics?.savedTimeMinutes ?? 0,
+    aiInvolvement: generated.aiInvolvement || 'FULL',
   })
+  // The model picks from the tag list it was given, so these are ids the POST can connect.
+  if (generated.tags?.length) articleTags.value = generated.tags
+  // There is an article now, so the composer has done its job and stops occupying the top of
+  // the page. The chip reopens it if the author wants another pass.
+  aiOpen.value = false
 }
 
 const submit = async (targetStatus: 'draft' | 'published') => {
@@ -476,15 +549,23 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   submitting.value = true
   try {
     if (isNew) {
-      await $fetch('/api/articles', { method: 'POST', body: payload })
+      const created = await $fetch<{ slug: string }>('/api/articles', { method: 'POST', body: payload })
       toast.success({ message: t('articles.editor.createSuccess') })
       await invalidateArticlesAndStats()
+      // The route param is the slug, and changing it remounts the page (Nuxt's default page key
+      // interpolates params) — which is what we want exactly once: `useArticleTranslations` bakes
+      // the article id into its fetch URL at construction, so it has to be rebuilt against the
+      // saved article before the language tabs mean anything.
+      await router.replace(localePath({ name: 'admin-editor-id', params: { id: created.slug } }))
     } else {
       await $fetch(`/api/articles/${article.value!.id}`, { method: 'PATCH', body: payload })
       toast.success({ message: t('common.messages.saveSuccess') })
       await invalidateArticles()
+      // Stay in the document. Re-baseline the two fields `hasChanges` compares, or leaving would
+      // prompt to discard work that is already saved.
+      article.value = { ...article.value!, title: payload.title, content: payload.content }
+      editedArticle.value.status = targetStatus
     }
-    router.push(localePath({ name: 'admin' }))
   } catch (e: any) {
     toast.error({ message: e.data?.message || t('common.messages.saveFailed') })
   } finally {
@@ -495,12 +576,7 @@ const submit = async (targetStatus: 'draft' | 'published') => {
 const hasChanges = computed(() => {
   // A rewritten translation is unsaved work too — leaving would drop it just as silently.
   if (tr.isDirty) return true
-  if (isNew) {
-    return (
-      editedArticle.value.title.length > 0 ||
-      (editedArticle.value.content !== '' && editedArticle.value.content !== '<p></p>')
-    )
-  }
+  if (isNew) return !isBlank.value
   return editedArticle.value.title !== article.value?.title || editedArticle.value.content !== article.value?.content
 })
 

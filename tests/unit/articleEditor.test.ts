@@ -5,8 +5,12 @@ import {
   composeAiPrompt,
   countHtmlWords,
   formatElapsed,
+  isBlankArticle,
+  publishAction,
   releaseQuickValue,
+  tagTriggerLabel,
   toDateTimeLocal,
+  wrapIndex,
 } from '../../shared/utils/articleEditor'
 
 describe('composeAiPrompt', () => {
@@ -79,6 +83,105 @@ describe('toDateTimeLocal', () => {
   it('renders a Date in local time, not UTC', () => {
     const date = new Date(2026, 7, 6, 14, 5)
     expect(toDateTimeLocal(date)).toBe('2026-08-06T14:05')
+  })
+})
+
+describe('isBlankArticle', () => {
+  it('treats a fresh article as blank', () => {
+    expect(isBlankArticle({ title: '', content: '' })).toBe(true)
+  })
+
+  it('treats TipTap’s emptied body as blank', () => {
+    expect(isBlankArticle({ title: '', content: '<p></p>' })).toBe(true)
+  })
+
+  it('is not blank once there is a title', () => {
+    expect(isBlankArticle({ title: 'Nuxt 4', content: '<p></p>' })).toBe(false)
+  })
+
+  it('is not blank once there is a body', () => {
+    expect(isBlankArticle({ title: '', content: '<p>první věta</p>' })).toBe(false)
+  })
+
+  it('tolerates a missing body', () => {
+    expect(isBlankArticle({ title: '' })).toBe(true)
+    expect(isBlankArticle({ title: '', content: null })).toBe(true)
+  })
+})
+
+describe('tagTriggerLabel', () => {
+  it('is empty with no tags, so the caller can fall back to its placeholder', () => {
+    expect(tagTriggerLabel([])).toBe('')
+  })
+
+  it('spells out names up to the limit', () => {
+    expect(tagTriggerLabel(['Vue'])).toBe('Vue')
+    expect(tagTriggerLabel(['Vue', 'Nuxt'])).toBe('Vue, Nuxt')
+  })
+
+  it('counts the overflow instead of growing', () => {
+    expect(tagTriggerLabel(['Vue', 'Nuxt', 'TypeScript'])).toBe('Vue, Nuxt +1')
+    expect(tagTriggerLabel(['a', 'b', 'c', 'd', 'e'])).toBe('a, b +3')
+  })
+
+  it('honours a different name budget', () => {
+    expect(tagTriggerLabel(['Vue', 'Nuxt', 'TypeScript'], 1)).toBe('Vue +2')
+    expect(tagTriggerLabel(['Vue', 'Nuxt', 'TypeScript'], 3)).toBe('Vue, Nuxt, TypeScript')
+  })
+})
+
+describe('wrapIndex', () => {
+  it('steps forward and backward', () => {
+    expect(wrapIndex(0, 1, 3)).toBe(1)
+    expect(wrapIndex(2, -1, 3)).toBe(1)
+  })
+
+  it('wraps at both ends', () => {
+    expect(wrapIndex(2, 1, 3)).toBe(0)
+    expect(wrapIndex(0, -1, 3)).toBe(2)
+  })
+
+  it('stays in range for deltas larger than the list', () => {
+    expect(wrapIndex(0, -5, 3)).toBe(1)
+    expect(wrapIndex(0, 7, 3)).toBe(1)
+  })
+
+  it('collapses to zero on an empty list', () => {
+    expect(wrapIndex(4, 1, 0)).toBe(0)
+  })
+})
+
+describe('publishAction', () => {
+  const now = new Date(2026, 7, 6, 14, 0)
+  const later = new Date(2026, 7, 6, 15, 0)
+  const earlier = new Date(2026, 7, 6, 13, 0)
+
+  it('offers creation on an unsaved article', () => {
+    expect(publishAction({ status: 'draft', releaseAt: null }, true, now)).toBe('createAndPublish')
+  })
+
+  it('offers immediate publication on a saved draft', () => {
+    expect(publishAction({ status: 'draft', releaseAt: null }, false, now)).toBe('publishNow')
+  })
+
+  it('says it schedules when the release date is still ahead', () => {
+    expect(publishAction({ status: 'draft', releaseAt: later }, true, now)).toBe('schedule')
+    expect(publishAction({ status: 'draft', releaseAt: later }, false, now)).toBe('schedule')
+  })
+
+  it('publishes rather than schedules once the release date has passed', () => {
+    expect(publishAction({ status: 'draft', releaseAt: earlier }, false, now)).toBe('publishNow')
+  })
+
+  it('degrades to a plain save once the article is published', () => {
+    expect(publishAction({ status: 'published', releaseAt: null }, false, now)).toBe('saveChanges')
+    // Still a save, not a re-schedule: the article is already out.
+    expect(publishAction({ status: 'published', releaseAt: later }, false, now)).toBe('saveChanges')
+  })
+
+  it('accepts the datetime-local string the release picker produces', () => {
+    expect(publishAction({ status: 'draft', releaseAt: '2026-08-06T15:00' }, false, now)).toBe('schedule')
+    expect(publishAction({ status: 'draft', releaseAt: '2026-08-06T13:00' }, false, now)).toBe('publishNow')
   })
 })
 

@@ -36,6 +36,49 @@ export const toDateTimeLocal = (value?: string | Date | null) => {
   return new Date(value.getTime() - value.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
 }
 
+/**
+ * Nothing written yet. TipTap normalises an emptied body to `<p></p>` rather than `''`, so both
+ * spellings have to count as empty — which is why this lives in one place instead of being
+ * re-typed wherever the editor asks the question.
+ */
+export const isBlankArticle = (article: { title?: string | null; content?: string | null }) =>
+  !article.title && (!article.content || article.content === '<p></p>')
+
+/**
+ * Bounded summary of the selected tags. The strip has to state what is on the article without
+ * being opened, but an unbounded list of names is what pushed the body around in the first place.
+ * Empty in, empty out — the caller substitutes its own placeholder.
+ */
+export const tagTriggerLabel = (names: string[], namesShown = 2) => {
+  if (names.length <= namesShown) return names.join(', ')
+
+  return `${names.slice(0, namesShown).join(', ')} +${names.length - namesShown}`
+}
+
+/** Cyclic list movement. Double-modulo because JS `%` keeps the sign of the dividend. */
+export const wrapIndex = (current: number, delta: number, count: number) => {
+  if (count <= 0) return 0
+
+  return (((current + delta) % count) + count) % count
+}
+
+export type PublishAction = 'saveChanges' | 'schedule' | 'createAndPublish' | 'publishNow'
+
+/**
+ * What the primary editor button actually does, as an `articles.*` key. A future `releaseAt`
+ * makes it queue rather than publish, which the button used to hide behind "Publikovat".
+ */
+export const publishAction = (
+  article: { status?: string | null; releaseAt?: string | Date | null },
+  isNew: boolean,
+  now: Date = new Date(),
+): PublishAction => {
+  if (article.status === 'published') return 'saveChanges'
+  if (article.releaseAt && new Date(article.releaseAt).getTime() > now.getTime()) return 'schedule'
+
+  return isNew ? 'createAndPublish' : 'publishNow'
+}
+
 export type ReleaseQuick = 'now' | 'inHour' | 'tomorrow' | 'clear'
 
 export const releaseQuickValue = (kind: ReleaseQuick, from: Date = new Date()) => {

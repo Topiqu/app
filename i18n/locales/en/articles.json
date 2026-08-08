@@ -49,6 +49,7 @@
     "saveAsDraft": "Save as draft",
     "createAndPublish": "Create & publish",
     "publishNow": "Publish",
+    "schedule": "Schedule",
     "saveChanges": "Save changes",
     "releaseQuick": {
       "now": "Now",
@@ -188,6 +189,7 @@
       "languages": "Languages"
     },
     "sources": {
+      "add": "Add source",
       "placeholder": "Source link (https://...)",
       "imageUrl": "Image link (https://...)",
       "youtube": "YouTube video link (https://...)"
@@ -359,6 +361,9 @@
         "phaseWriting": "Writing…",
         "phaseImages": "Generating images…",
         "aiContentStopped": "Generation stopped",
+        "enhance": "Improve prompt",
+        "enhanceUndo": "Undo",
+        "enhanceFailed": "Could not improve the prompt",
         "topicLabel": "Article topic",
         "topicPlaceholder": "What should the article be about? Add angle, audience or key points…",
         "step": {
