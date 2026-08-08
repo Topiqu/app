@@ -1,5 +1,7 @@
 <template>
-  <FormSelect v-model="language" :items />
+  <UFormField :label="$t('profile.language')" :ui="{ label: 'sr-only' }">
+    <USelectMenu v-model="language" valueKey="value" labelKey="label" :searchInput="false" :items />
+  </UFormField>
 </template>
 
 <script setup lang="ts">
