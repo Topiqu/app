@@ -1,6 +1,8 @@
 // What the AI-written words would have cost as human copywriting. Rate is USD, matching the
 // rest of the platform's money (see MAP.md → "Rate card is USD"); the display layer converts.
-export const DEFAULT_HOURLY_RATE_USD = 60
+// 35 sits just under every median we could source (BLS OEWS 27-3043 $36.98/h, ZipRecruiter
+// copywriter $36.74/h, Glassdoor $40/h) — the number has to survive a customer checking it.
+export const DEFAULT_HOURLY_RATE_USD = 35
 export const DEFAULT_WORDS_PER_HOUR = 400
 
 export interface WritingSavings {

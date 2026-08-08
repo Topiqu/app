@@ -478,7 +478,7 @@ model ClientSite {
   keywords             Json?
   audience             String?
   lastGeneratedAt      DateTime?
-  humanHourlyRateUsd   Int                  @default(60)
+  humanHourlyRateUsd   Int                  @default(35)
   humanWordsPerHour    Int                  @default(400)
   gtagId               String?
   apiKey               String?

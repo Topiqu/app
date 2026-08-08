@@ -18,7 +18,7 @@ describe('writing savings', () => {
     expect(savings.hourlyRateUsd).toBe(DEFAULT_HOURLY_RATE_USD)
     expect(savings.wordsPerHour).toBe(DEFAULT_WORDS_PER_HOUR)
     expect(savings.minutes).toBe(108)
-    expect(savings.amountUsd).toBe(108)
+    expect(savings.amountUsd).toBe(63)
   })
 
   it('falls back rather than dividing by zero or pricing at zero', () => {

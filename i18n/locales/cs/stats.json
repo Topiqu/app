@@ -20,7 +20,7 @@
       "words": "0 slov | {count} slovo | {count} slova | {count} slov",
       "timeBasis": "{words} ÷ {speed} slov/h",
       "amountBasis": "{time} × {rate}/h",
-      "tooltip": "Počítáme jen články, které napsala AI a nikdo je ručně neupravil — po první úpravě se článek přestane započítávat. Jejich slova vydělíme rychlostí psaní ({speed} slov/h) a výsledný čas vynásobíme hodinovou sazbou copywritera ({rate}/h). Je to odhad, ne fakturovaná částka."
+      "tooltip": "Počítáme jen články, které celé napsala AI. Jakmile do některého ručně sáhnete, ze statistiky vypadne. Sazba {rate}/h je pod mediánem trhu a v tempu {speed} slov/h je započítaná i rešerše a korektura. Jedná se o odhad, konkrétní sazby copywriterů se mohou lišit."
     },
     "articleCount": "Počet článků",
     "sentiment": {

@@ -20,7 +20,7 @@
       "words": "No words yet | {count} word | {count} words",
       "timeBasis": "{words} ÷ {speed} words/h",
       "amountBasis": "{time} × {rate}/h",
-      "tooltip": "Only articles written entirely by AI and never hand-edited are counted — an article stops counting the moment you edit it. Their words are divided by a writing speed of {speed} words/h, and the resulting time is priced at a copywriter's hourly rate of {rate}/h. It's an estimate, not an invoice."
+      "tooltip": "We only count articles the AI wrote end to end. Edit one by hand and it drops out of the stats. The {rate}/h rate sits below the market median, and {speed} words/h leaves room for research and a proofread. This is an estimate; actual copywriter rates vary."
     },
     "articleCount": "Total articles",
     "sentiment": {
