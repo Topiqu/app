@@ -334,7 +334,8 @@ The app had **zero runtime observability**: when something broke for a real user
 
 ### Files / wiring
 
-- `sentry.client.config.ts`, `sentry.server.config.ts` (project root) — SDK init. Read DSN + sampling from `runtimeConfig.public.sentry`. Empty DSN disables the SDK (local / CI).
+- `sentry.client.config.ts` (project root) — SDK init from `runtimeConfig.public.sentry`. Empty DSN disables the SDK (local / CI).
+- `sentry.server.config.ts` — same init, but **reads `process.env` and must never call `useRuntimeConfig()`**. It is prepended as the first import of the server entry, so it executes before Nitro exists; the call throws there and the container dies on boot behind a 502.
 - **The server config is not loaded on its own.** The module's documented path is the Node flag `--import ./server/sentry.server.config.mjs`, but the container entrypoint is `bun --bun server/index.mjs`, so `sentry.autoInjectServerSentry: 'top-level-import'` imports it from the server entry instead. Without either, `Sentry.init` never runs server-side and only browser errors reach Better Stack. Never run both — that initializes the SDK twice.
 - `nuxt.config.ts` — registers `@sentry/nuxt/module`; `runtimeConfig.public.sentry` (DSN/env/sample rates, overridable via `NUXT_PUBLIC_SENTRY_*`); `sentry.sourceMapsUploadOptions` (build-time, skipped without `SENTRY_AUTH_TOKEN`); `sourcemap.client: 'hidden'`.
 - `server/plugins/errorLogging.ts` — Nitro `error` hook, 5xx only, shipping to Better Stack **Logs** via `utils/logger.ts`. Sentry covers error tracking; this is the second trail, alongside the `cron:` and `audit:` lines. Nitro answers a throw with its own 500 and reports it nowhere, so before this an unhandled handler error was invisible in both products.
