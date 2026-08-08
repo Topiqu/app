@@ -9,15 +9,18 @@
         <button
           v-if="compact"
           type="button"
-          class="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-medium transition-colors max-w-56"
-          :class="
-            modelValue
-              ? 'bg-indigo-600! hover:bg-indigo-700! border-indigo-600! text-white!'
-              : 'bg-white! dark:bg-gray-900! hover:bg-gray-50! dark:hover:bg-gray-800! border-gray-300! dark:border-gray-700! text-gray-700! dark:text-gray-200!'
-          "
+          class="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-medium transition-colors max-w-56 bg-white! dark:bg-gray-900! hover:bg-gray-50! dark:hover:bg-gray-800!"
+          :class="modelValue ? 'border-gray-400! dark:border-gray-500!' : 'border-gray-300! dark:border-gray-700!'"
         >
           <Icon name="mdi:bookmark-multiple-outline" class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-          <span class="truncate">{{ modelValue ? modelValue.name : $t('series.placeholder') }}</span>
+          <!-- base.scss colours bare `span` directly, which outranks any colour inherited from the
+               button — the label has to carry its own or it renders near-black on whatever fill. -->
+          <span
+            class="truncate"
+            :class="modelValue ? 'text-gray-900! dark:text-gray-100!' : 'text-gray-600! dark:text-gray-300!'"
+          >
+            {{ modelValue ? modelValue.name : $t('series.placeholder') }}
+          </span>
           <Icon
             name="mdi:chevron-down"
             class="w-3.5 h-3.5 shrink-0 transition-transform opacity-60"
