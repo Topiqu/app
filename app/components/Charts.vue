@@ -29,20 +29,27 @@
         </thead>
         <tbody>
           <tr v-for="(name, i) in labels" :key="name" class="border-t border-gray-100 dark:border-gray-800">
-            <td class="py-1">
-              <span class="inline-flex items-center gap-2">
-                <!-- Only a breakdown colours by entity; a trend is one series, so a per-row
-                     swatch there would invent a distinction the chart does not make. -->
+            <td class="py-1.5">
+              <span class="inline-flex items-center gap-2.5">
+                <!-- The icon carries the series colour itself, so the row needs one mark instead
+                     of swatch + glyph. Only a breakdown colours by entity; a trend is one series,
+                     so colouring there would invent a distinction the chart does not make. -->
+                <Icon
+                  v-if="icons?.[i]"
+                  :name="icons[i]!"
+                  class="size-5 shrink-0 text-gray-400"
+                  :style="isBreakdown ? { color: palette[i % palette.length] } : undefined"
+                  aria-hidden="true"
+                />
                 <span
-                  v-if="isBreakdown"
+                  v-else-if="isBreakdown"
                   class="size-2.5 shrink-0 rounded-full ring-2 ring-white dark:ring-neutral-900"
                   :style="{ backgroundColor: palette[i % palette.length] }"
                 />
-                <Icon v-if="icons?.[i]" :name="icons[i]!" class="size-4 shrink-0 text-gray-400" aria-hidden="true" />
                 {{ name }}
               </span>
             </td>
-            <td class="py-1 text-right">{{ values[i] ?? 0 }}</td>
+            <td class="py-1.5 text-right">{{ values[i] ?? 0 }}</td>
           </tr>
         </tbody>
       </table>
@@ -159,7 +166,11 @@ const chartData = computed(() => {
   }
 })
 
-const chartOptions = computed<ChartOptions<'bar' | 'line' | 'pie'>>(() => ({
+// Typed to the one chart type rather than the union the component actually renders:
+// `ChartOptions<A|B|C>` is not assignable to `ChartOptions<A> | ChartOptions<B> | ChartOptions<C>`,
+// because TType sits in the parameter of every scriptable option and so compares contravariantly.
+// Nothing below is scriptable, so all three controllers accept this object at runtime.
+const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   // Horizontal, so entity names read as labels instead of rotated ticks.
