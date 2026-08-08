@@ -35,6 +35,7 @@ model User extends Base {
     feedbacks                     ArticleFeedback[]
     emojiReactions                EmojiReaction[]
     articleReactions              ArticleReaction[]
+    articleShares                 ArticleShare[]
     followers                     Follow[]          @relation("Follower")
     following                     Follow[]          @relation("Followed")
     bans                          UserBan[]         @relation("BannedUser")
