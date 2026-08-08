@@ -27,8 +27,10 @@ export function useArticleActions(
         body: { platform, visitorId },
       })
       resolvedData.value.shared = res.shared
-    } catch {
-      // Intentionally ignoring minor share tracking errors
+    } catch (e) {
+      // Still non-fatal for the visitor — but silence here is what let a 500 on every share
+      // (an unapplied migration) look like a working button for a whole afternoon.
+      console.warn('share tracking failed', e)
     }
   }
 
