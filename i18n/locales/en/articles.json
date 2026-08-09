@@ -436,6 +436,10 @@
       "ai": "Illustrative image (AI)",
       "photoBy": "photo: {author}"
     },
+    "aiDisclosure": {
+      "ASSIST": "Created with AI assistance",
+      "FULL": "Created by AI"
+    },
     "keyTakeaways": "Key takeaways",
     "faq": "Frequently asked questions"
   }

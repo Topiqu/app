@@ -45,8 +45,32 @@ const robots = await get('/robots.txt')
 check(robots.status === 200, 'robots.txt reachable', `HTTP ${robots.status}`)
 check(/^Sitemap:/im.test(robots.body), 'robots.txt points at a sitemap')
 check(/User-agent:\s*OAI-SearchBot/i.test(robots.body), 'answer-engine group present')
-check(/User-agent:\s*Google-Extended/i.test(robots.body), 'grounding tokens opted in')
-if (/^Disallow:\s*\/\s*$/im.test(robots.body)) fail('robots.txt does not block the whole site')
+check(/User-agent:\s*Google-Extended/i.test(robots.body), 'grounding tokens present')
+
+// A CDN can prepend its own managed groups, so report per bot rather than on a bare `Disallow: /`.
+const groups = robots.body.split(/\n(?=User-agent:)/i)
+const fullyBlocked = groups
+  .filter((g) => /^Disallow:\s*\/\s*$/im.test(g))
+  .flatMap((g) => [...g.matchAll(/User-agent:\s*(\S+)/gi)].map((m) => m[1]!))
+
+if (fullyBlocked.includes('*')) fail('wildcard group blocks the whole site')
+else pass('wildcard group does not block the site')
+
+const blockedAnswerEngines = fullyBlocked.filter((b) =>
+  ['OAI-SearchBot', 'Claude-SearchBot', 'PerplexityBot', 'DuckAssistBot'].some(
+    (x) => x.toLowerCase() === b.toLowerCase(),
+  ),
+)
+check(blockedAnswerEngines.length === 0, 'no answer engine is blocked outright', blockedAnswerEngines.join(', '))
+if (fullyBlocked.some((b) => /Google-Extended/i.test(b))) {
+  warn('Google-Extended is disallowed', 'opts out of Gemini grounding, not only training')
+}
+if (fullyBlocked.length) console.log(`         blocked outright: ${fullyBlocked.join(', ')}`)
+
+const wildcardGroups = groups.filter((g) => /^User-agent:\s*\*\s*$/im.test(g)).length
+if (wildcardGroups > 1) {
+  warn(`${wildcardGroups} separate "User-agent: *" groups`, 'a crawler may honour only the first')
+}
 
 const sitemap = await get('/sitemap.xml')
 const locs = [...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]!)
@@ -99,7 +123,9 @@ const description = page.body.match(/<meta[^>]+name="description"[^>]+content="(
 check(!!description, 'meta description present')
 check(!/Moderní blogovací platforma/i.test(description ?? ''), 'description is not the platform default')
 
-const h1Count = (page.body.match(/<h1[\s>]/g) ?? []).length
+// Strip the payload first: it re-serialises the body, so its copy of an `<h1>` is not a heading.
+const rendered = page.body.replace(/<script[\s\S]*?<\/script>/g, '')
+const h1Count = (rendered.match(/<h1[\s>]/g) ?? []).length
 check(h1Count === 1, 'exactly one h1', `${h1Count} found`)
 
 // ── Structured data ─────────────────────────────────────────────────────────

@@ -1,8 +1,10 @@
 import type { ThemeSchema, LanguageSchema } from '~~/shared/zod/enums'
 import type { SocialPlatform, ClientSite as _ClientSite } from '@prisma/client'
 
-export interface ClientSite
-  extends Omit<_ClientSite, 'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'lastTokenRefilled'> {
+export interface ClientSite extends Omit<
+  _ClientSite,
+  'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'lastTokenRefilled'
+> {
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT' | null
   nextBillingAt: string | null
   lastGeneratedAt: string | null
@@ -41,6 +43,7 @@ export interface ClientSettingsForm {
   autoRelease: boolean
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
+  discloseAiContent: boolean
   allowGtag: boolean
   linkedinMode: 'HitL' | 'FullAuto'
   linkedinBrandProfile: { tone: string; audience: string; doList: string[]; dontList: string[] }
@@ -67,6 +70,7 @@ const emptyForm = (): ClientSettingsForm => ({
   autoRelease: false,
   translationMode: 'OFF',
   translationLanguages: [],
+  discloseAiContent: false,
   allowGtag: false,
   linkedinMode: 'HitL',
   linkedinBrandProfile: { tone: '', audience: '', doList: [], dontList: [] },
@@ -81,7 +85,11 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     (client as { linkedinCompanies?: unknown[] }).linkedinCompanies?.[0] ??
     (client as { linkedinCompany?: unknown }).linkedinCompany
   const li = linkedin as
-    | { mode?: 'HitL' | 'FullAuto'; type?: 'pages' | 'personal'; brandProfile?: ClientSettingsForm['linkedinBrandProfile'] }
+    | {
+        mode?: 'HitL' | 'FullAuto'
+        type?: 'pages' | 'personal'
+        brandProfile?: ClientSettingsForm['linkedinBrandProfile']
+      }
     | undefined
 
   return {
@@ -108,6 +116,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     autoRelease: client.autoRelease ?? false,
     translationMode: client.translationMode ?? 'OFF',
     translationLanguages: client.translationLanguages ?? [],
+    discloseAiContent: client.discloseAiContent ?? false,
     allowAds: client.allowAds,
     allowGtag: client.allowGtag ?? false,
     linkedinMode: li?.mode ?? 'HitL',

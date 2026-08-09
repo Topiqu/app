@@ -20,6 +20,7 @@ export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'aiControversyLevel',
   'translationMode',
   'translationLanguages',
+  'discloseAiContent',
 ] as const
 
 export const PUBLIC_CLIENT_SITE_FIELDS = [
@@ -41,6 +42,7 @@ export const PUBLIC_CLIENT_SITE_FIELDS = [
   'allowGtag',
   'allowAds',
   'allowShapes',
+  'discloseAiContent',
   'gamNetworkCode',
 ] as const
 

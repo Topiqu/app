@@ -20,13 +20,13 @@
 <script setup lang="ts">
 import { creditSegments, creditSeparator, type CoverCredit } from '~~/shared/utils/imageCredit'
 
-const { cover } = defineProps<{ cover?: CoverCredit | null }>()
+const { cover, discloseAi = true } = defineProps<{ cover?: CoverCredit | null; discloseAi?: boolean }>()
 
 const { t } = useI18n()
 
 /** Only a real photo goes unlabelled; anything else says so before it says who made it. */
 const prefix = computed(() => {
-  if (cover?.kind === 'ai') return t('articles.image.ai')
+  if (cover?.kind === 'ai') return discloseAi ? t('articles.image.ai') : ''
   if (cover?.kind === 'illustration') return t('articles.image.illustration')
 
   return ''

@@ -577,7 +577,7 @@ const applyAiFinal = (generated: Record<string, any>) => {
     faq: generated.faq ?? [],
     savedAmount: generated.metrics?.savedAmount ?? 0,
     savedTimeMinutes: generated.metrics?.savedTimeMinutes ?? 0,
-    aiInvolvement: generated.aiInvolvement || 'FULL',
+    aiInvolvement: generated.aiInvolvement || 'ASSIST',
   })
   // The model picks from the tag list it was given, so these are ids the POST can connect.
   if (generated.tags?.length) articleTags.value = generated.tags

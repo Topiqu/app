@@ -398,6 +398,10 @@
         "confirmTitle": "Enable Automatic Publishing?",
         "confirmMessage": "Are you sure? AI may occasionally generate inaccuracies. We still recommend reviewing content before publication. If enabled, content will go live immediately without your approval."
       },
+      "aiDisclosure": {
+        "title": "Label AI-assisted content",
+        "desc": "Publicly shows the level of AI involvement in an article and labels AI-generated images."
+      },
       "translation": {
         "title": "Automatic Translations",
         "desc": "Translate published articles into other languages with AI.",

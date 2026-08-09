@@ -399,6 +399,10 @@
         "confirmTitle": "Povolit automatické publikování?",
         "confirmMessage": "Jste si jistí? AI může občas generovat nepřesnosti. Důrazně doporučujeme články před vydáním kontrolovat."
       },
+      "aiDisclosure": {
+        "title": "Označovat obsah vytvořený s AI",
+        "desc": "Veřejně zobrazí míru zapojení AI u článku a označí obrázky vygenerované AI."
+      },
       "translation": {
         "title": "Automatické překlady",
         "desc": "Překládejte publikované články do dalších jazyků pomocí AI.",

@@ -35,6 +35,7 @@ export const sanitizeHtml = (dirty: string) => {
       'rel',
       'start',
       'data-youtube-video',
+      'data-ai-disclosure',
       'alt',
       'title',
       'colwidth',

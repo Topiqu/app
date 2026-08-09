@@ -51,12 +51,21 @@
           :excerpt="data.excerpt"
           :imageUrl="data.imageUrl"
           :imageCredit="imageCredit"
+          :discloseAi="clientSite?.discloseAiContent ?? false"
           :series="data.series && data.series.name ? (data.series as any) : undefined"
           @follow="toggleFollow"
         />
 
         <!-- Only renders with a real published translation, so a language here never falls back. -->
         <ArticleLanguageLinks v-if="hasTranslations" class="mt-4" :links="alternates" :current="data.language" />
+
+        <div
+          v-if="clientSite?.discloseAiContent && data.aiInvolvement !== 'NONE'"
+          class="inline-flex w-fit items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+        >
+          <Icon name="mdi:robot-outline" class="h-4 w-4" />
+          {{ $t(`articles.aiDisclosure.${data.aiInvolvement}`) }}
+        </div>
 
         <div v-if="hasTags" class="mt-4 flex flex-wrap gap-2.5">
           <NuxtLink
@@ -104,8 +113,12 @@
           </NuxtLink>
         </div>
 
-        <div ref="content" :class="ARTICLE_PROSE_CLASS">
-          <ArticleParsed :blocks="data.blocks" :articleId="data.id" />
+        <div ref="content" :class="[ARTICLE_PROSE_CLASS, { 'hide-ai-disclosure': !clientSite?.discloseAiContent }]">
+          <ArticleParsed
+            :blocks="data.blocks"
+            :articleId="data.id"
+            :discloseAi="clientSite?.discloseAiContent ?? false"
+          />
         </div>
 
         <ArticleFaq :entries="faqEntries" />
@@ -398,6 +411,12 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.hide-ai-disclosure :deep([data-ai-disclosure]) {
+  display: none;
+}
+</style>
 
 <style>
 .fade-slide-enter-active,
