@@ -1,136 +1,111 @@
 <mjml>
   <mj-head>
-    <mj-preview>{t:comment.subject}</mj-preview>
-    <mj-font name="Montserrat" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" />
+    <mj-preview>{t:commentReply.subject}</mj-preview>
+    <mj-font
+      name="Inter"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+    />
     <mj-attributes>
-      <mj-text
-        font-family="Montserrat, Helvetica, Arial, sans-serif"
-        color="#333333"
-        line-height="24px"
-        font-size="15px"
-      />
+      <mj-all font-family="Inter, Helvetica, Arial, sans-serif" />
+      <mj-text color="#3F3F46" font-size="15px" line-height="24px" padding="0" />
       <mj-button
-        font-family="Montserrat, Helvetica, Arial, sans-serif"
-        background-color="#2563eb"
-        color="#ffffff"
-        font-size="16px"
-        font-weight="600"
-        border-radius="8px"
-        padding="16px 28px"
+        background-color="#7C3AED"
+        color="#FFFFFF"
+        font-size="15px"
+        font-weight="700"
+        border-radius="10px"
+        inner-padding="13px 24px"
+        padding="0"
       />
-      <mj-section padding="20px" background-color="#ffffff" border-radius="12px" border="1px solid #e5e7eb" />
-      <mj-column width="100%" />
     </mj-attributes>
     <mj-style inline="inline">
-      .comment-text {
-        font-size: 15px;
-        margin: 8px 0;
+      .card {
+        border: 1px solid #e4e4e7;
+        border-radius: 20px;
       }
-      .header-text {
-        font-size: 18px;
+      .eyebrow {
+        color: #7c3aed;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+      }
+      .title {
+        color: #18181b;
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 31px;
+        letter-spacing: -0.4px;
+      }
+      .quote {
+        background-color: #f7f5ff;
+        border-left: 4px solid #8b5cf6;
+        border-radius: 0 12px 12px 0;
+      }
+      .parent {
+        background-color: #f4f4f5;
+        border-radius: 12px;
+        color: #71717a;
+        font-size: 13px;
+      }
+      .footer,
+      .footer a {
+        color: #71717a;
+        font-size: 12px;
+      }
+      .footer a {
+        color: #7c3aed;
         font-weight: 600;
-        margin-bottom: 6px;
-      }
-      .quote-text {
-        font-size: 14px;
-        color: #555555;
-        font-style: italic;
-        padding: 10px 14px;
-        border-left: 3px solid #2563eb;
-        background-color: #f9fafb;
-        border-radius: 6px;
-        margin-top: 10px;
-      }
-      a {
-        color: #2563eb;
         text-decoration: none;
       }
-      a:hover {
-        text-decoration: underline;
-      }
-      .mj-button a {
-        transition: background-color 0.2s ease-in-out;
-      }
-      .mj-button-primary a:hover {
-        background-color: #1e40af !important;
-      }
-      .mj-button-secondary a:hover {
-        background-color: #3b82f6 !important;
-      }
-      @media (max-width: 480px) {
-        .comment-text {
-          font-size: 16px !important;
-        }
-        .quote-text {
-          font-size: 15px !important;
-        }
-      }
       @media (prefers-color-scheme: dark) {
-        body {
-          background-color: #111111 !important;
+        body,
+        .body-bg {
+          background-color: #09090b !important;
         }
-        .section-bg {
-          background-color: #1f1f1f !important;
+        .card-bg {
+          background-color: #18181b !important;
+          border-color: #3f3f46 !important;
         }
-        .comment-text {
-          color: #dddddd !important;
+        .title {
+          color: #fafafa !important;
         }
-        .header-text {
-          color: #ffffff !important;
+        .copy {
+          color: #d4d4d8 !important;
         }
-        .quote-text {
-          background-color: #2a2a2a !important;
-          color: #cccccc !important;
+        .quote,
+        .parent {
+          background-color: #27272a !important;
+          color: #e4e4e7 !important;
+        }
+        .footer {
+          color: #a1a1aa !important;
         }
       }
     </mj-style>
   </mj-head>
-  <mj-body background-color="#f4f4f4" width="600px">
-    <mj-wrapper padding="20px" background-color="#f4f4f4">
-      <mj-section padding="0">
+  <mj-body background-color="#F4F4F5" css-class="body-bg" width="640px">
+    <mj-wrapper padding="32px 16px">
+      <mj-section padding="0 0 20px"
+        ><mj-column><mj-image src="{logoUrl}" alt="Topiqu" width="120px" padding="0" /></mj-column
+      ></mj-section>
+      <mj-section background-color="#FFFFFF" css-class="card card-bg" padding="36px 32px">
         <mj-column>
-          <mj-image src="{logoUrl}" alt="Logo aplikace" width="150px" padding="10px" />
+          <mj-text css-class="eyebrow" padding="0 0 10px">Topiqu</mj-text>
+          <mj-text css-class="title" padding="0 0 20px">{t:commentReply.subject}</mj-text>
+          <mj-text css-class="copy" padding="0 0 18px">{t:commentReply.greeting}</mj-text>
+          <mj-text css-class="quote" padding="18px 20px">{t:commentReply.intro}</mj-text>
+          <mj-text css-class="parent" padding="14px 16px">{t:commentReply.parent}</mj-text>
+          <mj-button href="{commentUrl}" align="left" padding="26px 0 0">{t:commentReply.button}</mj-button>
         </mj-column>
       </mj-section>
-      <mj-section background-color="#2563eb" border-radius="10px 10px 0 0">
-        <mj-column>
-          <mj-text align="center" color="#ffffff" font-size="20px" font-weight="600">{t:comment.subject}</mj-text>
-        </mj-column>
-      </mj-section>
-      <mj-section>
-        <mj-column>
-          <mj-divider border-color="#e5e7eb" border-width="1px" />
-        </mj-column>
-      </mj-section>
-      <mj-section css-class="section-bg">
-        <mj-column width="20%">
-          <mj-image
-            src="{avatarUrl}"
-            alt="Profilový obrázek"
-            width="50px"
-            border-radius="50%"
-            border="2px solid #2563eb"
-            padding="10px"
-          />
-        </mj-column>
-        <mj-column width="80%">
-          <mj-text css-class="header-text">{t:comment.greeting}</mj-text>
-          <mj-text css-class="comment-text">{t:comment.intro}</mj-text>
-          <mj-text css-class="quote-text">{t:comment.parent}</mj-text>
-        </mj-column>
-      </mj-section>
-      <mj-section css-class="section-bg">
-        <mj-column>
-          <mj-button css-class="mj-button-primary" href="{commentUrl}">{t:comment.button}</mj-button>
-        </mj-column>
-      </mj-section>
-      <mj-section background-color="#f4f4f4" padding="10px">
-        <mj-column>
-          <mj-text font-size="12px" color="#666666" align="center">
-            {t:comment.unsubscribe.text} <a href="{unsubscribeUrl}">{t:comment.unsubscribe.link}</a>
-          </mj-text>
-        </mj-column>
-      </mj-section>
+      <mj-section padding="22px 12px 0"
+        ><mj-column
+          ><mj-text css-class="footer" align="center"
+            >{t:commentReply.unsubscribe.text} <a href="{unsubscribeUrl}">{t:commentReply.unsubscribe.link}</a></mj-text
+          ></mj-column
+        ></mj-section
+      >
     </mj-wrapper>
   </mj-body>
 </mjml>
