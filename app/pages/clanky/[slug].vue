@@ -422,10 +422,10 @@ onMounted(() => {
   opacity: 0;
   transform: translateY(-10px);
 }
+/* No vertical padding: the wrapping `<p>` already carries a prose margin, and this stacked a third
+   spacing on top of it. */
 .prose p img {
   border-radius: 0.75rem;
-  padding-top: 12px;
-  padding-bottom: 6px;
   max-height: 600px;
   cursor: pointer !important;
   opacity: 0;

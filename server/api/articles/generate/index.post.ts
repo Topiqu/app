@@ -67,8 +67,22 @@ export default defineEventHandler(async (event) => {
         const usage = await result.usage
 
         send(controller, { type: 'phase', phase: 'images' })
-        const finalized = await finalize(object, (image) => send(controller, { type: 'image', ...image }))
+
+        // Finalization is the only step that fills `[[IMAGEn]]`/`[[POLLn]]`, so its failure used to
+        // reach the author as an article full of raw markers. It is best-effort now: the text is
+        // written and already billable, and one dead image call must not cost the whole draft.
+        const finalized = await finalize(object, (image) => send(controller, { type: 'image', ...image })).catch(
+          async (error) => {
+            await reportError('Article finalization failed', error, { clientSiteId })
+            return { ...object, content: stripContentSlots(object.content), articleImageUrl: '' }
+          },
+        )
         const metrics = calculateArticleMetrics(finalized.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
+
+        // Handed over before billing. `consumeClientTokens` throws on a negative balance, and it
+        // threw *after* the decrement and *before* this send — so the one generation that emptied
+        // the wallet was charged and then thrown away.
+        send(controller, { type: 'final', article: { ...finalized, metrics, aiInvolvement: 'FULL' } })
 
         await consumeClientTokens(
           clientSiteId,
@@ -77,8 +91,6 @@ export default defineEventHandler(async (event) => {
           { ...finalized, usage, metrics, aiInvolvement: 'FULL', createdAt: new Date() },
           event,
         )
-
-        send(controller, { type: 'final', article: { ...finalized, metrics, aiInvolvement: 'FULL' } })
       } catch (error: any) {
         if (abortController.signal.aborted) {
           // Stopped mid-generation: bill best-effort for the partial usage we actually spent.
@@ -89,6 +101,10 @@ export default defineEventHandler(async (event) => {
             )
           }
         } else {
+          // The response is already a 200 with a half-written body, so this can never reach Nitro's
+          // `error` hook and Sentry never sees a caught throw — without this the author got a
+          // generic toast and production had no record at all.
+          await reportError('Article generation stream failed', error, { clientSiteId })
           send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })
         }
       } finally {

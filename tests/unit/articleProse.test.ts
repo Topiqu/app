@@ -8,6 +8,19 @@ import { ARTICLE_PROSE_CLASS, ARTICLE_TABLE_CLASS, EDITOR_TABLE_CLASS } from '..
 
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
+/**
+ * UnoCSS merges every rule sharing a declaration into one comma-separated selector list, so only
+ * the last selector of the group is followed by `{`. Asserting `selector{display:none` therefore
+ * passes or fails on generation order rather than on the rule existing.
+ */
+const hidesSelector = async (selector: string) => {
+  const uno = await createGenerator(unoConfig)
+  const { css } = await uno.generate(ARTICLE_PROSE_CLASS, { preflights: false })
+  const group = css.split('{display:none').slice(0, -1).join('{display:none')
+
+  return group.includes(selector)
+}
+
 /** A variant UnoCSS cannot parse emits nothing and fails silently in the browser. */
 const tokensWithoutCss = async (classes: string) => {
   const uno = await createGenerator(unoConfig)
@@ -51,16 +64,28 @@ describe('ARTICLE_PROSE_CLASS', () => {
   // `* { margin: 0 }` stood unopposed; against real prose margins it stopped self-collapsing and
   // each blank line cost a line box plus two margins on top.
   it('drops the editor blank lines', async () => {
-    const uno = await createGenerator(unoConfig)
-    const { css } = await uno.generate(ARTICLE_PROSE_CLASS, { preflights: false })
-
-    expect(css).toMatch(/p:empty\{display:none/)
+    expect(await hidesSelector('p:empty')).toBe(true)
   })
 
-  // Preset defaults are sized for a 65ch essay: 2em around an image, 3em around a rule.
+  // The same blank line in the two spellings the model actually emitted while the schema asked for
+  // a `<br>` per paragraph. Neither is `:empty` — a `<p>` holding a `<br>` has a child — so the
+  // `:empty` rule alone left every already-saved body double-spaced.
+  it('drops the blank lines a break makes, not just the empty element', async () => {
+    expect(await hidesSelector('p:has(>br:only-child)')).toBe(true)
+    expect(await hidesSelector('p>br:last-child')).toBe(true)
+  })
+
+  // Generated images sit inside `<p style="text-align:center">`, which already carries a prose
+  // margin. `<img>` is replaced, so vertical margins apply to it inline and stack on that one.
+  it('leaves image spacing to the paragraph that wraps it', () => {
+    expect(ARTICLE_PROSE_CLASS).toContain('prose-img:my-0')
+  })
+
+  // Preset defaults are sized for a 65ch essay: 3em around a rule. The body's h1 repeats the Hero
+  // title and opens the column, so its top margin separates it from nothing.
   it('tightens the block margins the preset sizes for a wider column', () => {
-    expect(ARTICLE_PROSE_CLASS).toContain('prose-img:my-6')
     expect(ARTICLE_PROSE_CLASS).toContain('prose-hr:my-10')
+    expect(ARTICLE_PROSE_CLASS).toContain('prose-h1:mt-0')
   })
 
   it('emits CSS for every token', async () => {

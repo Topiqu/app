@@ -150,6 +150,7 @@
           @partial="applyAiPartial"
           @image="applyAiImage"
           @final="applyAiFinal"
+          @settle="settleAiSlots"
         />
 
         <div v-if="!aiOpen || isBlank" class="flex flex-wrap items-center gap-2">
@@ -547,6 +548,13 @@ const applyAiPartial = (partial: { title?: string; perex?: string; content?: str
 
 const applyAiImage = ({ slot, html }: { slot: number; html: string }) => {
   editedArticle.value.content = replaceSlot(editedArticle.value.content ?? '', 'IMAGE', slot, html)
+}
+
+// Only `applyAiFinal` fills the remaining slots, so whenever the stream ends without one the body
+// keeps whatever the model wrote — including a literal `[[POLL1]]` the author then has to delete by
+// hand, or ships. Same rule as the server's: a marker with nothing to fill it is dropped.
+const settleAiSlots = () => {
+  editedArticle.value.content = stripContentSlots(editedArticle.value.content ?? '')
 }
 
 // The payload carries citations and effort metrics the editor has no other way to obtain —

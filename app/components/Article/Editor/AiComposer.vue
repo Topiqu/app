@@ -149,6 +149,8 @@ const emit = defineEmits<{
   partial: [partial: { title?: string; perex?: string; content?: string }]
   image: [image: { slot: number; html: string }]
   final: [article: Record<string, any>]
+  /** The stream ended without a `final`, so the streamed body still carries unfilled slot markers. */
+  settle: []
 }>()
 
 const { autofocus = false } = defineProps<{ autofocus?: boolean }>()
@@ -170,6 +172,8 @@ const originalTopic = shallowRef<string | null>(null)
 const enhancedTopic = shallowRef<string | null>(null)
 const format = shallowRef<AiFormat | null>(null)
 const phase = shallowRef<Phase>('writing')
+/** Whether this run delivered its `final`. Drives both the slot cleanup and the unmount abort. */
+const finalized = shallowRef(false)
 const streamedWords = shallowRef(0)
 const elapsedMs = shallowRef(0)
 
@@ -241,6 +245,8 @@ const generate = async () => {
   startedAt = Date.now()
   resume()
 
+  finalized.value = false
+
   try {
     const outcome = await streamGenerate(prompt, {
       onPartial: (partial) => {
@@ -250,6 +256,7 @@ const generate = async () => {
       onPhase: (next) => (phase.value = next),
       onImage: (image) => emit('image', image),
       onFinal: (article) => {
+        finalized.value = true
         streamedWords.value = countHtmlWords(article.content)
         emit('final', article)
       },
@@ -262,11 +269,17 @@ const generate = async () => {
   } finally {
     pause()
     generating.value = false
+    // Stopped, errored or the stream closed early: the body on screen is the raw model text, and
+    // nothing else will ever fill its `[[IMAGE1]]`/`[[POLL1]]` markers.
+    if (!finalized.value) emit('settle')
   }
 }
 
+// Applying the `final` closes the composer, which unmounts it while `generating` is still true —
+// so an unguarded stop here aborted the very stream that had just succeeded and reported it to the
+// author as "generation stopped".
 onBeforeUnmount(() => {
   pause()
-  if (generating.value) stopGeneration()
+  if (generating.value && !finalized.value) stopGeneration()
 })
 </script>

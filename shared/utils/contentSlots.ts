@@ -24,3 +24,11 @@ export const applyContentSlots = (content: string, kind: SlotKind, slots: Conten
 
   return orphans.length ? `${replaced.trimEnd()}\n${orphans.join('\n')}` : replaced
 }
+
+/**
+ * Every marker, with nothing left to fill it. Finalization is the only step that fills them, so
+ * wherever it is skipped or fails the raw `[[IMAGE1]]` has to come out here rather than reach the
+ * author's body as literal text.
+ */
+export const stripContentSlots = (content: string) =>
+  applyContentSlots(applyContentSlots(content, 'IMAGE', []), 'POLL', [])

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyContentSlots, replaceSlot } from '../../shared/utils/contentSlots'
+import { applyContentSlots, replaceSlot, stripContentSlots } from '../../shared/utils/contentSlots'
 
 const img = (n: number) => `<p><img src="/i${n}.png" /></p>`
 
@@ -75,5 +75,17 @@ describe('replaceSlot', () => {
 
   it('does not match a different slot number with the same prefix', () => {
     expect(replaceSlot('[[IMAGE12]]', 'IMAGE', 1, img(1))).toBe('[[IMAGE12]]')
+  })
+})
+
+// The recovery path for a stream that ends without a `final` — a failed finalization, a billing
+// throw, an author who hit Stop. Whatever the cause, the markers are nobody's to fill by then.
+describe('stripContentSlots', () => {
+  it('removes both kinds in one pass', () => {
+    expect(stripContentSlots('<p>a</p>[[IMAGE1]]<p>b</p>[[POLL1]][[IMAGE2]]')).toBe('<p>a</p><p>b</p>')
+  })
+
+  it('leaves a body that never had markers untouched', () => {
+    expect(stripContentSlots('<p>a</p><p>b</p>')).toBe('<p>a</p><p>b</p>')
   })
 })

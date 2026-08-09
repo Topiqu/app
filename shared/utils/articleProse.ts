@@ -10,17 +10,25 @@ export const ARTICLE_PROSE_CLASS = [
   // flattened it silently overrides every margin below and a h2 spaces like a paragraph.
   'text-[17px] md:text-lg leading-[1.8] text-gray-800',
   'prose prose-gray prose-a:text-blue-600 hover:prose-a:text-blue-800',
+  // The body repeats the title as its own h1 under `Hero.vue`'s, so it opens the column rather
+  // than continuing it — the preset's top margin has nothing to separate it from.
+  'prose-h1:mt-0 prose-h1:mb-4',
   'prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl',
   'prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic',
   // Indent lives on the list, not the item: `prose-li:ml-6` stacked on the preset's own
   // `padding-inline-start` and the marker ended up ~52px in, from two rules in two places.
   'prose-ul:list-disc prose-ol:list-decimal',
-  // The preset sizes these for a 65ch essay: 2em around every image, 3em around every rule.
-  'prose-img:my-6 prose-figure:my-6 prose-hr:my-10',
+  // Generated images arrive as `<p style="text-align:center"><img></p>`, so the paragraph already
+  // carries a full margin. `<img>` is a replaced element — vertical margins *do* apply to it inline
+  // — so any margin here stacks on that one instead of replacing it.
+  'prose-img:my-0 prose-figure:my-6 prose-hr:my-10',
   // Blank lines the editor emits as `<p></p>`. They were the article's only spacing while
   // base.scss's `* { margin: 0 }` stood unopposed; against real prose margins each one costs a
-  // line box plus two margins that no longer collapse through it.
-  '[&_p:empty]:hidden',
+  // line box plus two margins that no longer collapse through it. `<p><br></p>` and a paragraph
+  // closed by `<br>` are the same blank line in different markup — the model emitted those for as
+  // long as the schema asked for them (see `dropBlankLines`), so already-saved bodies are full of
+  // them and `:empty` matches neither: a `<p>` holding a `<br>` has a child.
+  '[&_p:empty]:hidden [&_p:has(>br:only-child)]:hidden [&_p>br:last-child]:hidden',
   'dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:prose-invert',
   'dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600',
 ].join(' ')

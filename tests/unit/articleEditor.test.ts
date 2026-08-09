@@ -5,6 +5,7 @@ import {
   canManageArticle,
   composeAiPrompt,
   countHtmlWords,
+  dropBlankLines,
   formatElapsed,
   isBlankArticle,
   publishAction,
@@ -77,6 +78,31 @@ describe('countHtmlWords', () => {
     expect(countHtmlWords('')).toBe(0)
     expect(countHtmlWords(null)).toBe(0)
     expect(countHtmlWords(undefined)).toBe(0)
+  })
+})
+
+describe('dropBlankLines', () => {
+  it('drops a break that only closes a block', () => {
+    expect(dropBlankLines('<p>one<br></p><h2>two<br /></h2>')).toBe('<p>one</p><h2>two</h2>')
+  })
+
+  it('keeps a break that separates content', () => {
+    const attribution = '<p><img src="/i.png" /><br><small>Zdroj: Unsplash</small></p>'
+    expect(dropBlankLines(attribution)).toBe(attribution)
+  })
+
+  it('drops paragraphs that are only a blank line', () => {
+    expect(dropBlankLines('<p>a</p><p></p><p><br></p><p>&nbsp;</p><p style="x">  </p><p>b</p>')).toBe(
+      '<p>a</p><p>b</p>',
+    )
+  })
+
+  it('collapses a run of breaks, not just the last one', () => {
+    expect(dropBlankLines('<p>a<br><br /> <br></p>')).toBe('<p>a</p>')
+  })
+
+  it('leaves a clean body untouched', () => {
+    expect(dropBlankLines('<h2>t</h2><p>a</p><ul><li>b</li></ul>')).toBe('<h2>t</h2><p>a</p><ul><li>b</li></ul>')
   })
 })
 

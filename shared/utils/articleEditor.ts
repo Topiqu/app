@@ -24,6 +24,19 @@ export const countHtmlWords = (html?: string | null) => {
   return text.split(/\s+/).filter(Boolean).length
 }
 
+/**
+ * The model's paragraph padding. It used to be asked for `<br>` at the end of every paragraph, back
+ * when the body was raw `v-html` under `base.scss`'s global `margin: 0` and that break was the only
+ * thing separating two paragraphs. `presetTypography` now owns the rhythm, so each one is a spare
+ * line box on top of a real margin — and `[&_p:empty]:hidden` never caught them, because a `<p>`
+ * holding a `<br>` is not `:empty`. Only a break that closes a block goes; one mid-paragraph is a
+ * deliberate line break (the image attribution emits exactly that).
+ */
+export const dropBlankLines = (html: string) =>
+  html
+    .replace(/(?:\s*<br\s*\/?>)+\s*(?=<\/(?:p|h[1-6]|li|blockquote|figcaption|td|th)>)/gi, '')
+    .replace(/<p(?:\s[^>]*)?>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '')
+
 export const formatElapsed = (ms: number) => {
   const seconds = Math.max(0, Math.floor(ms / 1000))
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`

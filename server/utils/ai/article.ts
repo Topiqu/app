@@ -10,7 +10,7 @@ export const articleSchema = z.object({
     .min(500)
     .max(20000)
     .describe(
-      'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, ul/ol/li and table/thead/tbody/tr/th/td, you can also add <br> tags at the end of each section/paragraph for v-html on frontend. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
+      'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, ul/ol/li and table/thead/tbody/tr/th/td. Never pad between blocks with <br> or empty paragraphs — the stylesheet owns the spacing. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
     ),
   coverImage: z
     .object({
@@ -193,14 +193,16 @@ export const finalizeArticle = async (object: ArticleObject, onImage?: (image: F
     filenamePrefix: 'article',
   }
 
-  // A failed image must never cost the author the whole article, so every generation
-  // is best-effort: we log and carry on with one image fewer.
+  // A failed image must never cost the author the whole article, so every generation is
+  // best-effort: report and carry on with one image fewer. Reported rather than logged because
+  // swallowing it here is exactly what makes "the images did not appear" undiagnosable — nothing
+  // downstream throws, so this is the only place the cause exists.
   const tryGenerateImage = async (prompt: string, opts?: { filenameSuffix?: string }) => {
     try {
       const { url } = await generateImage(prompt, { ...generateImageOptions, ...opts })
       return url
     } catch (error) {
-      console.error('Article image generation failed:', error)
+      await reportError('Article image generation failed', error, { prompt })
       return null
     }
   }
@@ -247,6 +249,9 @@ export const finalizeArticle = async (object: ArticleObject, onImage?: (image: F
 
   const generatedImages = settledImages.filter((image) => image !== null)
 
+  // Before the slots are filled: the image attribution carries a deliberate mid-paragraph `<br>`
+  // that this pass must not see as padding.
+  object.content = dropBlankLines(object.content)
   object.content = applyContentSlots(object.content, 'IMAGE', generatedImages)
 
   const polls = (object.polls ?? []).map((poll, idx) => {

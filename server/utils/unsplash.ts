@@ -19,7 +19,9 @@ export async function fetchUnsplashImage(keyword: string) {
     })
 
     if (!response.ok) {
-      console.error('Unsplash API error:', await response.text())
+      // Returning null silently falls back to AI generation, which hides a dead key or a spent
+      // rate limit behind nothing worse than a slightly different picture.
+      await logger.error('Unsplash search failed', { keyword, status: response.status, body: await response.text() })
       return null
     }
 
@@ -43,7 +45,7 @@ export async function fetchUnsplashImage(keyword: string) {
       alt: photo.alt_description || keyword,
     }
   } catch (err) {
-    console.error('Failed to fetch from Unsplash:', err)
+    await reportError('Unsplash request threw', err, { keyword })
     return null
   }
 }
