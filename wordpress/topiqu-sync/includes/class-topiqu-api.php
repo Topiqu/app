@@ -29,7 +29,7 @@ final class Topiqu_API {
             'redirection' => 2,
             'headers' => array(
                 'Accept' => 'application/json',
-                'User-Agent' => 'Topiqu-Sync/' . TOPIQU_SYNC_VERSION . '; ' . home_url('/'),
+                'User-Agent' => 'Topiqu-Sync/' . TOPIQU_SYNC_VERSION,
                 'x-api-key' => $this->api_key,
             ),
         ));

@@ -99,7 +99,11 @@ final class Topiqu_Admin {
         <div class="wrap">
             <h1><?php esc_html_e('Topiqu Sync', 'topiqu-sync'); ?></h1>
             <?php if (isset($_GET['topiqu_message'])) : ?>
-                <div class="notice notice-<?php echo 'error' === ($_GET['topiqu_status'] ?? '') ? 'error' : 'success'; ?> is-dismissible"><p><?php echo esc_html(wp_unslash($_GET['topiqu_message'])); ?></p></div>
+                <?php
+                $notice_status = isset($_GET['topiqu_status']) ? sanitize_key(wp_unslash($_GET['topiqu_status'])) : 'success';
+                $notice_class = 'error' === $notice_status ? 'error' : ('warning' === $notice_status ? 'warning' : 'success');
+                ?>
+                <div class="notice notice-<?php echo esc_attr($notice_class); ?> is-dismissible"><p><?php echo esc_html(wp_unslash($_GET['topiqu_message'])); ?></p></div>
             <?php endif; ?>
             <p><?php esc_html_e('Import published Topiqu articles as native WordPress posts.', 'topiqu-sync'); ?></p>
             <form method="post" action="options.php">
