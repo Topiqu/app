@@ -471,9 +471,13 @@ async function exportToPDF() {
     const blob = await response.blob()
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
+    const disposition = response.headers.get('Content-Disposition') || ''
+    const encodedFilename = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
     link.href = url
-    link.download = `profile_${profileForm.username}.pdf`
+    link.download = encodedFilename ? decodeURIComponent(encodedFilename) : 'topiqu-profile.pdf'
+    document.body.appendChild(link)
     link.click()
+    link.remove()
     window.URL.revokeObjectURL(url)
   } catch (err: any) {
     toast.error({ message: err.message || $t('common.messages.operationFailed') })
