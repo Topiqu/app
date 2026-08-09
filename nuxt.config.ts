@@ -150,6 +150,7 @@ export default defineNuxtConfig({
       '*/5 * * * *': ['translate-pending'],
       '0 4 * * *': ['gam-sync'],
       '30 4 * * *': ['domain-reverification'],
+      '0 5 * * *': ['trial-expiry'],
     },
     preset: 'bun',
     imports: {

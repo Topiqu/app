@@ -1,6 +1,7 @@
 import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
+import { TRIAL_PLAN } from '~~/shared/utils/trial'
 import { saveUserWithLogging } from '~~/server/utils/userLog'
 import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
 import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
@@ -58,12 +59,24 @@ export default defineEventHandler(async (event) => {
           language: body.language,
           theme: (body.theme || 'blue') as any,
           ...domainVerificationDefaults(fullSubdomain, randomBytes(24).toString('base64url')),
-          plan: 'BASIC', // Will be updated by Stripe Webhook
+          // The trial is a real plan, not a UI state — `firstPaidAt` stays null as the paid
+          // marker, and `trial-expiry` drops a card-less tenant back to BASIC after TRIAL_DAYS.
+          plan: TRIAL_PLAN,
           tokenRemaining: 25000,
           tokenLimit: 25000,
-          firstPaidAt: null, // Set in Stripe Webhook
+          firstPaidAt: null,
         },
       })
+
+      // Crons filter on ClientFeature rows, not on the plan column, so a trial without them
+      // would silently skip sentiment and article generation — the parts it exists to show off.
+      // Never fatal: `syncPlanFeatures` throws on an unseeded Feature catalog, and signup is the
+      // one path that must not depend on it. The plan column alone still unlocks the UI.
+      try {
+        await syncPlanFeatures(tx, site.id, TRIAL_PLAN)
+      } catch (error) {
+        console.error('TRIAL_FEATURE_PROVISIONING_FAILED', site.id, error)
+      }
 
       const hashedPassword = await argon2.hash(body.password)
 
