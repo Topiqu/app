@@ -3,6 +3,9 @@ export default defineEventHandler(async (event) => {
   if (!session) {
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }
+  if (session.role !== 'admin' && session.role !== 'superadmin') {
+    throw createError({ statusCode: 403, message: 'Forbidden' })
+  }
 
   const { clientSiteId: bodyClientSiteId, origin } = await readBody<{
     clientSiteId?: string

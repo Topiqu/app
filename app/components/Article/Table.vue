@@ -78,6 +78,7 @@
             :key="row.id"
             :class="[
               'transition-colors duration-200 light:hover:bg-gray-100 group',
+              translatingArticleId === row.original.id ? 'ring-2 ring-inset ring-indigo-400 bg-indigo-50/70!' : '',
               row.original.status === 'published'
                 ? 'light:bg-green-50 border-l-4 border-green-400'
                 : row.original.status === 'archived'
@@ -140,6 +141,14 @@
                 icon="mdi:pencil"
                 :disabled="row.original.status === 'archived'"
                 @click="openEditor(row.original.slug)"
+              />
+              <Button
+                v-tippy="$t(hasTargetTranslation(row.original) ? 'articles.translations.actions.retranslate' : 'articles.translations.actions.translate')"
+                icon="mdi:translate"
+                variant="secondary"
+                :loading="translatingArticleId === row.original.id"
+                :disabled="row.original.status === 'archived' || Boolean(translatingArticleId)"
+                @click="translateArticle(row.original)"
               />
               <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                 <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
@@ -208,6 +217,7 @@
         :key="row.id"
         :class="[
           'p-4 rounded-lg border border-gray-300 shadow-sm transition-colors duration-200 hover:bg-gray-100',
+          translatingArticleId === row.original.id ? 'ring-2 ring-indigo-400 bg-indigo-50/70!' : '',
           row.original.status === 'published'
             ? 'bg-green-50 border-l-4 border-green-400'
             : row.original.status === 'archived'
@@ -277,6 +287,15 @@
                   :disabled="row.original.status === 'archived'"
                   @click="openEditor(row.original.slug)"
                 />
+                <Button
+                  icon="mdi:translate"
+                  variant="secondary"
+                  :loading="translatingArticleId === row.original.id"
+                  :disabled="row.original.status === 'archived' || Boolean(translatingArticleId)"
+                  @click="translateArticle(row.original)"
+                >
+                  {{ $t(hasTargetTranslation(row.original) ? 'articles.translations.actions.retranslate' : 'articles.translations.actions.translate') }}
+                </Button>
                 <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                   <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
                 </LazyArticleTag>
@@ -347,6 +366,30 @@ const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
 const clientSite = await useClientSite()
 const primaryLanguage = clientSite?.language ?? 'en'
+// Language currently has two enum values (cs/en), so the table can derive the only possible
+// target from the public tenant context without fetching private settings separately.
+const targetLanguage = primaryLanguage === 'cs' ? 'en' : 'cs'
+const translatingArticleId = shallowRef<string | null>(null)
+
+const hasTargetTranslation = (article: ArticleWithDetails) =>
+  article.translations?.some((translation) => translation.language === targetLanguage) ?? false
+
+const translateArticle = async (article: ArticleWithDetails) => {
+  if (translatingArticleId.value) return
+  translatingArticleId.value = article.id
+  try {
+    await $fetch(`/api/articles/${article.id}/translate`, {
+      method: 'POST',
+      body: { language: targetLanguage },
+    })
+    await invalidateArticleLists()
+    toast.success({ message: $t('articles.translations.messages.translated') })
+  } catch (e: any) {
+    toast.error({ message: e?.data?.message || $t('common.messages.operationFailed') })
+  } finally {
+    translatingArticleId.value = null
+  }
+}
 
 // The editor resolves an article by its source slug, not its id — see `GET /api/articles/[id]`.
 const openEditor = (slug: string) => router.push(localePath({ name: 'admin-editor-id', params: { id: slug } }))

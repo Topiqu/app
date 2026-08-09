@@ -35,6 +35,14 @@
               {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
             </template>
           </span>
+          <span
+            v-if="aiGenerating"
+            class="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-300"
+            aria-live="polite"
+          >
+            <Icon name="mdi:loading" class="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
+            {{ $t('articles.editor.ai.generating') }}
+          </span>
         </div>
       </div>
 
@@ -146,6 +154,7 @@
       <template v-if="tr.isSource">
         <ArticleEditorAiComposer
           v-if="aiOpen"
+          v-model:generating="aiGenerating"
           :autofocus="aiAutofocus"
           @partial="applyAiPartial"
           @image="applyAiImage"
@@ -221,11 +230,47 @@
         </div>
       </div>
 
-      <p v-if="!tr.isSource && tr.active?.error" class="text-xs text-red-600 dark:text-red-400">
-        {{ tr.active.error }}
-      </p>
+      <div
+        v-if="!tr.isSource && tr.pending === 'translate'"
+        class="relative overflow-hidden flex items-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/30 px-3 py-2 text-sm text-indigo-700 dark:text-indigo-200"
+        role="status"
+        aria-live="polite"
+      >
+        <div class="absolute inset-x-0 top-0 h-0.5 bg-indigo-500/15">
+          <div class="h-full w-1/3 bg-indigo-500 animate-progress-slide motion-reduce:animate-none" />
+        </div>
+        <Icon name="mdi:translate" class="w-4 h-4" />
+        {{ $t('articles.translations.status.TRANSLATING') }}
+      </div>
 
-      <div class="flex flex-col gap-4">
+      <div
+        v-if="!tr.isSource && tr.pending === 'translate'"
+        class="flex flex-col gap-6 py-2 animate-pulse"
+        aria-hidden="true"
+      >
+        <div class="space-y-3">
+          <div class="h-10 sm:h-12 w-4/5 rounded-lg bg-gray-200 dark:bg-gray-700" />
+          <div class="h-6 w-full rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-6 w-2/3 rounded bg-gray-200 dark:bg-gray-700" />
+        </div>
+        <div class="h-px bg-gray-200 dark:bg-gray-800" />
+        <div class="space-y-3">
+          <div class="h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-4 w-11/12 rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-32 w-full rounded-xl bg-gray-100 dark:bg-gray-800" />
+          <div class="h-4 w-5/6 rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
+        </div>
+      </div>
+
+      <template v-else>
+        <p v-if="!tr.isSource && tr.active?.error" class="text-xs text-red-600 dark:text-red-400">
+          {{ tr.active.error }}
+        </p>
+
+        <div class="flex flex-col gap-4">
         <textarea
           ref="titleRef"
           v-model="titleText"
@@ -257,11 +302,11 @@
             {{ excerptText.length }} {{ $t('articles.editor.toolbar.characters') }}
           </span>
         </div>
-      </div>
+        </div>
 
       <!-- Cover sits below the excerpt because that is where it appears in `Hero.vue`: the editor
            now reads in the same order as the published article. -->
-      <template v-if="tr.isSource">
+        <template v-if="tr.isSource">
         <FileUploader
           compact
           type="article-image"
@@ -277,17 +322,18 @@
           v-model:releaseAt="editedArticle.releaseAt"
           v-model:sources="editedArticle.sources"
         />
-      </template>
+        </template>
 
-      <hr class="border-gray-200 dark:border-gray-800" />
+        <hr class="border-gray-200 dark:border-gray-800" />
 
       <!-- Lazy so the title, excerpt and strip are interactive before the editor bundle lands —
            and so a translation tab with no body never pays for it at all. -->
-      <LazyTiptapEditor v-if="bodyEditable" v-model="bodyModel" edit contentClass="min-h-[60vh]" />
+        <LazyTiptapEditor v-if="bodyEditable" v-model="bodyModel" edit contentClass="min-h-[60vh]" />
 
-      <p v-else class="text-sm text-gray-500 dark:text-gray-400">
-        {{ $t(`articles.translations.empty.${tr.active?.status ?? 'MISSING'}`) }}
-      </p>
+        <p v-else class="text-sm text-gray-500 dark:text-gray-400">
+          {{ $t(`articles.translations.empty.${tr.active?.status ?? 'MISSING'}`) }}
+        </p>
+      </template>
     </main>
 
     <ModalMini
@@ -495,6 +541,7 @@ onKeyStroke('Escape', () => {
 
 const jsonInput = useTemplateRef<HTMLInputElement>('jsonInput')
 const aiAutofocus = shallowRef(route.query.ai === '1')
+const aiGenerating = shallowRef(false)
 // Expanded while there is nothing to lose, or on the `?ai=1` deep link. Generation rewrites the
 // whole article, so a permanently open composer serves no mid-article iteration — it just pushed
 // the title below the fold on every visit.
