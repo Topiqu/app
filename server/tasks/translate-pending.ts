@@ -30,7 +30,19 @@ export default defineMonitoredTask({
     })
 
     if (!candidates.length) {
-      return { result: { processed: 0, failed: 0, skipped: 0, total: 0, timestamp: now.toISOString() } }
+      const queued = await prisma.articleTranslation.count({
+        where: { status: { in: ['PENDING', 'STALE'] }, deletedAt: null },
+      })
+      return {
+        result: {
+          processed: 0,
+          failed: 0,
+          skipped: 0,
+          total: 0,
+          queuedButIneligible: queued,
+          timestamp: now.toISOString(),
+        },
+      }
     }
 
     let processed = 0
