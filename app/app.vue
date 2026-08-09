@@ -119,12 +119,12 @@ useHead(() => ({
   ],
 }))
 
-// Site-wide half of the graph. Via `nuxt-schema-org` so the nodes get resolved `@id`s and the
-// per-page ones can link to them; two unlinked ld+json blobs are two unrelated entities.
+// Only the identity. `nuxt-schema-org`'s i18n plugin already emits WebSite and WebPage with
+// locale-aware `@id`s off the (per-tenant) site config — redefining them here detached
+// `WebPage.isPartOf` from the WebSite node it pointed at. No explicit `url` either: passing one
+// splits the identity into a second node.
 if (clientSite) {
   useSchemaOrg([
-    // No explicit `url` on either: the module derives it from site config, which the Nitro
-    // plugin already scopes to this host. Passing one splits the identity into a second node.
     defineOrganization({
       name: clientSite.name,
       logo: targetLogoUrl,
@@ -132,11 +132,6 @@ if (clientSite) {
       // Ties the blog to accounts the engine already has an entity for.
       sameAs: clientSite.socials?.map((social) => social.url) ?? [],
     }),
-    defineWebSite({
-      name: clientSite.name,
-      inLanguage: clientSite.language || 'en',
-    }),
-    defineWebPage(),
   ])
 }
 </script>

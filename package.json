@@ -28,6 +28,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "db:seed": "bun run prisma/seed.ts",
     "ai:smoke": "bun run scripts/ai-smoke.ts",
+    "seo:check": "bun run scripts/seo-check.ts",
     "db:seed-tokens": "bun run scripts/seed-tokens.ts"
   },
   "prisma": {

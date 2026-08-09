@@ -105,8 +105,11 @@ export function useArticleSeo(
       // Plain values — these take a resolvable array, not a getter, and the caller awaits first.
       articleSection: tagNames.value,
       keywords: tagNames.value,
-      // The research URLs the body was grounded in.
-      citation: () => article.value?.sources?.map((url) => ({ '@type': 'WebPage', url })) ?? [],
+      // The research URLs the body was grounded in; omitted rather than emitted empty.
+      citation: () =>
+        article.value?.sources?.length
+          ? article.value.sources.map((url) => ({ '@type': 'WebPage', url }))
+          : undefined,
       author: () =>
         authorName.value
           ? { '@type': 'Person', '@id': `${authorUrl.value}#author`, name: authorName.value }

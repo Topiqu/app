@@ -1,4 +1,5 @@
 import { IMAGE_HOSTS } from './shared/utils/imageHosts'
+import { AI_GROUNDING_TOKENS, ANSWER_ENGINE_BOTS } from './shared/utils/crawlers'
 
 const APP_ENV = process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
 const IS_PROD = APP_ENV === 'production'
@@ -63,28 +64,6 @@ const PRIVATE_PATHS = [
   '/auth',
   '/oauth-start',
 ]
-
-// Retrieval and user-triggered crawlers — the ones that fetch a page in order to cite it. The
-// wildcard group already allows them; naming them makes the stance reviewable and applies the
-// private-path list. Training-only crawlers (GPTBot, ClaudeBot, meta-externalagent, Amazonbot,
-// CCBot, Bytespider, cohere-ai) inherit `*` — blocking them is a product call, not a technical one.
-const ANSWER_ENGINE_BOTS = [
-  'OAI-SearchBot',
-  'ChatGPT-User',
-  'Claude-SearchBot',
-  'Claude-User',
-  'PerplexityBot',
-  'Perplexity-User',
-  'DuckAssistBot',
-  'MistralAI-User',
-  'Meta-ExternalFetcher',
-  'YouBot',
-]
-
-// Not crawlers. Neither issues an HTTP request of its own — both are robots.txt control tokens for
-// Gemini and Apple Intelligence training and grounding, so `Allow` is the opt-in and a path list
-// would be inert. Google states this token does not affect Search inclusion or ranking.
-const AI_GROUNDING_TOKENS = ['Google-Extended', 'Applebot-Extended']
 
 /** Headroom for crawler bursts on the public read surfaces, over the global 70 / 10 s. */
 const CRAWL_LIMIT = { tokensPerInterval: 300, interval: 10 * 1000 }
@@ -237,11 +216,13 @@ export default defineNuxtConfig({
     cacheMaxAgeSeconds: 600,
   },
 
+  // Naming the answer engines makes the stance reviewable and applies the private-path list; the
+  // wildcard group already allows them. Training crawlers inherit `*` — that is a product call.
   robots: {
     disallow: PRIVATE_PATHS,
     groups: [
-      { userAgent: ANSWER_ENGINE_BOTS, allow: ['/'], disallow: PRIVATE_PATHS },
-      { userAgent: AI_GROUNDING_TOKENS, allow: ['/'] },
+      { userAgent: [...ANSWER_ENGINE_BOTS], allow: ['/'], disallow: PRIVATE_PATHS },
+      { userAgent: [...AI_GROUNDING_TOKENS], allow: ['/'] },
     ],
   },
 
