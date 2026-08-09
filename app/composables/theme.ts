@@ -1,39 +1,3 @@
-export const themes: {
-  blue: string
-  green: string
-  red: string
-  purple: string
-  orange: string
-  teal: string
-  yellow: string
-  pink: string
-  indigo: string
-  gray: string
-  lime: string
-  sky: string
-  amber: string
-  cyan: string
-  violet: string
-} = {
-  blue: 'from-blue-600 to-indigo-900 dark:from-blue-800 dark:to-indigo-950',
-  green: 'from-green-600 to-emerald-900 dark:from-green-800 dark:to-emerald-950',
-  red: 'from-red-600 to-pink-900 dark:from-red-800 dark:to-pink-950',
-  purple: 'from-purple-600 to-indigo-900 dark:from-purple-800 dark:to-indigo-950',
-  orange: 'from-orange-500 to-red-600 dark:from-orange-700 dark:to-red-900',
-  teal: 'from-teal-600 to-cyan-900 dark:from-teal-800 dark:to-cyan-950',
-  yellow: 'from-yellow-400 to-yellow-700 dark:from-yellow-600 dark:to-yellow-900',
-  pink: 'from-pink-500 to-fuchsia-800 dark:from-pink-700 dark:to-fuchsia-900',
-  indigo: 'from-indigo-600 to-blue-900 dark:from-indigo-800 dark:to-blue-950',
-  gray: 'from-gray-400 to-gray-700 dark:from-gray-700 dark:to-gray-900',
-  lime: 'from-lime-500 to-green-800 dark:from-lime-700 dark:to-green-900',
-  sky: 'from-sky-500 to-blue-700 dark:from-sky-700 dark:to-blue-900',
-  amber: 'from-amber-500 to-orange-700 dark:from-amber-700 dark:to-orange-900',
-  cyan: 'from-cyan-500 to-teal-800 dark:from-cyan-700 dark:to-teal-900',
-  violet: 'from-violet-600 to-purple-900 dark:from-violet-800 dark:to-purple-950',
-}
-
-export type ThemeKey = keyof typeof themes
-
 export const themeColors = {
   blue: '#2563eb',
   green: '#16a34a',
@@ -50,22 +14,63 @@ export const themeColors = {
   amber: '#f59e0b',
   cyan: '#06b6d4',
   violet: '#8b5cf6',
-} satisfies Record<ThemeKey, string>
+} as const
 
-export const themeRings = {
-  blue: 'focus-visible:ring-blue-500',
-  green: 'focus-visible:ring-green-500',
-  red: 'focus-visible:ring-red-500',
-  purple: 'focus-visible:ring-purple-500',
-  orange: 'focus-visible:ring-orange-500',
-  teal: 'focus-visible:ring-teal-500',
-  yellow: 'focus-visible:ring-yellow-500',
-  pink: 'focus-visible:ring-pink-500',
-  indigo: 'focus-visible:ring-indigo-500',
-  gray: 'focus-visible:ring-gray-500',
-  lime: 'focus-visible:ring-lime-500',
-  sky: 'focus-visible:ring-sky-500',
-  amber: 'focus-visible:ring-amber-500',
-  cyan: 'focus-visible:ring-cyan-500',
-  violet: 'focus-visible:ring-violet-500',
-} satisfies Record<ThemeKey, string>
+export type ThemeKey = keyof typeof themeColors
+export type PublicationTypography = 'MODERN' | 'EDITORIAL' | 'SYSTEM'
+export const DEFAULT_TENANT_THEME: ThemeKey = 'indigo'
+
+// Explicit values keep the public CTA independent from Tailwind's generated palette.
+// Every foreground/background pair is at least WCAG AA for normal text.
+export const tenantCtaPalette = {
+  blue: { light: ['#1d4ed8', '#1e40af'], dark: ['#93c5fd', '#bfdbfe'] },
+  green: { light: ['#15803d', '#166534'], dark: ['#86efac', '#bbf7d0'] },
+  red: { light: ['#b91c1c', '#991b1b'], dark: ['#fca5a5', '#fecaca'] },
+  purple: { light: ['#6d28d9', '#5b21b6'], dark: ['#d8b4fe', '#e9d5ff'] },
+  orange: { light: ['#c2410c', '#9a3412'], dark: ['#fdba74', '#fed7aa'] },
+  teal: { light: ['#0f766e', '#115e59'], dark: ['#5eead4', '#99f6e4'] },
+  yellow: { light: ['#854d0e', '#713f12'], dark: ['#fde047', '#fef08a'] },
+  pink: { light: ['#be185d', '#9d174d'], dark: ['#f9a8d4', '#fbcfe8'] },
+  indigo: { light: ['#4338ca', '#3730a3'], dark: ['#a5b4fc', '#c7d2fe'] },
+  gray: { light: ['#4b5563', '#374151'], dark: ['#cbd5e1', '#e2e8f0'] },
+  lime: { light: ['#4d7c0f', '#3f6212'], dark: ['#bef264', '#d9f99d'] },
+  sky: { light: ['#0369a1', '#075985'], dark: ['#7dd3fc', '#bae6fd'] },
+  amber: { light: ['#92400e', '#78350f'], dark: ['#fcd34d', '#fde68a'] },
+  cyan: { light: ['#0e7490', '#155e75'], dark: ['#67e8f9', '#a5f3fc'] },
+  violet: { light: ['#6d28d9', '#5b21b6'], dark: ['#c4b5fd', '#ddd6fe'] },
+} as const satisfies Record<ThemeKey, { light: readonly [string, string]; dark: readonly [string, string] }>
+
+export const resolveTenantTheme = (value: unknown): ThemeKey => {
+  const key = typeof value === 'string' ? value.trim().toLowerCase() : ''
+  return Object.prototype.hasOwnProperty.call(themeColors, key) ? (key as ThemeKey) : DEFAULT_TENANT_THEME
+}
+
+export const resolveTypographyPreset = (value: unknown): PublicationTypography =>
+  value === 'EDITORIAL' || value === 'SYSTEM' ? value : 'MODERN'
+
+export const typographyFontFamily = (value: unknown) => {
+  const preset = resolveTypographyPreset(value)
+  if (preset === 'EDITORIAL') return '"Source Serif 4 Variable", Georgia, serif'
+  if (preset === 'SYSTEM') return 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+  return '"Manrope Variable", ui-sans-serif, system-ui, sans-serif'
+}
+
+export const tenantThemeStyle = (value: unknown, typography?: unknown) => {
+  const key = resolveTenantTheme(value)
+  const [background, hover] = tenantCtaPalette[key].light
+  const [darkBackground, darkHover] = tenantCtaPalette[key].dark
+  return {
+    '--topiqu-tenant-accent-light': background,
+    '--topiqu-tenant-accent-dark': darkBackground,
+    '--topiqu-tenant-accent-foreground': '#ffffff',
+    '--topiqu-cta-bg': background,
+    '--topiqu-cta-hover': hover,
+    '--topiqu-cta-fg': '#ffffff',
+    '--topiqu-cta-focus': '#0f172a',
+    '--topiqu-cta-dark-bg': darkBackground,
+    '--topiqu-cta-dark-hover': darkHover,
+    '--topiqu-cta-dark-fg': '#0f172a',
+    '--topiqu-cta-dark-focus': '#f8fafc',
+    '--topiqu-publication-font': typographyFontFamily(typography),
+  }
+}

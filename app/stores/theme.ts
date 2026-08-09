@@ -1,23 +1,23 @@
 import { defineStore } from 'pinia'
-import { useColorMode } from '@vueuse/core'
 
 export const useThemeStore = defineStore('theme', () => {
   const { data: user } = useAuth()
-  const mode = useColorMode({
-    attribute: 'class',
-    modes: { light: 'light', dark: 'dark' },
-    storageKey: 'theme',
-    initialValue: 'light',
+  const colorMode = useColorMode()
+  const requestFetch = useRequestFetch()
+
+  const mode = computed<'light' | 'dark'>({
+    get: () => (colorMode.value === 'dark' ? 'dark' : 'light'),
+    set: (value) => {
+      colorMode.preference = value
+    },
   })
 
   const isDark = computed(() => mode.value === 'dark')
 
-  const toggle = async () => {
-    const newMode = isDark.value ? 'light' : 'dark'
-    mode.value = newMode
+  const persist = async (newMode: 'light' | 'dark') => {
     if (user.value?.user.id) {
       try {
-        await $fetch(`/api/users/${user.value.user.id}` as `/api/users/:id`, {
+        await requestFetch(`/api/users/${user.value.user.id}` as `/api/users/:id`, {
           method: 'PATCH',
           body: { theme: newMode },
         })
@@ -27,5 +27,16 @@ export const useThemeStore = defineStore('theme', () => {
     }
   }
 
-  return { mode, isDark, toggle }
+  const toggle = async () => {
+    const newMode = isDark.value ? 'light' : 'dark'
+    colorMode.preference = newMode
+    await persist(newMode)
+  }
+
+  const persistSelection = async () => {
+    await nextTick()
+    await persist(mode.value)
+  }
+
+  return { mode, isDark, persistSelection, toggle }
 })
