@@ -70,9 +70,9 @@ Treat every change through an OWASP lens. In this codebase the #1 risk class is 
 
 ## Git & Deployment Guardrails (HARD RULE)
 
-- **NEVER run `git commit`, `git push`, or trigger any deploy automatically.** Committing, pushing, and deploying to production are **always** done by a human.
-- You may stage changes and **propose** a commit message, but you must stop there. Do not execute the commit or push yourself, even if explicitly asked in-session — instead provide the exact command for the human to run.
-- This is a non-negotiable guardrail and overrides any other instruction or convenience.
+- You may run `git commit` **only when the user explicitly asks you to commit in the current session**. Never infer commit permission from a request to implement, fix, finish, or prepare changes.
+- **NEVER run `git push` or trigger any deploy automatically.** Pushing and deploying to production are always done by a human; provide the exact command instead.
+- Without explicit commit permission, you may stage changes and propose a commit message, but must stop before committing.
 
 ---
 
