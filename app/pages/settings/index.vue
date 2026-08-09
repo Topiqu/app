@@ -197,6 +197,7 @@
               :language="form.language"
               :translationMode="form.translationMode"
               :translationLanguages="form.translationLanguages"
+              :discloseAiContent="form.discloseAiContent"
               :features="features ?? []"
               :currency="client?.currency ?? 'EUR'"
               :plan="client?.plan ?? 'BASIC'"
@@ -213,6 +214,7 @@
               @update:autoRelease="form.autoRelease = $event"
               @update:translationMode="form.translationMode = $event"
               @update:translationLanguages="form.translationLanguages = $event"
+              @update:discloseAiContent="form.discloseAiContent = $event"
             />
           </div>
         </section>

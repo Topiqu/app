@@ -138,6 +138,25 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
   const config = useRuntimeConfig()
   const client = getSesClient()
 
+  const textKeys: Record<string, string[]> = {
+    verificationCode: ['greeting', 'intro', 'expiration'],
+    newComment: ['greeting', 'intro', 'button'],
+    commentReply: ['greeting', 'intro', 'parent', 'button'],
+    deleteComment: ['greeting', 'intro', 'reason'],
+    userBan: ['greeting', data.introKey || 'intro_no_reason'],
+  }
+  const textParts = (textKeys[template] || ['intro'])
+    .map((key) => translate(`${template}.${key}`, enrichedData))
+    .filter((value) => value && !value.startsWith(`${template}.`))
+  if (template === 'verificationCode') textParts.splice(2, 0, data.verificationCode || '')
+  if (data.commentUrl) textParts.push(data.commentUrl)
+  textParts.push(`${translate(`${template}.unsubscribe.text`, enrichedData)} ${data.unsubscribeUrl || ''}`)
+  const textBody = textParts
+    .join('\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+
   const command = new SendEmailCommand({
     Source: config.email.from,
     Destination: { ToAddresses: [to] },
@@ -152,7 +171,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
           Charset: 'UTF-8',
         },
         Text: {
-          Data: translate(`${template}.intro`, data).replace(/<[^>]+>/g, ''),
+          Data: textBody,
           Charset: 'UTF-8',
         },
       },

@@ -436,6 +436,10 @@
       "ai": "Ilustrační obrázek (AI)",
       "photoBy": "foto: {author}"
     },
+    "aiDisclosure": {
+      "ASSIST": "Vytvořeno s pomocí AI",
+      "FULL": "Vytvořeno AI"
+    },
     "keyTakeaways": "Klíčové body",
     "faq": "Časté otázky"
   }

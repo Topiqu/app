@@ -9,12 +9,22 @@
       "link": "Unsubscribe"
     }
   },
-  "comment": {
+  "commentReply": {
     "subject": "New reply to your comment",
     "greeting": "Hello <b>{parentUsername}</b>,",
     "intro": "<b>{userName}</b> replied: \"<i>{commentContent}</i>\"",
     "parent": "Your comment: \"<i>{parentContent}</i>\"",
     "button": "View reply",
+    "unsubscribe": {
+      "text": "Don't want to receive notifications?",
+      "link": "Unsubscribe"
+    }
+  },
+  "deleteComment": {
+    "subject": "Your comment has been removed",
+    "greeting": "Hello {userName},",
+    "intro": "Your comment “<i>{commentContent}</i>” has been removed.",
+    "reason": "Reason: {deleteReason}",
     "unsubscribe": {
       "text": "Don't want to receive notifications?",
       "link": "Unsubscribe"

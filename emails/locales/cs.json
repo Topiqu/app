@@ -9,7 +9,7 @@
       "link": "Odhlásit se"
     }
   },
-  "comment": {
+  "commentReply": {
     "subject": "Nová odpověď na váš komentář",
     "greeting": "Dobrý den, <b>{parentUsername}</b>,",
     "intro": "<b>{userName}</b> odpověděl: „<i>{commentContent}</i>“",
@@ -38,7 +38,7 @@
     "subject": "Váš komentář byl smazán",
     "greeting": "Dobrý den, {userName},",
     "intro": "Váš komentář „<i>{commentContent}</i>“ byl smazán.",
-    "reason": "{deleteReason}",
+    "reason": "Důvod: {deleteReason}",
     "unsubscribe": {
       "text": "Nechcete dostávat notifikace?",
       "link": "Odhlásit se"

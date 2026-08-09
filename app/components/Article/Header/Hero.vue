@@ -74,7 +74,7 @@
       />
       <!-- Safe as a real `<figcaption>` here: the cover never passes through TipTap. -->
       <figcaption>
-        <ArticleImageCredit :cover="imageCredit" />
+        <ArticleImageCredit :cover="imageCredit" :discloseAi="discloseAi" />
       </figcaption>
     </figure>
   </div>
@@ -94,6 +94,7 @@ defineProps<{
   excerpt?: string | null
   imageUrl?: string | null
   imageCredit?: CoverCredit | null
+  discloseAi?: boolean
   series?: { name: string; current: number; total: number } | null
 }>()
 

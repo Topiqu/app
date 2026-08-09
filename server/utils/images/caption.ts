@@ -42,11 +42,16 @@ export const renderCredit = (credit: ImageCredit, labels: CaptionLabels) => {
  * is the deliberate mid-paragraph break `dropBlankLines` is written to preserve.
  */
 export const buildImageHtml = (image: ArticleImage, caption: string, labels: CaptionLabels) => {
-  const prefix = image.kind === 'ai' ? labels.ai : image.kind === 'illustration' ? labels.illustration : ''
+  const prefix =
+    image.kind === 'ai'
+      ? `<span data-ai-disclosure>${escapeHtml(labels.ai)}${caption.trim() ? ': ' : ''}</span>`
+      : image.kind === 'illustration'
+        ? `${escapeHtml(labels.illustration)}${caption.trim() ? ': ' : ''}`
+        : ''
   const trimmed = caption.trim()
-  const text = [prefix, trimmed].filter(Boolean).join(': ')
+  const text = `${prefix}${trimmed ? escapeHtml(trimmed) : ''}`
   const credit = image.credit ? renderCredit(image.credit, labels) : ''
-  const line = [text && escapeHtml(text), credit].filter(Boolean).join(' — ')
+  const line = [text, credit].filter(Boolean).join(' — ')
 
   // Falls back to the provider's description, then to a decorative empty alt — repeating a
   // search keyword there is worse for a screen reader than saying nothing.

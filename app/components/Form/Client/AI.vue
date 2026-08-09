@@ -98,6 +98,23 @@
         </div>
       </div>
     </Transition>
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+      <div class="flex items-center gap-4">
+        <Icon name="mdi:information-outline" class="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        <div class="flex-1">
+          <div class="font-semibold text-gray-900 dark:text-gray-100">
+            {{ $t('common.preferences.aiDisclosure.title') }}
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">{{ $t('common.preferences.aiDisclosure.desc') }}</div>
+        </div>
+        <FormInput
+          :modelValue="props.discloseAiContent"
+          type="checkbox"
+          class="!h-5 !w-5 cursor-pointer"
+          @update:modelValue="emit('update:discloseAiContent', $event as boolean)"
+        />
+      </div>
+    </div>
     <div
       class="flex flex-col gap-6 p-8 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
     >
@@ -255,6 +272,7 @@ const props = defineProps<{
   language: string
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
+  discloseAiContent: boolean
 }>()
 const emit = defineEmits<{
   'update:username': [string]
@@ -265,6 +283,7 @@ const emit = defineEmits<{
   'update:autoRelease': [boolean]
   'update:translationMode': ['OFF' | 'MANUAL' | 'AUTO' | 'HYBRID']
   'update:translationLanguages': [string[]]
+  'update:discloseAiContent': [boolean]
   'toggle:feature': [{ code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }]
 }>()
 

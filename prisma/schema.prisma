@@ -517,6 +517,7 @@ model ClientSite {
   allowShapes                  Boolean                  @default(false)
   aiToneOfVoice                String?
   aiControversyLevel           String?
+  discloseAiContent            Boolean                  @default(false)
   communityInsight             Json?
   insightUpdatedAt             DateTime?
   billingPlan                  BillingPlans             @default(MONTHLY)

@@ -33,7 +33,7 @@
     "data": "User Profile Data",
     "pdfExportHeader": "GDPR-Compliant Export",
     "gdprCompliance": "GDPR Compliance",
-    "gdprText": "This document contains all personal data associated with your account, provided in accordance with GDPR regulations. For inquiries regarding data processing, contact our support team at support{'@'}topiqu.com.",
+    "gdprText": "This document provides a summary of the profile and account data stored with your account. For a complete machine-readable export or questions about data processing, contact our support team at support{'@'}topiqu.com.",
     "generatedOn": "Generated automatically by Topiqu on {0}.",
     "roleLabel": "Role",
     "emailVerifiedLabel": "Email Verified",
