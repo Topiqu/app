@@ -2,6 +2,7 @@ import type { SocialPlatform } from '@prisma/client'
 
 import { randomBytes } from 'crypto'
 import { models } from '~~/shared/zod'
+import { domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 import {
   PRIVILEGED_CLIENT_SITE_FIELDS,
   TENANT_EDITABLE_CLIENT_SITE_FIELDS,
@@ -20,6 +21,10 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
+  if (body.domain !== undefined) {
+    body.domain = normalizeDomain(String(body.domain))
+    if (!isValidDomain(body.domain)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  }
 
   delete body.id
   delete body.optimizedUrl
@@ -53,19 +58,17 @@ export default defineEventHandler(async (event) => {
 
   const isSuperadmin = user.role === 'superadmin'
 
-  const UpdateSchema = models.ClientSiteScalarSchema.pick(
-    fieldMask(TENANT_EDITABLE_CLIENT_SITE_FIELDS),
-  ).partial()
+  const UpdateSchema = models.ClientSiteScalarSchema.pick(fieldMask(TENANT_EDITABLE_CLIENT_SITE_FIELDS)).partial()
 
-  const PrivilegedSchema = models.ClientSiteScalarSchema.pick(
-    fieldMask(PRIVILEGED_CLIENT_SITE_FIELDS),
-  ).partial()
+  const PrivilegedSchema = models.ClientSiteScalarSchema.pick(fieldMask(PRIVILEGED_CLIENT_SITE_FIELDS)).partial()
 
   const parsed = UpdateSchema.safeParse(pickFields(scalarBody, TENANT_EDITABLE_CLIENT_SITE_FIELDS))
   if (!parsed.success) {
     throw createError({ statusCode: 400, message: parsed.error.message })
   }
   const data: any = { ...parsed.data }
+  const domainChanged = typeof data.domain === 'string' && data.domain !== clientSite.domain
+  if (domainChanged) Object.assign(data, domainVerificationDefaults(data.domain, randomBytes(24).toString('base64url')))
 
   if (isSuperadmin) {
     const privileged = PrivilegedSchema.safeParse(pickFields(scalarBody, PRIVILEGED_CLIENT_SITE_FIELDS))
@@ -193,6 +196,16 @@ export default defineEventHandler(async (event) => {
     data,
     include: { socials: true, users: { where: { role: 'ai' }, take: 1 } },
   })
+
+  if (domainChanged) {
+    await logAction({
+      action: 'DOMAIN_CHANGED',
+      userId: user.id,
+      clientSiteId: id,
+      ip: getIp(event),
+      metadata: { previousDomain: clientSite.domain, domain: updatedSite.domain, verificationReset: true },
+    })
+  }
 
   if (updatedSite.plan !== clientSite.plan) {
     await prisma.$transaction((tx) => syncPlanFeatures(tx, id, updatedSite.plan))

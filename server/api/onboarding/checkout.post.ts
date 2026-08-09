@@ -3,16 +3,13 @@ import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
 import { saveUserWithLogging } from '~~/server/utils/userLog'
 import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
+import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
 
 const schema = z.object({
   siteName: z.string().min(1).max(255),
-  domain: z
-    .string()
-    .min(1)
-    .max(255)
-    .regex(/^[a-z0-9-]+$/),
+  domain: z.string().min(1).max(253),
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
   theme: z.string().optional(),
   language: z.enum(['cs', 'en']),
@@ -34,7 +31,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const fullSubdomain = body.domainType === 'SUBDOMAIN' ? `${body.domain}.topiqu.com` : body.domain
+  const fullSubdomain = normalizeDomain(body.domainType === 'SUBDOMAIN' ? `${body.domain}.topiqu.com` : body.domain)
+  if (!isValidDomain(fullSubdomain)) throw createError({ statusCode: 400, message: 'Invalid domain' })
   const loginToken = randomBytes(32).toString('hex')
   const loginTokenExpiresAt = new Date(Date.now() + LOGIN_TOKEN_TTL_MS)
 
@@ -59,7 +57,7 @@ export default defineEventHandler(async (event) => {
           domain: fullSubdomain,
           language: body.language,
           theme: (body.theme || 'blue') as any,
-          domainVerified: body.domainType === 'SUBDOMAIN', // Auto-verify subdomains, custom domains need checking
+          ...domainVerificationDefaults(fullSubdomain, randomBytes(24).toString('base64url')),
           plan: 'BASIC', // Will be updated by Stripe Webhook
           tokenRemaining: 25000,
           tokenLimit: 25000,
@@ -69,7 +67,7 @@ export default defineEventHandler(async (event) => {
 
       const hashedPassword = await argon2.hash(body.password)
 
-      await saveUserWithLogging(
+      const user = await saveUserWithLogging(
         event,
         {
           username: body.username,
@@ -85,6 +83,16 @@ export default defineEventHandler(async (event) => {
         false,
         tx,
       )
+
+      if (!isManagedDomain(site.domain))
+        await logAction({
+          action: 'DOMAIN_VERIFICATION_STARTED',
+          userId: user.id,
+          clientSiteId: site.id,
+          ip: getIp(event),
+          metadata: { domain: site.domain },
+          tx,
+        })
 
       return site
     })
@@ -113,8 +121,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const stripeSecret = process.env.STRIPE_SK
-  const priceId =
-    body.selectedPlan === 'PRO' ? process.env.STRIPE_PRICE_PRO : process.env.STRIPE_PRICE_PREMIUM
+  const priceId = body.selectedPlan === 'PRO' ? process.env.STRIPE_PRICE_PRO : process.env.STRIPE_PRICE_PREMIUM
 
   if (!stripeSecret || !priceId) {
     return { url: dashboardUrl }

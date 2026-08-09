@@ -1,3 +1,4 @@
+import { isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 const RESERVED = new Set([
   'www',
   'api',
@@ -21,13 +22,12 @@ const RESERVED = new Set([
 ])
 
 const SUBDOMAIN_RE = /^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$/
-const CUSTOM_DOMAIN_RE = /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/
 
 type Reason = 'empty' | 'tooShort' | 'invalid' | 'reserved' | 'taken'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const raw = String(query.domain ?? '').trim().toLowerCase()
+  const raw = normalizeDomain(String(query.domain ?? ''))
   const type = query.type === 'CUSTOM' ? 'CUSTOM' : 'SUBDOMAIN'
 
   if (!raw) return { ok: false as const, reason: 'empty' as Reason }
@@ -43,8 +43,8 @@ export default defineEventHandler(async (event) => {
     return { ok: true as const, fullDomain }
   }
 
-  if (!CUSTOM_DOMAIN_RE.test(raw)) return { ok: false as const, reason: 'invalid' as Reason }
-  if (raw.endsWith('.topiqu.com')) return { ok: false as const, reason: 'reserved' as Reason }
+  if (!isValidDomain(raw) || !raw.includes('.')) return { ok: false as const, reason: 'invalid' as Reason }
+  if (isManagedDomain(raw)) return { ok: false as const, reason: 'reserved' as Reason }
 
   const existing = await prisma.clientSite.findUnique({ where: { domain: raw }, select: { id: true } })
   if (existing) return { ok: false as const, reason: 'taken' as Reason }

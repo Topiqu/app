@@ -1,3 +1,4 @@
+import { isManagedDomain } from '~~/shared/utils/domain'
 import { publicClientSiteSelect } from '~~/shared/utils/clientSiteFields'
 
 export default defineEventHandler(async (event) => {
@@ -13,6 +14,10 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!clientSite) {
+    throw createError({ statusCode: 404, message: 'Blog nenalezen' })
+  }
+
+  if (process.env.NODE_ENV === 'production' && !clientSite.domainVerified && !isManagedDomain(clientSite.domain)) {
     throw createError({ statusCode: 404, message: 'Blog nenalezen' })
   }
 

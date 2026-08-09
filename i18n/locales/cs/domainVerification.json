@@ -1,10 +1,14 @@
 {
   "domainVerification": {
     "title": "Doména čeká na ověření",
-    "description": "Pro vaši vlastní doménu ({domain}) je potřeba nastavit CNAME záznam mířící na {target}.",
+    "description": "Pro vlastní doménu {domain} nastavte oba uvedené DNS záznamy.",
+    "degraded": "Opakovaná kontrola selhala. Opravte DNS během 7 dnů, jinak bude vlastní doména odpojena.",
+    "ownership": "Ověření vlastnictví",
+    "routing": "Směrování webu",
+    "result": "Vlastnictví: {ownership} · Směrování: {routing}",
     "verifyBtn": "Ověřit DNS",
     "success": "Doména úspěšně ověřena!",
-    "notFound": "DNS záznam nebyl nalezen. Zkontrolujte CNAME.",
+    "notFound": "DNS záznamy zatím nejsou správně nastavené nebo propagované.",
     "error": "Nastala chyba při ověřování."
   }
 }

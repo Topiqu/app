@@ -109,6 +109,7 @@ export default defineNuxtConfig({
       '0 3 * * *': ['community-insights'],
       '*/5 * * * *': ['translate-pending'],
       '0 4 * * *': ['gam-sync'],
+      '30 4 * * *': ['domain-reverification'],
     },
     preset: 'bun',
     imports: {

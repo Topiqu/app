@@ -125,3 +125,28 @@ export const feedGen = (clientSiteId: string) => getGen(feedNs(clientSiteId))
  * make the cache miss on every request.
  */
 export const invalidateFeed = (clientSiteId: string) => bumpGen(feedNs(clientSiteId))
+
+const fallbackLimits = new Map<string, { count: number; resetAt: number }>()
+
+export async function consumeRateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {
+  const redis = activeClient()
+  if (redis) {
+    try {
+      const redisKey = `rate:${key}`
+      const count = await redis.incr(redisKey)
+      if (count === 1) await redis.expire(redisKey, windowSeconds)
+      return count <= limit
+    } catch (e) {
+      logErr('rate-limit', key, e)
+    }
+  }
+
+  const now = Date.now()
+  const current = fallbackLimits.get(key)
+  if (!current || current.resetAt <= now) {
+    fallbackLimits.set(key, { count: 1, resetAt: now + windowSeconds * 1000 })
+    return true
+  }
+  current.count++
+  return current.count <= limit
+}

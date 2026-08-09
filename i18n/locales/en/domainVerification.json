@@ -1,10 +1,14 @@
 {
   "domainVerification": {
     "title": "Domain pending verification",
-    "description": "For your custom domain ({domain}), you need to point a CNAME record to {target}.",
+    "description": "Configure both DNS records below for your custom domain {domain}.",
+    "degraded": "Repeated verification checks failed. Fix DNS within 7 days or the custom domain will be disconnected.",
+    "ownership": "Ownership verification",
+    "routing": "Website routing",
+    "result": "Ownership: {ownership} · Routing: {routing}",
     "verifyBtn": "Verify DNS",
     "success": "Domain successfully verified!",
-    "notFound": "DNS record not found. Please check your CNAME.",
+    "notFound": "The DNS records are not configured correctly yet or have not propagated.",
     "error": "An error occurred during verification."
   }
 }

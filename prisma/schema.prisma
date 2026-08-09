@@ -114,6 +114,13 @@ enum BillingPlans {
   PERMANENT
 }
 
+enum DomainVerificationStatus {
+  PENDING
+  VERIFIED
+  DEGRADED
+  FAILED
+}
+
 enum SocialPlatform {
   FACEBOOK
   TWITTER
@@ -463,66 +470,75 @@ model Social {
 }
 
 model ClientSite {
-  id                   String               @id() @default(uuid())
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime?            @updatedAt()
-  deletedAt            DateTime?
-  name                 String               @unique()
-  domain               String               @unique()
-  domainVerified       Boolean              @default(false)
-  plan                 ClientPlan           @default(BASIC)
-  focus                String?
-  description          String?
-  logoUrl              String?
-  generationFrequency  GenerationFrequency  @default(NONE)
-  tokenLimit           Int?                 @default(0)
-  tokenRemaining       Int?                 @default(0)
-  totalUsage           Int?                 @default(0)
-  autoRelease          Boolean              @default(false)
-  keywords             Json?
-  audience             String?
-  lastGeneratedAt      DateTime?
-  humanHourlyRateUsd   Int                  @default(35)
-  humanWordsPerHour    Int                  @default(400)
-  gtagId               String?
-  apiKey               String?
-  gamNetworkCode       String?
-  allowAds             Boolean              @default(false)
-  allowGtag            Boolean?
-  allowShapes          Boolean              @default(false)
-  aiToneOfVoice        String?
-  aiControversyLevel   String?
-  communityInsight     Json?
-  insightUpdatedAt     DateTime?
-  billingPlan          BillingPlans         @default(MONTHLY)
-  firstPaidAt          DateTime?
-  nextBillingAt        DateTime?
-  lastInvoicedAt       DateTime?
-  monthlyPayment       Int?                 @default(0)
-  annualPayment        Int?                 @default(0)
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  stripePriceId        String?
-  currency             String?              @default("USD")
-  lastPaidAt           DateTime?            @default(now())
-  lastTokenRefilled    DateTime?            @default(now())
-  language             Language             @default(en)
-  theme                Theme                @default(blue)
-  translationMode      TranslationMode      @default(OFF)
-  translationLanguages Language[]
-  users                User[]
-  tags                 Tag[]
-  articles             Article[]
-  articleSeries        ArticleSeries[]
-  articleDrafts        ArticleDraft[]
-  emojis               Emoji[]
-  userBans             UserBan[]
-  socials              Social[]
-  logs                 Log[]                @relation("LogToClientSite")
-  features             ClientFeature[]
-  linkedinCompanies    LinkedinCompany[]
-  articleTranslations  ArticleTranslation[]
-  adEarnings           AdEarning[]
+  id                           String                   @id() @default(uuid())
+  createdAt                    DateTime                 @default(now())
+  updatedAt                    DateTime?                @updatedAt()
+  deletedAt                    DateTime?
+  name                         String                   @unique()
+  domain                       String                   @unique()
+  domainVerified               Boolean                  @default(false)
+  domainVerificationStatus     DomainVerificationStatus @default(PENDING)
+  domainVerificationToken      String?
+  domainVerificationIssuedAt   DateTime?
+  domainVerifiedAt             DateTime?
+  domainLastCheckedAt          DateTime?
+  domainRoutingVerified        Boolean                  @default(false)
+  domainVerificationFailures   Int                      @default(0)
+  domainVerificationDegradedAt DateTime?
+  domainVerificationError      String?
+  plan                         ClientPlan               @default(BASIC)
+  focus                        String?
+  description                  String?
+  logoUrl                      String?
+  generationFrequency          GenerationFrequency      @default(NONE)
+  tokenLimit                   Int?                     @default(0)
+  tokenRemaining               Int?                     @default(0)
+  totalUsage                   Int?                     @default(0)
+  autoRelease                  Boolean                  @default(false)
+  keywords                     Json?
+  audience                     String?
+  lastGeneratedAt              DateTime?
+  humanHourlyRateUsd           Int                      @default(35)
+  humanWordsPerHour            Int                      @default(400)
+  gtagId                       String?
+  apiKey                       String?
+  gamNetworkCode               String?
+  allowAds                     Boolean                  @default(false)
+  allowGtag                    Boolean?
+  allowShapes                  Boolean                  @default(false)
+  aiToneOfVoice                String?
+  aiControversyLevel           String?
+  communityInsight             Json?
+  insightUpdatedAt             DateTime?
+  billingPlan                  BillingPlans             @default(MONTHLY)
+  firstPaidAt                  DateTime?
+  nextBillingAt                DateTime?
+  lastInvoicedAt               DateTime?
+  monthlyPayment               Int?                     @default(0)
+  annualPayment                Int?                     @default(0)
+  stripeCustomerId             String?
+  stripeSubscriptionId         String?
+  stripePriceId                String?
+  currency                     String?                  @default("USD")
+  lastPaidAt                   DateTime?                @default(now())
+  lastTokenRefilled            DateTime?                @default(now())
+  language                     Language                 @default(en)
+  theme                        Theme                    @default(blue)
+  translationMode              TranslationMode          @default(OFF)
+  translationLanguages         Language[]
+  users                        User[]
+  tags                         Tag[]
+  articles                     Article[]
+  articleSeries                ArticleSeries[]
+  articleDrafts                ArticleDraft[]
+  emojis                       Emoji[]
+  userBans                     UserBan[]
+  socials                      Social[]
+  logs                         Log[]                    @relation("LogToClientSite")
+  features                     ClientFeature[]
+  linkedinCompanies            LinkedinCompany[]
+  articleTranslations          ArticleTranslation[]
+  adEarnings                   AdEarning[]
 
   @@index([domain, name, plan, billingPlan])
 }
