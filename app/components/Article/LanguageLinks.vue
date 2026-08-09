@@ -24,10 +24,12 @@
 </template>
 
 <script setup lang="ts">
+import type { Language } from '~~/shared/utils/language'
+
 import { translationStatusDot, type TranslationStatus } from '~~/shared/utils/articleTranslations'
 
 export interface LanguageLink {
-  language: string
+  language: Language
   slug: string
   status?: TranslationStatus
 }
@@ -39,7 +41,7 @@ const {
   articleRef = '',
 } = defineProps<{
   links: LanguageLink[]
-  current?: string
+  current?: Language
   /** `public` links to the live localized article, `editor` opens that language's tab. */
   target?: 'public' | 'editor'
   /** Source article slug — the editor route resolves the article by it, then `lang` picks the tab. */

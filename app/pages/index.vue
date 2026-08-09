@@ -198,6 +198,21 @@ import type { PollOptionData } from '~~/shared/utils/polls'
 
 import { formatDate } from '~~/shared/utils'
 
+interface HomeArticle {
+  id: string
+  slug: string
+  title: string
+  content?: string | null
+  excerpt: string | null
+  imageUrl: string | null
+  createdAt: string
+  readingTime: number | null
+  views: number
+  user: { id: string; username: string; avatarUrl: string | null } | null
+  tags: { tag: { id: string; name: string; slug: string } }[]
+  _count: { comments: number; reactions: number } | null
+}
+
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
 const { locale } = useI18n()
@@ -231,7 +246,9 @@ const {
   immediate: !isBlankSite,
 })
 
-const articleMap = ref<Map<string, NonNullable<typeof feed.value>['items'][number]>>(new Map())
+// Keep the view model shallow. Inferring this from the ZenStack-enhanced endpoint response makes
+// Volar recursively instantiate the full policy-aware payload type in every template binding.
+const articleMap = ref<Map<string, HomeArticle>>(new Map())
 const hasMore = shallowRef<boolean>(true)
 const latestPoll = ref<{
   type: string
@@ -246,7 +263,7 @@ watch(
   (d) => {
     const next = (d?.items ?? []).filter((a) => !articleMap.value.has(a.id))
     for (const article of next) {
-      articleMap.value.set(article.id, article)
+      articleMap.value.set(article.id, article as HomeArticle)
     }
 
     if (d?.latestPoll) {
@@ -271,6 +288,7 @@ watch([selectedTag, searchQuery], debouncedRefresh)
 
 const allArticles = computed(() => Array.from(articleMap.value.values()))
 const featured = computed(() => feat.value?.featured ?? null)
+const featuredId = computed<string | undefined>(() => feat.value?.featured?.id)
 const recommended = computed(() => feat.value?.recommended ?? [])
 const tags = computed(() => feed.value?.tags ?? [])
 const topArticles = computed(() =>
@@ -278,7 +296,7 @@ const topArticles = computed(() =>
     ? [...allArticles.value].sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0)).slice(0, 3)
     : [],
 )
-const filteredArticles = computed(() => allArticles.value.filter((a) => a.id !== featured.value?.id))
+const filteredArticles = computed(() => allArticles.value.filter((article) => article.id !== featuredId.value))
 const latestArticle = computed(
   () =>
     [...allArticles.value].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ?? null,

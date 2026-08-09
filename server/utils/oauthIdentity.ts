@@ -20,4 +20,5 @@ export const verifiedGoogleEmail = (profile: { email?: string | null; email_veri
 export const canLinkOAuthIdentity = (existing: { emailVerified: boolean } | null): boolean =>
   existing === null || existing.emailVerified === true
 
-export const isOAuthSignIn = (account: { type?: string } | null | undefined): boolean => account?.type === 'oauth'
+export const isOAuthSignIn = <T extends { type?: string }>(account: T | null | undefined): account is T =>
+  account?.type === 'oauth'

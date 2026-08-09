@@ -357,9 +357,9 @@ const openEditor = (slug: string) => router.push(localePath({ name: 'admin-edito
  * empty placeholder for each unused language would just add noise to every row.
  */
 const languageLinks = (article: ArticleWithDetails): LanguageLink[] => [
-  { language: primaryLanguage, slug: article.slug },
+  { language: primaryLanguage as LanguageLink['language'], slug: article.slug },
   ...(article.translations ?? []).map((tr) => ({
-    language: tr.language,
+    language: tr.language as LanguageLink['language'],
     slug: tr.slug ?? article.slug,
     status: tr.status as LanguageLink['status'],
   })),

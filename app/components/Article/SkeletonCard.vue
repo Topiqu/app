@@ -193,7 +193,7 @@ const props = defineProps<{
     createdAt: string
     readingTime: number | null
     views: number
-    user: { id: string; username: string; email: string; avatarUrl: string | null } | null
+    user: { id: string; username: string; avatarUrl: string | null } | null
     _count: { comments: number; reactions: number } | null
   }
   tags?: {
