@@ -23,6 +23,7 @@ export interface ArticleTranslationsPayload {
 export const useArticleTranslations = (articleId?: string, initialLang = '') => {
   const toast = useToast()
   const { t } = useI18n()
+  const { invalidateArticleLists } = useCacheInvalidation()
 
   const { data, refresh, status } = useFetch<ArticleTranslationsPayload>(`/api/articles/${articleId}/translations`, {
     key: `article-translations-${articleId ?? 'none'}`,
@@ -84,6 +85,7 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
     try {
       await fn()
       await refresh()
+      await invalidateArticleLists()
       toast.success({ message: t(successKey) })
     } catch (e: any) {
       toast.error({ message: e?.data?.message || t('common.messages.saveFailed') })
