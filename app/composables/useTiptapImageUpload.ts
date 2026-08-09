@@ -7,7 +7,10 @@ const cleanAltFromFilename = (name: string) =>
     .replace(/[-_]+/g, ' ')
     .trim()
 
-export function useTiptapImageUpload(editor: Ref<Editor | undefined>, promptAlt: (defaultAlt: string) => Promise<string>) {
+export function useTiptapImageUpload(
+  editor: Ref<Editor | undefined>,
+  promptAlt: (defaultAlt: string) => Promise<string>,
+) {
   const config = useRuntimeConfig()
   const toast = useToast()
 
@@ -32,9 +35,9 @@ export function useTiptapImageUpload(editor: Ref<Editor | undefined>, promptAlt:
 
     try {
       const { success } = await $fetch('/api/upload', { method: 'POST', body: form })
-      if (!success) toast.error({ message: $t('articles.editor.uploadFailed') })
+      if (!success) toast.add({ color: 'error', title: $t('articles.editor.uploadFailed') })
     } catch (e: any) {
-      toast.error({ message: e?.data?.message || e?.message || $t('articles.editor.uploadFailed') })
+      toast.add({ color: 'error', title: e?.data?.message || e?.message || $t('articles.editor.uploadFailed') })
     }
   }
 }

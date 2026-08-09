@@ -1,102 +1,75 @@
 <template>
-  <div class="w-full group/uploader" @paste.prevent="onPaste">
-    <transition name="fade" mode="out-in">
-      <div
-        v-if="previewUrl"
-        class="relative w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shadow-sm group/preview"
+  <div :class="compact ? 'w-40' : 'w-full'" class="group/uploader" @paste.prevent="onPaste">
+    <UFormField :label="$t('common.actions.clickToUpload')" :ui="{ label: 'sr-only' }">
+      <UFileUpload
+        ref="upload"
+        v-model="selectedFile"
+        accept="image/*"
+        :disabled="disabled || isProcessing"
+        :preview="true"
+        position="inside"
+        icon="i-mdi-cloud-upload-outline"
+        :label="previewUrl ? $t('common.actions.change') : $t('common.actions.clickToUpload')"
+        :description="`${$t('common.labels.orDrag')} · ${$t('common.labels.pasteImage')} (Ctrl+V)`"
+        reset
+        :class="compact ? 'size-40' : 'w-full'"
+        :ui="uploadUi"
+        @update:modelValue="onFileSelected"
       >
-        <div
-          class="absolute inset-0 bg-cover bg-center blur-xl opacity-50 dark:opacity-30"
-          :style="{ backgroundImage: `url(${previewUrl})` }"
-        />
-
-        <div class="relative z-10 p-6 flex flex-col items-center gap-4">
-          <NuxtImg
+        <template v-if="previewUrl && !selectedFile" #leading>
+          <AppMedia
             :src="previewUrl"
-            class="max-h-64 w-auto object-contain rounded-lg shadow-lg ring-1 ring-black/5"
             :alt="$t('articles.articleCard.imageAlt')"
+            :aspectRatio="resolvedAspectRatio"
+            fit="contain"
+            sizes="100vw sm:640px"
+            :containerClass="
+              compact ? 'size-20 rounded-[var(--ui-radius)]' : 'h-36 w-56 max-w-full rounded-[var(--ui-radius)]'
+            "
           />
-
-          <div class="flex gap-2">
-            <Button
-              variant="neutral"
-              size="sm"
-              icon="mdi:refresh"
-              class="bg-white/90 backdrop-blur hover:text-blue-600"
-              @click="cancelUpload"
-            >
-              {{ $t('common.actions.change') }}
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              icon="mdi:delete"
-              class="backdrop-blur hover:bg-red-50"
-              @click="cancelUpload"
+        </template>
+        <template #file>
+          <div class="flex w-full flex-col items-center gap-3">
+            <AppMedia
+              :src="previewUrl"
+              :alt="$t('articles.articleCard.imageAlt')"
+              :aspectRatio="resolvedAspectRatio"
+              fit="contain"
+              sizes="100vw sm:640px"
+              :containerClass="
+                compact ? 'size-20 rounded-[var(--ui-radius)]' : 'h-36 w-56 max-w-full rounded-[var(--ui-radius)]'
+              "
             />
-          </div>
-        </div>
-
-        <div
-          v-if="isProcessing"
-          class="absolute inset-0 z-20 bg-white/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center"
-        >
-          <Icon name="mdi:loading" class="w-8 h-8 animate-spin text-blue-600" />
-        </div>
-      </div>
-
-      <div
-        v-else-if="isProcessing"
-        class="w-full h-48 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse flex flex-col items-center justify-center gap-3 border border-transparent"
-      >
-        <Icon name="mdi:image-filter-hdr" class="w-10 h-10 text-gray-300 dark:text-gray-600" />
-        <span class="text-xs font-medium text-gray-400">{{ $t('common.loading') }}</span>
-      </div>
-
-      <div
-        v-else
-        class="relative w-full h-48 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer overflow-hidden"
-        :class="[
-          isDragging && !disabled
-            ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 scale-[1.01] shadow-lg'
-            : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-gray-400',
-          disabled ? 'opacity-50 cursor-not-allowed' : '',
-        ]"
-        @dragover.prevent="!disabled && (isDragging = true)"
-        @dragenter.prevent="!disabled && (isDragging = true)"
-        @dragleave.prevent="isDragging = false"
-        @drop.prevent="onDrop"
-        @click="!disabled && open({ accept: 'image/*' })"
-      >
-        <div
-          class="flex flex-col items-center gap-2 text-center p-4 transition-transform duration-300"
-          :class="{ 'scale-110': isDragging }"
-        >
-          <div class="p-3 rounded-full bg-white dark:bg-gray-700 shadow-sm ring-1 ring-gray-100 dark:ring-gray-600">
-            <Icon name="mdi:cloud-upload-outline" class="w-6 h-6 text-blue-500" />
-          </div>
-          <div class="flex flex-col">
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-              {{ $t('common.actions.clickToUpload') }}
-              <span class="text-gray-400 font-normal">{{ $t('common.labels.orDrag') }}</span>
+            <span v-if="selectedFile" class="max-w-full truncate text-sm font-medium text-highlighted">
+              {{ selectedFile.name }}
             </span>
-            <span class="text-xs text-gray-400 mt-1">
-              {{ isDragging ? $t('common.actions.dropHere') : `${$t('common.labels.pasteImage')} (Ctrl+V)` }}
-            </span>
+            <UProgress v-if="isProcessing" class="w-full" />
           </div>
-        </div>
+        </template>
+      </UFileUpload>
+    </UFormField>
 
-        <div class="absolute bottom-3 flex gap-2 opacity-60 hover:opacity-100 transition-opacity">
-          <span
-            v-for="(info, i) in constraintInfo"
-            :key="i"
-            class="text-[10px] px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-          >
-            {{ info }}
-          </span>
-        </div>
-      </div>
-    </transition>
+    <div v-if="previewUrl" class="mt-2 flex items-center justify-end gap-2">
+      <UButton type="button" color="neutral" variant="soft" size="sm" icon="i-mdi-refresh" @click="openPicker">
+        {{ $t('common.actions.change') }}
+      </UButton>
+      <UButton
+        type="button"
+        color="error"
+        variant="soft"
+        size="sm"
+        square
+        icon="i-mdi-delete"
+        :aria-label="$t('common.remove')"
+        @click="cancelUpload"
+      />
+    </div>
+
+    <div v-if="!compact && !previewUrl && !isProcessing" class="mt-2 flex flex-wrap gap-2">
+      <UBadge v-for="(info, i) in constraintInfo" :key="i" color="neutral" variant="subtle" size="sm">
+        {{ info }}
+      </UBadge>
+    </div>
   </div>
 </template>
 
@@ -104,10 +77,12 @@
 const emit = defineEmits<{ (e: 'upload', payload: { url: string; optimizedUrl: string }): void }>()
 const props = defineProps<{
   imageUrl?: string | null
-  type?: 'client-logo' | 'user-avatar' | 'article-image' | 'emoji'
+  type?: 'client-logo' | 'client-favicon' | 'user-avatar' | 'article-image' | 'emoji'
   shortcode?: string
   disabled?: boolean
   isAiUser?: boolean
+  compact?: boolean
+  aspectRatio?: string
   maxSize?: number
   minSize?: number
   maxWidth?: number
@@ -117,11 +92,30 @@ const props = defineProps<{
 }>()
 
 const toast = useToast()
-const { open, onChange, reset } = useFileDialog({ accept: 'image/*', multiple: false })
-
 const previewUrl = ref(props.imageUrl || null)
-const isDragging = shallowRef(false)
+const selectedFile = shallowRef<File | null>(null)
 const isProcessing = shallowRef(false)
+const upload = useTemplateRef<{ inputRef?: HTMLInputElement }>('upload')
+const openPicker = () => upload.value?.inputRef?.click()
+const resolvedAspectRatio = computed(() => props.aspectRatio || (props.compact ? '1 / 1' : '16 / 9'))
+const uploadUi = computed(() =>
+  props.compact
+    ? {
+        root: 'size-40',
+        base: 'size-40 flex-none p-2',
+        wrapper: 'gap-2 p-0',
+        label: 'text-xs',
+        description: 'hidden',
+        files: 'w-full',
+        file: 'w-full p-0',
+      }
+    : {
+        base: 'min-h-48',
+        wrapper: 'w-full',
+        files: 'w-full',
+        file: 'w-full',
+      },
+)
 
 watch(
   () => props.imageUrl,
@@ -132,6 +126,7 @@ const constraints = computed(() => {
   const defaults =
     {
       'client-logo': { maxWidth: 3840, maxHeight: 2160, maxSize: 8e6 },
+      'client-favicon': { minWidth: 32, minHeight: 32, maxWidth: 512, maxHeight: 512, maxSize: 512e3 },
       'user-avatar': { maxWidth: 3840, maxHeight: 2160, maxSize: 5e6 },
       'article-image': { maxWidth: 3840, maxHeight: 2160, minWidth: 300, minHeight: 200, maxSize: 5e6 },
       emoji: { maxWidth: 128, maxHeight: 128, maxSize: 1e6 },
@@ -149,14 +144,14 @@ const constraintInfo = computed(() => {
 
 const cancelUpload = () => {
   previewUrl.value = null
-  reset()
+  selectedFile.value = null
   emit('upload', { url: '', optimizedUrl: '' })
 }
 
 const validate = (condition: boolean, msg: string) => {
   if (condition) {
-    toast.error({ message: msg })
-    reset()
+    toast.add({ color: 'error', title: msg })
+    selectedFile.value = null
     return false
   }
   return true
@@ -165,9 +160,15 @@ const validate = (condition: boolean, msg: string) => {
 const handleFile = async (file: File) => {
   if (props.disabled) return
   if (!validate(!file.type.startsWith('image/'), $t('common.messages.operationFailed'))) return
+  if (
+    props.type === 'client-favicon' &&
+    !validate(!['image/png', 'image/jpeg', 'image/webp'].includes(file.type), $t('common.messages.operationFailed'))
+  )
+    return
 
   const c = constraints.value
-  if (!validate(!!c.maxSize && file.size > c.maxSize, `Příliš velký (max ${(c.maxSize! / 1e6).toFixed(1)} MB)`)) return
+  const maxSize = c.maxSize
+  if (!validate(!!maxSize && file.size > maxSize, `Příliš velký (max ${((maxSize ?? 0) / 1e6).toFixed(1)} MB)`)) return
   if (!validate(!!c.minSize && file.size < c.minSize, `Příliš malý`)) return
 
   const objectUrl = URL.createObjectURL(file)
@@ -176,6 +177,9 @@ const handleFile = async (file: File) => {
     i.onload = () => r(i)
     i.src = objectUrl
   })
+
+  if (props.type === 'client-favicon' && !validate(img.width !== img.height, $t('common.messages.operationFailed')))
+    return
 
   if (
     !validate(
@@ -208,17 +212,11 @@ const handleFile = async (file: File) => {
     const { url, optimizedUrl } = await $fetch('/api/upload', { method: 'POST', body: formData })
     emit('upload', { url, optimizedUrl })
   } catch (e: any) {
-    toast.error({ message: $t('common.avatar.uploadError') + e.data?.message })
-    reset()
+    toast.add({ color: 'error', title: $t('common.avatar.uploadError') + e.data?.message })
+    selectedFile.value = null
   } finally {
     isProcessing.value = false
   }
-}
-
-const onDrop = (e: DragEvent) => {
-  isDragging.value = false
-  const file = e.dataTransfer?.files[0]
-  if (file) handleFile(file)
 }
 
 const onPaste = (e: ClipboardEvent) => {
@@ -229,21 +227,5 @@ const onPaste = (e: ClipboardEvent) => {
   if (file) handleFile(file)
 }
 
-onChange((files) => {
-  if (files?.[0]) handleFile(files[0])
-})
+const onFileSelected = (file: File | null | undefined) => file && handleFile(file)
 </script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: scale(0.98);
-}
-</style>
