@@ -1,12 +1,12 @@
 <template>
-  <div class="max-w-5xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+  <div class="max-w-5xl w-full mx-auto px-2 sm:px-6 lg:px-8 pt-6 pb-28 sm:pt-8 sm:pb-32 lg:pt-10">
     <TransitionRoot :show="true" enter="transition-opacity duration-500" enterFrom="opacity-0" enterTo="opacity-100">
       <div class="space-y-6 sm:space-y-8 lg:space-y-10">
         <div class="p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700">
           <div
             class="mb-8 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/60 backdrop-blur relative"
           >
-            <UserPictureUploader v-model="profileForm.avatarUrl" @upload="refresh()" />
+            <UserPictureUploader v-model="profileForm.avatarUrl" @upload="handleAvatarUpload" />
             <div class="space-y-4 text-center sm:text-left flex-1">
               <h1
                 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2"
@@ -52,7 +52,7 @@
             :commentsCount="profileForm.commentsCount"
             :likesCount="profileForm.likesCount"
             @openDialog="openDialog"
-            @updateTab="activeTab = $event"
+            @updateTab="showActivity"
           />
           <div
             v-if="isDirty"
@@ -255,22 +255,26 @@
               </div>
             </div>
           </div>
-          <div class="mt-6 sm:mt-8 lg:mt-10 flex flex-col sm:flex-row gap-4">
+          <div
+            class="fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6 z-40 flex justify-center px-4 pointer-events-none"
+          >
             <Button
               :disabled="isLoading || !isDirty"
-              class="w-full sm:w-1/2 inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
+              class="pointer-events-auto w-full max-w-sm inline-flex justify-center items-center px-6 py-3 bg-indigo-600 text-white rounded-xl shadow-xl ring-1 ring-white/20 hover:bg-indigo-700 disabled:opacity-60 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
               @click="updateProfile"
             >
               <Save class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               {{ $t('common.actions.saveChanges') }}
             </Button>
           </div>
-          <UserActivity
-            v-model:activeTab="activeTab"
-            :profile="profileForm"
-            :pending="userDataPending"
-            :error="userDataError"
-          />
+          <div id="activity-section" class="scroll-mt-20">
+            <UserActivity
+              v-model:activeTab="activeTab"
+              :profile="profileForm"
+              :pending="userDataPending"
+              :error="userDataError"
+            />
+          </div>
         </div>
       </div>
     </TransitionRoot>
@@ -407,6 +411,23 @@ function revertChanges() {
 function openDialog(type: 'followers' | 'followed') {
   dialogType.value = type
   showDialog.value = true
+}
+
+async function showActivity(tab: 'likedArticles' | 'comments') {
+  activeTab.value = tab
+  await nextTick()
+  document.getElementById('activity-section')?.scrollIntoView({
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    block: 'start',
+  })
+}
+
+async function handleAvatarUpload() {
+  await refresh()
+  if (originalProfile.value) originalProfile.value.avatarUrl = profileForm.avatarUrl
+  isDirty.value = !equal({ ...profileForm, sessions: undefined }, { ...originalProfile.value, sessions: undefined })
+  if (isDirty.value) draft.save(profileForm)
+  else draft.clear()
 }
 
 async function updateProfile() {
