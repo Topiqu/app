@@ -57,6 +57,19 @@
 <script setup lang="ts">
 const animating = shallowRef<boolean>(false)
 const reversing = shallowRef<boolean>(false)
+const reverseDelay = shallowRef(0)
+
+const finishReverse = () => {
+  reversing.value = false
+  animating.value = false
+}
+const { start: finishReverseLater } = useTimeoutFn(finishReverse, 250, { immediate: false })
+
+const startReverse = () => {
+  reversing.value = true
+  finishReverseLater()
+}
+const { start: reverseLater } = useTimeoutFn(startReverse, reverseDelay, { immediate: false })
 
 const handleClick = (e: MouseEvent) => {
   if (disabled || loading || animating.value) return
@@ -78,14 +91,8 @@ const triggerAnimation = () => {
           : animation === 'softpop'
             ? 450
             : 0
-  setTimeout(startReverse, duration)
-}
-const startReverse = () => {
-  reversing.value = true
-  setTimeout(() => {
-    reversing.value = false
-    animating.value = false
-  }, 250)
+  reverseDelay.value = duration
+  reverseLater()
 }
 
 const animationClass = (anim: string) => {

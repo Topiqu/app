@@ -26,6 +26,7 @@ export const useArticleDrafts = async (
   const draftsOpen = shallowRef(false)
   const lastSavedAt = shallowRef<Date | null>(null)
   const saving = shallowRef(false)
+  const { start: clearSuccessLater } = useTimeoutFn(() => (successMessage.value = ''), 8000, { immediate: false })
 
   const {
     data: drafts,
@@ -77,7 +78,7 @@ export const useArticleDrafts = async (
       lastSavedAt.value = new Date()
       successMessage.value = t('common.messages.draftSaved')
       await refresh()
-      setTimeout(() => (successMessage.value = ''), 8000)
+      clearSuccessLater()
     } catch {
       toast.error({ message: t('common.messages.draftSaveFailed') })
     } finally {

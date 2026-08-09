@@ -28,6 +28,7 @@
 const clientSite = await useClientSite()
 const pending = shallowRef(false)
 const toast = useToast()
+const { start: reloadLater } = useTimeoutFn(() => window.location.reload(), 1500, { immediate: false })
 
 const baseDomain = useRuntimeConfig().public.baseDomain
 const isCustomDomain = computed(() => {
@@ -44,8 +45,7 @@ const verify = async () => {
     const res = await $fetch('/api/admin/verify-domain', { method: 'POST' })
     if (res.verified) {
       toast.success({ message: $t('domainVerification.success') })
-      // Auto-reload to hide the banner
-      setTimeout(() => window.location.reload(), 1500)
+      reloadLater()
     } else {
       toast.error({ message: $t('domainVerification.notFound') })
     }

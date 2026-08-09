@@ -50,7 +50,7 @@
           :showFollowButton="!!session?.user && session.user.id !== data.user.id"
           :excerpt="data.excerpt"
           :imageUrl="data.imageUrl"
-          :imageCredit="(data.imageCredit as CoverCredit | null)"
+          :imageCredit="imageCredit"
           :series="data.series && data.series.name ? (data.series as any) : undefined"
           @follow="toggleFollow"
         />
@@ -102,10 +102,7 @@
           </NuxtLink>
         </div>
 
-        <div
-          ref="content"
-          :class="ARTICLE_PROSE_CLASS"
-        >
+        <div ref="content" :class="ARTICLE_PROSE_CLASS">
           <ArticleParsed :content="data.content" :articleId="data.id" />
         </div>
 
@@ -237,10 +234,15 @@ const canonicalUrl = computed(() => {
 useArticleSeo(data, clientSite, canonicalUrl, alternateLinks)
 
 const ogImageOptions = computed(() => ({ backgroundImage: data.value?.imageUrl }))
+const imageCredit = computed(() => (data.value?.imageCredit as CoverCredit | null) ?? null)
 
 defineOgImage('TopiquArticle', ogImageOptions.value)
 
 const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
+const anonymousLike = useSessionStorage(
+  computed(() => `liked-${data.value?.slug ?? 'pending'}`),
+  false,
+)
 
 const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh, getVisitorId)
 
@@ -291,9 +293,8 @@ const toggleLike = async () => {
     visitorId = await getVisitorId()
   }
 
-  const key = `liked-${data.value.slug}`
-  const hasLiked = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(key) : null
-  if (hasLiked && !session.value?.user.id) sessionStorage.removeItem(key)
+  const hasLiked = anonymousLike.value
+  if (hasLiked && !session.value?.user.id) anonymousLike.value = false
 
   try {
     const res = await $fetch<{ liked: boolean; likes: number }>(`/api/articles/${data.value.id}/reaction`, {
@@ -306,11 +307,10 @@ const toggleLike = async () => {
       data.value.likes = res.likes
     }
 
-    if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
-    else if (!res.liked && !session.value?.user.id) sessionStorage.removeItem(key)
+    if (!session.value?.user.id) anonymousLike.value = res.liked
   } catch {
     toast.error({ message: $t('articles.comments.reactionFailed') })
-    if (hasLiked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
+    if (hasLiked && !session.value?.user.id) anonymousLike.value = true
   }
 }
 
@@ -366,46 +366,25 @@ const breadcrumbs = computed(() => {
   })
 })
 
-const isSticky = shallowRef(false)
-const progress = shallowRef(0)
-const container = useTemplateRef('container')
 const content = useTemplateRef('content')
-
-const handleContentScroll = () => {
-  if (!content.value) return
-  const { top, height } = content.value.getBoundingClientRect()
-  const contentTop = top + window.scrollY
-  const scrollable = height - window.innerHeight
-  if (scrollable > 0)
-    progress.value = Math.min(
-      100,
-      Math.max(0, (window.scrollY - contentTop + window.innerHeight / 2) / scrollable) * 100,
-    )
-  else progress.value = 0
-}
+const { y } = useWindowScroll()
+const { height: windowHeight } = useWindowSize()
+const { top: contentTop, height: contentHeight } = useElementBounding(content)
+const isSticky = computed(() => y.value > 100)
+const progress = computed(() => {
+  const scrollable = contentHeight.value - windowHeight.value
+  if (scrollable <= 0) return 0
+  return Math.min(100, Math.max(0, (-contentTop.value + windowHeight.value / 2) / scrollable) * 100)
+})
 
 onMounted(() => {
   trackView()
 
-  const onScroll = () => {
-    if (!container.value || !content.value) return
-    isSticky.value = window.scrollY > 100
-    handleContentScroll()
-  }
-
   if (data.value?.slug && !session.value?.user.id) {
-    const likeKey = `liked-${data.value.slug}`
-    const hasLikedLocal = sessionStorage.getItem(likeKey)
-    if (hasLikedLocal && !data.value.likedByUser) {
+    if (anonymousLike.value && !data.value.likedByUser) {
       data.value.likedByUser = true
     }
   }
-
-  window.addEventListener('scroll', onScroll)
-
-  onUnmounted(() => {
-    window.removeEventListener('scroll', onScroll)
-  })
 })
 </script>
 

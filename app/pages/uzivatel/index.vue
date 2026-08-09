@@ -255,18 +255,28 @@
               </div>
             </div>
           </div>
-          <div
-            class="fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6 z-40 flex justify-center px-4 pointer-events-none"
+          <Transition
+            enterActiveClass="transition duration-300 ease-out motion-reduce:transition-none"
+            enterFromClass="translate-y-6 opacity-0"
+            enterToClass="translate-y-0 opacity-100"
+            leaveActiveClass="transition duration-200 ease-in motion-reduce:transition-none"
+            leaveFromClass="translate-y-0 opacity-100"
+            leaveToClass="translate-y-6 opacity-0"
           >
-            <Button
-              :disabled="isLoading || !isDirty"
-              class="pointer-events-auto w-full max-w-sm inline-flex justify-center items-center px-6 py-3 bg-indigo-600 text-white rounded-xl shadow-xl ring-1 ring-white/20 hover:bg-indigo-700 disabled:opacity-60 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
-              @click="updateProfile"
+            <div
+              v-if="isDirty"
+              class="fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6 z-40 flex justify-center px-4 pointer-events-none"
             >
-              <Save class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              {{ $t('common.actions.saveChanges') }}
-            </Button>
-          </div>
+              <Button
+                :disabled="isLoading"
+                class="pointer-events-auto w-full max-w-sm inline-flex justify-center items-center px-6 py-3 bg-indigo-600 text-white rounded-xl shadow-xl ring-1 ring-white/20 hover:bg-indigo-700 disabled:opacity-60 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
+                @click="updateProfile"
+              >
+                <Save class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                {{ $t('common.actions.saveChanges') }}
+              </Button>
+            </div>
+          </Transition>
           <div id="activity-section" class="scroll-mt-20">
             <UserActivity
               v-model:activeTab="activeTab"
@@ -313,25 +323,27 @@ const toast = useToast()
 const { setLocale } = useI18n()
 const { formatTime } = useTime()
 const route = useRoute()
+const reducedMotion = usePreferredReducedMotion()
 
 if (!user.value) {
   await navigateTo(localePath({ name: 'autorizace' }))
 }
 
 const draftKey = computed(() => `profileDraft-${user.value?.user.id}`)
+const storedDraft = useLocalStorage<Profile | null>(draftKey, null)
 const draft = {
   load: (): Profile | null => {
-    const raw = localStorage.getItem(draftKey.value)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      delete parsed.sessions
-      return parsed
-    }
-    return null
+    if (!storedDraft.value) return null
+    const { sessions: _sessions, ...profile } = storedDraft.value
+    return profile as Profile
   },
-  save: (p: Profile) => localStorage.setItem(draftKey.value, JSON.stringify({ ...p, sessions: undefined })),
-  clear: () => localStorage.removeItem(draftKey.value),
+  save: ({ sessions: _sessions, ...profile }: Profile) => (storedDraft.value = profile as Profile),
+  clear: () => (storedDraft.value = null),
 }
+
+const { start: removeHighlightLater } = useTimeoutFn((el: HTMLElement) => el.classList.remove('highlight'), 1200, {
+  immediate: false,
+})
 
 function highlight(id?: string) {
   if (!id) return
@@ -339,7 +351,7 @@ function highlight(id?: string) {
     const el = document.getElementById(id.replace('#', ''))
     if (!el) return
     el.classList.add('highlight')
-    setTimeout(() => el.classList.remove('highlight'), 1200)
+    removeHighlightLater(el)
   })
 }
 
@@ -417,7 +429,7 @@ async function showActivity(tab: 'likedArticles' | 'comments') {
   activeTab.value = tab
   await nextTick()
   document.getElementById('activity-section')?.scrollIntoView({
-    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth',
     block: 'start',
   })
 }

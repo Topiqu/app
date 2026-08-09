@@ -112,6 +112,7 @@ const toast = useToast()
 const isLoading = shallowRef(false)
 const showReasonInput = shallowRef(false)
 const reasonText = shallowRef('')
+const { start: finishLoadingLater } = useTimeoutFn(() => (isLoading.value = false), 400, { immediate: false })
 
 const votedCookie = useCookie<boolean | string>(`feedback_voted_${props.articleId}`, {
   maxAge: 60 * 60 * 24 * 365,
@@ -138,7 +139,7 @@ const submitVote = async (isHelpful: boolean) => {
   } catch {
     toast.error({ message: $t('error.generic') })
   } finally {
-    setTimeout(() => (isLoading.value = false), 400)
+    finishLoadingLater()
   }
 }
 

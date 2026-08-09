@@ -4,12 +4,22 @@ export const useImageRetry = (originalUrl: MaybeRefOrGetter<string | null | unde
 
   const maxRetries = 10
   let retryCount = 0
-  let timeoutId: NodeJS.Timeout | null = null
+  const retryDelay = shallowRef(0)
+  const { start: scheduleRetry, stop: cancelRetry } = useTimeoutFn(
+    () => {
+      const rawUrl = toValue(originalUrl)
+      if (!rawUrl) return
+      const separator = rawUrl.includes('?') ? '&' : '?'
+      currentSrc.value = `${rawUrl}${separator}retry=${Date.now()}`
+    },
+    retryDelay,
+    { immediate: false },
+  )
 
   watch(
     () => toValue(originalUrl),
     (newUrl) => {
-      if (timeoutId) clearTimeout(timeoutId)
+      cancelRetry()
       retryCount = 0
       isRetrying.value = false
       currentSrc.value = newUrl || null
@@ -20,7 +30,7 @@ export const useImageRetry = (originalUrl: MaybeRefOrGetter<string | null | unde
   const handleLoad = () => {
     isRetrying.value = false
     retryCount = 0
-    if (timeoutId) clearTimeout(timeoutId)
+    cancelRetry()
   }
 
   const handleError = () => {
@@ -35,17 +45,9 @@ export const useImageRetry = (originalUrl: MaybeRefOrGetter<string | null | unde
     isRetrying.value = true
     retryCount++
 
-    const delay = 1000 + retryCount * 500
-
-    timeoutId = setTimeout(() => {
-      const separator = rawUrl.includes('?') ? '&' : '?'
-      currentSrc.value = `${rawUrl}${separator}retry=${Date.now()}`
-    }, delay)
+    retryDelay.value = 1000 + retryCount * 500
+    scheduleRetry()
   }
-
-  onUnmounted(() => {
-    if (timeoutId) clearTimeout(timeoutId)
-  })
 
   return {
     currentSrc,

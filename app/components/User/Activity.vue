@@ -87,7 +87,10 @@
               loading="lazy"
             />
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ $t('common.noResults') }}</p>
-            <NuxtLink :to="localePath({ name: 'index' })" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
+            <NuxtLink
+              :to="localePath({ name: 'index' })"
+              class="text-indigo-600 dark:text-indigo-400 text-sm font-medium"
+            >
               {{ $t('articles.explore') }}
             </NuxtLink>
           </div>
@@ -203,7 +206,10 @@
               loading="lazy"
             />
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ $t('common.noResults') }}</p>
-            <NuxtLink :to="localePath({ name: 'index' })" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
+            <NuxtLink
+              :to="localePath({ name: 'index' })"
+              class="text-indigo-600 dark:text-indigo-400 text-sm font-medium"
+            >
               {{ $t('articles.comments.commentsAction') }}
             </NuxtLink>
           </div>
@@ -376,6 +382,7 @@ defineEmits<{ (e: 'update:activeTab', value: 'likedArticles' | 'comments'): void
 const localePath = useLocalePath()
 const toast = useToast()
 const { data: session } = useAuth()
+const { copy } = useClipboard({ legacy: true })
 
 const tabs = [
   { id: 'likedArticles', label: 'articles.activity.tabs.likedArticles', icon: 'mdi:heart-outline' },
@@ -522,9 +529,9 @@ const unlikeArticle = async (articleId: string) => {
   }
 }
 
-const shareArticle = (article: Article) => {
+const shareArticle = async (article: Article) => {
   const url = `${window.location.origin}${localePath({ name: 'clanky-slug', params: { slug: article.slug } })}`
-  navigator.clipboard.writeText(url)
+  await copy(url)
   toast.success({ message: $t('common.actions.copySuccess') })
 }
 

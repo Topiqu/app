@@ -371,11 +371,12 @@ const isTriggerHovered = useElementHover(trigger)
 const isPanelHovered = useElementHover(panel)
 const isHovered = computed(() => isTriggerHovered.value || isPanelHovered.value)
 const isOpen = computed(() => show.value || hoverShow.value)
+const { start: hideAfterHover } = useTimeoutFn(() => !isHovered.value && (hoverShow.value = false), 50, {
+  immediate: false,
+})
 
 watch(show, (v) => (hoverShow.value = v))
-watch(isHovered, (v) =>
-  v ? (hoverShow.value = true) : setTimeout(() => !isHovered.value && (hoverShow.value = false), 50),
-)
+watch(isHovered, (v) => (v ? (hoverShow.value = true) : hideAfterHover()))
 
 onClickOutside(panel, () => (show.value = false), { ignore: [trigger] })
 </script>

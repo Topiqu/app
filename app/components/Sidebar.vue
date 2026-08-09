@@ -76,15 +76,7 @@ const localePath = useLocalePath()
 
 const theme = useThemeStore()
 
-const isMobile = shallowRef<boolean>(false)
-
-const updateIsMobile = () => (isMobile.value = window.innerWidth < 768)
-
-onMounted(() => {
-  updateIsMobile()
-  window.addEventListener('resize', updateIsMobile)
-  onBeforeUnmount(() => window.removeEventListener('resize', updateIsMobile))
-})
+const isMobile = useMediaQuery('(max-width: 767px)')
 
 watch(isMobile, (mobile) => !mobile && (isOpen.value = true), { immediate: true })
 </script>

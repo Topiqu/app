@@ -285,6 +285,9 @@ const dropdown = useTemplateRef('dropdown')
 const isBtnHovered = useElementHover(btn)
 const isDropdownHovered = useElementHover(dropdown)
 const isHovered = computed(() => isBtnHovered.value || isDropdownHovered.value)
+const { start: hideAfterHover } = useTimeoutFn(() => !isHovered.value && (hoverShow.value = false), 50, {
+  immediate: false,
+})
 
 watch(show, (newValue) => {
   if (newValue) hoverShow.value = true
@@ -293,7 +296,7 @@ watch(show, (newValue) => {
 
 watch(isHovered, (hovered) => {
   if (hovered) hoverShow.value = true
-  else setTimeout(() => !isHovered.value && (hoverShow.value = false), 50)
+  else hideAfterHover()
 })
 
 watch(

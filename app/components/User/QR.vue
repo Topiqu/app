@@ -185,10 +185,11 @@ const secret = computed(() => {
     return ''
   }
 })
+const { copy } = useClipboard({ legacy: true })
 
 async function copySecret(value: string) {
   try {
-    await navigator.clipboard.writeText(value)
+    await copy(value)
   } catch {
     alert('Copy failed')
   }

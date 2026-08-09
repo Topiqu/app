@@ -243,9 +243,10 @@ const toast = useToast()
 const open = defineModel<boolean>()
 const passwordDialog = useTemplateRef<ModalMiniRef>('passwordDialog')
 const passwordDialogValue = shallowRef('')
+const { copy } = useClipboard({ legacy: true })
 
-const copyPassword = () => {
-  navigator.clipboard.writeText(passwordDialogValue.value)
+const copyPassword = async () => {
+  await copy(passwordDialogValue.value)
   toast.success({ message: t('master.clientCreate.messages.passwordCopied') })
 }
 const keywordsInput = shallowRef<string>('')

@@ -308,27 +308,18 @@ watch(
   { immediate: true },
 )
 
-watch(
-  [show, sentinel],
-  async ([s, sent]) => {
-    if (s && sent && scroll.value && auth?.value?.user) {
-      const o = new IntersectionObserver(
-        async (e) => {
-          if (e[0]?.isIntersecting && !loading.value && hasMore.value) {
-            loading.value = true
-            page.value++
-            await refresh()
-            await nextTick()
-            loading.value = false
-          }
-        },
-        { root: scroll.value, threshold: 0.01 },
-      )
-      o.observe(sent)
-      return () => o.disconnect()
-    }
+useIntersectionObserver(
+  sentinel,
+  async ([entry]) => {
+    if (!show.value || !auth?.value?.user || !entry?.isIntersecting || loading.value || !hasMore.value) return
+
+    loading.value = true
+    page.value++
+    await refresh()
+    await nextTick()
+    loading.value = false
   },
-  { immediate: true },
+  { root: scroll, threshold: 0.01 },
 )
 
 onClickOutside(dropdown, () => (show.value = false), { ignore: [btn] })

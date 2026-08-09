@@ -178,19 +178,20 @@ const commit = () => {
 
 const clamp = (n: number) => Math.min(1, Math.max(0, n))
 
+const activeDrag = shallowRef<{ rect: DOMRect; onMove: (rect: DOMRect, e: PointerEvent) => void }>()
+
+useEventListener('pointermove', (e: PointerEvent) => {
+  if (activeDrag.value) activeDrag.value.onMove(activeDrag.value.rect, e)
+})
+useEventListener('pointerup', () => (activeDrag.value = undefined))
+
 const trackPointer = (elRef: any, onMove: (rect: DOMRect, e: PointerEvent) => void) => (e: PointerEvent) => {
   const el = elRef.value
   if (!el) return
   e.preventDefault()
   const rect = el.getBoundingClientRect()
-  const move = (ev: PointerEvent) => onMove(rect, ev)
-  const up = () => {
-    window.removeEventListener('pointermove', move)
-    window.removeEventListener('pointerup', up)
-  }
-  window.addEventListener('pointermove', move)
-  window.addEventListener('pointerup', up)
-  move(e)
+  activeDrag.value = { rect, onMove }
+  onMove(rect, e)
 }
 
 const startHueDragLinear = trackPointer(hueSliderEl, (rect, e) => {

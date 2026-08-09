@@ -59,6 +59,7 @@ const props = defineProps<{ content: string }>()
 
 const hasHeadings = shallowRef(true)
 const isMobileOpen = shallowRef(false)
+let stopObserving = () => {}
 
 const normalizeId = (text: string) =>
   text
@@ -88,8 +89,9 @@ const handleNavClick = (e: MouseEvent) => {
 }
 
 const initToc = async () => {
+  stopObserving()
   await nextTick()
-  const headings = document.querySelectorAll('.prose h1, .prose h2, .prose h3')
+  const headings = Array.from(document.querySelectorAll<HTMLElement>('.prose h1, .prose h2, .prose h3'))
   if (!headings.length) {
     hasHeadings.value = false
     return
@@ -118,7 +120,8 @@ const initToc = async () => {
     hasInnerContainers: true,
   })
 
-  const observer = new IntersectionObserver(
+  const { stop } = useIntersectionObserver(
+    headings,
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -133,15 +136,16 @@ const initToc = async () => {
     },
   )
 
-  headings.forEach((h) => h.id && observer.observe(h))
+  stopObserving = stop
   const initialHash = window.location.hash.slice(1)
   if (initialHash) updateActiveLink(initialHash)
 }
 
 onMounted(() => {
   initToc()
-  window.addEventListener('hashchange', updateActiveLink)
 })
+
+useEventListener('hashchange', updateActiveLink)
 
 watch(
   () => props.content,
@@ -152,8 +156,8 @@ watch(
 )
 
 onUnmounted(() => {
+  stopObserving()
   tocbot.destroy()
-  window.removeEventListener('hashchange', updateActiveLink)
 })
 </script>
 
