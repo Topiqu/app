@@ -144,7 +144,7 @@ const processClient = async (client: any) => {
     return
   }
 
-  const tokens = (usage.totalTokens ?? 0) + topicTokens
+  const tokens = (usage.totalTokens ?? 0) + topicTokens + (generated.researchTokens ?? 0)
   if (tokens <= 0) return
 
   try {
@@ -200,6 +200,10 @@ const processClient = async (client: any) => {
         // The streaming path carries these through `applyAiFinal`; the cron writes the row itself
         // and dropped them, so every cron article shipped with a NULL `sources` column.
         sources: linkableSources(generated.sources),
+        // Same omission, and it silently wasted the work: `finalizeArticle` already fetched or
+        // generated the cover before this row was written, so the cost was paid either way.
+        imageUrl: generated.articleImageUrl || null,
+        imageCredit: generated.articleImageCredit ?? undefined,
         totalWords: metrics.totalWords,
         savedAmount: metrics.savedAmount,
         savedTimeMinutes: metrics.savedTimeMinutes,
@@ -241,8 +245,8 @@ const processClient = async (client: any) => {
 
     const sendNotifications = async () => {
       if (article.user?.role !== 'ai') {
-        const { translate } = await useServerI18n(event as any, { locale: article.user?.language || 'cs' })
-        const authorMessage = translate('notifications.articlePublished', [article.title])
+        const translate = await getServerTranslator(article.user?.language || 'cs')
+        const authorMessage = translate('common.notifications.articlePublished', [article.title])
 
         const authorNotif = await prisma.notification.create({
           data: {
@@ -278,8 +282,8 @@ const processClient = async (client: any) => {
 
       const langTranslations = await Promise.all(
         uniqueLangs.map(async (lang) => {
-          const { translate } = await useServerI18n(event as any, { locale: lang })
-          const message = translate('notifications.newArticleFromFollowed', [username, article.title])!
+          const translate = await getServerTranslator(lang)
+          const message = translate('common.notifications.newArticleFromFollowed', [username, article.title])!
           return { lang, message }
         }),
       )

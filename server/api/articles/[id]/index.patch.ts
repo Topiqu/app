@@ -131,15 +131,21 @@ export default defineEventHandler(async (event) => {
   if (article.status === ArticleStatus.published && previousArticle?.status === ArticleStatus.draft) {
     const followers = await db.follow.findMany({
       where: { followedId: article.userId, follower: { allowNotifs: true } },
-      select: { followerId: true },
+      select: { followerId: true, follower: { select: { language: true } } },
     })
 
-    const notifications = followers.map((follower) => ({
-      message: `${user?.name} vydal nový článek: ${article.title}`,
-      userId: follower.followerId,
-      articleId: article.id,
-      type: 'ARTICLE_PUBLISHED' as NotificationType,
-    }))
+    const author = user?.name ?? 'Anonymous'
+    const notifications = await Promise.all(
+      followers.map(async (follower) => {
+        const translate = await getServerTranslator(follower.follower.language || 'en')
+        return {
+          message: translate('common.notifications.newArticleFromFollowed', [author, article.title])!,
+          userId: follower.followerId,
+          articleId: article.id,
+          type: 'ARTICLE_PUBLISHED' as NotificationType,
+        }
+      }),
+    )
 
     if (notifications.length > 0) {
       await db.$transaction(async (tx) => {

@@ -26,7 +26,7 @@ const collectKeys = () => {
   const found: { key: string; where: string }[] = []
   for (const file of walk(join(ROOT, 'server'))) {
     const source = readFileSync(file, 'utf8')
-    for (const [, key] of source.matchAll(/\bt\(\s*'([a-zA-Z][\w.]*)'/g))
+    for (const [, key] of source.matchAll(/\b(?:t|translate)\(\s*'([a-zA-Z][\w.]*)'/g))
       found.push({ key, where: file.slice(ROOT.length + 1).replace(/\\/g, '/') })
   }
   return found
