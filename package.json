@@ -119,7 +119,7 @@
     "vue": "^3.5.24",
     "vue-chartjs": "^5.3.3",
     "vue-easy-lightbox": "^1.19.0",
-    "vue-router": "^4.6.3",
+    "vue-router": "^5.0.4",
     "vue-tippy": "^6.7.1",
     "zod": "4.1.12"
   },
