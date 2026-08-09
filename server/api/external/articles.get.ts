@@ -1,45 +1,9 @@
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const { skip, take } = await getPagination(event)
-  const tagQuery = query.tag as string | undefined
-
-  const apiKey = getHeader(event, 'x-api-key')
-
-  if (!apiKey) {
-    throw createError({ statusCode: 401, message: 'Missing API Key' })
-  }
-
-  const clientSite = await prisma.clientSite.findFirst({
-    where: { apiKey },
-    select: { id: true },
-  })
-
-  if (!clientSite) {
-    throw createError({ statusCode: 401, message: 'Invalid API Key' })
-  }
-
-  const tags = tagQuery
-    ? tagQuery
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean)
-    : []
-
-  const whereCondition = {
-    clientSiteId: clientSite.id,
-    status: 'published' as const,
-    ...(tags.length > 0 && {
-      AND: tags.map((t) => ({
-        tags: {
-          some: {
-            tag: {
-              slug: t,
-            },
-          },
-        },
-      })),
-    }),
-  }
+  const clientSite = await requireExternalClient(event)
+  const tags = parseExternalTagFilter(query.tag)
+  const whereCondition = externalArticleWhere(clientSite.id, tags)
 
   const [total, articles] = await prisma.$transaction([
     prisma.article.count({
@@ -57,6 +21,12 @@ export default defineEventHandler(async (event) => {
         excerpt: true,
         content: true,
         imageUrl: true,
+        imageCredit: true,
+        updatedAt: true,
+        publishedAt: true,
+        readingTime: true,
+        totalWords: true,
+        sources: true,
         createdAt: true,
         tags: {
           select: {
@@ -74,6 +44,12 @@ export default defineEventHandler(async (event) => {
             avatarUrl: true,
           },
         },
+        articleSeries: { select: { id: true, name: true, slug: true } },
+        translations: {
+          where: { status: 'PUBLISHED' },
+          select: { language: true, slug: true, title: true, excerpt: true, translatedAt: true },
+          orderBy: { language: 'asc' },
+        },
       },
     }),
   ])
@@ -84,6 +60,8 @@ export default defineEventHandler(async (event) => {
       total,
       page: Math.floor(skip / take) + 1,
       limit: take,
+      primaryLanguage: clientSite.language,
+      appliedFilters: { tags },
     },
   }
 })
