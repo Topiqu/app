@@ -62,6 +62,10 @@ model Article extends Base, Ownable {
     excerpt          String?           @length(0, 500, "Perex může mít max. 500 znaků")
     content          String            @length(1, 50000, "Článek překročil délku znaků")
     imageUrl         String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    /// Cover provenance as `CoverCredit` — the kind (photo/illustration/ai) plus the library's
+    /// attribution. Body images carry theirs inside `content`; the cover is a bare URL, so
+    /// without this there is nowhere to disclose a generated hero or credit a licensed one.
+    imageCredit      Json?
     status           ArticleStatus     @default(draft)
     clientSiteId     String
     clientSite       ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)

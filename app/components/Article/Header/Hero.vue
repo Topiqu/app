@@ -62,20 +62,27 @@
       {{ excerpt }}
     </p>
 
-    <NuxtImg
-      v-if="imageUrl"
-      :src="imageUrl"
-      :alt="$t('articles.articleCard.imageAlt')"
-      format="webp"
-      quality="85"
-      class="w-full max-h-[70vh] rounded-2xl object-contain bg-neutral-100 dark:bg-neutral-900 border border-gray-100/20"
-      loading="lazy"
-      placeholder
-    />
+    <figure v-if="imageUrl">
+      <NuxtImg
+        :src="imageUrl"
+        :alt="$t('articles.articleCard.imageAlt')"
+        format="webp"
+        quality="85"
+        class="w-full max-h-[70vh] rounded-2xl object-contain bg-neutral-100 dark:bg-neutral-900 border border-gray-100/20"
+        loading="lazy"
+        placeholder
+      />
+      <!-- Safe as a real `<figcaption>` here: the cover never passes through TipTap. -->
+      <figcaption>
+        <ArticleImageCredit :cover="imageCredit" />
+      </figcaption>
+    </figure>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { CoverCredit } from '~~/shared/utils/imageCredit'
+
 const localePath = useLocalePath()
 
 defineProps<{
@@ -86,6 +93,7 @@ defineProps<{
   showFollowButton: boolean
   excerpt?: string | null
   imageUrl?: string | null
+  imageCredit?: CoverCredit | null
   series?: { name: string; current: number; total: number } | null
 }>()
 

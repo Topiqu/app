@@ -87,7 +87,7 @@ describe('dropBlankLines', () => {
   })
 
   it('keeps a break that separates content', () => {
-    const attribution = '<p><img src="/i.png" /><br><small>Zdroj: Unsplash</small></p>'
+    const attribution = '<p><img src="/i.png" /><br><small>Zdroj: Openverse</small></p>'
     expect(dropBlankLines(attribution)).toBe(attribution)
   })
 

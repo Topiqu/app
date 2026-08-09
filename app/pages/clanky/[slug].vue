@@ -50,6 +50,7 @@
           :showFollowButton="!!session?.user && session.user.id !== data.user.id"
           :excerpt="data.excerpt"
           :imageUrl="data.imageUrl"
+          :imageCredit="(data.imageCredit as CoverCredit | null)"
           :series="data.series && data.series.name ? (data.series as any) : undefined"
           @follow="toggleFollow"
         />
@@ -165,6 +166,7 @@
 
 <script setup lang="ts">
 import type { User } from '@zenstackhq/runtime/models'
+import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
 import { canManageArticle } from '~~/shared/utils/articleEditor'
 import { localeRedirectSlug } from '~~/shared/utils/articleLocale'

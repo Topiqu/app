@@ -19,6 +19,9 @@ export type ArticleWithDetails = {
   title: string
   content: string | null
   imageUrl: string | null
+  /** Prisma `Json`, so it arrives as `JsonValue`. `CoverCredit` is the shape; Hero casts and
+   *  `creditHref` is what actually guards it, since the column is admin-editable. */
+  imageCredit?: unknown
   createdAt: string
   excerpt: string | null
   readingTime: number | null

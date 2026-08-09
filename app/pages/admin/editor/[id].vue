@@ -354,6 +354,7 @@ const init = (): ArticleWithDetails =>
     content: '',
     slug: '',
     imageUrl: '',
+    imageCredit: null,
     status: 'draft',
     releaseAt: null,
     sources: [],
@@ -412,7 +413,7 @@ const discardTranslationOpen = shallowRef(false)
 /** Public URL of whichever language is on screen — only once it has a slug to point at. */
 const livePath = computed(() => {
   if (isNew || !activeSlug.value) return ''
-  const language = tr.isSource ? primaryLanguage : tr.activeLang
+  const language = (tr.isSource ? primaryLanguage : tr.activeLang) as Language
   return localePath({ name: 'clanky-slug', params: { slug: activeSlug.value } }, language)
 })
 
@@ -519,6 +520,7 @@ const importJson = async (event: Event) => {
       content: data.content ?? '',
       slug: data.slug ?? slugify(data.title ?? '', { lower: true, strict: true, trim: true }),
       imageUrl: data.imageUrl ?? '',
+      imageCredit: data.imageCredit ?? null,
       sources: Array.isArray(data.sources) ? data.sources : [],
       releaseAt: data.releaseAt ? toDateTimeLocal(new Date(data.releaseAt)) : null,
       savedAmount: 0,
@@ -537,6 +539,8 @@ const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.va
 
 const handleUpload = (file: { url: string; optimizedUrl: string }) => {
   editedArticle.value.imageUrl = file.url
+  // The author's own picture inherits neither the previous cover's AI label nor its attribution.
+  editedArticle.value.imageCredit = null
   optimizedImageUrl.value = file.optimizedUrl
 }
 
@@ -566,6 +570,7 @@ const applyAiFinal = (generated: Record<string, any>) => {
     excerpt: generated.perex,
     content: generated.content,
     imageUrl: generated.articleImageUrl,
+    imageCredit: generated.articleImageCredit ?? null,
     sources: generated.sources ?? [],
     savedAmount: generated.metrics?.savedAmount ?? 0,
     savedTimeMinutes: generated.metrics?.savedTimeMinutes ?? 0,

@@ -7,7 +7,7 @@ import * as Sentry from '@sentry/nuxt'
  * streamed response that has already committed to its 200 and cannot become a 5xx afterwards — is
  * invisible in production unless it is reported here.
  */
-export const reportError = async (message: string, error: unknown, context?: Record<string, unknown>) => {
+export const reportCaughtError = async (message: string, error: unknown, context?: Record<string, unknown>) => {
   Sentry.captureException(error, { extra: { message, ...context } })
 
   await logger.error(message, {

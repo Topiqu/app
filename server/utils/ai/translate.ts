@@ -5,6 +5,8 @@ import * as cheerio from 'cheerio'
 import { generateObject } from 'ai'
 import { normalizePollOptions } from '~~/shared/utils/polls'
 
+import { escapeHtml } from '../sanitize'
+
 const LANGUAGE_NAMES: Record<Language, string> = {
   cs: 'Czech',
   en: 'English',
@@ -16,14 +18,6 @@ const imgToken = (i: number) => `[[IMGBLK_${i}]]`
 const attrToken = (i: number) => `[[ATTR_${i}]]`
 
 const TRANSLATABLE_ATTRS = ['title', 'aria-label'] as const
-
-const escapeAttr = (s: string) =>
-  s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
 
 interface TranslatableArticle {
   title: string
@@ -167,7 +161,7 @@ export const rebuildContent = (
   // The token lives inside a quoted attribute value in the serialized HTML, so the
   // replacement must be HTML-escaped — a stray `"`/`&` would break out of the attribute.
   attrs.forEach((val, i) => {
-    out = out.split(attrToken(i)).join(escapeAttr(val))
+    out = out.split(attrToken(i)).join(escapeHtml(val))
   })
   verbatim.forEach((html, i) => {
     out = out.split(verbatimToken(i)).join(html)

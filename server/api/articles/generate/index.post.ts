@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
   }
   event.node.req.on('close', onClose)
 
-  const { result, finalize } = await streamArticle(clientSiteId, prompt, abortController.signal)
+  const { result, finalize, researchTokens } = await streamArticle(clientSiteId, prompt, abortController.signal)
 
   setResponseHeader(event, 'Content-Type', 'application/x-ndjson; charset=utf-8')
   setResponseHeader(event, 'Cache-Control', 'no-cache, no-transform')
@@ -73,8 +73,8 @@ export default defineEventHandler(async (event) => {
         // written and already billable, and one dead image call must not cost the whole draft.
         const finalized = await finalize(object, (image) => send(controller, { type: 'image', ...image })).catch(
           async (error) => {
-            await reportError('Article finalization failed', error, { clientSiteId })
-            return { ...object, content: stripContentSlots(object.content), articleImageUrl: '' }
+            await reportCaughtError('Article finalization failed', error, { clientSiteId })
+            return { ...object, content: stripContentSlots(object.content), articleImageUrl: '', articleImageCredit: null }
           },
         )
         const metrics = calculateArticleMetrics(finalized.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
@@ -86,25 +86,32 @@ export default defineEventHandler(async (event) => {
 
         await consumeClientTokens(
           clientSiteId,
-          usage.totalTokens || 0,
+          (usage.totalTokens || 0) + researchTokens,
           'GENERATE_ARTICLE',
-          { ...finalized, usage, metrics, aiInvolvement: 'FULL', createdAt: new Date() },
+          { ...finalized, usage, researchTokens, metrics, aiInvolvement: 'FULL', createdAt: new Date() },
           event,
         )
       } catch (error: any) {
         if (abortController.signal.aborted) {
           // Stopped mid-generation: bill best-effort for the partial usage we actually spent.
+          // Research is included because it completes before the first token streams, so Stop
+          // never gets it back.
           const usage = await result.usage.catch(() => null)
-          if (usage?.totalTokens) {
-            await consumeClientTokens(clientSiteId, usage.totalTokens, 'GENERATE_ARTICLE', { aborted: true }, event).catch(
-              () => {},
-            )
+          const spent = (usage?.totalTokens ?? 0) + researchTokens
+          if (spent > 0) {
+            await consumeClientTokens(
+              clientSiteId,
+              spent,
+              'GENERATE_ARTICLE',
+              { aborted: true, researchTokens },
+              event,
+            ).catch(() => {})
           }
         } else {
           // The response is already a 200 with a half-written body, so this can never reach Nitro's
           // `error` hook and Sentry never sees a caught throw — without this the author got a
           // generic toast and production had no record at all.
-          await reportError('Article generation stream failed', error, { clientSiteId })
+          await reportCaughtError('Article generation stream failed', error, { clientSiteId })
           send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })
         }
       } finally {
