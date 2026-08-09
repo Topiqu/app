@@ -283,6 +283,8 @@ export default defineNuxtConfig({
     xssValidator: false,
   },
   routeRules: {
+    '/manifest.webmanifest': { headers: { 'content-type': 'application/manifest+json' } },
+    '/sitemap.xml': { headers: { 'content-type': 'application/xml' } },
     '/__og-image__/**': { security: { xssValidator: false, headers: false } },
     '/**/__og-image__/**': { security: { xssValidator: false, headers: false } },
     '/cs/clanky/**': { security: { xssValidator: false } },
