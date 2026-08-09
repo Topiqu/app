@@ -1,44 +1,3 @@
-import { normalizePollOptions } from '~~/shared/utils/polls'
-
-function unescapeHtml(safe: string | undefined): string {
-  if (!safe) return ''
-  return safe
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-}
-
-function extractPollData(content: string, articleId: string) {
-  const pollMatch = content.match(/<div[^>]*data-type="poll"[^>]*>/)
-  if (!pollMatch) return null
-
-  const tag = pollMatch[0]
-
-  const pollIdMatch = tag.match(/data-poll-id="([^"]*)"/)
-  const questionMatch = tag.match(/data-question="([^"]*)"/)
-  const optionsMatch = tag.match(/data-options="([^"]*)"/)
-
-  if (!pollIdMatch || !questionMatch || !optionsMatch) return null
-
-  try {
-    const rawOptions = unescapeHtml(optionsMatch[1])
-    const options = normalizePollOptions(JSON.parse(rawOptions))
-
-    return {
-      type: 'poll',
-      pollId: pollIdMatch[1],
-      question: unescapeHtml(questionMatch[1]),
-      options,
-      articleId,
-    }
-  } catch (e) {
-    console.error('Failed to parse poll data', e)
-    return null
-  }
-}
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -112,10 +71,10 @@ export default defineEventHandler(async (event) => {
       select: { id: true, content: true },
     })
 
-    let latestPoll = null
-    if (latestPollArticle) {
-      latestPoll = extractPollData(latestPollArticle.content, latestPollArticle.id)
-    }
+    const firstPoll = latestPollArticle
+      ? articleBlocks(latestPollArticle.content).blocks.find((block) => block.type === 'poll')
+      : undefined
+    const latestPoll = firstPoll ? { ...firstPoll, articleId: latestPollArticle!.id } : null
 
     const hasMore = rows.length > take
     const items = await localizeArticles(db, hasMore ? rows.slice(0, take) : rows, {

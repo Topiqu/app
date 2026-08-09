@@ -1,5 +1,3 @@
-import slugify from 'slugify'
-import * as cheerio from 'cheerio'
 import { ArticleStatus, type NotificationType } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
@@ -60,30 +58,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  let content = body.content
-  if (content) {
-    const $ = cheerio.load(content)
-    const usedIds = new Map()
-    $('h1, h2, h3').each((i, el) => {
-      const $el = $(el)
-      let text = $el.text().trim()
-      if (!text) {
-        $el.attr('id', `heading-${i}`)
-        return
-      }
-      const maxLength = 50
-      text = text.length > maxLength ? text.slice(0, maxLength) : text
-      const baseId = slugify(text, { lower: true, strict: true })
-      let id = baseId
-      let counter = 1
-      while (usedIds.has(id)) {
-        id = `${baseId}-${counter++}`
-      }
-      usedIds.set(id, true)
-      $el.attr('id', id)
-    })
-    content = $.html()
-  }
+  const content = body.content ? stampHeadingIds(body.content) : body.content
 
   const data: any = {
     ...body,

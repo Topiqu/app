@@ -1,6 +1,3 @@
-import slugify from 'slugify'
-import * as cheerio from 'cheerio'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -22,27 +19,7 @@ export default defineEventHandler(async (event) => {
     seriesOrder = (lastArticle?.seriesOrder ?? 0) + 1
   }
 
-  const $ = cheerio.load(body.content || '')
-  const usedIds = new Map()
-  $('h1, h2, h3').each((i, el) => {
-    const $el = $(el)
-    let text = $el.text().trim()
-    if (!text) {
-      $el.attr('id', `heading-${i}`)
-      return
-    }
-    const maxLength = 50
-    text = text.length > maxLength ? text.slice(0, maxLength) : text
-    const baseId = slugify(text, { lower: true, strict: true })
-    let id = baseId
-    let counter = 1
-    while (usedIds.has(id)) {
-      id = `${baseId}-${counter++}`
-    }
-    usedIds.set(id, true)
-    $el.attr('id', id)
-  })
-  const contentWithIds = $.html()
+  const contentWithIds = stampHeadingIds(body.content)
 
   const tagsRelation =
     body.tags && Array.isArray(body.tags) && body.tags.length > 0

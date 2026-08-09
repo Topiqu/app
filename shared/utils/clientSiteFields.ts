@@ -1,4 +1,4 @@
-import type { ClientSite } from '@prisma/client'
+import type { ClientSite, SocialPlatform } from '@prisma/client'
 
 export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan', 'tokenLimit', 'gamNetworkCode', 'allowAds'] as const
 
@@ -76,8 +76,14 @@ export const pickFields = <T extends readonly string[]>(source: Record<string, u
 export const fieldMask = <T extends readonly string[]>(fields: T) =>
   Object.fromEntries(fields.map((field) => [field, true])) as { [K in T[number]]: true }
 
-export const publicClientSiteSelect = fieldMask(PUBLIC_CLIENT_SITE_FIELDS)
+export const publicClientSiteSelect = {
+  ...fieldMask(PUBLIC_CLIENT_SITE_FIELDS),
+  // Feeds `Organization.sameAs`, on the payload the app already fetches.
+  socials: { select: { platform: true, url: true } },
+} as const
 
 export type PublicClientSiteField = (typeof PUBLIC_CLIENT_SITE_FIELDS)[number]
 
-export type PublicClientSite = Pick<ClientSite, PublicClientSiteField>
+export type PublicClientSite = Pick<ClientSite, PublicClientSiteField> & {
+  socials: { platform: SocialPlatform; url: string }[]
+}

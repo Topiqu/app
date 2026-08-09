@@ -435,6 +435,8 @@
       "illustration": "Illustrative image",
       "ai": "Illustrative image (AI)",
       "photoBy": "photo: {author}"
-    }
+    },
+    "keyTakeaways": "Key takeaways",
+    "faq": "Frequently asked questions"
   }
 }

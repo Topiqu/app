@@ -112,27 +112,19 @@ useSeoMeta({
   robots: () => (hasSeoPlan.value && !search.value ? 'index, follow' : 'noindex, follow'),
 })
 
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl }],
-  script: [
-    {
-      type: 'application/ld+json',
-      innerHTML: computed(() =>
-        hasSeoPlan.value && author.value?.id
-          ? JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'ProfilePage',
-              mainEntity: {
-                '@type': 'Person',
-                name: authorName.value,
-                description: author.value.bio || $t('seo.author.description', { name: authorName.value }),
-                image: author.value.avatarUrl,
-                url: canonicalUrl.value,
-              },
-            })
-          : '',
-      ),
-    },
-  ],
-})
+useHead({ link: [{ rel: 'canonical', href: canonicalUrl }] })
+
+// Same `@id` the article's `author` points at, so the two resolve to one entity.
+if (hasSeoPlan.value) {
+  useSchemaOrg([
+    definePerson({
+      '@id': `${canonicalUrl.value}#author`,
+      name: authorName.value,
+      url: canonicalUrl.value,
+      image: author.value.avatarUrl || undefined,
+      description: author.value.bio || $t('seo.author.description', { name: authorName.value }),
+    }),
+    defineWebPage({ '@type': 'ProfilePage', mainEntity: { '@id': `${canonicalUrl.value}#author` } }),
+  ])
+}
 </script>

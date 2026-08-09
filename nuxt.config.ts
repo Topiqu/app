@@ -49,6 +49,46 @@ const CONSENT_DEFAULT = {
   region: CONSENT_REGIONS,
 } as const
 
+// Signed-in surfaces. `@nuxtjs/robots` emits each one again under every locale prefix, so they
+// are listed bare. Crawl budget, not access — auth middleware already turns these away.
+const PRIVATE_PATHS = [
+  '/api/',
+  '/admin',
+  '/settings',
+  '/master',
+  '/drafts',
+  '/uzivatel',
+  '/user',
+  '/autorizace',
+  '/auth',
+  '/oauth-start',
+]
+
+// Retrieval and user-triggered crawlers — the ones that fetch a page in order to cite it. The
+// wildcard group already allows them; naming them makes the stance reviewable and applies the
+// private-path list. Training-only crawlers (GPTBot, ClaudeBot, meta-externalagent, Amazonbot,
+// CCBot, Bytespider, cohere-ai) inherit `*` — blocking them is a product call, not a technical one.
+const ANSWER_ENGINE_BOTS = [
+  'OAI-SearchBot',
+  'ChatGPT-User',
+  'Claude-SearchBot',
+  'Claude-User',
+  'PerplexityBot',
+  'Perplexity-User',
+  'DuckAssistBot',
+  'MistralAI-User',
+  'Meta-ExternalFetcher',
+  'YouBot',
+]
+
+// Not crawlers. Neither issues an HTTP request of its own — both are robots.txt control tokens for
+// Gemini and Apple Intelligence training and grounding, so `Allow` is the opt-in and a path list
+// would be inert. Google states this token does not affect Search inclusion or ranking.
+const AI_GROUNDING_TOKENS = ['Google-Extended', 'Applebot-Extended']
+
+/** Headroom for crawler bursts on the public read surfaces, over the global 70 / 10 s. */
+const CRAWL_LIMIT = { tokensPerInterval: 300, interval: 10 * 1000 }
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
 
@@ -187,6 +227,23 @@ export default defineNuxtConfig({
     },
   },
 
+  sitemap: {
+    // Route discovery only finds the app-shell pages, which is exactly what no blog should list.
+    excludeAppSources: true,
+    // The source emits locale prefixes and alternates itself, from the PUBLISHED translations.
+    autoI18n: false,
+    sources: ['/api/__sitemap__/urls'],
+    cacheMaxAgeSeconds: 600,
+  },
+
+  robots: {
+    disallow: PRIVATE_PATHS,
+    groups: [
+      { userAgent: ANSWER_ENGINE_BOTS, allow: ['/'], disallow: PRIVATE_PATHS },
+      { userAgent: AI_GROUNDING_TOKENS, allow: ['/'] },
+    ],
+  },
+
   sourcemap: { client: 'hidden' },
   ogImage: {
     debug: process.env.NODE_ENV === 'development',
@@ -285,11 +342,16 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/manifest.webmanifest': { headers: { 'content-type': 'application/manifest+json' } },
-    '/sitemap.xml': { headers: { 'content-type': 'application/xml' } },
+    '/sitemap.xml': { headers: { 'content-type': 'application/xml' }, security: { rateLimiter: CRAWL_LIMIT } },
+    '/robots.txt': { security: { rateLimiter: CRAWL_LIMIT } },
+    '/llms.txt': { security: { rateLimiter: CRAWL_LIMIT } },
+    '/rss.xml': { security: { rateLimiter: CRAWL_LIMIT } },
     '/__og-image__/**': { security: { xssValidator: false, headers: false } },
     '/**/__og-image__/**': { security: { xssValidator: false, headers: false } },
-    '/cs/clanky/**': { security: { xssValidator: false } },
-    '/en/articles/**': { security: { xssValidator: false } },
+    // A crawler works through a sitemap in bursts. At the global 70 requests / 10 s it starts
+    // collecting 429s partway down the list, and the pages behind them silently never get indexed.
+    '/cs/clanky/**': { security: { xssValidator: false, rateLimiter: CRAWL_LIMIT } },
+    '/en/articles/**': { security: { xssValidator: false, rateLimiter: CRAWL_LIMIT } },
     '/api/onboarding/send-code': {
       security: { rateLimiter: { tokensPerInterval: 5, interval: 60 * 60 * 1000 } },
     },
@@ -402,10 +464,12 @@ export default defineNuxtConfig({
     },
   },
 
+  // Platform fallback; `server/plugins/siteConfig.ts` swaps in the tenant's own per request.
+  // `defaultLocale` must agree with `i18n.defaultLocale` or the two disagree on `x-default`.
   site: {
     name: 'Topiqu AI Blog',
     description: 'Moderní blogovací platforma poháněná AI',
-    defaultLocale: 'cs',
+    defaultLocale: 'en',
     indexable: true,
   },
 

@@ -38,7 +38,16 @@ export default defineEventHandler(async (event) => {
 
   const article = await db.article.findUnique({
     where: { id },
-    select: { id: true, title: true, excerpt: true, content: true, status: true },
+    select: {
+      id: true,
+      title: true,
+      excerpt: true,
+      content: true,
+      status: true,
+      answer: true,
+      keyTakeaways: true,
+      faq: true,
+    },
   })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 

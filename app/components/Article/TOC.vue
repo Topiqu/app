@@ -54,18 +54,13 @@
 
 <script lang="ts" setup>
 import tocbot from 'tocbot'
+import { headingSlug } from '~~/shared/utils/articleBlocks'
 
 const props = defineProps<{ content: string }>()
 
 const hasHeadings = shallowRef(true)
 const isMobileOpen = shallowRef(false)
 let stopObserving = () => {}
-
-const normalizeId = (text: string) =>
-  text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
 
 const updateActiveLink = (target: string | HashChangeEvent) => {
   const hash = typeof target === 'string' ? target : new URL(target.newURL).hash.slice(1)
@@ -99,11 +94,9 @@ const initToc = async () => {
 
   hasHeadings.value = true
 
+  // Published bodies arrive pre-stamped; this only covers the editor preview.
   headings.forEach((h, i) => {
-    if (!h.id) {
-      const text = h.textContent || `heading-${i}`
-      h.id = normalizeId(text)
-    }
+    if (!h.id) h.id = headingSlug(h.textContent || '') || `section-${i + 1}`
   })
 
   tocbot.init({

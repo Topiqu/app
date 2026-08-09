@@ -29,9 +29,11 @@
           </span>
         </div>
 
-        <h1 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate leading-tight">
+        <!-- Not a heading: this repeats the hero's h1 as scroll chrome, and two h1s with the same
+             text made the outline ambiguous. -->
+        <p aria-hidden="true" class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate leading-tight">
           {{ title }}
-        </h1>
+        </p>
 
         <button
           class="group relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full border transition-all duration-300 ease-out shrink-0"

@@ -25,6 +25,24 @@ export const articleSchema = z.object({
     .describe(
       'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, ul/ol/li and table/thead/tbody/tr/th/td. Never pad between blocks with <br> or empty paragraphs — the stylesheet owns the spacing. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
     ),
+  answer: z
+    .string()
+    .min(40)
+    .max(600)
+    .describe('40-60 word direct answer to the question the title poses, in the article language'),
+  keyTakeaways: z
+    .array(z.string().min(10).max(200))
+    .max(5)
+    .describe('3-5 standalone factual takeaways, or empty when the piece does not summarise'),
+  faq: z
+    .array(
+      z.object({
+        question: z.string().min(5).max(200).describe('Question a reader would actually type'),
+        answer: z.string().min(20).max(600).describe('Self-contained answer, 1-3 sentences'),
+      }),
+    )
+    .max(5)
+    .describe('2-5 FAQ entries, or empty when the topic raises no recurring questions'),
   coverImage: imageInstruction.describe('Cover image instruction'),
   images: z
     .array(
@@ -182,7 +200,10 @@ const buildArticleConfig = async (
       {
         "title": "catchy title 5-15 words",
         "perex": "short introductory paragraph (3-4 sentences)",
-        "content": "article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, lists and tables for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear. If relevant, include poll slots like [[POLL1]], [[POLL2]] to engage the audience.",
+        "answer": "40-60 words answering the title's question outright",
+        "keyTakeaways": ["standalone factual sentence", "..."] or [],
+        "faq": [{"question": "...", "answer": "..."}] or [],
+        "content": "article 500–1000 words with h2, h3, strong, blockquote, underline, italic, lists and tables for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear. If relevant, include poll slots like [[POLL1]], [[POLL2]] to engage the audience.",
         "coverImage": {"type": "stock", "query": "search keyword OR generation prompt"},
         "images": [{"type": "photo", "query": "keyword for IMAGE1", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
@@ -190,6 +211,15 @@ const buildArticleConfig = async (
         "sources": ["full source URL 1", "full source URL 2", ...]
       }.
       The title must be engaging.
+      Start the body at h2 — the page already renders the title as its h1.
+
+      Extraction fields (answer, keyTakeaways, faq):
+      These are quoted verbatim by search and answer engines, so each must stand on its own without the article around it.
+      - "answer": always required. Lead with the answer itself, no throat-clearing ("In this article we will look at…"). Name the subject explicitly rather than saying "it" or "this".
+      - "keyTakeaways": 3-5 facts, not teasers — "Prices rose 12% in 2025", not "We look at how prices moved". Return [] for a piece that does not summarise into facts, such as an opinion column or a narrative.
+      - "faq": ONLY when the topic genuinely has recurring reader questions, such as a guide, a comparison or anything procedural. Return [] for news, opinion, interviews and personal pieces. Never invent questions to fill the array — a padded FAQ reads as generated and is worse than none.
+      All three are in the same language as the article, and every claim in them must also be supported by the body.
+
       Naturally incorporate keywords if provided.
       ${keywords && `Keywords: ${JSON.stringify(keywords)}`}.
       Write in the language of the prompt or the company's presentation language.

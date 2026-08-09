@@ -6,6 +6,16 @@ export const normalizeDomain = (value: string) =>
     .replace(/\/$/, '')
     .replace(/\.$/, '')
 
+/** Bare hostname of a `Host` header: no scheme, no port, no `www.`. */
+export const toHostname = (value: string) => normalizeDomain(value).split(':')[0]!.replace(/^www\./, '')
+
+/** The platform's own hosts. Neither serves a tenant blog, so neither has a sitemap or a feed. */
+export const isRootHost = (host: string, baseDomain: string) => {
+  const hostname = toHostname(host)
+  const base = toHostname(baseDomain)
+  return hostname === base || hostname === `app.${base}`
+}
+
 export const isValidDomain = (value: string) => {
   const domain = normalizeDomain(value)
   if (!domain || domain.length > 253 || domain.includes('..')) return false

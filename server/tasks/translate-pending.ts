@@ -52,7 +52,17 @@ export default defineMonitoredTask({
           id: true,
           language: true,
           clientSiteId: true,
-          article: { select: { id: true, title: true, excerpt: true, content: true } },
+          article: {
+            select: {
+              id: true,
+              title: true,
+              excerpt: true,
+              content: true,
+              answer: true,
+              keyTakeaways: true,
+              faq: true,
+            },
+          },
           clientSite: { select: { tokenRemaining: true, translationMode: true } },
         },
       })

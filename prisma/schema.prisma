@@ -347,6 +347,12 @@ model Article {
   notifications    Notification[]       @relation("ArticleNotifications")
   translations     ArticleTranslation[]
   sources          String[]
+  /// Direct answer to the article's question, 40–60 words, rendered above the body. Answer
+  /// engines quote this span; the perex is a hook and reads as one.
+  answer           String?
+  keyTakeaways     String[]
+  /// `[{ question, answer }]` — rendered as a section and emitted as FAQPage.
+  faq              Json?
   prompt           String?
 
   @@unique([slug, clientSiteId])
@@ -367,6 +373,9 @@ model ArticleTranslation {
   title        String?
   excerpt      String?
   content      String?
+  answer       String?
+  keyTakeaways String[]
+  faq          Json?
   status       TranslationStatus @default(PENDING)
   source       TranslationSource @default(AI)
   model        String?

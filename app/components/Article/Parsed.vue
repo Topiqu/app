@@ -1,61 +1,16 @@
 <template>
   <div>
-    <div v-for="(node, i) in parsedContent" :key="i">
-      <ArticlePoll v-if="node.type === 'poll'" :poll="node" :articleId="props.articleId" />
-      <div v-else v-html="node.html" />
-    </div>
+    <template v-for="(block, i) in blocks" :key="i">
+      <ArticlePoll v-if="block.type === 'poll'" :poll="block" :articleId="articleId" />
+      <!-- eslint-disable-next-line vue/no-v-html -- server-sanitised body (`sanitizeHtml` on write) -->
+      <div v-else v-html="block.html" />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { normalizePollOptions, type PollOptionData } from '~~/shared/utils/polls'
-import { ARTICLE_TABLE_CLASS } from '~~/shared/utils/articleProse'
+import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
 
-const props = defineProps<{ content: string; articleId: string }>()
-const parsedContent = reactive<any[]>([])
-
-const parse = () => {
-  if (!props.content) return
-  if (import.meta.client) {
-    const p = new DOMParser()
-    const d = p.parseFromString(props.content, 'text/html')
-    parsedContent.splice(
-      0,
-      parsedContent.length,
-      ...Array.from(d.body.childNodes).map((n) => {
-        const el = n as Element
-        if (el.nodeName === 'TABLE') {
-          return { type: 'html', html: `<div class="${ARTICLE_TABLE_CLASS}">${el.outerHTML}</div>` }
-        }
-        if (el.nodeName === 'DIV' && el.getAttribute('data-type') === 'poll') {
-          const pollId = el.getAttribute('data-poll-id')
-          if (!pollId) {
-            // Server-side syncArticlePolls must stamp data-poll-id; without it the
-            // vote endpoint has no FK target, so degrade to raw HTML instead of
-            // rendering a vote widget that would silently drop hlasy.
-            console.warn('[ArticleParsed] poll block missing data-poll-id, rendering as raw HTML', el)
-            return { type: 'html', html: el.outerHTML }
-          }
-          let options: PollOptionData[]
-          try {
-            options = normalizePollOptions(JSON.parse(el.getAttribute('data-options') || '[]'))
-          } catch {
-            options = []
-          }
-          return {
-            type: 'poll',
-            pollId,
-            question: el.getAttribute('data-question') || 'Zadej otázku',
-            options,
-          }
-        }
-        return { type: 'html', html: el.outerHTML }
-      }),
-    )
-  }
-}
-
-onMounted(parse)
-
-watch(() => props.content, parse)
+// Blocks come pre-built. Splitting here (in `onMounted`) left the SSR HTML with an empty body.
+defineProps<{ blocks: ArticleBlock[]; articleId: string }>()
 </script>

@@ -24,10 +24,16 @@ const adChance = useAdChance()
 const i18nHead = useLocaleHead()
 const canonicalOrigin = useCanonicalOrigin()
 
+// `useLocaleHead` derives alternates from the route alone, so it advertised a translation that
+// may not exist. The article page knows which are PUBLISHED and emits its own.
+const isArticleRoute = computed(() => String(route.name ?? '').startsWith('clanky-slug'))
+
 const i18nLinks = computed(() =>
-  (i18nHead.value.link ?? []).map((link) =>
-    typeof link.href === 'string' ? { ...link, href: toAbsoluteUrl(link.href, canonicalOrigin) } : link,
-  ),
+  (i18nHead.value.link ?? [])
+    .filter((link) => !(isArticleRoute.value && link.rel === 'alternate'))
+    .map((link) =>
+      typeof link.href === 'string' ? { ...link, href: toAbsoluteUrl(link.href, canonicalOrigin) } : link,
+    ),
 )
 
 const localePath = useLocalePath()
@@ -96,6 +102,16 @@ useHead(() => ({
       type: 'image/x-icon',
       href: clientSite?.logoUrl || '/favicon.ico',
     },
+    ...(clientSite
+      ? [
+          {
+            rel: 'alternate',
+            type: 'application/rss+xml',
+            title: clientSite.name,
+            href: `${canonicalOrigin}/rss.xml`,
+          },
+        ]
+      : []),
   ],
   meta: [
     ...(i18nHead.value.meta || []),
@@ -103,31 +119,24 @@ useHead(() => ({
   ],
 }))
 
+// Site-wide half of the graph. Via `nuxt-schema-org` so the nodes get resolved `@id`s and the
+// per-page ones can link to them; two unlinked ld+json blobs are two unrelated entities.
 if (clientSite) {
-  useHead({
-    script: [
-      {
-        type: 'application/ld+json',
-        innerHTML: computed(() =>
-          JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            name: clientSite.name,
-            url: canonicalOrigin,
-            description: clientSite.description,
-            publisher: {
-              '@type': 'Organization',
-              name: clientSite.name,
-              logo: {
-                '@type': 'ImageObject',
-                url: clientSite.logoUrl || `${reqUrl.origin}/app-logo.png`,
-              },
-            },
-            inLanguage: clientSite.language || 'en',
-          }),
-        ),
-      },
-    ],
-  })
+  useSchemaOrg([
+    // No explicit `url` on either: the module derives it from site config, which the Nitro
+    // plugin already scopes to this host. Passing one splits the identity into a second node.
+    defineOrganization({
+      name: clientSite.name,
+      logo: targetLogoUrl,
+      ...(clientSite.description ? { description: clientSite.description } : {}),
+      // Ties the blog to accounts the engine already has an entity for.
+      sameAs: clientSite.socials?.map((social) => social.url) ?? [],
+    }),
+    defineWebSite({
+      name: clientSite.name,
+      inLanguage: clientSite.language || 'en',
+    }),
+    defineWebPage(),
+  ])
 }
 </script>

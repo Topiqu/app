@@ -69,6 +69,8 @@
           </NuxtLink>
         </div>
 
+        <ArticleSummary :answer="data.answer" :takeaways="data.keyTakeaways ?? []" />
+
         <ArticleActionsBar
           :article="data"
           :isAdmin="canManageArticle(session?.user, data)"
@@ -103,8 +105,10 @@
         </div>
 
         <div ref="content" :class="ARTICLE_PROSE_CLASS">
-          <ArticleParsed :content="data.content" :articleId="data.id" />
+          <ArticleParsed :blocks="data.blocks" :articleId="data.id" />
         </div>
+
+        <ArticleFaq :entries="faqEntries" />
 
         <ArticleSeries v-if="data.series && data.series.name" :series="data.series as any" />
         <div
@@ -119,18 +123,23 @@
         <LazyArticleLightbox :sourceRef="content" />
         <LazyArticleRelated :articles="relatedArticles!" :pending="pending" />
 
-        <div v-if="data.sources?.length" class="w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div
-            class="flex items-center justify-between cursor-pointer text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400"
-            @click="isOpen = !isOpen"
+        <!-- `<details>`, not a v-if — the collapsed state kept citations out of the served HTML
+             entirely, and it was the best-sourced articles that collapsed. -->
+        <details
+          v-if="data.sources?.length"
+          :open="data.sources.length <= 5"
+          class="w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700 [&[open]_.marker]:rotate-180"
+        >
+          <summary
+            class="flex items-center justify-between cursor-pointer list-none text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400"
           >
             <div class="flex items-center gap-2">
               <Icon name="mdi:book-open-page-variant" class="w-5 h-5 text-blue-500 dark:text-blue-400" />
               {{ $t('articles.columns.sources') }} ({{ data.sources.length }})
             </div>
-            <Icon name="mdi:chevron-down" class="w-5 h-5 text-gray-400" :class="{ 'rotate-180': isOpen }" />
-          </div>
-          <ul v-if="isOpen" class="mt-4 space-y-3 pl-1">
+            <Icon name="mdi:chevron-down" class="marker w-5 h-5 text-gray-400 transition-transform" />
+          </summary>
+          <ul class="mt-4 space-y-3 pl-1">
             <li v-for="source in data.sources" :key="source" class="flex items-center gap-3">
               <LazyNuxtImg
                 :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
@@ -147,7 +156,7 @@
               </NuxtLink>
             </li>
           </ul>
-        </div>
+        </details>
 
         <LazyCommentSection
           :articleId="data.id"
@@ -165,6 +174,7 @@
 import type { User } from '@zenstackhq/runtime/models'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
+import { readFaq } from '~~/shared/utils/articleFaq'
 import { canManageArticle } from '~~/shared/utils/articleEditor'
 import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
 import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
@@ -314,7 +324,7 @@ const toggleLike = async () => {
   }
 }
 
-const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5)
+const faqEntries = computed(() => readFaq(data.value?.faq))
 const hasTags = computed(() => !!data.value?.tags?.length)
 const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
 
@@ -356,14 +366,15 @@ const shareTargets = computed(() => {
     },
   ] as const
 })
-const items = useBreadcrumbItems()
-const breadcrumbs = computed(() => {
-  return items.value.map((item, index) => {
-    if (index === 0) return { ...item, label: $t('common.actions.home') }
-    if (index === items.value.length - 1) return { ...item, label: data.value?.title }
-    if (item.label === 'Clanky') return { ...item, label: $t('articles.title'), to: '/' }
-    return item
-  })
+// Overrides, not a post-map: the composable emits BreadcrumbList from its own items, so
+// relabelling afterwards left the schema saying "Clanky" and a raw slug. No `/clanky` index
+// page exists, hence the middle crumb pointing home.
+const breadcrumbs = useBreadcrumbItems({
+  overrides: computed(() => [
+    { label: $t('common.actions.home') },
+    { label: $t('articles.title'), to: '/' },
+    { label: data.value?.title ?? '' },
+  ]),
 })
 
 const content = useTemplateRef('content')

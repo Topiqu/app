@@ -92,6 +92,12 @@ model Article extends Base, Ownable {
     notifications    Notification[]    @relation("ArticleNotifications")
     translations     ArticleTranslation[]
     sources          String[]
+    /// Direct answer to the article's question, 40–60 words, rendered above the body. Answer
+    /// engines quote this span; the perex is a hook and reads as one.
+    answer           String?           @length(0, 600)
+    keyTakeaways     String[]
+    /// `[{ question, answer }]` — rendered as a section and emitted as FAQPage.
+    faq              Json?
     prompt           String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
@@ -109,6 +115,9 @@ model ArticleTranslation extends Base {
     title        String?           @length(1, 255, "Titulek musí mít 1–255 znaků")
     excerpt      String?           @length(0, 500, "Perex může mít max. 500 znaků")
     content      String?           @length(1, 50000, "Překlad překročil délku znaků")
+    answer       String?           @length(0, 600)
+    keyTakeaways String[]
+    faq          Json?
     status       TranslationStatus @default(PENDING)
     source       TranslationSource @default(AI)
     model        String?           @length(0, 64)

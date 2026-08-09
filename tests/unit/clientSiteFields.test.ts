@@ -82,7 +82,11 @@ describe('public client site read projection', () => {
     const classified = new Set<string>([...PUBLIC_CLIENT_SITE_FIELDS, ...CLIENT_SITE_SECRET_FIELDS])
     const unclassified = scalars.filter((field) => !classified.has(field))
 
-    expect(Object.keys(publicClientSiteSelect)).toEqual([...PUBLIC_CLIENT_SITE_FIELDS])
+    // Relations are opt-in by name and each one is its own projection, so they are listed here
+    // rather than in the scalar whitelist.
+    const RELATIONS = ['socials']
+
+    expect(Object.keys(publicClientSiteSelect)).toEqual([...PUBLIC_CLIENT_SITE_FIELDS, ...RELATIONS])
     for (const field of unclassified) {
       expect(publicClientSiteSelect).not.toHaveProperty(field)
     }

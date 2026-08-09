@@ -3,6 +3,7 @@ import type { Language } from '@prisma/client'
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
 import { generateObject } from 'ai'
+import { readFaq } from '~~/shared/utils/articleFaq'
 import { normalizePollOptions } from '~~/shared/utils/polls'
 
 import { escapeHtml } from '../sanitize'
@@ -23,7 +24,11 @@ interface TranslatableArticle {
   title: string
   excerpt?: string | null
   content: string
+  answer?: string | null
+  keyTakeaways?: string[]
+  faq?: unknown
 }
+
 
 interface ExtractedPoll {
   pollId: string
@@ -192,6 +197,11 @@ export const translationSchema = z.object({
   attrs: z
     .array(z.string())
     .describe('Translated human-readable attribute texts (title/aria-label), same order as input'),
+  answer: z.string().describe('Translated direct answer, empty string if the source was empty'),
+  keyTakeaways: z.array(z.string()).describe('Translated takeaways, same order and count as input'),
+  faq: z
+    .array(z.object({ question: z.string(), answer: z.string() }))
+    .describe('Translated FAQ, same order and count as input'),
 })
 
 /**
@@ -213,8 +223,12 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
     - For polls: return them in the SAME order, each with the SAME number of options in the SAME order; translate only the question and option labels.
     - For images: return them in the SAME order; translate only the alt and title text. Leave an entry empty if its source is empty.
     - For attrs: return them in the SAME order; these are human-readable attribute texts (link titles, aria-labels) — translate each into ${targetName}.
+    - For keyTakeaways and faq: return the SAME number of entries in the SAME order. Never add an entry the source does not have — an empty array stays empty.
     - Produce natural, fluent ${targetName} while preserving the original tone and meaning.
   `.trim()
+
+  const sourceFaq = readFaq(article.faq)
+  const sourceTakeaways = article.keyTakeaways ?? []
 
   const { object, usage } = await generateObject({
     model: aiModel('translation'),
@@ -227,6 +241,9 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
       polls: polls.map((p) => ({ question: p.question, options: p.options.map((o) => o.label) })),
       images: images.map((img) => ({ alt: img.alt ?? '', title: img.title ?? '' })),
       attrs,
+      answer: article.answer ?? '',
+      keyTakeaways: sourceTakeaways,
+      faq: sourceFaq,
     }),
     schema: translationSchema,
   })
@@ -258,6 +275,13 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
     title: object.title,
     excerpt: object.excerpt?.trim() || null,
     content: rebuildContent(object.content, verbatim, rebuiltPolls, rebuiltImages, rebuiltAttrs),
+    answer: object.answer?.trim() || null,
+    // Indexed against the source, so a model that drops or invents an entry cannot change the count.
+    keyTakeaways: sourceTakeaways.map((original, i) => object.keyTakeaways?.[i]?.trim() || original),
+    faq: sourceFaq.map((entry, i) => ({
+      question: object.faq?.[i]?.question?.trim() || entry.question,
+      answer: object.faq?.[i]?.answer?.trim() || entry.answer,
+    })),
     slug: slugify(object.title, { lower: true, strict: true, trim: true }),
     usage,
   }

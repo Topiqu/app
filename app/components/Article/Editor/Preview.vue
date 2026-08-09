@@ -22,7 +22,7 @@
     </div>
 
     <div v-if="hasBody" :class="ARTICLE_PROSE_CLASS">
-      <ArticleParsed :content="content!" :articleId="articleId ?? ''" />
+      <ArticleParsed :blocks="previewBlocks" :articleId="articleId ?? ''" />
     </div>
     <p v-else class="text-sm text-gray-500 dark:text-gray-400">
       {{ $t('articles.editor.preview.empty') }}
@@ -86,4 +86,7 @@ const { data: allTags } = useQuery({
 const tagNames = computed(() => (allTags.value ?? []).filter((tag) => tags.includes(tag.id)).map((tag) => tag.name))
 const filledSources = computed(() => sources.filter((source) => source.trim()))
 const hasBody = computed(() => !!content && content !== '<p></p>')
+
+// Unsaved content never reached the API, so the preview splits it with the same shared builder.
+const previewBlocks = computed(() => parseArticleBlocks(content).blocks)
 </script>
