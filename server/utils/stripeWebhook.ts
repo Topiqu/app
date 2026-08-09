@@ -13,6 +13,14 @@ export const planFromPriceId = (priceId: string | null | undefined): 'PRO' | 'PR
   return null
 }
 
+// A checkout that opens a trial still moves the plan — that is what the trial sells — but no money
+// has changed hands, and `firstPaidAt` is the paid marker every trial predicate reads. Stamping it
+// here would end the trial on the day it started.
+export const marksFirstPayment = (
+  status: Stripe.Subscription.Status | undefined,
+  plan: 'PRO' | 'PREMIUM' | null,
+): boolean => !!plan && status !== 'trialing'
+
 // `past_due` is deliberately absent — that is the dunning grace period, expected to recover.
 // `unpaid`/`incomplete_expired` are terminal but only ever arrive on `subscription.updated`,
 // never as a `deleted`, so an account set to mark unpaid rather than cancel would otherwise

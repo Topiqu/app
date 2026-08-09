@@ -12,15 +12,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'No client site associated' })
   }
 
-  // Označíme, že zkušební doba byla ukončena (trial -> free verze)
-  // v reálném systému by se mohl zapsat firstPaidAt pro bypass trial modalu a omezit tokenLimit
-  await db.clientSite.update({
+  const site = await db.clientSite.findUnique({
     where: { id: user.clientSiteId },
-    data: {
-      plan: 'BASIC',
-      firstPaidAt: new Date(),
-      tokenLimit: 100,
-    },
+    select: TRIAL_SELECT,
+  })
+
+  if (!site) throw createError({ statusCode: 404, message: 'Client site not found' })
+
+  // The cron normally gets here first; this is the "continue free" button, which also has to work
+  // the moment the trial lapses. Plan and features go through the system-scoped downgrade because
+  // a tenant may not grant itself features.
+  if (site.plan !== 'BASIC') await downgradeExpiredTrial(site.id, site)
+
+  // Doubles as the dismissal marker for the trial-expired modal. It is the paid marker everywhere
+  // else, so a tenant that continues free is indistinguishable from one that paid — see MAP.md.
+  await prisma.clientSite.update({
+    where: { id: site.id },
+    data: { firstPaidAt: new Date() },
   })
 
   return { success: true }

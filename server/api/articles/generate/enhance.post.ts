@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
   }
 
   await ensureMinAccountAge(event, user.id)
+  await requireAiPlan(user.clientSiteId, t('common.errors.featureNotInPlan')!)
 
   const { prompt } = await readValidatedBody(
     event,

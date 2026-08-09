@@ -1,3 +1,8 @@
+export const AI_CAPABLE_PLANS = ['PRO', 'PREMIUM', 'CUSTOM'] as const
+
+export const hasAiPlan = (plan?: string | null): boolean =>
+  (AI_CAPABLE_PLANS as readonly string[]).includes(plan ?? '')
+
 export type UpgradeTarget = 'PRO' | 'PREMIUM'
 
 const UPGRADE_LADDER: Record<string, UpgradeTarget> = {

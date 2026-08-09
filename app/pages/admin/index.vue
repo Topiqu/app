@@ -10,6 +10,8 @@
 </template>
 
 <script lang="ts" setup>
+import { trialExpired } from '~~/shared/utils/trial'
+
 definePageMeta({ middleware: 'admin' })
 const client = await useClientSite()
 const { data: status } = await useClientSiteStatus()
@@ -18,16 +20,9 @@ useSeoMeta({ title: `${client?.name} - ${$t('admin.title', 'Administrace')}` })
 
 const isOpen = shallowRef(false)
 
+// Was an inline `plan === 'BASIC'` check, which never fires now that a trial sits on TRIAL_PLAN.
 onMounted(() => {
-  if (status.value?.plan === 'BASIC' && !status.value.firstPaidAt && status.value.createdAt) {
-    const createdDate = new Date(status.value.createdAt)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - createdDate.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    if (diffDays >= 14) {
-      isOpen.value = true
-    }
-  }
+  isOpen.value = trialExpired(status.value)
 })
 
 const handleContinueFree = async () => {

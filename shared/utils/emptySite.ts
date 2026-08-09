@@ -1,3 +1,5 @@
+import { hasAiPlan } from './plans'
+
 export interface EmptySiteInfo {
   name?: string | null
   logoUrl?: string | null
@@ -16,15 +18,13 @@ export interface EmptySetupStep {
   locked: boolean
 }
 
-export const AI_CAPABLE_PLANS = ['PRO', 'PREMIUM', 'CUSTOM'] as const
-
 export const buildEmptySetupSteps = (site?: EmptySiteInfo | null): EmptySetupStep[] => {
-  const hasAiPlan = (AI_CAPABLE_PLANS as readonly string[]).includes(site?.plan ?? '')
+  const aiPlan = hasAiPlan(site?.plan)
 
   return [
     { id: 'article', done: false, locked: false },
     { id: 'branding', done: Boolean(site?.logoUrl && site?.description), locked: false },
-    { id: 'voice', done: hasAiPlan && Boolean(site?.focus && site?.audience), locked: !hasAiPlan },
+    { id: 'voice', done: aiPlan && Boolean(site?.focus && site?.audience), locked: !aiPlan },
     { id: 'domain', done: Boolean(site?.domainVerified), locked: false },
   ]
 }

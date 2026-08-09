@@ -1,3 +1,5 @@
+import { hasAiPlan } from '~~/shared/utils/plans'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -17,11 +19,17 @@ export default defineEventHandler(async (event) => {
 
   const client = await prisma.clientSite.findUnique({
     where: { id: user.clientSiteId },
-    select: { humanHourlyRateUsd: true, humanWordsPerHour: true },
+    select: { plan: true, humanHourlyRateUsd: true, humanWordsPerHour: true },
   })
 
   if (!client) {
     throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
+  }
+
+  // Read off the row already fetched rather than `requireAiPlan`, which would cost a second query.
+  // Without this the only brake was the token balance, so an expired trial kept generating.
+  if (!hasAiPlan(client.plan)) {
+    throw createError({ statusCode: 403, message: t('common.errors.featureNotInPlan')! })
   }
 
   const clientSiteId = user.clientSiteId

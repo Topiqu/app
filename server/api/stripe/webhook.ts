@@ -1,7 +1,13 @@
 import type Stripe from 'stripe'
 import type { ClientPlan } from '@prisma/client'
 
-import { extractSubscriptionId, isSubscribablePlan, planFromPriceId, revokesPlan } from '~~/server/utils/stripeWebhook'
+import {
+  extractSubscriptionId,
+  isSubscribablePlan,
+  marksFirstPayment,
+  planFromPriceId,
+  revokesPlan,
+} from '~~/server/utils/stripeWebhook'
 
 /**
  * `clearSubscription` only for a terminal deletion — an `unpaid` subscription still exists in
@@ -46,25 +52,23 @@ export default defineEventHandler(async (event) => {
       const subscription = subscriptionId ? await stripe.subscriptions.retrieve(subscriptionId) : null
       const priceId = subscription?.items.data[0]?.price.id ?? null
 
-      const isTrialing = subscription?.status === 'trialing'
       const metadataPlan = session.metadata?.plan
       const derivedPlan = planFromPriceId(priceId) ?? (isSubscribablePlan(metadataPlan) ? metadataPlan : null)
-      const promote = !isTrialing && !!derivedPlan
+      const paid = marksFirstPayment(subscription?.status, derivedPlan)
 
       await prisma.$transaction(async (tx) => {
         await tx.clientSite.update({
           where: { id: clientSiteId },
           data: {
-            ...(promote
-              ? { plan: derivedPlan as ClientPlan, firstPaidAt: { set: new Date() }, lastPaidAt: new Date() }
-              : {}),
+            ...(derivedPlan ? { plan: derivedPlan as ClientPlan } : {}),
+            ...(paid ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
             stripeCustomerId: customerId ?? undefined,
             stripeSubscriptionId: subscriptionId ?? undefined,
             stripePriceId: priceId ?? undefined,
           },
         })
 
-        if (promote) await syncPlanFeatures(tx, clientSiteId, derivedPlan as ClientPlan)
+        if (derivedPlan) await syncPlanFeatures(tx, clientSiteId, derivedPlan as ClientPlan)
       })
       return { received: true }
     }

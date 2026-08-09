@@ -2,7 +2,12 @@ import type Stripe from 'stripe'
 
 import { describe, expect, it } from 'vitest'
 
-import { extractSubscriptionId, isSubscribablePlan, revokesPlan } from '../../../server/utils/stripeWebhook'
+import {
+  extractSubscriptionId,
+  isSubscribablePlan,
+  marksFirstPayment,
+  revokesPlan,
+} from '../../../server/utils/stripeWebhook'
 
 const buildInvoice = (parent: Stripe.Invoice['parent']): Stripe.Invoice => ({ parent }) as unknown as Stripe.Invoice
 
@@ -42,6 +47,23 @@ describe('isSubscribablePlan', () => {
 
   it.each(['BASIC', 'CUSTOM', '', undefined, null, 42])('rejects %s', (value) => {
     expect(isSubscribablePlan(value)).toBe(false)
+  })
+})
+
+describe('marksFirstPayment', () => {
+  // The trial grants the plan on day 0, so the plan column cannot say whether money moved —
+  // `firstPaidAt` does, and stamping it during the trial would expire the trial immediately.
+  it('withholds the paid marker while the subscription is trialing', () => {
+    expect(marksFirstPayment('trialing', 'PREMIUM')).toBe(false)
+  })
+
+  it.each(['active', 'past_due', 'incomplete'] as const)('marks payment once the status is %s', (status) => {
+    expect(marksFirstPayment(status, 'PREMIUM')).toBe(true)
+  })
+
+  it('never marks payment without a resolvable plan', () => {
+    expect(marksFirstPayment('active', null)).toBe(false)
+    expect(marksFirstPayment(undefined, null)).toBe(false)
   })
 })
 
