@@ -1,89 +1,102 @@
 always:
-  - 🛑 keep misc style/ui clean
-  - 🛑 keep code optimised
-  - 🛑 test out before marking done
+
+- 🛑 keep misc style/ui clean
+- 🛑 keep code optimised
+- 🛑 test out before marking done
+
 ---
+
 now:
-  - 🛑 root Feed page na apex (topiqu.com) — "best of" články napříč všemi tenants; nahradí prod redirect apexu na landing.topiqu.com (app.vue#isLandingSurface), který je dočasný než Feed vznikne
-  - 🛑 GAM + total ad revenue overview & logging
-  - 🛑 AWS Comprehend integration
-  - 🛑 dynamic pricing (clientpreferences)
-  - 🟡 Stripe integration for token refill
-  - 🟡 AI Inolvement with article (cron based = fully AI, AI generated/enhanced = partially AI, no AI used = 100% human)
-  - 🟢 replace sweetalert modals with custom ModalMini component
-  - 🟢 implement in clientpreferences humanHourlyRate / humanWordsPerHour
-  - 🟡 document the wildcard TLS mechanism for *.topiqu.com in MAP.md §4 (Cloudflare Origin CA / DNS-01 / tunnel?) — it works, but nothing records how
-  - 🟡 per-account login lockout — Valkey is available; implement email-keyed exp. backoff + Turnstile on auth/callback/credentials + users/totp; per-IP rate-limit alone is botnet/proxy-bypassable
+
+- 🛑 GAM + total ad revenue overview & logging
+- 🛑 AWS Comprehend integration
+- 🛑 Cloudflare: unblock AI crawling (Security → Bots → AI Scrapers and Crawlers). The zone's managed robots.txt prepends `Disallow: /` for GPTBot/ClaudeBot/CCBot/Bytespider/Amazonbot/meta-externalagent/Google-Extended, ahead of ours. Google-Extended is the costly one — it gates Gemini grounding (AI Overview citations), not just training, and does not affect Search ranking. Blocking the training crawlers can stay if that is the intent. It also emits a second `User-agent: *` group before ours, which can shadow our private-path disallows. Re-verify with `bun run seo:check <domain>`.
+- 🛑 Cloudflare Email Routing: create support@topiqu.com and privacy@topiqu.com (no contact address exists anywhere in the app yet, incl. the privacy policy)
+- 🟢 AI involvement with article + optional public disclosure (cron = fully AI, manual AI generation/enhancement = partially AI, manual = human)
+- 🟢 implement in clientpreferences humanHourlyRate / humanWordsPerHour
+- 🟡 document the wildcard TLS mechanism for \*.topiqu.com in MAP.md §4 (Cloudflare Origin CA / DNS-01 / tunnel?) — it works, but nothing records how
+- 🟡 per-account login lockout — Valkey is available; implement email-keyed exp. backoff + Turnstile on auth/callback/credentials + users/totp; per-IP rate-limit alone is botnet/proxy-bypassable
+
 ---
+
 test:
-  - 🛑 google ads
-  - 🛑 google analytics
-  - 🛑 Sentry/Better Stack: verify event + session replay delivery (test throw on FE + Nitro)
-  - 🛑 OAuth ?redirect param
-  - 🛑 fix auth errors with zod id param
-  - 🛑 notifications should also be localised
-  - 🛑 production fix email template json not loadings
-  - 🛑 ai cron jobs for article writing and its notifications
-  - 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
-  - 🟡 Localise notifications used in crons/nitro-tasks (think up how to detect language since tasks dont provide event)
-  - 🟡 Localise user PDF export
-  - 🟢 centralised ArticleModal component (for ArticleCreate/Edit)
-  - 🟢 remake ArticleModal Drafts with ModalMini
+
+- 🛑 google ads
+- 🛑 google analytics
+- 🛑 Sentry/Better Stack: verify event + session replay delivery (test throw on FE + Nitro)
+- 🛑 OAuth ?redirect param
+- 🛑 fix auth errors with zod id param
+- 🛑 notifications should also be localised
+- 🛑 production fix email template json not loadings
+- 🛑 ai cron jobs for article writing and its notifications
+- 🛑 semantic article dedupe (make sure cronjobs dont repeat the same topic all over again + integrate sentiment suggestion)
+- 🟡 Localise notifications used in crons/nitro-tasks (think up how to detect language since tasks dont provide event)
+- 🟡 Localise user PDF export
+- 🟢 centralised ArticleModal component (for ArticleCreate/Edit)
+- 🟢 remake ArticleModal Drafts with ModalMini
+
 ---
+
 optional:
-  - deps to upgrade
-    - 🛑 @sidebase/nuxt-auth 1.2.0 -> 1.3.1 — pulls @auth/core 0.41.3, fixes critical auth bypass GHSA-7rqj-j65f-68wh (exact-pinned, bun update won't do it)
-    - 🟡 @pinia/nuxt 0.11.3 -> 1.0.1
-    - 🟢 ua-parser-js -> 2.0.10
-    - 🔰 @prisma/client 6 -> 7 — NO
-  - 🟡 gemini-3.1-pro-preview is a preview id (server/utils/ai/modelRegistry.ts) — recheck before GA/retirement
-  - further clientsite customization
-    - 🛑 more color variety
-    - 🟡 background shapes/patterns
-    - 🟡 fonts
-  - 🟡 HP/index page should get a UI rework and move from MVP to actual production ready page
-  - 🟢 article series (how to build a house 1/5) + next part/back button
-  - 🟢 feedback loop (was this helpful ? 👍/👎)
-  - 🟢 favorite button for articles (bookmark/save)
-  - 🟢 tiptap for comments
+
+- deps to upgrade
+  - 🛑 @sidebase/nuxt-auth 1.2.0 -> 1.3.1 — pulls @auth/core 0.41.3, fixes critical auth bypass GHSA-7rqj-j65f-68wh (exact-pinned, bun update won't do it)
+  - 🟡 @pinia/nuxt 0.11.3 -> 1.0.1
+  - 🟢 ua-parser-js -> 2.0.10
+  - 🔰 @prisma/client 6 -> 7 — NO
+  - 🛑 more color variety
+  - 🟡 background shapes/patterns
+  - 🟡 fonts
+- 🟡 HP/index page should get a UI rework and move from MVP to actual production ready page
+- 🟢 favorite button for articles (bookmark/save)
+- 🟢 tiptap for comments
+
 ---
+
 future:
-  - 🛑 zapier integration
-  - 🟡 automate onboarding flow: wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details
-  - 🔰 (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))...
-  - 🔰 newsletter for pro+ clients
-  - 🔰 multi agent writing (seo analyzer, copywriter, reviewer) with tools (debate, vote, merge, post)
-  - 🟢 better gamification - badges, levels, site activity points
+
+- 🛑 zapier integration
+- 🟡 automate onboarding flow: wp form -> post fetch on topiqu backend -> vercel api -> create subdomain/return custom domain dns details
+- 🔰 (exp. 100 comments reached, 25 articles liked, following 10 authors, positive karma (total likes - total dislikes))...
+- 🔰 newsletter for pro+ clients
+- 🔰 multi agent writing (seo analyzer, copywriter, reviewer) with tools (debate, vote, merge, post)
+- 🟢 better gamification - badges, levels, site activity points
+
 ---
+
 queue (SQS migration):
-  - ✅ serverless → self-hosted migration DONE (Dokploy/VPS, 2026-08) — MIGRATION.md deleted, runtime facts now in MAP.md §1/§4/§8
-  - 🛑 decide: queue in Redis Streams vs Postgres SKIP LOCKED — ArticleJob/PdfJob are Prisma models and PG is already managed+backed up; Streams adds a second stateful system and forces persistence config on the cache instance. Decide before writing queue.ts
-  - 🛑 server/utils/queue.ts abstraction (SQS + in-memory) + LocalStack in docker-compose
-  - 🛑 Prisma models: ArticleJob, PdfJob
-  - 🛑 server/worker.ts entrypoint (4 paralelní pollery)
-  - 🛑 SQS queues + DLQ + IAM (infra/CDK)
-  - 🟡 migrate POST /articles/generate → enqueue (202 + jobId)
-  - 🟡 cron generate-article → fan-out only (enqueue N msgs)
-  - 🟡 split notifications worker (DB createMany + SSE publish)
-  - 🟡 unified SSE server-events channel (notifs + job status, cross-replica)
-  - 🟡 useJobStream composable + UI loading/error/retry states
-  - 🟡 GET /users/pdf → enqueue + pdf-worker (S3 upload + signed URL)
-  - 🟡 view counter: enqueue + 5min batch UPDATE worker
-  - 🟢 CloudWatch alarms (queue depth, DLQ > 0, retry 3× exp backoff)
-  - 🟢 vitest workers (in-memory queue) + LocalStack in CI + MAP.md
+
+- ✅ serverless → self-hosted migration DONE (Dokploy/VPS, 2026-08) — MIGRATION.md deleted, runtime facts now in MAP.md §1/§4/§8
+- 🛑 decide: queue in Redis Streams vs Postgres SKIP LOCKED — ArticleJob/PdfJob are Prisma models and PG is already managed+backed up; Streams adds a second stateful system and forces persistence config on the cache instance. Decide before writing queue.ts
+- 🛑 server/utils/queue.ts abstraction (SQS + in-memory) + LocalStack in docker-compose
+- 🛑 Prisma models: ArticleJob, PdfJob
+- 🛑 server/worker.ts entrypoint (4 paralelní pollery)
+- 🛑 SQS queues + DLQ + IAM (infra/CDK)
+- 🟡 migrate POST /articles/generate → enqueue (202 + jobId)
+- 🟡 cron generate-article → fan-out only (enqueue N msgs)
+- 🟡 split notifications worker (DB createMany + SSE publish)
+- 🟡 unified SSE server-events channel (notifs + job status, cross-replica)
+- 🟡 useJobStream composable + UI loading/error/retry states
+- 🟡 GET /users/pdf → enqueue + pdf-worker (S3 upload + signed URL)
+- 🟡 view counter: enqueue + 5min batch UPDATE worker
+- 🟢 CloudWatch alarms (queue depth, DLQ > 0, retry 3× exp backoff)
+- 🟢 vitest workers (in-memory queue) + LocalStack in CI + MAP.md
+
 ---
+
 done:
-  - 🛑 nuxt-gtag
-  - 🛑 cliensite language column
-  - 🛑 cliensite customization (themes)
-  - 🛑 implement missing email templates
-  - 🛑 add sessionId for oauth providers in nuxt auth callback
-  - 🛑 useClientSite composable - return language/cliensite details based on host header
-  - 🛑 all clientsite endpoints should use host header instead of clientsite slug/route params
-  - 🛑 AWS S3 Bucket integration
-  - 🛑 AWS SES integration
-  - 🛑 AWS Rekognition integration
-  - 🛑 fix issue in users/[id]/patch : {
+
+- 🛑 nuxt-gtag
+- 🛑 cliensite language column
+- 🛑 cliensite customization (themes)
+- 🛑 implement missing email templates
+- 🛑 add sessionId for oauth providers in nuxt auth callback
+- 🛑 useClientSite composable - return language/cliensite details based on host header
+- 🛑 all clientsite endpoints should use host header instead of clientsite slug/route params
+- 🛑 AWS S3 Bucket integration
+- 🛑 AWS SES integration
+- 🛑 AWS Rekognition integration
+- 🛑 fix issue in users/[id]/patch : {
   "error": true,
   "url": "http://localhost:3000/api/users/f0ddd9fb-42af-4fe9-ab4e-4dd9257b632a",
   "statusCode": 400,
@@ -91,43 +104,55 @@ done:
   "message": "Invalid element at key \"id\": expected a Zod schema",
   "data": {},
   "stack": [
-    "Invalid element at key \"id\": expected a Zod schema",
-    "at createError (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:71:15)",
-    "at createValidationError (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:237:9)",
-    "at validateData (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:233:11)",
-    "at readValidatedBody (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:454:10)",
-    "at process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
-    "at async Object.handler (C:\\Users\\kurib\\rasg-blog\\server\\api\\users\\[id]\\index.patch.ts:17:0)",
-    "at async file:///C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:2004:19)",
-    "at async Object.callAsync (C:/Users/kurib/rasg-blog/node_modules/unctx/dist/index.mjs:72:16)",
-    "at async Object.callAsync (C:/Users/kurib/rasg-blog/node_modules/unctx/dist/index.mjs:72:16)",
-    "at async Server.toNodeHandle (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:2296:7)"
+  "Invalid element at key \"id\": expected a Zod schema",
+  "at createError (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:71:15)",
+  "at createValidationError (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:237:9)",
+  "at validateData (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:233:11)",
+  "at readValidatedBody (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:454:10)",
+  "at process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
+  "at async Object.handler (C:\\Users\\kurib\\rasg-blog\\server\\api\\users\\[id]\\index.patch.ts:17:0)",
+  "at async file:///C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:2004:19)",
+  "at async Object.callAsync (C:/Users/kurib/rasg-blog/node_modules/unctx/dist/index.mjs:72:16)",
+  "at async Object.callAsync (C:/Users/kurib/rasg-blog/node_modules/unctx/dist/index.mjs:72:16)",
+  "at async Server.toNodeHandle (C:/Users/kurib/rasg-blog/node_modules/h3/dist/index.mjs:2296:7)"
   ]
-}
-  - 🟡 autorelease articles
-  - 🟡 encapsulate article exports
-  - 🟡 create dropdown menu component w groups
-  - 🟡 account health - sessions, password strength, 2fa, amount of bans, verified email...
-  - 🟡 footer branding for free tier clients
-  - 🟡 fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions)
-  - 🔰 ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function
-  - 🟢 fix header z-index
-  - 🟢 lang switcher -> improve styles
-  - 🟢 fix background floating objects z-index
-  - 🟢 user page - enhance/improve styling & ui for hero section
-  - 🟢 rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one
-  - 🔰 generic canary / feature-flag primitive (modular + scalable) - reusable, not cache-specific. Best practices:
-      * deterministic bucketing hash(subject + flagKey) % 100 < rollout (NOT Math.random) -> sticky per subject, no flapping; salt by flagKey
-      * SSR/client consistency: same deterministic hash from a stable subject so server & client agree (avoids hydration mismatch when a flag affects render)
-      * config separate from code & changeable at runtime -> rollout state in Redis (Upstash), env/in-code default as fallback chain (Redis -> env -> default OFF); kill switch field for instant rollback, no redeploy
-      * evaluate() returns { enabled, variant, reason: KILL_SWITCH|DENY|ALLOW|PERCENTAGE|DEFAULT } not bool, for observability
-      * default-safe: unknown flag / provider error -> safe default (OFF for risky new paths); cache outage must not flip a flag on
-      * pluggable FlagProvider (swap Env/Redis -> LaunchDarkly/OpenFeature later w/o touching call sites); pluggable subject dimension (requestId/sessionId/userId/clientSiteId; per-tenant rollout is the multi-tenant win)
-      * support weighted multivariant (A/B/C), allow/deny lists
-      * layout: shared/canary/{types,evaluate}.ts (pure deterministic core, FNV-1a, unit-tested, shared client+server) ; server/utils/canary.ts (provider + 30s in-memory config cache so we don't hit Redis per request + canary() + withShadow()) ; app/composables/useCanary.ts (client eval over SSR-hydrated flags)
-      * withShadow(flag, subject, { primary, candidate }) -> runs both, returns primary, logs diff = generic version of the cached-vs-live leak check
-      * observability: emit each evaluation (flag, variant, reason, hashed subject) to logs AND Sentry (breadcrumb/tag or measurement) so we can correlate canary cohort vs rest, and a bad variant surfaces in error tracking
-      * first consumer: wrap the feed-cache (server/api/articles/by-clientsite/[slug].ts) so canary actually drives the cache we added, not theory
-  - 🔰 server cache follow-ups - DONE: temp [cache] HIT/MISS logs dropped, bumpGen wired into article mutations via invalidateFeed(). STILL OPEN: broaden anon-only -> all non-privileged readers; size TTLs from real hit rates (INFO commandstats on the valkey container now that Upstash's request counter is gone).
-  - 🟡 cache step 2 (agreed, not started): mount valkey as nitro storage (nitro.storage.cache redis driver) — also fixes ogImage.runtimeCacheStorage running on per-instance memory; then defineCachedEventHandler on the session-free routes, best candidate clients/slug/[slug].ts (raw prisma, publicClientSiteSelect, hit on every SSR render), then gifs/index.get.ts (Giphy quota). ALWAYS write getKey explicitly — the default key comes from the URL and any host-resolved tenant route would collide. APP_ENV=production is configured in Dokploy, so this is unblocked.
-  - 🟡 cache step 3 (agreed, not started): featured/[slug].ts onto cached() with an anon guard mirroring by-clientsite (it calls getEnhancedPrisma(user), so the payload is role-dependent and must not be cached for logged-in callers)
+  }
+- 🟡 autorelease articles
+- 🟡 encapsulate article exports
+- 🟡 create dropdown menu component w groups
+- 🟡 account health - sessions, password strength, 2fa, amount of bans, verified email...
+- 🟡 footer branding for free tier clients
+- 🟡 fix Comment/Section - sorting options not working, refresh issues (duplicate articles, reactions)
+- 🔰 ai sentiment analysis based on comments. (post comment -> onCommentCreated (ai reviews comments, rates it) -> aggregation of all comments and result community/reader perception of articles) - PREMIUM function
+- 🟢 fix header z-index
+- 🟢 lang switcher -> improve styles
+- 🟢 fix background floating objects z-index
+- 🟢 user page - enhance/improve styling & ui for hero section
+- 🟢 rework related articles logic - should have fallback when no tags are present, and select from more tags, not only one
+- 🔰 GSC intelligence layer — per-tenant Search Console OAuth feeding the content engine. API is free; the cost is rows and the OAuth verification. Depends on the privacy@/support@ mailboxes above (consent screen requires a contact address + privacy policy).
+  - per-tenant OAuth (`webmasters.readonly`), not a shared service account — a service account means every client manually adds us as a SC user, which is worse onboarding. Encrypted refresh token on a `SearchConsoleConnection` row keyed by `clientSiteId`; token never reaches a response, a log or the client bundle. Admin of that tenant only.
+  - **property validation is the security crux**: `sc-domain:client.cz` only for the tenant owning `client.cz`, URL-prefix must equal the tenant's canonical origin, and `sc-domain:topiqu.com` must be refused outright — it spans every tenant subdomain and would leak aggregated data across clients.
+  - store site/page/query daily rows; derive CTR from clicks/impressions rather than storing it, but *do* store impressions — averaging daily average positions unweighted is arithmetically wrong. Map pageUrl → Article/ArticleTranslation by canonical so the data reaches the editor.
+  - sync: 16-month backfill in weekly chunks as a background job (never in the OAuth callback); daily cron takes `today-3d` as the last stable day, re-pulls 7 days for late corrections, and re-pulls 30 days weekly. SC days are Pacific, not tenant-local. Idempotent upsert on (clientSiteId, date, pageUrl, query, device, country); monitor like `gam-sync`.
+  - the value is the decision layer, not a dashboard: emit `{ query, intent, existingArticleId?, recommendation: UPDATE|EXPAND|NEW_ARTICLE|IGNORE, evidence }` so the engine mostly improves existing URLs instead of manufacturing more — that is the brake on shitty scale. Plus cannibalisation detection (two URLs alternating on one query → merge/canonicalise, never a third article) and 30/60/90-day article review.
+  - caveat for the engine: zero clicks is not evidence of bad content (new domain, no authority, zero-click query), and CTR must not be used to make it copy the style of whatever performed.
+  - phases: OAuth + property pick → daily ingest → dashboard → URL↔Article mapping → opportunity detector → SC context in the topic picker → automatic 30/60/90 review.
+- 🔰 generic canary / feature-flag primitive (modular + scalable) - reusable, not cache-specific. Best practices:
+  - deterministic bucketing hash(subject + flagKey) % 100 < rollout (NOT Math.random) -> sticky per subject, no flapping; salt by flagKey
+  - SSR/client consistency: same deterministic hash from a stable subject so server & client agree (avoids hydration mismatch when a flag affects render)
+  - config separate from code & changeable at runtime -> rollout state in Redis (Upstash), env/in-code default as fallback chain (Redis -> env -> default OFF); kill switch field for instant rollback, no redeploy
+  - evaluate() returns { enabled, variant, reason: KILL_SWITCH|DENY|ALLOW|PERCENTAGE|DEFAULT } not bool, for observability
+  - default-safe: unknown flag / provider error -> safe default (OFF for risky new paths); cache outage must not flip a flag on
+  - pluggable FlagProvider (swap Env/Redis -> LaunchDarkly/OpenFeature later w/o touching call sites); pluggable subject dimension (requestId/sessionId/userId/clientSiteId; per-tenant rollout is the multi-tenant win)
+  - support weighted multivariant (A/B/C), allow/deny lists
+  - layout: shared/canary/{types,evaluate}.ts (pure deterministic core, FNV-1a, unit-tested, shared client+server) ; server/utils/canary.ts (provider + 30s in-memory config cache so we don't hit Redis per request + canary() + withShadow()) ; app/composables/useCanary.ts (client eval over SSR-hydrated flags)
+  - withShadow(flag, subject, { primary, candidate }) -> runs both, returns primary, logs diff = generic version of the cached-vs-live leak check
+  - observability: emit each evaluation (flag, variant, reason, hashed subject) to logs AND Sentry (breadcrumb/tag or measurement) so we can correlate canary cohort vs rest, and a bad variant surfaces in error tracking
+  - first consumer: wrap the feed-cache (server/api/articles/by-clientsite/[slug].ts) so canary actually drives the cache we added, not theory
+- 🔰 server cache follow-ups - DONE: temp [cache] HIT/MISS logs dropped, bumpGen wired into article mutations via invalidateFeed(). STILL OPEN: broaden anon-only -> all non-privileged readers; size TTLs from real hit rates (INFO commandstats on the valkey container now that Upstash's request counter is gone).
+- 🟡 cache step 2 (agreed, not started): mount valkey as nitro storage (nitro.storage.cache redis driver) — also fixes ogImage.runtimeCacheStorage running on per-instance memory; then defineCachedEventHandler on the session-free routes, best candidate clients/slug/[slug].ts (raw prisma, publicClientSiteSelect, hit on every SSR render), then gifs/index.get.ts (Giphy quota). ALWAYS write getKey explicitly — the default key comes from the URL and any host-resolved tenant route would collide. APP_ENV=production is configured in Dokploy, so this is unblocked.
+- 🟡 cache step 3 (agreed, not started): featured/[slug].ts onto cached() with an anon guard mirroring by-clientsite (it calls getEnhancedPrisma(user), so the payload is role-dependent and must not be cached for logged-in callers)
+- 🟢 feedback loop (was this helpful ? 👍/👎)
+- 🟢 article series (how to build a house 1/5) + next part/back button
+- 🟢 replace sweetalert modals with custom ModalMini component
+- 🟡 Stripe integration for token refill
