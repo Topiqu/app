@@ -18,10 +18,16 @@ export default defineEventHandler(async (event) => {
 
   const follow = await db.follow.create({ data: { followerId: user.id, followedId: body.followedId } })
 
+  // A missing i18n key returns undefined in production. Prisma then treats the property as
+  // omitted and rejects the required Notification.message field, even though TypeScript's `!`
+  // makes the call look safe at compile time.
+  const message = t('common.notifications.newFollower', { user: user.name || 'Anonymous' })
+    || `${user.name || 'Anonymous'} started following you.`
+
   await prisma.notification.create({
     data: {
       userId: body.followedId,
-      message: t('common.notifications.newFollower', { user: user.name || 'Anonymous' })!,
+      message,
       type: 'FOLLOW',
     },
   })
