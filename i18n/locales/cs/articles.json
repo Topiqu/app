@@ -153,6 +153,7 @@
         }
       }
     },
+    "exportTitle": "Export článků",
     "export": {
       "title": {
         "json": "Exportovat do JSON",
@@ -429,6 +430,11 @@
       "statusChangeFailed": "Stav se nepodařilo změnit",
       "deleteSuccess": "Článek smazán",
       "deleteFailed": "Článek se nepodařilo smazat"
+    },
+    "image": {
+      "illustration": "Ilustrační obrázek",
+      "ai": "Ilustrační obrázek (AI)",
+      "photoBy": "foto: {author}"
     }
   }
 }

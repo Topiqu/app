@@ -42,6 +42,7 @@
     "banReasonLabel": "Reason",
     "banDateLabel": "Date",
     "personalInfo": "Personal Information",
+    "userInformation": "User Information",
     "accountId": "Account ID",
     "accountDetails": "Account Details",
     "notifications": "Notifications",

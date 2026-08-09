@@ -153,6 +153,7 @@
         }
       }
     },
+    "exportTitle": "Articles export",
     "export": {
       "title": {
         "json": "Export to JSON",
@@ -429,6 +430,11 @@
       "statusChangeFailed": "Could not change the status",
       "deleteSuccess": "Article deleted",
       "deleteFailed": "Could not delete the article"
+    },
+    "image": {
+      "illustration": "Illustrative image",
+      "ai": "Illustrative image (AI)",
+      "photoBy": "photo: {author}"
     }
   }
 }

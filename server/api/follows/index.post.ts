@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   await prisma.notification.create({
     data: {
       userId: body.followedId,
-      message: t('notifications.newFollower', { user: user.name || 'Anonymous' })!,
+      message: t('common.notifications.newFollower', { user: user.name || 'Anonymous' })!,
       type: 'FOLLOW',
     },
   })
