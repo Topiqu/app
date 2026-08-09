@@ -1,4 +1,18 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+
+const getS3 = () => {
+  const config = useRuntimeConfig()
+  return {
+    bucket: config.awsS3BucketName,
+    client: new S3Client({
+      region: config.awsRegion,
+      credentials: {
+        accessKeyId: config.awsAccessKeyId,
+        secretAccessKey: config.awsSecretAccessKey,
+      },
+    }),
+  }
+}
 
 export const putToCdn = async (
   key: string,
@@ -8,17 +22,11 @@ export const putToCdn = async (
 ) => {
   const config = useRuntimeConfig()
 
-  const s3 = new S3Client({
-    region: config.awsRegion,
-    credentials: {
-      accessKeyId: config.awsAccessKeyId,
-      secretAccessKey: config.awsSecretAccessKey,
-    },
-  })
+  const { bucket, client } = getS3()
 
-  await s3.send(
+  await client.send(
     new PutObjectCommand({
-      Bucket: config.awsS3BucketName,
+      Bucket: bucket,
       Key: key,
       Body: body,
       ContentType: contentType,
@@ -27,4 +35,11 @@ export const putToCdn = async (
   )
 
   return `${config.public.cdnUrl}/${key}`
+}
+
+export const deleteFromCdn = async (key: string, allowedPrefix: string) => {
+  if (!allowedPrefix || !key.startsWith(allowedPrefix))
+    throw new Error(`Refusing to delete CDN object outside ${allowedPrefix}`)
+  const { bucket, client } = getS3()
+  await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
 }
