@@ -45,6 +45,7 @@ shared/         Cross-cut code shared by app & server (zod schemas, utils)
 prisma/         ZenStack source, generated Prisma schema, migrations
 extensions/     Tiptap editor extensions
 emails/         MJML email templates
+docs/           Consumer-facing docs (external-api.md — the public API spec)
 scripts/        Dev-only verification scripts (ai-smoke, seed-tokens)
 i18n/           Locale files (en, cs)
 types/          Ambient TS types
@@ -164,6 +165,11 @@ todo/           Working notes (non-code)
 
 ### External API
 
+> **`docs/external-api.md` is the consumer-facing spec** — auth, envelope, per-endpoint field
+> tables, error table, enums, and the pagination/deletion/HTML-rendering recipes an integrator
+> needs. This section stays the architectural note; that file is what a third party reads. A
+> change to any `server/api/external/*` response shape has to land in both.
+
 - Every external route authenticates through `server/utils/externalApi.ts → requireExternalClient` using the tenant's `x-api-key`; soft-deleted sites are refused and authenticated responses are `private, no-store`. An admin generates or rotates the single key through `POST /api/clients/[id]/api-key`; rotation immediately invalidates the previous key. The key is stored on `ClientSite` and is visible to the owning tenant in Settings → Integrations.
 - `GET /api/external/articles` remains the backwards-compatible collection endpoint. It returns **source-language, published `Article` rows only**, newest first. Its original fields and nested `tags[].tag` shape remain intact; additive fields now expose `updatedAt`, `publishedAt`, reading time/word count, sources, cover credit, series and metadata for published translations. Pagination is `page` + `limit` (defaults 1/10, maximum 100), and response metadata includes the primary language and applied tag filters. Optional comma-separated `tag` filtering is trimmed/deduplicated and retains **AND semantics**: an article must carry every requested tag slug.
 - `GET /api/external/articles/:id` returns one published tenant article with the complete safe external projection. Its response uses flat `tags`, identifies the source `language`, and exposes published translation summaries as `availableTranslations`; a foreign, draft, archived or missing id is the same 404.
@@ -226,7 +232,7 @@ Marketing names diverge from the DB enum: marketing **FREE** = enum **BASIC**. E
 
 **A literal `@` in any i18n message breaks the production build.** vue-i18n reads `@` as the start of a linked message (`@:key`), so an e-mail address in a message fails with `Invalid linked format`. It only surfaces under `jit: true`, which the build uses and neither `typecheck` nor `vitest` does — write `&#64;` instead (these messages render through `v-html`, so the entity decodes in both the link text and the `mailto:` href).
 
-**Legal texts** (`i18n/locales/{cs,en}/legal.json`, rendered by `pages/privacy.vue` / `pages/tos.vue`) are a **byte-identical copy of the same file in `../landing`** — edit there and copy across, or the two sites drift. Placeholders in `[[BRACKETS]]` (company name, IČO, registered office, contact e-mails, hosting provider) must be filled before the texts are treated as published. The LinkedIn section is written to match the retention limits in the LinkedIn API Terms (profile ≤24 h, social activity ≤48 h) — changing what `server/utils/linkedin/` stores means changing that section too.
+**Legal texts** (`i18n/locales/{cs,en}/legal.json`, rendered by `pages/privacy.vue` / `pages/tos.vue`) are a **duplicate of the same file in `../landing`** — edit there and copy across, or the two sites drift. The two copies differ only in line endings (app LF, landing CRLF), so compare with `diff --strip-trailing-cr`. The `[[BRACKETS]]` placeholders are filled (as of 10 Aug 2026); the ARES link is built from the IČO, so both change together. The postal address stays out on purpose — ARES carries it. The processor list names no hosting provider on purpose — app, DB and cache run on own hardware, so there is no hosting processor to disclose under Art. 13(1)(e), and the "transfers outside the EEA" paragraph therefore states no baseline region. The LinkedIn section is written to match the retention limits in the LinkedIn API Terms (profile ≤24 h, social activity ≤48 h) — changing what `server/utils/linkedin/` stores means changing that section too.
 
 **Who may write which `ClientSite` field.** `shared/utils/clientSiteFields.ts` is the single source: `PRIVILEGED_CLIENT_SITE_FIELDS` (`plan`, `tokenLimit`, `gamNetworkCode`, `allowAds`) are **superadmin-only**; everything in `TENANT_EDITABLE_CLIENT_SITE_FIELDS` is fair game for a site's own admin. `server/api/clients/[id]/index.patch.ts` builds two zod picks from those lists and parses the privileged one only for superadmins, so a tenant's extra keys are silently stripped rather than rejected. The partition is pinned by `tests/unit/clientSiteFields.test.ts` (the field lists carry no zod/ZenStack import precisely so the test does not depend on generated `shared/zod`). Reactivating a soft-deleted site (`deletedAt: null`) is superadmin-only too; self-deactivation stays open. Side effects must read the **parsed** value, never raw body — `requestedTokenLimit`, not `scalarBody.tokenLimit`.
 
