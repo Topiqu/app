@@ -1,211 +1,145 @@
 <template>
-  <div class="relative w-full overflow-hidden">
-    <div class="absolute inset-0 z-0 pointer-events-none">
-      <div
-        class="absolute top-0 right-0 w-[50rem] h-[50rem] bg-indigo-500/10 dark:bg-indigo-500/10 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-pulse"
-      ></div>
-      <div
-        class="absolute bottom-0 left-0 w-[50rem] h-[50rem] bg-emerald-500/10 dark:bg-emerald-500/5 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50"
-      ></div>
-      <div
-        class="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]"
-      ></div>
-    </div>
+  <div class="w-full border-b border-default bg-default">
+    <nav class="mx-auto flex h-16 max-w-[90rem] items-center justify-between px-4 sm:px-6 lg:px-8">
+      <NuxtLink :to="localePath({ name: 'index' })" class="flex items-center gap-2">
+        <AppMedia
+          src="/topik_normal_rm.png"
+          alt="Topiqu"
+          aspectRatio="1 / 1"
+          fit="contain"
+          sizes="40px"
+          priority
+          containerClass="size-10 bg-transparent"
+        />
+        <span class="text-lg font-bold tracking-tight text-highlighted">Topiqu</span>
+      </NuxtLink>
 
-    <div class="relative z-10">
-      <nav class="flex items-center justify-between px-6 py-6 max-w-[90rem] mx-auto">
-        <div class="flex items-center gap-2">
-          <NuxtImg
-            src="/topik_normal_rm.png"
-            width="40"
-            class="grayscale hover:grayscale-0 transition-all duration-300"
-          />
-          <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">Topiqu</span>
-        </div>
+      <div class="hidden items-center gap-1 md:flex">
+        <UButton color="neutral" variant="ghost" @click="$emit('scroll', 'specs')">
+          {{ $t('common.actions.learn_more') }}
+        </UButton>
+        <UButton color="neutral" variant="ghost" @click="$emit('scroll', 'pricing')">
+          {{ $t('landing.pricing.title') }}
+        </UButton>
+        <UButton color="neutral" variant="ghost" @click="$emit('scroll', 'faq')">
+          {{ $t('landing.faq.title') }}
+        </UButton>
+        <UButton :to="localePath({ name: 'autorizace' })" color="primary">
+          {{ $t('common.auth.login') }}
+        </UButton>
+      </div>
 
-        <div class="hidden md:flex gap-2 items-center">
-          <Button variant="transparent" borderless @click="$emit('scroll', 'specs')">
+      <UDropdownMenu :items="mobileNavigation" class="md:hidden">
+        <UButton color="neutral" variant="ghost" icon="i-mdi-menu" square :aria-label="$t('common.actions.openMenu')" />
+      </UDropdownMenu>
+    </nav>
+
+    <header
+      class="mx-auto grid min-h-[calc(100dvh-4rem)] max-w-[90rem] items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.8fr)] lg:px-8 lg:py-16"
+    >
+      <div class="max-w-3xl">
+        <UBadge color="primary" variant="soft" icon="i-mdi-newspaper-variant-outline">
+          {{ $t('landing.hero.badge') }}
+        </UBadge>
+        <h1
+          class="mt-6 text-balance text-4xl font-extrabold leading-[1.08] tracking-tight text-highlighted sm:text-5xl lg:text-6xl"
+        >
+          {{ $t('landing.hero.title_prefix') }}
+          <span class="text-primary">{{ $t('landing.hero.title_suffix') }}</span>
+        </h1>
+        <p class="mt-6 max-w-[62ch] text-pretty text-lg leading-8 text-muted">
+          {{ $t('landing.hero.subtitle') }}
+        </p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <UButton
+            :to="{ query: { ...$route.query, onboarding: '1' } }"
+            color="primary"
+            size="lg"
+            trailingIcon="i-mdi-arrow-right"
+          >
+            {{ $t('common.actions.get_started') }}
+          </UButton>
+          <UButton color="neutral" variant="outline" size="lg" @click="$emit('scroll', 'specs')">
             {{ $t('common.actions.learn_more') }}
-          </Button>
-
-          <Button variant="transparent" borderless @click="$emit('scroll', 'pricing')">
-            {{ $t('landing.pricing.title') }}
-          </Button>
-
-          <Button variant="transparent" borderless @click="$emit('scroll', 'faq')"> FAQ </Button>
-
-          <NuxtLink :to="localePath({ name: 'autorizace' })" class="w-full sm:w-auto">
-            <Button
-              variant="primary"
-              class="w-full shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 rounded-full px-6 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500"
-            >
-              {{ $t('common.auth.login') }}
-            </Button>
-          </NuxtLink>
+          </UButton>
         </div>
-      </nav>
+      </div>
 
-      <header class="pt-10 pb-20 px-6 md:pt-20 md:pb-32 max-w-7xl mx-auto">
-        <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <div class="text-center lg:text-left relative z-20">
-            <div
-              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 shadow-sm mb-8"
-            >
-              <span class="relative flex h-2 w-2">
-                <span
-                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"
-                ></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-              </span>
-              <span class="text-xs font-bold tracking-wide uppercase text-indigo-700 dark:text-indigo-300">
-                {{ $t('landing.hero.badge') }}
-              </span>
+      <div class="relative mx-auto w-full max-w-xl" aria-hidden="true">
+        <div
+          class="overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated p-2 shadow-xl shadow-primary/10"
+        >
+          <div class="aspect-[16/10] overflow-hidden rounded-lg border border-default bg-default">
+            <div class="flex h-8 items-center gap-1.5 border-b border-default px-3">
+              <span v-for="dot in 3" :key="dot" class="size-2 rounded-full bg-accented" />
             </div>
-
-            <h1
-              class="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight mb-6 text-slate-900 dark:text-white leading-[1.1]"
-            >
-              {{ $t('landing.hero.title_prefix') }} <br class="hidden lg:block" />
-              <span
-                class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-violet-700 to-indigo-700 dark:from-indigo-400 dark:via-violet-400 dark:to-indigo-400 animate-gradient-x bg-[length:200%_auto]"
-              >
-                {{ $t('landing.hero.title_suffix') }}
-              </span>
-            </h1>
-
-            <p
-              class="text-lg md:text-xl text-slate-700 dark:text-slate-300 mb-10 leading-relaxed font-medium max-w-2xl mx-auto lg:mx-0"
-            >
-              {{ $t('landing.hero.subtitle') }}
-            </p>
-
-            <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <Button
-                variant="primary"
-                size="lg"
-                animation="softpop"
-                icon="mdi:arrow-right"
-                iconPosition="right"
-                class="w-full sm:w-auto shadow-[0_20px_40px_-15px_rgba(79,70,229,0.4)]"
-                @click="$emit('startOnboarding')"
-              >
-                {{ $t('common.actions.get_started') }}
-              </Button>
-
-              <Button
-                variant="neutral"
-                size="lg"
-                class="w-full sm:w-auto bg-white dark:bg-slate-900"
-                @click="$emit('scroll', 'specs')"
-              >
-                {{ $t('common.actions.learn_more') }}
-              </Button>
-            </div>
-
-            <div
-              class="mt-12 pt-8 border-t border-slate-200 dark:border-white/10 flex flex-wrap justify-center lg:justify-start gap-8"
-            >
-              <div class="flex items-center gap-2">
-                <Icon name="mdi:check-circle" class="text-emerald-600 dark:text-emerald-400" />
-                <span class="text-sm font-bold text-slate-700 dark:text-slate-300">
-                  {{ $t('landing.hero.stats.score') }} 100/100
-                </span>
+            <div class="grid h-[calc(100%-2rem)] grid-cols-[4.5rem_1fr]">
+              <div class="space-y-3 border-r border-default bg-elevated p-3">
+                <span class="block h-2 w-full rounded bg-accented" />
+                <span class="block h-2 w-3/4 rounded bg-accented" />
+                <span class="block h-2 w-5/6 rounded bg-accented" />
               </div>
-            </div>
-          </div>
-
-          <div class="relative hidden lg:block perspective-1000">
-            <div
-              class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[28rem] h-[28rem] bg-gradient-to-tr from-indigo-500 to-emerald-400 rounded-full blur-[80px] opacity-30 dark:opacity-20 animate-pulse-slow"
-            ></div>
-
-            <div
-              class="relative mx-auto w-[400px] h-[500px] bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-[2rem] shadow-2xl flex flex-col items-center justify-end overflow-hidden transform rotate-y-6 hover:rotate-y-0 transition-transform duration-700 ease-out group"
-            >
-              <div
-                class="absolute top-10 -left-12 bg-white dark:bg-[#151515] p-3 rounded-xl shadow-xl border border-slate-200 dark:border-white/10 flex items-center gap-3 animate-float-slow z-20"
-              >
-                <div class="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-700 dark:text-green-400">
-                  <Icon name="mdi:chart-line-variant" size="20" />
+              <div class="space-y-4 p-5">
+                <div class="h-5 w-2/5 rounded bg-primary/25" />
+                <div class="grid grid-cols-3 gap-3">
+                  <div v-for="card in 3" :key="card" class="h-16 rounded-lg border border-default bg-elevated" />
                 </div>
-                <div>
-                  <div class="text-xs text-slate-500 uppercase font-bold">Revenue</div>
-                  <div class="text-sm font-bold text-slate-900 dark:text-white">+ 124%</div>
-                </div>
-              </div>
-
-              <div
-                class="absolute top-20 -right-8 bg-white dark:bg-[#151515] p-3 rounded-xl shadow-xl border border-slate-200 dark:border-white/10 flex items-center gap-3 animate-float-delayed z-20"
-              >
-                <div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-blue-700 dark:text-blue-400">
-                  <Icon name="mdi:google" size="20" />
-                </div>
-                <div>
-                  <div class="text-xs text-slate-500 uppercase font-bold">SEO Index</div>
-                  <div class="text-sm font-bold text-slate-900 dark:text-white">Optimized</div>
-                </div>
-              </div>
-
-              <NuxtImg
-                src="/topik_normal_rm.png"
-                class="w-[320px] relative z-10 -bottom-4 drop-shadow-2xl transition-transform group-hover:scale-105 duration-300"
-              />
-
-              <div class="w-full bg-slate-900 p-4 border-t border-slate-700">
-                <div class="flex gap-1.5 mb-2">
-                  <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                  <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
-                  <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                </div>
-                <div class="font-mono text-[10px] text-slate-300">
-                  <span class="text-purple-400">ai</span>.generate(<span class="text-green-400">'viral_post'</span>)
-                  <br />
-                  <span class="text-blue-400">>></span> Processing... Done.
+                <div class="space-y-3 rounded-lg border border-default p-4">
+                  <span
+                    v-for="line in 4"
+                    :key="line"
+                    class="block h-2 rounded bg-accented"
+                    :class="line === 4 ? 'w-2/3' : 'w-full'"
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </header>
-    </div>
+        <AppMedia
+          src="/topik_normal_rm.png"
+          alt=""
+          aspectRatio="1 / 1"
+          fit="contain"
+          sizes="180px"
+          priority
+          containerClass="absolute -bottom-8 -right-2 size-32 bg-transparent sm:-right-8 sm:size-44"
+        />
+      </div>
+    </header>
   </div>
 </template>
 
 <script setup lang="ts">
 const localePath = useLocalePath()
-defineEmits<{
+const emit = defineEmits<{
   (e: 'scroll', id: string): void
-  (e: 'startOnboarding'): void
 }>()
+
+const mobileNavigation = computed(() => [
+  [
+    {
+      label: $t('common.actions.learn_more'),
+      icon: 'i-mdi-book-open-page-variant-outline',
+      onSelect: () => emit('scroll', 'specs'),
+    },
+    {
+      label: $t('landing.pricing.title'),
+      icon: 'i-mdi-tag-outline',
+      onSelect: () => emit('scroll', 'pricing'),
+    },
+    {
+      label: $t('landing.faq.title'),
+      icon: 'i-mdi-help-circle-outline',
+      onSelect: () => emit('scroll', 'faq'),
+    },
+  ],
+  [
+    {
+      label: $t('common.auth.login'),
+      icon: 'i-mdi-login',
+      to: localePath({ name: 'autorizace' }),
+    },
+  ],
+])
 </script>
-
-<style scoped>
-@keyframes float-slow {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-@keyframes float-delayed {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-.animate-float-slow {
-  animation: float-slow 4s ease-in-out infinite;
-}
-.animate-float-delayed {
-  animation: float-delayed 5s ease-in-out infinite 1s;
-}
-
-.perspective-1000 {
-  perspective: 1000px;
-}
-</style>
