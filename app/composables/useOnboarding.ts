@@ -1,14 +1,6 @@
 import type { InjectionKey, Ref } from 'vue'
 
-export type DomainStatus =
-  | 'idle'
-  | 'checking'
-  | 'available'
-  | 'taken'
-  | 'invalid'
-  | 'tooShort'
-  | 'reserved'
-  | 'empty'
+export type DomainStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'tooShort' | 'reserved' | 'empty'
 
 export interface OnboardingForm {
   siteName: string
@@ -35,7 +27,7 @@ export interface OnboardingContext {
 
   domainStatus: Ref<DomainStatus>
   domainStatusIcon: Ref<string>
-  domainStatusColor: Ref<string>
+  domainStatusColor: Ref<'success' | 'neutral' | 'error'>
   fullDomainPreview: Ref<string>
 
   challenge: Ref<string | null>

@@ -1,103 +1,78 @@
 <template>
-  <div
-    v-if="open"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="onboarding-title"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-    @click.self="open = false"
+  <UModal
+    v-model:open="open"
+    :title="$t('landing.onboarding.title')"
+    :close="false"
+    :ui="{ content: 'max-w-[50rem] overflow-hidden' }"
   >
-    <div
-      class="absolute inset-0 bg-[#EBE9E4] dark:bg-[#0C0C0C] transition-opacity"
-      @click="open = false"
-    ></div>
-
-    <div
-      ref="panelRef"
-      tabindex="-1"
-      class="relative bg-[#FAFAFA] dark:bg-[#18181B] rounded-[2.5rem] w-full max-w-2xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.8)] overflow-hidden animate-fade-in-up max-h-[90vh] overflow-y-auto focus:outline-none"
-    >
-      <div class="p-8 md:p-12">
-        <div class="flex justify-between items-start mb-8 gap-6">
-          <h2
-            id="onboarding-title"
-            class="text-3xl md:text-4xl font-black text-[#111] dark:text-white tracking-tighter leading-tight flex items-center gap-5"
-          >
-            <div
-              class="w-14 h-14 bg-[#D8B4FE] text-[#111] rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0_0_rgba(17,17,17,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)] transform -rotate-3 transition-transform hover:rotate-0"
+    <template #content>
+      <div class="max-h-[90vh] overflow-y-auto">
+        <div class="p-8 md:p-12">
+          <div class="flex justify-between items-start mb-8 gap-6">
+            <h2
+              id="onboarding-title"
+              class="flex items-center gap-5 text-3xl font-black leading-tight text-highlighted md:text-4xl"
             >
-              <Icon name="mdi:rocket-launch" class="w-7 h-7" />
+              <UAvatar icon="i-mdi-rocket-launch" size="3xl" />
+              {{ $t('landing.onboarding.title') }}
+            </h2>
+            <div class="flex items-center gap-3 shrink-0">
+              <UBadge color="neutral" variant="soft" class="whitespace-nowrap">
+                {{ $t('landing.onboarding.stepLabel', { current: step, total: TOTAL_STEPS }) }}
+              </UBadge>
+              <UButton
+                square
+                variant="ghost"
+                size="sm"
+                color="neutral"
+                icon="i-mdi-close"
+                :aria-label="$t('common.actions.close')"
+                :title="$t('common.actions.close')"
+                @click="open = false"
+              />
             </div>
-            {{ $t('landing.onboarding.title') }}
-          </h2>
-          <div class="flex items-center gap-3 shrink-0">
-            <span class="text-xs font-black uppercase tracking-widest text-[#888] dark:text-[#71717A] whitespace-nowrap">
-              {{ $t('landing.onboarding.stepLabel', { current: step, total: TOTAL_STEPS }) }}
-            </span>
-            <Button
-              square
-              borderless
-              size="sm"
-              variant="transparent"
-              icon="mdi:close"
-              :aria="$t('common.actions.close')"
-              :title="$t('common.actions.close')"
-              class="text-[#888] hover:text-[#111] dark:hover:text-white"
-              @click="open = false"
-            />
           </div>
-        </div>
 
-        <div
-          class="flex gap-2 mb-12"
-          role="progressbar"
-          :aria-valuenow="step"
-          :aria-valuemin="1"
-          :aria-valuemax="TOTAL_STEPS"
-          :aria-label="$t('landing.onboarding.stepLabel', { current: step, total: TOTAL_STEPS })"
-        >
-          <div
-            v-for="s in TOTAL_STEPS"
-            :key="s"
-            class="h-3 flex-1 rounded-full transition-colors duration-500"
-            :class="step >= s ? 'bg-[#111] dark:bg-white' : 'bg-[#E5E5E5] dark:bg-[#27272A]'"
-          ></div>
-        </div>
-
-        <form @submit.prevent="handleSubmit">
-          <FormField
-            v-model="form.website"
-            label="Website"
-            type="text"
-            name="website"
-            aria-hidden="true"
-            tabindex="-1"
-            autocomplete="off"
-            class="absolute -left-[9999px] top-auto w-px h-px overflow-hidden"
+          <UStepper
+            v-model="step"
+            :items="stepperItems"
+            valueKey="value"
+            disabled
+            class="mb-12"
+            :aria-label="$t('landing.onboarding.stepLabel', { current: step, total: TOTAL_STEPS })"
           />
-          <TurnstileWidget v-model="turnstileToken" />
-          <div class="relative min-h-[680px]">
-            <Transition
-              mode="out-in"
-              enterActiveClass="transition-opacity duration-300 ease-out"
-              enterFromClass="opacity-0"
-              enterToClass="opacity-100"
-              leaveActiveClass="transition-opacity duration-200 ease-in"
-              leaveFromClass="opacity-100"
-              leaveToClass="opacity-0"
+
+          <UForm :state="form" @submit.prevent="handleSubmit">
+            <UFormField
+              :label="$t('landing.onboarding.honeypot')"
+              class="absolute -left-[9999px] top-auto w-px h-px overflow-hidden"
+              name="website"
             >
-              <LazyLandingOnboardingStepSite v-if="step === 1" key="step1" hydrateOnIdle />
-              <LazyLandingOnboardingStepDesign v-else-if="step === 2" key="step2" hydrateOnIdle />
-              <LazyLandingOnboardingStepAccount v-else-if="step === 3" key="step3" hydrateOnIdle />
-              <LazyLandingOnboardingStepPlan v-else-if="step === 4" key="step4" hydrateOnIdle />
-              <LazyLandingOnboardingStepVerify v-else-if="step === 5" key="step5" hydrateOnIdle />
-              <LazyLandingOnboardingStepSummary v-else-if="step === 6" key="step6" hydrateOnIdle />
-            </Transition>
-          </div>
-        </form>
+              <UInput
+                v-model="form.website"
+                type="text"
+                name="website"
+                aria-hidden="true"
+                tabindex="-1"
+                autocomplete="off"
+              />
+            </UFormField>
+            <TurnstileWidget v-model="turnstileToken" />
+            <div class="relative min-h-[680px]">
+              <div>
+                <LazyLandingOnboardingStepSite v-if="step === 1" key="step1" hydrateOnIdle />
+                <LazyLandingOnboardingStepDesign v-else-if="step === 2" key="step2" hydrateOnIdle />
+                <LazyLandingOnboardingStepAccount v-else-if="step === 3" key="step3" hydrateOnIdle />
+                <LazyLandingOnboardingStepPlan v-else-if="step === 4" key="step4" hydrateOnIdle />
+                <LazyLandingOnboardingStepVerify v-else-if="step === 5" key="step5" hydrateOnIdle />
+                <LazyLandingOnboardingStepSummary v-else-if="step === 6" key="step6" hydrateOnIdle />
+              </div>
+            </div>
+          </UForm>
+        </div>
       </div>
-    </div>
-  </div>
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -108,14 +83,19 @@ import { onboardingKey, type DomainStatus, type OnboardingForm } from '~/composa
 
 const TOTAL_STEPS = 6
 
-const open = defineModel<boolean>()
+const open = defineModel<boolean>('open')
 const toast = useToast()
 const { t: $t } = useI18n()
 
 const step = shallowRef(1)
+const stepperItems = computed(() =>
+  Array.from({ length: TOTAL_STEPS }, (_, index) => ({
+    value: index + 1,
+    title: $t('landing.onboarding.stepLabel', { current: index + 1, total: TOTAL_STEPS }),
+  })),
+)
 const loading = shallowRef(false)
 const userEditedDomain = shallowRef(false)
-const panelRef = useTemplateRef<HTMLElement>('panelRef')
 let codeInputEl: HTMLInputElement | null = null
 const registerCodeInput = (el: HTMLInputElement | null) => {
   codeInputEl = el
@@ -172,9 +152,7 @@ const form = shallowReactive<OnboardingForm>({
 
 const domainStatus = shallowRef<DomainStatus>('idle')
 
-const fullDomainPreview = computed(() =>
-  form.domainType === 'SUBDOMAIN' ? `${form.domain}.topiqu.com` : form.domain,
-)
+const fullDomainPreview = computed(() => (form.domainType === 'SUBDOMAIN' ? `${form.domain}.topiqu.com` : form.domain))
 
 watch(
   () => form.siteName,
@@ -208,7 +186,7 @@ const runDomainCheck = useDebounceFn(async (domain: string, type: string) => {
       query: { domain, type },
     })
     if (form.domain !== domain || form.domainType !== type) return
-    domainStatus.value = res.ok ? 'available' : (res.reason as DomainStatus) ?? 'invalid'
+    domainStatus.value = res.ok ? 'available' : ((res.reason as DomainStatus) ?? 'invalid')
   } catch {
     domainStatus.value = 'idle'
   }
@@ -227,21 +205,21 @@ watch(
 )
 
 const DOMAIN_STATUS_ICON: Record<DomainStatus, string> = {
-  idle: 'mdi:alert-circle',
-  checking: 'mdi:loading',
-  available: 'mdi:check-circle',
-  taken: 'mdi:alert-circle',
-  invalid: 'mdi:alert-circle',
-  tooShort: 'mdi:alert-circle',
-  reserved: 'mdi:alert-circle',
-  empty: 'mdi:alert-circle',
+  idle: 'i-mdi-alert-circle',
+  checking: 'i-mdi-loading',
+  available: 'i-mdi-check-circle',
+  taken: 'i-mdi-alert-circle',
+  invalid: 'i-mdi-alert-circle',
+  tooShort: 'i-mdi-alert-circle',
+  reserved: 'i-mdi-alert-circle',
+  empty: 'i-mdi-alert-circle',
 }
 
-const DOMAIN_STATUS_COLOR: Record<'available' | 'checking' | 'error', string> = {
-  available: 'text-[#16A34A] dark:text-[#86EFAC]',
-  checking: 'text-[#888] dark:text-[#71717A]',
-  error: 'text-[#DC2626] dark:text-[#FCA5A5]',
-}
+const DOMAIN_STATUS_COLOR = {
+  available: 'success',
+  checking: 'neutral',
+  error: 'error',
+} as const
 
 const domainStatusIcon = computed(() => DOMAIN_STATUS_ICON[domainStatus.value])
 const domainStatusColor = computed(() => {
@@ -251,48 +229,39 @@ const domainStatusColor = computed(() => {
 })
 
 const summaryRows = computed(() => [
-  { label: $t('landing.onboarding.summarySite'), value: form.siteName, icon: 'mdi:web' },
-  { label: $t('landing.onboarding.summaryDomain'), value: fullDomainPreview.value, icon: 'mdi:link' },
+  { label: $t('landing.onboarding.summarySite'), value: form.siteName, icon: 'i-mdi-web' },
+  { label: $t('landing.onboarding.summaryDomain'), value: fullDomainPreview.value, icon: 'i-mdi-link' },
   {
     label: $t('landing.onboarding.summaryLanguage'),
-    value:
-      form.language === 'cs'
-        ? `🇨🇿 ${$t('landing.onboarding.langCz')}`
-        : `🇬🇧 ${$t('landing.onboarding.langEn')}`,
-    icon: 'mdi:translate',
+    value: form.language === 'cs' ? `🇨🇿 ${$t('landing.onboarding.langCz')}` : `🇬🇧 ${$t('landing.onboarding.langEn')}`,
+    icon: 'i-mdi-translate',
   },
   {
     label: $t('landing.onboarding.summaryColor'),
     value: form.theme,
-    icon: 'mdi:palette',
+    icon: 'i-mdi-palette',
     swatch: form.theme,
   },
   {
     label: $t('landing.onboarding.summaryFocus'),
     value: form.focus || $t('landing.onboarding.focusNotSet'),
-    icon: 'mdi:target',
+    icon: 'i-mdi-target',
   },
-  { label: $t('landing.onboarding.summaryAdmin'), value: form.username, icon: 'mdi:account' },
-  { label: $t('landing.onboarding.summaryEmail'), value: form.email, icon: 'mdi:email' },
+  { label: $t('landing.onboarding.summaryAdmin'), value: form.username, icon: 'i-mdi-account' },
+  { label: $t('landing.onboarding.summaryEmail'), value: form.email, icon: 'i-mdi-email' },
   {
     label: $t('landing.onboarding.summaryPlan'),
     value: form.selectedPlan
       ? $t(`landing.pricing.plans.${form.selectedPlan.toLowerCase()}.name`)
       : $t('landing.onboarding.planFreeAfterTrial'),
-    icon: 'mdi:crown-outline',
+    icon: 'i-mdi-crown-outline',
   },
 ])
 
-const canAdvanceStep1 = computed(
-  () => !!form.siteName && !!form.domain && domainStatus.value === 'available',
-)
+const canAdvanceStep1 = computed(() => !!form.siteName && !!form.domain && domainStatus.value === 'available')
 
 const canAdvanceStep3 = computed(
-  () =>
-    !!form.username &&
-    !!form.email &&
-    !!form.password &&
-    form.password === form.passwordConfirm,
+  () => !!form.username && !!form.email && !!form.password && form.password === form.passwordConfirm,
 )
 
 const canAdvanceStep4 = computed(() => !!challenge.value && code.value.length === 6)
@@ -326,10 +295,10 @@ const sendCode = async () => {
     code.value = ''
     verifiedToken.value = null
     startResendCooldown(60)
-    toast.success({ message: $t('common.auth.verificationCodeSent') })
+    toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent') })
     nextTick(() => codeInputEl?.focus())
   } catch (error: any) {
-    toast.error({ message: error.data?.message || $t('common.auth.sendCodeFailed') })
+    toast.add({ color: 'error', title: error.data?.message || $t('common.auth.sendCodeFailed') })
   } finally {
     codeSending.value = false
   }
@@ -368,26 +337,11 @@ watch(step, (newStep, oldStep) => {
   }
 })
 
-const isLocked = useScrollLock(import.meta.client ? document.body : null)
 watch(open, (v) => {
-  isLocked.value = !!v
   if (v) {
     preloadStep(step.value)
     preloadStep(step.value + 1)
   }
-})
-
-onKeyStroke('Escape', () => {
-  if (open.value) open.value = false
-})
-
-watch([open, step], async ([isOpen]) => {
-  if (!isOpen) return
-  await nextTick()
-  const firstInput = panelRef.value?.querySelector<HTMLElement>(
-    'input:not([type="hidden"]):not([disabled]):not([readonly]), textarea, select, [contenteditable="true"]',
-  )
-  firstInput?.focus()
 })
 
 const STEP_COMPONENTS = [
@@ -426,19 +380,19 @@ const handleSubmit = () => {
 
 const submit = async () => {
   if (!form.acceptTos) {
-    toast.error({ message: $t('landing.onboarding.tosRequired') })
+    toast.add({ color: 'error', title: $t('landing.onboarding.tosRequired') })
     return
   }
   if (!form.username || !form.email || !form.password || form.password !== form.passwordConfirm) {
-    toast.error({ message: $t('common.auth.passwordsMismatch') })
+    toast.add({ color: 'error', title: $t('common.auth.passwordsMismatch') })
     return
   }
   if (zxcvbn(form.password).score < 3) {
-    toast.error({ message: $t('common.passwordSuggestions.weak') })
+    toast.add({ color: 'error', title: $t('common.passwordSuggestions.weak') })
     return
   }
   if (!verifiedToken.value) {
-    toast.error({ message: $t('common.auth.verifyFailed') })
+    toast.add({ color: 'error', title: $t('common.auth.verifyFailed') })
     step.value = 5
     return
   }
@@ -466,7 +420,7 @@ const submit = async () => {
       window.location.href = res.url
     }
   } catch (error: any) {
-    toast.error({ message: error.data?.message || $t('common.errors.general') })
+    toast.add({ color: 'error', title: error.data?.message || $t('common.errors.general') })
   } finally {
     loading.value = false
   }
@@ -504,19 +458,3 @@ provide(onboardingKey, {
   registerCodeInput,
 })
 </script>
-
-<style scoped>
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-.animate-fade-in-up {
-  animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-</style>

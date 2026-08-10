@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
@@ -116,8 +117,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const stripeSecret = process.env.STRIPE_SK
-  const priceId =
-    body.selectedPlan === 'PRO' ? process.env.STRIPE_PRICE_PRO : process.env.STRIPE_PRICE_PREMIUM
+  const priceId = body.selectedPlan === 'PRO' ? process.env.STRIPE_PRICE_PRO : process.env.STRIPE_PRICE_PREMIUM
 
   if (!stripeSecret || !priceId) {
     return { url: dashboardUrl }
