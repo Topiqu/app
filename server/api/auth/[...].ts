@@ -15,7 +15,9 @@ interface BaseOAuthProfile {
   picture?: string
 }
 
-const isProduction = process.env.NODE_ENV === 'production'
+// Compiled browser tests intentionally run over loopback HTTP against a dedicated
+// disposable database, so production-only secure/domain cookies cannot be used.
+const isProduction = process.env.NODE_ENV === 'production' && !process.env.TEST_DATABASE_URL
 // TODO: For strict multi-tenant (isolated accounts), set this to undefined to prevent session sharing across domains.
 const cookieDomain = isProduction ? '.topiqu.com' : undefined
 

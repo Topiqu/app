@@ -1,10 +1,19 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-white dark:bg-[#0A0A0A]">
-    <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+  <div class="flex min-h-[100dvh] items-center justify-center bg-default">
+    <UProgress class="w-48" />
   </div>
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  shell: 'product',
+  middleware: (to) => {
+    if (to.query.provider) return
+    const locale = to.path.split('/').filter(Boolean)[0] || 'en'
+    return navigateTo(`/${locale}`)
+  },
+})
+
 const route = useRoute()
 
 onMounted(async () => {

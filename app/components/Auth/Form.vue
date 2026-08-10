@@ -1,218 +1,142 @@
 <template>
-  <div class="w-xs sm:w-sm md:w-md px-6">
-    <div
-      v-if="data?.user && !internalMode"
-      class="bg-white dark:bg-gray-900 px-6 py-8 rounded-2xl shadow-md text-center space-y-5 border border-gray-200 dark:border-gray-700"
-    >
-      <p class="text-green-600 dark:text-green-400 text-lg font-semibold">
-        {{ $t('common.auth.welcome') }} {{ data.user?.name }}!
-      </p>
-      <AuthLogout />
-    </div>
+  <div class="w-full">
+    <UCard v-if="data?.user && !internalMode">
+      <div class="text-center">
+        <p class="text-lg font-semibold text-success">{{ $t('common.auth.welcome') }} {{ data.user?.name }}!</p>
+        <AuthLogout />
+      </div>
+    </UCard>
     <div v-else-if="internalMode === 'forgot' || internalMode === 'reset'">
       <AuthForgot :mode="internalMode" @update:mode="internalMode = $event" />
     </div>
-    <div
-      v-else
-      class="bg-white dark:bg-gray-900 px-6 py-8 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 space-y-6"
-    >
-      <div class="flex justify-between items-center gap-2 text-sm font-medium">
-        <Button
-          :class="[
-            'w-full px-4 py-2 rounded-lg transition font-semibold',
-            internalMode === 'login'
-              ? 'bg-blue-600! text-white! shadow'
-              : 'bg-gray-100! dark:bg-gray-800! text-gray-500! dark:text-gray-400! hover:bg-gray-200! dark:hover:bg-gray-700!',
-          ]"
-          @click="internalMode = 'login'"
-        >
-          {{ $t('common.auth.login') }}
-        </Button>
-        <Button
-          :class="[
-            'w-full px-4 py-2 rounded-lg transition font-semibold',
-            internalMode === 'register'
-              ? 'bg-blue-600! text-white! shadow'
-              : 'bg-gray-100! dark:bg-gray-800! text-gray-500! dark:text-gray-400! hover:bg-gray-200! dark:hover:bg-gray-700!',
-          ]"
-          @click="internalMode = 'register'"
-        >
-          {{ $t('common.auth.register') }}
-        </Button>
-      </div>
-      <form v-if="!verifyMode && internalMode !== 'totp'" class="space-y-5 text-sm" @submit.prevent="submit">
-        <div class="space-y-1.5">
-          <label for="email" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
-            {{ $t('profile.email') }}
-          </label>
-          <div class="relative">
-            <Icon name="mdi:envelope" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
-            <input
-              id="email"
+    <UCard v-else>
+      <UTabs v-model="authTab" :items="authTabs" variant="link" class="mb-6 w-full" />
+      <UForm v-if="!verifyMode && internalMode !== 'totp'" :state="form" :schema="authSchema" @submit="submit">
+        <div class="space-y-5 text-sm">
+          <UFormField :label="$t('profile.email')" name="email">
+            <UInput
               v-model="form.email"
               type="email"
-              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              icon="i-mdi-envelope"
+              class="w-full"
               placeholder="example@domain.tld"
               autocomplete="email"
               required
             />
-          </div>
-        </div>
-        <div v-if="internalMode === 'register'" class="space-y-1.5">
-          <label for="username" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
-            {{ $t('profile.username') }}
-          </label>
-          <div class="relative">
-            <Icon name="mdi:account" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
-            <input
-              id="username"
+          </UFormField>
+          <UFormField v-if="internalMode === 'register'" :label="$t('profile.username')" name="username">
+            <UInput
               v-model="form.username"
               type="text"
-              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              icon="i-mdi-account"
+              class="w-full"
               autocomplete="username"
               placeholder="Joe Doe"
-              maxlength="50"
-              minlength="3"
+              :maxlength="50"
+              :minlength="3"
               required
             />
+          </UFormField>
+          <div class="space-y-1.5">
+            <UFormField v-if="internalMode === 'login'" :label="$t('common.auth.password')" name="password">
+              <UInput
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                icon="i-mdi-lock"
+                class="w-full"
+                autocomplete="current-password"
+                placeholder="********"
+                :maxlength="124"
+                :minlength="4"
+                required
+              >
+                <template #trailing>
+                  <UButton
+                    type="button"
+                    color="neutral"
+                    variant="link"
+                    size="sm"
+                    :icon="showPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
+                    :aria-label="$t('common.actions.togglePassword')"
+                    @click="showPassword = !showPassword"
+                  />
+                </template>
+              </UInput>
+            </UFormField>
+            <UserPassword v-else v-model="form.password" :isValid="isPasswordFormValid" />
+            <div v-if="internalMode === 'login'" class="inline-flex justify-end w-full">
+              <UButton type="button" variant="link" size="sm" @click="internalMode = 'forgot'">
+                {{ $t('common.auth.forgotPassword') }}
+              </UButton>
+            </div>
           </div>
-        </div>
-        <div class="space-y-1.5">
-          <div v-if="internalMode === 'login'" class="relative">
-            <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
-            <input
-              id="password"
-              v-model="form.password"
-              :type="showPassword ? 'text' : 'password'"
-              class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              autocomplete="current-password"
-              placeholder="********"
-              maxlength="124"
-              minlength="4"
-              required
-            />
-            <button
+          <div v-if="internalMode === 'register'" class="space-y-1.5">
+            <UserPassword v-model="form.passwordConfirm" :isValid="isPasswordFormValid" isConfirm />
+          </div>
+          <UButton type="submit" :loading="submitting" :disabled="submitting" block>
+            {{ internalMode === 'register' ? $t('common.auth.register') : $t('common.auth.login') }}
+          </UButton>
+          <USeparator :label="$t('common.auth.or')" />
+          <div class="space-y-3 text-center">
+            <UButton
               type="button"
-              class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-600 dark:hover:text-gray-400"
-              @click="showPassword = !showPassword"
+              color="neutral"
+              variant="outline"
+              icon="i-mdi-google"
+              block
+              @click="handleSocialAuth('google')"
             >
-              <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" />
-            </button>
-          </div>
-          <UserPassword v-else v-model="form.password" :isValid="isPasswordFormValid" />
-          <div v-if="internalMode === 'login'" class="inline-flex justify-end w-full">
-            <button
+              {{ $t('common.auth.signInWithGoogle') }}
+            </UButton>
+            <UButton
               type="button"
-              class="text-xs p-1 text-blue-600 dark:text-blue-400 underline cursor-pointer hover:text-blue-700 dark:hover:text-blue-500 transition bg-transparent border-none"
-              @click="internalMode = 'forgot'"
+              color="neutral"
+              variant="outline"
+              icon="i-mdi-github"
+              block
+              @click="handleSocialAuth('github')"
             >
-              {{ $t('common.auth.forgotPassword') }}
-            </button>
+              {{ $t('common.auth.signInWithGithub') }}
+            </UButton>
           </div>
         </div>
-        <div v-if="internalMode === 'register'" class="space-y-1.5">
-          <UserPassword v-model="form.passwordConfirm" :isValid="isPasswordFormValid" isConfirm />
+      </UForm>
+      <UForm v-if="verifyMode" :state="form" :schema="verificationSchema" @submit="verify">
+        <div class="space-y-5 text-sm">
+          <p class="text-muted text-sm">
+            {{ $t('common.auth.enterVerificationCode') }}
+            <span class="font-medium">{{ form.email }}</span>
+          </p>
+          <UFormField :label="$t('common.auth.verificationCode')" name="code">
+            <UPinInput v-model="verificationDigits" :length="8" otp />
+          </UFormField>
+          <UButton type="submit" :loading="submitting" :disabled="submitting" block>
+            {{ $t('common.auth.verify') }}
+          </UButton>
         </div>
-        <Button
-          type="submit"
-          class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
-        >
-          {{ internalMode === 'register' ? $t('common.auth.register') : $t('common.auth.login') }}
-        </Button>
-        <div class="flex items-center my-4">
-          <hr class="flex-grow border-gray-300 dark:border-gray-700" />
-          <span class="mx-2 text-xs text-gray-400 dark:text-gray-500">{{ $t('common.auth.or') }}</span>
-          <hr class="flex-grow border-gray-300 dark:border-gray-700" />
+      </UForm>
+      <UForm v-if="internalMode === 'totp'" :state="form" :schema="totpSchema" @submit="verifyTotp">
+        <div class="space-y-5 text-sm">
+          <p class="text-muted text-sm">
+            {{ $t('common.auth.enterTotpCode') }}
+            <span class="font-medium">{{ form.email }}</span>
+          </p>
+          <UFormField :label="$t('common.auth.totpCode')" name="totpCode">
+            <UPinInput v-model="totpDigits" :length="6" otp />
+          </UFormField>
+          <UButton type="submit" :loading="submitting" :disabled="submitting" block>
+            {{ $t('common.auth.verifyTotp') }}
+          </UButton>
         </div>
-        <div class="space-y-3 text-center">
-          <Button
-            type="button"
-            variant="neutral"
-            class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-white! dark:bg-[#131314]! border border-[#747775] dark:border-[#8E918F] text-[#1F1F1F] dark:text-[#E3E3E3] text-sm font-roboto font-medium transition hover:bg-gray-50! dark:hover:bg-gray-800!"
-            @click="handleSocialAuth('google')"
-          >
-            <img
-              src="https://developers.google.com/identity/images/g-logo.png"
-              alt="Google logo"
-              class="w-5 h-5 mr-2"
-            />
-            {{ $t('common.auth.signInWithGoogle') }}
-          </Button>
-          <Button
-            type="button"
-            class="inline-flex items-center cursor-pointer justify-center w-full px-4 py-2 rounded-md bg-[#24292e]! dark:bg-[#24292e]! border border-[#747775] dark:border-[#8E918F] text-white dark:text-white text-sm font-roboto font-medium transition hover:bg-[#2f363d]! dark:hover:bg-[#2f363d]!"
-            @click="handleSocialAuth('github')"
-          >
-            <img src="https://simpleicons.org/icons/github.svg" alt="GitHub logo" class="w-5 h-5 mr-2" />
-            {{ $t('common.auth.signInWithGithub') }}
-          </Button>
-        </div>
-      </form>
-      <form v-if="verifyMode" class="space-y-5 text-sm" @submit.prevent="verify">
-        <p class="text-gray-500 dark:text-gray-400 text-sm">
-          {{ $t('common.auth.enterVerificationCode') }}
-          <span class="font-medium">{{ form.email }}</span>
-        </p>
-        <div class="space-y-1.5">
-          <label for="code" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
-            {{ $t('common.auth.verificationCode') }}
-          </label>
-          <div class="relative">
-            <Icon name="mdi:shield-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
-            <input
-              id="code"
-              v-model="form.code"
-              type="text"
-              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              required
-              minlength="8"
-              maxlength="8"
-              :placeholder="$t('common.auth.verificationCodePlaceholder')"
-            />
-          </div>
-        </div>
-        <button
-          type="submit"
-          class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
-        >
-          {{ $t('common.auth.verify') }}
-        </button>
-      </form>
-      <form v-if="internalMode === 'totp'" class="space-y-5 text-sm" @submit.prevent="verifyTotp">
-        <p class="text-gray-500 dark:text-gray-400 text-sm">
-          {{ $t('common.auth.enterTotpCode') }}
-          <span class="font-medium">{{ form.email }}</span>
-        </p>
-        <div class="space-y-1.5">
-          <label for="totpCode" class="block text-sm font-semibold text-gray-500 dark:text-gray-400">
-            {{ $t('common.auth.totpCode') }}
-          </label>
-          <div class="relative">
-            <Icon name="mdi:shield-lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
-            <input
-              id="totpCode"
-              v-model="form.totpCode"
-              type="text"
-              class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              required
-              minlength="6"
-              maxlength="6"
-              :placeholder="$t('common.auth.totpCodePlaceholder')"
-            />
-          </div>
-        </div>
-        <button
-          type="submit"
-          class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
-        >
-          {{ $t('common.auth.verifyTotp') }}
-        </button>
-      </form>
-    </div>
+      </UForm>
+    </UCard>
   </div>
 </template>
 
 <script setup lang="ts">
+import { z } from 'zod'
+import { signInSchema } from '~~/shared/utils/auth'
+
 const props = defineProps<{
   mode?: 'login' | 'register' | 'forgot' | 'reset'
 }>()
@@ -235,8 +159,34 @@ const init = {
 }
 const form = ref<typeof init>(init)
 const internalMode = shallowRef<'login' | 'register' | 'forgot' | 'reset' | 'totp'>('login')
+const authTabs = computed(() => [
+  { label: $t('common.auth.login'), value: 'login' },
+  { label: $t('common.auth.register'), value: 'register' },
+])
+const authTab = computed({
+  get: () => (internalMode.value === 'register' ? 'register' : 'login'),
+  set: (value: string) => (internalMode.value = value === 'register' ? 'register' : 'login'),
+})
 const verifyMode = shallowRef<boolean>(false)
 const showPassword = shallowRef(false)
+const submitting = shallowRef(false)
+const authSchema = computed(() =>
+  internalMode.value === 'register'
+    ? signInSchema
+        .extend({ passwordConfirm: z.string().min(4).max(124) })
+        .refine((value) => value.password === value.passwordConfirm, { path: ['passwordConfirm'] })
+    : signInSchema.pick({ email: true, password: true }),
+)
+const verificationSchema = z.object({ code: z.string().length(8) })
+const totpSchema = z.object({ totpCode: z.string().length(6) })
+const verificationDigits = computed<string[]>({
+  get: () => form.value.code.split(''),
+  set: (value) => (form.value.code = value.join('')),
+})
+const totpDigits = computed<string[]>({
+  get: () => form.value.totpCode.split(''),
+  set: (value) => (form.value.totpCode = value.join('')),
+})
 
 const isPasswordFormValid = computed(() => {
   return internalMode.value === 'register'
@@ -255,9 +205,11 @@ watch(
 )
 
 const submit = async () => {
+  if (submitting.value) return
+  submitting.value = true
   try {
     if (internalMode.value === 'register') {
-      if (!isPasswordFormValid.value) return toast.error({ message: $t('common.auth.passwordsMismatch') })
+      if (!isPasswordFormValid.value) return toast.add({ color: 'error', title: $t('common.auth.passwordsMismatch') })
       const res = await $fetch('/api/auth/register', {
         method: 'POST',
         body: {
@@ -266,9 +218,9 @@ const submit = async () => {
           password: form.value.password,
         },
       })
-      if (!res) return toast.error({ message: $t('common.auth.registerFailed') })
+      if (!res) return toast.add({ color: 'error', title: $t('common.auth.registerFailed') })
       verifyMode.value = true
-      toast.success({ message: $t('common.auth.verificationCodeSent') })
+      toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent') })
     } else {
       const totpData = await $fetch('/api/users/totp', {
         method: 'POST',
@@ -294,7 +246,7 @@ const submit = async () => {
         })
         setLocale(user.language)
         theme.mode = user.theme
-        toast.success({ message: $t('common.auth.loginSuccess') })
+        toast.add({ color: 'success', title: $t('common.auth.loginSuccess') })
         if (user.role === 'superadmin') navigateTo(localePath({ name: 'master' }))
         else if (user.role === 'admin') navigateTo(localePath({ name: 'admin' }))
         else navigateTo(localePath({ name: 'uzivatel' }))
@@ -302,12 +254,15 @@ const submit = async () => {
       }
     }
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: e.data?.message || $t('common.messages.operationFailed') })
+  } finally {
+    submitting.value = false
   }
 }
 
 const verify = async () => {
-  if (!form.value.code) return
+  if (!form.value.code || submitting.value) return
+  submitting.value = true
   try {
     await $fetch('/api/auth/verify', {
       method: 'POST',
@@ -325,15 +280,18 @@ const verify = async () => {
     })
     setLocale(user.language)
     theme.mode = user.theme
-    toast.success({ message: $t('common.auth.verifySuccess') })
+    toast.add({ color: 'success', title: $t('common.auth.verifySuccess') })
     navigateTo(localePath({ name: 'index' }))
   } catch (e: any) {
-    toast.error({ message: e.message || $t('common.auth.verifyFailed') })
+    toast.add({ color: 'error', title: e.message || $t('common.auth.verifyFailed') })
+  } finally {
+    submitting.value = false
   }
 }
 
 const verifyTotp = async () => {
-  if (!form.value.totpCode) return
+  if (!form.value.totpCode || submitting.value) return
+  submitting.value = true
   try {
     const token = form.value.totpCode.replace(/\s/g, '')
     const res = await $fetch('/api/users/verify-totp', {
@@ -360,7 +318,9 @@ const verifyTotp = async () => {
     form.value = init
     internalMode.value = 'login'
   } catch (e: any) {
-    toast.error({ message: e.message || $t('common.auth.totpFailed') })
+    toast.add({ color: 'error', title: e.message || $t('common.auth.totpFailed') })
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -384,7 +344,7 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
 
     if (result?.error) {
       const errorKey = provider === 'google' ? 'common.auth.googleSignInFailed' : 'common.auth.githubSignInFailed'
-      return toast.error({ message: $t(errorKey) })
+      return toast.add({ color: 'error', title: $t(errorKey) })
     }
 
     const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
@@ -396,16 +356,7 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
     theme.mode = user.theme
     form.value = init
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: e.data?.message || $t('common.messages.operationFailed') })
   }
 }
 </script>
-
-<style>
-@font-face {
-  font-family: 'Roboto';
-  src: url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
-  font-weight: 500;
-  font-style: normal;
-}
-</style>
