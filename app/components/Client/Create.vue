@@ -1,238 +1,257 @@
 <template>
-  <Modal v-model="open" :title="$t('master.clientCreate.title')">
-    <template #default="actions">
-      <slot v-bind="actions" />
-    </template>
+  <USlideover v-model:open="open" :title="$t('master.clientCreate.title')">
+    <slot :open="open" />
 
-    <template #content>
+    <template #body>
       <div class="flex flex-col gap-6">
         <!-- Basic Information -->
-        <div
-          class="flex flex-col gap-6 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30"
-        >
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-            <Icon name="mdi:information-outline" class="w-5 h-5 text-gray-500" />
-            {{ $t('master.clientCreate.sections.basic') }}
-          </h3>
-          <FormField
-            v-model="newClient.name"
-            :label="$t('master.clientCreate.fields.name.label')"
-            :placeholder="$t('master.clientCreate.fields.name.placeholder')"
-            @input="updateDomainFields"
-          />
-          <div class="flex flex-col gap-3">
-            <FormLabel :text="$t('master.clientCreate.fields.domainType.label')" />
-            <FormSelect
-              v-model="newClient.domainType"
-              :items="[
-                { label: $t('master.clientCreate.fields.domainType.options.SUBDOMAIN'), value: 'SUBDOMAIN' },
-                { label: $t('master.clientCreate.fields.domainType.options.CUSTOM'), value: 'CUSTOM' },
-              ]"
-              :showValue="false"
-              @update:modelValue="updateDomainFields"
-            />
+        <UCard>
+          <div class="flex flex-col gap-6">
+            <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
+              <UIcon size="20" name="i-mdi-information-outline" />
+              {{ $t('master.clientCreate.sections.basic') }}
+            </h3>
+            <UFormField :label="$t('master.clientCreate.fields.name.label')">
+              <UInput
+                v-model="newClient.name"
+                :placeholder="$t('master.clientCreate.fields.name.placeholder')"
+                @input="updateDomainFields"
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.fields.domainType.label')">
+              <USelectMenu
+                v-model="newClient.domainType"
+                valueKey="value"
+                labelKey="label"
+                :searchInput="false"
+                :items="[
+                  { label: $t('master.clientCreate.fields.domainType.options.SUBDOMAIN'), value: 'SUBDOMAIN' },
+                  { label: $t('master.clientCreate.fields.domainType.options.CUSTOM'), value: 'CUSTOM' },
+                ]"
+                @update:modelValue="updateDomainFields"
+              />
+            </UFormField>
+            <UFormField
+              v-if="newClient.domainType === 'SUBDOMAIN'"
+              :label="$t('master.clientCreate.fields.subdomain.label')"
+            >
+              <UInput
+                v-model="newClient.domain"
+                :placeholder="subdomainPlaceholder"
+                @input="normalizeDomain('domain')"
+              />
+            </UFormField>
+            <UFormField
+              v-if="newClient.domainType === 'CUSTOM'"
+              :label="$t('master.clientCreate.fields.customDomain.label')"
+            >
+              <UInput
+                v-model="newClient.customDomain"
+                :placeholder="customDomainPlaceholder"
+                @input="normalizeDomain('customDomain')"
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.fields.logo.label')">
+              <FileUploader
+                :imageUrl="newClient.logoUrl"
+                type="client-logo"
+                @upload="((newClient.logoUrl = $event.url), (newClient.optimizedUrl = $event.optimizedUrl))"
+              />
+            </UFormField>
           </div>
-          <FormField
-            v-if="newClient.domainType === 'SUBDOMAIN'"
-            v-model="newClient.domain"
-            :label="$t('master.clientCreate.fields.subdomain.label')"
-            :placeholder="subdomainPlaceholder"
-            @input="normalizeDomain('domain')"
-          />
-          <FormField
-            v-if="newClient.domainType === 'CUSTOM'"
-            v-model="newClient.customDomain"
-            :label="$t('master.clientCreate.fields.customDomain.label')"
-            :placeholder="customDomainPlaceholder"
-            @input="normalizeDomain('customDomain')"
-          />
-          <div class="flex flex-col gap-3">
-            <FormLabel :text="$t('master.clientCreate.fields.logo.label')" />
-            <FileUploader
-              :imageUrl="newClient.logoUrl"
-              type="client-logo"
-              @upload="((newClient.logoUrl = $event.url), (newClient.optimizedUrl = $event.optimizedUrl))"
-            />
-          </div>
-        </div>
+        </UCard>
 
         <!-- Targeting & SEO -->
-        <div
-          class="flex flex-col gap-6 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30"
-        >
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-            <Icon name="mdi:target" class="w-5 h-5 text-gray-500" />
-            {{ $t('master.clientCreate.sections.seo') }}
-          </h3>
-          <FormField
-            v-model="newClient.description"
-            type="textarea"
-            :label="$t('master.clientCreate.fields.description.label')"
-            :placeholder="$t('master.clientCreate.fields.description.placeholder')"
-            :maxLength="255"
-          />
-          <FormField
-            v-model="newClient.audience"
-            :label="$t('master.clientCreate.fields.audience.label')"
-            :placeholder="$t('master.clientCreate.fields.audience.placeholder')"
-          />
-          <FormField
-            v-model="newClient.focus"
-            :label="$t('master.clientCreate.fields.focus.label')"
-            :placeholder="$t('master.clientCreate.fields.focus.placeholder')"
-          />
-          <div class="flex flex-col gap-3">
-            <FormField
-              v-model="keywordsInput"
-              type="textarea"
-              :label="$t('master.clientCreate.fields.keywords.label')"
-              :placeholder="$t('master.clientCreate.fields.keywords.placeholder')"
-              @input="updateKeywords"
-            />
-            <span class="text-sm text-gray-500 dark:text-gray-400 -mt-2">{{
-              $t('master.clientCreate.fields.keywords.count', [newClient.keywords.length])
-            }}</span>
+        <UCard>
+          <div class="flex flex-col gap-6">
+            <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
+              <UIcon size="20" name="i-mdi-target" />
+              {{ $t('master.clientCreate.sections.seo') }}
+            </h3>
+            <UFormField :label="$t('master.clientCreate.fields.description.label')">
+              <UTextarea
+                v-model="newClient.description"
+                :placeholder="$t('master.clientCreate.fields.description.placeholder')"
+                :maxLength="255"
+                autoresize
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.fields.audience.label')">
+              <UInput
+                v-model="newClient.audience"
+                :placeholder="$t('master.clientCreate.fields.audience.placeholder')"
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.fields.focus.label')">
+              <UInput v-model="newClient.focus" :placeholder="$t('master.clientCreate.fields.focus.placeholder')" />
+            </UFormField>
+            <div class="flex flex-col gap-3">
+              <UFormField :label="$t('master.clientCreate.fields.keywords.label')">
+                <UTextarea
+                  v-model="keywordsInput"
+                  :placeholder="$t('master.clientCreate.fields.keywords.placeholder')"
+                  autoresize
+                  @input="updateKeywords"
+                />
+              </UFormField>
+              <span class="text-sm text-muted -mt-2">{{
+                $t('master.clientCreate.fields.keywords.count', [newClient.keywords.length])
+              }}</span>
+            </div>
           </div>
-        </div>
+        </UCard>
 
         <!-- Admin Account -->
-        <div
-          class="flex flex-col gap-6 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30"
-        >
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-            <Icon name="mdi:account-key-outline" class="w-5 h-5 text-gray-500" />
-            {{ $t('master.clientCreate.sections.admin') }}
-          </h3>
-          <FormField
-            v-model="newClient.email"
-            type="email"
-            :label="$t('master.clientCreate.fields.adminEmail.label')"
-            :placeholder="$t('master.clientCreate.fields.adminEmail.placeholder')"
-          />
-          <FormField
-            v-model="newClient.username"
-            :label="$t('master.clientCreate.fields.adminUsername.label')"
-            :placeholder="$t('master.clientCreate.fields.adminUsername.placeholder')"
-          />
-          <FormField
-            v-model="newClient.password"
-            type="password"
-            :label="$t('master.clientCreate.fields.adminPassword.label')"
-            :placeholder="$t('master.clientCreate.fields.adminPassword.placeholder')"
-          />
-        </div>
+        <UCard>
+          <div class="flex flex-col gap-6">
+            <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
+              <UIcon size="20" name="i-mdi-account-key-outline" />
+              {{ $t('master.clientCreate.sections.admin') }}
+            </h3>
+            <UFormField :label="$t('master.clientCreate.fields.adminEmail.label')">
+              <UInput
+                v-model="newClient.email"
+                type="email"
+                :placeholder="$t('master.clientCreate.fields.adminEmail.placeholder')"
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.fields.adminUsername.label')">
+              <UInput
+                v-model="newClient.username"
+                :placeholder="$t('master.clientCreate.fields.adminUsername.placeholder')"
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.fields.adminPassword.label')">
+              <UInput
+                v-model="newClient.password"
+                type="password"
+                :placeholder="$t('master.clientCreate.fields.adminPassword.placeholder')"
+              />
+            </UFormField>
+          </div>
+        </UCard>
 
         <!-- Subscription & AI Limits -->
-        <div
-          class="flex flex-col gap-6 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30"
-        >
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-            <Icon name="mdi:credit-card-outline" class="w-5 h-5 text-gray-500" />
-            {{ $t('master.clientCreate.sections.subscription') }}
-          </h3>
-          <div class="flex flex-col gap-3">
-            <FormLabel :text="$t('master.clientCreate.fields.plan.label')" />
-            <FormSelect
-              v-model="newClient.plan"
-              :items="[
-                { label: 'Basic', value: 'BASIC' },
-                { label: 'Pro', value: 'PRO' },
-                { label: 'Premium', value: 'PREMIUM' },
-                { label: 'Custom', value: 'CUSTOM' },
-              ]"
-              :showValue="false"
-            />
+        <UCard>
+          <div class="flex flex-col gap-6">
+            <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
+              <UIcon size="20" name="i-mdi-credit-card-outline" />
+              {{ $t('master.clientCreate.sections.subscription') }}
+            </h3>
+            <UFormField :label="$t('master.clientCreate.fields.plan.label')">
+              <USelectMenu
+                v-model="newClient.plan"
+                valueKey="value"
+                labelKey="label"
+                :searchInput="false"
+                :items="[
+                  { label: 'Basic', value: 'BASIC' },
+                  { label: 'Pro', value: 'PRO' },
+                  { label: 'Premium', value: 'PREMIUM' },
+                  { label: 'Custom', value: 'CUSTOM' },
+                ]"
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.fields.generationFrequency.label')">
+              <USelectMenu
+                v-model="newClient.generationFrequency"
+                valueKey="value"
+                labelKey="label"
+                :searchInput="false"
+                :items="[
+                  { label: $t('master.clientEdit.fields.generationFrequency.options.NONE'), value: 'NONE' },
+                  { label: $t('master.clientEdit.fields.generationFrequency.options.DAILY'), value: 'DAILY' },
+                  { label: $t('master.clientEdit.fields.generationFrequency.options.WEEKLY'), value: 'WEEKLY' },
+                ]"
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.fields.tokenLimit.label')">
+              <UInputNumber
+                v-model="newClient.tokenLimit"
+                :placeholder="$t('master.clientCreate.fields.tokenLimit.placeholder')"
+                :min="0"
+              />
+            </UFormField>
           </div>
-          <div class="flex flex-col gap-3">
-            <FormLabel :text="$t('master.clientCreate.fields.generationFrequency.label')" />
-            <FormSelect
-              v-model="newClient.generationFrequency"
-              :items="[
-                { label: $t('master.clientEdit.fields.generationFrequency.options.NONE'), value: 'NONE' },
-                { label: $t('master.clientEdit.fields.generationFrequency.options.DAILY'), value: 'DAILY' },
-                { label: $t('master.clientEdit.fields.generationFrequency.options.WEEKLY'), value: 'WEEKLY' },
-              ]"
-              :showValue="false"
-            />
-          </div>
-          <FormField
-            v-model.number="newClient.tokenLimit"
-            type="number"
-            :label="$t('master.clientCreate.fields.tokenLimit.label')"
-            :placeholder="$t('master.clientCreate.fields.tokenLimit.placeholder')"
-            min="0"
-          />
-        </div>
+        </UCard>
 
         <!-- AI Settings -->
-        <div
-          v-if="newClient.tokenLimit > 0"
-          class="flex flex-col gap-6 p-6 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
-        >
-          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
-            <Icon name="mdi:robot" class="w-5 h-5" />
-            {{ $t('master.clientCreate.aiSettings.title') }}
-          </h3>
-          <FormField
-            v-model="newClient.aiUser.name"
-            :label="$t('master.clientCreate.aiSettings.name.label')"
-            :placeholder="$t('master.clientCreate.aiSettings.name.placeholder')"
-            inputClass="bg-white dark:bg-gray-800"
-          />
-          <div class="flex flex-col gap-3">
-            <FormLabel :text="$t('master.clientCreate.aiSettings.avatar.label')" />
-            <FileUploader
-              :imageUrl="newClient.aiUser.avatarUrl"
-              type="user-avatar"
-              :isAiUser="true"
-              @upload="newClient.aiUser.avatarUrl = $event.url"
-            />
+        <UCard v-if="newClient.tokenLimit > 0">
+          <div class="flex flex-col gap-6">
+            <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
+              <UIcon size="20" name="i-mdi-robot" />
+              {{ $t('master.clientCreate.aiSettings.title') }}
+            </h3>
+            <UFormField :label="$t('master.clientCreate.aiSettings.name.label')">
+              <UInput
+                v-model="newClient.aiUser.name"
+                :placeholder="$t('master.clientCreate.aiSettings.name.placeholder')"
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.aiSettings.avatar.label')">
+              <FileUploader
+                :imageUrl="newClient.aiUser.avatarUrl"
+                type="user-avatar"
+                :isAiUser="true"
+                @upload="newClient.aiUser.avatarUrl = $event.url"
+              />
+            </UFormField>
+            <UFormField :label="$t('master.clientCreate.aiSettings.bio.label')">
+              <UTextarea
+                v-model="newClient.aiUser.bio"
+                :placeholder="$t('master.clientCreate.aiSettings.bio.placeholder')"
+                :maxLength="300"
+                autoresize
+              />
+            </UFormField>
           </div>
-          <FormField
-            v-model="newClient.aiUser.bio"
-            type="textarea"
-            :label="$t('master.clientCreate.aiSettings.bio.label')"
-            :placeholder="$t('master.clientCreate.aiSettings.bio.placeholder')"
-            :maxLength="300"
-            inputClass="bg-white dark:bg-gray-800"
-          />
-        </div>
+        </UCard>
       </div>
     </template>
 
     <template #footer="{ close }">
-      <div class="flex gap-4 justify-end mt-6 flex-shrink-0">
-        <Button variant="neutral" size="lg" @click="close">{{ $t('master.clientCreate.actions.close') }}</Button>
-        <Button size="lg" :disabled="!isFormValid || creating" @click="createClient">{{
+      <div class="flex gap-4 justify-end shrink-0">
+        <UButton color="neutral" variant="soft" size="lg" @click="close">{{
+          $t('master.clientCreate.actions.close')
+        }}</UButton>
+        <UButton size="lg" :loading="creating" :disabled="!isFormValid || creating" @click="createClient">{{
           $t('master.clientCreate.actions.submit')
-        }}</Button>
+        }}</UButton>
       </div>
     </template>
-  </Modal>
-  <ModalMini ref="passwordDialog">
-    <template #content>
+  </USlideover>
+  <UModal
+    v-model:open="passwordDialogOpen"
+    :title="t('master.clientCreate.messages.clientCreatedTitle')"
+    :dismissible="false"
+  >
+    <template #body>
       <div class="space-y-2">
         <p>{{ t('master.clientCreate.messages.clientCreatedHtml1') }}</p>
         <p>{{ t('master.clientCreate.messages.clientCreatedHtml2') }}</p>
-        <div class="flex gap-2 items-center">
-          <input
-            :value="passwordDialogValue"
-            readonly
-            class="flex-1 p-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-900"
-          />
-          <Button
-            size="sm"
-            variant="primary"
-            icon="mdi:content-copy"
-            :aria="t('master.clientCreate.messages.copyPassword')"
-            :title="t('master.clientCreate.messages.copyPassword')"
-            @click="copyPassword"
-          />
-        </div>
-        <p class="text-sm text-gray-500">{{ t('master.clientCreate.messages.clientCreatedHtml3') }}</p>
+        <UFormField :label="t('master.clientCreate.messages.copyPassword')">
+          <UFieldGroup class="w-full">
+            <UInput :modelValue="passwordDialogValue" readonly class="flex-1" />
+            <UButton
+              size="sm"
+              color="primary"
+              variant="solid"
+              icon="i-mdi-content-copy"
+              :aria-label="t('master.clientCreate.messages.copyPassword')"
+              :title="t('master.clientCreate.messages.copyPassword')"
+              @click="copyPassword"
+            />
+          </UFieldGroup>
+        </UFormField>
+        <p class="text-sm text-muted">{{ t('master.clientCreate.messages.clientCreatedHtml3') }}</p>
       </div>
     </template>
-  </ModalMini>
+    <template #footer>
+      <div class="flex w-full justify-end">
+        <UButton color="success" :label="t('master.clientCreate.messages.ok')" @click="passwordDialogOpen = false" />
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -240,13 +259,13 @@ const { invalidateClients } = useCacheInvalidation()
 const { t } = useI18n()
 const toast = useToast()
 
-const open = defineModel<boolean>()
-const passwordDialog = useTemplateRef<ModalMiniRef>('passwordDialog')
+const open = defineModel<boolean>({ default: false })
+const passwordDialogOpen = shallowRef(false)
 const passwordDialogValue = shallowRef('')
 
 const copyPassword = () => {
   navigator.clipboard.writeText(passwordDialogValue.value)
-  toast.success({ message: t('master.clientCreate.messages.passwordCopied') })
+  toast.add({ color: 'success', title: t('master.clientCreate.messages.passwordCopied') })
 }
 const keywordsInput = shallowRef<string>('')
 const initClient = () => ({
@@ -335,7 +354,7 @@ const createClient = async () => {
       body: {
         ...newClient.value,
         keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined,
-        logoUrl: newClient.value.optimizedUrl || newClient.value.logoUrl,
+        logoUrl: newClient.value.logoUrl,
         aiUser: newClient.value.tokenLimit > 0 ? newClient.value.aiUser : undefined,
         domain: newClient.value.domainType === 'SUBDOMAIN' ? newClient.value.domain : newClient.value.customDomain,
         customDomain: undefined,
@@ -345,23 +364,16 @@ const createClient = async () => {
       response.user.password && response.user.password !== 'user submitted' ? response.user.password : null
     if (generatedPassword) {
       passwordDialogValue.value = generatedPassword
-      await passwordDialog.value?.ask({
-        title: t('master.clientCreate.messages.clientCreatedTitle'),
-        icon: 'mdi:check-circle-outline',
-        confirmText: t('master.clientCreate.messages.ok'),
-        variant: 'success',
-      })
+      passwordDialogOpen.value = true
     } else {
-      toast.success({ message: t('master.clientCreate.messages.success') })
+      toast.add({ color: 'success', title: t('master.clientCreate.messages.success') })
     }
     await invalidateClients()
     open.value = false
     Object.assign(newClient.value, initClient())
     keywordsInput.value = ''
   } catch (e: any) {
-    toast.error({
-      message: e.data?.message || t('master.clientCreate.messages.createFailed'),
-    })
+    toast.add({ color: 'error', title: e.data?.message || t('master.clientCreate.messages.createFailed') })
   } finally {
     creating.value = false
   }

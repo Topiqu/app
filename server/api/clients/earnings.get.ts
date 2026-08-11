@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { summarizeEarnings } from '~~/server/utils/adRevenue'
 
 const MAX_RANGE_MONTHS = 24
@@ -52,7 +53,14 @@ export default defineEventHandler(async (event) => {
 
   const sites = new Map<
     string,
-    { clientSiteId: string; name: string; currency: string; grossCents: number; clientCents: number; platformCents: number }
+    {
+      clientSiteId: string
+      name: string
+      currency: string
+      grossCents: number
+      clientCents: number
+      platformCents: number
+    }
   >()
 
   for (const row of earnings) {

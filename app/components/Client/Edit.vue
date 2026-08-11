@@ -1,102 +1,102 @@
 <template>
-  <Modal v-model="open" :title="$t('master.clientEdit.title')">
-    <template #default="actions">
-      <slot v-bind="actions" />
-    </template>
+  <USlideover v-model:open="open" :title="$t('master.clientEdit.title')">
+    <slot :open="open" />
 
-    <template #content>
-      <div class="flex-1 overflow-y-auto pr-4">
+    <template #body>
+      <div>
         <div class="flex flex-col gap-6">
-          <FormField
-            v-model="editedClient.name"
-            :label="$t('master.clientEdit.fields.name.label')"
-            :placeholder="$t('master.clientEdit.fields.name.placeholder')"
-          />
-          <FormField
-            v-model="editedClient.domain"
-            :label="$t('master.clientEdit.fields.domain.label')"
-            :placeholder="$t('master.clientEdit.fields.domain.placeholder')"
-          />
-          <FormField
-            v-model="editedClient.description"
-            type="textarea"
-            :label="$t('master.clientEdit.fields.description.label')"
-            :placeholder="$t('master.clientEdit.fields.description.placeholder')"
-            :maxLength="255"
-          />
-          <div class="flex flex-col gap-3">
-            <FormLabel :text="$t('master.clientEdit.fields.logo.label')" />
+          <UFormField :label="$t('master.clientEdit.fields.name.label')">
+            <UInput v-model="editedClient.name" :placeholder="$t('master.clientEdit.fields.name.placeholder')" />
+          </UFormField>
+          <UFormField :label="$t('master.clientEdit.fields.domain.label')">
+            <UInput v-model="editedClient.domain" :placeholder="$t('master.clientEdit.fields.domain.placeholder')" />
+          </UFormField>
+          <UFormField :label="$t('master.clientEdit.fields.description.label')">
+            <UTextarea
+              v-model="editedClient.description"
+              :placeholder="$t('master.clientEdit.fields.description.placeholder')"
+              :maxLength="255"
+              autoresize
+            />
+          </UFormField>
+          <UFormField :label="$t('master.clientEdit.fields.logo.label')">
             <FileUploader
               :imageUrl="editedClient.logoUrl"
               type="client-logo"
               @upload="((editedClient.logoUrl = $event.url), (editedClient.optimizedUrl = $event.optimizedUrl))"
             />
-          </div>
-          <FormField
-            v-model="editedClient.audience"
-            :label="$t('master.clientEdit.fields.audience.label')"
-            :placeholder="$t('master.clientEdit.fields.audience.placeholder')"
-          />
-          <FormField
-            v-model="editedClient.focus"
-            :label="$t('master.clientEdit.fields.focus.label')"
-            :placeholder="$t('master.clientEdit.fields.focus.placeholder')"
-          />
-          <div class="flex flex-col gap-3">
-            <FormField
-              v-model="keywordsInput"
-              type="textarea"
-              :label="$t('master.clientEdit.fields.keywords.label')"
-              :placeholder="$t('master.clientEdit.fields.keywords.placeholder')"
-              @input="updateKeywords"
+          </UFormField>
+          <UFormField :label="$t('master.clientEdit.fields.audience.label')">
+            <UInput
+              v-model="editedClient.audience"
+              :placeholder="$t('master.clientEdit.fields.audience.placeholder')"
             />
-            <span class="text-sm text-gray-500 dark:text-gray-400 -mt-2">{{
+          </UFormField>
+          <UFormField :label="$t('master.clientEdit.fields.focus.label')">
+            <UInput v-model="editedClient.focus" :placeholder="$t('master.clientEdit.fields.focus.placeholder')" />
+          </UFormField>
+          <div class="flex flex-col gap-3">
+            <UFormField :label="$t('master.clientEdit.fields.keywords.label')">
+              <UTextarea
+                v-model="keywordsInput"
+                :placeholder="$t('master.clientEdit.fields.keywords.placeholder')"
+                autoresize
+                @input="updateKeywords"
+              />
+            </UFormField>
+            <span class="text-sm text-muted -mt-2">{{
               $t('master.clientEdit.fields.keywords.count', [editedClient.keywords.length])
             }}</span>
           </div>
-          <div class="flex flex-col gap-3">
-            <FormLabel :text="$t('master.clientEdit.fields.plan.label')" />
-            <FormSelect
+          <UFormField :label="$t('master.clientEdit.fields.plan.label')">
+            <USelectMenu
               v-model="editedClient.plan"
+              valueKey="value"
+              labelKey="label"
+              :searchInput="false"
               :items="[
                 { label: 'Basic', value: 'BASIC' },
                 { label: 'Pro', value: 'PRO' },
                 { label: 'Premium', value: 'PREMIUM' },
                 { label: 'Custom', value: 'CUSTOM' },
               ]"
-              :showValue="false"
             />
-          </div>
-          <div class="flex flex-col gap-3">
-            <FormLabel :text="$t('master.clientEdit.fields.generationFrequency.label')" />
-            <FormSelect
+          </UFormField>
+          <UFormField :label="$t('master.clientEdit.fields.generationFrequency.label')">
+            <USelectMenu
               v-model="editedClient.generationFrequency"
+              valueKey="value"
+              labelKey="label"
+              :searchInput="false"
               :items="[
                 { label: $t('master.clientEdit.fields.generationFrequency.options.NONE'), value: 'NONE' },
                 { label: $t('master.clientEdit.fields.generationFrequency.options.DAILY'), value: 'DAILY' },
                 { label: $t('master.clientEdit.fields.generationFrequency.options.WEEKLY'), value: 'WEEKLY' },
               ]"
-              :showValue="false"
             />
-          </div>
-          <FormField
-            v-model.number="editedClient.tokenLimit"
-            type="number"
-            :label="$t('master.clientEdit.fields.tokenLimit.label')"
-            :placeholder="$t('master.clientEdit.fields.tokenLimit.placeholder')"
-            min="0"
-          />
+          </UFormField>
+          <UFormField :label="$t('master.clientEdit.fields.tokenLimit.label')">
+            <UInputNumber
+              v-model="editedClient.tokenLimit"
+              :placeholder="$t('master.clientEdit.fields.tokenLimit.placeholder')"
+              :min="0"
+            />
+          </UFormField>
         </div>
       </div>
     </template>
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end flex-shrink-0">
-        <Button variant="neutral" size="lg" @click="close">{{ $t('master.clientEdit.actions.close') }}</Button>
-        <Button size="lg" :disabled="!isFormValid" @click="saveEdit">{{ $t('master.clientEdit.actions.save') }}</Button>
+        <UButton color="neutral" variant="soft" size="lg" @click="close">{{
+          $t('master.clientEdit.actions.close')
+        }}</UButton>
+        <UButton size="lg" :disabled="!isFormValid" @click="saveEdit">{{
+          $t('master.clientEdit.actions.save')
+        }}</UButton>
       </div>
     </template>
-  </Modal>
+  </USlideover>
 </template>
 
 <script setup lang="ts">
@@ -104,7 +104,7 @@ import type { ClientSite } from '@zenstackhq/runtime/models'
 
 const props = defineProps<{ client: ClientSite }>()
 
-const open = defineModel<boolean>()
+const open = defineModel<boolean>({ default: false })
 
 const emit = defineEmits(['saved'])
 
@@ -152,21 +152,22 @@ const saveEdit = async () => {
       method: 'PATCH',
       body: {
         ...editedClient.value,
-        logoUrl: editedClient.value.optimizedUrl || editedClient.value.logoUrl,
+        logoUrl: editedClient.value.logoUrl,
         keywords: editedClient.value.keywords.length ? editedClient.value.keywords : undefined,
       },
     })
 
     if (response?.clientSite) {
-      toast.success({ message: t('master.clientEdit.messages.success') })
+      toast.add({ color: 'success', title: t('master.clientEdit.messages.success') })
       emit('saved')
       open.value = false
     } else {
       throw new Error(t('master.clientEdit.messages.invalidResponse'))
     }
   } catch (error: any) {
-    toast.error({
-      message: error?.data?.message || error.data?.message || t('master.clientEdit.messages.updateFailed'),
+    toast.add({
+      color: 'error',
+      title: error?.data?.message || error.data?.message || t('master.clientEdit.messages.updateFailed'),
     })
   }
 }
