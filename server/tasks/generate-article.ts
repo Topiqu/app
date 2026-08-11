@@ -35,7 +35,7 @@ const generateUniqueSlug = async (ctx: any, title: string, clientSiteId: string)
 const MIN_TOKENS = 7000
 
 /** Why each scheduled site was left out of this run — `not_due` is the only benign answer. */
-const skippedSites = async (pickedIds: string[], now: Date) => {
+const skippedSites = async (pickedIds: string[]) => {
   const scheduled = await prisma.clientSite.findMany({
     where: { generationFrequency: { in: ['DAILY', 'WEEKLY'] }, id: { notIn: pickedIds } },
     select: {
@@ -70,6 +70,8 @@ const processClient = async (client: any) => {
     keywords: client.keywords,
     language: defaultLang,
     recentExcerpts: client.articles.map((a: any) => a.excerpt).filter(Boolean),
+    // Newest first — the picker's rule is about the last few, so the order carries meaning.
+    recentFormats: client.articles.map((a: any) => a.format).filter(Boolean),
     suggestion: client.communityInsight?.suggestion,
   }
 
@@ -96,7 +98,8 @@ const processClient = async (client: any) => {
   const topicBlock = topic
     ? `## TOPIC
   Topic: ${topic.topic}
-  Angle: ${topic.angle}`
+  Angle: ${topic.angle}
+  Format: ${topic.format}`
     : `## TOPIC RULES
   - Do NOT create an article that is semantically similar to previous ones.
   - Similarity = same topic, argument, or thesis, not wording.
@@ -134,6 +137,7 @@ const processClient = async (client: any) => {
     // Never `undefined` here: that would research the prompt, and the prompt is a template.
     ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt, {
       research: topic ? researchRequest(topic) : false,
+      format: topic?.format,
     }))
   } catch (err) {
     await logAction({
@@ -194,9 +198,12 @@ const processClient = async (client: any) => {
         slug,
         userId: client.users[0]?.id || 'system',
         content: sanitizeHtml(stampHeadingIds(generated.content)),
-        answer: generated.answer,
+        // Empty means the format carries no answer — `applyFormat` blanks it. Stored as NULL so
+        // the column reads the same as a human article that never had one.
+        answer: generated.answer || null,
         keyTakeaways: generated.keyTakeaways,
         faq: generated.faq,
+        format: topic?.format ?? null,
         clientSiteId,
         status,
         aiInvolvement: 'FULL',
@@ -354,7 +361,7 @@ export default defineMonitoredTask({
         generationFrequency: true,
         communityInsight: true,
         lastGeneratedAt: true,
-        articles: { select: { excerpt: true }, orderBy: { createdAt: 'desc' }, take: 30 },
+        articles: { select: { excerpt: true, format: true }, orderBy: { createdAt: 'desc' }, take: 30 },
         users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
       },
       where: {
@@ -377,10 +384,7 @@ export default defineMonitoredTask({
 
     // The `where` above drops a client without leaving a trace, so a site that stopped generating
     // looks exactly like a site with nothing due. Name the reason instead of guessing it later.
-    const skipped = await skippedSites(
-      clients.map((client) => client.id),
-      now,
-    )
+    const skipped = await skippedSites(clients.map((client) => client.id))
 
     const BATCH_SIZE = 5
 

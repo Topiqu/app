@@ -353,6 +353,10 @@ model Article {
   keyTakeaways     String[]
   /// `[{ question, answer }]` — rendered as a section and emitted as FAQPage.
   faq              Json?
+  /// Which shape the generator picked (`server/utils/ai/formats.ts`). Kept as a plain string,
+  /// not an enum: the catalogue is tuned by editing that file, and the cron reads the column
+  /// back only to avoid repeating a shape. NULL for anything a human wrote.
+  format           String?
   prompt           String?
 
   @@unique([slug, clientSiteId])

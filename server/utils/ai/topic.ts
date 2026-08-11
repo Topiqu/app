@@ -1,5 +1,7 @@
 import { generateObject } from 'ai'
 
+import { ARTICLE_FORMAT_NAMES, formatMenu, type ArticleFormat } from './formats'
+
 export const topicSchema = z.object({
   topic: z
     .string()
@@ -11,6 +13,11 @@ export const topicSchema = z.object({
     .min(10)
     .max(300)
     .describe('What makes this different from the past articles listed — the new question, contrast or perspective.'),
+  format: z
+    .enum(ARTICLE_FORMAT_NAMES as [ArticleFormat, ...ArticleFormat[]])
+    .describe(
+      'The shape this topic wants. Pick from the format list — it decides length and which elements the article may use, so a topic forced into the wrong shape reads as filler.',
+    ),
   needsResearch: z
     .boolean()
     .describe(
@@ -30,6 +37,7 @@ export type TopicInput = {
   keywords?: string[] | null
   language: string
   recentExcerpts: string[]
+  recentFormats?: string[]
   suggestion?: string | null
 }
 
@@ -47,6 +55,13 @@ ${input.recentExcerpts.length ? input.recentExcerpts.map((excerpt) => `- ${excer
 
 Similarity means the same topic, argument or thesis — not the same wording. A rephrasing of
 anything above is a failure. Your topic must open a question the list leaves unanswered.
+
+## FORMATS
+${formatMenu()}
+
+Last few articles were, most recent first: ${input.recentFormats?.length ? input.recentFormats.join(', ') : 'nothing yet'}.
+Do not pick a format from the three most recent unless the topic genuinely allows nothing else.
+A feed where every piece has the same shape reads as generated even when each piece is fine.
 
 ## COMMUNITY SIGNAL
 ${input.suggestion || 'none'}

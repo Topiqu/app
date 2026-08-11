@@ -98,6 +98,10 @@ model Article extends Base, Ownable {
     keyTakeaways     String[]
     /// `[{ question, answer }]` — rendered as a section and emitted as FAQPage.
     faq              Json?
+    /// Which shape the generator picked (`server/utils/ai/formats.ts`). Kept as a plain string,
+    /// not an enum: the catalogue is tuned by editing that file, and the cron reads the column
+    /// back only to avoid repeating a shape. NULL for anything a human wrote.
+    format           String?           @length(0, 32)
     prompt           String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)

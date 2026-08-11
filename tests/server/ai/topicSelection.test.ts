@@ -46,6 +46,18 @@ describe('buildTopicPrompt', () => {
   it('does not ask the model to write the article', () => {
     expect(buildTopicPrompt(INPUT)).not.toMatch(/perex|headings|valid JSON/i)
   })
+
+  it('offers the format catalogue and the shapes already used', () => {
+    const prompt = buildTopicPrompt({ ...INPUT, recentFormats: ['guide', 'guide', 'analysis'] })
+
+    expect(prompt).toContain('- opinion:')
+    expect(prompt).toContain('guide, guide, analysis')
+    expect(prompt).toContain('three most recent')
+  })
+
+  it('says so rather than listing nothing on a blog with no history', () => {
+    expect(buildTopicPrompt(INPUT)).toContain('nothing yet')
+  })
 })
 
 describe('researchRequest', () => {

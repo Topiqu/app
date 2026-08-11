@@ -7,6 +7,7 @@ import type { ArticleImage } from '../images/types'
 
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { allowsGeneratedFallback, findCoverImage, findStockImage } from '../images/chain'
+import { applyFormat, ARTICLE_FORMATS, formatRules, type ArticleFormat } from './formats'
 
 const imageInstruction = z.object({
   type: z
@@ -23,17 +24,18 @@ export const articleSchema = z.object({
     .min(500)
     .max(20000)
     .describe(
-      'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, ul/ol/li and table/thead/tbody/tr/th/td. Never pad between blocks with <br> or empty paragraphs — the stylesheet owns the spacing. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
+      'The article body at the length the format asks for, with h2, h3, strong, blockquote, underline, italic and ul/ol/li. Never pad between blocks with <br> or empty paragraphs — the stylesheet owns the spacing. Include image slots like [[IMAGE1]] where they should appear.',
     ),
   answer: z
     .string()
-    .min(40)
     .max(600)
-    .describe('40-60 word direct answer to the question the title poses, in the article language'),
+    .describe(
+      '40-60 word direct answer to the question the title poses, in the article language. Empty string when the format carries no answer.',
+    ),
   keyTakeaways: z
     .array(z.string().min(10).max(200))
     .max(5)
-    .describe('3-5 standalone factual takeaways, or empty when the piece does not summarise'),
+    .describe('3-5 standalone factual takeaways, or empty when the format does not summarise'),
   faq: z
     .array(
       z.object({
@@ -42,7 +44,7 @@ export const articleSchema = z.object({
       }),
     )
     .max(5)
-    .describe('2-5 FAQ entries, or empty when the topic raises no recurring questions'),
+    .describe('2-5 FAQ entries, or empty when the format raises no recurring questions'),
   coverImage: imageInstruction.describe('Cover image instruction'),
   images: z
     .array(
@@ -121,7 +123,7 @@ export type ResearchOption = { query: string } | false | undefined
 const buildArticleConfig = async (
   clientSiteId: string,
   prompt: string,
-  { research: researchOption }: { research?: ResearchOption } = {},
+  { research: researchOption, format }: { research?: ResearchOption; format?: ArticleFormat } = {},
 ) => {
   const {
     tokenRemaining,
@@ -190,6 +192,12 @@ const buildArticleConfig = async (
     ? `\nCommunity Insights to consider:\n- Audience mood summary: ${(communityInsight as any).summary}\n- Frequently discussed points: ${((communityInsight as any).topPoints || []).join(', ')}\nEnsure the article subtly addresses or acknowledges these current community feelings and discussion points where relevant.`
     : ''
 
+  // No format is the manual editor flow, where the author's prompt is the brief — it keeps the
+  // full menu, and only the cron's topic picker spends a format.
+  const spec = format ? ARTICLE_FORMATS[format] : null
+  const pollsAllowed = spec ? spec.poll : true
+  const tablesAllowed = spec ? spec.table : true
+
   const instructions = `
       You are a professional content writer focusing on ${focus || 'common topics'}.
       Write a detailed, well-structured article based on the user prompt aiming on ${audience || 'wide audience'}.
@@ -203,7 +211,7 @@ const buildArticleConfig = async (
         "answer": "40-60 words answering the title's question outright",
         "keyTakeaways": ["standalone factual sentence", "..."] or [],
         "faq": [{"question": "...", "answer": "..."}] or [],
-        "content": "article 500–1000 words with h2, h3, strong, blockquote, underline, italic, lists and tables for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear. If relevant, include poll slots like [[POLL1]], [[POLL2]] to engage the audience.",
+        "content": "the article body for v-html on frontend, with h2, h3, strong, blockquote, underline, italic and lists. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.",
         "coverImage": {"type": "stock", "query": "search keyword OR generation prompt"},
         "images": [{"type": "photo", "query": "keyword for IMAGE1", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
@@ -213,12 +221,7 @@ const buildArticleConfig = async (
       The title must be engaging.
       Start the body at h2 — the page already renders the title as its h1.
 
-      Extraction fields (answer, keyTakeaways, faq):
-      These are quoted verbatim by search and answer engines, so each must stand on its own without the article around it.
-      - "answer": always required. Lead with the answer itself, no throat-clearing ("In this article we will look at…"). Name the subject explicitly rather than saying "it" or "this".
-      - "keyTakeaways": 3-5 facts, not teasers — "Prices rose 12% in 2025", not "We look at how prices moved". Return [] for a piece that does not summarise into facts, such as an opinion column or a narrative.
-      - "faq": ONLY when the topic genuinely has recurring reader questions, such as a guide, a comparison or anything procedural. Return [] for news, opinion, interviews and personal pieces. Never invent questions to fill the array — a padded FAQ reads as generated and is worse than none.
-      All three are in the same language as the article, and every claim in them must also be supported by the body.
+      ${formatRules(format)}
 
       Naturally incorporate keywords if provided.
       ${keywords && `Keywords: ${JSON.stringify(keywords)}`}.
@@ -232,12 +235,21 @@ const buildArticleConfig = async (
       Each content image also needs a "caption": one factual sentence, in the same language as the article, saying what is in the picture — for 'photo' name who or what it is and when. Never write "Illustrative image", "AI generated", "Source:" or any credit into the caption; the system adds those itself.
 
       If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.
-      If the article would benefit from interactive audience engagement, include 0-2 poll slots in appropriate places in the content using [[POLL1]], [[POLL2]], etc. Provide corresponding questions and options (2-5 options per poll) in the polls array. Return an empty polls array if none are relevant.
-      
-      Tables:
+      ${
+        pollsAllowed
+          ? 'A poll is optional and the default is none. Add one only where it opens a question the article deliberately leaves open — at most 2 slots as [[POLL1]], [[POLL2]], with the question and 2-5 options per poll in the polls array. Otherwise return an empty polls array and write no slot.'
+          : 'Return an empty polls array and never write a [[POLL]] slot into the content.'
+      }
+
+      ${
+        tablesAllowed
+          ? `Tables:
       When the article compares options or presents figures (prices, budgets, specs, timelines), render them as a real HTML table, never as tab- or pipe-separated text.
       Use proper markup: <table><thead><tr><th>…</th></tr></thead><tbody><tr><td>…</td></tr></tbody></table>.
       Keep tables to a maximum of 4 columns so they stay readable on mobile, and never put an image, a poll slot or a nested table inside a cell.
+      A table earns its place by holding figures the reader compares across rows. Never build one out of prose.`
+          : 'Never render a <table>. Whatever figures this format needs belong in the prose.'
+      }
 
       Twitter/X Embeds:
       If you find a highly relevant post on the X network (Twitter) to illustrate the article, DO NOT just return the URL. Instead, return it wrapped in this exact HTML format:
@@ -365,10 +377,14 @@ export const finalizeArticle = async (
   return { ...object, articleImageUrl, articleImageCredit }
 }
 
-export const generateArticle = async (clientSiteId: string, prompt: string, opts?: { research?: ResearchOption }) => {
+export const generateArticle = async (
+  clientSiteId: string,
+  prompt: string,
+  opts?: { research?: ResearchOption; format?: ArticleFormat },
+) => {
   const { config, language, researchTokens } = await buildArticleConfig(clientSiteId, prompt, opts)
   const { object, usage } = await generateObject(config)
-  const finalized = await finalizeArticle(object, language)
+  const finalized = await finalizeArticle(applyFormat(object, opts?.format), language)
 
   return { ...finalized, usage, researchTokens }
 }
