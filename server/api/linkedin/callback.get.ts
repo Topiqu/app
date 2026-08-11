@@ -1,5 +1,5 @@
-import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
 import { verifyOAuthState } from '../../utils/linkedin/oauthState'
+import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

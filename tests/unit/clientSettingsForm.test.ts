@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest'
 import equal from 'fast-deep-equal'
+import { describe, expect, it } from 'vitest'
+
+import type { ClientSite } from '../../app/utils/buildClientSettingsForm'
 
 import { buildClientSettingsForm } from '../../app/utils/buildClientSettingsForm'
-import type { ClientSite } from '../../app/utils/buildClientSettingsForm'
 
 const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
   ({

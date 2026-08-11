@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
 import { createGenerator } from 'unocss'
+import { describe, expect, it } from 'vitest'
 
 import unoConfig from '../../uno.config'
 import { ARTICLE_PROSE_CLASS, ARTICLE_TABLE_CLASS, EDITOR_TABLE_CLASS } from '../../shared/utils/articleProse'

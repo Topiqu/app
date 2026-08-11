@@ -1,7 +1,6 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-
 import { describe, expect, it } from 'vitest'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 
 const ROOT = resolve(__dirname, '../..')
 const LOCALES = ['en', 'cs'] as const

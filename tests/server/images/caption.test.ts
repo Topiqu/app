@@ -59,10 +59,13 @@ describe('buildImageHtml', () => {
     expect(html).not.toContain('<figure')
   })
 
+  // Only the AI label is wrapped: `data-ai-disclosure` is what `Parsed.vue` strips and
+  // `[slug].vue` hides when a tenant turns disclosure off, so the span must hold the label and
+  // its separator and nothing else — the caption itself has to survive the strip.
   it('labels a generated picture as AI and never prints a credit for it', () => {
     const html = buildImageHtml(image({ kind: 'ai' }), 'Hardware budoucnosti', LABELS)
 
-    expect(html).toContain('Ilustrační obrázek (AI): Hardware budoucnosti')
+    expect(html).toContain('<span data-ai-disclosure>Ilustrační obrázek (AI): </span>Hardware budoucnosti')
     expect(html).not.toContain('foto:')
   })
 
