@@ -1,35 +1,28 @@
 <template>
   <div class="flex flex-col gap-6">
-    <FormField
+    <UFormField v-if="plan !== 'BASIC'" :label="$t('common.preferences.focus.label')">
+      <UInput v-model="focus" :placeholder="$t('common.preferences.focus.placeholder')" />
+    </UFormField>
+
+    <UFormField v-if="plan !== 'BASIC'" :label="$t('common.preferences.audience.label')">
+      <UInput v-model="audience" :placeholder="$t('common.preferences.audience.placeholder')" />
+    </UFormField>
+
+    <UFormField v-if="plan !== 'BASIC'" :label="$t('common.preferences.language.label')">
+      <USelectMenu v-model="language" valueKey="value" labelKey="label" :searchInput="false" :items="languageItems" />
+    </UFormField>
+
+    <UFormField
       v-if="plan !== 'BASIC'"
-      v-model="focus"
-      :label="$t('common.preferences.focus.label')"
-      :placeholder="$t('common.preferences.focus.placeholder')"
-    />
-
-    <FormField
-      v-if="plan !== 'BASIC'"
-      v-model="audience"
-      :label="$t('common.preferences.audience.label')"
-      :placeholder="$t('common.preferences.audience.placeholder')"
-    />
-
-    <div v-if="plan !== 'BASIC'" class="flex flex-col gap-2">
-      <FormLabel :text="$t('common.preferences.language.label')" />
-      <FormSelect v-model="language" :items="languageItems" />
-    </div>
-
-    <div v-if="plan !== 'BASIC'" class="flex flex-col gap-2">
-      <FormLabel :text="$t('common.preferences.keywords.label')" />
-      <FormField
+      :label="$t('common.preferences.keywords.label')"
+      :description="$t('common.preferences.keywords.count', [keywords.length])"
+    >
+      <UInput
         v-model="keywordsInput"
         :placeholder="$t('common.preferences.keywords.placeholder')"
         @input="updateKeywords"
       />
-      <span class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        {{ $t('common.preferences.keywords.count', [keywords.length]) }}
-      </span>
-    </div>
+    </UFormField>
   </div>
 </template>
 
@@ -62,7 +55,7 @@ const audience = computed({
 })
 
 const language = computed({
-  get: () => props.language,
+  get: () => props.language as 'cs' | 'en',
   set: (v) => emit('update:language', v),
 })
 

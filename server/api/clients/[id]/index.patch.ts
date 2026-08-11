@@ -52,13 +52,10 @@ export default defineEventHandler(async (event) => {
 
   const isSuperadmin = user.role === 'superadmin'
 
-  const UpdateSchema = models.ClientSiteScalarSchema.pick(
-    fieldMask(TENANT_EDITABLE_CLIENT_SITE_FIELDS),
-  ).partial()
-
-  const PrivilegedSchema = models.ClientSiteScalarSchema.pick(
-    fieldMask(PRIVILEGED_CLIENT_SITE_FIELDS),
-  ).partial()
+  const editableFields = isSuperadmin
+    ? [...TENANT_EDITABLE_CLIENT_SITE_FIELDS, ...PRIVILEGED_CLIENT_SITE_FIELDS]
+    : TENANT_EDITABLE_CLIENT_SITE_FIELDS
+  const UpdateSchema = models.ClientSiteScalarSchema.pick(fieldMask(editableFields)).partial()
 
   const parsed = UpdateSchema.safeParse(scalarBody)
   if (!parsed.success) {
@@ -67,12 +64,7 @@ export default defineEventHandler(async (event) => {
   const data: any = { ...parsed.data }
 
   if (isSuperadmin) {
-    const privileged = PrivilegedSchema.safeParse(scalarBody)
-    if (!privileged.success) {
-      throw createError({ statusCode: 400, message: privileged.error.message })
-    }
-    Object.assign(data, privileged.data)
-    if (privileged.data.tokenLimit !== undefined) data.tokenRemaining = privileged.data.tokenLimit
+    if (data.tokenLimit !== undefined) data.tokenRemaining = data.tokenLimit
   }
 
   if (scalarBody.description !== undefined)
@@ -86,7 +78,7 @@ export default defineEventHandler(async (event) => {
   const aiUserPayload = aiUser
   const currentAiUser = clientSite.users[0]
   const hasAiPayload = aiUserPayload && Object.values(aiUserPayload).some((v) => v !== '')
-  const requestedTokenLimit = isSuperadmin ? scalarBody.tokenLimit : undefined
+  const requestedTokenLimit = isSuperadmin ? data.tokenLimit : undefined
   const effectiveTokenLimit = requestedTokenLimit ?? clientSite.tokenLimit ?? 0
 
   if (hasAiPayload && effectiveTokenLimit > 0) {

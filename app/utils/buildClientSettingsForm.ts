@@ -1,8 +1,10 @@
 import type { ThemeSchema, LanguageSchema } from '~~/shared/zod/enums'
 import type { SocialPlatform, ClientSite as _ClientSite } from '@prisma/client'
 
-export interface ClientSite
-  extends Omit<_ClientSite, 'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'lastTokenRefilled'> {
+export interface ClientSite extends Omit<
+  _ClientSite,
+  'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'lastTokenRefilled'
+> {
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT' | null
   nextBillingAt: string | null
   lastGeneratedAt: string | null
@@ -28,7 +30,10 @@ export interface ClientSettingsForm {
   theme: (typeof ThemeSchema.options)[number]
   keywords: string[]
   description: string
+  tagline: string
   logoUrl: string
+  faviconUrl: string
+  typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM'
   optimizedUrl: string
   socials: { platform: SocialPlatform; url: string }[]
   aiUser: { username: string; bio: string; avatarUrl: string; optimizedAvatarUrl: string }
@@ -54,7 +59,10 @@ const emptyForm = (): ClientSettingsForm => ({
   theme: 'blue',
   keywords: [],
   description: '',
+  tagline: '',
   logoUrl: '',
+  faviconUrl: '',
+  typographyPreset: 'MODERN',
   optimizedUrl: '',
   socials: [],
   aiUser: { username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' },
@@ -81,7 +89,11 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     (client as { linkedinCompanies?: unknown[] }).linkedinCompanies?.[0] ??
     (client as { linkedinCompany?: unknown }).linkedinCompany
   const li = linkedin as
-    | { mode?: 'HitL' | 'FullAuto'; type?: 'pages' | 'personal'; brandProfile?: ClientSettingsForm['linkedinBrandProfile'] }
+    | {
+        mode?: 'HitL' | 'FullAuto'
+        type?: 'pages' | 'personal'
+        brandProfile?: ClientSettingsForm['linkedinBrandProfile']
+      }
     | undefined
 
   return {
@@ -91,7 +103,10 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     language: client.language,
     theme: client.theme,
     description: client.description ?? '',
+    tagline: client.tagline ?? '',
     logoUrl: client.logoUrl ?? '',
+    faviconUrl: client.faviconUrl ?? '',
+    typographyPreset: client.typographyPreset ?? 'MODERN',
     keywords: client.keywords ?? [],
     socials: client.socials ?? [],
     apiKey: client.apiKey ?? '',

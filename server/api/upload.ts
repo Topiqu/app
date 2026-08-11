@@ -11,7 +11,10 @@ const safeExt = (name?: string) => {
 
 const sanitizeFilename = (raw: string) => {
   const base = raw.split(/[/\\]/).pop() || ''
-  const stem = base.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 80)
+  const stem = base
+    .replace(/\.[^/.]+$/, '')
+    .replace(/[^a-zA-Z0-9._-]/g, '')
+    .slice(0, 80)
   return `${stem || `content-${Date.now()}`}.${safeExt(base)}`
 }
 
@@ -27,12 +30,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'No file uploaded' })
   }
 
-  const file = files[0]
+  const file = files.find((part) => Boolean(part.filename))
   if (!file?.type?.startsWith('image/')) {
     throw createError({ statusCode: 400, statusMessage: 'File must be an image' })
   }
   if (file.data.length > MAX_UPLOAD_BYTES) {
     throw createError({ statusCode: 413, statusMessage: 'File too large' })
+  }
+  const uploadType = files.find((part) => part.name === 'type')?.data.toString()
+  if (uploadType === 'client-favicon') {
+    const reason = await validateFaviconUpload(file.data, file.type || '')
+    if (reason === 'type') throw createError({ statusCode: 400, statusMessage: 'Favicon must be PNG, JPEG, or WebP' })
+    if (reason === 'bytes') throw createError({ statusCode: 413, statusMessage: 'Favicon must be at most 512 KB' })
+    if (reason === 'square') throw createError({ statusCode: 400, statusMessage: 'Favicon must be square' })
+    if (reason === 'dimensions')
+      throw createError({ statusCode: 400, statusMessage: 'Favicon dimensions must be between 32 and 512 px' })
   }
 
   const credentials = {

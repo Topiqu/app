@@ -25,7 +25,7 @@ describe('client site field partition', () => {
   })
 
   it('leaves presentation and content settings tenant-editable', () => {
-    for (const field of ['name', 'theme', 'description', 'gtagId']) {
+    for (const field of ['name', 'theme', 'description', 'tagline', 'faviconUrl', 'typographyPreset', 'gtagId']) {
       expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).toContain(field)
     }
   })
@@ -45,6 +45,13 @@ describe('client site field partition', () => {
 describe('public client site read projection', () => {
   const model = Prisma.dmmf.datamodel.models.find((m) => m.name === 'ClientSite')!
   const scalars = model.fields.filter((f) => f.kind !== 'object').map((f) => f.name)
+
+  it('publishes the complete brand kit', () => {
+    for (const field of ['tagline', 'faviconUrl', 'typographyPreset']) {
+      expect(PUBLIC_CLIENT_SITE_FIELDS).toContain(field)
+      expect(publicClientSiteSelect).toHaveProperty(field, true)
+    }
+  })
 
   it('never exposes credentials, billing identifiers or quota internals', () => {
     for (const field of [

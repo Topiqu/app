@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest'
 import equal from 'fast-deep-equal'
+import { describe, expect, it } from 'vitest'
+
+import type { ClientSite } from '../../app/utils/buildClientSettingsForm'
 
 import { buildClientSettingsForm } from '../../app/utils/buildClientSettingsForm'
-import type { ClientSite } from '../../app/utils/buildClientSettingsForm'
 
 const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
   ({
@@ -12,7 +13,10 @@ const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
     theme: 'green',
     keywords: ['a', 'b'],
     description: 'desc',
+    tagline: 'Independent analysis',
     logoUrl: 'https://cdn/logo.png',
+    faviconUrl: 'https://cdn/favicon.png',
+    typographyPreset: 'EDITORIAL',
     socials: [{ platform: 'X', url: 'https://x.com/acme' }],
     apiKey: 'sk_test',
     aiUser: { username: 'bot', bio: 'bio', avatarUrl: 'https://cdn/av.png' },
@@ -53,7 +57,10 @@ describe('buildClientSettingsForm', () => {
       theme: 'green',
       keywords: ['a', 'b'],
       description: 'desc',
+      tagline: 'Independent analysis',
       logoUrl: 'https://cdn/logo.png',
+      faviconUrl: 'https://cdn/favicon.png',
+      typographyPreset: 'EDITORIAL',
       apiKey: 'sk_test',
       aiToneOfVoice: 'friendly',
       aiControversyLevel: 'low',
@@ -65,7 +72,12 @@ describe('buildClientSettingsForm', () => {
       allowAds: true,
       allowGtag: true,
     })
-    expect(form.aiUser).toEqual({ username: 'bot', bio: 'bio', avatarUrl: 'https://cdn/av.png', optimizedAvatarUrl: '' })
+    expect(form.aiUser).toEqual({
+      username: 'bot',
+      bio: 'bio',
+      avatarUrl: 'https://cdn/av.png',
+      optimizedAvatarUrl: '',
+    })
     expect(form.optimizedUrl).toBe('')
   })
 
@@ -82,7 +94,11 @@ describe('buildClientSettingsForm', () => {
 
   it('falls back to the legacy linkedinCompany object when no array is present', () => {
     const client = baseClient({
-      linkedinCompany: { mode: 'FullAuto', type: 'pages', brandProfile: { tone: 't', audience: 'a', doList: [], dontList: [] } },
+      linkedinCompany: {
+        mode: 'FullAuto',
+        type: 'pages',
+        brandProfile: { tone: 't', audience: 'a', doList: [], dontList: [] },
+      },
     } as Partial<ClientSite>)
     const form = buildClientSettingsForm(client)
     expect(form.linkedinMode).toBe('FullAuto')

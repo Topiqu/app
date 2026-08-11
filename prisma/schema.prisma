@@ -4,8 +4,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -121,6 +121,12 @@ enum SocialPlatform {
   LINKEDIN
   YOUTUBE
   OTHER
+}
+
+enum PublicationTypography {
+  MODERN
+  EDITORIAL
+  SYSTEM
 }
 
 enum ReactionType {
@@ -453,55 +459,58 @@ model Social {
 }
 
 model ClientSite {
-  id                   String               @id() @default(uuid())
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime?            @updatedAt()
+  id                   String                @id() @default(uuid())
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime?             @updatedAt()
   deletedAt            DateTime?
-  name                 String               @unique()
-  domain               String               @unique()
-  domainVerified       Boolean              @default(false)
-  plan                 ClientPlan           @default(BASIC)
+  name                 String                @unique()
+  domain               String                @unique()
+  domainVerified       Boolean               @default(false)
+  plan                 ClientPlan            @default(BASIC)
   focus                String?
   description          String?
+  tagline              String?
   logoUrl              String?
-  generationFrequency  GenerationFrequency  @default(NONE)
-  tokenLimit           Int?                 @default(0)
-  tokenRemaining       Int?                 @default(0)
-  totalUsage           Int?                 @default(0)
-  autoRelease          Boolean              @default(false)
+  faviconUrl           String?
+  typographyPreset     PublicationTypography @default(MODERN)
+  generationFrequency  GenerationFrequency   @default(NONE)
+  tokenLimit           Int?                  @default(0)
+  tokenRemaining       Int?                  @default(0)
+  totalUsage           Int?                  @default(0)
+  autoRelease          Boolean               @default(false)
   keywords             Json?
   audience             String?
   lastGeneratedAt      DateTime?
-  humanHourlyRate      Int                  @default(1400)
-  humanWordsPerHour    Int                  @default(400)
+  humanHourlyRate      Int                   @default(1400)
+  humanWordsPerHour    Int                   @default(400)
   gtagId               String?
   apiKey               String?
   gamNetworkCode       String?
-  allowAds             Boolean              @default(false)
+  allowAds             Boolean               @default(false)
   allowGtag            Boolean?
-  allowShapes          Boolean              @default(false)
+  allowShapes          Boolean               @default(false)
   aiToneOfVoice        String?
   aiControversyLevel   String?
   communityInsight     Json?
   insightUpdatedAt     DateTime?
-  billingPlan          BillingPlans         @default(MONTHLY)
+  billingPlan          BillingPlans          @default(MONTHLY)
   firstPaidAt          DateTime?
   nextBillingAt        DateTime?
   lastInvoicedAt       DateTime?
-  monthlyPayment       Int?                 @default(0)
-  annualPayment        Int?                 @default(0)
+  monthlyPayment       Int?                  @default(0)
+  annualPayment        Int?                  @default(0)
   stripeCustomerId     String?
   stripeSubscriptionId String?
   stripePriceId        String?
-  enableAi             Boolean              @default(false)
-  enableCron           Boolean              @default(false)
-  enableSentiment      Boolean              @default(false)
-  currency             String?              @default("USD")
-  lastPaidAt           DateTime?            @default(now())
-  lastTokenRefilled    DateTime?            @default(now())
-  language             Language             @default(en)
-  theme                Theme                @default(blue)
-  translationMode      TranslationMode      @default(OFF)
+  enableAi             Boolean               @default(false)
+  enableCron           Boolean               @default(false)
+  enableSentiment      Boolean               @default(false)
+  currency             String?               @default("USD")
+  lastPaidAt           DateTime?             @default(now())
+  lastTokenRefilled    DateTime?             @default(now())
+  language             Language              @default(en)
+  theme                Theme                 @default(blue)
+  translationMode      TranslationMode       @default(OFF)
   translationLanguages Language[]
   users                User[]
   tags                 Tag[]
@@ -511,7 +520,7 @@ model ClientSite {
   emojis               Emoji[]
   userBans             UserBan[]
   socials              Social[]
-  logs                 Log[]                @relation("LogToClientSite")
+  logs                 Log[]                 @relation("LogToClientSite")
   features             ClientFeature[]
   linkedinCompanies    LinkedinCompany[]
   articleTranslations  ArticleTranslation[]
