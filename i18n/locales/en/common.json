@@ -397,7 +397,12 @@
       "annually": "year",
       "companyLogo": {
         "label": "Company Logo",
-        "description": "PNG, JPEG, WebP, or SVG, min. 512x512px, max. 2 MB"
+        "description": "PNG, JPEG, or WebP, up to 10 MB. The logo is saved on a transparent wide canvas suited to the header and homepage.",
+        "edit": "Replace and edit logo",
+        "remove": "Remove logo",
+        "editorTitle": "Position logo",
+        "dragHint": "Drag to position the logo and use the slider to zoom in or out. The checkerboard represents transparency.",
+        "save": "Use logo"
       },
       "companyDescription": {
         "label": "Company Description",

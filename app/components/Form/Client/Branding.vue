@@ -4,11 +4,8 @@
       <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
         {{ $t('common.preferences.companyLogo.label') }}
       </span>
-      <FileUploader
-        :imageUrl="logoUrl"
-        type="client-logo"
-        :maxWidth="3840"
-        :maxHeight="2160"
+      <FormClientLogoUploader
+        :logoUrl
         @upload="emit('update:logoUrl', { url: $event.url, optimizedUrl: $event.optimizedUrl })"
       />
       <span class="text-xs text-gray-500 dark:text-gray-400">

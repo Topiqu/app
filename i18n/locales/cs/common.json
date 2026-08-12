@@ -398,7 +398,12 @@
       "annually": "rok",
       "companyLogo": {
         "label": "Logo blogu",
-        "description": "PNG, JPEG, WebP nebo SVG, min. 512x512px, max. 2 MB"
+        "description": "PNG, JPEG nebo WebP, max. 10 MB. Logo se uloží na průhledném širokém plátně vhodném pro hlavičku i domovskou stránku.",
+        "edit": "Nahradit a upravit logo",
+        "remove": "Odstranit logo",
+        "editorTitle": "Umístění loga",
+        "dragHint": "Tažením logo umístěte, posuvníkem jej přibližte nebo oddalte. Šachovnice představuje průhledné pozadí.",
+        "save": "Použít logo"
       },
       "companyDescription": {
         "label": "Popis blogu",
