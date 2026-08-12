@@ -16,7 +16,10 @@
         height="80"
         fit="inside"
       />
-      <div class="home-hero__heading">
+      <h1 v-if="clientSite?.logoUrl" class="sr-only">
+        {{ clientSite.name }}
+      </h1>
+      <div v-else class="home-hero__heading">
         <h1 class="home-hero__title">
           {{ clientSite?.name ?? $t('common.labels.title') }}
         </h1>
