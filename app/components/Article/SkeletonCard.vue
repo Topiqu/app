@@ -215,7 +215,7 @@ const plainExcerpt = computed(() => {
 .editorial-card {
   --card-ink: #17211b;
   --card-muted: #68736b;
-  --card-accent: #d95238;
+  --card-accent: #b83b26;
   --card-line: rgb(23 33 27 / 12%);
   display: flex;
   flex-direction: column;

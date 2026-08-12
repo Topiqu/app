@@ -6,6 +6,8 @@
     "thankYou": "Thank you for your feedback!",
     "recorded": "Your opinion helps us improve the content.",
     "change": "Change your mind",
-    "thanks_short": "Thanks!"
+    "thanks_short": "Thanks!",
+    "helpful": "Yes, this article was helpful",
+    "notHelpful": "No, this article was not helpful"
   }
 }

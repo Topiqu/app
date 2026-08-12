@@ -7,7 +7,7 @@
       <div class="flex justify-start shrink-0">
         <NuxtLink
           to="/admin"
-          class="group inline-flex items-center gap-2 px-2 py-1.5 -ml-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-all"
+          class="group inline-flex min-h-11 items-center gap-2 px-2 py-1.5 -ml-2 rounded-lg text-gray-600 hover:text-blue-700 hover:bg-blue-50 dark:text-gray-300 dark:hover:text-blue-300 dark:hover:bg-blue-900/20 transition-all"
           :aria-label="$t('common.actions.backToList')"
         >
           <Icon name="mdi:arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1" />
@@ -43,6 +43,7 @@
               : 'border-gray-200 bg-transparent text-gray-400 hover:border-red-200 hover:bg-red-50 hover:text-red-500 dark:border-gray-700 dark:text-gray-500 dark:hover:border-red-900/50 dark:hover:bg-red-900/10 dark:hover:text-red-400',
           ]"
           :title="$t('common.actions.like')"
+          :aria-label="$t('common.actions.like')"
           @click="$emit('like')"
         >
           <Icon

@@ -139,7 +139,12 @@
       </div>
 
       <div class="flex items-center gap-2 sm:gap-3">
-        <LazyEmojiPopover :commentId="comment.id" :articleId="comment.articleId!" @reaction="handleEmojiReaction" />
+        <LazyEmojiPopover
+          v-if="session?.user"
+          :commentId="comment.id"
+          :articleId="comment.articleId!"
+          @reaction="handleEmojiReaction"
+        />
         <div
           v-if="state.isLikedByAuthor"
           v-tippy="{
@@ -235,6 +240,7 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
+const { data: session } = useAuth()
 
 const showDeleteModal = shallowRef(false)
 const showBanModal = shallowRef(false)

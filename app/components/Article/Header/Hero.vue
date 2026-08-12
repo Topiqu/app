@@ -30,7 +30,7 @@
           >
             {{ author.username }}
           </NuxtLink>
-          <span class="italic text-gray-400 text-sm">• {{ $t('articles.articleCard.author') }}</span>
+          <span class="italic text-gray-600 dark:text-gray-300 text-sm">• {{ $t('articles.articleCard.author') }}</span>
         </div>
         <div class="flex items-center gap-2 mt-1">
           <span

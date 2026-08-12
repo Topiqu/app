@@ -439,18 +439,9 @@ onMounted(() => {
   border-radius: 0.75rem;
   max-height: 600px;
   cursor: pointer !important;
-  opacity: 0;
-  animation: fade-in-image 0.6s ease-out forwards;
 }
-@keyframes fade-in-image {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.prose small {
+  color: #4b5563 !important;
 }
 ::-webkit-scrollbar {
   width: 8px;
