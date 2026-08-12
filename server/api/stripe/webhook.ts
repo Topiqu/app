@@ -1,6 +1,6 @@
+import type Stripe from 'stripe'
 import type { ClientPlan } from '@prisma/client'
 
-import Stripe from 'stripe'
 import { extractSubscriptionId, isSubscribablePlan, planFromPriceId } from '~~/server/utils/stripeWebhook'
 
 export default defineEventHandler(async (event) => {
@@ -21,8 +21,7 @@ export default defineEventHandler(async (event) => {
     if (!clientSiteId) return { received: true }
 
     if (session.mode === 'subscription') {
-      const subscriptionId =
-        typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
+      const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
       const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
       const subscription = subscriptionId ? await stripe.subscriptions.retrieve(subscriptionId) : null
       const priceId = subscription?.items.data[0]?.price.id ?? null
@@ -35,7 +34,9 @@ export default defineEventHandler(async (event) => {
       await prisma.clientSite.update({
         where: { id: clientSiteId },
         data: {
-          ...(promote ? { plan: derivedPlan as ClientPlan, firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
+          ...(promote
+            ? { plan: derivedPlan as ClientPlan, firstPaidAt: { set: new Date() }, lastPaidAt: new Date() }
+            : {}),
           stripeCustomerId: customerId ?? undefined,
           stripeSubscriptionId: subscriptionId ?? undefined,
           stripePriceId: priceId ?? undefined,

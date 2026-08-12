@@ -9,7 +9,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }
 
-  const { plan, interval: bodyInterval, clientSiteId: bodyClientSiteId, origin } = await readBody<{
+  const {
+    plan,
+    interval: bodyInterval,
+    clientSiteId: bodyClientSiteId,
+    origin,
+  } = await readBody<{
     plan: 'PRO' | 'PREMIUM'
     interval?: 'month' | 'year'
     clientSiteId?: string

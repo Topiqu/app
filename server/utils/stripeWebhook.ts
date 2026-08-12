@@ -1,7 +1,6 @@
 import type Stripe from 'stripe'
 
-export const isSubscribablePlan = (value: unknown): value is 'PRO' | 'PREMIUM' =>
-  value === 'PRO' || value === 'PREMIUM'
+export const isSubscribablePlan = (value: unknown): value is 'PRO' | 'PREMIUM' => value === 'PRO' || value === 'PREMIUM'
 
 // Reverse-maps a Stripe price ID back to a plan. Needed because the Customer
 // Portal changes the subscription's price without touching our metadata.plan,

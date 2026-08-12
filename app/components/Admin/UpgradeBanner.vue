@@ -1,43 +1,33 @@
 <template>
-  <div
+  <UAlert
     v-if="target"
-    class="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-pink-500/10 border border-purple-200 dark:border-purple-500/20 rounded-xl p-5 flex flex-col lg:flex-row lg:items-center gap-5 justify-between"
+    color="primary"
+    variant="soft"
+    icon="i-mdi-rocket-launch"
+    :title="$t(`admin.upgrade.${target.i18nKey}.title`)"
+    :description="$t(`admin.upgrade.${target.i18nKey}.description`)"
   >
-    <div class="flex items-start gap-3 flex-1">
-      <Icon name="mdi:rocket-launch" class="w-6 h-6 text-purple-500 shrink-0 mt-1" />
-      <div class="space-y-2">
-        <h4 class="font-bold text-purple-800 dark:text-purple-300 text-sm">
-          {{ $t(`admin.upgrade.${target.i18nKey}.title`) }}
-        </h4>
-        <p class="text-sm text-purple-700 dark:text-purple-200/80">
-          {{ $t(`admin.upgrade.${target.i18nKey}.description`) }}
-        </p>
-        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-1">
-          <li
-            v-for="feature in features"
-            :key="feature"
-            class="flex items-start gap-2 text-xs text-purple-700 dark:text-purple-200/80"
-          >
-            <Icon name="mdi:check-circle" class="w-3.5 h-3.5 text-purple-500 mt-0.5 shrink-0" />
-            <span>{{ feature }}</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="shrink-0">
-      <Button
-        variant="primary"
+    <template #description>
+      <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-1">
+        <li v-for="feature in features" :key="feature" class="flex items-start gap-2 text-xs">
+          <UIcon size="14" name="i-mdi-check-circle" class="mt-0.5 shrink-0" />
+          <span>{{ feature }}</span>
+        </li>
+      </ul>
+    </template>
+    <template #actions>
+      <UButton
+        color="primary"
+        variant="solid"
+        icon="i-mdi-star-four-points"
+        :loading="loading"
         :disabled="loading"
-        class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white whitespace-nowrap shadow-md"
         @click="upgrade"
       >
-        <Icon v-if="!loading" name="mdi:star-four-points" class="w-4 h-4 mr-2" />
-        <Icon v-else name="mdi:loading" class="w-4 h-4 mr-2 animate-spin" />
         {{ loading ? $t('admin.upgrade.loading') : $t('admin.upgrade.cta', { plan: target.plan }) }}
-      </Button>
-    </div>
-  </div>
+      </UButton>
+    </template>
+  </UAlert>
 </template>
 
 <script setup lang="ts">
@@ -80,7 +70,7 @@ const upgrade = async () => {
     })
     if (url) window.location.href = url
   } catch {
-    toast.error({ message: t('admin.upgrade.error') })
+    toast.add({ color: 'error', title: t('admin.upgrade.error') })
     loading.value = false
   }
 }

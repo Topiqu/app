@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { getTokenPack, TOKEN_PACKS } from '../../shared/utils/tokenPacks'
 import { planFromPriceId } from '../../server/utils/stripeWebhook'
+import { getTokenPack, TOKEN_PACKS } from '../../shared/utils/tokenPacks'
 
 describe('getTokenPack', () => {
   it('returns the pack for a known id with server-side price + tokens', () => {

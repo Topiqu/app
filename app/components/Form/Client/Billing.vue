@@ -1,178 +1,153 @@
 <template>
   <div class="space-y-4">
-    <div
-      class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
-    >
-      <div class="text-xs uppercase text-neutral-600 dark:text-neutral-300 mb-2">
+    <UCard>
+      <div class="mb-2 text-xs uppercase text-muted">
         {{ $t('common.preferences.currentPlan') }}
       </div>
       <div class="flex items-center gap-2">
-        <Icon name="mdi:check-circle" class="size-7 text-emerald-500" />
+        <UIcon size="28" name="i-mdi-check-circle" class="text-success" />
         <div>
-          <div class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+          <div class="text-2xl font-bold text-highlighted">
             {{ client?.plan }}
           </div>
-          <div class="text-sm text-neutral-500 dark:text-neutral-400">
+          <div class="text-sm text-muted">
             {{ billingPlanText }}
           </div>
         </div>
       </div>
-      <div class="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
+      <div class="mt-3 text-sm text-muted">
         {{ validityText }}
       </div>
-    </div>
+    </UCard>
 
-    <div
-      v-if="client?.billingPlan !== 'PERMANENT' && client?.nextBillingAt"
-      class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
-    >
-      <div class="flex items-center gap-2 text-xs uppercase text-neutral-600 dark:text-neutral-300 mb-2">
-        <Icon name="mdi:calendar-clock" class="size-4" />
+    <UCard v-if="client?.billingPlan !== 'PERMANENT' && client?.nextBillingAt">
+      <div class="mb-2 flex items-center gap-2 text-xs uppercase text-muted">
+        <UIcon size="16" name="i-mdi-calendar-clock" />
         {{ $t('common.preferences.nextPayment') }}
       </div>
-      <div class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+      <div class="text-2xl font-bold text-highlighted">
         {{ nextBillingDate }}
       </div>
-      <div class="text-sm text-neutral-500 dark:text-neutral-400">
+      <div class="text-sm text-muted">
         {{ nextBillingAmountText }}
       </div>
-    </div>
+    </UCard>
 
-    <div
-      v-if="client?.billingPlan === 'ANNUAL'"
-      class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
-    >
-      <div class="flex items-center gap-2 text-xs uppercase text-emerald-600 dark:text-emerald-400 mb-2">
-        <Icon name="mdi:currency-usd-off" class="size-4" />
+    <UCard v-if="client?.billingPlan === 'ANNUAL'">
+      <div class="mb-2 flex items-center gap-2 text-xs uppercase text-success">
+        <UIcon size="16" name="i-mdi-currency-usd-off" />
         {{ $t('common.preferences.savingsTitle') }}
       </div>
-      <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+      <div class="text-2xl font-bold text-success">
         {{ formatSavings }}
       </div>
-    </div>
+    </UCard>
 
     <div class="grid gap-4 sm:grid-cols-2">
-      <div
-        class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
-      >
-        <div class="text-neutral-600 dark:text-neutral-300 text-xs uppercase tracking-wider mb-1">
+      <UCard>
+        <div class="mb-1 text-xs uppercase tracking-wider text-muted">
           {{ $t('common.preferences.monthlyTitle') }}
         </div>
-        <div class="text-4xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+        <div class="text-4xl font-bold tracking-tight text-highlighted">
           {{ formatPrice('monthly') }}
         </div>
-        <div class="text-neutral-500 dark:text-neutral-400 text-xs mt-1">/{{ $t('common.preferences.monthly') }}</div>
-      </div>
+        <div class="mt-1 text-xs text-muted">/{{ $t('common.preferences.monthly') }}</div>
+      </UCard>
 
-      <div
-        class="relative rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
-      >
-        <div class="text-neutral-600 dark:text-neutral-300 text-xs uppercase tracking-wider mb-1">
+      <UCard class="relative">
+        <div class="mb-1 text-xs uppercase tracking-wider text-muted">
           {{ $t('common.preferences.annuallyTitle') }}
         </div>
-        <div class="text-4xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+        <div class="text-4xl font-bold tracking-tight text-highlighted">
           {{ formatPrice('annual') }}
         </div>
-        <div class="text-neutral-500 dark:text-neutral-400 text-xs mt-1">/{{ $t('common.preferences.annually') }}</div>
+        <div class="mt-1 text-xs text-muted">/{{ $t('common.preferences.annually') }}</div>
         <div v-if="client?.billingPlan === 'ANNUAL'" class="absolute -top-3 -right-3">
-          <div
-            class="flex items-center gap-1 bg-emerald-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg"
-          >
-            <Icon name="mdi:tag-outline" class="size-4" />
-            -20 %
+          <UBadge color="success" variant="solid" icon="i-mdi-tag-outline">-20 %</UBadge>
+        </div>
+      </UCard>
+    </div>
+
+    <UCard v-if="client && client.billingPlan !== 'PERMANENT'">
+      <div class="space-y-5">
+        <div v-if="(client.tokenLimit ?? 0) > 0" class="space-y-2">
+          <div class="flex items-center justify-between text-sm">
+            <span class="font-medium text-highlighted">
+              {{ $t('common.preferences.billing.tokenBalance') }}
+            </span>
+            <span class="tabular-nums text-muted">
+              {{ formatNumber(client.tokenRemaining ?? 0) }} / {{ formatNumber(client.tokenLimit ?? 0) }}
+            </span>
+          </div>
+          <UProgress color="success" :modelValue="tokenPercent" :max="100" />
+        </div>
+
+        <div class="space-y-2">
+          <span class="text-sm font-medium text-highlighted">
+            {{ $t('common.preferences.billing.buyTokens') }}
+          </span>
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="pack in tokenPacks"
+              :key="pack.id"
+              color="neutral"
+              variant="soft"
+              size="sm"
+              icon="i-mdi-lightning-bolt"
+              :loading="pendingAction === `pack-${pack.id}`"
+              @click="buyTokens(pack.id)"
+            >
+              {{ (pack.tokens / 1000).toLocaleString() }}k · ${{ pack.priceUsd }}
+            </UButton>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div
-      v-if="client && client.billingPlan !== 'PERMANENT'"
-      class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm space-y-5"
-    >
-      <div v-if="(client.tokenLimit ?? 0) > 0" class="space-y-2">
-        <div class="flex items-center justify-between text-sm">
-          <span class="font-medium text-neutral-700 dark:text-neutral-200">
-            {{ $t('common.preferences.billing.tokenBalance') }}
-          </span>
-          <span class="tabular-nums text-neutral-500 dark:text-neutral-400">
-            {{ (client.tokenRemaining ?? 0).toLocaleString() }} / {{ (client.tokenLimit ?? 0).toLocaleString() }}
-          </span>
-        </div>
-        <div class="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
-          <div class="h-full rounded-full bg-emerald-500 transition-all" :style="{ width: `${tokenPercent}%` }" />
-        </div>
-      </div>
-
-      <div class="space-y-2">
-        <span class="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-          {{ $t('common.preferences.billing.buyTokens') }}
-        </span>
-        <div class="flex flex-wrap gap-2">
-          <Button
-            v-for="pack in tokenPacks"
-            :key="pack.id"
-            variant="neutral"
-            size="sm"
-            :loading="pendingAction === `pack-${pack.id}`"
-            @click="buyTokens(pack.id)"
+        <UFieldGroup v-if="upgradeTarget">
+          <UButton
+            :color="checkoutInterval === 'month' ? 'primary' : 'neutral'"
+            :variant="checkoutInterval === 'month' ? 'solid' : 'ghost'"
+            type="button"
+            :aria-pressed="checkoutInterval === 'month'"
+            @click="checkoutInterval = 'month'"
           >
-            <Icon name="mdi:lightning-bolt" class="mr-1.5 size-4 text-amber-500" />
-            {{ (pack.tokens / 1000).toLocaleString() }}k · ${{ pack.priceUsd }}
-          </Button>
+            {{ $t('common.preferences.billing.intervalMonthly') }}
+          </UButton>
+          <UButton
+            :color="checkoutInterval === 'year' ? 'primary' : 'neutral'"
+            :variant="checkoutInterval === 'year' ? 'solid' : 'ghost'"
+            type="button"
+            :aria-pressed="checkoutInterval === 'year'"
+            @click="checkoutInterval = 'year'"
+          >
+            {{ $t('common.preferences.billing.intervalAnnual') }}
+            <UBadge color="success" variant="soft" size="sm">-20 %</UBadge>
+          </UButton>
+        </UFieldGroup>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-1">
+          <UButton
+            v-if="hasSubscription"
+            color="neutral"
+            variant="soft"
+            icon="i-mdi-receipt-text-outline"
+            class="flex-1"
+            :loading="pendingAction === 'portal'"
+            @click="openPortal"
+          >
+            {{ $t('common.preferences.billing.manage') }}
+          </UButton>
+          <UButton
+            v-if="upgradeTarget"
+            icon="i-mdi-arrow-up-circle-outline"
+            class="flex-1"
+            :loading="pendingAction === 'upgrade'"
+            @click="upgrade"
+          >
+            {{ $t('common.preferences.billing.upgrade', { plan: upgradeTarget }) }}
+          </UButton>
         </div>
       </div>
-
-      <div v-if="upgradeTarget" class="flex items-center gap-1 self-start rounded-full bg-neutral-100 dark:bg-neutral-800 p-1">
-        <button
-          type="button"
-          class="rounded-full px-3 py-1 text-xs font-medium transition"
-          :class="
-            checkoutInterval === 'month'
-              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-              : 'text-neutral-500 dark:text-neutral-400'
-          "
-          :aria-pressed="checkoutInterval === 'month'"
-          @click="checkoutInterval = 'month'"
-        >
-          {{ $t('common.preferences.billing.intervalMonthly') }}
-        </button>
-        <button
-          type="button"
-          class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition"
-          :class="
-            checkoutInterval === 'year'
-              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-              : 'text-neutral-500 dark:text-neutral-400'
-          "
-          :aria-pressed="checkoutInterval === 'year'"
-          @click="checkoutInterval = 'year'"
-        >
-          {{ $t('common.preferences.billing.intervalAnnual') }}
-          <span
-            class="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400"
-          >
-            -20 %
-          </span>
-        </button>
-      </div>
-
-      <div class="flex flex-col sm:flex-row gap-3 pt-1">
-        <Button
-          v-if="hasSubscription"
-          variant="neutral"
-          class="flex-1"
-          :loading="pendingAction === 'portal'"
-          @click="openPortal"
-        >
-          <Icon name="mdi:receipt-text-outline" class="mr-1.5 size-4" />
-          {{ $t('common.preferences.billing.manage') }}
-        </Button>
-        <Button v-if="upgradeTarget" class="flex-1" :loading="pendingAction === 'upgrade'" @click="upgrade">
-          <Icon name="mdi:arrow-up-circle-outline" class="mr-1.5 size-4" />
-          {{ $t('common.preferences.billing.upgrade', { plan: upgradeTarget }) }}
-        </Button>
-      </div>
-    </div>
+    </UCard>
   </div>
 </template>
 
@@ -185,6 +160,8 @@ const { client, rate } = defineProps<{ client: ClientSite | null; rate: number }
 
 const toast = useToast()
 const { formatTime } = useTime()
+const { locale } = useI18n()
+const formatNumber = (value: number) => new Intl.NumberFormat(locale.value === 'cs' ? 'cs-CZ' : 'en-US').format(value)
 
 const tokenPacks = TOKEN_PACK_LIST
 const pendingAction = ref<string | null>(null)
@@ -217,7 +194,7 @@ const redirectTo = async (url: string, action: string, body: Record<string, unkn
     if (res.url) window.location.href = res.url
     else throw new Error('no url')
   } catch {
-    toast.error({ message: $t('common.preferences.billing.actionFailed') })
+    toast.add({ color: 'error', title: $t('common.preferences.billing.actionFailed') })
     pendingAction.value = null
   }
 }
