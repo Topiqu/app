@@ -70,10 +70,11 @@
           />
           <button
             type="button"
-            class="absolute right-3 top-2.5 w-5 h-5 bg-transparent hover:bg-transparent border-none outline-none text-gray-400 hover:text-gray-600"
+            class="absolute right-0 top-0 flex h-11 w-11 items-center justify-center bg-transparent hover:bg-transparent border-none outline-none text-gray-500 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
+            :aria-label="$t('common.showPassword')"
             @click="showPassword = !showPassword"
           >
-            <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" />
+            <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -97,10 +98,11 @@
           />
           <button
             type="button"
-            class="absolute right-3 top-2.5 w-5 h-5 bg-transparent hover:bg-transparent border-none outline-none text-gray-400 hover:text-gray-600"
+            class="absolute right-0 top-0 flex h-11 w-11 items-center justify-center bg-transparent hover:bg-transparent border-none outline-none text-gray-500 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
+            :aria-label="$t('common.showPassword')"
             @click="showPasswordConfirm = !showPasswordConfirm"
           >
-            <Icon :name="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'" />
+            <Icon :name="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'" aria-hidden="true" />
           </button>
         </div>
       </div>

@@ -93,10 +93,11 @@
             />
             <button
               type="button"
-              class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-600 dark:hover:text-gray-400"
+              class="absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-gray-500 dark:text-gray-400 bg-transparent hover:bg-transparent border-none outline-none hover:text-gray-700 dark:hover:text-gray-200 focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
+              :aria-label="$t('common.showPassword')"
               @click="showPassword = !showPassword"
             >
-              <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" />
+              <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" aria-hidden="true" />
             </button>
           </div>
           <UserPassword v-else v-model="form.password" :isValid="isPasswordFormValid" />

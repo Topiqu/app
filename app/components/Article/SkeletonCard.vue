@@ -34,8 +34,12 @@
           :alt="$t('articles.articleCard.imageAlt')"
           width="600"
           height="400"
-          sizes="100vw sm:50vw lg:33vw"
-          loading="lazy"
+          :sizes="isFeatured ? '100vw lg:66vw' : '100vw sm:50vw lg:33vw'"
+          format="webp"
+          :quality="75"
+          :loading="isFeatured ? 'eager' : 'lazy'"
+          :fetchpriority="isFeatured ? 'high' : 'auto'"
+          :preload="isFeatured"
         />
         <div
           v-else
@@ -154,6 +158,8 @@
               :alt="$t('common.avatar.alt.author', [article?.user?.username || $t('articles.articleCard.noAuthor')])"
               width="64"
               height="64"
+              format="webp"
+              :quality="75"
               loading="lazy"
             />
             <span

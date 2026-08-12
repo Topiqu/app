@@ -13,6 +13,10 @@
         :src="clientSite.logoUrl"
         class="home-hero__logo"
         :alt="$t('common.avatar.alt.company')"
+        width="96"
+        height="96"
+        format="webp"
+        :quality="75"
       />
       <div class="home-hero__heading">
         <h1 class="home-hero__title">
@@ -36,6 +40,7 @@
     </section>
 
     <section v-if="hasHighlights" class="home-highlights">
+      <h2 class="sr-only">{{ $t('articles.latestArticle') }}</h2>
       <ArticleSkeletonCard
         v-if="featPending || featured"
         :pending="featPending"
@@ -155,6 +160,12 @@
             :src="top.imageUrl"
             class="w-16 h-16 object-cover rounded-lg"
             :alt="$t('articles.articleCard.imageAlt')"
+            width="64"
+            height="64"
+            sizes="64px"
+            format="webp"
+            :quality="70"
+            loading="lazy"
           />
           <div
             v-else
@@ -181,13 +192,12 @@
       <p class="max-w-xl mx-auto text-lg text-gray-600 dark:text-gray-300">
         {{ $t('common.auth.loginToComment') }}
       </p>
-      <div class="flex justify-center pt-2"><AuthForm /></div>
+      <div class="flex justify-center pt-2"><LazyAuthForm /></div>
     </section>
   </main>
 </template>
 
 <script setup lang="ts">
-import 'tippy.js/dist/tippy.css'
 import type { PollOptionData } from '~~/shared/utils/polls'
 
 import { formatDate } from '~~/shared/utils'
