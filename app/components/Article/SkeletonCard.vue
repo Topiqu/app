@@ -20,12 +20,9 @@
     </div>
     <template v-else>
       <NuxtLink
-        v-motion="{
-          initial: { opacity: 0, y: 50 },
-          visible: { opacity: 1, y: 0, transition: { duration: 500, delay: (index ?? 0) * 100 } },
-        }"
         class="editorial-card__media-link"
         :to="localePath({ name: 'clanky-slug', params: { slug: article?.slug } })"
+        :aria-label="$t('common.readMoreAbout', { title: article?.title })"
       >
         <NuxtImg
           v-if="article?.imageUrl"
@@ -35,6 +32,10 @@
             'editorial-card__image': !isFeatured,
           }"
           :alt="$t('articles.articleCard.imageAlt')"
+          width="600"
+          height="400"
+          sizes="100vw sm:50vw lg:33vw"
+          loading="lazy"
         />
         <div
           v-else
@@ -151,6 +152,9 @@
               :class="{ 'w-16 h-16': isFeatured, 'w-7 h-7': !isFeatured }"
               class="rounded-full object-cover border border-gray-200 dark:border-gray-700"
               :alt="$t('common.avatar.alt.author', [article?.user?.username || $t('articles.articleCard.noAuthor')])"
+              width="64"
+              height="64"
+              loading="lazy"
             />
             <span
               :class="{ 'text-lg font-semibold': isFeatured, 'font-medium': !isFeatured }"

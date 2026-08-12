@@ -41,6 +41,7 @@
           variant="neutral"
           icon="i-lucide:x"
           class="sm:hidden -mr-2"
+          :aria="String($t('common.close'))"
           @click="isMobileOpen = false"
         />
       </div>
@@ -155,12 +156,6 @@ onUnmounted(() => {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
-.font-inter {
-  font-family: 'Inter', sans-serif;
-}
-
 .sidebar::-webkit-scrollbar {
   width: 4px;
 }

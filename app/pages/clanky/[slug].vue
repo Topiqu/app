@@ -1,5 +1,5 @@
 <template>
-  <div v-if="data" class="min-h-screen p-8 md:p-12 relative">
+  <main v-if="data" class="min-h-screen p-8 md:p-12 relative">
     <ArticleHeaderSticky
       :isSticky="isSticky"
       :progress="progress"
@@ -179,7 +179,7 @@
       </div>
       <ArticleTOC :content="data.content" />
     </div>
-  </div>
+  </main>
   <Status v-else-if="status" :status="status" :message="status === 'error' ? `${error?.message}` : ''" />
 </template>
 

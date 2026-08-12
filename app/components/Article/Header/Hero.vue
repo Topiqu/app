@@ -67,10 +67,13 @@
         :src="imageUrl"
         :alt="$t('articles.articleCard.imageAlt')"
         format="webp"
-        quality="85"
+        quality="80"
+        width="1000"
+        height="563"
+        sizes="100vw sm:1000px"
         class="w-full max-h-[70vh] rounded-2xl object-contain bg-neutral-100 dark:bg-neutral-900 border border-gray-100/20"
-        loading="lazy"
-        placeholder
+        loading="eager"
+        fetchpriority="high"
       />
       <!-- Safe as a real `<figcaption>` here: the cover never passes through TipTap. -->
       <figcaption>
