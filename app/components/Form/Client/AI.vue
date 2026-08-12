@@ -131,11 +131,10 @@
         />
         <div class="flex flex-col gap-2">
           <FormLabel :text="$t('common.avatar.ai.label')" />
-          <FileUploader
-            :imageUrl="avatarUrl"
-            type="user-avatar"
-            :isAiUser="true"
-            @upload="((avatarUrl = $event.url), (optimizedImageUrl = $event.optimizedUrl))"
+          <UserPictureUploader
+            v-model="avatarUrl"
+            :api="`/api/clients/${clientId}/ai-avatar`"
+            :name="username || $t('common.preferences.aiAuthor.title')"
           />
         </div>
         <div class="flex flex-col gap-2">
@@ -252,6 +251,7 @@
 const { t } = useI18n()
 
 const props = defineProps<{
+  clientId: string
   username: string
   bio: string
   avatarUrl: string
@@ -279,7 +279,7 @@ const emit = defineEmits<{
   'update:bio': [string]
   'update:aiToneOfVoice': [string | null]
   'update:aiControversyLevel': [string | null]
-  'update:avatarUrl': [{ avatarUrl: string; optimizedImageUrl: string }]
+  'update:avatarUrl': [string]
   'update:autoRelease': [boolean]
   'update:translationMode': ['OFF' | 'MANUAL' | 'AUTO' | 'HYBRID']
   'update:translationLanguages': [string[]]
@@ -354,11 +354,12 @@ const toneSuggestions = computed(() => [
   t('common.preferences.aiAuthor.toneOfVoice.suggestions.technical'),
   t('common.preferences.aiAuthor.toneOfVoice.suggestions.inspiring'),
 ])
+// The uploader writes straight to the AI author row, so this only mirrors the saved URL back into
+// the settings form — it is never part of what the Save button sends.
 const avatarUrl = computed({
   get: () => props.avatarUrl,
-  set: (v) => emit('update:avatarUrl', { avatarUrl: v, optimizedImageUrl: optimizedImageUrl.value }),
+  set: (v) => emit('update:avatarUrl', v ?? ''),
 })
-const optimizedImageUrl = shallowRef('')
 const togglePending = computed(() => props.togglePending ?? false)
 
 const handleAutoReleaseToggle = (newValue: boolean) => {

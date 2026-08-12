@@ -1,4 +1,5 @@
 import sharp from 'sharp'
+import { DetectModerationLabelsCommand, RekognitionClient } from '@aws-sdk/client-rekognition'
 
 export const AVATAR_MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 export const AVATAR_SIZE = 512
@@ -27,6 +28,31 @@ export async function prepareAvatar(input: Uint8Array) {
   } catch (error: any) {
     if (error?.statusCode) throw error
     throw createError({ statusCode: 415, statusMessage: 'Invalid or unsupported image' })
+  }
+}
+
+// Rekognition being down must not block an avatar upload, so only its own 422 verdict propagates.
+export async function moderateAvatar(avatar: Uint8Array) {
+  const config = useRuntimeConfig()
+  const rekognition = new RekognitionClient({
+    region: config.awsRegion,
+    credentials: { accessKeyId: config.awsAccessKeyId, secretAccessKey: config.awsSecretAccessKey },
+  })
+
+  try {
+    const moderation = await rekognition.send(
+      new DetectModerationLabelsCommand({ Image: { Bytes: avatar }, MinConfidence: 75 }),
+    )
+    if (moderation.ModerationLabels?.length) {
+      throw createError({
+        statusCode: 422,
+        statusMessage: 'Avatar blocked by content moderation',
+        data: { reasons: moderation.ModerationLabels.map((label) => label.Name).filter(Boolean) },
+      })
+    }
+  } catch (error: any) {
+    if (error?.statusCode === 422) throw error
+    console.error('Avatar moderation failed:', error)
   }
 }
 

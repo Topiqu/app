@@ -33,7 +33,7 @@ export interface ClientSettingsForm {
   logoUrl: string
   optimizedUrl: string
   socials: { platform: SocialPlatform; url: string }[]
-  aiUser: { username: string; bio: string; avatarUrl: string; optimizedAvatarUrl: string }
+  aiUser: { username: string; bio: string; avatarUrl: string }
   aiToneOfVoice: string
   aiControversyLevel: string
   gtagId: string
@@ -60,7 +60,7 @@ const emptyForm = (): ClientSettingsForm => ({
   logoUrl: '',
   optimizedUrl: '',
   socials: [],
-  aiUser: { username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' },
+  aiUser: { username: '', bio: '', avatarUrl: '' },
   aiToneOfVoice: '',
   aiControversyLevel: '',
   gtagId: '',
@@ -107,7 +107,6 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
       username: client.aiUser?.username ?? '',
       bio: client.aiUser?.bio ?? '',
       avatarUrl: client.aiUser?.avatarUrl ?? '',
-      optimizedAvatarUrl: '',
     },
     aiToneOfVoice: client.aiToneOfVoice ?? '',
     aiControversyLevel: client.aiControversyLevel ?? '',

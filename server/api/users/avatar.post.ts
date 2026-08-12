@@ -1,6 +1,5 @@
 import { deleteFromCdn, putToCdn } from '~~/server/utils/storage'
-import { AVATAR_CONTENT_TYPE, avatarKeyFromUrl, prepareAvatar } from '~~/server/utils/avatar'
-import { DetectModerationLabelsCommand, RekognitionClient } from '@aws-sdk/client-rekognition'
+import { AVATAR_CONTENT_TYPE, avatarKeyFromUrl, moderateAvatar, prepareAvatar } from '~~/server/utils/avatar'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -12,28 +11,9 @@ export default defineEventHandler(async (event) => {
   if (!file?.data) throw createError({ statusCode: 400, statusMessage: 'No avatar uploaded' })
 
   const avatar = await prepareAvatar(file.data)
+  await moderateAvatar(avatar)
+
   const config = useRuntimeConfig()
-  const rekognition = new RekognitionClient({
-    region: config.awsRegion,
-    credentials: { accessKeyId: config.awsAccessKeyId, secretAccessKey: config.awsSecretAccessKey },
-  })
-
-  try {
-    const moderation = await rekognition.send(
-      new DetectModerationLabelsCommand({ Image: { Bytes: avatar }, MinConfidence: 75 }),
-    )
-    if (moderation.ModerationLabels?.length) {
-      throw createError({
-        statusCode: 422,
-        statusMessage: 'Avatar blocked by content moderation',
-        data: { reasons: moderation.ModerationLabels.map((label) => label.Name).filter(Boolean) },
-      })
-    }
-  } catch (error: any) {
-    if (error?.statusCode === 422) throw error
-    console.error('Avatar moderation failed:', error)
-  }
-
   const current = await prisma.user.findUnique({ where: { id: sessionUser.id }, select: { avatarUrl: true } })
   if (!current) throw createError({ statusCode: 404, message: t('common.errors.userNotFound')! })
 

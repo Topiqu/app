@@ -94,10 +94,11 @@ export default defineEventHandler(async (event) => {
   const effectiveTokenLimit = requestedTokenLimit ?? clientSite.tokenLimit ?? 0
 
   if (hasAiPayload && effectiveTokenLimit > 0) {
+    // `avatarUrl` is deliberately absent: it belongs to `ai-avatar.post`/`.delete`, which write it
+    // straight to the row. Saving settings used to send it back and blank it out.
     const aiData = {
-      username: aiUserPayload.username || `ai-${id}-${Date.now()}`,
       bio: aiUserPayload.bio || '',
-      avatarUrl: aiUserPayload.optimizedAvatarUrl || '',
+      ...(aiUserPayload.username ? { username: aiUserPayload.username } : {}),
     }
 
     if (currentAiUser) {
@@ -113,6 +114,7 @@ export default defineEventHandler(async (event) => {
       const newAi = await db.user.create({
         data: {
           ...aiData,
+          username: aiUserPayload.username || `ai-${id}-${Date.now()}`,
           email: `ai-${randomBytes(8).toString('hex')}@generated.ai`,
           role: 'ai',
           clientSiteId: id,

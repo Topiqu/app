@@ -11,7 +11,7 @@
           <UserPicture
             :url="displayAvatar"
             size="hg"
-            :name="auth?.user.name"
+            :name="name ?? auth?.user.name"
             class="size-32! transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
           />
           <span
@@ -135,7 +135,13 @@ const toast = useToast()
 const { data: auth, refresh } = useAuth()
 const avatar = defineModel<string | null | undefined>()
 const open = defineModel<boolean>('open', { default: false })
-const emit = defineEmits<{ (e: 'upload', value: { url: string; optimizedUrl: string }): void }>()
+const emit = defineEmits<{ (e: 'upload', avatarUrl: string | null): void }>()
+
+// `api` points the same editor at an avatar that is not the signed-in user's (the AI author's, say);
+// only the session user's own avatar may be mirrored back into the session.
+const { api, name } = defineProps<{ api?: string; name?: string }>()
+const endpoint = computed(() => api ?? '/api/users/avatar')
+const isOwnAvatar = computed(() => !api)
 
 const removeDialog = useTemplateRef<ModalMiniRef>('removeDialog')
 const savedAvatar = shallowRef<string | null>(null)
@@ -148,13 +154,14 @@ const { chooseFile, cropArea, draftUrl, errorMessage, isSwiping, previewStyle, r
     if (url) avatar.value = url
   })
 
-const displayAvatar = computed(() => draftUrl.value || avatar.value || auth.value?.user.avatarUrl)
+const currentAvatar = computed(() => avatar.value || (isOwnAvatar.value ? auth.value?.user.avatarUrl : null) || null)
+const displayAvatar = computed(() => draftUrl.value || currentAvatar.value)
 const uploadLabel = computed(() =>
   stage.value === 'uploading' ? $t('common.avatar.uploading') : $t('common.avatar.saving'),
 )
 
 function openEditor() {
-  savedAvatar.value = avatar.value || auth.value?.user.avatarUrl || null
+  savedAvatar.value = currentAvatar.value
   open.value = true
 }
 
@@ -168,7 +175,7 @@ function closeEditor() {
 function upload(blob: Blob) {
   return new Promise<{ avatarUrl: string }>((resolve, reject) => {
     const request = new XMLHttpRequest()
-    request.open('POST', '/api/users/avatar')
+    request.open('POST', endpoint.value)
     request.responseType = 'json'
     request.upload.onprogress = (event) => {
       stage.value = 'uploading'
@@ -201,9 +208,11 @@ async function saveAvatar() {
     progress.value = 100
     savedAvatar.value = response.avatarUrl
     avatar.value = response.avatarUrl
-    if (auth.value) auth.value.user.avatarUrl = response.avatarUrl
-    await refresh()
-    emit('upload', { url: response.avatarUrl, optimizedUrl: response.avatarUrl })
+    if (isOwnAvatar.value) {
+      if (auth.value) auth.value.user.avatarUrl = response.avatarUrl
+      await refresh()
+    }
+    emit('upload', response.avatarUrl)
     toast.success({ message: $t('common.avatar.uploadSuccess') })
     reset()
     open.value = false
@@ -229,12 +238,14 @@ async function confirmRemove() {
   busy.value = true
   errorMessage.value = ''
   try {
-    await $fetch('/api/users/avatar', { method: 'DELETE' })
+    await $fetch(endpoint.value, { method: 'DELETE' })
     savedAvatar.value = null
     avatar.value = null
-    if (auth.value) auth.value.user.avatarUrl = null
-    await refresh()
-    emit('upload', { url: '', optimizedUrl: '' })
+    if (isOwnAvatar.value) {
+      if (auth.value) auth.value.user.avatarUrl = null
+      await refresh()
+    }
+    emit('upload', null)
     toast.success({ message: $t('common.avatar.removeSuccess') })
     reset()
     open.value = false

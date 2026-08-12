@@ -41,7 +41,7 @@ describe('buildClientSettingsForm', () => {
     expect(form.socials).toEqual([])
     expect(form.allowAds).toBe(false)
     expect(form.apiKey).toBe('')
-    expect(form.aiUser).toEqual({ username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' })
+    expect(form.aiUser).toEqual({ username: '', bio: '', avatarUrl: '' })
     expect(buildClientSettingsForm(undefined)).toEqual(form)
   })
 
@@ -66,7 +66,7 @@ describe('buildClientSettingsForm', () => {
       allowAds: true,
       allowGtag: true,
     })
-    expect(form.aiUser).toEqual({ username: 'bot', bio: 'bio', avatarUrl: 'https://cdn/av.png', optimizedAvatarUrl: '' })
+    expect(form.aiUser).toEqual({ username: 'bot', bio: 'bio', avatarUrl: 'https://cdn/av.png' })
     expect(form.optimizedUrl).toBe('')
   })
 

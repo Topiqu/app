@@ -182,6 +182,7 @@
             class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm"
           >
             <LazyFormClientAI
+              :clientId="clientId ?? ''"
               :username="form.aiUser.username"
               :bio="form.aiUser.bio"
               :avatarUrl="form.aiUser.avatarUrl"
@@ -207,10 +208,7 @@
               @update:bio="form.aiUser.bio = $event"
               @update:aiToneOfVoice="form.aiToneOfVoice = $event ?? ''"
               @update:aiControversyLevel="form.aiControversyLevel = $event ?? ''"
-              @update:avatarUrl="
-                ((form.aiUser.avatarUrl = $event.avatarUrl),
-                (form.aiUser.optimizedAvatarUrl = $event.optimizedImageUrl))
-              "
+              @update:avatarUrl="((form.aiUser.avatarUrl = $event), (pristine.aiUser.avatarUrl = $event))"
               @update:autoRelease="form.autoRelease = $event"
               @update:translationMode="form.translationMode = $event"
               @update:translationLanguages="form.translationLanguages = $event"
