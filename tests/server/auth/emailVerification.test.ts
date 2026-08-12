@@ -37,7 +37,7 @@ describe('unverified accounts cannot sign in with a password', () => {
   it('rejects at the authorize() boundary, after the password is proven', () => {
     const code = source('server/api/auth/[...].ts')
     const passwordCheck = code.indexOf('await argon.verify(user.password, password)')
-    const verifiedCheck = code.indexOf("if (!user.emailVerified) throw new Error('email_not_verified')")
+    const verifiedCheck = code.indexOf("failure !== 'email_unverified'")
 
     expect(passwordCheck).toBeGreaterThan(-1)
     expect(verifiedCheck).toBeGreaterThan(passwordCheck)
@@ -50,13 +50,13 @@ describe('unverified accounts cannot sign in with a password', () => {
   it('rejects at the totp pre-flight with a machine-readable code', () => {
     const code = source('server/api/users/totp.post.ts')
 
-    expect(code).toContain('!user.emailVerified')
+    expect(code).toContain("failure !== 'email_unverified'")
     expect(code).toContain("code: 'email_not_verified'")
     expect(code).toMatch(/statusCode:\s*403/)
   })
 
   it('keeps the pre-flight and authorize() in sync on soft-deleted accounts', () => {
-    expect(source('server/api/users/totp.post.ts')).toContain('where: { email, deletedAt: null }')
+    expect(source('server/api/users/totp.post.ts')).toContain("mode: 'insensitive' }, deletedAt: null")
   })
 })
 

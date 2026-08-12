@@ -34,6 +34,11 @@ class FakeRedis {
     this.store.set(key, String(next))
     return next
   }
+
+  async expire(key: string, ttl: number) {
+    this.ttls.set(key, ttl)
+    return 1
+  }
 }
 
 let mockInstance = new FakeRedis()
@@ -186,5 +191,25 @@ describe('invalidateFeed', () => {
 
     expect(await feedGen('site-1')).toBe(1)
     expect(await feedGen('site-2')).toBe(0)
+  })
+})
+
+describe('consumeRateLimit', () => {
+  it('shares counters through Redis and rejects after the configured limit', async () => {
+    const { consumeRateLimit } = await loadCache()
+
+    await expect(consumeRateLimit('login:identity:x', 2, 900)).resolves.toBe(true)
+    await expect(consumeRateLimit('login:identity:x', 2, 900)).resolves.toBe(true)
+    await expect(consumeRateLimit('login:identity:x', 2, 900)).resolves.toBe(false)
+    expect(mockInstance.store.get('rate:login:identity:x')).toBe('3')
+    expect(mockInstance.ttls.get('rate:login:identity:x')).toBe(900)
+  })
+
+  it('keeps independent identities isolated', async () => {
+    const { consumeRateLimit } = await loadCache()
+
+    await consumeRateLimit('login:identity:a', 1, 900)
+    await expect(consumeRateLimit('login:identity:a', 1, 900)).resolves.toBe(false)
+    await expect(consumeRateLimit('login:identity:b', 1, 900)).resolves.toBe(true)
   })
 })

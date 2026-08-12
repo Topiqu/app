@@ -213,14 +213,22 @@ export default NuxtAuthHandler({
           typeof (credentials as any)?.loginToken === 'string' ? (credentials as any).loginToken : undefined
         if (loginToken) return authorizeWithOnboardingToken(loginToken, req)
 
-        const { email, password } = signInSchema.parse(credentials)
+        const parsed = signInSchema.parse(credentials)
+        const email = normalizeLoginEmail(parsed.email)
+        const { password } = parsed
         const totp = typeof (credentials as any)?.totp === 'string' ? (credentials as any).totp : undefined
+
+        const limit = await checkLoginRateLimit(req, email, 'authorize')
+        if (!limit.allowed) {
+          await logLoginFailure(req, email, 'rate_limited', 'authorize')
+          throw new Error('rate_limited')
+        }
 
         // TODO: For proper multi-tenant isolation:
         // 1. Resolve 'clientSiteId' from req.headers.host (domain).
         // 2. Filter user by { email, clientSiteId } to ensure unique accounts per site.
         const user = await prisma.user.findFirst({
-          where: { email, deletedAt: null },
+          where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
           select: {
             id: true,
             username: true,
@@ -233,14 +241,20 @@ export default NuxtAuthHandler({
             emailVerified: true,
           },
         })
-        if (!user || !user.password) return null
-        if (!(await argon.verify(user.password, password))) return null
-
-        if (!user.emailVerified) throw new Error('email_not_verified')
+        const failure = credentialFailure(user, !!user?.password && (await argon.verify(user.password, password)))
+        if (failure) {
+          await logLoginFailure(req, email, failure, 'authorize')
+          if (failure !== 'email_unverified') return null
+          throw new Error('email_not_verified')
+        }
+        if (!user) throw new Error('Credential decision invariant failed')
 
         if (user.totpSecret) {
           const code = (totp ?? '').replace(/\s/g, '')
-          if (!code || !authenticator.verify({ token: code, secret: user.totpSecret })) return null
+          if (!code || !authenticator.verify({ token: code, secret: user.totpSecret })) {
+            await logLoginFailure(req, email, 'totp_invalid', 'authorize')
+            return null
+          }
         }
 
         let plan: string | null = null
@@ -253,6 +267,8 @@ export default NuxtAuthHandler({
         }
 
         const sessionId = await generateSessionToken(user, req)
+        await prisma.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } })
+        await logLoginSuccess(req, email, user.id, user.clientSiteId)
 
         return {
           id: user.id,

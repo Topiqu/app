@@ -238,6 +238,11 @@ const internalMode = shallowRef<'login' | 'register' | 'forgot' | 'reset' | 'tot
 const verifyMode = shallowRef<boolean>(false)
 const showPassword = shallowRef(false)
 
+const signInWithCredentials = async (credentials: Record<string, string>) => {
+  const result = await signIn('credentials', { ...credentials, redirect: false })
+  if (result?.error) throw createError({ statusCode: result.status || 401, message: $t('common.errors.invalidCredentials') })
+}
+
 const isPasswordFormValid = computed(() => {
   return internalMode.value === 'register'
     ? !!(form.value.password && form.value.password === form.value.passwordConfirm)
@@ -282,16 +287,11 @@ const submit = async () => {
         form.value.totpChallenge = totpData.challenge
         internalMode.value = 'totp'
       } else {
-        await signIn('credentials', {
+        await signInWithCredentials({
           email: form.value.email,
           password: form.value.password,
-          redirect: false,
         })
         const user = await $fetch(`/api/users/${totpData.id}` as `/api/users/:id`)
-        await $fetch(`/api/users/${totpData.id}` as `/api/users/:id`, {
-          method: 'PATCH',
-          body: { lastLogin: Date.now() },
-        })
         setLocale(user.language)
         theme.mode = user.theme
         toast.success({ message: $t('common.auth.loginSuccess') })
@@ -318,16 +318,11 @@ const verify = async () => {
       method: 'POST',
       body: { email: form.value.email, code: form.value.code },
     })
-    await signIn('credentials', {
+    await signInWithCredentials({
       email: form.value.email,
       password: form.value.password,
-      redirect: false,
     })
     const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
-    await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { lastLogin: Date.now() },
-    })
     setLocale(user.language)
     theme.mode = user.theme
     toast.success({ message: $t('common.auth.verifySuccess') })
@@ -346,17 +341,12 @@ const verifyTotp = async () => {
       body: { token, challenge: form.value.totpChallenge },
     })
     if (!res.isValid) throw createError({ statusCode: 400, message: 'Neplatný TOTP kód' })
-    await signIn('credentials', {
+    await signInWithCredentials({
       email: form.value.email,
       password: form.value.password,
       totp: token,
-      redirect: false,
     })
     const user = await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`)
-    await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { lastLogin: Date.now() },
-    })
     setLocale(user.language)
     theme.mode = user.theme
     if (user.role === 'superadmin') navigateTo(localePath({ name: 'master' }))
@@ -393,10 +383,6 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
     }
 
     const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
-    await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { lastLogin: Date.now() },
-    })
     setLocale(user.language)
     theme.mode = user.theme
     form.value = init
