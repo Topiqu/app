@@ -1,43 +1,41 @@
 <template>
   <ArticleEmptyPage v-if="isBlankSite" :site="clientSite" :isOwner="isOwner" />
 
-  <main v-else class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-12">
-    <section class="text-center py-6 sm:py-10 space-y-4">
+  <main v-else class="home-shell custom-ui">
+    <section class="home-hero">
+      <div class="home-hero__glow" aria-hidden="true" />
+      <div class="home-hero__eyebrow">
+        <span class="home-hero__eyebrow-line" />
+        {{ $t('articles.title') }}
+      </div>
       <NuxtImg
         v-if="clientSite?.logoUrl"
         :src="clientSite.logoUrl"
-        class="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full object-contain border border-gray-200 dark:border-gray-700"
+        class="home-hero__logo"
         :alt="$t('common.avatar.alt.company')"
       />
-      <div class="space-y-3">
-        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 dark:text-gray-100 text-balance">
+      <div class="home-hero__heading">
+        <h1 class="home-hero__title">
           {{ clientSite?.name ?? $t('common.labels.title') }}
         </h1>
-        <div class="w-12 h-0.5 bg-blue-500 mx-auto rounded-full" />
       </div>
-      <p
-        v-if="clientSite?.description"
-        class="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed text-balance"
-      >
+      <p v-if="clientSite?.description" class="home-hero__description">
         {{ clientSite.description }}
       </p>
-      <div
-        v-if="latestArticle"
-        class="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2"
-      >
+      <div v-if="latestArticle" class="home-hero__meta">
         <span>{{ $t('stats.articleCount', { count: allArticles.length }) }}</span>
         <span aria-hidden="true">·</span>
         <span>{{ $t('articles.latestArticle') }}</span>
         <NuxtLink
           :to="localePath({ name: 'clanky-slug', params: { slug: latestArticle.slug } })"
-          class="font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[200px]"
+          class="home-hero__latest"
         >
           {{ latestArticle.title }}
         </NuxtLink>
       </div>
     </section>
 
-    <section v-if="hasHighlights" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <section v-if="hasHighlights" class="home-highlights">
       <ArticleSkeletonCard
         v-if="featPending || featured"
         :pending="featPending"
@@ -46,7 +44,7 @@
         :tags="featured?.tags"
         :index="0"
       />
-      <div v-if="featPending || recommended.length" class="space-y-6">
+      <div v-if="featPending || recommended.length" class="home-recommended">
         <template v-if="featPending">
           <ArticleSkeletonCard v-for="i in 3" :key="`skel-rec-${i}`" :pending="true" :index="i - 1" />
         </template>
@@ -63,15 +61,13 @@
       </div>
     </section>
 
-    <section v-if="showFeed" id="articles" class="space-y-6">
-      <div class="flex items-baseline justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-3">
-        <h2 class="text-3xl font-bold tracking-tight">{{ $t('articles.title') }}</h2>
+    <section v-if="showFeed" id="articles" class="home-feed">
+      <div class="home-section-heading">
+        <span class="home-section-heading__index">01</span>
+        <h2>{{ $t('articles.title') }}</h2>
       </div>
 
-      <div
-        v-if="hasContent || hasFilters"
-        class="sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-white/90 dark:bg-gray-950/90 backdrop-blur border-b border-gray-200 dark:border-gray-800 space-y-3"
-      >
+      <div v-if="hasContent || hasFilters" class="home-filters">
         <div class="relative w-full group">
           <label for="article-search" class="sr-only">{{ $t('articles.searchPlaceholder') }}</label>
           <span
@@ -85,10 +81,10 @@
             type="search"
             :placeholder="$t('articles.searchPlaceholder')"
             :aria-label="$t('articles.searchPlaceholder')"
-            class="w-full pl-11 pr-4 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-400/30 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-150"
+            class="home-search"
           />
         </div>
-        <div class="flex flex-nowrap overflow-x-auto gap-2 -mx-1 px-1 pb-1">
+        <div class="home-tags">
           <Button
             size="sm"
             :variant="selectedTag === '' ? 'primary' : 'neutral'"
@@ -110,10 +106,10 @@
         </div>
       </div>
 
-      <div v-if="pending && !filteredArticles.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-if="pending && !filteredArticles.length" class="home-grid">
         <ArticleSkeletonCard v-for="i in 6" :key="`skel-feed-${i}`" :pending="true" :index="i - 1" />
       </div>
-      <div v-else-if="filteredArticles.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else-if="filteredArticles.length" class="home-grid">
         <ArticleSkeletonCard
           v-for="(article, idx) in filteredArticles"
           :key="article.id"
@@ -134,7 +130,7 @@
       </div>
     </section>
 
-    <section v-if="latestPoll || topArticles.length" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <section v-if="latestPoll || topArticles.length" class="home-secondary">
       <div v-if="latestPoll" class="space-y-4" :class="{ 'lg:col-span-2': !topArticles.length }">
         <h2 class="text-2xl font-bold tracking-tight border-l-4 border-blue-500 pl-3">
           {{ $t('articles.poll.hpTitle') }}
@@ -151,9 +147,7 @@
           :to="localePath({ name: 'clanky-slug', params: { slug: top.slug } })"
           class="flex items-center gap-4 p-3 -mx-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 transition no-underline group"
         >
-          <span
-            class="flex-shrink-0 w-8 text-2xl font-black text-blue-500 dark:text-blue-400 text-center tabular-nums"
-          >
+          <span class="flex-shrink-0 w-8 text-2xl font-black text-blue-500 dark:text-blue-400 text-center tabular-nums">
             {{ idx + 1 }}
           </span>
           <NuxtImg
@@ -326,3 +320,249 @@ const loadMore = async () => {
   await refresh()
 }
 </script>
+
+<style scoped>
+.home-shell {
+  --home-ink: #17211b;
+  --home-muted: #657068;
+  --home-accent: #e05a3f;
+  --home-line: rgb(23 33 27 / 12%);
+  width: min(100% - 2rem, 80rem);
+  margin-inline: auto;
+  padding: clamp(5.5rem, 10vw, 8rem) 0 5rem;
+  display: grid;
+  gap: clamp(3.5rem, 7vw, 7rem);
+  color: var(--home-ink);
+}
+
+.home-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  gap: 1.15rem;
+  padding: clamp(2rem, 7vw, 5.5rem) clamp(1rem, 5vw, 4rem);
+  text-align: center;
+  overflow: hidden;
+  border: 1px solid var(--home-line);
+  border-radius: clamp(1.5rem, 4vw, 3.5rem);
+  background: linear-gradient(145deg, #f4eee3 0%, #fbfaf6 55%, #e9efe7 100%);
+}
+
+.home-hero__glow {
+  position: absolute;
+  z-index: -1;
+  top: -11rem;
+  right: -8rem;
+  width: 28rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgb(224 90 63 / 14%);
+  filter: blur(1px);
+}
+
+.home-hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--home-muted);
+}
+
+.home-hero__eyebrow-line {
+  width: 1.5rem;
+  height: 2px;
+  background: var(--home-accent);
+}
+.home-hero__logo {
+  width: clamp(4.5rem, 10vw, 6rem);
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 1.5rem;
+}
+.home-hero__heading {
+  max-width: 62rem;
+}
+.home-hero__title {
+  font-size: clamp(2.65rem, 8vw, 6.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.065em;
+  font-weight: 800;
+  text-wrap: balance;
+}
+.home-hero__description {
+  max-width: 44rem;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.65;
+  color: var(--home-muted);
+  text-wrap: balance;
+}
+.home-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem 0.65rem;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--home-muted);
+}
+.home-hero__latest {
+  max-width: min(17rem, 75vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--home-ink);
+  text-decoration: underline;
+  text-decoration-color: rgb(224 90 63 / 45%);
+  text-underline-offset: 0.25rem;
+}
+
+.home-highlights {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+  gap: clamp(1rem, 2.5vw, 2rem);
+  align-items: stretch;
+}
+.home-recommended {
+  display: grid;
+  gap: 1rem;
+}
+.home-feed {
+  display: grid;
+  gap: 1.75rem;
+  scroll-margin-top: 5rem;
+}
+.home-section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--home-line);
+}
+.home-section-heading h2 {
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 780;
+}
+.home-section-heading__index {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--home-accent);
+}
+.home-filters {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 20;
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--home-line);
+  border-radius: 1.25rem;
+  background: rgb(251 250 246 / 90%);
+  box-shadow: 0 12px 35px rgb(23 33 27 / 8%);
+  backdrop-filter: blur(16px);
+}
+.home-search {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 1rem 0.7rem 2.75rem !important;
+  border-radius: 0.85rem !important;
+  background: rgb(255 255 255 / 72%) !important;
+}
+.home-tags {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0 0.1rem 0.2rem;
+  scrollbar-width: none;
+}
+.home-tags::-webkit-scrollbar {
+  display: none;
+}
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+.home-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(2rem, 5vw, 4rem);
+  padding-top: clamp(2rem, 5vw, 4rem);
+  border-top: 1px solid var(--home-line);
+}
+
+:global(html.dark) .home-shell {
+  --home-ink: #f1eee7;
+  --home-muted: #a9b2ab;
+  --home-line: rgb(241 238 231 / 14%);
+}
+:global(html.dark) .home-hero {
+  background: linear-gradient(145deg, #202720, #17201a 58%, #29231f);
+}
+:global(html.dark) .home-filters {
+  background: rgb(23 32 26 / 90%);
+}
+:global(html.dark) .home-search {
+  background: rgb(31 41 55 / 75%) !important;
+}
+
+@media (max-width: 900px) {
+  .home-highlights,
+  .home-secondary {
+    grid-template-columns: 1fr;
+  }
+  .home-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .home-shell {
+    width: min(100% - 1rem, 80rem);
+    padding-top: 4.75rem;
+    gap: 3.5rem;
+  }
+  .home-hero {
+    justify-items: start;
+    padding: 2rem 1.15rem;
+    text-align: left;
+    border-radius: 1.5rem;
+  }
+  .home-hero__eyebrow {
+    font-size: 0.65rem;
+  }
+  .home-hero__title {
+    font-size: clamp(2.5rem, 15vw, 4.1rem);
+  }
+  .home-hero__description {
+    font-size: 1rem;
+  }
+  .home-hero__meta {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .home-hero__logo {
+    width: 4.25rem;
+    border-radius: 1rem;
+  }
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-filters {
+    top: 0.5rem;
+    border-radius: 1rem;
+  }
+  .home-secondary {
+    gap: 3rem;
+  }
+}
+</style>

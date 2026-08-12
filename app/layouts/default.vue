@@ -1,7 +1,7 @@
 <template>
   <!-- `clip` not `hidden`: `hidden` makes this a scroll container, which scopes every
        descendant `position: sticky` to a box that never scrolls and silently kills it. -->
-  <div class="pt-4 min-h-screen max-w-screen flex-1 flex flex-col bg-gray-100/90 relative overflow-x-clip">
+  <div class="min-h-screen max-w-screen flex-1 flex flex-col bg-[#f7f5ef] dark:bg-[#111712] relative overflow-x-clip">
     <Header v-model:isSidebarOpen="isSidebarOpen" />
     <Sidebar v-if="auth && isAdmin" v-model:isOpen="isSidebarOpen" />
     <slot />
