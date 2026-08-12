@@ -64,6 +64,9 @@ jobs:
       - name: Lint
         run: bun run lint
 
+      - name: Check OpenAPI contract
+        run: bun run openapi:check
+
       - name: Typecheck
         run: bun run typecheck
 
