@@ -14,9 +14,7 @@
         :alt="$t('common.avatar.alt.company')"
         width="192"
         height="80"
-        fit="contain"
-        format="webp"
-        :quality="75"
+        fit="inside"
       />
       <div class="home-hero__heading">
         <h1 class="home-hero__title">

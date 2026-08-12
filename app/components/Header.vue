@@ -20,8 +20,8 @@
         :alt="$t('common.avatar.alt.company')"
         width="176"
         height="48"
-        fit="contain"
-        class="block max-h-12 max-w-44 h-auto w-auto object-contain"
+        fit="inside"
+        class="block max-h-12 max-w-44 h-auto w-auto"
       />
       <div v-else class="h-11 w-28 animate-pulse rounded-lg bg-gray-200 dark:bg-neutral-700" />
     </NuxtLink>
