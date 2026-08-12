@@ -1,5 +1,5 @@
-import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
 import { verifyOAuthState } from '../../utils/linkedin/oauthState'
+import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -34,13 +34,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const clientId =
-    appType === 'pages'
-      ? process.env.LINKEDIN_CLIENT_ID_COMPANY
-      : process.env.LINKEDIN_CLIENT_ID_PERSONAL
+    appType === 'pages' ? process.env.LINKEDIN_CLIENT_ID_COMPANY : process.env.LINKEDIN_CLIENT_ID_PERSONAL
   const clientSecret =
-    appType === 'pages'
-      ? process.env.LINKEDIN_CLIENT_SECRET_COMPANY
-      : process.env.LINKEDIN_CLIENT_SECRET_PERSONAL
+    appType === 'pages' ? process.env.LINKEDIN_CLIENT_SECRET_COMPANY : process.env.LINKEDIN_CLIENT_SECRET_PERSONAL
   if (!clientId || !clientSecret) {
     throw createError({ statusCode: 500, message: 'LinkedIn credentials not configured' })
   }
@@ -54,8 +50,7 @@ export default defineEventHandler(async (event) => {
     const tokenData = await getAccessToken(code, redirectUri, clientId, clientSecret)
     const accessToken = tokenData.access_token
 
-    const fetchedUrn =
-      appType === 'personal' ? await getPersonalUrn(accessToken) : await getPagesUrn(accessToken)
+    const fetchedUrn = appType === 'personal' ? await getPersonalUrn(accessToken) : await getPagesUrn(accessToken)
 
     const db = await getEnhancedPrisma(user)
     const company = await db.linkedinCompany.findFirst({ where: { clientSiteId, type: appType } })

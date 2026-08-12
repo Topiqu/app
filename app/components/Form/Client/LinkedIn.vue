@@ -3,98 +3,100 @@
     <div class="flex items-center justify-between">
       <div>
         <h3 class="text-lg font-semibold flex items-center gap-2">
-          <Icon name="mdi:linkedin" class="w-5 h-5 text-blue-600" />
-          LinkedIn Automation
+          <UIcon size="20" name="i-mdi-linkedin" class="text-blue-600" />
+          {{ $t('common.linkedin.title') }}
         </h3>
-        <p class="text-sm text-neutral-500">Configure your automated LinkedIn publishing settings.</p>
+        <p class="text-sm text-muted">{{ $t('common.linkedin.description') }}</p>
       </div>
 
       <div v-if="!isConnected" class="flex gap-2">
-        <Button
-          variant="primary"
-          class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
+        <UButton
+          color="neutral"
+          variant="solid"
+          icon="i-mdi-account"
+          :style="{ backgroundColor: '#0A66C2' }"
           @click="connectLinkedIn('personal')"
         >
-          <Icon name="mdi:account" class="mr-1" />
-          Connect Personal
-        </Button>
-        <Button
-          variant="primary"
-          class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
+          {{ $t('common.linkedin.connectPersonal') }}
+        </UButton>
+        <UButton
+          color="neutral"
+          variant="solid"
+          icon="i-mdi-domain"
+          :style="{ backgroundColor: '#0A66C2' }"
           @click="connectLinkedIn('pages')"
         >
-          <Icon name="mdi:domain" class="mr-1" />
-          Connect Page
-        </Button>
+          {{ $t('common.linkedin.connectPage') }}
+        </UButton>
       </div>
       <div v-else class="flex flex-col items-end">
-        <div
-          class="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full"
-        >
-          <Icon name="mdi:check-circle" /> Connected ({{ localType }})
-        </div>
+        <UBadge color="success" variant="soft" icon="i-mdi-check-circle">
+          {{ $t('common.linkedin.connected', { type: localType }) }}
+        </UBadge>
         <div class="flex gap-2 mt-2">
-          <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('personal')">
-            Switch to Personal
-          </button>
-          <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('pages')">
-            Switch to Page
-          </button>
+          <UButton color="primary" variant="link" size="xs" @click="connectLinkedIn('personal')">
+            {{ $t('common.linkedin.switchPersonal') }}
+          </UButton>
+          <UButton color="primary" variant="link" size="xs" @click="connectLinkedIn('pages')">
+            {{ $t('common.linkedin.switchPage') }}
+          </UButton>
         </div>
       </div>
     </div>
 
-    <div
-      v-if="isConnected"
-      class="bg-white/5 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10 space-y-6"
-    >
-      <div>
-        <h4 class="font-medium mb-3">Publishing Mode</h4>
-        <div class="flex gap-4">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input v-model="localMode" type="radio" :value="'HitL'" @change="emitUpdate" />
-            <span>Human in the Loop (HitL)</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input v-model="localMode" type="radio" :value="'FullAuto'" @change="emitUpdate" />
-            <span>Full Auto (Gated by Policy)</span>
-          </label>
+    <UCard v-if="isConnected">
+      <div class="space-y-6">
+        <UFormField
+          :label="$t('common.linkedin.publishingMode')"
+          :description="$t('common.linkedin.publishingModeDescription')"
+        >
+          <URadioGroup
+            v-model="localMode"
+            :items="publishingModes"
+            orientation="horizontal"
+            valueKey="value"
+            @update:modelValue="emitUpdate"
+          />
+        </UFormField>
+
+        <USeparator />
+        <div class="space-y-4 pt-4">
+          <h4 class="font-medium">{{ $t('common.linkedin.brandGuidelines') }}</h4>
+
+          <UFormField :label="$t('common.linkedin.tone')">
+            <UInput
+              v-model="localBrandProfile.tone"
+              :placeholder="$t('common.linkedin.tonePlaceholder')"
+              @update:modelValue="emitUpdate"
+            />
+          </UFormField>
+
+          <UFormField :label="$t('common.linkedin.audience')">
+            <UInput
+              v-model="localBrandProfile.audience"
+              :placeholder="$t('common.linkedin.audiencePlaceholder')"
+              @update:modelValue="emitUpdate"
+            />
+          </UFormField>
+
+          <UFormField :label="$t('common.linkedin.doList')">
+            <UInput
+              v-model="localDoList"
+              :placeholder="$t('common.linkedin.doListPlaceholder')"
+              @update:modelValue="emitUpdate"
+            />
+          </UFormField>
+
+          <UFormField :label="$t('common.linkedin.dontList')">
+            <UInput
+              v-model="localDontList"
+              :placeholder="$t('common.linkedin.dontListPlaceholder')"
+              @update:modelValue="emitUpdate"
+            />
+          </UFormField>
         </div>
-        <p class="text-xs text-neutral-500 mt-2">HitL requires manual approval before any generated post goes live.</p>
       </div>
-
-      <div class="space-y-4 pt-4 border-t border-white/10">
-        <h4 class="font-medium">Brand Guidelines</h4>
-
-        <FormField
-          v-model="localBrandProfile.tone"
-          label="Tone of Voice"
-          placeholder="e.g. Professional and thought-provoking"
-          @update:modelValue="emitUpdate"
-        />
-
-        <FormField
-          v-model="localBrandProfile.audience"
-          label="Target Audience"
-          placeholder="e.g. Software engineers, CTOs"
-          @update:modelValue="emitUpdate"
-        />
-
-        <FormField
-          v-model="localDoList"
-          label="Do List (Comma separated)"
-          placeholder="e.g. React, Innovation, Cloud"
-          @update:modelValue="emitUpdate"
-        />
-
-        <FormField
-          v-model="localDontList"
-          label="Don't List / Banned Words (Comma separated)"
-          placeholder="e.g. cheap, guarantee, spam"
-          @update:modelValue="emitUpdate"
-        />
-      </div>
-    </div>
+    </UCard>
   </div>
 </template>
 
@@ -117,6 +119,10 @@ const isConnected = shallowRef(false)
 const localType = shallowRef(props.type || 'pages')
 
 const localMode = shallowRef(props.mode || 'HitL')
+const publishingModes = [
+  { label: 'Human in the Loop (HitL)', value: 'HitL' },
+  { label: 'Full Auto (Gated by Policy)', value: 'FullAuto' },
+]
 const localBrandProfile = ref({
   tone: props.brandProfile?.tone || '',
   audience: props.brandProfile?.audience || '',
