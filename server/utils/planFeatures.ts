@@ -1,6 +1,6 @@
 import type { BillingPlans, ClientPlan } from '@prisma/client'
 
-export type FeatureCode = 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'
+export type FeatureCode = 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS' | 'SEARCH_CONSOLE'
 
 type FeatureReadDb = {
   clientFeature: {
@@ -24,18 +24,20 @@ type FeatureSyncDb = {
   }
 }
 
-export const FEATURE_CODES: FeatureCode[] = ['AI', 'SENTIMENT', 'ARTICLE_CRONS']
+export const FEATURE_CODES: FeatureCode[] = ['AI', 'SENTIMENT', 'ARTICLE_CRONS', 'SEARCH_CONSOLE']
 
 export const FEATURE_DEPENDENCIES: Record<FeatureCode, FeatureCode[]> = {
   AI: [],
   SENTIMENT: ['AI'],
   ARTICLE_CRONS: ['AI'],
+  SEARCH_CONSOLE: [],
 }
 
 export const getAllowedFeatures = (plan: ClientPlan): Record<FeatureCode, boolean> => ({
   AI: ['PRO', 'PREMIUM', 'CUSTOM'].includes(plan),
   SENTIMENT: ['PREMIUM', 'CUSTOM'].includes(plan),
   ARTICLE_CRONS: ['PRO', 'PREMIUM', 'CUSTOM'].includes(plan),
+  SEARCH_CONSOLE: ['PREMIUM', 'CUSTOM'].includes(plan),
 })
 
 export const isCustomPlan = (plan: ClientPlan): boolean => plan === 'CUSTOM'

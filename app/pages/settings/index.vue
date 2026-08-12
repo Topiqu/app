@@ -53,6 +53,8 @@
         </section>
 
         <div v-if="!isBasic" v-show="activeTab === 'integrations'" class="space-y-8">
+          <LazyFormClientSearchConsole />
+
           <section>
             <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
               <Icon name="mdi:google-analytics" class="w-5 h-5 text-orange-500" />

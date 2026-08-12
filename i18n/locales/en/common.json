@@ -1,5 +1,17 @@
 {
   "common": {
+    "searchConsole": {
+      "title": "Google Search Console",
+      "premiumOnly": "Search Console performance intelligence and AI recommendations are available on PREMIUM.",
+      "connectTitle": "Connect real performance to your content strategy",
+      "connectDescription": "Topiqu requests read-only access and uses the data for article metrics and optimization recommendations.",
+      "connect": "Connect Google account",
+      "disconnect": "Disconnect",
+      "noProperty": "Choose a Search Console property",
+      "chooseProperty": "Which website belongs to this project?",
+      "choosePlaceholder": "Choose a property",
+      "lastSync": "Last sync:"
+    },
     "loading": "Loading...",
     "error": "Error loading data",
     "noResults": "No results found",

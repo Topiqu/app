@@ -128,6 +128,7 @@ export default defineNuxtConfig({
       '0 3 * * *': ['community-insights'],
       '*/5 * * * *': ['translate-pending'],
       '0 4 * * *': ['gam-sync'],
+      '15 4 * * *': ['search-console-sync'],
       '30 4 * * *': ['domain-reverification'],
       '0 5 * * *': ['trial-expiry'],
     },

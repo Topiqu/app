@@ -15,16 +15,16 @@ import {
 
 describe('getAllowedFeatures', () => {
   it('BASIC unlocks nothing', () => {
-    expect(getAllowedFeatures('BASIC')).toEqual({ AI: false, SENTIMENT: false, ARTICLE_CRONS: false })
+    expect(getAllowedFeatures('BASIC')).toEqual({ AI: false, SENTIMENT: false, ARTICLE_CRONS: false, SEARCH_CONSOLE: false })
   })
 
   it('PRO unlocks AI + ARTICLE_CRONS but not SENTIMENT', () => {
-    expect(getAllowedFeatures('PRO')).toEqual({ AI: true, SENTIMENT: false, ARTICLE_CRONS: true })
+    expect(getAllowedFeatures('PRO')).toEqual({ AI: true, SENTIMENT: false, ARTICLE_CRONS: true, SEARCH_CONSOLE: false })
   })
 
   it('PREMIUM and CUSTOM unlock everything', () => {
-    expect(getAllowedFeatures('PREMIUM')).toEqual({ AI: true, SENTIMENT: true, ARTICLE_CRONS: true })
-    expect(getAllowedFeatures('CUSTOM')).toEqual({ AI: true, SENTIMENT: true, ARTICLE_CRONS: true })
+    expect(getAllowedFeatures('PREMIUM')).toEqual({ AI: true, SENTIMENT: true, ARTICLE_CRONS: true, SEARCH_CONSOLE: true })
+    expect(getAllowedFeatures('CUSTOM')).toEqual({ AI: true, SENTIMENT: true, ARTICLE_CRONS: true, SEARCH_CONSOLE: true })
   })
 })
 
@@ -74,7 +74,7 @@ describe('billableMonthlyTotal (à-la-carte only)', () => {
 describe('planFeatureSync (plan grant provisioning)', () => {
   it('provisions everything a fresh PREMIUM site is owed', () => {
     expect(planFeatureSync('PREMIUM', [])).toEqual({
-      activate: ['AI', 'SENTIMENT', 'ARTICLE_CRONS'],
+      activate: ['AI', 'SENTIMENT', 'ARTICLE_CRONS', 'SEARCH_CONSOLE'],
       deactivate: [],
     })
   })

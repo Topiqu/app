@@ -99,6 +99,7 @@ enum FeatureCodes {
   CRONS
   SENTIMENT
   ARTICLE_CRONS
+  SEARCH_CONSOLE
 }
 
 enum ClientPlan {
@@ -174,6 +175,12 @@ enum AdPayoutStatus {
   PAYABLE
   PAID
   VOID
+}
+
+enum SearchConsoleConnectionStatus {
+  CONNECTED
+  ERROR
+  REVOKED
 }
 
 enum NotificationType {
@@ -553,6 +560,8 @@ model ClientSite {
   linkedinCompanies            LinkedinCompany[]
   articleTranslations          ArticleTranslation[]
   adEarnings                   AdEarning[]
+  searchConsoleConnection      SearchConsoleConnection?
+  searchConsoleMetrics         SearchConsoleMetric[]
 
   @@index([domain, name, plan, billingPlan])
 }
@@ -785,6 +794,48 @@ model AdEarning {
   @@unique([clientSiteId, periodStart, periodEnd])
   @@index([payoutStatus])
   @@index([clientSiteId, periodStart])
+}
+
+model SearchConsoleConnection {
+  id                    String                        @id() @default(uuid())
+  createdAt             DateTime                      @default(now())
+  updatedAt             DateTime?                     @updatedAt()
+  deletedAt             DateTime?
+  clientSiteId          String                        @unique()
+  clientSite            ClientSite                    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  googleSubjectId       String
+  googleEmail           String?
+  propertyUrl           String?
+  permissionLevel       String?
+  encryptedRefreshToken String
+  grantedScopes         String[]
+  status                SearchConsoleConnectionStatus @default(CONNECTED)
+  lastSyncAt            DateTime?
+  lastErrorAt           DateTime?
+  lastError             String?
+}
+
+model SearchConsoleMetric {
+  id           String     @id() @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt()
+  deletedAt    DateTime?
+  clientSiteId String
+  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  propertyUrl  String
+  date         DateTime
+  page         String
+  query        String     @default("")
+  country      String     @default("")
+  device       String     @default("")
+  clicks       Float      @default(0)
+  impressions  Float      @default(0)
+  ctr          Float      @default(0)
+  position     Float      @default(0)
+
+  @@unique([clientSiteId, date, page, query, country, device])
+  @@index([clientSiteId, date])
+  @@index([clientSiteId, page, date])
 }
 
 model Notification {

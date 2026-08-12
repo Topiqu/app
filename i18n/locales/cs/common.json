@@ -1,5 +1,17 @@
 {
   "common": {
+    "searchConsole": {
+      "title": "Google Search Console",
+      "premiumOnly": "Analýza výkonu a AI doporučení ze Search Console jsou dostupné v plánu PREMIUM.",
+      "connectTitle": "Propojte skutečný výkon s obsahovou strategií",
+      "connectDescription": "Topiqu získá pouze přístup ke čtení a použije data pro metriky článků a návrhy optimalizací.",
+      "connect": "Připojit Google účet",
+      "disconnect": "Odpojit",
+      "noProperty": "Vyberte Search Console property",
+      "chooseProperty": "Který web patří k tomuto projektu?",
+      "choosePlaceholder": "Vyberte property",
+      "lastSync": "Poslední synchronizace:"
+    },
     "loading": "Načítání...",
     "error": "Chyba při načítání dat",
     "noResults": "Žádné výsledky",

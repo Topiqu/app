@@ -9,6 +9,7 @@ const FEATURE_CATALOG = [
   { code: 'AI' as const, name: 'AI Generation', priceMonthly: 29 },
   { code: 'SENTIMENT' as const, name: 'Sentiment Analysis', priceMonthly: 19 },
   { code: 'ARTICLE_CRONS' as const, name: 'Scheduled Article Generation', priceMonthly: 19 },
+  { code: 'SEARCH_CONSOLE' as const, name: 'Search Console Intelligence', priceMonthly: 29 },
 ]
 
 async function main() {

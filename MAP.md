@@ -409,3 +409,10 @@ The app had **zero runtime observability**: when something broke for a real user
 - `.env.example` — `NUXT_PUBLIC_SENTRY_DSN`, `SENTRY_URL/ORG/PROJECT/AUTH_TOKEN`.
 - Replay masks all text + media (`maskAllText`, `blockAllMedia`) for GDPR.
 - CSP: works as-is — `nuxt-security` `connect-src` allows `https:`, replay worker uses existing `blob:` in `script-src`.
+# Google Search Console intelligence (PREMIUM)
+
+Search Console is connected per `ClientSite` through a read-only Google OAuth flow under `server/api/search-console`. Refresh tokens are encrypted with AES-256-GCM using `GOOGLE_SEARCH_CONSOLE_ENCRYPTION_KEY`; plaintext tokens never leave server utilities or appear in API responses. OAuth state is HMAC-signed, short-lived, cookie-bound, and tenant-bound.
+
+`SearchConsoleConnection` stores one Google connection and selected property per tenant. `SearchConsoleMetric` stores daily page/query performance with tenant-prefixed unique keys and indexes. The `search-console-sync` Nitro task re-imports finalized recent days so delayed Google data is corrected idempotently. `server/utils/searchConsole/opportunities.ts` converts metrics into deterministic, explainable opportunity candidates before any AI step. The initial rules cover striking-distance rankings and unusually low CTR; AI-generated changes must remain drafts requiring editorial approval.
+
+Access is provisioned through the `SEARCH_CONSOLE` feature for PREMIUM plans. CUSTOM remains explicitly configurable under the existing feature model. The settings integration supports OAuth, automatic domain/property matching, manual property selection, connection status, and disconnect.
