@@ -1,5 +1,5 @@
 <template>
-  <main v-if="data" class="min-h-screen p-8 md:p-12 relative">
+  <main v-if="data" class="relative min-h-screen px-4 py-6 sm:p-8 md:p-12">
     <ArticleHeaderSticky
       :isSticky="isSticky"
       :progress="progress"
@@ -11,7 +11,7 @@
     />
 
     <div class="max-w-[1000px] mx-auto relative">
-      <div ref="container" class="w-full flex flex-col gap-8 px-4 sm:px-0 pt-4">
+      <div ref="container" class="flex w-full flex-col gap-8 pt-4">
         <nav v-if="breadcrumbs?.length" aria-label="Breadcrumb" class="w-full">
           <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <li v-for="(item, index) in breadcrumbs" :key="index" class="flex items-center gap-2">
@@ -113,7 +113,11 @@
           </NuxtLink>
         </div>
 
-        <div ref="content" :class="[ARTICLE_PROSE_CLASS, { 'hide-ai-disclosure': !clientSite?.discloseAiContent }]">
+        <div
+          ref="content"
+          class="!border-transparent !bg-transparent !p-0 !shadow-none sm:!border-gray-100 sm:!bg-white sm:!p-6 sm:!shadow-lg sm:dark:!border-gray-700 sm:dark:!bg-neutral-900 md:!p-8"
+          :class="[ARTICLE_PROSE_CLASS, { 'hide-ai-disclosure': !clientSite?.discloseAiContent }]"
+        >
           <ArticleParsed
             :blocks="data.blocks"
             :articleId="data.id"

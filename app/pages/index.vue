@@ -3,7 +3,6 @@
 
   <main v-else class="home-shell custom-ui">
     <section class="home-hero">
-      <div class="home-hero__glow" aria-hidden="true" />
       <div class="home-hero__eyebrow">
         <span class="home-hero__eyebrow-line" />
         {{ $t('articles.title') }}
@@ -13,8 +12,9 @@
         :src="clientSite.logoUrl"
         class="home-hero__logo"
         :alt="$t('common.avatar.alt.company')"
-        width="96"
-        height="96"
+        width="192"
+        height="80"
+        fit="contain"
         format="webp"
         :quality="75"
       />
@@ -346,29 +346,12 @@ const loadMore = async () => {
 }
 
 .home-hero {
-  position: relative;
-  isolation: isolate;
   display: grid;
   justify-items: center;
-  gap: 1.15rem;
-  padding: clamp(2rem, 7vw, 5.5rem) clamp(1rem, 5vw, 4rem);
+  gap: 1rem;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(0.5rem, 3vw, 2rem) clamp(2.5rem, 6vw, 4.5rem);
   text-align: center;
-  overflow: hidden;
-  border: 1px solid var(--home-line);
-  border-radius: clamp(1.5rem, 4vw, 3.5rem);
-  background: linear-gradient(145deg, #f4eee3 0%, #fbfaf6 55%, #e9efe7 100%);
-}
-
-.home-hero__glow {
-  position: absolute;
-  z-index: -1;
-  top: -11rem;
-  right: -8rem;
-  width: 28rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgb(224 90 63 / 14%);
-  filter: blur(1px);
+  border-bottom: 1px solid var(--home-line);
 }
 
 .home-hero__eyebrow {
@@ -388,19 +371,20 @@ const loadMore = async () => {
   background: var(--home-accent);
 }
 .home-hero__logo {
-  width: clamp(4.5rem, 10vw, 6rem);
-  aspect-ratio: 1;
+  width: auto;
+  height: auto;
+  max-width: min(12rem, 70vw);
+  max-height: 5rem;
   object-fit: contain;
-  border-radius: 1.5rem;
 }
 .home-hero__heading {
   max-width: 62rem;
 }
 .home-hero__title {
-  font-size: clamp(2.65rem, 8vw, 6.5rem);
-  line-height: 0.94;
-  letter-spacing: -0.065em;
-  font-weight: 800;
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+  font-weight: 750;
   text-wrap: balance;
 }
 .home-hero__description {
@@ -515,9 +499,6 @@ const loadMore = async () => {
   --home-muted: #a9b2ab;
   --home-line: rgb(241 238 231 / 14%);
 }
-:global(html.dark) .home-hero {
-  background: linear-gradient(145deg, #202720, #17201a 58%, #29231f);
-}
 :global(html.dark) .home-filters {
   background: rgb(23 32 26 / 90%);
 }
@@ -543,9 +524,8 @@ const loadMore = async () => {
   }
   .home-hero {
     justify-items: start;
-    padding: 2rem 1.15rem;
+    padding: 1rem 0.5rem 2.5rem;
     text-align: left;
-    border-radius: 1.5rem;
   }
   .home-hero__eyebrow {
     font-size: 0.65rem;
@@ -561,8 +541,8 @@ const loadMore = async () => {
     text-align: left;
   }
   .home-hero__logo {
-    width: 4.25rem;
-    border-radius: 1rem;
+    max-width: min(10rem, 70vw);
+    max-height: 4rem;
   }
   .home-grid {
     grid-template-columns: 1fr;

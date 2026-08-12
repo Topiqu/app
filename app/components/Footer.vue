@@ -1,7 +1,7 @@
 <template>
   <footer
     v-if="clientSite?.plan === 'BASIC'"
-    class="sticky bottom-0 z-10 bg-white dark:bg-#111 border-t border-gray-200 dark:border-gray-800 py-5"
+    class="mt-auto border-t border-gray-200 bg-white py-5 dark:border-gray-800 dark:bg-#111"
   >
     <div class="flex items-center justify-center gap-4 text-base">
       <strong class="font-500 text-gray-700 dark:text-gray-300">Made with</strong>

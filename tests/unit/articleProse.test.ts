@@ -109,6 +109,14 @@ describe('ARTICLE_PROSE_CLASS', () => {
     expect(source).not.toContain('prose prose-gray')
   })
 
+  it('keeps the published body frameless only on mobile', () => {
+    const source = read('app/pages/clanky/[slug].vue')
+
+    expect(source).toContain('!bg-transparent')
+    expect(source).toContain('sm:!bg-white')
+    expect(source).toContain('sm:dark:!bg-neutral-900')
+  })
+
   // The class list only earns its CSS if UnoCSS scans the file it lives in. Vite's pipeline
   // skips plain .ts, so the DRY refactor above is exactly what can silently un-style the body.
   it('is inside a path uno.config tells the pipeline to scan', () => {
