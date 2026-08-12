@@ -225,8 +225,8 @@
       </div>
     </div>
 
-    <div class="pointer-events-none fixed inset-x-0 bottom-4 z-header flex justify-center px-4 sm:px-6">
-      <div class="w-full max-w-5xl flex justify-center sm:justify-end">
+    <Teleport to="body">
+      <div class="pointer-events-none fixed inset-x-0 bottom-4 z-header flex justify-center px-4 sm:px-6">
         <Transition
           enterActiveClass="transition duration-200 ease-out"
           enterFromClass="opacity-0 translate-y-2"
@@ -237,7 +237,7 @@
         >
           <div
             v-if="isDirty"
-            class="pointer-events-auto flex items-center gap-3 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 bg-white/95 dark:bg-neutral-900/95 backdrop-blur py-2 pl-4 pr-2 shadow-xl mr-14 sm:mr-16 xl:mr-0"
+            class="pointer-events-auto flex items-center gap-3 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 bg-white/95 dark:bg-neutral-900/95 backdrop-blur py-2 pl-4 pr-2 shadow-xl"
           >
             <span class="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
               <span class="size-2 rounded-full bg-amber-500 animate-pulse" />
@@ -254,7 +254,7 @@
           </div>
         </Transition>
       </div>
-    </div>
+    </Teleport>
 
     <ModalMini ref="discardDialog" />
   </main>
