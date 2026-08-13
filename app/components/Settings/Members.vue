@@ -56,7 +56,17 @@
           <div class="flex min-w-0 flex-col gap-4 p-5">
             <div class="flex items-center justify-between gap-3">
               <span class="text-xs font-semibold uppercase tracking-wider text-neutral-500">{{ $t('common.members.permissions') }}</span>
-              <Button v-if="canEdit(member)" square borderless variant="danger" icon="mdi:account-remove-outline" :aria="$t('common.members.remove')" @click="remove(member.id)" />
+              <Button
+                v-if="canEdit(member)"
+                square
+                borderless
+                variant="danger"
+                icon="mdi:account-remove-outline"
+                :aria="$t('common.members.remove')"
+                :loading="removingId === member.id"
+                :disabled="!!removingId"
+                @click="remove(member)"
+              />
             </div>
             <div class="flex flex-wrap gap-2">
               <label v-for="scope in scopes" :key="scope" class="rounded-full border px-2.5 py-1.5 text-xs transition" :class="hasScope(member, scope) ? 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-200' : 'border-neutral-200 text-neutral-400 dark:border-neutral-700'">
@@ -95,6 +105,7 @@
         </Button>
       </div>
     </section>
+    <ModalMini ref="removeDialog" />
   </section>
 </template>
 
@@ -109,11 +120,14 @@ const email = shallowRef('')
 const selected = ref<Scope[]>(['ARTICLE_WRITE'])
 const showInvite = shallowRef(false)
 const busy = shallowRef(false)
+const removingId = shallowRef<string>()
 const search = shallowRef('')
 const filter = shallowRef<(typeof filters)[number]>('all')
 const page = shallowRef(1)
 const pageSize = 8
 const toast = useToast()
+const { t } = useI18n()
+const removeDialog = useTemplateRef<ModalMiniRef>('removeDialog')
 const normalizedSearch = computed(() => search.value.trim().toLocaleLowerCase())
 const filteredMembers = computed(() => (data.value?.members ?? []).filter((member) => {
   if (filter.value === 'owners' && member.role !== 'OWNER') return false
@@ -130,7 +144,28 @@ const hasScope = (member: Member, scope: Scope) => member.role === 'OWNER' || me
 const canEdit = (member: Member) => !!data.value?.canControl && member.role !== 'OWNER' && member.id !== data.value.currentMembershipId
 const invite = async () => { busy.value = true; try { await $fetch('/api/tenant/invitations', { method: 'POST', body: { email: email.value, scopes: selected.value } }); email.value = ''; showInvite.value = false; await refresh(); toast.success({ message: $t('common.members.sent') }) } finally { busy.value = false } }
 const toggle = async (member: Member, scope: Scope) => { const next = member.scopes.includes(scope) ? member.scopes.filter((item) => item !== scope) : [...member.scopes, scope]; await $fetch(`/api/tenant/members/${member.id}`, { method: 'PATCH', body: { scopes: next } }); await refresh() }
-const remove = async (id: string) => { await $fetch(`/api/tenant/members/${id}`, { method: 'DELETE' }); await refresh() }
+const remove = async (member: Member) => {
+  const response = await removeDialog.value?.ask({
+    title: t('common.members.removeConfirmTitle'),
+    message: t('common.members.removeConfirmMessage', { name: member.user.username }),
+    icon: 'mdi:account-remove-outline',
+    confirmText: t('common.members.remove'),
+    cancelText: t('common.actions.cancel'),
+    variant: 'danger',
+  })
+  if (response !== 'ok') return
+
+  removingId.value = member.id
+  try {
+    await $fetch(`/api/tenant/members/${member.id}`, { method: 'DELETE' })
+    await refresh()
+    toast.success({ message: t('common.members.removeSuccess', { name: member.user.username }) })
+  } catch (error: any) {
+    toast.error({ message: error.data?.message || t('common.members.removeFailed') })
+  } finally {
+    removingId.value = undefined
+  }
+}
 const revoke = async (id: string) => { await $fetch(`/api/tenant/invitations/${id}`, { method: 'DELETE' }); await refresh() }
 const resend = async (id: string) => { await $fetch(`/api/tenant/invitations/${id}/resend`, { method: 'POST' }); toast.success({ message: $t('common.members.sent') }); await refresh() }
 </script>
