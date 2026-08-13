@@ -638,16 +638,15 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   if (!editedArticle.value.title)
     return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
 
-  const willPublishNow = targetStatus === 'published' && !editedArticle.value.releaseAt
   const releaseAt = editedArticle.value.releaseAt
     ? new Date(editedArticle.value.releaseAt)
-    : willPublishNow
-      ? new Date()
-      : null
+    : null
+  const schedulesForLater = targetStatus === 'published' && !!releaseAt && releaseAt.getTime() > Date.now()
+  const effectiveStatus = schedulesForLater ? 'draft' : targetStatus
 
   const payload = {
     ...editedArticle.value,
-    status: targetStatus,
+    status: effectiveStatus,
     imageUrl: optimizedImageUrl.value || editedArticle.value.imageUrl,
     articleSeriesId: selectedSeries.value?.id || null,
     tags: articleTags.value,
@@ -672,7 +671,7 @@ const submit = async (targetStatus: 'draft' | 'published') => {
       // Stay in the document. Re-baseline the two fields `hasChanges` compares, or leaving would
       // prompt to discard work that is already saved.
       article.value = { ...article.value!, title: payload.title, content: payload.content }
-      editedArticle.value.status = targetStatus
+      editedArticle.value.status = effectiveStatus
     }
   } catch (e: any) {
     toast.error({ message: e.data?.message || t('common.messages.saveFailed') })

@@ -1,9 +1,9 @@
 <template>
   <div
     v-tippy="
-      props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()
+      isScheduled
         ? $t('articles.statusCell.scheduledTooltip', [
-            format(new Date(props.row.original.releaseAt), 'dd.MM.yyyy, HH:mm'),
+            format(scheduledAt!, 'dd.MM.yyyy, HH:mm'),
           ])
         : ''
     "
@@ -11,7 +11,7 @@
   >
     <FormSelect v-model="model" :items="statusItems" :showValue="false" />
     <Icon
-      v-if="props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()"
+      v-if="isScheduled"
       name="mdi:hourglass"
       class="w-4 h-4 ml-2 text-blue-400"
     />
@@ -30,7 +30,12 @@ const emit = defineEmits<{
   (e: 'update', id: string, newStatus: ArticleStatus): void
 }>()
 
-const offset = new Date().getTimezoneOffset() * 60 * 1000
+const scheduledAt = computed(() =>
+  props.row.original.releaseAt ? new Date(props.row.original.releaseAt) : null,
+)
+const isScheduled = computed(
+  () => props.row.original.status === 'draft' && !!scheduledAt.value && scheduledAt.value.getTime() > Date.now(),
+)
 
 const statusItems = [
   { value: 'draft', label: $t('articles.status.draft'), icon: 'mdi:pencil-outline' },

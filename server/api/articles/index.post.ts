@@ -9,6 +9,10 @@ export default defineEventHandler(async (event) => {
 
   if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
+  const releaseAt = body.releaseAt ? new Date(body.releaseAt) : null
+  if (releaseAt && releaseAt.getTime() > Date.now()) body.status = 'draft'
+  else if (body.status === 'published') body.releaseAt = null
+
   let seriesOrder = 0
   if (body.articleSeriesId) {
     const lastArticle = await db.article.findFirst({

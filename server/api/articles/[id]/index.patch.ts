@@ -43,6 +43,9 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  if (body.releaseAt && new Date(body.releaseAt).getTime() > currentDate.getTime()) body.status = ArticleStatus.draft
+  else if (body.status === ArticleStatus.published) body.releaseAt = null
+
   let newSeriesOrder = previousArticle.seriesOrder
   if (body.articleSeriesId !== undefined) {
     if (body.articleSeriesId === null) {

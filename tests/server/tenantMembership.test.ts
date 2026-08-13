@@ -121,6 +121,20 @@ describe('tenant boundary wiring', () => {
     expect(endpoint).toContain("hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS')")
     expect(endpoint).toContain('canEditOthers ? {}')
   })
+
+  it('does not fetch protected statistics before the dialog is opened', () => {
+    const dialog = source('app/components/Stats/Dialog.vue')
+    expect(dialog).toContain('enabled: () => !!open.value')
+  })
+
+  it('keeps scheduled and published article states mutually exclusive', () => {
+    const create = source('server/api/articles/index.post.ts')
+    const update = source('server/api/articles/[id]/index.patch.ts')
+    expect(create).toContain("body.status = 'draft'")
+    expect(create).toContain("body.status === 'published') body.releaseAt = null")
+    expect(update).toContain('body.status = ArticleStatus.draft')
+    expect(update).toContain('body.status === ArticleStatus.published) body.releaseAt = null')
+  })
 })
 
 describe('invitation onboarding wiring', () => {
