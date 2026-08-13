@@ -11,10 +11,7 @@ export default defineConfig({
   // every `prose` rule with it, leaving tables at browser defaults (no borders, no padding).
   content: {
     pipeline: {
-      include: [
-        /\.(vue|svelte|[jt]sx|vine\.ts|mdx?|astro|elm|php|phtml|marko|html)($|\?)/,
-        /shared\/.*\.ts($|\?)/,
-      ],
+      include: [/\.(vue|svelte|[jt]sx|vine\.ts|mdx?|astro|elm|php|phtml|marko|html)($|\?)/, /shared\/.*\.ts($|\?)/],
     },
   },
   presets: [

@@ -63,9 +63,7 @@
 <script lang="ts" setup generic="T extends InputHTMLAttributes['type'] | 'textarea'">
 import type { InputHTMLAttributes } from 'vue'
 
-export type InputTypeValue<T> = T extends 'checkbox'
-  ? boolean
-  : string | number | null
+export type InputTypeValue<T> = T extends 'checkbox' ? boolean : string | number | null
 
 export interface FormInputProps<T> {
   icon?: string

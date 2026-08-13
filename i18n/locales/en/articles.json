@@ -256,6 +256,7 @@
       "roughlyEstimated": "Roughly {0} articles",
       "userDataError": "Error loading user data",
       "remainingTokens": "Remaining tokens",
+      "balanceIncludesExtras": "The plan includes {0} tokens; the balance also contains purchased or retained tokens.",
       "totalConsumed": "Total consumed: {0} tokens",
       "buyTokens": "Buy tokens",
       "upgradeToPremium": "Upgrade to PREMIUM",

@@ -9,11 +9,7 @@ interface CropperOptions {
   fit?: 'cover' | 'contain'
 }
 
-export function useAvatarCropper(
-  t: Translate,
-  onPreview: (url: string | null) => void,
-  options: CropperOptions = {},
-) {
+export function useAvatarCropper(t: Translate, onPreview: (url: string | null) => void, options: CropperOptions = {}) {
   const viewportWidth = options.viewportWidth ?? 288
   const viewportHeight = options.viewportHeight ?? 288
   const outputWidth = options.outputWidth ?? 1024
@@ -77,7 +73,7 @@ export function useAvatarCropper(
 
   function baseScale(width: number, height: number, frameWidth: number, frameHeight: number) {
     const scales = [frameWidth / width, frameHeight / height]
-    return (fit === 'contain' ? Math.min(...scales) : Math.max(...scales))
+    return fit === 'contain' ? Math.min(...scales) : Math.max(...scales)
   }
 
   function clampOffset() {

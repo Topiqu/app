@@ -336,7 +336,7 @@ const loadMore = async () => {
 .home-shell {
   --home-ink: #17211b;
   --home-muted: #657068;
-  --home-accent: #e05a3f;
+  --home-accent: var(--client-accent, #2563eb);
   --home-line: rgb(23 33 27 / 12%);
   width: min(100% - 2rem, 80rem);
   margin-inline: auto;
@@ -414,7 +414,7 @@ const loadMore = async () => {
   white-space: nowrap;
   color: var(--home-ink);
   text-decoration: underline;
-  text-decoration-color: rgb(224 90 63 / 45%);
+  text-decoration-color: color-mix(in srgb, var(--home-accent) 45%, transparent);
   text-underline-offset: 0.25rem;
 }
 

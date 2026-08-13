@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="flex md:flex-col gap-1.5 md:w-52 shrink-0 overflow-x-auto md:overflow-visible snap-x md:snap-none -mx-4 px-4 md:mx-0 md:px-0 pb-1 md:pb-0 md:sticky md:top-6 md:self-start [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    class="flex md:flex-col gap-1.5 md:w-52 shrink-0 overflow-x-auto md:overflow-visible snap-x md:snap-none -mx-4 px-4 md:mx-0 md:px-0 pb-1 md:pb-0 md:sticky md:top-24 md:self-start [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     :aria-label="$t('common.preferences.title')"
   >
     <button

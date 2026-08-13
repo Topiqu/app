@@ -31,7 +31,6 @@
         </span>
         <span class="tabular-nums">
           <span :class="tokenColor">{{ fmt(tokenRemaining) }}</span>
-          <span class="text-gray-400 dark:text-gray-600">/{{ fmt(tokenLimit) }}</span>
         </span>
       </span>
 
@@ -70,15 +69,18 @@
             <span :class="['text-2xl font-semibold leading-none tracking-tight tabular-nums', headlineColor]">
               {{ fmt(tokenRemaining) }}
             </span>
-            <span class="text-xs tabular-nums text-gray-400 dark:text-gray-500">/ {{ fmt(tokenLimit) }}</span>
           </div>
 
-          <div class="h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-neutral-700">
+          <div v-if="!balanceIncludesExtras" class="h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-neutral-700">
             <div
               :class="['h-full rounded-full transition-[width] duration-700 ease-out', barColor]"
               :style="{ width: `${remainingPercent}%` }"
             />
           </div>
+
+          <p v-else class="text-[11px] text-gray-500 dark:text-gray-500">
+            {{ $t('articles.userMenu.balanceIncludesExtras', [fmt(tokenLimit)]) }}
+          </p>
 
           <p class="text-[11px] text-gray-500 dark:text-gray-500">
             {{ $t('articles.userMenu.totalConsumed', [fmt(totalUsage)]) }}
@@ -279,6 +281,7 @@ const tokenRemaining = computed(() => status.value?.tokenRemaining ?? 0)
 const tokenLimit = computed(() => status.value?.tokenLimit ?? 0)
 const totalUsage = computed(() => status.value?.totalUsage ?? 0)
 const hasTokenPlan = computed(() => tokenLimit.value > 0)
+const balanceIncludesExtras = computed(() => tokenRemaining.value > tokenLimit.value)
 
 const remainingPercent = computed(() =>
   hasTokenPlan.value ? Math.min(100, Math.max(0, (tokenRemaining.value / tokenLimit.value) * 100)) : 0,

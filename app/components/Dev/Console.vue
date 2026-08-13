@@ -56,7 +56,11 @@
               :aria-label="collapsed ? 'Expand' : 'Collapse'"
               @click="collapsed = !collapsed"
             >
-              <Icon name="i-lucide:chevron-down" class="h-4 w-4 transition-transform" :class="collapsed ? '' : 'rotate-180'" />
+              <Icon
+                name="i-lucide:chevron-down"
+                class="h-4 w-4 transition-transform"
+                :class="collapsed ? '' : 'rotate-180'"
+              />
             </button>
             <button type="button" :class="headerBtn" aria-label="Hide DevConsole" @click="visible = false">
               <Icon name="i-lucide:x" class="h-4 w-4" />

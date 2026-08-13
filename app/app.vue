@@ -48,9 +48,7 @@ if (clientSite) {
   adChance.assign(clientSite.id, clientSite.plan)
 }
 
-const computedThemeColor = computed(
-  () => themeColors[clientSite?.theme as ThemeKey] ?? themeColors.blue,
-)
+const computedThemeColor = computed(() => themeColors[clientSite?.theme as ThemeKey] ?? themeColors.blue)
 
 useSeoMeta({
   title: () => clientSite?.name || 'Topiqu',
@@ -113,10 +111,7 @@ useHead(() => ({
         ]
       : []),
   ],
-  meta: [
-    ...(i18nHead.value.meta || []),
-    { name: 'theme-color', content: computedThemeColor.value },
-  ],
+  meta: [...(i18nHead.value.meta || []), { name: 'theme-color', content: computedThemeColor.value }],
 }))
 
 // Only the identity. `nuxt-schema-org`'s i18n plugin already emits WebSite and WebPage with

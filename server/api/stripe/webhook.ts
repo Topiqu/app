@@ -79,7 +79,6 @@ export default defineEventHandler(async (event) => {
         where: { id: clientSiteId },
         data: {
           tokenRemaining: { increment: tokens },
-          totalUsage: { increment: tokens },
         },
       })
     }

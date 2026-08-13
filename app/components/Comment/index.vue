@@ -310,7 +310,10 @@ const banUser = async () => {
   try {
     await $fetch(`/api/bans/${props.comment.id}`, {
       method: 'POST',
-      body: { reason: banReason.value, expiresAt: banExpiresAt.value ? new Date(banExpiresAt.value).toISOString() : null },
+      body: {
+        reason: banReason.value,
+        expiresAt: banExpiresAt.value ? new Date(banExpiresAt.value).toISOString() : null,
+      },
     })
     toast.success({ message: $t('articles.comments.banSuccess') })
     showBanModal.value = false

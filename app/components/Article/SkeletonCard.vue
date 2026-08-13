@@ -221,7 +221,7 @@ const plainExcerpt = computed(() => {
 .editorial-card {
   --card-ink: #17211b;
   --card-muted: #68736b;
-  --card-accent: #b83b26;
+  --card-accent: var(--client-accent, #2563eb);
   --card-line: rgb(23 33 27 / 12%);
   display: flex;
   flex-direction: column;
@@ -240,7 +240,7 @@ const plainExcerpt = computed(() => {
 
 .editorial-card:hover {
   transform: translateY(-4px);
-  border-color: rgb(217 82 56 / 35%);
+  border-color: color-mix(in srgb, var(--card-accent) 35%, transparent);
   box-shadow: 0 18px 45px rgb(23 33 27 / 10%);
 }
 .editorial-card__media-link {
@@ -272,9 +272,9 @@ const plainExcerpt = computed(() => {
 }
 .editorial-card__tag {
   padding: 0.35rem 0.65rem !important;
-  border: 1px solid rgb(217 82 56 / 22%);
+  border: 1px solid color-mix(in srgb, var(--card-accent) 22%, transparent);
   border-radius: 999px;
-  background: rgb(217 82 56 / 8%);
+  background: color-mix(in srgb, var(--card-accent) 8%, transparent);
   color: var(--card-accent);
   font-size: 0.7rem !important;
   font-weight: 750;

@@ -6,9 +6,19 @@
       :aria-label="$t('common.preferences.companyLogo.edit')"
       @click="openEditor"
     >
-      <NuxtImg v-if="logoUrl" :src="logoUrl" width="144" height="144" fit="contain" class="size-full object-contain p-3" :alt="$t('common.avatar.alt.company')" />
+      <NuxtImg
+        v-if="logoUrl"
+        :src="logoUrl"
+        width="144"
+        height="144"
+        fit="contain"
+        class="size-full object-contain p-3"
+        :alt="$t('common.avatar.alt.company')"
+      />
       <Icon v-else name="mdi:image-plus-outline" class="size-10 text-gray-400" />
-      <span class="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+      <span
+        class="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
+      >
         <Icon name="mdi:image-edit-outline" class="size-8" />
       </span>
     </button>
@@ -22,7 +32,12 @@
       </Button>
     </div>
 
-    <Modal v-model="open" :title="$t('common.preferences.companyLogo.editorTitle')" :onClose="closeEditor" class="max-w-lg">
+    <Modal
+      v-model="open"
+      :title="$t('common.preferences.companyLogo.editorTitle')"
+      :onClose="closeEditor"
+      class="max-w-lg"
+    >
       <template #content>
         <div class="flex flex-col gap-5">
           <button
@@ -43,7 +58,13 @@
               :style="{ width: `${LOGO_VIEWPORT_WIDTH}px`, height: `${LOGO_VIEWPORT_HEIGHT}px` }"
               :class="isSwiping ? 'cursor-grabbing' : 'cursor-grab'"
             >
-              <img :src="draftUrl" alt="" draggable="false" class="pointer-events-none absolute max-w-none select-none" :style="previewStyle" />
+              <img
+                :src="draftUrl"
+                alt=""
+                draggable="false"
+                class="pointer-events-none absolute max-w-none select-none"
+                :style="previewStyle"
+              />
               <div v-if="busy" class="absolute inset-0 flex items-center justify-center bg-black/45 text-white">
                 <Icon name="mdi:loading" class="size-9 animate-spin" />
               </div>
@@ -52,23 +73,50 @@
             <p class="text-center text-xs text-gray-500">{{ $t('common.preferences.companyLogo.dragHint') }}</p>
             <label class="flex items-center gap-3 text-sm">
               <Icon name="mdi:magnify-plus-outline" class="size-5" />
-              <input v-model.number="zoom" type="range" min="0.5" max="3" step="0.01" class="grow accent-indigo-600" :disabled="busy" />
+              <input
+                v-model.number="zoom"
+                type="range"
+                min="0.5"
+                max="3"
+                step="0.01"
+                class="grow accent-indigo-600"
+                :disabled="busy"
+              />
             </label>
             <div class="flex flex-wrap justify-center gap-2">
-              <Button variant="neutral" size="sm" icon="mdi:rotate-left" :disabled="busy" @click="rotation -= 90">{{ $t('common.avatar.rotateLeft') }}</Button>
-              <Button variant="neutral" size="sm" icon="mdi:rotate-right" :disabled="busy" @click="rotation += 90">{{ $t('common.avatar.rotateRight') }}</Button>
-              <Button variant="neutral" size="sm" icon="mdi:image-edit-outline" :disabled="busy" @click="chooseFile()">{{ $t('common.actions.change') }}</Button>
+              <Button variant="neutral" size="sm" icon="mdi:rotate-left" :disabled="busy" @click="rotation -= 90">{{
+                $t('common.avatar.rotateLeft')
+              }}</Button>
+              <Button variant="neutral" size="sm" icon="mdi:rotate-right" :disabled="busy" @click="rotation += 90">{{
+                $t('common.avatar.rotateRight')
+              }}</Button>
+              <Button
+                variant="neutral"
+                size="sm"
+                icon="mdi:image-edit-outline"
+                :disabled="busy"
+                @click="chooseFile()"
+                >{{ $t('common.actions.change') }}</Button
+              >
             </div>
           </template>
 
-          <p v-if="errorMessage" role="alert" class="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{{ errorMessage }}</p>
+          <p
+            v-if="errorMessage"
+            role="alert"
+            class="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300"
+          >
+            {{ errorMessage }}
+          </p>
         </div>
       </template>
 
       <template #footer>
         <div class="flex w-full justify-end gap-2">
           <Button variant="neutral" size="lg" :disabled="busy" @click="closeEditor">{{ $t('common.close') }}</Button>
-          <Button v-if="draftUrl" size="lg" icon="mdi:check" :loading="busy" @click="saveLogo">{{ $t('common.preferences.companyLogo.save') }}</Button>
+          <Button v-if="draftUrl" size="lg" icon="mdi:check" :loading="busy" @click="saveLogo">{{
+            $t('common.preferences.companyLogo.save')
+          }}</Button>
         </div>
       </template>
     </Modal>

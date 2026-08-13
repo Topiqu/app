@@ -40,9 +40,7 @@ const errorTitleMap: Record<number, string> = {
   504: 'common.errTypes.gatewayTimeout',
 }
 
-const title = computed(() =>
-  t(errorTitleMap[status.value] ?? 'common.errTypes.internalError'),
-)
+const title = computed(() => t(errorTitleMap[status.value] ?? 'common.errTypes.internalError'))
 
 if (import.meta.server) {
   const event = useRequestEvent()

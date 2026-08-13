@@ -13,10 +13,7 @@
         <div class="fixed inset-0 bg-neutral-900/60 dark:bg-black/70 backdrop-blur-[2px]" />
       </TransitionChild>
 
-      <div
-        class="fixed inset-0 flex items-end sm:items-center justify-center p-3 sm:p-4"
-        @keydown.enter.stop="onEnter"
-      >
+      <div class="fixed inset-0 flex items-end sm:items-center justify-center p-3 sm:p-4" @keydown.enter.stop="onEnter">
         <TransitionChild
           as="template"
           enter="ease-out duration-200"
@@ -159,14 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  Dialog,
-  DialogDescription,
-  DialogPanel,
-  DialogTitle,
-  TransitionChild,
-  TransitionRoot,
-} from '@headlessui/vue'
+import { Dialog, DialogDescription, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 
 type Variant = 'default' | 'danger' | 'success'
 

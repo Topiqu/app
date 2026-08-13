@@ -26,10 +26,7 @@
               :leaveTo="side === 'left' ? '-translate-x-full' : 'translate-x-full'"
             >
               <DialogPanel
-                :class="[
-                  'pointer-events-auto w-screen bg-white dark:bg-gray-950 shadow-2xl flex flex-col',
-                  widthClass,
-                ]"
+                :class="['pointer-events-auto w-screen bg-white dark:bg-gray-950 shadow-2xl flex flex-col', widthClass]"
               >
                 <div
                   v-if="title || closeBtn || $slots.header"
