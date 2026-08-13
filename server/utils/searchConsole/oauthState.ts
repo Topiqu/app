@@ -1,6 +1,10 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 
-interface StatePayload { clientSiteId: string; nonce: string; exp: number }
+interface StatePayload {
+  clientSiteId: string
+  nonce: string
+  exp: number
+}
 const secret = () => process.env.AUTH_SECRET || process.env.NUXT_AUTH_SECRET || ''
 
 export const signSearchConsoleState = (payload: StatePayload): string => {

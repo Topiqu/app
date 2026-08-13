@@ -13,7 +13,9 @@ describe('detectSearchOpportunities', () => {
   })
 
   it('flags low CTR on page one', () => {
-    const result = detectSearchOpportunities([{ page: '/a', query: 'query', clicks: 2, impressions: 500, ctr: 0.004, position: 4 }])
+    const result = detectSearchOpportunities([
+      { page: '/a', query: 'query', clicks: 2, impressions: 500, ctr: 0.004, position: 4 },
+    ])
     expect(result.map((item) => item.type)).toContain('LOW_CTR')
   })
 })
