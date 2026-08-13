@@ -374,6 +374,7 @@ const {
 } = useQuery({
   key: () => queryKeys.stats.dashboard,
   query: () => requestFetch<DashboardStats>('/api/stats/dashboard'),
+  enabled: () => !!open.value,
 })
 
 const loadFailed = computed(() => !!error.value && !dashboard.value)
@@ -381,7 +382,7 @@ const loadFailed = computed(() => !!error.value && !dashboard.value)
 const { data: rawInsight } = useQuery({
   key: () => queryKeys.stats.sentiment,
   query: () => requestFetch<CommunityInsight>('/api/clients/sentiment'),
-  enabled: () => !isBasicPlan.value,
+  enabled: () => !!open.value && !isBasicPlan.value,
 })
 
 const formatDuration = (totalMinutes: number) => {

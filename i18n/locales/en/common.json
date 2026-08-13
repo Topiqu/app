@@ -535,6 +535,7 @@
       "sent": "Invitation sent",
       "owner": "Owner",
       "member": "Member",
+      "you": "You",
       "joined": "Joined",
       "permissions": "Permissions",
       "search": "Search members and invitations",

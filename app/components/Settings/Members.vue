@@ -48,6 +48,9 @@
                 <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold" :class="member.role === 'OWNER' ? 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200' : 'bg-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'">
                   {{ member.role === 'OWNER' ? $t('common.members.owner') : $t('common.members.member') }}
                 </span>
+                <span v-if="member.id === data?.currentMembershipId" class="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                  {{ $t('common.members.you') }}
+                </span>
               </div>
               <div class="mt-1 truncate text-xs text-neutral-500">{{ member.user.email }}</div>
               <div class="mt-2 text-xs text-neutral-400">{{ $t('common.members.joined') }} <NuxtTime :datetime="member.createdAt" date-style="medium" /></div>
