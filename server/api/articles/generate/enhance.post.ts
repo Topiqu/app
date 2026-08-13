@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
   if (!user || !user.clientSiteId) {
     throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
   }
+  await requireTenantScope(event, 'AI_USE', user.clientSiteId)
 
   await ensureMinAccountAge(event, user.id)
   await requireAiPlan(user.clientSiteId, t('common.errors.featureNotInPlan')!)

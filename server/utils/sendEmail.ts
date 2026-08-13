@@ -144,6 +144,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
     commentReply: ['greeting', 'intro', 'parent', 'button'],
     deleteComment: ['greeting', 'intro', 'reason'],
     userBan: ['greeting', data.introKey || 'intro_no_reason'],
+    tenantInvitation: ['greeting', 'intro', 'button', 'expiration'],
   }
   const textParts = (textKeys[template] || ['intro'])
     .map((key) => translate(`${template}.${key}`, enrichedData))

@@ -20,5 +20,6 @@ export default defineEventHandler(async (event) => {
   if (!existingClientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   const newUser = await saveUserWithLogging(event, { username, email, password, role, clientSiteId })
+  if (role === 'admin') await prisma.tenantMembership.create({ data: { clientSiteId, userId: newUser.id, role: 'MEMBER', scopes: [...TENANT_SCOPES] } })
   return newUser
 })

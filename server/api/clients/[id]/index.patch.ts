@@ -18,9 +18,13 @@ export default defineEventHandler(async (event) => {
 
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'TENANT_SETTINGS', id)
 
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
+  const integrationFields = ['socials', 'linkedinMode', 'linkedinCompanyType', 'linkedinBrandProfile', 'gtagId', 'allowGtag']
+  if (user.role !== 'superadmin' && integrationFields.some((field) => field in body))
+    await requireTenantScope(event, 'INTEGRATION_CONTROL', id)
   if (body.domain !== undefined) {
     body.domain = normalizeDomain(String(body.domain))
     if (!isValidDomain(body.domain)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })

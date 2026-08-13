@@ -1,13 +1,13 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
-  if (!user || user.role !== 'admin') throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  const { user } = await requireTenantScope(event, 'ARTICLE_WRITE')
 
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
+  if ((body.status === 'published' || body.releaseAt) && !hasTenantScope((await requireTenantMember(event)).membership, 'ARTICLE_PUBLISH'))
+    throw createError({ statusCode: 403, message: 'Missing tenant scope: ARTICLE_PUBLISH' })
 
-  if (!isCdnImageUrl(body.imageUrl))
-    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   let seriesOrder = 0
   if (body.articleSeriesId) {

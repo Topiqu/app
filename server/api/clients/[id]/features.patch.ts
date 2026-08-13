@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
 
   if (user.role === 'admin' && user.clientSiteId !== clientId)
     throw createError({ statusCode: 403, message: t('common.errors.unauthorized')! })
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'BILLING_CHANGE', clientId)
 
   const { code, enabled } = await readBody<{ code: FeatureCode; enabled: boolean }>(event)
 

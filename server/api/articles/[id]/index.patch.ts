@@ -3,10 +3,9 @@ import { ArticleStatus, type NotificationType } from '@prisma/client'
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const id = getRouterParam(event, 'id')
-  const user = (await getServerSession(event))?.user
+  const { user, membership } = await requireTenantScope(event, 'ARTICLE_WRITE')
 
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
@@ -14,18 +13,21 @@ export default defineEventHandler(async (event) => {
   if (body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
 
-  if (!isCdnImageUrl(body.imageUrl))
-    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const currentDate = new Date()
   const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59)
 
   const previousArticle = await db.article.findUnique({
     where: { id },
-    select: { status: true, releaseAt: true, articleSeriesId: true, seriesOrder: true },
+    select: { status: true, releaseAt: true, articleSeriesId: true, seriesOrder: true, userId: true },
   })
 
   if (!previousArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  if (previousArticle.userId !== user.id && !hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS'))
+    throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
+  if ((body.status === ArticleStatus.published || body.releaseAt) && !hasTenantScope(membership, 'ARTICLE_PUBLISH'))
+    throw createError({ statusCode: 403, message: 'Missing tenant scope: ARTICLE_PUBLISH' })
 
   if (previousArticle.status === ArticleStatus.published) {
     delete body.releaseAt

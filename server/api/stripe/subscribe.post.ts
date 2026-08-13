@@ -9,12 +9,18 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }
 
-  const { plan, interval: bodyInterval, clientSiteId: bodyClientSiteId, origin } = await readBody<{
+  const {
+    plan,
+    interval: bodyInterval,
+    clientSiteId: bodyClientSiteId,
+    origin,
+  } = await readBody<{
     plan: 'PRO' | 'PREMIUM'
     interval?: 'month' | 'year'
     clientSiteId?: string
     origin: string
   }>(event)
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'BILLING_CHANGE', user.clientSiteId)
 
   const clientSiteId = user.role === 'superadmin' && bodyClientSiteId ? bodyClientSiteId : user.clientSiteId
   if (!plan || !clientSiteId || !origin) {

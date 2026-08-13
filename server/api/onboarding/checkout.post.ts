@@ -96,6 +96,7 @@ export default defineEventHandler(async (event) => {
         false,
         tx,
       )
+      await tx.tenantMembership.create({ data: { clientSiteId: site.id, userId: user.id, role: 'OWNER', scopes: [...TENANT_SCOPES] } })
 
       if (!isManagedDomain(site.domain))
         await logAction({

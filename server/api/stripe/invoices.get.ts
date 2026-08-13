@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
   if ((user.role !== 'admin' && user.role !== 'superadmin') || !user.clientSiteId) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'BILLING_CHANGE', user.clientSiteId)
 
   const db = await getEnhancedPrisma(user)
   const clientSite = await db.clientSite.findUnique({

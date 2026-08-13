@@ -9,22 +9,20 @@ export default defineEventHandler(async (event) => {
   if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
     throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
   }
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', user.clientSiteId)
 
   const query = getQuery(event)
   const appType = query.appType === 'pages' ? 'pages' : 'personal'
 
   const requestedClientSiteId = query.clientSiteId as string | undefined
-  const clientSiteId =
-    user.role === 'superadmin' && requestedClientSiteId ? requestedClientSiteId : user.clientSiteId
+  const clientSiteId = user.role === 'superadmin' && requestedClientSiteId ? requestedClientSiteId : user.clientSiteId
 
   if (!clientSiteId) {
     throw createError({ statusCode: 400, message: 'Missing clientSiteId' })
   }
 
   const clientId =
-    appType === 'pages'
-      ? process.env.LINKEDIN_CLIENT_ID_COMPANY
-      : process.env.LINKEDIN_CLIENT_ID_PERSONAL
+    appType === 'pages' ? process.env.LINKEDIN_CLIENT_ID_COMPANY : process.env.LINKEDIN_CLIENT_ID_PERSONAL
   if (!clientId) {
     throw createError({ statusCode: 500, message: `LinkedIn ${appType} Client ID not configured` })
   }

@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
   if (session.clientSiteId !== clientId && session.role !== 'superadmin') {
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
   }
+  if (session.role !== 'superadmin') await requireTenantScope(event, 'API_KEY_CONTROL', clientId)
 
   const db = await getEnhancedPrisma(session)
 
