@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 410, message: 'Invitation is no longer valid' })
   if (body.action === 'decline') {
     await prisma.tenantInvitation.update({ where: { id: invitation.id }, data: { revokedAt: new Date() } })
+    await logAction({ action: 'TENANT_INVITATION_DECLINED', userId: invitation.invitedById, clientSiteId: invitation.clientSiteId, ip: getIp(event), metadata: { invitationId: invitation.id, email: invitation.email, actor: 'invitation_recipient' } })
     return { accepted: false }
   }
   const user = await requireUser(event)
@@ -22,5 +23,6 @@ export default defineEventHandler(async (event) => {
     prisma.tenantInvitation.update({ where: { id: invitation.id }, data: { acceptedAt: new Date() } }),
     prisma.user.update({ where: { id: user.id }, data: { clientSiteId: invitation.clientSiteId, role: 'admin' } }),
   ])
+  await logAction({ action: 'TENANT_INVITATION_ACCEPTED', userId: user.id, clientSiteId: invitation.clientSiteId, ip: getIp(event), metadata: { invitationId: invitation.id, scopes: invitation.scopes } })
   return { accepted: true, clientSiteId: invitation.clientSiteId }
 })

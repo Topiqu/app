@@ -5,5 +5,6 @@ export default defineEventHandler(async (event) => {
   const membership = await prisma.tenantMembership.findUnique({ where: { clientSiteId_userId: { clientSiteId, userId: user.id } }, select: { id: true, deletedAt: true } })
   if (!membership || membership.deletedAt) throw createError({ statusCode: 403, message: 'Tenant membership required' })
   await prisma.user.update({ where: { id: user.id }, data: { clientSiteId, role: 'admin' } })
+  await logAction({ action: 'ACTIVE_TENANT_CHANGED', userId: user.id, clientSiteId, ip: getIp(event), metadata: { previousClientSiteId: user.clientSiteId || null } })
   return { clientSiteId }
 })

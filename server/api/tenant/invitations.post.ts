@@ -36,6 +36,10 @@ export default defineEventHandler(async (event) => {
       },
     })
   })
+  await logAction({
+    action: 'TENANT_INVITATION_CREATED', userId: user.id, clientSiteId: membership.clientSiteId, ip: getIp(event),
+    metadata: { email, scopes: body.scopes, expiresAt: expiresAt.toISOString() },
+  })
   const tenant = await prisma.clientSite.findUniqueOrThrow({
     where: { id: membership.clientSiteId },
     select: { name: true },

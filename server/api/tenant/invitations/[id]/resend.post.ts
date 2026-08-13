@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
   const token = invitationToken()
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   await prisma.tenantInvitation.update({ where: { id }, data: { tokenHash: invitationTokenHash(token), expiresAt } })
+  await logAction({ action: 'TENANT_INVITATION_RESENT', userId: user.id, clientSiteId: membership.clientSiteId, ip: getIp(event), metadata: { invitationId: id, email: invitation.email, expiresAt: expiresAt.toISOString() } })
   await sendEmail({ event, to: invitation.email, template: 'tenantInvitation', data: { tenantName: invitation.clientSite.name, inviterName: user.name, invitationUrl: invitationUrl(event, token), expirationDays: '7' } })
   return { expiresAt }
 })

@@ -43,3 +43,28 @@ describe('tenant authorization', () => {
     expect(sql).toContain('WHERE "role" = \'OWNER\'')
   })
 })
+
+describe('tenant audit trail', () => {
+  it('records every membership and invitation lifecycle mutation', () => {
+    const files = [
+      'server/api/tenant/invitations.post.ts',
+      'server/api/tenant/invitations/[id].delete.ts',
+      'server/api/tenant/invitations/[id]/resend.post.ts',
+      'server/api/invitations/[token].post.ts',
+      'server/api/tenant/members/[id].patch.ts',
+      'server/api/tenant/members/[id].delete.ts',
+      'server/api/tenant/active.post.ts',
+    ].map((file) => readFileSync(resolve(process.cwd(), file), 'utf8')).join('\n')
+
+    for (const action of [
+      'TENANT_INVITATION_CREATED',
+      'TENANT_INVITATION_RESENT',
+      'TENANT_INVITATION_REVOKED',
+      'TENANT_INVITATION_ACCEPTED',
+      'TENANT_INVITATION_DECLINED',
+      'TENANT_MEMBER_SCOPES_CHANGED',
+      'TENANT_MEMBER_REMOVED',
+      'ACTIVE_TENANT_CHANGED',
+    ]) expect(files).toContain(`action: '${action}'`)
+  })
+})

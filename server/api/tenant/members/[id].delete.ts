@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const { membership } = await requireTenantScope(event, 'MEMBER_CONTROL')
+  const { user: actor, membership } = await requireTenantScope(event, 'MEMBER_CONTROL')
   const id = getRouterParam(event, 'id')!
   const target = await prisma.tenantMembership.findFirst({
     where: { id, clientSiteId: membership.clientSiteId, deletedAt: null },
@@ -15,5 +15,6 @@ export default defineEventHandler(async (event) => {
       await prisma.user.update({ where: { id: target.userId }, data: { clientSiteId: next?.clientSiteId ?? null, role: next ? 'admin' : 'reader' } })
     }
   }
+  await logAction({ action: 'TENANT_MEMBER_REMOVED', userId: actor.id, clientSiteId: membership.clientSiteId, ip: getIp(event), metadata: { membershipId: id, targetUserId: target.userId, scopes: target.scopes } })
   return { ok: true }
 })
