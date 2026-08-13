@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed top-0 left-0 px-3 sm:px-5 h-18 w-full flex items-center justify-between bg-white/72 dark:bg-gray-950/72 backdrop-blur-xl border-b border-gray-900/7 dark:border-white/10 pointer-events-none [&>*]:pointer-events-auto z-header"
+    class="sticky top-0 shrink-0 px-3 sm:px-5 h-18 w-full flex items-center justify-between bg-white/72 dark:bg-gray-950/72 backdrop-blur-xl border-b border-gray-900/7 dark:border-white/10 pointer-events-none [&>*]:pointer-events-auto z-header"
   >
     <Button
       v-if="auth && isAdmin"
