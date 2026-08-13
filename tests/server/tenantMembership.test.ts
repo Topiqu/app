@@ -93,6 +93,16 @@ describe('tenant boundary wiring', () => {
     expect(source('server/api/auth/[...].ts')).toContain('activeSession?.clientSiteId')
   })
 
+  it('revalidates kicked sessions and protects analytics and tags', () => {
+    const auth = source('server/api/auth/[...].ts')
+    expect(auth).toContain('prisma.tenantMembership.findUnique')
+    expect(auth).toContain("token.role = hasActiveTenant ? 'admin' : 'reader'")
+    expect(source('server/api/tenant/members/[id].delete.ts')).toContain('prisma.session.updateMany')
+    for (const file of ['server/api/stats/dashboard.ts', 'server/api/stats/views.ts', 'server/api/tags/index.get.ts']) {
+      expect(source(file)).toContain('requireTenantScope')
+    }
+  })
+
   it('guards integrations, moderation, translations and article tags', () => {
     const expectations = [
       ['server/api/search-console/callback.get.ts', 'INTEGRATION_CONTROL'],

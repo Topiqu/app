@@ -16,6 +16,7 @@ const lastSevenDays = () => {
 
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { clientSite: true })
+  await requireTenantScope(event, 'ANALYTICS_READ', user.clientSiteId)
 
   const [
     articleCount,

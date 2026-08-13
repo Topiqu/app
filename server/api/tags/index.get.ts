@@ -3,6 +3,7 @@ export default defineEventHandler(async (event) => {
 
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  await requireTenantScope(event, 'ARTICLE_WRITE')
 
   // The pickers only ever render id + name; the full row also shipped slug, clientSiteId and
   // three timestamps per tag to every editor load.

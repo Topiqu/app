@@ -327,8 +327,21 @@ export default NuxtAuthHandler({
           where: { id: token.sessionId as string },
           select: { clientSiteId: true, clientSite: { select: { plan: true } } },
         })
-        token.clientSiteId = activeSession?.clientSiteId ?? ''
-        token.plan = activeSession?.clientSite?.plan ?? 'BASIC'
+        const activeMembership = activeSession?.clientSiteId
+          ? await prisma.tenantMembership.findUnique({
+              where: {
+                clientSiteId_userId: { clientSiteId: activeSession.clientSiteId, userId: token.id as string },
+              },
+              select: { deletedAt: true },
+            })
+          : null
+        const hasActiveTenant = activeMembership !== null && activeMembership.deletedAt === null
+        token.clientSiteId = hasActiveTenant ? activeSession!.clientSiteId! : ''
+        token.plan = hasActiveTenant ? activeSession!.clientSite!.plan : 'BASIC'
+        if (token.role !== 'superadmin') token.role = hasActiveTenant ? 'admin' : 'reader'
+        if (activeSession?.clientSiteId && !hasActiveTenant) {
+          await prisma.session.update({ where: { id: token.sessionId as string }, data: { clientSiteId: null } })
+        }
       }
       return token
     },
