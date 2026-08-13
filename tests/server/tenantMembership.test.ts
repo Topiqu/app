@@ -114,6 +114,13 @@ describe('tenant boundary wiring', () => {
     ]
     for (const [file, guard] of expectations) expect(source(file)).toContain(guard)
   })
+
+  it('uses ARTICLE_WRITE_OTHERS when building the admin article list', () => {
+    const endpoint = source('server/api/articles/search.ts')
+    expect(endpoint).toContain("requireTenantScope(event, 'ARTICLE_WRITE')")
+    expect(endpoint).toContain("hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS')")
+    expect(endpoint).toContain('canEditOthers ? {}')
+  })
 })
 
 describe('invitation onboarding wiring', () => {

@@ -2,43 +2,39 @@ import type { H3Event } from 'h3'
 
 export default defineEventHandler(async (event: H3Event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
-  if (!user?.id) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  const { user, membership } = await requireTenantScope(event, 'ARTICLE_WRITE')
 
   const { skip, take } = await getPagination(event)
   const query = getQuery(event).query as string | undefined
 
   const db = await getEnhancedPrisma(user)
 
-  const clientSite = await db.clientSite.findFirst({
-    where: { users: { some: { id: user.id } } },
-    select: { id: true },
-  })
-
-  if (!clientSite?.id) {
-    return { data: [], total: 0 }
-  }
+  const clientSiteId = membership.clientSiteId
 
   const aiUserIds = await db.user
     .findMany({
-      where: { clientSiteId: clientSite.id, role: 'ai' },
+      where: { clientSiteId, role: 'ai' },
       select: { id: true },
     })
     .then((users) => users.map((u) => u.id))
 
+  const canEditOthers = hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS')
+  const authorFilter = canEditOthers ? {} : { userId: { in: [user.id, ...aiUserIds] } }
+  const where = {
+    clientSiteId,
+    ...authorFilter,
+    ...(query && {
+      OR: [
+        { title: { contains: query, mode: 'insensitive' as const } },
+        { excerpt: { contains: query, mode: 'insensitive' as const } },
+        { content: { contains: query, mode: 'insensitive' as const } },
+      ],
+    }),
+  }
+
   const [articles, total] = await Promise.all([
     db.article.findMany({
-      where: {
-        clientSiteId: clientSite.id,
-        userId: { in: [user.id, ...aiUserIds] },
-        ...(query && {
-          OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { excerpt: { contains: query, mode: 'insensitive' } },
-            { content: { contains: query, mode: 'insensitive' } },
-          ],
-        }),
-      },
+      where,
       orderBy: { createdAt: 'desc' },
       skip,
       take,
@@ -46,19 +42,7 @@ export default defineEventHandler(async (event: H3Event) => {
       // the owning admin's own list, and "awaiting review" is the whole point of the column.
       include: { translations: { select: { language: true, status: true, slug: true } } },
     }),
-    db.article.count({
-      where: {
-        clientSiteId: clientSite.id,
-        userId: { in: [user.id, ...aiUserIds] },
-        ...(query && {
-          OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { excerpt: { contains: query, mode: 'insensitive' } },
-            { content: { contains: query, mode: 'insensitive' } },
-          ],
-        }),
-      },
-    }),
+    db.article.count({ where }),
   ])
 
   return { data: articles, total }
