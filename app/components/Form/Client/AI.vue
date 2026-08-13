@@ -131,11 +131,13 @@
         />
         <div class="flex flex-col gap-2">
           <FormLabel :text="$t('common.avatar.ai.label')" />
-          <UserPictureUploader
-            v-model="avatarUrl"
-            :api="`/api/clients/${clientId}/ai-avatar`"
-            :name="username || $t('common.preferences.aiAuthor.title')"
-          />
+          <div class="flex justify-center">
+            <UserPictureUploader
+              v-model="avatarUrl"
+              :api="`/api/clients/${clientId}/ai-avatar`"
+              :name="username || $t('common.preferences.aiAuthor.title')"
+            />
+          </div>
         </div>
         <div class="flex flex-col gap-2">
           <FormLabel :text="$t('common.preferences.aiAuthor.bio.label')" />
