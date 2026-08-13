@@ -1,8 +1,8 @@
 import type { AiImageTask, AiProvider, AiTask } from './modelRegistry'
 
 import xai from './xai'
-import googleAi from './googleAi'
 import openAi from './openai'
+import googleAi from './googleAi'
 import { AI_IMAGE_MODELS, AI_MODELS } from './modelRegistry'
 
 const TEXT_PROVIDERS: Record<AiProvider, (id: string) => ReturnType<typeof xai>> = {

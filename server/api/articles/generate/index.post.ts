@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -84,9 +86,13 @@ export default defineEventHandler(async (event) => {
           // Stopped mid-generation: bill best-effort for the partial usage we actually spent.
           const usage = await result.usage.catch(() => null)
           if (usage?.totalTokens) {
-            await consumeClientTokens(clientSiteId, usage.totalTokens, 'GENERATE_ARTICLE', { aborted: true }, event).catch(
-              () => {},
-            )
+            await consumeClientTokens(
+              clientSiteId,
+              usage.totalTokens,
+              'GENERATE_ARTICLE',
+              { aborted: true },
+              event,
+            ).catch(() => {})
           }
         } else {
           send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })

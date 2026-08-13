@@ -1,319 +1,259 @@
 <template>
   <div class="space-y-8">
-    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-6">
+    <UCard>
       <div class="grid grid-cols-1 gap-3">
-        <label
-          class="flex items-start gap-3 py-3 px-4 rounded-lg border transition-all duration-200 select-none cursor-pointer"
-          :class="[
-            aiEnabled
-              ? 'ring-2 ring-blue-500 border-transparent bg-white dark:bg-gray-800'
-              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
-            !canEnableAi && 'opacity-60 cursor-not-allowed',
-          ]"
-        >
-          <Icon name="mdi:robot-outline" class="w-6 h-6 mt-0.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ $t('common.features.ai') }}</div>
-            <div class="text-xs text-gray-600 dark:text-gray-400 leading-tight">{{ $t('common.features.aiDesc') }}</div>
-            <div class="mt-1 flex items-center gap-2 text-xs">
-              <span class="font-semibold text-gray-900 dark:text-gray-100">
-                {{ formatFeaturePrice('AI') }}
-                <span class="text-gray-500 font-normal"
-                  >/{{
-                    billingPlan === 'ANNUAL' ? $t('common.preferences.annualy') : $t('common.preferences.monthly')
-                  }}</span
-                >
-              </span>
-              <span v-if="billingPlan === 'ANNUAL'" class="text-emerald-600 dark:text-emerald-400 font-medium"
-                >–20 %</span
-              >
+        <UCard>
+          <div class="flex items-start gap-3">
+            <UIcon size="24" name="i-mdi-robot-outline" class="mt-0.5 shrink-0" />
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold text-sm text-highlighted">{{ $t('common.features.ai') }}</div>
+              <div class="text-xs text-muted leading-tight">{{ $t('common.features.aiDesc') }}</div>
+              <div class="mt-1 flex items-center gap-2 text-xs">
+                <span class="font-semibold text-highlighted">
+                  {{ formatFeaturePrice('AI') }}
+                  <span class="font-normal text-muted"
+                    >/{{
+                      billingPlan === 'ANNUAL' ? $t('common.preferences.annualy') : $t('common.preferences.monthly')
+                    }}</span
+                  >
+                </span>
+                <span v-if="billingPlan === 'ANNUAL'" class="font-medium text-success">–20 %</span>
+              </div>
             </div>
+            <UFormField :label="$t('common.features.ai')" :ui="{ label: 'sr-only' }" class="shrink-0">
+              <USwitch
+                :modelValue="aiEnabled"
+                :disabled="!canEnableAi"
+                :loading="togglePending"
+                :aria-label="$t('common.features.ai')"
+                @update:modelValue="toggle('AI')"
+              />
+            </UFormField>
           </div>
-          <div class="w-5 h-5 flex-shrink-0">
-            <FormInput
-              :modelValue="aiEnabled"
-              type="checkbox"
-              :disabled="!canEnableAi"
-              :loading="togglePending"
-              class="!w-5 !h-5 pointer-events-none"
-              @update:modelValue="toggle('AI')"
-            />
-          </div>
-        </label>
+        </UCard>
 
-        <label
-          class="flex items-start gap-3 py-3 px-4 rounded-lg border transition-all duration-200 select-none cursor-pointer"
-          :class="[
-            sentimentEnabled && aiEnabled
-              ? 'ring-2 ring-emerald-500 border-transparent bg-white dark:bg-gray-800'
-              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
-            (!canEnableSentiment || !aiEnabled) && 'opacity-60 cursor-not-allowed',
-          ]"
-        >
-          <Icon
-            name="mdi:emoticon-happy-outline"
-            class="w-6 h-6 mt-0.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0"
-          />
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold text-sm text-gray-900 dark:text-gray-100">
-              {{ $t('common.features.sentiment') }}
+        <UCard>
+          <div class="flex items-start gap-3">
+            <UIcon size="24" name="i-mdi-emoticon-happy-outline" class="mt-0.5 shrink-0" />
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold text-sm text-highlighted">
+                {{ $t('common.features.sentiment') }}
+              </div>
+              <div class="text-xs text-muted leading-tight">
+                {{ $t('common.features.sentimentDesc') }}
+              </div>
+              <div class="mt-1 flex items-center gap-2 text-xs">
+                <span class="font-semibold text-highlighted">
+                  {{ formatFeaturePrice('SENTIMENT') }}
+                  <span class="font-normal text-muted"
+                    >/{{
+                      billingPlan === 'ANNUAL' ? $t('common.preferences.annualy') : $t('common.preferences.monthly')
+                    }}</span
+                  >
+                </span>
+                <span v-if="billingPlan === 'ANNUAL'" class="font-medium text-success">–20 %</span>
+              </div>
             </div>
-            <div class="text-xs text-gray-600 dark:text-gray-400 leading-tight">
-              {{ $t('common.features.sentimentDesc') }}
-            </div>
-            <div class="mt-1 flex items-center gap-2 text-xs">
-              <span class="font-semibold text-gray-900 dark:text-gray-100">
-                {{ formatFeaturePrice('SENTIMENT') }}
-                <span class="text-gray-500 font-normal"
-                  >/{{
-                    billingPlan === 'ANNUAL' ? $t('common.preferences.annualy') : $t('common.preferences.monthly')
-                  }}</span
-                >
-              </span>
-              <span v-if="billingPlan === 'ANNUAL'" class="text-emerald-600 dark:text-emerald-400 font-medium"
-                >–20 %</span
-              >
-            </div>
+            <UFormField :label="$t('common.features.sentiment')" :ui="{ label: 'sr-only' }" class="shrink-0">
+              <USwitch
+                :modelValue="sentimentEnabled"
+                :disabled="!canEnableSentiment || !aiEnabled"
+                :loading="togglePending"
+                :aria-label="$t('common.features.sentiment')"
+                @update:modelValue="toggle('SENTIMENT')"
+              />
+            </UFormField>
           </div>
-          <div class="w-5 h-5 flex-shrink-0">
-            <FormInput
-              :modelValue="sentimentEnabled"
-              type="checkbox"
-              :disabled="!canEnableSentiment || !aiEnabled"
-              :loading="togglePending"
-              class="!w-5 !h-5 pointer-events-none"
-              @update:modelValue="toggle('SENTIMENT')"
-            />
-          </div>
-        </label>
+        </UCard>
 
-        <label
-          class="flex items-start gap-3 py-3 px-4 rounded-lg border transition-all duration-200 select-none cursor-pointer"
-          :class="[
-            articleCronsEnabled && aiEnabled
-              ? 'ring-2 ring-violet-500 border-transparent bg-white dark:bg-gray-800'
-              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
-            (!canEnableArticleCrons || !aiEnabled) && 'opacity-60 cursor-not-allowed',
-          ]"
-        >
-          <Icon name="mdi:clock-outline" class="w-6 h-6 mt-0.5 text-violet-600 dark:text-violet-400 flex-shrink-0" />
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold text-sm text-gray-900 dark:text-gray-100">
-              {{ $t('common.features.articleCrons') }}
+        <UCard>
+          <div class="flex items-start gap-3">
+            <UIcon size="24" name="i-mdi-clock-outline" class="mt-0.5 shrink-0" />
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold text-sm text-highlighted">
+                {{ $t('common.features.articleCrons') }}
+              </div>
+              <div class="text-xs text-muted leading-tight">
+                {{ $t('common.features.articleCronsDesc') }}
+              </div>
+              <div class="mt-1 flex items-center gap-2 text-xs">
+                <span class="font-semibold text-highlighted">
+                  {{ formatFeaturePrice('ARTICLE_CRONS') }}
+                  <span class="font-normal text-muted"
+                    >/{{
+                      billingPlan === 'ANNUAL' ? $t('common.preferences.annualy') : $t('common.preferences.monthly')
+                    }}</span
+                  >
+                </span>
+                <span v-if="billingPlan === 'ANNUAL'" class="font-medium text-success">–20 %</span>
+              </div>
             </div>
-            <div class="text-xs text-gray-600 dark:text-gray-400 leading-tight">
-              {{ $t('common.features.articleCronsDesc') }}
-            </div>
-            <div class="mt-1 flex items-center gap-2 text-xs">
-              <span class="font-semibold text-gray-900 dark:text-gray-100">
-                {{ formatFeaturePrice('ARTICLE_CRONS') }}
-                <span class="text-gray-500 font-normal"
-                  >/{{
-                    billingPlan === 'ANNUAL' ? $t('common.preferences.annualy') : $t('common.preferences.monthly')
-                  }}</span
-                >
-              </span>
-              <span v-if="billingPlan === 'ANNUAL'" class="text-emerald-600 dark:text-emerald-400 font-medium"
-                >–20 %</span
-              >
-            </div>
+            <UFormField :label="$t('common.features.articleCrons')" :ui="{ label: 'sr-only' }" class="shrink-0">
+              <USwitch
+                :modelValue="articleCronsEnabled"
+                :disabled="!canEnableArticleCrons || !aiEnabled"
+                :loading="togglePending"
+                :aria-label="$t('common.features.articleCrons')"
+                @update:modelValue="toggle('ARTICLE_CRONS')"
+              />
+            </UFormField>
           </div>
-          <div class="w-5 h-5 flex-shrink-0">
-            <FormInput
-              :modelValue="articleCronsEnabled"
-              type="checkbox"
-              :disabled="!canEnableArticleCrons || !aiEnabled"
-              :loading="togglePending"
-              class="!w-5 !h-5 pointer-events-none"
-              @update:modelValue="toggle('ARTICLE_CRONS')"
-            />
-          </div>
-        </label>
+        </UCard>
       </div>
-    </div>
-    <Transition
-      enterActiveClass="transition duration-300 ease-out"
-      enterFromClass="transform -translate-y-4 opacity-0"
-      enterToClass="transform translate-y-0 opacity-100"
-      leaveActiveClass="transition duration-200 ease-in"
-      leaveFromClass="transform translate-y-0 opacity-100"
-      leaveToClass="transform -translate-y-4 opacity-0"
-    >
-      <div
-        v-if="aiEnabled && articleCronsEnabled"
-        class="rounded-2xl border p-5 flex items-center gap-4 transition-colors duration-300"
-        :class="
-          autoRelease
-            ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
-            : 'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700'
-        "
-      >
-        <div
-          class="p-2 rounded-full"
-          :class="
-            autoRelease
-              ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-500'
-          "
-        >
-          <Icon :name="autoRelease ? 'mdi:publish' : 'mdi:file-document-edit-outline'" class="w-6 h-6" />
+    </UCard>
+    <UCard v-if="aiEnabled && articleCronsEnabled">
+      <div class="flex items-center gap-4">
+        <div>
+          <UIcon size="24" :name="autoRelease ? 'i-mdi-publish' : 'i-mdi-file-document-edit-outline'" />
         </div>
 
         <div class="flex-1">
-          <div
-            class="font-semibold text-sm"
-            :class="autoRelease ? 'text-amber-900 dark:text-amber-100' : 'text-gray-900 dark:text-gray-100'"
-          >
+          <div class="text-sm font-semibold text-highlighted">
             {{ $t('common.preferences.autoRelease.title') }}
           </div>
-          <div
-            class="text-xs leading-tight"
-            :class="autoRelease ? 'text-amber-700 dark:text-amber-300' : 'text-gray-500 dark:text-gray-400'"
-          >
+          <div class="text-xs leading-tight text-muted">
             {{ autoRelease ? $t('common.preferences.autoRelease.warning') : $t('common.preferences.autoRelease.desc') }}
           </div>
         </div>
 
-        <div class="flex items-center">
-          <FormInput
+        <UFormField :label="$t('common.preferences.autoRelease.title')" :ui="{ label: 'sr-only' }">
+          <USwitch
             :modelValue="autoRelease"
-            type="checkbox"
-            class="!w-5 !h-5 cursor-pointer"
+            :aria-label="$t('common.preferences.autoRelease.title')"
             @update:modelValue="(val) => handleAutoReleaseToggle(val as boolean)"
           />
+        </UFormField>
+      </div>
+    </UCard>
+    <UCard>
+      <div class="flex flex-col gap-6">
+        <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
+          <UIcon size="24" name="i-mdi-robot" />
+          {{ $t('common.preferences.aiAuthor.title') }}
+        </h3>
+        <div class="space-y-6">
+          <UFormField :label="$t('common.preferences.aiAuthor.username.label')">
+            <UInput
+              v-model="username"
+              :placeholder="$t('common.preferences.aiAuthor.username.placeholder')"
+              type="text"
+            />
+          </UFormField>
+          <UFormField :label="$t('common.avatar.ai.label')">
+            <FileUploader
+              :imageUrl="avatarUrl"
+              type="user-avatar"
+              :isAiUser="true"
+              @upload="((avatarUrl = $event.url), (optimizedImageUrl = $event.optimizedUrl))"
+            />
+          </UFormField>
+          <UFormField :label="$t('common.preferences.aiAuthor.bio.label')">
+            <UTextarea
+              v-model="bio"
+              :placeholder="$t('common.preferences.aiAuthor.bio.placeholder')"
+              :maxLength="300"
+              autoresize
+            />
+          </UFormField>
+          <UFormField :label="$t('common.preferences.aiAuthor.toneOfVoice.label')">
+            <UInput
+              v-model="aiToneOfVoice"
+              type="text"
+              :placeholder="$t('common.preferences.aiAuthor.toneOfVoice.placeholder')"
+            />
+            <div class="flex flex-wrap gap-2 mt-1">
+              <UButton
+                v-for="suggestion in toneSuggestions"
+                :key="suggestion"
+                :color="aiToneOfVoice.includes(suggestion) ? 'primary' : 'neutral'"
+                :variant="aiToneOfVoice.includes(suggestion) ? 'solid' : 'soft'"
+                @click="toggleToneSuggestion(suggestion)"
+              >
+                {{ suggestion }}
+              </UButton>
+            </div>
+          </UFormField>
+          <UFormField :label="$t('common.preferences.aiAuthor.controversyLevel.label')">
+            <USelectMenu
+              v-model="aiControversyLevel"
+              valueKey="value"
+              labelKey="label"
+              :searchInput="false"
+              :items="controversyOptions"
+            />
+          </UFormField>
         </div>
       </div>
-    </Transition>
-    <div
-      class="flex flex-col gap-6 p-8 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
-    >
-      <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
-        <Icon name="mdi:robot" class="w-6 h-6" />
-        {{ $t('common.preferences.aiAuthor.title') }}
-      </h3>
-      <div class="space-y-6">
-        <FormField
-          v-model="username"
-          :label="$t('common.preferences.aiAuthor.username.label')"
-          :placeholder="$t('common.preferences.aiAuthor.username.placeholder')"
-          type="text"
+    </UCard>
+
+    <UCard>
+      <fieldset :disabled="!aiEnabled" class="flex flex-col gap-6">
+        <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
+          <UIcon size="24" name="i-mdi-translate" />
+          {{ $t('common.preferences.translation.title') }}
+        </h3>
+        <p class="-mt-4 text-xs text-muted">{{ $t('common.preferences.translation.desc') }}</p>
+
+        <UFormField :label="$t('common.preferences.translation.mode.label')">
+          <USelectMenu
+            v-model="translationMode"
+            valueKey="value"
+            labelKey="label"
+            :searchInput="false"
+            :items="translationModeOptions"
+          />
+        </UFormField>
+
+        <UFormField v-if="translationMode !== 'OFF'" :label="$t('common.preferences.translation.targetLangs.label')">
+          <UCheckboxGroup
+            v-if="targetLangOptions.length"
+            v-model="translationLanguages"
+            :items="targetLanguageItems"
+            valueKey="value"
+            orientation="horizontal"
+          />
+          <UEmpty v-else size="sm" :description="$t('common.preferences.translation.targetLangs.empty')" />
+        </UFormField>
+
+        <UAlert
+          v-if="translationMode === 'AUTO' || translationMode === 'HYBRID'"
+          color="warning"
+          variant="soft"
+          icon="i-mdi-alert-outline"
+          :description="$t('common.preferences.translation.tokenWarning')"
         />
-        <div class="flex flex-col gap-2">
-          <FormLabel :text="$t('common.avatar.ai.label')" />
-          <FileUploader
-            :imageUrl="avatarUrl"
-            type="user-avatar"
-            :isAiUser="true"
-            @upload="((avatarUrl = $event.url), (optimizedImageUrl = $event.optimizedUrl))"
-          />
-        </div>
-        <div class="flex flex-col gap-2">
-          <FormLabel :text="$t('common.preferences.aiAuthor.bio.label')" />
-          <FormField
-            v-model="bio"
-            type="textarea"
-            :placeholder="$t('common.preferences.aiAuthor.bio.placeholder')"
-            :maxLength="300"
-          />
-        </div>
-        <div class="flex flex-col gap-2">
-          <FormLabel :text="$t('common.preferences.aiAuthor.toneOfVoice.label')" />
-          <FormField
-            v-model="aiToneOfVoice"
-            type="text"
-            :placeholder="$t('common.preferences.aiAuthor.toneOfVoice.placeholder')"
-          />
-          <div class="flex flex-wrap gap-2 mt-1">
-            <Button
-              v-for="suggestion in toneSuggestions"
-              :key="suggestion"
-              variant="neutral"
-              class="!px-3 !py-1 !min-h-0 !h-auto !text-xs !font-medium !rounded-full transition-colors border"
-              :class="
-                aiToneOfVoice.includes(suggestion)
-                  ? 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60'
-                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700'
-              "
-              @click="toggleToneSuggestion(suggestion)"
-            >
-              {{ suggestion }}
-            </Button>
-          </div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <FormLabel :text="$t('common.preferences.aiAuthor.controversyLevel.label')" />
-          <FormSelect v-model="aiControversyLevel" :items="controversyOptions" upwards />
-        </div>
-      </div>
-    </div>
+      </fieldset>
+    </UCard>
 
-    <div
-      class="flex flex-col gap-6 p-8 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
-      :class="!aiEnabled && 'opacity-60 pointer-events-none'"
-    >
-      <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
-        <Icon name="mdi:translate" class="w-6 h-6" />
-        {{ $t('common.preferences.translation.title') }}
-      </h3>
-      <p class="text-xs text-gray-600 dark:text-gray-400 -mt-4">{{ $t('common.preferences.translation.desc') }}</p>
-
-      <div class="flex flex-col gap-2">
-        <FormLabel :text="$t('common.preferences.translation.mode.label')" />
-        <FormSelect v-model="translationMode" :items="translationModeOptions" upwards />
-      </div>
-
-      <div v-if="translationMode !== 'OFF'" class="flex flex-col gap-2">
-        <FormLabel :text="$t('common.preferences.translation.targetLangs.label')" />
-        <div v-if="targetLangOptions.length" class="flex flex-wrap gap-2">
-          <Button
-            v-for="lang in targetLangOptions"
-            :key="lang"
-            variant="neutral"
-            class="!px-3 !py-1 !min-h-0 !h-auto !text-xs !font-medium !rounded-full transition-colors border"
-            :class="
-              translationLanguages.includes(lang)
-                ? 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300'
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
-            "
-            @click="toggleTargetLang(lang)"
-          >
-            {{ $t(`languages.${lang}`) }}
-          </Button>
-        </div>
-        <p v-else class="text-xs text-gray-500">{{ $t('common.preferences.translation.targetLangs.empty') }}</p>
-      </div>
-
-      <div
-        v-if="translationMode === 'AUTO' || translationMode === 'HYBRID'"
-        class="flex items-start gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800"
-      >
-        <Icon name="mdi:alert-outline" class="w-5 h-5 mt-0.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-        <p class="text-xs leading-tight text-amber-800 dark:text-amber-200">
-          {{ $t('common.preferences.translation.tokenWarning') }}
-        </p>
-      </div>
-    </div>
-
-    <ModalMini
+    <UModal
       v-model:open="showAutoReleaseModal"
       :title="$t('common.preferences.autoRelease.confirmTitle')"
-      :message="$t('common.preferences.autoRelease.confirmMessage')"
-      icon="mdi:alert-rhombus-outline"
-      :confirmText="$t('common.actions.enable')"
-      :cancelText="$t('common.actions.cancel')"
-      @confirm="confirmAutoRelease"
-    />
+      :description="$t('common.preferences.autoRelease.confirmMessage')"
+    >
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="showAutoReleaseModal = false">{{
+            $t('common.actions.cancel')
+          }}</UButton>
+          <UButton @click="confirmAutoRelease">{{ $t('common.actions.enable') }}</UButton>
+        </div>
+      </template>
+    </UModal>
 
-    <ModalMini
+    <UModal
       v-model:open="showAiDisableModal"
       :title="$t('common.features.disableAiTitle')"
-      :message="$t('common.features.disableAiMessage')"
-      icon="mdi:alert-rhombus-outline"
-      variant="danger"
-      :confirmText="$t('common.actions.disable')"
-      :cancelText="$t('common.actions.cancel')"
-      @confirm="confirmAiDisable"
-    />
+      :description="$t('common.features.disableAiMessage')"
+    >
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="showAiDisableModal = false">{{
+            $t('common.actions.cancel')
+          }}</UButton>
+          <UButton color="error" @click="confirmAiDisable">{{ $t('common.actions.disable') }}</UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -368,16 +308,14 @@ const translationModeOptions = computed(() =>
 )
 
 const targetLangOptions = computed(() => SUPPORTED_LANGUAGES.filter((lang) => lang !== props.language))
+const targetLanguageItems = computed(() =>
+  targetLangOptions.value.map((value) => ({ value, label: t(`languages.${value}`) })),
+)
 
-const translationLanguages = computed(() => props.translationLanguages)
-
-const toggleTargetLang = (lang: string) => {
-  const current = props.translationLanguages
-  emit(
-    'update:translationLanguages',
-    current.includes(lang) ? current.filter((l) => l !== lang) : [...current, lang],
-  )
-}
+const translationLanguages = computed({
+  get: () => props.translationLanguages,
+  set: (value: string[]) => emit('update:translationLanguages', value),
+})
 
 const showAutoReleaseModal = shallowRef(false)
 const showAiDisableModal = shallowRef(false)

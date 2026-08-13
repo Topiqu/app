@@ -1,5 +1,6 @@
 import type { ClientPlan } from '@zenstackhq/runtime/models'
 
+import { z } from 'zod'
 import { generateObject } from 'ai'
 
 const basicSchema = z.object({

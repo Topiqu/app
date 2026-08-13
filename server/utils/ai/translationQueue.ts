@@ -49,7 +49,13 @@ export const syncArticleTranslationQueue = async (
 
   if (missing.length) {
     await db.articleTranslation.createMany({
-      data: missing.map((language) => ({ articleId, clientSiteId, language, status: 'PENDING' as const, source: 'AI' as const })),
+      data: missing.map((language) => ({
+        articleId,
+        clientSiteId,
+        language,
+        status: 'PENDING' as const,
+        source: 'AI' as const,
+      })),
       skipDuplicates: true,
     })
   }

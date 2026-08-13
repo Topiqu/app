@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { tool } from 'ai'
 
 export const generateImageTool = tool({

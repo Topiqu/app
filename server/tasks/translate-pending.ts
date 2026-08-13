@@ -77,12 +77,13 @@ export default defineMonitoredTask({
       try {
         const { usage, slug: baseSlug, ...translated } = await generateTranslation(row.article, row.language)
 
-        await consumeClientTokens(
-          row.clientSiteId,
-          usage.totalTokens || 0,
-          'TRANSLATE_ARTICLE',
-          { articleId: row.article.id, translationId: row.id, targetLang: row.language, usage, auto: true },
-        )
+        await consumeClientTokens(row.clientSiteId, usage.totalTokens || 0, 'TRANSLATE_ARTICLE', {
+          articleId: row.article.id,
+          translationId: row.id,
+          targetLang: row.language,
+          usage,
+          auto: true,
+        })
 
         const slug = await dedupeTranslationSlug(prisma, baseSlug, row.clientSiteId, row.language, row.article.id)
         const finalStatus = row.clientSite.translationMode === 'AUTO' ? 'PUBLISHED' : 'READY'
@@ -106,7 +107,13 @@ export default defineMonitoredTask({
         logAction({
           action: 'TRANSLATE_ARTICLE',
           clientSiteId: row.clientSiteId,
-          metadata: { articleId: row.article.id, translationId: row.id, targetLang: row.language, status: finalStatus, usage },
+          metadata: {
+            articleId: row.article.id,
+            translationId: row.id,
+            targetLang: row.language,
+            status: finalStatus,
+            usage,
+          },
         })
         processed++
       } catch (e: any) {

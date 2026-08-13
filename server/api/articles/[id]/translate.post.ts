@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { type ClientPlan, Language } from '@prisma/client'
 
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
@@ -12,10 +13,7 @@ export default defineEventHandler(async (event) => {
 
   await ensureMinAccountAge(event, user.id)
 
-  const { language } = await readValidatedBody(
-    event,
-    z.object({ language: z.nativeEnum(Language).optional() }).parse,
-  )
+  const { language } = await readValidatedBody(event, z.object({ language: z.nativeEnum(Language).optional() }).parse)
 
   const db = await getEnhancedPrisma(user)
 
@@ -30,8 +28,7 @@ export default defineEventHandler(async (event) => {
 
   const sourceLang = clientSite.language
   const targetLang = language ?? (sourceLang === Language.cs ? Language.en : Language.cs)
-  if (targetLang === sourceLang)
-    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (targetLang === sourceLang) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   if (!clientSite.tokenRemaining || clientSite.tokenRemaining < MIN_TRANSLATION_TOKENS)
     throw createError({ statusCode: 402, message: 'Insufficient tokens' })

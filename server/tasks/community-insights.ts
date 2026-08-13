@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { generateObject } from 'ai'
 import { consumeClientTokens } from '~~/server/utils/consumeTokens'
 

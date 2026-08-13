@@ -1,5 +1,6 @@
 import type { Language } from '@prisma/client'
 
+import { z } from 'zod'
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
 import { generateObject } from 'ai'
@@ -18,12 +19,7 @@ const attrToken = (i: number) => `[[ATTR_${i}]]`
 const TRANSLATABLE_ATTRS = ['title', 'aria-label'] as const
 
 const escapeAttr = (s: string) =>
-  s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
 interface TranslatableArticle {
   title: string

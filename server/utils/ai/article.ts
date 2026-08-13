@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { generateObject, generateText, streamObject } from 'ai'
 
 import { fetchUnsplashImage } from '../unsplash'
@@ -170,7 +171,7 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
     instructions,
     prompt,
     schema: articleSchema,
-  } as const;
+  } as const
 }
 
 type FinalizeImage = { slot: number; html: string }
