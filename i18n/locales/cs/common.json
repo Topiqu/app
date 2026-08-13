@@ -557,7 +557,8 @@
         "BILLING_CHANGE": "Změny fakturace",
         "API_KEY_CONTROL": "API klíč",
         "AI_USE": "Používat AI tokeny",
-        "ANALYTICS_READ": "Zobrazit analytiku"
+        "ANALYTICS_READ": "Zobrazit analytiku",
+        "CONTENT_MODERATE": "Moderovat komunitní obsah"
       }
     },
     "invitation": {
@@ -567,7 +568,16 @@
       "signInAction": "Přihlásit se",
       "accept": "Přijmout",
       "decline": "Odmítnout",
-      "invalid": "Pozvánka je neplatná nebo vypršela."
+      "invalid": "Pozvánka je neplatná nebo vypršela.",
+      "accepted": "Pozvánka byla přijata. Vítejte v týmu!",
+      "declined": "Pozvánka byla odmítnuta.",
+      "errors": {
+        "INVITATION_NOT_FOUND": "Tato pozvánka neexistuje.",
+        "INVITATION_ACCEPTED": "Tato pozvánka už byla přijata.",
+        "INVITATION_REVOKED": "Tým tuto pozvánku zrušil.",
+        "INVITATION_EXPIRED": "Platnost pozvánky vypršela. Požádejte tým o novou.",
+        "INVITATION_EMAIL_MISMATCH": "Pozvánka patří jiné e-mailové adrese. Odhlaste se a použijte pozvaný účet."
+      }
     },
     "tasks": {
       "completed": "Dokončeno",

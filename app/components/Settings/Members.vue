@@ -96,7 +96,7 @@
 type Scope = (typeof scopes)[number]
 type Member = { id: string; role: 'OWNER' | 'MEMBER'; scopes: Scope[]; createdAt: string; user: { id: string; username: string; email: string; avatarUrl: string | null } }
 type Invitation = { id: string; email: string; expiresAt: string }
-const scopes = ['ARTICLE_WRITE', 'ARTICLE_WRITE_OTHERS', 'ARTICLE_PUBLISH', 'MEMBER_CONTROL', 'TENANT_SETTINGS', 'INTEGRATION_CONTROL', 'BILLING_CHANGE', 'API_KEY_CONTROL', 'AI_USE', 'ANALYTICS_READ'] as const
+const scopes = ['ARTICLE_WRITE', 'ARTICLE_WRITE_OTHERS', 'ARTICLE_PUBLISH', 'MEMBER_CONTROL', 'TENANT_SETTINGS', 'INTEGRATION_CONTROL', 'BILLING_CHANGE', 'API_KEY_CONTROL', 'AI_USE', 'ANALYTICS_READ', 'CONTENT_MODERATE'] as const
 const filters = ['all', 'owners', 'members'] as const
 const { data, refresh } = await useFetch<{ members: Member[]; invitations: Invitation[]; currentMembershipId: string; canControl: boolean }>('/api/tenant/members')
 const email = shallowRef('')

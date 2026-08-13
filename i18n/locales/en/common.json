@@ -556,7 +556,8 @@
         "BILLING_CHANGE": "Billing changes",
         "API_KEY_CONTROL": "API key",
         "AI_USE": "Use AI tokens",
-        "ANALYTICS_READ": "View analytics"
+        "ANALYTICS_READ": "View analytics",
+        "CONTENT_MODERATE": "Moderate community content"
       }
     },
     "invitation": {
@@ -566,7 +567,16 @@
       "signInAction": "Sign in",
       "accept": "Accept",
       "decline": "Decline",
-      "invalid": "This invitation is invalid or has expired."
+      "invalid": "This invitation is invalid or has expired.",
+      "accepted": "Invitation accepted. Welcome to the team!",
+      "declined": "Invitation declined.",
+      "errors": {
+        "INVITATION_NOT_FOUND": "This invitation does not exist.",
+        "INVITATION_ACCEPTED": "This invitation has already been accepted.",
+        "INVITATION_REVOKED": "This invitation was revoked by the team.",
+        "INVITATION_EXPIRED": "This invitation has expired. Ask the team to send a new one.",
+        "INVITATION_EMAIL_MISMATCH": "This invitation belongs to another email address. Sign out and use the invited account."
+      }
     },
     "tasks": {
       "completed": "Completed",

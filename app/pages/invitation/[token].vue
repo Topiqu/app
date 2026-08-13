@@ -41,7 +41,7 @@
       </template>
       <div v-else class="py-12">
         <Icon name="mdi:link-off" class="size-12 text-neutral-400" />
-        <h1 class="mt-4 text-xl font-bold">{{ $t('common.invitation.invalid') }}</h1>
+        <h1 class="mt-4 text-xl font-bold">{{ errorMessage }}</h1>
       </div>
     </div>
   </main>
@@ -51,7 +51,7 @@ const route = useRoute()
 const localePath = useLocalePath()
 const { status, getSession } = useAuth()
 const token = route.params.token as string
-const { data: invitation, pending } = await useFetch<{
+const { data: invitation, pending, error } = await useFetch<{
   tenantName: string
   logoUrl: string | null
   inviterName: string
@@ -60,7 +60,12 @@ const { data: invitation, pending } = await useFetch<{
   scopes: string[]
 }>(`/api/invitations/${token}`)
 const busy = shallowRef(false)
+const toast = useToast()
 const loggedIn = computed(() => status.value === 'authenticated')
+const errorMessage = computed(() => {
+  const code = error.value?.data?.data?.code
+  return code ? $t(`common.invitation.errors.${code}`) : $t('common.invitation.invalid')
+})
 const goToSignIn = () => navigateTo(localePath({ name: 'autorizace', query: { invitation: token } }))
 const respond = async (action: 'accept' | 'decline') => {
   busy.value = true
@@ -71,8 +76,15 @@ const respond = async (action: 'accept' | 'decline') => {
     })
     if (result.accepted) {
       await getSession()
+      toast.success({ message: $t('common.invitation.accepted') })
       await navigateTo(localePath({ name: 'admin' }))
-    } else await navigateTo('/')
+    } else {
+      toast.success({ message: $t('common.invitation.declined') })
+      await navigateTo('/')
+    }
+  } catch (cause: any) {
+    const code = cause?.data?.data?.code
+    toast.error({ message: code ? $t(`common.invitation.errors.${code}`) : $t('common.messages.operationFailed') })
   } finally {
     busy.value = false
   }
