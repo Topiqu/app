@@ -7,7 +7,10 @@ export const normalizeDomain = (value: string) =>
     .replace(/\.$/, '')
 
 /** Bare hostname of a `Host` header: no scheme, no port, no `www.`. */
-export const toHostname = (value: string) => normalizeDomain(value).split(':')[0]!.replace(/^www\./, '')
+export const toHostname = (value: string) =>
+  normalizeDomain(value)
+    .split(':')[0]!
+    .replace(/^www\./, '')
 
 /** The platform's own hosts. Neither serves a tenant blog, so neither has a sitemap or a feed. */
 export const isRootHost = (host: string, baseDomain: string) => {
@@ -15,6 +18,13 @@ export const isRootHost = (host: string, baseDomain: string) => {
   const base = toHostname(baseDomain)
   return hostname === base || hostname === `app.${base}`
 }
+
+/**
+ * Admin surfaces read their tenant from the hostname (`useClientSite()`) but act on the session's
+ * tenant, so on someone else's blog the two disagree. Root hosts resolve to no tenant at all.
+ */
+export const isForeignHost = (hostTenantId: string | null | undefined, sessionTenantId: string | null | undefined) =>
+  !!hostTenantId && hostTenantId !== sessionTenantId
 
 export const isValidDomain = (value: string) => {
   const domain = normalizeDomain(value)

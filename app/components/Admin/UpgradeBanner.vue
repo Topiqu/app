@@ -43,14 +43,16 @@
 <script setup lang="ts">
 type SubscribablePlan = 'PRO' | 'PREMIUM'
 
-const clientSite = await useClientSite()
+// Session, not `useClientSite()`: the banner offers a plan for whichever tenant Stripe will
+// actually charge, and the host tenant is not always that one.
+const { data: auth } = useAuth()
 const { t, tm, rt } = useI18n()
 const toast = useToast()
 
 const loading = shallowRef(false)
 
 const target = computed<{ plan: SubscribablePlan; i18nKey: 'toPro' | 'toPremium' } | null>(() => {
-  switch (clientSite?.plan) {
+  switch (auth.value?.user?.plan) {
     case 'BASIC':
       return { plan: 'PRO', i18nKey: 'toPro' }
     case 'PRO':
@@ -67,14 +69,13 @@ const features = computed<string[]>(() => {
 })
 
 const upgrade = async () => {
-  if (!target.value || !clientSite?.id) return
+  if (!target.value) return
   loading.value = true
   try {
     const { url } = await $fetch<{ url: string }>('/api/stripe/subscribe', {
       method: 'POST',
       body: {
         plan: target.value.plan,
-        clientSiteId: clientSite.id,
         origin: window.location.origin,
       },
     })

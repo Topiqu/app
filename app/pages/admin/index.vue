@@ -1,7 +1,7 @@
 <template>
-  <main class="w-full max-w-screen-2xl mx-auto mt-10 px-4 sm:px-6 lg:px-8 flex flex-col gap-6">
+  <main class="w-full max-w-screen-2xl mx-auto pt-28 px-4 sm:px-6 lg:px-8 flex flex-col gap-6">
     <AdminDomainVerificationBanner v-if="client" />
-    <AdminUpgradeBanner v-if="client?.plan === 'BASIC'" />
+    <AdminUpgradeBanner v-if="auth?.user?.plan === 'BASIC'" />
     <LazyAdminTranslationReviewBanner />
     <ArticleTable />
 
@@ -14,6 +14,7 @@ import { trialExpired } from '~~/shared/utils/trial'
 
 definePageMeta({ middleware: 'admin' })
 const client = await useClientSite()
+const { data: auth } = useAuth()
 const { data: status } = await useClientSiteStatus()
 
 useSeoMeta({ title: `${client?.name} - ${$t('admin.title', 'Administrace')}` })

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDomain } from '../../shared/utils/domain'
+import {
+  domainVerificationDefaults,
+  isForeignHost,
+  isManagedDomain,
+  isValidDomain,
+  normalizeDomain,
+} from '../../shared/utils/domain'
 
 describe('domain rules', () => {
   it('normalizes hostnames without accepting URL decoration as part of the domain', () => {
@@ -18,6 +24,17 @@ describe('domain rules', () => {
     expect(isValidDomain('blog.example.com')).toBe(true)
     expect(isValidDomain('-blog.example.com')).toBe(false)
     expect(isValidDomain('blog..example.com')).toBe(false)
+  })
+
+  it('treats another tenant as foreign, and a tenantless root host as no conflict', () => {
+    expect(isForeignHost('pixbo', 'test')).toBe(true)
+    expect(isForeignHost('test', 'test')).toBe(false)
+    expect(isForeignHost(null, 'test')).toBe(false)
+  })
+
+  it('keeps an admin without a tenant off every tenant host', () => {
+    expect(isForeignHost('pixbo', '')).toBe(true)
+    expect(isForeignHost('pixbo', undefined)).toBe(true)
   })
 
   it('auto-verifies managed domains and challenges custom domains', () => {
