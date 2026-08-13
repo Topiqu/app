@@ -122,9 +122,7 @@ export default defineEventHandler(async (event) => {
         // Fall back to the source: a row translated before these columns existed has them null,
         // and showing the source language beats showing nothing.
         answer: translation!.answer ?? translation!.article.answer,
-        keyTakeaways: translation!.keyTakeaways?.length
-          ? translation!.keyTakeaways
-          : translation!.article.keyTakeaways,
+        keyTakeaways: translation!.keyTakeaways?.length ? translation!.keyTakeaways : translation!.article.keyTakeaways,
         faq: translation!.faq ?? translation!.article.faq,
       }
       language = locale!

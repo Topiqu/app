@@ -31,7 +31,10 @@
 
         <!-- Not a heading: this repeats the hero's h1 as scroll chrome, and two h1s with the same
              text made the outline ambiguous. -->
-        <p aria-hidden="true" class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate leading-tight">
+        <p
+          aria-hidden="true"
+          class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate leading-tight"
+        >
           {{ title }}
         </p>
 

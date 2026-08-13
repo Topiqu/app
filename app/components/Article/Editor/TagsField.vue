@@ -1,10 +1,5 @@
 <template>
-  <ArticleEditorPopover
-    :label="$t('common.labels.tags')"
-    icon="mdi:tag-outline"
-    size="md"
-    :filled="!!selected.length"
-  >
+  <ArticleEditorPopover :label="$t('common.labels.tags')" icon="mdi:tag-outline" size="md" :filled="!!selected.length">
     <template #trigger>{{ triggerLabel }}</template>
 
     <div class="flex flex-col gap-2 w-72">
@@ -130,7 +125,11 @@ const canCreate = computed(() => {
 const rowCount = computed(() => options.value.length + (canCreate.value ? 1 : 0))
 
 const triggerLabel = computed(
-  () => tagTriggerLabel(selected.value.map((tag) => tag.name), NAMES_SHOWN) || t('articles.editor.addTag'),
+  () =>
+    tagTriggerLabel(
+      selected.value.map((tag) => tag.name),
+      NAMES_SHOWN,
+    ) || t('articles.editor.addTag'),
 )
 
 watch(query, () => (highlighted.value = 0))

@@ -74,7 +74,9 @@ export default defineEventHandler(async (event) => {
       ? ['## Key takeaways', '', ...article.keyTakeaways.map((item) => `- ${item}`), '']
       : []),
     contentToMarkdown(article.content),
-    ...(faq.length ? ['', '## FAQ', '', ...faq.flatMap((entry) => [`### ${entry.question}`, '', entry.answer, ''])] : []),
+    ...(faq.length
+      ? ['', '## FAQ', '', ...faq.flatMap((entry) => [`### ${entry.question}`, '', entry.answer, ''])]
+      : []),
     ...(article.sources.length ? ['', '## Sources', '', ...article.sources.map((url) => `- ${url}`)] : []),
     '',
   ]

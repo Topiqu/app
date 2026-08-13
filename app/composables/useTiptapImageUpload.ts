@@ -7,7 +7,10 @@ const cleanAltFromFilename = (name: string) =>
     .replace(/[-_]+/g, ' ')
     .trim()
 
-export function useTiptapImageUpload(editor: Ref<Editor | undefined>, promptAlt: (defaultAlt: string) => Promise<string>) {
+export function useTiptapImageUpload(
+  editor: Ref<Editor | undefined>,
+  promptAlt: (defaultAlt: string) => Promise<string>,
+) {
   const config = useRuntimeConfig()
   const toast = useToast()
 

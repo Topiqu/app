@@ -143,7 +143,13 @@
                 @click="openEditor(row.original.slug)"
               />
               <Button
-                v-tippy="$t(hasTargetTranslation(row.original) ? 'articles.translations.actions.retranslate' : 'articles.translations.actions.translate')"
+                v-tippy="
+                  $t(
+                    hasTargetTranslation(row.original)
+                      ? 'articles.translations.actions.retranslate'
+                      : 'articles.translations.actions.translate',
+                  )
+                "
                 icon="mdi:translate"
                 variant="secondary"
                 :loading="translatingArticleId === row.original.id"
@@ -294,7 +300,13 @@
                   :disabled="row.original.status === 'archived' || Boolean(translatingArticleId)"
                   @click="translateArticle(row.original)"
                 >
-                  {{ $t(hasTargetTranslation(row.original) ? 'articles.translations.actions.retranslate' : 'articles.translations.actions.translate') }}
+                  {{
+                    $t(
+                      hasTargetTranslation(row.original)
+                        ? 'articles.translations.actions.retranslate'
+                        : 'articles.translations.actions.translate',
+                    )
+                  }}
                 </Button>
                 <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
                   <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />

@@ -23,8 +23,7 @@ type SeoArticle = {
 }
 
 /** Schema.org dates are strings; the payload carries ISO already, a fresh fetch carries a Date. */
-const isoDate = (value: string | Date | null | undefined) =>
-  value ? new Date(value).toISOString() : undefined
+const isoDate = (value: string | Date | null | undefined) => (value ? new Date(value).toISOString() : undefined)
 
 export function useArticleSeo(
   data: MaybeRefOrGetter<SeoArticle | null | undefined>,
@@ -43,10 +42,7 @@ export function useArticleSeo(
   const seoEnabled = computed(() => hasSeoPlan(site.value?.plan))
 
   const description = computed(
-    () =>
-      article.value?.excerpt?.slice(0, 160) ||
-      article.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) ||
-      '',
+    () => article.value?.excerpt?.slice(0, 160) || article.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) || '',
   )
 
   const authorName = computed(() => article.value?.user?.username || site.value?.name || '')
@@ -107,9 +103,7 @@ export function useArticleSeo(
       keywords: tagNames.value,
       // The research URLs the body was grounded in; omitted rather than emitted empty.
       citation: () =>
-        article.value?.sources?.length
-          ? article.value.sources.map((url) => ({ '@type': 'WebPage', url }))
-          : undefined,
+        article.value?.sources?.length ? article.value.sources.map((url) => ({ '@type': 'WebPage', url })) : undefined,
       author: () =>
         authorName.value
           ? { '@type': 'Person', '@id': `${authorUrl.value}#author`, name: authorName.value }

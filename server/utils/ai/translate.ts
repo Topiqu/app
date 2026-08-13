@@ -29,7 +29,6 @@ interface TranslatableArticle {
   faq?: unknown
 }
 
-
 interface ExtractedPoll {
   pollId: string
   question: string

@@ -26,8 +26,7 @@ const makeDb = (polls: Array<{ id: string; options: string[] }> = []) => {
   return db
 }
 
-const optionsAttr = (opts: Array<{ id?: string; label: string }>) =>
-  JSON.stringify(opts).replace(/"/g, '&quot;')
+const optionsAttr = (opts: Array<{ id?: string; label: string }>) => JSON.stringify(opts).replace(/"/g, '&quot;')
 
 const pollBlock = (attrs: Record<string, string>) => {
   const a = Object.entries(attrs)

@@ -4,9 +4,9 @@ import { overlayTranslations, type LocalizableArticle } from '~~/shared/utils/ar
 
 type LocalizeDb = {
   articleTranslation: {
-    findMany: (args: any) => Promise<
-      { articleId: string; slug: string | null; title: string | null; excerpt: string | null }[]
-    >
+    findMany: (
+      args: any,
+    ) => Promise<{ articleId: string; slug: string | null; title: string | null; excerpt: string | null }[]>
   }
 }
 

@@ -1,10 +1,10 @@
 <template>
   <div
-    class="custom-ui flex-1 flex flex-col w-full max-w-3xl mx-auto px-4 pt-16 pb-24"
-    style="--tiptap-toolbar-top: 8rem"
+    class="custom-ui flex-1 flex flex-col w-full max-w-3xl mx-auto px-4 pt-18 pb-24"
+    style="--tiptap-toolbar-top: 8.5rem"
   >
     <header
-      class="sticky top-16 z-20 -mx-4 px-4 mb-8 h-16 flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 bg-gray-100/85 dark:bg-gray-800/85 backdrop-blur-xl"
+      class="sticky top-18 z-20 -mx-4 px-4 mb-8 h-16 flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 bg-gray-100/85 dark:bg-gray-800/85 backdrop-blur-xl"
     >
       <Button
         icon="mdi:arrow-left"
@@ -271,62 +271,62 @@
         </p>
 
         <div class="flex flex-col gap-4">
-        <textarea
-          ref="titleRef"
-          v-model="titleText"
-          rows="1"
-          :placeholder="$t('common.labels.articleTitle')"
-          :aria-label="$t('common.labels.articleTitle')"
-          class="w-full resize-none overflow-hidden break-words bg-transparent! rounded-none! px-0! pt-0! pb-1! text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15] placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0 transition-colors border-x-0! border-t-0! border-b-2! border-solid! border-transparent! hover:border-gray-300! dark:hover:border-gray-700! focus:border-indigo-500!"
-          @keydown.enter.prevent
-        />
+          <textarea
+            ref="titleRef"
+            v-model="titleText"
+            rows="1"
+            :placeholder="$t('common.labels.articleTitle')"
+            :aria-label="$t('common.labels.articleTitle')"
+            class="w-full resize-none overflow-hidden break-words bg-transparent! rounded-none! px-0! pt-0! pb-1! text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15] placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0 transition-colors border-x-0! border-t-0! border-b-2! border-solid! border-transparent! hover:border-gray-300! dark:hover:border-gray-700! focus:border-indigo-500!"
+            @keydown.enter.prevent
+          />
 
-        <textarea
-          ref="excerptRef"
-          v-model="excerptText"
-          rows="2"
-          :placeholder="$t('common.labels.articleExcerpt')"
-          :aria-label="$t('common.labels.articleExcerpt')"
-          class="w-full resize-none bg-transparent! rounded-none! px-0! pt-0! pb-1! text-lg leading-relaxed text-gray-600! dark:text-gray-300! placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0 transition-colors border-x-0! border-t-0! border-b! border-solid! border-transparent! hover:border-gray-300! dark:hover:border-gray-700! focus:border-indigo-500!"
-        />
+          <textarea
+            ref="excerptRef"
+            v-model="excerptText"
+            rows="2"
+            :placeholder="$t('common.labels.articleExcerpt')"
+            :aria-label="$t('common.labels.articleExcerpt')"
+            class="w-full resize-none bg-transparent! rounded-none! px-0! pt-0! pb-1! text-lg leading-relaxed text-gray-600! dark:text-gray-300! placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0 transition-colors border-x-0! border-t-0! border-b! border-solid! border-transparent! hover:border-gray-300! dark:hover:border-gray-700! focus:border-indigo-500!"
+          />
 
-        <div
-          v-if="activeSlug || excerptText"
-          class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 dark:text-gray-500"
-        >
-          <span v-if="activeSlug" class="inline-flex items-center gap-1 min-w-0">
-            <Icon name="mdi:link-variant" class="w-3.5 h-3.5 shrink-0" />
-            <span class="truncate">/{{ activeSlug }}</span>
-          </span>
-          <span v-if="excerptText" class="tabular-nums">
-            {{ excerptText.length }} {{ $t('articles.editor.toolbar.characters') }}
-          </span>
+          <div
+            v-if="activeSlug || excerptText"
+            class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 dark:text-gray-500"
+          >
+            <span v-if="activeSlug" class="inline-flex items-center gap-1 min-w-0">
+              <Icon name="mdi:link-variant" class="w-3.5 h-3.5 shrink-0" />
+              <span class="truncate">/{{ activeSlug }}</span>
+            </span>
+            <span v-if="excerptText" class="tabular-nums">
+              {{ excerptText.length }} {{ $t('articles.editor.toolbar.characters') }}
+            </span>
+          </div>
         </div>
-        </div>
 
-      <!-- Cover sits below the excerpt because that is where it appears in `Hero.vue`: the editor
+        <!-- Cover sits below the excerpt because that is where it appears in `Hero.vue`: the editor
            now reads in the same order as the published article. -->
         <template v-if="tr.isSource">
-        <FileUploader
-          compact
-          type="article-image"
-          :imageUrl="editedArticle.imageUrl"
-          :maxWidth="3840"
-          :maxHeight="2160"
-          @upload="handleUpload"
-        />
+          <FileUploader
+            compact
+            type="article-image"
+            :imageUrl="editedArticle.imageUrl"
+            :maxWidth="3840"
+            :maxHeight="2160"
+            @upload="handleUpload"
+          />
 
-        <ArticleEditorMetaBar
-          v-model:series="selectedSeries"
-          v-model:tags="articleTags"
-          v-model:releaseAt="editedArticle.releaseAt"
-          v-model:sources="editedArticle.sources"
-        />
+          <ArticleEditorMetaBar
+            v-model:series="selectedSeries"
+            v-model:tags="articleTags"
+            v-model:releaseAt="editedArticle.releaseAt"
+            v-model:sources="editedArticle.sources"
+          />
         </template>
 
         <hr class="border-gray-200 dark:border-gray-800" />
 
-      <!-- Lazy so the title, excerpt and strip are interactive before the editor bundle lands —
+        <!-- Lazy so the title, excerpt and strip are interactive before the editor bundle lands —
            and so a translation tab with no body never pays for it at all. -->
         <LazyTiptapEditor v-if="bodyEditable" v-model="bodyModel" edit contentClass="min-h-[60vh]" />
 

@@ -56,7 +56,7 @@ export const ARTICLE_FORMATS: Record<ArticleFormat, FormatSpec> = {
     poll: true,
   },
   opinion: {
-    shape: 'An argument in the author\'s own voice. It takes a position and defends it.',
+    shape: "An argument in the author's own voice. It takes a position and defends it.",
     words: [500, 800],
     answer: false,
     takeaways: false,
@@ -107,7 +107,9 @@ const formatElements = (spec: FormatSpec) => {
   ;(spec.poll ? allowed : banned).push('a reader poll')
 
   return [
-    allowed.length ? `This format may use: ${allowed.join(', ')}. Use it only where it carries information prose would carry worse.` : null,
+    allowed.length
+      ? `This format may use: ${allowed.join(', ')}. Use it only where it carries information prose would carry worse.`
+      : null,
     banned.length ? `This format must NOT contain: ${banned.join(', ')}.` : null,
   ]
     .filter(Boolean)

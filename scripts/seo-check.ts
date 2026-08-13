@@ -169,7 +169,9 @@ const CROSS_DOCUMENT = new Set(['translationOfWork', 'workTranslation'])
 const ids = new Set(nodes.map((n) => n['@id']).filter(Boolean))
 const dangling = nodes.flatMap((node) =>
   Object.entries(node)
-    .filter(([k, v]) => !CROSS_DOCUMENT.has(k) && v && typeof v === 'object' && '@id' in v && !ids.has((v as any)['@id']))
+    .filter(
+      ([k, v]) => !CROSS_DOCUMENT.has(k) && v && typeof v === 'object' && '@id' in v && !ids.has((v as any)['@id']),
+    )
     .map(([k, v]) => `${typeOf(node)[0]}.${k} → ${(v as any)['@id']}`),
 )
 check(dangling.length === 0, 'no dangling @id references', dangling.join(', '))

@@ -47,7 +47,8 @@ const listItems = ($: cheerio.CheerioAPI, el: Element, ordered: boolean, depth: 
         li.children.filter((child) => !(child.type === 'tag' && ['ul', 'ol'].includes((child as Element).tagName))),
       ).trim()
       const lines = [`${'  '.repeat(depth)}${marker} ${own}`]
-      for (const child of nested) lines.push(listItems($, child as Element, (child as Element).tagName === 'ol', depth + 1))
+      for (const child of nested)
+        lines.push(listItems($, child as Element, (child as Element).tagName === 'ol', depth + 1))
       return lines.join('\n')
     })
     .join('\n')
@@ -56,7 +57,12 @@ const table = ($: cheerio.CheerioAPI, el: Element) => {
   const rows = $(el)
     .find('tr')
     .toArray()
-    .map((tr) => $(tr).children('th, td').toArray().map((cell) => inline($, (cell as Element).children).trim()))
+    .map((tr) =>
+      $(tr)
+        .children('th, td')
+        .toArray()
+        .map((cell) => inline($, (cell as Element).children).trim()),
+    )
   if (!rows.length) return ''
 
   const [head, ...body] = rows
@@ -106,7 +112,10 @@ const block = ($: cheerio.CheerioAPI, node: AnyNode): string => {
         }
         return [`**${question}**`, ...options.map((option) => `- ${option?.label ?? ''}`)].filter(Boolean).join('\n')
       }
-      return el.children.map((child) => block($, child)).filter(Boolean).join('\n\n')
+      return el.children
+        .map((child) => block($, child))
+        .filter(Boolean)
+        .join('\n\n')
     default:
       return inline($, el.children).trim()
   }

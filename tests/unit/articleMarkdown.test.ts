@@ -24,7 +24,8 @@ describe('contentToMarkdown', () => {
   })
 
   it('builds a table with a header separator', () => {
-    const html = '<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>'
+    const html =
+      '<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>'
     expect(contentToMarkdown(html)).toBe('| A | B |\n| --- | --- |\n| 1 | 2 |')
   })
 
