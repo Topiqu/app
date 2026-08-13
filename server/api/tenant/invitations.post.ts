@@ -40,10 +40,7 @@ export default defineEventHandler(async (event) => {
     action: 'TENANT_INVITATION_CREATED', userId: user.id, clientSiteId: membership.clientSiteId, ip: getIp(event),
     metadata: { email, scopes: body.scopes, expiresAt: expiresAt.toISOString() },
   })
-  const tenant = await prisma.clientSite.findUniqueOrThrow({
-    where: { id: membership.clientSiteId },
-    select: { name: true, language: true },
-  })
+  const tenant = await getTenantInvitationProfile(membership.clientSiteId)
   await sendEmail({
     event,
     to: email,
@@ -52,8 +49,14 @@ export default defineEventHandler(async (event) => {
       tenantName: tenant.name,
       inviterName: user.name,
       invitationUrl: invitationUrl(event, token, tenant.language),
+      tenantLogoUrl: tenant.logoUrl ?? '',
+      tenantDescription: tenant.description || tenant.focus || tenant.domain,
+      followerCount: tenant.followerCount.toLocaleString(tenant.language),
+      tenantDomain: tenant.domain,
+      scopeCount: String(body.scopes.length),
       expirationDays: '7',
     },
+    lang: tenant.language,
   })
   return { expiresAt }
 })

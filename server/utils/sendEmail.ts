@@ -106,6 +106,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
   const enrichedData: Record<string, string> = {
     logoUrl: `${cdnUrl}/app-logo.png`,
     ...data,
+    tenantLogoUrl: data.tenantLogoUrl || `${cdnUrl}/app-logo.png`,
   }
 
   let parsedMjml = mjmlTemplate
@@ -144,7 +145,8 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
     commentReply: ['greeting', 'intro', 'parent', 'button'],
     deleteComment: ['greeting', 'intro', 'reason'],
     userBan: ['greeting', data.introKey || 'intro_no_reason'],
-    tenantInvitation: ['greeting', 'intro', 'button', 'expiration'],
+    tenantInvitation: ['greeting', 'intro', 'community', 'followers', 'website', 'access', 'button', 'expiration'],
+    tenantMemberRemoved: ['greeting', 'intro', 'removedBy', 'removedAt', 'otherTenants', 'contact'],
   }
   const textParts = (textKeys[template] || ['intro'])
     .map((key) => translate(`${template}.${key}`, enrichedData))
