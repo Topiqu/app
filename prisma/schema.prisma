@@ -24,6 +24,24 @@ enum UserRole {
   ai
 }
 
+enum TenantRole {
+  OWNER
+  MEMBER
+}
+
+enum TenantScope {
+  ARTICLE_WRITE
+  ARTICLE_WRITE_OTHERS
+  ARTICLE_PUBLISH
+  MEMBER_CONTROL
+  TENANT_SETTINGS
+  INTEGRATION_CONTROL
+  BILLING_CHANGE
+  API_KEY_CONTROL
+  AI_USE
+  ANALYTICS_READ
+}
+
 enum Language {
   cs
   en
@@ -193,30 +211,30 @@ enum NotificationType {
 }
 
 model User {
-  id                            String            @id() @default(uuid())
-  createdAt                     DateTime          @default(now())
-  updatedAt                     DateTime?         @updatedAt()
+  id                            String             @id() @default(uuid())
+  createdAt                     DateTime           @default(now())
+  updatedAt                     DateTime?          @updatedAt()
   deletedAt                     DateTime?
-  username                      String            @unique()
-  email                         String            @unique()
+  username                      String             @unique()
+  email                         String             @unique()
   password                      String?
   bio                           String?
-  role                          UserRole          @default(reader)
+  role                          UserRole           @default(reader)
   avatarUrl                     String?
   verification                  VerificationCode?
   totpSecret                    String?
   totpTempSecret                String?
   onboardingLoginToken          String?
   onboardingLoginTokenExpiresAt DateTime?
-  emailVerified                 Boolean           @default(false)
-  allowNotifs                   Boolean           @default(true)
-  allowEmail                    Boolean           @default(true)
-  lastLogin                     DateTime?         @default(now())
-  language                      Language          @default(en)
-  sessions                      Session[]         @relation("UserSessions")
+  emailVerified                 Boolean            @default(false)
+  allowNotifs                   Boolean            @default(true)
+  allowEmail                    Boolean            @default(true)
+  lastLogin                     DateTime?          @default(now())
+  language                      Language           @default(en)
+  sessions                      Session[]          @relation("UserSessions")
   clientSiteId                  String?
-  theme                         ThemeOption       @default(light)
-  clientSite                    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  theme                         ThemeOption        @default(light)
+  clientSite                    ClientSite?        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   articles                      Article[]
   articleDrafts                 ArticleDraft[]
   comments                      Comment[]
@@ -226,14 +244,52 @@ model User {
   emojiReactions                EmojiReaction[]
   articleReactions              ArticleReaction[]
   articleShares                 ArticleShare[]
-  followers                     Follow[]          @relation("Follower")
-  following                     Follow[]          @relation("Followed")
-  bans                          UserBan[]         @relation("BannedUser")
-  bansIssued                    UserBan[]         @relation("BannedBy")
-  logs                          Log[]             @relation("LogToUser")
+  followers                     Follow[]           @relation("Follower")
+  following                     Follow[]           @relation("Followed")
+  bans                          UserBan[]          @relation("BannedUser")
+  bansIssued                    UserBan[]          @relation("BannedBy")
+  logs                          Log[]              @relation("LogToUser")
   approvals                     Approval[]
+  tenantMemberships             TenantMembership[]
+  tenantInvitations             TenantInvitation[] @relation("InvitationSender")
 
   @@index([username, email, role, language, allowNotifs])
+}
+
+model TenantMembership {
+  id           String        @id() @default(uuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt()
+  deletedAt    DateTime?
+  clientSiteId String
+  clientSite   ClientSite    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role         TenantRole    @default(MEMBER)
+  scopes       TenantScope[]
+
+  @@unique([clientSiteId, userId])
+  @@index([userId])
+}
+
+model TenantInvitation {
+  id           String        @id() @default(uuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt()
+  deletedAt    DateTime?
+  clientSiteId String
+  clientSite   ClientSite    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  email        String
+  tokenHash    String        @unique()
+  scopes       TenantScope[]
+  invitedById  String
+  invitedBy    User          @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  revokedAt    DateTime?
+
+  @@index([clientSiteId, email])
+  @@index([expiresAt])
 }
 
 model Session {
@@ -562,6 +618,8 @@ model ClientSite {
   adEarnings                   AdEarning[]
   searchConsoleConnection      SearchConsoleConnection?
   searchConsoleMetrics         SearchConsoleMetric[]
+  tenantMemberships            TenantMembership[]
+  tenantInvitations            TenantInvitation[]
 
   @@index([domain, name, plan, billingPlan])
 }

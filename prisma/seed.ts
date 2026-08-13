@@ -44,7 +44,7 @@ async function main() {
   ]
 
   for (const u of users) {
-    await prisma.user.upsert({
+    const user = await prisma.user.upsert({
       where: { email: u.email },
       update: {},
       create: {
@@ -56,6 +56,11 @@ async function main() {
         language: 'cs',
         clientSiteId: 'clientSiteId' in u ? u.clientSiteId : null,
       },
+    })
+    if (u.role === 'admin') await prisma.tenantMembership.upsert({
+      where: { clientSiteId_userId: { clientSiteId: site.id, userId: user.id } },
+      update: {},
+      create: { clientSiteId: site.id, userId: user.id, role: 'OWNER', scopes: ['ARTICLE_WRITE', 'ARTICLE_WRITE_OTHERS', 'ARTICLE_PUBLISH', 'MEMBER_CONTROL', 'TENANT_SETTINGS', 'INTEGRATION_CONTROL', 'BILLING_CHANGE', 'API_KEY_CONTROL', 'AI_USE', 'ANALYTICS_READ'] },
     })
   }
 

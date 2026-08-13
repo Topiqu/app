@@ -12,6 +12,24 @@ enum UserRole {
     ai
 }
 
+enum TenantRole {
+    OWNER
+    MEMBER
+}
+
+enum TenantScope {
+    ARTICLE_WRITE
+    ARTICLE_WRITE_OTHERS
+    ARTICLE_PUBLISH
+    MEMBER_CONTROL
+    TENANT_SETTINGS
+    INTEGRATION_CONTROL
+    BILLING_CHANGE
+    API_KEY_CONTROL
+    AI_USE
+    ANALYTICS_READ
+}
+
 enum Language {
     cs
     en

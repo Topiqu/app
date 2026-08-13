@@ -130,6 +130,8 @@ model ClientSite extends Base {
     adEarnings           AdEarning[]
     searchConsoleConnection SearchConsoleConnection?
     searchConsoleMetrics SearchConsoleMetric[]
+    tenantMemberships    TenantMembership[]
+    tenantInvitations    TenantInvitation[]
 
     @@allow('read', true)
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
