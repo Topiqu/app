@@ -409,6 +409,7 @@ The app had **zero runtime observability**: when something broke for a real user
 - `.env.example` — `NUXT_PUBLIC_SENTRY_DSN`, `SENTRY_URL/ORG/PROJECT/AUTH_TOKEN`.
 - Replay masks all text + media (`maskAllText`, `blockAllMedia`) for GDPR.
 - CSP: works as-is — `nuxt-security` `connect-src` allows `https:`, replay worker uses existing `blob:` in `script-src`.
+
 # Google Search Console intelligence (PREMIUM)
 
 Search Console is connected per `ClientSite` through a read-only Google OAuth flow under `server/api/search-console`. Refresh tokens are encrypted with AES-256-GCM using `GOOGLE_SEARCH_CONSOLE_ENCRYPTION_KEY`; plaintext tokens never leave server utilities or appear in API responses. OAuth state is HMAC-signed, short-lived, cookie-bound, and tenant-bound.
@@ -416,3 +417,8 @@ Search Console is connected per `ClientSite` through a read-only Google OAuth fl
 `SearchConsoleConnection` stores one Google connection and selected property per tenant. `SearchConsoleMetric` stores daily page/query performance with tenant-prefixed unique keys and indexes. The `search-console-sync` Nitro task re-imports finalized recent days so delayed Google data is corrected idempotently. `server/utils/searchConsole/opportunities.ts` converts metrics into deterministic, explainable opportunity candidates before any AI step. The initial rules cover striking-distance rankings and unusually low CTR; AI-generated changes must remain drafts requiring editorial approval.
 
 Access is provisioned through the `SEARCH_CONSOLE` feature for PREMIUM plans. CUSTOM remains explicitly configurable under the existing feature model. The settings integration supports OAuth, automatic domain/property matching, manual property selection, connection status, and disconnect.
+## Tenant memberships and invitations
+
+Tenant access is modeled by `TenantMembership`, not by permissions stored on `User`. A user can therefore belong to multiple `ClientSite` records, with an independent `OWNER`/`MEMBER` role and scope list in each tenant. `User.clientSiteId` remains the active tenant pointer for compatibility with existing request/session code; `/api/tenant/active` changes it only after verifying membership.
+
+`server/utils/tenantMembership.ts` is the authorization boundary. Tenant mutations use `requireTenantScope`; owners implicitly have the complete scope catalog. Invitations store only a SHA-256 hash of a 256-bit token, expire after seven days, and are accepted only by an authenticated account whose normalized email matches the invitation. The management UI lives in Settings → Members, while `/invitation/[token]` provides the public invitation summary and accept/decline flow.
