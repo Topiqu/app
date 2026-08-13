@@ -73,7 +73,8 @@ const document = {
   info: {
     title: 'Topiqu External API',
     version: '1.0.0',
-    description: 'Read-only API for retrieving published Topiqu articles. Clients must ignore unknown response fields so v1 can evolve compatibly.',
+    description:
+      'Read-only API for retrieving published Topiqu articles. Clients must ignore unknown response fields so v1 can evolve compatibly.',
     contact: { name: 'Topiqu support', url: 'https://topiqu.com' },
   },
   servers: [{ url: 'https://app.topiqu.com/api/v1', description: 'Production' }],
@@ -89,7 +90,13 @@ const document = {
         parameters: [
           { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 } },
-          { name: 'tag', in: 'query', description: 'Comma-separated tag slugs.', schema: { type: 'string' }, example: 'ai,marketing' },
+          {
+            name: 'tag',
+            in: 'query',
+            description: 'Comma-separated tag slugs.',
+            schema: { type: 'string' },
+            example: 'ai,marketing',
+          },
         ],
         responses: {
           '200': {
@@ -121,7 +128,12 @@ const document = {
   },
   components: {
     securitySchemes: {
-      ApiKeyAuth: { type: 'apiKey', in: 'header', name: 'x-api-key', description: 'Site API key created in Topiqu settings.' },
+      ApiKeyAuth: {
+        type: 'apiKey',
+        in: 'header',
+        name: 'x-api-key',
+        description: 'Site API key created in Topiqu settings.',
+      },
     },
     schemas: {
       ArticleSummary: {
@@ -160,11 +172,17 @@ const document = {
         },
       },
       ArticleListResponse: {
-        type: 'object', required: ['data', 'meta'],
-        properties: { data: { type: 'array', items: { $ref: '#/components/schemas/ArticleSummary' } }, meta: { $ref: '#/components/schemas/PaginationMeta' } },
+        type: 'object',
+        required: ['data', 'meta'],
+        properties: {
+          data: { type: 'array', items: { $ref: '#/components/schemas/ArticleSummary' } },
+          meta: { $ref: '#/components/schemas/PaginationMeta' },
+        },
       },
       ArticleResponse: {
-        type: 'object', required: ['data'], properties: { data: { $ref: '#/components/schemas/Article' } },
+        type: 'object',
+        required: ['data'],
+        properties: { data: { $ref: '#/components/schemas/Article' } },
       },
       Error: {
         type: 'object',
@@ -172,16 +190,26 @@ const document = {
         properties: { statusCode: { type: 'integer' }, message: { type: 'string' } },
       },
     },
-    responses: Object.fromEntries([
-      ['BadRequest', 400, 'Invalid request'],
-      ['Unauthorized', 401, 'Missing or invalid API key'],
-      ['NotFound', 404, 'Article not found'],
-      ['RateLimited', 429, 'Rate limit exceeded'],
-      ['ServerError', 500, 'Unexpected server error'],
-    ].map(([name, statusCode, description]) => [name, {
-      description,
-      content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { statusCode, message: description } } },
-    }])),
+    responses: Object.fromEntries(
+      [
+        ['BadRequest', 400, 'Invalid request'],
+        ['Unauthorized', 401, 'Missing or invalid API key'],
+        ['NotFound', 404, 'Article not found'],
+        ['RateLimited', 429, 'Rate limit exceeded'],
+        ['ServerError', 500, 'Unexpected server error'],
+      ].map(([name, statusCode, description]) => [
+        name,
+        {
+          description,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+              example: { statusCode, message: description },
+            },
+          },
+        },
+      ]),
+    ),
   },
 }
 
