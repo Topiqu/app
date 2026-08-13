@@ -34,7 +34,7 @@
           <Button v-if="loggedIn" :disabled="busy" @click="respond('accept')">{{
             $t('common.invitation.accept')
           }}</Button>
-          <Button v-else :to="localePath({ name: 'autorizace', query: { invitation: token } })">{{
+          <Button v-else @click="goToSignIn">{{
             $t('common.invitation.signInAction')
           }}</Button>
         </div>
@@ -61,6 +61,7 @@ const { data: invitation, pending } = await useFetch<{
 }>(`/api/invitations/${token}`)
 const busy = shallowRef(false)
 const loggedIn = computed(() => status.value === 'authenticated')
+const goToSignIn = () => navigateTo(localePath({ name: 'autorizace', query: { invitation: token } }))
 const respond = async (action: 'accept' | 'decline') => {
   busy.value = true
   try {
