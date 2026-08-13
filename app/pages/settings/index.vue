@@ -222,6 +222,7 @@
         <section v-if="showBilling" v-show="activeTab === 'billing'">
           <FormClientBilling :client="client ?? null" :rate="rate" />
         </section>
+        <section v-show="activeTab === 'members'"><LazySettingsMembers /></section>
       </div>
     </div>
 
@@ -282,6 +283,7 @@ const isSuperadmin = computed(() => auth.value?.user.role === 'superadmin')
 
 const { data: client, refresh } = await useFetch<ClientSite>(`/api/clients/${auth.value?.user.clientSiteId}`)
 const { data: features } = await useFetch(`/api/features`)
+const { data: tenantAccess } = await useFetch<{ role: 'OWNER' | 'MEMBER'; scopes: string[] }>('/api/tenant/access')
 const rate = await useCurrencyRate(client.value?.currency ?? 'EUR')
 
 const form = ref(buildClientSettingsForm(client.value))
@@ -298,17 +300,18 @@ const allowedFeatures = computed(
 const isBasic = computed(() => client.value?.plan === 'BASIC')
 const hasAi = computed(() => !isBasic.value && (client.value?.tokenLimit ?? 0) > 0)
 const showBilling = computed(() => client.value?.billingPlan !== 'PERMANENT')
+const can = (scope: string) => isSuperadmin.value || tenantAccess.value?.role === 'OWNER' || tenantAccess.value?.scopes.includes(scope)
 
 const tabs = computed<SettingsTab[]>(() => {
-  const t: SettingsTab[] = [
-    { id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'mdi:palette-outline' },
-  ]
-  if (!isBasic.value) {
+  const t: SettingsTab[] = []
+  if (can('TENANT_SETTINGS')) t.push({ id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'mdi:palette-outline' })
+  t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'mdi:account-group-outline' })
+  if (!isBasic.value && can('TENANT_SETTINGS')) {
     t.push({ id: 'content', labelKey: 'common.preferences.tabs.content', icon: 'mdi:text-box-outline' })
-    t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'mdi:puzzle-outline' })
   }
-  if (hasAi.value) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
-  if (showBilling.value)
+  if (!isBasic.value && can('INTEGRATION_CONTROL')) t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'mdi:puzzle-outline' })
+  if (hasAi.value && can('AI_USE')) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
+  if (showBilling.value && can('BILLING_CHANGE'))
     t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'mdi:credit-card-outline' })
   return t
 })
@@ -346,14 +349,16 @@ const toggleFeature = async ({ code, enabled }: { code: 'AI' | 'SENTIMENT' | 'AR
 const savePreferences = async () => {
   if (!clientId.value) return toast.error({ message: $t('common.preferences.messages.noClientId') })
   try {
+    const payload: Record<string, unknown> = {
+      ...form.value,
+      logoUrl: form.value.optimizedUrl || form.value.logoUrl,
+      socials: form.value.socials.filter((s) => s.url.trim()),
+      aiUser: client.value?.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
+    }
+    if (!can('INTEGRATION_CONTROL')) for (const field of ['socials', 'linkedinMode', 'linkedinCompanyType', 'linkedinBrandProfile', 'gtagId', 'allowGtag']) delete payload[field]
     await $fetch(`/api/clients/${clientId.value}` as `/api/clients/:id`, {
       method: 'PATCH',
-      body: {
-        ...form.value,
-        logoUrl: form.value.optimizedUrl || form.value.logoUrl,
-        socials: form.value.socials.filter((s) => s.url.trim()),
-        aiUser: client.value?.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
-      },
+      body: payload,
     })
     toast.success({ message: $t('common.messages.successGeneralTitle') })
     await refresh()

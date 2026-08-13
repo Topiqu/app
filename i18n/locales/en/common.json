@@ -103,6 +103,7 @@
       "general": "Something went wrong. Please try again.",
       "unauthorized": "Access denied.",
       "invalidRequest": "Invalid request.",
+      "tooManyRequests": "Too many requests. Please try again later.",
       "missingBlog": "Missing blog name.",
       "blogNotFound": "Blog not found.",
       "tagNotFound": "Tag not found.",
@@ -331,7 +332,8 @@
         "content": "Content",
         "integrations": "Integrations",
         "ai": "AI",
-        "billing": "Billing"
+        "billing": "Billing",
+        "members": "Members"
       },
       "currentPlan": "Current plan",
       "nextPayment": "Next payment",
@@ -521,6 +523,41 @@
       "pack25k": "Token Pack 25k",
       "pack50k": "Token Pack 50k",
       "bestValue": "Best value"
+    },
+    "members": {
+      "title": "Members",
+      "description": "People who can work in this tenant.",
+      "invite": "Invite member",
+      "email": "Email address",
+      "send": "Send invitation",
+      "sent": "Invitation sent",
+      "owner": "Owner",
+      "remove": "Remove member",
+      "pending": "Pending invitations",
+      "revoke": "Revoke invitation",
+      "resend": "Resend invitation",
+      "switchTenant": "Switch tenant",
+      "scopes": {
+        "ARTICLE_WRITE": "Write own articles",
+        "ARTICLE_WRITE_OTHERS": "Edit others' articles",
+        "ARTICLE_PUBLISH": "Publish articles",
+        "MEMBER_CONTROL": "Manage members",
+        "TENANT_SETTINGS": "Tenant settings",
+        "INTEGRATION_CONTROL": "Integrations",
+        "BILLING_CHANGE": "Billing changes",
+        "API_KEY_CONTROL": "API key",
+        "AI_USE": "Use AI tokens",
+        "ANALYTICS_READ": "View analytics"
+      }
+    },
+    "invitation": {
+      "title": "Join {tenant}",
+      "by": "Invited by {inviter} · {followers} followers",
+      "signIn": "Sign in or create an account with {email} to accept.",
+      "signInAction": "Sign in",
+      "accept": "Accept",
+      "decline": "Decline",
+      "invalid": "This invitation is invalid or has expired."
     },
     "tasks": {
       "completed": "Completed",

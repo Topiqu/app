@@ -1,0 +1,79 @@
+<template>
+  <main class="min-h-[75vh] flex items-center justify-center px-4 py-12">
+    <div
+      class="w-full max-w-lg rounded-3xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-7 sm:p-10 shadow-xl text-center"
+    >
+      <div v-if="pending" class="py-16"><Icon name="mdi:loading" class="size-8 animate-spin" /></div>
+      <template v-else-if="invitation">
+        <img
+          v-if="invitation.logoUrl"
+          :src="invitation.logoUrl"
+          :alt="invitation.tenantName"
+          class="size-18 object-contain mx-auto mb-5 rounded-2xl"
+        />
+        <Icon v-else name="mdi:account-group-outline" class="size-16 mx-auto mb-5 text-violet-500" />
+        <h1 class="text-2xl font-bold">{{ $t('common.invitation.title', { tenant: invitation.tenantName }) }}</h1>
+        <p class="mt-3 text-neutral-600 dark:text-neutral-300">
+          {{ $t('common.invitation.by', { inviter: invitation.inviterName, followers: invitation.followerCount }) }}
+        </p>
+        <div class="mt-6 flex flex-wrap justify-center gap-2">
+          <span
+            v-for="scope in invitation.scopes"
+            :key="scope"
+            class="rounded-full bg-neutral-100 dark:bg-neutral-800 px-3 py-1 text-xs"
+            >{{ $t(`common.members.scopes.${scope}`) }}</span
+          >
+        </div>
+        <p v-if="!loggedIn" class="mt-7 text-sm text-amber-700 dark:text-amber-300">
+          {{ $t('common.invitation.signIn', { email: invitation.email }) }}
+        </p>
+        <div class="mt-7 flex justify-center gap-3">
+          <Button variant="neutral" :disabled="busy" @click="respond('decline')">{{
+            $t('common.invitation.decline')
+          }}</Button>
+          <Button v-if="loggedIn" :disabled="busy" @click="respond('accept')">{{
+            $t('common.invitation.accept')
+          }}</Button>
+          <Button v-else :to="localePath({ name: 'autorizace', query: { invitation: token } })">{{
+            $t('common.invitation.signInAction')
+          }}</Button>
+        </div>
+      </template>
+      <div v-else class="py-12">
+        <Icon name="mdi:link-off" class="size-12 text-neutral-400" />
+        <h1 class="mt-4 text-xl font-bold">{{ $t('common.invitation.invalid') }}</h1>
+      </div>
+    </div>
+  </main>
+</template>
+<script setup lang="ts">
+const route = useRoute()
+const localePath = useLocalePath()
+const { status, getSession } = useAuth()
+const token = route.params.token as string
+const { data: invitation, pending } = await useFetch<{
+  tenantName: string
+  logoUrl: string | null
+  inviterName: string
+  followerCount: number
+  email: string
+  scopes: string[]
+}>(`/api/invitations/${token}`)
+const busy = shallowRef(false)
+const loggedIn = computed(() => status.value === 'authenticated')
+const respond = async (action: 'accept' | 'decline') => {
+  busy.value = true
+  try {
+    const result = await $fetch<{ accepted: boolean }>(`/api/invitations/${token}`, {
+      method: 'POST',
+      body: { action },
+    })
+    if (result.accepted) {
+      await getSession()
+      await navigateTo(localePath({ name: 'admin' }))
+    } else await navigateTo('/')
+  } finally {
+    busy.value = false
+  }
+}
+</script>

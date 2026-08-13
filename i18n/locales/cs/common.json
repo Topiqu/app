@@ -67,6 +67,7 @@
       "general": "Něco se pokazilo. Zkuste to prosím znovu.",
       "unauthorized": "Přístup zamítnut.",
       "invalidRequest": "Neplatný požadavek.",
+      "tooManyRequests": "Příliš mnoho požadavků. Zkuste to prosím později.",
       "missingBlog": "Chybí název blogu.",
       "blogNotFound": "Blog nenalezen.",
       "tagNotFound": "Tag nenalezen.",
@@ -332,7 +333,8 @@
         "content": "Obsah",
         "integrations": "Integrace",
         "ai": "AI",
-        "billing": "Fakturace"
+        "billing": "Fakturace",
+        "members": "Členové"
       },
       "currentPlan": "Aktuální tarif",
       "nextPayment": "Další platba",
@@ -522,6 +524,41 @@
       "pack25k": "Balíček 25k tokenů",
       "pack50k": "Balíček 50k tokenů",
       "bestValue": "Nejvýhodnější"
+    },
+    "members": {
+      "title": "Členové",
+      "description": "Lidé, kteří mohou pracovat v tomto tenantovi.",
+      "invite": "Pozvat člena",
+      "email": "E-mailová adresa",
+      "send": "Odeslat pozvánku",
+      "sent": "Pozvánka byla odeslána",
+      "owner": "Vlastník",
+      "remove": "Odebrat člena",
+      "pending": "Čekající pozvánky",
+      "revoke": "Zrušit pozvánku",
+      "resend": "Poslat pozvánku znovu",
+      "switchTenant": "Přepnout tenanta",
+      "scopes": {
+        "ARTICLE_WRITE": "Psát vlastní články",
+        "ARTICLE_WRITE_OTHERS": "Upravovat cizí články",
+        "ARTICLE_PUBLISH": "Publikovat články",
+        "MEMBER_CONTROL": "Spravovat členy",
+        "TENANT_SETTINGS": "Nastavení tenanta",
+        "INTEGRATION_CONTROL": "Integrace",
+        "BILLING_CHANGE": "Změny fakturace",
+        "API_KEY_CONTROL": "API klíč",
+        "AI_USE": "Používat AI tokeny",
+        "ANALYTICS_READ": "Zobrazit analytiku"
+      }
+    },
+    "invitation": {
+      "title": "Připojit se k {tenant}",
+      "by": "Pozval(a) vás {inviter} · {followers} sledujících",
+      "signIn": "Pro přijetí se přihlaste nebo zaregistrujte jako {email}.",
+      "signInAction": "Přihlásit se",
+      "accept": "Přijmout",
+      "decline": "Odmítnout",
+      "invalid": "Pozvánka je neplatná nebo vypršela."
     },
     "tasks": {
       "completed": "Dokončeno",

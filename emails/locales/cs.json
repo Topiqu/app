@@ -44,6 +44,13 @@
       "link": "Odhlásit se"
     }
   },
+  "tenantInvitation": {
+    "subject": "Pozvánka do {tenantName}",
+    "greeting": "Dostali jste pozvánku",
+    "intro": "{inviterName} vás pozval(a) do <b>{tenantName}</b>.",
+    "button": "Zobrazit pozvánku",
+    "expiration": "Pozvánka vyprší za {expirationDays} dní."
+  },
   "userBan": {
     "subject": "Váš účet byl zabanován",
     "greeting": "Dobrý den, {userName},",

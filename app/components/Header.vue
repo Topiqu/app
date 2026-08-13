@@ -26,6 +26,7 @@
       <div v-else class="h-11 w-28 animate-pulse rounded-lg bg-gray-200 dark:bg-neutral-700" />
     </NuxtLink>
     <div class="flex items-center justify-between gap-2">
+      <TenantSwitcher v-if="auth" />
       <UserAccount />
       <ThemeToggle />
       <NotificationBar />

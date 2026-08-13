@@ -216,6 +216,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   mode?: 'login' | 'register' | 'forgot' | 'reset'
+  redirectTo?: string
 }>()
 
 const toast = useToast()
@@ -223,6 +224,12 @@ const theme = useThemeStore()
 const { data, signIn } = useAuth()
 const { setLocale } = useI18n()
 const localePath = useLocalePath()
+const afterSignIn = (role: string) => {
+  if (props.redirectTo) return navigateTo(props.redirectTo)
+  if (role === 'superadmin') return navigateTo(localePath({ name: 'master' }))
+  if (role === 'admin') return navigateTo(localePath({ name: 'admin' }))
+  return navigateTo(localePath({ name: 'uzivatel' }))
+}
 
 const init = {
   email: '',
@@ -296,9 +303,7 @@ const submit = async () => {
         setLocale(user.language)
         theme.mode = user.theme
         toast.success({ message: $t('common.auth.loginSuccess') })
-        if (user.role === 'superadmin') navigateTo(localePath({ name: 'master' }))
-        else if (user.role === 'admin') navigateTo(localePath({ name: 'admin' }))
-        else navigateTo(localePath({ name: 'uzivatel' }))
+        afterSignIn(user.role)
         form.value = init
       }
     }
@@ -327,7 +332,7 @@ const verify = async () => {
     setLocale(user.language)
     theme.mode = user.theme
     toast.success({ message: $t('common.auth.verifySuccess') })
-    navigateTo(localePath({ name: 'index' }))
+    afterSignIn(user.role)
   } catch (e: any) {
     toast.error({ message: e.message || $t('common.auth.verifyFailed') })
   }
@@ -350,9 +355,7 @@ const verifyTotp = async () => {
     const user = await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`)
     setLocale(user.language)
     theme.mode = user.theme
-    if (user.role === 'superadmin') navigateTo(localePath({ name: 'master' }))
-    else if (user.role === 'admin') navigateTo(localePath({ name: 'admin' }))
-    else navigateTo(localePath({ name: 'uzivatel' }))
+    afterSignIn(user.role)
     form.value = init
     internalMode.value = 'login'
   } catch (e: any) {

@@ -44,6 +44,13 @@
       "link": "Unsubscribe"
     }
   },
+  "tenantInvitation": {
+    "subject": "Invitation to {tenantName}",
+    "greeting": "You have been invited",
+    "intro": "{inviterName} invited you to join <b>{tenantName}</b>.",
+    "button": "View invitation",
+    "expiration": "This invitation expires in {expirationDays} days."
+  },
   "userBan": {
     "subject": "Your account has been banned",
     "greeting": "Hello {userName},",
