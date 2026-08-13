@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 const BodySchema = z.object({
   visitorId: z.string().optional().nullable(),
 })

@@ -15,13 +15,20 @@ export default defineEventHandler(async (event) => {
   const monthAgo = new Date()
   monthAgo.setDate(monthAgo.getDate() - 360)
 
+  const publicWhere = {
+    clientSiteId: clientSite.id,
+    status: 'published' as const,
+    deletedAt: null,
+    OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
+  }
+
   const totalArticles = await db.article.count({
-    where: { clientSiteId: clientSite.id },
+    where: publicWhere,
   })
 
   const articles = await db.article.findMany({
     where: {
-      clientSiteId: clientSite.id,
+      ...publicWhere,
       ...(totalArticles < 150 ? {} : { createdAt: { gte: monthAgo } }),
     },
     include: {
@@ -39,7 +46,7 @@ export default defineEventHandler(async (event) => {
     return bScore - aScore || b.createdAt.getTime() - a.createdAt.getTime()
   })
 
-  const [featured, ...recommended] = sortedArticles.length ? sortedArticles.slice(0, 3) : sortedArticles
+  const [featured, ...recommended] = sortedArticles.length ? sortedArticles.slice(0, 4) : sortedArticles
 
   return { featured, recommended, totalArticles }
 })

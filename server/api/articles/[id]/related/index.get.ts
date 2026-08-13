@@ -1,6 +1,5 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
 
   const slug = getRouterParam(event, 'id')
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
@@ -17,9 +16,12 @@ export default defineEventHandler(async (event) => {
 
   const candidates = await prisma.article.findMany({
     where: {
+      clientSiteId,
       slug: { not: slug },
+      status: 'published',
+      deletedAt: null,
+      OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
       tags: { some: { tagId: { in: tagIds } } },
-      ...(user?.role === 'admin' ? {} : { status: 'published' }),
     },
     include: {
       tags: { include: { tag: true } },

@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     skip,
     orderBy: { [field]: order },
     include: {
-      user: { select: { username: true } },
+      user: { select: { id: true, username: true, avatarUrl: true } },
       tags: { include: { tag: true } },
       _count: { select: { reactions: true } },
     },

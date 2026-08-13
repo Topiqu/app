@@ -33,14 +33,48 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'id')
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   const sessionId = getCookie(event, 'anon_session')
-  const { clientSiteId, locale } = getQuery<{ clientSiteId: string; locale?: Language }>(event)
+  const { clientSiteId, locale } = getQuery<{ clientSiteId?: string; locale?: Language }>(event)
+
+  // The editor routes by the immutable article id. Resolve that mode only for an
+  // authenticated staff member and always scope admins to their own tenant.
+  if (!clientSiteId && user && (user.role === 'admin' || user.role === 'superadmin')) {
+    const adminArticle = await prisma.article.findUnique({
+      where: { id: slug },
+      include: articleInclude,
+    })
+    if (!adminArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+    assertArticleAdminAccess(user, adminArticle, {
+      unauthorized: t('common.errors.unauthorized')!,
+      forbidden: t('common.errors.forbidden')!,
+    })
+    const adminSite = await prisma.clientSite.findUnique({
+      where: { id: adminArticle.clientSiteId },
+      select: { language: true },
+    })
+    return {
+      ...adminArticle,
+      language: adminSite?.language ?? 'en',
+      translationStatus: null,
+      alternates: [],
+      commentCount: adminArticle._count.comments,
+      likes: adminArticle._count.reactions,
+      likedByUser: adminArticle.reactions.some((reaction) => reaction.userId === user.id),
+      followerCount: adminArticle.user?._count.following ?? 0,
+      series: adminArticle.articleSeries,
+    }
+  }
+
+  if (!clientSiteId) {
+    if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  }
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
     select: { language: true },
   })
   const primaryLanguage = clientSite?.language ?? 'en'
-  const isAdmin = user?.role === 'admin'
+  const isAdmin = user?.role === 'superadmin' || (user?.role === 'admin' && user.clientSiteId === clientSiteId)
 
   // Locale-scoped resolution: the primary language renders the source Article; any other
   // locale renders its ArticleTranslation. Because each locale looks in exactly one place,

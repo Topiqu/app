@@ -105,11 +105,17 @@ export default defineEventHandler(async (event) => {
 
     doc.fontSize(11).fillColor('#111827').text(stripHtml(article.content), { align: 'justify', lineGap: 2 })
   } else {
-    doc.fontSize(18).fillColor('#111827').text(t('articles.exportTitle') || 'Articles export', { align: 'left' })
+    doc
+      .fontSize(18)
+      .fillColor('#111827')
+      .text(t('articles.exportTitle') || 'Articles export', { align: 'left' })
     doc.moveDown(1)
 
     articles.forEach((article, i) => {
-      doc.fontSize(13).fillColor('#2563eb').text(`${i + 1}. ${article.title}`)
+      doc
+        .fontSize(13)
+        .fillColor('#2563eb')
+        .text(`${i + 1}. ${article.title}`)
       doc
         .fontSize(9)
         .fillColor('#6b7280')

@@ -64,15 +64,20 @@ export default defineEventHandler(async (event) => {
     const rows = await db.article.findMany({
       where: {
         clientSiteId: clientSite.id,
+        status: 'published',
+        deletedAt: null,
+        OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
         ...(tag && {
           tags: { some: { tag: { name: { equals: tag, mode: 'insensitive' } } } },
         }),
         ...(search && {
-          OR: [
-            { title: { contains: search, mode: 'insensitive' } },
-            { excerpt: { contains: search, mode: 'insensitive' } },
-            { content: { contains: search, mode: 'insensitive' } },
-          ],
+          AND: {
+            OR: [
+              { title: { contains: search, mode: 'insensitive' } },
+              { excerpt: { contains: search, mode: 'insensitive' } },
+              { content: { contains: search, mode: 'insensitive' } },
+            ],
+          },
         }),
       },
       take: take + 1,
@@ -90,6 +95,8 @@ export default defineEventHandler(async (event) => {
         where: {
           clientSiteId: clientSite.id,
           status: 'published',
+          deletedAt: null,
+          OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
         },
         include: {
           tags: { include: { tag: true } },
@@ -105,6 +112,8 @@ export default defineEventHandler(async (event) => {
       where: {
         clientSiteId: clientSite.id,
         status: 'published',
+        deletedAt: null,
+        OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
         content: { contains: 'data-type="poll"' },
       },
       orderBy: { createdAt: 'desc' },

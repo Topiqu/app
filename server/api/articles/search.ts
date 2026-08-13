@@ -6,7 +6,7 @@ export default defineEventHandler(async (event: H3Event) => {
   if (!user?.id) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const { skip, take } = await getPagination(event)
-  const query = getQuery(event).query as string | undefined
+  const filters = parseArticleListQuery(getQuery(event))
 
   const db = await getEnhancedPrisma(user)
 
@@ -26,35 +26,31 @@ export default defineEventHandler(async (event: H3Event) => {
     })
     .then((users) => users.map((u) => u.id))
 
+  const where = {
+    clientSiteId: clientSite.id,
+    userId: { in: [user.id, ...aiUserIds] },
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(dateRangeWhere(filters.dateFrom, filters.dateTo)
+      ? { createdAt: dateRangeWhere(filters.dateFrom, filters.dateTo) }
+      : {}),
+    ...(filters.query && {
+      OR: [
+        { title: { contains: filters.query, mode: 'insensitive' as const } },
+        { excerpt: { contains: filters.query, mode: 'insensitive' as const } },
+        { content: { contains: filters.query, mode: 'insensitive' as const } },
+      ],
+    }),
+  }
+
   const [articles, total] = await Promise.all([
     db.article.findMany({
-      where: {
-        clientSiteId: clientSite.id,
-        userId: { in: [user.id, ...aiUserIds] },
-        ...(query && {
-          OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { excerpt: { contains: query, mode: 'insensitive' } },
-            { content: { contains: query, mode: 'insensitive' } },
-          ],
-        }),
-      },
-      orderBy: { createdAt: 'desc' },
+      where,
+      orderBy: { [filters.sort]: filters.order },
       skip,
       take,
     }),
     db.article.count({
-      where: {
-        clientSiteId: clientSite.id,
-        userId: { in: [user.id, ...aiUserIds] },
-        ...(query && {
-          OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { excerpt: { contains: query, mode: 'insensitive' } },
-            { content: { contains: query, mode: 'insensitive' } },
-          ],
-        }),
-      },
+      where,
     }),
   ])
 
