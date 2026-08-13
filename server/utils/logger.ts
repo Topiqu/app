@@ -21,15 +21,14 @@ async function ship(level: LogLevel, message: string, context?: LogContext): Pro
     await $fetch(`https://${INGEST_HOST}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SOURCE_TOKEN}`,
+        Authorization: `Bearer ${SOURCE_TOKEN}`,
         'Content-Type': 'application/json',
       },
       body: {
         dt: new Date().toISOString(),
         level,
         message,
-        environment:
-          process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
+        environment: process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
         ...context,
       },
       timeout: 5000,

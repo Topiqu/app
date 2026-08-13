@@ -15,16 +15,36 @@ import {
 
 describe('getAllowedFeatures', () => {
   it('BASIC unlocks nothing', () => {
-    expect(getAllowedFeatures('BASIC')).toEqual({ AI: false, SENTIMENT: false, ARTICLE_CRONS: false, SEARCH_CONSOLE: false })
+    expect(getAllowedFeatures('BASIC')).toEqual({
+      AI: false,
+      SENTIMENT: false,
+      ARTICLE_CRONS: false,
+      SEARCH_CONSOLE: false,
+    })
   })
 
   it('PRO unlocks AI + ARTICLE_CRONS but not SENTIMENT', () => {
-    expect(getAllowedFeatures('PRO')).toEqual({ AI: true, SENTIMENT: false, ARTICLE_CRONS: true, SEARCH_CONSOLE: false })
+    expect(getAllowedFeatures('PRO')).toEqual({
+      AI: true,
+      SENTIMENT: false,
+      ARTICLE_CRONS: true,
+      SEARCH_CONSOLE: false,
+    })
   })
 
   it('PREMIUM and CUSTOM unlock everything', () => {
-    expect(getAllowedFeatures('PREMIUM')).toEqual({ AI: true, SENTIMENT: true, ARTICLE_CRONS: true, SEARCH_CONSOLE: true })
-    expect(getAllowedFeatures('CUSTOM')).toEqual({ AI: true, SENTIMENT: true, ARTICLE_CRONS: true, SEARCH_CONSOLE: true })
+    expect(getAllowedFeatures('PREMIUM')).toEqual({
+      AI: true,
+      SENTIMENT: true,
+      ARTICLE_CRONS: true,
+      SEARCH_CONSOLE: true,
+    })
+    expect(getAllowedFeatures('CUSTOM')).toEqual({
+      AI: true,
+      SENTIMENT: true,
+      ARTICLE_CRONS: true,
+      SEARCH_CONSOLE: true,
+    })
   })
 })
 

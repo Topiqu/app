@@ -97,8 +97,8 @@ describe('getValidAccessToken', () => {
   })
 
   it('throws when there is no access token at all', async () => {
-    await expect(
-      getValidAccessToken({ ...base, accessToken: null, tokenExpiresAt: null }),
-    ).rejects.toThrow('No LinkedIn access token')
+    await expect(getValidAccessToken({ ...base, accessToken: null, tokenExpiresAt: null })).rejects.toThrow(
+      'No LinkedIn access token',
+    )
   })
 })

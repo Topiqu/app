@@ -26,7 +26,9 @@ type AuthRequest = Pick<RequestInternal, 'headers'>
 export const normalizeLoginEmail = (email: string) => email.trim().toLowerCase()
 
 const authFingerprint = (value: string) =>
-  createHmac('sha256', process.env.AUTH_SECRET || 'missing-auth-secret').update(value).digest('hex')
+  createHmac('sha256', process.env.AUTH_SECRET || 'missing-auth-secret')
+    .update(value)
+    .digest('hex')
 
 const header = (req: AuthRequest, name: string) => {
   const value = req.headers?.[name]

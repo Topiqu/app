@@ -5,10 +5,7 @@ import { refreshAccessToken } from './api'
 
 const EXPIRY_BUFFER_MS = 5 * 60 * 1000
 
-type TokenBearingCompany = Pick<
-  LinkedinCompany,
-  'id' | 'type' | 'accessToken' | 'refreshToken' | 'tokenExpiresAt'
->
+type TokenBearingCompany = Pick<LinkedinCompany, 'id' | 'type' | 'accessToken' | 'refreshToken' | 'tokenExpiresAt'>
 
 function getCredentials(type: string) {
   if (type === 'pages') {
@@ -26,8 +23,7 @@ function getCredentials(type: string) {
 export async function getValidAccessToken(company: TokenBearingCompany): Promise<string> {
   if (!company.accessToken) throw new Error('No LinkedIn access token for company.')
 
-  const stillValid =
-    company.tokenExpiresAt && company.tokenExpiresAt.getTime() - EXPIRY_BUFFER_MS > Date.now()
+  const stillValid = company.tokenExpiresAt && company.tokenExpiresAt.getTime() - EXPIRY_BUFFER_MS > Date.now()
   if (stillValid) return company.accessToken
 
   if (!company.refreshToken) {

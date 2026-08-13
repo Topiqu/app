@@ -11,13 +11,10 @@ export const verifyTurnstile = async (event: H3Event, token: string | undefined)
   if (!token) return false
 
   try {
-    const res = await $fetch<TurnstileResponse>(
-      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-      {
-        method: 'POST',
-        body: { secret, response: token, remoteip: getIp(event) },
-      },
-    )
+    const res = await $fetch<TurnstileResponse>('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: { secret, response: token, remoteip: getIp(event) },
+    })
     return res.success === true
   } catch {
     return false

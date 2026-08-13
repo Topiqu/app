@@ -1,7 +1,6 @@
 import type Stripe from 'stripe'
 
-export const isSubscribablePlan = (value: unknown): value is 'PRO' | 'PREMIUM' =>
-  value === 'PRO' || value === 'PREMIUM'
+export const isSubscribablePlan = (value: unknown): value is 'PRO' | 'PREMIUM' => value === 'PRO' || value === 'PREMIUM'
 
 // The Customer Portal changes the subscription's price without touching `metadata.plan`,
 // so the price ID is the only trustworthy source of the current plan.

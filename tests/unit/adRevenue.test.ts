@@ -83,7 +83,12 @@ describe('summarizeEarnings', () => {
 
   it('totals a single currency and groups by month in chronological order', () => {
     const summaries = summarizeEarnings([
-      ledgerRow({ periodStart: new Date('2026-06-02T00:00:00Z'), grossCents: 500, clientCents: 350, platformCents: 150 }),
+      ledgerRow({
+        periodStart: new Date('2026-06-02T00:00:00Z'),
+        grossCents: 500,
+        clientCents: 350,
+        platformCents: 150,
+      }),
       ledgerRow({ periodStart: new Date('2026-07-01T00:00:00Z') }),
       ledgerRow({ periodStart: new Date('2026-07-24T00:00:00Z') }),
     ])

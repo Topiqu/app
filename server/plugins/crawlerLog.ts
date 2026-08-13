@@ -2,7 +2,8 @@ import { toHostname } from '~~/shared/utils/domain'
 import { detectCrawler } from '~~/shared/utils/crawlers'
 
 // Assets dominate request volume and say nothing about crawl coverage.
-const IGNORED = /^\/(_nuxt|_fonts|_ipx|__og-image__|__nuxt|_scripts|api\/_)|\.(js|css|map|png|jpg|jpeg|webp|avif|svg|ico|woff2?)$/
+const IGNORED =
+  /^\/(_nuxt|_fonts|_ipx|__og-image__|__nuxt|_scripts|api\/_)|\.(js|css|map|png|jpg|jpeg|webp|avif|svg|ico|woff2?)$/
 
 /**
  * One line per crawler hit on a content route. Answers the questions a schema validator cannot:

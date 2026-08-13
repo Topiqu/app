@@ -83,7 +83,11 @@ describe('buildClientSettingsForm', () => {
 
   it('falls back to the legacy linkedinCompany object when no array is present', () => {
     const client = baseClient({
-      linkedinCompany: { mode: 'FullAuto', type: 'pages', brandProfile: { tone: 't', audience: 'a', doList: [], dontList: [] } },
+      linkedinCompany: {
+        mode: 'FullAuto',
+        type: 'pages',
+        brandProfile: { tone: 't', audience: 'a', doList: [], dontList: [] },
+      },
     } as Partial<ClientSite>)
     const form = buildClientSettingsForm(client)
     expect(form.linkedinMode).toBe('FullAuto')
