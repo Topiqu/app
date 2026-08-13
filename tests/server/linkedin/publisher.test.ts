@@ -22,7 +22,13 @@ const { publishApprovedDraft, executePublish } = await import('../../../server/u
 const draftWithToken = {
   id: 'draft-1',
   text: 'hello',
-  task: { company: { accessToken: 'tok', linkedinOrgId: 'urn:li:org:1' } },
+  task: {
+    company: {
+      accessToken: 'tok',
+      linkedinOrgId: 'urn:li:org:1',
+      tokenExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    },
+  },
 }
 
 beforeEach(() => {

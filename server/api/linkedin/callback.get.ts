@@ -1,5 +1,8 @@
 import { verifyOAuthState } from '../../utils/linkedin/oauthState'
 import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
+import { getLinkedInRedirectUri } from '../../utils/linkedin/redirectUri'
+
+const settingsRedirect = '/settings?tab=integrations'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -10,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
   const query = getQuery(event)
   if (query.error) {
-    return sendRedirect(event, '/master?tab=preferences&linkedin=error')
+    return sendRedirect(event, `${settingsRedirect}&linkedin=error`)
   }
 
   const code = query.code as string | undefined
@@ -45,10 +48,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'LinkedIn credentials not configured' })
   }
 
-  const config = useRuntimeConfig()
-  const redirectUri = config.public.siteUrl
-    ? `${config.public.siteUrl}/api/linkedin/callback`
-    : 'http://localhost:3000/api/linkedin/callback'
+  const redirectUri = getLinkedInRedirectUri()
 
   try {
     const tokenData = await getAccessToken(code, redirectUri, clientId, clientSecret)
@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
       await db.linkedinCompany.update({ where: { id: company.id }, data: dbData })
     }
 
-    return sendRedirect(event, '/master?tab=preferences')
+    return sendRedirect(event, `${settingsRedirect}&linkedin=connected`)
   } catch (err: any) {
     throw createError({ statusCode: 500, message: `Failed to connect LinkedIn: ${err.message}` })
   }

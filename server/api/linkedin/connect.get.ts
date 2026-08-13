@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import { signOAuthState } from '../../utils/linkedin/oauthState'
+import { getLinkedInRedirectUri } from '../../utils/linkedin/redirectUri'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -28,10 +29,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: `LinkedIn ${appType} Client ID not configured` })
   }
 
-  const config = useRuntimeConfig()
-  const redirectUri = config.public.siteUrl
-    ? `${config.public.siteUrl}/api/linkedin/callback`
-    : 'http://localhost:3000/api/linkedin/callback'
+  const redirectUri = getLinkedInRedirectUri()
 
   const state = signOAuthState({ nonce: randomUUID(), clientSiteId, appType })
 
