@@ -35,15 +35,12 @@ export default defineEventHandler(async (event) => {
   if (user.role !== 'superadmin' && clientSiteId !== user.clientSiteId) {
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
   }
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', clientSiteId)
 
   const clientId =
-    appType === 'pages'
-      ? process.env.LINKEDIN_CLIENT_ID_COMPANY
-      : process.env.LINKEDIN_CLIENT_ID_PERSONAL
+    appType === 'pages' ? process.env.LINKEDIN_CLIENT_ID_COMPANY : process.env.LINKEDIN_CLIENT_ID_PERSONAL
   const clientSecret =
-    appType === 'pages'
-      ? process.env.LINKEDIN_CLIENT_SECRET_COMPANY
-      : process.env.LINKEDIN_CLIENT_SECRET_PERSONAL
+    appType === 'pages' ? process.env.LINKEDIN_CLIENT_SECRET_COMPANY : process.env.LINKEDIN_CLIENT_SECRET_PERSONAL
   if (!clientId || !clientSecret) {
     throw createError({ statusCode: 500, message: 'LinkedIn credentials not configured' })
   }
@@ -54,8 +51,7 @@ export default defineEventHandler(async (event) => {
     const tokenData = await getAccessToken(code, redirectUri, clientId, clientSecret)
     const accessToken = tokenData.access_token
 
-    const fetchedUrn =
-      appType === 'personal' ? await getPersonalUrn(accessToken) : await getPagesUrn(accessToken)
+    const fetchedUrn = appType === 'personal' ? await getPersonalUrn(accessToken) : await getPagesUrn(accessToken)
 
     const db = await getEnhancedPrisma(user)
     const company = await db.linkedinCompany.findFirst({ where: { clientSiteId, type: appType } })

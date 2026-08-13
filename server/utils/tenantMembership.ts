@@ -12,6 +12,7 @@ export const TENANT_SCOPES = [
   'API_KEY_CONTROL',
   'AI_USE',
   'ANALYTICS_READ',
+  'CONTENT_MODERATE',
 ] as const satisfies readonly TenantScope[]
 
 export type TenantAccess = {
@@ -51,3 +52,12 @@ export const requireTenantScope = async (event: H3Event, scope: TenantScope, cli
 
 export const hasTenantScope = (membership: Pick<TenantAccess['membership'], 'role' | 'scopes'>, scope: TenantScope) =>
   membership.role === 'OWNER' || membership.scopes.includes(scope)
+
+export const requireArticleAccess = async (event: H3Event, articleId: string) => {
+  const article = await prisma.article.findUnique({ where: { id: articleId }, select: { userId: true, clientSiteId: true } })
+  if (!article) throw createError({ statusCode: 404, message: 'Article not found' })
+  const access = await requireTenantScope(event, 'ARTICLE_WRITE', article.clientSiteId)
+  if (article.userId !== access.user.id && !hasTenantScope(access.membership, 'ARTICLE_WRITE_OTHERS'))
+    throw createError({ statusCode: 403, message: 'Missing tenant scope: ARTICLE_WRITE_OTHERS' })
+  return { ...access, article }
+}

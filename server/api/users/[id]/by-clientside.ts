@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
 
   if (user.role !== 'superadmin' && user.role !== 'admin')
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'MEMBER_CONTROL', id)
 
   const users = await prisma.user.findMany({
     where: { clientSiteId: id },

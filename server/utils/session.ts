@@ -4,7 +4,7 @@ import type { User } from '@zenstackhq/runtime/models'
 import { UAParser } from 'ua-parser-js'
 
 export const generateSessionToken = async (
-  user: Pick<User, 'id'>,
+  user: Pick<User, 'id' | 'clientSiteId'>,
   req: Pick<RequestInternal, 'body' | 'query' | 'headers' | 'method'>,
 ) => {
   const ipHeader = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? ''
@@ -73,6 +73,7 @@ export const generateSessionToken = async (
         country: geo.country,
         lastUsedAt: new Date(),
         revoked: false,
+        clientSiteId: user.clientSiteId,
       },
     })
 

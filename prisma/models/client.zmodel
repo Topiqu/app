@@ -132,6 +132,7 @@ model ClientSite extends Base {
     searchConsoleMetrics SearchConsoleMetric[]
     tenantMemberships    TenantMembership[]
     tenantInvitations    TenantInvitation[]
+    activeSessions       Session[] @relation("SessionActiveTenant")
 
     @@allow('read', true)
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))

@@ -2,6 +2,7 @@ export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
   if (!user || user.role !== 'admin') throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  await requireTenantScope(event, 'CONTENT_MODERATE', user.clientSiteId)
 
   const commentId = getRouterParam(event, 'id')
   if (!commentId) throw createError({ statusCode: 400, message: t('common.errors.missing')! })

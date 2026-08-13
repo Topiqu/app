@@ -60,7 +60,7 @@ async function main() {
     if (u.role === 'admin') await prisma.tenantMembership.upsert({
       where: { clientSiteId_userId: { clientSiteId: site.id, userId: user.id } },
       update: {},
-      create: { clientSiteId: site.id, userId: user.id, role: 'OWNER', scopes: ['ARTICLE_WRITE', 'ARTICLE_WRITE_OTHERS', 'ARTICLE_PUBLISH', 'MEMBER_CONTROL', 'TENANT_SETTINGS', 'INTEGRATION_CONTROL', 'BILLING_CHANGE', 'API_KEY_CONTROL', 'AI_USE', 'ANALYTICS_READ'] },
+      create: { clientSiteId: site.id, userId: user.id, role: 'OWNER', scopes: ['ARTICLE_WRITE', 'ARTICLE_WRITE_OTHERS', 'ARTICLE_PUBLISH', 'MEMBER_CONTROL', 'TENANT_SETTINGS', 'INTEGRATION_CONTROL', 'BILLING_CHANGE', 'API_KEY_CONTROL', 'AI_USE', 'ANALYTICS_READ', 'CONTENT_MODERATE'] },
     })
   }
 

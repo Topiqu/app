@@ -2,6 +2,7 @@ export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { minRole: 'admin' })
 
   if (!user.clientSiteId) return null
+  if (user.role !== 'superadmin') await requireTenantMember(event, user.clientSiteId)
 
   const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId },

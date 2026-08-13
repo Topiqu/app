@@ -96,8 +96,11 @@ model Session extends Base {
     revoked    Boolean  @default(false)
     userId     String
     user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
+    clientSiteId String?
+    clientSite   ClientSite? @relation("SessionActiveTenant", fields: [clientSiteId], references: [id], onDelete: SetNull)
     @@allow('all', auth().id == userId || auth().role == 'superadmin')
     @@index([userId, lastUsedAt])
+    @@index([clientSiteId])
 }
 
 model Follow {

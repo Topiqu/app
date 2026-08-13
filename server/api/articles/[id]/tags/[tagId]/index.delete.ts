@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
   const articleId = event.context.params!.id!
   const tagId = event.context.params!.tagId!
   if (!articleId || !tagId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  await requireArticleAccess(event, articleId)
 
   const article = await db.article.findUnique({ where: { id: articleId }, select: { id: true } })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })

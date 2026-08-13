@@ -40,6 +40,7 @@ enum TenantScope {
   API_KEY_CONTROL
   AI_USE
   ANALYTICS_READ
+  CONTENT_MODERATE
 }
 
 enum Language {
@@ -293,24 +294,27 @@ model TenantInvitation {
 }
 
 model Session {
-  id         String    @id() @default(uuid())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime? @updatedAt()
-  deletedAt  DateTime?
-  ip         String?
-  userAgent  String?
-  device     String?
-  os         String?
-  browser    String?
-  city       String?
-  region     String?
-  country    String?
-  lastUsedAt DateTime  @default(now())
-  revoked    Boolean   @default(false)
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
+  id           String      @id() @default(uuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime?   @updatedAt()
+  deletedAt    DateTime?
+  ip           String?
+  userAgent    String?
+  device       String?
+  os           String?
+  browser      String?
+  city         String?
+  region       String?
+  country      String?
+  lastUsedAt   DateTime    @default(now())
+  revoked      Boolean     @default(false)
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
+  clientSiteId String?
+  clientSite   ClientSite? @relation("SessionActiveTenant", fields: [clientSiteId], references: [id], onDelete: SetNull)
 
   @@index([userId, lastUsedAt])
+  @@index([clientSiteId])
 }
 
 model Follow {
@@ -620,6 +624,7 @@ model ClientSite {
   searchConsoleMetrics         SearchConsoleMetric[]
   tenantMemberships            TenantMembership[]
   tenantInvitations            TenantInvitation[]
+  activeSessions               Session[]                @relation("SessionActiveTenant")
 
   @@index([domain, name, plan, billingPlan])
 }

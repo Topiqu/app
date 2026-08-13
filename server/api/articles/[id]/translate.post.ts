@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
   const user = await requireUser(event, { minRole: 'admin', clientSite: true })
   await requireTenantScope(event, 'AI_USE', user.clientSiteId)
-  await requireTenantScope(event, 'ARTICLE_WRITE', user.clientSiteId)
+  await requireArticleAccess(event, id)
 
   await ensureMinAccountAge(event, user.id)
 

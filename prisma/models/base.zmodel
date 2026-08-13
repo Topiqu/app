@@ -28,6 +28,7 @@ enum TenantScope {
     API_KEY_CONTROL
     AI_USE
     ANALYTICS_READ
+    CONTENT_MODERATE
 }
 
 enum Language {

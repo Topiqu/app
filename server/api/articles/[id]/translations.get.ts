@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const { user, db } = await requireDb(event, { minRole: 'admin', clientSite: true })
+  await requireArticleAccess(event, id)
 
   const article = await db.article.findFirst({
     where: { id, clientSiteId: user.clientSiteId! },

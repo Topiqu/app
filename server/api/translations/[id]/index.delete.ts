@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
   })
   if (!translation)
     throw createError({ statusCode: 404, message: t('common.errors.notFound') ?? 'Translation not found' })
+  await requireArticleAccess(event, translation.articleId)
 
   await db.articleTranslation.delete({ where: { id: translation.id } })
 

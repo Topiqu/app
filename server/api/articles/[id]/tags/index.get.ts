@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
 
   const articleId = getRouterParam(event, 'id')
   if (!articleId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  await requireArticleAccess(event, articleId)
 
   const article = await db.article.findUnique({ where: { id: articleId }, select: { id: true } })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })

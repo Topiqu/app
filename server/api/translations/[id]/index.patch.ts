@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
     where: { id, clientSiteId: user.clientSiteId! },
     select: { id: true, articleId: true, language: true, slug: true, title: true, content: true, status: true },
   })
+  if (translation) await requireArticleAccess(event, translation.articleId)
   if (!translation)
     throw createError({ statusCode: 404, message: t('common.errors.notFound') ?? 'Translation not found' })
 

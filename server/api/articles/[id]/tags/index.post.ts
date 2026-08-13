@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
 
   const articleId = event.context.params!.id!
   if (!articleId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  await requireArticleAccess(event, articleId)
 
   const body = await readValidatedBody(event, z.object({ tagId: z.string() }).parse)
 

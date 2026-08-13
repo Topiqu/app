@@ -2,6 +2,7 @@ import { TranslationStatus } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { minRole: 'admin', clientSite: true })
+  await requireTenantScope(event, 'ARTICLE_WRITE', user.clientSiteId)
 
   const { skip, take } = await getPagination(event)
   const { status } = await getValidatedQuery(
