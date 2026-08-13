@@ -26,8 +26,7 @@ describe('client site routes behind a session', () => {
   it('pins the client detail route to the caller own tenant unless superadmin', () => {
     const code = source('server/api/clients/[id]/index.get.ts')
 
-    expect(code).toContain('user.clientSiteId')
-    expect(code).toMatch(/statusCode:\s*403/)
+    expect(code).toContain('requireTenantMember(event, id)')
   })
 
   it('derives the owner status route from the session, never from a route param', () => {

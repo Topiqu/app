@@ -68,3 +68,62 @@ describe('tenant audit trail', () => {
     ]) expect(files).toContain(`action: '${action}'`)
   })
 })
+
+describe('tenant boundary wiring', () => {
+  const source = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8')
+
+  it('projects tenant secrets only behind their matching scopes', () => {
+    const endpoint = source('server/api/clients/[id]/index.get.ts')
+    expect(endpoint).toContain("hasTenantScope(membership, 'API_KEY_CONTROL')")
+    expect(endpoint).toContain("hasTenantScope(membership, 'BILLING_CHANGE')")
+    expect(endpoint).toContain("hasTenantScope(membership, 'INTEGRATION_CONTROL')")
+    expect(endpoint).toContain("hasTenantScope(membership, 'AI_USE')")
+  })
+
+  it('stores the selected tenant on the active session', () => {
+    const endpoint = source('server/api/tenant/active.post.ts')
+    expect(endpoint).toContain('prisma.session.update')
+    expect(endpoint).not.toContain('prisma.user.update')
+    expect(source('server/api/auth/[...].ts')).toContain('activeSession?.clientSiteId')
+  })
+
+  it('guards integrations, moderation, translations and article tags', () => {
+    const expectations = [
+      ['server/api/search-console/callback.get.ts', 'INTEGRATION_CONTROL'],
+      ['server/api/linkedin/callback.get.ts', 'INTEGRATION_CONTROL'],
+      ['server/api/bans/[id]/index.post.ts', 'CONTENT_MODERATE'],
+      ['server/api/comments/[id]/index.delete.ts', 'CONTENT_MODERATE'],
+      ['server/api/translations/[id]/index.patch.ts', 'requireArticleAccess'],
+      ['server/api/articles/[id]/tags/index.post.ts', 'requireArticleAccess'],
+    ]
+    for (const [file, guard] of expectations) expect(source(file)).toContain(guard)
+  })
+})
+
+describe('invitation onboarding wiring', () => {
+  const source = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8')
+
+  it('returns distinct states and a useful wrong-account error', () => {
+    const endpoint = source('server/api/invitations/[token].post.ts')
+    for (const code of ['INVITATION_ACCEPTED', 'INVITATION_REVOKED', 'INVITATION_EXPIRED', 'INVITATION_EMAIL_MISMATCH'])
+      expect(endpoint).toContain(code)
+    expect(endpoint).toContain('invitedEmail: invitation.email')
+  })
+
+  it('returns credentials registration and verification to the invitation', () => {
+    const authPage = source('app/pages/autorizace/index.vue')
+    const form = source('app/components/Auth/Form.vue')
+    expect(authPage).toContain(':redirectTo="invitationRedirect"')
+    expect(form.match(/afterSignIn\(user\.role\)/g)?.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('keeps the invitation URL as the OAuth callback and accepts the verified OAuth email', () => {
+    const form = source('app/components/Auth/Form.vue')
+    const auth = source('server/api/auth/[...].ts')
+    expect(form).toContain('const finalRedirectUrl = window.location.href')
+    expect(form).toContain('callbackUrl: finalRedirectUrl')
+    expect(auth).toContain('verifiedGoogleEmail(profile)')
+    expect(auth).toContain('verifiedGitHubEmail(emails)')
+    expect(source('server/api/invitations/[token].post.ts')).toContain('invitationEmail(user.email) !== invitation.email')
+  })
+})
