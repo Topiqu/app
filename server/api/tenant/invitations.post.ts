@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
   })
   const tenant = await prisma.clientSite.findUniqueOrThrow({
     where: { id: membership.clientSiteId },
-    select: { name: true },
+    select: { name: true, language: true },
   })
   await sendEmail({
     event,
@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
     data: {
       tenantName: tenant.name,
       inviterName: user.name,
-      invitationUrl: invitationUrl(event, token),
+      invitationUrl: invitationUrl(event, token, tenant.language),
       expirationDays: '7',
     },
   })

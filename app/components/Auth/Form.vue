@@ -367,7 +367,7 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
   try {
     const mainDomain = import.meta.dev ? 'localhost' : 'app.topiqu.com'
     const isMainDomain = window.location.hostname === mainDomain
-    const finalRedirectUrl = window.location.href
+    const finalRedirectUrl = resolveAuthRedirect(window.location.href, props.redirectTo)
 
     if (!isMainDomain) {
       const authBaseUrl = import.meta.dev ? 'http://localhost:3000' : 'https://app.topiqu.com'

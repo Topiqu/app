@@ -16,7 +16,9 @@ const { signIn, getSession, data } = useAuth()
 
 const initialMode = computed(() => (route.query.mode === 'register' ? 'register' : 'login'))
 const invitationRedirect = computed(() =>
-  typeof route.query.invitation === 'string' ? `/invitation/${encodeURIComponent(route.query.invitation)}` : undefined,
+  typeof route.query.invitation === 'string'
+    ? localePath({ name: 'invitation-token', params: { token: route.query.invitation } })
+    : undefined,
 )
 
 if (route.query.redirect?.length) navigateTo(route.query.redirect.toString(), { external: true })

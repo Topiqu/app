@@ -529,6 +529,7 @@
       "description": "People who can work in this tenant.",
       "inviteDescription": "Choose what the new member can do. You can change these permissions later.",
       "invite": "Invite member",
+      "inviteFirst": "Invite your first member",
       "email": "Email address",
       "send": "Send invitation",
       "sent": "Invitation sent",

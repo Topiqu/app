@@ -23,12 +23,12 @@
         </label>
       </div>
       <div class="flex justify-end gap-2">
-        <Button variant="neutral" @click="showInvite = false">{{ $t('common.actions.cancel') }}</Button>
+        <Button type="button" variant="neutral" @click="showInvite = false">{{ $t('common.actions.cancel') }}</Button>
         <Button type="submit" :loading="busy">{{ $t('common.members.send') }}</Button>
       </div>
     </form>
 
-    <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+    <div v-if="showDirectoryControls" class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
       <FormInput v-model="search" :placeholder="$t('common.members.search')" icon="mdi:magnify" />
       <div class="flex rounded-xl border border-neutral-200 bg-white p-1 dark:border-neutral-700 dark:bg-neutral-900">
         <button v-for="option in filters" :key="option" type="button" class="rounded-lg px-3 py-2 text-xs font-medium transition" :class="filter === option ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900' : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'" @click="filter = option">
@@ -87,7 +87,13 @@
           <Button square borderless variant="danger" icon="mdi:close" :aria="$t('common.members.revoke')" @click="revoke(item.id)" />
         </div>
       </div>
-      <p v-else class="text-sm text-neutral-500">{{ $t('common.members.noPending') }}</p>
+      <div v-else class="rounded-2xl border border-dashed border-neutral-300 px-5 py-8 text-center dark:border-neutral-700">
+        <Icon name="mdi:account-plus-outline" class="mx-auto size-8 text-neutral-400" />
+        <p class="mt-2 text-sm text-neutral-500">{{ $t('common.members.noPending') }}</p>
+        <Button v-if="data?.canControl" class="mx-auto mt-4" size="sm" @click="showInvite = true">
+          {{ $t('common.members.inviteFirst') }}
+        </Button>
+      </div>
     </section>
   </section>
 </template>
@@ -115,6 +121,7 @@ const filteredMembers = computed(() => (data.value?.members ?? []).filter((membe
   return !normalizedSearch.value || `${member.user.username} ${member.user.email}`.toLocaleLowerCase().includes(normalizedSearch.value)
 }))
 const filteredInvitations = computed(() => (data.value?.invitations ?? []).filter((item) => !normalizedSearch.value || item.email.toLocaleLowerCase().includes(normalizedSearch.value)))
+const showDirectoryControls = computed(() => (data.value?.members.length ?? 0) > 1 || (data.value?.invitations.length ?? 0) > 0 || !!normalizedSearch.value)
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredMembers.value.length / pageSize)))
 const pagedMembers = computed(() => filteredMembers.value.slice((page.value - 1) * pageSize, page.value * pageSize))
 watch([search, filter], () => { page.value = 1 })

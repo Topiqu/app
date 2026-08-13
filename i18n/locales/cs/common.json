@@ -530,6 +530,7 @@
       "description": "Lidé, kteří mohou pracovat v tomto tenantovi.",
       "inviteDescription": "Vyberte, co nový člen může dělat. Oprávnění lze později změnit.",
       "invite": "Pozvat člena",
+      "inviteFirst": "Pozvat prvního člena",
       "email": "E-mailová adresa",
       "send": "Odeslat pozvánku",
       "sent": "Pozvánka byla odeslána",
