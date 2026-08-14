@@ -1,21 +1,25 @@
 <template>
-  <div
-    v-tippy="
-      props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()
-        ? $t('articles.statusCell.scheduledTooltip', [
-            format(new Date(props.row.original.releaseAt), 'dd.MM.yyyy, HH:mm'),
-          ])
-        : ''
-    "
-    class="inline-flex items-center"
-  >
-    <FormSelect v-model="model" :items="statusItems" :showValue="false" />
-    <Icon
-      v-if="props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()"
-      name="mdi:hourglass"
-      class="w-4 h-4 ml-2 text-blue-400"
-    />
-  </div>
+  <UTooltip :text="tooltip" :disabled="!tooltip">
+    <div class="flex min-w-0 items-center">
+      <UFormField class="min-w-0 flex-1" :label="$t('articles.columns.status')" :ui="{ label: 'sr-only' }">
+        <USelectMenu
+          v-model="model"
+          valueKey="value"
+          labelKey="label"
+          :searchInput="false"
+          :items="statusItems"
+          class="min-w-0 flex-1"
+          :ui="{ base: 'w-full min-w-0', content: 'min-w-48' }"
+        />
+      </UFormField>
+      <UIcon
+        v-if="props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()"
+        name="i-mdi-hourglass"
+        size="16"
+        class="ml-2 text-info"
+      />
+    </div>
+  </UTooltip>
 </template>
 
 <script setup lang="ts">
@@ -23,7 +27,6 @@ import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
 import { format } from 'date-fns'
-import { directive as vTippy } from 'vue-tippy'
 
 const props = defineProps<{ row: { original: ArticleWithDetails } }>()
 const emit = defineEmits<{
@@ -31,11 +34,16 @@ const emit = defineEmits<{
 }>()
 
 const offset = new Date().getTimezoneOffset() * 60 * 1000
+const tooltip = computed(() =>
+  props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()
+    ? $t('articles.statusCell.scheduledTooltip', [format(new Date(props.row.original.releaseAt), 'dd.MM.yyyy, HH:mm')])
+    : '',
+)
 
 const statusItems = [
-  { value: 'draft', label: $t('articles.status.draft'), icon: 'mdi:pencil-outline' },
-  { value: 'published', label: $t('articles.status.published'), icon: 'mdi:earth' },
-  { value: 'archived', label: $t('articles.status.archived'), icon: 'mdi:archive' },
+  { value: 'draft', label: $t('articles.status.draft'), icon: 'i-mdi-pencil-outline' },
+  { value: 'published', label: $t('articles.status.published'), icon: 'i-mdi-earth' },
+  { value: 'archived', label: $t('articles.status.archived'), icon: 'i-mdi-archive' },
 ]
 
 const model = computed({
