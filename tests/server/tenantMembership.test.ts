@@ -1,9 +1,9 @@
-import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 
-import { invitationEmail, invitationToken, invitationTokenHash, invitationUrl } from '../../server/utils/tenantInvitation'
 import { resolveAuthRedirect } from '../../app/utils/authRedirect'
+import { invitationEmail, invitationToken, invitationTokenHash, invitationUrl } from '../../server/utils/tenantInvitation'
 import { hasTenantScope, TENANT_SCOPES } from '../../server/utils/tenantMembership'
 
 describe('tenant invitations', () => {

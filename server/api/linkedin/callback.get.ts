@@ -1,6 +1,6 @@
 import { verifyOAuthState } from '../../utils/linkedin/oauthState'
-import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
 import { getLinkedInRedirectUri } from '../../utils/linkedin/redirectUri'
+import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
 
 const settingsRedirect = '/settings?tab=integrations'
 

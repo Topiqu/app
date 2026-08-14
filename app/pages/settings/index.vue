@@ -355,7 +355,7 @@ const savePreferences = async () => {
       socials: form.value.socials.filter((s) => s.url.trim()),
       aiUser: client.value?.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
     }
-    if (!can('INTEGRATION_CONTROL')) for (const field of ['socials', 'linkedinMode', 'linkedinCompanyType', 'linkedinBrandProfile', 'gtagId', 'allowGtag']) delete payload[field]
+    if (!can('INTEGRATION_CONTROL')) for (const field of ['socials', 'linkedinMode', 'linkedinCompanyType', 'linkedinBrandProfile', 'gtagId', 'allowGtag']) Reflect.deleteProperty(payload, field)
     await $fetch(`/api/clients/${clientId.value}` as `/api/clients/:id`, {
       method: 'PATCH',
       body: payload,

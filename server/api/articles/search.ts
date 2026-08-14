@@ -1,7 +1,6 @@
 import type { H3Event } from 'h3'
 
 export default defineEventHandler(async (event: H3Event) => {
-  const { translate: t } = await useServerI18n(event)
   const { user, membership } = await requireTenantScope(event, 'ARTICLE_WRITE')
 
   const { skip, take } = await getPagination(event)

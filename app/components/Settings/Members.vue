@@ -53,7 +53,7 @@
                 </span>
               </div>
               <div class="mt-1 truncate text-xs text-neutral-500">{{ member.user.email }}</div>
-              <div class="mt-2 text-xs text-neutral-400">{{ $t('common.members.joined') }} <NuxtTime :datetime="member.createdAt" date-style="medium" /></div>
+              <div class="mt-2 text-xs text-neutral-400">{{ $t('common.members.joined') }} <NuxtTime :datetime="member.createdAt" dateStyle="medium" /></div>
             </div>
           </div>
           <div class="flex min-w-0 flex-col gap-4 p-5">
@@ -95,7 +95,7 @@
       <div v-if="filteredInvitations.length" class="overflow-hidden rounded-2xl border border-neutral-200 bg-white divide-y divide-neutral-200 dark:border-neutral-700 dark:bg-neutral-900 dark:divide-neutral-700">
         <div v-for="item in filteredInvitations" :key="item.id" class="flex items-center gap-3 p-4">
           <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950"><Icon name="mdi:account-clock-outline" class="size-5" /></div>
-          <div class="min-w-0 flex-1"><div class="truncate text-sm font-medium">{{ item.email }}</div><div class="text-xs text-neutral-500">{{ $t('common.members.expires') }} <NuxtTime :datetime="item.expiresAt" date-style="medium" /></div></div>
+          <div class="min-w-0 flex-1"><div class="truncate text-sm font-medium">{{ item.email }}</div><div class="text-xs text-neutral-500">{{ $t('common.members.expires') }} <NuxtTime :datetime="item.expiresAt" dateStyle="medium" /></div></div>
           <Button square borderless variant="neutral" icon="mdi:email-sync-outline" :aria="$t('common.members.resend')" @click="resend(item.id)" />
           <Button square borderless variant="danger" icon="mdi:close" :aria="$t('common.members.revoke')" @click="revoke(item.id)" />
         </div>
