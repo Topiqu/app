@@ -6,7 +6,7 @@
     teleport="body"
     loop
     @hide="open = false"
-    @on-index-change="(_o, n) => (index = n)"
+    @onIndexChange="onIndexChange"
   />
 </template>
 
@@ -22,6 +22,10 @@ const open = defineModel<boolean>('open', { default: false })
 const index = defineModel<number>('index', { default: 0 })
 
 const images = shallowRef<{ src: string; title?: string }[]>([])
+
+const onIndexChange = (_oldIndex: number, newIndex: number) => {
+  index.value = newIndex
+}
 
 const collect = () => {
   if (!sourceRef) return

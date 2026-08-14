@@ -19,7 +19,7 @@ export function useArticleActions(dataRef: MaybeRefOrGetter<any>, refreshContext
 
   const copyLink = async (url: string) => {
     clipboard.copy(url)
-    toast.success({ message: t('common.actions.copySuccess') })
+    toast.add({ color: 'success', title: t('common.actions.copySuccess') })
     await share('OTHER')
   }
 
@@ -31,8 +31,9 @@ export function useArticleActions(dataRef: MaybeRefOrGetter<any>, refreshContext
         method: 'PATCH',
         body: { allowedComments: article.allowedComments },
       })
-      toast.success({
-        message: t('articles.comments.toggleSuccess', [
+      toast.add({
+        color: 'success',
+        title: t('articles.comments.toggleSuccess', [
           article.allowedComments
             ? t('articles.comments.commentsEnabled')
             : t('articles.comments.commentsDisabledSuccess'),
@@ -41,7 +42,7 @@ export function useArticleActions(dataRef: MaybeRefOrGetter<any>, refreshContext
       await refreshContext()
     } catch (e: unknown) {
       const err = e as { data?: { message?: string } }
-      toast.error({ message: err.data?.message || t('common.messages.operationFailed') })
+      toast.add({ color: 'error', title: err.data?.message || t('common.messages.operationFailed') })
       article.allowedComments = !article.allowedComments
     }
   }
@@ -50,14 +51,15 @@ export function useArticleActions(dataRef: MaybeRefOrGetter<any>, refreshContext
     try {
       await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
       await refreshContext()
-      toast.success({
-        message: t('articles.status.changeSuccess', [
+      toast.add({
+        color: 'success',
+        title: t('articles.status.changeSuccess', [
           status === 'draft' ? t('articles.status.draft') : t('articles.status.published'),
         ]),
       })
     } catch (e: unknown) {
       const err = e as { data?: { message?: string } }
-      toast.error({ message: err.data?.message || t('common.messages.statusChangeFailed') })
+      toast.add({ color: 'error', title: err.data?.message || t('common.messages.statusChangeFailed') })
     }
   }, 100)
 

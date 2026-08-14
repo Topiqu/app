@@ -1,41 +1,41 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br">
-    <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4">
+  <div class="mx-auto max-w-4xl px-4">
+    <UPage>
       <Back />
-      <div class="text-center">
-        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-          {{ $t('articles.authorsArticles') }}
-          <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-            {{ authorName }}
-          </span>
-        </h1>
-        <div class="flex flex-col items-center mt-4 gap-2">
-          <NuxtImg
-            v-if="author.avatarUrl"
+      <UPageHeader :title="`${$t('articles.authorsArticles')} ${authorName}`">
+        <div class="flex items-center gap-4">
+          <AppMedia
             :src="author.avatarUrl"
             :alt="$t('common.avatar.alt.author', [authorName])"
-            class="w-16 h-16 rounded-full border border-gray-200 dark:border-neutral-700 object-cover"
+            :fallbackText="authorName"
+            aspectRatio="1 / 1"
+            sizes="64px"
+            containerClass="size-16 shrink-0 rounded-full"
           />
-          <p v-if="author.bio" class="text-gray-600 dark:text-gray-400 max-w-lg">
-            {{ author.bio }}
-          </p>
+          <div class="min-w-0">
+            <p class="font-semibold text-highlighted">{{ authorName }}</p>
+            <p v-if="author.bio" class="text-sm text-muted">{{ author.bio }}</p>
+          </div>
         </div>
-      </div>
-
-      <ArticleCollection
-        v-model:search="search"
-        v-model:sort="sort"
-        v-model:page="page"
-        :articles
-        :pending
-        :hasMore="author.hasMore"
-      />
-    </div>
+      </UPageHeader>
+      <UPageBody>
+        <ArticleCollection
+          v-model:search="search"
+          v-model:sort="sort"
+          v-model:page="page"
+          :articles
+          :pending
+          :hasMore="author.hasMore"
+        />
+      </UPageBody>
+    </UPage>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ArticleCardData } from '~~/shared/types/article'
+
+definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
 const reqUrl = useRequestURL()

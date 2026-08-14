@@ -1,67 +1,48 @@
 <template>
-  <div v-if="data" class="min-h-screen p-8 md:p-12 relative">
-    <ArticleHeaderSticky
-      :isSticky="isSticky"
-      :progress="progress"
-      :title="data.title"
-      :likedByUser="data.likedByUser"
-      :series="data.series && data.series.name ? (data.series as any) : undefined"
-      :clientTheme="clientSite?.theme"
-      @like="toggleLike"
-    />
-
-    <div class="max-w-[1000px] mx-auto relative">
-      <div ref="container" class="w-full flex flex-col gap-8 px-4 sm:px-0 pt-4">
-        <nav v-if="breadcrumbs?.length" aria-label="Breadcrumb" class="w-full">
-          <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <li v-for="(item, index) in breadcrumbs" :key="index" class="flex items-center gap-2">
-              <Icon v-if="index > 0" name="mdi:chevron-right" class="w-4 h-4 text-gray-300 dark:text-gray-600" />
-              <NuxtLink
-                v-if="index < breadcrumbs.length - 1"
-                :to="item.to"
-                class="hover:text-blue-600 dark:hover:text-blue-400 font-medium"
-              >
+  <div v-if="data" class="min-h-[100dvh] px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mx-auto grid max-w-[var(--topiqu-article-width)] gap-10 lg:grid-cols-[minmax(0,1fr)_15rem]">
+      <div class="flex min-w-0 flex-col gap-8 pt-4">
+        <nav v-if="breadcrumbs?.length" :aria-label="$t('common.breadcrumbs')" class="w-full">
+          <ol class="flex min-w-0 flex-nowrap items-center gap-2 overflow-hidden text-sm text-muted">
+            <li
+              v-for="(item, index) in breadcrumbs"
+              :key="index"
+              class="flex min-w-0 items-center gap-2"
+              :class="index === breadcrumbs.length - 1 ? 'flex-1' : 'shrink-0'"
+            >
+              <UIcon v-if="index > 0" name="i-mdi-chevron-right" size="16" />
+              <ULink v-if="index < breadcrumbs.length - 1" :to="item.to">
                 {{ item.label }}
-              </NuxtLink>
-              <span
-                v-else
-                class="font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[200px] sm:max-w-[400px]"
-              >
-                {{ item.label }}
-              </span>
+              </ULink>
+              <UTooltip v-else :text="item.label">
+                <span class="block min-w-0 truncate font-semibold text-highlighted">{{ item.label }}</span>
+              </UTooltip>
             </li>
           </ol>
         </nav>
 
-        <NuxtLink
-          to="/admin"
-          class="group flex items-center text-blue-700 hover:text-blue-900 font-semibold text-lg"
-          :aria-label="$t('common.actions.backToList')"
-        >
-          <Icon name="mdi:arrow" class="w-6 h-6 mr-2 group-hover:-translate-x-1.5" />
-          {{ $t('common.actions.backToList') }}
-        </NuxtLink>
-
-        <ArticleHeaderHero
-          :title="data.title"
-          :author="data.user"
-          :followerCount="data.followerCount || 0"
-          :isFollowing="isFollowing"
-          :showFollowButton="!!session?.user && session.user.id !== data.user.id"
-          :excerpt="data.excerpt"
-          :imageUrl="data.imageUrl"
-          :series="data.series && data.series.name ? (data.series as any) : undefined"
-          @follow="toggleFollow"
-        />
+        <div ref="hero">
+          <ArticleHeaderHero
+            :title="data.title"
+            :author="data.user"
+            :followerCount="data.followerCount || 0"
+            :isFollowing="isFollowing"
+            :showFollowButton="!!session?.user && session.user.id !== data.user.id"
+            :excerpt="data.excerpt"
+            :imageUrl="data.imageUrl"
+            :series="data.series && data.series.name ? (data.series as any) : undefined"
+            @follow="toggleFollow"
+          />
+        </div>
 
         <div v-if="hasTags" class="mt-4 flex flex-wrap gap-2.5">
           <NuxtLink
             v-for="t in data.tags"
             :key="t.tag.slug"
             :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
-            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 hover:bg-gray-100 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+            class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />{{ t.tag.name }}
+            <UBadge color="neutral" variant="soft" size="sm" icon="i-mdi-tag">{{ t.tag.name }}</UBadge>
           </NuxtLink>
         </div>
 
@@ -74,87 +55,111 @@
         />
 
         <div class="flex justify-end gap-4 mt-10">
-          <button
+          <UButton
+            :color="data.likedByUser ? 'error' : 'neutral'"
+            :variant="data.likedByUser ? 'soft' : 'ghost'"
+            icon="i-mdi-heart"
+            square
             :aria-label="$t('common.actions.like')"
-            class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-red-400 dark:hover:border-red-400"
             @click="toggleLike"
-          >
-            <Icon name="mdi:heart" class="w-5 h-5" :class="{ 'text-red-500 dark:text-red-400': data.likedByUser }" />
-          </button>
-          <button
+          />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-mdi-link-variant"
+            square
             :aria-label="$t('common.actions.copyLink')"
-            class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:hover:border-blue-500"
             @click="copyLink(fullUrl)"
-          >
-            <Icon name="mdi:link-variant" class="w-5 h-5" />
-          </button>
-          <NuxtLink
+          />
+          <UButton
             :to="`https://x.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
             target="_blank"
-            class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
+            color="neutral"
+            variant="ghost"
+            icon="i-mdi-twitter"
+            square
+            aria-label="X"
             @click="share('TWITTER')"
-          >
-            <Icon name="mdi:twitter" class="w-5 h-5" />
-          </NuxtLink>
-          <NuxtLink
+          />
+          <UButton
             :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
             target="_blank"
-            class="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:bg-[#374151] dark:border-[#4b5563] dark:text-gray-300 dark:hover:bg-[#2f3b4c] dark:hover:text-blue-400 dark:hover:border-blue-500"
+            color="neutral"
+            variant="ghost"
+            icon="i-mdi-linkedin"
+            square
+            aria-label="LinkedIn"
             @click="share('LINKEDIN')"
-          >
-            <Icon name="mdi:linkedin" class="w-5 h-5" />
-          </NuxtLink>
+          />
         </div>
 
-        <div
-          ref="content"
-          class="max-w-[1000px] bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 text-[17px] md:text-lg leading-[1.8] text-gray-800 space-y-6 prose prose-gray prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-2xl prose-h3:text-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 dark:bg-neutral-900 dark:text-gray-200 dark:border-gray-700 dark:prose-invert dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300 dark:prose-blockquote:border-gray-600"
-        >
+        <article ref="content" class="article-content mx-auto w-full">
           <ArticleParsed :content="data.content" :articleId="data.id" />
-        </div>
+        </article>
 
         <ArticleSeries v-if="data.series && data.series.name" :series="data.series as any" />
         <div
-          class="mt-8 flex flex-col items-start justify-between gap-4 border-t border-gray-100 pt-8 sm:flex-row sm:items-center dark:border-gray-800"
+          class="mt-8 flex flex-col items-start justify-between gap-4 border-t border-default pt-8 sm:flex-row sm:items-center"
         >
           <div class="flex shrink-0 items-center">
-            <ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-2 text-gray-400 dark:text-gray-500" />
+            <ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-2 text-muted" />
           </div>
           <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
         </div>
 
         <LazyArticleLightbox :sourceRef="content" />
-        <LazyArticleRelated :articles="relatedArticles!" :pending="pending" />
+        <LazyArticleRelated :articles="relatedArticles ?? []" :pending="pending" />
 
-        <div v-if="data.sources?.length" class="w-full mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div
-            class="flex items-center justify-between cursor-pointer text-gray-700 dark:text-gray-300 font-medium text-lg hover:text-blue-600 dark:hover:text-blue-400"
-            @click="isOpen = !isOpen"
-          >
-            <div class="flex items-center gap-2">
-              <Icon name="mdi:book-open-page-variant" class="w-5 h-5 text-blue-500 dark:text-blue-400" />
-              {{ $t('articles.columns.sources') }} ({{ data.sources.length }})
-            </div>
-            <Icon name="mdi:chevron-down" class="w-5 h-5 text-gray-400" :class="{ 'rotate-180': isOpen }" />
-          </div>
-          <ul v-if="isOpen" class="mt-4 space-y-3 pl-1">
-            <li v-for="source in data.sources" :key="source" class="flex items-center gap-3">
-              <LazyNuxtImg
-                :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
-                class="w-5 h-5 rounded-sm"
-                alt="favicon"
-              />
-              <NuxtLink
-                :to="source"
-                target="_blank"
-                rel="noreferrer"
-                class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline truncate max-w-[calc(100%-2.5rem)]"
+        <UCollapsible v-if="data.sources?.length" v-model:open="isOpen" class="mt-10 w-full">
+          <UButton
+            color="neutral"
+            variant="soft"
+            icon="i-mdi-book-open-page-variant"
+            :trailingIcon="isOpen ? 'i-mdi-chevron-up' : 'i-mdi-chevron-down'"
+            :label="`${$t('articles.columns.sources')} (${data.sources.length})`"
+            class="w-full"
+          />
+          <template #content>
+            <ol class="mt-3 overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated">
+              <li
+                v-for="(source, index) in data.sources"
+                :key="`${index}-${source}`"
+                class="grid min-w-0 grid-cols-[1.5rem_1.25rem_minmax(0,1fr)_2.25rem] items-center gap-2 p-3 not-last:border-b not-last:border-default"
               >
-                {{ source }}
-              </NuxtLink>
-            </li>
-          </ul>
-        </div>
+                <span class="text-right text-xs tabular-nums text-muted">{{ Number(index) + 1 }}</span>
+                <AppMedia
+                  :src="sourceFaviconUrl(source)"
+                  :alt="''"
+                  :fallbackText="presentSourceUrl(source).hostname"
+                  aspectRatio="1 / 1"
+                  fit="contain"
+                  sizes="20px"
+                  containerClass="size-5 shrink-0 rounded-sm"
+                />
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-medium text-highlighted">{{ presentSourceUrl(source).hostname }}</p>
+                  <p v-if="presentSourceUrl(source).path" class="truncate text-xs text-muted">
+                    {{ presentSourceUrl(source).path }}
+                  </p>
+                </div>
+                <UTooltip :text="source">
+                  <UButton
+                    v-if="presentSourceUrl(source).valid"
+                    :to="source"
+                    target="_blank"
+                    rel="noreferrer"
+                    square
+                    size="sm"
+                    color="neutral"
+                    variant="ghost"
+                    icon="i-mdi-open-in-new"
+                    :aria-label="source"
+                  />
+                </UTooltip>
+              </li>
+            </ol>
+          </template>
+        </UCollapsible>
 
         <LazyCommentSection
           :articleId="data.id"
@@ -162,7 +167,7 @@
           :allowComments="data.allowedComments"
         />
       </div>
-      <ArticleTOC :content="data.content" />
+      <ArticleTOC />
     </div>
   </div>
   <Status v-else-if="status" :status="status" :message="status === 'error' ? `${error?.message}` : ''" />
@@ -170,6 +175,10 @@
 
 <script setup lang="ts">
 import type { User } from '@zenstackhq/runtime/models'
+
+import { presentSourceUrl, sourceFaviconUrl } from '~/utils/sourcePresentation'
+
+definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
 const toast = useToast()
@@ -190,7 +199,7 @@ const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/
 
 const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/${slug.value}/related`, {
   lazy: true,
-  query: { limit: 3, clientSiteId: clientSite?.id },
+  query: { limit: 3, clientSiteId: data.value?.clientSiteId },
 })
 
 const canonicalOrigin = `${import.meta.dev ? reqUrl.protocol : 'https:'}//${reqUrl.host.replace(/^www\./, '')}`
@@ -230,7 +239,8 @@ const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleAction
 
 const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
 const toggleFollow = async () => {
-  if (!session.value?.user || !data.value?.user.id) return toast.error({ message: $t('common.auth.loginPrompt') })
+  if (!session.value?.user || !data.value?.user.id)
+    return toast.add({ color: 'error', title: $t('common.auth.loginPrompt') })
   try {
     if (isFollowing.value) {
       const response = await $fetch<{ success: true; followerCount: number }>(`/api/follows/${data.value.user.id}`, {
@@ -238,7 +248,7 @@ const toggleFollow = async () => {
       })
       isFollowing.value = false
       if (data.value) data.value.followerCount = response.followerCount ?? 0
-      toast.success({ message: $t('common.messages.successGeneral') })
+      toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
     } else {
       const response = await $fetch<{ followerCount: number }>(`/api/follows/`, {
         method: 'POST',
@@ -246,7 +256,7 @@ const toggleFollow = async () => {
       })
       isFollowing.value = true
       if (data.value) data.value.followerCount = response.followerCount ?? 0
-      toast.success({ message: $t('profile.messages.followSuccess', [data.value.user.username]) })
+      toast.add({ color: 'success', title: $t('profile.messages.followSuccess', [data.value.user.username]) })
     }
     await refreshFollows()
   } catch (e: unknown) {
@@ -259,8 +269,9 @@ const toggleFollow = async () => {
       })
       if (data.value) data.value.followerCount = response.followerCount ?? 0
     } else {
-      toast.error({
-        message:
+      toast.add({
+        color: 'error',
+        title:
           err.data?.message ||
           (isFollowing.value ? $t('profile.messages.profileUpdateError') : $t('profile.messages.followFailed')),
       })
@@ -294,50 +305,41 @@ const toggleLike = async () => {
     if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
     else if (!res.liked && !session.value?.user.id) sessionStorage.removeItem(key)
   } catch {
-    toast.error({ message: $t('articles.comments.reactionFailed') })
+    toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
     if (hasLiked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
   }
 }
 
 const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5)
 const hasTags = computed(() => !!data.value?.tags?.length)
-const fullUrl = computed(() => (import.meta.client ? window.location.href : ''))
-const items = useBreadcrumbItems()
-const breadcrumbs = computed(() => {
-  return items.value.map((item, index) => {
-    if (index === 0) return { ...item, label: $t('common.actions.home') }
-    if (index === items.value.length - 1) return { ...item, label: data.value?.title }
-    if (item.label === 'Clanky') return { ...item, label: $t('articles.title'), to: '/' }
-    return item
-  })
+const requestUrl = useRequestURL()
+const fullUrl = computed(() => new URL(route.fullPath, requestUrl.origin).href)
+const breadcrumbs = computed(() => [
+  { label: $t('common.actions.home'), to: localePath({ name: 'index' }) },
+  { label: $t('articles.title'), to: `${localePath({ name: 'index' })}#articles` },
+  { label: data.value?.title || '', to: route.fullPath },
+])
+
+const content = useTemplateRef<HTMLElement>('content')
+const hero = useTemplateRef<HTMLElement>('hero')
+useArticleScrollContext(content, hero)
+const articleHeader = useArticleHeaderContext()
+const articleLikeBus = useArticleLikeBus()
+
+watchEffect(() => {
+  if (!data.value) return
+  articleHeader.value = {
+    articleId: data.value.id,
+    backTo: localePath({ name: 'index' }),
+    canEdit: session.value?.user?.role === 'admin' && session.value.user.id === data.value.user.id,
+    liked: Boolean(data.value.likedByUser),
+    title: data.value.title,
+  }
 })
-
-const isSticky = shallowRef(false)
-const progress = shallowRef(0)
-const container = useTemplateRef('container')
-const content = useTemplateRef('content')
-
-const handleContentScroll = () => {
-  if (!content.value) return
-  const { top, height } = content.value.getBoundingClientRect()
-  const contentTop = top + window.scrollY
-  const scrollable = height - window.innerHeight
-  if (scrollable > 0)
-    progress.value = Math.min(
-      100,
-      Math.max(0, (window.scrollY - contentTop + window.innerHeight / 2) / scrollable) * 100,
-    )
-  else progress.value = 0
-}
 
 onMounted(() => {
   trackView()
-
-  const onScroll = () => {
-    if (!container.value || !content.value) return
-    isSticky.value = window.scrollY > 100
-    handleContentScroll()
-  }
+  articleLikeBus.on(toggleLike)
 
   if (data.value?.slug && !session.value?.user.id) {
     const likeKey = `liked-${data.value.slug}`
@@ -346,12 +348,11 @@ onMounted(() => {
       data.value.likedByUser = true
     }
   }
+})
 
-  window.addEventListener('scroll', onScroll)
-
-  onUnmounted(() => {
-    window.removeEventListener('scroll', onScroll)
-  })
+onUnmounted(() => {
+  articleLikeBus.off(toggleLike)
+  articleHeader.value = null
 })
 </script>
 
@@ -382,7 +383,7 @@ onMounted(() => {
   padding-top: 12px;
   padding-bottom: 6px;
   max-height: 600px;
-  cursor: pointer !important;
+  cursor: pointer;
   opacity: 0;
   animation: fade-in-image 0.6s ease-out forwards;
 }

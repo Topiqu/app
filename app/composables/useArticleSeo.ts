@@ -39,9 +39,19 @@ export function useArticleSeo(
   useHead({
     link: () => [
       { rel: 'canonical', href: resolvedCanonicalUrl.value },
-      ...resolvedAlternates.value.map((alt) => ({ rel: 'alternate', hreflang: alt.hreflang, href: alt.href })),
+      ...resolvedAlternates.value.map((alt) => ({
+        rel: 'alternate' as const,
+        hreflang: alt.hreflang,
+        href: alt.href,
+      })),
       ...(resolvedAlternates.value.length
-        ? [{ rel: 'alternate', hreflang: 'x-default', href: resolvedAlternates.value[0]!.href }]
+        ? [
+            {
+              rel: 'alternate' as const,
+              hreflang: 'x-default',
+              href: resolvedAlternates.value[0]!.href,
+            },
+          ]
         : []),
     ],
     script: [

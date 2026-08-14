@@ -1,20 +1,23 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br">
-    <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4">
+  <div class="mx-auto max-w-4xl px-4">
+    <UPage>
       <Back />
-      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-center">
-        {{ $t('articles.tagsArticles') }}
-        <span class="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">{{ tagName }}</span>
-      </h1>
-      <ArticleCollection
-        v-model:search="search"
-        v-model:sort="sort"
-        v-model:page="page"
-        :articles
-        :pending
-        :hasMore="tag.hasMore"
-      />
-    </div>
+      <UPageHeader :title="`${$t('articles.tagsArticles')} ${tagName}`">
+        <template #headline>
+          <UBadge color="primary" variant="soft" icon="i-mdi-tag-outline">{{ tagName }}</UBadge>
+        </template>
+      </UPageHeader>
+      <UPageBody>
+        <ArticleCollection
+          v-model:search="search"
+          v-model:sort="sort"
+          v-model:page="page"
+          :articles
+          :pending
+          :hasMore="tag.hasMore"
+        />
+      </UPageBody>
+    </UPage>
   </div>
 </template>
 
@@ -22,6 +25,8 @@
 import type { ArticleCardData } from '~~/shared/types/article'
 
 import slugify from 'slugify'
+
+definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
 const reqUrl = useRequestURL()

@@ -1,40 +1,34 @@
 <template>
-  <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 mt-4">
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-4 text-sm text-muted">
     <div class="flex flex-wrap items-center gap-4">
       <template v-if="isAdmin">
         <div class="flex items-center gap-2">
           <span class="font-medium">{{ $t('articles.columns.status') }}</span>
           <ArticleStatusCell :onUpdate="onStatusUpdate" :row="{ original: article }" />
-          <span v-if="article.status === 'published'" class="w-2 h-2 bg-green-500 rounded-full animate-pulse-slow" />
+          <UBadge v-if="article.status === 'published'" color="success" variant="soft" size="sm">
+            {{ $t('articles.status.published') }}
+          </UBadge>
         </div>
-        <span class="text-gray-300">|</span>
+        <span>|</span>
         <div class="flex items-center gap-2">
           <span>{{ $t('articles.comments.title') }}</span>
-          <button
-            role="switch"
-            :class="[
-              'relative inline-flex h-5 w-10 items-center rounded-full',
-              article.allowedComments ? 'bg-blue-600' : 'bg-gray-500 dark:bg-gray-600',
-            ]"
-            @click="$emit('toggleComments')"
-          >
-            <span
-              :class="[
-                'inline-block h-4 w-4 rounded-full bg-white transition-transform',
-                article.allowedComments ? 'translate-x-5' : 'translate-x-1',
-              ]"
+          <UFormField :label="$t('common.actions.toggleComments')" :ui="{ label: 'sr-only' }">
+            <USwitch
+              :modelValue="article.allowedComments"
+              :aria-label="$t('common.actions.toggleComments')"
+              @update:modelValue="$emit('toggleComments')"
             />
-          </button>
+          </UFormField>
         </div>
-        <span class="text-gray-300">|</span>
+        <span>|</span>
       </template>
 
       <div class="flex items-center gap-2">
-        <Icon name="mdi:calendar" class="w-4 h-4" />{{ formatDate(article.createdAt) }}
+        <UIcon size="16" name="i-mdi-calendar" />{{ formatDate(article.createdAt) }}
       </div>
-      <span class="text-gray-300">|</span>
+      <span>|</span>
       <div class="flex items-center gap-2">
-        <Icon name="mdi:clock-outline" class="w-4 h-4" />{{ $t('articles.readingTime', [article.readingTime]) }}
+        <UIcon size="16" name="i-mdi-clock-outline" />{{ $t('articles.readingTime', [article.readingTime]) }}
       </div>
     </div>
 
@@ -43,28 +37,22 @@
         <span>{{ formatNumber(article.views) }}x {{ $t('stats.totalViews.title') }}</span>
       </div>
       <div class="flex items-center gap-1">
-        <Icon name="mdi:heart" class="w-4 h-4" :class="article.likedByUser ? 'text-red-500' : 'text-gray-500'" />
+        <UIcon size="16" name="i-mdi-heart" :class="article.likedByUser ? 'text-error' : 'text-muted'" />
         <span>{{ formatNumber(article.likes) }}</span>
       </div>
       <div class="flex items-center gap-1">
-        <Icon name="mdi:share-variant" class="w-4 h-4 text-gray-500" /><span>{{ formatNumber(article.shared) }}</span>
+        <UIcon size="16" name="i-mdi-share-variant" /><span>{{ formatNumber(article.shared) }}</span>
       </div>
 
-      <LazyArticleModal
+      <UButton
         v-if="isAdmin"
-        v-slot="{ open }"
-        :article="article"
-        hydrateOnInteraction
-        @saved="$emit('refresh')"
-      >
-        <button
-          class="flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800 rounded-full hover:from-blue-300 hover:to-blue-400"
-          :aria-label="$t('common.actions.edit')"
-          @click="open.value = true"
-        >
-          <Icon name="mdi:pencil" class="w-5 h-5" />
-        </button>
-      </LazyArticleModal>
+        color="primary"
+        variant="soft"
+        square
+        icon="i-mdi-pencil"
+        :to="localePath({ name: 'admin-editor-id', params: { id: article.id } })"
+        :aria-label="$t('common.actions.edit')"
+      />
     </div>
   </div>
 </template>
@@ -72,6 +60,8 @@
 <script setup lang="ts">
 import { formatDate } from '~~/shared/utils'
 import { formatNumber } from '~~/shared/utils/number'
+
+const localePath = useLocalePath()
 
 defineProps<{
   article: any
