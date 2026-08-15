@@ -1,76 +1,85 @@
 <template>
-  <Modal v-model="open" :title="$t('emoji.create')" :onClose="confirmClose">
-    <template #default="actions">
-      <slot v-bind="actions" />
-    </template>
+  <UModal
+    v-model:open="open"
+    :title="$t('emoji.create')"
+    :dismissible="false"
+    :close="false"
+    @close:prevent="confirmClose"
+  >
+    <slot :open="open" />
 
-    <template #content>
-      <form class="mt-6 flex flex-col gap-6" @submit.prevent="submit">
-        <label class="flex flex-col gap-2">
-          <span class="text-sm font-semibold uppercase tracking-wide">{{ $t('common.labels.shortcode') }}</span>
-          <input
-            v-model="shortcode"
-            :placeholder="$t('emoji.shortcodePlaceholder')"
-            class="p-4 rounded-xl border shadow-inner bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
-            required
+    <template #body>
+      <UForm :state="emojiState" @submit.prevent="submit">
+        <div class="flex flex-col gap-6">
+          <UFormField :label="$t('common.labels.shortcode')">
+            <UInput v-model="shortcode" :placeholder="$t('emoji.shortcodePlaceholder')" class="w-full" required />
+          </UFormField>
+          <FileUploader
+            type="emoji"
+            :shortcode="shortcode"
+            :maxWidth="2560"
+            :maxHeight="1440"
+            :disabled="!shortcode"
+            @upload="onUpload"
           />
-        </label>
-        <FileUploader
-          type="emoji"
-          :shortcode="shortcode"
-          :maxWidth="2560"
-          :maxHeight="1440"
-          :disabled="!shortcode"
-          @upload="onUpload"
-        />
-      </form>
+        </div>
+      </UForm>
 
       <div class="mt-8">
-        <div v-if="loading && !emojis?.length" class="text-sm">{{ $t('common.loading') }}</div>
-        <div v-else-if="error" class="text-sm">{{ error }}</div>
-        <div v-else ref="scrollParent" class="rounded-xl border shadow-inner">
-          <div v-auto-animate :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
-            <div
-              v-for="virtualRow in virtualizer.getVirtualItems()"
-              :key="String(virtualRow.key)"
-              :style="{
-                position: 'absolute',
-                top: `${virtualRow.start}px`,
-                left: 0,
-                width: '100%',
-                height: `${virtualRow.size}px`,
-              }"
-              class="py-2 px-3 flex justify-between items-center transition border-b"
-            >
-              <div class="flex items-center gap-3">
-                <NuxtImg
-                  :src="emojis![virtualRow.index]?.imageUrl"
-                  :alt="emojis![virtualRow.index]?.shortcode"
-                  class="w-6 h-6 rounded"
-                />
-                <span class="text-sm font-medium">{{ emojis![virtualRow.index]?.shortcode }}</span>
-              </div>
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200"
-                @click="deleteEmoji(emojis![virtualRow.index]?.id!)"
+        <UProgress v-if="loading && !emojis?.length" animation="carousel" />
+        <UAlert v-else-if="error" color="error" variant="soft" :description="String(error)" />
+        <UCard v-else>
+          <div ref="scrollParent" class="overflow-y-auto">
+            <div v-auto-animate :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
+              <div
+                v-for="virtualRow in virtualizer.getVirtualItems()"
+                :key="String(virtualRow.key)"
+                :style="{
+                  position: 'absolute',
+                  top: `${virtualRow.start}px`,
+                  left: 0,
+                  width: '100%',
+                  height: `${virtualRow.size}px`,
+                }"
+                class="flex items-center justify-between border-b border-default px-3 py-2"
               >
-                <Icon name="mdi:delete" class="text-red-500 w-4 h-4" />
-              </button>
+                <div class="flex items-center gap-3">
+                  <AppMedia
+                    :src="emojis![virtualRow.index]?.imageUrl"
+                    :alt="emojis![virtualRow.index]?.shortcode ?? ''"
+                    aspectRatio="1 / 1"
+                    fit="contain"
+                    sizes="24px"
+                    containerClass="size-6 rounded"
+                  />
+                  <span class="text-sm font-medium">{{ emojis![virtualRow.index]?.shortcode }}</span>
+                </div>
+                <UButton
+                  color="error"
+                  variant="ghost"
+                  square
+                  icon="i-mdi-delete"
+                  :aria-label="$t('common.actions.deleteEmoji')"
+                  :title="$t('common.actions.deleteEmoji')"
+                  @click="deleteEmoji(emojis![virtualRow.index]?.id!)"
+                />
+              </div>
             </div>
+            <UEmpty v-if="!emojis?.length" size="sm" :description="$t('emoji.noEmojisFound')" />
           </div>
-          <div v-if="!emojis?.length" class="px-2 py-4 text-sm text-center">{{ $t('emoji.noEmojisFound') }}</div>
-        </div>
+        </UCard>
       </div>
     </template>
 
-    <template #footer="{ close }">
-      <div class="flex gap-4 justify-end mt-6 flex-shrink-0 pt-4 border-t">
-        <Button variant="neutral" size="lg" @click="close">{{ $t('common.messages.deleteCancel') }}</Button>
-        <Button :disabled="!shortcode || !imageUrl" @click="submit">{{ $t('emoji.create') }}</Button>
+    <template #footer>
+      <div class="flex gap-4 justify-end shrink-0 pt-4">
+        <UButton color="neutral" variant="soft" size="lg" @click="confirmClose">{{
+          $t('common.messages.deleteCancel')
+        }}</UButton>
+        <UButton :disabled="!shortcode || !imageUrl" @click="submit">{{ $t('emoji.create') }}</UButton>
       </div>
     </template>
-  </Modal>
-  <ModalMini ref="discardDialog" />
+  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -78,12 +87,13 @@ import { useVirtualizer } from '@tanstack/vue-virtual'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
 
 const toast = useToast()
-const open = defineModel<boolean>()
-const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
+const open = defineModel<boolean>({ default: false })
+const confirm = useConfirm()
 const shortcode = shallowRef<string>('')
 const imageUrl = shallowRef<string | null>(null)
 const optimizedImageUrl = shallowRef<string | null>(null)
 const scrollParent = useTemplateRef('scrollParent')
+const emojiState = computed(() => ({ imageUrl: imageUrl.value, shortcode: shortcode.value }))
 
 const { data: emojis, pending: loading, error, refresh } = await useFetch('/api/emojis')
 
@@ -108,18 +118,18 @@ const submit = async () => {
   try {
     const res = await $fetch('/api/emojis', {
       method: 'POST',
-      body: { shortcode: shortcode.value, imageUrl: optimizedImageUrl.value || imageUrl.value },
+      body: { shortcode: shortcode.value, imageUrl: imageUrl.value },
     })
     if (res.success && res.emoji) {
-      toast.success({ message: $t('emoji.createSuccess', [res.emoji.shortcode]) })
+      toast.add({ color: 'success', title: $t('emoji.createSuccess', [res.emoji.shortcode]) })
       shortcode.value = ''
       imageUrl.value = null
       await refresh()
     } else {
-      toast.error({ message: error.value?.message || $t('emoji.createFailed') })
+      toast.add({ color: 'error', title: error.value?.message || $t('emoji.createFailed') })
     }
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('emoji.createFailed') })
+    toast.add({ color: 'error', title: e.data?.message || $t('emoji.createFailed') })
   }
 }
 
@@ -127,26 +137,26 @@ const deleteEmoji = async (id: string) => {
   try {
     const res = await $fetch(`/api/emojis/${id}` as `/api/emojis/:id`, { method: 'DELETE' })
     if (res.success) {
-      toast.success({ message: $t('emoji.deleteSuccess') })
+      toast.add({ color: 'success', title: $t('emoji.deleteSuccess') })
       await refresh()
     } else {
-      toast.error({ message: error.value?.message || $t('emoji.deleteFailed') })
+      toast.add({ color: 'error', title: error.value?.message || $t('emoji.deleteFailed') })
     }
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('emoji.deleteFailed') })
+    toast.add({ color: 'error', title: e.data?.message || $t('emoji.deleteFailed') })
   }
 }
 
 const confirmClose = async () => {
   if (!shortcode.value && !imageUrl.value) return (open.value = false)
-  const r = await discardDialog.value?.ask({
+  const r = await confirm({
     title: $t('common.messages.closeConfirmTitle'),
     message: $t('common.messages.closeConfirmText'),
-    icon: 'mdi:alert-outline',
+    icon: 'i-mdi-alert-outline',
     confirmText: $t('common.messages.closeConfirmButton'),
     cancelText: $t('common.messages.deleteCancel'),
     variant: 'danger',
   })
-  if (r === 'ok') open.value = false
+  if (r) open.value = false
 }
 </script>

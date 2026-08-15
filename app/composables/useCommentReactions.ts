@@ -55,7 +55,7 @@ export function useCommentReactions(
       state[counter[type]] += isOff ? 1 : -1
       state.userReaction = prev ? { type: prev } : null
       if (opts.isAuthor.value) state.isLikedByAuthor = state.userReaction?.type === 'LIKE'
-      toast.error({ message: $t('articles.comments.reactionFailed') })
+      toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
     }
   }
 

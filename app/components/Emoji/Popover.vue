@@ -1,48 +1,49 @@
 <template>
-  <Popover v-slot="{ close }" class="relative">
-    <PopoverButton
+  <UPopover v-model:open="open" :content="{ side: 'top', align: 'end', sideOffset: 8 }">
+    <UButton
       v-if="session?.user"
-      class="flex items-center gap-1 px-2 py-1.5 text-sm font-medium rounded-xl bg-white hover:bg-gray-100 transition-colors shadow-sm cursor-pointer"
-    >
-      <Icon name="mdi:emoticon-outline" class="w-5 h-5 text-gray-500" />
-      <span class="text-gray-500 text-base leading-none">+</span>
-    </PopoverButton>
-    <TransitionRoot appear>
-      <TransitionChild
-        enter="transition ease-out duration-200"
-        enterFrom="opacity-0 -translate-y-2"
-        enterTo="opacity-100 translate-y-0"
-        leave="transition ease-in duration-150"
-        leaveFrom="opacity-100 translate-y-0"
-        leaveTo="opacity-0 -translate-y-2"
-      >
-        <PopoverPanel
-          class="absolute bottom-full right-0 z-20 mb-2 w-52 p-3 bg-white rounded-2xl shadow-2xl border border-gray-200"
-        >
-          <div v-if="loading" class="p-2 text-gray-600 text-xs">{{ $t('common.loading') }}</div>
-          <div v-else-if="error" class="p-2 text-red-600 text-xs">{{ $t('common.error') }}</div>
-          <div v-else-if="!emojis?.length" class="p-2 text-gray-600 text-xs">{{ $t('common.noItems') }}</div>
-          <div v-else class="grid grid-cols-5 gap-10">
-            <button
-              v-for="emoji in emojis"
-              :key="emoji.id"
-              v-tippy="{ content: emoji.shortcode, placement: 'top' }"
-              class="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      color="neutral"
+      variant="ghost"
+      icon="i-mdi-emoticon-outline"
+      :aria-label="$t('articles.comments.addReaction')"
+    />
+    <template #content="{ close }">
+      <div class="w-64 p-3">
+        <UProgress v-if="loading" />
+        <UAlert
+          v-else-if="error"
+          color="error"
+          variant="soft"
+          icon="i-mdi-alert-circle-outline"
+          :title="$t('common.error')"
+        />
+        <UEmpty v-else-if="!emojis?.length" size="sm" icon="i-mdi-emoticon-sad-outline" :title="$t('common.noItems')" />
+        <div v-else class="grid grid-cols-5 gap-2">
+          <UTooltip v-for="emoji in emojis" :key="emoji.id" :text="emoji.shortcode">
+            <UButton
+              color="neutral"
+              variant="soft"
+              square
+              :aria-label="emoji.shortcode"
               @click="toggleEmoji(emoji.id, close)"
             >
-              <img :src="emoji.imageUrl" :alt="emoji.shortcode" class="w-6 h-6 object-contain" loading="lazy" />
-            </button>
-          </div>
-        </PopoverPanel>
-      </TransitionChild>
-    </TransitionRoot>
-  </Popover>
+              <AppMedia
+                :src="emoji.imageUrl"
+                :alt="emoji.shortcode"
+                aspectRatio="1 / 1"
+                fit="contain"
+                sizes="24px"
+                containerClass="size-6 bg-transparent"
+              />
+            </UButton>
+          </UTooltip>
+        </div>
+      </div>
+    </template>
+  </UPopover>
 </template>
 
 <script setup lang="ts">
-import { directive as vTippy } from 'vue-tippy'
-import { Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import 'tippy.js/dist/tippy.css'
 const props = defineProps<{ commentId: string; articleId: string }>()
 const emit = defineEmits<{
   (
@@ -60,12 +61,18 @@ const emit = defineEmits<{
 
 const toast = useToast()
 const { data: session } = useAuth()
+const open = shallowRef(false)
 
 const {
   data: emojis,
   pending: loading,
   error,
-} = await useFetch(`/api/emojis/${props.articleId}/by-article`, { server: false, immediate: true })
+  refresh,
+} = await useFetch(`/api/emojis/${props.articleId}/by-article`, { server: false, immediate: false })
+
+watch(open, (isOpen) => {
+  if (isOpen && session.value?.user) void refresh()
+})
 
 const toggleEmoji = async (emojiId: string, close: () => void) => {
   const emoji = emojis.value!.find((e) => e.id === emojiId)!
@@ -81,7 +88,7 @@ const toggleEmoji = async (emojiId: string, close: () => void) => {
     const res = await $fetch('/api/emojis/reaction', { method: 'POST', body: { commentId: props.commentId, emojiId } })
     if (!res.success) throw new Error()
   } catch {
-    toast.error({ message: $t('articles.comments.reactionFailed') })
+    toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
     emit('reaction', {
       commentId: props.commentId,
       emojiId,

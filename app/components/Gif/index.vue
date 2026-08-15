@@ -1,14 +1,22 @@
 <template>
-  <div v-if="content" class="relative inline-block">
-    <NuxtImg :src="content" alt="GIF" class="max-w-[200px] rounded-lg shadow-md" />
-    <Button
+  <div v-if="content" class="relative w-full max-w-[200px]">
+    <AppMedia
+      :src="content"
+      alt="GIF"
+      aspectRatio="1 / 1"
+      fit="contain"
+      sizes="200px"
+      containerClass="w-full rounded-lg"
+    />
+    <UButton
       v-if="cancellable"
-      icon="mdi:close"
-      variant="danger"
+      icon="i-mdi-close"
+      color="error"
+      variant="solid"
       size="sm"
-      class="absolute top-1 right-1 rounded-full"
-      animation="softpop"
-      :aria="$t('articles.comments.removeGif')"
+      square
+      class="absolute top-1 right-1"
+      :aria-label="$t('articles.comments.removeGif')"
       @click="content = null"
     />
   </div>
