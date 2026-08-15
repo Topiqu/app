@@ -1,22 +1,22 @@
 <template>
-  <ModalMini
-    v-model:open="isOpen"
-    :title="$t('articles.editor.altModal.title')"
-    icon="mdi:image-text"
-    :confirmText="$t('common.actions.saveChanges')"
-    :cancelText="$t('common.close')"
-    @confirm="confirm"
-    @cancel="cancel"
-  >
-    <template #content>
-      <FormInput
-        v-model="alt"
-        :placeholder="$t('articles.editor.altModal.placeholder')"
-        :maxLength="200"
-        @keydown.enter.prevent.stop="confirm"
-      />
+  <UModal v-model:open="isOpen" :title="$t('articles.editor.altModal.title')">
+    <template #body>
+      <UFormField :label="$t('articles.editor.altModal.placeholder')">
+        <UInput
+          v-model="alt"
+          :placeholder="$t('articles.editor.altModal.placeholder')"
+          :maxlength="200"
+          @keydown.enter.prevent.stop="confirm"
+        />
+      </UFormField>
     </template>
-  </ModalMini>
+    <template #footer>
+      <div class="flex w-full justify-end gap-2">
+        <UButton color="neutral" variant="ghost" @click="cancel">{{ $t('common.close') }}</UButton>
+        <UButton icon="i-mdi-check" @click="confirm">{{ $t('common.actions.saveChanges') }}</UButton>
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">

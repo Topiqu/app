@@ -1,27 +1,30 @@
 <template>
-  <div class="flex-1 flex flex-col w-full max-w-5xl mx-auto px-4 pt-20 pb-12">
-    <header
-      class="sticky top-0 z-20 -mx-4 px-4 py-3 mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200/70 dark:border-gray-800/70 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl"
+  <div class="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-12 pt-6">
+    <div
+      role="region"
+      data-editor-command-bar
+      :data-editor-submitting="submitting"
+      :data-editor-title-length="editedArticle.title?.length || 0"
+      :aria-label="$t('articles.editor.title')"
+      class="sticky top-0 z-20 -mx-4 mb-8 flex flex-col gap-2 border-b border-default bg-default px-4 py-2 md:h-16 md:flex-row md:items-center md:justify-between"
     >
       <div class="flex items-center gap-3 min-w-0">
-        <Button icon="mdi:arrow-left" variant="neutral" :aria="$t('common.actions.back') || 'Back'" @click="goBack" />
-        <h1 class="text-lg font-bold truncate">
+        <UButton
+          icon="i-mdi-arrow-left"
+          color="neutral"
+          variant="soft"
+          :aria-label="$t('common.actions.back') || 'Back'"
+          @click="goBack"
+        />
+        <h1 class="min-w-0 text-lg font-bold">
           {{ isNew ? $t('articles.addArticle') : $t('articles.updateArticle') }}
         </h1>
         <ArticleStatusPill class="hidden sm:inline-flex" :status="editedArticle.status" />
       </div>
 
-      <div class="flex items-center gap-3 ml-auto">
-        <div
-          v-if="autosaveVisible"
-          class="hidden md:flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400"
-          aria-live="polite"
-        >
-          <Icon
-            :name="saving ? 'mdi:cloud-sync' : 'mdi:cloud-check'"
-            class="w-4 h-4"
-            :class="{ 'animate-spin': saving }"
-          />
+      <div class="flex w-full items-center gap-2 overflow-x-auto md:ml-auto md:w-auto md:overflow-visible">
+        <div v-if="autosaveVisible" class="hidden md:flex items-center gap-1.5 text-xs text-muted" aria-live="polite">
+          <UIcon :name="saving ? 'i-mdi-cloud-sync' : 'i-mdi-cloud-check'" size="16" />
           <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
           <template v-else-if="lastSavedAt">
             {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
@@ -29,69 +32,78 @@
           <template v-else>{{ $t('common.messages.unsaved') }}</template>
         </div>
 
-        <Button
-          icon="mdi:cog"
-          variant="neutral"
-          :aria="$t('common.settings')"
+        <UButton
+          icon="i-mdi-cog"
+          color="neutral"
+          variant="soft"
+          square
+          :aria-label="$t('common.settings')"
           :title="$t('common.settings')"
           @click="sidebarOpen = true"
         />
 
-        <Button
+        <UButton
           v-if="isNew || editedArticle.status === 'draft'"
-          variant="secondary"
-          :disabled="!editedArticle.title || submitting"
+          color="neutral"
+          variant="soft"
+          class="shrink-0"
+          :disabled="submitting"
           @click="submit('draft')"
         >
           {{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}
-        </Button>
+        </UButton>
 
-        <Button
-          :disabled="!editedArticle.title || submitting"
-          class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-transparent! hover:from-blue-600 hover:to-indigo-700"
+        <UButton
+          :disabled="submitting"
+          :loading="submitting"
+          color="primary"
+          variant="solid"
+          class="shrink-0"
           @click="submit('published')"
         >
           {{ publishLabel }}
-        </Button>
+        </UButton>
       </div>
-    </header>
+    </div>
 
-    <main class="flex-1 w-full">
+    <div class="flex-1 w-full">
       <div class="flex flex-col gap-6">
-        <FormField
-          v-model="editedArticle.title"
-          :placeholder="$t('common.labels.articleTitle')"
-          inputClass="text-4xl font-black !bg-transparent !border-none !outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 w-full !px-0 !focus:ring-0 border-l-4! border-transparent! focus:border-indigo-500! pl-4!"
-          @input="updateSlug"
-        />
-        <FormField
-          v-model="editedArticle.excerpt"
-          type="textarea"
-          :placeholder="$t('common.labels.articleExcerpt')"
-          inputClass="text-xl !bg-transparent !border-none !outline-none text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-600 w-full resize-none !min-h-[80px] !px-0 !focus:ring-0"
-        />
+        <UFormField :label="$t('common.labels.articleTitle')">
+          <UInput
+            v-model="editedArticle.title"
+            :placeholder="$t('common.labels.articleTitle')"
+            class="w-full"
+            @input="updateSlug"
+          />
+        </UFormField>
+        <UFormField :label="$t('common.labels.articleExcerpt')">
+          <UTextarea
+            :modelValue="editedArticle.excerpt ?? undefined"
+            :placeholder="$t('common.labels.articleExcerpt')"
+            class="w-full"
+            autoresize
+            @update:modelValue="editedArticle.excerpt = $event || null"
+          />
+        </UFormField>
 
-        <div class="mt-4 prose dark:prose-invert max-w-none">
+        <div class="mt-4 max-w-none">
           <TiptapEditor v-model="editedArticle.content" edit class="min-h-[500px]" />
 
           <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
-            <Button
-              size="sm"
-              icon="mdi:file-document-outline"
-              class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 dark:from-indigo-500 dark:to-purple-600 dark:hover:from-indigo-600 dark:hover:to-purple-700 border-transparent!"
-              @click="draftsOpen = true"
-            >
+            <UButton size="sm" icon="i-mdi-file-document-outline" @click="draftsOpen = true">
               {{ $t('articles.editor.drafts.loadDrafts') }}
-            </Button>
-            <span v-if="successMessage" class="text-sm text-green-600 dark:text-green-400 flex items-center">
-              <Icon name="mdi:check-circle" class="w-4 h-4 text-green-600 dark:text-green-400 mr-2" />{{
-                successMessage
-              }}
-            </span>
+            </UButton>
+            <UAlert
+              v-if="successMessage"
+              color="success"
+              variant="soft"
+              icon="i-mdi-check-circle"
+              :title="successMessage"
+            />
           </div>
         </div>
       </div>
-    </main>
+    </div>
 
     <LazyArticleDrafts
       v-model:open="draftsOpen"
@@ -101,143 +113,152 @@
       @close="draftsOpen = false"
     />
 
-    <ModalSlideOver v-model="sidebarOpen" :title="$t('common.settings')" width="lg">
-      <div class="p-6 flex flex-col gap-6">
-        <section class="flex flex-col gap-3">
-          <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
-            <Icon name="mdi:image-outline" class="w-4 h-4 text-indigo-500" />
-            {{ $t('common.labels.image') }}
-          </h3>
-          <FileUploader type="article-image" :maxWidth="3840" :maxHeight="2160" @upload="handleUpload" />
-          <NuxtImg
-            v-if="editedArticle.imageUrl"
-            :src="editedArticle.imageUrl"
-            class="w-full h-32 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
-            loading="lazy"
-          />
-        </section>
-
-        <hr class="border-gray-200 dark:border-gray-800" />
-
-        <section class="flex flex-col gap-3">
-          <button
-            type="button"
-            class="flex items-center justify-between w-full -mx-2 px-2 py-1.5 rounded-lg text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200 bg-transparent! hover:bg-gray-100! dark:hover:bg-gray-800! transition-colors"
-            :aria-expanded="aiOpen"
-            @click="aiOpen = !aiOpen"
-          >
-            <span class="flex items-center gap-2">
-              <Icon name="mdi:sparkles" class="w-4 h-4 text-purple-500" />
-              {{ $t('common.labels.aiGeneration') }}
-            </span>
-            <Icon :name="aiOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="w-5 h-5" />
-          </button>
-          <div
-            v-if="aiOpen"
-            class="flex flex-col gap-3 p-4 rounded-2xl border border-purple-200 dark:border-purple-900 bg-purple-50 dark:bg-purple-950/60"
-          >
-            <FormField
-              v-model="customPrompt"
-              type="textarea"
-              :placeholder="$t('articles.editor.ai.customPromptPlaceholder')"
-              inputClass="!min-h-[100px] !bg-white dark:!bg-gray-800"
+    <USlideover v-model:open="sidebarOpen" :title="$t('common.settings')">
+      <template #body>
+        <div class="flex flex-col gap-6">
+          <section class="flex flex-col gap-3">
+            <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
+              <UIcon size="16" name="i-mdi-image-outline" />
+              {{ $t('common.labels.image') }}
+            </h3>
+            <FileUploader
+              :imageUrl="editedArticle.imageUrl"
+              type="article-image"
+              aspectRatio="16 / 9"
+              :maxWidth="3840"
+              :maxHeight="2160"
+              @upload="handleUpload"
             />
-            <Button
-              v-if="!aiGenerating"
-              icon="mdi:lightning-bolt"
-              class="w-full text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 shadow-md border-transparent!"
-              @click="generateAIContent"
-            >
-              {{ $t('articles.editor.ai.generateButton') }}
-            </Button>
-            <div v-else class="flex items-center gap-2">
-              <span class="flex-1 flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
-                <Icon name="mdi:loading" class="w-4 h-4 animate-spin" />
-                {{
-                  aiPhase === 'images' ? $t('articles.editor.ai.phaseImages') : $t('articles.editor.ai.phaseWriting')
-                }}
-              </span>
-              <Button
-                icon="mdi:stop"
-                class="border-transparent! bg-red-500 text-white hover:bg-red-600"
-                @click="stopGeneration"
+          </section>
+
+          <USeparator />
+
+          <section class="flex flex-col gap-3">
+            <UCollapsible v-model:open="aiOpen">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                type="button"
+                class="w-full"
+                icon="i-mdi-sparkles"
+                :trailingIcon="aiOpen ? 'i-mdi-chevron-up' : 'i-mdi-chevron-down'"
+                :label="$t('common.labels.aiGeneration')"
+              />
+              <template #content>
+                <UCard>
+                  <div class="flex flex-col gap-3">
+                    <UFormField :label="$t('articles.editor.ai.customPromptPlaceholder')">
+                      <UTextarea
+                        v-model="customPrompt"
+                        :placeholder="$t('articles.editor.ai.customPromptPlaceholder')"
+                        class="w-full"
+                        autoresize
+                      />
+                    </UFormField>
+                    <UButton v-if="!aiGenerating" icon="i-mdi-lightning-bolt" class="w-full" @click="generateAIContent">
+                      {{ $t('articles.editor.ai.generateButton') }}
+                    </UButton>
+                    <div v-else class="flex items-center gap-2">
+                      <span class="flex-1 text-sm text-muted">
+                        {{
+                          aiPhase === 'images'
+                            ? $t('articles.editor.ai.phaseImages')
+                            : $t('articles.editor.ai.phaseWriting')
+                        }}
+                      </span>
+                      <UProgress class="w-24" />
+                      <UButton icon="i-mdi-stop" color="error" variant="solid" @click="stopGeneration">
+                        {{ $t('articles.editor.ai.stopButton') }}
+                      </UButton>
+                    </div>
+                  </div>
+                </UCard>
+              </template>
+            </UCollapsible>
+          </section>
+
+          <USeparator />
+
+          <section class="flex flex-col gap-3">
+            <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
+              <UIcon size="16" name="i-mdi-bookmark-multiple-outline" />
+              {{ $t('common.labels.series') }}
+            </h3>
+            <ArticleSeriesSelector v-model="selectedSeries" />
+          </section>
+
+          <USeparator />
+
+          <section class="flex flex-col gap-3">
+            <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
+              <UIcon size="16" name="i-mdi-tag-multiple-outline" />
+              {{ $t('common.labels.tags') }}
+            </h3>
+            <TagsManager
+              :article="article"
+              :initialTags="articleTags"
+              @add:tag="addTag"
+              @create:tag="addTag"
+              @delete:tag="removeTag"
+            />
+          </section>
+
+          <USeparator />
+
+          <section class="flex flex-col gap-3">
+            <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
+              <UIcon size="16" name="i-mdi-calendar-clock" />
+              {{ $t('common.labels.releaseDate') }}
+            </h3>
+            <UFormField :label="$t('common.labels.releaseDate')" :ui="{ label: 'sr-only' }">
+              <UInput
+                :modelValue="releaseAtInput ?? undefined"
+                type="datetime-local"
+                @update:modelValue="releaseAtInput = $event || null"
+              />
+            </UFormField>
+            <div class="flex flex-wrap gap-2">
+              <UButton size="sm" color="neutral" variant="soft" @click="setReleaseQuick('now')">
+                {{ $t('articles.releaseQuick.now') }}
+              </UButton>
+              <UButton size="sm" color="neutral" variant="soft" @click="setReleaseQuick('inHour')">
+                {{ $t('articles.releaseQuick.inHour') }}
+              </UButton>
+              <UButton size="sm" color="neutral" variant="soft" @click="setReleaseQuick('tomorrow')">
+                {{ $t('articles.releaseQuick.tomorrow') }}
+              </UButton>
+              <UButton
+                v-if="editedArticle.releaseAt"
+                size="sm"
+                color="neutral"
+                variant="soft"
+                icon="i-mdi-close"
+                @click="setReleaseQuick('clear')"
               >
-                {{ $t('articles.editor.ai.stopButton') }}
-              </Button>
+                {{ $t('articles.releaseQuick.clear') }}
+              </UButton>
             </div>
-          </div>
-        </section>
-
-        <hr class="border-gray-200 dark:border-gray-800" />
-
-        <section class="flex flex-col gap-3">
-          <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
-            <Icon name="mdi:bookmark-multiple-outline" class="w-4 h-4 text-teal-500" />
-            {{ $t('common.labels.series') }}
-          </h3>
-          <ArticleSeriesSelector v-model="selectedSeries" />
-        </section>
-
-        <hr class="border-gray-200 dark:border-gray-800" />
-
-        <section class="flex flex-col gap-3">
-          <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
-            <Icon name="mdi:tag-multiple-outline" class="w-4 h-4 text-amber-500" />
-            {{ $t('common.labels.tags') }}
-          </h3>
-          <TagsManager
-            :article="article"
-            :initialTags="articleTags"
-            @add:tag="addTag"
-            @create:tag="addTag"
-            @delete:tag="removeTag"
-          />
-        </section>
-
-        <hr class="border-gray-200 dark:border-gray-800" />
-
-        <section class="flex flex-col gap-3">
-          <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-200">
-            <Icon name="mdi:calendar-clock" class="w-4 h-4 text-blue-500" />
-            {{ $t('common.labels.releaseDate') }}
-          </h3>
-          <FormField v-model="releaseAtInput" type="datetime-local" />
-          <div class="flex flex-wrap gap-2">
-            <Button size="sm" variant="neutral" @click="setReleaseQuick('now')">
-              {{ $t('articles.releaseQuick.now') }}
-            </Button>
-            <Button size="sm" variant="neutral" @click="setReleaseQuick('inHour')">
-              {{ $t('articles.releaseQuick.inHour') }}
-            </Button>
-            <Button size="sm" variant="neutral" @click="setReleaseQuick('tomorrow')">
-              {{ $t('articles.releaseQuick.tomorrow') }}
-            </Button>
-            <Button
-              v-if="editedArticle.releaseAt"
-              size="sm"
-              variant="neutral"
-              icon="mdi:close"
-              @click="setReleaseQuick('clear')"
-            >
-              {{ $t('articles.releaseQuick.clear') }}
-            </Button>
-          </div>
-        </section>
-      </div>
-    </ModalSlideOver>
-
-    <ModalMini
-      v-model:open="discardConfirmOpen"
-      icon="mdi:alert-circle-outline"
-      :title="$t('common.messages.discardChangesTitle')"
-      :message="$t('common.messages.discardChangesText')"
-    >
-      <template #actions>
-        <Button variant="danger" size="sm" icon="mdi:trash-can-outline" @click="confirmDiscard">
-          {{ $t('common.messages.discardConfirm') }}
-        </Button>
+          </section>
+        </div>
       </template>
-    </ModalMini>
+    </USlideover>
+
+    <UModal
+      v-model:open="discardConfirmOpen"
+      :title="$t('common.messages.discardChangesTitle')"
+      :description="$t('common.messages.discardChangesText')"
+    >
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="discardConfirmOpen = false">{{
+            $t('common.actions.cancel')
+          }}</UButton>
+          <UButton color="error" size="sm" icon="i-mdi-trash-can-outline" @click="confirmDiscard">
+            {{ $t('common.messages.discardConfirm') }}
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -246,7 +267,7 @@ import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
 
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
 const route = useRoute()
 const router = useRouter()
@@ -310,7 +331,14 @@ if (!isNew) {
     articleTags.value = articleData?.tags?.map((t: any) => t.tag?.id || t.id) || []
   } catch (e: any) {
     console.error(e)
-    toast.error({ message: 'Failed to load article' })
+    const status = Number(e?.statusCode || e?.status || e?.response?.status)
+    const key =
+      status === 401
+        ? 'common.errors.unauthorized'
+        : status === 403
+          ? 'common.errors.forbidden'
+          : 'common.errors.articleNotFound'
+    toast.add({ color: 'error', title: t(key) })
     router.push(localePath({ name: 'admin' }))
   }
 }
@@ -397,10 +425,10 @@ const generateAIContent = async () => {
         })
       },
     })
-    if (outcome === 'aborted') toast.info({ message: 'AI Generation Stopped' })
-    else toast.success({ message: 'AI Content Generated' })
+    if (outcome === 'aborted') toast.add({ color: 'info', title: 'AI Generation Stopped' })
+    else toast.add({ color: 'success', title: 'AI Content Generated' })
   } catch {
-    toast.error({ message: 'AI Generation Failed' })
+    toast.add({ color: 'error', title: 'AI Generation Failed' })
   } finally {
     aiGenerating.value = false
   }
@@ -408,7 +436,7 @@ const generateAIContent = async () => {
 
 const submit = async (targetStatus: 'draft' | 'published') => {
   if (submitting.value) return
-  if (!editedArticle.value.title) return toast.error({ message: 'Title is required' })
+  if (!editedArticle.value.title) return toast.add({ color: 'error', title: 'Title is required' })
 
   const willPublishNow = targetStatus === 'published' && !editedArticle.value.releaseAt
   const releaseAt = editedArticle.value.releaseAt
@@ -420,7 +448,7 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   const payload = {
     ...editedArticle.value,
     status: targetStatus,
-    imageUrl: optimizedImageUrl.value || editedArticle.value.imageUrl,
+    imageUrl: editedArticle.value.imageUrl,
     articleSeriesId: selectedSeries.value?.id || null,
     tags: articleTags.value,
     releaseAt,
@@ -430,16 +458,16 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   try {
     if (isNew) {
       await $fetch('/api/articles', { method: 'POST', body: payload })
-      toast.success({ message: targetStatus === 'published' ? 'Article published' : 'Draft created' })
+      toast.add({ color: 'success', title: targetStatus === 'published' ? 'Article published' : 'Draft created' })
       await invalidateArticlesAndStats()
     } else {
       await $fetch(`/api/articles/${article.value!.id}`, { method: 'PATCH', body: payload })
-      toast.success({ message: 'Article updated' })
+      toast.add({ color: 'success', title: 'Article updated' })
       await invalidateArticles()
     }
     router.push(localePath({ name: 'admin' }))
   } catch (e: any) {
-    toast.error({ message: e.data?.message || 'Error saving article' })
+    toast.add({ color: 'error', title: e.data?.message || 'Error saving article' })
   } finally {
     submitting.value = false
   }

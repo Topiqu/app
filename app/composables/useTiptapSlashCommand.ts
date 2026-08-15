@@ -1,4 +1,5 @@
 import tippy from 'tippy.js'
+import 'tippy.js/dist/tippy.css'
 import { VueRenderer } from '@tiptap/vue-3'
 
 import CommandList from '~/components/CommandList.vue'
@@ -14,40 +15,40 @@ export function useTiptapSlashCommand(handlers: SlashCommandHandlers) {
     [
       {
         title: 'Heading 1',
-        icon: 'mdi-format-header-1',
+        icon: 'i-mdi-format-header-1',
         command: ({ editor, range }: any) =>
           editor.chain().focus().deleteRange(range).setNode('heading', { level: 1 }).run(),
       },
       {
         title: 'Heading 2',
-        icon: 'mdi-format-header-2',
+        icon: 'i-mdi-format-header-2',
         command: ({ editor, range }: any) =>
           editor.chain().focus().deleteRange(range).setNode('heading', { level: 2 }).run(),
       },
       {
         title: 'Heading 3',
-        icon: 'mdi-format-header-3',
+        icon: 'i-mdi-format-header-3',
         command: ({ editor, range }: any) =>
           editor.chain().focus().deleteRange(range).setNode('heading', { level: 3 }).run(),
       },
       {
         title: 'Bullet List',
-        icon: 'mdi-format-list-bulleted',
+        icon: 'i-mdi-format-list-bulleted',
         command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).toggleBulletList().run(),
       },
       {
         title: 'Numbered List',
-        icon: 'mdi-format-list-numbered',
+        icon: 'i-mdi-format-list-numbered',
         command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
       },
       {
         title: 'Quote',
-        icon: 'mdi-format-quote-open',
+        icon: 'i-mdi-format-quote-open',
         command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).setBlockquote().run(),
       },
       {
         title: 'Image',
-        icon: 'mdi-image',
+        icon: 'i-mdi-image',
         command: ({ editor, range }: any) => {
           editor.chain().focus().deleteRange(range).run()
           handlers.openImagePrompt()
@@ -55,7 +56,7 @@ export function useTiptapSlashCommand(handlers: SlashCommandHandlers) {
       },
       {
         title: 'YouTube',
-        icon: 'mdi-youtube',
+        icon: 'i-mdi-youtube',
         command: ({ editor, range }: any) => {
           editor.chain().focus().deleteRange(range).run()
           handlers.openYoutubePrompt()
@@ -63,7 +64,7 @@ export function useTiptapSlashCommand(handlers: SlashCommandHandlers) {
       },
       {
         title: 'Poll',
-        icon: 'mdi-poll',
+        icon: 'i-mdi-poll',
         command: ({ editor, range }: any) => {
           editor.chain().focus().deleteRange(range).run()
           handlers.insertPoll()

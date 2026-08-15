@@ -1,28 +1,28 @@
 <template>
-  <div class="flex flex-col gap-2" @keydown.tab.exact.stop @keydown.shift.tab.exact.stop>
+  <div class="flex flex-col" @keydown.tab.exact.stop @keydown.shift.tab.exact.stop>
     <template v-if="editor">
-      <TiptapToolbar
-        v-if="edit"
-        :editor
-        :limit
-        @openLink="openLink"
-        @insertPoll="insertPoll"
-        @uploadFile="uploadImage"
-        @focusEditor="focusEditor"
-      />
-
-      <TiptapToolbarBubble :editor @openLink="(url) => openLink({ type: 'link', url })" />
-
       <div
-        class="relative"
+        class="relative rounded-[var(--topiqu-surface-radius)] border border-default bg-default"
         @dragenter.prevent="onDragEnter"
         @dragover.prevent
         @dragleave.prevent="onDragLeave"
         @drop="onDrop"
       >
+        <TiptapToolbar
+          v-if="edit"
+          :editor
+          :limit
+          @openLink="openLink"
+          @insertPoll="insertPoll"
+          @uploadFile="uploadImage"
+          @focusEditor="focusEditor"
+        />
+
+        <TiptapToolbarBubble :editor @openLink="(url) => openLink({ type: 'link', url })" />
+
         <EditorContent
           :editor
-          :class="['h-96 p-4 bg-white border border-gray-300 overflow-y-auto', { 'rounded-lg shadow-sm': edit }]"
+          class="editor-canvas min-h-96 text-highlighted"
           @click.stop.prevent="handleEditorClick"
         />
         <TiptapDropOverlay :active="isDragging && edit" />
@@ -39,7 +39,7 @@
 
       <TiptapAltModal v-model:open="altModal.show" :defaultAlt="altModal.defaultAlt" @submit="onAltSubmit" />
     </template>
-    <div v-else v-html="content || fallback" />
+    <div v-else v-html="content || fallback || $t('articles.editor.noContent')" />
   </div>
 </template>
 
@@ -51,7 +51,7 @@ import { EditorContent } from '@tiptap/vue-3'
 const content = defineModel<string | null>({ default: '<p></p>' })
 const edit = defineModel<boolean>('edit', { default: false })
 
-const { fallback = 'No content available', limit = 8192 } = defineProps<{
+const { fallback, limit = 8192 } = defineProps<{
   fallback?: string
   limit?: number
 }>()
@@ -181,81 +181,8 @@ const editor = useTiptapInstance({
   slashCommand: suggestion,
   onChange: (html) => (content.value = validateContent(html)),
   onDropFiles: (files) => uploadImage(files),
+  ariaLabel: $t('articles.editor.title'),
 })
 
 const uploadImage = useTiptapImageUpload(editor, promptAlt)
 </script>
-
-<style scoped>
-div.tiptap.ProseMirror {
-  width: 100%;
-  height: 100%;
-}
-.ProseMirror img {
-  max-width: 100%;
-  max-height: 300px;
-  height: auto;
-  object-fit: contain;
-}
-.ProseMirror p,
-.ProseMirror h1,
-.ProseMirror h2,
-.ProseMirror h3,
-.ProseMirror h4,
-.ProseMirror h5,
-.ProseMirror h6 {
-  color: #000;
-}
-.ProseMirror blockquote.blockquote {
-  border-left: 4px solid #3b82f6;
-  background-color: #f9fafb;
-  padding: 12px 16px;
-  margin: 16px 0;
-  color: #1f2937;
-  font-style: italic;
-  border-radius: 4px;
-}
-html.dark .ProseMirror blockquote.blockquote {
-  background-color: #374151;
-  color: #e5e7eb;
-  border-left: 4px solid #60a5fa;
-}
-.ProseMirror iframe.youtube-video {
-  width: 100%;
-  max-width: 640px;
-  aspect-ratio: 16/9;
-  border-radius: 8px;
-  margin: 16px 0;
-}
-html.dark .ProseMirror iframe.youtube-video {
-  background-color: #374151;
-}
-.ProseMirror .poll-node {
-  border: 1px solid #ccc;
-  padding: 12px;
-  margin: 16px 0;
-  border-radius: 4px;
-  background-color: #f9fafb;
-}
-html.dark .ProseMirror .poll-node {
-  background-color: #374151;
-  border-color: #4b5563;
-}
-.ProseMirror .poll-node input {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-}
-.ProseMirror .poll-node button {
-  padding: 4px 8px;
-  margin-left: 8px;
-  background-color: #3b82f6;
-  color: white;
-  border-radius: 4px;
-}
-html.dark .ProseMirror .poll-node button {
-  background-color: #60a5fa;
-}
-</style>

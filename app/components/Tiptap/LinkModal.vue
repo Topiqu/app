@@ -1,32 +1,33 @@
 <template>
-  <ModalMini
-    v-model:open="isOpen"
-    :title="title"
-    :confirmText="$t('common.continue')"
-    :cancelText="$t('common.close')"
-    @confirm="confirm"
-    @cancel="isOpen = false"
-  >
-    <template #content>
-      <FormInput
-        v-model="url"
-        :placeholder="type === 'youtube' ? 'https://youtube.com/watch?v=...' : 'https://...'"
-        :icon="icon"
-        @keydown.enter.prevent.stop="confirm"
-      />
-      <p v-if="error" class="mt-2 text-xs text-red-500" role="alert">{{ error }}</p>
-      <Button
+  <UModal v-model:open="isOpen" :title="title">
+    <template #body>
+      <UFormField :label="title" :error="error || undefined">
+        <UInput
+          v-model="url"
+          :placeholder="type === 'youtube' ? 'https://youtube.com/watch?v=...' : 'https://...'"
+          :icon="icon"
+          @keydown.enter.prevent.stop="confirm"
+        />
+      </UFormField>
+      <UButton
         v-if="type === 'link' && isLinkActive"
-        variant="danger"
+        color="error"
+        variant="solid"
         size="sm"
-        icon="mdi:link-off"
+        icon="i-mdi-link-off"
         class="mt-3"
         @click="emit('remove')"
       >
         {{ $t('articles.editor.toolbar.removeLink') }}
-      </Button>
+      </UButton>
     </template>
-  </ModalMini>
+    <template #footer>
+      <div class="flex w-full justify-end gap-2">
+        <UButton color="neutral" variant="ghost" @click="isOpen = false">{{ $t('common.close') }}</UButton>
+        <UButton :disabled="!!error" icon="i-mdi-check" @click="confirm">{{ $t('common.continue') }}</UButton>
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -50,7 +51,7 @@ const title = computed(() =>
       : $t('articles.sources.youtube'),
 )
 
-const icon = computed(() => (type === 'image' ? 'mdi:image' : type === 'youtube' ? 'mdi:youtube' : 'mdi:link'))
+const icon = computed(() => (type === 'image' ? 'i-mdi-image' : type === 'youtube' ? 'i-mdi-youtube' : 'i-mdi-link'))
 
 const isValidUrl = (raw: string) => {
   try {
