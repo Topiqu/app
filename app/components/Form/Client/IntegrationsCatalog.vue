@@ -118,6 +118,9 @@
                 $t('common.preferences.api.warning')
               }}
             </p>
+            <Button size="sm" variant="neutral" @click="$emit('generateApiKey')">
+              <Icon name="mdi:refresh" class="mr-1.5 size-4" />{{ $t('common.preferences.api.revoke') }}
+            </Button>
           </div>
         </article>
 
@@ -159,7 +162,7 @@
 
     <Modal v-model="gscOpen" :title="$t('common.searchConsole.title')" class="max-w-2xl">
       <template #content>
-        <DialogIntro
+        <FormClientDialogIntro
           icon="mdi:chart-timeline-variant-shimmer"
           :description="$t('common.integrationsCatalog.gscDescription')"
           plan="premium"
@@ -179,7 +182,7 @@
 
     <Modal v-model="analyticsOpen" title="Google Analytics" class="max-w-2xl">
       <template #content>
-        <DialogIntro
+        <FormClientDialogIntro
           icon="mdi:google-analytics"
           :description="$t('common.integrationsCatalog.analyticsDescription')"
           plan="pro"
@@ -240,7 +243,7 @@
 
     <Modal v-model="linkedinOpen" title="LinkedIn" class="max-w-2xl">
       <template #content>
-        <DialogIntro
+        <FormClientDialogIntro
           icon="mdi:linkedin"
           :description="$t('common.integrationsCatalog.linkedinDescription')"
           plan="pro"
