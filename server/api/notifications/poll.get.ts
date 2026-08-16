@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 const QuerySchema = z.object({
   since: z.coerce.date().optional(),
 })

@@ -12,10 +12,7 @@ export const POLL_MAX_BATCH = 25
  * nothing — the client already has the full list from its initial fetch and
  * only needs the unread count.
  */
-export const buildPollFindArgs = (
-  userId: string,
-  since: Date | undefined,
-): Prisma.NotificationFindManyArgs | null => {
+export const buildPollFindArgs = (userId: string, since: Date | undefined): Prisma.NotificationFindManyArgs | null => {
   if (!since) return null
   return {
     where: { userId, deletedAt: null, createdAt: { gt: since } },

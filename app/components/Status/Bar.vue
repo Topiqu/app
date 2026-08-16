@@ -1,15 +1,12 @@
 <template>
-  <transition name="slide">
-    <div
-      v-if="showBar"
-      :class="[
-        isOnline ? 'bg-green-500' : 'bg-red-500',
-        'fixed bottom-0 left-0 right-0 text-white p-2 text-center z-overlay',
-      ]"
-    >
-      {{ isOnline ? $t('common.connection.online') : $t('common.connection.offline') }}
-    </div>
-  </transition>
+  <UAlert
+    v-if="showBar"
+    class="fixed bottom-0 left-0 right-0 z-overlay"
+    :color="isOnline ? 'success' : 'error'"
+    variant="solid"
+    :icon="isOnline ? 'i-mdi-wifi' : 'i-mdi-wifi-off'"
+    :title="isOnline ? $t('common.connection.online') : $t('common.connection.offline')"
+  />
 </template>
 
 <script setup lang="ts">
@@ -26,14 +23,3 @@ watch(isOnline, (online, prev) => {
   if (!online) showTemporaryBar()
 })
 </script>
-
-<style scoped>
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.3s ease;
-}
-.slide-enter-from,
-.slide-leave-to {
-  transform: translateY(100%);
-}
-</style>
