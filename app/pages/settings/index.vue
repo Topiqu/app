@@ -52,132 +52,34 @@
           />
         </section>
 
-        <div v-if="!isBasic" v-show="activeTab === 'integrations'" class="space-y-8">
-          <LazyFormClientSearchConsole />
-
-          <section>
-            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Icon name="mdi:google-analytics" class="w-5 h-5 text-orange-500" />
-              {{ $t('common.preferences.external') }}
-            </h3>
-
-            <div
-              class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm space-y-6"
-            >
-              <label class="flex items-center justify-between gap-4 cursor-pointer">
-                <span class="font-medium">Google Analytics</span>
-                <FormField
-                  v-model="form.allowGtag"
-                  type="checkbox"
-                  aria-label="Enable Google Analytics"
-                  class="w-auto"
-                />
-              </label>
-              <Transition name="fade">
-                <FormField
-                  v-if="form.allowGtag"
-                  v-model="form.gtagId"
-                  label="Measurement ID"
-                  placeholder="G-XXXXXXXXXX"
-                  icon="mdi:tag-outline"
-                />
-              </Transition>
-
-              <div v-if="isSuperadmin" class="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                <label class="flex items-center justify-between gap-4 mb-3 cursor-pointer">
-                  <span class="font-medium">Google Ads</span>
-                  <FormField v-model="form.allowAds" type="checkbox" aria-label="Enable Google Ads" class="w-auto" />
-                </label>
-                <Transition name="fade">
-                  <FormField
-                    v-if="form.allowAds"
-                    v-model="form.gamNetworkCode"
-                    label="Network Code"
-                    placeholder="XXXXXXXXXX"
-                    icon="mdi:code-tags"
-                  />
-                </Transition>
-              </div>
-            </div>
-          </section>
-
-          <section>
-            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Icon name="mdi:key-chain-variant" class="w-5 h-5 text-purple-500" />
-              {{ $t('common.preferences.api.title') }}
-            </h3>
-
-            <div
-              class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm"
-            >
-              <div v-if="!form.apiKey" class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="text-sm text-neutral-600 dark:text-neutral-400">
-                  {{ $t('common.preferences.api.description') }}
-                </div>
-                <Button variant="neutral" class="shrink-0" @click="generateApiKey">
-                  <Icon name="mdi:plus" class="mr-1.5 size-4" />
-                  {{ $t('common.preferences.api.generate') }}
-                </Button>
-              </div>
-
-              <div v-else class="space-y-3">
-                <FormLabel
-                  :text="$t('common.preferences.api.label')"
-                  class="text-xs font-bold uppercase tracking-wider text-neutral-500"
-                />
-
-                <div class="relative">
-                  <FormInput
-                    :modelValue="form.apiKey"
-                    :type="apiVisible ? 'text' : 'password'"
-                    readonly
-                    :inputClass="'font-mono pr-20!'"
-                  />
-
-                  <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    <Button
-                      square
-                      borderless
-                      size="sm"
-                      variant="neutral"
-                      :icon="apiVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'"
-                      :aria="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
-                      :title="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
-                      @click="apiVisible = !apiVisible"
-                    />
-                    <Button
-                      square
-                      borderless
-                      size="sm"
-                      variant="neutral"
-                      :icon="apiCopied ? 'mdi:check' : 'mdi:content-copy'"
-                      :aria="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
-                      :title="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
-                      @click="copyApi(form.apiKey)"
-                    />
-                  </div>
-                </div>
-
-                <div class="flex items-start gap-2 text-xs text-neutral-500 dark:text-neutral-500">
-                  <Icon name="mdi:shield-alert-outline" class="size-4 shrink-0 mt-0.5" />
-                  <p>{{ $t('common.preferences.api.warning') }}</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section>
-            <LazyFormClientLinkedIn
-              :clientSiteId="client?.id ?? ''"
-              :mode="form.linkedinMode"
-              :type="form.linkedinCompanyType"
-              :brandProfile="form.linkedinBrandProfile"
-              @update:mode="form.linkedinMode = $event"
-              @update:type="form.linkedinCompanyType = $event"
-              @update:brandProfile="form.linkedinBrandProfile = $event"
-            />
-          </section>
-        </div>
+        <FormClientIntegrationsCatalog
+          v-if="!isBasic"
+          v-show="activeTab === 'integrations'"
+          :clientSiteId="client?.id ?? ''"
+          :apiKey="form.apiKey"
+          :apiVisible="apiVisible"
+          :apiCopied="apiCopied"
+          :allowGtag="form.allowGtag"
+          :gtagId="form.gtagId"
+          :isSuperadmin="isSuperadmin"
+          :allowAds="form.allowAds"
+          :gamNetworkCode="form.gamNetworkCode"
+          :dirty="isDirty"
+          :linkedinMode="form.linkedinMode"
+          :linkedinType="form.linkedinCompanyType"
+          :linkedinBrandProfile="form.linkedinBrandProfile"
+          @update:allowGtag="form.allowGtag = $event"
+          @update:gtagId="form.gtagId = $event"
+          @update:allowAds="form.allowAds = $event"
+          @update:gamNetworkCode="form.gamNetworkCode = $event"
+          @update:linkedinMode="form.linkedinMode = $event"
+          @update:linkedinType="form.linkedinCompanyType = $event"
+          @update:linkedinBrandProfile="form.linkedinBrandProfile = $event"
+          @generateApiKey="generateApiKey"
+          @toggleApi="apiVisible = !apiVisible"
+          @copyApi="copyApi(form.apiKey)"
+          @save="savePreferences"
+        />
 
         <section v-if="hasAi" v-show="activeTab === 'ai'">
           <div
@@ -300,17 +202,21 @@ const allowedFeatures = computed(
 const isBasic = computed(() => client.value?.plan === 'BASIC')
 const hasAi = computed(() => !isBasic.value && (client.value?.tokenLimit ?? 0) > 0)
 const showBilling = computed(() => client.value?.billingPlan !== 'PERMANENT')
-const can = (scope: string) => isSuperadmin.value || tenantAccess.value?.role === 'OWNER' || tenantAccess.value?.scopes.includes(scope)
+const can = (scope: string) =>
+  isSuperadmin.value || tenantAccess.value?.role === 'OWNER' || tenantAccess.value?.scopes.includes(scope)
 
 const tabs = computed<SettingsTab[]>(() => {
   const t: SettingsTab[] = []
-  if (can('TENANT_SETTINGS')) t.push({ id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'mdi:palette-outline' })
+  if (can('TENANT_SETTINGS'))
+    t.push({ id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'mdi:palette-outline' })
   t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'mdi:account-group-outline' })
   if (!isBasic.value && can('TENANT_SETTINGS')) {
     t.push({ id: 'content', labelKey: 'common.preferences.tabs.content', icon: 'mdi:text-box-outline' })
   }
-  if (!isBasic.value && can('INTEGRATION_CONTROL')) t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'mdi:puzzle-outline' })
-  if (hasAi.value && can('AI_USE')) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
+  if (!isBasic.value && can('INTEGRATION_CONTROL'))
+    t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'mdi:puzzle-outline' })
+  if (hasAi.value && can('AI_USE'))
+    t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
   if (showBilling.value && can('BILLING_CHANGE'))
     t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'mdi:credit-card-outline' })
   return t
@@ -355,7 +261,16 @@ const savePreferences = async () => {
       socials: form.value.socials.filter((s) => s.url.trim()),
       aiUser: client.value?.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
     }
-    if (!can('INTEGRATION_CONTROL')) for (const field of ['socials', 'linkedinMode', 'linkedinCompanyType', 'linkedinBrandProfile', 'gtagId', 'allowGtag']) Reflect.deleteProperty(payload, field)
+    if (!can('INTEGRATION_CONTROL'))
+      for (const field of [
+        'socials',
+        'linkedinMode',
+        'linkedinCompanyType',
+        'linkedinBrandProfile',
+        'gtagId',
+        'allowGtag',
+      ])
+        Reflect.deleteProperty(payload, field)
     await $fetch(`/api/clients/${clientId.value}` as `/api/clients/:id`, {
       method: 'PATCH',
       body: payload,
