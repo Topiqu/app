@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const site = await prisma.clientSite.findUnique({ where: { id: clientSiteId }, select: { plan: true } })
   if (!site || !['PREMIUM', 'CUSTOM'].includes(site.plan))
     throw createError({ statusCode: 403, message: 'Search Console intelligence requires PREMIUM' })
-  const clientId = process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_ID
+  const clientId = searchConsoleClientId()
   if (!clientId) throw createError({ statusCode: 503, message: 'Google Search Console OAuth is not configured' })
 
   const state = signSearchConsoleState({ clientSiteId, nonce: randomUUID(), exp: Date.now() + 10 * 60_000 })

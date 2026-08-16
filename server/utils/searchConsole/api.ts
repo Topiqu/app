@@ -10,11 +10,14 @@ export interface GoogleTokens {
 }
 
 const credentials = () => {
-  const clientId = process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_ID
-  const clientSecret = process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_SECRET
+  const clientId = searchConsoleClientId()
+  const clientSecret = process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET
   if (!clientId || !clientSecret) throw new Error('Google Search Console OAuth is not configured')
   return { clientId, clientSecret }
 }
+
+export const searchConsoleClientId = () =>
+  process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID || ''
 
 export const exchangeSearchConsoleCode = async (code: string, redirectUri: string): Promise<GoogleTokens> => {
   const { clientId, clientSecret } = credentials()
