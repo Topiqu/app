@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div v-if="!embedded" class="flex items-center justify-between">
       <div>
         <h3 class="text-lg font-semibold flex items-center gap-2">
           <Icon name="mdi:linkedin" class="w-5 h-5 text-blue-600" />
@@ -41,6 +41,27 @@
             Switch to Page
           </button>
         </div>
+      </div>
+    </div>
+
+    <div v-if="embedded && !isConnected" class="flex flex-col gap-3 sm:flex-row">
+      <Button variant="primary" class="bg-[#0A66C2] text-white" @click="connectLinkedIn('personal')">
+        <Icon name="mdi:account" class="mr-1" />
+        Connect Personal
+      </Button>
+      <Button variant="primary" class="bg-[#0A66C2] text-white" @click="connectLinkedIn('pages')">
+        <Icon name="mdi:domain" class="mr-1" />
+        Connect Page
+      </Button>
+    </div>
+
+    <div v-if="embedded && isConnected" class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 text-sm font-medium text-emerald-600">
+        <Icon name="mdi:check-circle" /> Connected ({{ localType }})
+      </div>
+      <div class="flex gap-3">
+        <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('personal')">Personal</button>
+        <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('pages')">Page</button>
       </div>
     </div>
 
@@ -100,6 +121,7 @@
 
 <script setup lang="ts">
 const props = defineProps<{
+  embedded?: boolean
   clientSiteId: string
   mode?: 'HitL' | 'FullAuto'
   type?: 'pages' | 'personal'
