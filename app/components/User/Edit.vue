@@ -1,72 +1,57 @@
 <template>
-  <Modal v-model="open" title="Upravit uživatele" :onClose="confirmClose">
-    <template #default="actions">
-      <slot v-bind="actions" />
-    </template>
-    <template #content>
+  <UModal
+    v-model:open="open"
+    :title="$t('master.userEdit.title')"
+    :dismissible="false"
+    :close="false"
+    @close:prevent="confirmClose"
+  >
+    <slot :open="open" />
+    <template #body>
       <div class="flex-1 overflow-y-auto pr-4">
         <div class="flex flex-col gap-6">
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200"
-              >Uživatelské jméno</span
-            >
-            <input
-              v-model="editedUser.username"
-              placeholder="Uživatelské jméno"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Email</span>
-            <input
-              v-model="editedUser.email"
-              placeholder="Email"
-              type="email"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Heslo</span>
-            <input
+          <UFormField :label="$t('common.labels.username')">
+            <UInput v-model="editedUser.username" :placeholder="$t('common.labels.username')" />
+          </UFormField>
+          <UFormField :label="$t('common.labels.email')">
+            <UInput v-model="editedUser.email" :placeholder="$t('common.labels.email')" type="email" />
+          </UFormField>
+          <UFormField :label="$t('common.auth.password')">
+            <UInput
               v-model="editedUser.password"
-              placeholder="Nové heslo (nechte prázdné pro zachování)"
+              :placeholder="$t('master.userEdit.passwordPlaceholder')"
               type="password"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
             />
-          </label>
-          <label class="flex flex-col gap-3">
-            <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">Role</span>
-            <select
+          </UFormField>
+          <UFormField :label="$t('master.userEdit.role')">
+            <USelect
               v-model="editedUser.role"
-              class="p-4 rounded-2xl text-base focus:outline-none border-b-2 focus:ring-2 focus:border-blue-500/70 transition-all duration-300 shadow-sm hover:shadow-md"
-            >
-              <option value="admin">Admin</option>
-              <option value="reader">Čtenář</option>
-              <option value="ai">AI 🤖</option>
-            </select>
-          </label>
+              :items="[
+                { label: $t('master.userEdit.roles.admin'), value: 'admin' },
+                { label: $t('master.userEdit.roles.reader'), value: 'reader' },
+                { label: $t('master.userEdit.roles.ai'), value: 'ai' },
+              ]"
+              valueKey="value"
+              labelKey="label"
+            />
+          </UFormField>
         </div>
       </div>
     </template>
-    <template #footer="{ close }">
+    <template #footer>
       <div class="flex gap-4 justify-end flex-shrink-0">
-        <button
-          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
-          @click="close"
-        >
-          Zavřít
-        </button>
-        <button
+        <UButton color="neutral" variant="ghost" @click="confirmClose">{{ $t('common.actions.close') }}</UButton>
+        <UButton
+          color="primary"
+          variant="solid"
           :disabled="!editedUser.username || !editedUser.email"
-          class="px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           @click="saveEdit"
         >
-          Uložit změny
-        </button>
+          {{ $t('common.actions.saveChanges') }}
+        </UButton>
       </div>
     </template>
-  </Modal>
-  <ModalMini ref="discardDialog" />
+  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -74,10 +59,10 @@ const props = defineProps<{
   user: { id: string; username: string; email: string; role?: string }
 }>()
 const emit = defineEmits(['saved'])
-const open = defineModel<boolean>()
+const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 const { t } = useI18n()
-const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
+const confirm = useConfirm()
 
 const editedUser = shallowRef({
   id: props.user.id,
@@ -89,7 +74,7 @@ const editedUser = shallowRef({
 
 const saveEdit = async () => {
   if (!editedUser.value.username || !editedUser.value.email) {
-    toast.error({ message: 'Vyplňte uživatelské jméno a email' })
+    toast.add({ color: 'error', title: t('master.userEdit.validation') })
     return
   }
   try {
@@ -104,10 +89,10 @@ const saveEdit = async () => {
       body,
     })
     emit('saved')
-    toast.success({ message: 'Uživatel úspěšně upraven' })
+    toast.add({ color: 'success', title: t('master.userEdit.success') })
     open.value = false
   } catch (error: any) {
-    toast.error({ message: error?.data?.message || 'Nepodařilo se aktualizovat uživatele' })
+    toast.add({ color: 'error', title: error?.data?.message || t('master.userEdit.error') })
   }
 }
 
@@ -116,14 +101,14 @@ const confirmClose = async () => {
     open.value = false
     return
   }
-  const r = await discardDialog.value?.ask({
+  const r = await confirm({
     title: t('common.messages.closeConfirmTitle'),
     message: t('common.messages.closeConfirmText'),
-    icon: 'mdi:alert-outline',
+    icon: 'i-mdi-alert-outline',
     confirmText: t('common.messages.closeConfirmButton'),
     cancelText: t('common.messages.deleteCancel'),
     variant: 'danger',
   })
-  if (r === 'ok') open.value = false
+  if (r) open.value = false
 }
 </script>

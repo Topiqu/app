@@ -1,308 +1,306 @@
 <template>
-  <div class="max-w-5xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-    <TransitionRoot :show="true" enter="transition-opacity duration-500" enterFrom="opacity-0" enterTo="opacity-100">
-      <div class="space-y-6 sm:space-y-8 lg:space-y-10">
-        <div class="p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700">
-          <div
-            class="mb-8 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/60 backdrop-blur relative"
-          >
-            <UserPictureUploader v-model="profileForm.avatarUrl" @upload="refresh()" />
-            <div class="space-y-4 text-center sm:text-left flex-1">
-              <h1
-                class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2"
-              >
-                {{ profileForm.username }}
-              </h1>
-              <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-2">
-                @{{ profileForm.username?.toLowerCase().replace(/\s+/g, '') }}
-              </p>
-              <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 italic border-l-2 pl-3 border-indigo-500">
-                {{ profileForm.bio || $t('articles.userMenu.noBio') }}
-              </p>
-              <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-4">
-                <span class="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
-                  <Icon name="mdi:email" class="w-4 h-4" />
-                  {{ profileForm.email }}
-                </span>
-                <span class="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
-                  <Icon name="mdi:calendar" class="w-4 h-4" />
-                  {{ formatDate(profileForm.createdAt) }}
-                </span>
-              </div>
-            </div>
-            <div class="absolute top-3 right-3 sm:top-5 sm:right-5">
-              <Button
-                :disabled="isLoading"
-                icon="mdi:file-pdf-box"
-                variant="transparent"
-                square
-                borderless
-                :title="$t('profile.exportToPDF')"
-                class="relative cursor-pointer flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gray-100/80 !dark:bg-gray-800/70 shadow-md backdrop-blur hover:bg-indigo-50 dark:hover:bg-indigo-500/20 transition-all duration-300 hover:shadow-lg active:scale-95 disabled:opacity-50"
-                @click="exportToPDF"
-              >
-              </Button>
-            </div>
+  <div class="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <div class="grid items-start gap-8 lg:grid-cols-[17rem_minmax(0,1fr)]">
+      <aside class="space-y-5 lg:sticky lg:top-24">
+        <div class="flex flex-col items-center gap-4 text-center lg:items-start lg:text-left">
+          <UserPictureUploader v-model="profileForm.avatarUrl" @upload="refresh()" />
+          <div class="min-w-0">
+            <h1 class="break-words text-2xl font-extrabold text-highlighted">{{ profileForm.username }}</h1>
+            <p class="mt-1 break-all text-sm text-muted">
+              @{{ profileForm.username?.toLowerCase().replace(/\s+/g, '') }}
+            </p>
+            <p class="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">
+              {{ profileForm.bio || $t('articles.userMenu.noBio') }}
+            </p>
           </div>
-          <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200 my-8"></div>
-          <StatsUser
-            :followers="profileForm.followers"
-            :following="profileForm.following"
-            :likedArticles="profileForm.likedArticles"
-            :commentsCount="profileForm.commentsCount"
-            :likesCount="profileForm.likesCount"
-            @openDialog="openDialog"
-            @updateTab="activeTab = $event"
+          <div class="flex flex-wrap justify-center gap-2 lg:justify-start">
+            <UBadge color="neutral" variant="soft" icon="i-mdi-email">{{ profileForm.email }}</UBadge>
+            <UBadge color="neutral" variant="soft" icon="i-mdi-calendar">
+              {{ formatDate(profileForm.createdAt) }}
+            </UBadge>
+          </div>
+        </div>
+
+        <nav :aria-label="$t('profile.title')" class="hidden border-y border-default py-3 lg:block">
+          <UButton
+            v-for="item in profileNavigation"
+            :key="item.href"
+            :to="item.href"
+            :icon="item.icon"
+            :label="item.label"
+            :color="activeProfileSection === item.href.slice(1) ? 'primary' : 'neutral'"
+            :variant="activeProfileSection === item.href.slice(1) ? 'soft' : 'ghost'"
+            :aria-current="activeProfileSection === item.href.slice(1) ? 'location' : undefined"
+            :ui="{ base: 'w-full justify-start' }"
+            @click="activeProfileSection = item.href.slice(1)"
           />
-          <div
-            v-if="isDirty"
-            class="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/50 rounded-lg flex items-center gap-2 text-xs sm:text-sm text-yellow-800 dark:text-yellow-300"
-          >
-            <Icon name="mdi:alert-circle" class="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>{{ $t('common.unsavedChanges') }}</span>
-            <Icon
-              name="mdi:undo"
-              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-300 ml-auto cursor-pointer rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700 transition disabled:opacity-50"
-              :title="$t('common.actions.revertChanges')"
-              :class="{ 'pointer-events-none opacity-50': isLoading }"
-              @click="!isLoading && revertChanges()"
+        </nav>
+
+        <UButton
+          :disabled="isLoading"
+          icon="i-mdi-file-pdf-box"
+          color="neutral"
+          variant="soft"
+          block
+          :label="$t('profile.exportToPDF')"
+          :loading="isLoading"
+          @click="exportToPDF"
+        />
+      </aside>
+
+      <div class="min-w-0 max-w-[720px] space-y-8">
+        <StatsUser
+          :followers="profileForm.followers"
+          :following="profileForm.following"
+          :likedArticles="profileForm.likedArticles"
+          :commentsCount="profileForm.commentsCount"
+          :likesCount="profileForm.likesCount"
+          @openDialog="openDialog"
+          @updateTab="activeTab = $event"
+        />
+        <UAlert
+          v-if="isDirty"
+          color="warning"
+          variant="soft"
+          icon="i-mdi-alert-circle"
+          :title="$t('common.unsavedChanges')"
+          class="mb-4 sm:mb-6"
+        >
+          <template #actions>
+            <UButton
+              color="warning"
+              variant="ghost"
+              icon="i-mdi-undo"
+              square
+              :disabled="isLoading"
+              :aria-label="$t('common.actions.revertChanges')"
+              @click="revertChanges"
             />
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-            <div class="space-y-4 sm:space-y-6">
+          </template>
+        </UAlert>
+        <div class="grid grid-cols-1 gap-6">
+          <div class="space-y-4 sm:space-y-6">
+            <section id="personal-section" class="space-y-4 sm:space-y-6">
               <div id="username-section">
-                <FormField
-                  v-model="profileForm.username"
-                  :label="$t('profile.username')"
-                  type="text"
-                  name="username"
-                  placeholder="Enter your username"
-                />
+                <UFormField :label="$t('profile.username')" name="username">
+                  <UInput
+                    v-model="profileForm.username"
+                    type="text"
+                    name="username"
+                    :placeholder="$t('profile.usernamePlaceholder')"
+                  />
+                </UFormField>
               </div>
               <div id="bio-section">
-                <FormField
-                  v-model="profileForm.bio"
-                  :label="$t('profile.bio')"
-                  type="textarea"
-                  name="bio"
-                  rows="4 sm:rows-5"
-                  :maxLength="BIO_MAX_LENGTH"
-                />
+                <UFormField :label="$t('profile.bio')" name="bio">
+                  <UTextarea
+                    :modelValue="profileForm.bio ?? undefined"
+                    name="bio"
+                    :rows="4"
+                    :maxLength="BIO_MAX_LENGTH"
+                    autoresize
+                    @update:modelValue="profileForm.bio = $event || null"
+                  />
+                </UFormField>
               </div>
               <UserEmail
                 id="email-section"
-                v-model:email="profileForm.email!"
-                v-model:isEmailVerified="profileForm.emailVerified!"
                 v-model:isLoading="isLoading"
+                :email="profileForm.email ?? ''"
+                :isEmailVerified="profileForm.emailVerified ?? false"
+                @update:email="profileForm.email = $event"
+                @update:isEmailVerified="profileForm.emailVerified = $event"
               />
-              <div id="notifications-section">
-                <FormLabel :text="$t('profile.notifications')" />
-                <div class="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
-                  <div
-                    class="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
-                  >
-                    <input
-                      v-model="profileForm.allowNotifs"
-                      type="checkbox"
-                      class="mt-1 h-4 w-4 sm:h-5 sm:w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <div>
-                      <div class="flex items-center gap-2">
-                        <Icon name="mdi:web" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 dark:text-indigo-400" />
-                        <span class="font-medium text-gray-900 dark:text-white text-xs sm:text-sm">{{
-                          $t('profile.webNotifications')
-                        }}</span>
-                      </div>
-                      <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                        {{ $t('profile.webNotificationsDescription') }}
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    class="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-700"
-                  >
-                    <input
-                      v-model="profileForm.allowEmail"
-                      type="checkbox"
-                      class="mt-1 h-4 w-4 sm:h-5 sm:w-5 rounded border-gray-300 dark:border-neutral-600 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <div>
-                      <div class="flex items-center gap-2">
-                        <Icon
-                          name="mdi:email-outline"
-                          class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 dark:text-indigo-400"
-                        />
-                        <span class="font-medium text-gray-900 dark:text-white text-xs sm:text-sm">{{
-                          $t('profile.emailNotifications')
-                        }}</span>
-                      </div>
-                      <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                        {{ $t('profile.webNotificationsDescription') }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+            </section>
+            <div id="notifications-section">
+              <h2 class="text-sm font-semibold text-highlighted">{{ $t('profile.notifications') }}</h2>
+              <div class="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
+                <UFormField :label="$t('profile.webNotifications')" :ui="{ label: 'sr-only' }">
+                  <USwitch
+                    v-model="profileForm.allowNotifs"
+                    icon="i-mdi-web"
+                    :label="$t('profile.webNotifications')"
+                    :description="$t('profile.webNotificationsDescription')"
+                  />
+                </UFormField>
+                <UFormField :label="$t('profile.emailNotifications')" :ui="{ label: 'sr-only' }">
+                  <USwitch
+                    v-model="profileForm.allowEmail"
+                    icon="i-mdi-email-outline"
+                    :label="$t('profile.emailNotifications')"
+                    :description="$t('profile.webNotificationsDescription')"
+                  />
+                </UFormField>
               </div>
-              <UserAccountHealth class="mt-1" />
             </div>
-            <div class="space-y-4 sm:space-y-6">
-              <div id="language-section">
-                <FormLabel :text="$t('profile.language')" />
-                <LangSwitcher
-                  id="language-section"
-                  class="w-full mt-1"
-                  :language="profileForm.language || lcls[0]!.value"
-                  @update:language="updateLanguage"
-                />
-              </div>
-              <div id="id-section">
-                <FormField
+            <UserAccountHealth class="mt-1" />
+          </div>
+          <div class="space-y-4 sm:space-y-6">
+            <div id="language-section">
+              <UFormField :label="$t('profile.language')" />
+              <LangSwitcher
+                id="language-section"
+                class="w-full mt-1"
+                :language="profileForm.language || lcls[0]!.value"
+                @update:language="updateLanguage"
+              />
+            </div>
+            <div id="id-section">
+              <UFormField :label="$t('profile.id')" name="id">
+                <UInput
                   v-model="profileForm.id"
-                  :label="$t('profile.id')"
                   type="text"
                   name="id"
                   readonly
-                  icon="mdi:content-copy"
-                  iconPosition="trailing"
+                  trailingIcon="i-mdi-content-copy"
                   @click="clipboard.copy(profileForm.id!)"
                 />
-              </div>
-              <div id="registration-section">
-                <FormField
-                  v-model="formattedCreatedAt"
-                  :label="$t('profile.registrationDate')"
-                  type="text"
-                  name="createdAt"
-                  disabled
-                />
-              </div>
-              <div id="security-section">
-                <FormLabel :text="$t('profile.security')" />
-                <div class="space-y-3 sm:space-y-4">
-                  <Button
-                    :disabled="isLoading"
-                    class="w-full inline-flex justify-center items-center px-4 py-2 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-gray-300 rounded-lg hover:text-white disabled:opacity-50 transition-colors text-sm cursor-pointer touch-manipulation"
-                    :variant="'danger'"
-                    @click="confirmDeactivate"
+              </UFormField>
+            </div>
+            <div id="registration-section">
+              <UFormField :label="$t('profile.registrationDate')" name="createdAt">
+                <UInput v-model="formattedCreatedAt" type="text" name="createdAt" disabled />
+              </UFormField>
+            </div>
+            <div id="security-section">
+              <UFormField :label="$t('profile.security')" />
+              <div class="space-y-3 sm:space-y-4">
+                <UButton
+                  :disabled="isLoading"
+                  class="w-full"
+                  color="error"
+                  variant="solid"
+                  icon="i-mdi-account-cancel"
+                  @click="confirmDeactivate"
+                >
+                  {{ $t('profile.deactivateAccount') }}
+                </UButton>
+                <USeparator />
+                <div id="password-section" class="space-y-3 sm:space-y-4">
+                  <UFormField v-if="userData?.hasPassword" :label="$t('common.auth.oldPassword')">
+                    <UInput
+                      v-model="passwordForm.oldPassword"
+                      :type="showOldPassword ? 'text' : 'password'"
+                      name="oldPassword"
+                      :placeholder="$t('common.auth.oldPassword')"
+                      class="w-full"
+                    >
+                      <template #trailing>
+                        <UButton
+                          color="neutral"
+                          variant="link"
+                          size="sm"
+                          :icon="showOldPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
+                          :aria-label="showOldPassword ? $t('common.hidePassword') : $t('common.showPassword')"
+                          @click="showOldPassword = !showOldPassword"
+                        />
+                      </template>
+                    </UInput>
+                  </UFormField>
+                  <UserPassword v-model="passwordForm.newPassword" :isValid="isPasswordFormValid" />
+                  <UserPassword v-model="passwordForm.confirmNewPassword" :isValid="isPasswordFormValid" isConfirm />
+                  <p
+                    v-if="!isPasswordFormValid && passwordForm.newPassword && passwordForm.confirmNewPassword"
+                    class="text-xs text-error sm:text-sm"
                   >
-                    <Icon name="mdi:account-cancel" class="w-4 h-4 mr-2" />
-                    {{ $t('profile.deactivateAccount') }}
-                  </Button>
-                  <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
-                  <div id="password-section" class="space-y-3 sm:space-y-4">
-                    <div v-if="userData?.hasPassword">
-                      <FormLabel :text="$t('common.auth.oldPassword')" />
-                      <FormInput
-                        v-model="passwordForm.oldPassword"
-                        :type="showOldPassword ? 'text' : 'password'"
-                        name="oldPassword"
-                        :placeholder="$t('common.auth.oldPassword')"
-                        class="w-full rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all duration-300 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-neutral-700"
-                      >
-                        <template #icon>
-                          <div
-                            class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center size-6 text-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer"
-                            :aria-label="showOldPassword ? $t('common.hidePassword') : $t('common.showPassword')"
-                            @click="showOldPassword = !showOldPassword"
-                          >
-                            <Icon
-                              :name="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'"
-                              class="size-full text-[inherit]"
-                            />
-                          </div>
-                        </template>
-                      </FormInput>
-                    </div>
-                    <UserPassword v-model="passwordForm.newPassword" :isValid="isPasswordFormValid" />
-                    <UserPassword v-model="passwordForm.confirmNewPassword" :isValid="isPasswordFormValid" isConfirm />
-                    <p
-                      v-if="!isPasswordFormValid && passwordForm.newPassword && passwordForm.confirmNewPassword"
-                      class="text-xs sm:text-sm text-red-500 dark:text-red-400"
-                    >
-                      {{ $t('common.auth.passwordsMismatch') }}
-                    </p>
-                    <Button
-                      :disabled="isLoading || !isPasswordFormValid"
-                      class="w-full inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
-                      @click="handleChangePassword"
-                    >
-                      <Icon name="mdi:lock-reset" class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                      {{ $t('common.auth.changePassword') }}
-                    </Button>
-                  </div>
-                  <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
-                  <div id="2fa-section">
-                    <FormLabel :text="$t('profile.twoFactorAuth')" />
-                    <UserQR
-                      :enabled="is2FAEnabled"
-                      :otpauthUrl="otpauthUrl"
-                      :userId="user?.user.id!"
-                      @update:enabled="is2FAEnabled = $event"
-                      @update:otpauthUrl="otpauthUrl = $event"
-                      @error="twoFAError = $event"
-                    />
-                  </div>
-                  <div class="h-px bg-gradient-to-r from-indigo-200 via-gray-300 to-purple-200"></div>
-                  <UserSessions
-                    :sessions="profileForm.sessions"
-                    :currentSessionId="user?.user.sessionId"
-                    :isLoading="isLoading"
-                    @update:sessions="profileForm.sessions = $event"
-                    @update:isLoading="isLoading = $event"
-                    @signOut="signOut"
+                    {{ $t('common.auth.passwordsMismatch') }}
+                  </p>
+                  <UButton
+                    :disabled="isLoading || !isPasswordFormValid"
+                    :loading="isLoading"
+                    class="disabled-primary-action w-full"
+                    icon="i-mdi-lock-reset"
+                    @click="handleChangePassword"
+                  >
+                    {{ $t('common.auth.changePassword') }}
+                  </UButton>
+                </div>
+                <USeparator />
+                <div id="2fa-section">
+                  <UFormField :label="$t('profile.twoFactorAuth')" />
+                  <UserQR
+                    v-if="user?.user.id"
+                    :enabled="is2FAEnabled"
+                    :otpauthUrl="otpauthUrl"
+                    :userId="user.user.id"
+                    @update:enabled="is2FAEnabled = $event"
+                    @update:otpauthUrl="otpauthUrl = $event"
+                    @error="twoFAError = $event"
                   />
                 </div>
+                <USeparator />
+                <UserSessions
+                  :sessions="profileForm.sessions"
+                  :currentSessionId="user?.user.sessionId"
+                  :isLoading="isLoading"
+                  @update:sessions="profileForm.sessions = $event"
+                  @update:isLoading="isLoading = $event"
+                  @signOut="signOut"
+                />
               </div>
             </div>
           </div>
-          <div class="mt-6 sm:mt-8 lg:mt-10 flex flex-col sm:flex-row gap-4">
-            <Button
-              :disabled="isLoading || !isDirty"
-              class="w-full sm:w-1/2 inline-flex justify-center items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-transform hover:scale-105 text-sm sm:text-base touch-manipulation"
-              @click="updateProfile"
-            >
-              <Save class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              {{ $t('common.actions.saveChanges') }}
-            </Button>
-          </div>
-          <UserActivity
-            v-model:activeTab="activeTab"
-            :profile="profileForm"
-            :pending="userDataPending"
-            :error="userDataError"
-          />
+        </div>
+        <div v-if="isDirty" class="mt-6 flex flex-col gap-4 border-t border-default pt-6 sm:flex-row">
+          <UButton
+            :disabled="isLoading"
+            :loading="isLoading"
+            class="disabled-primary-action w-full sm:w-1/2"
+            icon="i-mdi-content-save-outline"
+            @click="updateProfile"
+          >
+            {{ $t('common.actions.saveChanges') }}
+          </UButton>
         </div>
       </div>
-    </TransitionRoot>
+    </div>
+    <section class="mt-10 border-t border-default pt-8" :aria-label="$t('profile.data')">
+      <UserActivity
+        v-model:activeTab="activeTab"
+        :profile="profileForm"
+        :pending="userDataPending"
+        :error="userDataError"
+      />
+    </section>
     <LazyUserFollowDialog v-model="showDialog" :type="dialogType" />
-    <ModalMini ref="deactivateDialog" />
   </div>
 </template>
 
 <script setup lang="ts">
 import equal from 'fast-deep-equal'
-import { Save } from 'lucide-vue-next'
 import { formatDate } from '~~/shared/utils'
-import { TransitionRoot } from '@headlessui/vue'
 
 import { useProfile, type Profile } from '~/composables/useProfile'
 
+definePageMeta({ shell: 'product' })
+
 const BIO_MAX_LENGTH = 300
+
+const profileNavigation = computed(() => [
+  { href: '#personal-section', icon: 'i-mdi-account-outline', label: $t('profile.personalInfo') },
+  { href: '#notifications-section', icon: 'i-mdi-bell-outline', label: $t('profile.notifications') },
+  { href: '#account-health-section', icon: 'i-mdi-heart-pulse', label: $t('profile.health') },
+  { href: '#security-section', icon: 'i-mdi-shield-lock-outline', label: $t('profile.security') },
+  { href: '#sessions-section', icon: 'i-mdi-devices', label: $t('profile.sessions') },
+])
+
+const activeProfileSection = shallowRef('personal-section')
+let profileSectionObserver: IntersectionObserver | undefined
 
 const { data: user, signOut } = useAuth()
 const { saveProfile, changePassword, deactivateAccount } = useProfile()
-const deactivateDialog = useTemplateRef<ModalMiniRef>('deactivateDialog')
+const confirm = useConfirm()
 
 const confirmDeactivate = async () => {
-  const r = await deactivateDialog.value?.ask({
+  const r = await confirm({
     title: $t('profile.deactivateAccountConfirmTitle'),
     message: $t('profile.deactivateAccountConfirmText'),
-    icon: 'mdi:alert-outline',
+    icon: 'i-mdi-alert-outline',
     confirmText: $t('common.actions.confirm'),
     cancelText: $t('common.messages.cancel'),
     variant: 'danger',
   })
-  if (r === 'ok') await deactivateAccount()
+  if (r) await deactivateAccount()
 }
 const localePath = useLocalePath()
 const toast = useToast()
@@ -329,18 +327,46 @@ const draft = {
   clear: () => localStorage.removeItem(draftKey.value),
 }
 
-function highlight(id?: string) {
+function revealSection(id?: string) {
   if (!id) return
   nextTick(() => {
     const el = document.getElementById(id.replace('#', ''))
     if (!el) return
-    el.classList.add('highlight')
-    setTimeout(() => el.classList.remove('highlight'), 1200)
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   })
 }
 
-onMounted(() => highlight(route.hash))
-watch(() => route.hash, highlight)
+onMounted(() => {
+  revealSection(route.hash)
+  if (route.hash) activeProfileSection.value = route.hash.slice(1)
+
+  const visibleSections = new Set<string>()
+  profileSectionObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) visibleSections.add(entry.target.id)
+        else visibleSections.delete(entry.target.id)
+      }
+
+      const closest = [...visibleSections]
+        .map((id) => document.getElementById(id))
+        .filter((element): element is HTMLElement => Boolean(element))
+        .sort(
+          (a, b) => Math.abs(a.getBoundingClientRect().top - 112) - Math.abs(b.getBoundingClientRect().top - 112),
+        )[0]
+      if (closest) activeProfileSection.value = closest.id
+    },
+    { rootMargin: '-96px 0px -55% 0px', threshold: [0, 0.1, 0.5] },
+  )
+
+  for (const item of profileNavigation.value) {
+    const element = document.getElementById(item.href.slice(1))
+    if (element) profileSectionObserver.observe(element)
+  }
+})
+watch(() => route.hash, revealSection)
+
+onBeforeUnmount(() => profileSectionObserver?.disconnect())
 
 const twoFAError = shallowRef('')
 const otpauthUrl = shallowRef('')
@@ -400,7 +426,7 @@ function revertChanges() {
     Object.assign(profileForm, originalProfile.value)
     draft.clear()
     isDirty.value = false
-    toast.success({ message: $t('common.messages.successGeneral') })
+    toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
   }
 }
 
@@ -443,7 +469,7 @@ async function exportToPDF() {
     link.click()
     window.URL.revokeObjectURL(url)
   } catch (err: any) {
-    toast.error({ message: err.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: err.message || $t('common.messages.operationFailed') })
   } finally {
     isLoading.value = false
   }
@@ -475,31 +501,3 @@ watch(
   { deep: true },
 )
 </script>
-
-<style>
-.highlight {
-  scroll-margin-top: 5rem;
-  border-radius: 0.5rem;
-  will-change: box-shadow, background-color;
-  animation: enterprise-pulse 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes enterprise-pulse {
-  0% {
-    background-color: transparent;
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
-  }
-  15% {
-    background-color: rgba(99, 102, 241, 0.15);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-  }
-  40% {
-    background-color: rgba(99, 102, 241, 0.15);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-  }
-  100% {
-    background-color: transparent;
-    box-shadow: 0 0 0 12px rgba(99, 102, 241, 0);
-  }
-}
-</style>

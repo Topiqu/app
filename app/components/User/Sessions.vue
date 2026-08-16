@@ -1,66 +1,62 @@
 <template>
   <div id="sessions-section">
-    <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-      $t('profile.sessions')
-    }}</label>
+    <h3 class="text-sm font-medium text-highlighted">{{ $t('profile.sessions') }}</h3>
     <div class="mt-2 space-y-3">
-      <div
-        v-for="session in props.sessions"
-        :key="session.id"
-        class="relative flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900/70 shadow-sm"
-      >
-        <span
+      <UCard v-for="session in props.sessions" :key="session.id" class="relative">
+        <UBadge
           v-if="session.id === props.currentSessionId"
-          class="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 text-xs font-medium rounded-full"
+          color="success"
+          variant="soft"
+          class="absolute right-3 top-3"
         >
-          <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
           {{ $t('profile.active') }}
-        </span>
-        <div class="flex items-center gap-3">
-          <div class="flex-shrink-0">
-            <Icon
-              :name="
-                getDeviceCategory(session) === 'mobile'
-                  ? 'mdi:cellphone'
-                  : getDeviceCategory(session) === 'tablet'
-                    ? 'mdi:tablet'
-                    : 'mdi:laptop'
-              "
-              class="w-6 h-6 text-indigo-500 dark:text-indigo-400"
-            />
+        </UBadge>
+        <div class="flex flex-col justify-between sm:flex-row sm:items-center">
+          <div class="flex items-center gap-3">
+            <div class="flex-shrink-0">
+              <UIcon
+                :name="
+                  getDeviceCategory(session) === 'mobile'
+                    ? 'i-mdi-cellphone'
+                    : getDeviceCategory(session) === 'tablet'
+                      ? 'i-mdi-tablet'
+                      : 'i-mdi-laptop'
+                "
+                size="24"
+              />
+            </div>
+            <div class="space-y-1">
+              <p class="font-medium text-highlighted">
+                {{ getDeviceLabel(session) }} – {{ session.os || $t('common.unknown') }} –
+                {{ session.browser || $t('common.unknown') }}
+              </p>
+              <p class="text-xs text-muted">
+                {{ session.city || $t('common.unknown') }}, {{ session.region || $t('common.unknown') }},
+                {{ session.country || $t('common.unknown') }}
+              </p>
+              <p class="text-xs text-muted">
+                {{ $t('profile.lastUsed', [formatDate(session.lastUsedAt)]) }}
+              </p>
+            </div>
           </div>
-          <div class="space-y-1">
-            <p class="font-medium text-gray-900 dark:text-white">
-              {{ getDeviceLabel(session) }} – {{ session.os || $t('common.unknown') }} –
-              {{ session.browser || $t('common.unknown') }}
-            </p>
-            <p class="text-xs text-gray-600 dark:text-gray-400">
-              {{ session.city || $t('common.unknown') }}, {{ session.region || $t('common.unknown') }},
-              {{ session.country || $t('common.unknown') }}
-            </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              {{ $t('profile.lastUsed', [formatDate(session.lastUsedAt)]) }}
-            </p>
+          <div class="mt-3 sm:mt-0">
+            <UButton
+              v-if="!session.revoked"
+              size="sm"
+              color="error"
+              variant="soft"
+              :disabled="session.id === props.currentSessionId || props.isLoading"
+              @click="revokeSession(session.id)"
+            >
+              {{ $t('common.actions.revoke') }}
+            </UButton>
+            <UBadge v-else color="neutral" variant="soft">
+              {{ $t('profile.sessionRevoked') }}
+            </UBadge>
           </div>
         </div>
-        <div class="mt-3 sm:mt-0">
-          <Button
-            v-if="!session.revoked"
-            size="sm"
-            :disabled="session.id === props.currentSessionId || props.isLoading"
-            class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            @click="revokeSession(session.id)"
-          >
-            {{ $t('common.actions.revoke') }}
-          </Button>
-          <span v-else class="px-3 py-1 bg-gray-100 dark:bg-neutral-800 text-gray-500 text-xs rounded-lg">
-            {{ $t('profile.sessionRevoked') }}
-          </span>
-        </div>
-      </div>
-      <p v-if="!props.sessions?.length" class="text-sm text-gray-500 dark:text-gray-400 italic">
-        {{ $t('profile.noActiveSessions') }}
-      </p>
+      </UCard>
+      <UEmpty v-if="!props.sessions?.length" size="sm" :description="$t('profile.noActiveSessions')" />
     </div>
   </div>
 </template>
@@ -115,9 +111,9 @@ async function revokeSession(sessionId: string) {
     if (sessionId === props.currentSessionId) {
       emit('signOut')
     }
-    toast.success({ message: $t('profile.sessionRevokedSuccess') })
+    toast.add({ color: 'success', title: $t('profile.sessionRevokedSuccess') })
   } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: err.data?.message || $t('common.messages.operationFailed') })
   } finally {
     emit('update:isLoading', false)
   }

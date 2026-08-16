@@ -1,340 +1,238 @@
 <template>
   <div class="mt-10 px-4 sm:px-6">
-    <div class="flex overflow-x-auto border-b border-gray-200 dark:border-neutral-700 gap-4 pb-2">
-      <button
+    <div class="flex gap-4 overflow-x-auto border-b border-default pb-2">
+      <UButton
         v-for="tab in tabs"
         :key="tab.id"
-        class="relative px-6 py-3 text-sm font-medium transition-all duration-200 flex items-center gap-2 shrink-0 rounded-md"
-        :class="
-          activeTab === tab.id
-            ? 'text-indigo-600 dark:text-indigo-400'
-            : 'text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-neutral-800'
-        "
+        :color="activeTab === tab.id ? 'primary' : 'neutral'"
+        :variant="activeTab === tab.id ? 'soft' : 'ghost'"
+        :icon="tab.icon"
+        class="shrink-0"
         @click="$emit('update:activeTab', tab.id)"
       >
-        <Icon
-          :name="tab.icon"
-          class="w-4 h-4"
-          :class="activeTab === tab.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'"
-        />
         {{ $t(tab.label) }}
-        <span
-          v-if="activeTab === tab.id"
-          class="absolute bottom-0 left-0 w-full h-[2px] bg-indigo-600 dark:bg-indigo-400 rounded-t motion-safe:transition-[width,left] duration-300 ease-in-out"
-        ></span>
-      </button>
+      </UButton>
     </div>
     <div class="mt-6 space-y-6">
       <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <input
-          v-model="searchQuery"
-          type="text"
-          :placeholder="$t('common.search')"
-          class="px-4 py-2.5 text-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg w-full sm:w-1/3 transition-colors duration-150 ease-in-out"
-        />
+        <UFormField :label="$t('common.search')" :ui="{ label: 'sr-only' }" class="w-full sm:w-1/3">
+          <UInput
+            v-model="searchQuery"
+            type="text"
+            :placeholder="$t('common.search')"
+            icon="i-mdi-magnify"
+            class="w-full"
+          />
+        </UFormField>
         <div class="flex gap-2 overflow-x-auto">
-          <button
+          <UBadge
             v-for="tag in availableTags"
             :key="tag"
-            class="px-3 py-1 text-xs rounded-full shrink-0 transition-colors duration-150 ease-in-out"
-            :class="
-              selectedTags.includes(tag)
-                ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
-                : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-gray-400 hover:bg-indigo-100 dark:hover:bg-indigo-800'
-            "
+            as="button"
+            type="button"
+            :color="selectedTags.includes(tag) ? 'primary' : 'neutral'"
+            :variant="selectedTags.includes(tag) ? 'solid' : 'soft'"
+            :aria-pressed="selectedTags.includes(tag)"
             @click="toggleTag(tag)"
           >
             {{ tag }}
-          </button>
+          </UBadge>
         </div>
         <div v-if="activeTab === 'likedArticles'" class="flex items-center gap-2">
-          <FormSelect v-model="sortOption" :items="sortItems" :showValue="false" />
-          <button
-            class="p-2 rounded-lg bg-gray-100 dark:bg-neutral-800 transition-colors duration-150 ease-in-out"
+          <UFormField :label="$t('common.search')" :ui="{ label: 'sr-only' }">
+            <USelectMenu
+              v-model="sortOption"
+              valueKey="value"
+              labelKey="label"
+              :searchInput="false"
+              :items="sortItems"
+            />
+          </UFormField>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            square
+            :icon="isGrid ? 'i-mdi-view-list' : 'i-mdi-view-grid'"
+            :aria-label="$t('common.actions.toggleLayout')"
+            :title="$t('common.actions.toggleLayout')"
             @click="isGrid = !isGrid"
-          >
-            <Icon :name="isGrid ? 'mdi:view-list' : 'mdi:view-grid'" class="w-5 h-5" />
-          </button>
+          />
         </div>
         <div v-else class="flex items-center gap-2">
-          <FormSelect
-            v-model="sortComment"
-            :items="sortItems.filter((item) => item.value !== 'views:desc')"
-            :showValue="false"
-          />
+          <UFormField :label="$t('common.search')" :ui="{ label: 'sr-only' }">
+            <USelectMenu
+              v-model="sortComment"
+              valueKey="value"
+              labelKey="label"
+              :searchInput="false"
+              :items="sortItems.filter((item) => item.value !== 'views:desc')"
+            />
+          </UFormField>
         </div>
       </div>
       <div v-if="pending" class="space-y-4">
-        <div v-for="i in 3" :key="i" class="h-32 bg-gray-200 dark:bg-neutral-800 rounded-2xl animate-pulse"></div>
+        <USkeleton v-for="i in 3" :key="i" class="h-32 w-full" />
       </div>
-      <div
+      <UAlert
         v-else-if="error"
-        class="text-center p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl"
-      >
-        <p class="text-red-600 dark:text-red-400 font-medium">
-          {{ error?.message || $t('common.error') }}
-        </p>
-      </div>
+        color="error"
+        variant="soft"
+        icon="i-mdi-alert-circle-outline"
+        :description="error?.message || $t('common.error')"
+      />
       <template v-else>
         <div v-if="activeTab === 'likedArticles'">
-          <div v-if="!filteredArticles.length" class="text-center py-12">
-            <NuxtImg
-              src="/topik_empty_rm.png"
-              alt="Empty state"
-              class="w-16 h-16 mx-auto"
-              format="webp"
-              quality="80"
-              loading="lazy"
-            />
-            <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ $t('common.noResults') }}</p>
-            <NuxtLink :to="localePath({ name: 'index' })" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
-              {{ $t('articles.explore') }}
-            </NuxtLink>
-          </div>
-          <div
-            :class="isGrid ? 'grid gap-6 grid-cols-1 sm:grid-cols-2' : 'space-y-4'"
-            class="transition-[margin,transform,opacity] duration-200 ease-in-out"
-          >
-            <div
+          <UEmpty v-if="!filteredArticles.length" :description="$t('common.noResults')">
+            <template #actions>
+              <UButton :to="localePath({ name: 'index' })" variant="soft">{{ $t('articles.explore') }}</UButton>
+            </template>
+          </UEmpty>
+          <div :class="isGrid ? 'grid auto-rows-fr grid-cols-1 gap-6 sm:grid-cols-2' : 'grid gap-4'">
+            <ArticleCard
               v-for="article in filteredArticles"
               :key="article.id"
-              class="p-5 sm:p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-150 ease-in-out"
-              :class="isGrid ? 'flex flex-col gap-4' : 'flex items-start gap-5'"
+              :article="toArticleCard(article)"
+              :variant="isGrid ? 'standard' : 'compact'"
             >
-              <NuxtImg
-                v-if="article.imageUrl"
-                :src="article.imageUrl"
-                :alt="$t('articles.articleCard.imageAlt', [article.title])"
-                format="webp"
-                quality="95"
-                :class="
-                  isGrid
-                    ? 'w-full aspect-video rounded-xl object-cover transition-transform duration-150 ease-in-out hover:scale-[1.01]'
-                    : 'w-20 h-20 rounded-xl object-cover flex-shrink-0 transition-transform duration-150 ease-in-out hover:scale-[1.01]'
-                "
-                loading="lazy"
-              />
-              <NuxtImg
-                v-else
-                src="/topik_empty_rm.png"
-                alt="No image"
-                format="webp"
-                quality="95"
-                :class="
-                  isGrid
-                    ? 'w-full aspect-video rounded-xl object-cover transition-transform duration-150 ease-in-out hover:scale-[1.01]'
-                    : 'w-20 h-20 rounded-xl object-cover flex-shrink-0 transition-transform duration-150 ease-in-out hover:scale-[1.01]'
-                "
-                loading="lazy"
-              />
-              <div class="flex flex-col flex-1 gap-2 leading-relaxed">
-                <NuxtLink
-                  :to="localePath({ name: 'clanky-slug', params: { slug: article.slug } })"
-                  class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold text-base sm:text-lg"
-                >
-                  {{ article.title }}
-                </NuxtLink>
-                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                  <UserPicture :url="article.authorPfp" :name="article.authorUsername" :size="'sm'" />
-                  <span class="text-sm">{{ article.authorUsername }}</span>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ $t('articles.status.published') }} {{ formatDate(article.createdAt || new Date().toISOString()) }}
-                </p>
-                <p
-                  v-if="article.excerpt || article.content"
-                  class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mt-1"
-                >
-                  {{ (article.excerpt || article.content).replace(/<[^>]+>/g, '').substring(0, 120) }}…
-                </p>
-                <div class="flex items-center justify-between gap-3 text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-1">
-                      <Icon name="mdi:thumb-up-outline" class="w-3 h-3" />
-                      <span>{{ article.likesCount }}</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                      <Icon name="mdi:eye-outline" class="w-3 h-3" />
-                      <span>{{ article.views }}</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <Button
-                      :onClick="() => unlikeArticle(article.id)"
-                      icon="mdi:heart-broken"
-                      class="!border-none !text-red-500 hover:!text-red-600 transition-colors w-5 h-5"
-                      square
-                      size="md"
-                      variant="neutral"
-                      borderless
-                    />
-                    <Button
-                      :onClick="() => shareArticle(article)"
-                      icon="mdi:share-variant"
-                      class="!border-none !text-indigo-500 hover:!text-indigo-600 transition-colors w-5 h-5"
-                      square
-                      size="md"
-                      variant="neutral"
-                      borderless
-                    />
-                  </div>
-                </div>
-                <div v-if="article.tags.length" class="flex flex-wrap gap-1.5 mt-3">
-                  <span
-                    v-for="tag in article.tags"
-                    :key="tag"
-                    class="px-2 py-0.5 text-xs bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800 transition-colors"
-                  >
-                    {{ tag }}
-                  </span>
-                </div>
-              </div>
-            </div>
+              <template #actions>
+                <UButton
+                  :onClick="() => unlikeArticle(article.id)"
+                  icon="i-mdi-heart-broken"
+                  square
+                  size="md"
+                  color="error"
+                  variant="ghost"
+                  :aria-label="$t('common.actions.unlike')"
+                  :title="$t('common.actions.unlike')"
+                />
+                <UButton
+                  :onClick="() => shareArticle(article)"
+                  icon="i-mdi-share-variant"
+                  square
+                  size="md"
+                  color="neutral"
+                  variant="ghost"
+                  :aria-label="$t('common.actions.share')"
+                  :title="$t('common.actions.share')"
+                />
+              </template>
+            </ArticleCard>
           </div>
         </div>
         <div v-if="activeTab === 'comments'">
-          <div v-if="!filteredComments.length" class="text-center py-12">
-            <NuxtImg
-              src="/topik_empty_rm.png"
-              alt="Empty state"
-              class="w-16 h-16 mx-auto"
-              format="webp"
-              quality="80"
-              loading="lazy"
-            />
-            <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ $t('common.noResults') }}</p>
-            <NuxtLink :to="localePath({ name: 'index' })" class="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
-              {{ $t('articles.comments.commentsAction') }}
-            </NuxtLink>
-          </div>
+          <UEmpty v-if="!filteredComments.length" :description="$t('common.noResults')">
+            <template #actions>
+              <UButton :to="localePath({ name: 'index' })" variant="soft">
+                {{ $t('articles.comments.commentsAction') }}
+              </UButton>
+            </template>
+          </UEmpty>
           <div v-for="comment in filteredComments" :key="comment.id" class="space-y-5">
-            <div
-              v-if="!comment.deletedAt"
-              class="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-150 ease-in-out"
-            >
+            <UCard v-if="!comment.deletedAt">
               <div class="flex items-center gap-2 mb-2">
                 <UserPicture :name="comment.authorUsername" :url="comment.authorPfp" />
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">{{
-                  comment.authorUsername
-                }}</span>
+                <span class="text-sm font-medium leading-relaxed text-highlighted">{{ comment.authorUsername }}</span>
               </div>
-              <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 leading-relaxed">{{ comment.content }}</p>
+              <p class="mb-2 text-sm leading-relaxed text-muted">{{ comment.content }}</p>
               <NuxtLink
                 :to="
                   localePath({ name: 'clanky-slug', params: { slug: comment.articleSlug } }) + `#comment-${comment.id}`
                 "
-                class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs flex items-center gap-1"
+                class="flex items-center gap-1 text-xs text-primary"
               >
-                <Icon name="mdi:file-document-outline" class="w-3 h-3" />
+                <UIcon size="12" name="i-mdi-file-document-outline" />
                 {{ $t('common.labels.article') }} {{ comment.articleTitle }}
               </NuxtLink>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <p class="mt-1 text-xs leading-relaxed text-muted">
                 {{ $t('common.created') }} {{ formatDate(comment.createdAt) }}
               </p>
-              <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2 items-center">
+              <div class="mt-2 flex items-center gap-4 text-xs text-muted">
                 <div class="flex items-center gap-1">
-                  <Icon name="mdi:thumb-up-outline" class="w-3 h-3" />
+                  <UIcon size="12" name="i-mdi-thumb-up-outline" />
                   <span>{{ comment.likesCount }}</span>
                 </div>
                 <div class="flex items-center gap-1">
-                  <Icon name="mdi:thumb-down-outline" class="w-3 h-3" />
+                  <UIcon size="12" name="i-mdi-thumb-down-outline" />
                   <span>{{ comment.dislikesCount }}</span>
                 </div>
-                <Button
+                <UButton
                   v-if="session?.user?.id === comment.userId"
                   :onClick="() => handleDelete(comment.id)"
-                  icon="mdi:delete-outline"
+                  icon="i-mdi-delete-outline"
                   square
                   size="sm"
-                  variant="danger"
-                  borderless
-                  class="w-5 h-5"
+                  color="error"
+                  variant="ghost"
+                  :aria-label="$t('common.actions.deleteComment')"
+                  :title="$t('common.actions.deleteComment')"
                 />
               </div>
               <div v-if="comment.tags.length" class="flex flex-wrap gap-1 mt-2">
-                <span
-                  v-for="tag in comment.tags"
-                  :key="tag"
-                  class="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
-                >
+                <UBadge v-for="tag in comment.tags" :key="tag" color="primary" variant="soft">
                   {{ tag }}
-                </span>
+                </UBadge>
               </div>
               <div v-if="comment.replies?.length" class="mt-4 space-y-4">
-                <div
-                  v-for="reply in sortReplies(comment.replies as Comment[])"
-                  :key="reply.id"
-                  class="p-4 rounded-lg bg-gray-50 dark:bg-neutral-800 border-l-2 border-indigo-100 dark:border-indigo-900 ml-6 sm:ml-10 transition-all duration-150 ease-in-out"
-                >
+                <UCard v-for="reply in sortReplies(comment.replies as Comment[])" :key="reply.id" class="ml-6 sm:ml-10">
                   <div class="flex items-center gap-2 mb-2">
                     <UserPicture :name="reply.authorUsername" :url="reply.authorPfp" />
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">{{
-                      reply.authorUsername
-                    }}</span>
+                    <span class="text-sm font-medium leading-relaxed text-highlighted">{{ reply.authorUsername }}</span>
                   </div>
-                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 leading-relaxed">{{ reply.content }}</p>
+                  <p class="mb-2 text-sm leading-relaxed text-muted">{{ reply.content }}</p>
                   <NuxtLink
                     :to="
                       localePath({ name: 'clanky-slug', params: { slug: reply.articleSlug } }) + `#comment-${reply.id}`
                     "
-                    class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs flex items-center gap-1"
+                    class="flex items-center gap-1 text-xs text-primary"
                   >
-                    <Icon name="mdi:file-document-outline" class="w-3 h-3" />
+                    <UIcon size="12" name="i-mdi-file-document-outline" />
                     {{ $t('common.labels.article') }} {{ reply.articleTitle }}
                   </NuxtLink>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                  <p class="mt-1 text-xs leading-relaxed text-muted">
                     {{ $t('common.created') }} {{ formatDate(reply.createdAt) }}
                   </p>
-                  <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2 items-center">
+                  <div class="mt-2 flex items-center gap-4 text-xs text-muted">
                     <div class="flex items-center gap-1">
-                      <Icon name="mdi:thumb-up-outline" class="w-3 h-3" />
+                      <UIcon size="12" name="i-mdi-thumb-up-outline" />
                       <span>{{ reply.likesCount }}</span>
                     </div>
                     <div class="flex items-center gap-1">
-                      <Icon name="mdi:thumb-down-outline" class="w-3 h-3" />
+                      <UIcon size="12" name="i-mdi-thumb-down-outline" />
                       <span>{{ reply.dislikesCount }}</span>
                     </div>
-                    <Button
+                    <UButton
                       v-if="session?.user?.id === reply.userId"
                       :onClick="() => handleDelete(reply.id)"
-                      icon="mdi:delete-outline"
+                      icon="i-mdi-delete-outline"
                       square
                       size="sm"
-                      variant="danger"
-                      borderless
-                      class="w-5 h-5"
+                      color="error"
+                      variant="ghost"
+                      :aria-label="$t('common.actions.deleteComment')"
+                      :title="$t('common.actions.deleteComment')"
                     />
                   </div>
                   <div v-if="reply.tags.length" class="flex flex-wrap gap-1 mt-2">
-                    <span
-                      v-for="tag in reply.tags"
-                      :key="tag"
-                      class="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
-                    >
+                    <UBadge v-for="tag in reply.tags" :key="tag" color="primary" variant="soft">
                       {{ tag }}
-                    </span>
+                    </UBadge>
                   </div>
-                </div>
+                </UCard>
               </div>
-            </div>
+            </UCard>
           </div>
         </div>
         <div v-if="hasMore[activeTab] && !pending" class="mt-8 text-center">
-          <button
-            :disabled="pending"
-            class="bg-indigo-600 text-white px-6 py-2 rounded-full font-semibold text-lg hover:bg-indigo-700 dark:bg-indigo-800 dark:hover:bg-indigo-700 transition duration-300 disabled:opacity-50"
-            @click="loadMore"
-          >
-            <span v-if="pending" class="animate-spin inline-block mr-2">↻</span>
+          <UButton color="primary" variant="solid" :loading="pending" :disabled="pending" @click="loadMore">
             {{ $t('common.pagination.next') }}
-          </button>
+          </UButton>
         </div>
-        <div v-if="pending" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
+        <div v-if="pending" class="py-4 text-center text-sm text-muted">
           {{ $t('common.loading') }}
         </div>
         <div
           v-if="!hasMore[activeTab] && (filteredArticles.length || filteredComments.length)"
-          class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm"
+          class="py-4 text-center text-sm text-muted"
         >
           {{ $t('common.noResults') }}
         </div>
@@ -344,6 +242,7 @@
 </template>
 
 <script setup lang="ts">
+import type { ArticleCardData } from '~~/shared/types/article'
 import type { Article as _Article, Comment as _Comment } from '@prisma/client'
 
 import { formatDate } from '~~/shared/utils'
@@ -369,17 +268,32 @@ type Comment = Pick<_Comment, 'id' | 'content' | 'userId' | 'parentId'> & {
   deletedAt?: string | null
 }
 
+const toArticleCard = (article: Article): ArticleCardData => ({
+  id: article.id,
+  slug: article.slug,
+  title: article.title,
+  imageUrl: article.imageUrl,
+  excerpt: article.excerpt,
+  content: article.content,
+  createdAt: article.createdAt || new Date(0).toISOString(),
+  views: article.views,
+  likes: article.likesCount,
+  user: { username: article.authorUsername, avatarUrl: article.authorPfp },
+  tags: article.tags.map((name) => ({ name })),
+})
+
 const props = defineProps<{ activeTab: 'likedArticles' | 'comments' }>()
 
 defineEmits<{ (e: 'update:activeTab', value: 'likedArticles' | 'comments'): void }>()
 
 const localePath = useLocalePath()
 const toast = useToast()
+const confirm = useConfirm()
 const { data: session } = useAuth()
 
 const tabs = [
-  { id: 'likedArticles', label: 'articles.activity.tabs.likedArticles', icon: 'mdi:heart-outline' },
-  { id: 'comments', label: 'articles.activity.tabs.comments', icon: 'mdi:comment-outline' },
+  { id: 'likedArticles', label: 'articles.activity.tabs.likedArticles', icon: 'i-mdi-heart-outline' },
+  { id: 'comments', label: 'articles.activity.tabs.comments', icon: 'i-mdi-comment-outline' },
 ] as const
 
 const sortOption = shallowRef('createdAt:desc')
@@ -394,10 +308,10 @@ const allArticles = ref<Article[]>([])
 const allComments = ref<Comment[]>([])
 
 const sortItems = [
-  { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'mdi:clock-outline' },
-  { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'mdi:clock-time-twelve-outline' },
-  { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'mdi:heart' },
-  { label: $t('common.sortOptions.mostViews'), value: 'views:desc', icon: 'mdi:eye-outline' },
+  { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'i-mdi-clock-outline' },
+  { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'i-mdi-clock-time-twelve-outline' },
+  { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'i-mdi-heart' },
+  { label: $t('common.sortOptions.mostViews'), value: 'views:desc', icon: 'i-mdi-eye-outline' },
 ]
 
 const { data, pending, error, refresh } = await useFetch('/api/users/activity', {
@@ -427,7 +341,7 @@ watch(
   { immediate: true },
 )
 
-watch([sortOption, sortComment, props.activeTab, searchQuery, selectedTags], () => {
+watch([sortOption, sortComment, () => props.activeTab, searchQuery, selectedTags], () => {
   page.value = 1
   allArticles.value = []
   allComments.value = []
@@ -516,20 +430,29 @@ const unlikeArticle = async (articleId: string) => {
     await $fetch(`/api/articles/${articleId}/reaction`, { method: 'POST' })
     allArticles.value = allArticles.value.filter((a) => a.id !== articleId)
     await refresh()
-    toast.success({ message: $t('common.messages.successGeneral') })
+    toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || e.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: e.data?.message || e.message || $t('common.messages.operationFailed') })
   }
 }
 
 const shareArticle = (article: Article) => {
   const url = `${window.location.origin}${localePath({ name: 'clanky-slug', params: { slug: article.slug } })}`
   navigator.clipboard.writeText(url)
-  toast.success({ message: $t('common.actions.copySuccess') })
+  toast.add({ color: 'success', title: $t('common.actions.copySuccess') })
 }
 
 const handleDelete = async (commentId: string) => {
-  if (!confirm($t('common.messages.deleteConfirmTitle'))) return
+  if (
+    !(await confirm({
+      title: $t('common.messages.deleteConfirmTitle'),
+      message: $t('common.messages.deleteConfirmText'),
+      confirmText: $t('common.actions.delete'),
+      cancelText: $t('common.messages.deleteCancel'),
+      variant: 'danger',
+    }))
+  )
+    return
   try {
     await $fetch(`/api/comments/${commentId}`, { method: 'DELETE', body: { reason: '' } })
     const updateComments = (comments: Comment[]): Comment[] => {
@@ -547,9 +470,9 @@ const handleDelete = async (commentId: string) => {
     }
     allComments.value = updateComments(allComments.value)
     await refresh()
-    toast.success({ message: $t('common.messages.deleteSuccess') })
+    toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || e.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: e.data?.message || e.message || $t('common.messages.operationFailed') })
   }
 }
 

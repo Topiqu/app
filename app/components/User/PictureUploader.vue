@@ -1,36 +1,23 @@
 <template>
-  <Modal v-model="open" :title="$t('common.avatar.uploadAvatar')">
+  <UModal v-model:open="open" :title="$t('common.avatar.uploadAvatar')">
     <template #default="actions">
       <slot v-bind="actions">
-        <div class="flex flex-col items-center sm:items-start gap-4" @click="open = !open">
-          <div class="relative group cursor-pointer">
-            <UserPicture
-              :url="avatar || auth?.user.avatarUrl"
-              :size="'hg'"
-              :name="auth?.user.name"
-              class="size-32! transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
-            />
-            <div
-              class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full transition-opacity"
-              :class="{ 'opacity-100': isLoading, 'opacity-0 group-hover:opacity-100': !isLoading }"
-            >
-              <Icon v-if="!isLoading" name="mdi:camera" class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-              <Icon v-else name="mdi:loading" class="w-6 h-6 sm:w-8 sm:h-8 text-white animate-spin" />
-            </div>
-          </div>
-        </div>
+        <UButton
+          color="neutral"
+          variant="ghost"
+          square
+          :loading="isLoading"
+          :avatar="{ src: avatar || auth?.user.avatarUrl || undefined, alt: auth?.user.name, size: '3xl' }"
+          :aria-label="$t('common.avatar.uploadAvatar')"
+          @click="open = !open"
+        />
       </slot>
     </template>
 
-    <template #content>
+    <template #body>
       <div class="grow flex flex-col gap-8">
         <div class="w-full my-8 flex items-center justify-center">
-          <UserPicture
-            :url="avatar || auth?.user.avatarUrl"
-            :size="'hg'"
-            :name="auth?.user.name"
-            class="size-32! transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
-          />
+          <UserPicture :url="avatar || auth?.user.avatarUrl" :size="'hg'" :name="auth?.user.name" />
         </div>
 
         <FileUploader type="user-avatar" @upload="handleUpload" />
@@ -39,10 +26,10 @@
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end">
-        <Button variant="neutral" size="lg" @click="close">{{ $t('common.close') }}</Button>
+        <UButton color="neutral" variant="soft" size="lg" @click="close">{{ $t('common.close') }}</UButton>
       </div>
     </template>
-  </Modal>
+  </UModal>
 </template>
 
 <script lang="ts" setup>
@@ -60,22 +47,24 @@ const emit = defineEmits<{ (e: 'upload', value: { url: string; optimizedUrl: str
 
 const handleUpload = (file: { url: string; optimizedUrl: string }) => {
   if (!auth.value)
-    return toast.error({
+    return toast.add({
+      color: 'error',
       title: 'Chyba',
-      message: 'Uživatel není přihlášen',
-      icon: 'mdi:alert-circle',
+      description: 'Uživatel není přihlášen',
+      icon: 'i-mdi-alert-circle',
     })
 
-  avatar.value = file.optimizedUrl
+  avatar.value = file.url
 
-  auth.value.user.avatarUrl = file.optimizedUrl
+  auth.value.user.avatarUrl = file.url
 
   refresh()
 
-  toast.success({
+  toast.add({
+    color: 'success',
     title: 'Úspěch',
-    message: 'Profilový obrázek byl úspěšně nahrán',
-    icon: 'mdi:check-circle',
+    description: 'Profilový obrázek byl úspěšně nahrán',
+    icon: 'i-mdi-check-circle',
   })
 
   emit('upload', { url: file.url, optimizedUrl: file.optimizedUrl })

@@ -1,107 +1,53 @@
 <template>
-  <div class="relative group w-full flex dark:bg-neutral-900">
-    <div
-      ref="card"
-      class="p-4 shadow-sm border border-gray-200 dark:border-neutral-700 flex items-center gap-4 w-full max-w-md sm:max-w-full transition-all"
-    >
-      <UserPicture :url="user?.avatarUrl" :name="user.username" />
-      <div class="flex flex-col overflow-hidden min-w-0">
-        <div class="flex items-center gap-2">
-          <span class="font-semibold text-base truncate">
-            {{ user.username }}
-          </span>
-          <span
-            v-if="user.role === 'admin'"
-            :class="[
-              'text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1',
-              data?.plan === 'PREMIUM'
-                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md'
-                : data?.plan === 'PRO'
-                  ? 'bg-gradient-to-r from-indigo-400 to-indigo-600 text-white shadow-md'
-                  : data?.plan === 'CUSTOM'
-                    ? 'bg-gradient-to-r from-pink-400 to-pink-600 text-white shadow-md'
-                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-            ]"
-          >
-            <Icon
-              v-if="data?.plan && ['PREMIUM', 'PRO', 'CUSTOM'].includes(data.plan)"
-              :name="data.plan === 'PREMIUM' ? 'mdi:crown' : data.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
-              class="w-4 h-4"
-            />
-            Admin
-          </span>
+  <UPopover mode="hover" :content="{ side: 'left', align: 'start' }">
+    <UCard class="w-full max-w-md sm:max-w-full">
+      <div class="flex items-center gap-3">
+        <UserPicture :url="user.avatarUrl" :name="user.username" />
+        <div class="min-w-0 flex-1">
+          <p class="truncate font-medium text-highlighted">{{ user.username }}</p>
+          <p class="truncate text-sm text-muted">{{ user.bio || $t('articles.userMenu.noBio') }}</p>
         </div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[200px]">
-          {{ user.bio || $t('articles.userMenu.noBio') }}
-        </p>
+        <UBadge v-if="user.role === 'admin'" :color="planColor" variant="soft" :icon="planIcon">
+          {{ $t('master.userEdit.roles.admin') }}
+        </UBadge>
       </div>
-    </div>
+    </UCard>
 
-    <div
-      v-if="isHovered"
-      class="absolute sm:fixed w-[90vw] sm:w-80 z-10 hidden group-hover:flex flex-col bg-white dark:bg-neutral-900 p-5 rounded-xl shadow-xl"
-      :style="{ top: `${y}px`, left: `${Math.max(x - 320 - 16, 8)}px` }"
-    >
-      <div class="flex items-center gap-4">
-        <UserPicture :url="user?.avatarUrl" :size="'lg'" :name="user?.username" />
-        <div class="flex flex-col min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="font-semibold text-gray-900 dark:text-white text-lg truncate">
-              {{ user.username }}
-            </span>
-            <span
-              v-if="user.role === 'admin'"
-              :class="[
-                'text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1',
-                data?.plan === 'PREMIUM'
-                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md'
-                  : data?.plan === 'PRO'
-                    ? 'bg-gradient-to-r from-indigo-400 to-indigo-600 text-white shadow-md'
-                    : data?.plan === 'CUSTOM'
-                      ? 'bg-gradient-to-r from-pink-400 to-pink-600 text-white shadow-md'
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-              ]"
-            >
-              <Icon
-                v-if="data?.plan && ['PREMIUM', 'PRO', 'CUSTOM'].includes(data.plan)"
-                :name="data.plan === 'PREMIUM' ? 'mdi:crown' : data.plan === 'PRO' ? 'mdi:star' : 'mdi:diamond'"
-                class="w-4 h-4"
-              />
-              Admin
-            </span>
+    <template #content>
+      <UCard class="w-[90vw] sm:w-80">
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center gap-3">
+            <UserPicture :url="user.avatarUrl" :name="user.username" size="lg" />
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-medium text-highlighted">{{ user.username }}</p>
+              <p class="truncate text-sm text-muted">{{ user.email }}</p>
+            </div>
+            <UBadge v-if="user.role === 'admin'" :color="planColor" variant="soft" :icon="planIcon">
+              {{ $t('master.userEdit.roles.admin') }}
+            </UBadge>
           </div>
-          <p class="text-gray-500 dark:text-gray-400 text-sm break-all">
-            {{ user.email }}
+          <p class="whitespace-pre-wrap break-words text-sm text-muted">
+            {{ user.bio || $t('articles.userMenu.noBio') }}
           </p>
+          <USeparator />
+          <div class="space-y-1 text-xs text-muted">
+            <p v-if="user.role === 'admin'">
+              {{ $t('articles.userMenu.adminIn', [data?.name || $t('articles.userMenu.noClientAssigned')]) }}
+            </p>
+            <p>{{ $t('common.user.joined', [formatDate(user.createdAt)]) }}</p>
+            <p>{{ $t('profile.lastLogin', [formatDate(user.lastLogin)]) }}</p>
+            <p>{{ $t('articles.comments.title') + ': ' }} {{ user.commentsCount ?? 0 }}</p>
+            <p>{{ $t('profile.followers') + ': ' }} {{ user.followers ?? 0 }}</p>
+            <p v-if="user.following > 0">{{ $t('profile.following', [user.following ?? 0]) }}</p>
+          </div>
+          <div class="flex gap-2">
+            <UBadge color="success" variant="soft" icon="i-mdi-thumb-up">{{ user.likesCount ?? 0 }}</UBadge>
+            <UBadge color="error" variant="soft" icon="i-mdi-thumb-down">{{ user.dislikesCount ?? 0 }}</UBadge>
+          </div>
         </div>
-      </div>
-
-      <div class="mt-3 text-sm text-gray-700 dark:text-gray-300">
-        <p class="whitespace-pre-wrap break-words">
-          {{ user.bio || $t('articles.userMenu.noBio') }}
-        </p>
-      </div>
-
-      <div
-        class="mt-3 pt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1 border-t border-gray-200 dark:border-gray-700"
-      >
-        <p v-if="user.role === 'admin'">
-          {{ $t('articles.userMenu.adminIn', [data?.name || $t('articles.userMenu.noClientAssigned')]) }}
-        </p>
-        <p>{{ $t('common.user.joined', [formatDate(user.createdAt)]) }}</p>
-        <p>{{ $t('profile.lastLogin', [formatDate(user.lastLogin)]) }}</p>
-        <p>{{ $t('articles.comments.title') + ': ' }} {{ user.commentsCount ?? 0 }}</p>
-        <p>{{ $t('profile.followers') + ': ' }} {{ user.followers ?? 0 }}</p>
-        <p v-if="user.following > 0">{{ $t('profile.following', [user.following ?? 0]) }}</p>
-        <div class="flex items-center gap-2">
-          <Icon name="mdi:thumb-up" class="w-4 h-4 text-green-500 dark:text-green-400" />
-          <span>{{ user.likesCount ?? 0 }}</span>
-          <Icon name="mdi:thumb-down" class="w-4 h-4 text-red-500 dark:text-red-400" />
-          <span>{{ user.dislikesCount ?? 0 }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
+      </UCard>
+    </template>
+  </UPopover>
 </template>
 
 <script setup lang="ts">
@@ -125,8 +71,26 @@ const props = defineProps<{
   }
 }>()
 
-const { data } = await useFetch(`/api/clients/${props.user.id}/by-userid`)
-const card = useTemplateRef('card')
-const isHovered = useElementHover(card)
-const { x, y } = useElementBounding(card)
+const { data } = await useFetch(() => `/api/clients/${props.user.id}/by-userid`, {
+  default: () => null,
+  immediate: props.user.role === 'admin',
+})
+const planColor = computed(() =>
+  data.value?.plan === 'PREMIUM'
+    ? 'warning'
+    : data.value?.plan === 'PRO'
+      ? 'primary'
+      : data.value?.plan === 'CUSTOM'
+        ? 'error'
+        : 'info',
+)
+const planIcon = computed(() =>
+  data.value?.plan === 'PREMIUM'
+    ? 'i-mdi-crown'
+    : data.value?.plan === 'PRO'
+      ? 'i-mdi-star'
+      : data.value?.plan === 'CUSTOM'
+        ? 'i-mdi-diamond'
+        : undefined,
+)
 </script>

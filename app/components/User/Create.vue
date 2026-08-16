@@ -1,43 +1,49 @@
 <template>
-  <Modal v-model="open" :title="$t('master.userCreate.title')">
-    <template #default="actions">
-      <slot v-bind="actions" />
-    </template>
+  <UModal v-model:open="open" :title="$t('master.userCreate.title')">
+    <slot :open="open" />
 
-    <template #content>
+    <template #body>
       <div class="flex flex-col gap-6">
         <div class="flex flex-col gap-4">
           <h3 class="text-lg font-medium">{{ $t('master.userCreate.assignNew') }}</h3>
-          <FormField
-            v-model="newUser.username"
-            :label="$t('master.userCreate.username')"
-            :placeholder="$t('master.userCreate.username')"
-          />
-          <FormField
-            v-model="newUser.email"
-            :label="$t('master.userCreate.email')"
-            :placeholder="$t('master.userCreate.email')"
-          />
-          <FormField
-            v-model="newUser.password"
-            type="password"
-            :label="$t('master.userCreate.password')"
-            :placeholder="$t('master.userCreate.password')"
-          />
-          <button
-            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-            :disabled="!newUser.username || !newUser.email || !newUser.password"
+          <UFormField :label="$t('master.userCreate.username')">
+            <UInput v-model="newUser.username" :placeholder="$t('master.userCreate.username')" />
+          </UFormField>
+          <UFormField :label="$t('master.userCreate.email')">
+            <UInput v-model="newUser.email" :placeholder="$t('master.userCreate.email')" />
+          </UFormField>
+          <UFormField :label="$t('master.userCreate.password')">
+            <UInput v-model="newUser.password" type="password" :placeholder="$t('master.userCreate.password')" />
+          </UFormField>
+          <UButton
+            color="primary"
+            variant="solid"
+            :loading="creating"
+            :disabled="creating || !newUser.username || !newUser.email || !newUser.password"
             @click="createUser"
           >
             {{ $t('master.userCreate.createBtn') }}
-          </button>
+          </UButton>
         </div>
 
         <div class="flex flex-col gap-4">
           <h3 class="text-lg font-medium">{{ $t('master.userCreate.addExisting') }}</h3>
-          <FormField v-model="searchQuery" :placeholder="$t('master.userCreate.searchPlaceholder')" />
-          <div v-if="loading && !users?.data.length" class="text-gray-600">{{ $t('master.userCreate.loading') }}</div>
-          <div v-else-if="error" class="text-red-600">{{ error }}</div>
+          <UFormField :label="$t('master.userCreate.searchPlaceholder')" :ui="{ label: 'sr-only' }">
+            <UInput
+              v-model="searchQuery"
+              icon="i-mdi-magnify"
+              :placeholder="$t('master.userCreate.searchPlaceholder')"
+            />
+          </UFormField>
+          <UProgress v-if="loading && !users?.data.length" />
+          <UAlert
+            v-else-if="error"
+            color="error"
+            variant="soft"
+            icon="i-mdi-alert-circle-outline"
+            :title="$t('common.error')"
+            :description="error.message"
+          />
           <div v-else ref="scrollParent" class="relative max-h-96 overflow-auto">
             <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
               <div
@@ -50,56 +56,58 @@
                   width: '100%',
                   height: `${virtualRow.size}px`,
                 }"
-                class="border-b py-2 px-1 flex justify-between items-center text-gray-700"
+                class="flex items-center justify-between px-1 py-2"
               >
-                <div>
-                  <div>
-                    <span class="font-medium">{{ $t('master.userCreate.userLabel') }}</span>
-                    {{ filteredUsers[virtualRow.index]?.username ?? $t('master.userCreate.notAvailable') }}
-                  </div>
-                  <div>
-                    <span class="font-medium">{{ $t('master.userCreate.emailLabel') }}</span>
-                    {{ filteredUsers[virtualRow.index]?.email ?? $t('master.userCreate.notAvailable') }}
-                  </div>
-                  <div>
-                    <span class="font-medium">{{ $t('master.userCreate.roleLabel') }}</span>
-                    {{ filteredUsers[virtualRow.index]?.role ?? $t('master.userCreate.notAvailable') }}
-                  </div>
-                </div>
+                <UUser
+                  :name="filteredUsers[virtualRow.index]?.username ?? $t('master.userCreate.notAvailable')"
+                  :description="filteredUsers[virtualRow.index]?.email ?? $t('master.userCreate.notAvailable')"
+                >
+                  <template #trailing>
+                    <UBadge color="neutral" variant="soft">
+                      {{ filteredUsers[virtualRow.index]?.role ?? $t('master.userCreate.notAvailable') }}
+                    </UBadge>
+                  </template>
+                </UUser>
                 <div class="flex gap-2">
-                  <button
+                  <UButton
                     v-if="filteredUsers[virtualRow.index]?.deletedAt === null"
-                    class="w-10 h-10 bg-blue-200 rounded-full hover:bg-blue-300 transition-all duration-200 flex justify-center items-center"
+                    color="primary"
+                    variant="soft"
+                    square
+                    icon="i-mdi-plus"
+                    :loading="assigningUserId === filteredUsers[virtualRow.index]?.id"
+                    :disabled="!!assigningUserId"
+                    :aria-label="$t('common.actions.assignUser')"
+                    :title="$t('common.actions.assignUser')"
                     @click="assignToClientSite(filteredUsers[virtualRow.index]?.id)"
-                  >
-                    <Icon name="mdi:plus" class="w-5 h-5 text-black" />
-                  </button>
+                  />
                 </div>
+                <USeparator class="absolute inset-x-0 bottom-0" />
               </div>
             </div>
-            <div v-if="!filteredUsers?.length" class="text-gray-600 px-2 py-4">
-              {{ $t('master.userCreate.noUsers') }}
-            </div>
+            <UEmpty
+              v-if="!filteredUsers?.length"
+              size="sm"
+              icon="i-mdi-account-search-outline"
+              :title="$t('master.userCreate.noUsers')"
+            />
           </div>
         </div>
       </div>
     </template>
 
     <template #footer="{ close }">
-      <button
-        class="px-6 py-3 rounded-xl text-base font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105"
-        @click="close"
-      >
+      <UButton color="neutral" variant="soft" @click="close">
         {{ $t('master.userCreate.close') }}
-      </button>
+      </UButton>
     </template>
-  </Modal>
+  </UModal>
 </template>
 
 <script lang="ts" setup>
 import { useVirtualizer } from '@tanstack/vue-virtual'
 
-const open = defineModel<boolean>()
+const open = defineModel<boolean>({ default: false })
 const props = defineProps<{ clientId: string }>()
 const emit = defineEmits(['create'])
 
@@ -107,6 +115,8 @@ const toast = useToast()
 const { t } = useI18n()
 const searchQuery = shallowRef<string>('')
 const scrollParent = useTemplateRef('scrollParent')
+const creating = shallowRef(false)
+const assigningUserId = shallowRef<string | null>(null)
 
 const newUser = ref({
   username: '',
@@ -146,6 +156,8 @@ const virtualizer = useVirtualizer({
 watch(filteredUsers, () => (virtualizer.value.options.count = filteredUsers.value.length))
 
 const createUser = async () => {
+  if (creating.value) return
+  creating.value = true
   try {
     const response = await $fetch('/api/users', {
       method: 'POST',
@@ -154,18 +166,21 @@ const createUser = async () => {
     if (!response) throw createError('Chyba')
 
     emit('create')
-    toast.success({ message: t('master.userCreate.messages.created') })
+    toast.add({ color: 'success', title: t('master.userCreate.messages.created') })
     open.value = false
     newUser.value = { username: '', email: '', password: '', role: 'reader' }
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || t('master.userCreate.messages.createFailed') })
+    toast.add({ color: 'error', title: e.data?.message || t('master.userCreate.messages.createFailed') })
+  } finally {
+    creating.value = false
   }
 }
 
 const assignToClientSite = async (userId: string | undefined) => {
-  if (!userId) return
+  if (!userId || assigningUserId.value) return
 
+  assigningUserId.value = userId
   try {
     const response = await $fetch(`/api/users/${userId}` as `/api/users/:id`, {
       method: 'PATCH',
@@ -173,11 +188,13 @@ const assignToClientSite = async (userId: string | undefined) => {
     })
     if (!response) throw createError('Chyba')
 
-    toast.success({ message: t('master.userCreate.messages.assigned') })
+    toast.add({ color: 'success', title: t('master.userCreate.messages.assigned') })
     emit('create')
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || t('master.userCreate.messages.assignFailed') })
+    toast.add({ color: 'error', title: e.data?.message || t('master.userCreate.messages.assignFailed') })
+  } finally {
+    assigningUserId.value = null
   }
 }
 </script>

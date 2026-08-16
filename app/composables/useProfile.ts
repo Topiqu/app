@@ -31,7 +31,7 @@ export function useProfile() {
       method: 'PATCH',
       body: partial,
     })
-    toast.success({ message: t('common.messages.successGeneralTitle') })
+    toast.add({ color: 'success', title: t('common.messages.successGeneralTitle') })
     return response
   }
 
@@ -41,7 +41,7 @@ export function useProfile() {
       method: 'PATCH',
       body: { password: newPassword, oldPass: oldPassword },
     })
-    toast.success({ message: t('common.messages.successGeneralTitle') })
+    toast.add({ color: 'success', title: t('common.messages.successGeneralTitle') })
   }
 
   async function deactivateAccount() {
@@ -50,7 +50,7 @@ export function useProfile() {
       method: 'PATCH',
       body: { deletedAt: new Date().toISOString() },
     })
-    toast.success({ message: t('common.messages.successGeneralTitle') })
+    toast.add({ color: 'success', title: t('common.messages.successGeneralTitle') })
     await signOut()
   }
 

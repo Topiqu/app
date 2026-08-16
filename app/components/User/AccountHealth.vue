@@ -1,31 +1,36 @@
 <template>
-  <div class="rounded-2xl shadow-lg p-6 bg-white dark:bg-neutral-900 border relative overflow-hidden">
+  <UCard id="account-health-section" class="relative overflow-hidden">
     <div class="flex items-center">
-      <Icon :name="`mdi:${iconName}`" :class="colorClass(data?.accountHealth ?? 0)" size="48" />
+      <UIcon :name="`i-mdi-${iconName}`" size="48" />
       <div class="ml-4">
         <h2 class="text-xl font-semibold">{{ $t('profile.health') }}</h2>
-        <p :class="colorClass(data?.accountHealth ?? 0)" class="text-2xl font-bold">{{ data?.accountHealth }}%</p>
+        <p class="text-2xl font-bold text-highlighted">{{ data?.accountHealth }}%</p>
       </div>
     </div>
-    <ul class="mt-4 divide-y divide-gray-200 dark:divide-gray-700">
-      <li v-for="check in data?.checks" :key="check.label" class="flex items-center justify-between py-2 flex-wrap">
-        <div class="flex items-center min-w-0">
-          <Icon v-if="check.ok" name="mdi:check-circle" class="w-5 h-5 text-green-500 shrink-0" />
-          <Icon v-else name="mdi:close-circle" class="w-5 h-5 text-red-500 shrink-0" />
-          <span class="ml-2 truncate">{{ getCheckLabel(check) }}</span>
+    <ul class="mt-4 divide-y divide-default">
+      <li
+        v-for="check in data?.checks"
+        :key="check.label"
+        class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div class="flex min-w-0 items-start">
+          <UIcon v-if="check.ok" name="i-mdi-check-circle" size="20" class="shrink-0 text-success" />
+          <UIcon v-else name="i-mdi-close-circle" size="20" class="shrink-0 text-error" />
+          <span class="ml-2 break-words">{{ getCheckLabel(check) }}</span>
         </div>
-        <Button
+        <UButton
           v-if="!check.ok && actions[check.label]"
-          variant="primary"
+          color="primary"
+          variant="solid"
           size="sm"
-          class="ml-2 mt-2 sm:mt-0 whitespace-normal break-words text-center px-3 py-1.5 max-w-full sm:max-w-[240px]"
+          class="self-start sm:ml-3 sm:shrink-0"
           @click="navigateToSection(check.label)"
         >
           {{ $t(actions[check.label]?.key) }}
-        </Button>
+        </UButton>
       </li>
     </ul>
-  </div>
+  </UCard>
 </template>
 
 <script setup lang="ts">
@@ -46,13 +51,9 @@ const actions: Record<string, { key: string; tab: string }> = {
 const iconName = computed(() => {
   const health = data.value?.accountHealth ?? 0
   if (health <= 40) return 'heart-broken'
-  if (health <= 70) return 'heart-minus'
+  if (health <= 70) return 'heart-pulse'
   return 'heart-plus'
 })
-
-const colorClass = (health: number) => {
-  return health <= 40 ? 'text-red-500' : health <= 70 ? 'text-orange-500' : 'text-green-500'
-}
 
 const getCheckLabel = (check: { label: string; ok: boolean }) => {
   if (check.label === 'profile.checks.passwordWeak') {
