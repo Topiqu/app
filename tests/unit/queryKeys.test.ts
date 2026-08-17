@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { queryKeys } from '~/utils/queryKeys'
 
 const isPrefixOf = (prefix: readonly unknown[], key: readonly unknown[]) =>

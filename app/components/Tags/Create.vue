@@ -1,99 +1,135 @@
 <template>
-  <Modal v-model="open" :title="$t('articles.tags.manageTags')">
-    <template #default="actions">
-      <slot v-bind="actions" />
-    </template>
-
-    <template #content>
-      <label class="flex flex-col gap-3">
-        <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">{{
-          $t('common.labels.tagName')
-        }}</span>
-        <div class="w-full flex items-center justify-between gap-2">
-          <input
+  <UModal v-model:open="open" :title="$t('articles.tags.manageTags')" :ui="{ content: 'max-w-3xl' }">
+    <template #body>
+      <UFormField :label="$t('common.labels.tagName')" :error="isDuplicate ? $t('articles.tags.duplicate') : undefined">
+        <div class="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+          <UInput
             v-model="newTag.name"
             :placeholder="$t('common.labels.tagName')"
-            :class="[
-              'w-full p-4 rounded-xl text-base bg-gray-50 border focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500',
-              isDuplicate
-                ? 'border-red-500 focus:ring-red-400 focus:border-red-400 dark:border-red-500 dark:focus:ring-red-500 dark:focus:border-red-500'
-                : 'border-gray-200',
-            ]"
+            class="w-full"
+            :color="isDuplicate ? 'error' : 'primary'"
+            :highlight="isDuplicate"
             @input="updateSlug"
           />
-          <Button size="lg" :disabled="isDuplicate" @click="createTag">
+          <UButton :disabled="isDuplicate || !newTag.name.trim()" @click="createTag">
             {{ $t('articles.tags.addButton') }}
-          </Button>
+          </UButton>
         </div>
-      </label>
+      </UFormField>
 
-      <div class="flex flex-col gap-4 mt-4">
-        <div class="relative">
-          <Icon
-            name="mdi:magnify"
-            class="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400 dark:text-gray-400 pointer-events-none"
-          />
-          <input
+      <div class="flex flex-col gap-4">
+        <UFormField :label="$t('articles.tags.searchPlaceholder')" :ui="{ label: 'sr-only' }">
+          <UInput
             v-model="searchQuery"
             :placeholder="$t('articles.tags.searchPlaceholder')"
-            class="w-full pl-12 pr-4 py-3 rounded-full text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            icon="i-mdi-magnify"
+            class="w-full"
           />
-        </div>
-        <div v-if="filteredTags.length" class="flex flex-wrap gap-3">
+        </UFormField>
+        <UProgress v-if="status === 'pending'" />
+        <UAlert
+          v-else-if="error"
+          color="error"
+          icon="i-mdi-alert-circle-outline"
+          :title="$t('common.messages.loadFailedTitle')"
+        >
+          <template #actions>
+            <UButton icon="i-mdi-refresh" color="error" variant="soft" @click="refresh()">
+              {{ $t('common.messages.retry') }}
+            </UButton>
+          </template>
+        </UAlert>
+        <div v-else-if="filteredTags.length" class="grid gap-3 sm:grid-cols-2">
           <div
             v-for="t in filteredTags"
             :key="t.id"
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-50 transition-all duration-300 group dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            class="flex min-w-0 items-center gap-2 rounded-[var(--ui-radius)] border border-default bg-elevated p-2"
           >
-            <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
             <span
-              v-if="!editingTagId || editingTagId !== t.id"
-              class="flex-1 cursor-pointer"
+              v-if="editingTagId !== t.id"
+              class="min-w-0 flex-1 truncate px-2 text-sm font-medium text-highlighted"
+              :title="t.name"
+              >{{ t.name }}</span
+            >
+            <UButton
+              v-if="editingTagId !== t.id"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              square
+              icon="i-mdi-pencil"
+              :aria-label="$t('common.actions.edit')"
+              :title="$t('common.actions.edit')"
               @click="startEditing(t.id)"
-            >
-              {{ t.name }}
-            </span>
-            <input
-              v-else
-              v-model="t.name"
-              class="flex-1 bg-transparent border-b border-transparent focus:border-blue-400 focus:outline-none transition-colors dark:focus:border-blue-500 min-w-[100px]"
-              @input="updateTag(t)"
-              @blur="stopEditing"
             />
-            <button
-              class="ml-2 w-5 h-5 flex items-center justify-center transition-colors duration-300 bg-transparent hover:bg-transparent border-none outline-none opacity-0 group-hover:opacity-100 dark:text-red-400 dark:hover:text-red-300"
-              @click="deleteTag(t.id, t.name)"
-            >
-              <Icon
-                name="mdi:delete"
-                class="w-4 h-4 text-red-500 hover:text-red-600 cursor-pointer dark:text-red-400 dark:hover:text-red-300"
+            <template v-else>
+              <UFormField
+                :label="$t('common.labels.tagName')"
+                :error="editError"
+                :ui="{ label: 'sr-only' }"
+                class="min-w-0 flex-1"
+              >
+                <UInput v-model="editDraft" class="w-full" @keyup.enter="saveEdit(t)" @keyup.esc="cancelEdit" />
+              </UFormField>
+              <UButton
+                color="primary"
+                size="sm"
+                square
+                icon="i-mdi-check"
+                :aria-label="$t('common.actions.saveChanges')"
+                @click="saveEdit(t)"
               />
-            </button>
+              <UButton
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                square
+                icon="i-mdi-close"
+                :aria-label="$t('common.actions.cancel')"
+                @click="cancelEdit"
+              />
+            </template>
+            <UButton
+              v-if="editingTagId !== t.id"
+              color="neutral"
+              variant="ghost"
+              class="tag-destructive-control"
+              size="sm"
+              square
+              icon="i-mdi-delete"
+              :aria-label="$t('common.actions.deleteTag')"
+              :title="$t('common.actions.deleteTag')"
+              @click="deleteTag(t.id, t.name)"
+            />
           </div>
         </div>
-        <p v-else class="text-sm text-gray-600 dark:text-gray-400">{{ $t('articles.tags.noTagsFound') }}</p>
+        <UEmpty v-else size="sm" :description="$t('articles.tags.noTagsFound')" />
       </div>
     </template>
 
     <template #footer="{ close }">
-      <Button variant="neutral" size="lg" @click="close">
+      <UButton color="neutral" variant="soft" size="lg" @click="close">
         {{ $t('common.close') }}
-      </Button>
+      </UButton>
     </template>
-  </Modal>
-  <ModalMini ref="deleteDialog" />
+  </UModal>
 </template>
 
 <script setup lang="ts">
 import slugify from 'slugify'
 
+const open = defineModel<boolean>({ default: false })
 const toast = useToast()
-const open = defineModel<boolean>()
-const deleteDialog = useTemplateRef<ModalMiniRef>('deleteDialog')
-const { data: tags, refresh } = await useFetch('/api/tags', { default: () => [] })
-let newTag = reactive({ name: '', slug: '' })
+const confirm = useConfirm()
+const { data: tags, refresh, status, error } = useFetch('/api/tags', { default: () => [], immediate: false })
+const newTag = reactive({ name: '', slug: '' })
 const searchQuery = shallowRef('')
 const editingTagId = shallowRef<string | null>(null)
+const editDraft = shallowRef('')
+
+watch(open, (isOpen) => {
+  if (isOpen) refresh()
+})
 
 const filteredTags = computed(() =>
   tags.value.filter((t) => t.name.toLowerCase().includes(searchQuery.value.toLowerCase())),
@@ -118,24 +154,24 @@ const createTag = async () => {
         slug: newTag.slug,
       },
     })
-    newTag = { name: '', slug: '' }
+    Object.assign(newTag, { name: '', slug: '' })
     await refresh()
-    toast.success({ message: $t('articles.tags.createSuccess') })
+    toast.add({ color: 'success', title: $t('articles.tags.createSuccess') })
   } catch (error: any) {
-    toast.error({ message: $t('articles.tags.createFailed') + error.data?.message })
+    toast.add({ color: 'error', title: $t('articles.tags.createFailed') + error.data?.message })
   }
 }
 
 const confirmDelete = async (name: string) => {
-  const r = await deleteDialog.value?.ask({
+  const r = await confirm({
     title: $t('common.messages.deleteConfirmTitle'),
     message: $t('articles.tags.deleteConfirmText', [name]),
-    icon: 'mdi:alert-outline',
+    icon: 'i-mdi-alert-outline',
     confirmText: $t('common.actions.delete'),
     cancelText: $t('common.messages.deleteCancel'),
     variant: 'danger',
   })
-  return r === 'ok'
+  return r
 }
 
 const deleteTag = async (id: string, name: string) => {
@@ -144,30 +180,43 @@ const deleteTag = async (id: string, name: string) => {
   try {
     await $fetch(`/api/tags/${id}`, { method: 'DELETE' })
     await refresh()
-    toast.success({ message: $t('common.messages.deleteSuccess') })
+    toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
   } catch (error: any) {
-    toast.error({ message: $t('common.messages.deleteFailed') + error.data?.message })
+    toast.add({ color: 'error', title: $t('common.messages.deleteFailed') + error.data?.message })
   }
 }
 
 const startEditing = (id: string) => {
   editingTagId.value = id
+  editDraft.value = tags.value.find((tag) => tag.id === id)?.name ?? ''
 }
 
-const stopEditing = () => {
+const cancelEdit = () => {
   editingTagId.value = null
+  editDraft.value = ''
 }
 
-const updateTag = useDebounceFn(async (tag: any) => {
+const editError = computed(() => {
+  const name = editDraft.value.trim()
+  if (!name) return $t('articles.tags.emptyName')
+  return tags.value.some((tag) => tag.id !== editingTagId.value && tag.name.toLowerCase() === name.toLowerCase())
+    ? $t('articles.tags.duplicate')
+    : undefined
+})
+
+const saveEdit = async (tag: { id: string }) => {
+  const name = editDraft.value.trim()
+  if (!name || editError.value) return
   try {
     await $fetch(`/api/tags/${tag.id}`, {
       method: 'PATCH',
-      body: { name: tag.name, slug: slugify(tag.name, { lower: true, strict: true, trim: true }) },
+      body: { name, slug: slugify(name, { lower: true, strict: true, trim: true }) },
     })
     await refresh()
-    toast.success({ message: $t('articles.tags.updateSuccess') })
+    cancelEdit()
+    toast.add({ color: 'success', title: $t('articles.tags.updateSuccess') })
   } catch (error: any) {
-    toast.error({ message: $t('articles.tags.updateFailed') + error.data?.message })
+    toast.add({ color: 'error', title: $t('articles.tags.updateFailed') + error.data?.message })
   }
-}, 600)
+}
 </script>

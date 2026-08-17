@@ -1,61 +1,52 @@
 <template>
   <div class="flex flex-col gap-6">
-    <label class="flex flex-col gap-3">
-      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">
-        {{ $t('articles.tags.selectExistingTag') }}
-      </span>
-      <select
+    <UFormField :label="$t('articles.tags.selectExistingTag')">
+      <USelectMenu
         v-model="selectedTagId"
-        class="p-4 rounded-xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-        @change="addExisting"
-      >
-        <option value="" disabled>{{ $t('articles.tags.selectExistingTag') }}</option>
-        <option v-for="t in availableTags" :key="t.id" :value="t.id">
-          {{ t.name }}
-        </option>
-      </select>
-    </label>
+        :items="availableTags"
+        valueKey="id"
+        labelKey="name"
+        :placeholder="$t('articles.tags.selectExistingTag')"
+        class="w-full"
+        @update:modelValue="addExisting"
+      />
+    </UFormField>
 
-    <label class="flex flex-col gap-3">
-      <span class="text-sm font-medium uppercase tracking-wide opacity-80 dark:text-gray-200">
-        {{ $t('articles.tags.addCustomTagPlaceholder') }}
-      </span>
+    <UFormField :label="$t('articles.tags.addCustomTagPlaceholder')">
       <div class="flex gap-2">
-        <input
+        <UInput
           v-model="newTagName"
           :placeholder="$t('articles.tags.addCustomTagPlaceholder')"
-          class="flex-1 p-4 rounded-xl text-base bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+          class="flex-1"
           @keyup.enter="createNew"
         />
-        <button
-          :disabled="!newTagName"
-          class="px-6 py-3 rounded-xl text-base font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-700"
-          @click="createNew"
-        >
+        <UButton color="primary" variant="solid" :disabled="!newTagName" @click="createNew">
           {{ $t('articles.tags.addButton') }}
-        </button>
+        </UButton>
       </div>
-    </label>
+    </UFormField>
 
     <div v-if="tagBuffer.length" class="flex flex-wrap gap-2">
       <div
         v-for="t in tagBuffer"
         :key="t.id"
-        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700 bg-white border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-200 group dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+        class="flex min-w-0 max-w-full items-center rounded-[var(--ui-radius)] border border-default bg-elevated pl-3"
       >
-        <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
-        {{ t.name }}
-        <button
-          class="ml-1 w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+        <span class="max-w-64 truncate text-sm font-medium" :title="t.name">{{ t.name }}</span>
+        <UButton
+          color="neutral"
+          variant="ghost"
+          class="tag-destructive-control"
+          icon="i-mdi-close"
+          size="sm"
+          square
+          :aria-label="$t('common.actions.deleteTag')"
+          :title="$t('common.actions.deleteTag')"
           @click="remove(t.id)"
-        >
-          <Icon name="mdi:close" class="w-4 h-4 text-red-500 hover:text-red-600" />
-        </button>
+        />
       </div>
     </div>
-    <p v-else class="text-sm text-gray-600 dark:text-gray-400">
-      {{ $t('articles.tags.noTagsFound') }}
-    </p>
+    <UEmpty v-else icon="i-mdi-tag-off-outline" :title="$t('articles.tags.noTagsFound')" />
   </div>
 </template>
 
@@ -153,7 +144,7 @@ const createNew = async () => {
     newTagName.value = ''
     await invalidateTags()
   } catch (e: any) {
-    toast.error({ message: $t('articles.tags.createFailed') + e.data?.message })
+    toast.add({ color: 'error', title: $t('articles.tags.createFailed') + e.data?.message })
   }
 }
 
