@@ -56,8 +56,7 @@ const ROWS_PAGE_SIZE = 1000
 
 export const microsToCents = (micros: number): number => Math.round(micros / 10000)
 
-export const isGamConfigured = (): boolean =>
-  !!process.env.GAM_NETWORK_CODE && !!process.env.GAM_SERVICE_ACCOUNT_KEY
+export const isGamConfigured = (): boolean => !!process.env.GAM_NETWORK_CODE && !!process.env.GAM_SERVICE_ACCOUNT_KEY
 
 export const resolveGamConfig = (): GamConfig => {
   const networkCode = process.env.GAM_NETWORK_CODE
@@ -202,11 +201,10 @@ export const fetchGamRevenueByClient = async (period: GamReportPeriod): Promise<
   const config = resolveGamConfig()
   const token = await getGamAccessToken()
 
-  const report = await gamFetch<{ name?: string }>(
-    `${config.apiBase}/networks/${config.networkCode}/reports`,
-    token,
-    { method: 'POST', body: buildReportDefinition(period, config) },
-  )
+  const report = await gamFetch<{ name?: string }>(`${config.apiBase}/networks/${config.networkCode}/reports`, token, {
+    method: 'POST',
+    body: buildReportDefinition(period, config),
+  })
 
   if (!report.name) throw createError({ statusCode: 502, message: 'GAM did not return a report resource name' })
 

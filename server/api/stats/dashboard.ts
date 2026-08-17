@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
     }),
     db.article.findFirst({
       where: { clientSiteId: user.clientSiteId },
-      select: { id: true, title: true, views: true },
+      select: { id: true, slug: true, title: true, views: true },
       orderBy: { views: 'desc' },
     }),
     db.user.findFirst({
@@ -56,12 +56,12 @@ export default defineEventHandler(async (event) => {
     }),
     db.article.findFirst({
       where: { clientSiteId: user.clientSiteId, status: 'published' },
-      select: { id: true, title: true, _count: { select: { comments: true } } },
+      select: { id: true, slug: true, title: true, _count: { select: { comments: true } } },
       orderBy: { comments: { _count: 'desc' } },
     }),
     db.article.findFirst({
       where: { clientSiteId: user.clientSiteId, status: 'published' },
-      select: { id: true, title: true, _count: { select: { reactions: true } } },
+      select: { id: true, slug: true, title: true, _count: { select: { reactions: true } } },
       orderBy: { reactions: { _count: 'desc' } },
     }),
     db.article.findMany({
@@ -110,12 +110,16 @@ export default defineEventHandler(async (event) => {
       : null,
     topCommentedArticle: topCommented
       ? {
+          id: topCommented.id,
+          slug: topCommented.slug,
           title: topCommented.title,
           comments: topCommented._count.comments,
         }
       : null,
     topLikedArticle: topLiked
       ? {
+          id: topLiked.id,
+          slug: topLiked.slug,
           title: topLiked.title,
           likes: topLiked._count.reactions,
         }

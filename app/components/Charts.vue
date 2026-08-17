@@ -1,24 +1,27 @@
 <template>
-  <div class="rounded-lg shadow p-6 mt-6">
+  <UCard class="mt-6">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">{{ title }}</h2>
-      <Button
-        variant="neutral"
-        class="!rounded-full"
+      <UButton
+        color="neutral"
+        variant="soft"
+        square
         :icon="
           chartType === 'bar'
-            ? 'mdi:chart-line'
+            ? 'i-mdi-chart-line'
             : chartType === 'line' && data?.user.plan !== 'BASIC'
-              ? 'mdi:chart-pie'
-              : 'mdi:chart-bar'
+              ? 'i-mdi-chart-pie'
+              : 'i-mdi-chart-bar'
         "
+        :aria-label="$t('common.actions.toggleChart')"
+        :title="$t('common.actions.toggleChart')"
         @click="toggleType"
       />
     </div>
     <div class="relative h-64">
       <component :is="currentChart" :data="chartData" :options="chartOptions" />
     </div>
-  </div>
+  </UCard>
 </template>
 
 <script setup lang="ts">
@@ -53,6 +56,7 @@ ChartJS.register(
 )
 
 const props = defineProps<{
+  kind: 'timeseries' | 'distribution'
   chartData: {
     labels: string[]
     datasets: {
@@ -66,8 +70,7 @@ const props = defineProps<{
   title: string
 }>()
 
-const isShareChart = (title: string) => title === 'Rozložení sdílení podle platformy'
-const chartType = shallowRef<'bar' | 'line' | 'pie'>(isShareChart(props.title) ? 'pie' : 'bar')
+const chartType = shallowRef<'bar' | 'line' | 'pie'>(props.kind === 'distribution' ? 'pie' : 'bar')
 
 const toggleType = () => {
   if (data?.value?.user.plan === 'BASIC') {
@@ -87,7 +90,7 @@ const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: { position: isShareChart(props.title) ? ('right' as const) : ('top' as const) },
+    legend: { position: props.kind === 'distribution' ? ('right' as const) : ('top' as const) },
   },
 }))
 </script>

@@ -11,7 +11,8 @@ const previousUtcDay = (now: Date): { start: Date; end: Date } => {
 export default defineMonitoredTask({
   meta: {
     name: 'gam-sync',
-    description: 'Ingest GAM per-client ad revenue for the previous day and upsert the AdEarning ledger (split by plan share)',
+    description:
+      'Ingest GAM per-client ad revenue for the previous day and upsert the AdEarning ledger (split by plan share)',
   },
   async run() {
     const now = new Date()

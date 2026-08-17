@@ -36,9 +36,7 @@ describe('gamReport dates', () => {
   })
 
   it('keeps multi-day ranges inclusive on both sides', () => {
-    expect(
-      gamDateRange({ start: new Date('2026-07-01T00:00:00Z'), end: new Date('2026-08-01T00:00:00Z') }),
-    ).toEqual({
+    expect(gamDateRange({ start: new Date('2026-07-01T00:00:00Z'), end: new Date('2026-08-01T00:00:00Z') })).toEqual({
       startDate: { year: 2026, month: 7, day: 1 },
       endDate: { year: 2026, month: 7, day: 31 },
     })
