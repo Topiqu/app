@@ -1,5 +1,6 @@
 <template>
-  <label
+  <component
+    :is="as"
     class="p-1 flex items-center justify-start gap-1 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300"
   >
     <slot name="icon">
@@ -10,9 +11,10 @@
     <slot>
       {{ text }}
     </slot>
-  </label>
+  </component>
 </template>
 
 <script lang="ts" setup>
-const { text, icon } = defineProps<{ text?: string; icon?: string }>()
+// `as="span"` for group titles (radiogroups, fieldsets) that label a control set, not a single input.
+const { text, icon, as = 'label' } = defineProps<{ text?: string; icon?: string; as?: string }>()
 </script>
