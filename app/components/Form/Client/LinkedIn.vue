@@ -9,60 +9,40 @@
         <p class="text-sm text-neutral-500">Configure your automated LinkedIn publishing settings.</p>
       </div>
 
-      <div v-if="!isConnected" class="flex gap-2">
-        <Button
-          variant="primary"
-          class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
-          @click="connectLinkedIn('personal')"
-        >
-          <Icon name="mdi:account" class="mr-1" />
-          Connect Personal
-        </Button>
-        <Button
-          variant="primary"
-          class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
-          @click="connectLinkedIn('pages')"
-        >
-          <Icon name="mdi:domain" class="mr-1" />
-          Connect Page
-        </Button>
-      </div>
+      <Button
+        v-if="!isConnected"
+        variant="primary"
+        class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
+        @click="connectLinkedIn"
+      >
+        <Icon name="mdi:account" class="mr-1" />
+        Connect Personal
+      </Button>
       <div v-else class="flex flex-col items-end">
         <div
           class="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full"
         >
           <Icon name="mdi:check-circle" /> Connected ({{ localType }})
         </div>
-        <div class="flex gap-2 mt-2">
-          <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('personal')">
-            Switch to Personal
-          </button>
-          <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('pages')">
-            Switch to Page
-          </button>
-        </div>
+        <button class="text-xs text-blue-600 hover:underline mt-2" @click="connectLinkedIn">Reconnect</button>
       </div>
     </div>
 
-    <div v-if="embedded && !isConnected" class="flex flex-col gap-3 sm:flex-row">
-      <Button variant="primary" class="bg-[#0A66C2] text-white" @click="connectLinkedIn('personal')">
-        <Icon name="mdi:account" class="mr-1" />
-        Connect Personal
-      </Button>
-      <Button variant="primary" class="bg-[#0A66C2] text-white" @click="connectLinkedIn('pages')">
-        <Icon name="mdi:domain" class="mr-1" />
-        Connect Page
-      </Button>
-    </div>
+    <Button
+      v-if="embedded && !isConnected"
+      variant="primary"
+      class="bg-[#0A66C2] text-white"
+      @click="connectLinkedIn"
+    >
+      <Icon name="mdi:account" class="mr-1" />
+      Connect Personal
+    </Button>
 
     <div v-if="embedded && isConnected" class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-2 text-sm font-medium text-emerald-600">
         <Icon name="mdi:check-circle" /> Connected ({{ localType }})
       </div>
-      <div class="flex gap-3">
-        <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('personal')">Personal</button>
-        <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn('pages')">Page</button>
-      </div>
+      <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn">Reconnect</button>
     </div>
 
     <div
@@ -136,7 +116,7 @@ const props = defineProps<{
 const emit = defineEmits(['update:mode', 'update:brandProfile', 'update:type'])
 
 const isConnected = shallowRef(false)
-const localType = shallowRef(props.type || 'pages')
+const localType = shallowRef(props.type || 'personal')
 
 const localMode = shallowRef(props.mode || 'HitL')
 const localBrandProfile = ref({
@@ -154,7 +134,7 @@ onMounted(async () => {
     })
     if (res && (res as any).connected) {
       isConnected.value = true
-      localType.value = (res as any).type || 'pages'
+      localType.value = (res as any).type || 'personal'
       emit('update:type', localType.value)
     }
   } catch {
@@ -192,9 +172,9 @@ function emitUpdate() {
   })
 }
 
-function connectLinkedIn(appType: 'personal' | 'pages') {
-  localType.value = appType
-  emit('update:type', appType)
-  window.location.href = `/api/linkedin/connect?appType=${appType}&clientSiteId=${props.clientSiteId}`
+function connectLinkedIn() {
+  localType.value = 'personal'
+  emit('update:type', 'personal')
+  window.location.href = `/api/linkedin/connect?appType=personal&clientSiteId=${props.clientSiteId}`
 }
 </script>

@@ -12,7 +12,13 @@ export default defineEventHandler(async (event) => {
   if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', user.clientSiteId)
 
   const query = getQuery(event)
-  const appType = query.appType === 'pages' ? 'pages' : 'personal'
+
+  // Company Pages ride on LinkedIn's Community Management API, approved only for registered legal
+  // entities. Personal is the only connectable type until that clears; the `pages` plumbing
+  // (token.ts, callback, LinkedinCompany.type) stays put so re-enabling is a revert.
+  if (query.appType === 'pages') {
+    throw createError({ statusCode: 403, message: 'LinkedIn Company Pages are not available yet.' })
+  }
 
   const requestedClientSiteId = query.clientSiteId as string | undefined
   const clientSiteId = user.role === 'superadmin' && requestedClientSiteId ? requestedClientSiteId : user.clientSiteId
@@ -21,15 +27,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing clientSiteId' })
   }
 
-  const clientId =
-    appType === 'pages' ? process.env.LINKEDIN_CLIENT_ID_COMPANY : process.env.LINKEDIN_CLIENT_ID_PERSONAL
+  const clientId = process.env.LINKEDIN_CLIENT_ID_PERSONAL
   if (!clientId) {
-    throw createError({ statusCode: 500, message: `LinkedIn ${appType} Client ID not configured` })
+    throw createError({ statusCode: 500, message: 'LinkedIn personal Client ID not configured' })
   }
 
   const redirectUri = getLinkedInRedirectUri()
 
-  const state = signOAuthState({ nonce: randomUUID(), clientSiteId, appType })
+  const state = signOAuthState({ nonce: randomUUID(), clientSiteId, appType: 'personal' })
 
   setCookie(event, 'linkedin_oauth_state', state, {
     httpOnly: true,
@@ -39,10 +44,7 @@ export default defineEventHandler(async (event) => {
     maxAge: 300,
   })
 
-  const scope =
-    appType === 'pages'
-      ? 'w_organization_social r_organization_social rw_organization_admin'
-      : 'openid profile email w_member_social'
+  const scope = 'openid profile email w_member_social'
 
   const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}&scope=${encodeURIComponent(scope)}`
 

@@ -173,10 +173,9 @@ export default defineEventHandler(async (event) => {
   // fabricate one with `linkedinOrgId: 'placeholder'`, which the unique index let exactly one
   // tenant get away with; everyone else's settings save died on P2002.
   if (linkedinMode !== undefined) {
-    // Prefers the 'pages' company; a tenant with only a personal profile falls back to that.
-    const company =
-      (await db.linkedinCompany.findFirst({ where: { clientSiteId: id, type: 'pages' } })) ??
-      (await db.linkedinCompany.findFirst({ where: { clientSiteId: id } }))
+    // Personal is the only connectable type, but a tenant may still carry an older 'pages' row —
+    // hence no `type` filter, so its publish mode stays editable.
+    const company = await db.linkedinCompany.findFirst({ where: { clientSiteId: id } })
 
     if (company) {
       await db.linkedinCompany.update({ where: { id: company.id }, data: { mode: linkedinMode } })

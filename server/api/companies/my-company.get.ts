@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
-  const appType = (getQuery(event).type as string) || 'pages'
+  const appType = (getQuery(event).type as string) || 'personal'
   const db = await getEnhancedPrisma(user)
 
   const company = await db.linkedinCompany.findFirst({
