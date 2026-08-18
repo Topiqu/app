@@ -30,12 +30,7 @@
       </div>
     </div>
 
-    <Button
-      v-if="embedded && !isConnected"
-      variant="primary"
-      class="bg-[#0A66C2] text-white"
-      @click="connectLinkedIn"
-    >
+    <Button v-if="embedded && !isConnected" variant="primary" class="bg-[#0A66C2] text-white" @click="connectLinkedIn">
       <Icon name="mdi:account" class="mr-1" />
       {{ $t('common.preferences.linkedin.connect') }}
     </Button>
@@ -125,11 +120,10 @@ const isConnected = shallowRef(false)
 const localType = shallowRef(props.type || 'personal')
 
 // `pages` is no longer connectable, but a tenant may still carry a row from before it was disabled.
-const connectedLabel = computed(() =>
-  t('common.preferences.linkedin.connected', [
-    t(localType.value === 'pages' ? 'common.preferences.linkedin.typePages' : 'common.preferences.linkedin.typePersonal'),
-  ]),
-)
+const connectedLabel = computed(() => {
+  const type = localType.value === 'pages' ? 'typePages' : 'typePersonal'
+  return t('common.preferences.linkedin.connected', [t(`common.preferences.linkedin.${type}`)])
+})
 
 const localMode = shallowRef(props.mode || 'HitL')
 const localBrandProfile = ref({
