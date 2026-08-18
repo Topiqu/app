@@ -1,20 +1,19 @@
 <template>
-  <main class="w-full max-w-5xl mx-auto mt-6 sm:mt-10 px-4 sm:px-6 pb-28 flex flex-col gap-6">
+  <div class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pb-28 pt-6 sm:px-6 sm:pt-10">
     <header class="flex items-center justify-between gap-4">
-      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-highlighted">
         {{ $t('common.preferences.title') }}
       </h1>
 
-      <LazyClientHint v-if="!isBasic" v-slot="{ open: clientHintOpen }" hydrateOnInteraction>
-        <Button
+      <LazyClientHint v-if="!isBasic" hydrateOnInteraction>
+        <UButton
           square
-          borderless
+          variant="ghost"
           size="sm"
-          variant="neutral"
-          icon="mdi:information-outline"
-          :aria="$t('common.preferences.explanation')"
+          color="neutral"
+          icon="i-mdi-information-outline"
+          :aria-label="$t('common.preferences.explanation')"
           :title="$t('common.preferences.explanation')"
-          @click="clientHintOpen.value = true"
         />
       </LazyClientHint>
     </header>
@@ -22,19 +21,20 @@
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">
       <SettingsNav v-model="activeTab" :tabs="tabs" />
 
-      <div class="flex-1 min-w-0 space-y-8">
+      <div class="min-w-0 flex-1 space-y-8">
         <section v-show="activeTab === 'branding'">
-          <LazyFormClientBranding
+          <FormClientBranding
+            v-model:description="form.description"
+            v-model:tagline="form.tagline"
+            v-model:typographyPreset="form.typographyPreset"
+            v-model:socials="form.socials"
+            v-model:currentTheme="form.theme"
             :logoUrl="form.logoUrl"
-            :description="form.description"
-            :socials="form.socials"
+            :faviconUrl="form.faviconUrl"
             :name="client?.name ?? ''"
             :domain="client?.domain ?? ''"
-            :currentTheme="form.theme"
             @update:logoUrl="((form.logoUrl = $event.url), (form.optimizedUrl = $event.optimizedUrl))"
-            @update:description="form.description = $event"
-            @update:socials="form.socials = $event"
-            @update:currentTheme="form.theme = $event as typeof form.theme"
+            @update:faviconUrl="form.faviconUrl = $event.url"
           />
         </section>
 
@@ -55,108 +55,87 @@
         <div v-if="!isBasic" v-show="activeTab === 'integrations'" class="space-y-8">
           <section>
             <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Icon name="mdi:google-analytics" class="w-5 h-5 text-orange-500" />
+              <UIcon size="20" name="i-mdi-google-analytics" class="text-orange-500" />
               {{ $t('common.preferences.external') }}
             </h3>
 
-            <div
-              class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm space-y-6"
-            >
-              <label class="flex items-center justify-between gap-4 cursor-pointer">
-                <span class="font-medium">Google Analytics</span>
-                <FormField v-model="form.allowGtag" type="checkbox" aria-label="Enable Google Analytics" class="w-auto" />
-              </label>
-              <Transition name="fade">
-                <FormField
-                  v-if="form.allowGtag"
-                  v-model="form.gtagId"
-                  label="Measurement ID"
-                  placeholder="G-XXXXXXXXXX"
-                  icon="mdi:tag-outline"
-                />
-              </Transition>
+            <UCard>
+              <div class="space-y-6">
+                <UFormField :label="$t('common.preferences.integrations.analytics')" :ui="{ label: 'sr-only' }">
+                  <UCheckbox v-model="form.allowGtag" :label="$t('common.preferences.integrations.analytics')" />
+                </UFormField>
+                <UFormField v-if="form.allowGtag" :label="$t('common.preferences.integrations.measurementId')">
+                  <UInput v-model="form.gtagId" placeholder="G-XXXXXXXXXX" leadingIcon="i-mdi-tag-outline" />
+                </UFormField>
 
-              <div v-if="isSuperadmin" class="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                <label class="flex items-center justify-between gap-4 mb-3 cursor-pointer">
-                  <span class="font-medium">Google Ads</span>
-                  <FormField v-model="form.allowAds" type="checkbox" aria-label="Enable Google Ads" class="w-auto" />
-                </label>
-                <Transition name="fade">
-                  <FormField
-                    v-if="form.allowAds"
-                    v-model="form.gamNetworkCode"
-                    label="Network Code"
-                    placeholder="XXXXXXXXXX"
-                    icon="mdi:code-tags"
-                  />
-                </Transition>
+                <div v-if="isSuperadmin" class="pt-4 border-t border-default">
+                  <UFormField :label="$t('common.preferences.integrations.ads')" :ui="{ label: 'sr-only' }">
+                    <UCheckbox v-model="form.allowAds" :label="$t('common.preferences.integrations.ads')" />
+                  </UFormField>
+                  <UFormField v-if="form.allowAds" :label="$t('common.preferences.integrations.networkCode')">
+                    <UInput v-model="form.gamNetworkCode" placeholder="XXXXXXXXXX" leadingIcon="i-mdi-code-tags" />
+                  </UFormField>
+                </div>
               </div>
-            </div>
+            </UCard>
           </section>
 
           <section>
             <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Icon name="mdi:key-chain-variant" class="w-5 h-5 text-purple-500" />
+              <UIcon size="20" name="i-mdi-key-chain-variant" />
               {{ $t('common.preferences.api.title') }}
             </h3>
 
-            <div
-              class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm"
-            >
+            <UCard>
               <div v-if="!form.apiKey" class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="text-sm text-neutral-600 dark:text-neutral-400">
+                <div class="text-sm text-muted">
                   {{ $t('common.preferences.api.description') }}
                 </div>
-                <Button variant="neutral" class="shrink-0" @click="generateApiKey">
-                  <Icon name="mdi:plus" class="mr-1.5 size-4" />
+                <UButton color="neutral" variant="soft" icon="i-mdi-plus" class="shrink-0" @click="generateApiKey">
                   {{ $t('common.preferences.api.generate') }}
-                </Button>
+                </UButton>
               </div>
 
               <div v-else class="space-y-3">
-                <FormLabel
-                  :text="$t('common.preferences.api.label')"
-                  class="text-xs font-bold uppercase tracking-wider text-neutral-500"
-                />
+                <UFormField :label="$t('common.preferences.api.label')">
+                  <UInput :modelValue="form.apiKey" :type="apiVisible ? 'text' : 'password'" readonly class="w-full">
+                    <template #trailing>
+                      <div class="flex items-center gap-1">
+                        <UButton
+                          square
+                          variant="ghost"
+                          size="sm"
+                          color="neutral"
+                          :icon="apiVisible ? 'i-mdi-eye-off-outline' : 'i-mdi-eye-outline'"
+                          :aria-label="
+                            apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')
+                          "
+                          :title="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
+                          @click="apiVisible = !apiVisible"
+                        />
+                        <UButton
+                          square
+                          variant="ghost"
+                          size="sm"
+                          color="neutral"
+                          :icon="apiCopied ? 'i-mdi-check' : 'i-mdi-content-copy'"
+                          :aria-label="
+                            apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')
+                          "
+                          :title="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
+                          @click="copyApi(form.apiKey)"
+                        />
+                      </div>
+                    </template>
+                  </UInput>
+                </UFormField>
 
-                <div class="relative">
-                  <FormInput
-                    :modelValue="form.apiKey"
-                    :type="apiVisible ? 'text' : 'password'"
-                    readonly
-                    :inputClass="'font-mono pr-20!'"
-                  />
-
-                  <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    <Button
-                      square
-                      borderless
-                      size="sm"
-                      variant="neutral"
-                      :icon="apiVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'"
-                      :aria="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
-                      :title="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
-                      @click="apiVisible = !apiVisible"
-                    />
-                    <Button
-                      square
-                      borderless
-                      size="sm"
-                      variant="neutral"
-                      :icon="apiCopied ? 'mdi:check' : 'mdi:content-copy'"
-                      :aria="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
-                      :title="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
-                      @click="copyApi(form.apiKey)"
-                    />
-                  </div>
-                </div>
-
-                <div class="flex items-start gap-2 text-xs text-neutral-500 dark:text-neutral-500">
-                  <Icon name="mdi:shield-alert-outline" class="size-4 shrink-0 mt-0.5" />
+                <div class="flex items-start gap-2 text-xs text-muted">
+                  <UIcon size="16" name="i-mdi-shield-alert-outline" class="shrink-0 mt-0.5" />
                   <p>{{ $t('common.preferences.api.warning') }}</p>
                 </div>
               </div>
-            </div>
+            </UCard>
           </section>
 
           <section>
@@ -173,9 +152,7 @@
         </div>
 
         <section v-if="hasAi" v-show="activeTab === 'ai'">
-          <div
-            class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm"
-          >
+          <UCard>
             <LazyFormClientAI
               :username="form.aiUser.username"
               :bio="form.aiUser.bio"
@@ -208,7 +185,7 @@
               @update:translationMode="form.translationMode = $event"
               @update:translationLanguages="form.translationLanguages = $event"
             />
-          </div>
+          </UCard>
         </section>
 
         <section v-if="showBilling" v-show="activeTab === 'billing'">
@@ -218,31 +195,22 @@
     </div>
 
     <div class="pointer-events-none sticky bottom-4 z-10 flex justify-center sm:justify-end">
-      <Transition
-        enterActiveClass="transition duration-200 ease-out"
-        enterFromClass="opacity-0 translate-y-2"
-        enterToClass="opacity-100 translate-y-0"
-        leaveActiveClass="transition duration-150 ease-in"
-        leaveFromClass="opacity-100 translate-y-0"
-        leaveToClass="opacity-0 translate-y-2"
+      <UAlert
+        v-if="isDirty"
+        class="pointer-events-auto w-auto"
+        color="warning"
+        variant="soft"
+        icon="i-mdi-content-save-alert-outline"
+        :title="$t('common.preferences.unsaved')"
       >
-        <div
-          v-if="isDirty"
-          class="pointer-events-auto flex items-center gap-3 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 bg-white/95 dark:bg-neutral-900/95 backdrop-blur py-2 pl-4 pr-2 shadow-xl"
-        >
-          <span class="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
-            <span class="size-2 rounded-full bg-amber-500 animate-pulse" />
-            {{ $t('common.preferences.unsaved') }}
-          </span>
-          <Button size="sm" @click="savePreferences">
+        <template #actions>
+          <UButton size="sm" @click="savePreferences">
             {{ $t('common.actions.saveChanges') }}
-          </Button>
-        </div>
-      </Transition>
+          </UButton>
+        </template>
+      </UAlert>
     </div>
-
-    <ModalMini ref="discardDialog" />
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -252,14 +220,14 @@ import type { SettingsTab } from '~/components/Settings/Nav.vue'
 
 import { buildClientSettingsForm, type ClientSite } from '~/utils/buildClientSettingsForm'
 
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
 const toast = useToast()
 const { data: auth } = useAuth()
 const route = useRoute()
 const router = useRouter()
 const { copy: copyApi, copied: apiCopied } = useClipboard({ legacy: true })
-const discardDialog = useTemplateRef<ModalMiniRef>('discardDialog')
+const confirm = useConfirm()
 const apiVisible = shallowRef(false)
 
 const clientId = computed(() => auth.value?.user.clientSiteId)
@@ -273,7 +241,7 @@ const form = ref(buildClientSettingsForm(client.value))
 const pristine = ref(buildClientSettingsForm(client.value))
 const isDirty = computed(() => !equal(form.value, pristine.value))
 
-useSeoMeta({ title: () => `${client.value?.name ?? ''} — ${$t('common.preferences.title')}` })
+useSeoMeta({ title: () => `${client.value?.name ?? ''} - ${$t('common.preferences.title')}` })
 
 const activeFeatures = computed(() => client.value?.activeFeatures ?? [])
 const allowedFeatures = computed(
@@ -286,14 +254,15 @@ const showBilling = computed(() => client.value?.billingPlan !== 'PERMANENT')
 
 const tabs = computed<SettingsTab[]>(() => {
   const t: SettingsTab[] = [
-    { id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'mdi:palette-outline' },
+    { id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'i-mdi-palette-outline' },
   ]
   if (!isBasic.value) {
-    t.push({ id: 'content', labelKey: 'common.preferences.tabs.content', icon: 'mdi:text-box-outline' })
-    t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'mdi:puzzle-outline' })
+    t.push({ id: 'content', labelKey: 'common.preferences.tabs.content', icon: 'i-mdi-text-box-outline' })
+    t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'i-mdi-puzzle-outline' })
   }
-  if (hasAi.value) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
-  if (showBilling.value) t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'mdi:credit-card-outline' })
+  if (hasAi.value) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'i-mdi-robot-outline' })
+  if (showBilling.value)
+    t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'i-mdi-credit-card-outline' })
   return t
 })
 
@@ -320,31 +289,36 @@ const toggleFeature = async ({ code, enabled }: { code: 'AI' | 'SENTIMENT' | 'AR
       monthlyPayment: res.monthlyPayment,
       annualPayment: res.annualPayment,
     }
-    toast.success({ message: enabled ? $t('common.messages.saveSuccess') : $t('common.messages.featureDisabled') })
+    toast.add({
+      color: 'success',
+      title: enabled ? $t('common.messages.saveSuccess') : $t('common.messages.featureDisabled'),
+    })
   } catch {
-    toast.error({ message: $t('common.messages.saveFailed') })
+    toast.add({ color: 'error', title: $t('common.messages.saveFailed') })
     await refresh()
   }
 }
 
 const savePreferences = async () => {
-  if (!clientId.value) return toast.error({ message: $t('common.preferences.messages.noClientId') })
+  if (!clientId.value) return toast.add({ color: 'error', title: $t('common.preferences.messages.noClientId') })
   try {
+    const { allowAds, gamNetworkCode, ...tenantForm } = form.value
     await $fetch(`/api/clients/${clientId.value}` as `/api/clients/:id`, {
       method: 'PATCH',
       body: {
-        ...form.value,
-        logoUrl: form.value.optimizedUrl || form.value.logoUrl,
+        ...tenantForm,
+        ...(isSuperadmin.value ? { allowAds, gamNetworkCode } : {}),
+        logoUrl: form.value.logoUrl,
         socials: form.value.socials.filter((s) => s.url.trim()),
         aiUser: client.value?.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
       },
     })
-    toast.success({ message: $t('common.messages.successGeneralTitle') })
+    toast.add({ color: 'success', title: $t('common.messages.successGeneralTitle') })
     await refresh()
     form.value = buildClientSettingsForm(client.value)
     pristine.value = buildClientSettingsForm(client.value)
   } catch {
-    toast.error({ message: $t('common.messages.saveFailed') })
+    toast.add({ color: 'error', title: $t('common.messages.saveFailed') })
   }
 }
 
@@ -354,22 +328,22 @@ const generateApiKey = async () => {
     const res = await $fetch<{ apiKey: string }>(`/api/clients/${clientId.value}/api-key`, { method: 'POST' })
     form.value.apiKey = res.apiKey
     pristine.value.apiKey = res.apiKey
-    toast.success({ message: 'API Key successfully generated' })
+    toast.add({ color: 'success', title: $t('common.preferences.api.generateSuccess') })
   } catch {
-    toast.error({ message: 'Failed to generate API Key' })
+    toast.add({ color: 'error', title: $t('common.preferences.api.generateFailed') })
   }
 }
 
 onBeforeRouteLeave(async () => {
   if (!isDirty.value) return true
-  const r = await discardDialog.value?.ask({
+  const r = await confirm({
     title: $t('common.messages.closeConfirmTitle'),
     message: $t('common.messages.closeConfirmText'),
-    icon: 'mdi:alert-outline',
+    icon: 'i-mdi-alert-outline',
     confirmText: $t('common.messages.closeConfirmButton'),
     cancelText: $t('common.messages.deleteCancel'),
     variant: 'danger',
   })
-  return r === 'ok'
+  return r
 })
 </script>
