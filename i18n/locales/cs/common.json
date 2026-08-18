@@ -34,10 +34,10 @@
       "analyticsStepTwo": "Zkopírujte Measurement ID ve formátu G-XXXXXXXXXX.",
       "analyticsStepThree": "Zapněte měření, vložte ID a uložte změny.",
       "enableAnalytics": "Zapnout Google Analytics",
-      "linkedinDescription": "Publikujte schválený obsah na profil nebo firemní stránku.",
-      "linkedinBenefitOne": "Podporuje osobní profil i LinkedIn Company Page.",
+      "linkedinDescription": "Publikujte schválený obsah na svůj osobní LinkedIn profil.",
+      "linkedinBenefitOne": "Schválené příspěvky míří přímo na váš osobní profil.",
       "linkedinBenefitTwo": "Režim Human in the Loop zachová kontrolu před publikováním.",
-      "linkedinStepOne": "Vyberte osobní profil nebo firemní stránku.",
+      "linkedinStepOne": "Připojte svůj osobní LinkedIn profil.",
       "linkedinStepTwo": "Povolte Topiqu požadovaný přístup na LinkedIn.",
       "linkedinStepThree": "Nastavte režim publikování a pravidla značky.",
       "developerTitle": "API a WordPress",
@@ -451,17 +451,23 @@
         "label": "Popis blogu",
         "placeholder": "Popis blogu (např. vaše mise nebo slogan)"
       },
+      "content": {
+        "title": "Obsahový brief",
+        "description": "Z těchto údajů vychází AI u každého generovaného článku."
+      },
       "focus": {
         "label": "Zaměření",
-        "placeholder": "Zaměření (např. objektivní herní žurnalistika, důraz na Unreal Engine)"
+        "help": "Hlavní téma a úhel pohledu. Určuje, o čem se píše a s jakým záměrem.",
+        "placeholder": "Např. objektivní herní žurnalistika s důrazem na Unreal Engine"
       },
       "audience": {
         "label": "Cílová skupina",
-        "placeholder": "Cílová skupina (např. mladí dospělí, profesionálové)"
+        "help": "Pro koho píšete. Ovlivňuje styl, slovník i technickou úroveň.",
+        "placeholder": "Např. mladí dospělí 18–25 let, vývojáři her"
       },
       "language": {
         "label": "Jazyk",
-        "placeholder": "Vyberte jazyk"
+        "help": "Jazyk, ve kterém vznikají nové články."
       },
       "theme": {
         "label": "Vzhled",
@@ -469,7 +475,10 @@
       },
       "keywords": {
         "label": "Klíčová slova",
-        "placeholder": "Klíčová slova (oddělená čárkou)",
+        "help": "Témata, která se mají ve výstupech objevovat častěji. Používají se i pro SEO.",
+        "placeholder": "Např. Unreal Engine, AI ve hrách",
+        "hint": "Přidejte klávesou Enter nebo čárkou.",
+        "remove": "Odebrat {0}",
         "count": "Počet slov: {0}"
       },
       "autoRelease": {
@@ -537,6 +546,40 @@
       "socials": {
         "label": "Sociální sítě",
         "noSocials": "Zatím nebyly přidány žádné sociální sítě."
+      },
+      "linkedin": {
+        "title": "Automatizace LinkedInu",
+        "description": "Nastavte automatické publikování příspěvků na LinkedIn.",
+        "connect": "Připojit osobní profil",
+        "connected": "Připojeno ({0})",
+        "typePersonal": "osobní profil",
+        "typePages": "firemní stránka",
+        "reconnect": "Připojit znovu",
+        "mode": {
+          "label": "Režim publikování",
+          "hitl": "Human in the Loop (HitL)",
+          "fullAuto": "Plná automatizace (hlídaná pravidly)",
+          "help": "HitL vyžaduje ruční schválení, než vygenerovaný příspěvek vyjde."
+        },
+        "brand": {
+          "label": "Pravidla značky",
+          "tone": {
+            "label": "Tón komunikace",
+            "placeholder": "Např. profesionální a podnětný"
+          },
+          "audience": {
+            "label": "Cílová skupina",
+            "placeholder": "Např. softwaroví inženýři, CTO"
+          },
+          "doList": {
+            "label": "Doporučená témata (oddělená čárkou)",
+            "placeholder": "Např. React, inovace, cloud"
+          },
+          "dontList": {
+            "label": "Zakázaná slova (oddělená čárkou)",
+            "placeholder": "Např. levný, garantujeme, spam"
+          }
+        }
       }
     },
     "passwordSuggestions": {

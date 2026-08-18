@@ -34,10 +34,10 @@
       "analyticsStepTwo": "Copy the Measurement ID in the G-XXXXXXXXXX format.",
       "analyticsStepThree": "Enable measurement, enter the ID, and save your changes.",
       "enableAnalytics": "Enable Google Analytics",
-      "linkedinDescription": "Publish approved content to a profile or company page.",
-      "linkedinBenefitOne": "Supports personal profiles and LinkedIn Company Pages.",
+      "linkedinDescription": "Publish approved content to your personal LinkedIn profile.",
+      "linkedinBenefitOne": "Approved posts go straight to your personal profile.",
       "linkedinBenefitTwo": "Human in the Loop keeps approval control before publishing.",
-      "linkedinStepOne": "Choose a personal profile or company page.",
+      "linkedinStepOne": "Connect your personal LinkedIn profile.",
       "linkedinStepTwo": "Grant Topiqu the requested LinkedIn access.",
       "linkedinStepThree": "Configure the publishing mode and brand guidelines.",
       "developerTitle": "API and WordPress",
@@ -450,17 +450,23 @@
         "label": "Company Description",
         "placeholder": "Company description (e.g., your mission or slogan)"
       },
+      "content": {
+        "title": "Content brief",
+        "description": "Every article the AI generates starts from these settings."
+      },
       "focus": {
         "label": "Focus",
-        "placeholder": "Focus (e.g., objective gaming journalism, emphasis on Unreal Engine)"
+        "help": "The main topic and angle. It sets what gets written about, and why.",
+        "placeholder": "e.g. objective gaming journalism with an emphasis on Unreal Engine"
       },
       "audience": {
         "label": "Target Audience",
-        "placeholder": "Target audience (e.g., young adults, professionals)"
+        "help": "Who you write for. It shapes style, vocabulary and technical depth.",
+        "placeholder": "e.g. young adults 18–25, game developers"
       },
       "language": {
         "label": "Language",
-        "placeholder": "Choose a language"
+        "help": "The language new articles are written in."
       },
       "theme": {
         "label": "Theme",
@@ -468,7 +474,10 @@
       },
       "keywords": {
         "label": "Keywords",
-        "placeholder": "Keywords (comma-separated)",
+        "help": "Topics that should recur in the output. Also used for SEO.",
+        "placeholder": "e.g. Unreal Engine, AI in games",
+        "hint": "Add with Enter or a comma.",
+        "remove": "Remove {0}",
         "count": "Words: {0}"
       },
       "autoRelease": {
@@ -536,6 +545,40 @@
       "socials": {
         "label": "Social Networks",
         "noSocials": "No social networks added yet."
+      },
+      "linkedin": {
+        "title": "LinkedIn Automation",
+        "description": "Configure your automated LinkedIn publishing settings.",
+        "connect": "Connect Personal",
+        "connected": "Connected ({0})",
+        "typePersonal": "personal profile",
+        "typePages": "company page",
+        "reconnect": "Reconnect",
+        "mode": {
+          "label": "Publishing Mode",
+          "hitl": "Human in the Loop (HitL)",
+          "fullAuto": "Full Auto (Gated by Policy)",
+          "help": "HitL requires manual approval before any generated post goes live."
+        },
+        "brand": {
+          "label": "Brand Guidelines",
+          "tone": {
+            "label": "Tone of Voice",
+            "placeholder": "e.g. Professional and thought-provoking"
+          },
+          "audience": {
+            "label": "Target Audience",
+            "placeholder": "e.g. Software engineers, CTOs"
+          },
+          "doList": {
+            "label": "Do List (comma separated)",
+            "placeholder": "e.g. React, Innovation, Cloud"
+          },
+          "dontList": {
+            "label": "Don't List / Banned Words (comma separated)",
+            "placeholder": "e.g. cheap, guarantee, spam"
+          }
+        }
       }
     },
     "passwordSuggestions": {

@@ -40,7 +40,6 @@
 
         <section v-if="!isBasic" v-show="activeTab === 'content'">
           <LazyFormClientContent
-            :plan="client?.plan ?? 'BASIC'"
             :focus="form.focus"
             :audience="form.audience"
             :language="form.language"
