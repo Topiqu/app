@@ -4,9 +4,9 @@
       <div>
         <h3 class="text-lg font-semibold flex items-center gap-2">
           <Icon name="mdi:linkedin" class="w-5 h-5 text-blue-600" />
-          LinkedIn Automation
+          {{ $t('common.preferences.linkedin.title') }}
         </h3>
-        <p class="text-sm text-neutral-500">Configure your automated LinkedIn publishing settings.</p>
+        <p class="text-sm text-neutral-500">{{ $t('common.preferences.linkedin.description') }}</p>
       </div>
 
       <Button
@@ -16,15 +16,17 @@
         @click="connectLinkedIn"
       >
         <Icon name="mdi:account" class="mr-1" />
-        Connect Personal
+        {{ $t('common.preferences.linkedin.connect') }}
       </Button>
       <div v-else class="flex flex-col items-end">
         <div
           class="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full"
         >
-          <Icon name="mdi:check-circle" /> Connected ({{ localType }})
+          <Icon name="mdi:check-circle" /> {{ connectedLabel }}
         </div>
-        <button class="text-xs text-blue-600 hover:underline mt-2" @click="connectLinkedIn">Reconnect</button>
+        <button class="text-xs text-blue-600 hover:underline mt-2" @click="connectLinkedIn">
+          {{ $t('common.preferences.linkedin.reconnect') }}
+        </button>
       </div>
     </div>
 
@@ -35,14 +37,16 @@
       @click="connectLinkedIn"
     >
       <Icon name="mdi:account" class="mr-1" />
-      Connect Personal
+      {{ $t('common.preferences.linkedin.connect') }}
     </Button>
 
     <div v-if="embedded && isConnected" class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-2 text-sm font-medium text-emerald-600">
-        <Icon name="mdi:check-circle" /> Connected ({{ localType }})
+        <Icon name="mdi:check-circle" /> {{ connectedLabel }}
       </div>
-      <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn">Reconnect</button>
+      <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn">
+        {{ $t('common.preferences.linkedin.reconnect') }}
+      </button>
     </div>
 
     <div
@@ -50,48 +54,48 @@
       class="bg-white/5 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10 space-y-6"
     >
       <div>
-        <h4 class="font-medium mb-3">Publishing Mode</h4>
+        <h4 class="font-medium mb-3">{{ $t('common.preferences.linkedin.mode.label') }}</h4>
         <div class="flex gap-4">
           <label class="flex items-center gap-2 cursor-pointer">
             <input v-model="localMode" type="radio" :value="'HitL'" @change="emitUpdate" />
-            <span>Human in the Loop (HitL)</span>
+            <span>{{ $t('common.preferences.linkedin.mode.hitl') }}</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer">
             <input v-model="localMode" type="radio" :value="'FullAuto'" @change="emitUpdate" />
-            <span>Full Auto (Gated by Policy)</span>
+            <span>{{ $t('common.preferences.linkedin.mode.fullAuto') }}</span>
           </label>
         </div>
-        <p class="text-xs text-neutral-500 mt-2">HitL requires manual approval before any generated post goes live.</p>
+        <p class="text-xs text-neutral-500 mt-2">{{ $t('common.preferences.linkedin.mode.help') }}</p>
       </div>
 
       <div class="space-y-4 pt-4 border-t border-white/10">
-        <h4 class="font-medium">Brand Guidelines</h4>
+        <h4 class="font-medium">{{ $t('common.preferences.linkedin.brand.label') }}</h4>
 
         <FormField
           v-model="localBrandProfile.tone"
-          label="Tone of Voice"
-          placeholder="e.g. Professional and thought-provoking"
+          :label="$t('common.preferences.linkedin.brand.tone.label')"
+          :placeholder="$t('common.preferences.linkedin.brand.tone.placeholder')"
           @update:modelValue="emitUpdate"
         />
 
         <FormField
           v-model="localBrandProfile.audience"
-          label="Target Audience"
-          placeholder="e.g. Software engineers, CTOs"
+          :label="$t('common.preferences.linkedin.brand.audience.label')"
+          :placeholder="$t('common.preferences.linkedin.brand.audience.placeholder')"
           @update:modelValue="emitUpdate"
         />
 
         <FormField
           v-model="localDoList"
-          label="Do List (Comma separated)"
-          placeholder="e.g. React, Innovation, Cloud"
+          :label="$t('common.preferences.linkedin.brand.doList.label')"
+          :placeholder="$t('common.preferences.linkedin.brand.doList.placeholder')"
           @update:modelValue="emitUpdate"
         />
 
         <FormField
           v-model="localDontList"
-          label="Don't List / Banned Words (Comma separated)"
-          placeholder="e.g. cheap, guarantee, spam"
+          :label="$t('common.preferences.linkedin.brand.dontList.label')"
+          :placeholder="$t('common.preferences.linkedin.brand.dontList.placeholder')"
           @update:modelValue="emitUpdate"
         />
       </div>
@@ -115,8 +119,17 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:mode', 'update:brandProfile', 'update:type'])
 
+const { t } = useI18n()
+
 const isConnected = shallowRef(false)
 const localType = shallowRef(props.type || 'personal')
+
+// `pages` is no longer connectable, but a tenant may still carry a row from before it was disabled.
+const connectedLabel = computed(() =>
+  t('common.preferences.linkedin.connected', [
+    t(localType.value === 'pages' ? 'common.preferences.linkedin.typePages' : 'common.preferences.linkedin.typePersonal'),
+  ]),
+)
 
 const localMode = shallowRef(props.mode || 'HitL')
 const localBrandProfile = ref({
