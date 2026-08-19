@@ -20,7 +20,7 @@
     </header>
 
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">
-      <SettingsNav v-model="activeTab" :tabs="tabs" />
+      <TabNav v-model="activeTab" :tabs="tabs" :label="$t('common.preferences.title')" />
 
       <div class="flex-1 min-w-0 space-y-8">
         <section v-show="activeTab === 'branding'">
@@ -165,7 +165,7 @@
 <script setup lang="ts">
 import equal from 'fast-deep-equal'
 
-import type { SettingsTab } from '~/components/Settings/Nav.vue'
+import type { TabItem } from '~/components/TabNav.vue'
 
 import { buildClientSettingsForm, type ClientSite } from '~/utils/buildClientSettingsForm'
 
@@ -204,8 +204,8 @@ const showBilling = computed(() => client.value?.billingPlan !== 'PERMANENT')
 const can = (scope: string) =>
   isSuperadmin.value || tenantAccess.value?.role === 'OWNER' || tenantAccess.value?.scopes.includes(scope)
 
-const tabs = computed<SettingsTab[]>(() => {
-  const t: SettingsTab[] = []
+const tabs = computed<TabItem[]>(() => {
+  const t: TabItem[] = []
   if (can('TENANT_SETTINGS'))
     t.push({ id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'mdi:palette-outline' })
   t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'mdi:account-group-outline' })
