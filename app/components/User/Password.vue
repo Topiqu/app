@@ -5,13 +5,8 @@
       v-model="password"
       :type="showPassword ? 'text' : 'password'"
       :placeholder="$t(isConfirm ? 'common.auth.passwordConfirm' : 'common.auth.newPassword')"
-      class="w-full rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all duration-300"
-      :class="{
-        'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-neutral-700': !password,
-        '!border-green-500 dark:border-green-500 bg-gray-100 dark:bg-neutral-700':
-          password && isValidReal && !isConfirm,
-        '!border-red-500 dark:border-red-500 bg-gray-100 dark:bg-neutral-700': password && !isValidReal && !isConfirm,
-      }"
+      autocomplete="new-password"
+      :inputClass="validityClass"
     >
       <template #icon>
         <div
@@ -76,6 +71,12 @@ const isValidReal = computed(() => {
   const maxLength = props.maxLength ?? getFallbackMaxLength()
   const lengthValid = password.value.length >= minLength && password.value.length <= maxLength
   return externalValid && scoreValid && lengthValid
+})
+
+// `inputClass` reaches the control; a plain `class` would land on FormInput's wrapper div instead.
+const validityClass = computed(() => {
+  if (!password.value || props.isConfirm) return ''
+  return isValidReal.value ? '!border-green-500' : '!border-red-500'
 })
 
 const suggestions = computed(() => {

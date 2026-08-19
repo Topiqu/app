@@ -1,67 +1,51 @@
 <template>
-  <div id="sessions-section">
-    <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-      $t('profile.sessions')
-    }}</label>
-    <div class="mt-2 space-y-3">
-      <div
-        v-for="session in props.sessions"
+  <div>
+    <ul v-if="sessions?.length" class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <li
+        v-for="session in sessions"
         :key="session.id"
-        class="relative flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900/70 shadow-sm"
+        class="flex flex-col gap-3 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
       >
-        <span
-          v-if="session.id === props.currentSessionId"
-          class="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 text-xs font-medium rounded-full"
+        <div class="flex min-w-0 items-start gap-3">
+          <Icon :name="deviceIcon(session)" class="mt-0.5 size-5 shrink-0 text-neutral-400 dark:text-neutral-500" />
+          <div class="min-w-0">
+            <p class="flex flex-wrap items-center gap-2 text-sm font-medium text-neutral-900 dark:text-neutral-100">
+              <span class="truncate">
+                {{ deviceLabel(session) }} · {{ session.os || $t('common.unknown') }} ·
+                {{ session.browser || $t('common.unknown') }}
+              </span>
+              <span
+                v-if="session.id === currentSessionId"
+                class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-500/10 dark:text-green-400"
+              >
+                <span class="size-1.5 rounded-full bg-green-500" />
+                {{ $t('profile.active') }}
+              </span>
+            </p>
+            <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+              {{ [session.city, session.region, session.country].filter(Boolean).join(', ') || $t('common.unknown') }}
+              · {{ $t('profile.lastUsed', [formatDate(session.lastUsedAt)]) }}
+            </p>
+          </div>
+        </div>
+
+        <Button
+          v-if="!session.revoked"
+          size="sm"
+          variant="transparent"
+          class="shrink-0 self-start !text-red-600 dark:!text-red-400 sm:self-auto"
+          :disabled="session.id === currentSessionId || isLoading"
+          @click="revokeSession(session.id)"
         >
-          <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-          {{ $t('profile.active') }}
+          {{ $t('common.actions.revoke') }}
+        </Button>
+        <span v-else class="shrink-0 self-start text-xs text-neutral-400 dark:text-neutral-500 sm:self-auto">
+          {{ $t('profile.sessionRevoked') }}
         </span>
-        <div class="flex items-center gap-3">
-          <div class="flex-shrink-0">
-            <Icon
-              :name="
-                getDeviceCategory(session) === 'mobile'
-                  ? 'mdi:cellphone'
-                  : getDeviceCategory(session) === 'tablet'
-                    ? 'mdi:tablet'
-                    : 'mdi:laptop'
-              "
-              class="w-6 h-6 text-indigo-500 dark:text-indigo-400"
-            />
-          </div>
-          <div class="space-y-1">
-            <p class="font-medium text-gray-900 dark:text-white">
-              {{ getDeviceLabel(session) }} – {{ session.os || $t('common.unknown') }} –
-              {{ session.browser || $t('common.unknown') }}
-            </p>
-            <p class="text-xs text-gray-600 dark:text-gray-400">
-              {{ session.city || $t('common.unknown') }}, {{ session.region || $t('common.unknown') }},
-              {{ session.country || $t('common.unknown') }}
-            </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              {{ $t('profile.lastUsed', [formatDate(session.lastUsedAt)]) }}
-            </p>
-          </div>
-        </div>
-        <div class="mt-3 sm:mt-0">
-          <Button
-            v-if="!session.revoked"
-            size="sm"
-            :disabled="session.id === props.currentSessionId || props.isLoading"
-            class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            @click="revokeSession(session.id)"
-          >
-            {{ $t('common.actions.revoke') }}
-          </Button>
-          <span v-else class="px-3 py-1 bg-gray-100 dark:bg-neutral-800 text-gray-500 text-xs rounded-lg">
-            {{ $t('profile.sessionRevoked') }}
-          </span>
-        </div>
-      </div>
-      <p v-if="!props.sessions?.length" class="text-sm text-gray-500 dark:text-gray-400 italic">
-        {{ $t('profile.noActiveSessions') }}
-      </p>
-    </div>
+      </li>
+    </ul>
+
+    <p v-else class="text-sm text-neutral-500 dark:text-neutral-400">{{ $t('profile.noActiveSessions') }}</p>
   </div>
 </template>
 
@@ -70,10 +54,11 @@ import { formatDate } from '~~/shared/utils'
 
 import type { Session } from '~/composables/useProfile'
 
-const props = defineProps<{
-  sessions: Session[]
+// `sessions` is optional because the panel renders before `/account` resolves.
+const { sessions, currentSessionId, isLoading } = defineProps<{
+  sessions?: Session[]
   currentSessionId?: string
-  isLoading: boolean
+  isLoading?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -84,20 +69,17 @@ const emit = defineEmits<{
 
 const toast = useToast()
 
-function getDeviceCategory(session: { device: string | null; os: string | null }) {
+function deviceIcon(session: { device: string | null; os: string | null }) {
   const device = session.device?.toLowerCase() || ''
   const os = session.os?.toLowerCase() || ''
-  if (os.includes('android') || os.includes('ios')) return 'mobile'
-  if (os.includes('ipad') || os.includes('tablet')) return 'tablet'
-  if (device.includes('mobile')) return 'mobile'
-  if (device.includes('tablet')) return 'tablet'
-  return 'desktop'
+  if (os.includes('ipad') || os.includes('tablet') || device.includes('tablet')) return 'mdi:tablet'
+  if (os.includes('android') || os.includes('ios') || device.includes('mobile')) return 'mdi:cellphone'
+  return 'mdi:laptop'
 }
 
-function getDeviceLabel(session: { device: string | null; os: string | null }) {
-  if (!session.device || session.device.length <= 2) {
-    return session.os || 'Unknown'
-  }
+// Some user agents report a 1–2 char device code, which reads as noise next to the OS name.
+function deviceLabel(session: { device: string | null; os: string | null }) {
+  if (!session.device || session.device.length <= 2) return session.os || $t('common.unknown')
   return session.device
 }
 
@@ -110,11 +92,9 @@ async function revokeSession(sessionId: string) {
     })
     emit(
       'update:sessions',
-      props.sessions.map((s) => (s.id === sessionId ? { ...s, revoked: true } : s)),
+      (sessions ?? []).map((s) => (s.id === sessionId ? { ...s, revoked: true } : s)),
     )
-    if (sessionId === props.currentSessionId) {
-      emit('signOut')
-    }
+    if (sessionId === currentSessionId) emit('signOut')
     toast.success({ message: $t('profile.sessionRevokedSuccess') })
   } catch (err: any) {
     toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })

@@ -1,80 +1,89 @@
-<!-- components/UserStats.vue -->
 <template>
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
-    <div
-      class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
-      @click="$emit('open-dialog', 'followed')"
+  <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+    <component
+      :is="metric.onSelect ? 'button' : 'div'"
+      v-for="metric in metrics"
+      :key="metric.label"
+      :type="metric.onSelect ? 'button' : undefined"
+      class="rounded-xl bg-neutral-50 px-3.5 py-3 text-left transition-colors dark:bg-neutral-800/40"
+      :class="
+        metric.onSelect &&
+        'cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+      "
+      @click="metric.onSelect?.()"
     >
-      <Icon name="mdi:account-multiple" class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
-      <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-        {{ $t('profile.following') }}
-      </p>
-      <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-        {{ followers ?? 0 }}
-      </p>
-    </div>
-    <div
-      class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
-      @click="$emit('open-dialog', 'followers')"
-    >
-      <Icon name="mdi:account-multiple" class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-indigo-500 dark:text-indigo-400" />
-      <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-        {{ $t('profile.followers') }}
-      </p>
-      <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-        {{ following ?? 0 }}
-      </p>
-    </div>
-    <div
-      class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
-      @click="$emit('update-tab', 'likedArticles')"
-    >
-      <Icon name="mdi:heart" class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-red-500 dark:text-red-400" />
-      <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-        {{ $t('profile.likedArticles') }}
-      </p>
-      <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-        {{ likedArticles?.length ?? 0 }}
-      </p>
-    </div>
-    <div
-      class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 cursor-pointer touch-manipulation"
-      @click="$emit('update-tab', 'comments')"
-    >
-      <Icon
-        name="mdi:comment-multiple-outline"
-        class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-indigo-500 dark:text-indigo-400"
-      />
-      <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-        {{ $t('articles.comments.title') }}
-      </p>
-      <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-        {{ commentsCount ?? 0 }}
-      </p>
-    </div>
-    <div
-      class="bg-gray-50 dark:bg-neutral-900 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 text-center transition-transform hover:scale-105 touch-manipulation"
-    >
-      <Icon name="mdi:thumb-up" class="w-5 h-5 sm:w-6 sm:h-6 mx-auto text-green-500 dark:text-green-400" />
-      <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">{{ $t('profile.likes') }}</p>
-      <p class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-        {{ likesCount ?? 0 }}
-      </p>
-    </div>
+      <span class="flex items-center gap-1.5">
+        <Icon :name="metric.icon" class="size-4 shrink-0" :class="metric.tone" />
+        <span class="text-2xl font-semibold leading-none tabular-nums text-neutral-900 dark:text-neutral-100">
+          {{ metric.value }}
+        </span>
+      </span>
+      <!-- Label below the number, so a two-line label ("Oblíbené články") cannot push the
+           figures out of alignment with each other. -->
+      <span class="mt-1.5 block text-xs leading-tight text-neutral-500 dark:text-neutral-400">
+        {{ metric.label }}
+      </span>
+    </component>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  followers?: number
-  following?: number
+const {
+  followingCount = 0,
+  followerCount = 0,
+  likedArticles,
+  commentsCount = 0,
+  likesCount = 0,
+} = defineProps<{
+  followingCount?: number
+  followerCount?: number
   likedArticles?: Array<{ id: string }>
   commentsCount?: number
   likesCount?: number
 }>()
 
-defineEmits<{
-  (e: 'open-dialog', type: 'followers' | 'followed'): void
-  (e: 'update-tab', tab: 'likedArticles' | 'comments'): void
+const emit = defineEmits<{
+  (e: 'openDialog', type: 'followers' | 'followed'): void
+  (e: 'updateTab', tab: 'likedArticles' | 'comments'): void
 }>()
+
+const neutralTone = 'text-neutral-400 dark:text-neutral-500'
+
+const metrics = computed(() => [
+  {
+    label: $t('profile.following'),
+    value: followingCount,
+    icon: 'mdi:account-arrow-right-outline',
+    tone: neutralTone,
+    onSelect: () => emit('openDialog', 'followed'),
+  },
+  {
+    label: $t('profile.followers'),
+    value: followerCount,
+    icon: 'mdi:account-multiple-outline',
+    tone: neutralTone,
+    onSelect: () => emit('openDialog', 'followers'),
+  },
+  {
+    label: $t('profile.likedArticles'),
+    value: likedArticles?.length ?? 0,
+    icon: 'mdi:heart',
+    tone: 'text-red-500',
+    onSelect: () => emit('updateTab', 'likedArticles'),
+  },
+  {
+    label: $t('articles.comments.title'),
+    value: commentsCount,
+    icon: 'mdi:comment-multiple-outline',
+    tone: neutralTone,
+    onSelect: () => emit('updateTab', 'comments'),
+  },
+  {
+    label: $t('profile.likes'),
+    value: likesCount,
+    icon: 'mdi:thumb-up',
+    tone: 'text-green-600 dark:text-green-500',
+    onSelect: undefined,
+  },
+])
 </script>

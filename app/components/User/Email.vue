@@ -1,50 +1,44 @@
 <template>
   <div class="space-y-4">
-    <div class="relative">
-      <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">{{
-        $t('profile.email')
-      }}</label>
-      <div class="relative flex items-center justify-center">
-        <input
-          v-model="email"
-          disabled
-          class="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none transition pr-10"
-        />
-        <Icon
-          v-if="isEmailVerified"
-          name="mdi:check-circle"
-          class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-green-500"
-        />
-        <Icon
-          v-else
-          name="mdi:alert-circle"
-          class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-yellow-500"
-        />
+    <div class="flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+          {{ $t('profile.email') }}
+        </p>
+        <p class="mt-0.5 truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">{{ email }}</p>
       </div>
+      <span
+        class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+        :class="
+          isEmailVerified
+            ? 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400'
+            : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
+        "
+      >
+        <Icon :name="isEmailVerified ? 'mdi:check-circle' : 'mdi:alert-circle-outline'" class="size-3.5" />
+        {{ isEmailVerified ? $t('profile.checks.emailVerified') : $t('profile.checks.emailNotVerified') }}
+      </span>
     </div>
+
     <div v-if="!isEmailVerified" class="space-y-3">
       <Button
         :disabled="isLoading || isVerificationCodeSent"
-        class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 text-sm"
+        icon="mdi:email-send-outline"
+        class="w-full"
         @click="sendVerificationCode"
       >
-        <Icon name="mdi:email-send" class="w-4 h-4 mr-2" />
         {{ $t('common.auth.sendCode') }}
       </Button>
+
       <div v-if="isVerificationCodeSent" class="space-y-2">
-        <div class="relative flex items-center justify-center">
-          <input
-            v-model="verificationCode"
-            :placeholder="$t('common.auth.enterCode')"
-            class="w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white px-3 sm:px-4 py-2 sm:py-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-          />
-        </div>
+        <FormInput v-model="verificationCode" name="verificationCode" :placeholder="$t('common.auth.enterCode')" />
         <Button
           :disabled="isLoading || !verificationCode"
-          class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 text-sm"
+          icon="mdi:check"
+          variant="success"
+          class="w-full"
           @click="verifyEmail"
         >
-          <Icon name="mdi:check" class="w-4 h-4 mr-2" />
           {{ $t('common.auth.verify') }}
         </Button>
       </div>
@@ -53,8 +47,9 @@
 </template>
 
 <script setup lang="ts">
-const email = defineModel<string>('email', { required: true })
-const isEmailVerified = defineModel<boolean>('isEmailVerified', { required: true })
+// Defaults rather than `required`: the panel renders before `/account` resolves.
+const email = defineModel<string>('email', { default: '' })
+const isEmailVerified = defineModel<boolean>('isEmailVerified', { default: false })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
 const toast = useToast()
