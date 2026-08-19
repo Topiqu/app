@@ -44,7 +44,7 @@ export function defineMonitoredTask(def: Parameters<typeof defineTask>[0]): Retu
     ...def,
     async run(ctx) {
       if (!name || !run) return run?.(ctx)
-      return withHeartbeat(name, () => run(ctx))
+      return withHeartbeat(name, () => Promise.resolve(run(ctx)))
     },
   })
 }

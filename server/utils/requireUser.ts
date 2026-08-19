@@ -29,8 +29,7 @@ export const requireUser = async (event: H3Event, opts: RequireUserOptions = {})
 
   if (opts.role) {
     const allowed = Array.isArray(opts.role) ? opts.role : [opts.role]
-    if (!allowed.includes(user.role))
-      throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+    if (!allowed.includes(user.role)) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
   }
 
   if (opts.clientSite && !user.clientSiteId)

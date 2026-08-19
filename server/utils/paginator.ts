@@ -1,5 +1,7 @@
 import type { H3Event } from 'h3'
 
+import { z } from 'zod'
+
 interface Pagination {
   skip: number
   take: number
