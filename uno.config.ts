@@ -47,10 +47,14 @@ export default defineConfig({
     animation: {
       keyframes: {
         'progress-slide': '{0%{transform:translateX(-110%)}100%{transform:translateX(410%)}}',
+        // Marks the section a deep link landed on (account-health checks → the control that fixes them).
+        'section-pulse':
+          '{0%{box-shadow:0 0 0 0 rgb(59 130 246 / 0)}15%,45%{box-shadow:0 0 0 4px rgb(59 130 246 / 0.35)}100%{box-shadow:0 0 0 12px rgb(59 130 246 / 0)}}',
       },
-      durations: { 'progress-slide': '1.4s' },
-      timingFns: { 'progress-slide': 'cubic-bezier(0.4,0,0.2,1)' },
-      counts: { 'progress-slide': 'infinite' },
+      durations: { 'progress-slide': '1.4s', 'section-pulse': '1.6s' },
+      timingFns: { 'progress-slide': 'cubic-bezier(0.4,0,0.2,1)', 'section-pulse': 'cubic-bezier(0.22,1,0.36,1)' },
+      counts: { 'progress-slide': 'infinite', 'section-pulse': 1 },
+      properties: { 'section-pulse': { 'animation-fill-mode': 'forwards' } },
     },
   },
   safelist: [
