@@ -123,7 +123,9 @@
       "shareLinkedIn": "Share on LinkedIn",
       "shareFacebook": "Share on Facebook",
       "shareEmail": "Share via email",
-      "copySuccess": "Successfully copied"
+      "copySuccess": "Successfully copied",
+      "confirm": "Confirm",
+      "toggleLayout": "Toggle layout"
     },
     "errTypes": {
       "notFound": "Couldn't find that. I must be blind.",
@@ -242,7 +244,8 @@
     "pagination": {
       "previous": "Previous",
       "next": "Next",
-      "pageInfo": "Page {0} of {1}"
+      "pageInfo": "Page {0} of {1}",
+      "end": "That's everything"
     },
     "user": {
       "joined": "Joined: {0}",
@@ -297,7 +300,8 @@
       "enterTotpCode": "Enter your TOTP code for",
       "totpCode": "TOTP Code",
       "totpCodePlaceholder": "6-digit code",
-      "verifyTotp": "Verify TOTP"
+      "verifyTotp": "Verify TOTP",
+      "enterCode": "Enter the code from your e-mail"
     },
     "labels": {
       "username": "Username",
@@ -625,7 +629,11 @@
       "noResults": "No members match your search.",
       "noPending": "There are no pending invitations.",
       "expires": "Expires",
-      "filters": { "all": "All", "owners": "Owners", "members": "Members" },
+      "filters": {
+        "all": "All",
+        "owners": "Owners",
+        "members": "Members"
+      },
       "remove": "Remove member",
       "removeConfirmTitle": "Remove member?",
       "removeConfirmMessage": "{name} will immediately lose access to this tenant. Their user account will not be deleted.",

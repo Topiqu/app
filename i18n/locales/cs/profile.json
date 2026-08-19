@@ -67,16 +67,48 @@
       "emailNotVerified": "E-mail není ověřen",
       "2faEnabled": "Dvoufaktorová autentizace je povolena",
       "2faDisabled": "Dvoufaktorová autentizace není povolena",
-      "noPassword": "Účet nemá heslo",
+      "noPassword": "Bez hesla — přihlašování přes poskytovatele",
       "passwordStrong": "Heslo je silné",
       "passwordWeak": "Heslo je slabé (síla: {value}/4)",
-      "passwordUnknown": "Síla hesla není známa",
+      "passwordUnknown": "Síla hesla nebyla změřena",
       "noSessions": "Žádné aktivní relace",
       "sessionsOk": "Relace jsou v pořádku",
       "sessionsMultipleCountries": "Relace z více zemí",
       "lastLoginOld": "Poslední přihlášení je starší než rok",
       "noBans": "Žádné bany",
       "bans": "Počet banů: {count}"
-    }
+    },
+    "tabs": {
+      "profile": "Profil",
+      "security": "Zabezpečení",
+      "notifications": "Oznámení",
+      "activity": "Aktivita"
+    },
+    "publicProfile": "Veřejný profil",
+    "dangerZone": "Nebezpečná zóna",
+    "deactivateAccountDescription": "Účet se skryje a budete odhlášeni. Obnovení vyžaduje podporu.",
+    "noActiveSessions": "Žádná přihlášená zařízení",
+    "sessionRevokedSuccess": "Zařízení odebráno",
+    "showQR": "Zobrazit QR kód",
+    "hideQR": "Skrýt QR kód",
+    "securityEvents": "Bezpečnostní aktivita",
+    "securityEventsDescription": "Posledních 20 přihlášení a změn zabezpečení. Pokud něco nepoznáváš, změň si heslo a odeber cizí zařízení.",
+    "noSecurityEvents": "Zatím žádná zaznamenaná aktivita",
+    "passwordChangedAt": "Naposledy změněno",
+    "passwordNeverMeasured": "Datum poslední změny neznáme",
+    "passwordOld": "Heslo je starší než rok",
+    "events": {
+      "SESSION_CREATE": "Přihlášení",
+      "SESSION_REVOKE": "Odebrání zařízení",
+      "PASSWORD_CHANGE": "Změna hesla",
+      "PASSWORD_SET": "Nastavení hesla",
+      "ROLE_CHANGE": "Změna role"
+    },
+    "publicProfileDescription": "Co o tobě uvidí ostatní u tvých článků a komentářů.",
+    "accountDetailsDescription": "Identifikátory účtu — hodí se, když budeš psát podpoře.",
+    "notificationsDescription": "Kde tě smíme kontaktovat. Obojí jde kdykoliv vypnout.",
+    "statsTitle": "Přehled",
+    "healthDescription": "Souhrn zabezpečení účtu. Kliknutím u nesplněné položky skočíš rovnou na nastavení.",
+    "sessionsDescription": "Zařízení, na kterých jsi právě přihlášený."
   }
 }

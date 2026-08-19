@@ -202,7 +202,9 @@
       "shareLinkedIn": "Sdílet na LinkedIn",
       "shareFacebook": "Sdílet na Facebooku",
       "shareEmail": "Sdílet e-mailem",
-      "copySuccess": "Odkaz úspěšně zkopírován"
+      "copySuccess": "Odkaz úspěšně zkopírován",
+      "confirm": "Potvrdit",
+      "toggleLayout": "Přepnout zobrazení"
     },
     "avatar": {
       "title": "Avatar",
@@ -243,7 +245,8 @@
     "pagination": {
       "previous": "Předchozí",
       "next": "Další",
-      "pageInfo": "Strana {0} z {1}"
+      "pageInfo": "Strana {0} z {1}",
+      "end": "To je vše"
     },
     "user": {
       "joined": "Přidal se: {0}",
@@ -298,7 +301,8 @@
       "enterTotpCode": "Zadejte Váš kód pro ",
       "totpCode": "TOTP kód",
       "totpCodePlaceholder": "6místný kód",
-      "verifyTotp": "Ověřit TOTP"
+      "verifyTotp": "Ověřit TOTP",
+      "enterCode": "Zadejte kód z e-mailu"
     },
     "labels": {
       "username": "Uživatelské jméno",
@@ -626,7 +630,11 @@
       "noResults": "Vyhledávání neodpovídají žádní členové.",
       "noPending": "Žádné čekající pozvánky.",
       "expires": "Vyprší",
-      "filters": { "all": "Všichni", "owners": "Vlastníci", "members": "Členové" },
+      "filters": {
+        "all": "Všichni",
+        "owners": "Vlastníci",
+        "members": "Členové"
+      },
       "remove": "Odebrat člena",
       "removeConfirmTitle": "Odebrat člena?",
       "removeConfirmMessage": "Uživatel {name} okamžitě ztratí přístup k tomuto tenantovi. Jeho uživatelský účet nebude smazán.",
