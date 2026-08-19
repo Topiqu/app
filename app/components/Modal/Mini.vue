@@ -46,7 +46,10 @@
             </div>
 
             <div class="flex-grow flex flex-col gap-1 min-w-0">
-              <div v-if="displayTitle || displayIcon || $slots.icon" class="flex items-center gap-2 pr-10">
+              <div
+                v-if="displayTitle || displayIcon || $slots.icon"
+                :class="['flex items-center gap-2', showClose && 'pr-10 sm:pr-0']"
+              >
                 <div class="flex-shrink-0 sm:hidden">
                   <slot name="icon">
                     <Icon
@@ -67,7 +70,10 @@
               </div>
               <DialogDescription
                 v-if="displayMessage"
-                class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed break-words"
+                :class="[
+                  'text-sm text-gray-600 dark:text-gray-400 leading-relaxed break-words',
+                  showClose && !displayTitle && 'pr-10 sm:pr-0',
+                ]"
               >
                 {{ displayMessage }}
               </DialogDescription>
@@ -77,6 +83,22 @@
             </div>
 
             <div class="flex-shrink-0 flex sm:flex-col items-stretch sm:items-center gap-2 sm:ml-2">
+              <div v-if="showClose" class="absolute top-2 right-2 sm:static">
+                <slot name="close">
+                  <Button
+                    square
+                    variant="transparent"
+                    size="sm"
+                    borderless
+                    :aria="$t('common.closeDialog')"
+                    :title="$t('common.closeDialog')"
+                    icon="mdi:close"
+                    class="!text-gray-600 dark:!text-gray-400 hover:!bg-gray-100 dark:hover:!bg-gray-800"
+                    @click="close"
+                  />
+                </slot>
+              </div>
+
               <slot name="actions">
                 <Button
                   v-if="displayCancelText"
@@ -131,23 +153,6 @@
                 />
               </slot>
             </div>
-
-            <div class="absolute top-2 right-2 sm:top-3 sm:right-3">
-              <slot name="close">
-                <Button
-                  v-if="!displayCancelText"
-                  square
-                  variant="transparent"
-                  size="sm"
-                  borderless
-                  :aria="$t('common.closeDialog')"
-                  :title="$t('common.closeDialog')"
-                  icon="mdi:close"
-                  class="!text-gray-600 dark:!text-gray-400 hover:!bg-gray-100 dark:hover:!bg-gray-800"
-                  @click="close"
-                />
-              </slot>
-            </div>
           </DialogPanel>
         </TransitionChild>
       </div>
@@ -185,6 +190,9 @@ const displayIcon = computed(() => overrides.value.icon ?? props.icon)
 const displayConfirmText = computed(() => overrides.value.confirmText ?? props.confirmText)
 const displayCancelText = computed(() => overrides.value.cancelText ?? props.cancelText)
 const displayVariant = computed(() => overrides.value.variant ?? props.variant)
+
+// A rendered cancel button already closes the dialog; a second X would duplicate it.
+const showClose = computed(() => !displayCancelText.value)
 
 const confirmVariant = computed(() =>
   displayVariant.value === 'danger' ? 'danger' : displayVariant.value === 'success' ? 'success' : 'primary',
