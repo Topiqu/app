@@ -274,11 +274,11 @@
 </template>
 
 <script setup lang="ts">
-import equal from 'fast-deep-equal'
 import { formatDate } from '~~/shared/utils'
 
 import type { TabItem } from '~/components/TabNav.vue'
 
+import { hasProfileChanges } from '~/utils/profileChanges'
 import { useProfile, type Profile } from '~/composables/useProfile'
 import { sectionId, tabForSection, toHandle } from '~/utils/profileSections'
 
@@ -360,10 +360,7 @@ const formattedCreatedAt = computed(() =>
   profileForm.createdAt ? `${formatDate(profileForm.createdAt)} (${formatTime(profileForm.createdAt, 'short')})` : '',
 )
 
-// Sessions are server-owned (revoking one is immediate), so they never count as unsaved edits.
-function isChanged() {
-  return !equal({ ...profileForm, sessions: undefined }, { ...originalProfile.value, sessions: undefined })
-}
+const isChanged = () => hasProfileChanges(profileForm, originalProfile.value)
 
 const { start: clearPulseLater } = useTimeoutFn(
   (el: HTMLElement) => el.classList.remove('animate-section-pulse'),
@@ -403,7 +400,7 @@ onMounted(() => {
   focusSection(route.hash)
 
   const stored = draft.load()
-  if (stored && !equal(stored, originalProfile.value)) {
+  if (stored && hasProfileChanges(stored, originalProfile.value)) {
     Object.assign(profileForm, stored)
     isDirty.value = true
   }
@@ -448,7 +445,9 @@ async function updateProfile() {
     })
     Object.assign(profileForm, response)
     await refresh()
-    originalProfile.value = { ...profileForm, handle: toHandle(profileForm.username) }
+    // Keep both copies of the derived handle in step, not just the snapshot's.
+    profileForm.handle = toHandle(profileForm.username)
+    originalProfile.value = { ...profileForm }
     draft.clear()
     isDirty.value = false
     otpauthUrl.value = userData.value?.otpauthUrl || ''
