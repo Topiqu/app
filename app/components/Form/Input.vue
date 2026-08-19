@@ -65,6 +65,7 @@ import type { InputHTMLAttributes } from 'vue'
 
 export type InputTypeValue<T> = T extends 'checkbox' ? boolean : string | number | null
 
+// Anything not declared here lands on the wrapper div via `attrs`, never on the control itself.
 export interface FormInputProps<T> {
   icon?: string
   iconPosition?: 'leading' | 'trailing'
@@ -76,6 +77,9 @@ export interface FormInputProps<T> {
   readonly?: boolean
   disabled?: boolean
   maxLength?: number
+  pattern?: string
+  inputmode?: InputHTMLAttributes['inputmode']
+  autocomplete?: string
 }
 
 const id = useId()
