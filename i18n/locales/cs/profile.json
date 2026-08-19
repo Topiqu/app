@@ -92,7 +92,7 @@
     "showQR": "Zobrazit QR kód",
     "hideQR": "Skrýt QR kód",
     "securityEvents": "Bezpečnostní aktivita",
-    "securityEventsDescription": "Posledních 20 přihlášení a změn zabezpečení. Pokud něco nepoznáváš, změň si heslo a odeber cizí zařízení.",
+    "securityEventsDescription": "Posledních 20 přihlášení a změn zabezpečení. Pokud něco nepoznáváte, změňte si heslo a odeberte cizí zařízení.",
     "noSecurityEvents": "Zatím žádná zaznamenaná aktivita",
     "passwordChangedAt": "Naposledy změněno",
     "passwordNeverMeasured": "Datum poslední změny neznáme",
@@ -104,11 +104,11 @@
       "PASSWORD_SET": "Nastavení hesla",
       "ROLE_CHANGE": "Změna role"
     },
-    "publicProfileDescription": "Co o tobě uvidí ostatní u tvých článků a komentářů.",
-    "accountDetailsDescription": "Identifikátory účtu — hodí se, když budeš psát podpoře.",
-    "notificationsDescription": "Kde tě smíme kontaktovat. Obojí jde kdykoliv vypnout.",
+    "publicProfileDescription": "Co o vás uvidí ostatní u vašich článků a komentářů.",
+    "accountDetailsDescription": "Identifikátory účtu — hodí se, když budete psát podpoře.",
+    "notificationsDescription": "Kde vás smíme kontaktovat. Obojí jde kdykoliv vypnout.",
     "statsTitle": "Přehled",
-    "healthDescription": "Souhrn zabezpečení účtu. Kliknutím u nesplněné položky skočíš rovnou na nastavení.",
-    "sessionsDescription": "Zařízení, na kterých jsi právě přihlášený."
+    "healthDescription": "Souhrn zabezpečení účtu. Kliknutím u nesplněné položky skočíte rovnou na nastavení.",
+    "sessionsDescription": "Zařízení, na kterých jste právě přihlášení."
   }
 }
