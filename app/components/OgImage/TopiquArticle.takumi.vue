@@ -1,5 +1,5 @@
 <template>
-  <div class="w-[1200px] h-[630px] flex bg-[#0f172a] relative overflow-hidden">
+  <div class="w-[1200px] h-[630px] flex bg-[#0f172a] relative overflow-hidden" style="font-family: Inter">
     <img
       v-if="backgroundImage"
       :src="backgroundImage"
