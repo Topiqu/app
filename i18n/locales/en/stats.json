@@ -7,8 +7,7 @@
       "description": "Statistics will be available after adding the first article"
     },
     "totalViews": {
-      "title": "Total Views",
-      "unit": "views"
+      "title": "Total Views"
     },
     "savedTime": {
       "basis": "{time} of work · {words}"
@@ -40,7 +39,7 @@
       "showAll": "Show all"
     },
     "topLikedArticle": {
-      "likes": "likes"
+      "likes": "no likes | {count} like | {count} likes"
     },
     "topCommentedArticle": {},
     "followerCount": "Follower Count",
@@ -74,8 +73,8 @@
     },
     "updatedAt": "Updated at",
     "averageViews": "Ø {count} per article",
-    "draftCount": "+ {count} drafts",
-    "articlesWritten": "{count} articles",
+    "draftCount": "| + {count} draft | + {count} drafts",
+    "articlesWritten": "no articles | {count} article | {count} articles",
     "concentration": "Top 3 articles = {share} of views",
     "sections": {
       "content": "Top performing content",
@@ -86,6 +85,7 @@
       "FULL": "Fully AI",
       "ASSIST": "AI + edits",
       "NONE": "By hand"
-    }
+    },
+    "viewsUnit": "no views | {count} view | {count} views"
   }
 }

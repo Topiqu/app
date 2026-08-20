@@ -7,8 +7,7 @@
       "description": "Statistiky budou dostupné po přidání prvního článku"
     },
     "totalViews": {
-      "title": "Zobrazení",
-      "unit": "zobrazení"
+      "title": "Zobrazení"
     },
     "savedTime": {
       "basis": "{time} práce · {words}"
@@ -40,7 +39,7 @@
       "showAll": "Zobrazit vše"
     },
     "topLikedArticle": {
-      "likes": "lajků"
+      "likes": "0 lajků | {count} lajk | {count} lajky | {count} lajků"
     },
     "topCommentedArticle": {},
     "followerCount": "Počet sledujících",
@@ -74,8 +73,8 @@
     },
     "updatedAt": "Aktualizováno v",
     "averageViews": "Ø {count} na článek",
-    "draftCount": "+ {count} rozepsaných",
-    "articlesWritten": "{count} článků",
+    "draftCount": "| + {count} rozepsaný | + {count} rozepsané | + {count} rozepsaných",
+    "articlesWritten": "0 článků | {count} článek | {count} články | {count} článků",
     "concentration": "Top 3 články = {share} zobrazení",
     "sections": {
       "content": "Nejúspěšnější obsah",
@@ -86,6 +85,7 @@
       "FULL": "Celé AI",
       "ASSIST": "AI + úpravy",
       "NONE": "Ručně"
-    }
+    },
+    "viewsUnit": "0 zobrazení | {count} zobrazení | {count} zobrazení | {count} zobrazení"
   }
 }

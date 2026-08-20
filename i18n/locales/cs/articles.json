@@ -42,7 +42,7 @@
       "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?",
       "noComments": "Žádné komentáře",
       "commentsAction": "Přidejte se k diskuzi.",
-      "unit": "komentářů"
+      "unit": "0 komentářů | {count} komentář | {count} komentáře | {count} komentářů"
     },
     "title": "Články",
     "addArticle": "Přidat článek",

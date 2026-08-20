@@ -42,7 +42,7 @@
       "reportCommentConfirm": "Are you sure you want to report this comment?",
       "noComments": "No comments",
       "commentsAction": "You have yet to comment something",
-      "unit": "comments"
+      "unit": "no comments | {count} comment | {count} comments"
     },
     "title": "Articles",
     "addArticle": "Add Article",

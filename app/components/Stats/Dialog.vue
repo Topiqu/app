@@ -80,7 +80,7 @@
               {{ formatCount(stats.publishedCount) }}
             </p>
             <p v-if="stats.draftCount > 0" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-              {{ $t('stats.draftCount', { count: formatCount(stats.draftCount) }) }}
+              {{ plural('stats.draftCount', stats.draftCount) }}
             </p>
           </div>
 
@@ -109,21 +109,21 @@
               v-if="stats.topArticle"
               icon="mdi:trophy-outline"
               :label="stats.topArticle.title"
-              :value="`${formatCount(stats.topArticle.views)} ${$t('stats.totalViews.unit')}`"
+              :value="plural('stats.viewsUnit', stats.topArticle.views)"
               :to="localePath({ name: 'clanky-slug', params: { slug: stats.topArticle.slug } })"
             />
             <StatsRow
               v-if="stats.topLikedArticle"
               icon="mdi:heart-outline"
               :label="stats.topLikedArticle.title"
-              :value="`${formatCount(stats.topLikedArticle.likes)} ${$t('stats.topLikedArticle.likes')}`"
+              :value="plural('stats.topLikedArticle.likes', stats.topLikedArticle.likes)"
               :to="localePath({ name: 'clanky-slug', params: { slug: stats.topLikedArticle.slug } })"
             />
             <StatsRow
               v-if="stats.topCommentedArticle"
               icon="mdi:comment-outline"
               :label="stats.topCommentedArticle.title"
-              :value="`${formatCount(stats.topCommentedArticle.comments)} ${$t('articles.comments.unit')}`"
+              :value="plural('articles.comments.unit', stats.topCommentedArticle.comments)"
               :to="localePath({ name: 'clanky-slug', params: { slug: stats.topCommentedArticle.slug } })"
             />
             <p v-if="!hasContentHighlights" class="py-2 text-sm text-neutral-500 dark:text-neutral-400">
@@ -154,7 +154,7 @@
               :rank="i + 1"
               :label="tag.name"
               :bar="topTagViews ? tag.views / topTagViews : 0"
-              :value="`${formatCount(tag.views)} ${$t('stats.totalViews.unit')}`"
+              :value="plural('stats.viewsUnit', tag.views)"
             />
           </div>
           <p v-else class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">{{ $t('stats.topTag.noTags') }}</p>
@@ -196,7 +196,7 @@
                 {{ stats.topAuthor.username }}
               </p>
               <p class="text-xs text-neutral-500 dark:text-neutral-400">
-                {{ $t('stats.topAuthor.title') }} · {{ $t('stats.articlesWritten', { count: stats.topAuthor.articleCount }) }}
+                {{ $t('stats.topAuthor.title') }} · {{ plural('stats.articlesWritten', stats.topAuthor.articleCount) }}
               </p>
             </div>
           </div>
@@ -334,6 +334,11 @@ const dateFormat = computed(() => new Intl.DateTimeFormat(locale.value, { day: '
 const dayLabel = computed(() => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'numeric' }))
 
 const formatCount = (value: number) => countFormat.value.format(value)
+
+// Czech picks between four forms (`shared/utils/plural.ts`), so a unit label cannot be a fixed
+// noun glued onto a number — "4 článků" is wrong where "4 články" is right. The raw count selects
+// the form; the interpolated one is locale-formatted.
+const plural = (key: string, count: number) => t(key, { count: formatCount(count) }, { plural: count })
 const formatDecimal = (value: number) => decimalFormat.value.format(value)
 const formatPercent = (value: number) => percentFormat.value.format(value)
 const formatDate = (iso: string) => dateFormat.value.format(new Date(`${iso}T00:00:00Z`))
@@ -430,7 +435,7 @@ const aiShare = computed(() => {
 
 const wordCount = computed(() => {
   const count = stats.value.savings.words
-  return t('stats.savings.words', { count }, { plural: count })
+  return plural('stats.savings.words', count)
 })
 
 const savingsTooltip = computed(() =>
