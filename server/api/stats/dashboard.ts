@@ -2,30 +2,24 @@ import type { SharePlatform } from '@prisma/client'
 
 import { writingSavings } from '~~/shared/utils/savings'
 
-// UTC day keys, oldest first — the raw query below buckets on DATE_TRUNC, which is UTC too.
-const lastSevenDays = () => {
-  const today = new Date()
-  today.setUTCHours(0, 0, 0, 0)
-
-  return Array.from({ length: 7 }, (_, i) => {
-    const day = new Date(today)
-    day.setUTCDate(day.getUTCDate() - (6 - i))
-    return day.toISOString().slice(0, 10)
-  })
-}
-
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { clientSite: true })
   await requireTenantScope(event, 'ANALYTICS_READ', user.clientSiteId)
 
+  const clientSiteId = user.clientSiteId!
+  const trendStart = lastDays(VIEW_TREND_DAYS)[0]!
+
   const [
     articleCount,
+    publishedCount,
     followerCount,
     viewsAggregate,
     aiWords,
+    aiInvolvement,
     rates,
-    viewsLast7Days,
-    tagsResult,
+    viewsByDayRows,
+    trackingSinceRows,
+    tagRows,
     topArticle,
     topAuthorResult,
     topCommented,
@@ -33,76 +27,94 @@ export default defineEventHandler(async (event) => {
     articlesForEngagement,
     shareDistribution,
   ] = await Promise.all([
-    db.article.count({ where: { clientSiteId: user.clientSiteId } }),
-    db.follow.count({ where: { followed: { clientSiteId: user.clientSiteId } } }),
+    db.article.count({ where: { clientSiteId } }),
+    db.article.count({ where: { clientSiteId, status: 'published' } }),
+    db.follow.count({ where: { followed: { clientSiteId } } }),
+    // Published only, matching `topArticle` — a draft is not readership, and an admin
+    // previewing one used to move this number.
     db.article.aggregate({
-      where: { clientSiteId: user.clientSiteId },
+      where: { clientSiteId, status: 'published' },
       _sum: { views: true },
     }),
     // Only fully AI-written articles count as saved work: the editor demotes an article to
     // ASSIST the moment a human edits its body.
     db.article.aggregate({
-      where: { clientSiteId: user.clientSiteId, aiInvolvement: 'FULL' },
+      where: { clientSiteId, aiInvolvement: 'FULL' },
       _sum: { totalWords: true },
     }),
+    db.article.groupBy({
+      by: ['aiInvolvement'],
+      where: { clientSiteId },
+      _count: { _all: true },
+    }),
     db.clientSite.findUnique({
-      where: { id: user.clientSiteId! },
+      where: { id: clientSiteId },
       select: { humanHourlyRateUsd: true, humanWordsPerHour: true },
     }),
+    // Real per-day readership from the event log, not views bucketed by publish date.
     db.$queryRaw`
-      SELECT DATE_TRUNC('day', COALESCE("publishedAt", "createdAt")) AS date, SUM(views) AS views
-      FROM "Article"
-      WHERE "clientSiteId" = ${user.clientSiteId}
-      AND "status" = 'published'
-      AND COALESCE("publishedAt", "createdAt") >= ${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)}
-      GROUP BY DATE_TRUNC('day', COALESCE("publishedAt", "createdAt"))
-      ORDER BY date
+      SELECT "viewedOn" AS date, COUNT(*)::int AS views
+      FROM "ArticleView"
+      WHERE "clientSiteId" = ${clientSiteId}
+      AND "viewedOn" >= ${trendStart}::date
+      GROUP BY "viewedOn"
+      ORDER BY "viewedOn"
     `,
-    db.tag.findMany({
-      where: { clientSiteId: user.clientSiteId },
-      select: {
-        id: true,
-        name: true,
-        articles: { select: { article: { select: { views: true } } } },
-      },
-      orderBy: { articles: { _count: 'desc' } },
-      take: 10,
-    }),
+    // The series cannot predate the event table, so the client labels the window instead of
+    // drawing flat zeros back to the blog's first article. Raw like the query above, so both
+    // read the log under the same explicit tenant filter rather than a policy this endpoint's
+    // non-admin members would fail.
+    db.$queryRaw`SELECT MIN("viewedOn") AS since FROM "ArticleView" WHERE "clientSiteId" = ${clientSiteId}`,
+    // Ranked by summed views in SQL. Prisma cannot order a tag by an aggregate over its
+    // articles, so the old code took the ten tags with most articles and sorted *those* —
+    // a tag on two heavily-read articles never entered the candidate set.
+    db.$queryRaw`
+      SELECT t."name" AS name,
+             COALESCE(SUM(a."views"), 0)::int AS views,
+             COUNT(a."id")::int AS "articleCount"
+      FROM "Tag" t
+      JOIN "ArticleTag" at ON at."tagId" = t."id"
+      JOIN "Article" a ON a."id" = at."articleId" AND a."status" = 'published'
+      WHERE t."clientSiteId" = ${clientSiteId}
+      GROUP BY t."id", t."name"
+      HAVING COUNT(a."id") > 0
+      ORDER BY views DESC, "articleCount" DESC
+      LIMIT 8
+    `,
     db.article.findFirst({
-      where: { clientSiteId: user.clientSiteId },
-      select: { id: true, title: true, views: true },
+      where: { clientSiteId, status: 'published' },
+      select: { id: true, slug: true, title: true, views: true },
       orderBy: { views: 'desc' },
     }),
     db.user.findFirst({
-      where: { articles: { some: { status: 'published', clientSiteId: user.clientSiteId } } },
+      where: { articles: { some: { status: 'published', clientSiteId } } },
       orderBy: { articles: { _count: 'desc' } },
       select: {
         username: true,
         avatarUrl: true,
-        articles: { where: { status: 'published', clientSiteId: user.clientSiteId }, select: { id: true } },
+        articles: { where: { status: 'published', clientSiteId }, select: { id: true } },
       },
     }),
     db.article.findFirst({
-      where: { clientSiteId: user.clientSiteId, status: 'published' },
-      select: { id: true, title: true, _count: { select: { comments: true } } },
+      where: { clientSiteId, status: 'published' },
+      select: { id: true, slug: true, title: true, _count: { select: { comments: true } } },
       orderBy: { comments: { _count: 'desc' } },
     }),
     db.article.findFirst({
-      where: { clientSiteId: user.clientSiteId, status: 'published' },
-      select: { id: true, title: true, _count: { select: { reactions: true } } },
+      where: { clientSiteId, status: 'published' },
+      select: { id: true, slug: true, title: true, _count: { select: { reactions: true } } },
       orderBy: { reactions: { _count: 'desc' } },
     }),
     db.article.findMany({
-      where: { status: 'published', clientSiteId: user.clientSiteId },
+      where: { status: 'published', clientSiteId },
       select: {
         views: true,
-        _count: { select: { reactions: true, comments: true, pollResults: true } },
-        shares: { select: { id: true } },
+        _count: { select: { reactions: true, comments: true, pollResults: true, shares: true } },
       },
     }),
     db.articleShare.groupBy({
       by: ['platform'],
-      where: { article: { status: 'published', clientSiteId: user.clientSiteId } },
+      where: { article: { status: 'published', clientSiteId } },
       _count: { platform: true },
     }),
   ])
@@ -112,30 +124,24 @@ export default defineEventHandler(async (event) => {
     distribution[s.platform] = s._count.platform
   })
 
-  const engagementRates = articlesForEngagement
-    .filter((a) => a.views > 0)
-    .map((a) => (a._count.reactions + a._count.comments + a.shares.length + a._count.pollResults) / a.views)
-
-  const engagementRate =
-    engagementRates.length > 0 ? engagementRates.reduce((s, r) => s + r, 0) / engagementRates.length : 0
-
-  const viewsByDay = new Map(
-    (viewsLast7Days as { date: Date; views: bigint | number }[]).map((row) => [
-      row.date.toISOString().slice(0, 10),
-      Number(row.views) || 0,
-    ]),
-  )
+  const viewCounts = articlesForEngagement.map((a) => a.views)
 
   // Derived on read, not read back from Article.savedAmount: those columns froze a rate (and a
   // currency) at generation time, so a rate correction never reached articles already written.
   const savings = writingSavings(aiWords._sum.totalWords || 0, rates?.humanHourlyRateUsd, rates?.humanWordsPerHour)
 
   return {
+    generatedAt: new Date().toISOString(),
     articleCount,
+    publishedCount,
+    draftCount: articleCount - publishedCount,
     followerCount,
     totalViews: viewsAggregate._sum.views || 0,
+    averageViews: publishedCount > 0 ? (viewsAggregate._sum.views || 0) / publishedCount : 0,
+    topThreeShare: topThreeShare(viewCounts),
+    aiInvolvement: involvementCounts(aiInvolvement),
     savings,
-    engagementRate,
+    engagementRate: engagementRate(articlesForEngagement),
     totalShares: Object.values(distribution).reduce((a, b) => a + b, 0),
     sharesDistribution: distribution,
     topArticle,
@@ -147,29 +153,16 @@ export default defineEventHandler(async (event) => {
         }
       : null,
     topCommentedArticle: topCommented
-      ? {
-          title: topCommented.title,
-          comments: topCommented._count.comments,
-        }
+      ? { slug: topCommented.slug, title: topCommented.title, comments: topCommented._count.comments }
       : null,
     topLikedArticle: topLiked
-      ? {
-          title: topLiked.title,
-          likes: topLiked._count.reactions,
-        }
+      ? { slug: topLiked.slug, title: topLiked.title, likes: topLiked._count.reactions }
       : null,
-    topTags: tagsResult
-      .map((tag) => ({
-        name: tag.name,
-        views: tag.articles.reduce((sum, a) => sum + a.article.views, 0),
-      }))
-      .sort((a, b) => b.views - a.views)
-      .slice(0, 3),
-    // Every day in the window, not just the ones that happen to have a row — a sparse axis
-    // made a two-article week look like a dense trend. Dates stay ISO; the client localises.
-    viewsHistory: lastSevenDays().map((date) => ({
-      date,
-      views: Number(viewsByDay.get(date) ?? 0),
-    })),
+    topTags: tagRows as { name: string; views: number; articleCount: number }[],
+    // Dates stay ISO; the client localises.
+    viewsHistory: fillDailySeries(viewsByDayRows as { date: Date; views: number }[]),
+    // Null until the first event lands. The client says "since <date>" rather than implying
+    // the flat stretch before the event table existed was a quiet month.
+    trackingSince: (trackingSinceRows as { since: Date | null }[])[0]?.since?.toISOString().slice(0, 10) ?? null,
   }
 })
