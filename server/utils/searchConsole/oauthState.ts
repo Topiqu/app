@@ -4,6 +4,8 @@ interface StatePayload {
   clientSiteId: string
   nonce: string
   exp: number
+  /** Carried across the hop: the callback runs on app.topiqu.com, where the tenant's `i18n_lang` cookie is not readable. */
+  locale?: 'cs' | 'en'
 }
 const secret = () => process.env.AUTH_SECRET || process.env.NUXT_AUTH_SECRET || ''
 
@@ -21,5 +23,7 @@ export const verifySearchConsoleState = (value: string | undefined): StatePayloa
   const actual = Buffer.from(signature, 'base64url')
   if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return null
   const payload = JSON.parse(Buffer.from(body, 'base64url').toString()) as StatePayload
-  return payload.clientSiteId && payload.exp > Date.now() ? payload : null
+  if (!payload.clientSiteId || payload.exp <= Date.now()) return null
+  // Signed or not, the locale ends up as a path segment — whitelist it.
+  return { ...payload, locale: payload.locale === 'cs' ? 'cs' : 'en' }
 }

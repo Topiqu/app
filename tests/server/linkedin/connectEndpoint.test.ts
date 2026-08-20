@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { verifyOAuthState } from '../../../server/utils/linkedin/oauthState'
+
 describe('GET /api/linkedin/connect', () => {
   let query: Record<string, unknown>
+  let cookies: Record<string, string>
+  const setOAuthState = vi.fn()
 
   beforeEach(() => {
     vi.resetModules()
@@ -12,13 +16,16 @@ describe('GET /api/linkedin/connect', () => {
     vi.stubEnv('LINKEDIN_CLIENT_ID_COMPANY', 'company-client')
 
     query = {}
+    cookies = {}
+    setOAuthState.mockClear()
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
     vi.stubGlobal('getServerSession', async () => ({ user: { role: 'admin', clientSiteId: 'site-1' } }))
     vi.stubGlobal('requireTenantScope', vi.fn())
     vi.stubGlobal('getQuery', () => query)
+    vi.stubGlobal('getCookie', (_event: unknown, name: string) => cookies[name])
     vi.stubGlobal('createError', (e: { statusCode: number; message: string }) => Object.assign(new Error(e.message), e))
-    vi.stubGlobal('setCookie', vi.fn())
+    vi.stubGlobal('setOAuthState', setOAuthState)
     vi.stubGlobal('sendRedirect', (_event: unknown, url: string) => url)
   })
 
@@ -37,5 +44,22 @@ describe('GET /api/linkedin/connect', () => {
 
   it('always authorizes against the personal app credentials', async () => {
     expect(new URL(await run()).searchParams.get('client_id')).toBe('personal-client')
+  })
+
+  it('stores the state in the shared cookie helper, which is what survives the host hop', async () => {
+    const state = new URL(await run()).searchParams.get('state')
+    expect(setOAuthState).toHaveBeenCalledWith({}, 'linkedin_oauth_state', state, 300)
+  })
+
+  // The callback runs on app.topiqu.com and cannot read the tenant's `i18n_lang` cookie, so the locale
+  // has to ride along in the signed state or the admin is redirected into the wrong language.
+  it('signs the caller locale into the state', async () => {
+    cookies.i18n_lang = 'cs'
+    expect(verifyOAuthState(new URL(await run()).searchParams.get('state')!)?.locale).toBe('cs')
+  })
+
+  it('falls back to en for an unknown locale cookie', async () => {
+    cookies.i18n_lang = 'de'
+    expect(verifyOAuthState(new URL(await run()).searchParams.get('state')!)?.locale).toBe('en')
   })
 })

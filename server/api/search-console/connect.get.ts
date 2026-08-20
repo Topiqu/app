@@ -12,14 +12,13 @@ export default defineEventHandler(async (event) => {
   const clientId = searchConsoleClientId()
   if (!clientId) throw createError({ statusCode: 503, message: 'Google Search Console OAuth is not configured' })
 
-  const state = signSearchConsoleState({ clientSiteId, nonce: randomUUID(), exp: Date.now() + 10 * 60_000 })
-  setCookie(event, 'gsc_oauth_state', state, {
-    httpOnly: true,
-    secure: !import.meta.dev,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 600,
+  const state = signSearchConsoleState({
+    clientSiteId,
+    nonce: randomUUID(),
+    exp: Date.now() + 10 * 60_000,
+    locale: getCookie(event, 'i18n_lang') === 'cs' ? 'cs' : 'en',
   })
+  setOAuthState(event, 'gsc_oauth_state', state, 600)
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: searchConsoleRedirectUri(),
@@ -27,7 +26,6 @@ export default defineEventHandler(async (event) => {
     scope: 'openid email https://www.googleapis.com/auth/webmasters.readonly',
     access_type: 'offline',
     prompt: 'consent',
-    include_granted_scopes: 'true',
     state,
   })
   return sendRedirect(event, `https://accounts.google.com/o/oauth2/v2/auth?${params}`)

@@ -5,13 +5,22 @@ export default defineEventHandler(async (event) => {
   const user = await requireUser(event, { role: ['admin', 'superadmin'] })
   const query = getQuery(event)
   const state = typeof query.state === 'string' ? query.state : undefined
-  const saved = getCookie(event, 'gsc_oauth_state')
-  deleteCookie(event, 'gsc_oauth_state', { path: '/' })
+  const saved = takeOAuthState(event, 'gsc_oauth_state')
   const payload = state && saved === state ? verifySearchConsoleState(state) : null
-  if (!payload || (user.role !== 'superadmin' && user.clientSiteId !== payload.clientSiteId))
+  if (!payload) {
+    const reason = !state
+      ? 'no state on the callback'
+      : !saved
+        ? 'state cookie missing — expired, or set on a host that does not reach this callback'
+        : saved !== state
+          ? 'state cookie does not match the callback state'
+          : 'state signature or expiry rejected'
+    console.warn(`Search Console callback rejected: ${reason}`, { userId: user.id })
+    throw createError({ statusCode: 403, message: 'Invalid Search Console OAuth state' })
+  }
+  if (user.role !== 'superadmin' && user.clientSiteId !== payload.clientSiteId)
     throw createError({ statusCode: 403, message: 'Invalid Search Console OAuth state' })
   if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', payload.clientSiteId)
-  if (typeof query.code !== 'string') return sendRedirect(event, '/settings?tab=integrations&gsc=cancelled')
 
   const site = await prisma.clientSite.findUnique({
     where: { id: payload.clientSiteId },
@@ -19,6 +28,14 @@ export default defineEventHandler(async (event) => {
   })
   if (!site || !['PREMIUM', 'CUSTOM'].includes(site.plan))
     throw createError({ statusCode: 403, message: 'Search Console intelligence requires PREMIUM' })
+
+  // The callback lands on AUTH_ORIGIN's host, settings live on the tenant's; `strategy: 'prefix'` also
+  // means an unprefixed `/settings` has no route at all.
+  const settingsUrl = (outcome: string) =>
+    `https://${site.domain}/${payload.locale ?? 'en'}/settings?tab=integrations&gsc=${outcome}`
+
+  if (typeof query.code !== 'string') return sendRedirect(event, settingsUrl('cancelled'))
+
   const tokens = await exchangeSearchConsoleCode(query.code, searchConsoleRedirectUri())
   if (!tokens.refresh_token)
     throw createError({
@@ -54,5 +71,5 @@ export default defineEventHandler(async (event) => {
       lastErrorAt: null,
     },
   })
-  return sendRedirect(event, `/settings?tab=integrations&gsc=${property ? 'connected' : 'select-property'}`)
+  return sendRedirect(event, settingsUrl(property ? 'connected' : 'select-property'))
 })

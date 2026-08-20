@@ -34,15 +34,14 @@ export default defineEventHandler(async (event) => {
 
   const redirectUri = getLinkedInRedirectUri()
 
-  const state = signOAuthState({ nonce: randomUUID(), clientSiteId, appType: 'personal' })
-
-  setCookie(event, 'linkedin_oauth_state', state, {
-    httpOnly: true,
-    secure: !import.meta.dev,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 300,
+  const state = signOAuthState({
+    nonce: randomUUID(),
+    clientSiteId,
+    appType: 'personal',
+    locale: getCookie(event, 'i18n_lang') === 'cs' ? 'cs' : 'en',
   })
+
+  setOAuthState(event, 'linkedin_oauth_state', state, 300)
 
   const scope = 'openid profile email w_member_social'
 
