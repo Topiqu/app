@@ -118,6 +118,7 @@ model ClientSite extends Base {
     users                User[]
     tags                 Tag[]
     articles             Article[]
+    articleViews         ArticleView[]
     articleSeries        ArticleSeries[]
     articleDrafts        ArticleDraft[]
     emojis               Emoji[]

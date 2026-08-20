@@ -245,6 +245,7 @@ model User {
   emojiReactions                EmojiReaction[]
   articleReactions              ArticleReaction[]
   articleShares                 ArticleShare[]
+  articleViews                  ArticleView[]
   followers                     Follow[]           @relation("Follower")
   following                     Follow[]           @relation("Followed")
   bans                          UserBan[]          @relation("BannedUser")
@@ -408,6 +409,7 @@ model Article {
   comments         Comment[]
   reactions        ArticleReaction[]
   shares           ArticleShare[]
+  viewEvents       ArticleView[]
   feedbacks        ArticleFeedback[]
   pollResults      PollResult[]
   polls            Poll[]
@@ -473,6 +475,29 @@ model ArticleSeries {
   articles     Article[]
 
   @@unique([slug, clientSiteId])
+}
+
+/// One row per visitor per article per UTC day. `Article.views` stays the running counter —
+/// this is the event log the dashboard's time series reads, so it starts at deploy day and
+/// cannot be backfilled. `sessionId` is required precisely so the unique index bites: a tuple
+/// with a NULL in it is distinct from every other in Postgres, which is why `ArticleShare`'s
+/// index catches nothing.
+model ArticleView {
+  id           String     @id() @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt()
+  deletedAt    DateTime?
+  articleId    String
+  article      Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  clientSiteId String
+  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId    String
+  viewedOn     DateTime   @db.Date()
+
+  @@unique([articleId, sessionId, viewedOn])
+  @@index([clientSiteId, viewedOn])
 }
 
 model ArticleShare {
@@ -610,6 +635,7 @@ model ClientSite {
   users                        User[]
   tags                         Tag[]
   articles                     Article[]
+  articleViews                 ArticleView[]
   articleSeries                ArticleSeries[]
   articleDrafts                ArticleDraft[]
   emojis                       Emoji[]
