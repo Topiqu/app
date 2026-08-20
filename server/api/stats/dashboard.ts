@@ -42,9 +42,11 @@ export default defineEventHandler(async (event) => {
       where: { clientSiteId, aiInvolvement: 'FULL' },
       _sum: { totalWords: true },
     }),
+    // Published only, like every other count here — counting drafts made this split total more
+    // than the article count printed directly above it.
     db.article.groupBy({
       by: ['aiInvolvement'],
-      where: { clientSiteId },
+      where: { clientSiteId, status: 'published' },
       _count: { _all: true },
     }),
     db.clientSite.findUnique({
@@ -86,14 +88,15 @@ export default defineEventHandler(async (event) => {
       select: { id: true, slug: true, title: true, views: true },
       orderBy: { views: 'desc' },
     }),
-    db.user.findFirst({
-      where: { articles: { some: { status: 'published', clientSiteId } } },
-      orderBy: { articles: { _count: 'desc' } },
-      select: {
-        username: true,
-        avatarUrl: true,
-        articles: { where: { status: 'published', clientSiteId }, select: { id: true } },
-      },
+    // Ranked by the same articles the count displays. `orderBy: { articles: { _count } }` on User
+    // cannot be filtered — it sorts by the author's total across every tenant and status, so the
+    // winner could be someone whose work is mostly elsewhere or unpublished.
+    db.article.groupBy({
+      by: ['userId'],
+      where: { clientSiteId, status: 'published' },
+      _count: { _all: true },
+      orderBy: { _count: { userId: 'desc' } },
+      take: 1,
     }),
     db.article.findFirst({
       where: { clientSiteId, status: 'published' },
@@ -126,6 +129,14 @@ export default defineEventHandler(async (event) => {
 
   const viewCounts = articlesForEngagement.map((a) => a.views)
 
+  const topAuthorRow = topAuthorResult[0]
+  const topAuthor = topAuthorRow
+    ? await db.user.findUnique({
+        where: { id: topAuthorRow.userId },
+        select: { username: true, avatarUrl: true },
+      })
+    : null
+
   // Derived on read, not read back from Article.savedAmount: those columns froze a rate (and a
   // currency) at generation time, so a rate correction never reached articles already written.
   const savings = writingSavings(aiWords._sum.totalWords || 0, rates?.humanHourlyRateUsd, rates?.humanWordsPerHour)
@@ -145,13 +156,10 @@ export default defineEventHandler(async (event) => {
     totalShares: Object.values(distribution).reduce((a, b) => a + b, 0),
     sharesDistribution: distribution,
     topArticle,
-    topAuthor: topAuthorResult
-      ? {
-          username: topAuthorResult.username,
-          avatarUrl: topAuthorResult.avatarUrl,
-          articleCount: topAuthorResult.articles.length,
-        }
-      : null,
+    topAuthor:
+      topAuthor && topAuthorRow
+        ? { username: topAuthor.username, avatarUrl: topAuthor.avatarUrl, articleCount: topAuthorRow._count._all }
+        : null,
     topCommentedArticle: topCommented
       ? { slug: topCommented.slug, title: topCommented.title, comments: topCommented._count.comments }
       : null,
