@@ -73,7 +73,7 @@
     },
     "updatedAt": "Aktualizováno v",
     "averageViews": "Ø {count} na článek",
-    "draftCount": "| + {count} rozepsaný | + {count} rozepsané | + {count} rozepsaných",
+    "draftCount": "+ 0 rozepsaných | + {count} rozepsaný | + {count} rozepsané | + {count} rozepsaných",
     "articlesWritten": "0 článků | {count} článek | {count} články | {count} článků",
     "concentration": "Top 3 články = {share} zobrazení",
     "sections": {

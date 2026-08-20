@@ -73,7 +73,7 @@
     },
     "updatedAt": "Updated at",
     "averageViews": "Ø {count} per article",
-    "draftCount": "| + {count} draft | + {count} drafts",
+    "draftCount": "+ 0 drafts | + {count} draft | + {count} drafts",
     "articlesWritten": "no articles | {count} article | {count} articles",
     "concentration": "Top 3 articles = {share} of views",
     "sections": {
