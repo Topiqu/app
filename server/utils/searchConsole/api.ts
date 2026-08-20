@@ -59,8 +59,9 @@ export const getGoogleIdentity = async (accessToken: string) =>
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 
+/** Pinned to AUTH_ORIGIN, not the request host: Google only accepts registered URIs and tenant subdomains hop to the auth origin. */
 export const searchConsoleRedirectUri = () =>
-  `${useRuntimeConfig().public.siteUrl || 'http://localhost:3000'}/api/search-console/callback`
+  `${(process.env.AUTH_ORIGIN || 'http://localhost:3000/api/auth').replace(/\/api\/auth\/?$/, '')}/api/search-console/callback`
 
 export const chooseSearchConsoleProperty = (domain: string, sites: { siteUrl: string; permissionLevel: string }[]) => {
   const normalized = domain
