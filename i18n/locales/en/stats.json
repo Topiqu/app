@@ -8,10 +8,10 @@
     },
     "totalViews": {
       "title": "Total Views",
-      "noViews": "No views yet"
+      "unit": "views"
     },
     "savedTime": {
-      "title": "Time Saved"
+      "basis": "{time} of work · {words}"
     },
     "savedAmount": {
       "title": "Money Saved"
@@ -24,38 +24,32 @@
     },
     "articleCount": "Total articles",
     "sentiment": {
-      "title": "Your community"
+      "title": "Your community",
+      "toxicity": "{value} toxicity"
     },
     "totalShares": {
-      "title": "Total Shares",
-      "noShares": "No shares yet"
+      "title": "Total Shares"
     },
     "topArticle": {
-      "title": "Most Read Article",
       "pluralTitle": "Most Read Articles",
       "noViews": "No article has been read yet"
     },
     "topTag": {
       "title": "Most Popular Tag",
-      "noTags": "No tags used yet"
+      "noTags": "No tags used yet",
+      "showAll": "Show all"
     },
     "topLikedArticle": {
-      "title": "Most Liked Article",
-      "likes": "likes",
-      "noLikes": "No article has been liked yet"
+      "likes": "likes"
     },
-    "topCommentedArticle": {
-      "title": "Most Commented Article",
-      "noComments": "No articles have comments yet"
-    },
+    "topCommentedArticle": {},
     "followerCount": "Follower Count",
     "engagementRate": {
       "title": "Engagement Rate",
-      "tooltip": "Engagement rate shows how actively readers interact with your articles. It is calculated as the average ratio of interactions (likes, comments, shares, and poll votes) to views for each article. A higher value indicates greater reader engagement."
+      "tooltip": "Engagement shows how actively readers interact with your articles. It is all interactions (likes, comments, shares and poll votes) divided by all views across the blog. A higher value means more engaged readers."
     },
     "topAuthor": {
-      "title": "Most Active Author",
-      "noAuthors": "No author has contributed yet"
+      "title": "Most Active Author"
     },
     "upgradePrompt": {
       "title": "Unlock Premium Statistics",
@@ -63,12 +57,13 @@
       "button": "Explore Plans"
     },
     "charts": {
-      "viewsByPublishDay": "Views on articles published this week",
       "shareDistribution": "Share Distribution by Platform",
       "toggleType": "Switch chart type",
       "showTable": "Show as a table",
       "day": "Day",
-      "platform": "Platform"
+      "platform": "Platform",
+      "viewsByDay": "Views over the last {days} days",
+      "trackingSince": "Tracked since {date} — earlier views were not recorded."
     },
     "platforms": {
       "TWITTER": "X / Twitter",
@@ -76,6 +71,21 @@
       "FACEBOOK": "Facebook",
       "EMAIL": "Email",
       "OTHER": "Other"
+    },
+    "updatedAt": "Updated at",
+    "averageViews": "Ø {count} per article",
+    "draftCount": "+ {count} drafts",
+    "articlesWritten": "{count} articles",
+    "concentration": "Top 3 articles = {share} of views",
+    "sections": {
+      "content": "Top performing content",
+      "audience": "Audience",
+      "authorship": "How they were written"
+    },
+    "aiInvolvement": {
+      "FULL": "Fully AI",
+      "ASSIST": "AI + edits",
+      "NONE": "By hand"
     }
   }
 }

@@ -41,7 +41,8 @@
       "likedByAuthor": "Líbí se autorovi ({0})",
       "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?",
       "noComments": "Žádné komentáře",
-      "commentsAction": "Přidejte se k diskuzi."
+      "commentsAction": "Přidejte se k diskuzi.",
+      "unit": "komentářů"
     },
     "title": "Články",
     "addArticle": "Přidat článek",

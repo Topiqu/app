@@ -204,7 +204,8 @@
       "shareEmail": "Sdílet e-mailem",
       "copySuccess": "Odkaz úspěšně zkopírován",
       "confirm": "Potvrdit",
-      "toggleLayout": "Přepnout zobrazení"
+      "toggleLayout": "Přepnout zobrazení",
+      "showLess": "Zobrazit méně"
     },
     "avatar": {
       "title": "Avatar",

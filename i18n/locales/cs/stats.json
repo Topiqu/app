@@ -8,10 +8,10 @@
     },
     "totalViews": {
       "title": "Zobrazení",
-      "noViews": "Zatím žádná zobrazení"
+      "unit": "zobrazení"
     },
     "savedTime": {
-      "title": "Ušetřený čas"
+      "basis": "{time} práce · {words}"
     },
     "savedAmount": {
       "title": "Ušetřené náklady"
@@ -24,38 +24,32 @@
     },
     "articleCount": "Počet článků",
     "sentiment": {
-      "title": "Vaše komunita"
+      "title": "Vaše komunita",
+      "toxicity": "{value} toxicita"
     },
     "totalShares": {
-      "title": "Sdílení",
-      "noShares": "Zatím žádné sdílení"
+      "title": "Sdílení"
     },
     "topArticle": {
-      "title": "Nejčtenější článek",
       "pluralTitle": "Nejčtenější články",
       "noViews": "Zatím žádný článek nebyl přečten"
     },
     "topTag": {
       "title": "Nejpopulárnější štítek",
-      "noTags": "Zatím nebyly použity žádné štítky"
+      "noTags": "Zatím nebyly použity žádné štítky",
+      "showAll": "Zobrazit vše"
     },
     "topLikedArticle": {
-      "title": "Nejlajkovanější článek",
-      "likes": "lajků",
-      "noLikes": "Zatím žádný článek nebyl lajkován"
+      "likes": "lajků"
     },
-    "topCommentedArticle": {
-      "title": "Článek s nejvíce komentáři",
-      "noComments": "Zatím žádné články nemají komentáře"
-    },
+    "topCommentedArticle": {},
     "followerCount": "Počet sledujících",
     "engagementRate": {
       "title": "Míra zapojení",
-      "tooltip": "Míra zapojení ukazuje, jak aktivně čtenáři interagují s vašimi články. Vypočítává se jako průměrný poměr interakcí (lajky, komentáře, sdílení a hlasy v anketách) k zobrazením pro každý článek. Vyšší hodnota znamená větší zapojení čtenářů."
+      "tooltip": "Míra zapojení ukazuje, jak aktivně čtenáři interagují s vašimi články. Počítá se jako podíl všech interakcí (lajky, komentáře, sdílení a hlasy v anketách) ke všem zobrazením napříč blogem. Vyšší hodnota znamená větší zapojení čtenářů."
     },
     "topAuthor": {
-      "title": "Nejaktivnější autor",
-      "noAuthors": "Zatím žádný autor nepřispěl"
+      "title": "Nejaktivnější autor"
     },
     "upgradePrompt": {
       "title": "Odemkněte prémiové statistiky",
@@ -63,12 +57,13 @@
       "button": "Prozkoumat plány"
     },
     "charts": {
-      "viewsByPublishDay": "Zobrazení článků vydaných za poslední týden",
       "shareDistribution": "Rozložení sdílení podle platformy",
       "toggleType": "Přepnout typ grafu",
       "showTable": "Zobrazit jako tabulku",
       "day": "Den",
-      "platform": "Platforma"
+      "platform": "Platforma",
+      "viewsByDay": "Zobrazení za posledních {days} dní",
+      "trackingSince": "Měřeno od {date} — starší zobrazení se nezaznamenávala."
     },
     "platforms": {
       "TWITTER": "X / Twitter",
@@ -76,6 +71,21 @@
       "FACEBOOK": "Facebook",
       "EMAIL": "E-mail",
       "OTHER": "Ostatní"
+    },
+    "updatedAt": "Aktualizováno v",
+    "averageViews": "Ø {count} na článek",
+    "draftCount": "+ {count} rozepsaných",
+    "articlesWritten": "{count} článků",
+    "concentration": "Top 3 články = {share} zobrazení",
+    "sections": {
+      "content": "Nejúspěšnější obsah",
+      "audience": "Publikum",
+      "authorship": "Jak vznikaly"
+    },
+    "aiInvolvement": {
+      "FULL": "Celé AI",
+      "ASSIST": "AI + úpravy",
+      "NONE": "Ručně"
     }
   }
 }

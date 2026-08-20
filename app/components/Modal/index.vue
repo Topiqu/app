@@ -26,7 +26,7 @@
         >
           <DialogPanel
             :class="[
-              'h-11/12 w-full bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col gap-6 overflow-y-auto border border-gray-200/70',
+              'h-11/12 w-full bg-white/80 dark:bg-neutral-900/85 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col gap-6 overflow-y-auto border border-gray-200/70 dark:border-neutral-800/70',
               $attrs.class || 'max-w-xl',
             ]"
           >
@@ -36,7 +36,7 @@
                   <slot name="title" v-bind="actions">
                     <DialogTitle
                       v-if="title"
-                      class="text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-400 bg-clip-text text-transparent"
+                      class="text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-400 dark:from-neutral-100 dark:to-neutral-400 bg-clip-text text-transparent"
                     >
                       {{ title }}
                     </DialogTitle>
@@ -44,7 +44,7 @@
                   <slot name="description" v-bind="actions">
                     <DialogDescription
                       v-if="description"
-                      class="text-lg font-semibold bg-gradient-to-r from-gray-600 to-gray-400 bg-clip-text text-transparent"
+                      class="text-lg font-semibold bg-gradient-to-r from-gray-600 to-gray-400 dark:from-neutral-100 dark:to-neutral-400 bg-clip-text text-transparent"
                     >
                       {{ description }}
                     </DialogDescription>

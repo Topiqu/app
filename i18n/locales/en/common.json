@@ -125,7 +125,8 @@
       "shareEmail": "Share via email",
       "copySuccess": "Successfully copied",
       "confirm": "Confirm",
-      "toggleLayout": "Toggle layout"
+      "toggleLayout": "Toggle layout",
+      "showLess": "Show less"
     },
     "errTypes": {
       "notFound": "Couldn't find that. I must be blind.",

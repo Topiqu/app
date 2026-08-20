@@ -41,7 +41,8 @@
       "likedByAuthor": "Liked by author ({0})",
       "reportCommentConfirm": "Are you sure you want to report this comment?",
       "noComments": "No comments",
-      "commentsAction": "You have yet to comment something"
+      "commentsAction": "You have yet to comment something",
+      "unit": "comments"
     },
     "title": "Articles",
     "addArticle": "Add Article",
