@@ -14,10 +14,16 @@
     "continue": "Pokračovat",
     "unsavedChanges": "Neuložené změny!",
     "showPassword": "Zobrazit heslo",
+    "hidePassword": "Skrýt heslo",
+    "advertisement": "Reklama",
+    "poweredBy": "Vytvořeno pomocí",
+    "breadcrumbs": "Drobečková navigace",
+    "navigation": {
+      "dashboard": "Přehled"
+    },
     "links": {
       "terms": "Obchodní podmínky",
-      "privacy": "Ochrana soukromí",
-      "status": "Status systému"
+      "privacy": "Ochrana soukromí"
     },
     "search": "Hledat...",
     "yes": "Ano",
@@ -36,22 +42,23 @@
       "disableAiMessage": "Vypnutím AI se vypne i analýza sentimentu a plánované generování článků, které AI vyžadují."
     },
     "errTypes": {
-      "notFound": "Tohle jsem nenašel, asi jsem slepý.",
-      "unauthorized": "Stát, sem nesmíš, to je zakázané území pro nepřihlášené dobrodruhy.",
-      "forbidden": "Tady je plot s ostnatým drátem – přístup zakázán, ani pro superadminy s cheat kódem.",
-      "server": "Server si vzal volno a šel na kafe. Zkuste to později.",
-      "badRequest": "Váš požadavek je zmatený jak draft článku bez nadpisu – zkuste to napsat jasněji.",
-      "tooManyRequests": "Spam alert! Klikáte rychleji než speedrunner – dejte si pauzu.",
-      "internalError": "Uvnitř to bouchlo jak špatně napsaný script. Naši technomágové už to řeší.",
-      "serviceUnavailable": "Služba odjela na dovolenou. Obnovte stránku nebo si zatím dejte čaj.",
-      "conflict": "Data se hádají jak dva editoři nad jedním článkem. Rozhodněte, která verze vyhraje.",
-      "notAcceptable": "Tohle je mimo pravidla hry. Upravte obsah a zkuste to znovu.",
-      "gatewayTimeout": "Brána se sekla jak lagující server. Počkejte chvilku a zkuste to znova.",
-      "unprocessableEntity": "Tomuhle nerozumíme, jako AI na špatný prompt. Přidejte víc detailů a půjde to."
+      "notFound": "Požadovanou stránku se nepodařilo najít.",
+      "unauthorized": "Pro pokračování se prosím přihlaste.",
+      "forbidden": "K této stránce nemáte oprávnění.",
+      "server": "Server požadavek nedokončil. Zkuste to prosím později.",
+      "badRequest": "Požadavek není platný. Zkontrolujte údaje a zkuste to znovu.",
+      "tooManyRequests": "Příliš mnoho požadavků. Chvíli počkejte a zkuste to znovu.",
+      "internalError": "Na naší straně se něco pokazilo. Zkuste to prosím později.",
+      "serviceUnavailable": "Služba je dočasně nedostupná. Zkuste to prosím později.",
+      "conflict": "Tato položka se změnila. Obnovte stránku a zkuste to znovu.",
+      "notAcceptable": "Odeslaný obsah nelze přijmout. Zkontrolujte jej a zkuste to znovu.",
+      "gatewayTimeout": "Požadavek vypršel. Zkuste to prosím znovu.",
+      "unprocessableEntity": "Některé údaje se nepodařilo zpracovat. Zkontrolujte je a zkuste to znovu."
     },
     "errors": {
       "general": "Něco se pokazilo. Zkuste to prosím znovu.",
       "unauthorized": "Přístup zamítnut.",
+      "invalidCredentials": "Neplatný e-mail nebo heslo.",
       "invalidRequest": "Neplatný požadavek.",
       "missingBlog": "Chybí název blogu.",
       "blogNotFound": "Blog nenalezen.",
@@ -103,7 +110,12 @@
       "commentReported": "Komentář nahlášen",
       "newFollower": "{user} vás začal sledovat.",
       "articlePublished": "Váš článek „{0}“ byl úspěšně publikován!",
-      "newArticleFromFollowed": "{0} publikoval nový článek: {1}"
+      "newArticleFromFollowed": "{0} publikoval nový článek: {1}",
+      "pollingActive": "Notifikace jsou aktivní",
+      "pollingPaused": "Notifikace jsou pozastavené",
+      "noMore": "Žádné další notifikace",
+      "empty": "Žádné nové notifikace",
+      "loginPrompt": "Přihlaste se a sledujte novinky a aktivity na platformě."
     },
     "actions": {
       "get_started": "Začít integraci",
@@ -134,7 +146,34 @@
       "copyLink": "Kopírovat odkaz",
       "shareX": "Sdílet na X",
       "shareLinkedIn": "Sdílet na LinkedIn",
-      "copySuccess": "Odkaz úspěšně zkopírován"
+      "copySuccess": "Odkaz úspěšně zkopírován",
+      "openMenu": "Otevřít navigaci",
+      "openNotifications": "Otevřít oznámení",
+      "deleteNotification": "Smazat oznámení",
+      "togglePassword": "Zobrazit nebo skrýt heslo",
+      "toggleTheme": "Přepnout barevný režim",
+      "toggleChart": "Přepnout typ grafu",
+      "addUser": "Přidat uživatele",
+      "deleteEmoji": "Smazat emoji",
+      "selectTheme": "Vybrat motiv {theme}",
+      "copy": "Kopírovat",
+      "deleteTag": "Smazat štítek",
+      "toggleLayout": "Přepnout rozložení",
+      "assignUser": "Přiřadit uživatele",
+      "blockUser": "Zablokovat uživatele",
+      "restoreUser": "Obnovit uživatele",
+      "copySecret": "Kopírovat tajný klíč",
+      "toggleComments": "Přepnout komentáře",
+      "unlike": "Odebrat To se mi líbí",
+      "share": "Sdílet",
+      "deleteComment": "Smazat komentář",
+      "more": "Další",
+      "confirm": "Potvrdit",
+      "expand": "Rozbalit postranní panel",
+      "collapse": "Sbalit postranní panel",
+      "revertChanges": "Vrátit změny",
+      "search": "Hledat",
+      "clear": "Vymazat vše"
     },
     "avatar": {
       "title": "Avatar",
@@ -212,7 +251,11 @@
       "enterTotpCode": "Zadejte Váš kód pro ",
       "totpCode": "TOTP kód",
       "totpCodePlaceholder": "6místný kód",
-      "verifyTotp": "Ověřit TOTP"
+      "verifyTotp": "Ověřit TOTP",
+      "totpFailed": "Dvoufázové ověření selhalo",
+      "enterCode": "Zadejte ověřovací kód",
+      "logout": "Odhlásit se",
+      "welcomeBack": "Vítejte zpět"
     },
     "labels": {
       "username": "Uživatelské jméno",
@@ -231,7 +274,14 @@
       "releaseDate": "Datum vydání",
       "series": "Série",
       "tags": "Štítky",
-      "aiGeneration": "AI Generování"
+      "aiGeneration": "AI Generování",
+      "status": "Stav",
+      "dateFrom": "Datum od",
+      "dateTo": "Datum do",
+      "sortBy": "Řadit podle",
+      "order": "Pořadí",
+      "filters": "Filtry",
+      "all": "Vše"
     },
     "messages": {
       "deleteConfirmTitle": "Opravdu chcete smazat?",
@@ -259,6 +309,7 @@
       "saveSuccess": "Úspěšně uloženo",
       "saveFailed": "Uložení selhalo",
       "invalidUrl": "Některé adresy URL jsou neplatné (musí začínat https://)",
+      "invalidUrlShort": "Neplatná URL adresa",
       "noClientId": "Chybí ID klienta",
       "savedAgo": "Uloženo",
       "savingNow": "Ukládá se…",
@@ -268,7 +319,8 @@
       "discardConfirm": "Zahodit",
       "loadFailedTitle": "Načtení se nezdařilo",
       "loadFailedText": "Data se nepodařilo načíst. Zkuste to prosím znovu.",
-      "retry": "Zkusit znovu"
+      "retry": "Zkusit znovu",
+      "cancel": "Zrušit"
     },
     "sortOptions": {
       "newest": "Nejnovější",
@@ -293,13 +345,22 @@
       "nextPayment": "Další platba",
       "savingsTitle": "Úspora",
       "external": "Externí služby",
+      "integrations": {
+        "analytics": "Google Analytics",
+        "measurementId": "ID měření",
+        "ads": "Google Ads",
+        "networkCode": "Kód sítě"
+      },
       "explanation": "Vysvětlení preferencí",
       "monthlyTitle": "Měsíční cena",
       "annuallyTitle": "Roční cena",
+      "annualy": "Ročně",
       "api": {
         "title": "API přístup",
         "description": "Vygenerujte si bezpečný API klíč pro programatický přístup k endpointům.",
         "generate": "Vygenerovat klíč",
+        "generateSuccess": "API klíč byl úspěšně vygenerován",
+        "generateFailed": "API klíč se nepodařilo vygenerovat",
         "label": "Váš API klíč",
         "revoke": "Zneplatnit a přegenerovat",
         "copy": "Kopírovat API klíč",
@@ -307,6 +368,9 @@
         "show": "Zobrazit API klíč",
         "hide": "Skrýt API klíč",
         "warning": "Tento klíč držte v tajnosti. Nesdílejte jej v klientském kódu ani veřejných repozitářích."
+      },
+      "messages": {
+        "noClientId": "Chybí ID klienta"
       },
       "billing": {
         "permanent": "– Trvalý přístup",
@@ -335,6 +399,19 @@
       "companyLogo": {
         "label": "Logo blogu",
         "description": "PNG, JPEG, WebP nebo SVG, min. 512x512px, max. 2 MB"
+      },
+      "branding": {
+        "identity": "Identita",
+        "favicon": "Favicon",
+        "faviconHelp": "Čtvercové PNG, JPEG nebo WebP, 32-512 px, maximálně 512 KB",
+        "tagline": "Tagline",
+        "taglinePlaceholder": "Krátká věta, která popisuje vaši publikaci",
+        "visualStyle": "Vizuální styl",
+        "typography": "Typografie",
+        "modern": "Moderní",
+        "editorial": "Editorial",
+        "system": "Systémové",
+        "addSocial": "Přidat sociální síť"
       },
       "companyDescription": {
         "label": "Popis blogu",
@@ -444,16 +521,44 @@
       "tooShort": "Heslo je příliš krátké (min. {minLength} znaků)",
       "tooLong": "Heslo je příliš dlouhé (max. {maxLength} znaků)"
     },
+    "linkedin": {
+      "title": "Automatizace LinkedIn",
+      "description": "Nastavte automatizované publikování na LinkedIn.",
+      "connectPersonal": "Připojit profil",
+      "connectPage": "Připojit stránku",
+      "connected": "Připojeno ({type})",
+      "switchPersonal": "Přepnout na profil",
+      "switchPage": "Přepnout na stránku",
+      "publishingMode": "Režim publikování",
+      "publishingModeDescription": "Režim s lidským schválením vyžaduje potvrzení před publikováním vygenerovaného příspěvku.",
+      "brandGuidelines": "Pravidla značky",
+      "tone": "Tón komunikace",
+      "tonePlaceholder": "Například: profesionální a podnětný",
+      "audience": "Cílová skupina",
+      "audiencePlaceholder": "Například: softwaroví vývojáři a techničtí ředitelé",
+      "doList": "Preferovaná témata (oddělená čárkou)",
+      "doListPlaceholder": "Například: React, inovace, cloud",
+      "dontList": "Zakázaná slova (oddělená čárkou)",
+      "dontListPlaceholder": "Například: levný, záruka, spam"
+    },
     "tokens": {
       "pack10k": "Balíček 10k tokenů",
       "pack25k": "Balíček 25k tokenů",
       "pack50k": "Balíček 50k tokenů",
       "bestValue": "Nejvýhodnější",
       "upgradeToPremium": "Povýšit na PREMIUM"
-    },
-    "tasks": {
-      "completed": "Dokončeno",
-      "tags": "Štítky"
+    }
+  },
+  "error": {
+    "generic": "Něco se pokazilo. Zkuste to prosím znovu."
+  },
+  "billing": {
+    "trialEnded": {
+      "title": "Zkušební období skončilo",
+      "description": "Vyberte, jak chcete pokračovat.",
+      "note": "Váš obsah zůstává dostupný.",
+      "freeAction": "Pokračovat zdarma",
+      "upgradeAction": "Změnit tarif"
     }
   }
 }

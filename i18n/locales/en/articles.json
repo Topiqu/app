@@ -2,6 +2,10 @@
   "articles": {
     "comments": {
       "addGif": "Add GIF",
+      "clearGifCategory": "Clear GIF category",
+      "gifCategories": "Categories",
+      "gifResults": "GIF results",
+      "trendingGifs": "Trending GIFs",
       "title": "Comments",
       "yourComment": "Your comment",
       "commentPlaceholder": "Write your comment...",
@@ -41,7 +45,9 @@
       "likedByAuthor": "Liked by author ({0})",
       "reportCommentConfirm": "Are you sure you want to report this comment?",
       "noComments": "No comments",
-      "commentsAction": "You have yet to comment something"
+      "commentsAction": "You have yet to comment something",
+      "addReaction": "Add reaction",
+      "removeGif": "Remove GIF"
     },
     "title": "Articles",
     "addArticle": "Add Article",
@@ -62,6 +68,13 @@
     "tagsArticles": "Articles with tag",
     "searchPlaceholder": "Search articles...",
     "latestArticle": "Latest article:",
+    "home": {
+      "publication": "Independent publication",
+      "latestStory": "Latest story",
+      "browseArticles": "Browse articles",
+      "exploreTopics": "Explore topics",
+      "recommended": "Recommended reading"
+    },
     "readingTime": "{0} min read",
     "noResults": {
       "imageAlt": "Sad Topík",
@@ -102,6 +115,7 @@
       }
     },
     "export": {
+      "label": "Export",
       "title": {
         "json": "Export to JSON",
         "csv": "Export to CSV",
@@ -135,10 +149,17 @@
       "actions": "Actions",
       "createdAt": "Created At"
     },
+    "messages": {
+      "archivedCannotEdit": "Archived articles cannot be edited.",
+      "statusChangeFailed": "Could not change the article status.",
+      "deleteSuccess": "Article deleted.",
+      "deleteFailed": "Could not delete the article."
+    },
     "sources": {
       "placeholder": "Source link (https://...)",
       "imageUrl": "Image link (https://...)",
-      "youtube": "YouTube video link (https://...)"
+      "youtube": "YouTube video link (https://...)",
+      "invalid": "Enter a complete URL, including https://"
     },
     "status": {
       "published": "Published",
@@ -146,6 +167,8 @@
       "archived": "Archived"
     },
     "tags": {
+      "emptyName": "Enter a tag name.",
+      "duplicate": "A tag with this name already exists.",
       "title": "Article Tags",
       "addCustomTagPlaceholder": "Add custom tag",
       "selectExistingTag": "Select existing tag",
@@ -195,6 +218,7 @@
     },
     "userMenu": {
       "noBio": "No bio",
+      "companyLogoAlt": "Company logo",
       "adminIn": "Administrator in: {0}",
       "noClientAssigned": "Not assigned",
       "currentPlan": "Current plan",
@@ -250,6 +274,34 @@
         "comments": "My Comments"
       }
     },
+    "workflowDrafts": {
+      "title": "Content drafts",
+      "topic": "Topic",
+      "company": "Company",
+      "score": "Score",
+      "flags": "Flags",
+      "approve": "Approve",
+      "reject": "Reject",
+      "publish": "Publish now",
+      "empty": "No drafts found for the selected status.",
+      "rejectTitle": "Reject draft",
+      "rejectDescription": "Explain why this draft is being rejected.",
+      "rejectReason": "Reason for rejection",
+      "approvalFailed": "Approval failed",
+      "rejectionFailed": "Rejection failed",
+      "publishTitle": "Publish draft now?",
+      "publishDescription": "This draft will be published immediately.",
+      "publishSuccess": "Publish request sent",
+      "publishFailed": "Publishing failed",
+      "status": {
+        "ALL": "All",
+        "DRAFT": "Draft",
+        "AWAITING_APPROVAL": "Awaiting approval",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "PUBLISHED": "Published"
+      }
+    },
     "editor": {
       "toolbar": {
         "more": "More options",
@@ -290,6 +342,7 @@
         "placeholder": "Describe the image for screen readers (optional)"
       },
       "uploadFailed": "Image upload failed",
+      "noContent": "No content available",
       "dropZone": "Drop image here",
       "title": "Edit Article",
       "modes": {

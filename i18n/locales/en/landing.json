@@ -162,6 +162,7 @@
       "line7": "Publication: Scheduled"
     },
     "onboarding": {
+      "honeypot": "Website",
       "title": "Create your own blog",
       "siteInfo": "Site Information",
       "siteInfoDesc": "Let's start with the most important thing - what will be the name of your project and where can we find it.",

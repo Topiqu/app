@@ -2,6 +2,10 @@
   "articles": {
     "comments": {
       "addGif": "Přidat GIF",
+      "clearGifCategory": "Zrušit výběr kategorie GIF",
+      "gifCategories": "Kategorie",
+      "gifResults": "Výsledky GIFů",
+      "trendingGifs": "Populární GIFy",
       "title": "Komentáře",
       "yourComment": "Váš komentář",
       "commentPlaceholder": "Napište svůj komentář...",
@@ -41,7 +45,9 @@
       "likedByAuthor": "Líbí se autorovi ({0})",
       "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?",
       "noComments": "Žádné komentáře",
-      "commentsAction": "Přidejte se k diskuzi."
+      "commentsAction": "Přidejte se k diskuzi.",
+      "addReaction": "Přidat reakci",
+      "removeGif": "Odebrat GIF"
     },
     "title": "Články",
     "addArticle": "Přidat článek",
@@ -63,6 +69,13 @@
     "searchPlaceholder": "Hledat články...",
     "readingTime": "{0} min čtení",
     "latestArticle": "Nejnovější článek:",
+    "home": {
+      "publication": "Nezávislá publikace",
+      "latestStory": "Nejnovější článek",
+      "browseArticles": "Procházet články",
+      "exploreTopics": "Prozkoumat témata",
+      "recommended": "Doporučené čtení"
+    },
     "noResults": {
       "imageAlt": "Smutný Topík",
       "message": "Achjo, cítím se tak zbytečný..."
@@ -102,6 +115,7 @@
       }
     },
     "export": {
+      "label": "Export",
       "title": {
         "json": "Exportovat do JSON",
         "csv": "Exportovat do CSV",
@@ -135,10 +149,17 @@
       "actions": "Akce",
       "createdAt": "Vytvořeno"
     },
+    "messages": {
+      "archivedCannotEdit": "Archivované články nelze upravovat.",
+      "statusChangeFailed": "Stav článku se nepodařilo změnit.",
+      "deleteSuccess": "Článek byl smazán.",
+      "deleteFailed": "Článek se nepodařilo smazat."
+    },
     "sources": {
       "placeholder": "Odkaz na zdroj (https://...)",
       "imageUrl": "Odkaz na obrázek (https://...)",
-      "youtube": "Odkaz na YouTube video (https://...)"
+      "youtube": "Odkaz na YouTube video (https://...)",
+      "invalid": "Zadejte úplnou URL včetně https://"
     },
     "status": {
       "published": "Publikováno",
@@ -146,6 +167,8 @@
       "archived": "Archivováno"
     },
     "tags": {
+      "emptyName": "Zadejte název štítku.",
+      "duplicate": "Štítek s tímto názvem už existuje.",
       "title": "Štítky článku",
       "addCustomTagPlaceholder": "Přidat vlastní štítek",
       "selectExistingTag": "Vybrat existující štítek",
@@ -195,6 +218,7 @@
     },
     "userMenu": {
       "noBio": "Žádné bio",
+      "companyLogoAlt": "Logo společnosti",
       "adminIn": "Administrátor v: {0}",
       "noClientAssigned": "Nepřiřazen",
       "currentPlan": "Současný plán",
@@ -250,6 +274,34 @@
         "comments": "Moje komentáře"
       }
     },
+    "workflowDrafts": {
+      "title": "Koncepty obsahu",
+      "topic": "Téma",
+      "company": "Společnost",
+      "score": "Hodnocení",
+      "flags": "Upozornění",
+      "approve": "Schválit",
+      "reject": "Zamítnout",
+      "publish": "Publikovat nyní",
+      "empty": "Pro vybraný stav nebyly nalezeny žádné koncepty.",
+      "rejectTitle": "Zamítnout koncept",
+      "rejectDescription": "Vysvětlete, proč je koncept zamítnut.",
+      "rejectReason": "Důvod zamítnutí",
+      "approvalFailed": "Schválení selhalo",
+      "rejectionFailed": "Zamítnutí selhalo",
+      "publishTitle": "Publikovat koncept nyní?",
+      "publishDescription": "Koncept bude okamžitě publikován.",
+      "publishSuccess": "Požadavek na publikování byl odeslán",
+      "publishFailed": "Publikování selhalo",
+      "status": {
+        "ALL": "Vše",
+        "DRAFT": "Koncept",
+        "AWAITING_APPROVAL": "Čeká na schválení",
+        "APPROVED": "Schváleno",
+        "REJECTED": "Zamítnuto",
+        "PUBLISHED": "Publikováno"
+      }
+    },
     "editor": {
       "toolbar": {
         "more": "Další možnosti",
@@ -290,6 +342,7 @@
         "placeholder": "Popište obrázek pro čtečky obrazovky (volitelné)"
       },
       "uploadFailed": "Nahrání obrázku se nezdařilo",
+      "noContent": "Obsah není dostupný",
       "dropZone": "Sem přetáhněte obrázek",
       "title": "Upravit článek",
       "modes": {

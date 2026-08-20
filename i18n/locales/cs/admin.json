@@ -1,5 +1,9 @@
 {
   "admin": {
+    "title": "Přehled",
+    "trial": {
+      "continueFreeSuccess": "Váš tarif byl změněn na Free."
+    },
     "upgrade": {
       "cta": "Přejít na {plan}",
       "loading": "Otevírám platbu…",

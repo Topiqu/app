@@ -20,9 +20,9 @@
         font-size: 38px;
         font-weight: 900;
         letter-spacing: 12px;
-        color: #18181B;
-        background: linear-gradient(135deg, #EDE9FE 0%, #E0E7FF 100%);
-        border: 2px solid #C4B5FD;
+        color: #18181b;
+        background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+        border: 2px solid #c4b5fd;
         border-radius: 18px;
         padding: 22px 16px;
         text-align: center;
@@ -31,35 +31,48 @@
       .greeting {
         font-size: 20px;
         font-weight: 800;
-        color: #18181B;
+        color: #18181b;
         letter-spacing: -0.01em;
       }
       .lead {
         font-size: 15px;
-        color: #3F3F46;
+        color: #3f3f46;
       }
       .meta {
         font-size: 13px;
-        color: #71717A;
+        color: #71717a;
       }
       .footer {
         font-size: 12px;
-        color: #A1A1AA;
+        color: #a1a1aa;
       }
       .footer a {
-        color: #7C3AED;
+        color: #7c3aed;
         text-decoration: none;
         font-weight: 600;
       }
       @media (prefers-color-scheme: dark) {
-        body, .body-bg { background-color: #0C0C0C !important; }
-        .panel-bg { background-color: #18181B !important; }
-        .greeting { color: #FAFAFA !important; }
-        .lead { color: #D4D4D8 !important; }
-        .meta { color: #A1A1AA !important; }
-        .footer { color: #71717A !important; }
+        body,
+        .body-bg {
+          background-color: #0c0c0c !important;
+        }
+        .panel-bg {
+          background-color: #18181b !important;
+        }
+        .greeting {
+          color: #fafafa !important;
+        }
+        .lead {
+          color: #d4d4d8 !important;
+        }
+        .meta {
+          color: #a1a1aa !important;
+        }
+        .footer {
+          color: #71717a !important;
+        }
         .code-pill {
-          color: #FAFAFA !important;
+          color: #fafafa !important;
           background: linear-gradient(135deg, rgba(124, 58, 237, 0.18) 0%, rgba(79, 70, 229, 0.18) 100%) !important;
           border-color: rgba(167, 139, 250, 0.45) !important;
         }

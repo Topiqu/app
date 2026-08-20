@@ -162,6 +162,7 @@
       "line7": "Publikace: Naplánována"
     },
     "onboarding": {
+      "honeypot": "Webová stránka",
       "title": "Vytvořte si vlastní blog",
       "siteInfo": "Informace o webu",
       "siteInfoDesc": "Začněme tím nejdůležitějším – jak se bude váš projekt jmenovat a kde ho najdeme.",

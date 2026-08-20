@@ -1,11 +1,29 @@
 {
   "master": {
+    "title": "Administrace",
+    "userEdit": {
+      "title": "Upravit uživatele",
+      "passwordPlaceholder": "Nové heslo (ponechte prázdné pro zachování současného)",
+      "role": "Role",
+      "roles": {
+        "admin": "Administrátor",
+        "reader": "Čtenář",
+        "ai": "AI autor"
+      },
+      "validation": "Zadejte uživatelské jméno a e-mail.",
+      "success": "Uživatel byl upraven.",
+      "error": "Uživatele se nepodařilo upravit."
+    },
     "clientTable": {
+      "title": "Klientské weby",
+      "description": "Správa publikací, tarifů, přístupů a nastavení klientů.",
       "search": "Hledat klienty...",
       "headers": {
         "name": "Název",
         "domain": "Doména",
+        "status": "Stav",
         "plan": "Plán",
+        "users": "Uživatelé",
         "createdAt": "Vytvořeno",
         "actions": "Akce"
       },

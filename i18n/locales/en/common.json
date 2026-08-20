@@ -10,13 +10,20 @@
     "warning": "Warning",
     "unknown": "Unknown",
     "settings": "Article Settings",
+    "remove": "Remove",
     "continue": "Continue",
     "unsavedChanges": "Unsaved changes!",
     "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "advertisement": "Advertisement",
+    "poweredBy": "Made with",
+    "breadcrumbs": "Breadcrumbs",
+    "navigation": {
+      "dashboard": "Dashboard"
+    },
     "links": {
       "terms": "Terms of Service",
-      "privacy": "Privacy Policy",
-      "status": "System Status"
+      "privacy": "Privacy Policy"
     },
     "search": "Search...",
     "yes": "Yes",
@@ -63,25 +70,53 @@
       "copyLink": "Copy link",
       "shareX": "Share on X",
       "shareLinkedIn": "Share on LinkedIn",
-      "copySuccess": "Successfully copied"
+      "copySuccess": "Successfully copied",
+      "openMenu": "Open navigation",
+      "openNotifications": "Open notifications",
+      "deleteNotification": "Delete notification",
+      "togglePassword": "Show or hide password",
+      "toggleTheme": "Toggle color mode",
+      "toggleChart": "Change chart type",
+      "addUser": "Add user",
+      "deleteEmoji": "Delete emoji",
+      "selectTheme": "Select {theme} theme",
+      "copy": "Copy",
+      "deleteTag": "Delete tag",
+      "toggleLayout": "Change layout",
+      "assignUser": "Assign user",
+      "blockUser": "Block user",
+      "restoreUser": "Restore user",
+      "copySecret": "Copy secret key",
+      "toggleComments": "Toggle comments",
+      "unlike": "Remove like",
+      "share": "Share",
+      "deleteComment": "Delete comment",
+      "more": "More",
+      "confirm": "Confirm",
+      "expand": "Expand sidebar",
+      "collapse": "Collapse sidebar",
+      "revertChanges": "Revert changes",
+      "search": "Search",
+      "clear": "Clear all"
     },
     "errTypes": {
-      "notFound": "Couldn't find that. I must be blind.",
-      "unauthorized": "Stop, you can't go here. This is forbidden territory for unauthenticated adventurers.",
-      "forbidden": "There's barbed wire here – access denied, even for superadmins with cheat codes.",
-      "server": "The server took a coffee break. Try again later.",
-      "badRequest": "Your request is as confused as a draft article without a title – try writing it clearly.",
-      "tooManyRequests": "Spam alert! You're clicking faster than a speedrunner – take a break.",
-      "internalError": "Something exploded inside like a poorly written script. Our technomages are on it.",
-      "serviceUnavailable": "The service went on vacation. Refresh the page or have some tea in the meantime.",
-      "conflict": "The data is arguing like two editors over one article. Decide which version wins.",
-      "notAcceptable": "This is against the rules of the game. Edit the content and try again.",
-      "gatewayTimeout": "The gateway got stuck like a lagging server. Wait a moment and try again.",
-      "unprocessableEntity": "We don't understand this, like an AI with a bad prompt. Add more details and it'll work."
+      "notFound": "We couldn't find the requested page.",
+      "unauthorized": "Please sign in to continue.",
+      "forbidden": "You don't have permission to access this page.",
+      "server": "The server couldn't complete the request. Please try again later.",
+      "badRequest": "The request is invalid. Check the information and try again.",
+      "tooManyRequests": "Too many requests. Please wait a moment and try again.",
+      "internalError": "Something went wrong on our side. Please try again later.",
+      "serviceUnavailable": "The service is temporarily unavailable. Please try again later.",
+      "conflict": "This item has changed. Refresh the page and try again.",
+      "notAcceptable": "The submitted content cannot be accepted. Review it and try again.",
+      "gatewayTimeout": "The request timed out. Please try again.",
+      "unprocessableEntity": "Some information could not be processed. Review it and try again."
     },
     "errors": {
       "general": "Something went wrong. Please try again.",
       "unauthorized": "Access denied.",
+      "invalidCredentials": "Invalid email or password.",
       "invalidRequest": "Invalid request.",
       "missingBlog": "Missing blog name.",
       "blogNotFound": "Blog not found.",
@@ -133,7 +168,12 @@
       "commentReported": "Comment reported",
       "newFollower": "{user} started following you.",
       "articlePublished": "Your article \"{0}\" has been successfully published!",
-      "newArticleFromFollowed": "{0} published a new article: {1}"
+      "newArticleFromFollowed": "{0} published a new article: {1}",
+      "pollingActive": "Notifications are active",
+      "pollingPaused": "Notifications are paused",
+      "noMore": "No more notifications",
+      "empty": "No new notifications",
+      "loginPrompt": "Sign in to follow news and activity on the platform."
     },
     "avatar": {
       "title": "Avatar",
@@ -211,7 +251,11 @@
       "enterTotpCode": "Enter your TOTP code for",
       "totpCode": "TOTP Code",
       "totpCodePlaceholder": "6-digit code",
-      "verifyTotp": "Verify TOTP"
+      "verifyTotp": "Verify TOTP",
+      "totpFailed": "Two-factor verification failed",
+      "enterCode": "Enter verification code",
+      "logout": "Log out",
+      "welcomeBack": "Welcome back"
     },
     "labels": {
       "username": "Username",
@@ -230,7 +274,14 @@
       "pasteImage": "Paste image",
       "series": "Series",
       "tags": "Tags",
-      "aiGeneration": "AI Generation"
+      "aiGeneration": "AI Generation",
+      "status": "Status",
+      "dateFrom": "From date",
+      "dateTo": "To date",
+      "sortBy": "Sort by",
+      "order": "Order",
+      "filters": "Filters",
+      "all": "All"
     },
     "messages": {
       "deleteConfirmTitle": "Are you sure you want to delete?",
@@ -258,6 +309,7 @@
       "saveSuccess": "Successfully saved",
       "saveFailed": "Failed to save",
       "invalidUrl": "Some URLs are invalid (must start with https://)",
+      "invalidUrlShort": "Invalid URL",
       "noClientId": "Missing client ID",
       "savedAgo": "Saved",
       "savingNow": "Saving…",
@@ -267,7 +319,8 @@
       "discardConfirm": "Discard",
       "loadFailedTitle": "Loading failed",
       "loadFailedText": "We could not load the data. Please try again.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "cancel": "Cancel"
     },
     "sortOptions": {
       "newest": "Newest",
@@ -292,13 +345,22 @@
       "nextPayment": "Next payment",
       "savingsTitle": "Savings",
       "external": "External services",
+      "integrations": {
+        "analytics": "Google Analytics",
+        "measurementId": "Measurement ID",
+        "ads": "Google Ads",
+        "networkCode": "Network code"
+      },
       "explanation": "Preferences Explanation",
       "monthlyTitle": "Monthly Price",
       "annuallyTitle": "Yearly Price",
+      "annualy": "Yearly",
       "api": {
         "title": "API Access",
         "description": "Generate a secure API key to access endpoints programmatically.",
         "generate": "Generate Key",
+        "generateSuccess": "API key generated successfully",
+        "generateFailed": "The API key could not be generated",
         "label": "Your API Key",
         "revoke": "Revoke & Regenerate",
         "copy": "Copy API Key",
@@ -306,6 +368,9 @@
         "show": "Show API Key",
         "hide": "Hide API Key",
         "warning": "Keep this key secret. Do not share it in client-side code or public repositories."
+      },
+      "messages": {
+        "noClientId": "Missing client ID"
       },
       "billing": {
         "permanent": "– Lifetime access",
@@ -334,6 +399,19 @@
       "companyLogo": {
         "label": "Company Logo",
         "description": "PNG, JPEG, WebP, or SVG, min. 512x512px, max. 2 MB"
+      },
+      "branding": {
+        "identity": "Identity",
+        "favicon": "Favicon",
+        "faviconHelp": "Square PNG, JPEG or WebP, 32-512 px, maximum 512 KB",
+        "tagline": "Tagline",
+        "taglinePlaceholder": "A short line describing your publication",
+        "visualStyle": "Visual style",
+        "typography": "Typography",
+        "modern": "Modern",
+        "editorial": "Editorial",
+        "system": "System",
+        "addSocial": "Add social network"
       },
       "companyDescription": {
         "label": "Company Description",
@@ -443,16 +521,44 @@
       "tooShort": "Password is too short. (min. {minLength} characters)",
       "tooLong": "Password is too long. (max. {maxLength} characters)"
     },
+    "linkedin": {
+      "title": "LinkedIn automation",
+      "description": "Configure automated LinkedIn publishing.",
+      "connectPersonal": "Connect profile",
+      "connectPage": "Connect page",
+      "connected": "Connected ({type})",
+      "switchPersonal": "Switch to profile",
+      "switchPage": "Switch to page",
+      "publishingMode": "Publishing mode",
+      "publishingModeDescription": "Human-in-the-loop mode requires approval before a generated post is published.",
+      "brandGuidelines": "Brand guidelines",
+      "tone": "Tone of voice",
+      "tonePlaceholder": "For example: professional and thought-provoking",
+      "audience": "Target audience",
+      "audiencePlaceholder": "For example: software engineers and CTOs",
+      "doList": "Preferred topics (comma separated)",
+      "doListPlaceholder": "For example: React, innovation, cloud",
+      "dontList": "Avoided words (comma separated)",
+      "dontListPlaceholder": "For example: cheap, guarantee, spam"
+    },
     "tokens": {
       "pack10k": "Token Pack 10k",
       "pack25k": "Token Pack 25k",
       "pack50k": "Token Pack 50k",
       "bestValue": "Best value",
       "upgradeToPremium": "Upgrade to PREMIUM"
-    },
-    "tasks": {
-      "completed": "Completed",
-      "tags": "Tags"
+    }
+  },
+  "error": {
+    "generic": "Something went wrong. Please try again."
+  },
+  "billing": {
+    "trialEnded": {
+      "title": "Your trial has ended",
+      "description": "Choose how you would like to continue.",
+      "note": "Your content remains available.",
+      "freeAction": "Continue with Free",
+      "upgradeAction": "Upgrade plan"
     }
   }
 }
