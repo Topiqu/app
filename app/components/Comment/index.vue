@@ -127,15 +127,13 @@
           <span>{{ state.dislikes }}</span>
         </Button>
 
-        <div
+        <EmojiReactionChip
           v-for="r in state.emojiReactions"
           :key="r.emojiId"
-          v-tippy="{ content: r.emoji.shortcode, placement: 'top' }"
-          class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-xl shadow-sm border border-gray-200 bg-gray-100 text-gray-600"
-        >
-          <img :src="r.emoji.imageUrl" :alt="r.emoji.shortcode" class="w-4 h-4 sm:w-5 sm:h-5" />
-          <span>{{ r.count }}</span>
-        </div>
+          :imageUrl="r.emoji.imageUrl"
+          :shortcode="r.emoji.shortcode"
+          :count="r.count"
+        />
       </div>
 
       <div class="flex items-center gap-2 sm:gap-3">
