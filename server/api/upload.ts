@@ -1,4 +1,5 @@
-import { RekognitionClient, DetectModerationLabelsCommand, DetectLabelsCommand } from '@aws-sdk/client-rekognition'
+import { randomUUID } from 'node:crypto'
+import { analyzeImage } from '~~/server/utils/imageAnalysis'
 
 const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'webp', 'gif']
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'No file uploaded' })
   }
 
-  const file = files[0]
+  const file = files.find((part) => part.filename)
   if (!file?.type?.startsWith('image/')) {
     throw createError({ statusCode: 400, statusMessage: 'File must be an image' })
   }
@@ -37,53 +38,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 413, statusMessage: 'File too large' })
   }
 
-  const credentials = {
-    accessKeyId: config.awsAccessKeyId,
-    secretAccessKey: config.awsSecretAccessKey,
-  }
+  const tags = await analyzeImage(file.data)
+  const detectedTagsString = tags.join(',')
 
-  const region = config.awsRegion
-
-  const rekognition = new RekognitionClient({ region, credentials })
-
-  try {
-    const moderationCommand = new DetectModerationLabelsCommand({
-      Image: { Bytes: file.data },
-      MinConfidence: 75,
-    })
-
-    const moderationResult = await rekognition.send(moderationCommand)
-
-    if (moderationResult.ModerationLabels && moderationResult.ModerationLabels.length > 0) {
-      const reasons = moderationResult.ModerationLabels.map((l) => l.Name).join(', ')
-      throw createError({
-        statusCode: 422,
-        statusMessage: 'Upload blocked: NSFW content detected',
-        data: { reasons },
-      })
-    }
-  } catch (err: any) {
-    if (err.statusCode === 422) throw err
-    console.error('Rekognition Moderation Error:', err)
-  }
-
-  let detectedTagsString = ''
-  try {
-    const labelsCommand = new DetectLabelsCommand({
-      Image: { Bytes: file.data },
-      MaxLabels: 10,
-      MinConfidence: 80,
-    })
-
-    const labelsResult = await rekognition.send(labelsCommand)
-    const tags = labelsResult.Labels?.map((l) => l.Name?.replace(/[^a-zA-Z0-9]/g, '')) || []
-    detectedTagsString = tags.join(',')
-  } catch (err) {
-    console.warn('Rekognition Labeling failed:', err)
-  }
-
-  const customFilename = files.find((f) => f.name === 'customFilename')?.data.toString()
-  const filename = customFilename ? sanitizeFilename(customFilename) : `content-${Date.now()}.${safeExt(file.filename)}`
+  const customFilename = files.find((part) => part.name === 'customFilename')?.data.toString()
+  const filename = customFilename
+    ? sanitizeFilename(customFilename)
+    : `content-${Date.now()}-${randomUUID().slice(0, 8)}.${safeExt(file.filename)}`
   const optimizedFilename = filename.replace(/\.[^/.]+$/, '.webp')
 
   try {
