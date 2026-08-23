@@ -16,9 +16,14 @@
 
     <ul class="flex flex-col gap-2">
       <li v-for="row in translations" :key="row.id">
-        <NuxtLink
-          :to="localePath({ name: 'admin-editor-id', params: { id: row.article.slug } })"
-          class="flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-amber-200 dark:border-amber-800 no-underline hover:border-amber-400 dark:hover:border-amber-600 transition-colors"
+        <UButton
+          :to="{
+            path: localePath({ name: 'admin-editor-id', params: { id: row.article.slug } }),
+            query: { lang: row.language },
+          }"
+          color="warning"
+          variant="soft"
+          block
         >
           <span
             class="px-2 py-0.5 rounded-full text-xs font-medium uppercase bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
@@ -35,7 +40,7 @@
             class="text-xs text-gray-500 dark:text-gray-400"
           />
           <Icon name="mdi:arrow-right" class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-        </NuxtLink>
+        </UButton>
       </li>
     </ul>
   </section>

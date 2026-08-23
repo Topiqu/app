@@ -4,64 +4,30 @@
     "title": "Topiqu External API",
     "version": "1.0.0",
     "description": "Read-only API for retrieving published Topiqu articles. Clients must ignore unknown response fields so v1 can evolve compatibly.",
-    "contact": {
-      "name": "Topiqu support",
-      "url": "https://topiqu.com"
-    }
+    "contact": { "name": "Topiqu support", "url": "https://topiqu.com" }
   },
-  "servers": [
-    {
-      "url": "https://app.topiqu.com/api/v1",
-      "description": "Production"
-    }
-  ],
-  "tags": [
-    {
-      "name": "Articles",
-      "description": "Published article content belonging to the authenticated site."
-    }
-  ],
-  "security": [
-    {
-      "ApiKeyAuth": []
-    }
-  ],
+  "servers": [{ "url": "https://app.topiqu.com/api/v1", "description": "Production" }],
+  "tags": [{ "name": "Articles", "description": "Published article content belonging to the authenticated site." }],
+  "security": [{ "ApiKeyAuth": [] }],
   "paths": {
     "/articles": {
       "get": {
         "operationId": "listArticles",
         "summary": "List published articles",
         "description": "Returns published articles newest first. Multiple tag slugs use AND semantics.",
-        "tags": [
-          "Articles"
-        ],
+        "tags": ["Articles"],
         "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            }
-          },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
           {
             "name": "limit",
             "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 10
-            }
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 10 }
           },
           {
             "name": "tag",
             "in": "query",
             "description": "Comma-separated tag slugs.",
-            "schema": {
-              "type": "string"
-            },
+            "schema": { "type": "string" },
             "example": "ai,marketing"
           }
         ],
@@ -69,33 +35,14 @@
           "200": {
             "description": "A page of published articles.",
             "headers": {
-              "X-API-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Resolved major API version."
-              }
+              "X-API-Version": { "schema": { "type": "string" }, "description": "Resolved major API version." }
             },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticleListResponse"
-                }
-              }
-            }
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ArticleListResponse" } } }
           },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "500": { "$ref": "#/components/responses/ServerError" }
         }
       }
     },
@@ -103,52 +50,19 @@
       "get": {
         "operationId": "getArticle",
         "summary": "Get a published article",
-        "tags": [
-          "Articles"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "tags": ["Articles"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
         "responses": {
           "200": {
             "description": "The published article.",
-            "headers": {
-              "X-API-Version": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArticleResponse"
-                }
-              }
-            }
+            "headers": { "X-API-Version": { "schema": { "type": "string" } } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ArticleResponse" } } }
           },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "500": { "$ref": "#/components/responses/ServerError" }
         }
       }
     }
@@ -184,191 +98,57 @@
           "availableTranslations"
         ],
         "properties": {
-          "id": {
-            "type": "string",
-            "example": "cm123abc"
-          },
-          "title": {
-            "type": "string",
-            "example": "How AI changes content operations"
-          },
-          "slug": {
-            "type": "string",
-            "example": "how-ai-changes-content-operations"
-          },
-          "excerpt": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "imageUrl": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "uri"
-          },
-          "aiInvolvement": {
-            "type": "string",
-            "description": "Level of AI involvement declared by the publisher."
-          },
-          "readingTime": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "minimum": 0
-          },
-          "totalWords": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "minimum": 0
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "publishedAt": {
-            "oneOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "language": {
-            "type": "string",
-            "example": "cs"
-          },
+          "id": { "type": "string", "example": "cm123abc" },
+          "title": { "type": "string", "example": "How AI changes content operations" },
+          "slug": { "type": "string", "example": "how-ai-changes-content-operations" },
+          "excerpt": { "type": ["string", "null"] },
+          "imageUrl": { "type": ["string", "null"], "format": "uri" },
+          "aiInvolvement": { "type": "string", "description": "Level of AI involvement declared by the publisher." },
+          "readingTime": { "type": ["integer", "null"], "minimum": 0 },
+          "totalWords": { "type": ["integer", "null"], "minimum": 0 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "publishedAt": { "oneOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }] },
+          "language": { "type": "string", "example": "cs" },
           "tags": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "id",
-                "name",
-                "slug"
-              ],
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "slug": {
-                  "type": "string"
-                }
-              }
+              "required": ["id", "name", "slug"],
+              "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "slug": { "type": "string" } }
             }
           },
           "user": {
             "type": "object",
-            "required": [
-              "id",
-              "username",
-              "avatarUrl"
-            ],
+            "required": ["id", "username", "avatarUrl"],
             "properties": {
-              "id": {
-                "type": "string"
-              },
-              "username": {
-                "type": "string"
-              },
-              "avatarUrl": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              }
+              "id": { "type": "string" },
+              "username": { "type": "string" },
+              "avatarUrl": { "type": ["string", "null"] }
             }
           },
           "articleSeries": {
             "oneOf": [
               {
                 "type": "object",
-                "required": [
-                  "id",
-                  "name",
-                  "slug"
-                ],
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "slug": {
-                    "type": "string"
-                  }
-                }
+                "required": ["id", "name", "slug"],
+                "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "slug": { "type": "string" } }
               },
-              {
-                "type": "null"
-              }
+              { "type": "null" }
             ]
           },
           "availableTranslations": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "id",
-                "language",
-                "slug",
-                "title",
-                "excerpt",
-                "translatedAt"
-              ],
+              "required": ["id", "language", "slug", "title", "excerpt", "translatedAt"],
               "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "language": {
-                  "type": "string",
-                  "example": "en"
-                },
-                "slug": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "title": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "excerpt": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "translatedAt": {
-                  "oneOf": [
-                    {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                }
+                "id": { "type": "string" },
+                "language": { "type": "string", "example": "en" },
+                "slug": { "type": ["string", "null"] },
+                "title": { "type": ["string", "null"] },
+                "excerpt": { "type": ["string", "null"] },
+                "translatedAt": { "oneOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }] }
               }
             }
           }
@@ -376,130 +156,51 @@
       },
       "Article": {
         "allOf": [
-          {
-            "$ref": "#/components/schemas/ArticleSummary"
-          },
+          { "$ref": "#/components/schemas/ArticleSummary" },
           {
             "type": "object",
-            "required": [
-              "content",
-              "imageCredit",
-              "sources",
-              "allowedComments"
-            ],
+            "required": ["content", "imageCredit", "sources", "allowedComments"],
             "properties": {
-              "content": {
-                "type": "string",
-                "description": "Article body as sanitized HTML."
-              },
-              "imageCredit": {
-                "type": [
-                  "object",
-                  "array",
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              },
-              "sources": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "allowedComments": {
-                "type": "boolean"
-              }
+              "content": { "type": "string", "description": "Article body as sanitized HTML." },
+              "imageCredit": { "type": ["object", "array", "string", "number", "boolean", "null"] },
+              "sources": { "type": "array", "items": { "type": "string" } },
+              "allowedComments": { "type": "boolean" }
             }
           }
         ]
       },
       "PaginationMeta": {
         "type": "object",
-        "required": [
-          "total",
-          "page",
-          "limit",
-          "primaryLanguage",
-          "appliedFilters"
-        ],
+        "required": ["total", "page", "limit", "primaryLanguage", "appliedFilters"],
         "properties": {
-          "total": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "page": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "limit": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100
-          },
-          "primaryLanguage": {
-            "type": "string"
-          },
+          "total": { "type": "integer", "minimum": 0 },
+          "page": { "type": "integer", "minimum": 1 },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100 },
+          "primaryLanguage": { "type": "string" },
           "appliedFilters": {
             "type": "object",
-            "required": [
-              "tags"
-            ],
-            "properties": {
-              "tags": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
+            "required": ["tags"],
+            "properties": { "tags": { "type": "array", "items": { "type": "string" } } }
           }
         }
       },
       "ArticleListResponse": {
         "type": "object",
-        "required": [
-          "data",
-          "meta"
-        ],
+        "required": ["data", "meta"],
         "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ArticleSummary"
-            }
-          },
-          "meta": {
-            "$ref": "#/components/schemas/PaginationMeta"
-          }
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/ArticleSummary" } },
+          "meta": { "$ref": "#/components/schemas/PaginationMeta" }
         }
       },
       "ArticleResponse": {
         "type": "object",
-        "required": [
-          "data"
-        ],
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/Article"
-          }
-        }
+        "required": ["data"],
+        "properties": { "data": { "$ref": "#/components/schemas/Article" } }
       },
       "Error": {
         "type": "object",
-        "required": [
-          "statusCode",
-          "message"
-        ],
-        "properties": {
-          "statusCode": {
-            "type": "integer"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
+        "required": ["statusCode", "message"],
+        "properties": { "statusCode": { "type": "integer" }, "message": { "type": "string" } }
       }
     },
     "responses": {
@@ -507,13 +208,8 @@
         "description": "Invalid request",
         "content": {
           "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            },
-            "example": {
-              "statusCode": 400,
-              "message": "Invalid request"
-            }
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "statusCode": 400, "message": "Invalid request" }
           }
         }
       },
@@ -521,13 +217,8 @@
         "description": "Missing or invalid API key",
         "content": {
           "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            },
-            "example": {
-              "statusCode": 401,
-              "message": "Missing or invalid API key"
-            }
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "statusCode": 401, "message": "Missing or invalid API key" }
           }
         }
       },
@@ -535,13 +226,8 @@
         "description": "Article not found",
         "content": {
           "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            },
-            "example": {
-              "statusCode": 404,
-              "message": "Article not found"
-            }
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "statusCode": 404, "message": "Article not found" }
           }
         }
       },
@@ -549,13 +235,8 @@
         "description": "Rate limit exceeded",
         "content": {
           "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            },
-            "example": {
-              "statusCode": 429,
-              "message": "Rate limit exceeded"
-            }
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "statusCode": 429, "message": "Rate limit exceeded" }
           }
         }
       },
@@ -563,13 +244,8 @@
         "description": "Unexpected server error",
         "content": {
           "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            },
-            "example": {
-              "statusCode": 500,
-              "message": "Unexpected server error"
-            }
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "statusCode": 500, "message": "Unexpected server error" }
           }
         }
       }

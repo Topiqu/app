@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div ref="root" @error.capture="handleMediaError">
     <template v-for="(block, i) in blocks" :key="i">
       <ArticlePoll v-if="block.type === 'poll'" :poll="block" :articleId="articleId" />
       <!-- eslint-disable-next-line vue/no-v-html -- server-sanitised body (`sanitizeHtml` on write) -->
@@ -18,6 +18,39 @@ const props = withDefaults(defineProps<{ blocks: ArticleBlock[]; articleId: stri
   discloseAi: true,
 })
 const image = useImage()
+const root = useTemplateRef<HTMLElement>('root')
+
+const handleMediaError = (event: Event) => {
+  const failed = event.target
+  if (!(failed instanceof HTMLImageElement) || !root.value?.contains(failed)) return
+
+  const original = failed.dataset.originalSrc
+  if (original && failed.dataset.originalRetry !== 'true') {
+    failed.dataset.originalRetry = 'true'
+    failed.removeAttribute('srcset')
+    failed.removeAttribute('sizes')
+    failed.src = original
+    return
+  }
+
+  const fallback = document.createElement('span')
+  fallback.className = 'article-inline-image-fallback'
+  fallback.setAttribute('role', 'img')
+  fallback.setAttribute('aria-label', failed.alt || $t('articles.columns.imageUrl'))
+  fallback.textContent = failed.alt || $t('articles.columns.imageUrl')
+  failed.replaceWith(fallback)
+}
+
+onMounted(() => {
+  // An SSR image can finish failing before Vue hydrates and attaches the capturing listener.
+  // Reconcile after the browser has painted the hydrated tree; mutating a child synchronously
+  // from its mounted hook can otherwise race a still-hydrating parent on slower viewports.
+  requestAnimationFrame(() => {
+    for (const media of root.value?.querySelectorAll('img') ?? []) {
+      if (media.complete && media.naturalWidth === 0) handleMediaError({ target: media } as unknown as Event)
+    }
+  })
+})
 
 // The span is the current format. The two text alternatives keep the toggle effective for old
 // articles and for captions round-tripped through TipTap, which may flatten unknown attributes.
@@ -28,6 +61,10 @@ const visibleHtml = (html: string) => {
         .replace(/<span\s+data-ai-disclosure(?:="")?>(.*?)<\/span>/gi, '')
         .replace(/(<small\b[^>]*>)\s*(?:Illustrative image \(AI\)|Ilustrační obrázek \(AI\)):\s*/gi, '$1')
 
-  return optimizeArticleImages(visible, (src, width) => image(src, { width, format: 'webp', quality: 75 }))
+  const normalized = visible
+    .replace(/<p(?:\s[^>]*)?>\s*(?:<br\s*\/?>|&nbsp;|\u00a0)?\s*<\/p>/gi, '')
+    .replace(/(<p(?:\s[^>]*)?>)\s*(<img\b[^>]*>)\s*(<\/p>)/gi, '$1$2$3')
+
+  return optimizeArticleImages(normalized, (src, width) => image(src, { width, format: 'webp', quality: 75 }))
 }
 </script>

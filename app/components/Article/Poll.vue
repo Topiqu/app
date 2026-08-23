@@ -1,31 +1,31 @@
 <template>
-  <div class="border border-gray-200 dark:border-gray-400 bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm m-4">
-    <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ poll.question }}</h4>
-    <div v-for="opt in poll.options" :key="opt.id" class="relative group mb-2">
-      <button
+  <UCard class="m-4">
+    <h4 class="mb-2 text-lg font-semibold text-highlighted">{{ poll.question }}</h4>
+    <div v-for="opt in poll.options" :key="opt.id" class="mb-2 space-y-1">
+      <UButton
+        :color="hasVoted && opt.id === getTopOption ? 'success' : 'neutral'"
+        :variant="hasVoted && opt.id === getTopOption ? 'soft' : 'ghost'"
         :disabled="hasVoted"
-        class="relative z-10 w-full p-3 text-left rounded-md border border-transparent transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-500 hover:border-gray-400 dark:hover:border-gray-500 focus-visible:ring-2 focus-visible:ring-blue-400 disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden"
-        :class="{
-          'ring-2 ring-green-400': hasVoted && opt.id === getTopOption,
-          'cursor-pointer': !hasVoted,
-        }"
+        class="w-full"
         @click="vote(opt.id)"
       >
-        <div
-          class="absolute inset-0 rounded-md transition-all duration-500 ease-out"
-          :class="selectedOption === opt.id ? 'bg-green-500/60 dark:bg-green-400/50' : 'bg-gray-300 dark:bg-gray-600'"
-          :style="{ width: hasVoted ? `${getPercentage(opt.id)}%` : '0%' }"
-        ></div>
-        <span class="relative flex justify-between items-center">
+        <span class="flex w-full items-center justify-between">
           {{ opt.label }}
           <span v-if="hasVoted" class="text-xs opacity-80"> {{ getPercentage(opt.id) }}% </span>
         </span>
-      </button>
+      </UButton>
+      <UProgress
+        v-if="hasVoted"
+        :modelValue="getPercentage(opt.id)"
+        :max="100"
+        :color="selectedOption === opt.id ? 'success' : 'neutral'"
+        size="sm"
+      />
     </div>
-    <div v-if="hasVoted" class="text-sm opacity-80 mb-4 text-gray-600 dark:text-gray-300">
+    <div v-if="hasVoted" class="mb-4 text-sm text-muted">
       ({{ `${getTotalVotes} ${$t('articles.votes').toLowerCase()}` }})
     </div>
-  </div>
+  </UCard>
 </template>
 
 <script setup lang="ts">
@@ -84,7 +84,7 @@ const vote = async (optionId?: string) => {
     selectedOption.value = optionId
     Object.assign(voteCounts, res.voteCounts)
   } catch (e: any) {
-    toast.error({ message: e.data?.message })
+    toast.add({ color: 'error', title: e.data?.message })
   }
 }
 

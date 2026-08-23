@@ -16,8 +16,9 @@ interface BaseOAuthProfile {
   picture?: string
 }
 
-const isProduction = process.env.NODE_ENV === 'production'
-
+// Compiled browser tests intentionally run over loopback HTTP against a dedicated
+// disposable database, so production-only secure/domain cookies cannot be used.
+const isProduction = process.env.NODE_ENV === 'production' && !process.env.TEST_DATABASE_URL
 function mapProfile({ id, sub, login, name, email, avatar_url, picture }: BaseOAuthProfile) {
   return {
     id: (id ?? sub ?? login ?? '').toString(),

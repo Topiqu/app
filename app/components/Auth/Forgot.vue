@@ -1,130 +1,83 @@
 <template>
-  <div class="bg-white px-6 py-8 rounded-2xl shadow-md border border-gray-200 space-y-6">
-    <form v-if="mode === 'forgot'" class="space-y-5 text-sm" @submit.prevent="forgot">
-      <p class="text-gray-500 text-center text-sm">{{ $t('common.auth.forgotPasswordPrompt') }}</p>
-      <div class="space-y-1.5">
-        <label for="email" class="block font-semibold text-gray-700">{{ $t('profile.email') }}</label>
-        <div class="relative">
-          <Icon name="mdi:envelope" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-          <input
-            id="email"
+  <UCard>
+    <UForm v-if="mode === 'forgot'" :state="form" :schema="forgotSchema" @submit="forgot">
+      <div class="space-y-5 text-sm">
+        <p class="text-center text-sm text-muted">{{ $t('common.auth.forgotPasswordPrompt') }}</p>
+        <UFormField :label="$t('profile.email')" name="email">
+          <UInput
             v-model="form.email"
             type="email"
-            class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            icon="i-mdi-envelope"
+            class="w-full"
             placeholder="example@domain.tld"
             autocomplete="email"
             required
           />
+        </UFormField>
+        <UButton type="submit" :loading="submitting" :disabled="submitting" block>
+          {{ $t('common.auth.sendCode') }}
+        </UButton>
+        <div class="text-center">
+          <UButton type="button" color="neutral" variant="link" @click="emit('update:mode', 'login')">
+            {{ $t('common.auth.backToLogin') }}
+          </UButton>
         </div>
       </div>
-      <button
-        type="submit"
-        class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
-      >
-        {{ $t('common.auth.sendCode') }}
-      </button>
-      <div class="text-center">
-        <button
-          type="button"
-          class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent hover:bg-black/5 border-none text-blue-600 hover:text-blue-700 text-sm font-medium transition"
-          @click="emit('update:mode', 'login')"
-        >
-          {{ $t('common.auth.backToLogin') }}
-        </button>
-      </div>
-    </form>
+    </UForm>
 
-    <form v-if="mode === 'reset'" class="space-y-5 text-sm" @submit.prevent="reset">
-      <p class="text-gray-500 text-sm">{{ $t('common.auth.resetPasswordPrompt') }}</p>
-      <div class="space-y-1.5">
-        <label for="code" class="block font-semibold text-gray-500">{{ $t('common.auth.verificationCode') }}</label>
-        <div class="relative">
-          <Icon name="mdi:shield-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-          <input
-            id="code"
-            v-model="form.code"
-            type="text"
-            class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            required
-            minlength="8"
-            maxlength="8"
-            :placeholder="$t('common.auth.verificationCodePlaceholder')"
-          />
-        </div>
-      </div>
+    <UForm v-if="mode === 'reset'" :state="form" :schema="resetSchema" @submit="reset">
+      <div class="space-y-5 text-sm">
+        <p class="text-sm text-muted">{{ $t('common.auth.resetPasswordPrompt') }}</p>
+        <UFormField :label="$t('common.auth.verificationCode')" name="code">
+          <UPinInput v-model="verificationDigits" :length="8" otp />
+        </UFormField>
 
-      <div class="space-y-1.5">
-        <label for="password" class="block font-semibold text-gray-500">{{ $t('common.auth.newPassword') }}</label>
-        <div class="relative">
-          <Icon name="mdi:lock" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-          <input
-            id="password"
+        <UFormField :label="$t('common.auth.newPassword')" name="password">
+          <UInput
             v-model="form.password"
             :type="showPassword ? 'text' : 'password'"
-            class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            class="w-full"
+            icon="i-mdi-lock"
+            :trailingIcon="showPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
             required
-            minlength="4"
-            maxlength="124"
+            :minlength="4"
+            :maxlength="124"
             placeholder="********"
             autocomplete="new-password"
+            @click:trailing="showPassword = !showPassword"
           />
-          <button
-            type="button"
-            class="absolute right-0 top-0 flex h-11 w-11 items-center justify-center bg-transparent hover:bg-transparent border-none outline-none text-gray-500 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
-            :aria-label="$t('common.showPassword')"
-            @click="showPassword = !showPassword"
-          >
-            <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+        </UFormField>
 
-      <div class="space-y-1.5">
-        <label for="passwordConfirm" class="block font-semibold text-gray-700">{{
-          $t('common.auth.passwordConfirm')
-        }}</label>
-        <div class="relative">
-          <Icon name="mdi:lock-check" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-          <input
-            id="passwordConfirm"
+        <UFormField :label="$t('common.auth.passwordConfirm')" name="passwordConfirm">
+          <UInput
             v-model="form.passwordConfirm"
             :type="showPasswordConfirm ? 'text' : 'password'"
-            class="w-full pl-11 pr-10 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            class="w-full"
+            icon="i-mdi-lock-check"
+            :trailingIcon="showPasswordConfirm ? 'i-mdi-eye-off' : 'i-mdi-eye'"
             required
-            minlength="4"
-            maxlength="124"
+            :minlength="4"
+            :maxlength="124"
             placeholder="********"
             autocomplete="new-password"
+            @click:trailing="showPasswordConfirm = !showPasswordConfirm"
           />
-          <button
-            type="button"
-            class="absolute right-0 top-0 flex h-11 w-11 items-center justify-center bg-transparent hover:bg-transparent border-none outline-none text-gray-500 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
-            :aria-label="$t('common.showPassword')"
-            @click="showPasswordConfirm = !showPasswordConfirm"
-          >
-            <Icon :name="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+        </UFormField>
 
-      <button
-        type="submit"
-        class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
-      >
-        {{ $t('common.auth.resetPassword') }}
-      </button>
-      <button
-        type="button"
-        class="w-full mt-2 inline-flex items-center justify-center px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium transition"
-        @click="emit('update:mode', 'login')"
-      >
-        {{ $t('common.auth.backToLogin') }}
-      </button>
-    </form>
-  </div>
+        <UButton type="submit" :loading="submitting" :disabled="submitting" block>
+          {{ $t('common.auth.resetPassword') }}
+        </UButton>
+        <UButton type="button" color="neutral" variant="outline" block @click="emit('update:mode', 'login')">
+          {{ $t('common.auth.backToLogin') }}
+        </UButton>
+      </div>
+    </UForm>
+  </UCard>
 </template>
 
 <script setup lang="ts">
+import { z } from 'zod'
+
 defineProps<{ mode: 'forgot' | 'reset' }>()
 const emit = defineEmits<{ (e: 'update:mode', value: 'login' | 'reset'): void }>()
 const toast = useToast()
@@ -132,25 +85,45 @@ const toast = useToast()
 const form = ref({ email: '', password: '', passwordConfirm: '', code: '' })
 const showPassword = shallowRef(false)
 const showPasswordConfirm = shallowRef(false)
+const submitting = shallowRef(false)
+const forgotSchema = z.object({ email: z.email() })
+const resetSchema = z
+  .object({
+    email: z.email(),
+    code: z.string().length(8),
+    password: z.string().min(4).max(124),
+    passwordConfirm: z.string().min(4).max(124),
+  })
+  .refine((value) => value.password === value.passwordConfirm, { path: ['passwordConfirm'] })
+const verificationDigits = computed<string[]>({
+  get: () => form.value.code.split(''),
+  set: (value) => (form.value.code = value.join('')),
+})
 
 const forgot = async () => {
+  if (submitting.value) return
+  submitting.value = true
   try {
     await $fetch('/api/auth/forgot', {
       method: 'POST',
       body: { email: form.value.email },
     })
     emit('update:mode', 'reset')
-    toast.success({ message: $t('common.auth.verificationCodeSent') })
+    toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.auth.sendCodeFailed') })
+    toast.add({ color: 'error', title: e.data?.message || $t('common.auth.sendCodeFailed') })
+  } finally {
+    submitting.value = false
   }
 }
 
 const reset = async () => {
+  if (submitting.value) return
   if (form.value.password !== form.value.passwordConfirm) {
-    toast.error({ message: $t('common.auth.passwordsMismatch') })
+    toast.add({ color: 'error', title: $t('common.auth.passwordsMismatch') })
     return
   }
+  submitting.value = true
   try {
     await $fetch('/api/auth/reset', {
       method: 'POST',
@@ -160,10 +133,12 @@ const reset = async () => {
         password: form.value.password,
       },
     })
-    toast.success({ message: $t('common.auth.resetPasswordSuccess') })
+    toast.add({ color: 'success', title: $t('common.auth.resetPasswordSuccess') })
     emit('update:mode', 'login')
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.auth.resetPasswordFailed') })
+    toast.add({ color: 'error', title: e.data?.message || $t('common.auth.resetPasswordFailed') })
+  } finally {
+    submitting.value = false
   }
 }
 </script>

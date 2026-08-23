@@ -1,47 +1,111 @@
 <template>
-  <div
-    class="fixed top-0 left-0 px-3 sm:px-5 h-18 w-full flex items-center justify-between bg-white/72 dark:bg-gray-950/72 backdrop-blur-xl border-b border-gray-900/7 dark:border-white/10 pointer-events-none [&>*]:pointer-events-auto z-header"
-  >
-    <Button
-      v-if="auth && isAdmin"
-      variant="neutral"
-      icon="mdi:menu"
-      class="md:hidden"
-      @click="isSidebarOpen = !isSidebarOpen"
-    />
-    <NuxtLink
-      to="/"
-      class="flex h-14 max-w-48 items-center justify-start rounded-xl px-2 py-1 transition hover:bg-gray-900/5 dark:hover:bg-white/8"
-      :aria-label="$t('common.actions.home')"
-    >
-      <NuxtImg
-        v-if="clientSite"
-        :src="logoSrc"
-        :alt="$t('common.avatar.alt.company')"
-        width="176"
-        height="48"
-        fit="inside"
-        class="block max-h-12 max-w-44 h-auto w-auto"
+  <UHeader :toggle="false" class="fixed inset-x-0 top-0 z-header h-16">
+    <template #left>
+      <UButton
+        v-if="showDashboard"
+        class="md:hidden"
+        color="neutral"
+        variant="ghost"
+        square
+        icon="i-mdi-menu"
+        :aria-label="$t('common.actions.openMenu')"
+        @click="isSidebarOpen = true"
       />
-      <div v-else class="h-11 w-28 animate-pulse rounded-lg bg-gray-200 dark:bg-neutral-700" />
-    </NuxtLink>
-    <div class="flex items-center justify-between gap-2">
-      <TenantSwitcher v-if="auth" />
-      <UserAccount />
-      <ThemeToggle />
-      <NotificationBar />
-    </div>
-  </div>
+      <UButton
+        v-if="articleState.showHeader && articleHeader"
+        :to="articleHeader.backTo"
+        color="neutral"
+        variant="ghost"
+        square
+        icon="i-mdi-arrow-left"
+        :aria-label="$t('common.actions.back')"
+      />
+      <NuxtLink v-else :to="localePath({ name: 'index' })" class="flex items-center justify-center gap-2">
+        <NuxtImg
+          v-if="!isPublicationSurface"
+          src="/app-logo.png"
+          alt="Topiqu"
+          width="48"
+          height="48"
+          preload
+          loading="eager"
+          fetchPriority="high"
+          class="size-12 object-contain"
+        />
+        <AppMedia
+          v-else
+          :src="logoSrc"
+          originalSrc="/app-logo.png"
+          :alt="clientSite?.name || 'Topiqu'"
+          :fallbackText="clientSite?.name"
+          aspectRatio="1 / 1"
+          fit="contain"
+          sizes="48px"
+          priority
+          containerClass="size-12 bg-transparent"
+        />
+      </NuxtLink>
+    </template>
+    <p
+      v-if="articleState.showHeader && articleHeader"
+      class="max-w-[45vw] truncate text-sm font-semibold text-highlighted sm:max-w-[55vw]"
+    >
+      {{ articleHeader.title }}
+    </p>
+    <template #right>
+      <div class="flex items-center justify-between gap-2">
+        <UButton
+          v-if="articleState.showHeader && articleHeader"
+          :color="articleHeader.liked ? 'error' : 'neutral'"
+          :variant="articleHeader.liked ? 'soft' : 'ghost'"
+          square
+          :icon="articleHeader.liked ? 'i-mdi-heart' : 'i-mdi-heart-outline'"
+          :aria-label="$t('common.actions.like')"
+          @click="articleLikeBus.emit()"
+        />
+        <UButton
+          v-if="articleState.showHeader && articleHeader?.canEdit"
+          :to="localePath({ name: 'admin-editor-id', params: { id: articleHeader.articleId } })"
+          color="neutral"
+          variant="ghost"
+          square
+          icon="i-mdi-pencil"
+          :aria-label="$t('common.actions.edit')"
+        />
+        <UserAccount />
+        <ThemeToggle />
+        <NotificationBar />
+      </div>
+    </template>
+    <template #bottom>
+      <UProgress
+        v-if="isArticleRoute"
+        class="absolute inset-x-0 bottom-0"
+        :modelValue="articleState.progress"
+        :max="100"
+        size="xs"
+        aria-label="Reading progress"
+      />
+    </template>
+  </UHeader>
 </template>
 
 <script lang="ts" setup>
 const isSidebarOpen = defineModel<boolean>('isSidebarOpen')
 
+const route = useRoute()
 const clientSite = await useClientSite()
 const { data: auth } = useAuth()
+const localePath = useLocalePath()
+const articleHeader = useArticleHeaderContext()
+const articleState = useArticleScrollState()
+const articleLikeBus = useArticleLikeBus()
+const isArticleRoute = computed(() => String(route.name || '').includes('clanky-slug'))
 
-const isAdmin = computed(() => ['admin', 'superadmin'].includes(auth?.value?.user.role || ''))
-const logoSrc = computed(() => {
-  return clientSite?.logoUrl || 'https://cdn.topiqu.com/app-logo.png'
+const shell = computed(() => resolvePageShell(route.meta.shell))
+const showDashboard = computed(() => canRenderDashboardShell(shell.value, auth.value?.user.role))
+const isPublicationSurface = computed(() => {
+  return Boolean(clientSite && shell.value === 'publication')
 })
+const logoSrc = computed(() => (isPublicationSurface.value ? clientSite?.logoUrl || '/app-logo.png' : '/app-logo.png'))
 </script>

@@ -1,67 +1,53 @@
 <template>
-  <div v-if="articles.length" class="flex justify-end gap-2 mb-4">
-    <Button
-      :title="$t('articles.export.title.json')"
-      icon="mdi:code-json"
-      size="sm"
-      :loading="exporting === 'json'"
+  <UDropdownMenu v-if="articles.length" :items="exportItems">
+    <UButton
+      color="neutral"
+      variant="soft"
+      icon="i-mdi-export-variant"
+      trailingIcon="i-mdi-chevron-down"
+      :loading="exporting !== null"
       :disabled="exporting !== null"
-      animation="softpop"
-      @click="handleExport(exportJson, 'json')"
-    />
-    <Button
-      :title="$t('articles.export.title.csv')"
-      icon="mdi:file-delimited"
-      size="sm"
-      :loading="exporting === 'csv'"
-      :disabled="exporting !== null"
-      animation="softpop"
-      @click="handleExport(exportCsv, 'csv')"
-    />
-    <Button
-      :title="$t('articles.export.title.pdf')"
-      icon="mdi:file-pdf-box"
-      size="sm"
-      :loading="exporting === 'pdf'"
-      :disabled="exporting !== null"
-      animation="softpop"
-      @click="handleExport(exportPdf, 'pdf')"
-    />
-  </div>
+    >
+      {{ $t('articles.export.label') }}
+    </UButton>
+  </UDropdownMenu>
 
-  <ModalMini
-    v-model:open="showConfirm"
-    :confirmText="$t('common.actions.continue')"
-    :cancelText="$t('common.actions.cancel')"
-    @confirm="executeExport"
-    @cancel="cancelExport"
-  >
-    <template #content>
+  <UModal v-model:open="showConfirm">
+    <template #body>
       <div class="flex items-start gap-4">
         <div class="flex-shrink-0">
-          <NuxtImg
+          <AppMedia
             src="/topik_premysli_rm.png"
             :alt="$t('common.warning')"
-            width="56"
-            height="56"
-            class="rounded-full"
+            aspectRatio="1 / 1"
+            fit="contain"
+            sizes="56px"
+            containerClass="size-14 rounded-full bg-transparent"
           />
         </div>
         <div class="flex-grow space-y-1.5">
-          <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
+          <h3 class="text-base font-medium text-highlighted">
             {{ $t(`articles.export.warning.title.${pendingType}`) }}
           </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+          <p class="text-sm text-muted leading-relaxed">
             {{ $t(`articles.export.warning.message.${pendingType}`, { count: articles.length }) }}
           </p>
-          <p class="text-xs text-amber-500/70 dark:text-amber-400/70 flex items-center gap-1 opacity-70">
-            <Icon name="mdi:clock-outline" class="w-3 h-3" />
-            {{ $t(`articles.export.warning.note.${pendingType}`) }}
-          </p>
+          <UAlert
+            color="warning"
+            variant="soft"
+            icon="i-mdi-clock-outline"
+            :description="$t(`articles.export.warning.note.${pendingType}`)"
+          />
         </div>
       </div>
     </template>
-  </ModalMini>
+    <template #footer>
+      <div class="flex w-full justify-end gap-2">
+        <UButton color="neutral" variant="ghost" @click="cancelExport">{{ $t('common.actions.cancel') }}</UButton>
+        <UButton @click="executeExport">{{ $t('common.actions.continue') }}</UButton>
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -77,6 +63,23 @@ const showConfirm = shallowRef(false)
 const pendingExport = shallowRef<(() => Promise<void>) | null>(null)
 const pendingType = shallowRef<'json' | 'csv' | 'pdf' | null>(null)
 const exporting = shallowRef<'json' | 'csv' | 'pdf' | null>(null)
+const exportItems = computed(() => [
+  {
+    label: $t('articles.export.title.json'),
+    icon: 'i-mdi-code-json',
+    onSelect: () => handleExport(exportJson, 'json'),
+  },
+  {
+    label: $t('articles.export.title.csv'),
+    icon: 'i-mdi-file-delimited',
+    onSelect: () => handleExport(exportCsv, 'csv'),
+  },
+  {
+    label: $t('articles.export.title.pdf'),
+    icon: 'i-mdi-file-pdf-box',
+    onSelect: () => handleExport(exportPdf, 'pdf'),
+  },
+])
 
 async function handleExport(fn: (data: ArticleWithDetails[]) => any, type: 'json' | 'csv' | 'pdf') {
   if (articles.length > 10) {

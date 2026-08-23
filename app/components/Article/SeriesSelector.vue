@@ -1,124 +1,85 @@
 <template>
-  <div :class="compact ? 'inline-flex items-center' : 'flex flex-col gap-2 w-full'">
-    <span v-if="!compact" class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400 ml-1">
+  <div class="flex flex-col gap-2 w-full">
+    <span class="ml-1 text-xs font-bold uppercase tracking-wider text-muted">
       {{ $t('series.label') }}
     </span>
 
-    <Dropdown :groups="dropdownGroups" :class="compact ? '' : 'w-full'">
+    <UDropdownMenu :items="dropdownGroups" class="w-full">
       <template #default="{ open }">
-        <button
-          v-if="compact"
-          type="button"
-          class="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-medium transition-colors max-w-56 bg-white! dark:bg-gray-900! hover:bg-gray-50! dark:hover:bg-gray-800!"
-          :class="modelValue ? 'border-gray-400! dark:border-gray-500!' : 'border-gray-300! dark:border-gray-700!'"
+        <UButton
+          :color="open ? 'primary' : 'neutral'"
+          :variant="open ? 'soft' : 'outline'"
+          class="w-full"
+          trailingIcon="i-mdi-chevron-down"
         >
-          <Icon name="mdi:bookmark-multiple-outline" class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-          <!-- base.scss colours bare `span` directly, which outranks any colour inherited from the
-               button — the label has to carry its own or it renders near-black on whatever fill. -->
           <span
-            class="truncate"
-            :class="modelValue ? 'text-gray-900! dark:text-gray-100!' : 'text-gray-600! dark:text-gray-300!'"
+            class="break-words text-left text-sm font-medium transition-colors"
+            :class="modelValue ? 'text-highlighted' : 'text-muted'"
           >
             {{ modelValue ? modelValue.name : $t('series.placeholder') }}
           </span>
-          <Icon
-            name="mdi:chevron-down"
-            class="w-3.5 h-3.5 shrink-0 transition-transform opacity-60"
-            :class="{ 'rotate-180': open }"
-            aria-hidden="true"
-          />
-        </button>
-
-        <button
-          v-else
-          type="button"
-          class="relative w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200 ease-in-out bg-white dark:bg-neutral-900 border rounded-xl shadow-sm outline-none group"
-          :class="[
-            open
-              ? 'border-indigo-500 ring-1 ring-indigo-500 shadow-indigo-500/10'
-              : 'border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-50/50 dark:hover:bg-neutral-800/50',
-          ]"
-        >
-          <span
-            class="truncate text-sm font-medium transition-colors"
-            :class="modelValue ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'"
-          >
-            {{ modelValue ? modelValue.name : $t('series.placeholder') }}
-          </span>
-
-          <Icon
-            name="mdi:chevron-down"
-            class="w-5 h-5 text-gray-400 transition-transform duration-300 ease-out flex-shrink-0"
-            :class="[open ? 'rotate-180 text-indigo-500' : 'group-hover:text-gray-600 dark:group-hover:text-gray-300']"
-          />
-        </button>
+        </UButton>
       </template>
-    </Dropdown>
+    </UDropdownMenu>
 
-    <transition
-      v-if="!compact"
-      enterActiveClass="transition duration-200 ease-out"
-      enterFromClass="opacity-0 -translate-y-2"
-      enterToClass="opacity-100 translate-y-0"
-      leaveActiveClass="transition duration-150 ease-in"
-      leaveFromClass="opacity-100 translate-y-0"
-      leaveToClass="opacity-0 -translate-y-2"
-    >
-      <div
-        v-if="modelValue"
-        class="mt-1 group flex items-center justify-between p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/50 dark:bg-indigo-900/10 backdrop-blur-sm"
-      >
+    <UCard v-if="modelValue" class="mt-1">
+      <div class="flex items-center justify-between">
         <div class="flex items-center gap-3 overflow-hidden">
-          <div
-            class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 flex-shrink-0"
-          >
-            <Icon name="mdi:playlist-play" class="w-5 h-5" />
-          </div>
+          <UIcon name="i-mdi-playlist-play" size="20" class="shrink-0" />
           <div class="flex flex-col min-w-0">
-            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+            <span class="break-words text-sm font-semibold text-highlighted">
               {{ modelValue.name }}
             </span>
-            <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+            <span class="text-xs text-muted font-medium">
               {{ $t('series.part', { count: (modelValue.articles?.length ?? 0) + 1 }, '{count}. díl') }}
             </span>
           </div>
         </div>
 
-        <button
+        <UButton
+          color="error"
+          variant="ghost"
           type="button"
-          class="p-2 rounded-lg text-gray-400 transition-all duration-200 hover:bg-white dark:hover:bg-neutral-800 hover:text-red-500 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500/30"
+          square
+          icon="i-mdi-close"
           :title="$t('common.actions.delete')"
           @click="modelValue = null"
-        >
-          <Icon name="mdi:close" class="w-4 h-4" />
-        </button>
+        />
       </div>
-    </transition>
+    </UCard>
 
-    <ModalMini v-model:open="createModal" :title="$t('series.createTitle', 'Vytvořit novou sérii')">
-      <template #content>
+    <UModal v-model:open="createModal" :title="$t('series.createTitle', 'Vytvořit novou sérii')">
+      <template #body>
         <div class="flex flex-col gap-4 py-2">
-          <label class="flex flex-col gap-2">
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {{ $t('series.nameLabel') }}
-            </span>
-            <FormInput
+          <UFormField :label="$t('series.nameLabel')">
+            <UInput
               v-model="newSeriesName"
               class="w-full"
               :placeholder="$t('series.namePlaceholder', 'Např. Úvod do Vue 3...')"
               autofocus
               @keyup.enter="createAndSelect"
             />
-          </label>
+          </UFormField>
         </div>
       </template>
 
-      <template #actions>
-        <Button size="sm" variant="primary" icon="mdi:check" :disabled="!newSeriesName.trim()" @click="createAndSelect">
-          {{ $t('common.continue') }}
-        </Button>
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="createModal = false">{{
+            $t('common.actions.cancel')
+          }}</UButton>
+          <UButton
+            size="sm"
+            color="primary"
+            icon="i-mdi-check"
+            :disabled="!newSeriesName.trim()"
+            @click="createAndSelect"
+          >
+            {{ $t('common.continue') }}
+          </UButton>
+        </div>
       </template>
-    </ModalMini>
+    </UModal>
   </div>
 </template>
 
@@ -141,17 +102,16 @@ const seriesItems = computed(() =>
   series.value.map((s) => ({
     id: s.id,
     label: s.name,
-    icon: 'mdi:bookmark-outline',
-    onClick: () => (modelValue.value = s),
+    icon: 'i-mdi-bookmark-outline',
+    onSelect: () => (modelValue.value = s),
   })),
 )
 
 const createItem = computed(() => ({
   id: 'create',
   label: $t('series.createNew', 'Vytvořit novou sérii...'),
-  icon: 'mdi:plus-circle-outline',
-  href: undefined,
-  onClick: () => (createModal.value = true),
+  icon: 'i-mdi-plus-circle-outline',
+  onSelect: () => (createModal.value = true),
 }))
 
 const dropdownGroups = computed(() => [seriesItems.value, [createItem.value]])
@@ -172,7 +132,7 @@ const createAndSelect = async () => {
     createModal.value = false
     newSeriesName.value = ''
   } catch {
-    useToast().error({ message: $t('series.createFailed') })
+    useToast().add({ color: 'error', title: $t('series.createFailed') })
   }
 }
 </script>

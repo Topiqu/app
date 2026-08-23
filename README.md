@@ -35,24 +35,22 @@ A modern full-stack TypeScript blogging platform. Topiqu pairs a rich Tiptap-bas
 
 ## 🧱 Tech Stack
 
-| Layer             | Technology                                                                                    |
-| ----------------- | --------------------------------------------------------------------------------------------- |
-| **Framework**     | [Nuxt 4](https://nuxt.com) (Vue 3.5, Composition API)                                         |
-| **Language**      | TypeScript (strict)                                                                           |
-| **Styling**       | [UnoCSS](https://unocss.dev) + SCSS                                                           |
-| **i18n**          | [`@nuxtjs/i18n`](https://i18n.nuxtjs.org) — `en`, `cs`                                        |
-| **Auth**          | [`@sidebase/nuxt-auth`](https://auth.sidebase.io) + Prisma adapter                            |
-| **ORM / Schema**  | [Prisma 6](https://www.prisma.io) + [ZenStack v2](https://zenstack.dev) (access policy)       |
-| **Database**      | PostgreSQL (via Docker Compose)                                                               |
-| **Editor**        | [Tiptap 3](https://tiptap.dev) with custom extensions                                         |
-| **AI**            | [Vercel AI SDK](https://sdk.vercel.ai) + [`@ai-sdk/openai`](https://platform.openai.com)      |
-| **Billing**       | [Stripe](https://stripe.com) via `@unlok-co/nuxt-stripe` (subscriptions + token top-ups)      |
-| **SEO**           | `@nuxtjs/seo`, `nuxt-og-image`, `nuxt-gtag`                                                   |
-| **Cache**         | Redis — cache-aside + generation counters (`server/utils/cache.ts`)                           |
-| **Observability** | [`@sentry/nuxt`](https://sentry.io) → Better Stack                                            |
-| **Cloud**         | AWS (S3, Rekognition, SES), Stripe; self-hosted on a VPS via Dokploy (Docker Swarm + Traefik) |
-| **Testing**       | [Vitest](https://vitest.dev) + `@nuxt/test-utils` (`jsdom` environment)                       |
-| **Tooling**       | ESLint, Prettier, vue-tsc                                                                     |
+| Layer            | Technology                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| **Framework**    | [Nuxt 4](https://nuxt.com) (Vue 3.5, Composition API)                                    |
+| **Language**     | TypeScript (strict)                                                                      |
+| **Styling**      | [UnoCSS](https://unocss.dev) + SCSS                                                      |
+| **i18n**         | [`@nuxtjs/i18n`](https://i18n.nuxtjs.org) — `en`, `cs`                                   |
+| **Auth**         | [`@sidebase/nuxt-auth`](https://auth.sidebase.io) + Prisma adapter                       |
+| **ORM / Schema** | [Prisma 6](https://www.prisma.io) + [ZenStack v2](https://zenstack.dev) (access policy)  |
+| **Database**     | PostgreSQL (via Docker Compose)                                                          |
+| **Editor**       | [Tiptap 3](https://tiptap.dev) with custom extensions                                    |
+| **AI**           | [Vercel AI SDK](https://sdk.vercel.ai) + [`@ai-sdk/xai`](https://x.ai) (Grok)            |
+| **Billing**      | [Stripe](https://stripe.com) via `@unlok-co/nuxt-stripe` (subscriptions + token top-ups) |
+| **SEO**          | `@nuxtjs/seo`, `nuxt-og-image`, `nuxt-gtag`                                              |
+| **Cloud**        | AWS (S3, Rekognition, SES), Stripe, Vercel                                               |
+| **Testing**      | [Vitest](https://vitest.dev) + `@nuxt/test-utils` + `happy-dom`                          |
+| **Tooling**      | ESLint, Prettier, vue-tsc                                                                |
 
 ## 📂 Project Structure
 

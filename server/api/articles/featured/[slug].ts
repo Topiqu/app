@@ -18,39 +18,37 @@ export default defineEventHandler(async (event) => {
     const monthAgo = new Date()
     monthAgo.setDate(monthAgo.getDate() - 360)
 
-    const totalArticles = await db.article.count({
-      where: { clientSiteId: clientSite.id },
-    })
-
+    const publicWhere = {
+      clientSiteId: clientSite.id,
+      status: 'published' as const,
+      deletedAt: null,
+      OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
+    }
+    const totalArticles = await db.article.count({ where: publicWhere })
     const articles = await db.article.findMany({
       where: {
-        clientSiteId: clientSite.id,
+        ...publicWhere,
         ...(totalArticles < 150 ? {} : { createdAt: { gte: monthAgo } }),
       },
       include: {
         tags: { include: { tag: true } },
-        // No email: this is an anonymous-readable payload and it gets cached.
         user: { select: { id: true, username: true, role: true, avatarUrl: true } },
         _count: { select: { comments: true, reactions: true } },
       },
       orderBy: { createdAt: 'desc' },
       take: 10,
     })
-
     const sortedArticles = articles.sort((a, b) => {
       const aScore = (a._count?.reactions ?? 0) + (a._count?.comments ?? 0)
       const bScore = (b._count?.reactions ?? 0) + (b._count?.comments ?? 0)
       return bScore - aScore || b.createdAt.getTime() - a.createdAt.getTime()
     })
-
-    const localized = await localizeArticles(db, sortedArticles.slice(0, 3), {
+    const localized = await localizeArticles(db, sortedArticles.slice(0, 4), {
       clientSiteId: clientSite.id,
       locale,
       primaryLanguage: clientSite.language,
     })
-
     const [featured, ...recommended] = localized
-
     return { featured, recommended, totalArticles }
   }
 

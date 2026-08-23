@@ -1,235 +1,80 @@
 <template>
-  <div v-show="hasHeadings">
-    <div
-      v-if="isMobileOpen"
-      class="fixed inset-0 z-40 bg-gray-900/10 backdrop-blur-sm transition-opacity sm:hidden dark:bg-black/40"
-      @click="isMobileOpen = false"
-    />
-
-    <Button
-      v-show="!isMobileOpen"
-      square
-      size="lg"
-      variant="neutral"
-      icon="i-lucide:list"
-      class="fixed top-24 right-6 z-40 shadow-xl ring-1 ring-black/5 backdrop-blur-md transition-all duration-300 hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 active:scale-95 sm:hidden dark:ring-white/10"
-      :aria="String($t('articles.tableOfContents.title'))"
-      @click="isMobileOpen = true"
-    />
-
-    <div
-      :class="[
-        'fixed z-50 flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
-        'bg-white/95 backdrop-blur-xl shadow-2xl ring-1 ring-gray-900/5 dark:bg-neutral-900/95 dark:ring-white/10',
-        isMobileOpen
-          ? 'top-[9.5rem] right-6 w-[17rem] origin-top-right scale-100 rounded-2xl opacity-100 max-h-[60vh]'
-          : 'pointer-events-none top-[9.5rem] right-6 w-[17rem] origin-top-right scale-95 opacity-0 sm:pointer-events-auto sm:top-24 sm:bottom-auto sm:right-8 lg:right-12 2xl:right-16 sm:mt-0 sm:scale-100 sm:opacity-100 sm:max-h-[calc(100vh-10rem)] rounded-2xl sm:bg-white/80 sm:dark:bg-neutral-900/80 sm:shadow-lg sm:ring-black/5 sm:dark:ring-white/5',
-      ]"
-    >
-      <div
-        class="flex items-center justify-between border-b border-gray-100/50 px-5 py-3.5 sm:pb-3 dark:border-white/5"
+  <div v-if="state.headings.length" class="contents">
+    <ClientOnly>
+      <UDrawer
+        v-model:open="isMobileOpen"
+        direction="right"
+        :title="String($t('articles.tableOfContents.title'))"
+        class="lg:hidden"
       >
-        <h2 class="flex items-center gap-2.5 text-[13px] font-semibold tracking-wide text-gray-900 dark:text-gray-100">
-          <Icon name="i-lucide:align-left" class="h-4 w-4 text-blue-600 dark:text-blue-500" />
+        <UButton
+          square
+          size="lg"
+          color="neutral"
+          variant="soft"
+          icon="i-mdi-format-list-bulleted"
+          class="fixed right-4 top-24 z-sidebar lg:hidden"
+          :aria-label="String($t('articles.tableOfContents.title'))"
+        />
+        <template #body>
+          <nav :aria-label="String($t('articles.tableOfContents.title'))">
+            <ul class="space-y-1">
+              <li v-for="heading in state.headings" :key="heading.id" class="py-2">
+                <NuxtLink
+                  :to="`#${heading.id}`"
+                  class="block border-l-2 pr-2 text-sm"
+                  :class="[
+                    heading.level === 2 ? 'pl-5' : heading.level === 3 ? 'pl-8' : 'pl-3',
+                    state.activeId === heading.id
+                      ? 'border-primary font-semibold text-primary'
+                      : 'border-transparent text-muted',
+                  ]"
+                  :aria-current="state.activeId === heading.id ? 'location' : undefined"
+                  @click="isMobileOpen = false"
+                >
+                  {{ heading.text }}
+                </NuxtLink>
+              </li>
+            </ul>
+          </nav>
+        </template>
+      </UDrawer>
+    </ClientOnly>
+
+    <aside
+      class="sticky top-[calc(var(--topiqu-header-height)+1.5rem)] hidden max-h-[calc(100dvh-var(--topiqu-header-height)-3rem)] min-w-0 self-start overflow-y-auto overscroll-contain lg:block"
+      :aria-label="String($t('articles.tableOfContents.title'))"
+    >
+      <div>
+        <h2 class="flex items-center gap-2 text-sm font-semibold text-highlighted">
+          <UIcon name="i-mdi-format-align-left" size="16" />
           {{ $t('articles.tableOfContents.title') }}
         </h2>
-        <Button
-          v-if="isMobileOpen"
-          square
-          borderless
-          size="sm"
-          variant="neutral"
-          icon="i-lucide:x"
-          class="sm:hidden -mr-2"
-          :aria="String($t('common.close'))"
-          @click="isMobileOpen = false"
-        />
+        <nav class="mt-3" :aria-label="String($t('articles.tableOfContents.title'))">
+          <ul class="border-l border-default py-1">
+            <li v-for="heading in state.headings" :key="heading.id" class="py-1.5">
+              <NuxtLink
+                :to="`#${heading.id}`"
+                class="-ml-px block border-l pr-2 text-[0.8125rem] leading-5"
+                :class="[
+                  heading.level === 2 ? 'pl-5' : heading.level === 3 ? 'pl-8' : 'pl-3',
+                  state.activeId === heading.id
+                    ? 'border-primary font-semibold text-primary'
+                    : 'border-transparent text-muted hover:text-highlighted',
+                ]"
+                :aria-current="state.activeId === heading.id ? 'location' : undefined"
+              >
+                {{ heading.text }}
+              </NuxtLink>
+            </li>
+          </ul>
+        </nav>
       </div>
-
-      <div class="overflow-y-auto px-5 pb-5 pt-3 sidebar">
-        <nav id="toc" class="space-y-0.5 relative" @click="handleNavClick" />
-      </div>
-    </div>
+    </aside>
   </div>
 </template>
 
-<script lang="ts" setup>
-import tocbot from 'tocbot'
-import { headingSlug } from '~~/shared/utils/articleBlocks'
-
-const props = defineProps<{ content: string }>()
-
-const hasHeadings = shallowRef(true)
+<script setup lang="ts">
+const state = useArticleScrollState()
 const isMobileOpen = shallowRef(false)
-let stopObserving = () => {}
-
-const updateActiveLink = (target: string | HashChangeEvent) => {
-  const hash = typeof target === 'string' ? target : new URL(target.newURL).hash.slice(1)
-  document.querySelectorAll('#toc a').forEach((el) => el.classList.remove('active-current'))
-  if (hash) {
-    try {
-      document
-        .querySelectorAll(`#toc a[href$="#${CSS.escape(hash)}"]`)
-        .forEach((el) => el.classList.add('active-current'))
-    } catch (e: any) {
-      console.error(e)
-    }
-  }
-}
-
-const handleNavClick = (e: MouseEvent) => {
-  const target = e.target as HTMLElement
-  if (target.tagName === 'A') {
-    isMobileOpen.value = false
-  }
-}
-
-const initToc = async () => {
-  stopObserving()
-  await nextTick()
-  const headings = Array.from(document.querySelectorAll<HTMLElement>('.prose h1, .prose h2, .prose h3'))
-  if (!headings.length) {
-    hasHeadings.value = false
-    return
-  }
-
-  hasHeadings.value = true
-
-  // Published bodies arrive pre-stamped; this only covers the editor preview.
-  headings.forEach((h, i) => {
-    if (!h.id) h.id = headingSlug(h.textContent || '') || `section-${i + 1}`
-  })
-
-  tocbot.init({
-    tocSelector: '#toc',
-    contentSelector: '.prose',
-    headingSelector: 'h1, h2, h3',
-    scrollSmooth: true,
-    scrollSmoothOffset: -100,
-    headingsOffset: 100,
-    linkClass: 'toc-link',
-    extraLinkClasses: 'h3-link',
-    collapseDepth: 0,
-    orderedList: false,
-    hasInnerContainers: true,
-  })
-
-  const { stop } = useIntersectionObserver(
-    headings,
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = entry.target.id
-          if (id) updateActiveLink(id)
-        }
-      })
-    },
-    {
-      rootMargin: '-20% 0px -70% 0px',
-      threshold: 0.2,
-    },
-  )
-
-  stopObserving = stop
-  const initialHash = window.location.hash.slice(1)
-  if (initialHash) updateActiveLink(initialHash)
-}
-
-onMounted(() => {
-  initToc()
-})
-
-useEventListener('hashchange', updateActiveLink)
-
-watch(
-  () => props.content,
-  () => {
-    tocbot.destroy()
-    initToc()
-  },
-)
-
-onUnmounted(() => {
-  stopObserving()
-  tocbot.destroy()
-})
 </script>
-
-<style>
-.sidebar::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar::-webkit-scrollbar-thumb {
-  background-color: rgba(203, 213, 225, 0.6);
-  border-radius: 4px;
-}
-.sidebar:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(148, 163, 184, 0.8);
-}
-.dark .sidebar::-webkit-scrollbar-thumb {
-  background-color: rgba(71, 85, 105, 0.6);
-}
-
-#toc {
-  border-left: 1px solid rgba(226, 232, 240, 0.5);
-  position: relative;
-}
-.dark #toc {
-  border-left-color: rgba(63, 63, 70, 0.5);
-}
-
-#toc .toc-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-#toc .toc-list .toc-list {
-  padding-left: 0;
-}
-
-#toc a.toc-link {
-  display: block;
-  position: relative;
-  font-size: 0.8125rem;
-  padding: 0.375rem 0.5rem 0.375rem 1rem;
-  color: #64748b;
-  text-decoration: none;
-  line-height: 1.25rem;
-  transition: all 0.2s ease;
-  margin-left: -1px;
-  border-left: 1px solid transparent;
-}
-.dark #toc a.toc-link {
-  color: #a1a1aa;
-}
-
-#toc .toc-list .toc-list a.toc-link {
-  padding-left: 1.5rem;
-}
-#toc .toc-list .toc-list .toc-list a.toc-link {
-  padding-left: 2rem;
-}
-
-#toc a.toc-link:hover {
-  color: #0f172a;
-}
-.dark #toc a.toc-link:hover {
-  color: #f4f4f5;
-}
-
-#toc a.toc-link.active-current {
-  font-weight: 500;
-  color: #2563eb;
-  border-left-color: #2563eb;
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
-}
-.dark #toc a.toc-link.active-current {
-  color: #3b82f6;
-  border-left-color: #3b82f6;
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
-}
-</style>

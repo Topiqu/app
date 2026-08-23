@@ -1,4 +1,4 @@
-import { hasAiPlan } from '~~/shared/utils/plans'
+import { z } from 'zod'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -112,13 +112,12 @@ export default defineEventHandler(async (event) => {
           // Research is included because it completes before the first token streams, so Stop
           // never gets it back.
           const usage = await result.usage.catch(() => null)
-          const spent = (usage?.totalTokens ?? 0) + researchTokens
-          if (spent > 0) {
+          if (usage?.totalTokens) {
             await consumeClientTokens(
               clientSiteId,
-              spent,
+              usage.totalTokens,
               'GENERATE_ARTICLE',
-              { aborted: true, researchTokens },
+              { aborted: true },
               event,
             ).catch(() => {})
           }

@@ -1,14 +1,21 @@
 <template>
-  <Button
-    variant="neutral"
-    class="!rounded-full"
-    animation="softpop"
-    :icon="theme.mode === 'light' ? 'mingcute:sun-fill' : 'mingcute:moon-fill'"
-    :aria="$t('common.actions.toggleTheme')"
+  <UButton
+    data-color-mode
+    :icon="icon"
+    color="neutral"
+    variant="ghost"
+    square
+    aria-label="Toggle color mode"
     @click="theme.toggle"
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 const theme = useThemeStore()
+const hydrated = shallowRef(false)
+const icon = computed(() =>
+  hydrated.value ? (theme.isDark ? 'i-mdi-weather-sunny' : 'i-mdi-weather-night') : 'i-mdi-monitor',
+)
+
+onMounted(() => (hydrated.value = true))
 </script>

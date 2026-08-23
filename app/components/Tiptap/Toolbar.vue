@@ -1,132 +1,188 @@
 <template>
   <div
-    class="sticky top-[var(--tiptap-toolbar-top,0px)] z-10 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-gray-200 dark:border-neutral-800 py-1.5 px-1 sm:px-2"
+    class="sticky top-24 z-10 rounded-t-[var(--topiqu-surface-radius)] border-b border-default bg-default px-1 py-1.5 sm:px-2 md:top-16"
+    data-editor-toolbar
   >
-    <div role="toolbar" :aria-label="$t('articles.editor.title')" class="flex flex-wrap items-center gap-1 sm:gap-1.5">
-      <Button
-        icon="mdi-undo"
-        :title="sk($t('articles.editor.toolbar.undo'), 'Mod+Z')"
-        :aria="$t('articles.editor.toolbar.undo')"
-        :disabled="!editor.can().undo()"
-        @click="run((c) => c.undo())"
-      />
-      <Button
-        icon="mdi-redo"
-        :title="sk($t('articles.editor.toolbar.redo'), 'Mod+Shift+Z')"
-        :aria="$t('articles.editor.toolbar.redo')"
-        :disabled="!editor.can().redo()"
-        @click="run((c) => c.redo())"
-      />
+    <div
+      class="grid grid-flow-col grid-rows-2 justify-start gap-2 overflow-x-auto sm:flex sm:items-center"
+      role="toolbar"
+      :aria-label="$t('articles.editor.title')"
+    >
+      <UFieldGroup class="shrink-0">
+        <UButton
+          icon="i-mdi-undo"
+          color="neutral"
+          variant="ghost"
+          :title="sk($t('articles.editor.toolbar.undo'), 'Mod+Z')"
+          :aria-label="$t('articles.editor.toolbar.undo')"
+          :disabled="!editor.can().undo()"
+          @click="run((c) => c.undo())"
+        />
+        <UButton
+          icon="i-mdi-redo"
+          color="neutral"
+          variant="ghost"
+          :title="sk($t('articles.editor.toolbar.redo'), 'Mod+Shift+Z')"
+          :aria-label="$t('articles.editor.toolbar.redo')"
+          :disabled="!editor.can().redo()"
+          @click="run((c) => c.redo())"
+        />
+      </UFieldGroup>
 
-      <div class="w-40">
-        <FormSelect v-model="headingValue" :items="headingItems" :showValue="false" />
+      <div class="w-40 shrink-0">
+        <USelectMenu
+          v-model="headingValue"
+          valueKey="value"
+          labelKey="label"
+          :searchInput="false"
+          :items="headingItems"
+          :aria-label="$t('articles.editor.title')"
+          :ui="{ base: 'whitespace-nowrap' }"
+        />
       </div>
 
-      <Button
-        icon="mdi-format-list-bulleted"
-        :title="sk($t('articles.editor.toolbar.bulletList'), 'Mod+Shift+8')"
-        :aria="$t('articles.editor.toolbar.bulletList')"
-        :active="editor.isActive('bulletList')"
-        @click="run((c) => c.toggleBulletList())"
-      />
-      <Button
-        icon="mdi-format-list-numbered"
-        :title="sk($t('articles.editor.toolbar.numberedList'), 'Mod+Shift+7')"
-        :aria="$t('articles.editor.toolbar.numberedList')"
-        :active="editor.isActive('orderedList')"
-        @click="run((c) => c.toggleOrderedList())"
-      />
-      <Button
-        icon="mdi-format-quote-open"
-        :title="$t('articles.editor.toolbar.blockquote')"
-        :aria="$t('articles.editor.toolbar.blockquote')"
-        :active="editor.isActive('blockquote')"
-        @click="toggleBlockquote"
-      />
-
-      <FileInput :uploadImage="onUploadFile" @close="emit('focusEditor')" />
-      <Button
-        icon="mdi:image-plus"
-        :title="$t('articles.editor.toolbar.insertImage')"
-        :aria="$t('articles.editor.toolbar.insertImage')"
-        @click="emit('openLink', { type: 'image' })"
-      />
-      <Button
-        icon="mdi-link"
-        :title="sk($t('articles.editor.toolbar.link'), 'Mod+K')"
-        :aria="$t('articles.editor.toolbar.link')"
-        :active="editor.isActive('link')"
-        @click="emit('openLink', { type: 'link', url: editor.getAttributes('link').href })"
-      />
-      <Button
-        icon="mdi-youtube"
-        :title="$t('articles.editor.toolbar.insertYoutube')"
-        :aria="$t('articles.editor.toolbar.insertYoutube')"
-        @click="emit('openLink', { type: 'youtube' })"
-      />
-      <Button
-        icon="mdi-poll"
-        :title="$t('articles.editor.toolbar.insertPoll')"
-        :aria="$t('articles.editor.toolbar.insertPoll')"
-        @click="emit('insertPoll')"
-      />
-      <Button
-        icon="mdi-table-plus"
-        :title="$t('articles.editor.toolbar.insertTable')"
-        :aria="$t('articles.editor.toolbar.insertTable')"
-        @click="run((c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }))"
-      />
-
-      <!-- Row/column commands are meaningless outside a table and would just be six dead buttons. -->
-      <template v-if="editor.isActive('table')">
-        <Button
-          v-for="cmd in tableCommands"
-          :key="cmd.key"
-          :icon="cmd.icon"
-          :title="$t(`articles.editor.toolbar.${cmd.key}`)"
-          :aria="$t(`articles.editor.toolbar.${cmd.key}`)"
-          @click="run(cmd.run)"
+      <UFieldGroup class="shrink-0">
+        <UButton
+          icon="i-mdi-format-list-bulleted"
+          color="neutral"
+          variant="ghost"
+          :title="sk($t('articles.editor.toolbar.bulletList'), 'Mod+Shift+8')"
+          :aria-label="$t('articles.editor.toolbar.bulletList')"
+          :active="editor.isActive('bulletList')"
+          @click="run((c) => c.toggleBulletList())"
         />
-      </template>
+        <UButton
+          icon="i-mdi-format-list-numbered"
+          color="neutral"
+          variant="ghost"
+          :title="sk($t('articles.editor.toolbar.numberedList'), 'Mod+Shift+7')"
+          :aria-label="$t('articles.editor.toolbar.numberedList')"
+          :active="editor.isActive('orderedList')"
+          @click="run((c) => c.toggleOrderedList())"
+        />
+        <UButton
+          icon="i-mdi-format-quote-open"
+          color="neutral"
+          variant="ghost"
+          :title="$t('articles.editor.toolbar.blockquote')"
+          :aria-label="$t('articles.editor.toolbar.blockquote')"
+          :active="editor.isActive('blockquote')"
+          @click="toggleBlockquote"
+        />
+      </UFieldGroup>
 
-      <Button
-        v-for="a in alignments"
-        :key="a"
-        :icon="`mdi-format-align-${a}`"
-        :title="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
-        :aria="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
-        :active="editor.isActive({ textAlign: a })"
-        @click="run((c) => c.setTextAlign(a))"
-      />
-      <Button
-        icon="mdi-format-indent-increase"
-        :title="$t('articles.editor.toolbar.indent')"
-        :aria="$t('articles.editor.toolbar.indent')"
-        @click="run((c) => c.indent())"
-      />
-      <Button
-        icon="mdi-format-indent-decrease"
-        :title="$t('articles.editor.toolbar.outdent')"
-        :aria="$t('articles.editor.toolbar.outdent')"
-        @click="run((c) => c.outdent())"
-      />
+      <UFieldGroup class="shrink-0">
+        <FileInput :uploadImage="onUploadFile" @close="emit('focusEditor')" />
+        <UButton
+          icon="i-mdi-image-plus"
+          color="neutral"
+          variant="ghost"
+          :title="$t('articles.editor.toolbar.insertImage')"
+          :aria-label="$t('articles.editor.toolbar.insertImage')"
+          @click="emit('openLink', { type: 'image' })"
+        />
+        <UButton
+          icon="i-mdi-link"
+          color="neutral"
+          variant="ghost"
+          :title="sk($t('articles.editor.toolbar.link'), 'Mod+K')"
+          :aria-label="$t('articles.editor.toolbar.link')"
+          :active="editor.isActive('link')"
+          @click="emit('openLink', { type: 'link', url: editor.getAttributes('link').href })"
+        />
+        <UButton
+          icon="i-mdi-youtube"
+          color="neutral"
+          variant="ghost"
+          :title="$t('articles.editor.toolbar.insertYoutube')"
+          :aria-label="$t('articles.editor.toolbar.insertYoutube')"
+          @click="emit('openLink', { type: 'youtube' })"
+        />
+        <UButton
+          icon="i-mdi-poll"
+          color="neutral"
+          variant="ghost"
+          :title="$t('articles.editor.toolbar.insertPoll')"
+          :aria-label="$t('articles.editor.toolbar.insertPoll')"
+          @click="emit('insertPoll')"
+        />
+      </UFieldGroup>
 
-      <Button
-        icon="mdi-minus"
-        :title="$t('articles.editor.toolbar.horizontalRule')"
-        :aria="$t('articles.editor.toolbar.horizontalRule')"
-        @click="run((c) => c.setHorizontalRule())"
-      />
-      <Button
-        icon="mdi-format-clear"
-        :title="$t('articles.editor.toolbar.clearFormatting')"
-        :aria="$t('articles.editor.toolbar.clearFormatting')"
-        @click="run((c) => c.clearNodes())"
-      />
+      <UFieldGroup class="shrink-0">
+        <UButton
+          v-for="a in alignments"
+          :key="a"
+          :icon="`i-mdi-format-align-${a}`"
+          color="neutral"
+          variant="ghost"
+          :title="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
+          :aria-label="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
+          :active="editor.isActive({ textAlign: a })"
+          @click="run((c) => c.setTextAlign(a))"
+        />
+      </UFieldGroup>
+      <UFieldGroup class="shrink-0">
+        <UButton
+          icon="i-mdi-format-indent-increase"
+          color="neutral"
+          variant="ghost"
+          :title="$t('articles.editor.toolbar.indent')"
+          :aria-label="$t('articles.editor.toolbar.indent')"
+          @click="run((c) => c.indent())"
+        />
+        <UButton
+          icon="i-mdi-format-indent-decrease"
+          color="neutral"
+          variant="ghost"
+          :title="$t('articles.editor.toolbar.outdent')"
+          :aria-label="$t('articles.editor.toolbar.outdent')"
+          @click="run((c) => c.outdent())"
+        />
+      </UFieldGroup>
+
+      <UFieldGroup class="shrink-0">
+        <UButton
+          icon="i-mdi-minus"
+          color="neutral"
+          variant="ghost"
+          :title="$t('articles.editor.toolbar.horizontalRule')"
+          :aria-label="$t('articles.editor.toolbar.horizontalRule')"
+          @click="run((c) => c.setHorizontalRule())"
+        />
+        <UButton
+          icon="i-mdi-format-clear"
+          color="neutral"
+          variant="ghost"
+          :title="$t('articles.editor.toolbar.clearFormatting')"
+          :aria-label="$t('articles.editor.toolbar.clearFormatting')"
+          @click="run((c) => c.clearNodes())"
+        />
+      </UFieldGroup>
+
+      <UPopover>
+        <UButton
+          icon="i-mdi-table-edit"
+          color="neutral"
+          variant="ghost"
+          :aria-label="$t('articles.editor.toolbar.table')"
+        />
+        <template #content>
+          <div class="grid gap-1 p-2">
+            <UButton
+              v-for="command in tableCommands"
+              :key="command.key"
+              :icon="`i-${command.icon}`"
+              color="neutral"
+              variant="ghost"
+              :label="$t(`articles.editor.toolbar.${command.key}`)"
+              @click="run(command.run)"
+            />
+          </div>
+        </template>
+      </UPopover>
 
       <TiptapColorPicker v-model="textColor" />
-
-      <TiptapCharacterCount :editor :limit class="ml-auto" />
+      <TiptapCharacterCount :editor :limit class="shrink-0 sm:ml-auto" />
     </div>
   </div>
 </template>
@@ -134,8 +190,6 @@
 <script setup lang="ts">
 import type { Level } from '@tiptap/extension-heading'
 import type { Editor, ChainedCommands } from '@tiptap/vue-3'
-
-import type { FormSelectItem } from '~/components/Form/Select.vue'
 
 const { editor, limit } = defineProps<{ editor: Editor; limit: number }>()
 
@@ -165,14 +219,14 @@ const onUploadFile = async (files: FileList | null) => {
   emit('uploadFile', files)
 }
 
-const headingItems = computed<FormSelectItem[]>(() => [
-  { value: 'p', label: $t('articles.editor.toolbar.paragraph'), icon: 'mdi-format-paragraph' },
-  { value: 'h1', label: $t('articles.editor.toolbar.heading', { level: 1 }), icon: 'mdi-format-header-1' },
-  { value: 'h2', label: $t('articles.editor.toolbar.heading', { level: 2 }), icon: 'mdi-format-header-2' },
-  { value: 'h3', label: $t('articles.editor.toolbar.heading', { level: 3 }), icon: 'mdi-format-header-3' },
-  { value: 'h4', label: $t('articles.editor.toolbar.heading', { level: 4 }), icon: 'mdi-format-header-4' },
-  { value: 'h5', label: $t('articles.editor.toolbar.heading', { level: 5 }), icon: 'mdi-format-header-5' },
-  { value: 'h6', label: $t('articles.editor.toolbar.heading', { level: 6 }), icon: 'mdi-format-header-6' },
+const headingItems = computed<Array<{ label: string; value: string; icon?: string }>>(() => [
+  { value: 'p', label: $t('articles.editor.toolbar.paragraph'), icon: 'i-mdi-format-paragraph' },
+  { value: 'h1', label: $t('articles.editor.toolbar.heading', { level: 1 }), icon: 'i-mdi-format-header-1' },
+  { value: 'h2', label: $t('articles.editor.toolbar.heading', { level: 2 }), icon: 'i-mdi-format-header-2' },
+  { value: 'h3', label: $t('articles.editor.toolbar.heading', { level: 3 }), icon: 'i-mdi-format-header-3' },
+  { value: 'h4', label: $t('articles.editor.toolbar.heading', { level: 4 }), icon: 'i-mdi-format-header-4' },
+  { value: 'h5', label: $t('articles.editor.toolbar.heading', { level: 5 }), icon: 'i-mdi-format-header-5' },
+  { value: 'h6', label: $t('articles.editor.toolbar.heading', { level: 6 }), icon: 'i-mdi-format-header-6' },
 ])
 
 const headingValue = computed({

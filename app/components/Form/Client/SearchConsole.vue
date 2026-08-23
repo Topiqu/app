@@ -27,8 +27,8 @@
             {{ $t('common.searchConsole.connectDescription') }}
           </p>
         </div>
-        <Button class="shrink-0" @click="connect"
-          ><Icon name="mdi:google" class="mr-2 size-4" />{{ $t('common.searchConsole.connect') }}</Button
+        <UButton class="shrink-0" @click="connect"
+          ><Icon name="mdi:google" class="mr-2 size-4" />{{ $t('common.searchConsole.connect') }}</UButton
         >
       </div>
       <div v-else class="space-y-4">
@@ -43,7 +43,9 @@
               {{ data.connection.propertyUrl || $t('common.searchConsole.noProperty') }}
             </p>
           </div>
-          <Button size="sm" variant="neutral" @click="disconnect">{{ $t('common.searchConsole.disconnect') }}</Button>
+          <UButton size="sm" color="neutral" variant="soft" @click="disconnect">{{
+            $t('common.searchConsole.disconnect')
+          }}</UButton>
         </div>
         <div
           v-if="!data.connection.propertyUrl"
@@ -51,16 +53,14 @@
         >
           <p class="text-sm font-medium">{{ $t('common.searchConsole.chooseProperty') }}</p>
           <div class="flex gap-2">
-            <select
-              v-model="selectedProperty"
-              class="min-w-0 flex-1 rounded-xl border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-            >
-              <option value="" disabled>{{ $t('common.searchConsole.choosePlaceholder') }}</option>
-              <option v-for="property in properties" :key="property.siteUrl" :value="property.siteUrl">
-                {{ property.siteUrl }}
-              </option>
-            </select>
-            <Button :disabled="!selectedProperty" @click="saveProperty">{{ $t('common.actions.save') }}</Button>
+            <UFormField class="min-w-0 flex-1" :label="$t('common.searchConsole.chooseProperty')">
+              <USelect
+                v-model="selectedProperty"
+                :items="propertyItems"
+                :placeholder="$t('common.searchConsole.choosePlaceholder')"
+              />
+            </UFormField>
+            <UButton :disabled="!selectedProperty" @click="saveProperty">{{ $t('common.actions.save') }}</UButton>
           </div>
         </div>
         <p v-if="data.connection.lastSyncAt" class="text-xs text-neutral-500">
@@ -82,10 +82,11 @@ interface Property {
   siteUrl: string
   permissionLevel: string
 }
-const toast = useToast()
+const toast = useAppToast()
 const { data, pending, refresh } = await useFetch<Status>('/api/search-console/status')
 const properties = shallowRef<Property[]>([])
 const selectedProperty = shallowRef('')
+const propertyItems = computed(() => properties.value.map((property) => property.siteUrl))
 const connect = () => {
   window.location.href = '/api/search-console/connect'
 }

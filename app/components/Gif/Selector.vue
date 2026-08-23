@@ -1,309 +1,341 @@
 <template>
-  <Popover v-slot="{ close }" class="relative">
-    <PopoverButton
-      class="group relative inline-flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 ease-out hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 active:scale-95 dark:hover:bg-white/10 dark:hover:text-blue-400"
-      :title="$t('articles.comments.addGif')"
+  <DefinePicker v-slot="{ dismiss }">
+    <div
+      data-gif-picker
+      class="flex w-[min(28rem,calc(100vw-2rem))] flex-col overflow-hidden"
+      :class="isMobile ? 'h-[min(28rem,55dvh)]' : 'h-[min(30rem,calc(44dvh-1rem))]'"
     >
-      <Icon
-        name="mdi:gif"
-        class="h-6 w-6 text-gray-500 transition-colors duration-300 group-hover:text-blue-600 dark:text-gray-400 dark:group-hover:text-blue-400"
-      />
-    </PopoverButton>
-
-    <TransitionRoot
-      appear
-      enter="transition ease-out duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
-      enterFrom="opacity-0 translate-y-2 scale-95"
-      enterTo="opacity-100 translate-y-0 scale-100"
-      leave="transition ease-in duration-150 cubic-bezier(0.16, 1, 0.3, 1)"
-      leaveFrom="opacity-100 translate-y-0 scale-100"
-      leaveTo="opacity-0 translate-y-2 scale-95"
-      class="origin-bottom-right z-50"
-    >
-      <PopoverPanel
-        static
-        focus
-        class="absolute bottom-full right-0 z-50 mb-3 w-[28rem] max-w-[95vw] overflow-hidden rounded-2xl border border-gray-100 bg-white/90 p-0 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl dark:border-white/5 dark:bg-[#1a1a1a]/90 dark:ring-white/10"
-      >
-        <div
-          v-if="categoriesLoading"
-          class="flex h-64 items-center justify-center gap-3 text-sm font-medium text-gray-500 dark:text-neutral-400"
-        >
-          <Icon name="mdi:loading" class="h-6 w-6 animate-spin text-blue-500" />
-          {{ $t('common.loading') }}
-        </div>
-
-        <div v-else class="relative flex flex-col">
-          <div
-            class="flex items-center gap-3 border-b border-gray-100 bg-white/50 p-4 backdrop-blur-sm dark:border-white/5 dark:bg-white/5"
-          >
-            <Button
+      <div ref="pickerScroll" class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div class="sticky top-0 z-10 space-y-3 border-b border-default bg-default/95 p-4 backdrop-blur">
+          <div class="flex items-center gap-2">
+            <UButton
               v-if="selectedCategory"
-              icon="mdi:arrow-left"
+              icon="i-mdi-arrow-left"
               size="sm"
-              variant="neutral"
-              borderless
-              aria="Zrušit výběr kategorie"
-              class="shrink-0 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-white"
-              @click.stop="clearCategory"
+              color="neutral"
+              variant="ghost"
+              square
+              :aria-label="$t('articles.comments.clearGifCategory')"
+              @click="clearCategory"
             />
-            <div class="relative flex-1">
-              <FormInput
+            <UFormField :label="$t('common.search')" :ui="{ label: 'sr-only' }" class="min-w-0 flex-1">
+              <UInput
                 v-model="searchQuery"
-                type="text"
-                icon="mdi:magnify"
-                iconPosition="leading"
+                type="search"
                 :placeholder="$t('common.search')"
-                class="w-full !rounded-xl !border-transparent !bg-gray-100/80 !py-2.5 !text-sm transition-all focus:!bg-white focus:!ring-2 focus:!ring-blue-500/20 dark:!bg-black/20 dark:focus:!bg-black/40 dark:focus:!ring-blue-500/30"
-                @input="debouncedSearch"
+                icon="i-mdi-magnify"
+                class="w-full"
               />
-            </div>
+            </UFormField>
           </div>
-
-          <div class="relative min-h-[300px]">
-            <div
-              v-show="shouldShowGifs"
-              ref="gifContainer"
-              class="scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent max-h-[400px] overflow-y-auto p-4 pb-12 transition-all duration-300"
-              :class="{ 'opacity-0 translate-y-4': !shouldShowGifs, 'opacity-100 translate-y-0': shouldShowGifs }"
-            >
-              <div class="grid grid-cols-3 gap-3">
-                <button
-                  v-for="gif in gifs"
-                  :key="gif.id"
-                  class="group/gif relative aspect-square overflow-hidden rounded-xl bg-gray-100 ring-1 ring-black/5 transition-all active:scale-95 dark:bg-white/5 dark:ring-white/5"
-                  @click="selectGif(gif, close)"
-                >
-                  <NuxtImg
-                    :src="gif.images.fixed_height.url"
-                    :alt="gif.title"
-                    class="h-full w-full object-cover transition-transform duration-500 group-hover/gif:scale-110"
-                    loading="lazy"
-                  />
-                  <div
-                    class="absolute inset-0 bg-black/0 transition-colors group-hover/gif:bg-black/10 dark:group-hover/gif:bg-white/10"
-                  ></div>
-                </button>
-
-                <template v-if="gifsLoading">
-                  <div
-                    v-for="i in 6"
-                    :key="'skeleton-' + i"
-                    class="aspect-square rounded-xl bg-gray-100 animate-pulse dark:bg-white/5"
-                  ></div>
-                </template>
-              </div>
-
-              <div ref="gifSentinel" class="h-4 w-full"></div>
-
-              <div v-if="error" class="mt-8 flex flex-col items-center gap-4 text-center">
-                <div class="rounded-full bg-red-50 p-4 dark:bg-red-500/10">
-                  <NuxtImg src="/topik_404_rm.png" alt="Error" class="h-12 w-12 opacity-80" />
-                </div>
-                <p class="text-sm font-medium text-red-600 dark:text-red-400">{{ $t('common.noResults') }}</p>
-              </div>
-              <div
-                v-else-if="!gifs.length && !gifsLoading"
-                class="mt-12 flex flex-col items-center gap-3 text-center text-gray-400 dark:text-neutral-500"
-              >
-                <Icon name="mdi:emoticon-sad-outline" class="h-10 w-10 opacity-50" />
-                <span class="text-sm font-medium">{{ $t('common.noResults') }}</span>
-              </div>
-            </div>
-
-            <div
-              v-show="!shouldShowGifs"
-              class="scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent max-h-[400px] overflow-y-auto p-4 pb-12 transition-all duration-300"
-              :class="{ 'opacity-0 -translate-y-4': shouldShowGifs, 'opacity-100 translate-y-0': !shouldShowGifs }"
-            >
-              <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <button
-                  v-for="cat in categories"
-                  :key="cat.name_encoded"
-                  class="group/cat relative aspect-[4/3] overflow-hidden rounded-xl bg-gray-900 shadow-sm transition-all hover:shadow-md active:scale-95 sm:aspect-square"
-                  @pointerdown.stop.prevent="selectCategory(cat)"
-                >
-                  <NuxtImg
-                    v-if="cat.gif?.images?.fixed_height?.url"
-                    :src="cat.gif.images.fixed_height.url"
-                    class="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover/cat:scale-110 group-hover/cat:opacity-50"
-                    loading="lazy"
-                  />
-                  <div
-                    class="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 !dark:bg-transparent"
-                  >
-                    <span
-                      class="text-center text-sm font-bold text-white drop-shadow-sm group-hover/cat:scale-105 transition-transform"
-                    >
-                      {{ cat.name }}
-                    </span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <div
-              class="absolute bottom-0 right-0 z-10 w-full bg-gradient-to-t from-white via-white/90 to-transparent pb-3 pr-5 pt-8 dark:from-[#1a1a1a] dark:via-[#1a1a1a]/90 pointer-events-none flex justify-end"
-            >
-              <NuxtImg
-                :src="theme.isDark ? '/Poweredby_100px-Black_VertLogo.png' : '/Poweredby_100px-White_VertLogo.png'"
-                alt="Powered by Giphy"
-                class="h-auto w-14 opacity-60 mix-blend-luminosity grayscale transition-all hover:grayscale-0 hover:opacity-100"
-                loading="lazy"
-              />
-            </div>
-          </div>
+          <p v-if="selectedCategory" class="truncate text-sm font-semibold text-highlighted">
+            {{ selectedCategory.name }}
+          </p>
         </div>
-      </PopoverPanel>
-    </TransitionRoot>
-  </Popover>
+
+        <div v-if="initialLoading" class="grid grid-cols-3 gap-3 p-4" aria-live="polite">
+          <USkeleton v-for="i in 9" :key="i" class="aspect-square" />
+        </div>
+
+        <UAlert
+          v-else-if="initialError"
+          class="m-4"
+          color="error"
+          variant="soft"
+          icon="i-mdi-alert-circle-outline"
+          :title="$t('common.messages.loadFailedTitle')"
+          :description="initialError"
+        >
+          <template #actions>
+            <UButton color="error" variant="soft" icon="i-mdi-refresh" @click="initialize(true)">
+              {{ $t('common.messages.retry') }}
+            </UButton>
+          </template>
+        </UAlert>
+
+        <template v-else>
+          <section v-if="!searchQuery && !selectedCategory && categories.length" class="border-b border-default p-4">
+            <h3 class="mb-3 text-sm font-semibold text-highlighted">{{ $t('articles.comments.gifCategories') }}</h3>
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <UButton
+                v-for="category in categories"
+                :key="category.name_encoded"
+                color="neutral"
+                variant="ghost"
+                class="relative aspect-[4/3] overflow-hidden"
+                :aria-label="category.name"
+                @click="selectCategory(category)"
+              >
+                <AppMedia
+                  :src="category.gif?.images?.fixed_height?.url"
+                  :alt="category.name"
+                  :fallbackText="category.name"
+                  aspectRatio="4 / 3"
+                  sizes="144px"
+                  containerClass="absolute inset-0 size-full opacity-40"
+                />
+                <span class="relative z-[1] line-clamp-2 text-sm font-bold text-highlighted">{{ category.name }}</span>
+              </UButton>
+            </div>
+          </section>
+
+          <section class="p-4" :aria-labelledby="`${pickerId}-results`">
+            <h3 :id="`${pickerId}-results`" class="mb-3 text-sm font-semibold text-highlighted">
+              {{
+                searchQuery || selectedCategory
+                  ? $t('articles.comments.gifResults')
+                  : $t('articles.comments.trendingGifs')
+              }}
+            </h3>
+            <div v-if="gifs.length" class="grid grid-cols-3 gap-3">
+              <UButton
+                v-for="gif in gifs"
+                :key="gif.id"
+                color="neutral"
+                variant="ghost"
+                square
+                :ui="{ base: 'aspect-square size-auto overflow-hidden p-0' }"
+                :aria-label="gif.title || $t('articles.comments.addGif')"
+                :title="gif.title"
+                @click="selectGif(gif, dismiss)"
+              >
+                <AppMedia
+                  :src="gif.images.fixed_height.url"
+                  :originalSrc="gif.images.original.url"
+                  :alt="gif.title || $t('articles.comments.addGif')"
+                  aspectRatio="1 / 1"
+                  sizes="144px"
+                  containerClass="size-full"
+                />
+              </UButton>
+              <USkeleton v-for="i in loadingMore ? 3 : 0" :key="`more-${i}`" class="aspect-square" />
+            </div>
+            <UEmpty v-else-if="!gifsLoading" icon="i-mdi-emoticon-sad-outline" :title="$t('common.noResults')" />
+            <div ref="gifSentinel" class="h-1" aria-hidden="true" />
+            <div v-if="gifsError" class="mt-3 text-center">
+              <UAlert color="error" variant="soft" :title="gifsError">
+                <template #actions>
+                  <UButton color="error" variant="soft" icon="i-mdi-refresh" @click="loadGifs(false)">
+                    {{ $t('common.messages.retry') }}
+                  </UButton>
+                </template>
+              </UAlert>
+            </div>
+            <div v-else-if="hasMore && gifs.length" class="mt-4 text-center">
+              <UButton color="neutral" variant="soft" :loading="loadingMore" @click="loadMore">
+                {{ $t('common.pagination.next') }}
+              </UButton>
+            </div>
+          </section>
+        </template>
+      </div>
+
+      <div class="pointer-events-none flex shrink-0 justify-end border-t border-default bg-default px-4 py-2">
+        <AppMedia
+          :src="theme.isDark ? '/Poweredby_100px-White_VertLogo.png' : '/Poweredby_100px-Black_VertLogo.png'"
+          alt="Powered by Giphy"
+          aspectRatio="100 / 27"
+          fit="contain"
+          sizes="100px"
+          containerClass="h-7 w-[6.5rem] bg-transparent"
+        />
+      </div>
+    </div>
+  </DefinePicker>
+
+  <UDrawer
+    v-if="isMobile"
+    v-model:open="pickerOpen"
+    :title="$t('articles.comments.addGif')"
+    :ui="{
+      content: 'h-[calc(100dvh-4rem)] max-h-[calc(100dvh-4rem)] overflow-hidden',
+      body: 'min-h-0 flex-1 overflow-hidden',
+    }"
+  >
+    <UButton
+      ref="trigger"
+      color="neutral"
+      variant="ghost"
+      square
+      icon="i-mdi-gif"
+      :aria-label="$t('articles.comments.addGif')"
+    />
+    <template #body><ReusePicker :dismiss="closePicker" /></template>
+  </UDrawer>
+
+  <UPopover
+    v-else
+    v-model:open="pickerOpen"
+    :content="{ side: 'top', align: 'end', sideOffset: 12, collisionPadding: 16 }"
+  >
+    <UButton
+      ref="trigger"
+      color="neutral"
+      variant="ghost"
+      square
+      icon="i-mdi-gif"
+      :aria-label="$t('articles.comments.addGif')"
+    />
+    <template #content="{ close }"><ReusePicker :dismiss="close" /></template>
+  </UPopover>
 </template>
 
-<script lang="ts" setup>
-import { Popover, PopoverButton, PopoverPanel, TransitionRoot } from '@headlessui/vue'
-const theme = useThemeStore()
+<script setup lang="ts">
 interface GiphyImage {
   url: string
   width: string
   height: string
 }
-
 interface GiphyImages {
   fixed_height: GiphyImage
   original: GiphyImage
 }
-
 interface GiphyGif {
   id: string
   title: string
   images: GiphyImages
 }
-
 interface GiphyCategory {
   name: string
   name_encoded: string
   gif?: GiphyGif
 }
-
 interface GiphyResponse {
   data: GiphyGif[]
-  pagination: {
-    offset: number
-    count: number
-    total_count: number
-  }
+  pagination: { offset: number; count: number; total_count: number }
 }
 
-interface GiphyCategoriesResponse {
-  data: GiphyCategory[]
-}
+const emit = defineEmits<{ select: [gif: GiphyGif] }>()
+const theme = useThemeStore()
+const isMobile = useMediaQuery('(max-width: 639px)')
+const pickerOpen = shallowRef(false)
+const pickerId = useId()
+const trigger = useTemplateRef<{ $el?: HTMLElement }>('trigger')
+const [DefinePicker, ReusePicker] = createReusableTemplate<{ dismiss: unknown }>()
+const gifSentinel = useTemplateRef<HTMLElement>('gifSentinel')
 
-const gifContainer = useTemplateRef('gifContainer')
-const gifSentinel = useTemplateRef('gifSentinel')
-
+const categories = shallowRef<GiphyCategory[]>([])
 const gifs = shallowRef<GiphyGif[]>([])
 const searchQuery = shallowRef('')
 const selectedCategory = shallowRef<GiphyCategory | null>(null)
+const initialized = shallowRef(false)
+const categoriesLoading = shallowRef(false)
+const gifsLoading = shallowRef(false)
+const loadingMore = shallowRef(false)
+const categoriesError = shallowRef('')
+const gifsError = shallowRef('')
+const page = shallowRef(1)
 const hasMore = shallowRef(true)
-const error = shallowRef<Error | null>(null)
-const categories = shallowRef<GiphyCategory[]>([])
+let requestVersion = 0
+let suppressSearchWatch = false
 
-const queryParams = shallowReactive({ page: 1, query: '' })
+const initialLoading = computed(() => !initialized.value && (categoriesLoading.value || gifsLoading.value))
+const initialError = computed(() => (!initialized.value ? categoriesError.value || gifsError.value : ''))
+const activeQuery = computed(() => searchQuery.value.trim() || selectedCategory.value?.name_encoded || '')
+const errorMessage = (error: unknown) =>
+  (error as { data?: { message?: string }; message?: string })?.data?.message ||
+  (error as { message?: string })?.message ||
+  $t('common.messages.loadFailedText')
 
-const emit = defineEmits<{
-  (e: 'select', gif: GiphyGif): void
-}>()
+const loadCategories = async () => {
+  categoriesLoading.value = true
+  categoriesError.value = ''
+  try {
+    const response = await $fetch<{ data: GiphyCategory[] }>('/api/gifs', {
+      query: { action: 'list-categories' },
+      retry: 0,
+    })
+    categories.value = response.data
+  } catch (error) {
+    categoriesError.value = errorMessage(error)
+  } finally {
+    categoriesLoading.value = false
+  }
+}
 
-const shouldShowGifs = computed(() => !!searchQuery.value || !!selectedCategory.value)
+const loadGifs = async (append: boolean) => {
+  const version = ++requestVersion
+  gifsError.value = ''
+  if (append) loadingMore.value = true
+  else gifsLoading.value = true
+  try {
+    const response = await $fetch<GiphyResponse>('/api/gifs', {
+      query: { page: page.value, limit: 18, ...(activeQuery.value ? { query: activeQuery.value } : {}) },
+      retry: 0,
+    })
+    if (version !== requestVersion) return
+    gifs.value = append ? [...gifs.value, ...response.data] : response.data
+    hasMore.value = response.pagination.offset + response.pagination.count < response.pagination.total_count
+  } catch (error) {
+    if (version === requestVersion) gifsError.value = errorMessage(error)
+  } finally {
+    if (version === requestVersion) {
+      gifsLoading.value = false
+      loadingMore.value = false
+    }
+  }
+}
 
-const {
-  data: categoriesData,
-  pending: categoriesLoading,
-  execute: fetchCategories,
-} = await useFetch<GiphyCategoriesResponse>('/api/gifs?action=list-categories', {
-  default: () => ({ data: [] }),
-  immediate: false,
-})
+const initialize = async (force = false) => {
+  if (initialized.value && !force) return
+  categoriesError.value = ''
+  gifsError.value = ''
+  page.value = 1
+  await Promise.all([loadCategories(), loadGifs(false)])
+  initialized.value = !categoriesError.value && !gifsError.value
+}
 
-const {
-  data: gifsData,
-  pending: gifsLoading,
-  refresh: refreshGifs,
-} = await useFetch<GiphyResponse>('/api/gifs', {
-  query: queryParams,
-  default: () => ({ data: [], pagination: { offset: 0, count: 0, total_count: 0 } }),
-  watch: false,
-})
-
-const getQueryParam = () =>
-  searchQuery.value || (selectedCategory.value ? selectedCategory.value.name_encoded : undefined)
-
-watch(categoriesData, (v) => {
-  if (v) categories.value = v.data
-})
-
-watch(gifsData, (v) => {
-  if (v) {
-    gifs.value = queryParams.page === 1 ? v.data : [...gifs.value, ...v.data]
-    hasMore.value = v.pagination.offset + v.pagination.count < v.pagination.total_count
+watch(pickerOpen, async (open, wasOpen) => {
+  if (open) initialize()
+  else if (wasOpen) {
+    await nextTick()
+    trigger.value?.$el?.focus()
   }
 })
 
-const debouncedSearch = useDebounceFn(() => {
-  queryParams.page = 1
-  queryParams.query = getQueryParam() || ''
+const runSearch = useDebounceFn(async () => {
+  page.value = 1
   gifs.value = []
-  refreshGifs()
+  await loadGifs(false)
 }, 300)
-
-useInfiniteScroll(
-  gifSentinel,
-  async () => {
-    if (!hasMore.value || gifsLoading.value || !shouldShowGifs.value) return
-    queryParams.page++
-    await refreshGifs()
-  },
-  { distance: 100, interval: 300 },
-)
-
-const selectCategory = (cat: GiphyCategory) => {
-  selectedCategory.value = cat
-  searchQuery.value = ''
-  queryParams.page = 1
-  queryParams.query = getQueryParam() || ''
-  gifs.value = []
-  nextTick(() => {
-    gifContainer.value?.focus()
-    refreshGifs()
-  })
-}
-
-const selectGif = (gif: GiphyGif, close: () => void) => {
-  emit('select', gif)
-  close()
-  searchQuery.value = ''
-  selectedCategory.value = null
-  queryParams.page = 1
-  queryParams.query = ''
-  gifs.value = []
-}
-
-const clearCategory = () => {
-  selectedCategory.value = null
-  searchQuery.value = ''
-  queryParams.page = 1
-  queryParams.query = ''
-  gifs.value = []
-}
-
-onMounted(async () => {
-  await fetchCategories()
-})
-
 watch(searchQuery, () => {
+  if (suppressSearchWatch) return
   selectedCategory.value = null
-  queryParams.page = 1
-  queryParams.query = getQueryParam() || ''
-  gifs.value = []
+  runSearch()
 })
+
+const selectCategory = async (category: GiphyCategory) => {
+  suppressSearchWatch = true
+  searchQuery.value = ''
+  selectedCategory.value = category
+  await nextTick()
+  suppressSearchWatch = false
+  page.value = 1
+  gifs.value = []
+  await loadGifs(false)
+}
+
+const clearCategory = async () => {
+  selectedCategory.value = null
+  page.value = 1
+  gifs.value = []
+  await loadGifs(false)
+}
+
+const loadMore = async () => {
+  if (!hasMore.value || gifsLoading.value || loadingMore.value) return
+  page.value += 1
+  await loadGifs(true)
+}
+
+useInfiniteScroll(gifSentinel, loadMore, { distance: 120, interval: 300 })
+
+const closePicker = () => {
+  pickerOpen.value = false
+}
+const selectGif = (gif: GiphyGif, dismiss: unknown) => {
+  emit('select', gif)
+  if (typeof dismiss === 'function') dismiss()
+  else closePicker()
+}
 </script>

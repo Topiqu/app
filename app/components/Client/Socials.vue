@@ -1,20 +1,20 @@
 <template>
-  <div v-if="pending" class="flex justify-center items-center py-4">
-    <Icon name="mdi:loading" class="w-6 h-6 text-blue-600 animate-spin" />
-  </div>
+  <UProgress v-if="pending" class="w-24" />
   <div v-else-if="client?.socials?.length" class="flex gap-3 py-4">
-    <NuxtLink
+    <UButton
       v-for="social in client.socials"
       :key="social.platform"
       :to="social.url"
       target="_blank"
-      class="flex items-center justify-center w-10 h-10 rounded-lg transition-transform duration-200 hover:scale-110"
-      :class="platformStyles[social.platform] || platformStyles.OTHER"
+      color="neutral"
+      variant="ghost"
+      class="social-platform-button"
+      :data-platform="social.platform"
+      :icon="platformIcons[social.platform] || platformIcons.OTHER"
+      square
       :title="social.platform.charAt(0).toUpperCase() + social.platform.slice(1).toLowerCase()"
       :aria-label="social.platform.toLowerCase()"
-    >
-      <Icon :name="platformIcons[social.platform] || platformIcons.OTHER" class="w-6 h-6 text-white" />
-    </NuxtLink>
+    />
   </div>
 </template>
 
@@ -33,20 +33,11 @@ const { data: client, pending } = await useFetch<ClientSite>(() => `/api/clients
 })
 
 const platformIcons: Record<SocialPlatform, string> = {
-  FACEBOOK: 'mdi:facebook',
-  TWITTER: 'mdi:alpha-x-circle',
-  INSTAGRAM: 'mdi:instagram',
-  LINKEDIN: 'mdi:linkedin',
-  YOUTUBE: 'mdi:youtube',
-  OTHER: 'mdi:web',
-}
-
-const platformStyles: Record<SocialPlatform, string> = {
-  FACEBOOK: 'bg-blue-600 hover:bg-blue-700',
-  TWITTER: 'bg-black hover:bg-gray-800',
-  INSTAGRAM: 'bg-pink-500 hover:bg-pink-600',
-  LINKEDIN: 'bg-blue-800 hover:bg-blue-900',
-  YOUTUBE: 'bg-red-600 hover:bg-red-700',
-  OTHER: 'bg-gray-600 hover:bg-gray-700',
+  FACEBOOK: 'i-mdi-facebook',
+  TWITTER: 'i-mdi-alpha-x-circle',
+  INSTAGRAM: 'i-mdi-instagram',
+  LINKEDIN: 'i-mdi-linkedin',
+  YOUTUBE: 'i-mdi-youtube',
+  OTHER: 'i-mdi-web',
 }
 </script>

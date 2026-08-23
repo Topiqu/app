@@ -29,16 +29,17 @@
           </div>
         </div>
 
-        <Button
+        <UButton
           v-if="!session.revoked"
           size="sm"
-          variant="transparent"
+          color="neutral"
+          variant="ghost"
           class="shrink-0 self-start !text-red-600 dark:!text-red-400 sm:self-auto"
           :disabled="session.id === currentSessionId || isLoading"
           @click="revokeSession(session.id)"
         >
           {{ $t('common.actions.revoke') }}
-        </Button>
+        </UButton>
         <span v-else class="shrink-0 self-start text-xs text-neutral-400 dark:text-neutral-500 sm:self-auto">
           {{ $t('profile.sessionRevoked') }}
         </span>
@@ -67,7 +68,7 @@ const emit = defineEmits<{
   (e: 'signOut'): void
 }>()
 
-const toast = useToast()
+const toast = useAppToast()
 
 function deviceIcon(session: { device: string | null; os: string | null }) {
   const device = session.device?.toLowerCase() || ''

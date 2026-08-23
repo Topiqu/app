@@ -4,6 +4,7 @@ export interface EmptySiteInfo {
   name?: string | null
   logoUrl?: string | null
   description?: string | null
+  tagline?: string | null
   focus?: string | null
   audience?: string | null
   plan?: string | null

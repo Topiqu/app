@@ -1,3 +1,4 @@
+import { z } from 'zod'
 const BodySchema = z.object({
   platform: z.enum(['TWITTER', 'FACEBOOK', 'LINKEDIN', 'EMAIL', 'OTHER']),
   visitorId: z.string().max(128).nullish(),

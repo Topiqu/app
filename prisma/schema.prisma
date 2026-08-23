@@ -150,6 +150,12 @@ enum SocialPlatform {
   OTHER
 }
 
+enum PublicationTypography {
+  MODERN
+  EDITORIAL
+  SYSTEM
+}
+
 enum ReactionType {
   LIKE
   DISLIKE
@@ -594,7 +600,10 @@ model ClientSite {
   plan                         ClientPlan               @default(BASIC)
   focus                        String?
   description                  String?
+  tagline                      String?
   logoUrl                      String?
+  faviconUrl                   String?
+  typographyPreset             PublicationTypography    @default(MODERN)
   generationFrequency          GenerationFrequency      @default(NONE)
   tokenLimit                   Int?                     @default(0)
   tokenRemaining               Int?                     @default(0)

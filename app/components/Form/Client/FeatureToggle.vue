@@ -27,14 +27,7 @@
       </div>
     </div>
     <div class="w-5 h-5 flex-shrink-0">
-      <FormInput
-        :modelValue="enabled"
-        type="checkbox"
-        :disabled
-        :loading
-        class="!w-5 !h-5 pointer-events-none"
-        @update:modelValue="emit('toggle')"
-      />
+      <UCheckbox :modelValue="enabled" :disabled class="pointer-events-none" @update:modelValue="emit('toggle')" />
     </div>
   </label>
 </template>

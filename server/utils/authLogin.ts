@@ -3,12 +3,7 @@ import type { RequestInternal } from 'next-auth'
 import { createHmac } from 'node:crypto'
 
 export type LoginFailure =
-  | 'user_not_found'
-  | 'password_missing'
-  | 'password_mismatch'
-  | 'email_unverified'
-  | 'totp_invalid'
-  | 'rate_limited'
+  'user_not_found' | 'password_missing' | 'password_mismatch' | 'email_unverified' | 'totp_invalid' | 'rate_limited'
 
 export const credentialFailure = (
   user: { password: string | null; emailVerified: boolean } | null,

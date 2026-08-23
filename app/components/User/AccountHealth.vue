@@ -40,15 +40,16 @@
             {{ checkLabel(check) }}
           </span>
         </span>
-        <Button
+        <UButton
           v-if="!check.ok && actions[check.label]"
-          variant="transparent"
+          color="neutral"
+          variant="ghost"
           size="sm"
           class="shrink-0 !text-blue-700 dark:!text-blue-400"
           @click="emit('navigate', actions[check.label]!.section)"
         >
           {{ $t(actions[check.label]!.key) }}
-        </Button>
+        </UButton>
       </li>
     </ul>
   </div>

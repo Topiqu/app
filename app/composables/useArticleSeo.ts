@@ -75,10 +75,19 @@ export function useArticleSeo(
   useHead({
     link: () => [
       { rel: 'canonical', href: canonical.value },
-      ...resolvedAlternates.value.map((alt) => ({ rel: 'alternate', hreflang: alt.hreflang, href: alt.href })),
-      // Index 0 is the source language — the API builds `alternates` as `[primary, …translations]`.
+      ...resolvedAlternates.value.map((alt) => ({
+        rel: 'alternate' as const,
+        hreflang: alt.hreflang,
+        href: alt.href,
+      })),
       ...(resolvedAlternates.value.length
-        ? [{ rel: 'alternate', hreflang: 'x-default', href: resolvedAlternates.value[0]!.href }]
+        ? [
+            {
+              rel: 'alternate' as const,
+              hreflang: 'x-default',
+              href: resolvedAlternates.value[0]!.href,
+            },
+          ]
         : []),
     ],
   })
@@ -108,7 +117,7 @@ export function useArticleSeo(
         authorName.value
           ? { '@type': 'Person', '@id': `${authorUrl.value}#author`, name: authorName.value }
           : undefined,
-    }),
+    } as never) as never,
     // For LLM extraction, not Google — FAQ rich results were fully sunset in May 2026. Emitted
     // only when the article carries real questions; the generator returns none otherwise.
     ...(faq.value.length

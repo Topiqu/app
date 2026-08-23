@@ -1,29 +1,29 @@
 <template>
-  <div
-    class="custom-ui flex-1 flex flex-col w-full max-w-3xl mx-auto px-4 pt-18 pb-24"
-    style="--tiptap-toolbar-top: 8.5rem"
-  >
-    <header
-      class="sticky top-18 z-20 -mx-4 px-4 mb-8 h-16 flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 bg-gray-100/85 dark:bg-gray-800/85 backdrop-blur-xl"
+  <div class="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-12 pt-6">
+    <div
+      role="region"
+      data-editor-command-bar
+      :data-editor-submitting="submitting"
+      :data-editor-title-length="editedArticle.title?.length || 0"
+      :aria-label="$t('articles.editor.title')"
+      class="sticky top-0 z-20 -mx-4 mb-8 flex flex-col gap-2 border-b border-default bg-default px-4 py-2 md:h-16 md:flex-row md:items-center md:justify-between"
     >
-      <Button
-        icon="mdi:arrow-left"
-        variant="neutral"
-        size="sm"
-        :aria="$t('common.actions.back')"
-        :title="$t('common.actions.back')"
-        @click="goBack"
-      />
-
-      <div class="flex flex-col min-w-0 gap-0.5">
-        <h1 class="truncate text-sm font-semibold leading-tight">
+      <div class="flex items-center gap-3 min-w-0">
+        <UButton
+          icon="i-mdi-arrow-left"
+          color="neutral"
+          variant="soft"
+          :aria-label="$t('common.actions.back') || 'Back'"
+          @click="goBack"
+        />
+        <h1 class="min-w-0 text-lg font-bold">
           {{ isNew ? $t('articles.addArticle') : $t('articles.updateArticle') }}
         </h1>
         <div class="flex items-center gap-2 min-w-0">
           <ArticleStatusPill v-if="tr.isSource" :status="editedArticle.status" />
-          <span v-else class="px-2 py-0.5 rounded-full text-[11px] font-medium" :class="translationBadge">
+          <UBadge v-else :color="translationBadgeColor" variant="soft" size="sm">
             {{ $t(`articles.translations.status.${tr.active?.status ?? 'MISSING'}`) }}
-          </span>
+          </UBadge>
           <span
             v-if="autosaveVisible"
             class="hidden sm:flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400"
@@ -37,7 +37,7 @@
           </span>
           <span
             v-if="aiGenerating"
-            class="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-300"
+            class="inline-flex items-center gap-1 text-[11px] font-medium text-primary"
             aria-live="polite"
           >
             <Icon name="mdi:loading" class="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
@@ -46,306 +46,258 @@
         </div>
       </div>
 
-      <div class="ml-auto flex items-center gap-2">
-        <NuxtLink
+      <div class="flex w-full items-center gap-2 overflow-x-auto md:ml-auto md:w-auto md:overflow-visible">
+        <div v-if="autosaveVisible" class="hidden md:flex items-center gap-1.5 text-xs text-muted" aria-live="polite">
+          <UIcon :name="saving ? 'i-mdi-cloud-sync' : 'i-mdi-cloud-check'" size="16" />
+          <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
+          <template v-else-if="lastSavedAt">
+            {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
+          </template>
+          <template v-else>{{ $t('common.messages.unsaved') }}</template>
+        </div>
+
+        <UButton
           v-if="livePath"
           :to="livePath"
           target="_blank"
-          class="hidden sm:inline-flex items-center justify-center w-8 h-8 rounded-lg no-underline text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-          :title="$t('articles.translations.viewLive')"
-          :aria-label="$t('articles.translations.viewLive')"
-        >
-          <Icon name="mdi:open-in-new" class="w-4 h-4" />
-        </NuxtLink>
-
-        <button
-          type="button"
-          class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-transparent! hover:bg-gray-200! dark:hover:bg-gray-700! text-gray-500 dark:text-gray-400"
-          :class="{ 'bg-gray-200! dark:bg-gray-700! text-gray-900! dark:text-gray-100!': previewing }"
-          :aria-pressed="previewing"
-          :title="$t('articles.editor.preview.toggle')"
-          :aria-label="$t('articles.editor.preview.toggle')"
-          @click="previewing = !previewing"
-        >
-          <Icon :name="previewing ? 'mdi:pencil-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
-        </button>
-
-        <ArticleEditorLanguageTabs
-          v-if="tr.enabled"
-          v-model="tr.activeLang"
-          class="max-sm:hidden"
-          :primaryLanguage="primaryLanguage"
-          :targetLanguages="tr.targetLanguages"
-          :byLanguage="tr.byLanguage"
+          icon="i-mdi-open-in-new"
+          color="neutral"
+          variant="ghost"
+          :aria-label="$t('common.actions.view')"
+        />
+        <UButton
+          icon="i-mdi-eye-outline"
+          color="neutral"
+          variant="ghost"
+          :aria-label="$t('articles.editor.preview.title')"
+          @click="previewing = true"
         />
 
-        <template v-if="tr.isSource">
-          <Button
-            v-if="isNew || editedArticle.status === 'draft'"
-            variant="secondary"
-            icon="mdi:content-save-outline"
-            class="max-sm:px-2!"
-            :disabled="!editedArticle.title || submitting"
-            @click="submit('draft')"
-          >
-            <span class="max-sm:hidden">{{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}</span>
-          </Button>
+        <UButton
+          icon="i-mdi-cog"
+          color="neutral"
+          variant="soft"
+          class="lg:hidden"
+          square
+          :aria-label="$t('common.settings')"
+          :title="$t('common.settings')"
+          @click="sidebarOpen = true"
+        />
 
-          <Button
-            :disabled="!editedArticle.title || submitting"
-            :loading="submitting"
-            class="bg-indigo-600! hover:bg-indigo-700! text-white! border-transparent!"
-            @click="submit('published')"
-          >
-            {{ publishLabel }}
-          </Button>
-        </template>
+        <UButton
+          v-if="tr.isSource && (isNew || editedArticle.status === 'draft')"
+          color="neutral"
+          variant="soft"
+          class="shrink-0"
+          :disabled="submitting"
+          @click="submit('draft')"
+        >
+          {{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}
+        </UButton>
 
+        <UButton
+          v-if="tr.isSource"
+          :disabled="submitting"
+          :loading="submitting"
+          color="primary"
+          variant="solid"
+          class="shrink-0"
+          @click="submit('published')"
+        >
+          {{ publishLabel }}
+        </UButton>
+      </div>
+    </div>
+
+    <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
+
+    <div v-if="!isNew && tr.enabled" class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <ArticleEditorLanguageTabs
+        v-model="activeLanguageModel"
+        :primaryLanguage="primaryLanguage"
+        :targetLanguages="tr.targetLanguages"
+        :byLanguage="tr.byLanguage"
+      />
+      <div v-if="!tr.isSource" class="flex flex-wrap items-center gap-2">
+        <UButton
+          v-if="!tr.hasBody"
+          icon="i-mdi-translate"
+          :loading="tr.pending === 'translate'"
+          :disabled="Boolean(tr.pending)"
+          @click="tr.translateNow()"
+        >
+          {{ $t('articles.translations.actions.translate') }}
+        </UButton>
         <template v-else>
-          <Button
-            v-if="tr.hasBody"
-            variant="secondary"
-            icon="mdi:content-save-outline"
-            class="max-sm:px-2!"
-            :disabled="!tr.isDirty"
+          <UButton
+            color="neutral"
+            variant="soft"
+            icon="i-mdi-content-save-outline"
             :loading="tr.pending === 'save'"
+            :disabled="Boolean(tr.pending) || !tr.isDirty"
             @click="tr.save()"
           >
-            <span class="max-sm:hidden">{{ $t('common.actions.save') }}</span>
-          </Button>
-
-          <Button
-            v-if="tr.hasBody && tr.active?.status !== 'PUBLISHED'"
+            {{ $t('common.actions.saveChanges') }}
+          </UButton>
+          <UButton
+            icon="i-mdi-check-circle-outline"
             :loading="tr.pending === 'publish'"
-            class="bg-indigo-600! hover:bg-indigo-700! text-white! border-transparent!"
+            :disabled="Boolean(tr.pending) || tr.isDirty"
             @click="tr.save('PUBLISHED')"
           >
             {{ $t('articles.translations.actions.approve') }}
-          </Button>
-        </template>
-      </div>
-    </header>
-
-    <ArticleEditorLanguageTabs
-      v-if="tr.enabled"
-      v-model="tr.activeLang"
-      class="sm:hidden self-start mb-4"
-      :primaryLanguage="primaryLanguage"
-      :targetLanguages="tr.targetLanguages"
-      :byLanguage="tr.byLanguage"
-    />
-
-    <ArticleEditorPreview
-      v-if="previewing"
-      :title="titleModel"
-      :excerpt="excerptModel"
-      :content="bodyModel"
-      :imageUrl="editedArticle.imageUrl"
-      :articleId="article?.id"
-      :tags="articleTags"
-      :sources="editedArticle.sources"
-      :series="previewSeries"
-    />
-
-    <main v-else class="flex flex-col min-w-0 gap-5">
-      <!-- Language-neutral surfaces belong to the article, so they only exist on the source tab.
-           Starters come first because they all answer the same question — where does the first
-           draft come from — and they retreat to a single chip once that question is answered. -->
-      <template v-if="tr.isSource">
-        <ArticleEditorAiComposer
-          v-if="aiOpen"
-          v-model:generating="aiGenerating"
-          :autofocus="aiAutofocus"
-          @partial="applyAiPartial"
-          @image="applyAiImage"
-          @final="applyAiFinal"
-          @settle="settleAiSlots"
-        />
-
-        <div v-if="!aiOpen || isBlank" class="flex flex-wrap items-center gap-2">
-          <ArticleEditorChip v-if="!aiOpen" icon="mdi:auto-fix" size="md" @click="openAi">
-            {{ $t('common.labels.aiGeneration') }}
-          </ArticleEditorChip>
-
-          <template v-if="isBlank">
-            <ArticleEditorChip
-              v-if="!article && drafts?.length"
-              icon="mdi:file-document-outline"
-              size="md"
-              @click="draftsOpen = true"
-            >
-              {{ $t('articles.editor.drafts.loadDrafts') }}
-            </ArticleEditorChip>
-
-            <ArticleEditorChip icon="mdi:import" size="md" @click="jsonInput?.click()">
-              {{ $t('articles.editor.modes.import') }}
-            </ArticleEditorChip>
-            <input ref="jsonInput" type="file" accept=".json" class="hidden" @change="importJson" />
-          </template>
-        </div>
-      </template>
-
-      <div
-        v-else
-        class="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-xs"
-      >
-        <span v-if="tr.active?.source" class="text-gray-500 dark:text-gray-400">
-          {{ $t(`articles.translations.source.${tr.active.source}`) }}
-        </span>
-        <AppTime
-          v-if="tr.active?.translatedAt"
-          :datetime="tr.active.translatedAt"
-          preset="shortDatetime"
-          class="text-gray-500 dark:text-gray-400"
-        />
-        <span v-if="tr.isDirty" class="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-500" />
-          {{ $t('articles.translations.unsaved') }}
-        </span>
-
-        <div class="ml-auto flex flex-wrap items-center gap-2">
-          <Button
-            size="sm"
-            variant="neutral"
-            icon="mdi:auto-fix"
+          </UButton>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-mdi-translate"
             :loading="tr.pending === 'translate'"
+            :disabled="Boolean(tr.pending) || tr.isDirty"
             @click="tr.translateNow()"
           >
-            {{
-              tr.active
-                ? $t('articles.translations.actions.retranslate')
-                : $t('articles.translations.actions.translate')
-            }}
-          </Button>
-          <Button
-            v-if="tr.active"
-            size="sm"
-            variant="danger"
-            icon="mdi:trash-can-outline"
-            :loading="tr.pending === 'discard'"
+            {{ $t('articles.translations.actions.retranslate') }}
+          </UButton>
+          <UButton
+            color="error"
+            variant="ghost"
+            icon="i-mdi-delete-outline"
+            :disabled="Boolean(tr.pending)"
             @click="discardTranslationOpen = true"
           >
             {{ $t('articles.translations.actions.discard') }}
-          </Button>
-        </div>
+          </UButton>
+        </template>
       </div>
+    </div>
 
-      <div
-        v-if="!tr.isSource && tr.pending === 'translate'"
-        class="relative overflow-hidden flex items-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/30 px-3 py-2 text-sm text-indigo-700 dark:text-indigo-200"
-        role="status"
-        aria-live="polite"
-      >
-        <div class="absolute inset-x-0 top-0 h-0.5 bg-indigo-500/15">
-          <div class="h-full w-1/3 bg-indigo-500 animate-progress-slide motion-reduce:animate-none" />
-        </div>
-        <Icon name="mdi:translate" class="w-4 h-4" />
-        {{ $t('articles.translations.status.TRANSLATING') }}
-      </div>
+    <UAlert
+      v-if="!isNew && !tr.isSource && !tr.hasBody && !tr.error"
+      class="mb-6"
+      color="neutral"
+      variant="soft"
+      icon="i-mdi-translate"
+      :title="$t(`articles.translations.status.${tr.active?.status ?? 'MISSING'}`)"
+      :description="$t(`articles.translations.empty.${tr.active?.status ?? 'MISSING'}`)"
+    />
 
-      <div
-        v-if="!tr.isSource && tr.pending === 'translate'"
-        class="flex flex-col gap-6 py-2 animate-pulse"
-        aria-hidden="true"
-      >
-        <div class="space-y-3">
-          <div class="h-10 sm:h-12 w-4/5 rounded-lg bg-gray-200 dark:bg-gray-700" />
-          <div class="h-6 w-full rounded bg-gray-200 dark:bg-gray-700" />
-          <div class="h-6 w-2/3 rounded bg-gray-200 dark:bg-gray-700" />
-        </div>
-        <div class="h-px bg-gray-200 dark:bg-gray-800" />
-        <div class="space-y-3">
-          <div class="h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
-          <div class="h-4 w-11/12 rounded bg-gray-200 dark:bg-gray-700" />
-          <div class="h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
-          <div class="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
-          <div class="h-32 w-full rounded-xl bg-gray-100 dark:bg-gray-800" />
-          <div class="h-4 w-5/6 rounded bg-gray-200 dark:bg-gray-700" />
-          <div class="h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
-        </div>
-      </div>
+    <UAlert
+      v-if="!isNew && tr.error"
+      class="mb-6"
+      color="error"
+      icon="i-mdi-alert-circle-outline"
+      :title="$t('common.messages.loadFailedTitle')"
+      :description="$t('common.messages.loadFailedText')"
+    >
+      <template #actions>
+        <UButton color="error" variant="soft" size="sm" @click="tr.refresh()">
+          {{ $t('common.messages.retry') }}
+        </UButton>
+      </template>
+    </UAlert>
 
-      <template v-else>
-        <p v-if="!tr.isSource && tr.active?.error" class="text-xs text-red-600 dark:text-red-400">
-          {{ tr.active.error }}
-        </p>
-
-        <div class="flex flex-col gap-4">
-          <textarea
-            ref="titleRef"
-            v-model="titleText"
-            rows="1"
+    <div
+      class="grid flex-1 items-start gap-8"
+      :class="settingsExpanded ? 'lg:grid-cols-[minmax(0,1fr)_20rem]' : 'lg:grid-cols-[minmax(0,1fr)_3rem]'"
+    >
+      <div class="min-w-0 flex flex-col gap-6">
+        <UFormField :label="$t('common.labels.articleTitle')">
+          <UInput
+            v-model="titleModel"
             :placeholder="$t('common.labels.articleTitle')"
-            :aria-label="$t('common.labels.articleTitle')"
-            class="w-full resize-none overflow-hidden break-words bg-transparent! rounded-none! px-0! pt-0! pb-1! text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15] placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0 transition-colors border-x-0! border-t-0! border-b-2! border-solid! border-transparent! hover:border-gray-300! dark:hover:border-gray-700! focus:border-indigo-500!"
-            @keydown.enter.prevent
+            class="w-full"
+            @input="updateSlug"
           />
-
-          <textarea
-            ref="excerptRef"
-            v-model="excerptText"
-            rows="2"
+        </UFormField>
+        <UFormField :label="$t('common.labels.articleExcerpt')">
+          <UTextarea
+            :modelValue="excerptModel ?? undefined"
             :placeholder="$t('common.labels.articleExcerpt')"
-            :aria-label="$t('common.labels.articleExcerpt')"
-            class="w-full resize-none bg-transparent! rounded-none! px-0! pt-0! pb-1! text-lg leading-relaxed text-gray-600! dark:text-gray-300! placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0 transition-colors border-x-0! border-t-0! border-b! border-solid! border-transparent! hover:border-gray-300! dark:hover:border-gray-700! focus:border-indigo-500!"
+            class="w-full"
+            autoresize
+            @update:modelValue="excerptModel = $event || null"
           />
+        </UFormField>
 
-          <div
-            v-if="activeSlug || excerptText"
-            class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 dark:text-gray-500"
-          >
-            <span v-if="activeSlug" class="inline-flex items-center gap-1 min-w-0">
-              <Icon name="mdi:link-variant" class="w-3.5 h-3.5 shrink-0" />
-              <span class="truncate">/{{ activeSlug }}</span>
-            </span>
-            <span v-if="excerptText" class="tabular-nums">
-              {{ excerptText.length }} {{ $t('articles.editor.toolbar.characters') }}
-            </span>
+        <div class="mt-4 max-w-none">
+          <TiptapEditor v-model="bodyModel" :edit="bodyEditable" class="min-h-[500px]" />
+
+          <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
+            <UButton size="sm" icon="i-mdi-file-document-outline" @click="draftsOpen = true">
+              {{ $t('articles.editor.drafts.loadDrafts') }}
+            </UButton>
+            <UAlert
+              v-if="successMessage"
+              color="success"
+              variant="soft"
+              icon="i-mdi-check-circle"
+              :title="successMessage"
+            />
           </div>
         </div>
-
-        <!-- Cover sits below the excerpt because that is where it appears in `Hero.vue`: the editor
-           now reads in the same order as the published article. -->
-        <template v-if="tr.isSource">
-          <FileUploader
-            compact
-            type="article-image"
+      </div>
+      <aside class="sticky top-20 hidden max-h-[calc(100dvh-6rem)] self-start overflow-y-auto lg:block">
+        <div
+          v-if="settingsExpanded"
+          class="rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5"
+        >
+          <div class="mb-5 flex items-center justify-between gap-3">
+            <h2 class="font-semibold text-highlighted">{{ $t('common.settings') }}</h2>
+            <UButton
+              icon="i-mdi-chevron-right"
+              color="neutral"
+              variant="ghost"
+              square
+              :aria-label="$t('common.actions.collapse')"
+              @click="settingsExpanded = false"
+            />
+          </div>
+          <ArticleEditorSettingsPanel
+            v-model:selectedSeries="selectedSeries"
+            v-model:customPrompt="customPrompt"
+            v-model:releaseAt="releaseAtInput"
+            v-model:sources="sourcesModel"
+            v-model:aiOpen="aiOpen"
+            :article="article"
             :imageUrl="editedArticle.imageUrl"
-            :maxWidth="3840"
-            :maxHeight="2160"
+            :articleTags="articleTags"
+            :aiGenerating="aiGenerating"
+            :aiPhase="aiPhase"
             @upload="handleUpload"
+            @generate="generateAIContent"
+            @stop="stopGeneration"
+            @addTag="addTag"
+            @removeTag="removeTag"
+            @quickRelease="setReleaseQuick"
           />
+        </div>
+        <UButton
+          v-else
+          icon="i-mdi-cog-outline"
+          color="neutral"
+          variant="soft"
+          square
+          :aria-label="$t('common.actions.expand')"
+          @click="settingsExpanded = true"
+        />
+      </aside>
+    </div>
 
-          <ArticleEditorMetaBar
-            v-model:series="selectedSeries"
-            v-model:tags="articleTags"
-            v-model:releaseAt="editedArticle.releaseAt"
-            v-model:sources="editedArticle.sources"
-          />
-        </template>
-
-        <hr class="border-gray-200 dark:border-gray-800" />
-
-        <!-- Lazy so the title, excerpt and strip are interactive before the editor bundle lands —
-           and so a translation tab with no body never pays for it at all. -->
-        <LazyTiptapEditor v-if="bodyEditable" v-model="bodyModel" edit contentClass="min-h-[60vh]" />
-
-        <p v-else class="text-sm text-gray-500 dark:text-gray-400">
-          {{ $t(`articles.translations.empty.${tr.active?.status ?? 'MISSING'}`) }}
-        </p>
-      </template>
-    </main>
-
-    <ModalMini
+    <UModal
       v-model:open="discardTranslationOpen"
-      icon="mdi:alert-circle-outline"
-      variant="danger"
       :title="$t('articles.translations.discardTitle')"
-      :message="$t('articles.translations.discardMessage')"
-      :confirmText="$t('articles.translations.actions.discard')"
-      :cancelText="$t('common.actions.cancel')"
-      @confirm="tr.discard()"
-    />
+      :description="$t('articles.translations.discardMessage')"
+    >
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="discardTranslationOpen = false">
+            {{ $t('common.actions.cancel') }}
+          </UButton>
+          <UButton color="error" icon="i-mdi-delete-outline" @click="discardTranslation">
+            {{ $t('articles.translations.actions.discard') }}
+          </UButton>
+        </div>
+      </template>
+    </UModal>
 
     <LazyArticleDrafts
       v-model:open="draftsOpen"
@@ -355,18 +307,60 @@
       @close="draftsOpen = false"
     />
 
-    <ModalMini
-      v-model:open="discardConfirmOpen"
-      icon="mdi:alert-circle-outline"
-      :title="$t('common.messages.discardChangesTitle')"
-      :message="$t('common.messages.discardChangesText')"
-    >
-      <template #actions>
-        <Button variant="danger" size="sm" icon="mdi:trash-can-outline" @click="confirmDiscard">
-          {{ $t('common.messages.discardConfirm') }}
-        </Button>
+    <UModal v-model:open="previewing" :title="$t('articles.editor.preview.title')">
+      <template #body>
+        <ArticleEditorPreview
+          :articleId="editedArticle.id"
+          :title="titleModel"
+          :excerpt="excerptModel"
+          :content="bodyModel"
+          :imageUrl="editedArticle.imageUrl"
+          :tags="articleTags"
+          :sources="editedArticle.sources"
+          :series="previewSeries"
+        />
       </template>
-    </ModalMini>
+    </UModal>
+
+    <USlideover v-model:open="sidebarOpen" :title="$t('common.settings')" class="lg:hidden">
+      <template #body>
+        <ArticleEditorSettingsPanel
+          v-model:selectedSeries="selectedSeries"
+          v-model:customPrompt="customPrompt"
+          v-model:releaseAt="releaseAtInput"
+          v-model:sources="sourcesModel"
+          v-model:aiOpen="aiOpen"
+          :article="article"
+          :imageUrl="editedArticle.imageUrl"
+          :articleTags="articleTags"
+          :aiGenerating="aiGenerating"
+          :aiPhase="aiPhase"
+          @upload="handleUpload"
+          @generate="generateAIContent"
+          @stop="stopGeneration"
+          @addTag="addTag"
+          @removeTag="removeTag"
+          @quickRelease="setReleaseQuick"
+        />
+      </template>
+    </USlideover>
+
+    <UModal
+      v-model:open="discardConfirmOpen"
+      :title="$t('common.messages.discardChangesTitle')"
+      :description="$t('common.messages.discardChangesText')"
+    >
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="discardConfirmOpen = false">{{
+            $t('common.actions.cancel')
+          }}</UButton>
+          <UButton color="error" size="sm" icon="i-mdi-trash-can-outline" @click="confirmDiscard">
+            {{ $t('common.messages.discardConfirm') }}
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -374,20 +368,22 @@
 import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
-import { translationStatusBadge } from '~~/shared/utils/articleTranslations'
 
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
-const toast = useToast()
+const toast = useAppToast()
 const { t } = useI18n()
 const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
 
 const clientSite = await useClientSite()
+const requestFetch = useRequestFetch()
 
 const isNew = route.params.id === 'new'
+const sidebarOpen = shallowRef(false)
+const settingsExpanded = useLocalStorage('topiqu-editor-settings-expanded', true)
 const discardConfirmOpen = shallowRef(false)
 const submitting = shallowRef(false)
 
@@ -413,19 +409,33 @@ const editedArticle = ref(init())
 const selectedSeries = shallowRef<any>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
+const customPrompt = shallowRef('')
+const aiPhase = shallowRef<'writing' | 'images'>('writing')
+const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
+const serializeSourceState = () =>
+  JSON.stringify({
+    article: editedArticle.value,
+    tags: [...articleTags.value].sort(),
+    seriesId: selectedSeries.value?.id ?? null,
+  })
+const sourceBaseline = shallowRef(serializeSourceState())
 
 const { idle } = useIdle(5 * 60 * 1000)
-const { drafts, loading, draftsOpen, lastSavedAt, saving, loadDraft } = await useArticleDrafts(editedArticle, idle, {
-  enabled: isNew,
-  onDraftLoaded: () => {
-    selectedSeries.value = null
-    articleTags.value = []
+const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDraft } = await useArticleDrafts(
+  editedArticle,
+  idle,
+  {
+    enabled: isNew,
+    onDraftLoaded: () => {
+      selectedSeries.value = null
+      articleTags.value = []
+    },
   },
-})
+)
 
 if (!isNew) {
   try {
-    const data = await $fetch<any>(`/api/articles/${route.params.id}`, {
+    const data = await requestFetch<any>(`/api/articles/${route.params.id}`, {
       query: { clientSiteId: clientSite?.id },
     })
     article.value = data as any
@@ -436,16 +446,26 @@ if (!isNew) {
     const articleData = article.value as any
     selectedSeries.value = articleData?.articleSeries
     articleTags.value = articleData?.tags?.map((t: any) => t.tag?.id || t.id) || []
+    sourceBaseline.value = serializeSourceState()
   } catch (e: any) {
     console.error(e)
-    toast.error({ message: t('articles.editor.loadFailed') })
+    const status = Number(e?.statusCode || e?.status || e?.response?.status)
+    const key =
+      status === 401
+        ? 'common.errors.unauthorized'
+        : status === 403
+          ? 'common.errors.forbidden'
+          : 'common.errors.articleNotFound'
+    toast.add({ color: 'error', title: t(key) })
     router.push(localePath({ name: 'admin' }))
   }
 }
 
 // Language is a dimension of the article, not a separate screen: `tr.activeLang === ''` edits
 // the source, anything else edits that translation through the same fields.
-const primaryLanguage = clientSite?.language ?? 'en'
+// Product routes intentionally have no public-domain client-site payload. The detail contract
+// carries the resolved source language, so editor tabs remain correct in the persistent shell.
+const primaryLanguage = article.value?.language ?? clientSite?.language ?? 'en'
 
 // `?lang=` lets the admin table deep-link straight to a language. The primary language is the
 // source tab, which the composable represents as an empty string. Seeded at construction rather
@@ -455,6 +475,17 @@ const initialLang = !isNew && requestedLang && requestedLang !== primaryLanguage
 
 const tr = reactive(useArticleTranslations(article.value?.id, initialLang))
 const discardTranslationOpen = shallowRef(false)
+const activeLanguageModel = computed({
+  get: () => tr.activeLang,
+  set: (language: string) => {
+    if (language === tr.activeLang) return
+    if (tr.isDirty) {
+      toast.add({ color: 'warning', title: t('articles.translations.unsaved') })
+      return
+    }
+    tr.activeLang = language
+  },
+})
 
 /** Public URL of whichever language is on screen — only once it has a slug to point at. */
 const livePath = computed(() => {
@@ -463,9 +494,25 @@ const livePath = computed(() => {
   return localePath({ name: 'clanky-slug', params: { slug: activeSlug.value } }, language)
 })
 
-const translationBadge = computed(() => translationStatusBadge(tr.active?.status))
+const translationBadgeColor = computed(() => {
+  const status = tr.active?.status
+  if (status === 'PUBLISHED') return 'success' as const
+  if (status === 'READY') return 'warning' as const
+  if (status === 'FAILED') return 'error' as const
+  return 'neutral' as const
+})
 const activeSlug = computed(() => (tr.isSource ? editedArticle.value.slug : (tr.active?.slug ?? '')))
 const bodyEditable = computed(() => tr.isSource || tr.hasBody)
+
+watch(
+  () => tr.activeLang,
+  (language) => {
+    const query = { ...route.query }
+    if (language) query.lang = language
+    else delete query.lang
+    router.replace({ query })
+  },
+)
 
 const bodyModel = computed({
   get: () => (tr.isSource ? editedArticle.value.content : tr.draft.content),
@@ -491,36 +538,56 @@ const excerptModel = computed({
   },
 })
 
-const { textarea: titleRef, input: titleText } = useTextareaAutosize({ styleProp: 'minHeight' })
-const { textarea: excerptRef, input: excerptText } = useTextareaAutosize({ styleProp: 'minHeight' })
-
-watch(titleText, (value) => {
-  const single = value.replace(/\s*\n+\s*/g, ' ')
-  if (single !== value) titleText.value = single
-  titleModel.value = single
+const sourcesModel = computed<string[]>({
+  get: () => editedArticle.value.sources ?? [],
+  set: (value) => {
+    editedArticle.value.sources = value
+  },
 })
-watch(
-  titleModel,
-  (value) => {
-    if ((value ?? '') !== titleText.value) titleText.value = value ?? ''
-  },
-  { immediate: true },
-)
-
-watch(excerptText, (value) => (excerptModel.value = value))
-watch(
-  excerptModel,
-  (value) => {
-    if ((value ?? '') !== excerptText.value) excerptText.value = value ?? ''
-  },
-  { immediate: true },
-)
 
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 
 const isBlank = computed(() => isBlankArticle(editedArticle.value))
 
 const previewing = shallowRef(false)
+
+const releaseAtInput = computed<string | null>({
+  get: () => {
+    const value = editedArticle.value.releaseAt as unknown as string | Date | null
+    if (!value) return null
+    if (typeof value === 'string') return value.slice(0, 16)
+    return new Date(value.getTime() - value.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
+  },
+  set: (value) => {
+    editedArticle.value.releaseAt = value as any
+  },
+})
+
+const updateSlug = () => {
+  if (isNew) editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })
+}
+const addTag = (id: string) => {
+  if (!articleTags.value.includes(id)) articleTags.value.push(id)
+}
+const removeTag = (id: string) => {
+  articleTags.value = articleTags.value.filter((tag) => tag !== id)
+}
+const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
+  if (kind === 'clear') {
+    editedArticle.value.releaseAt = null
+    return
+  }
+  const date = new Date()
+  if (kind === 'inHour') date.setHours(date.getHours() + 1)
+  if (kind === 'tomorrow') {
+    date.setDate(date.getDate() + 1)
+    date.setHours(8, 0, 0, 0)
+  }
+  date.setSeconds(0, 0)
+  editedArticle.value.releaseAt = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16) as any
+}
 
 // `Hero.vue` wants the part number, which only the selected series knows. A new article lands
 // after the ones already in the series, so its own position is one past the end.
@@ -539,48 +606,11 @@ onKeyStroke('Escape', () => {
   if (previewing.value) previewing.value = false
 })
 
-const jsonInput = useTemplateRef<HTMLInputElement>('jsonInput')
-const aiAutofocus = shallowRef(route.query.ai === '1')
 const aiGenerating = shallowRef(false)
 // Expanded while there is nothing to lose, or on the `?ai=1` deep link. Generation rewrites the
 // whole article, so a permanently open composer serves no mid-article iteration — it just pushed
 // the title below the fold on every visit.
 const aiOpen = shallowRef(isBlank.value || route.query.ai === '1')
-
-const openAi = () => {
-  aiAutofocus.value = true
-  aiOpen.value = true
-}
-
-const importJson = async (event: Event) => {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (!file) return
-
-  try {
-    const [data] = JSON.parse(await file.text())
-    if (!data) throw new Error('empty')
-
-    Object.assign(editedArticle.value, {
-      title: data.title ?? '',
-      excerpt: data.excerpt ?? '',
-      content: data.content ?? '',
-      slug: data.slug ?? slugify(data.title ?? '', { lower: true, strict: true, trim: true }),
-      imageUrl: data.imageUrl ?? '',
-      imageCredit: data.imageCredit ?? null,
-      sources: Array.isArray(data.sources) ? data.sources : [],
-      releaseAt: data.releaseAt ? toDateTimeLocal(new Date(data.releaseAt)) : null,
-      savedAmount: 0,
-      savedTimeMinutes: 0,
-      aiInvolvement: 'NONE',
-    })
-    toast.success({ message: t('common.messages.successGeneral') })
-  } catch {
-    toast.error({ message: t('common.error') })
-  } finally {
-    input.value = ''
-  }
-}
 
 const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
 
@@ -591,90 +621,81 @@ const handleUpload = (file: { url: string; optimizedUrl: string }) => {
   optimizedImageUrl.value = file.optimizedUrl
 }
 
-const applyAiPartial = (partial: { title?: string; perex?: string; content?: string }) => {
-  if (partial.title != null) editedArticle.value.title = partial.title
-  if (partial.perex != null) editedArticle.value.excerpt = partial.perex
-  if (partial.content != null) editedArticle.value.content = partial.content
-}
-
-const applyAiImage = ({ slot, html }: { slot: number; html: string }) => {
-  editedArticle.value.content = replaceSlot(editedArticle.value.content ?? '', 'IMAGE', slot, html)
-}
-
-// Only `applyAiFinal` fills the remaining slots, so whenever the stream ends without one the body
-// keeps whatever the model wrote — including a literal `[[POLL1]]` the author then has to delete by
-// hand, or ships. Same rule as the server's: a marker with nothing to fill it is dropped.
-const settleAiSlots = () => {
-  editedArticle.value.content = stripContentSlots(editedArticle.value.content ?? '')
-}
-
-// The payload carries citations and effort metrics the editor has no other way to obtain —
-// dropping them here shipped AI articles with no sources and a zeroed AI disclosure.
-const applyAiFinal = (generated: Record<string, any>) => {
-  optimizedImageUrl.value = ''
-  Object.assign(editedArticle.value, {
-    title: generated.title,
-    excerpt: generated.perex,
-    content: generated.content,
-    imageUrl: generated.articleImageUrl,
-    imageCredit: generated.articleImageCredit ?? null,
-    sources: generated.sources ?? [],
-    answer: generated.answer ?? null,
-    keyTakeaways: generated.keyTakeaways ?? [],
-    faq: generated.faq ?? [],
-    savedAmount: generated.metrics?.savedAmount ?? 0,
-    savedTimeMinutes: generated.metrics?.savedTimeMinutes ?? 0,
-    aiInvolvement: generated.aiInvolvement || 'ASSIST',
-  })
-  // The model picks from the tag list it was given, so these are ids the POST can connect.
-  if (generated.tags?.length) articleTags.value = generated.tags
-  // There is an article now, so the composer has done its job and stops occupying the top of
-  // the page. The chip reopens it if the author wants another pass.
-  aiOpen.value = false
+const generateAIContent = async () => {
+  aiGenerating.value = true
+  aiPhase.value = 'writing'
+  try {
+    const outcome = await streamGenerate(customPrompt.value || 'Empty...', {
+      onPartial: (partial) => {
+        if (partial.title != null) editedArticle.value.title = partial.title
+        if (partial.perex != null) editedArticle.value.excerpt = partial.perex
+        if (partial.content != null) editedArticle.value.content = partial.content
+      },
+      onPhase: (phase) => (aiPhase.value = phase),
+      onImage: ({ slot, html }) => {
+        editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
+      },
+      onFinal: (article) => {
+        Object.assign(editedArticle.value, {
+          title: article.title,
+          excerpt: article.perex,
+          content: article.content,
+          imageUrl: article.articleImageUrl,
+        })
+      },
+    })
+    if (outcome === 'aborted') toast.add({ color: 'info', title: 'AI Generation Stopped' })
+    else toast.add({ color: 'success', title: 'AI Content Generated' })
+  } catch {
+    toast.add({ color: 'error', title: 'AI Generation Failed' })
+  } finally {
+    aiGenerating.value = false
+  }
 }
 
 const submit = async (targetStatus: 'draft' | 'published') => {
   if (submitting.value) return
-  if (!editedArticle.value.title)
-    return toast.error({ message: t('common.messages.requiredField', [t('common.labels.title')]) })
+  if (!editedArticle.value.title) return toast.add({ color: 'error', title: 'Title is required' })
 
-  const releaseAt = editedArticle.value.releaseAt
-    ? new Date(editedArticle.value.releaseAt)
-    : null
+  const releaseAt = editedArticle.value.releaseAt ? new Date(editedArticle.value.releaseAt) : null
   const schedulesForLater = targetStatus === 'published' && !!releaseAt && releaseAt.getTime() > Date.now()
   const effectiveStatus = schedulesForLater ? 'draft' : targetStatus
 
   const payload = {
     ...editedArticle.value,
-    status: effectiveStatus,
-    imageUrl: optimizedImageUrl.value || editedArticle.value.imageUrl,
+    status: targetStatus,
+    imageUrl: editedArticle.value.imageUrl,
     articleSeriesId: selectedSeries.value?.id || null,
     tags: articleTags.value,
     releaseAt,
+    sources: (editedArticle.value.sources ?? []).map((source) => source.trim()).filter(Boolean),
   }
 
   submitting.value = true
   try {
     if (isNew) {
       const created = await $fetch<{ slug: string }>('/api/articles', { method: 'POST', body: payload })
-      toast.success({ message: t('articles.editor.createSuccess') })
+      toast.add({ color: 'success', title: targetStatus === 'published' ? 'Article published' : 'Draft created' })
       await invalidateArticlesAndStats()
       // The route param is the slug, and changing it remounts the page (Nuxt's default page key
       // interpolates params) — which is what we want exactly once: `useArticleTranslations` bakes
       // the article id into its fetch URL at construction, so it has to be rebuilt against the
       // saved article before the language tabs mean anything.
+      allowNavigation.value = true
       await router.replace(localePath({ name: 'admin-editor-id', params: { id: created.slug } }))
     } else {
       await $fetch(`/api/articles/${article.value!.id}`, { method: 'PATCH', body: payload })
-      toast.success({ message: t('common.messages.saveSuccess') })
+      toast.add({ color: 'success', title: 'Article updated' })
       await invalidateArticles()
       // Stay in the document. Re-baseline the two fields `hasChanges` compares, or leaving would
       // prompt to discard work that is already saved.
       article.value = { ...article.value!, title: payload.title, content: payload.content }
       editedArticle.value.status = effectiveStatus
+      editedArticle.value.sources = payload.sources
+      sourceBaseline.value = serializeSourceState()
     }
   } catch (e: any) {
-    toast.error({ message: e.data?.message || t('common.messages.saveFailed') })
+    toast.add({ color: 'error', title: e.data?.message || 'Error saving article' })
   } finally {
     submitting.value = false
   }
@@ -683,9 +704,23 @@ const submit = async (targetStatus: 'draft' | 'published') => {
 const hasChanges = computed(() => {
   // A rewritten translation is unsaved work too — leaving would drop it just as silently.
   if (tr.isDirty) return true
-  if (isNew) return !isBlank.value
-  return editedArticle.value.title !== article.value?.title || editedArticle.value.content !== article.value?.content
+  return serializeSourceState() !== sourceBaseline.value
 })
+
+const allowNavigation = shallowRef(false)
+
+onBeforeRouteLeave(() => {
+  if (allowNavigation.value || !hasChanges.value) return true
+  discardConfirmOpen.value = true
+  return false
+})
+
+if (import.meta.client) {
+  useEventListener(window, 'beforeunload', (event) => {
+    if (!hasChanges.value) return
+    event.preventDefault()
+  })
+}
 
 const goBack = () => {
   if (hasChanges.value) {
@@ -697,7 +732,13 @@ const goBack = () => {
 
 const confirmDiscard = () => {
   discardConfirmOpen.value = false
+  allowNavigation.value = true
   router.push(localePath({ name: 'admin' }))
+}
+
+const discardTranslation = async () => {
+  await tr.discard()
+  discardTranslationOpen.value = false
 }
 
 watch(

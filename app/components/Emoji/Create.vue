@@ -18,7 +18,7 @@
           </div>
         </div>
 
-        <button
+        <UButton
           type="button"
           class="group flex min-h-24 w-full items-center gap-4 rounded-2xl border border-dashed px-5 py-4 text-left transition-colors"
           :class="
@@ -44,7 +44,7 @@
             <span class="mt-1 block text-xs text-neutral-500 dark:text-neutral-400">{{ $t('emoji.dropHint') }}</span>
           </div>
           <Icon name="mdi:chevron-right" class="hidden size-5 text-neutral-400 sm:block" />
-        </button>
+        </UButton>
 
         <div v-if="queue.length" class="grid items-start gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div class="rounded-2xl bg-neutral-100/70 p-2 dark:bg-neutral-800/50">
@@ -68,7 +68,7 @@
                     : 'hover:bg-white/70 dark:hover:bg-neutral-700/60'
                 "
               >
-                <button
+                <UButton
                   type="button"
                   class="relative grid size-11 place-items-center rounded-lg bg-white ring-1 transition dark:bg-neutral-800"
                   :class="
@@ -79,7 +79,7 @@
                   :aria="$t('emoji.previewAria', { shortcode: item.shortcode })"
                   @click="selectedPreviewId = item.id"
                 >
-                  <img :src="item.previewUrl" :alt="item.shortcode" class="size-7 object-contain" />
+                  <NuxtImg :src="item.previewUrl" :alt="item.shortcode" class="size-7 object-contain" />
                   <span
                     v-if="selectedPreview?.id === item.id"
                     class="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-indigo-500 text-white ring-2 ring-white dark:ring-neutral-700"
@@ -87,10 +87,10 @@
                   >
                     <Icon name="mdi:eye" class="size-2.5" />
                   </span>
-                </button>
+                </UButton>
 
                 <label class="min-w-0">
-                  <input
+                  <UInput
                     v-model="item.shortcode"
                     maxlength="50"
                     :aria-label="$t('common.labels.shortcode')"
@@ -112,11 +112,11 @@
                   </p>
                 </label>
 
-                <Button
+                <UButton
                   type="button"
                   square
                   size="sm"
-                  variant="transparent"
+                  variant="ghost"
                   icon="mdi:close"
                   :disabled="submitting"
                   :aria="$t('emoji.removeFromQueue')"
@@ -152,7 +152,7 @@
               name="mdi:magnify"
               class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
             />
-            <input
+            <UInput
               v-model="search"
               type="search"
               :placeholder="$t('emoji.searchPlaceholder')"
@@ -187,11 +187,11 @@
                 </p>
               </div>
             </div>
-            <Button
+            <UButton
               type="button"
               square
               size="sm"
-              variant="transparent"
+              variant="ghost"
               icon="mdi:delete-outline"
               class="text-red-500"
               :loading="deletingIds.has(emoji.id)"
@@ -211,16 +211,16 @@
 
     <template #footer>
       <div class="mt-6 flex flex-shrink-0 justify-end gap-3 border-t pt-4">
-        <Button type="button" variant="neutral" size="lg" :disabled="submitting" @click="confirmClose">{{
+        <UButton type="button" color="neutral" variant="soft" size="lg" :disabled="submitting" @click="confirmClose">{{
           $t('common.messages.deleteCancel')
-        }}</Button>
-        <Button :loading="submitting" :disabled="!canSubmit" @click="submitQueue">
+        }}</UButton>
+        <UButton :loading="submitting" :disabled="!canSubmit" @click="submitQueue">
           {{ queue.length > 1 ? $t('emoji.createMany', { count: queue.length }) : $t('emoji.create') }}
-        </Button>
+        </UButton>
       </div>
     </template>
   </Modal>
-  <ModalMini ref="dialog" />
+  <AppConfirmDialog ref="dialog" />
 </template>
 
 <script setup lang="ts">
@@ -244,9 +244,9 @@ interface EmojiRecord {
 const MAX_SOURCE_BYTES = 5 * 1024 * 1024
 const ACCEPTED_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
 
-const toast = useToast()
+const toast = useAppToast()
 const open = defineModel<boolean>()
-const dialog = useTemplateRef<ModalMiniRef>('dialog')
+const dialog = useTemplateRef<{ ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'> }>('dialog')
 const queue = ref<QueuedEmoji[]>([])
 const selectedPreviewId = shallowRef('')
 const search = shallowRef('')

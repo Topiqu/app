@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <button
+    <UButton
       type="button"
       class="group relative flex size-36 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm transition hover:border-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-500 dark:border-gray-700 dark:bg-gray-800"
       :aria-label="$t('common.preferences.companyLogo.edit')"
@@ -21,15 +21,15 @@
       >
         <Icon name="mdi:image-edit-outline" class="size-8" />
       </span>
-    </button>
+    </UButton>
 
     <div class="flex flex-wrap gap-2">
-      <Button variant="neutral" size="sm" icon="mdi:image-edit-outline" @click="openEditor">
+      <UButton color="neutral" variant="soft" size="sm" icon="mdi:image-edit-outline" @click="openEditor">
         {{ logoUrl ? $t('common.preferences.companyLogo.edit') : $t('common.actions.clickToUpload') }}
-      </Button>
-      <Button v-if="logoUrl" variant="danger" size="sm" icon="mdi:delete-outline" @click="removeLogo">
+      </UButton>
+      <UButton v-if="logoUrl" color="error" variant="soft" size="sm" icon="mdi:delete-outline" @click="removeLogo">
         {{ $t('common.preferences.companyLogo.remove') }}
-      </Button>
+      </UButton>
     </div>
 
     <Modal
@@ -40,7 +40,7 @@
     >
       <template #content>
         <div class="flex flex-col gap-5">
-          <button
+          <UButton
             v-if="!draftUrl"
             type="button"
             class="flex h-56 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-300 transition-colors hover:border-indigo-500 hover:bg-indigo-50/50 dark:border-gray-600 dark:hover:bg-indigo-950/20"
@@ -49,7 +49,7 @@
             <Icon name="mdi:image-plus-outline" class="size-10 text-indigo-500" />
             <span class="font-medium">{{ $t('common.avatar.chooseImage') }}</span>
             <span class="text-xs text-gray-500">{{ $t('common.avatar.requirements') }}</span>
-          </button>
+          </UButton>
 
           <template v-else>
             <div
@@ -58,7 +58,7 @@
               :style="{ width: `${LOGO_VIEWPORT_WIDTH}px`, height: `${LOGO_VIEWPORT_HEIGHT}px` }"
               :class="isSwiping ? 'cursor-grabbing' : 'cursor-grab'"
             >
-              <img
+              <NuxtImg
                 :src="draftUrl"
                 alt=""
                 draggable="false"
@@ -73,7 +73,7 @@
             <p class="text-center text-xs text-gray-500">{{ $t('common.preferences.companyLogo.dragHint') }}</p>
             <label class="flex items-center gap-3 text-sm">
               <Icon name="mdi:magnify-plus-outline" class="size-5" />
-              <input
+              <UInput
                 v-model.number="zoom"
                 type="range"
                 min="0.5"
@@ -84,19 +84,32 @@
               />
             </label>
             <div class="flex flex-wrap justify-center gap-2">
-              <Button variant="neutral" size="sm" icon="mdi:rotate-left" :disabled="busy" @click="rotation -= 90">{{
-                $t('common.avatar.rotateLeft')
-              }}</Button>
-              <Button variant="neutral" size="sm" icon="mdi:rotate-right" :disabled="busy" @click="rotation += 90">{{
-                $t('common.avatar.rotateRight')
-              }}</Button>
-              <Button
-                variant="neutral"
+              <UButton
+                color="neutral"
+                variant="soft"
+                size="sm"
+                icon="mdi:rotate-left"
+                :disabled="busy"
+                @click="rotation -= 90"
+                >{{ $t('common.avatar.rotateLeft') }}</UButton
+              >
+              <UButton
+                color="neutral"
+                variant="soft"
+                size="sm"
+                icon="mdi:rotate-right"
+                :disabled="busy"
+                @click="rotation += 90"
+                >{{ $t('common.avatar.rotateRight') }}</UButton
+              >
+              <UButton
+                color="neutral"
+                variant="soft"
                 size="sm"
                 icon="mdi:image-edit-outline"
                 :disabled="busy"
                 @click="chooseFile()"
-                >{{ $t('common.actions.change') }}</Button
+                >{{ $t('common.actions.change') }}</UButton
               >
             </div>
           </template>
@@ -113,10 +126,12 @@
 
       <template #footer>
         <div class="flex w-full justify-end gap-2">
-          <Button variant="neutral" size="lg" :disabled="busy" @click="closeEditor">{{ $t('common.close') }}</Button>
-          <Button v-if="draftUrl" size="lg" icon="mdi:check" :loading="busy" @click="saveLogo">{{
+          <UButton color="neutral" variant="soft" size="lg" :disabled="busy" @click="closeEditor">{{
+            $t('common.close')
+          }}</UButton>
+          <UButton v-if="draftUrl" size="lg" icon="mdi:check" :loading="busy" @click="saveLogo">{{
             $t('common.preferences.companyLogo.save')
-          }}</Button>
+          }}</UButton>
         </div>
       </template>
     </Modal>

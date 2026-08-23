@@ -13,19 +13,14 @@
       </div>
 
       <div
-        class="relative overflow-hidden bg-gray-50/50 dark:bg-gray-900/20"
+        class="relative overflow-hidden"
         :style="{
           width: props.width || '100%',
           minHeight: loading ? reservedHeight : 'auto',
           height: props.sizes === 'fluid' ? 'auto' : props.height || 'auto',
         }"
       >
-        <div
-          v-if="loading"
-          class="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 animate-pulse rounded-sm"
-        >
-          <span class="text-xs font-medium text-gray-400">{{ $t('common.loading') }}</span>
-        </div>
+        <USkeleton v-if="loading" class="absolute inset-0 z-10" :aria-label="$t('common.loading')" />
 
         <div :id="internalSlotId"></div>
       </div>

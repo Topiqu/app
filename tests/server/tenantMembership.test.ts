@@ -3,8 +3,13 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 
 import { resolveAuthRedirect } from '../../app/utils/authRedirect'
-import { invitationEmail, invitationToken, invitationTokenHash, invitationUrl } from '../../server/utils/tenantInvitation'
 import { hasTenantScope, TENANT_SCOPES } from '../../server/utils/tenantMembership'
+import {
+  invitationEmail,
+  invitationToken,
+  invitationTokenHash,
+  invitationUrl,
+} from '../../server/utils/tenantInvitation'
 
 describe('tenant invitations', () => {
   it('generates a locale-prefixed URL that works on a cold page load', () => {
@@ -43,7 +48,10 @@ describe('tenant authorization', () => {
   })
 
   it('enforces one owner and tenant-scoped uniqueness in the migration', () => {
-    const sql = readFileSync(resolve(process.cwd(), 'prisma/migrations/20260813130000_tenant_memberships/migration.sql'), 'utf8')
+    const sql = readFileSync(
+      resolve(process.cwd(), 'prisma/migrations/20260813130000_tenant_memberships/migration.sql'),
+      'utf8',
+    )
     expect(sql).toContain('"TenantMembership_one_owner"')
     expect(sql).toContain('"TenantMembership_clientSiteId_userId_key"')
     expect(sql).toContain('WHERE "role" = \'OWNER\'')
@@ -60,7 +68,9 @@ describe('tenant audit trail', () => {
       'server/api/tenant/members/[id].patch.ts',
       'server/api/tenant/members/[id].delete.ts',
       'server/api/tenant/active.post.ts',
-    ].map((file) => readFileSync(resolve(process.cwd(), file), 'utf8')).join('\n')
+    ]
+      .map((file) => readFileSync(resolve(process.cwd(), file), 'utf8'))
+      .join('\n')
 
     for (const action of [
       'TENANT_INVITATION_CREATED',
@@ -71,7 +81,8 @@ describe('tenant audit trail', () => {
       'TENANT_MEMBER_SCOPES_CHANGED',
       'TENANT_MEMBER_REMOVED',
       'ACTIVE_TENANT_CHANGED',
-    ]) expect(files).toContain(`action: '${action}'`)
+    ])
+      expect(files).toContain(`action: '${action}'`)
   })
 })
 
@@ -139,8 +150,9 @@ describe('tenant boundary wiring', () => {
 
 describe('invitation onboarding wiring', () => {
   it('uses the invitation as the OAuth callback instead of the sign-in page', () => {
-    expect(resolveAuthRedirect('https://tenant.topiqu.com/en/autorizace?invitation=token', '/en/invitation/token'))
-      .toBe('https://tenant.topiqu.com/en/invitation/token')
+    expect(
+      resolveAuthRedirect('https://tenant.topiqu.com/en/autorizace?invitation=token', '/en/invitation/token'),
+    ).toBe('https://tenant.topiqu.com/en/invitation/token')
   })
   const source = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8')
 
@@ -165,6 +177,8 @@ describe('invitation onboarding wiring', () => {
     expect(form).toContain('callbackUrl: finalRedirectUrl')
     expect(auth).toContain('verifiedGoogleEmail(profile)')
     expect(auth).toContain('verifiedGitHubEmail(emails)')
-    expect(source('server/api/invitations/[token].post.ts')).toContain('invitationEmail(user.email) !== invitation.email')
+    expect(source('server/api/invitations/[token].post.ts')).toContain(
+      'invitationEmail(user.email) !== invitation.email',
+    )
   })
 })

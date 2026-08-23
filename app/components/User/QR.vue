@@ -2,16 +2,16 @@
   <div class="space-y-4">
     <div v-if="!enabled && !showForm" class="flex items-start justify-between gap-3">
       <p class="text-sm text-neutral-500 dark:text-neutral-400 text-pretty">{{ $t('profile.scanTotp') }}</p>
-      <Button :disabled="isLoading" icon="mdi:shield-lock-outline" class="shrink-0" @click="enable2FA">
+      <UButton :disabled="isLoading" icon="i-mdi-shield-lock-outline" class="shrink-0" @click="enable2FA">
         {{ $t('profile.enable2FA') }}
-      </Button>
+      </UButton>
     </div>
 
     <template v-if="otpauthUrl">
       <UserTotpQr :otpauthUrl="otpauthUrl" />
 
       <div v-if="showForm" class="mx-auto max-w-xs space-y-2">
-        <FormInput
+        <UInput
           v-model="totpCode"
           type="tel"
           name="totpCode"
@@ -19,30 +19,31 @@
           inputmode="numeric"
           autocomplete="one-time-code"
           :placeholder="$t('profile.enterTotpCode')"
-          :inputClass="error ? '!border-red-500' : ''"
         />
         <p v-if="error" class="text-xs text-red-600 dark:text-red-400">{{ error }}</p>
-        <Button
+        <UButton
           :disabled="isLoading || !totpCode"
-          icon="mdi:check-circle-outline"
-          variant="success"
+          icon="i-mdi-check-circle-outline"
+          color="success"
+          variant="soft"
           class="w-full"
           @click="verifyTotpCode"
         >
           {{ $t('profile.verify2FA') }}
-        </Button>
+        </UButton>
       </div>
 
-      <Button
+      <UButton
         v-else-if="enabled"
         :disabled="isLoading"
-        icon="mdi:shield-off-outline"
-        variant="danger"
+        icon="i-mdi-shield-off-outline"
+        color="error"
+        variant="soft"
         class="mx-auto w-full max-w-xs"
         @click="disable2FA"
       >
         {{ $t('profile.disable2FA') }}
-      </Button>
+      </UButton>
     </template>
   </div>
 </template>

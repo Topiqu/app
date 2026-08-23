@@ -50,6 +50,12 @@ enum SocialPlatform {
     OTHER
 }
 
+enum PublicationTypography {
+    MODERN
+    EDITORIAL
+    SYSTEM
+}
+
 model Social {
     id           String         @id @default(uuid())
     platform     SocialPlatform
@@ -76,7 +82,10 @@ model ClientSite extends Base {
     plan                 ClientPlan          @default(BASIC)
     focus                String?
     description          String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
+    tagline              String?             @length(0, 80, "Tagline musí mít max. 80 znaků")
     logoUrl              String?             @length(0, 255, "URL loga musí mít max. 255 znaků")
+    faviconUrl           String?             @length(0, 255, "URL faviconu musí mít max. 255 znaků")
+    typographyPreset     PublicationTypography @default(MODERN)
     generationFrequency  GenerationFrequency @default(NONE)
     tokenLimit           Int?                @default(0)
     tokenRemaining       Int?                @default(0)

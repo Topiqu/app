@@ -84,7 +84,7 @@ export default defineEventHandler(async (event) => {
       LIMIT 8
     `,
     db.article.findFirst({
-      where: { clientSiteId, status: 'published' },
+      where: { clientSiteId: user.clientSiteId },
       select: { id: true, slug: true, title: true, views: true },
       orderBy: { views: 'desc' },
     }),
@@ -99,12 +99,12 @@ export default defineEventHandler(async (event) => {
       take: 1,
     }),
     db.article.findFirst({
-      where: { clientSiteId, status: 'published' },
+      where: { clientSiteId: user.clientSiteId, status: 'published' },
       select: { id: true, slug: true, title: true, _count: { select: { comments: true } } },
       orderBy: { comments: { _count: 'desc' } },
     }),
     db.article.findFirst({
-      where: { clientSiteId, status: 'published' },
+      where: { clientSiteId: user.clientSiteId, status: 'published' },
       select: { id: true, slug: true, title: true, _count: { select: { reactions: true } } },
       orderBy: { reactions: { _count: 'desc' } },
     }),
@@ -161,10 +161,20 @@ export default defineEventHandler(async (event) => {
         ? { username: topAuthor.username, avatarUrl: topAuthor.avatarUrl, articleCount: topAuthorRow._count._all }
         : null,
     topCommentedArticle: topCommented
-      ? { slug: topCommented.slug, title: topCommented.title, comments: topCommented._count.comments }
+      ? {
+          id: topCommented.id,
+          slug: topCommented.slug,
+          title: topCommented.title,
+          comments: topCommented._count.comments,
+        }
       : null,
     topLikedArticle: topLiked
-      ? { slug: topLiked.slug, title: topLiked.title, likes: topLiked._count.reactions }
+      ? {
+          id: topLiked.id,
+          slug: topLiked.slug,
+          title: topLiked.title,
+          likes: topLiked._count.reactions,
+        }
       : null,
     topTags: tagRows as { name: string; views: number; articleCount: number }[],
     // Dates stay ISO; the client localises.

@@ -17,20 +17,5 @@ services:
       timeout: 5s
       retries: 10
 
-  valkey:
-    image: valkey/valkey:8.1-alpine
-    container_name: rasg-blog-cache
-    restart: unless-stopped
-    # Cache-only: no persistence, and volatile-lru so the TTL-less gen:* counters
-    # are never the thing evicted (only keys carrying a TTL are candidates).
-    command: ['valkey-server', '--maxmemory', '256mb', '--maxmemory-policy', 'volatile-lru', '--save', '']
-    ports:
-      - '${REDIS_HOST_PORT:-6379}:6379'
-    healthcheck:
-      test: ['CMD', 'valkey-cli', 'ping']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
 volumes:
   rasg-blog-db:

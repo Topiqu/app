@@ -62,7 +62,7 @@ describe('credential login wiring', () => {
 
   it('does not continue after NextAuth returns a failed sign-in result', () => {
     const form = source('app/components/Auth/Form.vue')
-    expect(form).toContain('if (result?.error) throw createError')
+    expect(form).toMatch(/if \(result\?\.error\)\s+throw createError/)
     expect(form.match(/signInWithCredentials\(/g)).toHaveLength(3)
   })
 })

@@ -1,10 +1,11 @@
 <template>
-  <figure class="rounded-lg shadow p-6 mt-6">
+  <UCard as="figure" class="mt-6">
     <figcaption class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">{{ title }}</h2>
-      <Button
-        variant="neutral"
-        class="!rounded-full"
+      <UButton
+        color="neutral"
+        variant="soft"
+        square
         :icon="nextTypeIcon"
         :aria-label="$t('stats.charts.toggleType')"
         @click="toggleType"
@@ -20,44 +21,13 @@
       <summary class="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
         {{ $t('stats.charts.showTable') }}
       </summary>
-      <table class="mt-3 w-full text-left tabular-nums">
-        <thead>
-          <tr class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-            <th scope="col" class="py-1 font-medium">{{ categoryHeading }}</th>
-            <th scope="col" class="py-1 font-medium text-right">{{ label }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(name, i) in labels" :key="name" class="border-t border-gray-100 dark:border-gray-800">
-            <td class="py-1.5">
-              <span class="inline-flex items-center gap-2.5">
-                <!-- The icon carries the series colour itself, so the row needs one mark instead
-                     of swatch + glyph. Only a breakdown colours by entity; a trend is one series,
-                     so colouring there would invent a distinction the chart does not make. -->
-                <Icon
-                  v-if="icons?.[i]"
-                  :name="icons[i]!"
-                  class="size-5 shrink-0 text-gray-400"
-                  :style="isBreakdown ? { color: palette[i % palette.length] } : undefined"
-                  aria-hidden="true"
-                />
-                <span
-                  v-else-if="isBreakdown"
-                  class="size-2.5 shrink-0 rounded-full ring-2 ring-white dark:ring-neutral-900"
-                  :style="{ backgroundColor: palette[i % palette.length] }"
-                />
-                {{ name }}
-              </span>
-            </td>
-            <td class="py-1.5 text-right">{{ values[i] ?? 0 }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <UTable :data="tableRows" :columns="tableColumns" />
     </details>
-  </figure>
+  </UCard>
 </template>
 
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
 import type { Chart, ChartOptions, Plugin } from 'chart.js'
 
 import { Bar, Line, Pie } from 'vue-chartjs'
@@ -136,6 +106,11 @@ const currentChart = computed(() => {
 })
 
 const isBreakdown = computed(() => props.kind === 'breakdown')
+const tableRows = computed(() => props.labels.map((category, index) => ({ category, value: props.values[index] ?? 0 })))
+const tableColumns = computed<TableColumn<(typeof tableRows.value)[number]>[]>(() => [
+  { accessorKey: 'category', header: props.categoryHeading },
+  { accessorKey: 'value', header: props.label },
+])
 
 const chartData = computed(() => {
   // A trend is one series, so it is one colour; a breakdown colours by entity, which is

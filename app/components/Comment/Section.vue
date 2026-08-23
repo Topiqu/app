@@ -1,96 +1,95 @@
 <template>
-  <div class="w-full mx-auto mt-14">
-    <div class="flex items-center gap-3 mb-10">
-      <Icon name="mdi:comment-multiple-outline" class="w-8 h-8 text-blue-600" />
+  <section class="mx-auto mt-14 w-full" :aria-label="$t('articles.comments.title')">
+    <div class="mb-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <UIcon size="32" name="i-mdi-comment-multiple-outline" />
       <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
-        {{ $t('articles.comments.title') }} <span class="text-xl text-gray-500">({{ commCount }})</span>
+        {{ $t('articles.comments.title') }} <span class="text-xl text-muted">({{ commCount }})</span>
       </h2>
-      <div class="ml-auto flex items-center gap-2">
-        <FormSelect v-model="sort" :items="sortItems" :showValue="false" />
+      <div class="flex items-center gap-2 sm:ml-auto">
+        <UFormField :label="$t('articles.comments.title')" :ui="{ label: 'sr-only' }">
+          <div class="min-w-48">
+            <USelectMenu v-model="sort" valueKey="value" labelKey="label" :searchInput="false" :items="sortItems" />
+          </div>
+        </UFormField>
       </div>
     </div>
-    <div
-      v-if="session?.user && props.allowComments"
-      ref="commentForm"
-      class="mb-14 p-8 rounded-3xl shadow-xl border border-gray-200"
-    >
-      <form class="space-y-6" @submit.prevent="submitComment">
-        <div class="space-y-2">
-          <label for="comment" class="block text-base font-semibold flex items-center gap-2">
-            <Icon name="mdi:pencil-outline" class="w-5 h-5" />
-            {{ $t('articles.comments.yourComment') }}
-          </label>
-          <div class="relative">
-            <Icon name="mdi:comment-outline" class="absolute left-4 top-4 w-5 h-5 text-gray-400 pointer-events-none" />
-            <textarea
-              id="comment"
-              v-model="newComment"
-              :maxlength="maxLength"
-              class="w-full pl-12 pr-10 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm resize-y min-h-[100px]"
-              :placeholder="$t('articles.comments.commentPlaceholder')"
-              required
-              :disabled="isSubmitting"
-            />
-            <div class="absolute right-2 top-2">
-              <GifSelector @select="handleGifSelect" />
+    <div v-if="session?.user && props.allowComments" ref="commentForm" class="mb-10">
+      <UForm :state="commentState" @submit.prevent="submitComment">
+        <div class="space-y-6">
+          <UFormField :label="$t('articles.comments.yourComment')" name="comment">
+            <div class="relative">
+              <UTextarea
+                id="comment"
+                v-model="newComment"
+                :maxlength="maxLength"
+                class="min-h-[100px] w-full"
+                :ui="{ leading: 'items-center self-stretch', trailing: 'items-start pt-1.5' }"
+                :placeholder="$t('articles.comments.commentPlaceholder')"
+                required
+                :disabled="isSubmitting"
+              >
+                <template #leading><UIcon name="i-mdi-comment-outline" size="20" class="text-muted" /></template>
+                <template #trailing><GifSelector @select="handleGifSelect" /></template>
+              </UTextarea>
+              <div class="mt-1 flex justify-between text-xs text-muted">
+                <span>{{ characterCount }} / {{ maxLength }}</span>
+                <UBadge v-if="characterCount >= maxLength" color="error" variant="soft" size="sm">
+                  {{ $t('articles.comments.characterLimitReached') }}
+                </UBadge>
+              </div>
+              <Gif v-model:content="selectedGifUrl" cancellable />
             </div>
-            <div class="flex justify-between text-xs text-gray-500 mt-1">
-              <span>{{ characterCount }} / {{ maxLength }}</span>
-              <span v-if="characterCount >= maxLength" class="text-red-500 font-medium">
-                {{ $t('articles.comments.characterLimitReached') }}
-              </span>
-            </div>
-            <Gif v-model:content="selectedGifUrl" cancellable />
-          </div>
+          </UFormField>
+          <UAlert
+            v-if="replyingTo"
+            color="info"
+            variant="soft"
+            icon="i-mdi-reply"
+            :title="$t('articles.comments.replyingTo', [replyingTo.user?.username || $t('common.user.notAvailable')])"
+            :description="replyingTo.content"
+          >
+            <template #actions>
+              <UButton
+                icon="i-mdi-close"
+                size="sm"
+                color="error"
+                variant="ghost"
+                square
+                :aria-label="$t('common.cancelAction')"
+                @click="replyingTo = null"
+              />
+            </template>
+          </UAlert>
+          <UButton
+            type="submit"
+            :loading="isSubmitting"
+            :disabled="isSubmitting || !!(replyingTo && replyingTo.deletedAt)"
+          >
+            {{ replyingTo ? $t('articles.comments.submitReply') : $t('articles.comments.addComment') }}
+          </UButton>
         </div>
-        <div
-          v-if="replyingTo"
-          class="flex flex-col gap-3 text-sm text-gray-700 bg-blue-50/60 p-3 rounded-xl border border-blue-200"
-        >
-          <div class="flex items-center gap-3">
-            <Icon name="mdi:reply" class="w-4 h-4 text-gray-500" />
-            <span>
-              {{ $t('articles.comments.replyingTo', [replyingTo.user?.username || $t('common.user.notAvailable')]) }}
-            </span>
-            <Button
-              icon="mdi:close"
-              size="sm"
-              variant="danger"
-              square
-              :title="$t('common.cancelAction')"
-              class="!rounded-full ml-auto"
-              @click="replyingTo = null"
-            />
-          </div>
-          <div class="text-sm text-gray-600 italic bg-white p-2 rounded-lg border border-gray-100">
-            {{ replyingTo.content }}
-          </div>
-        </div>
-        <Button
-          type="submit"
-          :loading="isSubmitting"
-          :disabled="isSubmitting || !!(replyingTo && replyingTo.deletedAt)"
-        >
-          {{ replyingTo ? $t('articles.comments.submitReply') : $t('articles.comments.addComment') }}
-        </Button>
-      </form>
+      </UForm>
     </div>
-    <p v-else-if="session?.user && !props.allowComments" class="text-gray-600 mb-14 text-base text-center">
-      {{ $t('articles.comments.commentsDisabled') }}
-    </p>
-    <p v-else class="text-gray-600 mb-14 text-base text-center">
-      <NuxtLink to="/autorizace" class="text-blue-600 hover:underline font-medium cursor-pointer">
-        {{ $t('common.auth.login') }}
-      </NuxtLink>
-      {{ $t('common.auth.loginToComment') }}
-    </p>
-    <div v-if="loading && !comments.length" class="flex justify-center mb-10">
-      <Icon name="mdi:loading" class="w-8 h-8 text-blue-600 animate-spin" />
-    </div>
-    <div v-else-if="error" class="text-center p-6 bg-red-50 rounded-2xl shadow border border-gray-200">
-      <Icon name="mdi:alert-circle" class="w-8 h-8 text-red-500 mx-auto mb-2" />
-      <p class="text-gray-700">{{ $t('articles.comments.errorLoadingComments', { 0: error.message }) }}</p>
-    </div>
+    <UAlert
+      v-else-if="session?.user && !props.allowComments"
+      color="neutral"
+      variant="soft"
+      :title="$t('articles.comments.commentsDisabled')"
+    />
+    <UAlert v-else class="mb-10" color="info" variant="soft" :title="$t('common.auth.loginToComment')">
+      <template #actions>
+        <UButton :to="localePath({ name: 'autorizace' })" color="primary" variant="solid" size="sm">
+          {{ $t('common.auth.login') }}
+        </UButton>
+      </template>
+    </UAlert>
+    <UProgress v-if="loading && !comments.length" class="mb-10" />
+    <UAlert
+      v-else-if="error"
+      color="error"
+      icon="i-mdi-alert-circle"
+      :title="$t('articles.comments.errorLoadingComments', { 0: error.message })"
+    />
     <div v-else-if="filteredComments.length" class="w-full max-w-full p-0.25 space-y-6">
       <Comment
         v-for="comment in filteredComments"
@@ -105,15 +104,16 @@
         @refresh="refresh"
       />
       <div ref="sentinel" class="h-4"></div>
-      <div v-if="loading" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
-        {{ $t('common.loading') }}
-      </div>
-      <div v-if="!hasMore && comments.length" class="text-center text-neutral-500 dark:text-neutral-300 py-4 text-sm">
-        {{ $t('articles.comments.noComments') }}
-      </div>
+      <UProgress v-if="loading" />
+      <UAlert
+        v-if="!hasMore && comments.length"
+        color="neutral"
+        variant="subtle"
+        :title="$t('articles.comments.noComments')"
+      />
     </div>
-    <p v-else class="text-gray-600 text-center text-base">{{ $t('articles.comments.noComments') }}</p>
-  </div>
+    <UEmpty v-else icon="i-mdi-comment-off-outline" :title="$t('articles.comments.noComments')" />
+  </section>
 </template>
 
 <script lang="ts" setup>
@@ -127,6 +127,8 @@ interface GiphyGif {
 
 const toast = useToast(),
   { data: session } = useAuth()
+const confirm = useConfirm()
+const localePath = useLocalePath()
 const props = defineProps<{ articleId: string; commCount: number; allowComments: boolean }>()
 
 const newComment = shallowRef(''),
@@ -135,11 +137,12 @@ const newComment = shallowRef(''),
   replyingTo = ref<CommentWithReplies | null>(null),
   commentForm = useTemplateRef<HTMLElement>('commentForm'),
   sentinel = useTemplateRef('sentinel')
+const commentState = computed(() => ({ comment: newComment.value }))
 const sort = shallowRef('createdAt:desc'),
   sortItems = [
-    { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'mdi:clock-outline' },
-    { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'mdi:clock-time-twelve-outline' },
-    { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'mdi:heart' },
+    { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'i-mdi-clock-outline' },
+    { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'i-mdi-clock-time-twelve-outline' },
+    { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'i-mdi-heart' },
   ]
 const page = shallowRef(1),
   limit = 2,
@@ -181,7 +184,11 @@ watch(
 watch(
   error,
   (e) =>
-    e && toast.error({ message: $t('articles.comments.errorLoadingComments', { 0: e.message || $t('common.error') }) }),
+    e &&
+    toast.add({
+      color: 'error',
+      title: $t('articles.comments.errorLoadingComments', { 0: e.message || $t('common.error') }),
+    }),
 )
 useInfiniteScroll(
   sentinel,
@@ -191,11 +198,6 @@ useInfiniteScroll(
     await refresh()
   },
   { distance: 100, interval: 300 },
-)
-onClickOutside(
-  commentForm,
-  (e) =>
-    replyingTo.value && commentForm.value && !commentForm.value.contains(e.target as Node) && (replyingTo.value = null),
 )
 const handleGifSelect = (g: GiphyGif) => (selectedGifUrl.value = g.images.original.url)
 
@@ -213,8 +215,9 @@ const submitComment = async () => {
         userId: session?.value?.user?.id,
       },
     })
-    toast.success({
-      message: replyingTo.value ? $t('articles.comments.replySubmitted') : $t('articles.comments.commentAdded'),
+    toast.add({
+      color: 'success',
+      title: replyingTo.value ? $t('articles.comments.replySubmitted') : $t('articles.comments.commentAdded'),
     })
     newComment.value = ''
     selectedGifUrl.value = null
@@ -224,7 +227,7 @@ const submitComment = async () => {
     commCount.value += 1
     await refresh()
   } catch (e: any) {
-    toast.error({ message: e.data?.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: e.data?.message || $t('common.messages.operationFailed') })
   } finally {
     isSubmitting.value = false
   }
@@ -248,7 +251,16 @@ const markAsDeleted = (list: CommentWithReplies[], id: string): boolean => {
 }
 
 const handleDelete = async (c: CommentWithReplies, r: string | null) => {
-  if (!confirm($t('common.messages.deleteConfirmTitle'))) return
+  if (
+    !(await confirm({
+      title: $t('common.messages.deleteConfirmTitle'),
+      message: $t('common.messages.deleteConfirmText'),
+      confirmText: $t('common.actions.delete'),
+      cancelText: $t('common.messages.deleteCancel'),
+      variant: 'danger',
+    }))
+  )
+    return
 
   markAsDeleted(comments.value, c.id)
   triggerRef(comments)
@@ -258,10 +270,10 @@ const handleDelete = async (c: CommentWithReplies, r: string | null) => {
       method: 'DELETE',
       body: { reason: r },
     })
-    toast.success({ message: $t('common.messages.deleteSuccess') })
+    toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
   } catch (e) {
     console.error(e)
-    toast.error({ message: $t('common.messages.deleteFailed') })
+    toast.add({ color: 'error', title: $t('common.messages.deleteFailed') })
   }
 }
 const handleLike = (c: CommentWithReplies) => !c.deletedAt

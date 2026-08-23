@@ -1,249 +1,285 @@
 <template>
   <div class="mb-10 space-y-4 px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-center">
-      <div class="w-full max-w-xs sm:max-w-xl">
-        <FormInput
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <UFormField :label="$t('master.clientTable.search')" :ui="{ label: 'sr-only' }" class="w-full max-w-xl">
+        <UInput
           v-model="globalFilter"
-          type="text"
+          type="search"
           :placeholder="$t('master.clientTable.search')"
-          icon="material-symbols:search-rounded"
+          icon="i-mdi-magnify"
+          class="w-full"
         />
-      </div>
+      </UFormField>
+      <UButton
+        color="neutral"
+        variant="soft"
+        icon="i-mdi-filter-variant"
+        :aria-expanded="filtersOpen"
+        @click="filtersOpen = !filtersOpen"
+      >
+        {{ $t('common.labels.filters') }}
+        <UBadge v-if="activeFilterCount" color="primary" variant="solid">{{ activeFilterCount }}</UBadge>
+      </UButton>
     </div>
     <div
-      class="overflow-x-auto rounded border border-gray-300 sm:block hidden transition-opacity duration-200"
-      :class="isRefetching ? 'opacity-50 pointer-events-none' : ''"
-      :aria-busy="isRefetching"
+      v-show="filtersOpen"
+      class="grid gap-3 rounded-[var(--topiqu-surface-radius)] border border-default p-4 sm:grid-cols-2 lg:grid-cols-4"
     >
-      <table class="w-full table-auto text-sm divide-y divide-gray-200">
-        <thead class="bg-gray-100 text-left font-semibold text-black">
-          <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-            <th
-              v-for="header in headerGroup.headers"
-              :key="header.id"
-              class="px-2 sm:px-4 py-2 text-center select-none cursor-pointer group relative min-h-[48px]"
-              @click="header.column.getCanSort() ? header.column.getToggleSortingHandler()?.($event) : undefined"
-            >
-              <span v-if="!header.isPlaceholder" class="text-black flex items-center justify-center gap-2">
-                <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-                <span v-if="header.column.getCanSort()">
-                  <Icon
-                    :name="
-                      header.column.getIsSorted() === 'asc'
-                        ? 'mdi:arrow-up'
-                        : header.column.getIsSorted() === 'desc'
-                          ? 'mdi:arrow-down'
-                          : 'mdi:arrow-up-down'
-                    "
-                    class="w-4 h-4 text-blue-400"
-                  />
-                </span>
-              </span>
-            </th>
-            <th class="px-2 sm:px-4 py-2 text-center min-h-[48px]">{{ $t('master.clientTable.headers.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody v-auto-animate class="text-gray-800 dark:text-gray-200 divide-y divide-gray-200">
-          <tr v-if="loadFailed" class="text-center">
-            <td colspan="5" class="px-4 py-10">
-              <Icon name="mdi:alert-circle-outline" class="w-12 h-12 text-red-500 mx-auto" />
-              <p class="mt-4 text-xl text-gray-700 dark:text-gray-200">{{ $t('common.messages.loadFailedTitle') }}</p>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $t('common.messages.loadFailedText') }}</p>
-              <Button class="mt-4" icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
-            </td>
-          </tr>
-          <tr v-for="row in table.getRowModel().rows" v-else :key="row.id">
-            <td
-              v-for="cell in row.getVisibleCells()"
-              :key="cell.id"
-              class="px-4 py-2 break-words max-w-[240px] sm:max-w-none text-center min-h-[72px]"
-            >
-              <div class="flex items-center justify-center h-full">
-                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                <p
-                  v-if="cell.column.id === 'name'"
-                  class="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
-                  :class="row.original.deletedAt ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'"
-                >
-                  {{
-                    row.original.deletedAt
-                      ? $t('master.clientTable.status.deactivated')
-                      : $t('master.clientTable.status.active')
-                  }}
-                </p>
-              </div>
-            </td>
-            <td
-              class="px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4 min-h-[72px]"
-            >
-              <LazyClientUsers v-slot="{ open }" :clientId="row.original.id" hydrateOnInteraction>
-                <Button icon="mdi:eye" variant="success" @click="open.value = true" />
-              </LazyClientUsers>
-              <LazyClientEdit v-slot="{ open }" :client="row.original" hydrateOnInteraction @saved="invalidateClients">
-                <Button icon="mdi:pencil" variant="primary" @click="open.value = true" />
-              </LazyClientEdit>
-              <Button
-                v-if="!row.original.deletedAt"
-                icon="mdi:delete"
-                variant="danger"
-                @click="del(row.original.id, row.original.name)"
-              />
-              <Button v-else icon="mdi:lock-open" variant="warning" @click="restore(row.original.id)" />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <Pagination :page="page" :totalPages="totalPages" :prevPage="prevPage" :nextPage="nextPage" class="mt-6" />
+      <UFormField :label="$t('master.clientTable.headers.domain')"><UInput v-model="domainFilter" /></UFormField>
+      <UFormField :label="$t('master.clientTable.headers.plan')"
+        ><USelect v-model="planFilter" :items="planItems"
+      /></UFormField>
+      <UFormField :label="$t('common.labels.status')"
+        ><USelect v-model="statusFilter" :items="statusItems"
+      /></UFormField>
+      <UFormField :label="$t('common.labels.dateFrom')"><UInput v-model="dateFrom" type="date" /></UFormField>
+      <UFormField :label="$t('common.labels.dateTo')"><UInput v-model="dateTo" type="date" /></UFormField>
+      <UFormField :label="$t('common.labels.sortBy')"><USelect v-model="sortField" :items="sortItems" /></UFormField>
+      <UFormField :label="$t('common.labels.order')"><USelect v-model="sortOrder" :items="orderItems" /></UFormField>
+      <div class="flex items-end">
+        <UButton color="neutral" variant="soft" icon="i-mdi-filter-remove-outline" @click="clearFilters">{{
+          $t('common.actions.clear')
+        }}</UButton>
+      </div>
     </div>
-    <div v-if="loadFailed" class="sm:hidden p-6 rounded-lg border border-red-300 text-center space-y-2">
-      <Icon name="mdi:alert-circle-outline" class="w-10 h-10 text-red-500 mx-auto" />
-      <p class="text-lg text-gray-700 dark:text-gray-200">{{ $t('common.messages.loadFailedTitle') }}</p>
-      <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('common.messages.loadFailedText') }}</p>
-      <Button icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
-    </div>
+
+    <UAlert
+      v-if="loadFailed"
+      color="error"
+      icon="i-mdi-alert-circle-outline"
+      :title="$t('common.messages.loadFailedTitle')"
+      :description="$t('common.messages.loadFailedText')"
+    >
+      <template #actions>
+        <UButton icon="i-mdi-refresh" color="error" variant="soft" @click="refetch()">
+          {{ $t('common.messages.retry') }}
+        </UButton>
+      </template>
+    </UAlert>
 
     <div
       v-else
-      class="sm:hidden space-y-4 transition-opacity duration-200"
-      :class="isRefetching ? 'opacity-50 pointer-events-none' : ''"
+      class="hidden overflow-x-auto rounded-[var(--topiqu-surface-radius)] border border-default sm:block"
       :aria-busy="isRefetching"
     >
-      <div
-        v-for="row in table.getRowModel().rows"
-        :key="row.id"
-        :class="[
-          'p-4 rounded-lg border border-gray-300 shadow-sm transition-colors duration-200 hover:bg-gray-100',
-          row.original.deletedAt ? 'bg-red-50 border-l-4 border-red-500' : 'bg-green-50 border-l-4 border-green-400',
-        ]"
-      >
-        <div class="space-y-2">
-          <div v-for="cell in row.getVisibleCells()" :key="cell.id">
-            <div class="font-semibold">{{ cell.column.columnDef.header }}</div>
-            <div class="flex items-center justify-center h-full">
-              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-              <p
-                v-if="cell.column.id === 'name'"
-                class="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
-                :class="row.original.deletedAt ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'"
-              >
+      <UTable :data="rows" :columns="columns" :loading="isRefetching" :ui="{ base: 'min-w-[52rem] table-fixed' }">
+        <template #name-header>
+          <UButton color="neutral" variant="ghost" :trailingIcon="sortIcon('name')" @click="toggleSort('name')">
+            {{ t('master.clientTable.headers.name') }}
+          </UButton>
+        </template>
+        <template #domain-header>
+          <UButton color="neutral" variant="ghost" :trailingIcon="sortIcon('domain')" @click="toggleSort('domain')">
+            {{ t('master.clientTable.headers.domain') }}
+          </UButton>
+        </template>
+        <template #plan-header>
+          <UButton color="neutral" variant="ghost" :trailingIcon="sortIcon('plan')" @click="toggleSort('plan')">
+            {{ t('master.clientTable.headers.plan') }}
+          </UButton>
+        </template>
+        <template #createdAt-header>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :trailingIcon="sortIcon('createdAt')"
+            @click="toggleSort('createdAt')"
+          >
+            {{ t('master.clientTable.headers.createdAt') }}
+          </UButton>
+        </template>
+        <template #name-cell="{ row }">
+          <span class="block truncate font-medium" :title="row.original.name">{{ row.original.name }}</span>
+        </template>
+        <template #domain-cell="{ row }">
+          <span class="block truncate" :title="row.original.domain">{{ row.original.domain }}</span>
+        </template>
+        <template #status-cell="{ row }">
+          <UBadge :color="row.original.deletedAt ? 'error' : 'success'" variant="subtle">
+            {{
+              row.original.deletedAt
+                ? $t('master.clientTable.status.deactivated')
+                : $t('master.clientTable.status.active')
+            }}
+          </UBadge>
+        </template>
+        <template #userCount-cell="{ row }">{{ row.original.userCount }}</template>
+        <template #createdAt-cell="{ row }">{{ formatCreatedAt(row.original.createdAt) }}</template>
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end gap-2">
+            <ClientUsers :clientId="row.original.id">
+              <UButton
+                icon="i-mdi-account-multiple-outline"
+                color="neutral"
+                variant="ghost"
+                :aria-label="$t('master.clientUsers.title')"
+              />
+            </ClientUsers>
+            <ClientEdit :client="row.original" @saved="invalidateClients">
+              <UButton icon="i-mdi-pencil" color="neutral" variant="ghost" :aria-label="$t('common.actions.edit')" />
+            </ClientEdit>
+            <UButton
+              v-if="!row.original.deletedAt"
+              icon="i-mdi-delete"
+              color="error"
+              variant="ghost"
+              :aria-label="$t('master.clientTable.actions.deleteDeactivate')"
+              @click="del(row.original.id, row.original.name)"
+            />
+            <UButton
+              v-else
+              icon="i-mdi-lock-open"
+              color="success"
+              variant="ghost"
+              :aria-label="$t('master.clientTable.actions.activate')"
+              @click="restore(row.original.id)"
+            />
+          </div>
+        </template>
+      </UTable>
+    </div>
+
+    <div v-if="!loadFailed" class="space-y-3 sm:hidden" :aria-busy="isRefetching">
+      <UCard v-for="client in rows" :key="client.id">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0 space-y-1">
+            <div class="flex items-center gap-2">
+              <h3 class="break-words font-semibold">{{ client.name }}</h3>
+              <UBadge :color="client.deletedAt ? 'error' : 'success'" variant="subtle">
                 {{
-                  row.original.deletedAt
+                  client.deletedAt
                     ? $t('master.clientTable.status.deactivated')
                     : $t('master.clientTable.status.active')
                 }}
-              </p>
+              </UBadge>
             </div>
+            <p class="break-all text-sm text-muted">{{ client.domain }}</p>
+            <p class="text-xs text-muted">
+              {{ client.plan }} · {{ client.userCount }}
+              {{ $t('master.clientTable.headers.users').toLocaleLowerCase() }}
+            </p>
+            <p class="text-xs text-muted">{{ formatCreatedAt(client.createdAt) }}</p>
           </div>
-          <div :ref="(el) => setDropdownRef(row.id, el)" class="relative">
-            <Button icon="mdi:dots-vertical" @click="toggleDropdown(row.id)" />
-            <div
-              v-if="openDropdown === row.id"
-              class="absolute z-10 right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
-            >
-              <div class="py-1">
-                <LazyClientUsers v-slot="{ open }" :clientId="row.original.id" hydrateOnInteraction>
-                  <Button icon="mdi:eye" variant="success" @click="open.value = true" />
-                </LazyClientUsers>
-                <LazyClientEdit
-                  v-slot="{ open }"
-                  :client="row.original"
-                  hydrateOnInteraction
-                  @saved="invalidateClients"
-                >
-                  <Button icon="mdi:pencil" variant="primary" @click="open.value = true" />
-                </LazyClientEdit>
-                <Button
-                  v-if="!row.original.deletedAt"
-                  icon="mdi:lock"
-                  variant="danger"
-                  @click="del(row.original.id, row.original.name)"
-                >
-                  {{ $t('master.clientTable.actions.deleteDeactivate') }}
-                </Button>
-                <Button v-else icon="mdi:lock-open" @click="restore(row.original.id)">
-                  {{ $t('master.clientTable.actions.activate') }}
-                </Button>
-              </div>
-            </div>
+          <div class="flex shrink-0 items-center gap-1">
+            <ClientUsers :clientId="client.id">
+              <UButton
+                icon="i-mdi-account-multiple-outline"
+                color="neutral"
+                variant="ghost"
+                :aria-label="$t('master.clientUsers.title')"
+              />
+            </ClientUsers>
+            <UDropdownMenu :items="actionItems(client)">
+              <UButton
+                icon="i-mdi-dots-vertical"
+                color="neutral"
+                variant="ghost"
+                :aria-label="$t('master.clientTable.headers.actions')"
+              />
+            </UDropdownMenu>
           </div>
         </div>
-      </div>
+      </UCard>
+    </div>
+
+    <div v-if="!loadFailed && totalPages > 1" class="flex justify-center">
+      <UPagination
+        :page="page"
+        :total="totalPages"
+        :itemsPerPage="1"
+        color="neutral"
+        variant="outline"
+        activeColor="primary"
+        activeVariant="solid"
+        showEdges
+        @update:page="setPage"
+      />
     </div>
   </div>
-  <ModalMini
+
+  <UModal
     v-model:open="deleteOpen"
     :title="deleteTarget ? t('master.clientTable.deleteDialog.title', { name: deleteTarget.name }) : ''"
-    :message="t('master.clientTable.deleteDialog.text')"
-    icon="mdi:alert-outline"
+    :description="t('master.clientTable.deleteDialog.text')"
   >
-    <template #actions>
-      <Button
-        size="sm"
-        variant="warning"
-        icon="mdi:close"
-        animation="softpop"
-        :aria="t('master.clientTable.deleteDialog.cancel')"
-        :title="t('master.clientTable.deleteDialog.cancel')"
-        @click="deleteOpen = false"
-      >
-        {{ t('master.clientTable.deleteDialog.cancel') }}
-      </Button>
-      <Button
-        size="sm"
-        variant="info"
-        icon="mdi:archive-arrow-down"
-        animation="softpop"
-        :aria="t('master.clientTable.deleteDialog.deny')"
-        :title="t('master.clientTable.deleteDialog.deny')"
-        @click="performDelete('soft')"
-      >
-        {{ t('master.clientTable.deleteDialog.deny') }}
-      </Button>
-      <Button
-        size="sm"
-        variant="danger"
-        icon="mdi:delete-forever"
-        animation="softpop"
-        :aria="t('master.clientTable.deleteDialog.confirm')"
-        :title="t('master.clientTable.deleteDialog.confirm')"
-        @click="performDelete('hard')"
-      >
-        {{ t('master.clientTable.deleteDialog.confirm') }}
-      </Button>
+    <template #footer>
+      <div class="flex w-full flex-wrap justify-end gap-2">
+        <UButton color="neutral" variant="ghost" @click="deleteOpen = false">
+          {{ t('master.clientTable.deleteDialog.cancel') }}
+        </UButton>
+        <UButton color="warning" icon="i-mdi-archive-arrow-down" @click="performDelete('soft')">
+          {{ t('master.clientTable.deleteDialog.deny') }}
+        </UButton>
+        <UButton color="error" icon="i-mdi-delete-forever" @click="performDelete('hard')">
+          {{ t('master.clientTable.deleteDialog.confirm') }}
+        </UButton>
+      </div>
     </template>
-  </ModalMini>
-  <ModalMini ref="activateDialog" />
+  </UModal>
 </template>
 
 <script setup lang="ts">
 import type { ClientSite } from '@zenstackhq/runtime/models'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 
-import { vAutoAnimate } from '@formkit/auto-animate/vue'
-import {
-  type ColumnDef,
-  FlexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useVueTable,
-} from '@tanstack/vue-table'
-
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { invalidateClients } = useCacheInvalidation()
 const requestFetch = useRequestFetch()
 const toast = useToast()
-const activateDialog = useTemplateRef<ModalMiniRef>('activateDialog')
-const deleteOpen = shallowRef<boolean>(false)
-const deleteTarget = shallowRef<{ id: string; name: string } | null>(null)
+const confirm = useConfirm()
 const route = useRoute()
 const router = useRouter()
-const openDropdown = ref<string | null>(null)
-const dropdownRef = ref<HTMLElement | null>(null)
+type ClientRow = ClientSite & { userCount: number }
 
+const deleteOpen = shallowRef(false)
+const deleteTarget = shallowRef<{ id: string; name: string } | null>(null)
 const limit = 20
 const page = shallowRef(Number(route.query.page) || 1)
 const globalFilter = shallowRef((route.query.query as string) || '')
+const domainFilter = shallowRef((route.query.domain as string) || '')
+const planFilter = shallowRef((route.query.plan as string) || 'all')
+const statusFilter = shallowRef((route.query.status as string) || 'all')
+const dateFrom = shallowRef((route.query.dateFrom as string) || '')
+const dateTo = shallowRef((route.query.dateTo as string) || '')
+const sortField = shallowRef((route.query.sort as string) || 'createdAt')
+const sortOrder = shallowRef((route.query.order as string) || 'desc')
+const filtersOpen = shallowRef(
+  Boolean(domainFilter.value) ||
+    planFilter.value !== 'all' ||
+    statusFilter.value !== 'all' ||
+    Boolean(dateFrom.value) ||
+    Boolean(dateTo.value),
+)
 const debouncedFilter = refDebounced(globalFilter, 400)
+const debouncedDomain = refDebounced(domainFilter, 400)
+const planItems = ['all', 'BASIC', 'PRO', 'PREMIUM', 'CUSTOM']
+const statusItems = computed(() => [
+  { label: t('common.labels.all'), value: 'all' },
+  { label: t('master.clientTable.status.active'), value: 'active' },
+  { label: t('master.clientTable.status.deactivated'), value: 'deactivated' },
+])
+const sortItems = computed(() => [
+  { label: t('master.clientTable.headers.name'), value: 'name' },
+  { label: t('master.clientTable.headers.domain'), value: 'domain' },
+  { label: t('master.clientTable.headers.plan'), value: 'plan' },
+  { label: t('master.clientTable.headers.createdAt'), value: 'createdAt' },
+])
+const orderItems = computed(() => [
+  { label: t('common.sortOptions.newest'), value: 'desc' },
+  { label: t('common.sortOptions.oldest'), value: 'asc' },
+])
+const listQuery = computed(() => ({
+  page: page.value,
+  limit,
+  ...(debouncedFilter.value ? { query: debouncedFilter.value } : {}),
+  ...(debouncedDomain.value ? { domain: debouncedDomain.value } : {}),
+  ...(planFilter.value !== 'all' ? { plan: planFilter.value } : {}),
+  ...(statusFilter.value !== 'all' ? { status: statusFilter.value } : {}),
+  ...(dateFrom.value ? { dateFrom: dateFrom.value } : {}),
+  ...(dateTo.value ? { dateTo: dateTo.value } : {}),
+  sort: sortField.value,
+  order: sortOrder.value,
+}))
 
 const {
   data: clients,
@@ -251,11 +287,8 @@ const {
   error,
   refetch,
 } = useQuery({
-  key: () => queryKeys.clients.list(page.value, debouncedFilter.value),
-  query: () =>
-    requestFetch<{ data: ClientSite[]; total: number }>(
-      `/api/clients?page=${page.value}&limit=${limit}${debouncedFilter.value ? `&query=${encodeURIComponent(debouncedFilter.value)}` : ''}`,
-    ),
+  key: () => ['clients', 'list', listQuery.value],
+  query: () => requestFetch<{ data: ClientRow[]; total: number }>('/api/clients', { query: listQuery.value }),
   placeholderData: (previous) => previous,
 })
 
@@ -263,165 +296,131 @@ const rows = computed(() => clients.value?.data ?? [])
 const totalPages = computed(() => Math.ceil((clients.value?.total || 0) / limit))
 const isRefetching = computed(() => asyncStatus.value === 'loading')
 const loadFailed = computed(() => !!error.value && rows.value.length === 0)
-
-watch(debouncedFilter, () => {
-  page.value = 1
-  router.push({ query: { ...route.query, page: undefined, query: debouncedFilter.value || undefined } })
-})
-
-const prevPage = () => {
-  if (page.value > 1) {
-    page.value--
-    router.push({ query: { ...route.query, page: page.value, query: globalFilter.value || undefined } })
-  }
-}
-
-const nextPage = () => {
-  if (page.value < totalPages.value) {
-    page.value++
-    router.push({ query: { ...route.query, page: page.value, query: globalFilter.value || undefined } })
-  }
-}
-
-const columns = ref<ColumnDef<ClientSite>[]>([
+const activeFilterCount = computed(
+  () =>
+    [domainFilter.value, planFilter.value !== 'all', statusFilter.value !== 'all', dateFrom.value, dateTo.value].filter(
+      Boolean,
+    ).length,
+)
+const columns = computed<TableColumn<ClientRow>[]>(() => [
   {
-    header: () => t('master.clientTable.headers.name'),
     accessorKey: 'name',
-    id: 'name',
-    cell: (info) => info.getValue(),
+    header: t('master.clientTable.headers.name'),
+    meta: { class: { th: 'w-auto', td: 'min-w-0 max-w-0' } },
   },
   {
-    header: () => t('master.clientTable.headers.domain'),
     accessorKey: 'domain',
-    cell: (info) => info.getValue(),
+    header: t('master.clientTable.headers.domain'),
+    meta: { class: { th: 'w-48', td: 'w-48 max-w-48' } },
+  },
+  { id: 'status', header: t('common.labels.status'), meta: { class: { th: 'w-28', td: 'w-28' } } },
+  { accessorKey: 'plan', header: t('master.clientTable.headers.plan'), meta: { class: { th: 'w-32', td: 'w-32' } } },
+  {
+    accessorKey: 'userCount',
+    header: t('master.clientTable.headers.users'),
+    meta: { class: { th: 'w-20', td: 'w-20 tabular-nums' } },
   },
   {
-    header: () => t('master.clientTable.headers.plan'),
-    id: 'plan',
-    accessorKey: 'plan',
-    cell: (info) => info.getValue(),
-  },
-  {
-    header: () => t('master.clientTable.headers.createdAt'),
     accessorKey: 'createdAt',
-    cell: (info) =>
-      new Date(info.getValue() as string).toLocaleString(
-        t('master.clientTable.headers.name') === 'Název' ? 'cs-CZ' : 'en-US',
-      ),
+    header: t('master.clientTable.headers.createdAt'),
+    meta: { class: { th: 'w-36', td: 'w-36 whitespace-nowrap' } },
   },
+  { id: 'actions', header: t('master.clientTable.headers.actions'), meta: { class: { th: 'w-40', td: 'w-40' } } },
 ])
 
-const table = useVueTable({
-  get data() {
-    return rows.value
-  },
-  get columns() {
-    return columns.value
-  },
-  state: {
-    get globalFilter() {
-      return globalFilter.value
-    },
-  },
-  onGlobalFilterChange: (val) => (globalFilter.value = typeof val === 'function' ? val(globalFilter.value) : val),
-  getCoreRowModel: getCoreRowModel(),
-  getSortedRowModel: getSortedRowModel(),
-  getFilteredRowModel: getFilteredRowModel(),
+const toggleSort = (field: 'name' | 'domain' | 'plan' | 'createdAt') => {
+  if (sortField.value === field) sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  else {
+    sortField.value = field
+    sortOrder.value = 'asc'
+  }
+}
+const sortIcon = (field: string) =>
+  sortField.value === field
+    ? sortOrder.value === 'asc'
+      ? 'i-mdi-arrow-up'
+      : 'i-mdi-arrow-down'
+    : 'i-mdi-unfold-more-horizontal'
+
+const formatCreatedAt = (value: Date | string) =>
+  new Date(value).toLocaleString(locale.value === 'cs' ? 'cs-CZ' : 'en-US')
+
+watch([debouncedFilter, debouncedDomain, planFilter, statusFilter, dateFrom, dateTo, sortField, sortOrder], () => {
+  page.value = 1
+  router.replace({ query: { ...listQuery.value, page: undefined, limit: undefined } })
 })
 
-function toDom(el: Element | ComponentPublicInstance | null): HTMLElement | null {
-  if (!el) return null
-  if (el instanceof HTMLElement) return el
-
-  const root = (el as any)?.$el
-  return root instanceof HTMLElement ? root : null
+const setPage = (nextPage: number) => {
+  page.value = Math.min(Math.max(nextPage, 1), Math.max(totalPages.value, 1))
+  router.push({ query: { ...listQuery.value, limit: undefined } })
 }
 
-function setDropdownRef(id: string, el: Element | ComponentPublicInstance | null) {
-  const dom = toDom(el)
-  if (openDropdown.value === id) dropdownRef.value = dom
+const clearFilters = () => {
+  globalFilter.value = ''
+  domainFilter.value = ''
+  planFilter.value = 'all'
+  statusFilter.value = 'all'
+  dateFrom.value = ''
+  dateTo.value = ''
+  sortField.value = 'createdAt'
+  sortOrder.value = 'desc'
 }
-
-onClickOutside(dropdownRef, () => {
-  openDropdown.value = null
-  dropdownRef.value = null
-})
 
 const del = (id: string, name: string) => {
   deleteTarget.value = { id, name }
   deleteOpen.value = true
 }
 
+const actionItems = (client: ClientRow): DropdownMenuItem[] => [
+  {
+    label: client.deletedAt
+      ? t('master.clientTable.actions.activate')
+      : t('master.clientTable.actions.deleteDeactivate'),
+    icon: client.deletedAt ? 'i-mdi-lock-open' : 'i-mdi-delete',
+    color: client.deletedAt ? 'success' : 'error',
+    onSelect: () => (client.deletedAt ? restore(client.id) : del(client.id, client.name)),
+  },
+]
+
 const performDelete = async (mode: 'hard' | 'soft') => {
   const target = deleteTarget.value
   deleteOpen.value = false
   if (!target) return
-  if (mode === 'hard') {
-    try {
-      await $fetch(`/api/clients/${target.id}?hard=true` as `api/clients/:id`, { method: 'DELETE' })
-      toast.success({ message: t('master.clientTable.messages.permanentlyDeleted') })
-    } catch (e: any) {
-      toast.error({ message: e.data?.message || t('master.clientTable.messages.deleteFailed') })
-    } finally {
-      await invalidateClients()
-    }
-  } else {
-    try {
-      await $fetch(`/api/clients/${target.id}` as `api/clients/:id`, { method: 'DELETE' })
-      toast.success({ message: t('master.clientTable.messages.deactivated') })
-    } catch (e: any) {
-      toast.error({ message: e.data?.message || t('master.clientTable.messages.deactivateFailed') })
-    } finally {
-      await invalidateClients()
-    }
-  }
-}
-
-const restore = async (id: string) => {
-  const r = await activateDialog.value?.ask({
-    title: t('master.clientTable.activateDialog.title'),
-    message: t('master.clientTable.activateDialog.text'),
-    icon: 'mdi:help-circle-outline',
-    confirmText: t('master.clientTable.activateDialog.confirm'),
-    cancelText: t('master.clientTable.activateDialog.cancel'),
-    variant: 'success',
-  })
-  if (r !== 'ok') return
-
   try {
-    await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'PATCH', body: { deletedAt: null } })
-
-    toast.success({ message: t('master.clientTable.messages.activated') })
-  } catch (e: any) {
-    toast.error({ message: e.data?.message || t('master.clientTable.messages.activateFailed') })
+    await $fetch(`/api/clients/${target.id}${mode === 'hard' ? '?hard=true' : ''}` as `api/clients/:id`, {
+      method: 'DELETE',
+    })
+    toast.add({
+      color: 'success',
+      title: t(
+        mode === 'hard' ? 'master.clientTable.messages.permanentlyDeleted' : 'master.clientTable.messages.deactivated',
+      ),
+    })
+  } catch (error: any) {
+    toast.add({ color: 'error', title: error.data?.message || t('master.clientTable.messages.deleteFailed') })
   } finally {
+    deleteTarget.value = null
     await invalidateClients()
   }
 }
 
-function toggleDropdown(id: string) {
-  if (openDropdown.value === id) {
-    openDropdown.value = null
-    dropdownRef.value = null
-  } else {
-    openDropdown.value = id
+const restore = async (id: string) => {
+  const confirmed = await confirm({
+    title: t('master.clientTable.activateDialog.title'),
+    message: t('master.clientTable.activateDialog.text'),
+    icon: 'i-mdi-help-circle-outline',
+    confirmText: t('master.clientTable.activateDialog.confirm'),
+    cancelText: t('master.clientTable.activateDialog.cancel'),
+    variant: 'success',
+  })
+  if (!confirmed) return
+  try {
+    await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'PATCH', body: { deletedAt: null } })
+    toast.add({ color: 'success', title: t('master.clientTable.messages.activated') })
+  } catch (error: any) {
+    toast.add({ color: 'error', title: error.data?.message || t('master.clientTable.messages.activateFailed') })
+  } finally {
+    await invalidateClients()
   }
 }
 </script>
-
-<style>
-.animate-slide-in {
-  animation: slideIn 0.2s ease-out forwards;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>

@@ -1,5 +1,6 @@
 import type { Language } from '@prisma/client'
 
+import { z } from 'zod'
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
 import { generateObject } from 'ai'

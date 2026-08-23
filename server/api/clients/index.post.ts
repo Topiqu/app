@@ -77,7 +77,9 @@ export default defineEventHandler(async (event) => {
     emailVerified: true,
     role: 'admin',
   })
-  await prisma.tenantMembership.create({ data: { clientSiteId: clientSite.id, userId: newUser.id, role: 'OWNER', scopes: [...TENANT_SCOPES] } })
+  await prisma.tenantMembership.create({
+    data: { clientSiteId: clientSite.id, userId: newUser.id, role: 'OWNER', scopes: [...TENANT_SCOPES] },
+  })
 
   if (!isManagedDomain(clientSite.domain))
     await logAction({

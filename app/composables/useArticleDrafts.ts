@@ -80,7 +80,7 @@ export const useArticleDrafts = async (
       await refresh()
       clearSuccessLater()
     } catch {
-      toast.error({ message: t('common.messages.draftSaveFailed') })
+      toast.add({ color: 'error', title: t('common.messages.draftSaveFailed') })
     } finally {
       saving.value = false
     }

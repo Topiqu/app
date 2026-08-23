@@ -16,6 +16,12 @@ export default defineEventHandler(async (event) => {
     data: { scopes: [...new Set(body.scopes)] },
     select: { id: true, scopes: true },
   })
-  await logAction({ action: 'TENANT_MEMBER_SCOPES_CHANGED', userId: user.id, clientSiteId: membership.clientSiteId, ip: getIp(event), metadata: { membershipId: id, targetUserId: target.userId, previousScopes: target.scopes, scopes: updated.scopes } })
+  await logAction({
+    action: 'TENANT_MEMBER_SCOPES_CHANGED',
+    userId: user.id,
+    clientSiteId: membership.clientSiteId,
+    ip: getIp(event),
+    metadata: { membershipId: id, targetUserId: target.userId, previousScopes: target.scopes, scopes: updated.scopes },
+  })
   return updated
 })

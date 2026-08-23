@@ -12,8 +12,8 @@
     >
       <div class="grid gap-x-8 gap-y-2.5 p-5 sm:p-6 lg:grid-cols-[12.5rem_minmax(0,1fr)]">
         <div>
-          <FormLabel
-            :for="focusId"
+          <AppFormLabel
+            :forId="focusId"
             :text="$t('common.preferences.focus.label')"
             icon="mdi:bullseye"
             class="p-0! font-semibold!"
@@ -22,19 +22,13 @@
             {{ $t('common.preferences.focus.help') }}
           </p>
         </div>
-        <FormInput
-          :id="focusId"
-          v-model="focus"
-          type="textarea"
-          inputClass="h-20! min-h-11!"
-          :placeholder="$t('common.preferences.focus.placeholder')"
-        />
+        <UTextarea :id="focusId" v-model="focus" :placeholder="$t('common.preferences.focus.placeholder')" />
       </div>
 
       <div class="grid gap-x-8 gap-y-2.5 p-5 sm:p-6 lg:grid-cols-[12.5rem_minmax(0,1fr)]">
         <div>
-          <FormLabel
-            :for="audienceId"
+          <AppFormLabel
+            :forId="audienceId"
             :text="$t('common.preferences.audience.label')"
             icon="mdi:account-group-outline"
             class="p-0! font-semibold!"
@@ -43,20 +37,13 @@
             {{ $t('common.preferences.audience.help') }}
           </p>
         </div>
-        <FormInput
-          :id="audienceId"
-          v-model="audience"
-          type="textarea"
-          inputClass="h-20! min-h-11!"
-          :placeholder="$t('common.preferences.audience.placeholder')"
-        />
+        <UTextarea :id="audienceId" v-model="audience" :placeholder="$t('common.preferences.audience.placeholder')" />
       </div>
 
       <div class="grid gap-x-8 gap-y-2.5 p-5 sm:p-6 lg:grid-cols-[12.5rem_minmax(0,1fr)]">
         <div>
-          <FormLabel
+          <AppFormLabel
             :id="languageLabelId"
-            as="span"
             :text="$t('common.preferences.language.label')"
             icon="mdi:translate"
             class="p-0! font-semibold!"
@@ -65,22 +52,15 @@
             {{ $t('common.preferences.language.help') }}
           </p>
         </div>
-        <div role="radiogroup" :aria-labelledby="languageLabelId" class="flex flex-wrap gap-2 self-start">
-          <label v-for="option in languageItems" :key="option.value">
-            <input v-model="language" type="radio" name="content-language" :value="option.value" class="peer sr-only" />
-            <span
-              class="block cursor-pointer rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-600 transition hover:border-neutral-300 hover:bg-neutral-50 peer-checked:border-neutral-900 peer-checked:bg-neutral-900 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-focus-visible:ring-offset-2 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-600 dark:hover:bg-neutral-800 dark:peer-checked:border-neutral-100 dark:peer-checked:bg-neutral-100 dark:peer-checked:text-neutral-900 dark:peer-focus-visible:ring-offset-neutral-900"
-            >
-              {{ option.label }}
-            </span>
-          </label>
-        </div>
+        <UFormField :label="$t('common.preferences.language.label')" :ui="{ label: 'sr-only' }">
+          <URadioGroup v-model="language" :items="languageItems" orientation="horizontal" variant="card" />
+        </UFormField>
       </div>
 
       <div class="grid gap-x-8 gap-y-2.5 p-5 sm:p-6 lg:grid-cols-[12.5rem_minmax(0,1fr)]">
         <div>
-          <FormLabel
-            :for="keywordsId"
+          <AppFormLabel
+            :forId="keywordsId"
             :text="$t('common.preferences.keywords.label')"
             icon="mdi:tag-multiple-outline"
             class="p-0! font-semibold!"
@@ -100,22 +80,23 @@
               class="inline-flex items-center gap-1 rounded-md bg-indigo-100 py-1 pl-2.5 pr-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
             >
               {{ keyword }}
-              <button
+              <UButton
                 type="button"
-                class="grid size-5 place-items-center rounded text-indigo-500/70 transition hover:bg-indigo-500/15 hover:text-indigo-700 dark:hover:text-indigo-100"
+                size="xs"
+                square
+                color="error"
+                variant="ghost"
+                icon="i-mdi-close"
                 :aria-label="$t('common.preferences.keywords.remove', [keyword])"
                 @click.stop="removeKeyword(index)"
-              >
-                <Icon name="mdi:close" class="size-3.5" />
-              </button>
+              />
             </span>
 
-            <input
+            <UInput
               :id="keywordsId"
               ref="keywordField"
               v-model="draft"
               type="text"
-              class="min-w-40 flex-1 bg-transparent px-1.5 py-1 text-sm text-gray-800 outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-neutral-400"
               :placeholder="keywords.length ? '' : $t('common.preferences.keywords.placeholder')"
               @keydown="onKeywordKeydown"
               @paste="onKeywordPaste"
@@ -169,8 +150,8 @@ const audience = computed({
   set: (v) => emit('update:audience', v),
 })
 
-const language = computed({
-  get: () => props.language,
+const language = computed<'cs' | 'en'>({
+  get: () => (props.language === 'cs' ? 'cs' : 'en'),
   set: (v) => emit('update:language', v),
 })
 

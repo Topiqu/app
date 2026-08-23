@@ -34,10 +34,21 @@ export default defineEventHandler(async (event) => {
       data: { clientSiteId: next?.clientSiteId ?? null },
     }),
     ...(user?.clientSiteId === membership.clientSiteId
-      ? [prisma.user.update({ where: { id: target.userId }, data: { clientSiteId: next?.clientSiteId ?? null, role: next ? 'admin' : 'reader' } })]
+      ? [
+          prisma.user.update({
+            where: { id: target.userId },
+            data: { clientSiteId: next?.clientSiteId ?? null, role: next ? 'admin' : 'reader' },
+          }),
+        ]
       : []),
   ])
-  await logAction({ action: 'TENANT_MEMBER_REMOVED', userId: actor.id, clientSiteId: membership.clientSiteId, ip: getIp(event), metadata: { membershipId: id, targetUserId: target.userId, scopes: target.scopes } })
+  await logAction({
+    action: 'TENANT_MEMBER_REMOVED',
+    userId: actor.id,
+    clientSiteId: membership.clientSiteId,
+    ip: getIp(event),
+    metadata: { membershipId: id, targetUserId: target.userId, scopes: target.scopes },
+  })
   if (user?.email) {
     try {
       const locale = user.language === 'cs' ? 'cs-CZ' : 'en-US'

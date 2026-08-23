@@ -1,22 +1,22 @@
 <template>
-  <div v-if="content" class="relative inline-block">
-    <img
+  <div v-if="content" class="relative w-full max-w-[200px]">
+    <AppMedia
       :src="optimizedContent"
       alt="GIF"
-      width="200"
-      height="150"
-      loading="lazy"
-      decoding="async"
-      class="h-auto max-w-[200px] rounded-lg shadow-md"
+      aspectRatio="1 / 1"
+      fit="contain"
+      sizes="200px"
+      containerClass="w-full rounded-lg"
     />
-    <Button
+    <UButton
       v-if="cancellable"
-      icon="mdi:close"
-      variant="danger"
+      icon="i-mdi-close"
+      color="error"
+      variant="solid"
       size="sm"
-      class="absolute top-1 right-1 rounded-full"
-      animation="softpop"
-      :aria="$t('articles.comments.removeGif')"
+      square
+      class="absolute top-1 right-1"
+      :aria-label="$t('articles.comments.removeGif')"
       @click="content = null"
     />
   </div>

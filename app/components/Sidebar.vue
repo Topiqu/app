@@ -1,82 +1,140 @@
 <template>
-  <transition
-    enterActiveClass="transition transform duration-300 ease-out"
-    enterFromClass="-translate-x-full"
-    enterToClass="translate-x-0"
-    leaveActiveClass="transition transform duration-300 ease-in"
-    leaveFromClass="translate-x-0"
-    leaveToClass="-translate-x-full"
+  <UDashboardSidebar
+    v-model:open="isOpen"
+    collapsible
+    :defaultSize="272"
+    :minSize="272"
+    :maxSize="272"
+    :collapsedSize="72"
   >
-    <div
-      v-show="isOpen"
-      class="sidebar fixed z-overlay bg-white shadow-lg p-2 flex flex-col justify-center items-center gap-4 rounded-md"
-      :class="
-        isMobile ? 'top-0 left-0 w-28 max-w-[90%] h-full p-1 gap-2' : 'top-1/2 left-8 w-14 p-2 gap-4 -translate-y-1/2'
-      "
-    >
-      <div v-if="auth?.user?.role === 'admin'" class="flex flex-col gap-4">
-        <Button icon="mdi:home" variant="neutral" @click="router.push(localePath({ name: 'admin' }))" />
-        <Button
-          icon="mdi:pencil"
-          variant="neutral"
-          @click="router.push(localePath({ name: 'admin-editor-id', params: { id: 'new' } }))"
-        />
-        <LazyTagsCreate v-slot="{ open }" hydrateOnInteraction>
-          <Button icon="mdi:tag-outline" variant="neutral" @click="open.value = true" />
-        </LazyTagsCreate>
-        <LazyEmojiCreate v-slot="{ open }" hydrateOnInteraction>
-          <Button
-            v-if="auth?.user?.plan !== 'BASIC'"
-            icon="mdi:emoticon"
-            variant="neutral"
-            @click="open.value = true"
+    <template #header="{ collapsed, collapse }">
+      <div class="flex w-full items-center gap-2" :class="collapsed ? 'justify-center' : 'justify-between'">
+        <NuxtLink
+          v-if="!collapsed"
+          :to="localePath({ name: auth?.user?.role === 'superadmin' ? 'master' : 'admin' })"
+          class="flex min-w-0 items-center gap-2"
+        >
+          <AppMedia
+            src="/app-logo.png"
+            alt=""
+            aspectRatio="1 / 1"
+            fit="contain"
+            sizes="32px"
+            containerClass="size-8 shrink-0 bg-transparent"
           />
-        </LazyEmojiCreate>
-        <LazyStatsDialog v-slot="{ open }" hydrateOnInteraction>
-          <Button icon="mdi:chart-bar" variant="neutral" @click="open.value = true" />
-        </LazyStatsDialog>
-        <Button icon="mdi:cog" variant="neutral" @click="router.push(localePath({ name: 'settings' }))" />
+          <span class="truncate font-bold">Topiqu</span>
+        </NuxtLink>
+        <UTooltip :text="collapsed ? $t('common.actions.expand') : $t('common.actions.collapse')">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            square
+            :icon="collapsed ? 'i-mdi-chevron-double-right' : 'i-mdi-chevron-double-left'"
+            :aria-label="collapsed ? $t('common.actions.expand') : $t('common.actions.collapse')"
+            @click="collapse(!collapsed)"
+          />
+        </UTooltip>
       </div>
-      <div v-if="auth?.user?.role === 'superadmin'" class="flex flex-col gap-4">
-        <Button icon="mdi:home" variant="neutral" @click="router.push(localePath({ name: 'master' }))" />
-        <LazyClientCreate v-slot="{ open }" hydrateOnInteraction>
-          <Button icon="mdi:account-plus" variant="neutral" @click="open.value = true" />
-        </LazyClientCreate>
-        <LazyUserList v-slot="{ open }" hydrateOnIdle>
-          <Button icon="mdi:account-group" variant="neutral" @click="open.value = true" />
-        </LazyUserList>
+    </template>
+
+    <template #default="{ collapsed }">
+      <UNavigationMenu
+        :items="navigationItems"
+        orientation="vertical"
+        :collapsed="collapsed"
+        :ui="{ link: collapsed ? 'size-10 mx-auto justify-center p-0' : 'min-h-10 justify-start' }"
+      />
+    </template>
+
+    <template #footer="{ collapsed }">
+      <div class="flex w-full flex-col gap-1">
+        <template v-if="auth?.user?.role === 'admin'">
+          <UButton
+            icon="i-mdi-tag-outline"
+            color="neutral"
+            variant="ghost"
+            :label="collapsed ? undefined : $t('articles.tags.manageTags')"
+            :square="collapsed"
+            :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+            @click="tagsOpen = true"
+          />
+          <EmojiCreate v-if="auth?.user?.plan !== 'BASIC'">
+            <UButton
+              icon="i-mdi-emoticon"
+              color="neutral"
+              variant="ghost"
+              :label="collapsed ? undefined : $t('emoji.create')"
+              :square="collapsed"
+              :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+            />
+          </EmojiCreate>
+          <UButton
+            icon="i-mdi-chart-bar"
+            color="neutral"
+            variant="ghost"
+            :label="collapsed ? undefined : $t('stats.title')"
+            :square="collapsed"
+            :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+            @click="statsOpen = true"
+          />
+        </template>
+        <template v-else-if="auth?.user?.role === 'superadmin'">
+          <UButton
+            icon="i-mdi-account-plus"
+            color="neutral"
+            variant="ghost"
+            :label="collapsed ? undefined : $t('master.clientCreate.title')"
+            :square="collapsed"
+            :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+            @click="clientCreateOpen = true"
+          />
+          <UButton
+            icon="i-mdi-account-group"
+            color="neutral"
+            variant="ghost"
+            :label="collapsed ? undefined : $t('master.userList.title')"
+            :square="collapsed"
+            :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+            @click="userListOpen = true"
+          />
+        </template>
+        <AuthLogout :showLabel="!collapsed" />
+        <ClientVersion v-if="!collapsed" docked />
       </div>
-      <AuthLogout />
-    </div>
-  </transition>
-  <transition
-    enterActiveClass="transition-opacity duration-300 ease-out"
-    enterFromClass="opacity-0"
-    enterToClass="opacity-100"
-    leaveActiveClass="transition-opacity duration-300 ease-in"
-    leaveFromClass="opacity-100"
-    leaveToClass="opacity-0"
-  >
-    <div
-      v-if="isMobile && isOpen"
-      class="fixed inset-0 z-30 bg-black/40"
-      :style="{ backgroundColor: theme.mode === 'dark' ? 'rgba(0,0,0,0.5) !important' : undefined }"
-      @click="isOpen = false"
-    />
-  </transition>
+    </template>
+  </UDashboardSidebar>
 </template>
 
 <script setup lang="ts">
+import type { NavigationMenuItem } from '@nuxt/ui'
+
 const isOpen = defineModel<boolean>('isOpen')
-
 const { data: auth } = useAuth()
-
-const router = useRouter()
 const localePath = useLocalePath()
+const tagsOpen = useState('dashboard-tags-open', () => false)
+const statsOpen = useState('dashboard-stats-open', () => false)
+const clientCreateOpen = useState('dashboard-client-create-open', () => false)
+const userListOpen = useState('dashboard-user-list-open', () => false)
 
-const theme = useThemeStore()
-
-const isMobile = useMediaQuery('(max-width: 767px)')
-
-watch(isMobile, (mobile) => !mobile && (isOpen.value = true), { immediate: true })
+const navigationItems = computed<NavigationMenuItem[]>(() => {
+  const publication = {
+    label: $t('common.navigation.publication'),
+    icon: 'i-mdi-newspaper-variant-outline',
+    to: localePath({ name: 'index' }),
+  }
+  if (auth.value?.user.role === 'superadmin') {
+    return [{ label: $t('master.title'), icon: 'i-mdi-home', to: localePath({ name: 'master' }) }, publication]
+  }
+  return [
+    { label: $t('common.navigation.dashboard'), icon: 'i-mdi-home', to: localePath({ name: 'admin' }) },
+    {
+      label: $t('articles.addArticle'),
+      icon: 'i-mdi-pencil',
+      to: localePath({ name: 'admin-editor-id', params: { id: 'new' } }),
+    },
+    { label: $t('common.settings'), icon: 'i-mdi-cog', to: localePath({ name: 'settings' }) },
+    publication,
+  ]
+})
 </script>

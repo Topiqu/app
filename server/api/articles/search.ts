@@ -4,7 +4,7 @@ export default defineEventHandler(async (event: H3Event) => {
   const { user, membership } = await requireTenantScope(event, 'ARTICLE_WRITE')
 
   const { skip, take } = await getPagination(event)
-  const query = getQuery(event).query as string | undefined
+  const filters = parseArticleListQuery(getQuery(event))
 
   const db = await getEnhancedPrisma(user)
 
@@ -22,11 +22,15 @@ export default defineEventHandler(async (event: H3Event) => {
   const where = {
     clientSiteId,
     ...authorFilter,
-    ...(query && {
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(dateRangeWhere(filters.dateFrom, filters.dateTo)
+      ? { createdAt: dateRangeWhere(filters.dateFrom, filters.dateTo) }
+      : {}),
+    ...(filters.query && {
       OR: [
-        { title: { contains: query, mode: 'insensitive' as const } },
-        { excerpt: { contains: query, mode: 'insensitive' as const } },
-        { content: { contains: query, mode: 'insensitive' as const } },
+        { title: { contains: filters.query, mode: 'insensitive' as const } },
+        { excerpt: { contains: filters.query, mode: 'insensitive' as const } },
+        { content: { contains: filters.query, mode: 'insensitive' as const } },
       ],
     }),
   }
@@ -34,14 +38,16 @@ export default defineEventHandler(async (event: H3Event) => {
   const [articles, total] = await Promise.all([
     db.article.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { [filters.sort]: filters.order },
       skip,
       take,
       // Feeds the admin table's language column. Drafts are visible here on purpose — this is
       // the owning admin's own list, and "awaiting review" is the whole point of the column.
       include: { translations: { select: { language: true, status: true, slug: true } } },
     }),
-    db.article.count({ where }),
+    db.article.count({
+      where,
+    }),
   ])
 
   return { data: articles, total }

@@ -30,13 +30,13 @@
       </div>
 
       <label class="sr-only" :for="promptId">{{ $t('articles.editor.ai.topicLabel') }}</label>
-      <textarea
+      <UTextarea
         :id="promptId"
         ref="textarea"
         v-model="topic"
         :disabled="generating"
         :placeholder="$t('articles.editor.ai.topicPlaceholder')"
-        rows="2"
+        :rows="2"
         class="w-full resize-none bg-transparent! border-none! rounded-none! px-3.5 pt-3.5 pb-2 text-sm leading-relaxed placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:ring-0 disabled:opacity-60"
         @focus="focused = true"
         @blur="focused = false"
@@ -98,15 +98,16 @@
               />
             </li>
           </ol>
-          <Button
+          <UButton
             size="sm"
             icon="mdi:stop"
-            variant="neutral"
+            color="neutral"
+            variant="soft"
             class="ml-auto shrink-0 bg-transparent! border-gray-200! dark:border-gray-700! text-red-600! dark:text-red-400! hover:bg-red-50! dark:hover:bg-red-950/40!"
             @click="stopGeneration"
           >
             {{ $t('articles.editor.ai.stopButton') }}
-          </Button>
+          </UButton>
         </template>
 
         <template v-else>
@@ -126,7 +127,7 @@
             >
               {{ $t('articles.editor.ai.enhance') }}
             </ArticleEditorChip>
-            <Button
+            <UButton
               size="sm"
               icon="mdi:auto-fix"
               :disabled="!canGenerate"
@@ -134,7 +135,7 @@
               @click="generate"
             >
               {{ $t('articles.editor.ai.generateButton') }}
-            </Button>
+            </UButton>
           </div>
         </template>
       </div>
@@ -158,7 +159,7 @@ const { autofocus = false } = defineProps<{ autofocus?: boolean }>()
 const generating = defineModel<boolean>('generating', { default: false })
 
 const { t } = useI18n()
-const toast = useToast()
+const toast = useAppToast()
 const promptId = useId()
 
 const steps: Phase[] = ['writing', 'images']

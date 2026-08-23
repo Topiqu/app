@@ -1,50 +1,48 @@
 <template>
-  <Modal v-model="open" :title="$t('articles.preferencesExplanation.title')">
-    <template #default="actions">
-      <slot v-bind="actions" />
-    </template>
+  <UModal v-model:open="open" :title="$t('articles.preferencesExplanation.title')">
+    <slot :open="openDialog" />
 
-    <template #content>
-      <div class="flex flex-col divide-y divide-gray-200 dark:divide-gray-700 mt-6">
+    <template #body>
+      <div class="flex flex-col divide-y divide-default">
         <section class="py-6">
           <div class="flex items-center gap-2 mb-2">
-            <Icon name="mdi:bullseye" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+            <UIcon size="20" name="i-mdi-bullseye" />
+            <h3 class="text-sm font-semibold text-muted uppercase tracking-widest">
               {{ $t('articles.preferencesExplanation.focus.title') }}
             </h3>
           </div>
-          <p class="text-base leading-relaxed text-gray-700 dark:text-gray-200">
+          <p class="text-base leading-relaxed text-highlighted">
             {{ $t('articles.preferencesExplanation.focus.description') }}
           </p>
-          <p class="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
+          <p class="mt-2 text-sm italic text-muted">
             {{ $t('articles.preferencesExplanation.focus.example') }}
           </p>
         </section>
         <section class="py-6">
           <div class="flex items-center gap-2 mb-2">
-            <Icon name="mdi:account-group-outline" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+            <UIcon size="20" name="i-mdi-account-group-outline" />
+            <h3 class="text-sm font-semibold text-muted uppercase tracking-widest">
               {{ $t('articles.preferencesExplanation.targetAudience.title') }}
             </h3>
           </div>
-          <p class="text-base leading-relaxed text-gray-700 dark:text-gray-200">
+          <p class="text-base leading-relaxed text-highlighted">
             {{ $t('articles.preferencesExplanation.targetAudience.description') }}
           </p>
-          <p class="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
+          <p class="mt-2 text-sm italic text-muted">
             {{ $t('articles.preferencesExplanation.targetAudience.example') }}
           </p>
         </section>
         <section class="py-6">
           <div class="flex items-center gap-2 mb-2">
-            <Icon name="mdi:tag-multiple-outline" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+            <UIcon size="20" name="i-mdi-tag-multiple-outline" />
+            <h3 class="text-sm font-semibold text-muted uppercase tracking-widest">
               {{ $t('articles.preferencesExplanation.keywords.title') }}
             </h3>
           </div>
-          <p class="text-base leading-relaxed text-gray-700 dark:text-gray-200">
+          <p class="text-base leading-relaxed text-highlighted">
             {{ $t('articles.preferencesExplanation.keywords.description') }}
           </p>
-          <p class="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
+          <p class="mt-2 text-sm italic text-muted">
             {{ $t('articles.preferencesExplanation.keywords.example') }}
           </p>
         </section>
@@ -52,11 +50,12 @@
     </template>
 
     <template #footer="{ close }">
-      <Button variant="neutral" size="lg" @click="close">{{ $t('common.close') }}</Button>
+      <UButton color="neutral" variant="soft" size="lg" @click="close">{{ $t('common.close') }}</UButton>
     </template>
-  </Modal>
+  </UModal>
 </template>
 
 <script setup lang="ts">
-const open = defineModel<boolean>()
+const open = defineModel<boolean>({ default: false })
+const openDialog = () => (open.value = true)
 </script>

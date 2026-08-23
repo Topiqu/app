@@ -1,5 +1,5 @@
 <template>
-  <button
+  <UButton
     type="button"
     :disabled
     :aria-pressed="toggle ? active : undefined"
@@ -18,7 +18,7 @@
          to restate the colour, and guessing it in the consumer is how the series pill went dark
          text on an indigo fill. -->
     <slot :textTone="text" />
-  </button>
+  </UButton>
 </template>
 
 <script setup lang="ts">

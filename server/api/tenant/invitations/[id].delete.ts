@@ -6,6 +6,12 @@ export default defineEventHandler(async (event) => {
     data: { revokedAt: new Date() },
   })
   if (!result.count) throw createError({ statusCode: 404, message: 'Invitation not found' })
-  await logAction({ action: 'TENANT_INVITATION_REVOKED', userId: user.id, clientSiteId: membership.clientSiteId, ip: getIp(event), metadata: { invitationId: id } })
+  await logAction({
+    action: 'TENANT_INVITATION_REVOKED',
+    userId: user.id,
+    clientSiteId: membership.clientSiteId,
+    ip: getIp(event),
+    metadata: { invitationId: id },
+  })
   return { ok: true }
 })

@@ -5,7 +5,7 @@
     >
       <div v-if="pending" class="py-16"><Icon name="mdi:loading" class="size-8 animate-spin" /></div>
       <template v-else-if="invitation">
-        <img
+        <NuxtImg
           v-if="invitation.logoUrl"
           :src="invitation.logoUrl"
           :alt="invitation.tenantName"
@@ -28,15 +28,13 @@
           {{ $t('common.invitation.signIn', { email: invitation.email }) }}
         </p>
         <div class="mt-7 flex justify-center gap-3">
-          <Button variant="neutral" :disabled="busy" @click="respond('decline')">{{
+          <UButton color="neutral" variant="soft" :disabled="busy" @click="respond('decline')">{{
             $t('common.invitation.decline')
-          }}</Button>
-          <Button v-if="loggedIn" :disabled="busy" @click="respond('accept')">{{
+          }}</UButton>
+          <UButton v-if="loggedIn" :loading="busy" @click="respond('accept')">{{
             $t('common.invitation.accept')
-          }}</Button>
-          <Button v-else @click="goToSignIn">{{
-            $t('common.invitation.signInAction')
-          }}</Button>
+          }}</UButton>
+          <UButton v-else @click="goToSignIn">{{ $t('common.invitation.signInAction') }}</UButton>
         </div>
       </template>
       <div v-else class="py-12">
@@ -47,11 +45,17 @@
   </main>
 </template>
 <script setup lang="ts">
+definePageMeta({ shell: 'product', dashboardSidebar: false })
+
 const route = useRoute()
 const localePath = useLocalePath()
 const { status, getSession } = useAuth()
 const token = route.params.token as string
-const { data: invitation, pending, error } = await useFetch<{
+const {
+  data: invitation,
+  pending,
+  error,
+} = await useFetch<{
   tenantName: string
   logoUrl: string | null
   inviterName: string
@@ -60,10 +64,10 @@ const { data: invitation, pending, error } = await useFetch<{
   scopes: string[]
 }>(`/api/invitations/${token}`)
 const busy = shallowRef(false)
-const toast = useToast()
+const toast = useAppToast()
 const loggedIn = computed(() => status.value === 'authenticated')
 const errorMessage = computed(() => {
-  const code = error.value?.data?.data?.code
+  const code = (error.value?.data as { data?: { code?: string } } | undefined)?.data?.code
   return code ? $t(`common.invitation.errors.${code}`) : $t('common.invitation.invalid')
 })
 const goToSignIn = () => navigateTo(localePath({ name: 'autorizace', query: { invitation: token } }))

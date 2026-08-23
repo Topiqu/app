@@ -35,6 +35,7 @@ export interface UseTiptapInstanceOptions {
   slashCommand: any
   onChange: (html: string) => void
   onDropFiles: (files: File[]) => void
+  ariaLabel: string
 }
 
 export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
@@ -51,7 +52,7 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
   const editor = useEditor({
     content: opts.content.value ?? '<p></p>',
     extensions: [
-      StarterKit.configure({ blockquote: false }),
+      StarterKit.configure({ blockquote: false, dropcursor: false, link: false, underline: false }),
       CustomBlockquote.configure({ HTMLAttributes: { class: 'blockquote' } }),
       Image.configure({
         inline: true,
@@ -93,6 +94,7 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
     ],
     editable: opts.edit.value,
     editorProps: {
+      attributes: { role: 'textbox', 'aria-label': opts.ariaLabel },
       handleDrop(_, event, __, moved) {
         if (moved) return false
         const files = Array.from((event as DragEvent).dataTransfer?.files ?? []).filter((f) =>

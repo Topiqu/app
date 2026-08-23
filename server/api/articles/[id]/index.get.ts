@@ -67,15 +67,18 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'id')
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   const sessionId = getCookie(event, 'anon_session')
-  const { clientSiteId, locale } = getQuery<{ clientSiteId: string; locale?: Language }>(event)
+  const { clientSiteId: requestedClientSiteId, locale } = getQuery<{ clientSiteId?: string; locale?: Language }>(event)
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
+  const clientSiteId = requestedClientSiteId || (isAdmin ? user?.clientSiteId : undefined)
   if (!clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (user?.role === 'admin' && clientSiteId !== user.clientSiteId)
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
     select: { language: true },
   })
   const primaryLanguage = clientSite?.language ?? 'en'
-  const isAdmin = user?.role === 'admin'
   const select = articleSelect(isAdmin, { userId: user?.id, sessionId })
 
   // Locale-scoped resolution: the primary language renders the source Article; any other
@@ -106,7 +109,7 @@ export default defineEventHandler(async (event) => {
     })
     const visible =
       translation?.article &&
-      (translation.status === 'PUBLISHED' || isAdmin) &&
+      translation.status === 'PUBLISHED' &&
       (translation.article.status === 'published' || isAdmin)
 
     if (visible) {
@@ -134,10 +137,15 @@ export default defineEventHandler(async (event) => {
   if (!resolvedAsTranslation) {
     // Source content — and the fallback for a not-yet-translated locale (legacy i18n alias):
     // the body stays in the primary language and SEO collapses to the primary-language URL.
-    article = await prisma.article.findUnique({
-      where: { slug_clientSiteId: { slug, clientSiteId } },
-      select,
-    })
+    article = isAdmin
+      ? await prisma.article.findFirst({
+          where: { clientSiteId, OR: [{ slug }, { id: slug }] },
+          select,
+        })
+      : await prisma.article.findUnique({
+          where: { slug_clientSiteId: { slug, clientSiteId } },
+          select,
+        })
     if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
     if (article.status !== 'published' && !isAdmin)
       throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
@@ -194,6 +202,7 @@ export default defineEventHandler(async (event) => {
 
   return {
     ...rest,
+    sourceSlug: baseSlug,
     language,
     translationStatus,
     alternates,

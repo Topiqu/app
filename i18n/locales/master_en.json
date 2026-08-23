@@ -1,11 +1,29 @@
 {
   "master": {
+    "title": "Administration",
+    "userEdit": {
+      "title": "Edit user",
+      "passwordPlaceholder": "New password (leave blank to keep the current one)",
+      "role": "Role",
+      "roles": {
+        "admin": "Administrator",
+        "reader": "Reader",
+        "ai": "AI author"
+      },
+      "validation": "Enter a username and email address.",
+      "success": "User updated.",
+      "error": "The user could not be updated."
+    },
     "clientTable": {
+      "title": "Client sites",
+      "description": "Manage publications, plans, access and tenant settings.",
       "search": "Search clients...",
       "headers": {
         "name": "Name",
         "domain": "Domain",
+        "status": "Status",
         "plan": "Plan",
+        "users": "Users",
         "createdAt": "Created At",
         "actions": "Actions"
       },

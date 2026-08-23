@@ -1,43 +1,41 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br">
-    <div class="max-w-4xl mx-auto flex flex-col gap-8 px-4">
+  <div class="mx-auto max-w-4xl px-4">
+    <UPage>
       <Back />
-      <header class="flex flex-col items-center gap-4 text-center">
-        <UserPicture
-          :url="author.avatarUrl"
-          :name="authorName"
-          size="xl"
-          class="ring-4 ring-white dark:ring-neutral-900 shadow-lg"
-        />
-        <div class="flex flex-col items-center gap-1">
-          <h1
-            class="text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"
-          >
-            {{ authorName }}
-          </h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ $t('articles.articlesCount', author.total, { count: author.total }) }}
-          </p>
+      <UPageHeader :title="`${$t('articles.authorsArticles')} ${authorName}`">
+        <div class="flex items-center gap-4">
+          <AppMedia
+            :src="author.avatarUrl"
+            :alt="$t('common.avatar.alt.author', [authorName])"
+            :fallbackText="authorName"
+            aspectRatio="1 / 1"
+            sizes="64px"
+            containerClass="size-16 shrink-0 rounded-full"
+          />
+          <div class="min-w-0">
+            <p class="font-semibold text-highlighted">{{ authorName }}</p>
+            <p v-if="author.bio" class="text-sm text-muted">{{ author.bio }}</p>
+          </div>
         </div>
-        <p v-if="author.bio" class="text-gray-600 dark:text-gray-400 max-w-lg text-pretty">
-          {{ author.bio }}
-        </p>
-      </header>
-
-      <ArticleCollection
-        v-model:search="search"
-        v-model:sort="sort"
-        v-model:page="page"
-        :articles
-        :pending
-        :hasMore="author.hasMore"
-      />
-    </div>
+      </UPageHeader>
+      <UPageBody>
+        <ArticleCollection
+          v-model:search="search"
+          v-model:sort="sort"
+          v-model:page="page"
+          :articles
+          :pending
+          :hasMore="author.hasMore"
+        />
+      </UPageBody>
+    </UPage>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ArticleCardData } from '~~/shared/types/article'
+
+definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
 const canonicalOrigin = useCanonicalOrigin()

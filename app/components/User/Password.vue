@@ -1,32 +1,32 @@
 <template>
   <div class="relative space-y-2">
-    <FormLabel :text="$t(isConfirm ? 'common.auth.passwordConfirm' : 'common.auth.newPassword')" />
-    <FormInput
-      v-model="password"
-      :type="showPassword ? 'text' : 'password'"
-      :placeholder="$t(isConfirm ? 'common.auth.passwordConfirm' : 'common.auth.newPassword')"
-      autocomplete="new-password"
-      :inputClass="validityClass"
-    >
-      <template #icon>
-        <div
-          class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center size-6 text-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer"
-          :aria-label="showPassword ? $t('common.hidePassword') : $t('common.showPassword')"
-          @click="showPassword = !showPassword"
-        >
-          <Icon :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" class="size-full text-[inherit]" />
-        </div>
-      </template>
-    </FormInput>
+    <UFormField :label="$t(isConfirm ? 'common.auth.passwordConfirm' : 'common.auth.newPassword')">
+      <UInput
+        v-model="password"
+        :type="showPassword ? 'text' : 'password'"
+        :placeholder="$t(isConfirm ? 'common.auth.passwordConfirm' : 'common.auth.newPassword')"
+        class="w-full"
+        :color="password && !isConfirm ? (isValidReal ? 'success' : 'error') : 'neutral'"
+      >
+        <template #trailing>
+          <UButton
+            color="neutral"
+            variant="link"
+            size="sm"
+            :icon="showPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
+            :aria-label="showPassword ? $t('common.hidePassword') : $t('common.showPassword')"
+            @click="showPassword = !showPassword"
+          />
+        </template>
+      </UInput>
+    </UFormField>
 
     <div v-if="password && !isConfirm" class="space-y-2">
-      <div class="flex gap-1">
-        <div v-for="n in 4" :key="n" class="flex-1 h-2 rounded transition-all duration-300" :class="segmentClass(n)" />
-      </div>
+      <UProgress :modelValue="passwordAnalysis.score" :max="4" :color="strengthColor" />
 
       <div class="text-xs text-right space-y-1" aria-live="polite">
-        <p :class="labelColor">{{ strengthLabel }}</p>
-        <div v-for="s in suggestions" :key="s" class="text-gray-600 dark:text-gray-400 italic">
+        <UBadge :color="strengthColor" variant="soft">{{ strengthLabel }}</UBadge>
+        <div v-for="s in suggestions" :key="s" class="italic text-muted">
           {{ s }}
         </div>
       </div>
@@ -73,12 +73,6 @@ const isValidReal = computed(() => {
   return externalValid && scoreValid && lengthValid
 })
 
-// `inputClass` reaches the control; a plain `class` would land on FormInput's wrapper div instead.
-const validityClass = computed(() => {
-  if (!password.value || props.isConfirm) return ''
-  return isValidReal.value ? '!border-green-500' : '!border-red-500'
-})
-
 const suggestions = computed(() => {
   if (props.isConfirm) return []
   const rawSuggestions = passwordAnalysis.value.feedback.suggestions || []
@@ -103,25 +97,13 @@ const strengthLabel = computed(() => {
   return ''
 })
 
-const labelColor = computed(() => {
-  if (props.isConfirm) return 'text-gray-400'
+const strengthColor = computed<'error' | 'warning' | 'success' | 'neutral'>(() => {
+  if (props.isConfirm) return 'neutral'
   const sc = passwordAnalysis.value.score
-  if (sc <= 1) return 'text-red-500'
-  if (sc === 2) return 'text-yellow-500'
-  if (sc === 3) return 'text-green-500'
-  if (sc >= 4) return 'text-green-700'
-  return 'text-gray-400'
+  if (sc <= 1) return 'error'
+  if (sc === 2) return 'warning'
+  return 'success'
 })
-
-function segmentClass(n: number): string {
-  if (props.isConfirm) return 'bg-gray-300 dark:bg-neutral-700'
-  const sc = passwordAnalysis.value.score
-  if (sc <= 1 && n === 1) return 'bg-red-500'
-  if (sc === 2 && n <= 2) return 'bg-yellow-500'
-  if (sc === 3 && n <= 3) return 'bg-green-500'
-  if (sc >= 4 && n <= 4) return 'bg-green-800'
-  return 'bg-gray-300 dark:bg-neutral-700'
-}
 
 function translateSuggestion(s: string): string {
   if (!s) return ''

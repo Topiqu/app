@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const { user, db } = await requireDb(event, { minRole: 'admin', clientSite: true })

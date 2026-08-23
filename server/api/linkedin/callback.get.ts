@@ -1,5 +1,4 @@
 import { verifyOAuthState } from '../../utils/linkedin/oauthState'
-import { getLinkedInRedirectUri } from '../../utils/linkedin/redirectUri'
 import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
 
 export default defineEventHandler(async (event) => {

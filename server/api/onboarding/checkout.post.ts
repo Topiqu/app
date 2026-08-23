@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
@@ -96,7 +97,9 @@ export default defineEventHandler(async (event) => {
         false,
         tx,
       )
-      await tx.tenantMembership.create({ data: { clientSiteId: site.id, userId: user.id, role: 'OWNER', scopes: [...TENANT_SCOPES] } })
+      await tx.tenantMembership.create({
+        data: { clientSiteId: site.id, userId: user.id, role: 'OWNER', scopes: [...TENANT_SCOPES] },
+      })
 
       if (!isManagedDomain(site.domain))
         await logAction({

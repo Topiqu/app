@@ -1,113 +1,210 @@
 <template>
-  <div class="flex flex-col gap-8">
-    <div class="flex flex-col gap-2">
-      <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
-        {{ $t('common.preferences.companyLogo.label') }}
-      </span>
-      <FormClientLogoUploader
-        :logoUrl
-        @upload="emit('update:logoUrl', { url: $event.url, optimizedUrl: $event.optimizedUrl })"
-      />
-      <span class="text-xs text-gray-500 dark:text-gray-400">
-        {{ $t('common.preferences.companyLogo.description') }}
-      </span>
-    </div>
-
-    <FormField
-      v-model="localDescription"
-      :label="$t('common.preferences.companyDescription.label')"
-      type="textarea"
-      :placeholder="$t('common.preferences.companyDescription.placeholder')"
-      :maxLength="255"
-    />
-
-    <label class="flex flex-col gap-2">
-      <span class="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
-        {{ $t('common.preferences.theme.label') }}
-      </span>
-      <div class="grid grid-cols-5 gap-4 sm:gap-6 max-w-xs sm:max-w-sm mx-auto justify-items-center">
-        <Button
-          v-for="theme in themes"
-          :key="theme"
-          type="button"
-          :icon="currentTheme === theme ? 'mdi:check' : undefined"
-          :style="{ backgroundColor: theme }"
-          class="size-12! rounded-full! aspect-square"
-          :class="
-            currentTheme === theme
-              ? 'ring-2 ring-blue-500 scale-110'
-              : 'hover:scale-105 border border-gray-300 dark:border-gray-600'
-          "
-          @click="emit('update:currentTheme', theme)"
+  <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="flex min-w-0 flex-col gap-8">
+      <h2 data-branding-section="identity" class="text-lg font-semibold text-highlighted">
+        {{ $t('common.preferences.branding.identity') }}
+      </h2>
+      <UFormField
+        :label="$t('common.preferences.companyLogo.label')"
+        :description="$t('common.preferences.companyLogo.description')"
+      >
+        <FileUploader
+          compact
+          :imageUrl="logoUrl"
+          type="client-logo"
+          :maxWidth="3840"
+          :maxHeight="2160"
+          @upload="emit('update:logoUrl', { url: $event.url, optimizedUrl: $event.optimizedUrl })"
         />
-      </div>
-    </label>
+      </UFormField>
 
-    <div class="flex flex-col gap-6">
-      <div class="flex items-center justify-between">
-        <span class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-200">
-          {{ $t('common.preferences.socials.label') }}
-        </span>
-        <div class="flex flex-wrap gap-2">
-          <Button
-            v-for="platform in socialPlatforms"
-            :key="platform"
-            variant="transparent"
-            :icon="platformIcons[platform]"
-            :disabled="localSocials.some((s) => s.platform === platform)"
-            class="text-white"
-            :class="
-              localSocials.some((s) => s.platform === platform)
-                ? '!bg-gray-200 dark:!bg-gray-700 opacity-50'
-                : platformStyles[platform].bg
-            "
-            @click="addSocial(platform)"
+      <UFormField
+        :label="$t('common.preferences.branding.favicon')"
+        :description="$t('common.preferences.branding.faviconHelp')"
+      >
+        <FileUploader
+          compact
+          aspectRatio="1 / 1"
+          :imageUrl="faviconUrl"
+          type="client-favicon"
+          :minWidth="32"
+          :minHeight="32"
+          :maxWidth="512"
+          :maxHeight="512"
+          :maxSize="512000"
+          @upload="emit('update:faviconUrl', $event)"
+        />
+      </UFormField>
+
+      <UFormField :label="$t('common.preferences.branding.tagline')" :hint="`${localTagline.length}/80`">
+        <UInput
+          v-model="localTagline"
+          :maxlength="80"
+          :placeholder="$t('common.preferences.branding.taglinePlaceholder')"
+        />
+      </UFormField>
+
+      <UFormField :label="$t('common.preferences.companyDescription.label')" :hint="`${localDescription.length}/255`">
+        <UTextarea
+          v-model="localDescription"
+          :placeholder="$t('common.preferences.companyDescription.placeholder')"
+          :maxLength="255"
+          autoresize
+        />
+      </UFormField>
+
+      <h2 data-branding-section="visual-style" class="text-lg font-semibold text-highlighted">
+        {{ $t('common.preferences.branding.visualStyle') }}
+      </h2>
+      <UFormField :label="$t('common.preferences.theme.label')">
+        <UPopover :content="{ align: 'start' }">
+          <UButton
+            color="neutral"
+            variant="outline"
+            trailingIcon="i-mdi-chevron-down"
+            :label="localTheme"
+            :style="{ borderInlineStart: `2rem solid ${currentThemeColor}` }"
           />
-        </div>
-      </div>
-
-      <div v-if="localSocials.length" class="grid gap-4">
-        <div
-          v-for="(social, index) in localSocials"
-          :key="index"
-          class="rounded-xl border bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200"
-          :class="[
-            platformStyles[social.platform].border,
-            isValidUrl(social.url) ? '' : 'border-red-500 dark:border-red-400',
-          ]"
-        >
-          <div class="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-700">
-            <div
-              class="flex items-center justify-center w-9 h-9 rounded-lg"
-              :class="platformStyles[social.platform].bg"
-            >
-              <Icon :name="platformIcons[social.platform]" class="w-5 h-5 text-white" />
+          <template #content>
+            <div class="grid grid-cols-5 gap-2 p-3" :aria-label="$t('common.preferences.theme.label')">
+              <UButton
+                v-for="theme in themes"
+                :key="theme"
+                square
+                color="neutral"
+                :variant="localTheme === theme ? 'outline' : 'ghost'"
+                :style="{ backgroundColor: themeColors[theme] }"
+                :aria-label="theme"
+                :title="theme"
+                @click="localTheme = theme"
+              />
             </div>
-            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ social.platform }}</span>
-            <button
-              class="ml-auto p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-              @click="removeSocial(index)"
+          </template>
+        </UPopover>
+      </UFormField>
+
+      <UFormField :label="$t('common.preferences.branding.typography')">
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div
+            v-for="preset in typographyPresets"
+            :key="preset.value"
+            class="rounded-[var(--topiqu-surface-radius)] border"
+            :class="typographyPreset === preset.value ? 'border-primary bg-primary/5' : 'border-default bg-default'"
+            :style="{ fontFamily: preset.font }"
+          >
+            <UButton
+              type="button"
+              color="neutral"
+              variant="ghost"
+              block
+              :aria-label="preset.label"
+              :aria-pressed="typographyPreset === preset.value"
+              @click="emit('update:typographyPreset', preset.value)"
             >
-              <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
-            </button>
-          </div>
-          <div class="p-4">
-            <FormField
-              v-model="localSocials[index]!.url"
-              :icon="platformIcons[social.platform]"
-              iconPosition="leading"
-              :placeholder="platformPlaceholders[social.platform]"
-              :maxLength="255"
-              @blur="normalizeUrl(index)"
-            />
+              <span
+                ><strong class="block">{{ preset.label }}</strong
+                ><span class="text-xs text-muted">Aa Bb Cc</span></span
+              >
+            </UButton>
           </div>
         </div>
+      </UFormField>
+
+      <div
+        data-publication-preview
+        class="publication-surface rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-6 lg:hidden"
+        :style="previewStyle"
+      >
+        <p v-if="localTagline" class="text-sm font-semibold text-[var(--topiqu-tenant-accent)]">
+          {{ localTagline }}
+        </p>
+        <h3 class="mt-2 text-3xl font-black text-highlighted">{{ name }}</h3>
+        <p v-if="localDescription" class="mt-2 line-clamp-3 text-sm text-muted">{{ localDescription }}</p>
+        <span
+          class="publication-primary-cta mt-5 inline-flex rounded-[var(--ui-radius)] px-3 py-2 text-sm font-semibold"
+          >{{ $t('articles.home.latestStory') }}</span
+        >
       </div>
 
-      <span v-else class="text-sm text-gray-500 dark:text-gray-400">
-        {{ $t('common.preferences.socials.noSocials') }}
-      </span>
+      <div class="flex flex-col gap-6">
+        <div class="flex items-center justify-between">
+          <span data-branding-section="socials" class="text-lg font-semibold text-highlighted">
+            {{ $t('common.preferences.socials.label') }}
+          </span>
+          <UDropdownMenu :items="availableSocialItems">
+            <UButton
+              color="neutral"
+              variant="soft"
+              icon="i-mdi-plus"
+              :label="$t('common.preferences.branding.addSocial')"
+            />
+          </UDropdownMenu>
+        </div>
+
+        <div v-if="localSocials.length" class="grid gap-4">
+          <UCard v-for="(social, index) in localSocials" :key="index">
+            <div class="flex items-center gap-3 border-b border-default p-4">
+              <div
+                class="flex h-9 w-9 items-center justify-center rounded-lg"
+                :style="{ backgroundColor: platformColors[social.platform] }"
+              >
+                <UIcon size="20" :name="platformIcons[social.platform]" class="text-white" />
+              </div>
+              <span class="text-sm font-medium text-highlighted">{{ social.platform }}</span>
+              <UBadge v-if="!isValidUrl(social.url)" color="error" variant="soft">{{
+                $t('common.messages.invalidUrlShort')
+              }}</UBadge>
+              <UButton
+                color="neutral"
+                variant="ghost"
+                square
+                icon="i-mdi-trash-can-outline"
+                class="ml-auto"
+                :aria-label="$t('common.actions.delete')"
+                @click="removeSocial(index)"
+              />
+            </div>
+            <div class="p-4">
+              <UFormField :label="social.platform" :ui="{ label: 'sr-only' }">
+                <UInput
+                  v-model="localSocials[index]!.url"
+                  :placeholder="platformPlaceholders[social.platform]"
+                  :maxLength="255"
+                  :leadingIcon="platformIcons[social.platform]"
+                  @blur="normalizeUrl(index)"
+                />
+              </UFormField>
+            </div>
+          </UCard>
+        </div>
+
+        <UEmpty v-else size="sm" :description="$t('common.preferences.socials.noSocials')" />
+      </div>
     </div>
+
+    <aside
+      data-publication-preview
+      class="publication-surface sticky top-24 hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-6 lg:block"
+      :style="previewStyle"
+    >
+      <AppMedia
+        :src="logoUrl"
+        originalSrc="/app-logo.png"
+        :alt="name"
+        aspectRatio="1 / 1"
+        fit="contain"
+        containerClass="size-12 rounded-[var(--ui-radius)] bg-elevated"
+      />
+      <p v-if="localTagline" class="mt-5 text-sm font-semibold text-[var(--topiqu-tenant-accent)]">
+        {{ localTagline }}
+      </p>
+      <h3 class="mt-2 text-3xl font-black text-highlighted">{{ name }}</h3>
+      <p v-if="localDescription" class="mt-2 line-clamp-3 text-sm text-muted">{{ localDescription }}</p>
+      <span
+        class="publication-primary-cta mt-5 inline-flex rounded-[var(--ui-radius)] px-3 py-2 text-sm font-semibold"
+        >{{ $t('articles.home.latestStory') }}</span
+      >
+    </aside>
   </div>
 </template>
 
@@ -116,9 +213,14 @@ import type { SocialPlatform } from '@prisma/client'
 
 import { ThemeSchema } from '~~/shared/zod/enums'
 
+import { themeColors, type ThemeKey } from '~/composables/theme'
+
 const props = defineProps<{
   logoUrl: string
   description: string
+  tagline: string
+  faviconUrl: string
+  typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM'
   socials: { platform: SocialPlatform; url: string }[]
   name: string
   domain: string
@@ -128,6 +230,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:logoUrl': [url: { url: string; optimizedUrl: string }]
   'update:description': [value: string]
+  'update:tagline': [value: string]
+  'update:faviconUrl': [url: { url: string; optimizedUrl: string }]
+  'update:typographyPreset': [preset: 'MODERN' | 'EDITORIAL' | 'SYSTEM']
   'update:socials': [socials: { platform: SocialPlatform; url: string }[]]
   'update:currentTheme': [theme: string]
 }>()
@@ -138,6 +243,26 @@ const localDescription = computed({
   get: () => props.description,
   set: (value) => emit('update:description', value),
 })
+const localTagline = computed({
+  get: () => props.tagline,
+  set: (value) => emit('update:tagline', value),
+})
+const typographyPresets = computed(() => [
+  { value: 'MODERN' as const, label: $t('common.preferences.branding.modern'), font: '"Manrope Variable", sans-serif' },
+  {
+    value: 'EDITORIAL' as const,
+    label: $t('common.preferences.branding.editorial'),
+    font: '"Source Serif 4 Variable", serif',
+  },
+  { value: 'SYSTEM' as const, label: $t('common.preferences.branding.system'), font: 'system-ui, sans-serif' },
+])
+const previewStyle = computed(() => tenantThemeStyle(props.currentTheme, props.typographyPreset))
+
+const localTheme = computed({
+  get: () => props.currentTheme,
+  set: (value: string) => emit('update:currentTheme', value),
+})
+const currentThemeColor = computed(() => themeColors[localTheme.value as ThemeKey] || themeColors.indigo)
 
 const localSocials = computed({
   get: () => props.socials,
@@ -145,47 +270,32 @@ const localSocials = computed({
 })
 
 const socialPlatforms: SocialPlatform[] = ['FACEBOOK', 'TWITTER', 'INSTAGRAM', 'LINKEDIN', 'YOUTUBE', 'OTHER']
+const availableSocialItems = computed(() =>
+  socialPlatforms
+    .filter((platform) => !localSocials.value.some((social) => social.platform === platform))
+    .map((platform) => ({
+      label: platform,
+      icon: platformIcons[platform],
+      onSelect: () => addSocial(platform),
+    })),
+)
 
 const platformIcons: Record<SocialPlatform, string> = {
-  FACEBOOK: 'mdi:facebook',
-  TWITTER: 'mdi:alpha-x-circle',
-  INSTAGRAM: 'mdi:instagram',
-  LINKEDIN: 'mdi:linkedin',
-  YOUTUBE: 'mdi:youtube',
-  OTHER: 'mdi:web',
+  FACEBOOK: 'i-mdi-facebook',
+  TWITTER: 'i-mdi-alpha-x-circle',
+  INSTAGRAM: 'i-mdi-instagram',
+  LINKEDIN: 'i-mdi-linkedin',
+  YOUTUBE: 'i-mdi-youtube',
+  OTHER: 'i-mdi-web',
 }
 
-const platformStyles: Record<SocialPlatform, { bg: string; border: string; text: string }> = {
-  FACEBOOK: {
-    bg: '!bg-blue-600 hover:!bg-blue-700 dark:!bg-blue-500 dark:hover:!bg-blue-600',
-    border: 'border-blue-600 dark:border-blue-500',
-    text: 'text-blue-600 dark:text-blue-500',
-  },
-  TWITTER: {
-    bg: '!bg-black hover:!bg-gray-800',
-    border: 'border-black dark:border-gray-200',
-    text: 'text-black dark:text-gray-200',
-  },
-  INSTAGRAM: {
-    bg: '!bg-pink-500 hover:!bg-pink-600 dark:!bg-pink-400 dark:hover:!bg-pink-500',
-    border: 'border-pink-500 dark:border-pink-400',
-    text: 'text-pink-500 dark:text-pink-400',
-  },
-  LINKEDIN: {
-    bg: '!bg-blue-800 hover:!bg-blue-900 dark:!bg-blue-700 dark:hover:!bg-blue-800',
-    border: 'border-blue-800 dark:border-blue-700',
-    text: 'text-blue-800 dark:text-blue-700',
-  },
-  YOUTUBE: {
-    bg: '!bg-red-600 hover:!bg-red-700 dark:!bg-red-500 dark:hover:!bg-red-600',
-    border: 'border-red-600 dark:border-red-500',
-    text: 'text-red-600 dark:text-red-500',
-  },
-  OTHER: {
-    bg: '!bg-gray-600 hover:!bg-gray-700 dark:!bg-gray-500 dark:hover:!bg-gray-600',
-    border: 'border-gray-600 dark:border-gray-500',
-    text: 'text-gray-600 dark:text-gray-500',
-  },
+const platformColors: Record<SocialPlatform, string> = {
+  FACEBOOK: '#1877F2',
+  TWITTER: '#09090B',
+  INSTAGRAM: '#E1306C',
+  LINKEDIN: '#0A66C2',
+  YOUTUBE: '#FF0000',
+  OTHER: '#4B5563',
 }
 
 const platformPlaceholders = computed(() => ({

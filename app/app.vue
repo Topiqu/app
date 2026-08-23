@@ -1,21 +1,24 @@
 <template>
-  <NuxtLoadingIndicator class="z-top" :color="computedThemeColor" />
-  <NuxtRouteAnnouncer />
-  <StatusBar />
+  <UApp :locale="uiLocale">
+    <NuxtLoadingIndicator class="z-top" :color="computedThemeColor" />
+    <NuxtRouteAnnouncer />
+    <StatusBar />
 
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
 
-  <DevOnly>
-    <DevConsole />
-  </DevOnly>
+    <DevOnly v-if="!isBrowserTest">
+      <DevConsole />
+    </DevOnly>
+  </UApp>
 </template>
 
 <script setup lang="ts">
+import { cs, en } from '@nuxt/ui/locale'
 import { toAbsoluteUrl } from '~~/shared/utils/seo'
 
-import { themeColors, type ThemeKey } from '~/composables/theme'
+import { resolveTenantTheme, themeColors } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
 const route = useRoute()
@@ -23,11 +26,11 @@ const clientSite = await useClientSite()
 const adChance = useAdChance()
 const i18nHead = useLocaleHead()
 const canonicalOrigin = useCanonicalOrigin()
+const { locale } = useI18n()
+const uiLocale = computed(() => (locale.value === 'cs' ? cs : en))
+const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)
 
-// `useLocaleHead` derives alternates from the route alone, so it advertised a translation that
-// may not exist. The article page knows which are PUBLISHED and emits its own.
 const isArticleRoute = computed(() => String(route.name ?? '').startsWith('clanky-slug'))
-
 const i18nLinks = computed(() =>
   (i18nHead.value.link ?? [])
     .filter((link) => !(isArticleRoute.value && link.rel === 'alternate'))
@@ -35,6 +38,10 @@ const i18nLinks = computed(() =>
       typeof link.href === 'string' ? { ...link, href: toAbsoluteUrl(link.href, canonicalOrigin) } : link,
     ),
 )
+
+onMounted(() => {
+  document.documentElement.dataset.topiquHydrated = 'true'
+})
 
 const localePath = useLocalePath()
 
@@ -48,17 +55,11 @@ if (clientSite) {
   adChance.assign(clientSite.id, clientSite.plan)
 }
 
-const computedThemeColor = computed(() => themeColors[clientSite?.theme as ThemeKey] ?? themeColors.blue)
+const computedThemeColor = computed(() => themeColors[resolveTenantTheme(clientSite?.theme)])
 
 useSeoMeta({
   title: () => clientSite?.name || 'Topiqu',
   description: () => clientSite?.description || 'Moderní blogovací platforma',
-  keywords: () =>
-    Array.isArray(clientSite?.keywords)
-      ? clientSite.keywords.join(', ')
-      : typeof clientSite?.keywords === 'string'
-        ? clientSite.keywords
-        : 'blog, ai, platforma',
   author: () => clientSite?.name || 'Topiqu',
   ogTitle: () => clientSite?.name || 'Topiqu',
   ogDescription: () => clientSite?.description || 'Moderní blogovací platforma',
@@ -97,13 +98,12 @@ useHead(() => ({
     ...i18nLinks.value,
     {
       rel: 'icon',
-      type: 'image/x-icon',
-      href: clientSite?.logoUrl || '/favicon.ico',
+      href: clientSite?.faviconUrl || clientSite?.logoUrl || '/favicon.ico',
     },
     ...(clientSite
       ? [
           {
-            rel: 'alternate',
+            rel: 'alternate' as const,
             type: 'application/rss+xml',
             title: clientSite.name,
             href: `${canonicalOrigin}/rss.xml`,
@@ -111,7 +111,18 @@ useHead(() => ({
         ]
       : []),
   ],
-  meta: [...(i18nHead.value.meta || []), { name: 'theme-color', content: computedThemeColor.value }],
+  meta: [
+    ...(i18nHead.value.meta || []),
+    {
+      name: 'keywords',
+      content: Array.isArray(clientSite?.keywords)
+        ? clientSite.keywords.join(', ')
+        : typeof clientSite?.keywords === 'string'
+          ? clientSite.keywords
+          : 'blog, ai, platforma',
+    },
+    { name: 'theme-color', content: computedThemeColor.value },
+  ],
 }))
 
 // Only the identity. `nuxt-schema-org`'s i18n plugin already emits WebSite and WebPage with

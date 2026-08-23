@@ -1,46 +1,36 @@
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between gap-3">
-      <div class="min-w-0">
-        <p class="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-          {{ $t('profile.email') }}
-        </p>
-        <p class="mt-0.5 truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">{{ email }}</p>
-      </div>
-      <span
-        class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-        :class="
-          isEmailVerified
-            ? 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400'
-            : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
-        "
-      >
-        <Icon :name="isEmailVerified ? 'mdi:check-circle' : 'mdi:alert-circle-outline'" class="size-3.5" />
-        {{ isEmailVerified ? $t('profile.checks.emailVerified') : $t('profile.checks.emailNotVerified') }}
-      </span>
-    </div>
-
-    <div v-if="!isEmailVerified" class="space-y-3">
-      <Button
-        :disabled="isLoading || isVerificationCodeSent"
-        icon="mdi:email-send-outline"
+    <UFormField :label="$t('profile.email')">
+      <UInput
+        v-model="email"
+        disabled
         class="w-full"
+        :trailingIcon="isEmailVerified ? 'i-mdi-check-circle' : 'i-mdi-alert-circle'"
+      />
+    </UFormField>
+    <div v-if="!isEmailVerified" class="space-y-3">
+      <UButton
+        :disabled="isLoading || isVerificationCodeSent"
+        class="w-full"
+        :loading="isLoading"
+        icon="i-mdi-email-send"
         @click="sendVerificationCode"
       >
         {{ $t('common.auth.sendCode') }}
-      </Button>
-
+      </UButton>
       <div v-if="isVerificationCodeSent" class="space-y-2">
-        <FormInput v-model="verificationCode" name="verificationCode" :placeholder="$t('common.auth.enterCode')" />
-        <Button
+        <UFormField :label="$t('common.auth.enterCode')">
+          <UInput v-model="verificationCode" :placeholder="$t('common.auth.enterCode')" class="w-full" />
+        </UFormField>
+        <UButton
           :disabled="isLoading || !verificationCode"
-          icon="mdi:check"
-          variant="success"
           class="w-full"
+          :loading="isLoading"
+          icon="i-mdi-check"
           @click="verifyEmail"
         >
           {{ $t('common.auth.verify') }}
-        </Button>
+        </UButton>
       </div>
     </div>
   </div>
@@ -61,9 +51,9 @@ async function sendVerificationCode() {
     isLoading.value = true
     const response = await $fetch('/api/users/send-verification', { method: 'POST' })
     isVerificationCodeSent.value = true
-    toast.success({ message: response.message })
+    toast.add({ color: 'success', title: response.message })
   } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('common.auth.verifyFailed') })
+    toast.add({ color: 'error', title: err.data?.message || $t('common.auth.verifyFailed') })
   } finally {
     isLoading.value = false
   }
@@ -79,9 +69,9 @@ async function verifyEmail() {
     isEmailVerified.value = true
     isVerificationCodeSent.value = false
     verificationCode.value = ''
-    toast.success({ message: $t('common.auth.verifySuccess') })
+    toast.add({ color: 'success', title: $t('common.auth.verifySuccess') })
   } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('common.auth.verifyFailed') })
+    toast.add({ color: 'error', title: err.data?.message || $t('common.auth.verifyFailed') })
   } finally {
     isLoading.value = false
   }

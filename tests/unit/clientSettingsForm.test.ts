@@ -13,7 +13,10 @@ const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
     theme: 'green',
     keywords: ['a', 'b'],
     description: 'desc',
+    tagline: 'Independent analysis',
     logoUrl: 'https://cdn/logo.png',
+    faviconUrl: 'https://cdn/favicon.png',
+    typographyPreset: 'EDITORIAL',
     socials: [{ platform: 'X', url: 'https://x.com/acme' }],
     apiKey: 'sk_test',
     aiUser: { username: 'bot', bio: 'bio', avatarUrl: 'https://cdn/av.png' },
@@ -41,7 +44,7 @@ describe('buildClientSettingsForm', () => {
     expect(form.socials).toEqual([])
     expect(form.allowAds).toBe(false)
     expect(form.apiKey).toBe('')
-    expect(form.aiUser).toEqual({ username: '', bio: '', avatarUrl: '' })
+    expect(form.aiUser).toEqual({ username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' })
     expect(buildClientSettingsForm(undefined)).toEqual(form)
   })
 
@@ -54,7 +57,10 @@ describe('buildClientSettingsForm', () => {
       theme: 'green',
       keywords: ['a', 'b'],
       description: 'desc',
+      tagline: 'Independent analysis',
       logoUrl: 'https://cdn/logo.png',
+      faviconUrl: 'https://cdn/favicon.png',
+      typographyPreset: 'EDITORIAL',
       apiKey: 'sk_test',
       aiToneOfVoice: 'friendly',
       aiControversyLevel: 'low',
@@ -66,7 +72,12 @@ describe('buildClientSettingsForm', () => {
       allowAds: true,
       allowGtag: true,
     })
-    expect(form.aiUser).toEqual({ username: 'bot', bio: 'bio', avatarUrl: 'https://cdn/av.png' })
+    expect(form.aiUser).toEqual({
+      username: 'bot',
+      bio: 'bio',
+      avatarUrl: 'https://cdn/av.png',
+      optimizedAvatarUrl: '',
+    })
     expect(form.optimizedUrl).toBe('')
   })
 

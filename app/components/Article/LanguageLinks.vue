@@ -4,22 +4,19 @@
     class="inline-flex items-center gap-1"
     :aria-label="$t('articles.translations.languageTabs')"
   >
-    <NuxtLink
+    <UButton
       v-for="link in links"
       :key="link.language"
       :to="link.to"
       :title="$t(`languages.${link.language}`)"
       :aria-current="link.current ? 'true' : undefined"
-      class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-semibold uppercase tracking-wide no-underline border transition-colors"
-      :class="
-        link.current
-          ? 'bg-indigo-600! border-indigo-600! text-white!'
-          : 'bg-white! dark:bg-gray-900! border-gray-200! dark:border-gray-700! text-gray-600! dark:text-gray-300! hover:bg-gray-50! dark:hover:bg-gray-800!'
-      "
+      size="xs"
+      :color="link.current ? 'primary' : 'neutral'"
+      :variant="link.current ? 'solid' : 'soft'"
     >
       {{ link.language }}
       <span v-if="link.dot" class="w-1.5 h-1.5 rounded-full" :class="link.dot" />
-    </NuxtLink>
+    </UButton>
   </nav>
 </template>
 

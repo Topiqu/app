@@ -37,7 +37,10 @@ export default defineEventHandler(async (event) => {
     })
   })
   await logAction({
-    action: 'TENANT_INVITATION_CREATED', userId: user.id, clientSiteId: membership.clientSiteId, ip: getIp(event),
+    action: 'TENANT_INVITATION_CREATED',
+    userId: user.id,
+    clientSiteId: membership.clientSiteId,
+    ip: getIp(event),
     metadata: { email, scopes: body.scopes, expiresAt: expiresAt.toISOString() },
   })
   const tenant = await getTenantInvitationProfile(membership.clientSiteId)

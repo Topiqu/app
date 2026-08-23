@@ -43,33 +43,59 @@ export default defineEventHandler(async (event) => {
     activeFeatures,
     allowedFeatures,
   }
-  const settings = hasTenantScope(membership, 'TENANT_SETTINGS') ? {
-    focus: clientSite.focus, description: clientSite.description, generationFrequency: clientSite.generationFrequency,
-    keywords: clientSite.keywords, audience: clientSite.audience, theme: clientSite.theme, allowShapes: clientSite.allowShapes,
-    humanHourlyRateUsd: clientSite.humanHourlyRateUsd, humanWordsPerHour: clientSite.humanWordsPerHour,
-  } : {}
-  const integrations = hasTenantScope(membership, 'INTEGRATION_CONTROL') ? {
-    socials: clientSite.socials, allowGtag: clientSite.allowGtag, gtagId: clientSite.gtagId,
-    linkedinCompanies: clientSite.linkedinCompanies,
-  } : {}
-  const billing = hasTenantScope(membership, 'BILLING_CHANGE') ? {
-    currency: clientSite.currency, annualPayment: clientSite.annualPayment, monthlyPayment: clientSite.monthlyPayment,
-    firstPaidAt: clientSite.firstPaidAt, nextBillingAt: clientSite.nextBillingAt, lastInvoicedAt: clientSite.lastInvoicedAt,
-    stripeCustomerId: clientSite.stripeCustomerId, stripeSubscriptionId: clientSite.stripeSubscriptionId,
-  } : {}
-  const ai = hasTenantScope(membership, 'AI_USE') ? {
-    tokenLimit: clientSite.tokenLimit, tokenRemaining: clientSite.tokenRemaining, totalUsage: clientSite.totalUsage,
-    autoRelease: clientSite.autoRelease, aiToneOfVoice: clientSite.aiToneOfVoice,
-    aiControversyLevel: clientSite.aiControversyLevel, translationMode: clientSite.translationMode,
-    translationLanguages: clientSite.translationLanguages, discloseAiContent: clientSite.discloseAiContent,
-    aiUser: clientSite.users[0]
-      ? {
-          username: clientSite.users[0].username,
-          bio: clientSite.users[0].bio,
-          avatarUrl: clientSite.users[0].avatarUrl,
-        }
-      : null,
-  } : {}
+  const settings = hasTenantScope(membership, 'TENANT_SETTINGS')
+    ? {
+        focus: clientSite.focus,
+        description: clientSite.description,
+        generationFrequency: clientSite.generationFrequency,
+        keywords: clientSite.keywords,
+        audience: clientSite.audience,
+        theme: clientSite.theme,
+        allowShapes: clientSite.allowShapes,
+        humanHourlyRateUsd: clientSite.humanHourlyRateUsd,
+        humanWordsPerHour: clientSite.humanWordsPerHour,
+      }
+    : {}
+  const integrations = hasTenantScope(membership, 'INTEGRATION_CONTROL')
+    ? {
+        socials: clientSite.socials,
+        allowGtag: clientSite.allowGtag,
+        gtagId: clientSite.gtagId,
+        linkedinCompanies: clientSite.linkedinCompanies,
+      }
+    : {}
+  const billing = hasTenantScope(membership, 'BILLING_CHANGE')
+    ? {
+        currency: clientSite.currency,
+        annualPayment: clientSite.annualPayment,
+        monthlyPayment: clientSite.monthlyPayment,
+        firstPaidAt: clientSite.firstPaidAt,
+        nextBillingAt: clientSite.nextBillingAt,
+        lastInvoicedAt: clientSite.lastInvoicedAt,
+        stripeCustomerId: clientSite.stripeCustomerId,
+        stripeSubscriptionId: clientSite.stripeSubscriptionId,
+      }
+    : {}
+  const ai = hasTenantScope(membership, 'AI_USE')
+    ? {
+        tokenLimit: clientSite.tokenLimit,
+        tokenRemaining: clientSite.tokenRemaining,
+        totalUsage: clientSite.totalUsage,
+        autoRelease: clientSite.autoRelease,
+        aiToneOfVoice: clientSite.aiToneOfVoice,
+        aiControversyLevel: clientSite.aiControversyLevel,
+        translationMode: clientSite.translationMode,
+        translationLanguages: clientSite.translationLanguages,
+        discloseAiContent: clientSite.discloseAiContent,
+        aiUser: clientSite.users[0]
+          ? {
+              username: clientSite.users[0].username,
+              bio: clientSite.users[0].bio,
+              avatarUrl: clientSite.users[0].avatarUrl,
+            }
+          : null,
+      }
+    : {}
 
   return {
     ...base,

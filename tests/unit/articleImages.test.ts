@@ -11,6 +11,7 @@ describe('optimizeArticleImages', () => {
     expect(html).toContain('src="/_ipx/w_1000/https://cdn.example/image.png?a=1&amp;b=2"')
     expect(html).toContain('srcset="/_ipx/w_640/https://cdn.example/image.png?a=1&amp;b=2 640w')
     expect(html).toContain('width="1000" height="667" loading="lazy" decoding="async"')
+    expect(html).toContain('data-original-src="https://cdn.example/image.png"')
     expect(html).toContain('alt="Preview"')
   })
 

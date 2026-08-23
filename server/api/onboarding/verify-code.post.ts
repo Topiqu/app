@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { consumeChallenge, issueVerifiedToken } from '~~/server/utils/onboardingTokens'
 
 const schema = z.object({

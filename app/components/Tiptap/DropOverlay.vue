@@ -13,7 +13,7 @@
       aria-hidden="true"
     >
       <div class="flex flex-col items-center gap-2 text-indigo-600 dark:text-indigo-300">
-        <Icon name="mdi:tray-arrow-down" class="size-12" />
+        <UIcon size="48" name="i-mdi-tray-arrow-down" />
         <span class="text-sm font-medium">{{ $t('articles.editor.dropZone') }}</span>
       </div>
     </div>

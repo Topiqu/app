@@ -1,12 +1,26 @@
 <template>
-  <Modal v-model="open" :title="$t('stats.title')" class="max-w-3xl">
+  <UModal v-model:open="open" :title="$t('stats.title')" class="max-w-5xl">
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
 
-    <template #content>
+    <template #header="{ close }">
+      <div class="flex w-full min-w-0 items-center justify-between gap-3">
+        <h2 class="truncate text-lg font-semibold text-highlighted">{{ $t('stats.title') }}</h2>
+        <UButton
+          icon="i-mdi-close"
+          color="neutral"
+          variant="ghost"
+          square
+          :aria-label="$t('common.close')"
+          @click="close"
+        />
+      </div>
+    </template>
+
+    <template #body>
       <div v-if="pending" class="space-y-8" :aria-label="$t('stats.loading')" aria-busy="true">
-        <div class="grid grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <div v-for="i in 3" :key="i" class="space-y-2">
             <div class="h-3 w-16 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
             <div class="h-9 w-24 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
@@ -14,7 +28,11 @@
         </div>
         <div v-for="section in 3" :key="section" class="space-y-3">
           <div class="h-3 w-28 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
-          <div v-for="row in 3" :key="row" class="h-8 animate-pulse rounded bg-neutral-900/[0.05] dark:bg-white/[0.06]" />
+          <div
+            v-for="row in 3"
+            :key="row"
+            class="h-8 animate-pulse rounded bg-neutral-900/[0.05] dark:bg-white/[0.06]"
+          />
         </div>
       </div>
 
@@ -24,7 +42,7 @@
           {{ $t('common.messages.loadFailedTitle') }}
         </p>
         <p class="text-sm text-neutral-500 dark:text-neutral-400">{{ $t('common.messages.loadFailedText') }}</p>
-        <Button icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
+        <UButton icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</UButton>
       </div>
 
       <div v-else-if="stats.articleCount === 0" class="flex flex-col items-center gap-3 py-12 text-center">
@@ -49,22 +67,22 @@
           </div>
           <!-- Closing first, the way TrialEnded/TrialExpired do it — the dialog is not dismissed
                by navigation and would otherwise sit on top of the billing tab it just opened. -->
-          <NuxtLink
-            :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
-            class="shrink-0 rounded-lg bg-neutral-900 px-4 py-2 text-center text-sm font-medium text-white transition-colors motion-reduce:transition-none hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
-            @click="open = false"
-          >
+          <UButton :to="localePath({ name: 'settings', query: { tab: 'billing' } })" @click="open = false">
             {{ $t('stats.upgradePrompt.button') }}
-          </NuxtLink>
+          </UButton>
         </div>
 
         <!-- The payload: three numbers the whole modal exists to deliver. -->
-        <section class="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:divide-x sm:divide-neutral-200 dark:sm:divide-neutral-800">
+        <section
+          class="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:divide-x sm:divide-neutral-200 dark:sm:divide-neutral-800"
+        >
           <div class="sm:pr-6">
             <p class="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
               {{ $t('stats.totalViews.title') }}
             </p>
-            <p class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-neutral-900 sm:text-4xl dark:text-neutral-50">
+            <p
+              class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-neutral-900 sm:text-4xl dark:text-neutral-50"
+            >
               {{ formatCount(stats.totalViews) }}
             </p>
             <p v-if="stats.publishedCount > 0" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -76,7 +94,9 @@
             <p class="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
               {{ $t('stats.articleCount') }}
             </p>
-            <p class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-neutral-900 sm:text-4xl dark:text-neutral-50">
+            <p
+              class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-neutral-900 sm:text-4xl dark:text-neutral-50"
+            >
               {{ formatCount(stats.publishedCount) }}
             </p>
             <p v-if="stats.draftCount > 0" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -93,7 +113,9 @@
                 <Icon name="mdi:help-circle-outline" class="size-3.5 cursor-help" />
               </span>
             </p>
-            <p class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-emerald-600 sm:text-4xl dark:text-emerald-400">
+            <p
+              class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-emerald-600 sm:text-4xl dark:text-emerald-400"
+            >
               {{ formatMoney(stats.savings.amountUsd) }}
             </p>
             <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -135,15 +157,17 @@
         <section v-if="!isBasicPlan">
           <StatsSectionHeading :title="$t('stats.topTag.title')">
             <template v-if="stats.topTags.length > COLLAPSED_TAGS" #action>
-              <button
+              <UButton
                 type="button"
-                class="rounded text-xs font-medium text-indigo-600 transition-colors motion-reduce:transition-none hover:text-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-indigo-400"
+                color="primary"
+                variant="ghost"
+                size="xs"
                 :aria-expanded="showAllTags"
                 aria-controls="stats-top-tags"
                 @click="showAllTags = !showAllTags"
               >
                 {{ showAllTags ? $t('common.actions.showLess') : $t('stats.topTag.showAll') }}
-              </button>
+              </UButton>
             </template>
           </StatsSectionHeading>
 
@@ -189,7 +213,10 @@
             </div>
           </div>
 
-          <div v-if="stats.topAuthor" class="mt-4 flex items-center gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+          <div
+            v-if="stats.topAuthor"
+            class="mt-4 flex items-center gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-800"
+          >
             <UserPicture :url="stats.topAuthor.avatarUrl" :name="stats.topAuthor.username" />
             <div class="min-w-0">
               <p class="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
@@ -220,7 +247,9 @@
 
         <section v-if="insight">
           <StatsSectionHeading :title="$t('stats.sentiment.title')" />
-          <div class="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40">
+          <div
+            class="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40"
+          >
             <p class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{{ insight.summary }}</p>
             <div class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs">
               <span class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
@@ -271,12 +300,19 @@
           {{ $t('stats.updatedAt') }} <NuxtTime :datetime="stats.generatedAt" timeStyle="short" :locale />
         </p>
         <div class="ml-auto flex items-center gap-2">
-          <Button variant="neutral" icon="mdi:refresh" :loading="isRefreshing" :aria="$t('common.messages.retry')" @click="refetch()" />
-          <Button size="lg" @click="close">{{ $t('common.close') }}</Button>
+          <UButton
+            color="neutral"
+            variant="soft"
+            icon="mdi:refresh"
+            :loading="isRefreshing"
+            :aria="$t('common.messages.retry')"
+            @click="refetch()"
+          />
+          <UButton size="lg" @click="close">{{ $t('common.close') }}</UButton>
         </div>
       </div>
     </template>
-  </Modal>
+  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -329,8 +365,12 @@ const { data: rawInsight } = useQuery({
 // US machine printed 1,234 next to "zobrazení".
 const countFormat = computed(() => new Intl.NumberFormat(locale.value))
 const decimalFormat = computed(() => new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 }))
-const percentFormat = computed(() => new Intl.NumberFormat(locale.value, { style: 'percent', maximumFractionDigits: 1 }))
-const dateFormat = computed(() => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'long', year: 'numeric' }))
+const percentFormat = computed(
+  () => new Intl.NumberFormat(locale.value, { style: 'percent', maximumFractionDigits: 1 }),
+)
+const dateFormat = computed(
+  () => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'long', year: 'numeric' }),
+)
 const dayLabel = computed(() => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'numeric' }))
 
 const formatCount = (value: number) => countFormat.value.format(value)

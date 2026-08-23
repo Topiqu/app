@@ -14,10 +14,18 @@ export default defineEventHandler(async (event) => {
       invitedBy: { select: { username: true } },
     },
   })
-  if (!invitation) throw createError({ statusCode: 404, message: 'Invitation not found', data: { code: 'INVITATION_NOT_FOUND' } })
-  if (invitation.acceptedAt) throw createError({ statusCode: 409, message: 'Invitation was already accepted', data: { code: 'INVITATION_ACCEPTED' } })
-  if (invitation.revokedAt) throw createError({ statusCode: 410, message: 'Invitation was revoked', data: { code: 'INVITATION_REVOKED' } })
-  if (invitation.expiresAt <= new Date()) throw createError({ statusCode: 410, message: 'Invitation expired', data: { code: 'INVITATION_EXPIRED' } })
+  if (!invitation)
+    throw createError({ statusCode: 404, message: 'Invitation not found', data: { code: 'INVITATION_NOT_FOUND' } })
+  if (invitation.acceptedAt)
+    throw createError({
+      statusCode: 409,
+      message: 'Invitation was already accepted',
+      data: { code: 'INVITATION_ACCEPTED' },
+    })
+  if (invitation.revokedAt)
+    throw createError({ statusCode: 410, message: 'Invitation was revoked', data: { code: 'INVITATION_REVOKED' } })
+  if (invitation.expiresAt <= new Date())
+    throw createError({ statusCode: 410, message: 'Invitation expired', data: { code: 'INVITATION_EXPIRED' } })
   return {
     tenantName: invitation.clientSite.name,
     logoUrl: invitation.clientSite.logoUrl,

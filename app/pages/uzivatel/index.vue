@@ -4,14 +4,14 @@
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
         {{ $t('profile.title') }}
       </h1>
-      <Button
+      <UButton
         square
-        borderless
         size="sm"
-        variant="neutral"
-        icon="mdi:file-pdf-box"
+        color="neutral"
+        variant="soft"
+        icon="i-mdi-file-pdf-box"
         :disabled="isLoading"
-        :aria="$t('profile.exportToPDF')"
+        :aria-label="$t('profile.exportToPDF')"
         :title="$t('profile.exportToPDF')"
         @click="exportToPDF"
       />
@@ -36,7 +36,7 @@
 
           <Panel :title="$t('profile.publicProfile')" :description="$t('profile.publicProfileDescription')">
             <div class="space-y-4">
-              <FormField
+              <AppFormField
                 id="username-section"
                 v-model="profileForm.username"
                 :label="$t('profile.username')"
@@ -44,16 +44,15 @@
                 name="username"
                 autocomplete="nickname"
               />
-              <FormField
+              <AppFormField
                 id="bio-section"
                 v-model="profileForm.bio"
                 :label="$t('profile.bio')"
-                type="textarea"
                 name="bio"
                 :maxLength="BIO_MAX_LENGTH"
               />
               <div id="language-section">
-                <FormLabel as="span" :text="$t('profile.language')" />
+                <AppFormLabel :text="$t('profile.language')" />
                 <LangSwitcher class="w-full mt-1" :language="currentLanguage" @update:language="updateLanguage" />
               </div>
             </div>
@@ -65,13 +64,13 @@
                 <dt class="text-neutral-500 dark:text-neutral-400">{{ $t('profile.id') }}</dt>
                 <dd class="flex min-w-0 items-center gap-1">
                   <code class="truncate text-xs text-neutral-700 dark:text-neutral-300">{{ profileForm.id }}</code>
-                  <Button
+                  <UButton
                     square
-                    borderless
                     size="sm"
-                    variant="transparent"
+                    color="neutral"
+                    variant="ghost"
                     :icon="copied ? 'mdi:check' : 'mdi:content-copy'"
-                    :aria="$t('common.actions.copyLink')"
+                    :aria-label="$t('common.actions.copyLink')"
                     :title="$t('common.actions.copyLink')"
                     @click="copy(profileForm.id ?? '')"
                   />
@@ -125,8 +124,8 @@
               </div>
 
               <div v-if="userData?.hasPassword">
-                <FormLabel :for="oldPasswordId" :text="$t('common.auth.oldPassword')" />
-                <FormInput
+                <AppFormLabel :forId="oldPasswordId" :text="$t('common.auth.oldPassword')" />
+                <UInput
                   :id="oldPasswordId"
                   v-model="passwordForm.oldPassword"
                   :type="showOldPassword ? 'text' : 'password'"
@@ -134,17 +133,17 @@
                   autocomplete="current-password"
                   :placeholder="$t('common.auth.oldPassword')"
                 >
-                  <template #icon>
-                    <button
-                      type="button"
-                      class="absolute right-3 top-1/2 -translate-y-1/2 flex size-6 items-center justify-center text-xl text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                  <template #trailing>
+                    <UButton
+                      color="neutral"
+                      variant="link"
+                      size="sm"
+                      :icon="showOldPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
                       :aria-label="showOldPassword ? $t('common.hidePassword') : $t('common.showPassword')"
                       @click="showOldPassword = !showOldPassword"
-                    >
-                      <Icon :name="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'" class="size-full text-[inherit]" />
-                    </button>
+                    />
                   </template>
-                </FormInput>
+                </UInput>
               </div>
 
               <UserPassword v-model="passwordForm.newPassword" />
@@ -157,15 +156,15 @@
                 {{ $t('common.auth.passwordsMismatch') }}
               </p>
 
-              <Button
+              <UButton
                 :disabled="isLoading || !passwordsMatch"
                 :loading="isLoading"
-                icon="mdi:lock-reset"
+                icon="i-mdi-lock-reset"
                 class="w-full"
                 @click="handleChangePassword"
               >
                 {{ $t('common.auth.changePassword') }}
-              </Button>
+              </UButton>
             </div>
           </Panel>
 
@@ -200,9 +199,15 @@
           </Panel>
 
           <Panel danger :title="$t('profile.dangerZone')" :description="$t('profile.deactivateAccountDescription')">
-            <Button :disabled="isLoading" variant="danger" icon="mdi:account-cancel-outline" @click="confirmDeactivate">
+            <UButton
+              :disabled="isLoading"
+              color="error"
+              variant="soft"
+              icon="i-mdi-account-cancel-outline"
+              @click="confirmDeactivate"
+            >
               {{ $t('profile.deactivateAccount') }}
-            </Button>
+            </UButton>
           </Panel>
         </div>
 
@@ -256,12 +261,12 @@
               {{ $t('common.unsavedChanges') }}
             </span>
             <div class="flex items-center gap-1.5">
-              <Button size="sm" variant="transparent" :disabled="isLoading" @click="revertChanges">
+              <UButton size="sm" color="neutral" variant="ghost" :disabled="isLoading" @click="revertChanges">
                 {{ $t('common.actions.reset') }}
-              </Button>
-              <Button size="sm" :disabled="isLoading" :loading="isLoading" @click="updateProfile">
+              </UButton>
+              <UButton size="sm" :disabled="isLoading" :loading="isLoading" @click="updateProfile">
                 {{ $t('common.actions.saveChanges') }}
-              </Button>
+              </UButton>
             </div>
           </div>
         </Transition>
@@ -269,7 +274,7 @@
     </Teleport>
 
     <LazyUserFollowDialog v-model="showDialog" :type="dialogType" />
-    <ModalMini ref="deactivateDialog" />
+    <AppConfirmDialog ref="deactivateDialog" />
   </main>
 </template>
 
@@ -281,6 +286,8 @@ import type { TabItem } from '~/components/TabNav.vue'
 import { hasProfileChanges } from '~/utils/profileChanges'
 import { useProfile, type Profile } from '~/composables/useProfile'
 import { sectionId, tabForSection, toHandle } from '~/utils/profileSections'
+
+definePageMeta({ shell: 'product' })
 
 const BIO_MAX_LENGTH = 300
 
@@ -301,11 +308,13 @@ const { saveProfile, changePassword, deactivateAccount } = useProfile()
 const { setLocale } = useI18n()
 const { formatTime } = useTime()
 const { copy, copied } = useClipboard({ legacy: true })
-const toast = useToast()
+const toast = useAppToast()
 const route = useRoute()
 const router = useRouter()
 const reducedMotion = usePreferredReducedMotion()
-const deactivateDialog = useTemplateRef<ModalMiniRef>('deactivateDialog')
+const deactivateDialog = useTemplateRef<{ ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'> }>(
+  'deactivateDialog',
+)
 const oldPasswordId = useId()
 
 function setTab(tab: string) {

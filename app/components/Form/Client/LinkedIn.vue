@@ -9,39 +9,39 @@
         <p class="text-sm text-neutral-500">{{ $t('common.preferences.linkedin.description') }}</p>
       </div>
 
-      <Button
+      <UButton
         v-if="!isConnected"
-        variant="primary"
+        variant="solid"
         class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
         @click="connectLinkedIn"
       >
         <Icon name="mdi:account" class="mr-1" />
         {{ $t('common.preferences.linkedin.connect') }}
-      </Button>
+      </UButton>
       <div v-else class="flex flex-col items-end">
         <div
           class="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full"
         >
           <Icon name="mdi:check-circle" /> {{ connectedLabel }}
         </div>
-        <button class="text-xs text-blue-600 hover:underline mt-2" @click="connectLinkedIn">
+        <UButton color="neutral" variant="link" size="xs" @click="connectLinkedIn">
           {{ $t('common.preferences.linkedin.reconnect') }}
-        </button>
+        </UButton>
       </div>
     </div>
 
-    <Button v-if="embedded && !isConnected" variant="primary" class="bg-[#0A66C2] text-white" @click="connectLinkedIn">
+    <UButton v-if="embedded && !isConnected" variant="solid" class="bg-[#0A66C2] text-white" @click="connectLinkedIn">
       <Icon name="mdi:account" class="mr-1" />
       {{ $t('common.preferences.linkedin.connect') }}
-    </Button>
+    </UButton>
 
     <div v-if="embedded && isConnected" class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-2 text-sm font-medium text-emerald-600">
         <Icon name="mdi:check-circle" /> {{ connectedLabel }}
       </div>
-      <button class="text-xs text-blue-600 hover:underline" @click="connectLinkedIn">
+      <UButton color="neutral" variant="link" size="xs" @click="connectLinkedIn">
         {{ $t('common.preferences.linkedin.reconnect') }}
-      </button>
+      </UButton>
     </div>
 
     <div
@@ -50,44 +50,42 @@
     >
       <div>
         <h4 class="font-medium mb-3">{{ $t('common.preferences.linkedin.mode.label') }}</h4>
-        <div class="flex gap-4">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input v-model="localMode" type="radio" :value="'HitL'" @change="emitUpdate" />
-            <span>{{ $t('common.preferences.linkedin.mode.hitl') }}</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input v-model="localMode" type="radio" :value="'FullAuto'" @change="emitUpdate" />
-            <span>{{ $t('common.preferences.linkedin.mode.fullAuto') }}</span>
-          </label>
-        </div>
+        <UFormField :label="$t('common.preferences.linkedin.mode.label')" :ui="{ label: 'sr-only' }">
+          <URadioGroup
+            v-model="localMode"
+            :items="modeItems"
+            orientation="horizontal"
+            @update:modelValue="emitUpdate"
+          />
+        </UFormField>
         <p class="text-xs text-neutral-500 mt-2">{{ $t('common.preferences.linkedin.mode.help') }}</p>
       </div>
 
       <div class="space-y-4 pt-4 border-t border-white/10">
         <h4 class="font-medium">{{ $t('common.preferences.linkedin.brand.label') }}</h4>
 
-        <FormField
+        <AppFormField
           v-model="localBrandProfile.tone"
           :label="$t('common.preferences.linkedin.brand.tone.label')"
           :placeholder="$t('common.preferences.linkedin.brand.tone.placeholder')"
           @update:modelValue="emitUpdate"
         />
 
-        <FormField
+        <AppFormField
           v-model="localBrandProfile.audience"
           :label="$t('common.preferences.linkedin.brand.audience.label')"
           :placeholder="$t('common.preferences.linkedin.brand.audience.placeholder')"
           @update:modelValue="emitUpdate"
         />
 
-        <FormField
+        <AppFormField
           v-model="localDoList"
           :label="$t('common.preferences.linkedin.brand.doList.label')"
           :placeholder="$t('common.preferences.linkedin.brand.doList.placeholder')"
           @update:modelValue="emitUpdate"
         />
 
-        <FormField
+        <AppFormField
           v-model="localDontList"
           :label="$t('common.preferences.linkedin.brand.dontList.label')"
           :placeholder="$t('common.preferences.linkedin.brand.dontList.placeholder')"
@@ -126,6 +124,10 @@ const connectedLabel = computed(() => {
 })
 
 const localMode = shallowRef(props.mode || 'HitL')
+const modeItems = computed(() => [
+  { value: 'HitL', label: t('common.preferences.linkedin.mode.hitl') },
+  { value: 'FullAuto', label: t('common.preferences.linkedin.mode.fullAuto') },
+])
 const localBrandProfile = ref({
   tone: props.brandProfile?.tone || '',
   audience: props.brandProfile?.audience || '',

@@ -6,7 +6,9 @@
       v-if="!showQR"
       class="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-neutral-900/60 backdrop-blur-md"
     >
-      <Button size="sm" variant="secondary" icon="mdi:eye" @click="showQR = true">{{ $t('profile.showQR') }}</Button>
+      <UButton size="sm" color="neutral" variant="soft" icon="i-mdi-eye" @click="showQR = true">{{
+        $t('profile.showQR')
+      }}</UButton>
     </div>
 
     <div class="transition-opacity duration-300" :class="showQR ? 'opacity-100' : 'opacity-40'">
@@ -20,38 +22,39 @@
       <p class="mt-1 text-center text-xs text-amber-600 dark:text-amber-500">{{ $t('profile.sensitiveInfo') }}</p>
 
       <div v-if="showQR" class="mt-3 flex flex-col items-center gap-2">
-        <Button
+        <UButton
           size="sm"
-          variant="transparent"
+          color="neutral"
+          variant="ghost"
           :icon="showSecret ? 'mdi:eye-off' : 'mdi:eye'"
           @click="showSecret = !showSecret"
         >
           {{ showSecret ? $t('profile.hideSecret') : $t('profile.showSecret') }}
-        </Button>
+        </UButton>
         <div v-if="showSecret" class="flex items-center gap-2">
           <code class="rounded bg-neutral-100 px-2 py-1 text-xs dark:bg-neutral-800">{{ secret }}</code>
-          <Button
+          <UButton
             size="sm"
             square
-            borderless
-            variant="transparent"
-            icon="mdi:content-copy"
-            :aria="$t('common.actions.copyLink')"
+            color="neutral"
+            variant="ghost"
+            icon="i-mdi-content-copy"
+            :aria-label="$t('common.actions.copyLink')"
             @click="copySecret"
           />
         </div>
       </div>
     </div>
 
-    <Button
+    <UButton
       v-if="showQR"
       size="sm"
       square
-      borderless
-      variant="transparent"
-      icon="mdi:eye-off"
+      color="neutral"
+      variant="ghost"
+      icon="i-mdi-eye-off"
       class="absolute right-1 top-1"
-      :aria="$t('profile.hideQR')"
+      :aria-label="$t('profile.hideQR')"
       :title="$t('profile.hideQR')"
       @click="showQR = false"
     />
@@ -61,7 +64,7 @@
 <script setup lang="ts">
 const { otpauthUrl } = defineProps<{ otpauthUrl: string }>()
 
-const toast = useToast()
+const toast = useAppToast()
 const { copy } = useClipboard({ legacy: true })
 
 const showQR = shallowRef(false)

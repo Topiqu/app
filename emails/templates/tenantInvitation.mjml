@@ -20,7 +20,14 @@
     </mj-section>
     <mj-section background-color="#fafafa" padding="24px 28px">
       <mj-column width="96px" vertical-align="middle">
-        <mj-image src="{tenantLogoUrl}" alt="{tenantName}" width="72px" height="72px" border-radius="16px" padding="0" />
+        <mj-image
+          src="{tenantLogoUrl}"
+          alt="{tenantName}"
+          width="72px"
+          height="72px"
+          border-radius="16px"
+          padding="0"
+        />
       </mj-column>
       <mj-column vertical-align="middle">
         <mj-text font-size="20px" font-weight="700" padding="0 0 4px">{tenantName}</mj-text>
@@ -44,7 +51,14 @@
     <mj-section background-color="#ffffff" border-radius="0 0 20px 20px" padding="8px 32px 32px">
       <mj-column>
         <mj-text align="center" color="#52525b" font-size="13px" padding="0 0 8px">{t:tenantInvitation.access}</mj-text>
-        <mj-button href="{invitationUrl}" background-color="#18181b" color="#ffffff" font-weight="700" border-radius="10px" padding="12px 0 18px">
+        <mj-button
+          href="{invitationUrl}"
+          background-color="#18181b"
+          color="#ffffff"
+          font-weight="700"
+          border-radius="10px"
+          padding="12px 0 18px"
+        >
           {t:tenantInvitation.button}
         </mj-button>
         <mj-text align="center" color="#71717a" font-size="13px" padding="0">{t:tenantInvitation.expiration}</mj-text>

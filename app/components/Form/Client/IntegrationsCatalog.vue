@@ -8,7 +8,7 @@
     </div>
 
     <div class="grid gap-3 sm:grid-cols-2">
-      <button
+      <UButton
         v-for="item in services"
         :key="item.id"
         type="button"
@@ -44,7 +44,7 @@
             <Icon name="mdi:arrow-right" class="size-4 transition group-hover:translate-x-0.5" />
           </span>
         </span>
-      </button>
+      </UButton>
     </div>
 
     <section class="space-y-3 border-t border-neutral-200 pt-7 dark:border-neutral-700">
@@ -82,32 +82,31 @@
             </li>
           </ul>
           <div v-if="!apiKey" class="mt-5">
-            <Button variant="neutral" @click="$emit('generateApiKey')"
-              ><Icon name="mdi:plus" class="mr-1.5 size-4" />{{ $t('common.preferences.api.generate') }}</Button
+            <UButton color="neutral" variant="soft" @click="$emit('generateApiKey')"
+              ><Icon name="mdi:plus" class="mr-1.5 size-4" />{{ $t('common.preferences.api.generate') }}</UButton
             >
           </div>
           <div v-else class="mt-5 space-y-3">
             <div class="relative">
-              <FormInput
-                :modelValue="apiKey"
-                :type="apiVisible ? 'text' : 'password'"
-                readonly
-                :inputClass="'font-mono pr-20!'"
-              />
+              <UFormField :label="$t('common.preferences.api.title')">
+                <UInput :modelValue="apiKey" :type="apiVisible ? 'text' : 'password'" readonly />
+              </UFormField>
               <div class="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-                <Button
+                <UButton
                   square
                   borderless
                   size="sm"
-                  variant="neutral"
+                  color="neutral"
+                  variant="soft"
                   :icon="apiVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'"
                   @click="$emit('toggleApi')"
                 />
-                <Button
+                <UButton
                   square
                   borderless
                   size="sm"
-                  variant="neutral"
+                  color="neutral"
+                  variant="soft"
                   :icon="apiCopied ? 'mdi:check' : 'mdi:content-copy'"
                   @click="$emit('copyApi')"
                 />
@@ -118,9 +117,9 @@
                 $t('common.preferences.api.warning')
               }}
             </p>
-            <Button size="sm" variant="neutral" @click="$emit('generateApiKey')">
+            <UButton size="sm" color="neutral" variant="soft" @click="$emit('generateApiKey')">
               <Icon name="mdi:refresh" class="mr-1.5 size-4" />{{ $t('common.preferences.api.revoke') }}
-            </Button>
+            </UButton>
           </div>
         </article>
 
@@ -237,7 +236,7 @@
         </div>
       </template>
       <template #footer
-        ><Button :disabled="!dirty" @click="$emit('save')">{{ $t('common.actions.saveChanges') }}</Button></template
+        ><UButton :disabled="!dirty" @click="$emit('save')">{{ $t('common.actions.saveChanges') }}</UButton></template
       >
     </Modal>
 
@@ -272,7 +271,7 @@
         </div>
       </template>
       <template #footer
-        ><Button :disabled="!dirty" @click="$emit('save')">{{ $t('common.actions.saveChanges') }}</Button></template
+        ><UButton :disabled="!dirty" @click="$emit('save')">{{ $t('common.actions.saveChanges') }}</UButton></template
       >
     </Modal>
   </section>

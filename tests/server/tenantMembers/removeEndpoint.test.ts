@@ -22,14 +22,17 @@ describe('DELETE /api/tenant/members/:id', () => {
     vi.stubGlobal('sendEmail', email)
     vi.stubGlobal('prisma', {
       tenantMembership: {
-        findFirst: vi.fn()
+        findFirst: vi
+          .fn()
           .mockResolvedValueOnce({ id: 'membership-2', userId: 'member-1', role: 'MEMBER', scopes: [] })
           .mockResolvedValueOnce({ clientSiteId: 'tenant-2' })
           .mockResolvedValueOnce({ user: { email: 'owner@example.com' } }),
         delete: vi.fn((args) => ({ kind: 'membership', args })),
       },
       user: {
-        findUnique: vi.fn().mockResolvedValue({ clientSiteId: 'tenant-1', email: 'member@example.com', language: 'en' }),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ clientSiteId: 'tenant-1', email: 'member@example.com', language: 'en' }),
         update: vi.fn((args) => ({ kind: 'user', args })),
       },
       session: { updateMany: sessionUpdate },
@@ -44,10 +47,12 @@ describe('DELETE /api/tenant/members/:id', () => {
       data: { clientSiteId: 'tenant-2' },
     })
     expect(transaction).toHaveBeenCalledOnce()
-    expect(email).toHaveBeenCalledWith(expect.objectContaining({
-      to: 'member@example.com',
-      template: 'tenantMemberRemoved',
-      data: expect.objectContaining({ tenantName: 'Tenant', ownerEmail: 'owner@example.com' }),
-    }))
+    expect(email).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'member@example.com',
+        template: 'tenantMemberRemoved',
+        data: expect.objectContaining({ tenantName: 'Tenant', ownerEmail: 'owner@example.com' }),
+      }),
+    )
   })
 })

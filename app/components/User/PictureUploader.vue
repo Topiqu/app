@@ -1,45 +1,24 @@
 <template>
-  <Modal v-model="open" :title="$t('common.avatar.uploadAvatar')" :onClose="closeEditor" class="max-w-lg">
+  <UModal v-model:open="open" :title="$t('common.avatar.uploadAvatar')">
     <template #default="actions">
       <slot v-bind="actions">
-        <button
-          type="button"
-          class="relative group cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-500"
+        <UButton
+          color="neutral"
+          variant="ghost"
+          square
+          :loading="isLoading"
+          :avatar="{ src: avatar || auth?.user.avatarUrl || undefined, alt: auth?.user.name, size: '3xl' }"
           :aria-label="$t('common.avatar.uploadAvatar')"
           @click="openEditor"
-        >
-          <UserPicture
-            :url="displayAvatar"
-            size="hg"
-            :name="name ?? auth?.user.name"
-            class="size-32! transition-transform group-hover:scale-105 rounded-full border-4 border-white shadow-lg"
-          />
-          <span
-            class="absolute inset-0 flex items-center justify-center bg-black/45 rounded-full transition-opacity"
-            :class="busy ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100'"
-          >
-            <Icon
-              :name="busy ? 'mdi:loading' : 'mdi:camera'"
-              class="size-8 text-white"
-              :class="{ 'animate-spin': busy }"
-            />
-          </span>
-        </button>
+        />
       </slot>
     </template>
 
-    <template #content>
-      <div class="flex flex-col gap-5">
-        <button
-          v-if="!draftUrl"
-          type="button"
-          class="h-56 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-colors"
-          @click="chooseFile()"
-        >
-          <Icon name="mdi:image-plus-outline" class="size-10 text-indigo-500" />
-          <span class="font-medium">{{ $t('common.avatar.chooseImage') }}</span>
-          <span class="text-xs text-gray-500">{{ $t('common.avatar.requirements') }}</span>
-        </button>
+    <template #body>
+      <div class="grow flex flex-col gap-8">
+        <div v-if="!draftUrl" class="w-full my-8 flex items-center justify-center">
+          <UserPicture :url="displayAvatar" :size="'hg'" :name="name ?? auth?.user.name" />
+        </div>
 
         <template v-else>
           <div
@@ -47,7 +26,7 @@
             class="relative mx-auto size-72 max-w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800 ring-4 ring-white dark:ring-gray-700 shadow-lg touch-none"
             :class="busy ? 'cursor-wait' : isSwiping ? 'cursor-grabbing' : 'cursor-grab'"
           >
-            <img
+            <NuxtImg
               :src="draftUrl"
               alt=""
               draggable="false"
@@ -70,7 +49,7 @@
             <p class="text-center text-xs text-gray-500">{{ $t('common.avatar.dragHint') }}</p>
             <label class="flex items-center gap-3 text-sm">
               <Icon name="mdi:magnify-plus-outline" class="size-5" />
-              <input
+              <UInput
                 v-model.number="zoom"
                 type="range"
                 min="1"
@@ -81,15 +60,36 @@
               />
             </label>
             <div class="flex justify-center gap-2">
-              <Button variant="neutral" size="sm" icon="mdi:rotate-left" :disabled="busy" @click="rotation -= 90">
+              <UButton
+                color="neutral"
+                variant="soft"
+                size="sm"
+                icon="mdi:rotate-left"
+                :disabled="busy"
+                @click="rotation -= 90"
+              >
                 {{ $t('common.avatar.rotateLeft') }}
-              </Button>
-              <Button variant="neutral" size="sm" icon="mdi:rotate-right" :disabled="busy" @click="rotation += 90">
+              </UButton>
+              <UButton
+                color="neutral"
+                variant="soft"
+                size="sm"
+                icon="mdi:rotate-right"
+                :disabled="busy"
+                @click="rotation += 90"
+              >
                 {{ $t('common.avatar.rotateRight') }}
-              </Button>
-              <Button variant="neutral" size="sm" icon="mdi:image-edit-outline" :disabled="busy" @click="chooseFile()">
+              </UButton>
+              <UButton
+                color="neutral"
+                variant="soft"
+                size="sm"
+                icon="mdi:image-edit-outline"
+                :disabled="busy"
+                @click="chooseFile()"
+              >
                 {{ $t('common.actions.change') }}
-              </Button>
+              </UButton>
             </div>
           </div>
 
@@ -105,33 +105,25 @@
       </div>
     </template>
 
-    <template #footer>
-      <div class="w-full flex flex-wrap justify-between gap-2">
-        <Button
-          v-if="savedAvatar"
-          variant="danger"
-          size="lg"
-          icon="mdi:delete-outline"
-          :disabled="busy"
-          @click="confirmRemove"
-        >
+    <template #footer="{ close }">
+      <div class="flex gap-4 justify-end">
+        <UButton v-if="currentAvatar" color="error" variant="soft" icon="i-mdi-delete-outline" @click="confirmRemove">
           {{ $t('common.avatar.remove') }}
-        </Button>
-        <span v-else />
-        <div class="flex gap-2">
-          <Button variant="neutral" size="lg" :disabled="busy" @click="closeEditor">{{ $t('common.close') }}</Button>
-          <Button v-if="draftUrl" size="lg" icon="mdi:check" :disabled="busy" @click="saveAvatar">
-            {{ errorMessage ? $t('common.avatar.retry') : $t('common.avatar.save') }}
-          </Button>
-        </div>
+        </UButton>
+        <UButton color="neutral" variant="soft" size="lg" @click="(closeEditor(), close())">{{
+          $t('common.close')
+        }}</UButton>
+        <UButton v-if="draftUrl" :loading="busy" icon="i-mdi-content-save" @click="saveAvatar">
+          {{ $t('common.actions.save') }}
+        </UButton>
       </div>
     </template>
-  </Modal>
-  <ModalMini ref="removeDialog" />
+  </UModal>
+  <AppConfirmDialog ref="removeDialog" />
 </template>
 
 <script lang="ts" setup>
-const toast = useToast()
+const toast = useAppToast()
 const { data: auth, refresh } = useAuth()
 const avatar = defineModel<string | null | undefined>()
 const open = defineModel<boolean>('open', { default: false })
@@ -143,9 +135,12 @@ const { api, name } = defineProps<{ api?: string; name?: string }>()
 const endpoint = computed(() => api ?? '/api/users/avatar')
 const isOwnAvatar = computed(() => !api)
 
-const removeDialog = useTemplateRef<ModalMiniRef>('removeDialog')
+const removeDialog = useTemplateRef<{ ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'> }>(
+  'removeDialog',
+)
 const savedAvatar = shallowRef<string | null>(null)
 const busy = shallowRef(false)
+const isLoading = computed(() => busy.value)
 const progress = shallowRef(0)
 const stage = shallowRef<'uploading' | 'saving'>('uploading')
 

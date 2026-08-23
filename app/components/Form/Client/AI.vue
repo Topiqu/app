@@ -3,7 +3,7 @@
     <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-6">
       <div class="grid grid-cols-1 gap-3">
         <FormClientFeatureToggle
-          icon="mdi:robot-outline"
+          icon="i-mdi-robot-outline"
           accentRing="ring-2 ring-blue-500"
           accentIcon="text-blue-600 dark:text-blue-400"
           :title="$t('common.features.ai')"
@@ -17,7 +17,7 @@
         />
 
         <FormClientFeatureToggle
-          icon="mdi:emoticon-happy-outline"
+          icon="i-mdi-emoticon-happy-outline"
           accentRing="ring-2 ring-emerald-500"
           accentIcon="text-emerald-600 dark:text-emerald-400"
           :title="$t('common.features.sentiment')"
@@ -31,7 +31,7 @@
         />
 
         <FormClientFeatureToggle
-          icon="mdi:clock-outline"
+          icon="i-mdi-clock-outline"
           accentRing="ring-2 ring-violet-500"
           accentIcon="text-violet-600 dark:text-violet-400"
           :title="$t('common.features.articleCrons')"
@@ -89,9 +89,8 @@
         </div>
 
         <div class="flex items-center">
-          <FormInput
+          <UCheckbox
             :modelValue="autoRelease"
-            type="checkbox"
             class="!w-5 !h-5 cursor-pointer"
             @update:modelValue="(val) => handleAutoReleaseToggle(val as boolean)"
           />
@@ -107,9 +106,8 @@
           </div>
           <div class="text-xs text-gray-500 dark:text-gray-400">{{ $t('common.preferences.aiDisclosure.desc') }}</div>
         </div>
-        <FormInput
+        <UCheckbox
           :modelValue="props.discloseAiContent"
-          type="checkbox"
           class="!h-5 !w-5 cursor-pointer"
           @update:modelValue="emit('update:discloseAiContent', $event as boolean)"
         />
@@ -123,14 +121,14 @@
         {{ $t('common.preferences.aiAuthor.title') }}
       </h3>
       <div class="space-y-6">
-        <FormField
+        <AppFormField
           v-model="username"
           :label="$t('common.preferences.aiAuthor.username.label')"
           :placeholder="$t('common.preferences.aiAuthor.username.placeholder')"
           type="text"
         />
         <div class="flex flex-col gap-2">
-          <FormLabel :text="$t('common.avatar.ai.label')" />
+          <AppFormLabel :text="$t('common.avatar.ai.label')" />
           <div class="flex justify-center">
             <UserPictureUploader
               v-model="avatarUrl"
@@ -140,26 +138,26 @@
           </div>
         </div>
         <div class="flex flex-col gap-2">
-          <FormLabel :text="$t('common.preferences.aiAuthor.bio.label')" />
-          <FormField
+          <AppFormLabel :text="$t('common.preferences.aiAuthor.bio.label')" />
+          <AppFormField
             v-model="bio"
-            type="textarea"
             :placeholder="$t('common.preferences.aiAuthor.bio.placeholder')"
             :maxLength="300"
           />
         </div>
         <div class="flex flex-col gap-2">
-          <FormLabel :text="$t('common.preferences.aiAuthor.toneOfVoice.label')" />
-          <FormField
+          <AppFormLabel :text="$t('common.preferences.aiAuthor.toneOfVoice.label')" />
+          <AppFormField
             v-model="aiToneOfVoice"
             type="text"
             :placeholder="$t('common.preferences.aiAuthor.toneOfVoice.placeholder')"
           />
           <div class="flex flex-wrap gap-2 mt-1">
-            <Button
+            <UButton
               v-for="suggestion in toneSuggestions"
               :key="suggestion"
-              variant="neutral"
+              color="neutral"
+              variant="soft"
               class="!px-3 !py-1 !min-h-0 !h-auto !text-xs !font-medium !rounded-full transition-colors border"
               :class="
                 aiToneOfVoice.includes(suggestion)
@@ -169,12 +167,18 @@
               @click="toggleToneSuggestion(suggestion)"
             >
               {{ suggestion }}
-            </Button>
+            </UButton>
           </div>
         </div>
         <div class="flex flex-col gap-2">
-          <FormLabel :text="$t('common.preferences.aiAuthor.controversyLevel.label')" />
-          <FormSelect v-model="aiControversyLevel" :items="controversyOptions" upwards />
+          <AppFormLabel :text="$t('common.preferences.aiAuthor.controversyLevel.label')" />
+          <USelectMenu
+            v-model="aiControversyLevel"
+            valueKey="value"
+            labelKey="label"
+            :items="controversyOptions"
+            upwards
+          />
         </div>
       </div>
     </div>
@@ -190,17 +194,24 @@
       <p class="text-xs text-gray-600 dark:text-gray-400 -mt-4">{{ $t('common.preferences.translation.desc') }}</p>
 
       <div class="flex flex-col gap-2">
-        <FormLabel :text="$t('common.preferences.translation.mode.label')" />
-        <FormSelect v-model="translationMode" :items="translationModeOptions" upwards />
+        <AppFormLabel :text="$t('common.preferences.translation.mode.label')" />
+        <USelectMenu
+          v-model="translationMode"
+          valueKey="value"
+          labelKey="label"
+          :items="translationModeOptions"
+          upwards
+        />
       </div>
 
       <div v-if="translationMode !== 'OFF'" class="flex flex-col gap-2">
-        <FormLabel :text="$t('common.preferences.translation.targetLangs.label')" />
+        <AppFormLabel :text="$t('common.preferences.translation.targetLangs.label')" />
         <div v-if="targetLangOptions.length" class="flex flex-wrap gap-2">
-          <Button
+          <UButton
             v-for="lang in targetLangOptions"
             :key="lang"
-            variant="neutral"
+            color="neutral"
+            variant="soft"
             class="!px-3 !py-1 !min-h-0 !h-auto !text-xs !font-medium !rounded-full transition-colors border"
             :class="
               translationLanguages.includes(lang)
@@ -210,7 +221,7 @@
             @click="toggleTargetLang(lang)"
           >
             {{ $t(`languages.${lang}`) }}
-          </Button>
+          </UButton>
         </div>
         <p v-else class="text-xs text-gray-500">{{ $t('common.preferences.translation.targetLangs.empty') }}</p>
       </div>
@@ -226,21 +237,21 @@
       </div>
     </div>
 
-    <ModalMini
+    <AppConfirmDialog
       v-model:open="showAutoReleaseModal"
       :title="$t('common.preferences.autoRelease.confirmTitle')"
       :message="$t('common.preferences.autoRelease.confirmMessage')"
-      icon="mdi:alert-rhombus-outline"
+      icon="i-mdi-alert-rhombus-outline"
       :confirmText="$t('common.actions.enable')"
       :cancelText="$t('common.actions.cancel')"
       @confirm="confirmAutoRelease"
     />
 
-    <ModalMini
+    <AppConfirmDialog
       v-model:open="showAiDisableModal"
       :title="$t('common.features.disableAiTitle')"
       :message="$t('common.features.disableAiMessage')"
-      icon="mdi:alert-rhombus-outline"
+      icon="i-mdi-alert-rhombus-outline"
       variant="danger"
       :confirmText="$t('common.actions.disable')"
       :cancelText="$t('common.actions.cancel')"

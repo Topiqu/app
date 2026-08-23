@@ -1,4 +1,4 @@
-import { isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
+import { isManagedDomain, isValidDomain } from '~~/shared/utils/domain'
 const RESERVED = new Set([
   'www',
   'api',
@@ -27,7 +27,9 @@ type Reason = 'empty' | 'tooShort' | 'invalid' | 'reserved' | 'taken'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const raw = normalizeDomain(String(query.domain ?? ''))
+  const raw = String(query.domain ?? '')
+    .trim()
+    .toLowerCase()
   const type = query.type === 'CUSTOM' ? 'CUSTOM' : 'SUBDOMAIN'
 
   if (!raw) return { ok: false as const, reason: 'empty' as Reason }

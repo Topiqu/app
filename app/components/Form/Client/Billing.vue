@@ -111,17 +111,18 @@
           {{ $t('common.preferences.billing.buyTokens') }}
         </span>
         <div class="flex flex-wrap gap-2">
-          <Button
+          <UButton
             v-for="pack in tokenPacks"
             :key="pack.id"
-            variant="neutral"
+            color="neutral"
+            variant="soft"
             size="sm"
             :loading="pendingAction === `pack-${pack.id}`"
             @click="buyTokens(pack.id)"
           >
             <Icon name="mdi:lightning-bolt" class="mr-1.5 size-4 text-amber-500" />
             {{ (pack.tokens / 1000).toLocaleString(locale) }}k · {{ formatTokenPackPrice(pack, locale) }}
-          </Button>
+          </UButton>
         </div>
       </div>
 
@@ -129,27 +130,23 @@
         v-if="upgradeTarget"
         class="flex items-center gap-1 self-start rounded-full bg-neutral-100 dark:bg-neutral-800 p-1"
       >
-        <button
+        <UButton
           type="button"
-          class="rounded-full px-3 py-1 text-xs font-medium transition"
-          :class="
-            checkoutInterval === 'month'
-              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-              : 'text-neutral-500 dark:text-neutral-400'
-          "
+          size="sm"
+          :color="checkoutInterval === 'month' ? 'primary' : 'neutral'"
+          :variant="checkoutInterval === 'month' ? 'solid' : 'ghost'"
+          class="rounded-full"
           :aria-pressed="checkoutInterval === 'month'"
           @click="checkoutInterval = 'month'"
         >
           {{ $t('common.preferences.billing.intervalMonthly') }}
-        </button>
-        <button
+        </UButton>
+        <UButton
           type="button"
-          class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition"
-          :class="
-            checkoutInterval === 'year'
-              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-              : 'text-neutral-500 dark:text-neutral-400'
-          "
+          size="sm"
+          :color="checkoutInterval === 'year' ? 'primary' : 'neutral'"
+          :variant="checkoutInterval === 'year' ? 'solid' : 'ghost'"
+          class="rounded-full"
           :aria-pressed="checkoutInterval === 'year'"
           @click="checkoutInterval = 'year'"
         >
@@ -159,24 +156,25 @@
           >
             -20 %
           </span>
-        </button>
+        </UButton>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3 pt-1">
-        <Button
+        <UButton
           v-if="hasSubscription"
-          variant="neutral"
+          color="neutral"
+          variant="soft"
           class="flex-1"
           :loading="pendingAction === 'portal'"
           @click="openPortal"
         >
           <Icon name="mdi:receipt-text-outline" class="mr-1.5 size-4" />
           {{ $t('common.preferences.billing.manage') }}
-        </Button>
-        <Button v-if="upgradeTarget" class="flex-1" :loading="pendingAction === 'upgrade'" @click="upgrade">
+        </UButton>
+        <UButton v-if="upgradeTarget" class="flex-1" :loading="pendingAction === 'upgrade'" @click="upgrade">
           <Icon name="mdi:arrow-up-circle-outline" class="mr-1.5 size-4" />
           {{ $t('common.preferences.billing.upgrade', { plan: upgradeTarget }) }}
-        </Button>
+        </UButton>
       </div>
     </div>
 
@@ -196,10 +194,10 @@
             {{ $t('common.preferences.billing.invoicesDescription') }}
           </p>
         </div>
-        <Button variant="neutral" size="sm" :loading="pendingAction === 'portal'" @click="openPortal">
+        <UButton color="neutral" variant="soft" size="sm" :loading="pendingAction === 'portal'" @click="openPortal">
           <Icon name="mdi:cog-outline" class="mr-1.5 size-4" />
           {{ $t('common.preferences.billing.openPortal') }}
-        </Button>
+        </UButton>
       </div>
 
       <div v-if="invoiceStatus === 'pending'" class="space-y-3 p-5" role="status">
@@ -209,9 +207,9 @@
 
       <div v-else-if="invoiceError" class="p-5 text-sm text-neutral-600 dark:text-neutral-300">
         <p>{{ $t('common.preferences.billing.invoicesFailed') }}</p>
-        <Button class="mt-3" variant="neutral" size="sm" @click="refreshInvoices()">
+        <UButton class="mt-3" color="neutral" variant="soft" size="sm" @click="refreshInvoices()">
           {{ $t('common.preferences.billing.retry') }}
-        </Button>
+        </UButton>
       </div>
 
       <div v-else-if="!invoices?.length" class="p-5 text-sm text-neutral-500 dark:text-neutral-400">
@@ -237,27 +235,31 @@
             {{ formatInvoiceAmount(invoice.amount, invoice.currency) }}
           </div>
           <div class="flex items-center gap-2">
-            <a
+            <UButton
               v-if="invoice.hostedUrl"
-              :href="invoice.hostedUrl"
+              :to="invoice.hostedUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex h-8 items-center justify-center rounded-lg border border-neutral-200 px-2 text-sm text-neutral-700 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              color="neutral"
+              variant="soft"
+              size="sm"
+              trailingIcon="i-mdi-open-in-new"
             >
               {{ $t('common.preferences.billing.viewInvoice') }}
-              <Icon name="mdi:open-in-new" class="ml-1.5 size-3.5" />
-            </a>
-            <a
+            </UButton>
+            <UButton
               v-if="invoice.pdfUrl"
-              :href="invoice.pdfUrl"
+              :to="invoice.pdfUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex size-8 items-center justify-center rounded-lg text-neutral-500 transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:hover:bg-neutral-800"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              square
+              icon="i-mdi-file-pdf-box"
               :aria-label="$t('common.preferences.billing.downloadInvoice', { number: invoice.number ?? '' })"
               :title="$t('common.preferences.billing.downloadPdf')"
-            >
-              <Icon name="mdi:file-pdf-box" class="size-5" />
-            </a>
+            />
           </div>
         </li>
       </ul>
@@ -275,7 +277,7 @@ import type { ClientSite } from '~/utils/buildClientSettingsForm'
 
 const { client, rate } = defineProps<{ client: ClientSite | null; rate: number }>()
 
-const toast = useToast()
+const toast = useAppToast()
 const { locale } = useI18n()
 const { formatTime } = useTime()
 
@@ -288,9 +290,7 @@ const tokenPercent = computed(() => {
   if (limit <= 0) return 0
   return Math.min(100, Math.round(((client?.tokenRemaining ?? 0) / limit) * 100))
 })
-const balanceIncludesExtras = computed(
-  () => (client?.tokenRemaining ?? 0) > (client?.tokenLimit ?? 0),
-)
+const balanceIncludesExtras = computed(() => (client?.tokenRemaining ?? 0) > (client?.tokenLimit ?? 0))
 
 const hasSubscription = computed(() => !!client?.stripeCustomerId)
 

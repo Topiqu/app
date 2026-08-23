@@ -1,4 +1,5 @@
 import { dirname, resolve } from 'node:path'
+import { format, resolveConfig } from 'prettier'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 
 const outputPath = resolve(import.meta.dir, '../openapi/v1.json')
@@ -213,7 +214,10 @@ const document = {
   },
 }
 
-const serialized = `${JSON.stringify(document, null, 2)}\n`
+const serialized = await format(JSON.stringify(document), {
+  ...(await resolveConfig(outputPath)),
+  filepath: outputPath,
+})
 
 if (process.argv.includes('--check')) {
   const current = await readFile(outputPath, 'utf8').catch(() => '')

@@ -4,14 +4,16 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
-  if ((body.status === 'published' || body.releaseAt) && !hasTenantScope((await requireTenantMember(event)).membership, 'ARTICLE_PUBLISH'))
+  if (
+    (body.status === 'published' || body.releaseAt) &&
+    !hasTenantScope((await requireTenantMember(event)).membership, 'ARTICLE_PUBLISH')
+  )
     throw createError({ statusCode: 403, message: 'Missing tenant scope: ARTICLE_PUBLISH' })
 
-  if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-
-  const releaseAt = body.releaseAt ? new Date(body.releaseAt) : null
-  if (releaseAt && releaseAt.getTime() > Date.now()) body.status = 'draft'
+  if (body.releaseAt && new Date(body.releaseAt).getTime() > Date.now()) body.status = 'draft'
   else if (body.status === 'published') body.releaseAt = null
+
+  if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   let seriesOrder = 0
   if (body.articleSeriesId) {

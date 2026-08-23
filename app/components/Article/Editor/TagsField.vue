@@ -3,7 +3,7 @@
     <template #trigger>{{ triggerLabel }}</template>
 
     <div class="flex flex-col gap-2 w-72">
-      <input
+      <UInput
         v-model="query"
         type="search"
         role="combobox"
@@ -25,7 +25,7 @@
         :aria-label="$t('common.labels.tags')"
         class="flex flex-col max-h-56 overflow-y-auto -mx-1"
       >
-        <button
+        <UButton
           v-for="(option, index) in options"
           :id="`${listId}-${index}`"
           :key="option.id"
@@ -46,9 +46,9 @@
           />
           <!-- base.scss colours bare `span` directly, so the label cannot inherit from the row. -->
           <span class="truncate text-gray-700! dark:text-gray-200!">{{ option.name }}</span>
-        </button>
+        </UButton>
 
-        <button
+        <UButton
           v-if="canCreate"
           :id="`${listId}-${options.length}`"
           type="button"
@@ -70,7 +70,7 @@
           <span class="truncate font-medium text-indigo-600! dark:text-indigo-300!">
             {{ $t('articles.editor.createTag', { name: query.trim() }) }}
           </span>
-        </button>
+        </UButton>
       </div>
 
       <p v-else class="px-1 py-1.5 text-xs text-gray-400 dark:text-gray-500">
@@ -91,7 +91,7 @@ const NAMES_SHOWN = 2
 const tags = defineModel<string[]>({ default: () => [] })
 
 const { t } = useI18n()
-const toast = useToast()
+const toast = useAppToast()
 const requestFetch = useRequestFetch()
 const { invalidateTags } = useCacheInvalidation()
 const listId = useId()

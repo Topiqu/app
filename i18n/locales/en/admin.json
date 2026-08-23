@@ -1,5 +1,9 @@
 {
   "admin": {
+    "title": "Dashboard",
+    "trial": {
+      "continueFreeSuccess": "Your plan was changed to Free."
+    },
     "upgrade": {
       "cta": "Upgrade to {plan}",
       "loading": "Opening checkout…",

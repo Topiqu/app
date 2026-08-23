@@ -30,10 +30,13 @@ export interface ClientSettingsForm {
   theme: (typeof ThemeSchema.options)[number]
   keywords: string[]
   description: string
+  tagline: string
   logoUrl: string
+  faviconUrl: string
+  typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM'
   optimizedUrl: string
   socials: { platform: SocialPlatform; url: string }[]
-  aiUser: { username: string; bio: string; avatarUrl: string }
+  aiUser: { username: string; bio: string; avatarUrl: string; optimizedAvatarUrl: string }
   aiToneOfVoice: string
   aiControversyLevel: string
   gtagId: string
@@ -57,10 +60,13 @@ const emptyForm = (): ClientSettingsForm => ({
   theme: 'blue',
   keywords: [],
   description: '',
+  tagline: '',
   logoUrl: '',
+  faviconUrl: '',
+  typographyPreset: 'MODERN',
   optimizedUrl: '',
   socials: [],
-  aiUser: { username: '', bio: '', avatarUrl: '' },
+  aiUser: { username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' },
   aiToneOfVoice: '',
   aiControversyLevel: '',
   gtagId: '',
@@ -99,7 +105,10 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     language: client.language,
     theme: client.theme,
     description: client.description ?? '',
+    tagline: client.tagline ?? '',
     logoUrl: client.logoUrl ?? '',
+    faviconUrl: client.faviconUrl ?? '',
+    typographyPreset: client.typographyPreset ?? 'MODERN',
     keywords: client.keywords ?? [],
     socials: client.socials ?? [],
     apiKey: client.apiKey ?? '',
@@ -107,6 +116,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
       username: client.aiUser?.username ?? '',
       bio: client.aiUser?.bio ?? '',
       avatarUrl: client.aiUser?.avatarUrl ?? '',
+      optimizedAvatarUrl: '',
     },
     aiToneOfVoice: client.aiToneOfVoice ?? '',
     aiControversyLevel: client.aiControversyLevel ?? '',

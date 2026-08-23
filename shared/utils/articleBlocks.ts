@@ -2,8 +2,7 @@ import { ARTICLE_TABLE_CLASS } from './articleProse'
 import { normalizePollOptions, type PollOptionData } from './polls'
 
 export type ArticleBlock =
-  | { type: 'html'; html: string }
-  | { type: 'poll'; pollId: string; question: string; options: PollOptionData[] }
+  { type: 'html'; html: string } | { type: 'poll'; pollId: string; question: string; options: PollOptionData[] }
 
 export type ArticleHeading = { id: string; text: string; level: number }
 

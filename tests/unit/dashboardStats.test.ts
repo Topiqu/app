@@ -9,7 +9,10 @@ import {
   topThreeShare,
 } from '../../server/utils/dashboardStats'
 
-const article = (views: number, counts: Partial<Record<'reactions' | 'comments' | 'pollResults' | 'shares', number>>) => ({
+const article = (
+  views: number,
+  counts: Partial<Record<'reactions' | 'comments' | 'pollResults' | 'shares', number>>,
+) => ({
   views,
   _count: { reactions: 0, comments: 0, pollResults: 0, shares: 0, ...counts },
 })

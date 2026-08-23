@@ -16,6 +16,8 @@ export type ArticleBase = _Article & {
 export type ArticleWithDetails = {
   id: string
   slug: string
+  sourceSlug?: string
+  language?: string
   title: string
   content: string | null
   imageUrl: string | null

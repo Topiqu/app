@@ -14,6 +14,7 @@ export const optimizeArticleImages = (html: string, resolve: (src: string, width
     let optimized = tag.replace(source[0], ` src="${large}"`)
 
     const attrs: Record<string, string> = {
+      'data-original-src': escapeAttribute(src),
       srcset: `${small} 640w, ${large} 1000w`,
       sizes: '(max-width: 640px) calc(100vw - 3rem), 936px',
       width: '1000',

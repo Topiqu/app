@@ -36,7 +36,7 @@ export function useArticleActions(
 
   const copyLink = async (url: string) => {
     clipboard.copy(url)
-    toast.success({ message: t('common.actions.copySuccess') })
+    toast.add({ color: 'success', title: t('common.actions.copySuccess') })
     await share('OTHER')
   }
 
@@ -53,15 +53,18 @@ export function useArticleActions(
         method: 'PATCH',
         body: { allowedComments: next },
       })
-      toast.success({
-        message: t('articles.comments.toggleSuccess', [
-          next ? t('articles.comments.commentsEnabled') : t('articles.comments.commentsDisabledSuccess'),
+      toast.add({
+        color: 'success',
+        title: t('articles.comments.toggleSuccess', [
+          article.allowedComments
+            ? t('articles.comments.commentsEnabled')
+            : t('articles.comments.commentsDisabledSuccess'),
         ]),
       })
     } catch (e: unknown) {
       const err = e as { data?: { message?: string } }
-      toast.error({ message: err.data?.message || t('common.messages.operationFailed') })
-      article.allowedComments = !next
+      toast.add({ color: 'error', title: err.data?.message || t('common.messages.operationFailed') })
+      article.allowedComments = !article.allowedComments
     }
   }
 
@@ -69,14 +72,15 @@ export function useArticleActions(
     try {
       await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
       await refreshContext()
-      toast.success({
-        message: t('articles.status.changeSuccess', [
+      toast.add({
+        color: 'success',
+        title: t('articles.status.changeSuccess', [
           status === 'draft' ? t('articles.status.draft') : t('articles.status.published'),
         ]),
       })
     } catch (e: unknown) {
       const err = e as { data?: { message?: string } }
-      toast.error({ message: err.data?.message || t('common.messages.statusChangeFailed') })
+      toast.add({ color: 'error', title: err.data?.message || t('common.messages.statusChangeFailed') })
     }
   }, 100)
 

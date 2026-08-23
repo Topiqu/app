@@ -7,7 +7,8 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const article = await db.article.findUnique({ where: { id }, select: { userId: true } })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
-  if (article.userId !== user.id && !hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS')) throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
+  if (article.userId !== user.id && !hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS'))
+    throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
   const deleted = await db.article.delete({ where: { id } })
   if (deleted.status === 'published') await invalidateFeed(deleted.clientSiteId)
   return { success: true }

@@ -10,12 +10,9 @@
         <p class="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400 text-pretty">{{ $t(option.description) }}</p>
       </div>
 
-      <input
-        :id="option.id"
-        v-model="option.model.value"
-        type="checkbox"
-        class="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-neutral-600"
-      />
+      <UFormField :label="$t(option.title)" class="sr-only">
+        <UCheckbox :id="option.id" v-model="option.model.value" />
+      </UFormField>
     </li>
   </ul>
 </template>

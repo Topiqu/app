@@ -1,8 +1,5 @@
 <template>
-  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" :class="pillClass">
-    <Icon :name="icon" class="w-3.5 h-3.5" />
-    {{ label }}
-  </span>
+  <UBadge :color="color" variant="soft" :icon="icon" :label="label" />
 </template>
 
 <script setup lang="ts">
@@ -10,25 +7,25 @@ import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
 const { status } = defineProps<{ status: ArticleStatus | string }>()
 
-const pillClass = computed(() => {
+const color = computed(() => {
   switch (status) {
     case 'published':
-      return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+      return 'success'
     case 'archived':
-      return 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+      return 'neutral'
     default:
-      return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+      return 'warning'
   }
 })
 
 const icon = computed(() => {
   switch (status) {
     case 'published':
-      return 'mdi:check-circle-outline'
+      return 'i-mdi-check-circle-outline'
     case 'archived':
-      return 'mdi:archive-outline'
+      return 'i-mdi-archive-outline'
     default:
-      return 'mdi:circle-edit-outline'
+      return 'i-mdi-circle-edit-outline'
   }
 })
 

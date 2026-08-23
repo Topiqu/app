@@ -69,7 +69,7 @@ describe('resolveArticleBySlug', () => {
     ).toBeNull()
   })
 
-  it('resolves an unpublished translation for an admin', async () => {
+  it('hides an unpublished public translation from an admin too', async () => {
     const db = makeDb({ translation: { status: 'PENDING', article: { id: 'a1' } } })
 
     const found = await resolveArticleBySlug(
@@ -78,7 +78,7 @@ describe('resolveArticleBySlug', () => {
       SELECT,
     )
 
-    expect(found).toEqual({ id: 'a1' })
+    expect(found).toBeNull()
   })
 
   it('returns null for an unknown slug', async () => {

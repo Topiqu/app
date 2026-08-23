@@ -1,116 +1,106 @@
 <template>
-  <ModalMini
+  <UModal
     v-model:open="isOpen"
     :title="$t('articles.editor.drafts.selectDraftTitle')"
-    parentWidth="max-w-6xl"
-    :disabled="loading"
-    @cancel="close"
+    :dismissible="!loading"
+    :ui="{ content: 'max-w-[50rem]' }"
+    @close:prevent="close"
   >
-    <template #content>
+    <template #body>
       <div class="mt-4">
-        <div v-if="drafts.length" class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-          <FormInput
-            v-model="searchQuery"
-            :placeholder="$t('common.search')"
-            class="flex-1 w-full"
-            inputClass="rounded-xl bg-white dark:bg-gray-800"
-            :disabled="loading"
-            icon="mdi:magnify"
-          />
-          <FormSelect
-            v-model="sortOption"
-            :items="sortItems"
+        <div v-if="drafts.length" class="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <UFormField :label="$t('common.search')" :ui="{ label: 'sr-only' }" class="w-full flex-1">
+            <UInput
+              v-model="searchQuery"
+              :placeholder="$t('common.search')"
+              :disabled="loading"
+              icon="i-mdi-magnify"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField
+            :label="$t('articles.editor.drafts.selectDraftTitle')"
+            :ui="{ label: 'sr-only' }"
             class="w-full md:w-40"
-            :disabled="loading"
-            :showValue="false"
-          />
+          >
+            <USelectMenu
+              v-model="sortOption"
+              valueKey="value"
+              labelKey="label"
+              :searchInput="false"
+              :items="sortItems"
+              class="w-full"
+              :disabled="loading"
+            />
+          </UFormField>
         </div>
 
-        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 opacity-60">
-          <div v-for="n in 8" :key="n" class="animate-pulse rounded-2xl shadow-md bg-white dark:bg-neutral-900">
-            <div class="h-40 bg-gray-100 dark:bg-gray-800 rounded-t-2xl"></div>
-            <div class="p-4 space-y-3">
-              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-              <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+        <div v-if="loading" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <UCard v-for="n in 8" :key="n">
+            <USkeleton class="h-40 w-full" />
+            <div class="mt-3 space-y-3">
+              <USkeleton class="h-4 w-3/4" />
+              <USkeleton class="h-3 w-1/2" />
             </div>
-          </div>
+          </UCard>
         </div>
 
         <div
           v-else-if="filteredDrafts.length"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-h-[36rem] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+          class="grid max-h-[36rem] grid-cols-1 gap-6 overflow-y-auto pr-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
-          <button
-            v-for="draft in filteredDrafts"
-            :key="draft.id"
-            class="group relative flex flex-col cursor-pointer rounded-2xl bg-white dark:bg-neutral-900/80 border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 ease-out"
-            :disabled="loading"
-            @click="selectDraft(draft)"
-          >
-            <div class="relative aspect-video overflow-hidden">
-              <NuxtImg
-                v-if="draft.imageUrl"
+          <UPageCard v-for="draft in filteredDrafts" :key="draft.id" class="relative">
+            <div class="aspect-video overflow-hidden">
+              <AppMedia
                 :src="draft.imageUrl"
-                class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-              />
-              <div
-                v-else
-                class="w-full h-full bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-800 dark:to-gray-700"
-              />
-              <div
-                class="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 dark:via-neutral-900/40 to-white dark:to-neutral-900 backdrop-blur-[2px] pointer-events-none"
-              />
-              <div
-                class="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                :alt="draft.title || $t('articles.articleCard.imageAlt')"
+                aspectRatio="16 / 9"
+                sizes="100vw sm:50vw lg:25vw"
+                containerClass="size-full rounded-lg"
               />
             </div>
-            <div
-              class="flex flex-col flex-1 p-5 bg-white dark:bg-neutral-950 border-t border-gray-200 dark:border-gray-800 shadow-inner"
-            >
-              <h3
-                class="font-medium text-gray-900 dark:text-gray-100 text-base mb-1 line-clamp-1 tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
-              >
+            <div class="flex flex-1 flex-col gap-3">
+              <h3 class="break-words text-base font-medium tracking-tight text-highlighted">
                 {{ draft.title || $t('articles.editor.drafts.untitled', [draft.id.slice(-4)]) }}
               </h3>
-              <p
-                v-if="draft.excerpt"
-                class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4 leading-snug flex-1"
-              >
+              <p v-if="draft.excerpt" class="line-clamp-2 flex-1 text-sm leading-snug text-muted">
                 {{ draft.excerpt }}
               </p>
-              <div
-                class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400"
-              >
+              <USeparator />
+              <div class="flex items-center justify-between text-xs text-muted">
                 <div class="flex items-center gap-1.5">
-                  <Icon name="mdi:clock-outline" class="w-3.5 h-3.5" />{{
+                  <UIcon size="14" name="i-mdi-clock-outline" />{{
                     format(draft.createdAt, dateFormat, { locale: dateLocale })
                   }}
                 </div>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 active:scale-95 transition"
-                  @click.stop="deleteDraft(draft.id)"
-                  ><Icon name="mdi:delete" class="w-4 h-4"
-                /></Button>
+                <UTooltip :text="$t('common.actions.delete')">
+                  <UButton
+                    color="error"
+                    variant="ghost"
+                    size="sm"
+                    square
+                    icon="i-mdi-delete"
+                    class="relative z-10"
+                    :aria-label="$t('common.actions.delete')"
+                    @click.stop="deleteDraft(draft.id)"
+                  />
+                </UTooltip>
               </div>
             </div>
-          </button>
+            <UButton
+              color="neutral"
+              variant="link"
+              class="absolute inset-0"
+              :aria-label="draft.title || $t('articles.editor.drafts.untitled', [draft.id.slice(-4)])"
+              @click="selectDraft(draft)"
+            />
+          </UPageCard>
         </div>
 
-        <div v-else class="text-center py-16 text-gray-500 dark:text-gray-400">
-          <NuxtImg
-            src="/topik_404_rm.png"
-            width="100"
-            height="100"
-            class="mx-auto mb-5 opacity-70"
-            :alt="$t('common.noResults')"
-          />
-          <p class="text-sm">{{ $t('common.noResults') }}</p>
-        </div>
+        <UEmpty v-else icon="i-mdi-file-search-outline" :title="$t('common.noResults')" />
       </div>
     </template>
-  </ModalMini>
+  </UModal>
 </template>
 <script setup lang="ts">
 import type { ArticleDraft } from '@zenstackhq/runtime/models'
@@ -137,9 +127,9 @@ const searchQuery = shallowRef('')
 const sortOption = shallowRef<'newest' | 'oldest' | 'alphabetical'>('newest')
 
 const sortItems = [
-  { value: 'newest', label: t('common.sortOptions.newest'), icon: 'mdi:clock-outline' },
-  { value: 'oldest', label: t('common.sortOptions.oldest'), icon: 'mdi:clock' },
-  { value: 'alphabetical', label: 'A-Z', icon: 'mdi:sort-alphabetical-ascending' },
+  { value: 'newest', label: t('common.sortOptions.newest'), icon: 'i-mdi-clock-outline' },
+  { value: 'oldest', label: t('common.sortOptions.oldest'), icon: 'i-mdi-clock' },
+  { value: 'alphabetical', label: 'A-Z', icon: 'i-mdi-sort-alphabetical-ascending' },
 ]
 
 const localDrafts = ref<ArticleDraft[]>([...props.drafts])
@@ -176,9 +166,9 @@ const deleteDraft = async (draftId: string) => {
   try {
     await $fetch('/api/articles/draft', { method: 'DELETE', body: { id: draftId } })
     localDrafts.value = localDrafts.value.filter((d) => d.id !== draftId)
-    toast.success({ message: t('common.messages.deleteSuccess') })
+    toast.add({ color: 'success', title: t('common.messages.deleteSuccess') })
   } catch {
-    toast.error({ message: t('common.messages.deleteFailed') })
+    toast.add({ color: 'error', title: t('common.messages.deleteFailed') })
   }
 }
 </script>

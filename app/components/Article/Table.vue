@@ -1,379 +1,269 @@
 <template>
-  <div class="mb-10 space-y-4 px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-center">
-      <FormInput
-        v-model="globalFilter"
-        type="text"
-        icon="mdi:magnify"
-        inputClass="rounded-full!"
-        class="relative w-full max-w-xs sm:max-w-xl"
-        :placeholder="$t('articles.searchPlaceholder')"
-      />
-    </div>
-
-    <div v-if="rows.length" class="flex justify-end gap-2 mb-4">
-      <Exports :articles="visibleRows" />
-    </div>
-
+  <div class="mb-10 w-full space-y-4" data-article-table :data-search-query="globalFilter">
     <div
-      class="overflow-x-auto rounded border border-gray-300 sm:block hidden transition-opacity duration-200"
-      :class="isRefetching ? 'opacity-50 pointer-events-none' : ''"
-      :aria-busy="isRefetching"
+      class="space-y-3 sm:sticky sm:top-0 sm:z-20 sm:border-b sm:border-default sm:bg-default/95 sm:py-3 sm:backdrop-blur"
+      data-article-table-toolbar
     >
-      <table class="w-full table-auto text-sm divide-y divide-gray-200">
-        <thead class="bg-gray-100 text-left font-semibold text-black">
-          <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-            <th
-              v-for="header in headerGroup.headers"
-              :key="header.id"
-              class="px-2 sm:px-4 py-2 text-center select-none cursor-pointer group relative min-h-[48px]"
-              @click="header.column.getCanSort() ? header.column.getToggleSortingHandler()?.($event) : undefined"
-            >
-              <span v-if="!header.isPlaceholder" class="text-black flex items-center justify-center gap-2">
-                <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-                <span v-if="header.column.getCanSort()">
-                  <Icon
-                    :name="
-                      header.column.getIsSorted() === 'asc'
-                        ? 'mdi:arrow-up'
-                        : header.column.getIsSorted() === 'desc'
-                          ? 'mdi:arrow-down'
-                          : 'mdi:arrow-up-down'
-                    "
-                    class="w-4 h-4 text-blue-400"
-                  />
-                </span>
-              </span>
-            </th>
-          </tr>
-        </thead>
-        <tbody v-auto-animate class="text-gray-800">
-          <template v-if="isPending">
-            <tr v-for="n in SKELETON_ROWS" :key="`skeleton-${n}`" class="animate-pulse">
-              <td v-for="col in 5" :key="col" class="px-4 py-4 min-h-[72px]">
-                <div
-                  class="rounded bg-gray-200 dark:bg-gray-700 mx-auto"
-                  :class="col === 1 ? 'w-16 h-16 rounded-lg' : 'h-4 w-full max-w-[160px]'"
-                />
-              </td>
-            </tr>
-          </template>
-          <tr v-else-if="loadFailed" class="text-center">
-            <td colspan="5" class="px-4 py-10">
-              <Icon name="mdi:alert-circle-outline" class="w-12 h-12 text-red-500 mx-auto" />
-              <p class="mt-4 text-xl text-gray-700 dark:text-gray-200">{{ $t('common.messages.loadFailedTitle') }}</p>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $t('common.messages.loadFailedText') }}</p>
-              <Button class="mt-4" icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
-            </td>
-          </tr>
-          <tr v-else-if="rows.length === 0" class="text-center">
-            <td colspan="5" class="px-4 py-10">
-              <NuxtImg src="/topik_smutny_rm.png" :alt="$t('articles.noResults.imageAlt')" class="mx-auto w-32" />
-              <p class="mt-4 text-xl text-gray-500 dark:text-gray-300">{{ $t('articles.noResults.message') }}</p>
-            </td>
-          </tr>
-          <tr
-            v-for="row in table.getRowModel().rows"
-            v-else
-            :key="row.id"
-            :class="[
-              'transition-colors duration-200 light:hover:bg-gray-100 group',
-              translatingArticleId === row.original.id ? 'ring-2 ring-inset ring-indigo-400 bg-indigo-50/70!' : '',
-              row.original.status === 'published'
-                ? 'light:bg-green-50 border-l-4 border-green-400'
-                : row.original.status === 'archived'
-                  ? 'light:bg-gray-100 border-l-4 border-gray-400'
-                  : 'light:bg-white border-l-4 border-yellow-400',
-            ]"
-          >
-            <td
-              v-for="cell in row.getVisibleCells()"
-              :key="cell.id"
-              class="px-4 py-2 break-words max-w-[240px] sm:max-w-none text-center min-h-[72px] dark:text-white"
-              :class="[
-                row.original.status === 'published' ? 'dark:text-green-300' : '',
-                row.original.status === 'archived' ? 'text-gray-400 dark:text-gray-500 italic' : '',
-              ]"
-            >
-              <div
-                v-if="cell.column.id === 'content'"
-                class="line-clamp-3 dark:bg-transparent"
-                v-html="cell.getValue() as string"
-              ></div>
-              <div
-                v-else-if="cell.column.id === 'imageUrl'"
-                class="flex items-center justify-center h-full dark:bg-transparent"
-              >
-                <NuxtImg
-                  v-if="cell.getValue()"
-                  :src="cell.getValue() as string"
-                  :alt="$t('articles.columns.imageUrl')"
-                  class="w-16 h-16 object-cover rounded"
-                />
-                <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
-              </div>
-              <div
-                v-else-if="cell.column.id === 'status'"
-                class="flex items-center justify-center h-full dark:bg-transparent"
-              >
-                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-              </div>
-              <div
-                v-else-if="['title', 'date'].includes(cell.column.id)"
-                class="flex items-center justify-center h-full dark:bg-transparent"
-                :class="row.original.status === 'archived' ? 'line-through' : ''"
-              >
-                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-              </div>
-              <div v-else class="flex items-center justify-center h-full dark:bg-transparent">
-                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-              </div>
-            </td>
-            <td
-              class="px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4 min-h-[72px]"
-            >
-              <Button
-                :icon="'mdi:eye'"
-                variant="success"
-                @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
-              />
-              <Button
-                icon="mdi:pencil"
-                :disabled="row.original.status === 'archived'"
-                @click="openEditor(row.original.slug)"
-              />
-              <Button
-                v-tippy="
-                  $t(
-                    hasTargetTranslation(row.original)
-                      ? 'articles.translations.actions.retranslate'
-                      : 'articles.translations.actions.translate',
-                  )
-                "
-                icon="mdi:translate"
-                variant="secondary"
-                :loading="translatingArticleId === row.original.id"
-                :disabled="row.original.status === 'archived' || Boolean(translatingArticleId)"
-                @click="translateArticle(row.original)"
-              />
-              <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
-                <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
-              </LazyArticleTag>
-              <Button :icon="'mdi:delete'" variant="danger" @click="del(row.original.id)" />
-              <Dropdown
-                v-if="row.original.status !== 'archived'"
-                :groups="[
-                  [
-                    {
-                      id: 'json',
-                      label: $t('articles.export.title.json'),
-                      icon: 'mdi:code-json',
-                      onClick: () => exportJson(row.original),
-                    },
-                    {
-                      id: 'csv',
-                      label: $t('articles.export.title.csv'),
-                      icon: 'mdi:file-delimited',
-                      onClick: () => exportCsv(row.original),
-                    },
-                    {
-                      id: 'pdf',
-                      label: $t('articles.export.title.pdf'),
-                      icon: 'mdi:file-pdf-box',
-                      onClick: () => exportPdf(row.original),
-                    },
-                  ],
-                ]"
-              >
-                <Button :icon="'mdi:dots-horizontal'" variant="neutral" />
-              </Dropdown>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div v-if="isPending" class="sm:hidden space-y-4">
-      <div
-        v-for="n in SKELETON_ROWS"
-        :key="`skeleton-card-${n}`"
-        class="p-4 rounded-lg border border-gray-300 shadow-sm animate-pulse space-y-3"
-      >
-        <div class="w-16 h-16 rounded-lg bg-gray-200 dark:bg-gray-700" />
-        <div class="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
-        <div class="h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <UFormField
+          :label="$t('articles.searchPlaceholder')"
+          :ui="{ label: 'sr-only' }"
+          class="w-full min-w-0 sm:flex-1"
+        >
+          <UInput
+            v-model="globalFilter"
+            type="search"
+            :placeholder="$t('articles.searchPlaceholder')"
+            icon="i-mdi-magnify"
+            class="w-full"
+          />
+        </UFormField>
+        <UButton
+          class="shrink-0"
+          color="neutral"
+          variant="soft"
+          icon="i-mdi-filter-variant"
+          :aria-expanded="filtersOpen"
+          @click="filtersOpen = !filtersOpen"
+        >
+          {{ $t('common.labels.filters') }}
+          <UBadge v-if="activeFilterCount" color="primary" variant="solid">{{ activeFilterCount }}</UBadge>
+        </UButton>
+        <div v-if="rows.length" class="shrink-0">
+          <Exports :articles="rows" />
+        </div>
       </div>
-    </div>
-
-    <div v-else-if="loadFailed" class="sm:hidden p-6 rounded-lg border border-red-300 text-center space-y-2">
-      <Icon name="mdi:alert-circle-outline" class="w-10 h-10 text-red-500 mx-auto" />
-      <p class="text-lg text-gray-700 dark:text-gray-200">{{ $t('common.messages.loadFailedTitle') }}</p>
-      <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('common.messages.loadFailedText') }}</p>
-      <Button icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</Button>
-    </div>
-
-    <div
-      v-else-if="rows.length > 0"
-      class="sm:hidden space-y-4 transition-opacity duration-200"
-      :class="isRefetching ? 'opacity-50 pointer-events-none' : ''"
-      :aria-busy="isRefetching"
-    >
       <div
-        v-for="row in table.getRowModel().rows"
-        :key="row.id"
-        :class="[
-          'p-4 rounded-lg border border-gray-300 shadow-sm transition-colors duration-200 hover:bg-gray-100',
-          translatingArticleId === row.original.id ? 'ring-2 ring-indigo-400 bg-indigo-50/70!' : '',
-          row.original.status === 'published'
-            ? 'bg-green-50 border-l-4 border-green-400'
-            : row.original.status === 'archived'
-              ? 'bg-gray-100 border-l-4 border-gray-400'
-              : 'bg-white border-l-4 border-yellow-400',
-        ]"
+        v-show="filtersOpen"
+        class="grid gap-3 overflow-y-auto overscroll-contain rounded-[var(--topiqu-surface-radius)] border border-default p-4 sm:max-h-[min(22rem,calc(100dvh-8rem))] sm:grid-cols-2 lg:grid-cols-3"
       >
-        <div class="space-y-2">
-          <div
-            v-for="cell in row.getVisibleCells()"
-            :key="cell.id"
-            class="text-gray-800"
-            :class="[
-              row.original.status === 'published' ? 'dark:text-green-300' : '',
-              row.original.status === 'archived' ? 'text-gray-400 dark:text-gray-500 italic' : '',
-            ]"
-          >
-            <div class="font-semibold">{{ $t(`articles.columns.${cell.column.id}`) }}</div>
-            <div
-              v-if="cell.column.id === 'content'"
-              class="line-clamp-3 dark:bg-transparent"
-              v-html="cell.getValue() as string"
-            ></div>
-            <div v-else-if="cell.column.id === 'imageUrl'" class="flex justify-center dark:bg-transparent">
-              <NuxtImg
-                v-if="cell.getValue()"
-                :src="cell.getValue() as string"
-                :alt="$t('articles.columns.imageUrl')"
-                class="w-16 h-16 object-cover rounded"
-              />
-              <Icon v-else name="mdi:image-off" class="w-16 h-16 text-gray-400" />
-            </div>
-            <div v-else-if="cell.column.id === 'status'" class="dark:bg-transparent">
-              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-            </div>
-            <div
-              v-else-if="['title', 'date'].includes(cell.column.id)"
-              class="dark:bg-transparent"
-              :class="row.original.status === 'archived' ? 'line-through' : ''"
-            >
-              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-            </div>
-            <div v-else class="dark:bg-transparent">
-              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-            </div>
-          </div>
-          <div :ref="(el) => setDropdownRef(row.id, el)" class="relative">
-            <button
-              class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full hover:from-gray-300 hover:to-gray-400 transition shadow-sm hover:shadow-md transform hover:scale-105"
-              @click="toggleDropdown(row.id)"
-            >
-              <Icon name="mdi:dots-vertical" class="w-5 h-5 text-black" />
-            </button>
-            <div
-              v-if="openDropdown === row.id"
-              class="absolute z-popover right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 animate-slide-in"
-            >
-              <div class="py-1 flex flex-col gap-1">
-                <Button
-                  :icon="'mdi:eye'"
-                  variant="success"
-                  @click="router.push(localePath({ name: 'clanky-slug', params: { slug: row.original.slug } }))"
-                />
-                <Button
-                  v-tippy="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''"
-                  icon="mdi:pencil"
-                  :disabled="row.original.status === 'archived'"
-                  @click="openEditor(row.original.slug)"
-                />
-                <Button
-                  icon="mdi:translate"
-                  variant="secondary"
-                  :loading="translatingArticleId === row.original.id"
-                  :disabled="row.original.status === 'archived' || Boolean(translatingArticleId)"
-                  @click="translateArticle(row.original)"
-                >
-                  {{
-                    $t(
-                      hasTargetTranslation(row.original)
-                        ? 'articles.translations.actions.retranslate'
-                        : 'articles.translations.actions.translate',
-                    )
-                  }}
-                </Button>
-                <LazyArticleTag v-slot="{ open }" :articleId="row.original.id" hydrateOnInteraction>
-                  <Button :icon="'mdi:tag-outline'" variant="warning" @click="open.value = true" />
-                </LazyArticleTag>
-                <Button :icon="'mdi:delete'" variant="danger" @click="del(row.original.id)" />
-                <Dropdown
-                  v-if="row.original.status !== 'archived'"
-                  :groups="[
-                    [
-                      {
-                        id: 'json',
-                        label: $t('articles.export.title.json'),
-                        icon: 'mdi:code-json',
-                        onClick: () => exportJson(row.original),
-                      },
-                      {
-                        id: 'csv',
-                        label: $t('articles.export.title.csv'),
-                        icon: 'mdi:file-delimited',
-                        onClick: () => exportCsv(row.original),
-                      },
-                      {
-                        id: 'pdf',
-                        label: $t('articles.export.title.pdf'),
-                        icon: 'mdi:file-pdf-box',
-                        onClick: () => exportPdf(row.original),
-                      },
-                    ],
-                  ]"
-                >
-                  <Button :icon="'mdi:dots-horizontal'" variant="neutral" />
-                </Dropdown>
-              </div>
-            </div>
-          </div>
+        <UFormField :label="$t('common.labels.status')"
+          ><USelect v-model="statusFilter" :items="statusItems"
+        /></UFormField>
+        <UFormField :label="$t('common.labels.dateFrom')"><UInput v-model="dateFrom" type="date" /></UFormField>
+        <UFormField :label="$t('common.labels.dateTo')"><UInput v-model="dateTo" type="date" /></UFormField>
+        <UFormField :label="$t('common.labels.sortBy')"><USelect v-model="sortField" :items="sortItems" /></UFormField>
+        <UFormField :label="$t('common.labels.order')"><USelect v-model="sortOrder" :items="orderItems" /></UFormField>
+        <div class="flex items-end">
+          <UButton color="neutral" variant="soft" icon="i-mdi-filter-remove-outline" @click="clearFilters">{{
+            $t('common.actions.clear')
+          }}</UButton>
         </div>
       </div>
     </div>
 
-    <Pagination :page :totalPages :prevPage :nextPage class="mt-6" />
+    <UAlert
+      v-if="loadFailed"
+      color="error"
+      icon="i-mdi-alert-circle-outline"
+      :title="$t('common.messages.loadFailedTitle')"
+      :description="$t('common.messages.loadFailedText')"
+    >
+      <template #actions>
+        <UButton icon="i-mdi-refresh" color="error" variant="soft" @click="refetch()">
+          {{ $t('common.messages.retry') }}
+        </UButton>
+      </template>
+    </UAlert>
+
+    <UEmpty
+      v-else-if="!isPending && rows.length === 0"
+      icon="i-mdi-file-document-outline"
+      :title="$t('articles.noResults.message')"
+    />
+
+    <div
+      v-else
+      class="hidden overflow-x-auto rounded-[var(--topiqu-surface-radius)] border border-default sm:block"
+      :aria-busy="isRefetching"
+    >
+      <UTable
+        :data="rows"
+        :columns="columns"
+        :loading="isPending || isRefetching"
+        :ui="{ base: 'w-full min-w-[48rem] table-fixed' }"
+      >
+        <template #title-header>
+          <UButton color="neutral" variant="ghost" :trailingIcon="sortIcon('title')" @click="toggleSort('title')">
+            {{ $t('articles.columns.title') }}
+          </UButton>
+        </template>
+        <template #status-header>
+          <UButton color="neutral" variant="ghost" :trailingIcon="sortIcon('status')" @click="toggleSort('status')">
+            {{ $t('articles.columns.status') }}
+          </UButton>
+        </template>
+        <template #createdAt-header>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :trailingIcon="sortIcon('createdAt')"
+            @click="toggleSort('createdAt')"
+          >
+            {{ $t('articles.columns.date') }}
+          </UButton>
+        </template>
+        <template #imageUrl-cell="{ row }">
+          <NuxtLink :to="articleUrl(row.original.slug)" class="block focus-visible:outline-offset-2">
+            <AppMedia
+              :src="row.original.imageUrl"
+              :alt="row.original.title"
+              aspectRatio="1 / 1"
+              sizes="56px"
+              containerClass="size-14 rounded-md"
+            />
+          </NuxtLink>
+        </template>
+        <template #title-cell="{ row }">
+          <NuxtLink
+            :to="articleUrl(row.original.slug)"
+            class="block min-w-0 max-w-full truncate"
+            :title="row.original.title"
+            :class="row.original.status === 'archived' ? 'text-muted line-through' : 'font-medium'"
+          >
+            {{ row.original.title }}
+          </NuxtLink>
+        </template>
+        <template #status-cell="{ row }">
+          <ArticleStatusCell :row="row" @update="debouncedSetStatus" />
+        </template>
+        <template #languages-cell="{ row }">
+          <ArticleLanguageLinks
+            :links="languageLinks(row.original)"
+            :current="primaryLanguage"
+            target="editor"
+            :articleRef="row.original.slug"
+          />
+        </template>
+        <template #createdAt-cell="{ row }">{{ formatTime(row.original.createdAt, 'shortDatetime') }}</template>
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end gap-1">
+            <UTooltip :text="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''">
+              <UButton
+                icon="i-mdi-pencil"
+                color="neutral"
+                variant="ghost"
+                :disabled="row.original.status === 'archived'"
+                :aria-label="$t('common.actions.edit')"
+                @click="openEditor(row.original.slug)"
+              />
+            </UTooltip>
+            <UDropdownMenu :items="desktopActionItems(row.original)">
+              <UButton
+                icon="i-mdi-dots-vertical"
+                color="neutral"
+                variant="ghost"
+                square
+                :aria-label="$t('common.actions.more')"
+              />
+            </UDropdownMenu>
+          </div>
+        </template>
+      </UTable>
+    </div>
+
+    <div v-if="isPending" class="space-y-3 sm:hidden">
+      <UCard v-for="n in 5" :key="n"><USkeleton class="h-28 w-full" /></UCard>
+    </div>
+    <div v-else-if="rows.length" class="space-y-3 sm:hidden" :aria-busy="isRefetching">
+      <UCard v-for="article in rows" :key="article.id">
+        <div class="flex gap-3">
+          <NuxtLink :to="articleUrl(article.slug)" class="block shrink-0">
+            <AppMedia
+              :src="article.imageUrl"
+              :alt="article.title"
+              aspectRatio="1 / 1"
+              sizes="80px"
+              containerClass="size-20 rounded-lg"
+            />
+          </NuxtLink>
+          <div class="min-w-0 flex-1 space-y-2">
+            <NuxtLink
+              :to="articleUrl(article.slug)"
+              class="line-clamp-2 font-semibold"
+              :class="article.status === 'archived' ? 'line-through text-muted' : ''"
+            >
+              {{ article.title }}
+            </NuxtLink>
+            <ArticleStatusCell :row="{ original: article }" @update="debouncedSetStatus" />
+            <ArticleLanguageLinks
+              :links="languageLinks(article)"
+              :current="primaryLanguage"
+              target="editor"
+              :articleRef="article.slug"
+            />
+            <p class="text-xs text-muted">{{ formatTime(article.createdAt, 'shortDatetime') }}</p>
+          </div>
+          <div class="flex flex-col gap-1">
+            <UButton
+              icon="i-mdi-pencil"
+              color="neutral"
+              variant="ghost"
+              square
+              :disabled="article.status === 'archived'"
+              :aria-label="$t('common.actions.edit')"
+              @click="openEditor(article.slug)"
+            />
+            <LazyArticleTag :articleId="article.id" hydrateOnInteraction>
+              <UButton
+                icon="i-mdi-tag-outline"
+                color="neutral"
+                variant="ghost"
+                square
+                :aria-label="$t('articles.tags.title')"
+              />
+            </LazyArticleTag>
+            <UDropdownMenu :items="mobileActionItems(article)">
+              <UButton
+                icon="i-mdi-dots-vertical"
+                color="neutral"
+                variant="ghost"
+                square
+                :aria-label="$t('common.actions.more')"
+              />
+            </UDropdownMenu>
+          </div>
+        </div>
+      </UCard>
+    </div>
+
+    <div v-if="totalPages > 1" class="flex justify-center">
+      <UPagination
+        :page="page"
+        :total="totalPages"
+        :itemsPerPage="1"
+        color="neutral"
+        variant="outline"
+        activeColor="primary"
+        activeVariant="solid"
+        showEdges
+        @update:page="setPage"
+      />
+    </div>
   </div>
-  <ModalMini ref="deleteDialog" />
+  <LazyArticleTag
+    v-if="tagTargetId"
+    :key="tagTargetId"
+    v-model="tagOpen"
+    :articleId="tagTargetId"
+    hydrateOnInteraction
+  />
 </template>
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
-import { vAutoAnimate } from '@formkit/auto-animate/vue'
-import {
-  type ColumnDef,
-  FlexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useVueTable,
-} from '@tanstack/vue-table'
-
-import ArticleStatusCell from '~/components/Article/StatusCell.vue'
-import ArticleLanguageLinks, { type LanguageLink } from '~/components/Article/LanguageLinks.vue'
+import type { LanguageLink } from '~/components/Article/LanguageLinks.vue'
 
 const router = useRouter()
 const route = useRoute()
-const toast = useToast()
+const toast = useAppToast()
 const { invalidateArticleLists, invalidateArticlesAndStats } = useCacheInvalidation()
-const deleteDialog = useTemplateRef<ModalMiniRef>('deleteDialog')
+const confirm = useConfirm()
 const localePath = useLocalePath()
+const articleUrl = (slug: string) => localePath({ name: 'clanky-slug', params: { slug } })
 const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
 const clientSite = await useClientSite()
@@ -422,9 +312,41 @@ const languageLinks = (article: ArticleWithDetails): LanguageLink[] => [
 
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
-const SKELETON_ROWS = 5
-const globalFilter = shallowRef((route.query.query as string) || '')
+const globalFilter = ref((route.query.query as string) || '')
+const statusFilter = shallowRef((route.query.status as string) || 'all')
+const dateFrom = shallowRef((route.query.dateFrom as string) || '')
+const dateTo = shallowRef((route.query.dateTo as string) || '')
+const sortField = shallowRef((route.query.sort as string) || 'createdAt')
+const sortOrder = shallowRef((route.query.order as string) || 'desc')
+const filtersOpen = shallowRef(statusFilter.value !== 'all' || Boolean(dateFrom.value) || Boolean(dateTo.value))
+const tagOpen = shallowRef(false)
+const tagTargetId = shallowRef('')
 const debouncedFilter = refDebounced(globalFilter, 400)
+const statusItems = computed(() => [
+  { label: $t('common.labels.all'), value: 'all' },
+  { label: $t('articles.status.draft'), value: 'draft' },
+  { label: $t('articles.status.published'), value: 'published' },
+  { label: $t('articles.status.archived'), value: 'archived' },
+])
+const sortItems = computed(() => [
+  { label: $t('articles.columns.title'), value: 'title' },
+  { label: $t('articles.columns.status'), value: 'status' },
+  { label: $t('articles.columns.date'), value: 'createdAt' },
+])
+const orderItems = computed(() => [
+  { label: $t('common.sortOptions.newest'), value: 'desc' },
+  { label: $t('common.sortOptions.oldest'), value: 'asc' },
+])
+const listQuery = computed(() => ({
+  page: page.value,
+  limit,
+  ...(debouncedFilter.value ? { query: debouncedFilter.value } : {}),
+  ...(statusFilter.value !== 'all' ? { status: statusFilter.value } : {}),
+  ...(dateFrom.value ? { dateFrom: dateFrom.value } : {}),
+  ...(dateTo.value ? { dateTo: dateTo.value } : {}),
+  sort: sortField.value,
+  order: sortOrder.value,
+}))
 
 const {
   data: articles,
@@ -433,11 +355,9 @@ const {
   error,
   refetch,
 } = useQuery({
-  key: () => queryKeys.articles.list(page.value, debouncedFilter.value),
+  key: () => ['articles', 'list', listQuery.value],
   query: () =>
-    requestFetch<{ data: ArticleWithDetails[]; total: number }>(
-      `/api/articles/search?page=${page.value}&limit=${limit}${debouncedFilter.value ? `&query=${encodeURIComponent(debouncedFilter.value)}` : ''}`,
-    ),
+    requestFetch<{ data: ArticleWithDetails[]; total: number }>('/api/articles/search', { query: listQuery.value }),
   placeholderData: (previous) => previous,
 })
 
@@ -445,166 +365,176 @@ const rows = computed(() => articles.value?.data ?? [])
 const totalPages = computed(() => Math.ceil((articles.value?.total ?? 0) / limit))
 const isRefetching = computed(() => asyncStatus.value === 'loading' && !isPending.value)
 const loadFailed = computed(() => !!error.value && rows.value.length === 0)
+const activeFilterCount = computed(
+  () => [statusFilter.value !== 'all', dateFrom.value, dateTo.value].filter(Boolean).length,
+)
+const columns = computed<TableColumn<ArticleWithDetails>[]>(() => [
+  {
+    accessorKey: 'imageUrl',
+    header: $t('articles.columns.imageUrl'),
+    enableSorting: false,
+    meta: { class: { th: 'hidden w-20 lg:table-cell', td: 'hidden w-20 lg:table-cell' } },
+  },
+  {
+    accessorKey: 'title',
+    header: $t('articles.columns.title'),
+    meta: { class: { th: 'w-auto overflow-hidden', td: 'min-w-0 max-w-0 overflow-hidden' } },
+  },
+  {
+    accessorKey: 'status',
+    header: $t('articles.columns.status'),
+    meta: { class: { th: 'w-52', td: 'w-52 overflow-hidden' } },
+  },
+  {
+    id: 'languages',
+    header: $t('articles.translations.languageTabs'),
+    meta: { class: { th: 'hidden w-36 lg:table-cell', td: 'hidden w-36 lg:table-cell' } },
+  },
+  {
+    accessorKey: 'createdAt',
+    header: $t('articles.columns.date'),
+    meta: { class: { th: 'hidden w-48 xl:table-cell', td: 'hidden w-48 whitespace-nowrap xl:table-cell' } },
+  },
+  { id: 'actions', header: $t('common.actions.more'), meta: { class: { th: 'w-28', td: 'w-28' } } },
+])
 
-const prevPage = () => {
-  if (page.value > 1) {
-    page.value--
-    router.push({ query: { ...route.query, page: page.value, query: globalFilter.value || undefined } })
+const toggleSort = (field: 'title' | 'status' | 'createdAt') => {
+  if (sortField.value === field) sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  else {
+    sortField.value = field
+    sortOrder.value = 'asc'
   }
 }
+const sortIcon = (field: string) =>
+  sortField.value === field
+    ? sortOrder.value === 'asc'
+      ? 'i-mdi-arrow-up'
+      : 'i-mdi-arrow-down'
+    : 'i-mdi-unfold-more-horizontal'
 
-const nextPage = () => {
-  if (page.value < totalPages.value) {
-    page.value++
-    router.push({ query: { ...route.query, page: page.value, query: globalFilter.value || undefined } })
-  }
+const setPage = (nextPage: number) => {
+  page.value = Math.min(Math.max(nextPage, 1), Math.max(totalPages.value, 1))
+  router.push({ query: { ...listQuery.value, limit: undefined } })
 }
 
-watch(debouncedFilter, () => {
+const syncUrl = () => {
   page.value = 1
-  router.push({ query: { ...route.query, page: 1, query: globalFilter.value || undefined } })
-})
-
-const openDropdown = shallowRef<string | null>(null)
-const dropdownRef = ref<HTMLElement | null>(null)
-
-function toDom(el: Element | ComponentPublicInstance | null): HTMLElement | null {
-  if (!el) return null
-  if (el instanceof HTMLElement) return el
-  const root = (el as any)?.$el
-  return root instanceof HTMLElement ? root : null
+  router.replace({
+    query: {
+      ...(globalFilter.value ? { query: globalFilter.value } : {}),
+      ...(statusFilter.value !== 'all' ? { status: statusFilter.value } : {}),
+      ...(dateFrom.value ? { dateFrom: dateFrom.value } : {}),
+      ...(dateTo.value ? { dateTo: dateTo.value } : {}),
+      sort: sortField.value,
+      order: sortOrder.value,
+    },
+  })
 }
+const syncTextUrl = useDebounceFn(syncUrl, 400)
+watch(globalFilter, syncTextUrl)
+watch([statusFilter, dateFrom, dateTo, sortField, sortOrder], syncUrl)
 
-function setDropdownRef(id: string, el: Element | ComponentPublicInstance | null) {
-  const dom = toDom(el)
-  if (openDropdown.value === id) dropdownRef.value = dom
+const clearFilters = () => {
+  globalFilter.value = ''
+  statusFilter.value = 'all'
+  dateFrom.value = ''
+  dateTo.value = ''
+  sortField.value = 'createdAt'
+  sortOrder.value = 'desc'
 }
-
-onClickOutside(dropdownRef, () => {
-  openDropdown.value = null
-  dropdownRef.value = null
-})
 
 const { mutate: setStatus } = useMutation({
   mutation: async ({ id, status }: { id: string; status: ArticleStatus }) => {
     await $fetch(`/api/articles/${id}` as `/api/articles/:id`, { method: 'PATCH', body: { status } })
   },
   onSuccess: (_data, { status }) =>
-    toast.success({ message: 'Status ' + $t(`articles.status.${status}`).toLocaleLowerCase() }),
-  onError: (e: any) => toast.error({ message: e.data?.message || $t('articles.messages.statusChangeFailed') }),
+    toast.add({ color: 'success', title: 'Status ' + $t(`articles.status.${status}`).toLocaleLowerCase() }),
+  onError: (error: any) =>
+    toast.add({ color: 'error', title: error.data?.message || $t('articles.messages.statusChangeFailed') }),
   onSettled: invalidateArticleLists,
 })
 
 const debouncedSetStatus = useDebounceFn((id: string, status: ArticleStatus) => setStatus({ id, status }), 100)
-
 const { mutate: deleteArticle, isLoading: isDeleting } = useMutation({
-  mutation: async (id: string) => {
-    await $fetch(`/api/articles/${id}` as `/api/articles/:id`, { method: 'DELETE' })
-  },
-  onSuccess: () => toast.success({ message: $t('articles.messages.deleteSuccess') }),
-  onError: (e: any) => toast.error({ message: e.data?.message || $t('articles.messages.deleteFailed') }),
+  mutation: async (id: string) => $fetch<unknown>(`/api/articles/${id}` as string, { method: 'DELETE' }),
+  onSuccess: () => toast.add({ color: 'success', title: $t('articles.messages.deleteSuccess') }),
+  onError: (error: any) =>
+    toast.add({ color: 'error', title: error.data?.message || $t('articles.messages.deleteFailed') }),
   onSettled: invalidateArticlesAndStats,
 })
 
 async function del(id: string) {
-  const r = await deleteDialog.value?.ask({
+  const confirmed = await confirm({
     title: $t('common.messages.deleteConfirmTitle'),
     message: $t('common.messages.deleteConfirmText'),
-    icon: 'mdi:alert-outline',
+    icon: 'i-mdi-alert-outline',
     confirmText: $t('common.actions.delete'),
     cancelText: $t('common.messages.deleteCancel'),
     variant: 'danger',
   })
-  if (r !== 'ok' || isDeleting.value) return
-
-  deleteArticle(id)
+  if (confirmed && !isDeleting.value) deleteArticle(id)
 }
-
-const columns: ColumnDef<ArticleWithDetails>[] = [
-  {
-    header: $t('articles.columns.imageUrl'),
-    accessorKey: 'imageUrl',
-    enableSorting: false,
-  },
-  {
-    header: $t('articles.columns.title'),
-    accessorKey: 'title',
-  },
-  {
-    header: $t('articles.columns.status'),
-    accessorKey: 'status',
-    cell: ({ row }) =>
-      h(ArticleStatusCell, {
-        row,
-        onUpdate: (id: string, status: ArticleStatus) => debouncedSetStatus(id, status),
-      }),
-  },
-  {
-    header: $t('articles.columns.languages'),
-    id: 'languages',
-    enableSorting: false,
-    cell: ({ row }) =>
-      h(ArticleLanguageLinks, {
-        target: 'editor',
-        articleRef: row.original.slug,
-        current: primaryLanguage,
-        links: languageLinks(row.original),
-      }),
-  },
-  {
-    header: $t('articles.columns.date'),
-    accessorKey: 'createdAt',
-    cell: (info) => formatTime(info.getValue() as string, 'shortDatetime'),
-    sortingFn: (rowA, rowB, columnId) => {
-      const dateA = new Date(rowA.getValue(columnId) as string).getTime()
-      const dateB = new Date(rowB.getValue(columnId) as string).getTime()
-      return dateA - dateB
-    },
-  },
-]
-
-const table = useVueTable({
-  get data() {
-    return rows.value
-  },
-  columns,
-  state: {
-    get globalFilter() {
-      return globalFilter.value
-    },
-  },
-  onGlobalFilterChange: (u) => (globalFilter.value = typeof u === 'function' ? u(globalFilter.value) : u),
-  getCoreRowModel: getCoreRowModel(),
-  getSortedRowModel: getSortedRowModel(),
-  getFilteredRowModel: getFilteredRowModel(),
-})
 
 const { exportJson, exportCsv, exportPdf } = useExport()
-const visibleRows = computed(() => table.getFilteredRowModel().rows.map((r) => r.original))
+const exportItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
+  [
+    { label: $t('articles.export.title.json'), icon: 'i-mdi-code-json', onSelect: () => exportJson(article) },
+    { label: $t('articles.export.title.csv'), icon: 'i-mdi-file-delimited', onSelect: () => exportCsv(article) },
+    { label: $t('articles.export.title.pdf'), icon: 'i-mdi-file-pdf-box', onSelect: () => exportPdf(article) },
+  ],
+]
 
-function toggleDropdown(id: string) {
-  if (openDropdown.value === id) {
-    openDropdown.value = null
-    dropdownRef.value = null
-  } else {
-    openDropdown.value = id
-  }
-}
+const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
+  [
+    {
+      label: hasTargetTranslation(article)
+        ? $t('articles.translations.actions.retranslate')
+        : $t('articles.translations.actions.translate'),
+      icon: 'i-mdi-translate',
+      disabled: translatingArticleId.value === article.id,
+      onSelect: () => translateArticle(article),
+    },
+  ],
+  [
+    {
+      label: $t('articles.tags.title'),
+      icon: 'i-mdi-tag-outline',
+      onSelect: () => {
+        tagTargetId.value = article.id
+        tagOpen.value = true
+      },
+    },
+  ],
+  ...(article.status === 'archived' ? [] : exportItems(article)),
+  [
+    {
+      label: $t('common.actions.delete'),
+      icon: 'i-mdi-delete',
+      color: 'error',
+      onSelect: () => del(article.id),
+    },
+  ],
+]
+
+const mobileActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
+  [
+    {
+      label: hasTargetTranslation(article)
+        ? $t('articles.translations.actions.retranslate')
+        : $t('articles.translations.actions.translate'),
+      icon: 'i-mdi-translate',
+      disabled: translatingArticleId.value === article.id,
+      onSelect: () => translateArticle(article),
+    },
+  ],
+  [
+    {
+      label: $t('common.actions.delete'),
+      icon: 'i-mdi-delete',
+      color: 'error',
+      onSelect: () => del(article.id),
+    },
+  ],
+  ...(article.status === 'archived' ? [] : exportItems(article)),
+]
 </script>
-
-<style>
-.animate-slide-in {
-  animation: slideIn 0.2s ease-out forwards;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>

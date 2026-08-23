@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { describe, expect, it } from 'vitest'
 import { zodSchema } from '@ai-sdk/provider-utils'
 

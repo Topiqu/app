@@ -34,15 +34,15 @@
         <Icon name="mdi:thumb-down-outline" class="size-3.5" />
         <span class="tabular-nums">{{ comment.dislikesCount }}</span>
       </span>
-      <Button
+      <UButton
         v-if="isOwn"
-        icon="mdi:delete-outline"
+        icon="i-mdi-delete-outline"
         square
-        borderless
         size="sm"
-        variant="transparent"
+        color="neutral"
+        variant="ghost"
         class="!text-red-600 dark:!text-red-400"
-        :aria="$t('common.actions.delete')"
+        :aria-label="$t('common.actions.delete')"
         :title="$t('common.actions.delete')"
         @click="$emit('delete', comment.id)"
       />

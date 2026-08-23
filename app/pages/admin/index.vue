@@ -1,22 +1,19 @@
 <template>
-  <main class="w-full max-w-screen-2xl mx-auto pt-28 px-4 sm:px-6 lg:px-8 flex flex-col gap-6">
-    <AdminDomainVerificationBanner v-if="client" />
-    <AdminUpgradeBanner />
-    <LazyAdminTranslationReviewBanner />
+  <div class="mx-auto mt-10 flex w-full max-w-screen-2xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
+    <AdminDomainVerificationBanner v-if="client && !client.domainVerified" />
+    <AdminUpgradeBanner v-if="client?.plan === 'BASIC'" />
     <ArticleTable />
 
     <ModalTrialExpired v-model="isOpen" @continueFree="handleContinueFree" />
-  </main>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { trialExpired } from '~~/shared/utils/trial'
-
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 const client = await useClientSite()
 const { data: status } = await useClientSiteStatus()
 
-useSeoMeta({ title: `${client?.name} - ${$t('admin.title', 'Administrace')}` })
+useSeoMeta({ title: `${client?.name} - ${$t('admin.title')}` })
 
 const isOpen = shallowRef(false)
 
@@ -30,7 +27,10 @@ const handleContinueFree = async () => {
     const toast = useToast()
     await $fetch('/api/clients/end-trial', { method: 'POST' })
     isOpen.value = false
-    toast.success({ message: $t('admin.trial.continueFreeSuccess', 'Pokračujete s omezenou verzí zdarma.') })
+    toast.add({
+      color: 'success',
+      title: $t('admin.trial.continueFreeSuccess'),
+    })
   } catch (error) {
     console.error('Chyba při přepnutí:', error)
   }

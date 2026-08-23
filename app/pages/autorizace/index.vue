@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center px-4">
-    <div class="w-full max-w-md space-y-6">
+  <div class="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-8">
+    <div class="w-full max-w-md">
       <AuthForm :mode="initialMode" :redirectTo="invitationRedirect" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'auth', shell: 'product', dashboardSidebar: false })
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -30,13 +30,13 @@ const finishOnboardingLogin = async (token: string) => {
 
     await getSession()
     const role = data.value?.user?.role
-    toast.success({ message: $t('common.auth.loginSuccess') })
+    toast.add({ color: 'success', title: $t('common.auth.loginSuccess') })
 
     if (role === 'superadmin') return navigateTo(localePath({ name: 'master' }))
     if (role === 'admin') return navigateTo(localePath({ name: 'admin' }))
     return navigateTo(localePath({ name: 'uzivatel' }))
   } catch {
-    toast.error({ message: $t('common.auth.onboardingLoginExpired') })
+    toast.add({ color: 'error', title: $t('common.auth.onboardingLoginExpired') })
     navigateTo({ query: {} })
   }
 }

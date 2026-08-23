@@ -8,18 +8,18 @@ describe('legacy invitation URL middleware', () => {
     vi.stubGlobal('invitationTokenHash', () => 'token-hash')
   })
 
-  it.each([['cs', '/cs/invitation/raw-token?source=email'], ['en', '/en/invitation/raw-token?source=email']])(
-    'redirects an existing %s invitation before Nuxt routing',
-    async (language, expected) => {
-      vi.stubGlobal('prisma', {
-        tenantInvitation: { findUnique: vi.fn().mockResolvedValue({ clientSite: { language } }) },
-      })
-      const redirect = vi.fn().mockReturnValue('redirected')
-      vi.stubGlobal('sendRedirect', redirect)
-      const handler = (await import('../../../server/middleware/invitationLocale')).default
+  it.each([
+    ['cs', '/cs/invitation/raw-token?source=email'],
+    ['en', '/en/invitation/raw-token?source=email'],
+  ])('redirects an existing %s invitation before Nuxt routing', async (language, expected) => {
+    vi.stubGlobal('prisma', {
+      tenantInvitation: { findUnique: vi.fn().mockResolvedValue({ clientSite: { language } }) },
+    })
+    const redirect = vi.fn().mockReturnValue('redirected')
+    vi.stubGlobal('sendRedirect', redirect)
+    const handler = (await import('../../../server/middleware/invitationLocale')).default
 
-      await expect(handler({} as never)).resolves.toBe('redirected')
-      expect(redirect).toHaveBeenCalledWith({}, expected, 302)
-    },
-  )
+    await expect(handler({} as never)).resolves.toBe('redirected')
+    expect(redirect).toHaveBeenCalledWith({}, expected, 302)
+  })
 })

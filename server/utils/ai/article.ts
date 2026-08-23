@@ -1,6 +1,7 @@
 import type { Language } from '@prisma/client'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
+import { z } from 'zod'
 import { generateObject, generateText, streamObject } from 'ai'
 
 import type { ArticleImage } from '../images/types'
@@ -100,7 +101,7 @@ const researchTopic = async (prompt: string) => {
       `.trim(),
       prompt,
       maxOutputTokens: RESEARCH_TOKENS,
-      tools: { web_search: aiWebSearchTool() },
+      tools: { web_search: aiWebSearchTool() as never },
     })
 
     return { brief: text.trim() || null, tokens: usage?.totalTokens ?? 0 }
