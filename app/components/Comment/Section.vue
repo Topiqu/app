@@ -23,7 +23,7 @@
                 v-model="newComment"
                 :maxlength="maxLength"
                 class="min-h-[100px] w-full"
-                :ui="{ leading: 'items-start pt-3', trailing: 'items-start pt-1.5' }"
+                :ui="{ leading: 'items-center self-stretch', trailing: 'items-start pt-1.5' }"
                 :placeholder="$t('articles.comments.commentPlaceholder')"
                 required
                 :disabled="isSubmitting"

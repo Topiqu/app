@@ -173,7 +173,7 @@
 
       <div
         v-if="hasContent || hasFilters"
-        class="sticky top-16 z-20 -mx-4 space-y-3 border-b border-default bg-default px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+        class="sticky top-0 z-20 -mx-4 space-y-3 border-b border-default bg-default px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
       >
         <UFormField :label="$t('articles.searchPlaceholder')" :ui="{ label: 'sr-only' }" class="w-full">
           <UInput

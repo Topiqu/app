@@ -32,7 +32,7 @@
             </UBadge>
           </div>
 
-          <div class="min-w-0 space-y-2">
+          <div class="min-w-0 space-y-3">
             <NuxtLink :to="articlePath">
               <h2
                 :class="

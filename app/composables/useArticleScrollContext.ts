@@ -37,6 +37,7 @@ export const useArticleScrollState = () =>
 
 export const useArticleScrollContext = (content: Ref<HTMLElement | null>, hero: Ref<HTMLElement | null>) => {
   const state = useArticleScrollState()
+  const scrollContainer = shallowRef<HTMLElement | null>(null)
 
   const collectHeadings = () => {
     if (!content.value) return
@@ -60,18 +61,22 @@ export const useArticleScrollContext = (content: Ref<HTMLElement | null>, hero: 
 
   const update = () => {
     if (!import.meta.client || !content.value) return
-    const scrollY = window.scrollY
-    const documentRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
-    state.value.progress = Math.round(Math.min(100, Math.max(0, (scrollY / documentRange) * 1000)) / 10)
-    state.value.showHeader = Boolean(hero.value && hero.value.getBoundingClientRect().bottom <= 64)
+    const scroller = scrollContainer.value
+    const scrollTop = scroller?.scrollTop ?? window.scrollY
+    const viewportHeight = scroller?.clientHeight ?? window.innerHeight
+    const scrollHeight = scroller?.scrollHeight ?? document.documentElement.scrollHeight
+    const scrollRange = Math.max(1, scrollHeight - viewportHeight)
+    const viewportTop = scroller?.getBoundingClientRect().top ?? 0
+    state.value.progress = Math.round(Math.min(100, Math.max(0, (scrollTop / scrollRange) * 1000)) / 10)
+    state.value.showHeader = Boolean(hero.value && hero.value.getBoundingClientRect().bottom <= viewportTop)
 
-    const activationLine = 88
+    const activationLine = viewportTop + 24
     const headingElements = state.value.headings
       .map(({ id }) => document.getElementById(id))
       .filter((heading): heading is HTMLElement => Boolean(heading))
     const active = headingElements.filter((heading) => heading.getBoundingClientRect().top <= activationLine).at(-1)
     state.value.activeId = active?.id || headingElements[0]?.id || ''
-    if (scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+    if (scrollTop + viewportHeight >= scrollHeight - 2) {
       state.value.progress = 100
       state.value.activeId = headingElements.at(-1)?.id || state.value.activeId
     }
@@ -79,6 +84,7 @@ export const useArticleScrollContext = (content: Ref<HTMLElement | null>, hero: 
 
   onMounted(async () => {
     await nextTick()
+    scrollContainer.value = content.value?.closest<HTMLElement>('.topiqu-dashboard-scroll') ?? null
     collectHeadings()
     update()
   })
@@ -86,7 +92,7 @@ export const useArticleScrollContext = (content: Ref<HTMLElement | null>, hero: 
     collectHeadings()
     update()
   })
-  useEventListener(window, 'scroll', update, { passive: true })
+  useEventListener(() => scrollContainer.value ?? window, 'scroll', update, { passive: true })
 
   onUnmounted(() => {
     state.value = { activeId: '', headings: [], progress: 0, showHeader: false }
