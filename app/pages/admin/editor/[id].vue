@@ -79,8 +79,8 @@
           variant="soft"
           class="lg:hidden"
           square
-          :aria-label="$t('common.settings')"
-          :title="$t('common.settings')"
+          :aria-label="$t('articles.editor.settingsTitle')"
+          :title="$t('articles.editor.settingsTitle')"
           @click="sidebarOpen = true"
         />
 
@@ -197,7 +197,7 @@
 
     <div
       class="grid flex-1 items-start gap-8"
-      :class="settingsExpanded ? 'lg:grid-cols-[minmax(0,1fr)_20rem]' : 'lg:grid-cols-[minmax(0,1fr)_3rem]'"
+      :class="settingsExpanded ? 'lg:grid-cols-[minmax(0,1fr)_24rem]' : 'lg:grid-cols-[minmax(0,1fr)_3rem]'"
     >
       <div class="min-w-0 flex flex-col gap-6">
         <UFormField :label="$t('common.labels.articleTitle')">
@@ -218,7 +218,7 @@
           />
         </UFormField>
 
-        <div class="mt-4 max-w-none">
+        <div class="mt-4 min-w-0 max-w-full">
           <TiptapEditor v-model="bodyModel" :edit="bodyEditable" class="min-h-[500px]" />
 
           <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
@@ -241,7 +241,7 @@
           class="rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5"
         >
           <div class="mb-5 flex items-center justify-between gap-3">
-            <h2 class="font-semibold text-highlighted">{{ $t('common.settings') }}</h2>
+            <h2 class="font-semibold text-highlighted">{{ $t('articles.editor.settingsTitle') }}</h2>
             <UButton
               icon="i-mdi-chevron-right"
               color="neutral"
@@ -322,7 +322,7 @@
       </template>
     </UModal>
 
-    <USlideover v-model:open="sidebarOpen" :title="$t('common.settings')" class="lg:hidden">
+    <USlideover v-model:open="sidebarOpen" :title="$t('articles.editor.settingsTitle')" class="lg:hidden">
       <template #body>
         <ArticleEditorSettingsPanel
           v-model:selectedSeries="selectedSeries"

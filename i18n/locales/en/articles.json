@@ -409,6 +409,7 @@
       "noContent": "No content available",
       "dropZone": "Drop image here",
       "title": "Edit Article",
+      "settingsTitle": "Article settings",
       "modes": {
         "manual": "Manual Writing",
         "import": "JSON Import",

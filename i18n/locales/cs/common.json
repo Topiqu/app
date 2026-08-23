@@ -62,7 +62,7 @@
     "closeDialog": "Zavřít dialog",
     "warning": "Upozornění",
     "unknown": "Neznámo",
-    "settings": "Nastavení článku",
+    "settings": "Nastavení",
     "remove": "Odebrat",
     "continue": "Pokračovat",
     "unsavedChanges": "Neuložené změny!",
@@ -72,7 +72,8 @@
     "poweredBy": "Vytvořeno pomocí",
     "breadcrumbs": "Drobečková navigace",
     "navigation": {
-      "publication": "Veřejná publikace",
+      "publication": "Zobrazit web",
+      "settings": "Nastavení webu",
       "dashboard": "Přehled"
     },
     "links": {

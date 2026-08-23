@@ -110,4 +110,18 @@ describe('dashboard UI polish contracts', () => {
     expect(stats).toContain('PLATFORM_COLORS')
     expect(source('app/components/Charts.vue')).toContain('#category-cell')
   })
+
+  it('keeps the mobile editor inside the viewport and gives article settings useful width', () => {
+    const page = source('app/pages/admin/editor/[id].vue')
+    const editor = source('app/components/Tiptap/Editor.vue')
+    const toolbar = source('app/components/Tiptap/Toolbar.vue')
+    const styles = source('app/assets/styles/main.css')
+
+    expect(page).toContain('lg:grid-cols-[minmax(0,1fr)_24rem]')
+    expect(page).toContain('class="mt-4 min-w-0 max-w-full"')
+    expect(editor).toContain('flex min-w-0 max-w-full flex-col')
+    expect(toolbar).toContain('overflow-x-auto overscroll-x-contain')
+    expect(styles).toContain('.editor-canvas .ProseMirror pre')
+    expect(styles).toContain('overflow-wrap: anywhere')
+  })
 })

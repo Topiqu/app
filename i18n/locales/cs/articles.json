@@ -409,6 +409,7 @@
       "noContent": "Obsah není dostupný",
       "dropZone": "Sem přetáhněte obrázek",
       "title": "Upravit článek",
+      "settingsTitle": "Nastavení článku",
       "modes": {
         "manual": "Ruční psaní",
         "import": "Importovat z JSON",

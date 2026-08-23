@@ -62,7 +62,7 @@
     "closeDialog": "Close dialog",
     "warning": "Warning",
     "unknown": "Unknown",
-    "settings": "Article Settings",
+    "settings": "Settings",
     "remove": "Remove",
     "continue": "Continue",
     "unsavedChanges": "Unsaved changes!",
@@ -72,7 +72,8 @@
     "poweredBy": "Made with",
     "breadcrumbs": "Breadcrumbs",
     "navigation": {
-      "publication": "Public publication",
+      "publication": "View site",
+      "settings": "Site settings",
       "dashboard": "Dashboard"
     },
     "links": {

@@ -310,9 +310,24 @@ main {
 }
 
 .editor-canvas .ProseMirror {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 24rem;
   color: var(--ui-text);
   padding: 1rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.editor-canvas .ProseMirror pre {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.editor-canvas .ProseMirror :where(a, code) {
+  overflow-wrap: anywhere;
 }
 
 .editor-canvas .ProseMirror img {

@@ -1,10 +1,10 @@
 <template>
   <div
-    class="sticky top-24 z-10 rounded-t-[var(--topiqu-surface-radius)] border-b border-default bg-default px-1 py-1.5 sm:px-2 md:top-16"
+    class="sticky top-24 z-10 min-w-0 max-w-full overflow-hidden rounded-t-[var(--topiqu-surface-radius)] border-b border-default bg-default px-1 py-1.5 sm:px-2 md:top-16"
     data-editor-toolbar
   >
     <div
-      class="grid grid-flow-col grid-rows-2 justify-start gap-2 overflow-x-auto sm:flex sm:items-center"
+      class="grid min-w-0 max-w-full grid-flow-col grid-rows-2 justify-start gap-2 overflow-x-auto overscroll-x-contain sm:flex sm:items-center"
       role="toolbar"
       :aria-label="$t('articles.editor.title')"
     >
