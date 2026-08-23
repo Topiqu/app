@@ -280,7 +280,7 @@
       "roughlyEstimated": "Přibližně {0} článků",
       "userDataError": "Chyba při načítání uživatelských dat",
       "remainingTokens": "Zbývající tokeny",
-      "balanceIncludesExtras": "Základní příděl plánu je {0} tokenů; zůstatek zahrnuje také dokoupené nebo zachované tokeny.",
+      "balanceIncludesExtras": "Zůstatek zahrnuje dokoupené nebo zachované tokeny z dřívějšího tarifu a může být vyšší než aktuální příděl plánu.",
       "totalConsumed": "Celkem spotřebováno: {0} tokenů",
       "buyTokens": "Koupit tokeny",
       "upgradeToPremium": "Povýšit na PREMIUM",

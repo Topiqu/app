@@ -102,7 +102,7 @@
           <div class="h-full rounded-full bg-emerald-500 transition-all" :style="{ width: `${tokenPercent}%` }" />
         </div>
         <p v-else class="text-xs text-neutral-500 dark:text-neutral-400">
-          {{ $t('articles.userMenu.balanceIncludesExtras', [(client.tokenLimit ?? 0).toLocaleString()]) }}
+          {{ $t('articles.userMenu.balanceIncludesExtras') }}
         </p>
       </div>
 
@@ -110,19 +110,44 @@
         <span class="text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {{ $t('common.preferences.billing.buyTokens') }}
         </span>
-        <div class="flex flex-wrap gap-2">
-          <UButton
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <button
             v-for="pack in tokenPacks"
             :key="pack.id"
-            color="neutral"
-            variant="soft"
-            size="sm"
-            :loading="pendingAction === `pack-${pack.id}`"
+            type="button"
+            class="group relative min-w-0 rounded-xl border p-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
+            :class="
+              pack.featured
+                ? 'border-primary bg-primary/5 shadow-sm hover:bg-primary/10'
+                : 'border-default bg-elevated hover:border-primary/40 hover:bg-muted'
+            "
+            :disabled="pendingAction !== null"
+            :aria-label="`${pack.name}, ${pack.price}`"
             @click="buyTokens(pack.id)"
           >
-            <Icon name="mdi:lightning-bolt" class="mr-1.5 size-4 text-amber-500" />
-            {{ (pack.tokens / 1000).toLocaleString(locale) }}k · {{ formatTokenPackPrice(pack, locale) }}
-          </UButton>
+            <span class="flex min-h-6 items-start justify-between gap-2">
+              <UIcon
+                :name="pendingAction === `pack-${pack.id}` ? 'i-mdi-loading' : 'i-mdi-lightning-bolt'"
+                class="size-5 text-warning"
+                :class="pendingAction === `pack-${pack.id}` ? 'animate-spin' : ''"
+              />
+              <span class="flex flex-wrap justify-end gap-1">
+                <UBadge v-if="pack.valueBonus" color="success" variant="soft" size="xs">
+                  {{ $t('common.tokens.valueBonus', [pack.valueBonus]) }}
+                </UBadge>
+                <UBadge v-if="pack.featured" color="primary" variant="soft" size="xs">
+                  {{ $t('common.tokens.mostTokens') }}
+                </UBadge>
+              </span>
+            </span>
+            <span class="mt-3 block text-xl font-bold tabular-nums text-highlighted">
+              {{ pack.tokens.toLocaleString(locale) }}
+            </span>
+            <span class="block text-xs text-muted">{{ $t('common.tokens.tokens') }}</span>
+            <span class="mt-3 block border-t border-default pt-2 text-sm font-semibold text-highlighted">
+              {{ pack.price }}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -306,17 +331,18 @@ import type { PlanPrice, PlanPricing } from '~~/shared/types/planPricing'
 import type { BillingInvoice, BillingInvoiceStatus } from '~~/shared/types/billing'
 
 import { getUpgradeTarget } from '~~/shared/utils/plans'
-import { TOKEN_PACK_LIST, formatTokenPackPrice } from '~~/shared/utils/tokenPacks'
 
 import type { ClientSite } from '~/utils/buildClientSettingsForm'
+
+import { buildTokenPackViews } from '~/utils/tokenPackPresentation'
 
 const { client, rate } = defineProps<{ client: ClientSite | null; rate: number }>()
 
 const toast = useAppToast()
-const { locale, tm, rt } = useI18n()
+const { locale, tm, rt, t } = useI18n()
 const { formatTime } = useTime()
 
-const tokenPacks = TOKEN_PACK_LIST
+const tokenPacks = computed(() => buildTokenPackViews(t, locale.value))
 const pendingAction = ref<string | null>(null)
 const checkoutInterval = ref<'month' | 'year'>(client?.billingPlan === 'ANNUAL' ? 'year' : 'month')
 

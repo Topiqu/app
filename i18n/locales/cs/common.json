@@ -759,7 +759,11 @@
       "pack10k": "Balíček 10k tokenů",
       "pack25k": "Balíček 25k tokenů",
       "pack50k": "Balíček 50k tokenů",
+      "pack75k": "Balíček 75k tokenů",
       "bestValue": "Nejvýhodnější",
+      "mostTokens": "Nejvíce tokenů",
+      "valueBonus": "+{0} % value",
+      "tokens": "tokenů",
       "upgradeToPremium": "Povýšit na PREMIUM"
     }
   },

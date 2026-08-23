@@ -5,10 +5,10 @@ import { getTokenPack, TOKEN_PACKS } from '../../shared/utils/tokenPacks'
 
 describe('getTokenPack', () => {
   it('returns the pack for a known id with server-side price + tokens', () => {
-    const pack = getTokenPack('25000')
-    expect(pack).toEqual(TOKEN_PACKS['25000'])
-    expect(pack?.priceUsd).toBe(4.99)
-    expect(pack?.tokens).toBe(25000)
+    const pack = getTokenPack('75000')
+    expect(pack).toEqual(TOKEN_PACKS['75000'])
+    expect(pack?.priceUsd).toBe(11.19)
+    expect(pack?.tokens).toBe(75000)
   })
 
   it('rejects unknown or malformed ids (price tampering guard)', () => {

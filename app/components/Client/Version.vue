@@ -43,16 +43,37 @@
             :description="$t('articles.userMenu.lowTokensHint')"
           />
 
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              v-for="pack in tokenPacks"
+              :key="pack.id"
+              type="button"
+              class="relative min-w-0 rounded-xl border p-2.5 text-left transition disabled:cursor-wait disabled:opacity-60"
+              :class="
+                pack.featured
+                  ? 'border-primary bg-primary/10 hover:bg-primary/15'
+                  : 'border-default bg-elevated hover:border-primary/40'
+              "
+              :disabled="checkoutPack !== null"
+              @click="buyTokens(pack.id)"
+            >
+              <span class="flex items-center justify-between gap-1">
+                <UIcon
+                  :name="checkoutPack === pack.id ? 'i-mdi-loading' : 'i-mdi-lightning-bolt'"
+                  class="size-4 text-warning"
+                  :class="checkoutPack === pack.id ? 'animate-spin' : ''"
+                />
+                <UBadge v-if="pack.valueBonus" color="success" variant="soft" size="xs">
+                  +{{ pack.valueBonus }}%
+                </UBadge>
+              </span>
+              <span class="mt-2 block text-sm font-bold tabular-nums text-highlighted">
+                {{ (pack.tokens / 1000).toLocaleString(locale) }}k
+              </span>
+              <span class="block text-xs font-medium text-muted">{{ pack.price }}</span>
+            </button>
+          </div>
           <div class="grid grid-cols-1 gap-2">
-            <UButton color="neutral" variant="outline" icon="i-mdi-package-variant" block @click="buyTokens('10000')">
-              {{ $t('common.tokens.pack10k') }} · 2.99 $
-            </UButton>
-            <UButton color="neutral" variant="outline" icon="i-mdi-star-half-full" block @click="buyTokens('25000')">
-              {{ $t('common.tokens.pack25k') }} · 4.99 $
-            </UButton>
-            <UButton icon="i-mdi-diamond-stone" block @click="buyTokens('50000')">
-              {{ $t('common.tokens.pack50k') }} · 9.99 $
-            </UButton>
             <UButton
               v-if="site?.plan === 'BASIC'"
               color="success"
@@ -119,11 +140,14 @@
 
 <script setup lang="ts">
 const config = useRuntimeConfig()
+const { locale, t } = useI18n()
 const { data: status } = await useClientSiteStatus()
 const site = computed(() => status.value)
+const tokenPacks = computed(() => buildTokenPackViews(t, locale.value))
 
 const page = shallowRef(1)
 const show = shallowRef(false)
+const checkoutPack = shallowRef<string | null>(null)
 const logs = reactive<{ items: any[]; hasMore: boolean }>({ items: [], hasMore: false })
 
 const {
@@ -206,11 +230,16 @@ const formatLogDetail = (metadata: unknown) => {
 }
 
 const buyTokens = async (pack: string) => {
-  const res = await $fetch('/api/stripe/checkout', {
-    method: 'POST',
-    body: { pack, origin: window.location.origin },
-  })
-  if (res.url) window.location.href = res.url
+  checkoutPack.value = pack
+  try {
+    const res = await $fetch('/api/stripe/checkout', {
+      method: 'POST',
+      body: { pack, origin: window.location.origin },
+    })
+    if (res.url) window.location.href = res.url
+  } finally {
+    checkoutPack.value = null
+  }
 }
 
 const localePath = useLocalePath()

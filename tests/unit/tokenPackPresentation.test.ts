@@ -15,7 +15,7 @@ describe('buildTokenPackViews', () => {
     const views = buildTokenPackViews(translate, 'en-US')
 
     expect(views.map((v) => v.id)).toEqual(TOKEN_PACK_LIST.map((p) => p.id))
-    expect(views.map((v) => v.price)).toEqual(['$2.99', '$4.99', '$9.99'])
+    expect(views.map((v) => v.price)).toEqual(['$2.99', '$4.99', '$9.99', '$11.19'])
   })
 
   it('labels packs through i18n keys and marks exactly one pack as featured', () => {
@@ -25,15 +25,22 @@ describe('buildTokenPackViews', () => {
       't:common.tokens.pack10k',
       't:common.tokens.pack25k',
       't:common.tokens.pack50k',
+      't:common.tokens.pack75k',
     ])
-    expect(views.filter((v) => v.featured).map((v) => v.id)).toEqual(['50000'])
+    expect(views.filter((v) => v.featured).map((v) => v.id)).toEqual(['75000'])
   })
 
   it('estimates articles by flooring tokens against the per-article cost', () => {
     const views = buildTokenPackViews(translate, 'en-US')
 
     expect(views.map((v) => v.articles)).toEqual(TOKEN_PACK_LIST.map((p) => Math.floor(p.tokens / TOKENS_PER_ARTICLE)))
-    expect(views.map((v) => v.articles)).toEqual([2, 5, 10])
+    expect(views.map((v) => v.articles)).toEqual([2, 5, 10, 15])
+  })
+
+  it('calculates honest value gains against the entry pack', () => {
+    const views = buildTokenPackViews(translate, 'en-US')
+
+    expect(views.map((view) => view.valueBonus)).toEqual([0, 50, 50, 100])
   })
 
   it('formats price for the active locale', () => {

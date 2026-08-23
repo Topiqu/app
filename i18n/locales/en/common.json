@@ -759,7 +759,11 @@
       "pack10k": "Token Pack 10k",
       "pack25k": "Token Pack 25k",
       "pack50k": "Token Pack 50k",
+      "pack75k": "Token Pack 75k",
       "bestValue": "Best value",
+      "mostTokens": "Most tokens",
+      "valueBonus": "+{0}% value",
+      "tokens": "tokens",
       "upgradeToPremium": "Upgrade to PREMIUM"
     }
   },
