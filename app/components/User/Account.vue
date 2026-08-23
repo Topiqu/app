@@ -24,59 +24,69 @@
     />
 
     <template #content>
-      <UCard class="w-[92vw] max-w-sm">
+      <UCard class="w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden" :ui="{ body: 'p-0 sm:p-0' }">
         <template v-if="auth && userData">
-          <div class="flex flex-col gap-4">
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex min-w-0 items-center gap-3">
-                <UserPicture :url="userData.avatarUrl" :name="userData.username" size="lg" />
-                <div class="min-w-0 flex-1">
-                  <p class="truncate font-medium text-highlighted">{{ userData.username }}</p>
-                  <p class="truncate text-sm text-muted">{{ userData.email }}</p>
+          <div>
+            <div class="flex items-center gap-3 bg-elevated/70 p-4">
+              <UserPicture :url="userData.avatarUrl" :name="userData.username" size="lg" />
+              <div class="min-w-0 flex-1">
+                <div class="flex min-w-0 items-center gap-2">
+                  <p class="truncate font-semibold text-highlighted">{{ userData.username }}</p>
+                  <UBadge
+                    v-if="userData.role === 'admin' || userData.role === 'superadmin'"
+                    class="shrink-0"
+                    :color="planColor"
+                    variant="soft"
+                    :icon="planIcon"
+                    size="sm"
+                  >
+                    {{ userData.role === 'admin' ? 'Admin' : 'Super' }}
+                  </UBadge>
                 </div>
-                <UBadge
-                  v-if="userData.role === 'admin' || userData.role === 'superadmin'"
-                  :color="planColor"
-                  variant="soft"
-                  :icon="planIcon"
-                >
-                  {{ userData.role === 'admin' ? 'Admin' : 'Super' }}
-                </UBadge>
+                <p class="truncate text-sm text-muted">{{ userData.email }}</p>
               </div>
-              <AuthLogout />
             </div>
 
-            <p class="line-clamp-3 text-sm text-muted">
-              {{ userData.bio || $t('articles.userMenu.noBio') }}
-            </p>
+            <div class="space-y-4 p-4">
+              <p v-if="userData.bio" class="line-clamp-2 text-sm leading-relaxed text-muted">{{ userData.bio }}</p>
 
-            <USeparator />
+              <div class="grid grid-cols-3 divide-x divide-default rounded-lg bg-elevated p-2 text-center">
+                <div class="min-w-0 px-1">
+                  <UIcon name="i-mdi-thumb-up-outline" size="18" />
+                  <strong class="block text-sm tabular-nums text-highlighted">{{ userData.likesCount || 0 }}</strong>
+                  <span class="block truncate text-xs text-muted">{{ $t('common.user.likes') }}</span>
+                </div>
+                <div class="min-w-0 px-1">
+                  <UIcon name="i-mdi-thumb-down-outline" size="18" />
+                  <strong class="block text-sm tabular-nums text-highlighted">{{ userData.dislikesCount || 0 }}</strong>
+                  <span class="block truncate text-xs text-muted">{{ $t('common.user.dislikes') }}</span>
+                </div>
+                <div class="min-w-0 px-1">
+                  <UIcon name="i-mdi-comment-outline" size="18" />
+                  <strong class="block text-sm tabular-nums text-highlighted">{{ userData.commentsCount || 0 }}</strong>
+                  <span class="block truncate text-xs text-muted">{{ $t('common.user.comments') }}</span>
+                </div>
+              </div>
 
-            <div class="flex flex-wrap gap-2">
-              <UBadge color="success" variant="soft" icon="i-mdi-thumb-up">
-                {{ userData.likesCount || 0 }} {{ $t('common.user.likes') }}
-              </UBadge>
-              <UBadge color="error" variant="soft" icon="i-mdi-thumb-down">
-                {{ userData.dislikesCount || 0 }} {{ $t('common.user.dislikes') }}
-              </UBadge>
-              <UBadge color="info" variant="soft" icon="i-mdi-comment">
-                {{ userData.commentsCount || 0 }} {{ $t('common.user.comments') }}
-              </UBadge>
+              <div class="flex items-center justify-between gap-3 text-xs text-muted">
+                <span class="truncate">{{ $t('common.user.joined', [formatDate(userData.createdAt)]) }}</span>
+                <span v-if="userData.role === 'admin'" class="max-w-28 truncate">{{ clientData?.name }}</span>
+              </div>
+
+              <div class="flex items-center gap-2 border-t border-default pt-3">
+                <UButton
+                  :to="localePath({ name: 'uzivatel' })"
+                  icon="i-mdi-account-outline"
+                  color="neutral"
+                  variant="soft"
+                  :ui="{ base: 'flex-1 justify-center' }"
+                  @click="show = false"
+                >
+                  {{ $t('common.user.viewProfile') }}
+                </UButton>
+                <AuthLogout />
+              </div>
             </div>
-
-            <div class="flex items-center justify-between gap-3 text-xs text-muted">
-              <span>{{ $t('common.user.joined', [formatDate(userData.createdAt)]) }}</span>
-              <span v-if="userData.role === 'admin'">{{ clientData?.name }}</span>
-            </div>
-
-            <UButton
-              :to="localePath({ name: 'uzivatel' })"
-              block
-              trailingIcon="i-mdi-arrow-right"
-              @click="show = false"
-            >
-              {{ $t('common.user.viewProfile') }}
-            </UButton>
           </div>
         </template>
 
