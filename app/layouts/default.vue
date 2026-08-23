@@ -8,7 +8,7 @@
     <UDashboardGroup
       v-if="showDashboard"
       unit="px"
-      storage="local"
+      storage="cookie"
       storageKey="topiqu-dashboard-sidebar"
       class="topiqu-dashboard-group fixed inset-x-0 bottom-0 top-16"
     >
@@ -53,5 +53,11 @@ const isPublicationSurface = computed(() => {
 const publicationStyle = computed(() => {
   if (!isPublicationSurface.value) return undefined
   return tenantThemeStyle(clientSite?.theme, clientSite?.typographyPreset)
+})
+
+// The desktop collapsed state is persisted by UDashboardGroup. The drawer is transient
+// and must never survive hydration as an overlay hiding the current page.
+onMounted(() => {
+  isSidebarOpen.value = false
 })
 </script>

@@ -8,7 +8,7 @@
     :collapsedSize="72"
   >
     <template #header="{ collapsed, collapse }">
-      <div class="flex w-full items-center justify-between gap-2">
+      <div class="flex w-full items-center gap-2" :class="collapsed ? 'justify-center' : 'justify-between'">
         <NuxtLink
           v-if="!collapsed"
           :to="localePath({ name: auth?.user?.role === 'superadmin' ? 'master' : 'admin' })"
