@@ -129,12 +129,39 @@
         />
         <div class="flex flex-col gap-2">
           <AppFormLabel :text="$t('common.avatar.ai.label')" />
-          <div class="flex justify-center">
+          <div class="flex flex-col items-center gap-2">
             <UserPictureUploader
               v-model="avatarUrl"
               :api="`/api/clients/${clientId}/ai-avatar`"
               :name="username || $t('common.preferences.aiAuthor.title')"
-            />
+            >
+              <template #default="{ open }">
+                <button
+                  type="button"
+                  class="group relative rounded-full ring-4 ring-white shadow-md outline-none transition hover:scale-[1.03] hover:ring-blue-200 focus-visible:ring-blue-500 dark:ring-gray-800 dark:hover:ring-blue-800"
+                  :aria-label="`${$t('common.actions.change')} ${$t('common.avatar.ai.label')}`"
+                  @click="open"
+                >
+                  <UserPicture :url="avatarUrl" size="xl" :name="username || $t('common.preferences.aiAuthor.title')" />
+                  <span
+                    class="absolute inset-0 grid place-items-center rounded-full bg-black/0 text-white transition group-hover:bg-black/45 group-focus-visible:bg-black/45"
+                  >
+                    <UIcon
+                      name="i-mdi-camera-outline"
+                      class="size-7 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
+                    />
+                  </span>
+                  <span
+                    class="absolute bottom-0 right-0 grid size-8 place-items-center rounded-full bg-primary text-white ring-2 ring-white dark:ring-gray-800"
+                  >
+                    <UIcon name="i-mdi-pencil" class="size-4" />
+                  </span>
+                </button>
+              </template>
+            </UserPictureUploader>
+            <span class="text-xs font-medium text-blue-700 dark:text-blue-300">
+              {{ $t('common.actions.change') }}
+            </span>
           </div>
         </div>
         <div class="flex flex-col gap-2">

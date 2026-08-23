@@ -1,7 +1,7 @@
 <template>
   <UModal v-model:open="open" :title="$t('common.avatar.uploadAvatar')">
     <template #default="actions">
-      <slot v-bind="actions">
+      <slot v-bind="{ ...actions, open: openEditor }">
         <UButton
           color="neutral"
           variant="ghost"
@@ -16,8 +16,12 @@
 
     <template #body>
       <div class="grow flex flex-col gap-8">
-        <div v-if="!draftUrl" class="w-full my-8 flex items-center justify-center">
-          <UserPicture :url="displayAvatar" :size="'hg'" :name="name ?? auth?.user.name" />
+        <div v-if="!draftUrl" class="my-8 flex w-full flex-col items-center justify-center gap-5">
+          <UserPicture :url="displayAvatar" size="xl" :name="name ?? auth?.user.name" />
+          <UButton icon="i-mdi-image-edit-outline" size="lg" @click="chooseFile()">
+            {{ $t('common.avatar.chooseImage') }}
+          </UButton>
+          <p class="text-center text-xs text-muted">{{ $t('common.avatar.requirements') }}</p>
         </div>
 
         <template v-else>

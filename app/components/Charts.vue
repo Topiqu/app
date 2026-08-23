@@ -21,7 +21,19 @@
       <summary class="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
         {{ $t('stats.charts.showTable') }}
       </summary>
-      <UTable :data="tableRows" :columns="tableColumns" />
+      <UTable :data="tableRows" :columns="tableColumns">
+        <template #category-cell="{ row }">
+          <span class="inline-flex items-center gap-2">
+            <Icon
+              v-if="row.original.icon"
+              :name="row.original.icon"
+              class="size-5 shrink-0"
+              :style="{ color: row.original.color }"
+            />
+            <span>{{ row.original.category }}</span>
+          </span>
+        </template>
+      </UTable>
     </details>
   </UCard>
 </template>
@@ -82,6 +94,8 @@ const props = defineProps<{
   values: number[]
   /** Per-row icon names for the table twin, parallel to `labels`. */
   icons?: string[]
+  /** Stable brand/category colours, with a contrast-safe value for each colour mode. */
+  colors?: { light: string; dark: string }[]
 }>()
 
 const theme = useThemeStore()
@@ -106,7 +120,20 @@ const currentChart = computed(() => {
 })
 
 const isBreakdown = computed(() => props.kind === 'breakdown')
-const tableRows = computed(() => props.labels.map((category, index) => ({ category, value: props.values[index] ?? 0 })))
+const categoryColors = computed(() =>
+  props.labels.map((_, index) => {
+    const brand = props.colors?.[index]
+    return brand ? (theme.isDark ? brand.dark : brand.light) : palette.value[index % palette.value.length]!
+  }),
+)
+const tableRows = computed(() =>
+  props.labels.map((category, index) => ({
+    category,
+    value: props.values[index] ?? 0,
+    icon: props.icons?.[index],
+    color: categoryColors.value[index],
+  })),
+)
 const tableColumns = computed<TableColumn<(typeof tableRows.value)[number]>[]>(() => [
   { accessorKey: 'category', header: props.categoryHeading },
   { accessorKey: 'value', header: props.label },
@@ -115,9 +142,7 @@ const tableColumns = computed<TableColumn<(typeof tableRows.value)[number]>[]>((
 const chartData = computed(() => {
   // A trend is one series, so it is one colour; a breakdown colours by entity, which is
   // what the pie needs and what keeps the two views of it consistent.
-  const colors = isBreakdown.value
-    ? props.labels.map((_, i) => palette.value[i % palette.value.length]!)
-    : palette.value[0]!
+  const colors = isBreakdown.value ? categoryColors.value : palette.value[0]!
 
   return {
     labels: props.labels,

@@ -3,21 +3,24 @@
     class="relative group flex flex-col gap-5 p-7 rounded-[1.25rem] border border-gray-200 bg-white shadow-[0_6px_18px_rgba(0,0,0,0.06)] transition-colors duration-250 max-w-[40rem] dark:border-gray-700 dark:bg-slate-900"
     contenteditable="false"
   >
-    <Button
+    <UButton
       square
       size="sm"
-      variant="neutral"
-      icon="mdi:close"
+      color="neutral"
+      variant="ghost"
+      icon="i-mdi-close"
       class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity !text-gray-400 hover:!text-red-500 hover:!bg-red-50 border-none shadow-none"
       :title="$t('common.delete')"
       @click.stop.prevent="deleteNode"
       @mousedown.stop.prevent
     />
 
-    <FormInput
+    <UInput
       v-model="localQuestion"
       :placeholder="$t('articles.poll.questionPlaceholder')"
-      class="w-full text-xl font-bold border-none border-b-2 border-transparent bg-transparent outline-none py-2 transition-colors duration-250 pr-8 focus:border-blue-600 dark:text-gray-100 dark:focus:border-blue-500 placeholder:text-gray-400"
+      size="xl"
+      class="w-full pr-8"
+      :ui="{ base: 'text-lg font-bold' }"
       @input="syncQuestion"
       @click.stop
       @mousedown.stop
@@ -29,37 +32,39 @@
       :key="i"
       class="flex items-center gap-3 border border-transparent rounded-xl px-4 py-3 bg-gray-50 transition-all duration-250 hover:border-gray-300 hover:shadow-sm dark:bg-slate-800 dark:border-slate-700"
     >
-      <FormInput
+      <UInput
         v-model="opt.label"
         :placeholder="$t('articles.poll.optionPlaceholder')"
-        class="flex-1 bg-transparent border-none outline-none text-[0.95rem] text-inherit placeholder:text-gray-400 dark:text-gray-200"
+        class="min-w-0 flex-1"
         @input="syncOptions"
         @click.stop
         @mousedown.stop
         @focus.stop
       />
 
-      <Button
+      <UButton
         v-if="localOptions.length > 1"
         square
         size="sm"
-        variant="neutral"
-        icon="mdi:trash"
+        color="error"
+        variant="ghost"
+        icon="i-mdi-trash-can-outline"
         class="!p-1.5 !w-8 !h-8 !text-red-500 hover:!bg-red-50 hover:scale-105 border-none shadow-none !bg-transparent"
         @click.stop.prevent="rm(i)"
         @mousedown.stop.prevent
       />
     </div>
 
-    <Button
-      variant="neutral"
-      icon="mdi:plus"
+    <UButton
+      color="neutral"
+      variant="soft"
+      icon="i-mdi-plus"
       class="w-full !border-2 !border-dashed !border-gray-300 !text-gray-500 hover:!border-blue-500 hover:!text-blue-600 hover:!bg-blue-50/50 dark:!border-gray-600 dark:!text-gray-400 dark:hover:!border-blue-500 dark:hover:!text-blue-400 dark:hover:!bg-blue-900/20 shadow-none justify-center"
       @click.stop.prevent="add"
       @mousedown.stop.prevent
     >
       {{ $t('articles.poll.addOption') }}
-    </Button>
+    </UButton>
   </node-view-wrapper>
 </template>
 
@@ -73,9 +78,7 @@ const { node, updateAttributes, deleteNode } = props
 const defaultOption = () => ({ label: $t('articles.poll.defaultOption') })
 
 const localQuestion = shallowRef(node.attrs.question || $t('articles.poll.defaultQuestion'))
-const localOptions = shallowRef(
-  node.attrs.options?.length ? node.attrs.options.map((o) => ({ ...o })) : [defaultOption()],
-)
+const localOptions = ref(node.attrs.options?.length ? node.attrs.options.map((o) => ({ ...o })) : [defaultOption()])
 const localId = shallowRef(node.attrs.id || crypto.randomUUID())
 
 const syncQuestion = () => {

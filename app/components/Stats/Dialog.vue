@@ -289,6 +289,7 @@
             :labels="shareChart.labels"
             :values="shareChart.values"
             :icons="shareChart.icons"
+            :colors="shareChart.colors"
           />
         </section>
       </div>
@@ -507,9 +508,18 @@ const PLATFORM_ICONS: Record<(typeof SHARE_PLATFORMS)[number], string> = {
   OTHER: 'mdi:link-variant',
 }
 
+const PLATFORM_COLORS: Record<(typeof SHARE_PLATFORMS)[number], { light: string; dark: string }> = {
+  TWITTER: { light: '#09090b', dark: '#fafafa' },
+  LINKEDIN: { light: '#0a66c2', dark: '#70b5f9' },
+  FACEBOOK: { light: '#1877f2', dark: '#6ea8fe' },
+  EMAIL: { light: '#ea4335', dark: '#f28b82' },
+  OTHER: { light: '#7c3aed', dark: '#a78bfa' },
+}
+
 const shareChart = computed(() => ({
   labels: SHARE_PLATFORMS.map((platform) => t(`stats.platforms.${platform}`)),
   values: SHARE_PLATFORMS.map((platform) => stats.value.sharesDistribution[platform] || 0),
   icons: SHARE_PLATFORMS.map((platform) => PLATFORM_ICONS[platform]),
+  colors: SHARE_PLATFORMS.map((platform) => PLATFORM_COLORS[platform]),
 }))
 </script>

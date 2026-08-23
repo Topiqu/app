@@ -57,12 +57,11 @@
           <section v-if="!searchQuery && !selectedCategory && categories.length" class="border-b border-default p-4">
             <h3 class="mb-3 text-sm font-semibold text-highlighted">{{ $t('articles.comments.gifCategories') }}</h3>
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <UButton
+              <button
                 v-for="category in categories"
                 :key="category.name_encoded"
-                color="neutral"
-                variant="ghost"
-                class="relative aspect-[4/3] overflow-hidden"
+                type="button"
+                class="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--ui-radius)] border border-default bg-elevated text-center transition hover:border-primary/50 hover:ring-2 hover:ring-primary/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 :aria-label="category.name"
                 @click="selectCategory(category)"
               >
@@ -74,8 +73,11 @@
                   sizes="144px"
                   containerClass="absolute inset-0 size-full opacity-40"
                 />
-                <span class="relative z-[1] line-clamp-2 text-sm font-bold text-highlighted">{{ category.name }}</span>
-              </UButton>
+                <span
+                  class="absolute inset-x-2 bottom-2 z-[1] line-clamp-2 text-sm font-bold text-highlighted drop-shadow-sm"
+                  >{{ category.name }}</span
+                >
+              </button>
             </div>
           </section>
 
@@ -130,14 +132,22 @@
         </template>
       </div>
 
-      <div class="pointer-events-none flex shrink-0 justify-end border-t border-default bg-default px-4 py-2">
-        <AppMedia
-          :src="theme.isDark ? '/Poweredby_100px-White_VertLogo.png' : '/Poweredby_100px-Black_VertLogo.png'"
+      <div
+        class="pointer-events-none flex h-11 shrink-0 items-center justify-end border-t border-default bg-default px-4"
+      >
+        <img
+          src="/Poweredby_100px-White_VertLogo.png"
           alt="Powered by Giphy"
-          aspectRatio="100 / 27"
-          fit="contain"
-          sizes="100px"
-          containerClass="h-7 w-[6.5rem] bg-transparent"
+          width="100"
+          height="27"
+          class="h-[27px] w-[100px] object-contain dark:hidden"
+        />
+        <img
+          src="/Poweredby_100px-Black_VertLogo.png"
+          alt=""
+          width="100"
+          height="27"
+          class="hidden h-[27px] w-[100px] object-contain dark:block"
         />
       </div>
     </div>
@@ -206,7 +216,6 @@ interface GiphyResponse {
 }
 
 const emit = defineEmits<{ select: [gif: GiphyGif] }>()
-const theme = useThemeStore()
 const isMobile = useMediaQuery('(max-width: 639px)')
 const pickerOpen = shallowRef(false)
 const pickerId = useId()

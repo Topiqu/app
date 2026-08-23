@@ -143,9 +143,16 @@ const authorAvatar = computed(() => props.article.author?.avatarUrl || props.art
 const authorPath = computed(() => localePath({ name: 'autor-name', params: { name: authorName.value } }))
 const displayDate = computed(() => props.article.publishedAt || props.article.createdAt)
 const comments = computed(() => props.article._count?.comments ?? 0)
-const localLikes = shallowRef(props.article._count?.reactions ?? props.article.likes ?? 0)
-const localLiked = shallowRef(Boolean(props.article.likedByUser))
-const reactions = computed(() => localLikes.value)
+const reactionState = useState<Record<string, { liked: boolean; likes: number }>>('article-card-reactions', () => ({}))
+const currentReaction = computed(
+  () =>
+    reactionState.value[props.article.id] ?? {
+      liked: Boolean(props.article.likedByUser),
+      likes: props.article._count?.reactions ?? props.article.likes ?? 0,
+    },
+)
+const localLiked = computed(() => currentReaction.value.liked)
+const reactions = computed(() => currentReaction.value.likes)
 const shares = computed(() => props.article._count?.shares ?? props.article.shares ?? 0)
 const plainExcerpt = computed(() =>
   (props.article.excerpt || props.article.content || '').replace(/<[^>]+>/g, '').trim(),
@@ -174,8 +181,12 @@ const toggleLike = async () => {
       method: 'POST',
       body: { visitorId },
     })
-    localLiked.value = result.liked
-    localLikes.value = result.likes
+    // Homepage filters can remount the same article in a different rail. Store the
+    // response by article ID so every instance reads the same reaction state.
+    reactionState.value = {
+      ...reactionState.value,
+      [props.article.id]: result,
+    }
   } catch {
     toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
   } finally {

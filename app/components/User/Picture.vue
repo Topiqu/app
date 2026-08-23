@@ -27,6 +27,8 @@ const sizeClass = computed(() => {
       return 'size-12'
     case 'hg':
       return 'size-16'
+    case 'xl':
+      return 'size-24'
     default:
       return 'size-10'
   }
@@ -41,6 +43,8 @@ const pixelSize = computed(() => {
       return '48px'
     case 'hg':
       return '64px'
+    case 'xl':
+      return '96px'
     default:
       return '40px'
   }

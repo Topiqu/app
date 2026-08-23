@@ -10,9 +10,13 @@
         <p class="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400 text-pretty">{{ $t(option.description) }}</p>
       </div>
 
-      <UFormField :label="$t(option.title)" class="sr-only">
-        <UCheckbox :id="option.id" v-model="option.model.value" />
-      </UFormField>
+      <USwitch
+        :id="option.id"
+        :modelValue="option.model.value"
+        :aria-label="$t(option.title)"
+        class="mt-0.5 shrink-0"
+        @update:modelValue="option.model.value = $event"
+      />
     </li>
   </ul>
 </template>

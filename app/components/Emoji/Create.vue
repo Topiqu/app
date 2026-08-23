@@ -1,8 +1,14 @@
 <template>
-  <Modal v-model="open" class="max-w-3xl" :title="$t('emoji.manage')" :onClose="confirmClose">
+  <UModal
+    v-model:open="open"
+    :title="$t('emoji.manage')"
+    :dismissible="!queue.length"
+    :close="false"
+    :ui="{ content: 'max-w-3xl' }"
+  >
     <template #default="actions"><slot v-bind="actions" /></template>
 
-    <template #content>
+    <template #body>
       <form class="mt-2 flex flex-col gap-5" @submit.prevent="submitQueue" @paste="onPaste">
         <div class="flex items-start gap-3">
           <div
@@ -219,7 +225,7 @@
         </UButton>
       </div>
     </template>
-  </Modal>
+  </UModal>
   <AppConfirmDialog ref="dialog" />
 </template>
 

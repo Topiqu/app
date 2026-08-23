@@ -1,7 +1,13 @@
 <template>
   <div>
     <div class="flex items-center gap-4">
-      <Icon :name="`mdi:${heartIcon}`" class="size-10 shrink-0 transition-colors" :class="toneText" />
+      <span
+        class="grid size-12 shrink-0 place-items-center rounded-full bg-current/10"
+        :class="toneText"
+        aria-hidden="true"
+      >
+        <UserHealthHeartIcon :variant="score <= 40 ? 'broken' : score <= 70 ? 'minus' : 'plus'" class="size-8" />
+      </span>
 
       <div class="min-w-0 flex-1">
         <div class="flex items-baseline justify-between gap-3">
@@ -71,10 +77,6 @@ const actions: Record<string, { key: string; section: string }> = {
 }
 
 const score = computed(() => data.value?.accountHealth ?? 0)
-// The heart carries the state at a glance — a bar alone reads as a generic meter.
-const heartIcon = computed(() =>
-  score.value <= 40 ? 'heart-broken' : score.value <= 70 ? 'heart-minus' : 'heart-plus',
-)
 const total = computed(() => data.value?.checks?.length ?? 0)
 const passed = computed(() => data.value?.checks?.filter((c) => c.ok).length ?? 0)
 

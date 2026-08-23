@@ -5,38 +5,40 @@
       <li
         v-for="(source, index) in sources"
         :key="index"
-        class="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-start gap-2 sm:grid-cols-[2rem_minmax(0,1fr)_10rem_auto]"
+        class="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-start gap-2"
       >
         <span class="flex size-8 items-center justify-center text-sm font-bold tabular-nums text-muted">
           {{ index + 1 }}
         </span>
-        <UFormField
-          :label="`${$t('articles.columns.sources')} ${index + 1}`"
-          :ui="{ label: 'sr-only' }"
-          :error="source && !isValidURL(source) ? $t('articles.sources.invalid') : undefined"
-        >
-          <UInput
-            v-model="sources[index]"
-            type="url"
-            :placeholder="$t('articles.sources.placeholder')"
-            class="w-full"
-            :color="source && !isValidURL(source) ? 'error' : 'primary'"
-            :highlight="Boolean(source && !isValidURL(source))"
-            @blur="sanitizeSource(index)"
-            @keyup.enter="addSourceIfValid(index)"
-          />
-        </UFormField>
-        <div v-if="source" class="col-start-2 flex min-w-0 items-center gap-2 sm:col-start-auto sm:h-10">
-          <AppMedia
-            :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
-            :alt="extractDomain(source)"
-            :fallbackText="extractDomain(source)"
-            aspectRatio="1 / 1"
-            fit="contain"
-            sizes="24px"
-            containerClass="size-6 shrink-0 rounded-[var(--ui-radius)]"
-          />
-          <span class="min-w-0 truncate text-sm text-muted">{{ extractDomain(source) }}</span>
+        <div class="min-w-0">
+          <UFormField
+            :label="`${$t('articles.columns.sources')} ${index + 1}`"
+            :ui="{ label: 'sr-only' }"
+            :error="source && !isValidURL(source) ? $t('articles.sources.invalid') : undefined"
+          >
+            <UInput
+              v-model="sources[index]"
+              type="url"
+              :placeholder="$t('articles.sources.placeholder')"
+              class="w-full"
+              :color="source && !isValidURL(source) ? 'error' : 'primary'"
+              :highlight="Boolean(source && !isValidURL(source))"
+              @blur="sanitizeSource(index)"
+              @keyup.enter="addSourceIfValid(index)"
+            />
+          </UFormField>
+          <div v-if="source" class="mt-1.5 flex min-w-0 items-center gap-2 px-1">
+            <AppMedia
+              :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
+              :alt="extractDomain(source)"
+              :fallbackText="extractDomain(source)"
+              aspectRatio="1 / 1"
+              fit="contain"
+              sizes="20px"
+              containerClass="size-5 shrink-0 rounded-[var(--ui-radius)]"
+            />
+            <span class="min-w-0 truncate text-xs text-muted">{{ extractDomain(source) }}</span>
+          </div>
         </div>
         <UButton
           icon="i-mdi-delete"

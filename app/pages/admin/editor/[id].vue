@@ -26,10 +26,10 @@
           </UBadge>
           <span
             v-if="autosaveVisible"
-            class="hidden sm:flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400"
+            class="hidden items-center gap-1 text-[11px] text-gray-500 sm:flex md:hidden dark:text-gray-400"
             aria-live="polite"
           >
-            <Icon :name="saving ? 'mdi:cloud-sync' : 'mdi:cloud-check'" class="w-3.5 h-3.5 shrink-0" />
+            <UIcon :name="saveStatusIcon" class="size-3.5 shrink-0 transition duration-300" :class="saveStatusClass" />
             <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
             <template v-else-if="lastSavedAt">
               {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
@@ -48,7 +48,7 @@
 
       <div class="flex w-full items-center gap-2 overflow-x-auto md:ml-auto md:w-auto md:overflow-visible">
         <div v-if="autosaveVisible" class="hidden md:flex items-center gap-1.5 text-xs text-muted" aria-live="polite">
-          <UIcon :name="saving ? 'i-mdi-cloud-sync' : 'i-mdi-cloud-check'" size="16" />
+          <UIcon :name="saveStatusIcon" size="16" class="transition duration-300" :class="saveStatusClass" />
           <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
           <template v-else-if="lastSavedAt">
             {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
@@ -546,6 +546,25 @@ const sourcesModel = computed<string[]>({
 })
 
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
+const saveConfirmed = shallowRef(false)
+const { start: clearSaveConfirmed } = useTimeoutFn(() => (saveConfirmed.value = false), 1400, { immediate: false })
+const saveStatusIcon = computed(() =>
+  saving.value ? 'i-mdi-cloud-sync' : saveConfirmed.value ? 'i-mdi-check-circle' : 'i-mdi-cloud-check',
+)
+const saveStatusClass = computed(() =>
+  saving.value
+    ? 'animate-spin motion-reduce:animate-none'
+    : saveConfirmed.value
+      ? 'scale-125 text-success'
+      : 'scale-100',
+)
+
+watch(saving, (current, previous) => {
+  if (!current && previous && lastSavedAt.value) {
+    saveConfirmed.value = true
+    clearSaveConfirmed()
+  }
+})
 
 const isBlank = computed(() => isBlankArticle(editedArticle.value))
 
