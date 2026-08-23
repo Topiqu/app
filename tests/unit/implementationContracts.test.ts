@@ -54,10 +54,31 @@ describe('systemic UX implementation contracts', () => {
   })
 
   it('uses one article header and one shared scroll state', () => {
+    const scrollContext = source('app/composables/useArticleScrollContext.ts')
     expect(source('app/pages/clanky/[slug].vue')).not.toContain('ArticleHeaderSticky')
     expect(source('app/pages/clanky/[slug].vue')).not.toContain("addEventListener('scroll'")
     expect(source('app/components/Header.vue')).toContain('useArticleScrollState()')
     expect(source('app/components/Article/TOC.vue')).toContain('useArticleScrollState()')
+    expect(scrollContext).toContain("closest<HTMLElement>('.topiqu-dashboard-scroll')")
+    expect(scrollContext).toContain('scrollContainer.value ?? window')
+    expect(scrollContext).toContain('scroller?.scrollTop ?? window.scrollY')
+  })
+
+  it('keeps compact dashboard controls and publication spacing aligned to the real shell', () => {
+    const upgrade = source('app/components/Admin/UpgradeBanner.vue')
+    const version = source('app/components/Client/Version.vue')
+    const table = source('app/components/Article/Table.vue')
+    const homepage = source('app/pages/index.vue')
+    const card = source('app/components/Article/Card.vue')
+    const comments = source('app/components/Comment/Section.vue')
+
+    expect(upgrade).toContain('class="absolute right-3 top-3"')
+    expect(version).toContain('max-w-[8.5rem]')
+    expect(table).toContain('class="w-full min-w-0 sm:flex-1"')
+    expect(homepage).toContain('class="sticky top-0 z-20')
+    expect(card).toContain('space-y-3')
+    expect(comments).toContain("leading: 'items-center self-stretch'")
+    expect(source('app/components/Sidebar.vue')).toContain("collapsed ? 'justify-center' : 'justify-between'")
   })
 
   it('uses one canonical article card contract for every presentation variant', () => {
@@ -137,6 +158,8 @@ describe('systemic UX implementation contracts', () => {
     expect(table).toContain('data-article-table-toolbar')
     expect(table).toContain('sm:max-h-[min(22rem,calc(100dvh-8rem))]')
     expect(layout).toContain('route.meta.dashboardSidebar')
+    expect(layout).toContain('storage="cookie"')
+    expect(layout).toContain('isSidebarOpen.value = false')
     expect(pageMeta).toContain('dashboardSidebar?: false')
     for (const path of [
       'app/pages/autorizace/index.vue',
