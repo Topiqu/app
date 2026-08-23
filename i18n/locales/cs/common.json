@@ -489,6 +489,10 @@
           "unknown": "Neznámý stav"
         },
         "upgrade": "Přejít na {plan}",
+        "recommended": "Doporučený další krok",
+        "annualEquivalent": "V přepočtu {price} měsíčně, účtováno ročně",
+        "priceUnavailable": "Aktuální cenu zobrazíme v zabezpečené pokladně Stripe.",
+        "checkoutHint": "Před potvrzením uvidíte přesnou cenu i datum první platby. Tarif můžete kdykoli spravovat ve Stripe portálu.",
         "actionFailed": "Platbu se nepodařilo zahájit. Zkuste to prosím znovu."
       },
       "validity": {
@@ -725,7 +729,20 @@
       "removeConfirmTitle": "Odebrat člena?",
       "removeConfirmMessage": "Člen okamžitě ztratí přístup.",
       "removeSuccess": "Člen odebrán",
-      "removeFailed": "Člena se nepodařilo odebrat"
+      "removeFailed": "Člena se nepodařilo odebrat",
+      "scopes": {
+        "ARTICLE_WRITE": "Vytvářet a upravovat vlastní články",
+        "ARTICLE_WRITE_OTHERS": "Upravovat články ostatních autorů",
+        "ARTICLE_PUBLISH": "Publikovat a stahovat články",
+        "MEMBER_CONTROL": "Spravovat členy a pozvánky",
+        "TENANT_SETTINGS": "Měnit nastavení publikace",
+        "INTEGRATION_CONTROL": "Spravovat integrace",
+        "BILLING_CHANGE": "Spravovat tarif a fakturaci",
+        "API_KEY_CONTROL": "Spravovat API klíče",
+        "AI_USE": "Používat AI nástroje",
+        "ANALYTICS_READ": "Zobrazovat analytiku",
+        "CONTENT_MODERATE": "Moderovat komentáře a obsah"
+      }
     },
     "invitation": {
       "title": "Připojit se k {tenant}",

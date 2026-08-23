@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-2">
+    <div v-if="(client?.monthlyPayment ?? 0) > 0" class="grid gap-4 sm:grid-cols-2">
       <div
         class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
       >
@@ -126,57 +126,91 @@
         </div>
       </div>
 
-      <div
-        v-if="upgradeTarget"
-        class="flex items-center gap-1 self-start rounded-full bg-neutral-100 dark:bg-neutral-800 p-1"
-      >
-        <UButton
-          type="button"
-          size="sm"
-          :color="checkoutInterval === 'month' ? 'primary' : 'neutral'"
-          :variant="checkoutInterval === 'month' ? 'solid' : 'ghost'"
-          class="rounded-full"
-          :aria-pressed="checkoutInterval === 'month'"
-          @click="checkoutInterval = 'month'"
-        >
-          {{ $t('common.preferences.billing.intervalMonthly') }}
-        </UButton>
-        <UButton
-          type="button"
-          size="sm"
-          :color="checkoutInterval === 'year' ? 'primary' : 'neutral'"
-          :variant="checkoutInterval === 'year' ? 'solid' : 'ghost'"
-          class="rounded-full"
-          :aria-pressed="checkoutInterval === 'year'"
-          @click="checkoutInterval = 'year'"
-        >
-          {{ $t('common.preferences.billing.intervalAnnual') }}
-          <span
-            class="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400"
-          >
-            -20 %
-          </span>
-        </UButton>
-      </div>
-
-      <div class="flex flex-col sm:flex-row gap-3 pt-1">
-        <UButton
-          v-if="hasSubscription"
-          color="neutral"
-          variant="soft"
-          class="flex-1"
-          :loading="pendingAction === 'portal'"
-          @click="openPortal"
-        >
+      <div v-if="hasSubscription" class="flex pt-1">
+        <UButton color="neutral" variant="soft" :loading="pendingAction === 'portal'" @click="openPortal">
           <Icon name="mdi:receipt-text-outline" class="mr-1.5 size-4" />
           {{ $t('common.preferences.billing.manage') }}
         </UButton>
-        <UButton v-if="upgradeTarget" class="flex-1" :loading="pendingAction === 'upgrade'" @click="upgrade">
-          <Icon name="mdi:arrow-up-circle-outline" class="mr-1.5 size-4" />
-          {{ $t('common.preferences.billing.upgrade', { plan: upgradeTarget }) }}
-        </UButton>
       </div>
     </div>
+
+    <section
+      v-if="upgradeTarget"
+      class="overflow-hidden rounded-[var(--topiqu-surface-radius)] bg-gradient-to-br from-primary-50 via-white to-emerald-50 p-5 ring ring-primary-200 dark:from-primary-950/50 dark:via-neutral-900 dark:to-emerald-950/30 dark:ring-primary-800 sm:p-6"
+    >
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div class="min-w-0">
+          <UBadge color="primary" variant="soft" icon="i-mdi-rocket-launch">
+            {{ $t('common.preferences.billing.recommended') }}
+          </UBadge>
+          <h2 class="mt-3 text-xl font-bold text-highlighted sm:text-2xl">
+            {{ $t(`admin.upgrade.${upsellKey}.title`) }}
+          </h2>
+          <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+            {{ $t(`admin.upgrade.${upsellKey}.description`) }}
+          </p>
+          <ul class="mt-4 grid gap-x-6 gap-y-2 text-sm text-toned sm:grid-cols-2">
+            <li v-for="feature in upsellFeatures" :key="feature" class="flex items-start gap-2">
+              <span class="mt-0.5 shrink-0 text-emerald-500">
+                <UIcon name="i-mdi-check-circle" size="18" />
+              </span>
+              <span>{{ feature }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="min-w-[15rem] rounded-xl bg-default/85 p-4 ring ring-default backdrop-blur-sm">
+          <div class="flex items-center gap-1 rounded-full bg-elevated p-1">
+            <UButton
+              type="button"
+              size="sm"
+              :color="checkoutInterval === 'month' ? 'primary' : 'neutral'"
+              :variant="checkoutInterval === 'month' ? 'solid' : 'ghost'"
+              :ui="{ base: 'flex-1 rounded-full' }"
+              :aria-pressed="checkoutInterval === 'month'"
+              @click="checkoutInterval = 'month'"
+            >
+              {{ $t('common.preferences.billing.intervalMonthly') }}
+            </UButton>
+            <UButton
+              type="button"
+              size="sm"
+              :color="checkoutInterval === 'year' ? 'primary' : 'neutral'"
+              :variant="checkoutInterval === 'year' ? 'solid' : 'ghost'"
+              :ui="{ base: 'flex-1 rounded-full' }"
+              :aria-pressed="checkoutInterval === 'year'"
+              @click="checkoutInterval = 'year'"
+            >
+              {{ $t('common.preferences.billing.intervalAnnual') }}
+              <span class="text-[10px] font-bold">−20 %</span>
+            </UButton>
+          </div>
+
+          <div class="mt-4 min-h-14">
+            <template v-if="selectedPlanPrice">
+              <div class="flex items-end gap-1">
+                <strong class="text-3xl font-bold tracking-tight text-highlighted">{{ formattedPlanPrice }}</strong>
+                <span class="pb-1 text-sm text-muted">/{{ selectedPricePeriod }}</span>
+              </div>
+              <p v-if="checkoutInterval === 'year'" class="mt-1 text-xs text-muted">
+                {{ $t('common.preferences.billing.annualEquivalent', { price: formattedMonthlyEquivalent }) }}
+              </p>
+            </template>
+            <p v-else class="text-sm text-muted">{{ $t('common.preferences.billing.priceUnavailable') }}</p>
+          </div>
+
+          <UButton
+            class="mt-4"
+            icon="i-mdi-arrow-up-circle-outline"
+            :loading="pendingAction === 'upgrade'"
+            @click="upgrade"
+          >
+            {{ $t('common.preferences.billing.upgrade', { plan: upgradeTarget }) }}
+          </UButton>
+          <p class="mt-3 text-xs leading-relaxed text-muted">{{ $t('common.preferences.billing.checkoutHint') }}</p>
+        </div>
+      </div>
+    </section>
 
     <section
       v-if="hasSubscription"
@@ -201,7 +235,7 @@
       </div>
 
       <div v-if="invoiceStatus === 'pending'" class="space-y-3 p-5" role="status">
-        <div v-for="index in 3" :key="index" class="h-11 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
+        <USkeleton v-for="index in 3" :key="index" class="h-11 w-full" />
         <span class="sr-only">{{ $t('common.preferences.billing.invoicesLoading') }}</span>
       </div>
 
@@ -268,6 +302,7 @@
 </template>
 
 <script setup lang="ts">
+import type { PlanPrice, PlanPricing } from '~~/shared/types/planPricing'
 import type { BillingInvoice, BillingInvoiceStatus } from '~~/shared/types/billing'
 
 import { getUpgradeTarget } from '~~/shared/utils/plans'
@@ -278,7 +313,7 @@ import type { ClientSite } from '~/utils/buildClientSettingsForm'
 const { client, rate } = defineProps<{ client: ClientSite | null; rate: number }>()
 
 const toast = useAppToast()
-const { locale } = useI18n()
+const { locale, tm, rt } = useI18n()
 const { formatTime } = useTime()
 
 const tokenPacks = TOKEN_PACK_LIST
@@ -305,6 +340,35 @@ const {
 })
 
 const upgradeTarget = computed(() => getUpgradeTarget(client?.plan, !!client?.stripeSubscriptionId))
+const { data: planPricing } = await useLazyFetch<PlanPricing>('/api/stripe/plans', {
+  immediate: Boolean(upgradeTarget.value),
+  default: () => ({ PRO: { month: null, year: null }, PREMIUM: { month: null, year: null } }),
+})
+const upsellKey = computed(() => (upgradeTarget.value === 'PREMIUM' ? 'toPremium' : 'toPro'))
+const upsellFeatures = computed<string[]>(() => {
+  const messages = tm(`admin.upgrade.${upsellKey.value}.features`) as unknown[]
+  return Array.isArray(messages) ? messages.map((message) => rt(message as string)) : []
+})
+const selectedPlanPrice = computed<PlanPrice | null>(() => {
+  if (!upgradeTarget.value) return null
+  return planPricing.value?.[upgradeTarget.value]?.[checkoutInterval.value] ?? null
+})
+const formatMinorAmount = (amount: number, currency: string) => {
+  const formatter = new Intl.NumberFormat(locale.value, { style: 'currency', currency })
+  const digits = formatter.resolvedOptions().maximumFractionDigits ?? 2
+  return formatter.format(amount / 10 ** digits)
+}
+const formattedPlanPrice = computed(() => {
+  const price = selectedPlanPrice.value
+  return price ? formatMinorAmount(price.amount, price.currency) : ''
+})
+const formattedMonthlyEquivalent = computed(() => {
+  const price = selectedPlanPrice.value
+  return price ? formatMinorAmount(Math.round(price.amount / 12), price.currency) : ''
+})
+const selectedPricePeriod = computed(() =>
+  checkoutInterval.value === 'year' ? $t('common.preferences.annually') : $t('common.preferences.monthly'),
+)
 
 const redirectTo = async (url: string, action: string, body: Record<string, unknown>) => {
   pendingAction.value = action

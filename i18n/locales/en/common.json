@@ -489,6 +489,10 @@
           "unknown": "Unknown"
         },
         "upgrade": "Upgrade to {plan}",
+        "recommended": "Recommended next step",
+        "annualEquivalent": "Equivalent to {price} per month, billed annually",
+        "priceUnavailable": "We will show the current price in the secure Stripe checkout.",
+        "checkoutHint": "You will see the exact price and first payment date before confirming. Manage the plan anytime in the Stripe portal.",
         "actionFailed": "Could not start the payment flow. Please try again."
       },
       "validity": {
@@ -725,7 +729,20 @@
       "removeConfirmTitle": "Remove member?",
       "removeConfirmMessage": "This member will immediately lose access.",
       "removeSuccess": "Member removed",
-      "removeFailed": "Could not remove member"
+      "removeFailed": "Could not remove member",
+      "scopes": {
+        "ARTICLE_WRITE": "Create and edit own articles",
+        "ARTICLE_WRITE_OTHERS": "Edit other authors' articles",
+        "ARTICLE_PUBLISH": "Publish and unpublish articles",
+        "MEMBER_CONTROL": "Manage members and invitations",
+        "TENANT_SETTINGS": "Change publication settings",
+        "INTEGRATION_CONTROL": "Manage integrations",
+        "BILLING_CHANGE": "Manage plan and billing",
+        "API_KEY_CONTROL": "Manage API keys",
+        "AI_USE": "Use AI tools",
+        "ANALYTICS_READ": "View analytics",
+        "CONTENT_MODERATE": "Moderate comments and content"
+      }
     },
     "invitation": {
       "title": "Join {tenant}",
