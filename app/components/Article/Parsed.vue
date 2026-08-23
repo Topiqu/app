@@ -24,6 +24,15 @@ const handleMediaError = (event: Event) => {
   const failed = event.target
   if (!(failed instanceof HTMLImageElement) || !root.value?.contains(failed)) return
 
+  const original = failed.dataset.originalSrc
+  if (original && failed.dataset.originalRetry !== 'true') {
+    failed.dataset.originalRetry = 'true'
+    failed.removeAttribute('srcset')
+    failed.removeAttribute('sizes')
+    failed.src = original
+    return
+  }
+
   const fallback = document.createElement('span')
   fallback.className = 'article-inline-image-fallback'
   fallback.setAttribute('role', 'img')
@@ -31,6 +40,17 @@ const handleMediaError = (event: Event) => {
   fallback.textContent = failed.alt || $t('articles.columns.imageUrl')
   failed.replaceWith(fallback)
 }
+
+onMounted(() => {
+  // An SSR image can finish failing before Vue hydrates and attaches the capturing listener.
+  // Reconcile after the browser has painted the hydrated tree; mutating a child synchronously
+  // from its mounted hook can otherwise race a still-hydrating parent on slower viewports.
+  requestAnimationFrame(() => {
+    for (const media of root.value?.querySelectorAll('img') ?? []) {
+      if (media.complete && media.naturalWidth === 0) handleMediaError({ target: media } as unknown as Event)
+    }
+  })
+})
 
 // The span is the current format. The two text alternatives keep the toggle effective for old
 // articles and for captions round-tripped through TipTap, which may flatten unknown attributes.

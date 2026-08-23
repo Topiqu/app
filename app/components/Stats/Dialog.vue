@@ -4,9 +4,23 @@
       <slot v-bind="actions" />
     </template>
 
-    <template #content>
+    <template #header="{ close }">
+      <div class="flex w-full min-w-0 items-center justify-between gap-3">
+        <h2 class="truncate text-lg font-semibold text-highlighted">{{ $t('stats.title') }}</h2>
+        <UButton
+          icon="i-mdi-close"
+          color="neutral"
+          variant="ghost"
+          square
+          :aria-label="$t('common.close')"
+          @click="close"
+        />
+      </div>
+    </template>
+
+    <template #body>
       <div v-if="pending" class="space-y-8" :aria-label="$t('stats.loading')" aria-busy="true">
-        <div class="grid grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <div v-for="i in 3" :key="i" class="space-y-2">
             <div class="h-3 w-16 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
             <div class="h-9 w-24 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
@@ -145,7 +159,9 @@
             <template v-if="stats.topTags.length > COLLAPSED_TAGS" #action>
               <UButton
                 type="button"
-                class="rounded text-xs font-medium text-indigo-600 transition-colors motion-reduce:transition-none hover:text-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-indigo-400"
+                color="primary"
+                variant="ghost"
+                size="xs"
                 :aria-expanded="showAllTags"
                 aria-controls="stats-top-tags"
                 @click="showAllTags = !showAllTags"

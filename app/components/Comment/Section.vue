@@ -1,5 +1,5 @@
 <template>
-  <UCard class="mx-auto mt-14 w-full">
+  <section class="mx-auto mt-14 w-full" :aria-label="$t('articles.comments.title')">
     <div class="mb-10 flex flex-col gap-3 sm:flex-row sm:items-center">
       <UIcon size="32" name="i-mdi-comment-multiple-outline" />
       <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
@@ -76,9 +76,9 @@
       variant="soft"
       :title="$t('articles.comments.commentsDisabled')"
     />
-    <UAlert v-else color="info" variant="soft" :title="$t('common.auth.loginToComment')">
+    <UAlert v-else class="mb-10" color="info" variant="soft" :title="$t('common.auth.loginToComment')">
       <template #actions>
-        <UButton :to="localePath({ name: 'autorizace' })" color="neutral" variant="solid" size="sm">
+        <UButton :to="localePath({ name: 'autorizace' })" color="primary" variant="solid" size="sm">
           {{ $t('common.auth.login') }}
         </UButton>
       </template>
@@ -113,7 +113,7 @@
       />
     </div>
     <UEmpty v-else icon="i-mdi-comment-off-outline" :title="$t('articles.comments.noComments')" />
-  </UCard>
+  </section>
 </template>
 
 <script lang="ts" setup>

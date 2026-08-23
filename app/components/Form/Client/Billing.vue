@@ -132,12 +132,10 @@
       >
         <UButton
           type="button"
-          class="rounded-full px-3 py-1 text-xs font-medium transition"
-          :class="
-            checkoutInterval === 'month'
-              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-              : 'text-neutral-500 dark:text-neutral-400'
-          "
+          size="sm"
+          :color="checkoutInterval === 'month' ? 'primary' : 'neutral'"
+          :variant="checkoutInterval === 'month' ? 'solid' : 'ghost'"
+          class="rounded-full"
           :aria-pressed="checkoutInterval === 'month'"
           @click="checkoutInterval = 'month'"
         >
@@ -145,12 +143,10 @@
         </UButton>
         <UButton
           type="button"
-          class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition"
-          :class="
-            checkoutInterval === 'year'
-              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-              : 'text-neutral-500 dark:text-neutral-400'
-          "
+          size="sm"
+          :color="checkoutInterval === 'year' ? 'primary' : 'neutral'"
+          :variant="checkoutInterval === 'year' ? 'solid' : 'ghost'"
+          class="rounded-full"
           :aria-pressed="checkoutInterval === 'year'"
           @click="checkoutInterval = 'year'"
         >
@@ -239,27 +235,31 @@
             {{ formatInvoiceAmount(invoice.amount, invoice.currency) }}
           </div>
           <div class="flex items-center gap-2">
-            <a
+            <UButton
               v-if="invoice.hostedUrl"
-              :href="invoice.hostedUrl"
+              :to="invoice.hostedUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex h-8 items-center justify-center rounded-lg border border-neutral-200 px-2 text-sm text-neutral-700 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              color="neutral"
+              variant="soft"
+              size="sm"
+              trailingIcon="i-mdi-open-in-new"
             >
               {{ $t('common.preferences.billing.viewInvoice') }}
-              <Icon name="mdi:open-in-new" class="ml-1.5 size-3.5" />
-            </a>
-            <a
+            </UButton>
+            <UButton
               v-if="invoice.pdfUrl"
-              :href="invoice.pdfUrl"
+              :to="invoice.pdfUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex size-8 items-center justify-center rounded-lg text-neutral-500 transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:hover:bg-neutral-800"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              square
+              icon="i-mdi-file-pdf-box"
               :aria-label="$t('common.preferences.billing.downloadInvoice', { number: invoice.number ?? '' })"
               :title="$t('common.preferences.billing.downloadPdf')"
-            >
-              <Icon name="mdi:file-pdf-box" class="size-5" />
-            </a>
+            />
           </div>
         </li>
       </ul>

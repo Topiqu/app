@@ -7,6 +7,7 @@
 <script setup lang="ts">
 definePageMeta({
   shell: 'product',
+  dashboardSidebar: false,
 })
 
 const route = useRoute()

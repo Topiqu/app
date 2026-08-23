@@ -1,125 +1,126 @@
 <template>
-  <div class="@container h-full min-w-0">
-    <article
-      class="flex h-full min-w-0 flex-col overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-default"
-      :class="layout === 'responsive-row' ? '@min-[36rem]:grid @min-[36rem]:grid-cols-[11rem_minmax(0,1fr)]' : ''"
-      data-article-card
-      :data-article-variant="variant"
-      :data-article-layout="layout"
-    >
-      <NuxtLink :to="articlePath" class="block shrink-0">
-        <AppMedia
-          :src="article.imageUrl"
-          :alt="article.title"
-          :priority="variant === 'featured'"
-          :aspectRatio="variant === 'featured' ? '3 / 2' : '8 / 5'"
-          :sizes="
-            variant === 'featured'
-              ? '100vw lg:55vw'
-              : layout === 'responsive-row'
-                ? '100vw (min-width: 576px) 176px'
-                : '100vw sm:50vw lg:33vw'
-          "
-          :containerClass="layout === 'responsive-row' ? 'w-full @min-[36rem]:h-full' : 'w-full'"
-        />
-      </NuxtLink>
+  <div class="@container h-full min-w-0 [&>*]:h-full">
+    <UCard data-article-card :data-article-variant="variant" :data-article-layout="layout">
+      <article
+        class="flex h-full min-w-0 flex-col gap-5 overflow-hidden"
+        :class="layout === 'responsive-row' ? '@min-[36rem]:grid @min-[36rem]:grid-cols-[11rem_minmax(0,1fr)]' : ''"
+      >
+        <NuxtLink :to="articlePath" class="block shrink-0">
+          <AppMedia
+            :src="article.imageUrl"
+            :alt="article.title"
+            :priority="variant === 'featured'"
+            :aspectRatio="variant === 'featured' ? '3 / 2' : '8 / 5'"
+            :sizes="
+              variant === 'featured'
+                ? '100vw lg:55vw'
+                : layout === 'responsive-row'
+                  ? '100vw (min-width: 576px) 176px'
+                  : '100vw sm:50vw lg:33vw'
+            "
+            :containerClass="layout === 'responsive-row' ? 'w-full @min-[36rem]:h-full' : 'w-full'"
+          />
+        </NuxtLink>
 
-      <div :class="variant === 'compact' ? 'gap-2 p-3' : 'gap-4 p-5'" class="flex min-h-0 flex-1 flex-col">
-        <div v-if="normalizedTags.length" class="flex flex-wrap gap-2">
-          <UBadge v-for="tag in visibleTags" :key="tag.id" color="primary" variant="soft">
-            {{ tag.name }}
-          </UBadge>
-          <UBadge v-if="normalizedTags.length > tagLimit" color="neutral" variant="soft">
-            +{{ normalizedTags.length - tagLimit }}
-          </UBadge>
-        </div>
-
-        <div class="min-w-0 space-y-2">
-          <NuxtLink :to="articlePath">
-            <h2
-              :class="variant === 'featured' ? 'text-2xl sm:text-3xl' : variant === 'compact' ? 'text-base' : 'text-xl'"
-              class="font-bold leading-tight tracking-tight text-highlighted"
-              :title="article.title"
-            >
-              <span :class="variant === 'compact' ? 'line-clamp-2' : 'line-clamp-3'">{{ article.title }}</span>
-            </h2>
-          </NuxtLink>
-          <p
-            v-if="plainExcerpt"
-            :class="variant === 'compact' ? 'line-clamp-2 text-sm' : 'line-clamp-3'"
-            class="text-muted"
-          >
-            {{ plainExcerpt }}
-          </p>
-        </div>
-
-        <div class="mt-auto space-y-3 pt-1" data-article-footer>
-          <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm text-muted">
-            <span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span class="inline-flex whitespace-nowrap items-center gap-1">
-                <UIcon name="i-mdi-calendar-outline" size="16" />
-                {{ formatDate(displayDate) }}
-              </span>
-              <span v-if="article.readingTime" class="inline-flex whitespace-nowrap items-center gap-1">
-                <UIcon name="i-mdi-clock-outline" size="16" />
-                {{ $t('articles.readingTime', [article.readingTime]) }}
-              </span>
-            </span>
-            <span class="inline-flex shrink-0 items-center gap-3 whitespace-nowrap">
-              <span class="inline-flex items-center gap-1"
-                ><UIcon name="i-mdi-comment-outline" size="16" />{{ comments }}</span
-              >
-              <span class="inline-flex items-center gap-1"
-                ><UIcon name="i-mdi-heart-outline" size="16" />{{ reactions }}</span
-              >
-              <span class="inline-flex items-center gap-1"
-                ><UIcon name="i-mdi-eye-outline" size="16" />{{ article.views ?? 0 }}</span
-              >
-              <span class="inline-flex items-center gap-1"
-                ><UIcon name="i-mdi-share-variant-outline" size="16" />{{ shares }}</span
-              >
-            </span>
+        <div :class="variant === 'compact' ? 'gap-3' : 'gap-5'" class="flex min-h-0 flex-1 flex-col">
+          <div v-if="normalizedTags.length" class="flex flex-wrap gap-2">
+            <UBadge v-for="tag in visibleTags" :key="tag.id" color="primary" variant="soft">
+              {{ tag.name }}
+            </UBadge>
+            <UBadge v-if="normalizedTags.length > tagLimit" color="neutral" variant="soft">
+              +{{ normalizedTags.length - tagLimit }}
+            </UBadge>
           </div>
 
-          <USeparator />
-          <div class="flex min-h-9 items-center justify-between gap-3">
-            <NuxtLink v-if="authorName" :to="authorPath" class="flex min-w-0 items-center gap-2">
-              <AppMedia
-                :src="authorAvatar"
-                :alt="$t('common.avatar.alt.author', [authorName])"
-                :fallbackText="authorName"
-                aspectRatio="1 / 1"
-                sizes="32px"
-                containerClass="size-8 shrink-0 rounded-full"
-              />
-              <span class="truncate text-sm font-medium text-highlighted">{{ authorName }}</span>
+          <div class="min-w-0 space-y-2">
+            <NuxtLink :to="articlePath">
+              <h2
+                :class="
+                  variant === 'featured' ? 'text-2xl sm:text-3xl' : variant === 'compact' ? 'text-base' : 'text-xl'
+                "
+                class="font-bold leading-snug tracking-tight text-highlighted"
+                :title="article.title"
+              >
+                <span :class="variant === 'compact' ? 'line-clamp-2' : 'line-clamp-3'">{{ article.title }}</span>
+              </h2>
             </NuxtLink>
-            <span v-else />
-            <div class="flex shrink-0 items-center gap-1">
-              <slot name="actions" :article="article">
-                <UButton
-                  :icon="localLiked ? 'i-mdi-heart' : 'i-mdi-heart-outline'"
-                  :color="localLiked ? 'error' : 'neutral'"
-                  variant="ghost"
-                  square
-                  :loading="liking"
-                  :aria-label="$t('common.actions.like')"
-                  @click="toggleLike"
+            <p
+              v-if="plainExcerpt"
+              :class="variant === 'compact' ? 'line-clamp-2 text-sm' : 'line-clamp-3'"
+              class="leading-relaxed text-muted"
+            >
+              {{ plainExcerpt }}
+            </p>
+          </div>
+
+          <div class="mt-auto space-y-3 pt-1" data-article-footer>
+            <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm text-muted">
+              <span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span class="inline-flex whitespace-nowrap items-center gap-1">
+                  <UIcon name="i-mdi-calendar-outline" size="16" />
+                  {{ formatDate(displayDate) }}
+                </span>
+                <span v-if="article.readingTime" class="inline-flex whitespace-nowrap items-center gap-1">
+                  <UIcon name="i-mdi-clock-outline" size="16" />
+                  {{ $t('articles.readingTime', [article.readingTime]) }}
+                </span>
+              </span>
+              <span class="inline-flex shrink-0 items-center gap-3 whitespace-nowrap">
+                <span class="inline-flex items-center gap-1"
+                  ><UIcon name="i-mdi-comment-outline" size="16" />{{ comments }}</span
+                >
+                <span class="inline-flex items-center gap-1"
+                  ><UIcon name="i-mdi-heart-outline" size="16" />{{ reactions }}</span
+                >
+                <span class="inline-flex items-center gap-1"
+                  ><UIcon name="i-mdi-eye-outline" size="16" />{{ article.views ?? 0 }}</span
+                >
+                <span class="inline-flex items-center gap-1"
+                  ><UIcon name="i-mdi-share-variant-outline" size="16" />{{ shares }}</span
+                >
+              </span>
+            </div>
+
+            <USeparator />
+            <div class="flex min-h-9 items-center justify-between gap-3">
+              <NuxtLink v-if="authorName" :to="authorPath" class="flex min-w-0 items-center gap-2">
+                <AppMedia
+                  :src="authorAvatar"
+                  :alt="$t('common.avatar.alt.author', [authorName])"
+                  :fallbackText="authorName"
+                  aspectRatio="1 / 1"
+                  sizes="32px"
+                  containerClass="size-8 shrink-0 rounded-full"
                 />
-                <UButton
-                  icon="i-mdi-share-variant-outline"
-                  color="neutral"
-                  variant="ghost"
-                  square
-                  :aria-label="$t('common.actions.share')"
-                  @click="shareArticle"
-                />
-              </slot>
+                <span class="truncate text-sm font-medium text-highlighted">{{ authorName }}</span>
+              </NuxtLink>
+              <span v-else />
+              <div class="flex shrink-0 items-center gap-1">
+                <slot name="actions" :article="article">
+                  <UButton
+                    :icon="localLiked ? 'i-mdi-heart' : 'i-mdi-heart-outline'"
+                    :color="localLiked ? 'error' : 'neutral'"
+                    variant="ghost"
+                    square
+                    :loading="liking"
+                    :aria-label="$t('common.actions.like')"
+                    @click="toggleLike"
+                  />
+                  <UButton
+                    icon="i-mdi-share-variant-outline"
+                    color="neutral"
+                    variant="ghost"
+                    square
+                    :aria-label="$t('common.actions.share')"
+                    @click="shareArticle"
+                  />
+                </slot>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </UCard>
   </div>
 </template>
 

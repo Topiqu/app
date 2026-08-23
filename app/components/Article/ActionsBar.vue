@@ -50,7 +50,7 @@
         variant="soft"
         square
         icon="i-mdi-pencil"
-        :to="localePath({ name: 'admin-editor-id', params: { id: article.id } })"
+        :to="localePath({ name: 'admin-editor-id', params: { id: article.sourceSlug || article.slug } })"
         :aria-label="$t('common.actions.edit')"
       />
     </div>

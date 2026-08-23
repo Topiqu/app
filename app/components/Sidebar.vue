@@ -118,8 +118,13 @@ const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
 
 const navigationItems = computed<NavigationMenuItem[]>(() => {
+  const publication = {
+    label: $t('common.navigation.publication'),
+    icon: 'i-mdi-newspaper-variant-outline',
+    to: localePath({ name: 'index' }),
+  }
   if (auth.value?.user.role === 'superadmin') {
-    return [{ label: $t('master.title'), icon: 'i-mdi-home', to: localePath({ name: 'master' }) }]
+    return [{ label: $t('master.title'), icon: 'i-mdi-home', to: localePath({ name: 'master' }) }, publication]
   }
   return [
     { label: $t('common.navigation.dashboard'), icon: 'i-mdi-home', to: localePath({ name: 'admin' }) },
@@ -129,6 +134,7 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
       to: localePath({ name: 'admin-editor-id', params: { id: 'new' } }),
     },
     { label: $t('common.settings'), icon: 'i-mdi-cog', to: localePath({ name: 'settings' }) },
+    publication,
   ]
 })
 </script>

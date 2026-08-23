@@ -71,6 +71,8 @@ describe('systemic UX implementation contracts', () => {
     expect(card).toContain("layout: 'column'")
     expect(card).toContain('@min-[36rem]')
     expect(card).toContain('<UBadge')
+    expect(card).toContain('<UCard')
+    expect(card).toContain("variant === 'compact' ? 'gap-3' : 'gap-5'")
     expect(card).toContain('<slot name="actions"')
     for (const path of [
       'app/pages/index.vue',
@@ -83,6 +85,77 @@ describe('systemic UX implementation contracts', () => {
     }
     expect(source('app/components/Article/Related.vue')).toContain('layout="column"')
     expect(source('app/pages/index.vue')).toContain('layout="responsive-row"')
+  })
+
+  it('keeps the article fallback, comments and sources editorial rather than card-heavy', () => {
+    const parsed = source('app/components/Article/Parsed.vue')
+    const images = source('shared/utils/articleImages.ts')
+    const comments = source('app/components/Comment/Section.vue')
+    const articlePage = source('app/pages/clanky/[slug].vue')
+
+    expect(images).toContain("'data-original-src'")
+    expect(parsed).toContain("failed.dataset.originalRetry !== 'true'")
+    expect(parsed).toContain("failed.removeAttribute('srcset')")
+    expect(parsed).toContain('failed.replaceWith(fallback)')
+    expect(parsed).toContain('media.complete && media.naturalWidth === 0')
+    expect(articlePage).toContain('class="article-content mx-auto w-full"')
+    expect(comments).not.toContain('<UCard')
+    expect(comments).toContain('color="primary" variant="solid"')
+    expect(comments).toContain('class="mb-10"')
+  })
+
+  it('renders a shared responsive editor settings panel and the complete translation workflow', () => {
+    const editor = source('app/pages/admin/editor/[id].vue')
+    const panel = source('app/components/Article/Editor/SettingsPanel.vue')
+    const tabs = source('app/components/Article/Editor/LanguageTabs.vue')
+    const table = source('app/components/Article/Table.vue')
+
+    expect(editor).toContain('<ArticleEditorLanguageTabs')
+    expect(editor).toContain('<ArticleEditorSettingsPanel')
+    expect(editor).toContain("useLocalStorage('topiqu-editor-settings-expanded', true)")
+    expect(editor).toContain("tr.save('PUBLISHED')")
+    expect(editor).toContain('tr.translateNow()')
+    expect(editor).toContain('discardTranslationOpen = true')
+    expect(panel).toContain('data-article-settings-panel')
+    expect(panel).toContain('<ArticleSources')
+    expect(tabs).not.toContain('indigo')
+    expect(table).toContain(':articleRef="row.original.slug"')
+    expect(table).toContain('const mobileActionItems')
+    expect(table).toContain('onSelect: () => translateArticle(article)')
+  })
+
+  it('keeps modal scrolling, sticky filters and role shell contracts explicit', () => {
+    const stats = source('app/components/Stats/Dialog.vue')
+    const table = source('app/components/Article/Table.vue')
+    const layout = source('app/layouts/default.vue')
+    const pageMeta = source('types/page-meta.d.ts')
+
+    expect(stats).toContain('<template #header')
+    expect(stats).toContain('<template #body>')
+    expect(stats).toContain('<template #footer')
+    expect(source('app/app.config.ts')).toContain("body: 'min-h-0 flex-1 overflow-y-auto'")
+    expect(table).toContain('data-article-table-toolbar')
+    expect(table).toContain('sm:max-h-[min(22rem,calc(100dvh-8rem))]')
+    expect(layout).toContain('route.meta.dashboardSidebar')
+    expect(pageMeta).toContain('dashboardSidebar?: false')
+    for (const path of [
+      'app/pages/autorizace/index.vue',
+      'app/pages/oauth-start.vue',
+      'app/pages/invitation/[token].vue',
+    ]) {
+      expect(source(path), path).toContain('dashboardSidebar: false')
+    }
+  })
+
+  it('uses source slugs canonically while retaining an admin UUID fallback', () => {
+    const detail = source('server/api/articles/[id]/index.get.ts')
+    const actions = source('app/components/Article/ActionsBar.vue')
+    const review = source('app/components/Admin/TranslationReviewBanner.vue')
+
+    expect(detail).toContain('OR: [{ slug }, { id: slug }]')
+    expect(detail).toContain('sourceSlug: baseSlug')
+    expect(actions).toContain('article.sourceSlug || article.slug')
+    expect(review).toContain('query: { lang: row.language }')
   })
 
   it('uses recommended homepage data once and returns a compact client user count', () => {

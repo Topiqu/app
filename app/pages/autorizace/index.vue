@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-definePageMeta({ middleware: 'auth', shell: 'product' })
+definePageMeta({ middleware: 'auth', shell: 'product', dashboardSidebar: false })
 
 const route = useRoute()
 const localePath = useLocalePath()

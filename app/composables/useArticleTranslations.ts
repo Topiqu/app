@@ -25,11 +25,14 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
   const { t } = useI18n()
   const { invalidateArticleLists } = useCacheInvalidation()
 
-  const { data, refresh, status } = useFetch<ArticleTranslationsPayload>(`/api/articles/${articleId}/translations`, {
-    key: `article-translations-${articleId ?? 'none'}`,
-    immediate: Boolean(articleId),
-    default: (): ArticleTranslationsPayload => ({ translations: [], targetLanguages: [], translationMode: 'OFF' }),
-  })
+  const { data, refresh, status, error } = useFetch<ArticleTranslationsPayload>(
+    `/api/articles/${articleId}/translations`,
+    {
+      key: `article-translations-${articleId ?? 'none'}`,
+      immediate: Boolean(articleId),
+      default: (): ArticleTranslationsPayload => ({ translations: [], targetLanguages: [], translationMode: 'OFF' }),
+    },
+  )
 
   const translations = computed(() => data.value.translations)
   const targetLanguages = computed(() => data.value.targetLanguages)
@@ -140,6 +143,8 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
     hasBody,
     isDirty,
     pending,
+    status,
+    error,
     save,
     translateNow,
     discard,

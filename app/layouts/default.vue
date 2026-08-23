@@ -44,7 +44,9 @@ const statsOpen = useState('dashboard-stats-open', () => false)
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
 const shell = computed(() => resolvePageShell(route.meta.shell))
-const showDashboard = computed(() => canRenderDashboardShell(shell.value, auth.value?.user.role))
+const showDashboard = computed(() =>
+  canRenderDashboardShell(shell.value, auth.value?.user.role, route.meta.dashboardSidebar),
+)
 const isPublicationSurface = computed(() => {
   return Boolean(clientSite && shell.value === 'publication')
 })

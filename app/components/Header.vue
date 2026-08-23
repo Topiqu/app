@@ -1,7 +1,16 @@
 <template>
   <UHeader :toggle="false" class="fixed inset-x-0 top-0 z-header h-16">
     <template #left>
-      <UDashboardSidebarToggle v-if="showDashboard" class="md:hidden" :aria-label="$t('common.actions.openMenu')" />
+      <UButton
+        v-if="showDashboard"
+        class="md:hidden"
+        color="neutral"
+        variant="ghost"
+        square
+        icon="i-mdi-menu"
+        :aria-label="$t('common.actions.openMenu')"
+        @click="isSidebarOpen = true"
+      />
       <UButton
         v-if="articleState.showHeader && articleHeader"
         :to="articleHeader.backTo"
@@ -70,7 +79,7 @@
 </template>
 
 <script lang="ts" setup>
-const _isSidebarOpen = defineModel<boolean>('isSidebarOpen')
+const isSidebarOpen = defineModel<boolean>('isSidebarOpen')
 
 const route = useRoute()
 const clientSite = await useClientSite()

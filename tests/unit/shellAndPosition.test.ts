@@ -19,10 +19,15 @@ describe('application shell contract', () => {
     ['dashboard', 'superadmin', true],
     ['dashboard', 'user', false],
     ['dashboard', undefined, false],
-    ['publication', 'admin', false],
-    ['product', 'superadmin', false],
+    ['publication', 'admin', true],
+    ['product', 'superadmin', true],
   ] as const)('renders %s for %s: %s', (shell, role, expected) => {
     expect(canRenderDashboardShell(shell, role)).toBe(expected)
+  })
+
+  it('lets auth and invitation routes explicitly suppress the role shell', () => {
+    expect(canRenderDashboardShell('product', 'admin', false)).toBe(false)
+    expect(canRenderDashboardShell('publication', 'superadmin', false)).toBe(false)
   })
 })
 

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex items-center gap-0.5 p-0.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+    class="flex items-center gap-1 rounded-lg border border-default bg-muted p-1"
     role="tablist"
     :aria-label="$t('articles.translations.languageTabs')"
   >
@@ -11,12 +11,10 @@
       role="tab"
       :aria-selected="tab.lang === modelValue"
       :title="tab.hint"
-      class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-colors border-none"
-      :class="
-        tab.lang === modelValue
-          ? 'bg-indigo-600! text-white!'
-          : 'bg-transparent! text-gray-600! dark:text-gray-300! hover:bg-gray-200! dark:hover:bg-gray-800!'
-      "
+      size="sm"
+      :color="tab.lang === modelValue ? 'primary' : 'neutral'"
+      :variant="tab.lang === modelValue ? 'solid' : 'ghost'"
+      class="uppercase tracking-wide"
       @click="modelValue = tab.lang"
     >
       {{ tab.code }}

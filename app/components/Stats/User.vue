@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-2 gap-2 sm:grid-cols-5 sm:mb-8 mb-6" data-profile-metrics>
+  <div class="mb-6 grid grid-cols-2 gap-2 sm:mb-8 sm:grid-cols-3 lg:grid-cols-5" data-profile-metrics>
     <UButton
       v-for="item in interactiveStats"
       :key="item.label"

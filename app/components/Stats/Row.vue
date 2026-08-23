@@ -5,7 +5,7 @@
     class="group relative flex items-center gap-3 rounded-lg px-2 py-2 -mx-2"
     :class="
       to
-        ? 'transition-colors motion-reduce:transition-none hover:bg-neutral-900/[0.04] dark:hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60'
+        ? 'transition-colors motion-reduce:transition-none hover:bg-neutral-900/[0.04] dark:hover:bg-white/[0.06] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
         : ''
     "
   >
@@ -42,7 +42,10 @@
       </span>
     </span>
 
-    <span class="shrink-0 whitespace-nowrap text-sm tabular-nums text-neutral-500 dark:text-neutral-400">
+    <span
+      class="max-w-[40%] shrink-0 truncate whitespace-nowrap text-sm tabular-nums text-neutral-500 dark:text-neutral-400"
+      :title="value"
+    >
       {{ value }}
     </span>
   </component>

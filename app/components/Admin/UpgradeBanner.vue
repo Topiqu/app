@@ -9,24 +9,26 @@
   >
     <template #description>
       <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-1">
-        <li v-for="feature in features" :key="feature" class="flex items-start gap-2 text-xs">
-          <UIcon size="14" name="i-mdi-check-circle" class="mt-0.5 shrink-0" />
+        <li v-for="feature in features" :key="feature" class="flex items-start gap-2 text-sm leading-relaxed">
+          <UIcon size="16" name="i-mdi-check-circle" class="mt-0.5 shrink-0" />
           <span>{{ feature }}</span>
         </li>
       </ul>
     </template>
     <template #actions>
-      <UButton
-        color="primary"
-        variant="solid"
-        icon="i-mdi-star-four-points"
-        :loading="loading"
-        :disabled="loading"
-        @click="upgrade"
-      >
-        {{ loading ? $t('admin.upgrade.loading') : $t('admin.upgrade.cta', { plan: target }) }}
-      </UButton>
-      <UButton color="neutral" variant="ghost" icon="i-mdi-close" :aria-label="$t('common.close')" @click="dismiss" />
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <UButton
+          color="primary"
+          variant="solid"
+          icon="i-mdi-star-four-points"
+          :loading="loading"
+          :disabled="loading"
+          @click="upgrade"
+        >
+          {{ loading ? $t('admin.upgrade.loading') : $t('admin.upgrade.cta', { plan: target }) }}
+        </UButton>
+        <UButton color="neutral" variant="ghost" icon="i-mdi-close" :aria-label="$t('common.close')" @click="dismiss" />
+      </div>
     </template>
   </UAlert>
 </template>

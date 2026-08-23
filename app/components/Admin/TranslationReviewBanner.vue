@@ -17,7 +17,10 @@
     <ul class="flex flex-col gap-2">
       <li v-for="row in translations" :key="row.id">
         <UButton
-          :to="localePath({ name: 'admin-editor-id', params: { id: row.article.slug } })"
+          :to="{
+            path: localePath({ name: 'admin-editor-id', params: { id: row.article.slug } }),
+            query: { lang: row.language },
+          }"
           color="warning"
           variant="soft"
           block

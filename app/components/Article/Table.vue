@@ -1,52 +1,47 @@
 <template>
   <div class="mb-10 w-full space-y-4" data-article-table :data-search-query="globalFilter">
     <div
-      class="flex flex-col gap-3 sm:sticky sm:top-0 sm:z-20 sm:flex-row sm:items-center sm:border-b sm:border-default sm:bg-default/95 sm:py-3 sm:backdrop-blur"
+      class="space-y-3 sm:sticky sm:top-0 sm:z-20 sm:border-b sm:border-default sm:bg-default/95 sm:py-3 sm:backdrop-blur"
+      data-article-table-toolbar
     >
-      <UFormField :label="$t('articles.searchPlaceholder')" :ui="{ label: 'sr-only' }" class="w-full max-w-xl">
-        <UInput
-          v-model="globalFilter"
-          type="search"
-          :placeholder="$t('articles.searchPlaceholder')"
-          icon="i-mdi-magnify"
-          class="w-full"
-        />
-      </UFormField>
-      <UButton
-        color="neutral"
-        variant="soft"
-        icon="i-mdi-filter-variant"
-        :aria-expanded="filtersOpen"
-        @click="filtersOpen = !filtersOpen"
-      >
-        {{ $t('common.labels.filters') }}
-        <UBadge v-if="activeFilterCount" color="primary" variant="solid">{{ activeFilterCount }}</UBadge>
-      </UButton>
-      <Exports v-if="rows.length" :articles="rows" class="sm:ml-auto" />
-    </div>
-    <div
-      v-show="filtersOpen"
-      class="grid gap-3 rounded-[var(--topiqu-surface-radius)] border border-default p-4 sm:grid-cols-2 lg:grid-cols-3"
-    >
-      <UFormField :label="$t('common.labels.status')">
-        <USelect v-model="statusFilter" :items="statusItems" />
-      </UFormField>
-      <UFormField :label="$t('common.labels.dateFrom')">
-        <UInput v-model="dateFrom" type="date" />
-      </UFormField>
-      <UFormField :label="$t('common.labels.dateTo')">
-        <UInput v-model="dateTo" type="date" />
-      </UFormField>
-      <UFormField :label="$t('common.labels.sortBy')">
-        <USelect v-model="sortField" :items="sortItems" />
-      </UFormField>
-      <UFormField :label="$t('common.labels.order')">
-        <USelect v-model="sortOrder" :items="orderItems" />
-      </UFormField>
-      <div class="flex items-end">
-        <UButton color="neutral" variant="soft" icon="i-mdi-filter-remove-outline" @click="clearFilters">
-          {{ $t('common.actions.clear') }}
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <UFormField :label="$t('articles.searchPlaceholder')" :ui="{ label: 'sr-only' }" class="w-full max-w-xl">
+          <UInput
+            v-model="globalFilter"
+            type="search"
+            :placeholder="$t('articles.searchPlaceholder')"
+            icon="i-mdi-magnify"
+            class="w-full"
+          />
+        </UFormField>
+        <UButton
+          color="neutral"
+          variant="soft"
+          icon="i-mdi-filter-variant"
+          :aria-expanded="filtersOpen"
+          @click="filtersOpen = !filtersOpen"
+        >
+          {{ $t('common.labels.filters') }}
+          <UBadge v-if="activeFilterCount" color="primary" variant="solid">{{ activeFilterCount }}</UBadge>
         </UButton>
+        <Exports v-if="rows.length" :articles="rows" class="sm:ml-auto" />
+      </div>
+      <div
+        v-show="filtersOpen"
+        class="grid gap-3 overflow-y-auto overscroll-contain rounded-[var(--topiqu-surface-radius)] border border-default p-4 sm:max-h-[min(22rem,calc(100dvh-8rem))] sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <UFormField :label="$t('common.labels.status')"
+          ><USelect v-model="statusFilter" :items="statusItems"
+        /></UFormField>
+        <UFormField :label="$t('common.labels.dateFrom')"><UInput v-model="dateFrom" type="date" /></UFormField>
+        <UFormField :label="$t('common.labels.dateTo')"><UInput v-model="dateTo" type="date" /></UFormField>
+        <UFormField :label="$t('common.labels.sortBy')"><USelect v-model="sortField" :items="sortItems" /></UFormField>
+        <UFormField :label="$t('common.labels.order')"><USelect v-model="sortOrder" :items="orderItems" /></UFormField>
+        <div class="flex items-end">
+          <UButton color="neutral" variant="soft" icon="i-mdi-filter-remove-outline" @click="clearFilters">{{
+            $t('common.actions.clear')
+          }}</UButton>
+        </div>
       </div>
     </div>
 
@@ -126,7 +121,12 @@
           <ArticleStatusCell :row="row" @update="debouncedSetStatus" />
         </template>
         <template #languages-cell="{ row }">
-          <ArticleLanguageLinks :links="languageLinks(row.original)" :current="primaryLanguage" target="editor" />
+          <ArticleLanguageLinks
+            :links="languageLinks(row.original)"
+            :current="primaryLanguage"
+            target="editor"
+            :articleRef="row.original.slug"
+          />
         </template>
         <template #createdAt-cell="{ row }">{{ formatTime(row.original.createdAt, 'shortDatetime') }}</template>
         <template #actions-cell="{ row }">
@@ -179,7 +179,12 @@
               {{ article.title }}
             </NuxtLink>
             <ArticleStatusCell :row="{ original: article }" @update="debouncedSetStatus" />
-            <ArticleLanguageLinks :links="languageLinks(article)" :current="primaryLanguage" target="editor" />
+            <ArticleLanguageLinks
+              :links="languageLinks(article)"
+              :current="primaryLanguage"
+              target="editor"
+              :articleRef="article.slug"
+            />
             <p class="text-xs text-muted">{{ formatTime(article.createdAt, 'shortDatetime') }}</p>
           </div>
           <div class="flex flex-col gap-1">
@@ -505,6 +510,16 @@ const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] =
 ]
 
 const mobileActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
+  [
+    {
+      label: hasTargetTranslation(article)
+        ? $t('articles.translations.actions.retranslate')
+        : $t('articles.translations.actions.translate'),
+      icon: 'i-mdi-translate',
+      disabled: translatingArticleId.value === article.id,
+      onSelect: () => translateArticle(article),
+    },
+  ],
   [
     {
       label: $t('common.actions.delete'),

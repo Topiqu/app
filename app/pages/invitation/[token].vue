@@ -45,6 +45,8 @@
   </main>
 </template>
 <script setup lang="ts">
+definePageMeta({ shell: 'product', dashboardSidebar: false })
+
 const route = useRoute()
 const localePath = useLocalePath()
 const { status, getSession } = useAuth()

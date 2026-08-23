@@ -31,6 +31,8 @@ async function main() {
       language: 'cs',
       tagline: 'Praktické poznatky pro digitální redakce',
       typographyPreset: 'MODERN',
+      translationMode: 'HYBRID',
+      translationLanguages: ['en'],
     },
     create: {
       name: 'topiqu-dev',
@@ -42,6 +44,8 @@ async function main() {
       tokenRemaining: 20000,
       tagline: 'Praktické poznatky pro digitální redakce',
       typographyPreset: 'MODERN',
+      translationMode: 'HYBRID',
+      translationLanguages: ['en'],
     },
   })
 
@@ -182,7 +186,7 @@ async function main() {
       readingTime: 4,
       seriesOrder: 3,
       content:
-        '<h2>Struktura vede čtenáře</h2><p>Nadpisy mají vysvětlovat vztahy mezi částmi textu. Krátké odstavce, popisné odkazy a smysluplný alternativní text pomáhají všem čtenářům.</p>',
+        '<h2>Struktura vede čtenáře</h2><p>Nadpisy mají vysvětlovat vztahy mezi částmi textu. Krátké odstavce, popisné odkazy a smysluplný alternativní text pomáhají všem čtenářům.</p><p><img src="/missing-inline-image.webp" alt="Schéma přístupného článku"></p>',
     },
   ]
 

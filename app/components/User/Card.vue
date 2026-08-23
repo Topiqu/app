@@ -1,6 +1,6 @@
 <template>
   <UPopover mode="hover" :content="{ side: 'left', align: 'start' }">
-    <UCard class="w-full max-w-md sm:max-w-full">
+    <UButton type="button" color="neutral" variant="ghost" class="min-w-0 max-w-full">
       <div class="flex items-center gap-3">
         <UserPicture :url="user.avatarUrl" :name="user.username" />
         <div class="min-w-0 flex-1">
@@ -11,7 +11,7 @@
           {{ $t('master.userEdit.roles.admin') }}
         </UBadge>
       </div>
-    </UCard>
+    </UButton>
 
     <template #content>
       <UCard class="w-[90vw] sm:w-80">

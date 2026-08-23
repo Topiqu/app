@@ -1,37 +1,40 @@
 <template>
   <div class="space-y-5">
-    <div class="flex w-fit gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800/60" role="tablist">
+    <div class="flex w-fit gap-1 rounded-xl bg-muted p-1" role="tablist">
       <UButton
         v-for="tab in tabs"
         :key="tab.id"
         type="button"
         role="tab"
         :aria-selected="activeTab === tab.id"
-        class="flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors"
-        :class="
-          activeTab === tab.id
-            ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-900 dark:text-neutral-100'
-            : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
-        "
+        :icon="tab.icon"
+        :color="activeTab === tab.id ? 'primary' : 'neutral'"
+        :variant="activeTab === tab.id ? 'solid' : 'ghost'"
+        size="sm"
         @click="$emit('update:activeTab', tab.id)"
       >
-        <Icon :name="tab.icon" class="size-4 shrink-0" />
         {{ $t(tab.label) }}
       </UButton>
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <UFormField :label="$t('common.search')" class="sm:max-w-xs">
-        <UInput v-model="searchQuery" name="activitySearch" icon="i-mdi-magnify" :placeholder="$t('common.search')" />
+      <UFormField :label="$t('common.search')" class="w-full sm:max-w-xs">
+        <UInput
+          v-model="searchQuery"
+          name="activitySearch"
+          icon="i-mdi-magnify"
+          :placeholder="$t('common.search')"
+          class="w-full"
+        />
       </UFormField>
-      <div class="flex items-center gap-2 sm:ml-auto">
-        <UFormField :label="$t('common.labels.sortBy')">
-          <USelect v-model="sortOption" :items="sortItems" valueKey="value" labelKey="label" />
+      <div class="flex w-full items-end gap-2 sm:ml-auto sm:w-auto">
+        <UFormField :label="$t('common.labels.sortBy')" class="min-w-0 flex-1 sm:w-48 sm:flex-none">
+          <USelect v-model="sortOption" :items="sortItems" valueKey="value" labelKey="label" class="w-full" />
         </UFormField>
         <UButton
           v-if="activeTab === 'likedArticles'"
           square
-          borderless
+          color="neutral"
           variant="ghost"
           :icon="isGrid ? 'mdi:view-list' : 'mdi:view-grid'"
           :aria="$t('common.actions.toggleLayout')"
@@ -46,12 +49,10 @@
         v-for="tag in availableTags"
         :key="tag"
         type="button"
-        class="rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
-        :class="
-          selectedTags.includes(tag)
-            ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-            : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
-        "
+        size="xs"
+        :color="selectedTags.includes(tag) ? 'primary' : 'neutral'"
+        :variant="selectedTags.includes(tag) ? 'solid' : 'soft'"
+        class="rounded-full"
         :aria-pressed="selectedTags.includes(tag)"
         @click="toggleTag(tag)"
       >
