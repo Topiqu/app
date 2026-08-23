@@ -19,9 +19,9 @@ export default defineMonitoredTask({
         deletedAt: null,
         article: { status: 'published', deletedAt: null },
         clientSite: {
-          enableAi: true,
           plan: { in: TRANSLATION_PLANS },
           translationMode: { in: ['AUTO', 'HYBRID'] },
+          ...activeFeatureFilter('AI'),
         },
       },
       take: BATCH_SIZE,
@@ -30,7 +30,19 @@ export default defineMonitoredTask({
     })
 
     if (!candidates.length) {
-      return { result: { processed: 0, failed: 0, skipped: 0, total: 0, timestamp: now.toISOString() } }
+      const queued = await prisma.articleTranslation.count({
+        where: { status: { in: ['PENDING', 'STALE'] }, deletedAt: null },
+      })
+      return {
+        result: {
+          processed: 0,
+          failed: 0,
+          skipped: 0,
+          total: 0,
+          queuedButIneligible: queued,
+          timestamp: now.toISOString(),
+        },
+      }
     }
 
     let processed = 0
@@ -52,7 +64,17 @@ export default defineMonitoredTask({
           id: true,
           language: true,
           clientSiteId: true,
-          article: { select: { id: true, title: true, excerpt: true, content: true } },
+          article: {
+            select: {
+              id: true,
+              title: true,
+              excerpt: true,
+              content: true,
+              answer: true,
+              keyTakeaways: true,
+              faq: true,
+            },
+          },
           clientSite: { select: { tokenRemaining: true, translationMode: true } },
         },
       })
@@ -95,6 +117,9 @@ export default defineMonitoredTask({
             title: translated.title,
             excerpt: translated.excerpt,
             content: sanitizeHtml(translated.content),
+            answer: translated.answer,
+            keyTakeaways: translated.keyTakeaways,
+            faq: translated.faq,
             status: finalStatus,
             source: 'AI',
             model: aiModelId('translation'),

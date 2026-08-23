@@ -69,7 +69,7 @@ const emit = defineEmits<{
 type TagOption = { id: string; name: string }
 type ArticleTagRow = { tagId: string; tag: { id: string; name: string } }
 
-const toast = useToast()
+const toast = useAppToast()
 const requestFetch = useRequestFetch()
 const { invalidateTags } = useCacheInvalidation()
 

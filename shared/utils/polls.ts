@@ -22,3 +22,11 @@ export const normalizePollOptions = (raw: unknown): PollOptionData[] => {
     .filter((o): o is PollOptionData => !!o && o.label.trim().length > 0)
   return opts.length ? opts : [{ label: DEFAULT_LABEL }]
 }
+
+/**
+ * Serializes parsed `data-options` back into the attribute. The editor rewrites it on every
+ * keystroke, so this has to carry the server-assigned ids through untouched — a vote keys off
+ * them — and be idempotent, or each pass would dirty the document again.
+ */
+export const pollOptionsAttr = (raw: unknown, fallbackLabel: string): string =>
+  JSON.stringify(Array.isArray(raw) && raw.length ? normalizePollOptions(raw) : [{ label: fallbackLabel }])

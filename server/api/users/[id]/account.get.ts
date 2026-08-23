@@ -60,6 +60,7 @@ export default defineEventHandler(async (event) => {
           region: true,
           country: true,
           lastUsedAt: true,
+          clientSiteId: true,
           revoked: true,
           userId: true,
         },
@@ -68,6 +69,14 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!userData) throw createError({ statusCode: 404, message: t('common.errors.userNotFound')! })
+
+  // Strength is only ever known at set/change time, so the audit log is the only record of when
+  // the current password was chosen. Absent for accounts predating that logging.
+  const passwordLog = await prisma.log.findFirst({
+    where: { userId: id, action: { in: ['PASSWORD_CHANGE', 'PASSWORD_SET'] } },
+    orderBy: { createdAt: 'desc' },
+    select: { createdAt: true },
+  })
 
   const likesCount = userData.comments.reduce((sum, c) => sum + c.reactions.filter((r) => r.type === 'LIKE').length, 0)
   const dislikesCount = userData.comments.reduce(
@@ -101,6 +110,7 @@ export default defineEventHandler(async (event) => {
     following: userData.following.length,
     theme: userData.theme,
     hasPassword: !!userData.password,
+    passwordChangedAt: passwordLog?.createdAt.toISOString() ?? null,
     totpSecret: userData.totpSecret,
     otpauthUrl,
     likedArticles: userData.articleReactions.map((r) => ({ id: r.article.id })),
@@ -115,6 +125,7 @@ export default defineEventHandler(async (event) => {
       region: s.region,
       country: s.country,
       lastUsedAt: s.lastUsedAt.toISOString(),
+      clientSiteId: s.clientSiteId,
       revoked: s.revoked,
       userId: s.userId,
     })),

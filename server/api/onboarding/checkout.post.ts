@@ -2,18 +2,16 @@ import { z } from 'zod'
 import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
+import { TRIAL_PLAN } from '~~/shared/utils/trial'
 import { saveUserWithLogging } from '~~/server/utils/userLog'
 import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
+import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
 
 const schema = z.object({
   siteName: z.string().min(1).max(255),
-  domain: z
-    .string()
-    .min(1)
-    .max(255)
-    .regex(/^[a-z0-9-]+$/),
+  domain: z.string().min(1).max(253),
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
   theme: z.string().optional(),
   language: z.enum(['cs', 'en']),
@@ -35,7 +33,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const fullSubdomain = body.domainType === 'SUBDOMAIN' ? `${body.domain}.topiqu.com` : body.domain
+  const fullSubdomain = normalizeDomain(body.domainType === 'SUBDOMAIN' ? `${body.domain}.topiqu.com` : body.domain)
+  if (!isValidDomain(fullSubdomain)) throw createError({ statusCode: 400, message: 'Invalid domain' })
   const loginToken = randomBytes(32).toString('hex')
   const loginTokenExpiresAt = new Date(Date.now() + LOGIN_TOKEN_TTL_MS)
 
@@ -60,20 +59,29 @@ export default defineEventHandler(async (event) => {
           domain: fullSubdomain,
           language: body.language,
           theme: (body.theme || 'blue') as any,
-          domainVerified: body.domainType === 'SUBDOMAIN', // Auto-verify subdomains, custom domains need checking
-          plan: 'BASIC', // Will be updated by Stripe Webhook
+          ...domainVerificationDefaults(fullSubdomain, randomBytes(24).toString('base64url')),
+          // The trial is a real plan, not a UI state — `firstPaidAt` stays null as the paid
+          // marker, and `trial-expiry` drops a card-less tenant back to BASIC after TRIAL_DAYS.
+          plan: TRIAL_PLAN,
           tokenRemaining: 25000,
           tokenLimit: 25000,
-          enableAi: true,
-          enableCron: true,
-          enableSentiment: true,
-          firstPaidAt: null, // Set in Stripe Webhook
+          firstPaidAt: null,
         },
       })
 
+      // Crons filter on ClientFeature rows, not on the plan column, so a trial without them
+      // would silently skip sentiment and article generation — the parts it exists to show off.
+      // Never fatal: `syncPlanFeatures` throws on an unseeded Feature catalog, and signup is the
+      // one path that must not depend on it. The plan column alone still unlocks the UI.
+      try {
+        await syncPlanFeatures(tx, site.id, TRIAL_PLAN)
+      } catch (error) {
+        console.error('TRIAL_FEATURE_PROVISIONING_FAILED', site.id, error)
+      }
+
       const hashedPassword = await argon2.hash(body.password)
 
-      await saveUserWithLogging(
+      const user = await saveUserWithLogging(
         event,
         {
           username: body.username,
@@ -89,6 +97,19 @@ export default defineEventHandler(async (event) => {
         false,
         tx,
       )
+      await tx.tenantMembership.create({
+        data: { clientSiteId: site.id, userId: user.id, role: 'OWNER', scopes: [...TENANT_SCOPES] },
+      })
+
+      if (!isManagedDomain(site.domain))
+        await logAction({
+          action: 'DOMAIN_VERIFICATION_STARTED',
+          userId: user.id,
+          clientSiteId: site.id,
+          ip: getIp(event),
+          metadata: { domain: site.domain },
+          tx,
+        })
 
       return site
     })

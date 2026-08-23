@@ -7,6 +7,7 @@ import { Indent } from '~~/extensions/indent'
 import { Image } from '@tiptap/extension-image'
 import { Color } from '@tiptap/extension-color'
 import { Youtube } from '@tiptap/extension-youtube'
+import SlashCommand from '~~/extensions/slashCommand'
 import { Underline } from '@tiptap/extension-underline'
 import { TextAlign } from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
@@ -17,11 +18,11 @@ import { FontFamily } from '@tiptap/extension-font-family'
 import { useEditor, VueNodeViewRenderer } from '@tiptap/vue-3'
 import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import { CharacterCount } from '@tiptap/extension-character-count'
-
-import TiptapImage from '~/components/File/TiptapImage.vue'
+import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 // eslint-disable-next-line
 import Poll from '~~/extensions/poll'
-import SlashCommand from '~~/extensions/slashCommand'
+
+import TiptapImage from '~/components/File/TiptapImage.vue'
 
 const CustomBlockquote = Blockquote.extend({
   renderHTML: ({ HTMLAttributes }) => ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0],
@@ -38,7 +39,15 @@ export interface UseTiptapInstanceOptions {
 }
 
 export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
-  const debouncedChange = useDebounceFn((html: string) => opts.onChange(html), 200)
+  // The last HTML this editor emitted upward. The parent writes it straight back into `content`,
+  // and recognising that echo saves a second full-document `getHTML()` per keystroke burst —
+  // the watcher below otherwise serialises the whole article just to compare it with itself.
+  let lastEmitted: string | null = null
+
+  const debouncedChange = useDebounceFn((html: string) => {
+    lastEmitted = html
+    opts.onChange(html)
+  }, 200)
 
   const editor = useEditor({
     content: opts.content.value ?? '<p></p>',
@@ -66,6 +75,10 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
         allowFullscreen: true,
         ccLanguage: 'cs',
       }),
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Poll,
       Indent,
       TextStyle,
@@ -104,6 +117,9 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
   })
 
   watch(opts.content, (v) => {
+    // Anything the parent transforms on the way through (sanitising, AI streaming, loading a
+    // draft) differs from what we emitted and still takes the full compare below.
+    if (v === lastEmitted) return
     if (editor.value?.getHTML() !== v) editor.value?.commands.setContent(v ?? '<p></p>')
   })
   watchEffect(() => editor.value?.setEditable(opts.edit.value))

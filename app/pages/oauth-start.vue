@@ -7,14 +7,14 @@
 <script setup lang="ts">
 definePageMeta({
   shell: 'product',
-  middleware: (to) => {
-    if (to.query.provider) return
-    const locale = to.path.split('/').filter(Boolean)[0] || 'en'
-    return navigateTo(`/${locale}`)
-  },
 })
 
 const route = useRoute()
+
+if (!route.query.provider) {
+  const locale = route.path.split('/').filter(Boolean)[0] || 'en'
+  await navigateTo(`/${locale}`)
+}
 
 onMounted(async () => {
   const provider = (route.query.provider as string) || ''

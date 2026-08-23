@@ -19,6 +19,7 @@ const shiftMonths = (date: Date, months: number): Date => {
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const { user, db } = await requireDb(event, { minRole: 'admin' })
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'ANALYTICS_READ', user.clientSiteId)
 
   const query = await getValidatedQuery(event, QuerySchema.parse)
 

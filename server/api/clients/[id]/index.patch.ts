@@ -2,10 +2,12 @@ import type { SocialPlatform } from '@prisma/client'
 
 import { randomBytes } from 'crypto'
 import { models } from '~~/shared/zod'
+import { domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 import {
   PRIVILEGED_CLIENT_SITE_FIELDS,
   TENANT_EDITABLE_CLIENT_SITE_FIELDS,
   fieldMask,
+  pickFields,
 } from '~~/shared/utils/clientSiteFields'
 
 export default defineEventHandler(async (event) => {
@@ -16,9 +18,24 @@ export default defineEventHandler(async (event) => {
 
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'TENANT_SETTINGS', id)
 
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
+  const integrationFields = [
+    'socials',
+    'linkedinMode',
+    'linkedinCompanyType',
+    'linkedinBrandProfile',
+    'gtagId',
+    'allowGtag',
+  ]
+  if (user.role !== 'superadmin' && integrationFields.some((field) => field in body))
+    await requireTenantScope(event, 'INTEGRATION_CONTROL', id)
+  if (body.domain !== undefined) {
+    body.domain = normalizeDomain(String(body.domain))
+    if (!isValidDomain(body.domain)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  }
 
   delete body.id
   delete body.optimizedUrl
@@ -57,11 +74,13 @@ export default defineEventHandler(async (event) => {
     : TENANT_EDITABLE_CLIENT_SITE_FIELDS
   const UpdateSchema = models.ClientSiteScalarSchema.pick(fieldMask(editableFields)).partial()
 
-  const parsed = UpdateSchema.safeParse(scalarBody)
+  const parsed = UpdateSchema.safeParse(pickFields(scalarBody, TENANT_EDITABLE_CLIENT_SITE_FIELDS))
   if (!parsed.success) {
     throw createError({ statusCode: 400, message: parsed.error.message })
   }
   const data: any = { ...parsed.data }
+  const domainChanged = typeof data.domain === 'string' && data.domain !== clientSite.domain
+  if (domainChanged) Object.assign(data, domainVerificationDefaults(data.domain, randomBytes(24).toString('base64url')))
 
   if (isSuperadmin) {
     if (data.tokenLimit !== undefined) data.tokenRemaining = data.tokenLimit
@@ -82,10 +101,11 @@ export default defineEventHandler(async (event) => {
   const effectiveTokenLimit = requestedTokenLimit ?? clientSite.tokenLimit ?? 0
 
   if (hasAiPayload && effectiveTokenLimit > 0) {
+    // `avatarUrl` is deliberately absent: it belongs to `ai-avatar.post`/`.delete`, which write it
+    // straight to the row. Saving settings used to send it back and blank it out.
     const aiData = {
-      username: aiUserPayload.username || `ai-${id}-${Date.now()}`,
       bio: aiUserPayload.bio || '',
-      avatarUrl: aiUserPayload.optimizedAvatarUrl || '',
+      ...(aiUserPayload.username ? { username: aiUserPayload.username } : {}),
     }
 
     if (currentAiUser) {
@@ -101,6 +121,7 @@ export default defineEventHandler(async (event) => {
       const newAi = await db.user.create({
         data: {
           ...aiData,
+          username: aiUserPayload.username || `ai-${id}-${Date.now()}`,
           email: `ai-${randomBytes(8).toString('hex')}@generated.ai`,
           role: 'ai',
           clientSiteId: id,
@@ -149,54 +170,32 @@ export default defineEventHandler(async (event) => {
     if (operations.length) await Promise.all(operations)
   }
 
+  // The settings form always sends `linkedinMode`, so this runs for tenants that never connected
+  // LinkedIn too. There is nothing to set a publish mode on until they do — the row is created by
+  // the OAuth callback, which is the only place a real `linkedinOrgId` comes from. This used to
+  // fabricate one with `linkedinOrgId: 'placeholder'`, which the unique index let exactly one
+  // tenant get away with; everyone else's settings save died on P2002.
   if (linkedinMode !== undefined) {
-    // Note: This endpoint currently updates the FIRST linkedin company it finds.
-    // If you need to specify which one (pages vs personal), you would need to pass the type in the body.
-    // For now, we'll try to find the 'pages' one first, then fallback to finding any.
-    let company = await db.linkedinCompany.findFirst({
-      where: { clientSiteId: id, type: 'pages' },
-    })
+    // Personal is the only connectable type, but a tenant may still carry an older 'pages' row —
+    // hence no `type` filter, so its publish mode stays editable.
+    const company = await db.linkedinCompany.findFirst({ where: { clientSiteId: id } })
 
-    if (!company) {
-      company = await db.linkedinCompany.findFirst({
-        where: { clientSiteId: id },
-      })
-    }
+    if (company) {
+      await db.linkedinCompany.update({ where: { id: company.id }, data: { mode: linkedinMode } })
 
-    if (!company) {
-      company = await db.linkedinCompany.create({
-        data: {
-          name: 'My Company',
-          linkedinOrgId: 'placeholder', // actual sync comes later with oauth
-          type: 'pages', // Defaulting to pages if none exists
-          mode: linkedinMode,
-          clientSiteId: id,
-        },
-      })
-    } else {
-      company = await db.linkedinCompany.update({
-        where: { id: company.id },
-        data: { mode: linkedinMode },
-      })
-    }
-
-    if (linkedinBrandProfile) {
-      await db.brandProfile.upsert({
-        where: { companyId: company.id },
-        create: {
-          companyId: company.id,
+      if (linkedinBrandProfile) {
+        const profile = {
           tone: linkedinBrandProfile.tone,
           audience: linkedinBrandProfile.audience,
           doList: linkedinBrandProfile.doList,
           dontList: linkedinBrandProfile.dontList,
-        },
-        update: {
-          tone: linkedinBrandProfile.tone,
-          audience: linkedinBrandProfile.audience,
-          doList: linkedinBrandProfile.doList,
-          dontList: linkedinBrandProfile.dontList,
-        },
-      })
+        }
+        await db.brandProfile.upsert({
+          where: { companyId: company.id },
+          create: { companyId: company.id, ...profile },
+          update: profile,
+        })
+      }
     }
   }
 
@@ -205,6 +204,20 @@ export default defineEventHandler(async (event) => {
     data,
     include: { socials: true, users: { where: { role: 'ai' }, take: 1 } },
   })
+
+  if (domainChanged) {
+    await logAction({
+      action: 'DOMAIN_CHANGED',
+      userId: user.id,
+      clientSiteId: id,
+      ip: getIp(event),
+      metadata: { previousDomain: clientSite.domain, domain: updatedSite.domain, verificationReset: true },
+    })
+  }
+
+  if (updatedSite.plan !== clientSite.plan) {
+    await prisma.$transaction((tx) => syncPlanFeatures(tx, id, updatedSite.plan))
+  }
 
   await logAction({
     action: 'CLIENT_SITE_UPDATE',

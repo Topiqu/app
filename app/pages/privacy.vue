@@ -35,7 +35,14 @@
 <script setup lang="ts">
 const { rt, t, tm } = useI18n()
 
-const sections = computed(() => tm('legal.privacy.sections') as any[])
+const sections = computed(() =>
+  (tm('legal.privacy.sections') as any[]).map((s) => ({
+    icon: rt(s.icon),
+    iconColor: rt(s.iconColor),
+    title: rt(s.title),
+    content: rt(s.content),
+  })),
+)
 
 useSeoMeta({
   title: () => t('legal.privacy.title'),

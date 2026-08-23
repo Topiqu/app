@@ -84,7 +84,7 @@ import { buildEmptySetupSteps, emptySetupProgress } from '~~/shared/utils/emptyS
 const { site } = defineProps<{ site?: EmptySiteInfo | null }>()
 
 const localePath = useLocalePath()
-const status = await useClientSiteStatus()
+const { data: status } = await useClientSiteStatus()
 
 const stepMeta: Record<EmptySetupStepId, { icon: string; to: () => RouteLocationRaw }> = {
   article: {
@@ -105,7 +105,9 @@ const stepMeta: Record<EmptySetupStepId, { icon: string; to: () => RouteLocation
   },
 }
 
-const steps = computed(() => buildEmptySetupSteps({ ...site, focus: status?.focus, audience: status?.audience }))
+const steps = computed(() =>
+  buildEmptySetupSteps({ ...site, focus: status.value?.focus, audience: status.value?.audience }),
+)
 const progress = computed(() => emptySetupProgress(steps.value))
 const rows = computed(() => steps.value.map((step) => ({ ...step, ...stepMeta[step.id], to: stepMeta[step.id].to() })))
 </script>

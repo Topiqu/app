@@ -1,5 +1,8 @@
 <template>
-  <div class="w-full h-full flex flex-col justify-center items-center text-white bg-[#0f172a] relative overflow-hidden">
+  <div
+    class="w-full h-full flex flex-col justify-center items-center text-white bg-[#0f172a] relative overflow-hidden"
+    style="font-family: Inter"
+  >
     <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-900/40" />
 
     <div class="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-[100px]" />

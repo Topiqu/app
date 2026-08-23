@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
       statusCode: 401,
       message: t('common.errors.unauthorized', { locale: 'cs' })!,
     })
+  await requireTenantScope(event, 'ARTICLE_WRITE')
 
   const body = await readValidatedBody(event, TagCreateSchema.parse)
 

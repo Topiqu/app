@@ -2,29 +2,39 @@ import type { H3Event } from 'h3'
 
 const API_BASE = 'https://api.giphy.com/v1/gifs'
 
-export default defineEventHandler(async (event: H3Event) => {
-  const { translate: t } = await useServerI18n(event)
-  const action = getQuery(event).action as string | undefined
-  if (action === 'list-categories') {
-    const url = `${API_BASE}/categories?api_key=${process.env.GIPHY_API_KEY}`
+export default defineCachedEventHandler(
+  async (event: H3Event) => {
+    const { translate: t } = await useServerI18n(event)
+    const action = getQuery(event).action as string | undefined
+    if (action === 'list-categories') {
+      const url = `${API_BASE}/categories?api_key=${process.env.GIPHY_API_KEY}`
+      try {
+        const res = await $fetch(url)
+        return res
+      } catch {
+        throw createError({ statusCode: 500, message: t('common.errors.giphyCategoriesFailed')! })
+      }
+    }
+
+    const { skip, take } = await getPagination(event)
+    const query = getQuery(event).query as string | undefined
+
+    const endpoint = query ? 'search' : 'trending'
+    const url = `${API_BASE}/${endpoint}?api_key=${process.env.GIPHY_API_KEY}&limit=${take}&offset=${skip}${query ? `&q=${encodeURIComponent(query)}` : ''}`
+
     try {
       const res = await $fetch(url)
       return res
     } catch {
-      throw createError({ statusCode: 500, message: t('common.errors.giphyCategoriesFailed')! })
+      throw createError({ statusCode: 500, message: t('common.errors.giphyFetchFailed')! })
     }
-  }
-
-  const { skip, take } = await getPagination(event)
-  const query = getQuery(event).query as string | undefined
-
-  const endpoint = query ? 'search' : 'trending'
-  const url = `${API_BASE}/${endpoint}?api_key=${process.env.GIPHY_API_KEY}&limit=${take}&offset=${skip}${query ? `&q=${encodeURIComponent(query)}` : ''}`
-
-  try {
-    const res = await $fetch(url)
-    return res
-  } catch {
-    throw createError({ statusCode: 500, message: t('common.errors.giphyFetchFailed')! })
-  }
-})
+  },
+  {
+    name: 'gifs',
+    maxAge: 3600,
+    // No session and no tenant in play, so path + query is the complete key.
+    // Never rely on the default: it is URL-derived, which would collide for any
+    // handler that resolves its tenant from the Host header instead.
+    getKey: (event) => event.path,
+  },
+)

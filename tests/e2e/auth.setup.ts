@@ -16,6 +16,7 @@ for (const role of ['reader', 'admin', 'super'] as const) {
     )
     const statePath = join(authDir, `${role}.json`)
     await mkdir(dirname(statePath), { recursive: true })
+    await page.addInitScript(() => localStorage.removeItem('topiqu-color-mode'))
     await page.goto('/en/auth')
     await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
     await page.getByLabel('Email').fill(`${role}@test.local`)
@@ -30,8 +31,6 @@ for (const role of ['reader', 'admin', 'super'] as const) {
     const session = await page.request.get('/api/auth/session')
     const sessionBody = (await session.json()) as { user?: { role?: string } }
     if (!sessionBody.user) throw new Error('Credentials callback did not establish a session.')
-    await page.waitForURL((url) => !url.pathname.endsWith('/auth'))
-    await page.evaluate(() => localStorage.removeItem('topiqu-color-mode'))
     await page.context().storageState({ path: statePath })
   })
 }

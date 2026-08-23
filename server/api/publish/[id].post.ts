@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
   const siteId = draft.task.company.clientSiteId
   const allowed = user.role === 'superadmin' || (user.role === 'admin' && user.clientSiteId === siteId)
   if (!allowed) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', siteId)
 
   try {
     const result = await publishDecisionAndExecute(id)

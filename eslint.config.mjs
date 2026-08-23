@@ -9,7 +9,9 @@ export default withNuxt({
     'vue/no-v-html': 'off',
     'vue/html-self-closing': 'off',
     'vue/attribute-hyphenation': ['error', 'never'],
-    'vue/v-on-event-hyphenation': ['error', 'never'],
+    // `vue-easy-lightbox` declares this emit hyphenated, and only that spelling resolves against
+    // its signature — camelCase still fires at runtime but drops both params to `any`.
+    'vue/v-on-event-hyphenation': ['error', 'never', { ignore: ['on-index-change'] }],
     'object-shorthand': ['error', 'always'],
     'vue/multi-word-component-names': 'off',
     '@typescript-eslint/no-explicit-any': 'off',

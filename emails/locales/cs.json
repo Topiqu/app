@@ -9,7 +9,7 @@
       "link": "Odhlásit se"
     }
   },
-  "comment": {
+  "commentReply": {
     "subject": "Nová odpověď na váš komentář",
     "greeting": "Dobrý den, <b>{parentUsername}</b>,",
     "intro": "<b>{userName}</b> odpověděl: „<i>{commentContent}</i>“",
@@ -38,11 +38,33 @@
     "subject": "Váš komentář byl smazán",
     "greeting": "Dobrý den, {userName},",
     "intro": "Váš komentář „<i>{commentContent}</i>“ byl smazán.",
-    "reason": "{deleteReason}",
+    "reason": "Důvod: {deleteReason}",
     "unsubscribe": {
       "text": "Nechcete dostávat notifikace?",
       "link": "Odhlásit se"
     }
+  },
+  "tenantInvitation": {
+    "subject": "Pozvánka do {tenantName}",
+    "greeting": "Dostali jste pozvánku",
+    "intro": "{inviterName} vás pozval(a) do <b>{tenantName}</b>.",
+    "followers": "Sledujících",
+    "website": "Web",
+    "community": "Přidejte se k týmu tohoto magazínu a pomozte utvářet obsah pro jeho publikum.",
+    "access": "Počet přidělených oprávnění: {scopeCount}. Před přijetím si je můžete zkontrolovat.",
+    "button": "Zobrazit pozvánku",
+    "expiration": "Pozvánka vyprší za {expirationDays} dní."
+  },
+  "tenantMemberRemoved": {
+    "subject": "Váš přístup k {tenantName} byl odebrán",
+    "greeting": "Přístup k {tenantName} byl odebrán",
+    "intro": "K tomuto magazínu ani jeho administraci už nemáte přístup.",
+    "removedByLabel": "Odebral(a)",
+    "removedAtLabel": "Datum a čas",
+    "removedBy": "Odebral(a): {removedBy}",
+    "removedAt": "Odebráno: {removedAt}",
+    "otherTenants": "Váš Topiqu účet ani přístup k ostatním magazínům nebyly ovlivněny.",
+    "contact": "Pokud se jedná o omyl, kontaktujte vlastníka magazínu na {ownerEmail}. Pro obnovení přístupu je nutná nová pozvánka."
   },
   "userBan": {
     "subject": "Váš účet byl zabanován",

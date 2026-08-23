@@ -1,6 +1,6 @@
 <template>
   <UModal v-model:open="open" :title="$t('articles.preferencesExplanation.title')">
-    <slot :open="open" />
+    <slot :open="openDialog" />
 
     <template #body>
       <div class="flex flex-col divide-y divide-default">
@@ -57,4 +57,5 @@
 
 <script setup lang="ts">
 const open = defineModel<boolean>({ default: false })
+const openDialog = () => (open.value = true)
 </script>

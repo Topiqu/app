@@ -62,6 +62,10 @@ model Article extends Base, Ownable {
     excerpt          String?           @length(0, 500, "Perex může mít max. 500 znaků")
     content          String            @length(1, 50000, "Článek překročil délku znaků")
     imageUrl         String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    /// Cover provenance as `CoverCredit` — the kind (photo/illustration/ai) plus the library's
+    /// attribution. Body images carry theirs inside `content`; the cover is a bare URL, so
+    /// without this there is nowhere to disclose a generated hero or credit a licensed one.
+    imageCredit      Json?
     status           ArticleStatus     @default(draft)
     clientSiteId     String
     clientSite       ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
@@ -82,12 +86,23 @@ model Article extends Base, Ownable {
     comments         Comment[]
     reactions        ArticleReaction[]
     shares           ArticleShare[]
+    viewEvents       ArticleView[]
     feedbacks        ArticleFeedback[]
     pollResults      PollResult[]
     polls            Poll[]
     notifications    Notification[]    @relation("ArticleNotifications")
     translations     ArticleTranslation[]
     sources          String[]
+    /// Direct answer to the article's question, 40–60 words, rendered above the body. Answer
+    /// engines quote this span; the perex is a hook and reads as one.
+    answer           String?           @length(0, 600)
+    keyTakeaways     String[]
+    /// `[{ question, answer }]` — rendered as a section and emitted as FAQPage.
+    faq              Json?
+    /// Which shape the generator picked (`server/utils/ai/formats.ts`). Kept as a plain string,
+    /// not an enum: the catalogue is tuned by editing that file, and the cron reads the column
+    /// back only to avoid repeating a shape. NULL for anything a human wrote.
+    format           String?           @length(0, 32)
     prompt           String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
@@ -105,6 +120,9 @@ model ArticleTranslation extends Base {
     title        String?           @length(1, 255, "Titulek musí mít 1–255 znaků")
     excerpt      String?           @length(0, 500, "Perex může mít max. 500 znaků")
     content      String?           @length(1, 50000, "Překlad překročil délku znaků")
+    answer       String?           @length(0, 600)
+    keyTakeaways String[]
+    faq          Json?
     status       TranslationStatus @default(PENDING)
     source       TranslationSource @default(AI)
     model        String?           @length(0, 64)
@@ -134,10 +152,33 @@ model ArticleSeries extends Base {
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
 }
 
+/// One row per visitor per article per UTC day. `Article.views` stays the running counter —
+/// this is the event log the dashboard's time series reads, so it starts at deploy day and
+/// cannot be backfilled. `sessionId` is required precisely so the unique index bites: a tuple
+/// with a NULL in it is distinct from every other in Postgres, which is why `ArticleShare`'s
+/// index catches nothing.
+model ArticleView extends Base {
+    articleId    String
+    article      Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    userId       String?
+    user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+    sessionId    String
+    viewedOn     DateTime   @db.Date
+    @@unique([articleId, sessionId, viewedOn])
+    @@index([clientSiteId, viewedOn])
+    @@allow('read', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
+}
+
 model ArticleShare extends Base {
     articleId String
     article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
     platform  SharePlatform
+    userId    String?
+    user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    sessionId String?
+    @@unique([articleId, platform, userId, sessionId])
     @@allow('create', true)
     @@allow('read', true)
     @@allow('delete', auth().role == 'admin')

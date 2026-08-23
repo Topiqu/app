@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-8">
     <div class="w-full max-w-md">
-      <AuthForm :mode="initialMode" />
+      <AuthForm :mode="initialMode" :redirectTo="invitationRedirect" />
     </div>
   </div>
 </template>
@@ -15,6 +15,11 @@ const toast = useToast()
 const { signIn, getSession, data } = useAuth()
 
 const initialMode = computed(() => (route.query.mode === 'register' ? 'register' : 'login'))
+const invitationRedirect = computed(() =>
+  typeof route.query.invitation === 'string'
+    ? localePath({ name: 'invitation-token', params: { token: route.query.invitation } })
+    : undefined,
+)
 
 if (route.query.redirect?.length) navigateTo(route.query.redirect.toString(), { external: true })
 

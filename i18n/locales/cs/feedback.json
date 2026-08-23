@@ -6,6 +6,8 @@
     "thankYou": "Díky za zpětnou vazbu!",
     "recorded": "Váš názor nám pomáhá zlepšovat obsah.",
     "change": "Změnit názor",
-    "thanks_short": "Díky!"
+    "thanks_short": "Díky!",
+    "helpful": "Ano, článek byl užitečný",
+    "notHelpful": "Ne, článek nebyl užitečný"
   }
 }

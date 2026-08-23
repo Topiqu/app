@@ -2,6 +2,7 @@ import { createRequire } from 'node:module'
 import { defineNuxtModule } from 'nuxt/kit'
 
 import { IMAGE_HOSTS } from './shared/utils/imageHosts'
+import { AI_GROUNDING_TOKENS, ANSWER_ENGINE_BOTS } from './shared/utils/crawlers'
 
 const APP_ENV = process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
 const IS_PROD = APP_ENV === 'production'
@@ -90,6 +91,24 @@ const CONSENT_DEFAULT = {
   region: CONSENT_REGIONS,
 } as const
 
+// Signed-in surfaces. `@nuxtjs/robots` emits each one again under every locale prefix, so they
+// are listed bare. Crawl budget, not access — auth middleware already turns these away.
+const PRIVATE_PATHS = [
+  '/api/',
+  '/admin',
+  '/settings',
+  '/master',
+  '/drafts',
+  '/uzivatel',
+  '/user',
+  '/autorizace',
+  '/auth',
+  '/oauth-start',
+]
+
+/** Headroom for crawler bursts on the public read surfaces, over the global 70 / 10 s. */
+const CRAWL_LIMIT = { tokensPerInterval: 300, interval: 10 * 1000 }
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
 
@@ -102,7 +121,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      appVersion: '1.0.0 beta',
+      appVersion: '1.0.0',
       appEnv: APP_ENV,
       browserTest: IS_BROWSER_TEST,
       cdnUrl: process.env.CDN_URL || 'https://cdn.topiqu.com',
@@ -117,9 +136,6 @@ export default defineNuxtConfig({
       },
     },
     turnstile: { secretKey: process.env.TURNSTILE_SECRET_KEY || '' },
-    openModerator: { apiKey: process.env.OPENMODERATOR_API_KEY },
-    xai: { apiKey: process.env.XAI_API_KEY },
-    googleAi: { apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY },
     openAi: { apiKey: process.env.OPENAI_API_KEY },
     auth: { secret: process.env.AUTH_SECRET },
     email: {
@@ -214,12 +230,37 @@ export default defineNuxtConfig({
   },
 
   sentry: {
+    // Without this the server SDK never initializes and only browser errors reach Better Stack.
+    // The documented alternative is `--import ./server/sentry.server.config.mjs` at startup, which
+    // is a Node flag — the container entrypoint is `bun --bun server/index.mjs`. Costs us
+    // db/native-module tracing spans (http traces and errors still arrive); do not add `--import`
+    // alongside it or the SDK initializes twice.
+    autoInjectServerSentry: 'top-level-import',
     sourceMapsUploadOptions: {
       url: process.env.SENTRY_URL,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
       authToken: process.env.SENTRY_AUTH_TOKEN,
     },
+  },
+
+  sitemap: {
+    // Route discovery only finds the app-shell pages, which is exactly what no blog should list.
+    excludeAppSources: true,
+    // The source emits locale prefixes and alternates itself, from the PUBLISHED translations.
+    autoI18n: false,
+    sources: ['/api/__sitemap__/urls'],
+    cacheMaxAgeSeconds: 600,
+  },
+
+  // Naming the answer engines makes the stance reviewable and applies the private-path list; the
+  // wildcard group already allows them. Training crawlers inherit `*` — that is a product call.
+  robots: {
+    disallow: PRIVATE_PATHS,
+    groups: [
+      { userAgent: [...ANSWER_ENGINE_BOTS], allow: ['/'], disallow: PRIVATE_PATHS },
+      { userAgent: [...AI_GROUNDING_TOKENS], allow: ['/'] },
+    ],
   },
 
   sourcemap: { client: 'hidden' },
@@ -362,10 +403,17 @@ export default defineNuxtConfig({
     xssValidator: false,
   },
   routeRules: {
+    '/manifest.webmanifest': { headers: { 'content-type': 'application/manifest+json' } },
+    '/sitemap.xml': { headers: { 'content-type': 'application/xml' }, security: { rateLimiter: CRAWL_LIMIT } },
+    '/robots.txt': { security: { rateLimiter: CRAWL_LIMIT } },
+    '/llms.txt': { security: { rateLimiter: CRAWL_LIMIT } },
+    '/rss.xml': { security: { rateLimiter: CRAWL_LIMIT } },
     '/__og-image__/**': { security: { xssValidator: false, headers: false } },
     '/**/__og-image__/**': { security: { xssValidator: false, headers: false } },
-    '/cs/clanky/**': { security: { xssValidator: false } },
-    '/en/articles/**': { security: { xssValidator: false } },
+    // A crawler works through a sitemap in bursts. At the global 70 requests / 10 s it starts
+    // collecting 429s partway down the list, and the pages behind them silently never get indexed.
+    '/cs/clanky/**': { security: { xssValidator: false, rateLimiter: CRAWL_LIMIT } },
+    '/en/articles/**': { security: { xssValidator: false, rateLimiter: CRAWL_LIMIT } },
     '/api/onboarding/send-code': {
       security: { rateLimiter: { tokensPerInterval: 5, interval: 60 * 60 * 1000 } },
     },
@@ -390,7 +438,6 @@ export default defineNuxtConfig({
         files: [
           'en/common.json',
           'en/series.json',
-          'en/landing.json',
           'en/feedback.json',
           'en/seo.json',
           'en/articles.json',
@@ -412,7 +459,6 @@ export default defineNuxtConfig({
         files: [
           'cs/common.json',
           'cs/series.json',
-          'cs/landing.json',
           'cs/feedback.json',
           'cs/seo.json',
           'cs/articles.json',
@@ -481,11 +527,13 @@ export default defineNuxtConfig({
     },
   },
 
+  // Platform fallback; `server/plugins/siteConfig.ts` swaps in the tenant's own per request.
+  // `defaultLocale` must agree with `i18n.defaultLocale` or the two disagree on `x-default`.
   site: {
     url: SITE_URL,
     name: 'Topiqu AI Blog',
     description: 'Moderní blogovací platforma poháněná AI',
-    defaultLocale: 'cs',
+    defaultLocale: 'en',
     indexable: true,
   },
 

@@ -1,7 +1,33 @@
 import type Stripe from 'stripe'
 import type { ClientPlan } from '@prisma/client'
 
-import { extractSubscriptionId, isSubscribablePlan, planFromPriceId } from '~~/server/utils/stripeWebhook'
+import {
+  extractSubscriptionId,
+  isSubscribablePlan,
+  marksFirstPayment,
+  planFromPriceId,
+  revokesPlan,
+} from '~~/server/utils/stripeWebhook'
+
+/**
+ * `clearSubscription` only for a terminal deletion — an `unpaid` subscription still exists in
+ * Stripe and revives the moment the invoice is paid, so we keep the id to stay attached to it.
+ * `stripeCustomerId` survives either way, or the tenant loses portal access to their invoices.
+ */
+const revokeToBasic = async (clientSiteId: string, { clearSubscription }: { clearSubscription: boolean }) => {
+  await prisma.$transaction(async (tx) => {
+    await tx.clientSite.update({
+      where: { id: clientSiteId },
+      data: {
+        plan: 'BASIC',
+        stripePriceId: null,
+        ...(clearSubscription ? { stripeSubscriptionId: null } : {}),
+      },
+    })
+
+    await syncPlanFeatures(tx, clientSiteId, 'BASIC')
+  })
+}
 
 export default defineEventHandler(async (event) => {
   const body = await readRawBody(event, false)
@@ -26,21 +52,23 @@ export default defineEventHandler(async (event) => {
       const subscription = subscriptionId ? await stripe.subscriptions.retrieve(subscriptionId) : null
       const priceId = subscription?.items.data[0]?.price.id ?? null
 
-      const isTrialing = subscription?.status === 'trialing'
       const metadataPlan = session.metadata?.plan
       const derivedPlan = planFromPriceId(priceId) ?? (isSubscribablePlan(metadataPlan) ? metadataPlan : null)
-      const promote = !isTrialing && !!derivedPlan
+      const paid = marksFirstPayment(subscription?.status, derivedPlan)
 
-      await prisma.clientSite.update({
-        where: { id: clientSiteId },
-        data: {
-          ...(promote
-            ? { plan: derivedPlan as ClientPlan, firstPaidAt: { set: new Date() }, lastPaidAt: new Date() }
-            : {}),
-          stripeCustomerId: customerId ?? undefined,
-          stripeSubscriptionId: subscriptionId ?? undefined,
-          stripePriceId: priceId ?? undefined,
-        },
+      await prisma.$transaction(async (tx) => {
+        await tx.clientSite.update({
+          where: { id: clientSiteId },
+          data: {
+            ...(derivedPlan ? { plan: derivedPlan as ClientPlan } : {}),
+            ...(paid ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
+            stripeCustomerId: customerId ?? undefined,
+            stripeSubscriptionId: subscriptionId ?? undefined,
+            stripePriceId: priceId ?? undefined,
+          },
+        })
+
+        if (derivedPlan) await syncPlanFeatures(tx, clientSiteId, derivedPlan as ClientPlan)
       })
       return { received: true }
     }
@@ -51,7 +79,6 @@ export default defineEventHandler(async (event) => {
         where: { id: clientSiteId },
         data: {
           tokenRemaining: { increment: tokens },
-          totalUsage: { increment: tokens },
         },
       })
     }
@@ -69,15 +96,25 @@ export default defineEventHandler(async (event) => {
     const derivedPlan = planFromPriceId(currentPriceId) ?? (isSubscribablePlan(metadataPlan) ? metadataPlan : null)
     const trialEnded = previous?.status === 'trialing' && subscription.status === 'active'
 
+    // Terminal non-paying states never produce a `deleted` event — revoke here or not at all.
+    if (revokesPlan(subscription.status)) {
+      await revokeToBasic(clientSiteId, { clearSubscription: subscription.status === 'canceled' })
+      return { received: true }
+    }
+
     // Fires on both trial-end promotion and portal-driven plan changes (PRO↔PREMIUM).
     if (subscription.status === 'active' && derivedPlan) {
-      await prisma.clientSite.update({
-        where: { id: clientSiteId },
-        data: {
-          plan: derivedPlan as ClientPlan,
-          stripePriceId: currentPriceId ?? undefined,
-          ...(trialEnded ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
-        },
+      await prisma.$transaction(async (tx) => {
+        await tx.clientSite.update({
+          where: { id: clientSiteId },
+          data: {
+            plan: derivedPlan as ClientPlan,
+            stripePriceId: currentPriceId ?? undefined,
+            ...(trialEnded ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
+          },
+        })
+
+        await syncPlanFeatures(tx, clientSiteId, derivedPlan as ClientPlan)
       })
     }
     return { received: true }
@@ -88,14 +125,8 @@ export default defineEventHandler(async (event) => {
     const clientSiteId = subscription.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
 
-    await prisma.clientSite.update({
-      where: { id: clientSiteId },
-      data: {
-        plan: 'BASIC',
-        stripeSubscriptionId: null,
-        stripePriceId: null,
-      },
-    })
+    await revokeToBasic(clientSiteId, { clearSubscription: true })
+    return { received: true }
   }
 
   if (stripeEvent.type === 'invoice.payment_succeeded') {

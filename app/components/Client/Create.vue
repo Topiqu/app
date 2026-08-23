@@ -262,7 +262,6 @@ const toast = useToast()
 const open = defineModel<boolean>({ default: false })
 const passwordDialogOpen = shallowRef(false)
 const passwordDialogValue = shallowRef('')
-
 const copyPassword = () => {
   navigator.clipboard.writeText(passwordDialogValue.value)
   toast.add({ color: 'success', title: t('master.clientCreate.messages.passwordCopied') })

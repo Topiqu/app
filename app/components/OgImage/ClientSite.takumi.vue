@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white font-sans">
+  <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white" style="font-family: Inter">
     <div
       class="absolute inset-0 w-full h-full opacity-40"
       :style="{ background: `linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%)` }"
@@ -40,13 +40,17 @@
       </div>
     </div>
 
-    <div class="relative flex flex-col justify-end h-full p-16 pb-24">
+    <!-- pb clears the absolutely-positioned domain pill below (bottom-16 + its own height). -->
+    <div class="relative flex flex-col justify-end h-full p-16 pb-36">
       <div class="flex flex-col gap-6 max-w-4xl">
         <h1 class="text-8xl font-black leading-[0.95] text-white drop-shadow-2xl tracking-tight">
           {{ title }}
         </h1>
-        <p v-if="description" class="text-4xl text-blue-100/80 line-clamp-2 leading-snug font-light max-w-5xl">
-          {{ description }}
+        <p
+          v-if="clamped"
+          class="text-4xl text-blue-100/80 leading-snug font-light max-w-5xl max-h-[100px] overflow-hidden"
+        >
+          {{ clamped }}
         </p>
       </div>
     </div>
@@ -60,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   title: string
   description?: string
   siteName: string
@@ -68,4 +72,11 @@ defineProps<{
   themeColor: string
   domain: string
 }>()
+
+// `line-clamp-2` compiles to `display: -webkit-box`, which Takumi refuses outright — it 500s the whole
+// render, not just the paragraph. Cut the text instead and keep the height cap as the backstop.
+const clamped = computed(() => {
+  const text = props.description?.trim() ?? ''
+  return text.length > 110 ? `${text.slice(0, 109).trimEnd()}…` : text
+})
 </script>

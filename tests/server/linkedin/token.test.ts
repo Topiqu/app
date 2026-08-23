@@ -85,14 +85,14 @@ describe('getValidAccessToken', () => {
     )
   })
 
-  it('does not attempt a refresh when there is no refresh token', async () => {
-    const token = await getValidAccessToken({
-      ...base,
-      refreshToken: null,
-      tokenExpiresAt: new Date(Date.now() - 1000),
-    })
-
-    expect(token).toBe('current-token')
+  it('requires reconnection when an expired token has no refresh token', async () => {
+    await expect(
+      getValidAccessToken({
+        ...base,
+        refreshToken: null,
+        tokenExpiresAt: new Date(Date.now() - 1000),
+      }),
+    ).rejects.toThrow('reconnect the LinkedIn account')
     expect(refreshAccessToken).not.toHaveBeenCalled()
   })
 

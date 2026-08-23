@@ -1,6 +1,6 @@
 <template>
   <UModal v-model:open="open" :title="$t('articles.tags.title')" :ui="{ content: 'max-w-xl' }">
-    <slot :open="open" />
+    <slot :open="openDialog" />
 
     <template #body>
       <div class="flex flex-wrap gap-2">
@@ -64,6 +64,7 @@ import slugify from 'slugify'
 
 const toast = useToast()
 const open = defineModel<boolean>({ default: false })
+const openDialog = () => (open.value = true)
 const props = defineProps<{ articleId: string }>()
 
 const { invalidateArticleDetail, invalidateTags: invalidateTagLibrary } = useCacheInvalidation()

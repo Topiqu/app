@@ -20,13 +20,30 @@ export async function pingHeartbeat(taskName: string, status: HeartbeatStatus = 
   }
 }
 
-export async function withHeartbeat<T>(taskName: string, run: () => Promise<T>): Promise<T> {
+export async function withHeartbeat<T>(taskName: string, run: () => T | Promise<T>): Promise<Awaited<T>> {
+  const startedAt = Date.now()
+
   try {
     const result = await run()
     await pingHeartbeat(taskName, 'success')
+    // A heartbeat only says the run did not throw. A run that picked up no work looks identical
+    // to a healthy one, which is how a whole day of article generation went unnoticed — so ship
+    // the result itself, not just the fact that it finished.
+    await logger.info(`cron:${taskName}`, {
+      source: 'cron',
+      task: taskName,
+      durationMs: Date.now() - startedAt,
+      result: (result as { result?: unknown })?.result ?? null,
+    })
     return result
   } catch (error) {
     await pingHeartbeat(taskName, 'fail')
+    await logger.error(`cron:${taskName} failed`, {
+      source: 'cron',
+      task: taskName,
+      durationMs: Date.now() - startedAt,
+      error: (error as Error)?.message ?? String(error),
+    })
     throw error
   }
 }

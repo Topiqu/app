@@ -1,6 +1,5 @@
 // @vitest-environment nuxt
 
-import { nextTick } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -11,10 +10,8 @@ import TiptapToolbar from '../../app/components/Tiptap/Toolbar.vue'
 import NotificationBar from '../../app/components/Notification/Bar.vue'
 import ArticleCollection from '../../app/components/Article/Collection.vue'
 import ArticleActionsBar from '../../app/components/Article/ActionsBar.vue'
-import StepPlan from '../../app/components/Landing/Onboarding/StepPlan.vue'
 
 const mocks = vi.hoisted(() => ({
-  onboardingForm: { selectedPlan: null as null | 'PRO' | 'PREMIUM' },
   authData: null as null | { user: { id: string; role: string } },
   notificationData: null as null | {
     notifications: {
@@ -30,10 +27,8 @@ const mocks = vi.hoisted(() => ({
     hasMore: boolean
   },
   refresh: vi.fn(),
-  goBack: vi.fn(),
 }))
 
-mockNuxtImport('useOnboarding', () => () => ({ form: mocks.onboardingForm, goBack: mocks.goBack }))
 mockNuxtImport('useAuth', () => () => ({ data: ref(mocks.authData) }))
 mockNuxtImport('useLocalePath', () => () => (route: unknown) => JSON.stringify(route))
 mockNuxtImport('useTiptapShortcuts', () => () => (label: string) => label)
@@ -101,8 +96,6 @@ const global = {
 
 describe('Nuxt UI component behavior', () => {
   beforeEach(() => {
-    mocks.onboardingForm.selectedPlan = null
-    mocks.goBack.mockReset()
     mocks.authData = null
     mocks.notificationData = null
     mocks.refresh.mockReset()
@@ -129,19 +122,6 @@ describe('Nuxt UI component behavior', () => {
     expect(buttons.find((button) => button.props('label') === 'No')!.props('variant')).toBe('outline')
     expect(wrapper.get('[data-confirm-dialog]').attributes('description')).toBeUndefined()
     expect(wrapper.get('p').text()).toBe('This cannot be undone.')
-  })
-
-  it('preserves the onboarding null | PRO | PREMIUM payload contract', async () => {
-    const wrapper = mount(StepPlan, { global })
-    const radio = wrapper.findComponent({ name: 'URadioGroup' })
-
-    radio.vm.$emit('update:modelValue', 'PREMIUM')
-    await nextTick()
-    expect(mocks.onboardingForm.selectedPlan).toBe('PREMIUM')
-
-    radio.vm.$emit('update:modelValue', 'FREE')
-    await nextTick()
-    expect(mocks.onboardingForm.selectedPlan).toBeNull()
   })
 
   it('renders notification and user-menu authentication branches', async () => {

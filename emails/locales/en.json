@@ -9,12 +9,22 @@
       "link": "Unsubscribe"
     }
   },
-  "comment": {
+  "commentReply": {
     "subject": "New reply to your comment",
     "greeting": "Hello <b>{parentUsername}</b>,",
     "intro": "<b>{userName}</b> replied: \"<i>{commentContent}</i>\"",
     "parent": "Your comment: \"<i>{parentContent}</i>\"",
     "button": "View reply",
+    "unsubscribe": {
+      "text": "Don't want to receive notifications?",
+      "link": "Unsubscribe"
+    }
+  },
+  "deleteComment": {
+    "subject": "Your comment has been removed",
+    "greeting": "Hello {userName},",
+    "intro": "Your comment “<i>{commentContent}</i>” has been removed.",
+    "reason": "Reason: {deleteReason}",
     "unsubscribe": {
       "text": "Don't want to receive notifications?",
       "link": "Unsubscribe"
@@ -33,6 +43,28 @@
       "text": "Don't want to receive notifications?",
       "link": "Unsubscribe"
     }
+  },
+  "tenantInvitation": {
+    "subject": "Invitation to {tenantName}",
+    "greeting": "You have been invited",
+    "intro": "{inviterName} invited you to join <b>{tenantName}</b>.",
+    "followers": "Followers",
+    "website": "Website",
+    "community": "Join the team behind this publication and help shape what its audience reads.",
+    "access": "Granted permissions: {scopeCount}. You can review them before accepting.",
+    "button": "View invitation",
+    "expiration": "This invitation expires in {expirationDays} days."
+  },
+  "tenantMemberRemoved": {
+    "subject": "Your access to {tenantName} was removed",
+    "greeting": "Access to {tenantName} removed",
+    "intro": "You no longer have access to this publication or its administration.",
+    "removedByLabel": "Removed by",
+    "removedAtLabel": "Date and time",
+    "removedBy": "Removed by: {removedBy}",
+    "removedAt": "Removed at: {removedAt}",
+    "otherTenants": "Your Topiqu account and access to any other publications were not affected.",
+    "contact": "If you believe this was a mistake, contact the publication owner at {ownerEmail}. A new invitation is required to restore access."
   },
   "userBan": {
     "subject": "Your account has been banned",

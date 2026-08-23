@@ -1,99 +1,60 @@
 <template>
   <div class="space-y-4">
-    <UButton
-      v-if="!enabled && !showForm"
-      class="disabled-primary-action w-full"
-      icon="i-mdi-shield-lock"
-      :disabled="isLoading"
-      :loading="isLoading"
-      @click="enable2FA"
-    >
-      {{ $t('profile.enable2FA') }}
-    </UButton>
-
-    <div v-if="otpauthUrl && (showForm || enabled)" class="space-y-4 text-center">
-      <UCard class="mx-auto w-full sm:max-w-[22rem]">
-        <template v-if="showQR">
-          <ClientOnly>
-            <Qrcode :value="otpauthUrl" class="mx-auto" />
-          </ClientOnly>
-          <p class="mt-2 text-xs text-muted">{{ $t('profile.scanTotp') }}</p>
-          <UAlert
-            class="mt-3"
-            color="warning"
-            variant="soft"
-            icon="i-mdi-alert-outline"
-            :description="$t('profile.sensitiveInfo')"
-          />
-          <div class="mt-3 flex justify-center gap-2">
-            <UButton
-              size="sm"
-              color="neutral"
-              variant="soft"
-              :icon="showSecret ? 'i-mdi-eye-off' : 'i-mdi-eye'"
-              @click="showSecret = !showSecret"
-            >
-              {{ showSecret ? $t('profile.hideSecret') : $t('profile.showSecret') }}
-            </UButton>
-            <UButton
-              square
-              size="sm"
-              color="neutral"
-              variant="ghost"
-              icon="i-mdi-eye-off"
-              :aria-label="$t('profile.hideSecret')"
-              @click="showQR = false"
-            />
-          </div>
-          <div v-if="showSecret" class="mt-2 flex items-center justify-center gap-2">
-            <code class="text-xs text-highlighted">{{ secret }}</code>
-            <UButton
-              square
-              size="sm"
-              color="neutral"
-              variant="soft"
-              icon="i-mdi-content-copy"
-              :aria-label="$t('common.actions.copySecret')"
-              @click="copySecret(secret)"
-            />
-          </div>
-        </template>
-        <UButton v-else color="neutral" variant="soft" icon="i-mdi-qrcode" @click="showQR = true">
-          {{ $t('profile.showQr') }}
-        </UButton>
-      </UCard>
-
-      <UFormField v-if="showForm" :label="$t('profile.enterTotpCode')" :error="error || undefined">
-        <UPinInput v-model="totpDigits" type="number" :length="6" otp class="mx-auto" />
-      </UFormField>
-
-      <UButton
-        v-if="showForm"
-        class="disabled-primary-action mx-auto w-full max-w-xs"
-        icon="i-mdi-check-circle"
-        :disabled="isLoading || totpCode.length !== 6"
-        :loading="isLoading"
-        @click="verifyTotpCode"
-      >
-        {{ $t('profile.verify2FA') }}
+    <div v-if="!enabled && !showForm" class="flex items-start justify-between gap-3">
+      <p class="text-sm text-neutral-500 dark:text-neutral-400 text-pretty">{{ $t('profile.scanTotp') }}</p>
+      <UButton :disabled="isLoading" icon="i-mdi-shield-lock-outline" class="shrink-0" @click="enable2FA">
+        {{ $t('profile.enable2FA') }}
       </UButton>
+    </div>
+
+    <template v-if="otpauthUrl">
+      <UserTotpQr :otpauthUrl="otpauthUrl" />
+
+      <div v-if="showForm" class="mx-auto max-w-xs space-y-2">
+        <UInput
+          v-model="totpCode"
+          type="tel"
+          name="totpCode"
+          pattern="[0-9]*"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          :placeholder="$t('profile.enterTotpCode')"
+        />
+        <p v-if="error" class="text-xs text-red-600 dark:text-red-400">{{ error }}</p>
+        <UButton
+          :disabled="isLoading || !totpCode"
+          icon="i-mdi-check-circle-outline"
+          color="success"
+          variant="soft"
+          class="w-full"
+          @click="verifyTotpCode"
+        >
+          {{ $t('profile.verify2FA') }}
+        </UButton>
+      </div>
+
       <UButton
-        v-else
-        class="mx-auto w-full max-w-xs"
-        color="error"
-        icon="i-mdi-shield-off"
+        v-else-if="enabled"
         :disabled="isLoading"
-        :loading="isLoading"
+        icon="i-mdi-shield-off-outline"
+        color="error"
+        variant="soft"
+        class="mx-auto w-full max-w-xs"
         @click="disable2FA"
       >
         {{ $t('profile.disable2FA') }}
       </UButton>
-    </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ enabled: boolean; otpauthUrl: string; userId: string }>()
+const { enabled, otpauthUrl, userId } = defineProps<{
+  enabled: boolean
+  otpauthUrl: string
+  userId: string
+}>()
+
 const emit = defineEmits<{
   (e: 'update:enabled', value: boolean): void
   (e: 'update:otpauthUrl' | 'error', value: string): void
@@ -101,33 +62,13 @@ const emit = defineEmits<{
 
 const isLoading = shallowRef(false)
 const showForm = shallowRef(false)
-const showQR = shallowRef(false)
-const showSecret = shallowRef(false)
-const totpDigits = ref<number[]>([])
-const totpCode = computed(() => totpDigits.value.join(''))
+const totpCode = shallowRef('')
 const error = shallowRef<string | null>(null)
-const toast = useToast()
-
-const secret = computed(() => {
-  try {
-    return new URL(props.otpauthUrl).searchParams.get('secret') ?? ''
-  } catch {
-    return ''
-  }
-})
-
-async function copySecret(value: string) {
-  try {
-    await navigator.clipboard.writeText(value)
-  } catch {
-    toast.add({ color: 'error', title: $t('common.messages.operationFailed') })
-  }
-}
 
 async function enable2FA() {
   try {
     isLoading.value = true
-    const response = await $fetch(`/api/users/${props.userId}` as `/api/users/:id`, {
+    const response = await $fetch(`/api/users/${userId}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { totpAction: 'enable' },
     })
@@ -146,17 +87,14 @@ async function enable2FA() {
 async function verifyTotpCode() {
   try {
     isLoading.value = true
-    const response = await $fetch(`/api/users/${props.userId}` as `/api/users/:id`, {
+    const response = await $fetch(`/api/users/${userId}` as `/api/users/:id`, {
       method: 'PATCH',
       body: { totpCode: totpCode.value },
     })
     if (!('verified' in response) || !response.verified)
       throw createError({ statusCode: 500, statusMessage: 'Invalid response from server' })
-    showForm.value = false
-    showQR.value = false
-    showSecret.value = false
-    totpDigits.value = []
-    error.value = null
+
+    reset()
     emit('update:enabled', true)
     emit('error', '')
   } catch (err: any) {
@@ -169,12 +107,11 @@ async function verifyTotpCode() {
 async function disable2FA() {
   try {
     isLoading.value = true
-    await $fetch(`/api/users/${props.userId}`, { method: 'PATCH', body: { totpSecret: null } })
-    showForm.value = false
-    showQR.value = false
-    showSecret.value = false
-    totpDigits.value = []
-    error.value = null
+    await $fetch(`/api/users/${userId}`, {
+      method: 'PATCH',
+      body: { totpSecret: null },
+    })
+    reset()
     emit('update:enabled', false)
     emit('update:otpauthUrl', '')
     emit('error', '')
@@ -183,5 +120,11 @@ async function disable2FA() {
   } finally {
     isLoading.value = false
   }
+}
+
+function reset() {
+  showForm.value = false
+  totpCode.value = ''
+  error.value = null
 }
 </script>

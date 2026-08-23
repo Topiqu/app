@@ -26,7 +26,9 @@ export async function getValidAccessToken(company: TokenBearingCompany): Promise
   const stillValid = company.tokenExpiresAt && company.tokenExpiresAt.getTime() - EXPIRY_BUFFER_MS > Date.now()
   if (stillValid) return company.accessToken
 
-  if (!company.refreshToken) return company.accessToken
+  if (!company.refreshToken) {
+    throw new Error('LinkedIn access token expired; reconnect the LinkedIn account')
+  }
 
   const { clientId, clientSecret } = getCredentials(company.type)
   if (!clientId || !clientSecret) throw new Error('LinkedIn credentials not configured')

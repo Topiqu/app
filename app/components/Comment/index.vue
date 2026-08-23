@@ -117,19 +117,13 @@
           <span>{{ state.dislikes }}</span>
         </UButton>
 
-        <UTooltip v-for="r in state.emojiReactions" :key="r.emojiId" :text="r.emoji.shortcode">
-          <UBadge color="neutral" variant="soft">
-            <AppMedia
-              :src="r.emoji.imageUrl"
-              :alt="r.emoji.shortcode"
-              aspectRatio="1 / 1"
-              fit="contain"
-              sizes="20px"
-              containerClass="size-4 bg-transparent sm:size-5"
-            />
-            <span>{{ r.count }}</span>
-          </UBadge>
-        </UTooltip>
+        <EmojiReactionChip
+          v-for="r in state.emojiReactions"
+          :key="r.emojiId"
+          :imageUrl="r.emoji.imageUrl"
+          :shortcode="r.emoji.shortcode"
+          :count="r.count"
+        />
       </div>
 
       <div class="flex items-center gap-2 sm:gap-3">

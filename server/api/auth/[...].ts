@@ -11,6 +11,7 @@ interface BaseOAuthProfile {
   login?: string
   name?: string
   email?: string | null
+  email_verified?: unknown
   avatar_url?: string
   picture?: string
 }
@@ -18,9 +19,6 @@ interface BaseOAuthProfile {
 // Compiled browser tests intentionally run over loopback HTTP against a dedicated
 // disposable database, so production-only secure/domain cookies cannot be used.
 const isProduction = process.env.NODE_ENV === 'production' && !process.env.TEST_DATABASE_URL
-// TODO: For strict multi-tenant (isolated accounts), set this to undefined to prevent session sharing across domains.
-const cookieDomain = isProduction ? '.topiqu.com' : undefined
-
 function mapProfile({ id, sub, login, name, email, avatar_url, picture }: BaseOAuthProfile) {
   return {
     id: (id ?? sub ?? login ?? '').toString(),
@@ -42,7 +40,7 @@ function GoogleProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>)
     authorization: { params: { scope: 'openid email profile' } },
     idToken: true,
     checks: ['pkce', 'state'],
-    profile: (profile) => mapProfile(profile),
+    profile: (profile) => mapProfile({ ...profile, email: verifiedGoogleEmail(profile) }),
     ...options,
   }
 }
@@ -52,16 +50,13 @@ async function fetchGitHubProfile(tokens: any) {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
   }).then((res) => res.json())
 
-  if (!profile.email) {
-    const emails = await fetch('https://api.github.com/user/emails', {
-      headers: { Authorization: `Bearer ${tokens.access_token}` },
-    }).then((res) => res.json())
-    profile.email =
-      emails.find((e: { primary: boolean; verified: boolean }) => e.primary && e.verified)?.email ??
-      emails[0]?.email ??
-      null
-  }
-  return profile
+  const emails = await fetch('https://api.github.com/user/emails', {
+    headers: { Authorization: `Bearer ${tokens.access_token}` },
+  })
+    .then((res) => res.json())
+    .catch(() => [])
+
+  return { ...profile, email: verifiedGitHubEmail(emails) }
 }
 
 function GitHubProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>): OAuthConfig<P> {
@@ -182,13 +177,13 @@ export default NuxtAuthHandler({
   secret: useRuntimeConfig().auth.secret,
   cookies: {
     sessionToken: {
-      name: `${isProduction ? '__Secure-' : ''}next-auth.session-token`,
+      name: sessionCookieName,
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
         secure: isProduction,
-        domain: cookieDomain,
+        domain: sessionCookieDomain,
       },
     },
     callbackUrl: {
@@ -197,7 +192,7 @@ export default NuxtAuthHandler({
         sameSite: 'lax',
         path: '/',
         secure: isProduction,
-        domain: cookieDomain,
+        domain: sessionCookieDomain,
       },
     },
     csrfToken: {
@@ -207,7 +202,7 @@ export default NuxtAuthHandler({
         sameSite: 'lax',
         path: '/',
         secure: isProduction,
-        domain: cookieDomain,
+        domain: sessionCookieDomain,
       },
     },
   },
@@ -219,14 +214,22 @@ export default NuxtAuthHandler({
           typeof (credentials as any)?.loginToken === 'string' ? (credentials as any).loginToken : undefined
         if (loginToken) return authorizeWithOnboardingToken(loginToken, req)
 
-        const { email, password } = signInSchema.parse(credentials)
+        const parsed = signInSchema.parse(credentials)
+        const email = normalizeLoginEmail(parsed.email)
+        const { password } = parsed
         const totp = typeof (credentials as any)?.totp === 'string' ? (credentials as any).totp : undefined
+
+        const limit = await checkLoginRateLimit(req, email, 'authorize')
+        if (!limit.allowed) {
+          await logLoginFailure(req, email, 'rate_limited', 'authorize')
+          throw new Error('rate_limited')
+        }
 
         // TODO: For proper multi-tenant isolation:
         // 1. Resolve 'clientSiteId' from req.headers.host (domain).
         // 2. Filter user by { email, clientSiteId } to ensure unique accounts per site.
         const user = await prisma.user.findFirst({
-          where: { email, deletedAt: null },
+          where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
           select: {
             id: true,
             username: true,
@@ -236,14 +239,23 @@ export default NuxtAuthHandler({
             email: true,
             avatarUrl: true,
             totpSecret: true,
+            emailVerified: true,
           },
         })
-        if (!user || !user.password) return null
-        if (!(await argon.verify(user.password, password))) return null
+        const failure = credentialFailure(user, !!user?.password && (await argon.verify(user.password, password)))
+        if (failure) {
+          await logLoginFailure(req, email, failure, 'authorize')
+          if (failure !== 'email_unverified') return null
+          throw new Error('email_not_verified')
+        }
+        if (!user) throw new Error('Credential decision invariant failed')
 
         if (user.totpSecret) {
           const code = (totp ?? '').replace(/\s/g, '')
-          if (!code || !authenticator.verify({ token: code, secret: user.totpSecret })) return null
+          if (!code || !authenticator.verify({ token: code, secret: user.totpSecret })) {
+            await logLoginFailure(req, email, 'totp_invalid', 'authorize')
+            return null
+          }
         }
 
         let plan: string | null = null
@@ -256,6 +268,8 @@ export default NuxtAuthHandler({
         }
 
         const sessionId = await generateSessionToken(user, req)
+        await prisma.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } })
+        await logLoginSuccess(req, email, user.id, user.clientSiteId)
 
         return {
           id: user.id,
@@ -287,8 +301,12 @@ export default NuxtAuthHandler({
       return baseUrl
     },
     async jwt({ token, user, account }) {
-      if (account?.provider) {
-        const existingUser = await prisma.user.findUnique({ where: { email: token.email ?? '' } })
+      if (isOAuthSignIn(account)) {
+        if (!token.email) throw new Error('oauth_email_unverified')
+
+        const existingUser = await prisma.user.findFirst({ where: { email: token.email, deletedAt: null } })
+        if (!canLinkOAuthIdentity(existingUser)) throw new Error('oauth_local_account_unverified')
+
         const avatarValue = token.picture ?? token.image
         token = await handleOAuthUser(token, existingUser, prisma, avatarValue)
         token.provider = account.provider
@@ -301,12 +319,30 @@ export default NuxtAuthHandler({
         token.plan = user.plan
         token.avatarUrl = user.avatarUrl
         token.sessionId = user.sessionId
-      } else if (token.clientSiteId) {
-        const fresh = await prisma.clientSite.findUnique({
-          where: { id: token.clientSiteId as string },
-          select: { plan: true },
+      } else if (token.id) {
+        const freshUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { role: true } })
+        if (freshUser) token.role = freshUser.role
+      }
+      if (token.sessionId) {
+        const activeSession = await prisma.session.findUnique({
+          where: { id: token.sessionId as string },
+          select: { clientSiteId: true, clientSite: { select: { plan: true } } },
         })
-        if (fresh) token.plan = fresh.plan
+        const activeMembership = activeSession?.clientSiteId
+          ? await prisma.tenantMembership.findUnique({
+              where: {
+                clientSiteId_userId: { clientSiteId: activeSession.clientSiteId, userId: token.id as string },
+              },
+              select: { deletedAt: true },
+            })
+          : null
+        const hasActiveTenant = activeMembership !== null && activeMembership.deletedAt === null
+        token.clientSiteId = hasActiveTenant ? activeSession!.clientSiteId! : ''
+        token.plan = hasActiveTenant ? activeSession!.clientSite!.plan : 'BASIC'
+        if (token.role !== 'superadmin') token.role = hasActiveTenant ? 'admin' : 'reader'
+        if (activeSession?.clientSiteId && !hasActiveTenant) {
+          await prisma.session.update({ where: { id: token.sessionId as string }, data: { clientSiteId: null } })
+        }
       }
       return token
     },

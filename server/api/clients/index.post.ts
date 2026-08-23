@@ -1,4 +1,5 @@
 import { randomBytes } from 'crypto'
+import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -8,9 +9,11 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(session)
   const body = await readBody(event)
+  body.domain = normalizeDomain(String(body.domain ?? ''))
 
   if (!body.name || !body.email || !body.domain)
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
+  if (!isValidDomain(body.domain)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   if (body.tokenLimit > 0 && !body.aiUser?.name)
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
@@ -31,6 +34,7 @@ export default defineEventHandler(async (event) => {
       data: {
         name: body.name,
         domain: body.domain,
+        ...domainVerificationDefaults(body.domain, randomBytes(24).toString('base64url')),
         plan: body.plan,
         generationFrequency: body.generationFrequency,
         tokenLimit: body.tokenLimit,
@@ -73,6 +77,18 @@ export default defineEventHandler(async (event) => {
     emailVerified: true,
     role: 'admin',
   })
+  await prisma.tenantMembership.create({
+    data: { clientSiteId: clientSite.id, userId: newUser.id, role: 'OWNER', scopes: [...TENANT_SCOPES] },
+  })
+
+  if (!isManagedDomain(clientSite.domain))
+    await logAction({
+      action: 'DOMAIN_VERIFICATION_STARTED',
+      userId: newUser.id,
+      clientSiteId: clientSite.id,
+      ip: getIp(event),
+      metadata: { domain: clientSite.domain },
+    })
 
   return {
     clientSite: {

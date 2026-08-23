@@ -1,328 +1,189 @@
 <template>
-  <div class="mt-10 px-4 sm:px-6">
-    <div class="flex gap-4 overflow-x-auto border-b border-default pb-2">
+  <div class="space-y-5">
+    <div class="flex w-fit gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800/60" role="tablist">
       <UButton
         v-for="tab in tabs"
         :key="tab.id"
-        :color="activeTab === tab.id ? 'primary' : 'neutral'"
-        :variant="activeTab === tab.id ? 'soft' : 'ghost'"
-        :icon="tab.icon"
-        class="shrink-0"
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === tab.id"
+        class="flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors"
+        :class="
+          activeTab === tab.id
+            ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-900 dark:text-neutral-100'
+            : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
+        "
         @click="$emit('update:activeTab', tab.id)"
       >
+        <Icon :name="tab.icon" class="size-4 shrink-0" />
         {{ $t(tab.label) }}
       </UButton>
     </div>
-    <div class="mt-6 space-y-6">
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <UFormField :label="$t('common.search')" :ui="{ label: 'sr-only' }" class="w-full sm:w-1/3">
-          <UInput
-            v-model="searchQuery"
-            type="text"
-            :placeholder="$t('common.search')"
-            icon="i-mdi-magnify"
-            class="w-full"
-          />
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <UFormField :label="$t('common.search')" class="sm:max-w-xs">
+        <UInput v-model="searchQuery" name="activitySearch" icon="i-mdi-magnify" :placeholder="$t('common.search')" />
+      </UFormField>
+      <div class="flex items-center gap-2 sm:ml-auto">
+        <UFormField :label="$t('common.labels.sortBy')">
+          <USelect v-model="sortOption" :items="sortItems" valueKey="value" labelKey="label" />
         </UFormField>
-        <div class="flex gap-2 overflow-x-auto">
-          <UBadge
-            v-for="tag in availableTags"
-            :key="tag"
-            as="button"
-            type="button"
-            :color="selectedTags.includes(tag) ? 'primary' : 'neutral'"
-            :variant="selectedTags.includes(tag) ? 'solid' : 'soft'"
-            :aria-pressed="selectedTags.includes(tag)"
-            @click="toggleTag(tag)"
-          >
-            {{ tag }}
-          </UBadge>
-        </div>
-        <div v-if="activeTab === 'likedArticles'" class="flex items-center gap-2">
-          <UFormField :label="$t('common.search')" :ui="{ label: 'sr-only' }">
-            <USelectMenu
-              v-model="sortOption"
-              valueKey="value"
-              labelKey="label"
-              :searchInput="false"
-              :items="sortItems"
-            />
-          </UFormField>
-          <UButton
-            color="neutral"
-            variant="ghost"
-            square
-            :icon="isGrid ? 'i-mdi-view-list' : 'i-mdi-view-grid'"
-            :aria-label="$t('common.actions.toggleLayout')"
-            :title="$t('common.actions.toggleLayout')"
-            @click="isGrid = !isGrid"
-          />
-        </div>
-        <div v-else class="flex items-center gap-2">
-          <UFormField :label="$t('common.search')" :ui="{ label: 'sr-only' }">
-            <USelectMenu
-              v-model="sortComment"
-              valueKey="value"
-              labelKey="label"
-              :searchInput="false"
-              :items="sortItems.filter((item) => item.value !== 'views:desc')"
-            />
-          </UFormField>
-        </div>
+        <UButton
+          v-if="activeTab === 'likedArticles'"
+          square
+          borderless
+          variant="ghost"
+          :icon="isGrid ? 'mdi:view-list' : 'mdi:view-grid'"
+          :aria="$t('common.actions.toggleLayout')"
+          :title="$t('common.actions.toggleLayout')"
+          @click="isGrid = !isGrid"
+        />
       </div>
-      <div v-if="pending" class="space-y-4">
-        <USkeleton v-for="i in 3" :key="i" class="h-32 w-full" />
-      </div>
-      <UAlert
-        v-else-if="error"
-        color="error"
-        variant="soft"
-        icon="i-mdi-alert-circle-outline"
-        :description="error?.message || $t('common.error')"
-      />
-      <template v-else>
-        <div v-if="activeTab === 'likedArticles'">
-          <UEmpty v-if="!filteredArticles.length" :description="$t('common.noResults')">
-            <template #actions>
-              <UButton :to="localePath({ name: 'index' })" variant="soft">{{ $t('articles.explore') }}</UButton>
-            </template>
-          </UEmpty>
-          <div :class="isGrid ? 'grid auto-rows-fr grid-cols-1 gap-6 sm:grid-cols-2' : 'grid gap-4'">
-            <ArticleCard
-              v-for="article in filteredArticles"
-              :key="article.id"
-              :article="toArticleCard(article)"
-              :variant="isGrid ? 'standard' : 'compact'"
-            >
-              <template #actions>
-                <UButton
-                  :onClick="() => unlikeArticle(article.id)"
-                  icon="i-mdi-heart-broken"
-                  square
-                  size="md"
-                  color="error"
-                  variant="ghost"
-                  :aria-label="$t('common.actions.unlike')"
-                  :title="$t('common.actions.unlike')"
-                />
-                <UButton
-                  :onClick="() => shareArticle(article)"
-                  icon="i-mdi-share-variant"
-                  square
-                  size="md"
-                  color="neutral"
-                  variant="ghost"
-                  :aria-label="$t('common.actions.share')"
-                  :title="$t('common.actions.share')"
-                />
-              </template>
-            </ArticleCard>
-          </div>
-        </div>
-        <div v-if="activeTab === 'comments'">
-          <UEmpty v-if="!filteredComments.length" :description="$t('common.noResults')">
-            <template #actions>
-              <UButton :to="localePath({ name: 'index' })" variant="soft">
-                {{ $t('articles.comments.commentsAction') }}
-              </UButton>
-            </template>
-          </UEmpty>
-          <div v-for="comment in filteredComments" :key="comment.id" class="space-y-5">
-            <UCard v-if="!comment.deletedAt">
-              <div class="flex items-center gap-2 mb-2">
-                <UserPicture :name="comment.authorUsername" :url="comment.authorPfp" />
-                <span class="text-sm font-medium leading-relaxed text-highlighted">{{ comment.authorUsername }}</span>
-              </div>
-              <p class="mb-2 text-sm leading-relaxed text-muted">{{ comment.content }}</p>
-              <NuxtLink
-                :to="
-                  localePath({ name: 'clanky-slug', params: { slug: comment.articleSlug } }) + `#comment-${comment.id}`
-                "
-                class="flex items-center gap-1 text-xs text-primary"
-              >
-                <UIcon size="12" name="i-mdi-file-document-outline" />
-                {{ $t('common.labels.article') }} {{ comment.articleTitle }}
-              </NuxtLink>
-              <p class="mt-1 text-xs leading-relaxed text-muted">
-                {{ $t('common.created') }} {{ formatDate(comment.createdAt) }}
-              </p>
-              <div class="mt-2 flex items-center gap-4 text-xs text-muted">
-                <div class="flex items-center gap-1">
-                  <UIcon size="12" name="i-mdi-thumb-up-outline" />
-                  <span>{{ comment.likesCount }}</span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <UIcon size="12" name="i-mdi-thumb-down-outline" />
-                  <span>{{ comment.dislikesCount }}</span>
-                </div>
-                <UButton
-                  v-if="session?.user?.id === comment.userId"
-                  :onClick="() => handleDelete(comment.id)"
-                  icon="i-mdi-delete-outline"
-                  square
-                  size="sm"
-                  color="error"
-                  variant="ghost"
-                  :aria-label="$t('common.actions.deleteComment')"
-                  :title="$t('common.actions.deleteComment')"
-                />
-              </div>
-              <div v-if="comment.tags.length" class="flex flex-wrap gap-1 mt-2">
-                <UBadge v-for="tag in comment.tags" :key="tag" color="primary" variant="soft">
-                  {{ tag }}
-                </UBadge>
-              </div>
-              <div v-if="comment.replies?.length" class="mt-4 space-y-4">
-                <UCard v-for="reply in sortReplies(comment.replies as Comment[])" :key="reply.id" class="ml-6 sm:ml-10">
-                  <div class="flex items-center gap-2 mb-2">
-                    <UserPicture :name="reply.authorUsername" :url="reply.authorPfp" />
-                    <span class="text-sm font-medium leading-relaxed text-highlighted">{{ reply.authorUsername }}</span>
-                  </div>
-                  <p class="mb-2 text-sm leading-relaxed text-muted">{{ reply.content }}</p>
-                  <NuxtLink
-                    :to="
-                      localePath({ name: 'clanky-slug', params: { slug: reply.articleSlug } }) + `#comment-${reply.id}`
-                    "
-                    class="flex items-center gap-1 text-xs text-primary"
-                  >
-                    <UIcon size="12" name="i-mdi-file-document-outline" />
-                    {{ $t('common.labels.article') }} {{ reply.articleTitle }}
-                  </NuxtLink>
-                  <p class="mt-1 text-xs leading-relaxed text-muted">
-                    {{ $t('common.created') }} {{ formatDate(reply.createdAt) }}
-                  </p>
-                  <div class="mt-2 flex items-center gap-4 text-xs text-muted">
-                    <div class="flex items-center gap-1">
-                      <UIcon size="12" name="i-mdi-thumb-up-outline" />
-                      <span>{{ reply.likesCount }}</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                      <UIcon size="12" name="i-mdi-thumb-down-outline" />
-                      <span>{{ reply.dislikesCount }}</span>
-                    </div>
-                    <UButton
-                      v-if="session?.user?.id === reply.userId"
-                      :onClick="() => handleDelete(reply.id)"
-                      icon="i-mdi-delete-outline"
-                      square
-                      size="sm"
-                      color="error"
-                      variant="ghost"
-                      :aria-label="$t('common.actions.deleteComment')"
-                      :title="$t('common.actions.deleteComment')"
-                    />
-                  </div>
-                  <div v-if="reply.tags.length" class="flex flex-wrap gap-1 mt-2">
-                    <UBadge v-for="tag in reply.tags" :key="tag" color="primary" variant="soft">
-                      {{ tag }}
-                    </UBadge>
-                  </div>
-                </UCard>
-              </div>
-            </UCard>
-          </div>
-        </div>
-        <div v-if="hasMore[activeTab] && !pending" class="mt-8 text-center">
-          <UButton color="primary" variant="solid" :loading="pending" :disabled="pending" @click="loadMore">
-            {{ $t('common.pagination.next') }}
-          </UButton>
-        </div>
-        <div v-if="pending" class="py-4 text-center text-sm text-muted">
-          {{ $t('common.loading') }}
-        </div>
-        <div
-          v-if="!hasMore[activeTab] && (filteredArticles.length || filteredComments.length)"
-          class="py-4 text-center text-sm text-muted"
-        >
-          {{ $t('common.noResults') }}
-        </div>
-      </template>
     </div>
+
+    <div v-if="availableTags.length" class="flex flex-wrap gap-1.5">
+      <UButton
+        v-for="tag in availableTags"
+        :key="tag"
+        type="button"
+        class="rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+        :class="
+          selectedTags.includes(tag)
+            ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+            : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
+        "
+        :aria-pressed="selectedTags.includes(tag)"
+        @click="toggleTag(tag)"
+      >
+        {{ tag }}
+      </UButton>
+    </div>
+
+    <div v-if="pending && !items.length" class="space-y-3">
+      <div v-for="i in 3" :key="i" class="h-28 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
+    </div>
+
+    <div
+      v-else-if="error"
+      class="rounded-xl border border-red-200 bg-red-50 p-5 text-center dark:border-red-900/60 dark:bg-red-900/20"
+    >
+      <p class="text-sm font-medium text-red-600 dark:text-red-400">{{ error?.message || $t('common.error') }}</p>
+    </div>
+
+    <template v-else>
+      <div v-if="!items.length" class="py-12 text-center">
+        <NuxtImg src="/topik_empty_rm.png" alt="" class="mx-auto size-16" format="webp" quality="80" loading="lazy" />
+        <p class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">{{ $t('common.noResults') }}</p>
+        <NuxtLink
+          :to="localePath({ name: 'index' })"
+          class="mt-1 inline-block text-sm font-medium text-blue-700 hover:underline dark:text-blue-400"
+        >
+          {{ activeTab === 'likedArticles' ? $t('articles.explore') : $t('articles.comments.commentsAction') }}
+        </NuxtLink>
+      </div>
+
+      <div
+        v-else-if="activeTab === 'likedArticles'"
+        :class="isGrid ? 'grid gap-4 grid-cols-1 sm:grid-cols-2' : 'space-y-3'"
+      >
+        <UserActivityArticle
+          v-for="article in filteredArticles"
+          :key="article.id"
+          :article="article"
+          :grid="isGrid"
+          @unlike="unlikeArticle"
+          @share="shareArticle"
+        />
+      </div>
+
+      <div v-else class="space-y-3">
+        <UserActivityComment
+          v-for="comment in filteredComments"
+          :key="comment.id"
+          :comment="comment"
+          @delete="confirmDelete"
+        >
+          <template #replies>
+            <UserActivityComment
+              v-for="reply in sortReplies(comment.replies ?? [])"
+              :key="reply.id"
+              :comment="reply"
+              nested
+              @delete="confirmDelete"
+            />
+          </template>
+        </UserActivityComment>
+      </div>
+
+      <div class="text-center">
+        <UButton
+          v-if="hasMore[activeTab]"
+          :loading="pending"
+          :disabled="pending"
+          color="neutral"
+          variant="soft"
+          @click="loadMore"
+        >
+          {{ $t('common.pagination.next') }}
+        </UButton>
+        <p v-else-if="items.length" class="text-sm text-neutral-400 dark:text-neutral-500">
+          {{ $t('common.pagination.end') }}
+        </p>
+      </div>
+    </template>
+
+    <AppConfirmDialog ref="deleteDialog" />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ArticleCardData } from '~~/shared/types/article'
-import type { Article as _Article, Comment as _Comment } from '@prisma/client'
+import { compareBySort, matchesFilters } from '~/utils/activityFilters'
 
-import { formatDate } from '~~/shared/utils'
+import type { ActivityArticle } from './ActivityArticle.vue'
+import type { ActivityComment } from './ActivityComment.vue'
 
-type Article = Pick<_Article, 'id' | 'slug' | 'title' | 'content' | 'excerpt' | 'imageUrl' | 'views'> & {
-  authorUsername: string
-  authorPfp?: string | null
-  tags: string[]
-  likesCount: number
-  createdAt: string | null
-}
-
-type Comment = Pick<_Comment, 'id' | 'content' | 'userId' | 'parentId'> & {
-  articleSlug: string
-  articleTitle: string
-  authorUsername: string
-  authorPfp?: string | null
-  tags: string[]
-  likesCount: number
-  dislikesCount: number
-  replies?: Comment[]
-  createdAt: string
-  deletedAt?: string | null
-}
-
-const toArticleCard = (article: Article): ArticleCardData => ({
-  id: article.id,
-  slug: article.slug,
-  title: article.title,
-  imageUrl: article.imageUrl,
-  excerpt: article.excerpt,
-  content: article.content,
-  createdAt: article.createdAt || new Date(0).toISOString(),
-  views: article.views,
-  likes: article.likesCount,
-  user: { username: article.authorUsername, avatarUrl: article.authorPfp },
-  tags: article.tags.map((name) => ({ name })),
-})
-
-const props = defineProps<{ activeTab: 'likedArticles' | 'comments' }>()
+const { activeTab } = defineProps<{ activeTab: 'likedArticles' | 'comments' }>()
 
 defineEmits<{ (e: 'update:activeTab', value: 'likedArticles' | 'comments'): void }>()
 
 const localePath = useLocalePath()
-const toast = useToast()
-const confirm = useConfirm()
-const { data: session } = useAuth()
+const toast = useAppToast()
+const { copy } = useClipboard({ legacy: true })
+const deleteDialog = useTemplateRef<{ ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'> }>(
+  'deleteDialog',
+)
 
 const tabs = [
-  { id: 'likedArticles', label: 'articles.activity.tabs.likedArticles', icon: 'i-mdi-heart-outline' },
-  { id: 'comments', label: 'articles.activity.tabs.comments', icon: 'i-mdi-comment-outline' },
+  { id: 'likedArticles', label: 'articles.activity.tabs.likedArticles', icon: 'mdi:heart-outline' },
+  { id: 'comments', label: 'articles.activity.tabs.comments', icon: 'mdi:comment-outline' },
 ] as const
 
 const sortOption = shallowRef('createdAt:desc')
-const sortComment = shallowRef('createdAt:desc')
 const isGrid = shallowRef(true)
 const searchQuery = shallowRef('')
 const selectedTags = ref<string[]>([])
 const page = shallowRef(1)
-const limit = 2
+const limit = 10
 const hasMore = shallowRef({ likedArticles: true, comments: true })
-const allArticles = ref<Article[]>([])
-const allComments = ref<Comment[]>([])
+const allArticles = ref<ActivityArticle[]>([])
+const allComments = ref<ActivityComment[]>([])
 
-const sortItems = [
-  { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'i-mdi-clock-outline' },
-  { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'i-mdi-clock-time-twelve-outline' },
-  { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'i-mdi-heart' },
-  { label: $t('common.sortOptions.mostViews'), value: 'views:desc', icon: 'i-mdi-eye-outline' },
+const allSortItems = [
+  { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'mdi:clock-outline' },
+  { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'mdi:clock-time-twelve-outline' },
+  { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'mdi:heart' },
+  { label: $t('common.sortOptions.mostViews'), value: 'views:desc', icon: 'mdi:eye-outline' },
 ]
+// Comments have no view count to sort by.
+const sortItems = computed(() =>
+  activeTab === 'likedArticles' ? allSortItems : allSortItems.filter((i) => i.value !== 'views:desc'),
+)
 
 const { data, pending, error, refresh } = await useFetch('/api/users/activity', {
-  query: {
-    page,
-    limit,
-    sort: computed(() => (props.activeTab === 'likedArticles' ? sortOption.value : sortComment.value)),
-  },
+  query: { page, limit, sort: sortOption },
   default: () => ({
-    likedArticles: [] as Article[],
-    comments: [] as Comment[],
+    likedArticles: [] as ActivityArticle[],
+    comments: [] as ActivityComment[],
     hasMore: { likedArticles: true, comments: true },
   }),
   watch: false,
@@ -332,152 +193,105 @@ watch(
   data,
   (v) => {
     if (!v) return
-    const existingArticleIds = new Set(allArticles.value.map((a) => a.id))
-    const existingCommentIds = new Set(allComments.value.map((c) => c.id))
-    allArticles.value = [...allArticles.value, ...(v.likedArticles || []).filter((a) => !existingArticleIds.has(a.id))]
-    allComments.value = [...allComments.value, ...(v.comments || []).filter((c) => !existingCommentIds.has(c.id))]
+    const knownArticles = new Set(allArticles.value.map((a) => a.id))
+    const knownComments = new Set(allComments.value.map((c) => c.id))
+    allArticles.value = [...allArticles.value, ...(v.likedArticles || []).filter((a) => !knownArticles.has(a.id))]
+    allComments.value = [...allComments.value, ...(v.comments || []).filter((c) => !knownComments.has(c.id))]
     hasMore.value = v.hasMore || { likedArticles: true, comments: true }
   },
   { immediate: true },
 )
 
-watch([sortOption, sortComment, () => props.activeTab, searchQuery, selectedTags], () => {
+// `activeTab` is a prop — it needs a getter here, otherwise the tab switch never refetches.
+watch([sortOption, () => activeTab], () => {
   page.value = 1
   allArticles.value = []
   allComments.value = []
   hasMore.value = { likedArticles: true, comments: true }
+  // A sort the current tab does not offer would be sent to the API verbatim.
+  if (activeTab === 'comments' && sortOption.value === 'views:desc') sortOption.value = 'createdAt:desc'
   refresh()
 })
 
 const availableTags = computed(() => {
   const tags = new Set<string>()
-  allArticles.value.forEach((a) => a.tags.forEach((t) => tags.add(t)))
-  allComments.value.forEach((c) => {
-    c.tags.forEach((t) => tags.add(t))
-    c.replies?.forEach((r) => r.tags.forEach((t) => tags.add(t)))
-  })
+  if (activeTab === 'likedArticles') {
+    allArticles.value.forEach((a) => a.tags.forEach((t) => tags.add(t)))
+  } else {
+    allComments.value.forEach((c) => {
+      c.tags.forEach((t) => tags.add(t))
+      c.replies?.forEach((r) => r.tags.forEach((t) => tags.add(t)))
+    })
+  }
   return [...tags]
 })
 
-const toggleTag = (tag: string) => {
-  if (selectedTags.value.includes(tag)) {
-    selectedTags.value = selectedTags.value.filter((t) => t !== tag)
-  } else {
-    selectedTags.value.push(tag)
-  }
+function toggleTag(tag: string) {
+  selectedTags.value = selectedTags.value.includes(tag)
+    ? selectedTags.value.filter((t) => t !== tag)
+    : [...selectedTags.value, tag]
 }
 
-const filteredArticles = computed(() => {
-  const [field, order] = sortOption.value.split(':')
-  return [...allArticles.value]
-    .filter((article) => {
-      const matchesSearch = article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-      const matchesTags = selectedTags.value.length
-        ? selectedTags.value.every((tag) => article.tags.includes(tag))
-        : true
-      return matchesSearch && matchesTags
-    })
-    .sort((a, b) => {
-      let av: number, bv: number
-      if (field === 'createdAt') {
-        av = new Date(a.createdAt || 0).getTime()
-        bv = new Date(b.createdAt || 0).getTime()
-      } else if (field === 'likes') {
-        av = a.likesCount || 0
-        bv = b.likesCount || 0
-      } else {
-        av = a.views || 0
-        bv = b.views || 0
-      }
-      return order === 'asc' ? av - bv : bv - av
-    })
-})
+const keep = (text: string, tags: string[]) => matchesFilters(text, tags, searchQuery.value, selectedTags.value)
 
-const sortReplies = (replies: Comment[]) => {
-  const [field, order] = sortComment.value.split(':')
-  return [...(replies || [])]
-    .filter((reply) => {
-      const matchesSearch = reply.content.toLowerCase().includes(searchQuery.value.toLowerCase())
-      const matchesTags = selectedTags.value.length ? selectedTags.value.every((tag) => reply.tags.includes(tag)) : true
-      return matchesSearch && matchesTags
-    })
-    .sort((a, b) => {
-      const av = field === 'createdAt' ? new Date(a.createdAt).getTime() : a.likesCount || 0
-      const bv = field === 'createdAt' ? new Date(b.createdAt).getTime() : b.likesCount || 0
-      return order === 'asc' ? av - bv : bv - av
-    })
+const filteredArticles = computed(() =>
+  allArticles.value.filter((a) => keep(a.title, a.tags)).sort(compareBySort(sortOption.value)),
+)
+
+const filteredComments = computed(() =>
+  allComments.value.filter((c) => !c.parentId && keep(c.content, c.tags)).sort(compareBySort(sortOption.value)),
+)
+
+function sortReplies(replies: ActivityComment[]) {
+  return replies.filter((r) => keep(r.content, r.tags)).sort(compareBySort(sortOption.value))
 }
 
-const filteredComments = computed(() => {
-  const [field, order] = sortComment.value.split(':')
-  return [...allComments.value]
-    .filter((comment) => {
-      const matchesSearch = comment.content.toLowerCase().includes(searchQuery.value.toLowerCase())
-      const matchesTags = selectedTags.value.length
-        ? selectedTags.value.every((tag) => comment.tags.includes(tag))
-        : true
-      return matchesSearch && matchesTags && !comment.parentId
-    })
-    .sort((a, b) => {
-      const av = field === 'createdAt' ? new Date(a.createdAt).getTime() : a.likesCount || 0
-      const bv = field === 'createdAt' ? new Date(b.createdAt).getTime() : b.likesCount || 0
-      return order === 'asc' ? av - bv : bv - av
-    })
-})
+const items = computed(() => (activeTab === 'likedArticles' ? filteredArticles.value : filteredComments.value))
 
-const unlikeArticle = async (articleId: string) => {
+async function unlikeArticle(articleId: string) {
   try {
     await $fetch(`/api/articles/${articleId}/reaction`, { method: 'POST' })
     allArticles.value = allArticles.value.filter((a) => a.id !== articleId)
     await refresh()
-    toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
+    toast.success({ message: $t('common.messages.successGeneral') })
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || e.message || $t('common.messages.operationFailed') })
+    toast.error({ message: e.data?.message || e.message || $t('common.messages.operationFailed') })
   }
 }
 
-const shareArticle = (article: Article) => {
+async function shareArticle(article: ActivityArticle) {
   const url = `${window.location.origin}${localePath({ name: 'clanky-slug', params: { slug: article.slug } })}`
-  navigator.clipboard.writeText(url)
-  toast.add({ color: 'success', title: $t('common.actions.copySuccess') })
+  await copy(url)
+  toast.success({ message: $t('common.actions.copySuccess') })
 }
 
-const handleDelete = async (commentId: string) => {
-  if (
-    !(await confirm({
-      title: $t('common.messages.deleteConfirmTitle'),
-      message: $t('common.messages.deleteConfirmText'),
-      confirmText: $t('common.actions.delete'),
-      cancelText: $t('common.messages.deleteCancel'),
-      variant: 'danger',
-    }))
-  )
-    return
+async function confirmDelete(commentId: string) {
+  const answer = await deleteDialog.value?.ask({
+    title: $t('common.messages.deleteConfirmTitle'),
+    message: $t('common.messages.deleteConfirmText'),
+    icon: 'mdi:delete-outline',
+    confirmText: $t('common.actions.delete'),
+    cancelText: $t('common.actions.cancel'),
+    variant: 'danger',
+  })
+  if (answer !== 'ok') return
+
   try {
     await $fetch(`/api/comments/${commentId}`, { method: 'DELETE', body: { reason: '' } })
-    const updateComments = (comments: Comment[]): Comment[] => {
-      return comments
-        .map((c) => {
-          if (c.id === commentId) {
-            return { ...c, deletedAt: new Date().toISOString() }
-          }
-          if (c.replies?.length) {
-            return { ...c, replies: updateComments(c.replies) }
-          }
-          return c
-        })
-        .filter((c) => !c.deletedAt)
-    }
-    allComments.value = updateComments(allComments.value)
+    const prune = (comments: ActivityComment[]): ActivityComment[] =>
+      comments
+        .filter((c) => c.id !== commentId)
+        .map((c) => (c.replies?.length ? { ...c, replies: prune(c.replies) } : c))
+    allComments.value = prune(allComments.value)
     await refresh()
-    toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
+    toast.success({ message: $t('common.messages.deleteSuccess') })
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || e.message || $t('common.messages.operationFailed') })
+    toast.error({ message: e.data?.message || e.message || $t('common.messages.operationFailed') })
   }
 }
 
-const loadMore = async () => {
-  if (!hasMore.value[props.activeTab] || pending.value) return
+async function loadMore() {
+  if (!hasMore.value[activeTab] || pending.value) return
   page.value++
   await refresh()
 }

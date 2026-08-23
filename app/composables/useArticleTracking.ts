@@ -1,4 +1,9 @@
 export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
+  const lastViewedAt = useSessionStorage<number | null>(
+    computed(() => `viewed-${articleIdRef.value ?? 'pending'}`),
+    null,
+  )
+
   let fpPromise: Promise<any> | undefined
 
   const getVisitorId = async () => {
@@ -12,15 +17,13 @@ export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
 
   const trackView = () => {
     if (!articleIdRef.value || !import.meta.client) return
-    const key = `viewed-${articleIdRef.value}`
-    const last = sessionStorage.getItem(key)
     const now = Date.now()
 
-    if (last && now - Number(last) < 1000 * 60 * 30) return
+    if (lastViewedAt.value && now - lastViewedAt.value < 1000 * 60 * 30) return
 
     try {
       $fetch(`/api/articles/${articleIdRef.value}/view`, { method: 'POST' })
-      sessionStorage.setItem(key, now.toString())
+      lastViewedAt.value = now
     } catch {
       // Ignored
     }

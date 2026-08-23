@@ -6,6 +6,8 @@ declare global {
 
 export interface ClientSiteStatus {
   id: string
+  domain: string
+  domainVerified: boolean
   plan: string
   tokenLimit: number | null
   tokenRemaining: number | null
@@ -14,6 +16,7 @@ export interface ClientSiteStatus {
   firstPaidAt: string | null
   focus: string | null
   audience: string | null
+  hasActiveSubscription: boolean
 }
 
 export const useClientSite = async () => {
@@ -28,6 +31,10 @@ export const useClientSite = async () => {
     return null
   }
 
+  // Resolved before the await: `admin` middleware calls this, and a composable that reaches for
+  // the Nuxt instance past an await point there throws on SSR (`experimental.asyncContext` is off).
+  const gtag = import.meta.client ? useGtag() : null
+
   const { data } = await useAsyncData(
     `clientsite-${hostname}`,
     () => $fetch<PublicClientSite>(`/api/clients/slug/${hostname}` as string),
@@ -38,19 +45,16 @@ export const useClientSite = async () => {
 
   const gtagId = data.value?.gtagId
 
-  if (import.meta.client && data.value?.plan !== 'BASIC' && gtagId && data.value?.allowGtag && !globalThis.gtagInit) {
-    const { initialize } = useGtag()
-    initialize(gtagId)
+  if (gtag && data.value?.plan !== 'BASIC' && gtagId && data.value?.allowGtag && !globalThis.gtagInit) {
+    gtag.initialize(gtagId)
     globalThis.gtagInit = true
   }
 
   return data.value
 }
 
-export const useClientSiteStatus = async () => {
-  const { data } = await useAsyncData('clientsite-status', () =>
-    $fetch<ClientSiteStatus | null>('/api/clients/status').catch(() => null),
-  )
+export const useClientSiteStatus = () => {
+  const requestFetch = useRequestFetch()
 
-  return data.value
+  return useAsyncData('clientsite-status', () => requestFetch<ClientSiteStatus | null>('/api/clients/status'))
 }

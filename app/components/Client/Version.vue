@@ -120,7 +120,7 @@ const { data: site } = await useFetch(() => `/api/clients/${session.value?.user.
   default: () => null,
   immediate: session.value?.user.role === 'admin',
 })
-const status = await useClientSiteStatus()
+const { data: status } = await useClientSiteStatus()
 
 const page = shallowRef(1)
 const show = shallowRef(false)
@@ -161,8 +161,12 @@ const loadMore = async () => {
   await refresh()
 }
 
+const tokenRemaining = computed(() => status.value?.tokenRemaining ?? 0)
+const tokenLimit = computed(() => status.value?.tokenLimit ?? 0)
+const hasTokenPlan = computed(() => tokenLimit.value > 0)
+
 const remainingPercent = computed(() =>
-  Math.max(0, ((status?.tokenRemaining ?? 0) / (status?.tokenLimit ?? 20000)) * 100),
+  hasTokenPlan.value ? Math.min(100, Math.max(0, (tokenRemaining.value / tokenLimit.value) * 100)) : 0,
 )
 const isLowTokens = computed(() => remainingPercent.value <= 20)
 const planBadgeColor = computed(() =>

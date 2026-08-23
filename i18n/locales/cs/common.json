@@ -1,10 +1,63 @@
 {
   "common": {
+    "searchConsole": {
+      "title": "Google Search Console",
+      "premiumOnly": "Analýza výkonu a AI doporučení ze Search Console jsou dostupné v plánu PREMIUM.",
+      "connectTitle": "Propojte skutečný výkon s obsahovou strategií",
+      "connectDescription": "Topiqu získá pouze přístup ke čtení a použije data pro metriky článků a návrhy optimalizací.",
+      "connect": "Připojit Google účet",
+      "disconnect": "Odpojit",
+      "noProperty": "Vyberte Search Console property",
+      "chooseProperty": "Který web patří k tomuto projektu?",
+      "choosePlaceholder": "Vyberte property",
+      "lastSync": "Poslední synchronizace:"
+    },
+    "integrationsCatalog": {
+      "title": "Integrace",
+      "description": "Propojte Topiqu se službami pro měření, distribuci a publikování.",
+      "open": "Otevřít nastavení",
+      "active": "Aktivní",
+      "optional": "Volitelné",
+      "automation": "Automatizace",
+      "benefits": "V čem vám pomůže",
+      "setup": "Jak ji zapnout",
+      "gscDescription": "Proměňte výkon ve vyhledávání na konkrétní obsahové příležitosti.",
+      "gscBenefitOne": "Uvidíte dotazy, kliknutí, CTR a průměrné pozice článků.",
+      "gscBenefitTwo": "Topiqu odhalí obsah těsně pod nejlepšími pozicemi a nízké CTR.",
+      "gscStepOne": "Připojte Google účet s přístupem k Search Console.",
+      "gscStepTwo": "Vyberte property odpovídající tomuto webu.",
+      "gscStepThree": "Topiqu začne denně synchronizovat finalizovaná data.",
+      "analyticsDescription": "Přidejte vlastní GA4 měření na web publikovaný přes Topiqu.",
+      "analyticsBenefitOne": "Návštěvnost zůstává ve vaší vlastní Google Analytics property.",
+      "analyticsBenefitTwo": "Měření zapnete bez zásahu do šablony nebo zdrojového kódu.",
+      "analyticsStepOne": "V Google Analytics otevřete Administrace → Datové streamy.",
+      "analyticsStepTwo": "Zkopírujte Measurement ID ve formátu G-XXXXXXXXXX.",
+      "analyticsStepThree": "Zapněte měření, vložte ID a uložte změny.",
+      "enableAnalytics": "Zapnout Google Analytics",
+      "linkedinDescription": "Publikujte schválený obsah na svůj osobní LinkedIn profil.",
+      "linkedinBenefitOne": "Schválené příspěvky míří přímo na váš osobní profil.",
+      "linkedinBenefitTwo": "Režim Human in the Loop zachová kontrolu před publikováním.",
+      "linkedinStepOne": "Připojte svůj osobní LinkedIn profil.",
+      "linkedinStepTwo": "Povolte Topiqu požadovaný přístup na LinkedIn.",
+      "linkedinStepThree": "Nastavte režim publikování a pravidla značky.",
+      "developerTitle": "API a WordPress",
+      "developerDescription": "Nástroje pro vlastní vývoj a publikační workflow mimo katalog externích služeb.",
+      "apiBenefitOne": "Napojíte vlastní aplikaci, automatizaci nebo redakční workflow.",
+      "apiBenefitTwo": "Jeden zabezpečený klíč lze kdykoliv nově vygenerovat.",
+      "wordpressTitle": "WordPress plugin",
+      "wordpressDescription": "Topiqu Sync importuje publikované články jako nativní WordPress příspěvky.",
+      "wordpressBenefitOne": "Publikovaný obsah se přenese bez ručního kopírování.",
+      "wordpressBenefitTwo": "Články zůstávají nativními WordPress příspěvky ve vašem webu.",
+      "wordpressStepOne": "Nainstalujte a aktivujte plugin Topiqu Sync ve WordPressu.",
+      "wordpressStepTwo": "Vložte URL Topiqu a API klíč z této stránky.",
+      "wordpressStepThree": "Otestujte spojení a nastavte interval synchronizace."
+    },
     "loading": "Načítání...",
     "error": "Chyba při načítání dat",
     "noResults": "Žádné výsledky",
     "noItems": "Žádné položky",
     "readMore": "Číst více",
+    "readMoreAbout": "o článku {title}",
     "close": "Zavřít",
     "closeDialog": "Zavřít dialog",
     "warning": "Upozornění",
@@ -38,6 +91,7 @@
       "sentimentDesc": "Podrobná analýza nálady a zpětné vazby čtenářů",
       "articleCrons": "Plánované generování článků",
       "articleCronsDesc": "Automatické vydávání článků pomocí AI na základě vašich preferencí",
+      "includedInPlan": "Součástí tvého tarifu",
       "disableAiTitle": "Vypnout AI?",
       "disableAiMessage": "Vypnutím AI se vypne i analýza sentimentu a plánované generování článků, které AI vyžadují."
     },
@@ -60,6 +114,7 @@
       "unauthorized": "Přístup zamítnut.",
       "invalidCredentials": "Neplatný e-mail nebo heslo.",
       "invalidRequest": "Neplatný požadavek.",
+      "tooManyRequests": "Příliš mnoho požadavků. Zkuste to prosím později.",
       "missingBlog": "Chybí název blogu.",
       "blogNotFound": "Blog nenalezen.",
       "tagNotFound": "Tag nenalezen.",
@@ -72,6 +127,11 @@
       "authorNotFound": "Autor nenalezen",
       "userNotFound": "Uživatel nenalezen",
       "adminNotFound": "Admin nenalezen",
+      "notFound": "Nenalezeno.",
+      "clientNotFound": "Klientský web nenalezen",
+      "clientDeactivated": "Tento klientský web je deaktivovaný",
+      "invalidFeature": "Neplatná funkce",
+      "commentIdRequired": "ID komentáře je povinné",
       "articleIdRequired": "ID článku je povinné",
       "articleEditForbidden": "Tento článek nemůžete upravovat",
       "notificationIdRequired": "ID notifikace je povinné",
@@ -99,7 +159,9 @@
       "roleChangeForbidden": "Změna role není povolena",
       "featureNotInPlan": "Tato funkce není dostupná ve vašem tarifu",
       "aiRequired": "Nejdřív zapněte AI",
-      "followNotFound": "Tento follow vztah neexistuje"
+      "followNotFound": "Tento follow vztah neexistuje",
+      "invalidCredentials": "Nesprávný e-mail nebo heslo.",
+      "emailNotVerified": "Nejdřív potvrď svůj e-mail. Poslali jsme ti nový ověřovací kód."
     },
     "notifications": {
       "userLikedArticle": "{0} lajkl váš článek.",
@@ -124,12 +186,15 @@
       "edit": "Upravit",
       "tags": "Štítky",
       "home": "Domů",
+      "notifications": "Oznámení",
+      "toggleTheme": "Přepnout barevný motiv",
       "continue": "Pokračovat",
       "send": "Odeslat",
       "cancel": "Zrušit",
       "enable": "Zapnout",
       "disable": "Vypnout",
       "showDetails": "Zobrazit detaily",
+      "showLess": "Zobrazit méně",
       "hideDetails": "Skrýt detaily",
       "delete": "Smazat",
       "revoke": "Odebrat",
@@ -137,7 +202,9 @@
       "clickToUpload": "Klikněte pro nahrání",
       "dropHere": "Pusťte soubor zde",
       "upload": "Vybrat",
+      "save": "Uložit",
       "saveChanges": "Uložit změny",
+      "reset": "Vrátit zpět",
       "backToList": "Zpět na seznam",
       "backToTop": "Zpět nahoru",
       "back": "Zpět",
@@ -185,6 +252,24 @@
       },
       "uploadSuccess": "Avatar nahrán",
       "uploadError": "Nahrávání selhalo",
+      "chooseImage": "Vybrat fotografii",
+      "requirements": "JPG, PNG, WebP nebo GIF, maximálně 10 MB",
+      "rotateLeft": "Otočit vlevo",
+      "rotateRight": "Otočit vpravo",
+      "dragHint": "Tažením nastavte výřez",
+      "save": "Uložit avatar",
+      "retry": "Zkusit znovu",
+      "uploading": "Nahrávám…",
+      "saving": "Ukládám…",
+      "tooLarge": "Obrázek je příliš velký. Maximum je 10 MB.",
+      "invalidFile": "Vyberte platný obrázek ve formátu JPG, PNG, WebP nebo GIF.",
+      "processingError": "Obrázek se nepodařilo zpracovat.",
+      "networkError": "Nahrávání přerušilo připojení. Zkuste to znovu.",
+      "remove": "Odstranit avatar",
+      "removeTitle": "Odstranit avatar?",
+      "removeConfirm": "Místo fotografie se bude zobrazovat výchozí avatar.",
+      "removeSuccess": "Avatar byl odstraněn",
+      "removeError": "Avatar se nepodařilo odstranit",
       "ai": {
         "label": "AI Avatar"
       }
@@ -196,7 +281,8 @@
     "pagination": {
       "previous": "Předchozí",
       "next": "Další",
-      "pageInfo": "Strana {0} z {1}"
+      "pageInfo": "Strana {0} z {1}",
+      "end": "To je vše"
     },
     "user": {
       "joined": "Přidal se: {0}",
@@ -339,7 +425,8 @@
         "content": "Obsah",
         "integrations": "Integrace",
         "ai": "AI",
-        "billing": "Fakturace"
+        "billing": "Fakturace",
+        "members": "Členové"
       },
       "currentPlan": "Aktuální tarif",
       "nextPayment": "Další platba",
@@ -381,6 +468,25 @@
         "tokenBalance": "Zůstatek tokenů",
         "buyTokens": "Dokoupit tokeny",
         "manage": "Spravovat předplatné a faktury",
+        "openPortal": "Spravovat fakturaci",
+        "invoicesTitle": "Faktury a platby",
+        "invoicesDescription": "Posledních 12 Stripe faktur. Kompletní historii a platební údaje najdete ve fakturačním portálu.",
+        "invoicesLoading": "Načítání faktur",
+        "invoicesFailed": "Faktury se nepodařilo načíst.",
+        "invoicesEmpty": "Zatím zde nejsou žádné faktury.",
+        "invoice": "Faktura",
+        "viewInvoice": "Otevřít",
+        "downloadPdf": "Stáhnout PDF",
+        "downloadInvoice": "Stáhnout fakturu {number} jako PDF",
+        "retry": "Zkusit znovu",
+        "invoiceStatus": {
+          "draft": "Koncept",
+          "open": "K úhradě",
+          "paid": "Zaplaceno",
+          "uncollectible": "Nedobytná",
+          "void": "Stornováno",
+          "unknown": "Neznámý stav"
+        },
         "upgrade": "Přejít na {plan}",
         "actionFailed": "Platbu se nepodařilo zahájit. Zkuste to prosím znovu."
       },
@@ -398,7 +504,12 @@
       "annually": "rok",
       "companyLogo": {
         "label": "Logo blogu",
-        "description": "PNG, JPEG, WebP nebo SVG, min. 512x512px, max. 2 MB"
+        "description": "PNG, JPEG nebo WebP, max. 10 MB. Logo se uloží na průhledném širokém plátně vhodném pro hlavičku i domovskou stránku.",
+        "edit": "Nahradit a upravit logo",
+        "remove": "Odstranit logo",
+        "editorTitle": "Umístění loga",
+        "dragHint": "Tažením logo umístěte, posuvníkem jej přibližte nebo oddalte. Šachovnice představuje průhledné pozadí.",
+        "save": "Použít logo"
       },
       "branding": {
         "identity": "Identita",
@@ -417,17 +528,23 @@
         "label": "Popis blogu",
         "placeholder": "Popis blogu (např. vaše mise nebo slogan)"
       },
+      "content": {
+        "title": "Obsahový brief",
+        "description": "Z těchto údajů vychází AI u každého generovaného článku."
+      },
       "focus": {
         "label": "Zaměření",
-        "placeholder": "Zaměření (např. objektivní herní žurnalistika, důraz na Unreal Engine)"
+        "help": "Hlavní téma a úhel pohledu. Určuje, o čem se píše a s jakým záměrem.",
+        "placeholder": "Např. objektivní herní žurnalistika s důrazem na Unreal Engine"
       },
       "audience": {
         "label": "Cílová skupina",
-        "placeholder": "Cílová skupina (např. mladí dospělí, profesionálové)"
+        "help": "Pro koho píšete. Ovlivňuje styl, slovník i technickou úroveň.",
+        "placeholder": "Např. mladí dospělí 18–25 let, vývojáři her"
       },
       "language": {
         "label": "Jazyk",
-        "placeholder": "Vyberte jazyk"
+        "help": "Jazyk, ve kterém vznikají nové články."
       },
       "theme": {
         "label": "Vzhled",
@@ -435,7 +552,10 @@
       },
       "keywords": {
         "label": "Klíčová slova",
-        "placeholder": "Klíčová slova (oddělená čárkou)",
+        "help": "Témata, která se mají ve výstupech objevovat častěji. Používají se i pro SEO.",
+        "placeholder": "Např. Unreal Engine, AI ve hrách",
+        "hint": "Přidejte klávesou Enter nebo čárkou.",
+        "remove": "Odebrat {0}",
         "count": "Počet slov: {0}"
       },
       "autoRelease": {
@@ -444,6 +564,10 @@
         "warning": "Články budou veřejně publikovány ihned po vygenerování.",
         "confirmTitle": "Povolit automatické publikování?",
         "confirmMessage": "Jste si jistí? AI může občas generovat nepřesnosti. Důrazně doporučujeme články před vydáním kontrolovat."
+      },
+      "aiDisclosure": {
+        "title": "Označovat obsah vytvořený s AI",
+        "desc": "Veřejně zobrazí míru zapojení AI u článku a označí obrázky vygenerované AI."
       },
       "translation": {
         "title": "Automatické překlady",
@@ -499,6 +623,40 @@
       "socials": {
         "label": "Sociální sítě",
         "noSocials": "Zatím nebyly přidány žádné sociální sítě."
+      },
+      "linkedin": {
+        "title": "Automatizace LinkedInu",
+        "description": "Nastavte automatické publikování příspěvků na LinkedIn.",
+        "connect": "Připojit osobní profil",
+        "connected": "Připojeno ({0})",
+        "typePersonal": "osobní profil",
+        "typePages": "firemní stránka",
+        "reconnect": "Připojit znovu",
+        "mode": {
+          "label": "Režim publikování",
+          "hitl": "Human in the Loop (HitL)",
+          "fullAuto": "Plná automatizace (hlídaná pravidly)",
+          "help": "HitL vyžaduje ruční schválení, než vygenerovaný příspěvek vyjde."
+        },
+        "brand": {
+          "label": "Pravidla značky",
+          "tone": {
+            "label": "Tón komunikace",
+            "placeholder": "Např. profesionální a podnětný"
+          },
+          "audience": {
+            "label": "Cílová skupina",
+            "placeholder": "Např. softwaroví inženýři, CTO"
+          },
+          "doList": {
+            "label": "Doporučená témata (oddělená čárkou)",
+            "placeholder": "Např. React, inovace, cloud"
+          },
+          "dontList": {
+            "label": "Zakázaná slova (oddělená čárkou)",
+            "placeholder": "Např. levný, garantujeme, spam"
+          }
+        }
       }
     },
     "passwordSuggestions": {
@@ -540,6 +698,44 @@
       "doListPlaceholder": "Například: React, inovace, cloud",
       "dontList": "Zakázaná slova (oddělená čárkou)",
       "dontListPlaceholder": "Například: levný, záruka, spam"
+    },
+    "members": {
+      "title": "Členové",
+      "description": "Správa přístupu a oprávnění k webu.",
+      "invite": "Pozvat člena",
+      "inviteDescription": "Odešlete pozvánku a vyberte oprávnění.",
+      "email": "E-mailová adresa",
+      "send": "Odeslat pozvánku",
+      "search": "Hledat členy",
+      "owner": "Vlastník",
+      "member": "Člen",
+      "you": "Vy",
+      "joined": "Připojení {date}",
+      "permissions": "Oprávnění",
+      "remove": "Odebrat",
+      "noResults": "Žádní členové",
+      "pending": "Čekající pozvánky",
+      "expires": "Vyprší {date}",
+      "resend": "Odeslat znovu",
+      "revoke": "Zrušit",
+      "noPending": "Žádné čekající pozvánky",
+      "inviteFirst": "Pozvat prvního člena",
+      "sent": "Pozvánka odeslána",
+      "removeConfirmTitle": "Odebrat člena?",
+      "removeConfirmMessage": "Člen okamžitě ztratí přístup.",
+      "removeSuccess": "Člen odebrán",
+      "removeFailed": "Člena se nepodařilo odebrat"
+    },
+    "invitation": {
+      "title": "Připojit se k {tenant}",
+      "by": "Pozval vás {inviter}. {followers} sledujících.",
+      "signIn": "Pro pokračování se přihlaste jako {email}.",
+      "decline": "Odmítnout",
+      "accept": "Přijmout pozvánku",
+      "signInAction": "Přihlásit nebo registrovat",
+      "invalid": "Tato pozvánka již není platná.",
+      "accepted": "Pozvánka přijata",
+      "declined": "Pozvánka odmítnuta"
     },
     "tokens": {
       "pack10k": "Balíček 10k tokenů",

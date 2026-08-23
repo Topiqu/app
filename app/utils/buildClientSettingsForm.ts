@@ -46,6 +46,7 @@ export interface ClientSettingsForm {
   autoRelease: boolean
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
+  discloseAiContent: boolean
   allowGtag: boolean
   linkedinMode: 'HitL' | 'FullAuto'
   linkedinBrandProfile: { tone: string; audience: string; doList: string[]; dontList: string[] }
@@ -75,6 +76,7 @@ const emptyForm = (): ClientSettingsForm => ({
   autoRelease: false,
   translationMode: 'OFF',
   translationLanguages: [],
+  discloseAiContent: false,
   allowGtag: false,
   linkedinMode: 'HitL',
   linkedinBrandProfile: { tone: '', audience: '', doList: [], dontList: [] },
@@ -123,6 +125,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     autoRelease: client.autoRelease ?? false,
     translationMode: client.translationMode ?? 'OFF',
     translationLanguages: client.translationLanguages ?? [],
+    discloseAiContent: client.discloseAiContent ?? false,
     allowAds: client.allowAds,
     allowGtag: client.allowGtag ?? false,
     linkedinMode: li?.mode ?? 'HitL',

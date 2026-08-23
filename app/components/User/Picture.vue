@@ -13,7 +13,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   url?: string | null
-  size?: 'mn' | 'sm' | 'md' | 'lg' | 'hg'
+  size?: 'mn' | 'sm' | 'md' | 'lg' | 'hg' | 'xl'
   name?: string | null
 }>()
 

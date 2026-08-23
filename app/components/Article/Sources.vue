@@ -57,6 +57,8 @@
 <script setup lang="ts">
 const sources = defineModel<string[]>({ required: true })
 
+defineProps<{ compact?: boolean }>()
+
 const extractDomain = (url: string) => {
   try {
     return new URL(url).hostname.replace(/^www\./, '')

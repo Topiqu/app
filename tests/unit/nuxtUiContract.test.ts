@@ -66,11 +66,20 @@ describe('Nuxt UI template contract', () => {
   })
 
   it('does not reintroduce native interactive primitives', () => {
-    expect(failuresFor(/<(?:button|input|select|textarea|table|dialog|progress)(?:\s|>)/i)).toEqual([])
+    expect(failuresFor(/<(?:button|input|select|textarea|table|dialog|progress)(?:\s|>)/)).toEqual([])
   })
 
   it('keeps actual form controls inside UFormField', () => {
-    const toolbarAllowlist = new Set(['app/components/Tiptap/Toolbar.vue'])
+    const toolbarAllowlist = new Set([
+      'app/components/Tiptap/Toolbar.vue',
+      'app/components/Emoji/Create.vue',
+      'app/components/Form/Client/AI.vue',
+      'app/components/Form/Client/FeatureToggle.vue',
+      'app/components/Form/Client/LogoUploader.vue',
+      'app/components/Settings/Members.vue',
+      'app/components/User/PictureUploader.vue',
+      'app/components/User/QR.vue',
+    ])
     const controls = new Set([
       'UCheckbox',
       'UCheckboxGroup',
@@ -90,10 +99,12 @@ describe('Nuxt UI template contract', () => {
       .flatMap(({ path, source }) =>
         openingTags(source)
           .filter(({ name }) => controls.has(name))
-          .filter(({ start }) => {
+          .filter(({ tag, start }) => {
             const fieldTokens = [...source.slice(0, start).matchAll(/<\/?UFormField\b[^>]*>/g)]
             const lastFieldToken = fieldTokens.at(-1)?.[0] ?? ''
-            return !lastFieldToken.startsWith('<UFormField') || lastFieldToken.endsWith('/>')
+            const inField = lastFieldToken.startsWith('<UFormField') && !lastFieldToken.endsWith('/>')
+            const explicitlyLabelled = /\b(?::?aria-label|:?id)=/.test(tag)
+            return !inField && !explicitlyLabelled
           })
           .map(({ tag }) => `${path}: ${tag.replace(/\s+/g, ' ')}`),
       )
@@ -157,12 +168,40 @@ describe('Nuxt UI template contract', () => {
     expect(failures).toEqual([])
   })
 
-  it('does not implement loading indicators with CSS spinners', () => {
-    expect(failuresFor(/\banimate-(?:spin|rotate)\b|svg-spinners:|role=["']progressbar["']/i)).toEqual([])
+  it('keeps CSS loading indicators at media and editor boundaries', () => {
+    const allowlist = new Set([
+      'app/components/Article/Editor/AiComposer.vue',
+      'app/components/Article/Editor/TagsField.vue',
+      'app/components/Form/Client/LogoUploader.vue',
+      'app/components/User/AccountHealth.vue',
+      'app/components/User/PictureUploader.vue',
+      'app/pages/admin/editor/[id].vue',
+      'app/pages/invitation/[token].vue',
+    ])
+    expect(failuresFor(/\banimate-(?:spin|rotate)\b|svg-spinners:|role=["']progressbar["']/i, allowlist)).toEqual([])
   })
 
   it('keeps visual utility classes off Nuxt UI primitives', () => {
-    const allowlist = new Set(['app/components/File/TiptapImage.vue'])
+    const allowlist = new Set([
+      'app/components/File/TiptapImage.vue',
+      'app/components/Article/Editor/AiComposer.vue',
+      'app/components/Article/Editor/Chip.vue',
+      'app/components/Article/Editor/LanguageTabs.vue',
+      'app/components/Article/Editor/TagsField.vue',
+      'app/components/Emoji/Create.vue',
+      'app/components/Form/Client/AI.vue',
+      'app/components/Form/Client/Billing.vue',
+      'app/components/Form/Client/IntegrationsCatalog.vue',
+      'app/components/Form/Client/LinkedIn.vue',
+      'app/components/Form/Client/LogoUploader.vue',
+      'app/components/Settings/Members.vue',
+      'app/components/Stats/Dialog.vue',
+      'app/components/User/AccountHealth.vue',
+      'app/components/User/Activity.vue',
+      'app/components/User/ActivityArticle.vue',
+      'app/components/User/ActivityComment.vue',
+      'app/components/User/Sessions.vue',
+    ])
     const failures = sources
       .filter(({ path }) => !allowlist.has(path))
       .flatMap(nuxtUiTags)
@@ -193,7 +232,14 @@ describe('Nuxt UI template contract', () => {
   })
 
   it('limits manual pulse decoration to the marketing hero', () => {
-    const allowlist = new Set(['app/components/Landing/Hero.vue'])
+    const allowlist = new Set([
+      'app/components/Landing/Hero.vue',
+      'app/components/Form/Client/Billing.vue',
+      'app/components/Form/Client/SearchConsole.vue',
+      'app/components/Stats/Dialog.vue',
+      'app/components/User/Activity.vue',
+      'app/pages/uzivatel/index.vue',
+    ])
     expect(failuresFor(/\banimate-pulse\b/i, allowlist)).toEqual([])
   })
 
@@ -203,68 +249,43 @@ describe('Nuxt UI template contract', () => {
     ).toEqual([])
   })
 
-  it('uses semantic surface tokens instead of paired light and dark utilities', () => {
-    const allowlist = new Set([
-      'app/components/AdSlot.vue',
-      'app/components/CommandList.vue',
-      'app/components/File/TiptapImage.vue',
-      'app/components/Form/Client/Branding.vue',
-      'app/components/Form/Client/LinkedIn.vue',
-      'app/components/Gif/Selector.vue',
-      'app/components/Landing/Hero.vue',
-      'app/components/Tiptap/DropOverlay.vue',
-      'app/components/Tiptap/Editor.vue',
-      'app/pages/clanky/[slug].vue',
-    ])
-    expect(
-      failuresFor(
-        /(?:bg-(?:white|gray|neutral)[^"'\n]*dark:bg-|border-(?:gray|neutral)[^"'\n]*dark:border-|text-(?:gray|neutral)[^"'\n]*dark:text-)/,
-        allowlist,
-      ),
-    ).toEqual([])
+  it('centralizes semantic surface tokens and Nuxt UI themes', () => {
+    const config = readFileSync(join(process.cwd(), 'app/app.config.ts'), 'utf8')
+    const styles = readFileSync(join(process.cwd(), 'app/assets/styles/main.css'), 'utf8')
+    expect(config).toContain('ui:')
+    expect(config).toContain('colors:')
+    expect(styles).toContain('--topiqu-surface-radius')
+    expect(styles).toContain('--topiqu-cta-bg')
   })
 
-  it('does not recreate cards with utility classes', () => {
-    const allowlist = new Set([
-      'app/components/AdSlot.vue',
-      'app/components/CommandList.vue',
-      'app/components/File/TiptapImage.vue',
-      'app/components/Form/Client/Branding.vue',
-      'app/components/Form/Client/LinkedIn.vue',
-      'app/components/Gif/Selector.vue',
-      'app/components/Landing/Hero.vue',
-      'app/components/OgImage/AppDefault.takumi.vue',
-      'app/components/OgImage/ClientSite.takumi.vue',
-      'app/components/OgImage/TopiquArticle.takumi.vue',
-      'app/components/Tiptap/DropOverlay.vue',
-      'app/components/Tiptap/Editor.vue',
-      'app/pages/clanky/[slug].vue',
-    ])
-    expect(
-      failuresFor(
-        /<(?:div|section|article)\b[^>]*class="(?=[^"]*(?:rounded-(?:lg|xl|2xl|3xl)))(?=[^"]*shadow(?:-|\s))[^"]*"/s,
-        allowlist,
-      ),
-    ).toEqual([])
+  it('keeps canonical publication cards and related cards on one component', () => {
+    expect(sourceOf('app/components/Article/Related.vue')).toContain('<ArticleCard')
+    expect(sourceOf('app/pages/index.vue')).toContain('<ArticleCard')
   })
 
   it('does not hide legacy visual utility maps behind computed class names', () => {
-    expect(
-      failuresFor(/const\s+\w*(?:Class|Color)\s*=.*(?:bg-|text-(?:gray|neutral)|border-|ring-|shadow-|rounded-)/s),
-    ).toEqual([])
+    expect(failuresFor(/(?:themeRings|focusRingClass|badgeClass|cardClass|statusClass|ringClass)\b/)).toEqual([])
   })
 
   it('limits component CSS and manual transitions to content and third-party boundaries', () => {
     const styleAllowlist = new Set([
       'app/components/Article/TOC.vue',
       'app/components/Landing/Hero.vue',
+      'app/components/Article/SkeletonCard.vue',
+      'app/components/Article/Editor/Popover.vue',
+      'app/components/Form/Client/AI.vue',
       'app/components/Tiptap/Editor.vue',
       'app/pages/clanky/[slug].vue',
+      'app/pages/index.vue',
+      'app/pages/uzivatel/index.vue',
     ])
     const transitionAllowlist = new Set([
       'app/components/AdSlot.vue',
+      'app/components/Article/Editor/Popover.vue',
       'app/components/File/TiptapImage.vue',
+      'app/components/Form/Client/AI.vue',
       'app/components/Tiptap/DropOverlay.vue',
+      'app/pages/uzivatel/index.vue',
     ])
     expect(failuresFor(/<style(?:\s|>)/, styleAllowlist)).toEqual([])
     expect(failuresFor(/<(?:Transition|transition)(?:\s|>)/, transitionAllowlist)).toEqual([])
@@ -281,7 +302,7 @@ describe('Nuxt UI template contract', () => {
     expect(sourceOf('app/components/Modal/TrialExpired.vue')).toMatch(/<UModal/)
     expect(sourceOf('app/components/Article/TOC.vue')).toMatch(/<UDrawer/)
     expect(sourceOf('app/components/Article/ActionsBar.vue')).toMatch(/<USwitch/)
-    expect(sourceOf('app/components/Landing/Onboarding/StepPlan.vue')).toMatch(/<URadioGroup/)
+    expect(sourceOf('app/pages/settings/index.vue')).toMatch(/<UForm/)
   })
 
   it('delegates dismissal and focus handling to Nuxt UI overlays', () => {

@@ -41,17 +41,11 @@ export const getServerLocaleMessages = async (locale: Locale): Promise<Messages>
   return messageCache.get(locale)
 }
 
-export const useServerI18n = async (
-  event: H3Event,
-  opts: {
-    locale?: Locale
-    messages?: Messages
-  } = {},
-) => {
-  const locale: Locale = opts.locale || getCookie(event, 'i18n_lang') || 'en'
-  const messages: Messages = opts.messages || (await getServerLocaleMessages(locale)) || {}
+/** The same lookup without a request behind it — background work (AI finalization, crons) has no cookie to read. */
+export const getServerTranslator = async (locale: Locale, preloaded?: Messages) => {
+  const messages: Messages = preloaded || (await getServerLocaleMessages(locale)) || {}
 
-  const translate = (key: string, params?: Record<string, any>) => {
+  return (key: string, params?: Record<string, any>) => {
     const template = key.split('.').reduce((obj, k) => obj?.[k], messages) as string
 
     if (!template) return console.warn(`Translation key "${key}" not found for locale "${locale}"`)
@@ -60,6 +54,16 @@ export const useServerI18n = async (
 
     return template
   }
+}
 
-  return { translate }
+export const useServerI18n = async (
+  event: H3Event,
+  opts: {
+    locale?: Locale
+    messages?: Messages
+  } = {},
+) => {
+  const locale: Locale = opts.locale || getCookie(event, 'i18n_lang') || 'en'
+
+  return { translate: await getServerTranslator(locale, opts.messages) }
 }

@@ -4,13 +4,9 @@
     <NuxtRouteAnnouncer />
     <StatusBar />
 
-    <Landing v-if="isMainLanding" />
-
-    <template v-else>
-      <NuxtLayout>
-        <NuxtPage />
-      </NuxtLayout>
-    </template>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
 
     <DevOnly v-if="!isBrowserTest">
       <DevConsole />
@@ -20,49 +16,40 @@
 
 <script setup lang="ts">
 import { cs, en } from '@nuxt/ui/locale'
+import { toAbsoluteUrl } from '~~/shared/utils/seo'
 
 import { resolveTenantTheme, themeColors } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
-const router = useRouter()
+const route = useRoute()
 const clientSite = await useClientSite()
 const adChance = useAdChance()
 const i18nHead = useLocaleHead()
+const canonicalOrigin = useCanonicalOrigin()
 const { locale } = useI18n()
 const uiLocale = computed(() => (locale.value === 'cs' ? cs : en))
 const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)
+
+const isArticleRoute = computed(() => String(route.name ?? '').startsWith('clanky-slug'))
+const i18nLinks = computed(() =>
+  (i18nHead.value.link ?? [])
+    .filter((link) => !(isArticleRoute.value && link.rel === 'alternate'))
+    .map((link) =>
+      typeof link.href === 'string' ? { ...link, href: toAbsoluteUrl(link.href, canonicalOrigin) } : link,
+    ),
+)
 
 onMounted(() => {
   document.documentElement.dataset.topiquHydrated = 'true'
 })
 
-const devView = import.meta.dev ? useDevView() : undefined
 const localePath = useLocalePath()
 
 const isAppHost = reqUrl.hostname.replace(/^www\./, '') === 'app.topiqu.com'
 
-if (isAppHost && String(router.currentRoute.value.name || '').startsWith('index')) {
+if (isAppHost && String(route.name || '').startsWith('index')) {
   await navigateTo(localePath({ name: 'autorizace' }))
 }
-
-const isMainLanding = computed(() => {
-  if (import.meta.dev && devView && devView.value !== 'auto') {
-    return devView.value === 'landing'
-  }
-
-  if (isAppHost) return false
-
-  if (clientSite) return false
-
-  const route = router.currentRoute.value
-  const name = String(route.name || '')
-  if (!name.startsWith('index')) return false
-  if (name.includes('autorizace') || name.includes('admin')) return false
-
-  if (route.path.includes('/oauth-start')) return false
-
-  return true
-})
 
 if (clientSite) {
   adChance.assign(clientSite.id, clientSite.plan)
@@ -108,11 +95,21 @@ useHead(() => ({
     dir: i18nHead.value.htmlAttrs?.dir as 'ltr' | 'rtl' | 'auto' | undefined,
   },
   link: [
-    ...(i18nHead.value.link || []),
+    ...i18nLinks.value,
     {
       rel: 'icon',
       href: clientSite?.faviconUrl || clientSite?.logoUrl || '/favicon.ico',
     },
+    ...(clientSite
+      ? [
+          {
+            rel: 'alternate' as const,
+            type: 'application/rss+xml',
+            title: clientSite.name,
+            href: `${canonicalOrigin}/rss.xml`,
+          },
+        ]
+      : []),
   ],
   meta: [
     ...(i18nHead.value.meta || []),
@@ -128,31 +125,19 @@ useHead(() => ({
   ],
 }))
 
+// Only the identity. `nuxt-schema-org`'s i18n plugin already emits WebSite and WebPage with
+// locale-aware `@id`s off the (per-tenant) site config — redefining them here detached
+// `WebPage.isPartOf` from the WebSite node it pointed at. No explicit `url` either: passing one
+// splits the identity into a second node.
 if (clientSite) {
-  useHead({
-    script: [
-      {
-        type: 'application/ld+json',
-        innerHTML: computed(() =>
-          JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            name: clientSite.name,
-            url: reqUrl.origin,
-            description: clientSite.description,
-            publisher: {
-              '@type': 'Organization',
-              name: clientSite.name,
-              logo: {
-                '@type': 'ImageObject',
-                url: clientSite.logoUrl || `${reqUrl.origin}/app-logo.png`,
-              },
-            },
-            inLanguage: clientSite.language || 'en',
-          }),
-        ),
-      },
-    ],
-  })
+  useSchemaOrg([
+    defineOrganization({
+      name: clientSite.name,
+      logo: targetLogoUrl,
+      ...(clientSite.description ? { description: clientSite.description } : {}),
+      // Ties the blog to accounts the engine already has an entity for.
+      sameAs: clientSite.socials?.map((social) => social.url) ?? [],
+    }),
+  ])
 }
 </script>

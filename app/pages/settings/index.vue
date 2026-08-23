@@ -19,7 +19,7 @@
     </header>
 
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">
-      <SettingsNav v-model="activeTab" :tabs="tabs" />
+      <TabNav v-model="activeTab" :tabs="tabs" :label="$t('common.preferences.title')" />
 
       <div class="min-w-0 flex-1 space-y-8">
         <section v-show="activeTab === 'branding'">
@@ -40,7 +40,6 @@
 
         <section v-if="!isBasic" v-show="activeTab === 'content'">
           <LazyFormClientContent
-            :plan="client?.plan ?? 'BASIC'"
             :focus="form.focus"
             :audience="form.audience"
             :language="form.language"
@@ -154,6 +153,7 @@
         <section v-if="hasAi" v-show="activeTab === 'ai'">
           <UCard>
             <LazyFormClientAI
+              :clientId="clientId ?? ''"
               :username="form.aiUser.username"
               :bio="form.aiUser.bio"
               :avatarUrl="form.aiUser.avatarUrl"
@@ -169,21 +169,21 @@
               :language="form.language"
               :translationMode="form.translationMode"
               :translationLanguages="form.translationLanguages"
+              :discloseAiContent="form.discloseAiContent"
               :features="features ?? []"
               :currency="client?.currency ?? 'EUR'"
+              :plan="client?.plan ?? 'BASIC'"
               :billingPlan="client?.billingPlan ?? 'MONTHLY'"
               @toggle:feature="toggleFeature"
               @update:username="form.aiUser.username = $event"
               @update:bio="form.aiUser.bio = $event"
               @update:aiToneOfVoice="form.aiToneOfVoice = $event ?? ''"
               @update:aiControversyLevel="form.aiControversyLevel = $event ?? ''"
-              @update:avatarUrl="
-                ((form.aiUser.avatarUrl = $event.avatarUrl),
-                (form.aiUser.optimizedAvatarUrl = $event.optimizedImageUrl))
-              "
+              @update:avatarUrl="((form.aiUser.avatarUrl = $event), (pristine.aiUser.avatarUrl = $event))"
               @update:autoRelease="form.autoRelease = $event"
               @update:translationMode="form.translationMode = $event"
               @update:translationLanguages="form.translationLanguages = $event"
+              @update:discloseAiContent="form.discloseAiContent = $event"
             />
           </UCard>
         </section>
@@ -191,6 +191,7 @@
         <section v-if="showBilling" v-show="activeTab === 'billing'">
           <FormClientBilling :client="client ?? null" :rate="rate" />
         </section>
+        <section v-show="activeTab === 'members'"><LazySettingsMembers /></section>
       </div>
     </div>
 
@@ -204,6 +205,9 @@
         :title="$t('common.preferences.unsaved')"
       >
         <template #actions>
+          <UButton color="neutral" variant="ghost" size="sm" @click="resetForm">
+            {{ $t('common.actions.reset') }}
+          </UButton>
           <UButton size="sm" @click="savePreferences">
             {{ $t('common.actions.saveChanges') }}
           </UButton>
@@ -216,7 +220,7 @@
 <script setup lang="ts">
 import equal from 'fast-deep-equal'
 
-import type { SettingsTab } from '~/components/Settings/Nav.vue'
+import type { TabItem } from '~/components/TabNav.vue'
 
 import { buildClientSettingsForm, type ClientSite } from '~/utils/buildClientSettingsForm'
 
@@ -235,6 +239,7 @@ const isSuperadmin = computed(() => auth.value?.user.role === 'superadmin')
 
 const { data: client, refresh } = await useFetch<ClientSite>(`/api/clients/${auth.value?.user.clientSiteId}`)
 const { data: features } = await useFetch(`/api/features`)
+const { data: tenantAccess } = await useFetch<{ role: 'OWNER' | 'MEMBER'; scopes: string[] }>('/api/tenant/access')
 const rate = await useCurrencyRate(client.value?.currency ?? 'EUR')
 
 const form = ref(buildClientSettingsForm(client.value))
@@ -251,17 +256,23 @@ const allowedFeatures = computed(
 const isBasic = computed(() => client.value?.plan === 'BASIC')
 const hasAi = computed(() => !isBasic.value && (client.value?.tokenLimit ?? 0) > 0)
 const showBilling = computed(() => client.value?.billingPlan !== 'PERMANENT')
+const can = (scope: string) =>
+  isSuperadmin.value || tenantAccess.value?.role === 'OWNER' || tenantAccess.value?.scopes.includes(scope)
 
-const tabs = computed<SettingsTab[]>(() => {
-  const t: SettingsTab[] = [
-    { id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'i-mdi-palette-outline' },
-  ]
-  if (!isBasic.value) {
+const tabs = computed<TabItem[]>(() => {
+  const t: TabItem[] = []
+  if (can('TENANT_SETTINGS'))
+    t.push({ id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'i-mdi-palette-outline' })
+  t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'i-mdi-account-group-outline' })
+  if (!isBasic.value && can('TENANT_SETTINGS')) {
     t.push({ id: 'content', labelKey: 'common.preferences.tabs.content', icon: 'i-mdi-text-box-outline' })
+  }
+  if (!isBasic.value && can('INTEGRATION_CONTROL')) {
     t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'i-mdi-puzzle-outline' })
   }
-  if (hasAi.value) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'i-mdi-robot-outline' })
-  if (showBilling.value)
+  if (hasAi.value && can('AI_USE'))
+    t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'i-mdi-robot-outline' })
+  if (showBilling.value && can('BILLING_CHANGE'))
     t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'i-mdi-credit-card-outline' })
   return t
 })
@@ -320,6 +331,19 @@ const savePreferences = async () => {
   } catch {
     toast.add({ color: 'error', title: $t('common.messages.saveFailed') })
   }
+}
+
+const resetForm = async () => {
+  const confirmed = await confirm({
+    title: $t('common.messages.discardChangesTitle'),
+    message: $t('common.messages.discardChangesText'),
+    icon: 'mdi:backup-restore',
+    confirmText: $t('common.messages.discardConfirm'),
+    cancelText: $t('common.messages.deleteCancel'),
+    variant: 'danger',
+  })
+  if (!confirmed) return
+  form.value = structuredClone(toRaw(pristine.value))
 }
 
 const generateApiKey = async () => {

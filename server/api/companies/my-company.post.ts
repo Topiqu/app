@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const body = await readBody(event)
-  const appType = body.type || 'pages'
+  const appType = body.type || 'personal'
   const db = await getEnhancedPrisma(user)
 
   const existing = await db.linkedinCompany.findFirst({

@@ -8,6 +8,7 @@ import "./models/notification"
 import "./models/linkedin"
 import "./models/log"
 import "./models/ads"
+import "./models/searchConsole"
 
 generator client {
     provider = "prisma-client-js"

@@ -125,6 +125,9 @@
         <template #status-cell="{ row }">
           <ArticleStatusCell :row="row" @update="debouncedSetStatus" />
         </template>
+        <template #languages-cell="{ row }">
+          <ArticleLanguageLinks :links="languageLinks(row.original)" :current="primaryLanguage" target="editor" />
+        </template>
         <template #createdAt-cell="{ row }">{{ formatTime(row.original.createdAt, 'shortDatetime') }}</template>
         <template #actions-cell="{ row }">
           <div class="flex justify-end gap-1">
@@ -135,7 +138,7 @@
                 variant="ghost"
                 :disabled="row.original.status === 'archived'"
                 :aria-label="$t('common.actions.edit')"
-                @click="router.push(localePath({ name: 'admin-editor-id', params: { id: row.original.id } }))"
+                @click="openEditor(row.original.slug)"
               />
             </UTooltip>
             <UDropdownMenu :items="desktopActionItems(row.original)">
@@ -176,6 +179,7 @@
               {{ article.title }}
             </NuxtLink>
             <ArticleStatusCell :row="{ original: article }" @update="debouncedSetStatus" />
+            <ArticleLanguageLinks :links="languageLinks(article)" :current="primaryLanguage" target="editor" />
             <p class="text-xs text-muted">{{ formatTime(article.createdAt, 'shortDatetime') }}</p>
           </div>
           <div class="flex flex-col gap-1">
@@ -186,7 +190,7 @@
               square
               :disabled="article.status === 'archived'"
               :aria-label="$t('common.actions.edit')"
-              @click="router.push(localePath({ name: 'admin-editor-id', params: { id: article.id } }))"
+              @click="openEditor(article.slug)"
             />
             <LazyArticleTag :articleId="article.id" hydrateOnInteraction>
               <UButton
@@ -239,15 +243,61 @@ import type { ArticleWithDetails } from '~~/types/article'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
+import type { LanguageLink } from '~/components/Article/LanguageLinks.vue'
+
 const router = useRouter()
 const route = useRoute()
-const toast = useToast()
+const toast = useAppToast()
 const { invalidateArticleLists, invalidateArticlesAndStats } = useCacheInvalidation()
 const confirm = useConfirm()
 const localePath = useLocalePath()
 const articleUrl = (slug: string) => localePath({ name: 'clanky-slug', params: { slug } })
 const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
+const clientSite = await useClientSite()
+const primaryLanguage = clientSite?.language ?? 'en'
+// Language currently has two enum values (cs/en), so the table can derive the only possible
+// target from the public tenant context without fetching private settings separately.
+const targetLanguage = primaryLanguage === 'cs' ? 'en' : 'cs'
+const translatingArticleId = shallowRef<string | null>(null)
+
+const hasTargetTranslation = (article: ArticleWithDetails) =>
+  article.translations?.some((translation) => translation.language === targetLanguage) ?? false
+
+const translateArticle = async (article: ArticleWithDetails) => {
+  if (translatingArticleId.value) return
+  translatingArticleId.value = article.id
+  try {
+    await $fetch(`/api/articles/${article.id}/translate`, {
+      method: 'POST',
+      body: { language: targetLanguage },
+    })
+    await invalidateArticleLists()
+    toast.success({ message: $t('articles.translations.messages.translated') })
+  } catch (e: any) {
+    toast.error({ message: e?.data?.message || $t('common.messages.operationFailed') })
+  } finally {
+    translatingArticleId.value = null
+  }
+}
+
+// The editor resolves an article by its source slug, not its id — see `GET /api/articles/[id]`.
+const openEditor = (slug: string) => router.push(localePath({ name: 'admin-editor-id', params: { id: slug } }))
+
+/**
+ * Source first, then every language that actually has a translation row. A configured-but-never
+ * translated language is deliberately absent: the column answers "which versions exist", and an
+ * empty placeholder for each unused language would just add noise to every row.
+ */
+const languageLinks = (article: ArticleWithDetails): LanguageLink[] => [
+  { language: primaryLanguage as LanguageLink['language'], slug: article.slug },
+  ...(article.translations ?? []).map((tr) => ({
+    language: tr.language as LanguageLink['language'],
+    slug: tr.slug ?? article.slug,
+    status: tr.status as LanguageLink['status'],
+  })),
+]
+
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
 const globalFilter = ref((route.query.query as string) || '')
@@ -322,6 +372,11 @@ const columns = computed<TableColumn<ArticleWithDetails>[]>(() => [
     accessorKey: 'status',
     header: $t('articles.columns.status'),
     meta: { class: { th: 'w-52', td: 'w-52 overflow-hidden' } },
+  },
+  {
+    id: 'languages',
+    header: $t('articles.translations.languageTabs'),
+    meta: { class: { th: 'hidden w-36 lg:table-cell', td: 'hidden w-36 lg:table-cell' } },
   },
   {
     accessorKey: 'createdAt',
@@ -418,6 +473,16 @@ const exportItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
 ]
 
 const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
+  [
+    {
+      label: hasTargetTranslation(article)
+        ? $t('articles.translations.actions.retranslate')
+        : $t('articles.translations.actions.translate'),
+      icon: 'i-mdi-translate',
+      disabled: translatingArticleId.value === article.id,
+      onSelect: () => translateArticle(article),
+    },
+  ],
   [
     {
       label: $t('articles.tags.title'),

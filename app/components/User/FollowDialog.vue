@@ -41,7 +41,7 @@ const localePath = useLocalePath()
 
 const open = defineModel<boolean>({ default: false })
 
-const props = defineProps<{ type: 'followers' | 'followed' }>()
+const { type } = defineProps<{ type: 'followers' | 'followed' }>()
 
-const { data, pending, error } = await useFetch(() => `/api/follows/${props.type}`)
+const { data, pending, error } = await useFetch(() => `/api/follows/${type}`)
 </script>

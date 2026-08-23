@@ -12,10 +12,11 @@
 <script setup lang="ts">
 const isOnline = useOnline()
 const showBar = shallowRef<boolean>(false)
+const { start: hideLater } = useTimeoutFn(() => (showBar.value = false), 3000, { immediate: false })
 
 const showTemporaryBar = () => {
   showBar.value = true
-  setTimeout(() => (showBar.value = false), 3000)
+  hideLater()
 }
 
 watch(isOnline, (online, prev) => {

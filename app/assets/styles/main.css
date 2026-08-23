@@ -209,6 +209,28 @@ main {
   flex-grow: 1;
 }
 
+.article-inline-image-fallback {
+  display: inline-flex;
+  min-height: 2.5rem;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg-elevated);
+  color: var(--ui-text-muted);
+  font-family: var(--ui-font-sans);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.article-inline-image-fallback::before {
+  content: '\1F5BC';
+  flex: none;
+}
+
 .topiqu-dashboard-scroll {
   scrollbar-gutter: stable;
   scrollbar-width: none;

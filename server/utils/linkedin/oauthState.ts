@@ -4,6 +4,8 @@ export interface OAuthStatePayload {
   nonce: string
   clientSiteId: string
   appType: 'personal' | 'pages'
+  /** Carried across the hop: the callback runs on app.topiqu.com, where the tenant's `i18n_lang` cookie is not readable. */
+  locale?: 'cs' | 'en'
 }
 
 function secret() {
@@ -34,7 +36,8 @@ export function verifyOAuthState(state: string | undefined): OAuthStatePayload |
     if (!payload.clientSiteId || (payload.appType !== 'personal' && payload.appType !== 'pages')) {
       return null
     }
-    return payload
+    // Signed or not, the locale ends up as a path segment — whitelist it.
+    return { ...payload, locale: payload.locale === 'cs' ? 'cs' : 'en' }
   } catch {
     return null
   }

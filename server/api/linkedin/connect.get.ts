@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import { signOAuthState } from '../../utils/linkedin/oauthState'
+import { getLinkedInRedirectUri } from '../../utils/linkedin/redirectUri'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -8,9 +9,16 @@ export default defineEventHandler(async (event) => {
   if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
     throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
   }
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', user.clientSiteId)
 
   const query = getQuery(event)
-  const appType = query.appType === 'pages' ? 'pages' : 'personal'
+
+  // Company Pages ride on LinkedIn's Community Management API, approved only for registered legal
+  // entities. Personal is the only connectable type until that clears; the `pages` plumbing
+  // (token.ts, callback, LinkedinCompany.type) stays put so re-enabling is a revert.
+  if (query.appType === 'pages') {
+    throw createError({ statusCode: 403, message: 'LinkedIn Company Pages are not available yet.' })
+  }
 
   const requestedClientSiteId = query.clientSiteId as string | undefined
   const clientSiteId = user.role === 'superadmin' && requestedClientSiteId ? requestedClientSiteId : user.clientSiteId
@@ -19,31 +27,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing clientSiteId' })
   }
 
-  const clientId =
-    appType === 'pages' ? process.env.LINKEDIN_CLIENT_ID_COMPANY : process.env.LINKEDIN_CLIENT_ID_PERSONAL
+  const clientId = process.env.LINKEDIN_CLIENT_ID_PERSONAL
   if (!clientId) {
-    throw createError({ statusCode: 500, message: `LinkedIn ${appType} Client ID not configured` })
+    throw createError({ statusCode: 500, message: 'LinkedIn personal Client ID not configured' })
   }
 
-  const config = useRuntimeConfig()
-  const redirectUri = config.public.siteUrl
-    ? `${config.public.siteUrl}/api/linkedin/callback`
-    : 'http://localhost:3000/api/linkedin/callback'
+  const redirectUri = getLinkedInRedirectUri()
 
-  const state = signOAuthState({ nonce: randomUUID(), clientSiteId, appType })
-
-  setCookie(event, 'linkedin_oauth_state', state, {
-    httpOnly: true,
-    secure: !import.meta.dev,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 300,
+  const state = signOAuthState({
+    nonce: randomUUID(),
+    clientSiteId,
+    appType: 'personal',
+    locale: getCookie(event, 'i18n_lang') === 'cs' ? 'cs' : 'en',
   })
 
-  const scope =
-    appType === 'pages'
-      ? 'w_organization_social r_organization_social rw_organization_admin'
-      : 'openid profile email w_member_social'
+  setOAuthState(event, 'linkedin_oauth_state', state, 300)
+
+  const scope = 'openid profile email w_member_social'
 
   const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}&scope=${encodeURIComponent(scope)}`
 

@@ -1,7 +1,7 @@
 <template>
   <div v-if="content" class="relative w-full max-w-[200px]">
     <AppMedia
-      :src="content"
+      :src="optimizedContent"
       alt="GIF"
       aspectRatio="1 / 1"
       fit="contain"
@@ -26,4 +26,5 @@ const { cancellable = false } = defineProps<{
   cancellable?: boolean
 }>()
 const content = defineModel<string | null>('content')
+const optimizedContent = computed(() => content.value?.replace(/\/giphy\.gif(?=[?#]|$)/i, '/giphy.webp'))
 </script>

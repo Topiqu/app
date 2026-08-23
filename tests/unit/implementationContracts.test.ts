@@ -41,7 +41,7 @@ describe('systemic UX implementation contracts', () => {
     expect(source('app/components/ConfirmDialog.vue')).toContain("content: 'confirm-dialog-content max-w-md'")
     expect(source('app/components/Article/Tag.vue')).toContain("content: 'max-w-xl'")
     expect(source('app/components/Tags/Create.vue')).toContain("content: 'max-w-3xl'")
-    expect(source('app/components/Stats/Dialog.vue')).toContain("content: 'max-w-5xl'")
+    expect(source('app/components/Stats/Dialog.vue')).toContain('class="max-w-5xl"')
     expect(source('app/app.config.ts')).toContain('max-sm:size-full')
   })
 
@@ -77,7 +77,7 @@ describe('systemic UX implementation contracts', () => {
       'app/pages/stitky/[slug].vue',
       'app/pages/autor/[name].vue',
       'app/components/Article/Related.vue',
-      'app/components/User/Activity.vue',
+      'app/components/User/ActivityArticle.vue',
     ]) {
       expect(source(path), path).toContain('ArticleCard')
     }
@@ -114,10 +114,10 @@ describe('systemic UX implementation contracts', () => {
     expect(source('app/components/Exports.vue')).toContain('<UDropdownMenu')
     expect(tags).toContain('const editDraft')
     expect(tags).not.toContain('useDebounceFn(async (tag')
-    expect(stats).toContain('rankedItems')
-    expect(stats).toContain('kind="timeseries"')
-    expect(stats).toContain('kind="distribution"')
-    expect(chart).toContain("kind: 'timeseries' | 'distribution'")
+    expect(stats).toContain('<StatsRow')
+    expect(stats).toContain('kind="trend"')
+    expect(stats).toContain('kind="breakdown"')
+    expect(chart).toContain("kind: 'trend' | 'breakdown'")
     expect(gif).toContain('watch(pickerOpen')
     expect(gif).toContain('requestVersion')
     expect(gif).toContain('collisionPadding: 16')
@@ -137,13 +137,10 @@ describe('systemic UX implementation contracts', () => {
     expect(styles).not.toMatch(/^:focus-visible/m)
     expect(comments).not.toContain('comment-composer-textarea')
     expect(comments).toContain('<UTextarea')
-    expect(profile).toContain("href: '#personal-section'")
+    expect(profile).toContain('<TabNav')
     expect(status).toContain("base: 'w-full min-w-0'")
-    expect(profile.indexOf("href: '#account-health-section'")).toBeLessThan(
-      profile.indexOf("href: '#security-section'"),
-    )
-    expect(profile).toContain('new IntersectionObserver')
-    expect(profile).toContain(':aria-current=')
+    expect(profile).toContain('tabForSection')
+    expect(profile).toContain('focusSection')
     expect(config).toContain('tokensPerInterval: IS_BROWSER_TEST ? 10_000 : 300')
   })
 })

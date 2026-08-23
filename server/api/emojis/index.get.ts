@@ -6,5 +6,12 @@ export default defineEventHandler(async (event) => {
 
   return await db.emoji.findMany({
     where: { clientSiteId: user.clientSiteId },
+    orderBy: { shortcode: 'asc' },
+    select: {
+      id: true,
+      shortcode: true,
+      imageUrl: true,
+      _count: { select: { emojiReactions: true } },
+    },
   })
 })

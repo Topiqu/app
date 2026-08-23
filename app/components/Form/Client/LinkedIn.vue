@@ -1,107 +1,104 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div v-if="!embedded" class="flex items-center justify-between">
       <div>
         <h3 class="text-lg font-semibold flex items-center gap-2">
-          <UIcon size="20" name="i-mdi-linkedin" class="text-blue-600" />
-          {{ $t('common.linkedin.title') }}
+          <Icon name="mdi:linkedin" class="w-5 h-5 text-blue-600" />
+          {{ $t('common.preferences.linkedin.title') }}
         </h3>
-        <p class="text-sm text-muted">{{ $t('common.linkedin.description') }}</p>
+        <p class="text-sm text-neutral-500">{{ $t('common.preferences.linkedin.description') }}</p>
       </div>
 
-      <div v-if="!isConnected" class="flex gap-2">
-        <UButton
-          color="neutral"
-          variant="solid"
-          icon="i-mdi-account"
-          :style="{ backgroundColor: '#0A66C2' }"
-          @click="connectLinkedIn('personal')"
-        >
-          {{ $t('common.linkedin.connectPersonal') }}
-        </UButton>
-        <UButton
-          color="neutral"
-          variant="solid"
-          icon="i-mdi-domain"
-          :style="{ backgroundColor: '#0A66C2' }"
-          @click="connectLinkedIn('pages')"
-        >
-          {{ $t('common.linkedin.connectPage') }}
-        </UButton>
-      </div>
+      <UButton
+        v-if="!isConnected"
+        variant="solid"
+        class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
+        @click="connectLinkedIn"
+      >
+        <Icon name="mdi:account" class="mr-1" />
+        {{ $t('common.preferences.linkedin.connect') }}
+      </UButton>
       <div v-else class="flex flex-col items-end">
-        <UBadge color="success" variant="soft" icon="i-mdi-check-circle">
-          {{ $t('common.linkedin.connected', { type: localType }) }}
-        </UBadge>
-        <div class="flex gap-2 mt-2">
-          <UButton color="primary" variant="link" size="xs" @click="connectLinkedIn('personal')">
-            {{ $t('common.linkedin.switchPersonal') }}
-          </UButton>
-          <UButton color="primary" variant="link" size="xs" @click="connectLinkedIn('pages')">
-            {{ $t('common.linkedin.switchPage') }}
-          </UButton>
+        <div
+          class="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full"
+        >
+          <Icon name="mdi:check-circle" /> {{ connectedLabel }}
         </div>
+        <UButton color="neutral" variant="link" size="xs" @click="connectLinkedIn">
+          {{ $t('common.preferences.linkedin.reconnect') }}
+        </UButton>
       </div>
     </div>
 
-    <UCard v-if="isConnected">
-      <div class="space-y-6">
-        <UFormField
-          :label="$t('common.linkedin.publishingMode')"
-          :description="$t('common.linkedin.publishingModeDescription')"
-        >
+    <UButton v-if="embedded && !isConnected" variant="solid" class="bg-[#0A66C2] text-white" @click="connectLinkedIn">
+      <Icon name="mdi:account" class="mr-1" />
+      {{ $t('common.preferences.linkedin.connect') }}
+    </UButton>
+
+    <div v-if="embedded && isConnected" class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 text-sm font-medium text-emerald-600">
+        <Icon name="mdi:check-circle" /> {{ connectedLabel }}
+      </div>
+      <UButton color="neutral" variant="link" size="xs" @click="connectLinkedIn">
+        {{ $t('common.preferences.linkedin.reconnect') }}
+      </UButton>
+    </div>
+
+    <div
+      v-if="isConnected"
+      class="bg-white/5 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10 space-y-6"
+    >
+      <div>
+        <h4 class="font-medium mb-3">{{ $t('common.preferences.linkedin.mode.label') }}</h4>
+        <UFormField :label="$t('common.preferences.linkedin.mode.label')" :ui="{ label: 'sr-only' }">
           <URadioGroup
             v-model="localMode"
-            :items="publishingModes"
+            :items="modeItems"
             orientation="horizontal"
-            valueKey="value"
             @update:modelValue="emitUpdate"
           />
         </UFormField>
-
-        <USeparator />
-        <div class="space-y-4 pt-4">
-          <h4 class="font-medium">{{ $t('common.linkedin.brandGuidelines') }}</h4>
-
-          <UFormField :label="$t('common.linkedin.tone')">
-            <UInput
-              v-model="localBrandProfile.tone"
-              :placeholder="$t('common.linkedin.tonePlaceholder')"
-              @update:modelValue="emitUpdate"
-            />
-          </UFormField>
-
-          <UFormField :label="$t('common.linkedin.audience')">
-            <UInput
-              v-model="localBrandProfile.audience"
-              :placeholder="$t('common.linkedin.audiencePlaceholder')"
-              @update:modelValue="emitUpdate"
-            />
-          </UFormField>
-
-          <UFormField :label="$t('common.linkedin.doList')">
-            <UInput
-              v-model="localDoList"
-              :placeholder="$t('common.linkedin.doListPlaceholder')"
-              @update:modelValue="emitUpdate"
-            />
-          </UFormField>
-
-          <UFormField :label="$t('common.linkedin.dontList')">
-            <UInput
-              v-model="localDontList"
-              :placeholder="$t('common.linkedin.dontListPlaceholder')"
-              @update:modelValue="emitUpdate"
-            />
-          </UFormField>
-        </div>
+        <p class="text-xs text-neutral-500 mt-2">{{ $t('common.preferences.linkedin.mode.help') }}</p>
       </div>
-    </UCard>
+
+      <div class="space-y-4 pt-4 border-t border-white/10">
+        <h4 class="font-medium">{{ $t('common.preferences.linkedin.brand.label') }}</h4>
+
+        <AppFormField
+          v-model="localBrandProfile.tone"
+          :label="$t('common.preferences.linkedin.brand.tone.label')"
+          :placeholder="$t('common.preferences.linkedin.brand.tone.placeholder')"
+          @update:modelValue="emitUpdate"
+        />
+
+        <AppFormField
+          v-model="localBrandProfile.audience"
+          :label="$t('common.preferences.linkedin.brand.audience.label')"
+          :placeholder="$t('common.preferences.linkedin.brand.audience.placeholder')"
+          @update:modelValue="emitUpdate"
+        />
+
+        <AppFormField
+          v-model="localDoList"
+          :label="$t('common.preferences.linkedin.brand.doList.label')"
+          :placeholder="$t('common.preferences.linkedin.brand.doList.placeholder')"
+          @update:modelValue="emitUpdate"
+        />
+
+        <AppFormField
+          v-model="localDontList"
+          :label="$t('common.preferences.linkedin.brand.dontList.label')"
+          :placeholder="$t('common.preferences.linkedin.brand.dontList.placeholder')"
+          @update:modelValue="emitUpdate"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 const props = defineProps<{
+  embedded?: boolean
   clientSiteId: string
   mode?: 'HitL' | 'FullAuto'
   type?: 'pages' | 'personal'
@@ -115,14 +112,22 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:mode', 'update:brandProfile', 'update:type'])
 
+const { t } = useI18n()
+
 const isConnected = shallowRef(false)
-const localType = shallowRef(props.type || 'pages')
+const localType = shallowRef(props.type || 'personal')
+
+// `pages` is no longer connectable, but a tenant may still carry a row from before it was disabled.
+const connectedLabel = computed(() => {
+  const type = localType.value === 'pages' ? 'typePages' : 'typePersonal'
+  return t('common.preferences.linkedin.connected', [t(`common.preferences.linkedin.${type}`)])
+})
 
 const localMode = shallowRef(props.mode || 'HitL')
-const publishingModes = [
-  { label: 'Human in the Loop (HitL)', value: 'HitL' },
-  { label: 'Full Auto (Gated by Policy)', value: 'FullAuto' },
-]
+const modeItems = computed(() => [
+  { value: 'HitL', label: t('common.preferences.linkedin.mode.hitl') },
+  { value: 'FullAuto', label: t('common.preferences.linkedin.mode.fullAuto') },
+])
 const localBrandProfile = ref({
   tone: props.brandProfile?.tone || '',
   audience: props.brandProfile?.audience || '',
@@ -138,7 +143,7 @@ onMounted(async () => {
     })
     if (res && (res as any).connected) {
       isConnected.value = true
-      localType.value = (res as any).type || 'pages'
+      localType.value = (res as any).type || 'personal'
       emit('update:type', localType.value)
     }
   } catch {
@@ -176,9 +181,9 @@ function emitUpdate() {
   })
 }
 
-function connectLinkedIn(appType: 'personal' | 'pages') {
-  localType.value = appType
-  emit('update:type', appType)
-  window.location.href = `/api/linkedin/connect?appType=${appType}&clientSiteId=${props.clientSiteId}`
+function connectLinkedIn() {
+  localType.value = 'personal'
+  emit('update:type', 'personal')
+  window.location.href = `/api/linkedin/connect?appType=personal&clientSiteId=${props.clientSiteId}`
 }
 </script>

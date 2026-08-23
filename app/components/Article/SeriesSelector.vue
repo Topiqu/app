@@ -88,6 +88,8 @@ import slugify from 'slugify'
 
 const modelValue = defineModel<any>({ default: null })
 
+defineProps<{ compact?: boolean }>()
+
 const { data: series, refresh } = await useLazyFetch<any[]>('/api/series', {
   server: false,
   default: () => [],

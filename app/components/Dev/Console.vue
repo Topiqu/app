@@ -213,7 +213,6 @@ import type { DevView } from '~/composables/useDevView'
 
 const views = [
   { id: 'auto', icon: 'i-mdi-auto-fix' },
-  { id: 'landing', icon: 'i-mdi-web' },
   { id: 'tenant', icon: 'i-mdi-office-building' },
 ] satisfies { id: DevView; icon: string }[]
 const view = useDevView()

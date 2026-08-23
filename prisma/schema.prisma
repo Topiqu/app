@@ -24,6 +24,25 @@ enum UserRole {
   ai
 }
 
+enum TenantRole {
+  OWNER
+  MEMBER
+}
+
+enum TenantScope {
+  ARTICLE_WRITE
+  ARTICLE_WRITE_OTHERS
+  ARTICLE_PUBLISH
+  MEMBER_CONTROL
+  TENANT_SETTINGS
+  INTEGRATION_CONTROL
+  BILLING_CHANGE
+  API_KEY_CONTROL
+  AI_USE
+  ANALYTICS_READ
+  CONTENT_MODERATE
+}
+
 enum Language {
   cs
   en
@@ -99,6 +118,7 @@ enum FeatureCodes {
   CRONS
   SENTIMENT
   ARTICLE_CRONS
+  SEARCH_CONSOLE
 }
 
 enum ClientPlan {
@@ -112,6 +132,13 @@ enum BillingPlans {
   MONTHLY
   ANNUAL
   PERMANENT
+}
+
+enum DomainVerificationStatus {
+  PENDING
+  VERIFIED
+  DEGRADED
+  FAILED
 }
 
 enum SocialPlatform {
@@ -175,6 +202,12 @@ enum AdPayoutStatus {
   VOID
 }
 
+enum SearchConsoleConnectionStatus {
+  CONNECTED
+  ERROR
+  REVOKED
+}
+
 enum NotificationType {
   COMMENT
   LIKE
@@ -185,30 +218,30 @@ enum NotificationType {
 }
 
 model User {
-  id                            String            @id() @default(uuid())
-  createdAt                     DateTime          @default(now())
-  updatedAt                     DateTime?         @updatedAt()
+  id                            String             @id() @default(uuid())
+  createdAt                     DateTime           @default(now())
+  updatedAt                     DateTime?          @updatedAt()
   deletedAt                     DateTime?
-  username                      String            @unique()
-  email                         String            @unique()
+  username                      String             @unique()
+  email                         String             @unique()
   password                      String?
   bio                           String?
-  role                          UserRole          @default(reader)
+  role                          UserRole           @default(reader)
   avatarUrl                     String?
   verification                  VerificationCode?
   totpSecret                    String?
   totpTempSecret                String?
   onboardingLoginToken          String?
   onboardingLoginTokenExpiresAt DateTime?
-  emailVerified                 Boolean           @default(false)
-  allowNotifs                   Boolean           @default(true)
-  allowEmail                    Boolean           @default(true)
-  lastLogin                     DateTime?         @default(now())
-  language                      Language          @default(en)
-  sessions                      Session[]         @relation("UserSessions")
+  emailVerified                 Boolean            @default(false)
+  allowNotifs                   Boolean            @default(true)
+  allowEmail                    Boolean            @default(true)
+  lastLogin                     DateTime?          @default(now())
+  language                      Language           @default(en)
+  sessions                      Session[]          @relation("UserSessions")
   clientSiteId                  String?
-  theme                         ThemeOption       @default(light)
-  clientSite                    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  theme                         ThemeOption        @default(light)
+  clientSite                    ClientSite?        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   articles                      Article[]
   articleDrafts                 ArticleDraft[]
   comments                      Comment[]
@@ -217,35 +250,78 @@ model User {
   feedbacks                     ArticleFeedback[]
   emojiReactions                EmojiReaction[]
   articleReactions              ArticleReaction[]
-  followers                     Follow[]          @relation("Follower")
-  following                     Follow[]          @relation("Followed")
-  bans                          UserBan[]         @relation("BannedUser")
-  bansIssued                    UserBan[]         @relation("BannedBy")
-  logs                          Log[]             @relation("LogToUser")
+  articleShares                 ArticleShare[]
+  articleViews                  ArticleView[]
+  followers                     Follow[]           @relation("Follower")
+  following                     Follow[]           @relation("Followed")
+  bans                          UserBan[]          @relation("BannedUser")
+  bansIssued                    UserBan[]          @relation("BannedBy")
+  logs                          Log[]              @relation("LogToUser")
   approvals                     Approval[]
+  tenantMemberships             TenantMembership[]
+  tenantInvitations             TenantInvitation[] @relation("InvitationSender")
 
   @@index([username, email, role, language, allowNotifs])
 }
 
+model TenantMembership {
+  id           String        @id() @default(uuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt()
+  deletedAt    DateTime?
+  clientSiteId String
+  clientSite   ClientSite    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role         TenantRole    @default(MEMBER)
+  scopes       TenantScope[]
+
+  @@unique([clientSiteId, userId])
+  @@index([userId])
+}
+
+model TenantInvitation {
+  id           String        @id() @default(uuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt()
+  deletedAt    DateTime?
+  clientSiteId String
+  clientSite   ClientSite    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  email        String
+  tokenHash    String        @unique()
+  scopes       TenantScope[]
+  invitedById  String
+  invitedBy    User          @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  revokedAt    DateTime?
+
+  @@index([clientSiteId, email])
+  @@index([expiresAt])
+}
+
 model Session {
-  id         String    @id() @default(uuid())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime? @updatedAt()
-  deletedAt  DateTime?
-  ip         String?
-  userAgent  String?
-  device     String?
-  os         String?
-  browser    String?
-  city       String?
-  region     String?
-  country    String?
-  lastUsedAt DateTime  @default(now())
-  revoked    Boolean   @default(false)
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
+  id           String      @id() @default(uuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime?   @updatedAt()
+  deletedAt    DateTime?
+  ip           String?
+  userAgent    String?
+  device       String?
+  os           String?
+  browser      String?
+  city         String?
+  region       String?
+  country      String?
+  lastUsedAt   DateTime    @default(now())
+  revoked      Boolean     @default(false)
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
+  clientSiteId String?
+  clientSite   ClientSite? @relation("SessionActiveTenant", fields: [clientSiteId], references: [id], onDelete: SetNull)
 
   @@index([userId, lastUsedAt])
+  @@index([clientSiteId])
 }
 
 model Follow {
@@ -315,6 +391,10 @@ model Article {
   excerpt          String?
   content          String
   imageUrl         String?
+  /// Cover provenance as `CoverCredit` — the kind (photo/illustration/ai) plus the library's
+  /// attribution. Body images carry theirs inside `content`; the cover is a bare URL, so
+  /// without this there is nowhere to disclose a generated hero or credit a licensed one.
+  imageCredit      Json?
   status           ArticleStatus        @default(draft)
   clientSiteId     String
   clientSite       ClientSite           @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
@@ -335,12 +415,23 @@ model Article {
   comments         Comment[]
   reactions        ArticleReaction[]
   shares           ArticleShare[]
+  viewEvents       ArticleView[]
   feedbacks        ArticleFeedback[]
   pollResults      PollResult[]
   polls            Poll[]
   notifications    Notification[]       @relation("ArticleNotifications")
   translations     ArticleTranslation[]
   sources          String[]
+  /// Direct answer to the article's question, 40–60 words, rendered above the body. Answer
+  /// engines quote this span; the perex is a hook and reads as one.
+  answer           String?
+  keyTakeaways     String[]
+  /// `[{ question, answer }]` — rendered as a section and emitted as FAQPage.
+  faq              Json?
+  /// Which shape the generator picked (`server/utils/ai/formats.ts`). Kept as a plain string,
+  /// not an enum: the catalogue is tuned by editing that file, and the cron reads the column
+  /// back only to avoid repeating a shape. NULL for anything a human wrote.
+  format           String?
   prompt           String?
 
   @@unique([slug, clientSiteId])
@@ -361,6 +452,9 @@ model ArticleTranslation {
   title        String?
   excerpt      String?
   content      String?
+  answer       String?
+  keyTakeaways String[]
+  faq          Json?
   status       TranslationStatus @default(PENDING)
   source       TranslationSource @default(AI)
   model        String?
@@ -389,6 +483,29 @@ model ArticleSeries {
   @@unique([slug, clientSiteId])
 }
 
+/// One row per visitor per article per UTC day. `Article.views` stays the running counter —
+/// this is the event log the dashboard's time series reads, so it starts at deploy day and
+/// cannot be backfilled. `sessionId` is required precisely so the unique index bites: a tuple
+/// with a NULL in it is distinct from every other in Postgres, which is why `ArticleShare`'s
+/// index catches nothing.
+model ArticleView {
+  id           String     @id() @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt()
+  deletedAt    DateTime?
+  articleId    String
+  article      Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  clientSiteId String
+  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId    String
+  viewedOn     DateTime   @db.Date()
+
+  @@unique([articleId, sessionId, viewedOn])
+  @@index([clientSiteId, viewedOn])
+}
+
 model ArticleShare {
   id        String        @id() @default(uuid())
   createdAt DateTime      @default(now())
@@ -397,6 +514,11 @@ model ArticleShare {
   articleId String
   article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
   platform  SharePlatform
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+
+  @@unique([articleId, platform, userId, sessionId])
 }
 
 model Tag {
@@ -459,74 +581,87 @@ model Social {
 }
 
 model ClientSite {
-  id                   String                @id() @default(uuid())
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime?             @updatedAt()
-  deletedAt            DateTime?
-  name                 String                @unique()
-  domain               String                @unique()
-  domainVerified       Boolean               @default(false)
-  plan                 ClientPlan            @default(BASIC)
-  focus                String?
-  description          String?
-  tagline              String?
-  logoUrl              String?
-  faviconUrl           String?
-  typographyPreset     PublicationTypography @default(MODERN)
-  generationFrequency  GenerationFrequency   @default(NONE)
-  tokenLimit           Int?                  @default(0)
-  tokenRemaining       Int?                  @default(0)
-  totalUsage           Int?                  @default(0)
-  autoRelease          Boolean               @default(false)
-  keywords             Json?
-  audience             String?
-  lastGeneratedAt      DateTime?
-  humanHourlyRate      Int                   @default(1400)
-  humanWordsPerHour    Int                   @default(400)
-  gtagId               String?
-  apiKey               String?
-  gamNetworkCode       String?
-  allowAds             Boolean               @default(false)
-  allowGtag            Boolean?
-  allowShapes          Boolean               @default(false)
-  aiToneOfVoice        String?
-  aiControversyLevel   String?
-  communityInsight     Json?
-  insightUpdatedAt     DateTime?
-  billingPlan          BillingPlans          @default(MONTHLY)
-  firstPaidAt          DateTime?
-  nextBillingAt        DateTime?
-  lastInvoicedAt       DateTime?
-  monthlyPayment       Int?                  @default(0)
-  annualPayment        Int?                  @default(0)
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  stripePriceId        String?
-  enableAi             Boolean               @default(false)
-  enableCron           Boolean               @default(false)
-  enableSentiment      Boolean               @default(false)
-  currency             String?               @default("USD")
-  lastPaidAt           DateTime?             @default(now())
-  lastTokenRefilled    DateTime?             @default(now())
-  language             Language              @default(en)
-  theme                Theme                 @default(blue)
-  translationMode      TranslationMode       @default(OFF)
-  translationLanguages Language[]
-  users                User[]
-  tags                 Tag[]
-  articles             Article[]
-  articleSeries        ArticleSeries[]
-  articleDrafts        ArticleDraft[]
-  emojis               Emoji[]
-  userBans             UserBan[]
-  socials              Social[]
-  logs                 Log[]                 @relation("LogToClientSite")
-  features             ClientFeature[]
-  linkedinCompanies    LinkedinCompany[]
-  articleTranslations  ArticleTranslation[]
-  adEarnings           AdEarning[]
+  id                           String                   @id() @default(uuid())
+  createdAt                    DateTime                 @default(now())
+  updatedAt                    DateTime?                @updatedAt()
+  deletedAt                    DateTime?
+  name                         String                   @unique()
+  domain                       String                   @unique()
+  domainVerified               Boolean                  @default(false)
+  domainVerificationStatus     DomainVerificationStatus @default(PENDING)
+  domainVerificationToken      String?
+  domainVerificationIssuedAt   DateTime?
+  domainVerifiedAt             DateTime?
+  domainLastCheckedAt          DateTime?
+  domainRoutingVerified        Boolean                  @default(false)
+  domainVerificationFailures   Int                      @default(0)
+  domainVerificationDegradedAt DateTime?
+  domainVerificationError      String?
+  plan                         ClientPlan               @default(BASIC)
+  focus                        String?
+  description                  String?
+  tagline                      String?
+  logoUrl                      String?
+  faviconUrl                   String?
+  typographyPreset             PublicationTypography    @default(MODERN)
+  generationFrequency          GenerationFrequency      @default(NONE)
+  tokenLimit                   Int?                     @default(0)
+  tokenRemaining               Int?                     @default(0)
+  totalUsage                   Int?                     @default(0)
+  autoRelease                  Boolean                  @default(false)
+  keywords                     Json?
+  audience                     String?
+  lastGeneratedAt              DateTime?
+  humanHourlyRateUsd           Int                      @default(35)
+  humanWordsPerHour            Int                      @default(400)
+  gtagId                       String?
+  apiKey                       String?
+  gamNetworkCode               String?
+  allowAds                     Boolean                  @default(false)
+  allowGtag                    Boolean?
+  allowShapes                  Boolean                  @default(false)
+  aiToneOfVoice                String?
+  aiControversyLevel           String?
+  discloseAiContent            Boolean                  @default(false)
+  communityInsight             Json?
+  insightUpdatedAt             DateTime?
+  billingPlan                  BillingPlans             @default(MONTHLY)
+  firstPaidAt                  DateTime?
+  nextBillingAt                DateTime?
+  lastInvoicedAt               DateTime?
+  monthlyPayment               Int?                     @default(0)
+  annualPayment                Int?                     @default(0)
+  stripeCustomerId             String?
+  stripeSubscriptionId         String?
+  stripePriceId                String?
+  currency                     String?                  @default("USD")
+  lastPaidAt                   DateTime?                @default(now())
+  lastTokenRefilled            DateTime?                @default(now())
+  language                     Language                 @default(en)
+  theme                        Theme                    @default(blue)
+  translationMode              TranslationMode          @default(OFF)
+  translationLanguages         Language[]
+  users                        User[]
+  tags                         Tag[]
+  articles                     Article[]
+  articleViews                 ArticleView[]
+  articleSeries                ArticleSeries[]
+  articleDrafts                ArticleDraft[]
+  emojis                       Emoji[]
+  userBans                     UserBan[]
+  socials                      Social[]
+  logs                         Log[]                    @relation("LogToClientSite")
+  features                     ClientFeature[]
+  linkedinCompanies            LinkedinCompany[]
+  articleTranslations          ArticleTranslation[]
+  adEarnings                   AdEarning[]
+  searchConsoleConnection      SearchConsoleConnection?
+  searchConsoleMetrics         SearchConsoleMetric[]
+  tenantMemberships            TenantMembership[]
+  tenantInvitations            TenantInvitation[]
+  activeSessions               Session[]                @relation("SessionActiveTenant")
 
-  @@index([domain, name, plan, billingPlan, enableAi, enableCron, enableSentiment])
+  @@index([domain, name, plan, billingPlan])
 }
 
 model Feature {
@@ -757,6 +892,48 @@ model AdEarning {
   @@unique([clientSiteId, periodStart, periodEnd])
   @@index([payoutStatus])
   @@index([clientSiteId, periodStart])
+}
+
+model SearchConsoleConnection {
+  id                    String                        @id() @default(uuid())
+  createdAt             DateTime                      @default(now())
+  updatedAt             DateTime?                     @updatedAt()
+  deletedAt             DateTime?
+  clientSiteId          String                        @unique()
+  clientSite            ClientSite                    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  googleSubjectId       String
+  googleEmail           String?
+  propertyUrl           String?
+  permissionLevel       String?
+  encryptedRefreshToken String
+  grantedScopes         String[]
+  status                SearchConsoleConnectionStatus @default(CONNECTED)
+  lastSyncAt            DateTime?
+  lastErrorAt           DateTime?
+  lastError             String?
+}
+
+model SearchConsoleMetric {
+  id           String     @id() @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt()
+  deletedAt    DateTime?
+  clientSiteId String
+  clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  propertyUrl  String
+  date         DateTime
+  page         String
+  query        String     @default("")
+  country      String     @default("")
+  device       String     @default("")
+  clicks       Float      @default(0)
+  impressions  Float      @default(0)
+  ctr          Float      @default(0)
+  position     Float      @default(0)
+
+  @@unique([clientSiteId, date, page, query, country, device])
+  @@index([clientSiteId, date])
+  @@index([clientSiteId, page, date])
 }
 
 model Notification {

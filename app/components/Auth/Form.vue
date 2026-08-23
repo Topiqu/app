@@ -139,6 +139,7 @@ import { signInSchema } from '~~/shared/utils/auth'
 
 const props = defineProps<{
   mode?: 'login' | 'register' | 'forgot' | 'reset'
+  redirectTo?: string
 }>()
 
 const toast = useToast()
@@ -146,6 +147,12 @@ const theme = useThemeStore()
 const { data, signIn } = useAuth()
 const { setLocale } = useI18n()
 const localePath = useLocalePath()
+const afterSignIn = (role: string) => {
+  if (props.redirectTo) return navigateTo(props.redirectTo)
+  if (role === 'superadmin') return navigateTo(localePath({ name: 'master' }))
+  if (role === 'admin') return navigateTo(localePath({ name: 'admin' }))
+  return navigateTo(localePath({ name: 'uzivatel' }))
+}
 
 const init = {
   email: '',
@@ -187,6 +194,12 @@ const totpDigits = computed<string[]>({
   get: () => form.value.totpCode.split(''),
   set: (value) => (form.value.totpCode = value.join('')),
 })
+
+const signInWithCredentials = async (credentials: Record<string, string>) => {
+  const result = await signIn('credentials', { ...credentials, redirect: false })
+  if (result?.error)
+    throw createError({ statusCode: result.status || 401, message: $t('common.errors.invalidCredentials') })
+}
 
 const isPasswordFormValid = computed(() => {
   return internalMode.value === 'register'
@@ -234,22 +247,15 @@ const submit = async () => {
         form.value.totpChallenge = totpData.challenge
         internalMode.value = 'totp'
       } else {
-        await signIn('credentials', {
+        await signInWithCredentials({
           email: form.value.email,
           password: form.value.password,
-          redirect: false,
         })
         const user = await $fetch(`/api/users/${totpData.id}` as `/api/users/:id`)
-        await $fetch(`/api/users/${totpData.id}` as `/api/users/:id`, {
-          method: 'PATCH',
-          body: { lastLogin: Date.now() },
-        })
         setLocale(user.language)
         theme.mode = user.theme
         toast.add({ color: 'success', title: $t('common.auth.loginSuccess') })
-        if (user.role === 'superadmin') navigateTo(localePath({ name: 'master' }))
-        else if (user.role === 'admin') navigateTo(localePath({ name: 'admin' }))
-        else navigateTo(localePath({ name: 'uzivatel' }))
+        afterSignIn(user.role)
         form.value = init
       }
     }
@@ -268,20 +274,15 @@ const verify = async () => {
       method: 'POST',
       body: { email: form.value.email, code: form.value.code },
     })
-    await signIn('credentials', {
+    await signInWithCredentials({
       email: form.value.email,
       password: form.value.password,
-      redirect: false,
     })
     const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
-    await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { lastLogin: Date.now() },
-    })
     setLocale(user.language)
     theme.mode = user.theme
     toast.add({ color: 'success', title: $t('common.auth.verifySuccess') })
-    navigateTo(localePath({ name: 'index' }))
+    afterSignIn(user.role)
   } catch (e: any) {
     toast.add({ color: 'error', title: e.message || $t('common.auth.verifyFailed') })
   } finally {
@@ -299,22 +300,15 @@ const verifyTotp = async () => {
       body: { token, challenge: form.value.totpChallenge },
     })
     if (!res.isValid) throw createError({ statusCode: 400, message: 'Neplatný TOTP kód' })
-    await signIn('credentials', {
+    await signInWithCredentials({
       email: form.value.email,
       password: form.value.password,
       totp: token,
-      redirect: false,
     })
     const user = await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`)
-    await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { lastLogin: Date.now() },
-    })
     setLocale(user.language)
     theme.mode = user.theme
-    if (user.role === 'superadmin') navigateTo(localePath({ name: 'master' }))
-    else if (user.role === 'admin') navigateTo(localePath({ name: 'admin' }))
-    else navigateTo(localePath({ name: 'uzivatel' }))
+    afterSignIn(user.role)
     form.value = init
     internalMode.value = 'login'
   } catch (e: any) {
@@ -328,7 +322,7 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
   try {
     const mainDomain = import.meta.dev ? 'localhost' : 'app.topiqu.com'
     const isMainDomain = window.location.hostname === mainDomain
-    const finalRedirectUrl = window.location.href
+    const finalRedirectUrl = resolveAuthRedirect(window.location.href, props.redirectTo)
 
     if (!isMainDomain) {
       const authBaseUrl = import.meta.dev ? 'http://localhost:3000' : 'https://app.topiqu.com'
@@ -348,10 +342,6 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
     }
 
     const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
-    await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { lastLogin: Date.now() },
-    })
     setLocale(user.language)
     theme.mode = user.theme
     form.value = init

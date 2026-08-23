@@ -1,9 +1,23 @@
+import type { Language } from '@prisma/client'
+import type { CoverCredit } from '~~/shared/utils/imageCredit'
+
 import { z } from 'zod'
 import { generateObject, generateText, streamObject } from 'ai'
 
-import { fetchUnsplashImage } from '../unsplash'
+import type { ArticleImage } from '../images/types'
 
-const articleSchema = z.object({
+import { buildImageHtml, type CaptionLabels } from '../images/caption'
+import { allowsGeneratedFallback, findCoverImage, findStockImage } from '../images/chain'
+import { applyFormat, ARTICLE_FORMATS, formatRules, type ArticleFormat } from './formats'
+
+const imageInstruction = z.object({
+  type: z
+    .enum(['photo', 'stock', 'generate'])
+    .describe("'photo' for a real subject, 'stock' for mood, 'generate' only for what cannot be photographed"),
+  query: z.string().min(2).max(1000).describe('English search keyword, or a generation prompt for type=generate'),
+})
+
+export const articleSchema = z.object({
   title: z.string().min(5).max(500).describe('Catchy title 5-15 words'),
   perex: z.string().min(20).max(1000).describe('Short introductory paragraph (3-4 sentences)'),
   content: z
@@ -11,19 +25,38 @@ const articleSchema = z.object({
     .min(500)
     .max(20000)
     .describe(
-      'Article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic, you can also add <br> tags at the end of each section/paragraph for v-html on frontend. Include image slots like [[IMAGE1]] and poll slots like [[POLL1]] where they should appear.',
+      'The article body at the length the format asks for, with h2, h3, strong, blockquote, underline, italic and ul/ol/li. Never pad between blocks with <br> or empty paragraphs — the stylesheet owns the spacing. Include image slots like [[IMAGE1]] where they should appear.',
     ),
-  coverImage: z
-    .object({
-      type: z.enum(['unsplash', 'generate']),
-      query: z.string().min(2).max(1000),
-    })
-    .describe('Cover image instruction'),
-  images: z
+  answer: z
+    .string()
+    .max(600)
+    .describe(
+      '40-60 word direct answer to the question the title poses, in the article language. Empty string when the format carries no answer.',
+    ),
+  keyTakeaways: z
+    .array(z.string().min(10).max(200))
+    .max(5)
+    .describe('3-5 standalone factual takeaways, or empty when the format does not summarise'),
+  faq: z
     .array(
       z.object({
-        type: z.enum(['unsplash', 'generate']),
-        query: z.string().min(2).max(1000),
+        question: z.string().min(5).max(200).describe('Question a reader would actually type'),
+        answer: z.string().min(20).max(600).describe('Self-contained answer, 1-3 sentences'),
+      }),
+    )
+    .max(5)
+    .describe('2-5 FAQ entries, or empty when the format raises no recurring questions'),
+  coverImage: imageInstruction.describe('Cover image instruction'),
+  images: z
+    .array(
+      imageInstruction.extend({
+        caption: z
+          .string()
+          .min(3)
+          .max(200)
+          .describe(
+            'One factual sentence in the article language saying what the picture shows. No "Illustrative", "AI" or "Source:" — those are added automatically.',
+          ),
       }),
     )
     .describe('Array of image instructions corresponding to slots in content'),
@@ -34,8 +67,7 @@ const articleSchema = z.object({
         options: z.array(z.string().min(1).max(255)).min(2).max(5).describe('Poll options (2-5)'),
       }),
     )
-    .optional()
-    .describe('Array of polls corresponding to slots in content'),
+    .describe('Array of polls corresponding to slots in content, empty array if none'),
   tags: z
     .array(z.string())
     .max(5)
@@ -48,54 +80,82 @@ const articleSchema = z.object({
 
 type ArticleObject = (typeof articleSchema)['_output']
 
-const researchTopic = async (prompt: string, maxSearchResults: number) => {
+/** The brief's own output ceiling. Web search bills input and search context on top of it, so this
+ *  is a headroom guard for the balance check, never the real cost — that comes back as `usage`. */
+const RESEARCH_TOKENS = 1200
+
+/** Minimum balance to start an article at all, before research is considered. */
+const ARTICLE_TOKEN_FLOOR = 1500
+
+const researchTopic = async (prompt: string) => {
   try {
-    const { text } = await generateText({
+    const { text, usage } = await generateText({
       model: aiModel('articleResearch'),
       instructions: `
         You are a research assistant preparing grounding material for another writer.
-        Search the live web and the X network for the user's topic.
+        Search the live web for the user's topic.
         Return a compact brief: 5-10 verified facts, each on its own line.
         Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
         Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
         Do not write an article, an intro, or any prose beyond the facts.
       `.trim(),
       prompt,
-      maxOutputTokens: 1200,
-      providerOptions: {
-        xai: {
-          searchParameters: { mode: 'on', maxSearchResults },
-        },
-      },
+      maxOutputTokens: RESEARCH_TOKENS,
+      tools: { web_search: aiWebSearchTool() as never },
     })
 
-    return text.trim() || null
-  } catch (e: any) {
-    console.error('[ai/article] research step failed, continuing ungrounded:', e?.message || e)
+    return { brief: text.trim() || null, tokens: usage?.totalTokens ?? 0 }
+  } catch (error) {
+    // Degrading to ungrounded is the whole point of the catch, but it is also indistinguishable
+    // from "the plan has no research" once the article lands with an empty `sources` array.
+    await reportCaughtError('Article research failed, continuing ungrounded', error, { prompt })
 
-    return null
+    return { brief: null, tokens: 0 }
   }
 }
 
-const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
-  const { tokenRemaining, plan, focus, keywords, audience, tags, aiToneOfVoice, aiControversyLevel, communityInsight } =
-    await prisma.clientSite.findFirstOrThrow({
-      select: {
-        tokenRemaining: true,
-        focus: true,
-        keywords: true,
-        audience: true,
-        tags: { select: { id: true, name: true } },
-        plan: true,
-        aiToneOfVoice: true,
-        aiControversyLevel: true,
-        communityInsight: true,
-      },
-      where: { id: clientSiteId },
-    })
+/**
+ * `undefined` researches the prompt itself (the manual editor flow, where the prompt *is* the
+ * topic). `false` skips the step. `{ query }` researches that query instead — the cron passes
+ * this, because its prompt is a template, not a topic.
+ */
+export type ResearchOption = { query: string } | false | undefined
 
-  if (!tokenRemaining || tokenRemaining < 1500)
-    throw createError({ statusCode: 403, statusMessage: 'Insufficient tokens (minimum 1500 required)' })
+const buildArticleConfig = async (
+  clientSiteId: string,
+  prompt: string,
+  { research: researchOption, format }: { research?: ResearchOption; format?: ArticleFormat } = {},
+) => {
+  const {
+    tokenRemaining,
+    focus,
+    keywords,
+    audience,
+    tags,
+    aiToneOfVoice,
+    aiControversyLevel,
+    communityInsight,
+    language,
+  } = await prisma.clientSite.findFirstOrThrow({
+    select: {
+      tokenRemaining: true,
+      language: true,
+      focus: true,
+      keywords: true,
+      audience: true,
+      tags: { select: { id: true, name: true } },
+      aiToneOfVoice: true,
+      aiControversyLevel: true,
+      communityInsight: true,
+    },
+    where: { id: clientSiteId },
+  })
+
+  if (!tokenRemaining || tokenRemaining < ARTICLE_TOKEN_FLOOR)
+    throw createError({
+      statusCode: 403,
+      statusMessage: `Insufficient tokens (minimum ${ARTICLE_TOKEN_FLOOR} required)`,
+    })
 
   const maxOutputTokens = Math.min(tokenRemaining, 6000)
 
@@ -116,16 +176,28 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
 
   const controversyPrompt = getControversyPrompt(aiControversyLevel)
 
-  const searchOn = plan === 'PREMIUM' || (plan === 'CUSTOM' && maxOutputTokens > 5000)
-  const research = searchOn ? await researchTopic(prompt, 10) : null
+  // Research used to be a PREMIUM / large-CUSTOM perk, which made an empty `sources` array the
+  // guaranteed outcome everywhere else — with no brief the model is told to return one. Open to
+  // every plan now; the only gate left is the balance, because the brief bills on top of the
+  // article and must not eat the floor the article itself needs.
+  const searchOn = tokenRemaining >= ARTICLE_TOKEN_FLOOR + RESEARCH_TOKENS
+  const researchQuery = researchOption === undefined ? prompt : researchOption ? researchOption.query : null
+  const { brief, tokens: researchTokens } =
+    searchOn && researchQuery ? await researchTopic(researchQuery) : { brief: null, tokens: 0 }
 
-  const researchPrompt = research
-    ? `\nResearch brief (gathered from live web/X search — this is your only factual grounding):\n${research}\nEvery entry in "sources" MUST be a URL that appears verbatim in this brief. If the brief lists no URLs, return an empty sources array. Never invent or reconstruct a source URL.`
-    : `\nYou have no live search results for this article. Return an empty "sources" array rather than inventing URLs.`
+  const researchPrompt = brief
+    ? `\nResearch brief (gathered from live web search — this is your only factual grounding):\n${brief}\nEvery entry in "sources" MUST be a URL that appears verbatim in this brief. If the brief lists no URLs, return an empty sources array. Never invent or reconstruct a source URL.`
+    : `\nYou have no live search results for this article. Return an empty "sources" array rather than inventing URLs. Do not state specific statistics, percentages, study results or named-organisation findings you cannot ground — write about the topic without inventing figures.`
 
   const communityPrompt = communityInsight
     ? `\nCommunity Insights to consider:\n- Audience mood summary: ${(communityInsight as any).summary}\n- Frequently discussed points: ${((communityInsight as any).topPoints || []).join(', ')}\nEnsure the article subtly addresses or acknowledges these current community feelings and discussion points where relevant.`
     : ''
+
+  // No format is the manual editor flow, where the author's prompt is the brief — it keeps the
+  // full menu, and only the cron's topic picker spends a format.
+  const spec = format ? ARTICLE_FORMATS[format] : null
+  const pollsAllowed = spec ? spec.poll : true
+  const tablesAllowed = spec ? spec.table : true
 
   const instructions = `
       You are a professional content writer focusing on ${focus || 'common topics'}.
@@ -137,123 +209,195 @@ const buildArticleConfig = async (clientSiteId: string, prompt: string) => {
       {
         "title": "catchy title 5-15 words",
         "perex": "short introductory paragraph (3-4 sentences)",
-        "content": "article 500–1000 words with h1, h2, h3, strong, blockquote, underline, italic for v-html on frontend. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear. If relevant, include poll slots like [[POLL1]], [[POLL2]] to engage the audience.",
-        "coverImage": {"type": "unsplash", "query": "search keyword OR generation prompt"},
-        "images": [{"type": "unsplash", "query": "keyword for IMAGE1"}, {"type": "generate", "query": "prompt for IMAGE2"}, ...],
+        "answer": "40-60 words answering the title's question outright",
+        "keyTakeaways": ["standalone factual sentence", "..."] or [],
+        "faq": [{"question": "...", "answer": "..."}] or [],
+        "content": "the article body for v-html on frontend, with h2, h3, strong, blockquote, underline, italic and lists. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.",
+        "coverImage": {"type": "stock", "query": "search keyword OR generation prompt"},
+        "images": [{"type": "photo", "query": "keyword for IMAGE1", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
         "tags": ["ID's of relevant tags from the provided tags list, up to 5, that best fit the article topic"],
-        "sources": ["source URL or reference 1", "source URL or reference 2", ...]
+        "sources": ["full source URL 1", "full source URL 2", ...]
       }.
       The title must be engaging.
+      Start the body at h2 — the page already renders the title as its h1.
+
+      ${formatRules(format)}
+
       Naturally incorporate keywords if provided.
       ${keywords && `Keywords: ${JSON.stringify(keywords)}`}.
       Write in the language of the prompt or the company's presentation language.
       
       Image Rules:
-      For the coverImage and each image in the content, you MUST choose between two tools: 'unsplash' or 'generate'.
-      - Use 'unsplash': For all common topics (food, lifestyle, nature, business, emotions, technology, people). Provide a short, precise English search keyword (e.g. "office meeting").
-      - Use 'generate': ONLY as a last resort for highly specific, non-existent concepts, humor, or abstract ideas that cannot be found on Unsplash (e.g. "AI eating old code"). Provide a detailed generation prompt. Do NOT generate real people or politicians.
-      
+      For the coverImage and each image in the content you MUST pick one of three intents. You are describing what the picture needs to be, not where it comes from — the system picks the library.
+      - Use 'photo': for a real, identifiable subject — a named person, place, organisation, product or event (e.g. "Vladimir Putin 2024", "Tokyo Shibuya crossing", "PlayStation 5 console"). Name the subject in English the way a photo archive would catalogue it.
+      - Use 'stock': for mood, atmosphere or a generic scene where any fitting picture works (e.g. "office meeting", "gaming setup at night"). Short, precise English keyword.
+      - Use 'generate': ONLY for what cannot be photographed — abstract ideas, humor, non-existent concepts (e.g. "AI eating old code"). Provide a detailed generation prompt. NEVER use it for a real person, a real place or a real event.
+      Each content image also needs a "caption": one factual sentence, in the same language as the article, saying what is in the picture — for 'photo' name who or what it is and when. Never write "Illustrative image", "AI generated", "Source:" or any credit into the caption; the system adds those itself.
+
       If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.
-      If the article would benefit from interactive audience engagement, include 0-2 poll slots in appropriate places in the content using [[POLL1]], [[POLL2]], etc. Provide corresponding questions and options (2-5 options per poll) in the polls array.
-      
+      ${
+        pollsAllowed
+          ? 'A poll is optional and the default is none. Add one only where it opens a question the article deliberately leaves open — at most 2 slots as [[POLL1]], [[POLL2]], with the question and 2-5 options per poll in the polls array. Otherwise return an empty polls array and write no slot.'
+          : 'Return an empty polls array and never write a [[POLL]] slot into the content.'
+      }
+
+      ${
+        tablesAllowed
+          ? `Tables:
+      When the article compares options or presents figures (prices, budgets, specs, timelines), render them as a real HTML table, never as tab- or pipe-separated text.
+      Use proper markup: <table><thead><tr><th>…</th></tr></thead><tbody><tr><td>…</td></tr></tbody></table>.
+      Keep tables to a maximum of 4 columns so they stay readable on mobile, and never put an image, a poll slot or a nested table inside a cell.
+      A table earns its place by holding figures the reader compares across rows. Never build one out of prose.`
+          : 'Never render a <table>. Whatever figures this format needs belong in the prose.'
+      }
+
       Twitter/X Embeds:
       If you find a highly relevant post on the X network (Twitter) to illustrate the article, DO NOT just return the URL. Instead, return it wrapped in this exact HTML format:
       <blockquote class="twitter-tweet"><a href="[INSERT TWEET URL HERE]"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
       
-      Include 0-5 credible sources (URLs or references) relevant to the article topic in the sources array, if necessary (ie. jokes, short skits, or others).
+      The research rule above is the only authority on "sources" — never add an entry it does not permit.
       Only select tags from this list: ${JSON.stringify(tags || [])}.
     `.trim()
 
   return {
-    model: aiModel('articleWriter'),
-    maxOutputTokens,
-    instructions,
-    prompt,
-    schema: articleSchema,
-  } as const
+    language,
+    // Billed on top of `usage` by every caller: the brief is a separate model call, so it is
+    // invisible to the writer's own token count. It went unbilled entirely while research was a
+    // PREMIUM perk, and opening the gate would have multiplied that leak across every tenant.
+    researchTokens,
+    config: {
+      model: aiModel('articleWriter'),
+      maxOutputTokens,
+      instructions,
+      prompt,
+      schema: articleSchema,
+    } as const,
+  }
 }
 
 type FinalizeImage = { slot: number; html: string }
 
-export const finalizeArticle = async (object: ArticleObject, onImage?: (image: FinalizeImage) => void) => {
+/** Falls back to English wording rather than dropping the disclosure when a key is missing. */
+const captionLabels = async (language: Language): Promise<CaptionLabels> => {
+  const t = await getServerTranslator(language)
+
+  return {
+    illustration: t('articles.image.illustration') || 'Illustrative image',
+    ai: t('articles.image.ai') || 'Illustrative image (AI)',
+    photoBy: t('articles.image.photoBy') || 'photo: {author}',
+  }
+}
+
+export const finalizeArticle = async (
+  object: ArticleObject,
+  language: Language = 'en',
+  onImage?: (image: FinalizeImage) => void,
+) => {
   const generateImageOptions = {
     outputDir: 'article-images',
     filenamePrefix: 'article',
   }
 
-  let articleImageUrl = ''
-  if (object.coverImage) {
-    if (object.coverImage.type === 'unsplash') {
-      const unsplashRes = await fetchUnsplashImage(object.coverImage.query)
-      if (unsplashRes) {
-        articleImageUrl = unsplashRes.url
-      }
+  // A failed image must never cost the author the whole article, so every generation is
+  // best-effort: report and carry on with one image fewer. Reported rather than logged because
+  // swallowing it here is exactly what makes "the images did not appear" undiagnosable — nothing
+  // downstream throws, so this is the only place the cause exists.
+  const tryGenerateImage = async (prompt: string, opts?: { filenameSuffix?: string }) => {
+    try {
+      const { url } = await generateImage(prompt, { ...generateImageOptions, ...opts })
+      return url
+    } catch (error) {
+      await reportCaughtError('Article image generation failed', error, { prompt })
+      return null
     }
-    // Fallback or generate
-    if (!articleImageUrl) {
-      const { url } = await generateImage(object.coverImage.query, generateImageOptions)
-      articleImageUrl = url
-    }
-  } else {
-    // Legacy fallback just in case AI omits it
-    const { url } = await generateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024), generateImageOptions)
-    articleImageUrl = url
   }
 
-  const buildImageHtml = (url: string, desc: string, attribution: string) =>
-    `<p style="text-align: center;"><img src="${url}" alt="${desc}" />${attribution}</p>`
+  let articleImageUrl = ''
+  let articleImageCredit: CoverCredit | null = null
+  if (object.coverImage) {
+    const hit = object.coverImage.type === 'generate' ? null : await findCoverImage(object.coverImage.query)
+    articleImageUrl = hit?.url ?? (await tryGenerateImage(object.coverImage.query)) ?? ''
 
-  const generatedImages = await Promise.all(
+    // Whatever it turned out to be, not what was asked for: a stock lookup that came back empty
+    // silently became a generated picture, and that is the case the reader most needs told.
+    if (articleImageUrl) articleImageCredit = hit ? { kind: 'illustration', credit: hit.credit } : { kind: 'ai' }
+  } else {
+    // Legacy fallback just in case AI omits it
+    articleImageUrl = (await tryGenerateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024))) ?? ''
+    if (articleImageUrl) articleImageCredit = { kind: 'ai' }
+  }
+
+  const labels = await captionLabels(language)
+
+  /** `photo` deliberately has no generated fallback — see `findStockImage`. */
+  const resolveImage = async (
+    instruction: ArticleObject['images'][number],
+    idx: number,
+  ): Promise<ArticleImage | null> => {
+    const hit = await findStockImage(instruction.type, instruction.query)
+    if (hit) return { url: hit.image.url, kind: hit.kind, alt: hit.image.alt, credit: hit.image.credit }
+
+    if (!allowsGeneratedFallback(instruction.type)) return null
+
+    const url = await tryGenerateImage(instruction.query, { filenameSuffix: idx.toString() })
+
+    return url ? { url, kind: 'ai' } : null
+  }
+
+  const settledImages = await Promise.all(
     object.images.map(async (img, idx) => {
-      let html: string
-      if (img.type === 'unsplash') {
-        const unsplashRes = await fetchUnsplashImage(img.query)
-        if (unsplashRes) {
-          const attribution = `<br><small style="color: gray;">Zdroj: <a href="${unsplashRes.authorUrl}?utm_source=rasg&utm_medium=referral" target="_blank">${unsplashRes.authorName}</a> na Unsplash</small>`
-          html = buildImageHtml(unsplashRes.url, img.query, attribution)
-          const image = { slot: idx + 1, html }
-          onImage?.(image)
-          return image
-        }
-      }
-      // fallback to AI generation
-      const { url } = await generateImage(img.query, { ...generateImageOptions, filenameSuffix: idx.toString() })
-      html = buildImageHtml(url, img.query, '')
-      const image = { slot: idx + 1, html }
+      const resolved = await resolveImage(img, idx)
+      if (!resolved) return null
+
+      const image = { slot: idx + 1, html: buildImageHtml(resolved, img.caption, labels) }
       onImage?.(image)
+
       return image
     }),
   )
 
-  for (const { slot, html } of generatedImages) {
-    object.content = object.content.replace(`[[IMAGE${slot}]]`, html)
-  }
+  const generatedImages = settledImages.filter((image) => image !== null)
 
-  if (object.polls) {
-    for (const [idx, poll] of object.polls.entries()) {
-      const pollId = crypto.randomUUID()
-      const optionObjects = poll.options.map((label: string) => ({ label }))
-      const escapedOptions = JSON.stringify(optionObjects).replace(/"/g, '&quot;')
-      const pollHtml = `<div data-type="poll" data-id="${pollId}" data-question="${poll.question}" data-options="${escapedOptions}"></div>`
-      object.content = object.content.replace(`[[POLL${idx + 1}]]`, pollHtml)
+  // Before the slots are filled: the image attribution carries a deliberate mid-paragraph `<br>`
+  // that this pass must not see as padding.
+  object.content = dropBlankLines(object.content)
+  object.content = applyContentSlots(object.content, 'IMAGE', generatedImages)
+
+  const polls = (object.polls ?? []).map((poll, idx) => {
+    const pollId = crypto.randomUUID()
+    const optionObjects = poll.options.map((label: string) => ({ label }))
+    const escapedOptions = JSON.stringify(optionObjects).replace(/"/g, '&quot;')
+    return {
+      slot: idx + 1,
+      html: `<div data-type="poll" data-id="${pollId}" data-question="${poll.question}" data-options="${escapedOptions}"></div>`,
     }
-  }
+  })
+  object.content = applyContentSlots(object.content, 'POLL', polls)
 
-  return { ...object, articleImageUrl }
+  return { ...object, articleImageUrl, articleImageCredit }
 }
 
-export const generateArticle = async (clientSiteId: string, prompt: string) => {
-  const config = await buildArticleConfig(clientSiteId, prompt)
+export const generateArticle = async (
+  clientSiteId: string,
+  prompt: string,
+  opts?: { research?: ResearchOption; format?: ArticleFormat },
+) => {
+  const { config, language, researchTokens } = await buildArticleConfig(clientSiteId, prompt, opts)
   const { object, usage } = await generateObject(config)
-  const finalized = await finalizeArticle(object)
+  const finalized = await finalizeArticle(applyFormat(object, opts?.format), language)
 
-  return { ...finalized, usage }
+  return { ...finalized, usage, researchTokens }
 }
 
 export const streamArticle = async (clientSiteId: string, prompt: string, abortSignal?: AbortSignal) => {
-  const config = await buildArticleConfig(clientSiteId, prompt)
+  const { config, language, researchTokens } = await buildArticleConfig(clientSiteId, prompt)
   const result = streamObject({ ...config, abortSignal })
 
-  return { result, finalize: finalizeArticle }
+  // The caption labels follow the site's language, which only this side knows — so the endpoint
+  // keeps handing over just the object and its image callback.
+  const finalize = (object: ArticleObject, onImage?: (image: FinalizeImage) => void) =>
+    finalizeArticle(object, language, onImage)
+
+  return { result, finalize, researchTokens }
 }

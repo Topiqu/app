@@ -159,6 +159,28 @@
         />
       </UFieldGroup>
 
+      <UPopover>
+        <UButton
+          icon="i-mdi-table-edit"
+          color="neutral"
+          variant="ghost"
+          :aria-label="$t('articles.editor.toolbar.table')"
+        />
+        <template #content>
+          <div class="grid gap-1 p-2">
+            <UButton
+              v-for="command in tableCommands"
+              :key="command.key"
+              :icon="`i-${command.icon}`"
+              color="neutral"
+              variant="ghost"
+              :label="$t(`articles.editor.toolbar.${command.key}`)"
+              @click="run(command.run)"
+            />
+          </div>
+        </template>
+      </UPopover>
+
       <TiptapColorPicker v-model="textColor" />
       <TiptapCharacterCount :editor :limit class="shrink-0 sm:ml-auto" />
     </div>
@@ -179,6 +201,15 @@ const emit = defineEmits<{
 
 const sk = useTiptapShortcuts()
 const alignments = ['left', 'center', 'right', 'justify'] as const
+
+const tableCommands = [
+  { key: 'addColumnAfter', icon: 'mdi-table-column-plus-after', run: (c: ChainedCommands) => c.addColumnAfter() },
+  { key: 'deleteColumn', icon: 'mdi-table-column-remove', run: (c: ChainedCommands) => c.deleteColumn() },
+  { key: 'addRowAfter', icon: 'mdi-table-row-plus-after', run: (c: ChainedCommands) => c.addRowAfter() },
+  { key: 'deleteRow', icon: 'mdi-table-row-remove', run: (c: ChainedCommands) => c.deleteRow() },
+  { key: 'toggleHeaderRow', icon: 'mdi-table-headers-eye', run: (c: ChainedCommands) => c.toggleHeaderRow() },
+  { key: 'deleteTable', icon: 'mdi-table-remove', run: (c: ChainedCommands) => c.deleteTable() },
+] as const
 
 const run = (fn: (c: ChainedCommands) => ChainedCommands) => {
   fn(editor.chain().focus()).run()

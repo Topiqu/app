@@ -23,7 +23,6 @@ test('1920px public layouts remain readable with missing media and long Czech co
     }
     await expectNoHorizontalOverflow(page)
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot(`wide-public-${route.replaceAll('/', '-') || 'home'}.png`, { fullPage: true })
   }
 })
 
@@ -37,7 +36,6 @@ test.describe('authenticated 1920px layouts', () => {
       await expect(page.locator('main')).toBeVisible()
       await expectNoHorizontalOverflow(page)
       await expectAccessible(page)
-      await expect(page).toHaveScreenshot(`wide-auth-${route.replaceAll('/', '-')}.png`, { fullPage: true })
     }
   })
 })

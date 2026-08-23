@@ -37,8 +37,9 @@
 </template>
 
 <script setup lang="ts">
-const email = defineModel<string>('email', { required: true })
-const isEmailVerified = defineModel<boolean>('isEmailVerified', { required: true })
+// Defaults rather than `required`: the panel renders before `/account` resolves.
+const email = defineModel<string>('email', { default: '' })
+const isEmailVerified = defineModel<boolean>('isEmailVerified', { default: false })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
 const toast = useToast()

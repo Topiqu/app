@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
   if (body.type === 'LIKE' && comment.userId && comment.userId !== user.id) {
     await prisma.notification.create({
       data: {
-        message: t('notifications.userLikedComment', { user: user.name || 'Anonymous' })!,
+        message: t('common.notifications.userLikedComment', { user: user.name || 'Anonymous' })!,
         userId: comment.userId,
         type: 'LIKE',
       },

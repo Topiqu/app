@@ -5,8 +5,23 @@ const prisma = new PrismaClient()
 
 const TEST_PASSWORD = 'test1234'
 
+const FEATURE_CATALOG = [
+  { code: 'AI' as const, name: 'AI Generation', priceMonthly: 29 },
+  { code: 'SENTIMENT' as const, name: 'Sentiment Analysis', priceMonthly: 19 },
+  { code: 'ARTICLE_CRONS' as const, name: 'Scheduled Article Generation', priceMonthly: 19 },
+  { code: 'SEARCH_CONSOLE' as const, name: 'Search Console Intelligence', priceMonthly: 29 },
+]
+
 async function main() {
   const passwordHash = await argon.hash(TEST_PASSWORD)
+
+  for (const feature of FEATURE_CATALOG) {
+    await prisma.feature.upsert({
+      where: { code: feature.code },
+      update: {},
+      create: feature,
+    })
+  }
 
   const site = await prisma.clientSite.upsert({
     where: { name: 'topiqu-dev' },
@@ -61,7 +76,7 @@ async function main() {
   ]
 
   for (const u of users) {
-    await prisma.user.upsert({
+    const user = await prisma.user.upsert({
       where: { email: u.email },
       update: {
         username: u.username,
@@ -81,6 +96,29 @@ async function main() {
         clientSiteId: 'clientSiteId' in u ? u.clientSiteId : null,
       },
     })
+    if (u.role === 'admin')
+      await prisma.tenantMembership.upsert({
+        where: { clientSiteId_userId: { clientSiteId: site.id, userId: user.id } },
+        update: {},
+        create: {
+          clientSiteId: site.id,
+          userId: user.id,
+          role: 'OWNER',
+          scopes: [
+            'ARTICLE_WRITE',
+            'ARTICLE_WRITE_OTHERS',
+            'ARTICLE_PUBLISH',
+            'MEMBER_CONTROL',
+            'TENANT_SETTINGS',
+            'INTEGRATION_CONTROL',
+            'BILLING_CHANGE',
+            'API_KEY_CONTROL',
+            'AI_USE',
+            'ANALYTICS_READ',
+            'CONTENT_MODERATE',
+          ],
+        },
+      })
   }
 
   const admin = await prisma.user.findUniqueOrThrow({ where: { email: 'admin@test.local' } })

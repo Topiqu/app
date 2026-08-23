@@ -1,10 +1,63 @@
 {
   "common": {
+    "searchConsole": {
+      "title": "Google Search Console",
+      "premiumOnly": "Search Console performance intelligence and AI recommendations are available on PREMIUM.",
+      "connectTitle": "Connect real performance to your content strategy",
+      "connectDescription": "Topiqu requests read-only access and uses the data for article metrics and optimization recommendations.",
+      "connect": "Connect Google account",
+      "disconnect": "Disconnect",
+      "noProperty": "Choose a Search Console property",
+      "chooseProperty": "Which website belongs to this project?",
+      "choosePlaceholder": "Choose a property",
+      "lastSync": "Last sync:"
+    },
+    "integrationsCatalog": {
+      "title": "Integrations",
+      "description": "Connect Topiqu to services for measurement, distribution, and publishing.",
+      "open": "Open settings",
+      "active": "Active",
+      "optional": "Optional",
+      "automation": "Automation",
+      "benefits": "How it helps",
+      "setup": "How to enable it",
+      "gscDescription": "Turn search performance into concrete content opportunities.",
+      "gscBenefitOne": "See article queries, clicks, CTR, and average positions.",
+      "gscBenefitTwo": "Topiqu identifies content near top positions and unusually low CTR.",
+      "gscStepOne": "Connect a Google account with Search Console access.",
+      "gscStepTwo": "Choose the property that belongs to this website.",
+      "gscStepThree": "Topiqu starts syncing finalized performance data every day.",
+      "analyticsDescription": "Add your own GA4 measurement to the website published by Topiqu.",
+      "analyticsBenefitOne": "Traffic data remains in your own Google Analytics property.",
+      "analyticsBenefitTwo": "Enable measurement without editing templates or source code.",
+      "analyticsStepOne": "In Google Analytics, open Admin → Data streams.",
+      "analyticsStepTwo": "Copy the Measurement ID in the G-XXXXXXXXXX format.",
+      "analyticsStepThree": "Enable measurement, enter the ID, and save your changes.",
+      "enableAnalytics": "Enable Google Analytics",
+      "linkedinDescription": "Publish approved content to your personal LinkedIn profile.",
+      "linkedinBenefitOne": "Approved posts go straight to your personal profile.",
+      "linkedinBenefitTwo": "Human in the Loop keeps approval control before publishing.",
+      "linkedinStepOne": "Connect your personal LinkedIn profile.",
+      "linkedinStepTwo": "Grant Topiqu the requested LinkedIn access.",
+      "linkedinStepThree": "Configure the publishing mode and brand guidelines.",
+      "developerTitle": "API and WordPress",
+      "developerDescription": "Tools for custom development and publishing workflows outside the external services catalog.",
+      "apiBenefitOne": "Connect a custom app, automation, or editorial workflow.",
+      "apiBenefitTwo": "Regenerate the single secure access key whenever needed.",
+      "wordpressTitle": "WordPress plugin",
+      "wordpressDescription": "Topiqu Sync imports published articles as native WordPress posts.",
+      "wordpressBenefitOne": "Move published content without manual copying.",
+      "wordpressBenefitTwo": "Articles remain native WordPress posts on your website.",
+      "wordpressStepOne": "Install and activate the Topiqu Sync plugin in WordPress.",
+      "wordpressStepTwo": "Enter your Topiqu URL and the API key from this page.",
+      "wordpressStepThree": "Test the connection and configure the synchronization interval."
+    },
     "loading": "Loading...",
     "error": "Error loading data",
     "noResults": "No results found",
     "noItems": "No items",
     "readMore": "Read More",
+    "readMoreAbout": "about the article {title}",
     "close": "Close",
     "closeDialog": "Close dialog",
     "warning": "Warning",
@@ -38,6 +91,7 @@
       "sentimentDesc": "Detailed analysis of readers' mood and feedback",
       "articleCrons": "Scheduled Article Generation",
       "articleCronsDesc": "Automatic publishing of articles using AI based on your preferences",
+      "includedInPlan": "Included in your plan",
       "disableAiTitle": "Disable AI?",
       "disableAiMessage": "Disabling AI will also disable sentiment analysis and scheduled article generation, which depend on it."
     },
@@ -48,12 +102,15 @@
       "edit": "Edit",
       "tags": "Tags",
       "home": "Home",
+      "notifications": "Notifications",
+      "toggleTheme": "Toggle color theme",
       "continue": "Continue",
       "send": "Send",
       "cancel": "Cancel",
       "enable": "Enable",
       "disable": "Disable",
       "showDetails": "Show details",
+      "showLess": "Show less",
       "hideDetails": "Hide details",
       "delete": "Delete",
       "revoke": "Revoke",
@@ -61,7 +118,9 @@
       "clickToUpload": "Click to upload",
       "dropHere": "Drop file here",
       "upload": "Select",
+      "save": "Save",
       "saveChanges": "Save Changes",
+      "reset": "Reset",
       "backToList": "Back to list",
       "backToTop": "Back to top",
       "back": "Back",
@@ -118,6 +177,7 @@
       "unauthorized": "Access denied.",
       "invalidCredentials": "Invalid email or password.",
       "invalidRequest": "Invalid request.",
+      "tooManyRequests": "Too many requests. Please try again later.",
       "missingBlog": "Missing blog name.",
       "blogNotFound": "Blog not found.",
       "tagNotFound": "Tag not found.",
@@ -130,6 +190,11 @@
       "authorNotFound": "Author not found",
       "userNotFound": "User not found",
       "adminNotFound": "Admin not found",
+      "notFound": "Not found.",
+      "clientNotFound": "Client site not found",
+      "clientDeactivated": "This client site is deactivated",
+      "invalidFeature": "Invalid feature",
+      "commentIdRequired": "Comment ID is required",
       "articleIdRequired": "Article ID is required",
       "articleEditForbidden": "You cannot edit this article",
       "notificationIdRequired": "Notification ID is required",
@@ -157,7 +222,9 @@
       "passwordChangeFailed": "Password change failed",
       "roleChangeForbidden": "Changing role is not allowed",
       "featureNotInPlan": "This feature is not available on your plan",
-      "aiRequired": "Enable AI first"
+      "aiRequired": "Enable AI first",
+      "invalidCredentials": "Incorrect email or password.",
+      "emailNotVerified": "Please confirm your email first. We have sent you a new verification code."
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",
@@ -185,6 +252,24 @@
       },
       "uploadSuccess": "Avatar uploaded",
       "uploadError": "Upload failed",
+      "chooseImage": "Choose a photo",
+      "requirements": "JPG, PNG, WebP or GIF, up to 10 MB",
+      "rotateLeft": "Rotate left",
+      "rotateRight": "Rotate right",
+      "dragHint": "Drag to position the crop",
+      "save": "Save avatar",
+      "retry": "Try again",
+      "uploading": "Uploading…",
+      "saving": "Saving…",
+      "tooLarge": "The image is too large. The maximum size is 10 MB.",
+      "invalidFile": "Choose a valid JPG, PNG, WebP or GIF image.",
+      "processingError": "The image could not be processed.",
+      "networkError": "The connection interrupted the upload. Try again.",
+      "remove": "Remove avatar",
+      "removeTitle": "Remove avatar?",
+      "removeConfirm": "The default avatar will be shown instead of your photo.",
+      "removeSuccess": "Avatar removed",
+      "removeError": "The avatar could not be removed",
       "ai": {
         "label": "AI Avatar"
       }
@@ -196,7 +281,8 @@
     "pagination": {
       "previous": "Previous",
       "next": "Next",
-      "pageInfo": "Page {0} of {1}"
+      "pageInfo": "Page {0} of {1}",
+      "end": "That's everything"
     },
     "user": {
       "joined": "Joined: {0}",
@@ -339,7 +425,8 @@
         "content": "Content",
         "integrations": "Integrations",
         "ai": "AI",
-        "billing": "Billing"
+        "billing": "Billing",
+        "members": "Members"
       },
       "currentPlan": "Current plan",
       "nextPayment": "Next payment",
@@ -381,6 +468,25 @@
         "tokenBalance": "Token balance",
         "buyTokens": "Buy tokens",
         "manage": "Manage subscription & invoices",
+        "openPortal": "Manage billing",
+        "invoicesTitle": "Invoices and payments",
+        "invoicesDescription": "Your 12 most recent Stripe invoices. Find the full history and payment details in the billing portal.",
+        "invoicesLoading": "Loading invoices",
+        "invoicesFailed": "We could not load your invoices.",
+        "invoicesEmpty": "There are no invoices yet.",
+        "invoice": "Invoice",
+        "viewInvoice": "Open",
+        "downloadPdf": "Download PDF",
+        "downloadInvoice": "Download invoice {number} as PDF",
+        "retry": "Try again",
+        "invoiceStatus": {
+          "draft": "Draft",
+          "open": "Due",
+          "paid": "Paid",
+          "uncollectible": "Uncollectible",
+          "void": "Void",
+          "unknown": "Unknown"
+        },
         "upgrade": "Upgrade to {plan}",
         "actionFailed": "Could not start the payment flow. Please try again."
       },
@@ -398,7 +504,12 @@
       "annually": "year",
       "companyLogo": {
         "label": "Company Logo",
-        "description": "PNG, JPEG, WebP, or SVG, min. 512x512px, max. 2 MB"
+        "description": "PNG, JPEG, or WebP, up to 10 MB. The logo is saved on a transparent wide canvas suited to the header and homepage.",
+        "edit": "Replace and edit logo",
+        "remove": "Remove logo",
+        "editorTitle": "Position logo",
+        "dragHint": "Drag to position the logo and use the slider to zoom in or out. The checkerboard represents transparency.",
+        "save": "Use logo"
       },
       "branding": {
         "identity": "Identity",
@@ -417,17 +528,23 @@
         "label": "Company Description",
         "placeholder": "Company description (e.g., your mission or slogan)"
       },
+      "content": {
+        "title": "Content brief",
+        "description": "Every article the AI generates starts from these settings."
+      },
       "focus": {
         "label": "Focus",
-        "placeholder": "Focus (e.g., objective gaming journalism, emphasis on Unreal Engine)"
+        "help": "The main topic and angle. It sets what gets written about, and why.",
+        "placeholder": "e.g. objective gaming journalism with an emphasis on Unreal Engine"
       },
       "audience": {
         "label": "Target Audience",
-        "placeholder": "Target audience (e.g., young adults, professionals)"
+        "help": "Who you write for. It shapes style, vocabulary and technical depth.",
+        "placeholder": "e.g. young adults 18–25, game developers"
       },
       "language": {
         "label": "Language",
-        "placeholder": "Choose a language"
+        "help": "The language new articles are written in."
       },
       "theme": {
         "label": "Theme",
@@ -435,7 +552,10 @@
       },
       "keywords": {
         "label": "Keywords",
-        "placeholder": "Keywords (comma-separated)",
+        "help": "Topics that should recur in the output. Also used for SEO.",
+        "placeholder": "e.g. Unreal Engine, AI in games",
+        "hint": "Add with Enter or a comma.",
+        "remove": "Remove {0}",
         "count": "Words: {0}"
       },
       "autoRelease": {
@@ -444,6 +564,10 @@
         "warning": "Articles will be publicly published immediately after generation.",
         "confirmTitle": "Enable Automatic Publishing?",
         "confirmMessage": "Are you sure? AI may occasionally generate inaccuracies. We still recommend reviewing content before publication. If enabled, content will go live immediately without your approval."
+      },
+      "aiDisclosure": {
+        "title": "Label AI-assisted content",
+        "desc": "Publicly shows the level of AI involvement in an article and labels AI-generated images."
       },
       "translation": {
         "title": "Automatic Translations",
@@ -499,6 +623,40 @@
       "socials": {
         "label": "Social Networks",
         "noSocials": "No social networks added yet."
+      },
+      "linkedin": {
+        "title": "LinkedIn Automation",
+        "description": "Configure your automated LinkedIn publishing settings.",
+        "connect": "Connect Personal",
+        "connected": "Connected ({0})",
+        "typePersonal": "personal profile",
+        "typePages": "company page",
+        "reconnect": "Reconnect",
+        "mode": {
+          "label": "Publishing Mode",
+          "hitl": "Human in the Loop (HitL)",
+          "fullAuto": "Full Auto (Gated by Policy)",
+          "help": "HitL requires manual approval before any generated post goes live."
+        },
+        "brand": {
+          "label": "Brand Guidelines",
+          "tone": {
+            "label": "Tone of Voice",
+            "placeholder": "e.g. Professional and thought-provoking"
+          },
+          "audience": {
+            "label": "Target Audience",
+            "placeholder": "e.g. Software engineers, CTOs"
+          },
+          "doList": {
+            "label": "Do List (comma separated)",
+            "placeholder": "e.g. React, Innovation, Cloud"
+          },
+          "dontList": {
+            "label": "Don't List / Banned Words (comma separated)",
+            "placeholder": "e.g. cheap, guarantee, spam"
+          }
+        }
       }
     },
     "passwordSuggestions": {
@@ -540,6 +698,44 @@
       "doListPlaceholder": "For example: React, innovation, cloud",
       "dontList": "Avoided words (comma separated)",
       "dontListPlaceholder": "For example: cheap, guarantee, spam"
+    },
+    "members": {
+      "title": "Members",
+      "description": "Manage tenant access and permissions.",
+      "invite": "Invite member",
+      "inviteDescription": "Send an invitation and choose its permissions.",
+      "email": "Email address",
+      "send": "Send invitation",
+      "search": "Search members",
+      "owner": "Owner",
+      "member": "Member",
+      "you": "You",
+      "joined": "Joined {date}",
+      "permissions": "Permissions",
+      "remove": "Remove",
+      "noResults": "No members found",
+      "pending": "Pending invitations",
+      "expires": "Expires {date}",
+      "resend": "Resend",
+      "revoke": "Revoke",
+      "noPending": "No pending invitations",
+      "inviteFirst": "Invite the first member",
+      "sent": "Invitation sent",
+      "removeConfirmTitle": "Remove member?",
+      "removeConfirmMessage": "This member will immediately lose access.",
+      "removeSuccess": "Member removed",
+      "removeFailed": "Could not remove member"
+    },
+    "invitation": {
+      "title": "Join {tenant}",
+      "by": "Invited by {inviter}. {followers} followers.",
+      "signIn": "Sign in as {email} to continue.",
+      "decline": "Decline",
+      "accept": "Accept invitation",
+      "signInAction": "Sign in or register",
+      "invalid": "This invitation is no longer valid.",
+      "accepted": "Invitation accepted",
+      "declined": "Invitation declined"
     },
     "tokens": {
       "pack10k": "Token Pack 10k",

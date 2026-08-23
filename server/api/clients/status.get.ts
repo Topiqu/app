@@ -2,11 +2,14 @@ export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { minRole: 'admin' })
 
   if (!user.clientSiteId) return null
+  if (user.role !== 'superadmin') await requireTenantMember(event, user.clientSiteId)
 
-  return db.clientSite.findUnique({
+  const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId },
     select: {
       id: true,
+      domain: true,
+      domainVerified: true,
       plan: true,
       tokenLimit: true,
       tokenRemaining: true,
@@ -15,6 +18,13 @@ export default defineEventHandler(async (event) => {
       firstPaidAt: true,
       focus: true,
       audience: true,
+      stripeSubscriptionId: true,
     },
   })
+
+  if (!clientSite) return null
+
+  const { stripeSubscriptionId, ...status } = clientSite
+
+  return { ...status, hasActiveSubscription: !!stripeSubscriptionId }
 })

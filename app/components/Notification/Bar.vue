@@ -138,7 +138,7 @@ const poll = async () => {
     const fresh = res.notifications.filter((n) => n?.id && !known.has(n.id))
     if (fresh.length) {
       data.value = [...fresh, ...data.value]
-      for (const n of fresh) useToast().add({ color: 'success', title: `Nová notifikace: ${n.message}` })
+      for (const n of fresh) useAppToast().add({ color: 'success', title: `Nová notifikace: ${n.message}` })
     }
     unreadCount.value = res.unreadCount
   } catch {
@@ -171,7 +171,7 @@ watch(
 )
 
 watch(error, (e) => {
-  if (e) useToast().add({ color: 'error', title: `Chyba při načítání: ${e.message || 'Neznámá chyba'}` })
+  if (e) useAppToast().add({ color: 'error', title: `Chyba při načítání: ${e.message || 'Neznámá chyba'}` })
 })
 
 const notifications = computed(() => {
@@ -221,7 +221,7 @@ const del = async (id: string) => {
     })
     unreadCount.value = data.value.filter((n) => !n.isRead).length
   } catch (e: any) {
-    useToast().add({ color: 'error', title: `Chyba při mazání: ${e.data?.message || 'Neznámá chyba'}` })
+    useAppToast().add({ color: 'error', title: `Chyba při mazání: ${e.data?.message || 'Neznámá chyba'}` })
   }
 }
 
@@ -240,7 +240,7 @@ watch(
 )
 
 watch(
-  [show, sentinel],
+  () => [show.value, sentinel.value] as const,
   async ([s, sent], _previous, onCleanup) => {
     if (s && sent && scroll.value && auth?.value?.user) {
       const o = new IntersectionObserver(
@@ -259,6 +259,5 @@ watch(
       onCleanup(() => o.disconnect())
     }
   },
-  { immediate: true },
 )
 </script>

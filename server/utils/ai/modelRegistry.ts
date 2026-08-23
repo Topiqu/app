@@ -1,18 +1,18 @@
-export type AiProvider = 'xai' | 'google' | 'openai'
+export type AiProvider = 'openai'
 
 export const AI_MODELS = {
-  // articleResearch stays on xAI: it depends on Live Search (providerOptions.xai.searchParameters).
-  articleResearch: { provider: 'xai', id: 'grok-4.3' },
-  articleWriter: { provider: 'google', id: 'gemini-3.1-pro-preview' },
-  linkedinPost: { provider: 'google', id: 'gemini-3.1-pro-preview' },
+  topicSelection: { provider: 'openai', id: 'gpt-5.6-luna' },
+  articleResearch: { provider: 'openai', id: 'gpt-5.6-luna' },
+  articleWriter: { provider: 'openai', id: 'gpt-5.6-luna' },
+  linkedinPost: { provider: 'openai', id: 'gpt-5.6-luna' },
   translation: { provider: 'openai', id: 'gpt-5.6-luna' },
   promptEnhance: { provider: 'openai', id: 'gpt-5.6-luna' },
-  sentiment: { provider: 'xai', id: 'grok-4.3' },
-  communityInsight: { provider: 'xai', id: 'grok-4.3' },
+  sentiment: { provider: 'openai', id: 'gpt-5.6-luna' },
+  communityInsight: { provider: 'openai', id: 'gpt-5.6-luna' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export const AI_IMAGE_MODELS = {
-  articleImage: { provider: 'google', id: 'gemini-3.1-flash-lite-image' },
+  articleImage: { provider: 'openai', id: 'gpt-image-2' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export type AiTask = keyof typeof AI_MODELS

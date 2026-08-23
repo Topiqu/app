@@ -10,6 +10,8 @@ export default defineEventHandler(async (event) => {
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const user = await requireUser(event, { minRole: 'admin', clientSite: true })
+  await requireTenantScope(event, 'AI_USE', user.clientSiteId)
+  await requireArticleAccess(event, id)
 
   await ensureMinAccountAge(event, user.id)
 
@@ -19,11 +21,11 @@ export default defineEventHandler(async (event) => {
 
   const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId },
-    select: { enableAi: true, plan: true, language: true, tokenRemaining: true },
+    select: { plan: true, language: true, tokenRemaining: true },
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
 
-  if (!clientSite.enableAi || !TRANSLATION_PLANS.includes(clientSite.plan))
+  if (!TRANSLATION_PLANS.includes(clientSite.plan) || !(await hasActiveFeature(db, user.clientSiteId, 'AI')))
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const sourceLang = clientSite.language
@@ -35,7 +37,16 @@ export default defineEventHandler(async (event) => {
 
   const article = await db.article.findUnique({
     where: { id },
-    select: { id: true, title: true, excerpt: true, content: true, status: true },
+    select: {
+      id: true,
+      title: true,
+      excerpt: true,
+      content: true,
+      status: true,
+      answer: true,
+      keyTakeaways: true,
+      faq: true,
+    },
   })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
@@ -61,6 +72,9 @@ export default defineEventHandler(async (event) => {
       title: translated.title,
       excerpt: translated.excerpt,
       content: sanitizeHtml(translated.content),
+      answer: translated.answer,
+      keyTakeaways: translated.keyTakeaways,
+      faq: translated.faq,
       status: 'READY',
       source: 'AI',
       model: aiModelId('translation'),
@@ -73,6 +87,9 @@ export default defineEventHandler(async (event) => {
       title: translated.title,
       excerpt: translated.excerpt,
       content: sanitizeHtml(translated.content),
+      answer: translated.answer,
+      keyTakeaways: translated.keyTakeaways,
+      faq: translated.faq,
       status: 'READY',
       source: 'AI',
       model: aiModelId('translation'),

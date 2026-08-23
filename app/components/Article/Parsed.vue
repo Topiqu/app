@@ -1,57 +1,50 @@
 <template>
-  <div>
-    <div v-for="(node, i) in parsedContent" :key="i">
-      <ArticlePoll v-if="node.type === 'poll'" :poll="node" :articleId="props.articleId" />
-      <div v-else v-html="node.html" />
-    </div>
+  <div ref="root" @error.capture="handleMediaError">
+    <template v-for="(block, i) in blocks" :key="i">
+      <ArticlePoll v-if="block.type === 'poll'" :poll="block" :articleId="articleId" />
+      <!-- eslint-disable-next-line vue/no-v-html -- server-sanitised body (`sanitizeHtml` on write) -->
+      <div v-else v-html="visibleHtml(block.html)" />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { normalizePollOptions, type PollOptionData } from '~~/shared/utils/polls'
+import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
 
-const props = defineProps<{ content: string; articleId: string }>()
-const parsedContent = reactive<any[]>([])
+import { optimizeArticleImages } from '~~/shared/utils/articleImages'
 
-const parse = () => {
-  if (!props.content) return
-  if (import.meta.client) {
-    const p = new DOMParser()
-    const d = p.parseFromString(props.content, 'text/html')
-    parsedContent.splice(
-      0,
-      parsedContent.length,
-      ...Array.from(d.body.childNodes).map((n) => {
-        const el = n as Element
-        if (el.nodeName === 'DIV' && el.getAttribute('data-type') === 'poll') {
-          const pollId = el.getAttribute('data-poll-id') || el.getAttribute('data-id')
-          if (!pollId) {
-            // Server-side syncArticlePolls must stamp data-poll-id; without it the
-            // vote endpoint has no FK target, so degrade to raw HTML instead of
-            // rendering a vote widget that would silently drop hlasy.
-            console.warn('[ArticleParsed] poll block missing data-poll-id, rendering as raw HTML', el)
-            return { type: 'html', html: el.outerHTML }
-          }
-          let options: PollOptionData[]
-          try {
-            options = normalizePollOptions(JSON.parse(el.getAttribute('data-options') || '[]'))
-          } catch {
-            options = []
-          }
-          return {
-            type: 'poll',
-            pollId,
-            question: el.getAttribute('data-question') || 'Zadej otázku',
-            options,
-          }
-        }
-        return { type: 'html', html: el.outerHTML }
-      }),
-    )
-  }
+// Blocks come pre-built. Splitting here (in `onMounted`) left the SSR HTML with an empty body.
+const props = withDefaults(defineProps<{ blocks: ArticleBlock[]; articleId: string; discloseAi?: boolean }>(), {
+  discloseAi: true,
+})
+const image = useImage()
+const root = useTemplateRef<HTMLElement>('root')
+
+const handleMediaError = (event: Event) => {
+  const failed = event.target
+  if (!(failed instanceof HTMLImageElement) || !root.value?.contains(failed)) return
+
+  const fallback = document.createElement('span')
+  fallback.className = 'article-inline-image-fallback'
+  fallback.setAttribute('role', 'img')
+  fallback.setAttribute('aria-label', failed.alt || $t('articles.columns.imageUrl'))
+  fallback.textContent = failed.alt || $t('articles.columns.imageUrl')
+  failed.replaceWith(fallback)
 }
 
-onMounted(parse)
+// The span is the current format. The two text alternatives keep the toggle effective for old
+// articles and for captions round-tripped through TipTap, which may flatten unknown attributes.
+const visibleHtml = (html: string) => {
+  const visible = props.discloseAi
+    ? html
+    : html
+        .replace(/<span\s+data-ai-disclosure(?:="")?>(.*?)<\/span>/gi, '')
+        .replace(/(<small\b[^>]*>)\s*(?:Illustrative image \(AI\)|Ilustrační obrázek \(AI\)):\s*/gi, '$1')
 
-watch(() => props.content, parse)
+  const normalized = visible
+    .replace(/<p(?:\s[^>]*)?>\s*(?:<br\s*\/?>|&nbsp;|\u00a0)?\s*<\/p>/gi, '')
+    .replace(/(<p(?:\s[^>]*)?>)\s*(<img\b[^>]*>)\s*(<\/p>)/gi, '$1$2$3')
+
+  return optimizeArticleImages(normalized, (src, width) => image(src, { width, format: 'webp', quality: 75 }))
+}
 </script>

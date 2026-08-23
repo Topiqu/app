@@ -23,11 +23,16 @@
           />
           <p v-if="clientSite?.tagline" class="text-sm font-semibold text-primary">{{ clientSite.tagline }}</p>
         </div>
-        <h1
-          class="max-w-[14ch] text-4xl font-black leading-[1.05] tracking-tight text-highlighted sm:text-5xl lg:text-6xl"
-        >
+        <h1 v-if="clientSite?.logoUrl" class="sr-only">
           {{ clientSite?.name ?? $t('common.labels.title') }}
         </h1>
+        <div v-else class="home-hero__heading">
+          <h1
+            class="max-w-[14ch] text-4xl font-black leading-[1.05] tracking-tight text-highlighted sm:text-5xl lg:text-6xl"
+          >
+            {{ clientSite?.name ?? $t('common.labels.title') }}
+          </h1>
+        </div>
         <p v-if="clientSite?.description" class="line-clamp-4 max-w-[60ch] text-lg leading-8 text-muted">
           {{ clientSite.description }}
         </p>
@@ -209,10 +214,10 @@
         </div>
       </div>
 
-      <div v-if="pending && !filteredArticles.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-if="pending && !filteredArticles.length" class="home-grid">
         <ArticleSkeletonCard v-for="i in 6" :key="`skel-feed-${i}`" :pending="true" :index="i - 1" />
       </div>
-      <div v-else-if="filteredArticles.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else-if="filteredArticles.length" class="home-grid">
         <ArticleSkeletonCard
           v-for="(article, idx) in filteredArticles"
           :key="article.id"
@@ -296,11 +301,30 @@ import { formatNumber } from '~~/shared/utils/number'
 
 definePageMeta({ shell: 'publication' })
 
+interface HomeArticle {
+  id: string
+  slug: string
+  title: string
+  content?: string | null
+  excerpt: string | null
+  imageUrl: string | null
+  createdAt: string
+  publishedAt?: string | null
+  readingTime: number | null
+  views: number
+  user: { id: string; username: string; avatarUrl: string | null } | null
+  tags: { tag: { id: string; name: string; slug: string } }[]
+  _count: { comments: number; reactions: number } | null
+}
+
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
+const { locale } = useI18n()
 const clientSite = await useClientSite()
 
-const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`)
+const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
+  query: { locale },
+})
 const page = shallowRef<number>(1)
 const limit = shallowRef<number>(15)
 const selectedTag = shallowRef<string>('')
@@ -309,6 +333,7 @@ const searchQuery = shallowRef<string>('')
 const query = computed(() => ({
   page: page.value,
   limit: limit.value,
+  locale: locale.value,
   ...(selectedTag.value ? { tag: selectedTag.value } : {}),
   ...(searchQuery.value ? { query: searchQuery.value } : {}),
 }))
@@ -325,7 +350,9 @@ const {
   immediate: !isBlankSite,
 })
 
-const articleMap = ref<Map<string, NonNullable<typeof feed.value>['items'][number]>>(new Map())
+// Keep the view model shallow. Inferring this from the ZenStack-enhanced endpoint response makes
+// Volar recursively instantiate the full policy-aware payload type in every template binding.
+const articleMap = ref<Map<string, HomeArticle>>(new Map())
 const hasMore = shallowRef<boolean>(true)
 const latestPoll = ref<{
   type: string
@@ -340,7 +367,7 @@ watch(
   (d) => {
     const next = (d?.items ?? []).filter((a) => !articleMap.value.has(a.id))
     for (const article of next) {
-      articleMap.value.set(article.id, article)
+      articleMap.value.set(article.id, article as HomeArticle)
     }
 
     if (d?.latestPoll) {
@@ -432,3 +459,229 @@ const selectTopic = (tagName: string) => {
   nextTick(() => document.querySelector('#articles')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 </script>
+
+<style scoped>
+.home-shell {
+  --home-ink: #17211b;
+  --home-muted: #657068;
+  --home-accent: var(--client-accent, #2563eb);
+  --home-line: rgb(23 33 27 / 12%);
+  width: min(100% - 2rem, 80rem);
+  margin-inline: auto;
+  padding: clamp(5.5rem, 10vw, 8rem) 0 5rem;
+  display: grid;
+  gap: clamp(3.5rem, 7vw, 7rem);
+  color: var(--home-ink);
+}
+
+.home-hero {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(0.5rem, 3vw, 2rem) clamp(2.5rem, 6vw, 4.5rem);
+  text-align: center;
+  border-bottom: 1px solid var(--home-line);
+}
+
+.home-hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--home-muted);
+}
+
+.home-hero__eyebrow-line {
+  width: 1.5rem;
+  height: 2px;
+  background: var(--home-accent);
+}
+.home-hero__logo {
+  width: auto;
+  height: auto;
+  max-width: min(12rem, 70vw);
+  max-height: 5rem;
+  object-fit: contain;
+}
+.home-hero__heading {
+  max-width: 62rem;
+}
+.home-hero__title {
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+  font-weight: 750;
+  text-wrap: balance;
+}
+.home-hero__description {
+  max-width: 44rem;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.65;
+  color: var(--home-muted);
+  text-wrap: balance;
+}
+.home-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem 0.65rem;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--home-muted);
+}
+.home-hero__latest {
+  max-width: min(17rem, 75vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--home-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--home-accent) 45%, transparent);
+  text-underline-offset: 0.25rem;
+}
+
+.home-highlights {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+  gap: clamp(1rem, 2.5vw, 2rem);
+  align-items: stretch;
+}
+.home-recommended {
+  display: grid;
+  gap: 1rem;
+}
+.home-feed {
+  display: grid;
+  gap: 1.75rem;
+  scroll-margin-top: 5rem;
+}
+.home-section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--home-line);
+}
+.home-section-heading h2 {
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 780;
+}
+.home-section-heading__index {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--home-accent);
+}
+.home-filters {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 20;
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--home-line);
+  border-radius: 1.25rem;
+  background: rgb(251 250 246 / 90%);
+  box-shadow: 0 12px 35px rgb(23 33 27 / 8%);
+  backdrop-filter: blur(16px);
+}
+.home-search {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 1rem 0.7rem 2.75rem !important;
+  border-radius: 0.85rem !important;
+  background: rgb(255 255 255 / 72%) !important;
+}
+.home-tags {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0 0.1rem 0.2rem;
+  scrollbar-width: none;
+}
+.home-tags::-webkit-scrollbar {
+  display: none;
+}
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+.home-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(2rem, 5vw, 4rem);
+  padding-top: clamp(2rem, 5vw, 4rem);
+  border-top: 1px solid var(--home-line);
+}
+
+:global(html.dark) .home-shell {
+  --home-ink: #f1eee7;
+  --home-muted: #a9b2ab;
+  --home-line: rgb(241 238 231 / 14%);
+}
+:global(html.dark) .home-filters {
+  background: rgb(23 32 26 / 90%);
+}
+:global(html.dark) .home-search {
+  background: rgb(31 41 55 / 75%) !important;
+}
+
+@media (max-width: 900px) {
+  .home-highlights,
+  .home-secondary {
+    grid-template-columns: 1fr;
+  }
+  .home-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .home-shell {
+    width: min(100% - 1rem, 80rem);
+    padding-top: 4.75rem;
+    gap: 3.5rem;
+  }
+  .home-hero {
+    justify-items: start;
+    padding: 1rem 0.5rem 2.5rem;
+    text-align: left;
+  }
+  .home-hero__eyebrow {
+    font-size: 0.65rem;
+  }
+  .home-hero__title {
+    font-size: clamp(2.5rem, 15vw, 4.1rem);
+  }
+  .home-hero__description {
+    font-size: 1rem;
+  }
+  .home-hero__meta {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .home-hero__logo {
+    max-width: min(10rem, 70vw);
+    max-height: 4rem;
+  }
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-filters {
+    top: 0.5rem;
+    border-radius: 1rem;
+  }
+  .home-secondary {
+    gap: 3rem;
+  }
+}
+</style>

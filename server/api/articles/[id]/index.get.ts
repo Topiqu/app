@@ -1,23 +1,57 @@
 import type { Language } from '@prisma/client'
 
-const articleInclude = {
+/** Explicit because the row also carries `prompt` and the tenant's savings figures. */
+const PUBLIC_FIELDS = {
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  publishedAt: true,
+  userId: true,
+  slug: true,
+  title: true,
+  excerpt: true,
+  content: true,
+  imageUrl: true,
+  imageCredit: true,
+  status: true,
+  clientSiteId: true,
+  views: true,
+  shared: true,
+  aiInvolvement: true,
+  readingTime: true,
+  totalWords: true,
+  articleSeriesId: true,
+  seriesOrder: true,
+  releaseAt: true,
+  allowedComments: true,
+  sources: true,
+  answer: true,
+  keyTakeaways: true,
+  faq: true,
+} as const
+
+/** The editor loads through this same route, so an admin still needs the internals. */
+const ADMIN_FIELDS = { prompt: true, savedAmount: true, savedTimeMinutes: true } as const
+
+/** `reactions` is scoped to the caller: unfiltered it shipped every liker's id to answer one bool. */
+const articleSelect = (isAdmin: boolean, viewer: { userId?: string; sessionId?: string }) => ({
+  ...PUBLIC_FIELDS,
+  ...(isAdmin ? ADMIN_FIELDS : {}),
   user: {
     select: {
-      username: true,
       id: true,
-      email: true,
+      username: true,
       avatarUrl: true,
+      bio: true,
       _count: { select: { following: true } },
     },
   },
   tags: { include: { tag: true } },
-  reactions: true,
-  articleSeries: {
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-    },
+  articleSeries: { select: { id: true, name: true, slug: true } },
+  reactions: {
+    where: viewer.userId ? { userId: viewer.userId } : viewer.sessionId ? { sessionId: viewer.sessionId } : { id: '' },
+    select: { id: true },
+    take: 1,
   },
   _count: {
     select: {
@@ -25,7 +59,7 @@ const articleInclude = {
       reactions: true,
     },
   },
-} as const
+})
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -33,48 +67,16 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'id')
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   const sessionId = getCookie(event, 'anon_session')
-  const { clientSiteId, locale } = getQuery<{ clientSiteId?: string; locale?: Language }>(event)
-
-  // The editor routes by the immutable article id. Resolve that mode only for an
-  // authenticated staff member and always scope admins to their own tenant.
-  if (!clientSiteId && user && (user.role === 'admin' || user.role === 'superadmin')) {
-    const adminArticle = await prisma.article.findUnique({
-      where: { id: slug },
-      include: articleInclude,
-    })
-    if (!adminArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
-    assertArticleAdminAccess(user, adminArticle, {
-      unauthorized: t('common.errors.unauthorized')!,
-      forbidden: t('common.errors.forbidden')!,
-    })
-    const adminSite = await prisma.clientSite.findUnique({
-      where: { id: adminArticle.clientSiteId },
-      select: { language: true },
-    })
-    return {
-      ...adminArticle,
-      language: adminSite?.language ?? 'en',
-      translationStatus: null,
-      alternates: [],
-      commentCount: adminArticle._count.comments,
-      likes: adminArticle._count.reactions,
-      likedByUser: adminArticle.reactions.some((reaction) => reaction.userId === user.id),
-      followerCount: adminArticle.user?._count.following ?? 0,
-      series: adminArticle.articleSeries,
-    }
-  }
-
-  if (!clientSiteId) {
-    if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
-    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
-  }
+  const { clientSiteId, locale } = getQuery<{ clientSiteId: string; locale?: Language }>(event)
+  if (!clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
     select: { language: true },
   })
   const primaryLanguage = clientSite?.language ?? 'en'
-  const isAdmin = user?.role === 'superadmin' || (user?.role === 'admin' && user.clientSiteId === clientSiteId)
+  const isAdmin = user?.role === 'admin'
+  const select = articleSelect(isAdmin, { userId: user?.id, sessionId })
 
   // Locale-scoped resolution: the primary language renders the source Article; any other
   // locale renders its ArticleTranslation. Because each locale looks in exactly one place,
@@ -90,7 +92,17 @@ export default defineEventHandler(async (event) => {
   if (wantsTranslation) {
     const translation = await prisma.articleTranslation.findUnique({
       where: { slug_clientSiteId_language: { slug, clientSiteId, language: locale } },
-      include: { article: { include: articleInclude } },
+      select: {
+        status: true,
+        title: true,
+        excerpt: true,
+        content: true,
+        slug: true,
+        answer: true,
+        keyTakeaways: true,
+        faq: true,
+        article: { select },
+      },
     })
     const visible =
       translation?.article &&
@@ -107,6 +119,11 @@ export default defineEventHandler(async (event) => {
         excerpt: translation!.excerpt,
         content: translation!.content,
         slug: translation!.slug,
+        // Fall back to the source: a row translated before these columns existed has them null,
+        // and showing the source language beats showing nothing.
+        answer: translation!.answer ?? translation!.article.answer,
+        keyTakeaways: translation!.keyTakeaways?.length ? translation!.keyTakeaways : translation!.article.keyTakeaways,
+        faq: translation!.faq ?? translation!.article.faq,
       }
       language = locale!
       translationStatus = translation!.status
@@ -119,7 +136,7 @@ export default defineEventHandler(async (event) => {
     // the body stays in the primary language and SEO collapses to the primary-language URL.
     article = await prisma.article.findUnique({
       where: { slug_clientSiteId: { slug, clientSiteId } },
-      include: articleInclude,
+      select,
     })
     if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
     if (article.status !== 'published' && !isAdmin)
@@ -173,18 +190,18 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  const { reactions, _count, ...rest } = article
+
   return {
-    ...article,
+    ...rest,
     language,
     translationStatus,
     alternates,
-    commentCount: article._count.comments,
-    likes: article._count.reactions,
-    likedByUser: user?.id
-      ? article.reactions.some((r: any) => r.userId === user.id)
-      : sessionId
-        ? article.reactions.some((r: any) => r.sessionId === sessionId)
-        : false,
+    // Only place that sees the resolved translation, so the split belongs here.
+    ...articleBlocks(article.content),
+    commentCount: _count.comments,
+    likes: _count.reactions,
+    likedByUser: reactions.length > 0,
     followerCount: article.user?._count.following ?? 0,
     series: seriesNav,
   }

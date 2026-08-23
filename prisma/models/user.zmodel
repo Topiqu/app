@@ -35,17 +35,53 @@ model User extends Base {
     feedbacks                     ArticleFeedback[]
     emojiReactions                EmojiReaction[]
     articleReactions              ArticleReaction[]
+    articleShares                 ArticleShare[]
+    articleViews                  ArticleView[]
     followers                     Follow[]          @relation("Follower")
     following                     Follow[]          @relation("Followed")
     bans                          UserBan[]         @relation("BannedUser")
     bansIssued                    UserBan[]         @relation("BannedBy")
     logs                          Log[]             @relation("LogToUser")
     approvals                     Approval[]
+    tenantMemberships             TenantMembership[]
+    tenantInvitations             TenantInvitation[] @relation("InvitationSender")
     @@allow('read', true)
     @@allow('create', true)
     @@allow('update', auth().id == id || auth().role == 'superadmin')
     @@allow('all', auth().role == 'admin' || auth().role == 'superadmin')
     @@index([username, email, role, language, allowNotifs])
+}
+
+model TenantMembership extends Base {
+    clientSiteId String
+    clientSite   ClientSite    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    userId       String
+    user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    role         TenantRole    @default(MEMBER)
+    scopes       TenantScope[]
+
+    @@unique([clientSiteId, userId])
+    @@index([userId])
+    @@allow('read', auth().role == 'superadmin' || auth().id == userId || auth().clientSiteId == clientSiteId)
+    @@allow('all', auth().role == 'superadmin')
+}
+
+model TenantInvitation extends Base {
+    clientSiteId  String
+    clientSite    ClientSite    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    email         String
+    tokenHash     String         @unique @omit
+    scopes        TenantScope[]
+    invitedById   String
+    invitedBy     User           @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: Cascade)
+    expiresAt     DateTime
+    acceptedAt    DateTime?
+    revokedAt     DateTime?
+
+    @@index([clientSiteId, email])
+    @@index([expiresAt])
+    @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('all', auth().role == 'superadmin')
 }
 
 model Session extends Base {
@@ -61,8 +97,11 @@ model Session extends Base {
     revoked    Boolean  @default(false)
     userId     String
     user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
+    clientSiteId String?
+    clientSite   ClientSite? @relation("SessionActiveTenant", fields: [clientSiteId], references: [id], onDelete: SetNull)
     @@allow('all', auth().id == userId || auth().role == 'superadmin')
     @@index([userId, lastUsedAt])
+    @@index([clientSiteId])
 }
 
 model Follow {

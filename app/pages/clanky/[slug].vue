@@ -30,9 +30,21 @@
             :showFollowButton="!!session?.user && session.user.id !== data.user.id"
             :excerpt="data.excerpt"
             :imageUrl="data.imageUrl"
+            :imageCredit="imageCredit"
             :series="data.series && data.series.name ? (data.series as any) : undefined"
             @follow="toggleFollow"
           />
+        </div>
+
+        <!-- Only renders with a real published translation, so a language here never falls back. -->
+        <ArticleLanguageLinks v-if="hasTranslations" class="mt-4" :links="alternates" :current="data.language" />
+
+        <div
+          v-if="clientSite?.discloseAiContent && data.aiInvolvement !== 'NONE'"
+          class="inline-flex w-fit items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+        >
+          <Icon name="mdi:robot-outline" class="h-4 w-4" />
+          {{ $t(`articles.aiDisclosure.${data.aiInvolvement}`) }}
         </div>
 
         <div v-if="hasTags" class="mt-4 flex flex-wrap gap-2.5">
@@ -46,9 +58,11 @@
           </NuxtLink>
         </div>
 
+        <ArticleSummary :answer="data.answer" :takeaways="data.keyTakeaways ?? []" />
+
         <ArticleActionsBar
           :article="data"
-          :isAdmin="session?.user?.role === 'admin' && session.user.id === data.user.id"
+          :isAdmin="canManageArticle(session?.user, data)"
           :onStatusUpdate="debouncedSetStatus"
           @toggleComments="toggleComments"
           @refresh="refresh"
@@ -93,9 +107,15 @@
           />
         </div>
 
-        <article ref="content" class="article-content mx-auto w-full">
-          <ArticleParsed :content="data.content" :articleId="data.id" />
+        <article ref="content" class="article-content mx-auto w-full" :class="ARTICLE_PROSE_CLASS">
+          <ArticleParsed
+            :blocks="data.blocks"
+            :articleId="data.id"
+            :discloseAi="clientSite?.discloseAiContent ?? false"
+          />
         </article>
+
+        <ArticleFaq :entries="faqEntries" />
 
         <ArticleSeries v-if="data.series && data.series.name" :series="data.series as any" />
         <div
@@ -175,6 +195,12 @@
 
 <script setup lang="ts">
 import type { User } from '@zenstackhq/runtime/models'
+import type { CoverCredit } from '~~/shared/utils/imageCredit'
+
+import { readFaq } from '~~/shared/utils/articleFaq'
+import { canManageArticle } from '~~/shared/utils/articleEditor'
+import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
+import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
 
 import { presentSourceUrl, sourceFaviconUrl } from '~/utils/sourcePresentation'
 
@@ -183,7 +209,8 @@ definePageMeta({ shell: 'publication' })
 const route = useRoute()
 const toast = useToast()
 const localePath = useLocalePath()
-const reqUrl = useRequestURL()
+const canonicalOrigin = useCanonicalOrigin()
+const isOpen = shallowRef(true)
 
 const { data: session } = useAuth()
 const clientSite = await useClientSite()
@@ -191,9 +218,26 @@ const slug = computed(() => route.params.slug as string)
 
 const { locale } = useI18n()
 
+// `deep` is false by default in Nuxt 4, i.e. `data` is a shallowRef. The engagement counters
+// (likes, shared, followerCount) are written back into this payload after each action, and a
+// shallow ref does not track those nested writes — `ArticleActionsBar` receives the same object
+// identity, so `hasPropsChanged` bails and the counts only appeared after a page refresh.
 const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.value}` as `/api/articles/:id`, {
   query: { clientSiteId: clientSite?.id, locale: locale.value },
+  deep: true,
 })
+
+// Landing on this locale with another language's slug (browser-language detection, an old link,
+// a hand-edited URL) silently renders the source body. Send it to the real translation instead.
+// Deliberately 302, not 301: a translation can be unpublished or discarded, and a cached
+// permanent redirect would then pin visitors to a URL that 404s.
+const redirectSlug = localeRedirectSlug(locale.value, data.value?.language, data.value?.alternates ?? [])
+if (redirectSlug) {
+  await navigateTo(localePath({ name: 'clanky-slug', params: { slug: redirectSlug } }), {
+    redirectCode: 302,
+    replace: true,
+  })
+}
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
 
@@ -201,8 +245,6 @@ const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/$
   lazy: true,
   query: { limit: 3, clientSiteId: data.value?.clientSiteId },
 })
-
-const canonicalOrigin = `${import.meta.dev ? reqUrl.protocol : 'https:'}//${reqUrl.host.replace(/^www\./, '')}`
 
 const primaryLocale = computed(() => clientSite?.language ?? 'en')
 
@@ -230,12 +272,17 @@ const canonicalUrl = computed(() => {
 useArticleSeo(data, clientSite, canonicalUrl, alternateLinks)
 
 const ogImageOptions = computed(() => ({ backgroundImage: data.value?.imageUrl }))
+const imageCredit = computed(() => (data.value?.imageCredit as CoverCredit | null) ?? null)
 
 defineOgImage('TopiquArticle', ogImageOptions.value)
 
 const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
+const anonymousLike = useSessionStorage(
+  computed(() => `liked-${data.value?.slug ?? 'pending'}`),
+  false,
+)
 
-const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh)
+const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh, getVisitorId)
 
 const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
 const toggleFollow = async () => {
@@ -286,9 +333,8 @@ const toggleLike = async () => {
     visitorId = await getVisitorId()
   }
 
-  const key = `liked-${data.value.slug}`
-  const hasLiked = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(key) : null
-  if (hasLiked && !session.value?.user.id) sessionStorage.removeItem(key)
+  const hasLiked = anonymousLike.value
+  if (hasLiked && !session.value?.user.id) anonymousLike.value = false
 
   try {
     const res = await $fetch<{ liked: boolean; likes: number }>(`/api/articles/${data.value.id}/reaction`, {
@@ -299,18 +345,16 @@ const toggleLike = async () => {
     if (data.value) {
       data.value.likedByUser = res.liked
       data.value.likes = res.likes
-      triggerRef(data)
     }
 
-    if (res.liked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
-    else if (!res.liked && !session.value?.user.id) sessionStorage.removeItem(key)
+    if (!session.value?.user.id) anonymousLike.value = res.liked
   } catch {
     toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
-    if (hasLiked && !session.value?.user.id) sessionStorage.setItem(key, 'true')
+    if (hasLiked && !session.value?.user.id) anonymousLike.value = true
   }
 }
 
-const isOpen = shallowRef(data.value?.sources && data.value.sources.length <= 5)
+const faqEntries = computed(() => readFaq(data.value?.faq))
 const hasTags = computed(() => !!data.value?.tags?.length)
 const requestUrl = useRequestURL()
 const fullUrl = computed(() => new URL(route.fullPath, requestUrl.origin).href)
@@ -342,9 +386,7 @@ onMounted(() => {
   articleLikeBus.on(toggleLike)
 
   if (data.value?.slug && !session.value?.user.id) {
-    const likeKey = `liked-${data.value.slug}`
-    const hasLikedLocal = sessionStorage.getItem(likeKey)
-    if (hasLikedLocal && !data.value.likedByUser) {
+    if (anonymousLike.value && !data.value.likedByUser) {
       data.value.likedByUser = true
     }
   }
@@ -355,6 +397,12 @@ onUnmounted(() => {
   articleHeader.value = null
 })
 </script>
+
+<style scoped>
+.hide-ai-disclosure :deep([data-ai-disclosure]) {
+  display: none;
+}
+</style>
 
 <style>
 .fade-slide-enter-active,
@@ -371,31 +419,17 @@ onUnmounted(() => {
   opacity: 0;
   transform: translateY(-10px);
 }
-.prose p {
-  line-height: 1.8;
-}
-.prose p:empty::before {
-  content: '\200B';
-  display: inline-block;
-}
+/* No vertical padding: the wrapping `<p>` already carries a prose margin, and this stacked a third
+   spacing on top of it. */
 .prose p img {
   border-radius: 0.75rem;
-  padding-top: 12px;
-  padding-bottom: 6px;
   max-height: 600px;
   cursor: pointer;
   opacity: 0;
   animation: fade-in-image 0.6s ease-out forwards;
 }
-@keyframes fade-in-image {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.prose small {
+  color: #4b5563 !important;
 }
 ::-webkit-scrollbar {
   width: 8px;

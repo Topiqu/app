@@ -55,6 +55,7 @@
     "saveAsDraft": "Uložit jako koncept",
     "createAndPublish": "Vytvořit a publikovat",
     "publishNow": "Publikovat",
+    "schedule": "Naplánovat",
     "saveChanges": "Uložit změny",
     "releaseQuick": {
       "now": "Hned",
@@ -62,10 +63,61 @@
       "tomorrow": "Zítra ráno",
       "clear": "Vymazat"
     },
-    "authorsArticles": "Články od autora",
+    "articlesCount": "Zatím žádné články | {count} článek | {count} články | {count} článků",
+    "translations": {
+      "title": "Překlady",
+      "languageTabs": "Jazyk článku",
+      "sourceTab": "Zdrojový jazyk",
+      "unsaved": "Neuložené změny",
+      "awaitingReview": "nic ke kontrole | {count} čeká na kontrolu | {count} čekají na kontrolu | {count} čeká na kontrolu",
+      "status": {
+        "MISSING": "Nepřeloženo",
+        "PENDING": "Ve frontě",
+        "TRANSLATING": "Překládá se",
+        "READY": "Čeká na kontrolu",
+        "PUBLISHED": "Publikováno",
+        "FAILED": "Selhalo",
+        "STALE": "Zdroj se změnil"
+      },
+      "source": {
+        "AI": "Strojový překlad",
+        "HUMAN": "Upraveno člověkem"
+      },
+      "empty": {
+        "MISSING": "Tento článek zatím nemá překlad do tohoto jazyka.",
+        "PENDING": "Zařazeno do fronty — naplánovaná úloha překlad brzy zpracuje.",
+        "TRANSLATING": "Překlad právě probíhá.",
+        "FAILED": "Poslední pokus o překlad selhal. Zkus to znovu.",
+        "STALE": "Zdrojový článek se změnil, překlad se vygeneruje znovu.",
+        "READY": "Tento překlad zatím nemá obsah.",
+        "PUBLISHED": "Tento překlad zatím nemá obsah."
+      },
+      "fields": {
+        "title": "Titulek",
+        "excerpt": "Perex",
+        "content": "Obsah"
+      },
+      "actions": {
+        "approve": "Schválit a publikovat",
+        "translate": "Přeložit teď",
+        "retranslate": "Přeložit znovu",
+        "discard": "Zahodit"
+      },
+      "discardTitle": "Zahodit tento překlad?",
+      "discardMessage": "Přeložený text se smaže. Samotného článku se to nedotkne a překlad lze kdykoli vygenerovat znovu.",
+      "messages": {
+        "published": "Překlad publikován",
+        "translated": "Překlad vygenerován",
+        "discarded": "Překlad zahozen"
+      },
+      "reviewQueue": {
+        "title": "Nic nečeká na kontrolu | {count} překlad čeká na kontrolu | {count} překlady čekají na kontrolu | {count} překladů čeká na kontrolu",
+        "desc": "Hybridní režim drží strojové překlady zpět, dokud je neschválíš. Otevři článek a překlad zkontroluj a publikuj."
+      },
+      "viewLive": "Zobrazit živou stránku"
+    },
     "explore": "Prozkoumat články",
     "votes": "Hlasů",
-    "tagsArticles": "Články se štítkem",
     "searchPlaceholder": "Hledat články...",
     "readingTime": "{0} min čtení",
     "latestArticle": "Nejnovější článek:",
@@ -114,6 +166,7 @@
         }
       }
     },
+    "exportTitle": "Export článků",
     "export": {
       "label": "Export",
       "title": {
@@ -147,7 +200,8 @@
       "status": "Status",
       "date": "Datum",
       "actions": "Akce",
-      "createdAt": "Vytvořeno"
+      "createdAt": "Vytvořeno",
+      "languages": "Jazyky"
     },
     "messages": {
       "archivedCannotEdit": "Archivované články nelze upravovat.",
@@ -156,6 +210,7 @@
       "deleteFailed": "Článek se nepodařilo smazat."
     },
     "sources": {
+      "add": "Přidat zdroj",
       "placeholder": "Odkaz na zdroj (https://...)",
       "imageUrl": "Odkaz na obrázek (https://...)",
       "youtube": "Odkaz na YouTube video (https://...)",
@@ -225,6 +280,7 @@
       "roughlyEstimated": "Přibližně {0} článků",
       "userDataError": "Chyba při načítání uživatelských dat",
       "remainingTokens": "Zbývající tokeny",
+      "balanceIncludesExtras": "Základní příděl plánu je {0} tokenů; zůstatek zahrnuje také dokoupené nebo zachované tokeny.",
       "totalConsumed": "Celkem spotřebováno: {0} tokenů",
       "buyTokens": "Koupit tokeny",
       "upgradeToPremium": "Povýšit na PREMIUM",
@@ -239,7 +295,7 @@
       "articleSavedAsDraft": "Článek uložen jako koncept",
       "insightGenerated": "Insight vytvořen",
       "lowTokensWarning": "Málo tokenů!",
-      "lowTokensHint": "Zbývá méně než 10 % tokenů. Dokupte si balíček, ať nepřijdete o generování.",
+      "lowTokensHint": "Zbývá méně než {percent} % tokenů. Dokupte si balíček, ať nepřijdete o generování.",
       "insightSkipped": "Insight přeskočen"
     },
     "dateFormats": {
@@ -317,6 +373,14 @@
         "insertImage": "Vložit obrázek z URL",
         "insertYoutube": "Vložit YouTube video",
         "insertPoll": "Vložit anketu",
+        "insertTable": "Vložit tabulku",
+        "table": "Akce tabulky",
+        "addColumnAfter": "Přidat sloupec",
+        "deleteColumn": "Odstranit sloupec",
+        "addRowAfter": "Přidat řádek",
+        "deleteRow": "Odstranit řádek",
+        "toggleHeaderRow": "Přepnout záhlaví",
+        "deleteTable": "Odstranit tabulku",
         "alignLeft": "Zarovnat vlevo",
         "alignCenter": "Zarovnat na střed",
         "alignRight": "Zarovnat vpravo",
@@ -350,6 +414,11 @@
         "import": "Importovat z JSON",
         "ai": "AI generování"
       },
+      "preview": {
+        "title": "Náhled článku",
+        "toggle": "Náhled článku",
+        "empty": "Článek zatím nemá obsah — přepni zpět na psaní a začni."
+      },
       "ai": {
         "customPromptPlaceholder": "Zadejte pokyn pro generování článku AI...",
         "notAvailable": "Generování AI není dostupné.",
@@ -359,7 +428,38 @@
         "generating": "Píšu…",
         "phaseWriting": "Píšu…",
         "phaseImages": "Generuji obrázky…",
-        "aiContentStopped": "Generování zastaveno"
+        "aiContentStopped": "Generování zastaveno",
+        "enhance": "Vylepšit zadání",
+        "enhanceUndo": "Vrátit původní",
+        "enhanceFailed": "Vylepšení zadání se nepovedlo",
+        "topicLabel": "Téma článku",
+        "topicPlaceholder": "O čem má článek být? Doplň úhel pohledu, publikum nebo klíčové body…",
+        "step": {
+          "writing": "Píšu",
+          "images": "Obrázky"
+        },
+        "formats": {
+          "howto": {
+            "label": "Návod",
+            "template": "Napiš praktický návod krok za krokem na téma:"
+          },
+          "news": {
+            "label": "Zpráva",
+            "template": "Napiš zpravodajský článek na téma:"
+          },
+          "listicle": {
+            "label": "Žebříček",
+            "template": "Napiš článek ve formě seznamu na téma:"
+          },
+          "opinion": {
+            "label": "Názor",
+            "template": "Napiš názorový komentář na téma:"
+          },
+          "deepDive": {
+            "label": "Analýza",
+            "template": "Napiš hloubkovou analýzu tématu:"
+          }
+        }
       },
       "drafts": {
         "loadDrafts": "Načíst koncepty",
@@ -373,7 +473,32 @@
       "createSuccess": "Článek úspěšně vytvořen",
       "createFailed": "Vytvoření článku selhalo",
       "aiContentGenerated": "Obsah AI úspěšně vygenerován",
-      "aiContentFailed": "Generování obsahu AI selhalo"
-    }
+      "aiContentFailed": "Generování obsahu AI selhalo",
+      "loadFailed": "Načtení článku selhalo",
+      "metaBar": "Metadata článku",
+      "addTag": "Přidat tag",
+      "searchTags": "Najít nebo vytvořit tag…",
+      "createTag": "Vytvořit „{name}“",
+      "publishImmediately": "Ihned"
+    },
+    "messages": {
+      "archivedCannotEdit": "Archivované články nelze upravovat",
+      "statusChangeFailed": "Stav se nepodařilo změnit",
+      "deleteSuccess": "Článek smazán",
+      "deleteFailed": "Článek se nepodařilo smazat"
+    },
+    "image": {
+      "illustration": "Ilustrační obrázek",
+      "ai": "Ilustrační obrázek (AI)",
+      "photoBy": "foto: {author}"
+    },
+    "aiDisclosure": {
+      "ASSIST": "Vytvořeno s pomocí AI",
+      "FULL": "Vytvořeno AI"
+    },
+    "authorsArticles": "Články tohoto autora",
+    "tagsArticles": "Články s tímto štítkem",
+    "keyTakeaways": "Klíčové body",
+    "faq": "Časté otázky"
   }
 }

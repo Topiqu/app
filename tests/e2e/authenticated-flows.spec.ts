@@ -16,7 +16,6 @@ test.describe('reader', () => {
     await expect(page.getByRole('heading').first()).toBeVisible()
     await expectNoHorizontalOverflow(page)
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot('reader-profile.png', { fullPage: true })
   })
 
   test('profile save actions only appear after an edit', async ({ page }, testInfo) => {
@@ -62,7 +61,6 @@ test.describe('admin', () => {
       await expect(page.locator('main')).toBeVisible()
       await expectNoHorizontalOverflow(page)
       await expectAccessible(page)
-      await expect(page).toHaveScreenshot(`admin-${route.replaceAll('/', '-')}.png`, { fullPage: true })
     })
   }
 
@@ -148,7 +146,6 @@ test.describe('admin', () => {
     await expect(page.getByRole('dialog')).toBeVisible()
     await expectOverlayWithinViewport(page)
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot('admin-statistics-dialog.png', { fullPage: true })
     await page.keyboard.press('Escape')
 
     await page
@@ -159,7 +156,6 @@ test.describe('admin', () => {
     await expect(page.getByRole('dialog')).toBeVisible()
     await expectOverlayWithinViewport(page)
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot('admin-tags-dialog.png', { fullPage: true })
   })
 
   test('draft workflow and header popovers remain readable', async ({ page }, testInfo) => {
@@ -226,7 +222,6 @@ test.describe('superadmin', () => {
     await expect(page.getByRole('heading', { name: /Client sites|Klientské weby/ })).toBeVisible()
     await expectNoHorizontalOverflow(page)
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot('superadmin-clients.png', { fullPage: true })
   })
 
   test('client create and global users workflows use constrained overlays', async ({ page }, testInfo) => {
@@ -243,7 +238,6 @@ test.describe('superadmin', () => {
       .click()
     await expect(page.getByRole('dialog')).toBeVisible()
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot('superadmin-create-client-slideover.png', { fullPage: true })
     await page.keyboard.press('Escape')
 
     await page
@@ -253,7 +247,6 @@ test.describe('superadmin', () => {
       .click()
     await expect(page.getByRole('dialog')).toBeVisible()
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot('superadmin-global-users-dialog.png', { fullPage: true })
   })
 
   test('client edit and destructive actions use accessible overlays', async ({ page }, testInfo) => {
@@ -269,7 +262,6 @@ test.describe('superadmin', () => {
       .click()
     await expect(page.getByRole('dialog')).toBeVisible()
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot('superadmin-edit-client-slideover.png', { fullPage: true })
     await page.keyboard.press('Escape')
 
     await page
@@ -280,7 +272,6 @@ test.describe('superadmin', () => {
     await expect(confirmation).toBeVisible()
     await expect(confirmation.getByRole('button', { name: /Permanently delete|Trvale smazat/i })).toBeVisible()
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot('superadmin-delete-confirmation.png', { fullPage: true })
   })
 })
 

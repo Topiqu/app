@@ -19,7 +19,31 @@
         <h1 class="min-w-0 text-lg font-bold">
           {{ isNew ? $t('articles.addArticle') : $t('articles.updateArticle') }}
         </h1>
-        <ArticleStatusPill class="hidden sm:inline-flex" :status="editedArticle.status" />
+        <div class="flex items-center gap-2 min-w-0">
+          <ArticleStatusPill v-if="tr.isSource" :status="editedArticle.status" />
+          <span v-else class="px-2 py-0.5 rounded-full text-[11px] font-medium" :class="translationBadge">
+            {{ $t(`articles.translations.status.${tr.active?.status ?? 'MISSING'}`) }}
+          </span>
+          <span
+            v-if="autosaveVisible"
+            class="hidden sm:flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400"
+            aria-live="polite"
+          >
+            <Icon :name="saving ? 'mdi:cloud-sync' : 'mdi:cloud-check'" class="w-3.5 h-3.5 shrink-0" />
+            <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
+            <template v-else-if="lastSavedAt">
+              {{ $t('common.messages.savedAgo') }}&nbsp;<AppTime :datetime="lastSavedAt" preset="relative" />
+            </template>
+          </span>
+          <span
+            v-if="aiGenerating"
+            class="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-300"
+            aria-live="polite"
+          >
+            <Icon name="mdi:loading" class="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
+            {{ $t('articles.editor.ai.generating') }}
+          </span>
+        </div>
       </div>
 
       <div class="flex w-full items-center gap-2 overflow-x-auto md:ml-auto md:w-auto md:overflow-visible">
@@ -31,6 +55,23 @@
           </template>
           <template v-else>{{ $t('common.messages.unsaved') }}</template>
         </div>
+
+        <UButton
+          v-if="livePath"
+          :to="livePath"
+          target="_blank"
+          icon="i-mdi-open-in-new"
+          color="neutral"
+          variant="ghost"
+          :aria-label="$t('common.actions.view')"
+        />
+        <UButton
+          icon="i-mdi-eye-outline"
+          color="neutral"
+          variant="ghost"
+          :aria-label="$t('articles.editor.preview.title')"
+          @click="previewing = true"
+        />
 
         <UButton
           icon="i-mdi-cog"
@@ -70,7 +111,7 @@
       <div class="flex flex-col gap-6">
         <UFormField :label="$t('common.labels.articleTitle')">
           <UInput
-            v-model="editedArticle.title"
+            v-model="titleModel"
             :placeholder="$t('common.labels.articleTitle')"
             class="w-full"
             @input="updateSlug"
@@ -78,16 +119,16 @@
         </UFormField>
         <UFormField :label="$t('common.labels.articleExcerpt')">
           <UTextarea
-            :modelValue="editedArticle.excerpt ?? undefined"
+            :modelValue="excerptModel ?? undefined"
             :placeholder="$t('common.labels.articleExcerpt')"
             class="w-full"
             autoresize
-            @update:modelValue="editedArticle.excerpt = $event || null"
+            @update:modelValue="excerptModel = $event || null"
           />
         </UFormField>
 
         <div class="mt-4 max-w-none">
-          <TiptapEditor v-model="editedArticle.content" edit class="min-h-[500px]" />
+          <TiptapEditor v-model="bodyModel" :edit="bodyEditable" class="min-h-[500px]" />
 
           <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
             <UButton size="sm" icon="i-mdi-file-document-outline" @click="draftsOpen = true">
@@ -105,6 +146,17 @@
       </div>
     </div>
 
+    <ModalMini
+      v-model:open="discardTranslationOpen"
+      icon="mdi:alert-circle-outline"
+      variant="danger"
+      :title="$t('articles.translations.discardTitle')"
+      :message="$t('articles.translations.discardMessage')"
+      :confirmText="$t('articles.translations.actions.discard')"
+      :cancelText="$t('common.actions.cancel')"
+      @confirm="tr.discard()"
+    />
+
     <LazyArticleDrafts
       v-model:open="draftsOpen"
       :drafts="drafts"
@@ -112,6 +164,21 @@
       @select="loadDraft"
       @close="draftsOpen = false"
     />
+
+    <UModal v-model:open="previewing" :title="$t('articles.editor.preview.title')">
+      <template #body>
+        <ArticleEditorPreview
+          :articleId="editedArticle.id"
+          :title="titleModel"
+          :excerpt="excerptModel"
+          :content="bodyModel"
+          :imageUrl="editedArticle.imageUrl"
+          :tags="articleTags"
+          :sources="editedArticle.sources"
+          :series="previewSeries"
+        />
+      </template>
+    </UModal>
 
     <USlideover v-model:open="sidebarOpen" :title="$t('common.settings')">
       <template #body>
@@ -266,19 +333,21 @@
 import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
+import { translationStatusBadge } from '~~/shared/utils/articleTranslations'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
-const toast = useToast()
+const toast = useAppToast()
 const { t } = useI18n()
 const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
 
+const clientSite = await useClientSite()
+
 const isNew = route.params.id === 'new'
 const sidebarOpen = shallowRef(false)
-const aiOpen = shallowRef(route.query.ai === '1')
 const discardConfirmOpen = shallowRef(false)
 const submitting = shallowRef(false)
 
@@ -291,6 +360,7 @@ const init = (): ArticleWithDetails =>
     content: '',
     slug: '',
     imageUrl: '',
+    imageCredit: null,
     status: 'draft',
     releaseAt: null,
     sources: [],
@@ -304,13 +374,15 @@ const selectedSeries = shallowRef<any>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
 const customPrompt = shallowRef('')
-const aiGenerating = shallowRef(false)
+const aiPhase = shallowRef<'writing' | 'images'>('writing')
+const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
 
 const { idle } = useIdle(5 * 60 * 1000)
 const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDraft } = await useArticleDrafts(
   editedArticle,
   idle,
   {
+    enabled: isNew,
     onDraftLoaded: () => {
       selectedSeries.value = null
       articleTags.value = []
@@ -320,7 +392,9 @@ const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDr
 
 if (!isNew) {
   try {
-    const data = await $fetch(`/api/articles/${route.params.id}`)
+    const data = await $fetch<any>(`/api/articles/${route.params.id}`, {
+      query: { clientSiteId: clientSite?.id },
+    })
     article.value = data as any
     editedArticle.value = {
       ...article.value,
@@ -343,64 +417,129 @@ if (!isNew) {
   }
 }
 
+// Language is a dimension of the article, not a separate screen: `tr.activeLang === ''` edits
+// the source, anything else edits that translation through the same fields.
+const primaryLanguage = clientSite?.language ?? 'en'
+
+// `?lang=` lets the admin table deep-link straight to a language. The primary language is the
+// source tab, which the composable represents as an empty string. Seeded at construction rather
+// than assigned afterwards, so nothing can reconcile it away before the payload lands.
+const requestedLang = route.query.lang as string | undefined
+const initialLang = !isNew && requestedLang && requestedLang !== primaryLanguage ? requestedLang : ''
+
+const tr = reactive(useArticleTranslations(article.value?.id, initialLang))
+const discardTranslationOpen = shallowRef(false)
+
+/** Public URL of whichever language is on screen — only once it has a slug to point at. */
+const livePath = computed(() => {
+  if (isNew || !activeSlug.value) return ''
+  const language = (tr.isSource ? primaryLanguage : tr.activeLang) as Language
+  return localePath({ name: 'clanky-slug', params: { slug: activeSlug.value } }, language)
+})
+
+const translationBadge = computed(() => translationStatusBadge(tr.active?.status))
+const activeSlug = computed(() => (tr.isSource ? editedArticle.value.slug : (tr.active?.slug ?? '')))
+const bodyEditable = computed(() => tr.isSource || tr.hasBody)
+
+const bodyModel = computed({
+  get: () => (tr.isSource ? editedArticle.value.content : tr.draft.content),
+  set: (value: string) => {
+    if (tr.isSource) editedArticle.value.content = value
+    else tr.draft.content = value
+  },
+})
+
+const titleModel = computed({
+  get: () => (tr.isSource ? editedArticle.value.title : tr.draft.title),
+  set: (value: string) => {
+    if (tr.isSource) editedArticle.value.title = value
+    else tr.draft.title = value
+  },
+})
+
+const excerptModel = computed({
+  get: () => (tr.isSource ? editedArticle.value.excerpt : tr.draft.excerpt),
+  set: (value: string) => {
+    if (tr.isSource) editedArticle.value.excerpt = value
+    else tr.draft.excerpt = value
+  },
+})
+
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 
-const publishLabel = computed(() => {
-  if (isNew) return t('articles.createAndPublish')
-  if (editedArticle.value.status === 'published') return t('articles.saveChanges')
-  return t('articles.publishNow')
-})
+const isBlank = computed(() => isBlankArticle(editedArticle.value))
+
+const previewing = shallowRef(false)
 
 const releaseAtInput = computed<string | null>({
   get: () => {
-    const v = editedArticle.value.releaseAt as unknown as string | Date | null
-    if (!v) return null
-    if (typeof v === 'string') return v.slice(0, 16)
-    const d = v as Date
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
+    const value = editedArticle.value.releaseAt as unknown as string | Date | null
+    if (!value) return null
+    if (typeof value === 'string') return value.slice(0, 16)
+    return new Date(value.getTime() - value.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
   },
-  set: (v) => {
-    ;(editedArticle.value as any).releaseAt = v
+  set: (value) => {
+    editedArticle.value.releaseAt = value as any
   },
 })
 
 const updateSlug = () => {
-  if (isNew) {
-    editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })
-  }
+  if (isNew) editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })
 }
-
-const handleUpload = (file: { url: string; optimizedUrl: string }) => {
-  editedArticle.value.imageUrl = file.url
-  optimizedImageUrl.value = file.optimizedUrl
-}
-
 const addTag = (id: string) => {
   if (!articleTags.value.includes(id)) articleTags.value.push(id)
 }
 const removeTag = (id: string) => {
-  articleTags.value = articleTags.value.filter((t) => t !== id)
+  articleTags.value = articleTags.value.filter((tag) => tag !== id)
 }
-
 const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
   if (kind === 'clear') {
     editedArticle.value.releaseAt = null
     return
   }
-  const d = new Date()
-  if (kind === 'inHour') d.setHours(d.getHours() + 1)
+  const date = new Date()
+  if (kind === 'inHour') date.setHours(date.getHours() + 1)
   if (kind === 'tomorrow') {
-    d.setDate(d.getDate() + 1)
-    d.setHours(8, 0, 0, 0)
+    date.setDate(date.getDate() + 1)
+    date.setHours(8, 0, 0, 0)
   }
-  d.setSeconds(0, 0)
-  editedArticle.value.releaseAt = new Date(d.getTime() - d.getTimezoneOffset() * 60_000)
+  date.setSeconds(0, 0)
+  editedArticle.value.releaseAt = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
     .toISOString()
     .slice(0, 16) as any
 }
 
-const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
-const aiPhase = shallowRef<'writing' | 'images'>('writing')
+// `Hero.vue` wants the part number, which only the selected series knows. A new article lands
+// after the ones already in the series, so its own position is one past the end.
+const previewSeries = computed(() => {
+  const series = selectedSeries.value
+  if (!series?.name) return null
+  const total = (series.articles?.length ?? 0) + 1
+
+  return { name: series.name, current: total, total }
+})
+
+// Escape leaves the preview, the way Escape leaves any mode. No chord to enter it: Ctrl+Shift+P
+// is Firefox's private window and Ctrl+Alt+P is AltGr on a Czech layout, so the header button
+// is the only affordance that works everywhere.
+onKeyStroke('Escape', () => {
+  if (previewing.value) previewing.value = false
+})
+
+const aiGenerating = shallowRef(false)
+// Expanded while there is nothing to lose, or on the `?ai=1` deep link. Generation rewrites the
+// whole article, so a permanently open composer serves no mid-article iteration — it just pushed
+// the title below the fold on every visit.
+const aiOpen = shallowRef(isBlank.value || route.query.ai === '1')
+
+const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
+
+const handleUpload = (file: { url: string; optimizedUrl: string }) => {
+  editedArticle.value.imageUrl = file.url
+  // The author's own picture inherits neither the previous cover's AI label nor its attribution.
+  editedArticle.value.imageCredit = null
+  optimizedImageUrl.value = file.optimizedUrl
+}
 
 const generateAIContent = async () => {
   aiGenerating.value = true
@@ -438,12 +577,9 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   if (submitting.value) return
   if (!editedArticle.value.title) return toast.add({ color: 'error', title: 'Title is required' })
 
-  const willPublishNow = targetStatus === 'published' && !editedArticle.value.releaseAt
-  const releaseAt = editedArticle.value.releaseAt
-    ? new Date(editedArticle.value.releaseAt)
-    : willPublishNow
-      ? new Date()
-      : null
+  const releaseAt = editedArticle.value.releaseAt ? new Date(editedArticle.value.releaseAt) : null
+  const schedulesForLater = targetStatus === 'published' && !!releaseAt && releaseAt.getTime() > Date.now()
+  const effectiveStatus = schedulesForLater ? 'draft' : targetStatus
 
   const payload = {
     ...editedArticle.value,
@@ -457,15 +593,23 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   submitting.value = true
   try {
     if (isNew) {
-      await $fetch('/api/articles', { method: 'POST', body: payload })
+      const created = await $fetch<{ slug: string }>('/api/articles', { method: 'POST', body: payload })
       toast.add({ color: 'success', title: targetStatus === 'published' ? 'Article published' : 'Draft created' })
       await invalidateArticlesAndStats()
+      // The route param is the slug, and changing it remounts the page (Nuxt's default page key
+      // interpolates params) — which is what we want exactly once: `useArticleTranslations` bakes
+      // the article id into its fetch URL at construction, so it has to be rebuilt against the
+      // saved article before the language tabs mean anything.
+      await router.replace(localePath({ name: 'admin-editor-id', params: { id: created.slug } }))
     } else {
       await $fetch(`/api/articles/${article.value!.id}`, { method: 'PATCH', body: payload })
       toast.add({ color: 'success', title: 'Article updated' })
       await invalidateArticles()
+      // Stay in the document. Re-baseline the two fields `hasChanges` compares, or leaving would
+      // prompt to discard work that is already saved.
+      article.value = { ...article.value!, title: payload.title, content: payload.content }
+      editedArticle.value.status = effectiveStatus
     }
-    router.push(localePath({ name: 'admin' }))
   } catch (e: any) {
     toast.add({ color: 'error', title: e.data?.message || 'Error saving article' })
   } finally {
@@ -474,12 +618,9 @@ const submit = async (targetStatus: 'draft' | 'published') => {
 }
 
 const hasChanges = computed(() => {
-  if (isNew) {
-    return (
-      editedArticle.value.title.length > 0 ||
-      (editedArticle.value.content !== '' && editedArticle.value.content !== '<p></p>')
-    )
-  }
+  // A rewritten translation is unsaved work too — leaving would drop it just as silently.
+  if (tr.isDirty) return true
+  if (isNew) return !isBlank.value
   return editedArticle.value.title !== article.value?.title || editedArticle.value.content !== article.value?.content
 })
 

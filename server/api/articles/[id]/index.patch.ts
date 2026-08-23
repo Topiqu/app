@@ -1,14 +1,11 @@
-import slugify from 'slugify'
-import * as cheerio from 'cheerio'
 import { ArticleStatus, type NotificationType } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const id = getRouterParam(event, 'id')
-  const user = (await getServerSession(event))?.user
+  const { user, membership } = await requireTenantScope(event, 'ARTICLE_WRITE')
 
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
   const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
@@ -23,10 +20,14 @@ export default defineEventHandler(async (event) => {
 
   const previousArticle = await db.article.findUnique({
     where: { id },
-    select: { status: true, releaseAt: true, articleSeriesId: true, seriesOrder: true },
+    select: { status: true, releaseAt: true, articleSeriesId: true, seriesOrder: true, userId: true },
   })
 
   if (!previousArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  if (previousArticle.userId !== user.id && !hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS'))
+    throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
+  if ((body.status === ArticleStatus.published || body.releaseAt) && !hasTenantScope(membership, 'ARTICLE_PUBLISH'))
+    throw createError({ statusCode: 403, message: 'Missing tenant scope: ARTICLE_PUBLISH' })
 
   if (previousArticle.status === ArticleStatus.published) {
     delete body.releaseAt
@@ -41,6 +42,9 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: t('common.errors.invalidReleaseDate')! })
     }
   }
+
+  if (body.releaseAt && new Date(body.releaseAt).getTime() > currentDate.getTime()) body.status = ArticleStatus.draft
+  else if (body.status === ArticleStatus.published) body.releaseAt = null
 
   let newSeriesOrder = previousArticle.seriesOrder
   if (body.articleSeriesId !== undefined) {
@@ -59,30 +63,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  let content = body.content
-  if (content) {
-    const $ = cheerio.load(content)
-    const usedIds = new Map()
-    $('h1, h2, h3').each((i, el) => {
-      const $el = $(el)
-      let text = $el.text().trim()
-      if (!text) {
-        $el.attr('id', `heading-${i}`)
-        return
-      }
-      const maxLength = 50
-      text = text.length > maxLength ? text.slice(0, maxLength) : text
-      const baseId = slugify(text, { lower: true, strict: true })
-      let id = baseId
-      let counter = 1
-      while (usedIds.has(id)) {
-        id = `${baseId}-${counter++}`
-      }
-      usedIds.set(id, true)
-      $el.attr('id', id)
-    })
-    content = $.html()
-  }
+  const content = body.content ? stampHeadingIds(body.content) : body.content
 
   const data: any = {
     ...body,
@@ -113,6 +94,12 @@ export default defineEventHandler(async (event) => {
     await syncArticleTranslationQueue(db, article.id, user.clientSiteId, { contentChanged: 'content' in data })
   }
 
+  // Covers publishing, unpublishing and edits to an already-live article. A
+  // draft-only edit is not in any listing, so it must not flush the tenant's cache.
+  if (article.status === ArticleStatus.published || previousArticle.status === ArticleStatus.published) {
+    await invalidateFeed(user.clientSiteId)
+  }
+
   await logAction({
     action: 'ARTICLE_UPDATE',
     userId: user.id,
@@ -124,15 +111,21 @@ export default defineEventHandler(async (event) => {
   if (article.status === ArticleStatus.published && previousArticle?.status === ArticleStatus.draft) {
     const followers = await db.follow.findMany({
       where: { followedId: article.userId, follower: { allowNotifs: true } },
-      select: { followerId: true },
+      select: { followerId: true, follower: { select: { language: true } } },
     })
 
-    const notifications = followers.map((follower) => ({
-      message: `${user?.name} vydal nový článek: ${article.title}`,
-      userId: follower.followerId,
-      articleId: article.id,
-      type: 'ARTICLE_PUBLISHED' as NotificationType,
-    }))
+    const author = user?.name ?? 'Anonymous'
+    const notifications = await Promise.all(
+      followers.map(async (follower) => {
+        const translate = await getServerTranslator(follower.follower.language || 'en')
+        return {
+          message: translate('common.notifications.newArticleFromFollowed', [author, article.title])!,
+          userId: follower.followerId,
+          articleId: article.id,
+          type: 'ARTICLE_PUBLISHED' as NotificationType,
+        }
+      }),
+    )
 
     if (notifications.length > 0) {
       await db.$transaction(async (tx) => {

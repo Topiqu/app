@@ -1,4 +1,6 @@
 const baseUrl = 'https://api.linkedin.com/v2'
+const restBaseUrl = 'https://api.linkedin.com/rest'
+const linkedInVersion = process.env.LINKEDIN_API_VERSION || '202604'
 
 /**
  * Fetches an access token using an authorization code
@@ -88,27 +90,25 @@ export async function createPost(
 ): Promise<string> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch(`${baseUrl}/ugcPosts`, {
+      const response = await fetch(`${restBaseUrl}/posts`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'X-Restli-Protocol-Version': '2.0.0',
+          'Linkedin-Version': linkedInVersion,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           author: authorUrn,
+          commentary: text,
+          visibility: 'PUBLIC',
+          distribution: {
+            feedDistribution: 'MAIN_FEED',
+            targetEntities: [],
+            thirdPartyDistributionChannels: [],
+          },
           lifecycleState: 'PUBLISHED',
-          specificContent: {
-            'com.linkedin.ugc.ShareContent': {
-              shareCommentary: {
-                text,
-              },
-              shareMediaCategory: 'NONE',
-            },
-          },
-          visibility: {
-            'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
-          },
+          isReshareDisabledByAuthor: false,
         }),
       })
 
@@ -116,8 +116,9 @@ export async function createPost(
         throw new Error(`LinkedIn API error: ${await response.text()}`)
       }
 
-      const data = await response.json()
-      return data.id
+      const postId = response.headers.get('x-restli-id')
+      if (!postId) throw new Error('LinkedIn did not return the created post ID')
+      return postId
     } catch (error) {
       if (attempt === maxRetries) {
         throw error
@@ -129,7 +130,8 @@ export async function createPost(
 }
 
 /**
- * Fetches engagement metrics for a given post
+ * @deprecated Personal-post metrics require restricted LinkedIn read access that Topiqu does
+ * not currently hold. Kept as the future reactivation point; do not call from scheduled jobs.
  */
 export async function getPostMetrics(accessToken: string, shareUrn: string) {
   const response = await fetch(`${baseUrl}/socialActions/${encodeURIComponent(shareUrn)}`, {

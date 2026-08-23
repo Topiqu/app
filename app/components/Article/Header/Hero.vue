@@ -59,6 +59,8 @@
 </template>
 
 <script setup lang="ts">
+import type { CoverCredit } from '~~/shared/utils/imageCredit'
+
 const localePath = useLocalePath()
 
 defineProps<{
@@ -69,6 +71,8 @@ defineProps<{
   showFollowButton: boolean
   excerpt?: string | null
   imageUrl?: string | null
+  imageCredit?: CoverCredit | null
+  discloseAi?: boolean
   series?: { name: string; current: number; total: number } | null
 }>()
 

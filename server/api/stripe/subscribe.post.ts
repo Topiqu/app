@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
     clientSiteId?: string
     origin: string
   }>(event)
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'BILLING_CHANGE', user.clientSiteId)
 
   const clientSiteId = user.role === 'superadmin' && bodyClientSiteId ? bodyClientSiteId : user.clientSiteId
   if (!plan || !clientSiteId || !origin) {

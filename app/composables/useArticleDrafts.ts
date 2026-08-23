@@ -7,17 +7,26 @@ import equal from 'fast-deep-equal'
 export const useArticleDrafts = async (
   editedArticle: Ref<ArticleWithDetails>,
   idle: Ref<boolean>,
-  options?: {
+  options: {
+    /**
+     * Drafts are the recovery net for an article that does not exist yet. `POST /api/articles/draft`
+     * **creates a row per call**, so leaving this on while editing a saved article buried the
+     * drafts list under one duplicate per autosave tick. Required rather than defaulted, because
+     * both call sites got it wrong when it was implicit.
+     */
+    enabled: boolean
     onDraftLoaded?: () => void
   },
 ) => {
   const { t } = useI18n()
   const toast = useToast()
+  const { enabled } = options
 
   const successMessage = shallowRef('')
   const draftsOpen = shallowRef(false)
   const lastSavedAt = shallowRef<Date | null>(null)
   const saving = shallowRef(false)
+  const { start: clearSuccessLater } = useTimeoutFn(() => (successMessage.value = ''), 8000, { immediate: false })
 
   const {
     data: drafts,
@@ -26,6 +35,7 @@ export const useArticleDrafts = async (
   } = await useLazyFetch<ArticleDraft[]>('/api/articles/draft', {
     default: () => [],
     server: false,
+    immediate: enabled,
   })
 
   const saveDraft = useDebounceFn(async () => {
@@ -68,7 +78,7 @@ export const useArticleDrafts = async (
       lastSavedAt.value = new Date()
       successMessage.value = t('common.messages.draftSaved')
       await refresh()
-      setTimeout(() => (successMessage.value = ''), 8000)
+      clearSuccessLater()
     } catch {
       toast.add({ color: 'error', title: t('common.messages.draftSaveFailed') })
     } finally {
@@ -89,20 +99,20 @@ export const useArticleDrafts = async (
       aiInvolvement: 'NONE',
     })
 
-    if (options?.onDraftLoaded) {
-      options.onDraftLoaded()
-    }
+    options.onDraftLoaded?.()
   }
 
-  watch(
-    [
-      () => editedArticle.value.title,
-      () => editedArticle.value.excerpt,
-      () => editedArticle.value.content,
-      () => editedArticle.value.imageUrl,
-    ],
-    saveDraft,
-  )
+  if (enabled) {
+    watch(
+      [
+        () => editedArticle.value.title,
+        () => editedArticle.value.excerpt,
+        () => editedArticle.value.content,
+        () => editedArticle.value.imageUrl,
+      ],
+      saveDraft,
+    )
+  }
 
   return {
     drafts,

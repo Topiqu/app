@@ -1,433 +1,428 @@
 <template>
-  <div class="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-    <div class="grid items-start gap-8 lg:grid-cols-[17rem_minmax(0,1fr)]">
-      <aside class="space-y-5 lg:sticky lg:top-24">
-        <div class="flex flex-col items-center gap-4 text-center lg:items-start lg:text-left">
-          <UserPictureUploader v-model="profileForm.avatarUrl" @upload="refresh()" />
-          <div class="min-w-0">
-            <h1 class="break-words text-2xl font-extrabold text-highlighted">{{ profileForm.username }}</h1>
-            <p class="mt-1 break-all text-sm text-muted">
-              @{{ profileForm.username?.toLowerCase().replace(/\s+/g, '') }}
-            </p>
-            <p class="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">
-              {{ profileForm.bio || $t('articles.userMenu.noBio') }}
-            </p>
-          </div>
-          <div class="flex flex-wrap justify-center gap-2 lg:justify-start">
-            <UBadge color="neutral" variant="soft" icon="i-mdi-email">{{ profileForm.email }}</UBadge>
-            <UBadge color="neutral" variant="soft" icon="i-mdi-calendar">
-              {{ formatDate(profileForm.createdAt) }}
-            </UBadge>
-          </div>
-        </div>
+  <main class="w-full max-w-5xl mx-auto pt-24 sm:pt-28 px-4 sm:px-6 pb-28 flex flex-col gap-6">
+    <header class="flex items-center justify-between gap-4">
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+        {{ $t('profile.title') }}
+      </h1>
+      <UButton
+        square
+        size="sm"
+        color="neutral"
+        variant="soft"
+        icon="i-mdi-file-pdf-box"
+        :disabled="isLoading"
+        :aria-label="$t('profile.exportToPDF')"
+        :title="$t('profile.exportToPDF')"
+        @click="exportToPDF"
+      />
+    </header>
 
-        <nav :aria-label="$t('profile.title')" class="hidden border-y border-default py-3 lg:block">
-          <UButton
-            v-for="item in profileNavigation"
-            :key="item.href"
-            :to="item.href"
-            :icon="item.icon"
-            :label="item.label"
-            :color="activeProfileSection === item.href.slice(1) ? 'primary' : 'neutral'"
-            :variant="activeProfileSection === item.href.slice(1) ? 'soft' : 'ghost'"
-            :aria-current="activeProfileSection === item.href.slice(1) ? 'location' : undefined"
-            :ui="{ base: 'w-full justify-start' }"
-            @click="activeProfileSection = item.href.slice(1)"
-          />
-        </nav>
+    <div class="flex flex-col md:flex-row gap-6 md:gap-10">
+      <TabNav v-model="activeTab" :tabs="tabs" :label="$t('profile.title')" />
 
-        <UButton
-          :disabled="isLoading"
-          icon="i-mdi-file-pdf-box"
-          color="neutral"
-          variant="soft"
-          block
-          :label="$t('profile.exportToPDF')"
-          :loading="isLoading"
-          @click="exportToPDF"
-        />
-      </aside>
-
-      <div class="min-w-0 max-w-[720px] space-y-8">
-        <StatsUser
-          :followers="profileForm.followers"
-          :following="profileForm.following"
-          :likedArticles="profileForm.likedArticles"
-          :commentsCount="profileForm.commentsCount"
-          :likesCount="profileForm.likesCount"
-          @openDialog="openDialog"
-          @updateTab="activeTab = $event"
-        />
-        <UAlert
-          v-if="isDirty"
-          color="warning"
-          variant="soft"
-          icon="i-mdi-alert-circle"
-          :title="$t('common.unsavedChanges')"
-          class="mb-4 sm:mb-6"
-        >
-          <template #actions>
-            <UButton
-              color="warning"
-              variant="ghost"
-              icon="i-mdi-undo"
-              square
-              :disabled="isLoading"
-              :aria-label="$t('common.actions.revertChanges')"
-              @click="revertChanges"
+      <div class="flex-1 min-w-0">
+        <div v-show="activeTab === 'profile'" class="space-y-6">
+          <Panel>
+            <UserIdentity
+              v-model:avatarUrl="profileForm.avatarUrl"
+              :username="profileForm.username"
+              :handle="handle"
+              :bio="profileForm.bio"
+              :email="profileForm.email"
+              :createdAt="profileForm.createdAt"
+              @upload="onAvatarUpload"
             />
-          </template>
-        </UAlert>
-        <div class="grid grid-cols-1 gap-6">
-          <div class="space-y-4 sm:space-y-6">
-            <section id="personal-section" class="space-y-4 sm:space-y-6">
-              <div id="username-section">
-                <UFormField :label="$t('profile.username')" name="username">
-                  <UInput
-                    v-model="profileForm.username"
-                    type="text"
-                    name="username"
-                    :placeholder="$t('profile.usernamePlaceholder')"
-                  />
-                </UFormField>
-              </div>
-              <div id="bio-section">
-                <UFormField :label="$t('profile.bio')" name="bio">
-                  <UTextarea
-                    :modelValue="profileForm.bio ?? undefined"
-                    name="bio"
-                    :rows="4"
-                    :maxLength="BIO_MAX_LENGTH"
-                    autoresize
-                    @update:modelValue="profileForm.bio = $event || null"
-                  />
-                </UFormField>
-              </div>
-              <UserEmail
-                id="email-section"
-                v-model:isLoading="isLoading"
-                :email="profileForm.email ?? ''"
-                :isEmailVerified="profileForm.emailVerified ?? false"
-                @update:email="profileForm.email = $event"
-                @update:isEmailVerified="profileForm.emailVerified = $event"
+          </Panel>
+
+          <Panel :title="$t('profile.publicProfile')" :description="$t('profile.publicProfileDescription')">
+            <div class="space-y-4">
+              <AppFormField
+                id="username-section"
+                v-model="profileForm.username"
+                :label="$t('profile.username')"
+                type="text"
+                name="username"
+                autocomplete="nickname"
               />
-            </section>
-            <div id="notifications-section">
-              <h2 class="text-sm font-semibold text-highlighted">{{ $t('profile.notifications') }}</h2>
-              <div class="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
-                <UFormField :label="$t('profile.webNotifications')" :ui="{ label: 'sr-only' }">
-                  <USwitch
-                    v-model="profileForm.allowNotifs"
-                    icon="i-mdi-web"
-                    :label="$t('profile.webNotifications')"
-                    :description="$t('profile.webNotificationsDescription')"
-                  />
-                </UFormField>
-                <UFormField :label="$t('profile.emailNotifications')" :ui="{ label: 'sr-only' }">
-                  <USwitch
-                    v-model="profileForm.allowEmail"
-                    icon="i-mdi-email-outline"
-                    :label="$t('profile.emailNotifications')"
-                    :description="$t('profile.webNotificationsDescription')"
-                  />
-                </UFormField>
+              <AppFormField
+                id="bio-section"
+                v-model="profileForm.bio"
+                :label="$t('profile.bio')"
+                name="bio"
+                :maxLength="BIO_MAX_LENGTH"
+              />
+              <div id="language-section">
+                <AppFormLabel :text="$t('profile.language')" />
+                <LangSwitcher class="w-full mt-1" :language="currentLanguage" @update:language="updateLanguage" />
               </div>
             </div>
-            <UserAccountHealth class="mt-1" />
-          </div>
-          <div class="space-y-4 sm:space-y-6">
-            <div id="language-section">
-              <UFormField :label="$t('profile.language')" />
-              <LangSwitcher
-                id="language-section"
-                class="w-full mt-1"
-                :language="profileForm.language || lcls[0]!.value"
-                @update:language="updateLanguage"
-              />
-            </div>
-            <div id="id-section">
-              <UFormField :label="$t('profile.id')" name="id">
-                <UInput
-                  v-model="profileForm.id"
-                  type="text"
-                  name="id"
-                  readonly
-                  trailingIcon="i-mdi-content-copy"
-                  @click="clipboard.copy(profileForm.id!)"
-                />
-              </UFormField>
-            </div>
-            <div id="registration-section">
-              <UFormField :label="$t('profile.registrationDate')" name="createdAt">
-                <UInput v-model="formattedCreatedAt" type="text" name="createdAt" disabled />
-              </UFormField>
-            </div>
-            <div id="security-section">
-              <UFormField :label="$t('profile.security')" />
-              <div class="space-y-3 sm:space-y-4">
-                <UButton
-                  :disabled="isLoading"
-                  class="w-full"
-                  color="error"
-                  variant="solid"
-                  icon="i-mdi-account-cancel"
-                  @click="confirmDeactivate"
-                >
-                  {{ $t('profile.deactivateAccount') }}
-                </UButton>
-                <USeparator />
-                <div id="password-section" class="space-y-3 sm:space-y-4">
-                  <UFormField v-if="userData?.hasPassword" :label="$t('common.auth.oldPassword')">
-                    <UInput
-                      v-model="passwordForm.oldPassword"
-                      :type="showOldPassword ? 'text' : 'password'"
-                      name="oldPassword"
-                      :placeholder="$t('common.auth.oldPassword')"
-                      class="w-full"
-                    >
-                      <template #trailing>
-                        <UButton
-                          color="neutral"
-                          variant="link"
-                          size="sm"
-                          :icon="showOldPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
-                          :aria-label="showOldPassword ? $t('common.hidePassword') : $t('common.showPassword')"
-                          @click="showOldPassword = !showOldPassword"
-                        />
-                      </template>
-                    </UInput>
-                  </UFormField>
-                  <UserPassword v-model="passwordForm.newPassword" :isValid="isPasswordFormValid" />
-                  <UserPassword v-model="passwordForm.confirmNewPassword" :isValid="isPasswordFormValid" isConfirm />
-                  <p
-                    v-if="!isPasswordFormValid && passwordForm.newPassword && passwordForm.confirmNewPassword"
-                    class="text-xs text-error sm:text-sm"
-                  >
-                    {{ $t('common.auth.passwordsMismatch') }}
-                  </p>
+          </Panel>
+
+          <Panel :title="$t('profile.accountDetails')" :description="$t('profile.accountDetailsDescription')">
+            <dl class="divide-y divide-neutral-100 dark:divide-neutral-800 text-sm">
+              <div id="id-section" class="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                <dt class="text-neutral-500 dark:text-neutral-400">{{ $t('profile.id') }}</dt>
+                <dd class="flex min-w-0 items-center gap-1">
+                  <code class="truncate text-xs text-neutral-700 dark:text-neutral-300">{{ profileForm.id }}</code>
                   <UButton
-                    :disabled="isLoading || !isPasswordFormValid"
-                    :loading="isLoading"
-                    class="disabled-primary-action w-full"
-                    icon="i-mdi-lock-reset"
-                    @click="handleChangePassword"
-                  >
-                    {{ $t('common.auth.changePassword') }}
-                  </UButton>
-                </div>
-                <USeparator />
-                <div id="2fa-section">
-                  <UFormField :label="$t('profile.twoFactorAuth')" />
-                  <UserQR
-                    v-if="user?.user.id"
-                    :enabled="is2FAEnabled"
-                    :otpauthUrl="otpauthUrl"
-                    :userId="user.user.id"
-                    @update:enabled="is2FAEnabled = $event"
-                    @update:otpauthUrl="otpauthUrl = $event"
-                    @error="twoFAError = $event"
+                    square
+                    size="sm"
+                    color="neutral"
+                    variant="ghost"
+                    :icon="copied ? 'mdi:check' : 'mdi:content-copy'"
+                    :aria-label="$t('common.actions.copyLink')"
+                    :title="$t('common.actions.copyLink')"
+                    @click="copy(profileForm.id ?? '')"
                   />
-                </div>
-                <USeparator />
-                <UserSessions
-                  :sessions="profileForm.sessions"
-                  :currentSessionId="user?.user.sessionId"
-                  :isLoading="isLoading"
-                  @update:sessions="profileForm.sessions = $event"
-                  @update:isLoading="isLoading = $event"
-                  @signOut="signOut"
-                />
+                </dd>
               </div>
-            </div>
-          </div>
+              <div id="registration-section" class="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                <dt class="text-neutral-500 dark:text-neutral-400">{{ $t('profile.registrationDate') }}</dt>
+                <dd class="text-neutral-700 dark:text-neutral-300">{{ formattedCreatedAt }}</dd>
+              </div>
+            </dl>
+          </Panel>
         </div>
-        <div v-if="isDirty" class="mt-6 flex flex-col gap-4 border-t border-default pt-6 sm:flex-row">
-          <UButton
-            :disabled="isLoading"
-            :loading="isLoading"
-            class="disabled-primary-action w-full sm:w-1/2"
-            icon="i-mdi-content-save-outline"
-            @click="updateProfile"
+
+        <div v-show="activeTab === 'security'" class="space-y-6">
+          <Panel :title="$t('profile.health')" :description="$t('profile.healthDescription')">
+            <UserAccountHealth @navigate="focusSection" />
+          </Panel>
+
+          <Panel id="email-section" :title="$t('profile.email')">
+            <UserEmail
+              v-model:email="profileForm.email!"
+              v-model:isEmailVerified="profileForm.emailVerified!"
+              v-model:isLoading="isLoading"
+            />
+          </Panel>
+
+          <Panel id="password-section" :title="$t('common.auth.changePassword')">
+            <div class="space-y-4">
+              <div
+                v-if="userData?.hasPassword"
+                class="flex items-center justify-between gap-3 rounded-xl bg-neutral-50 px-3.5 py-2.5 dark:bg-neutral-800/40"
+              >
+                <span class="text-xs text-neutral-500 dark:text-neutral-400">
+                  <template v-if="userData.passwordChangedAt">
+                    {{ $t('profile.passwordChangedAt') }}
+                    <AppTime
+                      :datetime="userData.passwordChangedAt"
+                      preset="relative"
+                      class="font-medium text-neutral-700 dark:text-neutral-300"
+                    />
+                  </template>
+                  <template v-else>{{ $t('profile.passwordNeverMeasured') }}</template>
+                </span>
+                <span
+                  v-if="isPasswordOld"
+                  class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                >
+                  <Icon name="mdi:clock-alert-outline" class="size-3.5" />
+                  {{ $t('profile.passwordOld') }}
+                </span>
+              </div>
+
+              <div v-if="userData?.hasPassword">
+                <AppFormLabel :forId="oldPasswordId" :text="$t('common.auth.oldPassword')" />
+                <UInput
+                  :id="oldPasswordId"
+                  v-model="passwordForm.oldPassword"
+                  :type="showOldPassword ? 'text' : 'password'"
+                  name="oldPassword"
+                  autocomplete="current-password"
+                  :placeholder="$t('common.auth.oldPassword')"
+                >
+                  <template #trailing>
+                    <UButton
+                      color="neutral"
+                      variant="link"
+                      size="sm"
+                      :icon="showOldPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
+                      :aria-label="showOldPassword ? $t('common.hidePassword') : $t('common.showPassword')"
+                      @click="showOldPassword = !showOldPassword"
+                    />
+                  </template>
+                </UInput>
+              </div>
+
+              <UserPassword v-model="passwordForm.newPassword" />
+              <UserPassword v-model="passwordForm.confirmNewPassword" :isValid="passwordsMatch" isConfirm />
+
+              <p
+                v-if="!passwordsMatch && passwordForm.newPassword && passwordForm.confirmNewPassword"
+                class="text-sm text-red-600 dark:text-red-400"
+              >
+                {{ $t('common.auth.passwordsMismatch') }}
+              </p>
+
+              <UButton
+                :disabled="isLoading || !passwordsMatch"
+                :loading="isLoading"
+                icon="i-mdi-lock-reset"
+                class="w-full"
+                @click="handleChangePassword"
+              >
+                {{ $t('common.auth.changePassword') }}
+              </UButton>
+            </div>
+          </Panel>
+
+          <Panel id="2fa-section" :title="$t('profile.twoFactorAuth')">
+            <UserQR
+              :enabled="is2FAEnabled"
+              :otpauthUrl="otpauthUrl"
+              :userId="user?.user.id ?? ''"
+              @update:enabled="is2FAEnabled = $event"
+              @update:otpauthUrl="otpauthUrl = $event"
+              @error="onTwoFAError"
+            />
+          </Panel>
+
+          <Panel id="sessions-section" :title="$t('profile.sessions')" :description="$t('profile.sessionsDescription')">
+            <UserSessions
+              :sessions="profileForm.sessions"
+              :currentSessionId="user?.user.sessionId"
+              :isLoading="isLoading"
+              @update:sessions="profileForm.sessions = $event"
+              @update:isLoading="isLoading = $event"
+              @signOut="signOut"
+            />
+          </Panel>
+
+          <Panel
+            id="events-section"
+            :title="$t('profile.securityEvents')"
+            :description="$t('profile.securityEventsDescription')"
           >
-            {{ $t('common.actions.saveChanges') }}
-          </UButton>
+            <UserSecurityEvents />
+          </Panel>
+
+          <Panel danger :title="$t('profile.dangerZone')" :description="$t('profile.deactivateAccountDescription')">
+            <UButton
+              :disabled="isLoading"
+              color="error"
+              variant="soft"
+              icon="i-mdi-account-cancel-outline"
+              @click="confirmDeactivate"
+            >
+              {{ $t('profile.deactivateAccount') }}
+            </UButton>
+          </Panel>
+        </div>
+
+        <div v-show="activeTab === 'notifications'">
+          <Panel
+            id="notifications-section"
+            :title="$t('profile.notifications')"
+            :description="$t('profile.notificationsDescription')"
+          >
+            <UserNotifications
+              v-model:allowNotifs="profileForm.allowNotifs"
+              v-model:allowEmail="profileForm.allowEmail"
+            />
+          </Panel>
+        </div>
+
+        <div v-show="activeTab === 'activity'" class="space-y-6">
+          <Panel :title="$t('profile.statsTitle')">
+            <StatsUser
+              :followingCount="profileForm.followers"
+              :followerCount="profileForm.following"
+              :likedArticles="profileForm.likedArticles"
+              :commentsCount="profileForm.commentsCount"
+              :likesCount="profileForm.likesCount"
+              @openDialog="openDialog"
+              @updateTab="activityTab = $event"
+            />
+          </Panel>
+
+          <UserActivity v-model:activeTab="activityTab" />
         </div>
       </div>
     </div>
-    <section class="mt-10 border-t border-default pt-8" :aria-label="$t('profile.data')">
-      <UserActivity
-        v-model:activeTab="activeTab"
-        :profile="profileForm"
-        :pending="userDataPending"
-        :error="userDataError"
-      />
-    </section>
+
+    <Teleport to="body">
+      <div class="pointer-events-none fixed inset-x-0 bottom-4 z-header flex justify-center px-4 sm:px-6">
+        <Transition
+          enterActiveClass="transition duration-200 ease-out"
+          enterFromClass="opacity-0 translate-y-2"
+          enterToClass="opacity-100 translate-y-0"
+          leaveActiveClass="transition duration-150 ease-in"
+          leaveFromClass="opacity-100 translate-y-0"
+          leaveToClass="opacity-0 translate-y-2"
+        >
+          <div
+            v-if="isDirty"
+            class="pointer-events-auto flex items-center gap-3 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 bg-white/95 dark:bg-neutral-900/95 backdrop-blur py-2 pl-4 pr-2 shadow-xl"
+          >
+            <span class="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+              <span class="size-2 rounded-full bg-amber-500 animate-pulse" />
+              {{ $t('common.unsavedChanges') }}
+            </span>
+            <div class="flex items-center gap-1.5">
+              <UButton size="sm" color="neutral" variant="ghost" :disabled="isLoading" @click="revertChanges">
+                {{ $t('common.actions.reset') }}
+              </UButton>
+              <UButton size="sm" :disabled="isLoading" :loading="isLoading" @click="updateProfile">
+                {{ $t('common.actions.saveChanges') }}
+              </UButton>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </Teleport>
+
     <LazyUserFollowDialog v-model="showDialog" :type="dialogType" />
-  </div>
+    <AppConfirmDialog ref="deactivateDialog" />
+  </main>
 </template>
 
 <script setup lang="ts">
-import equal from 'fast-deep-equal'
 import { formatDate } from '~~/shared/utils'
 
+import type { TabItem } from '~/components/TabNav.vue'
+
+import { hasProfileChanges } from '~/utils/profileChanges'
 import { useProfile, type Profile } from '~/composables/useProfile'
+import { sectionId, tabForSection, toHandle } from '~/utils/profileSections'
 
 definePageMeta({ shell: 'product' })
 
 const BIO_MAX_LENGTH = 300
 
-const profileNavigation = computed(() => [
-  { href: '#personal-section', icon: 'i-mdi-account-outline', label: $t('profile.personalInfo') },
-  { href: '#notifications-section', icon: 'i-mdi-bell-outline', label: $t('profile.notifications') },
-  { href: '#account-health-section', icon: 'i-mdi-heart-pulse', label: $t('profile.health') },
-  { href: '#security-section', icon: 'i-mdi-shield-lock-outline', label: $t('profile.security') },
-  { href: '#sessions-section', icon: 'i-mdi-devices', label: $t('profile.sessions') },
-])
-
-const activeProfileSection = shallowRef('personal-section')
-let profileSectionObserver: IntersectionObserver | undefined
+const tabs: TabItem[] = [
+  { id: 'profile', labelKey: 'profile.tabs.profile', icon: 'mdi:account-outline' },
+  { id: 'security', labelKey: 'profile.tabs.security', icon: 'mdi:shield-lock-outline' },
+  { id: 'notifications', labelKey: 'profile.tabs.notifications', icon: 'mdi:bell-outline' },
+  { id: 'activity', labelKey: 'profile.tabs.activity', icon: 'mdi:chart-timeline-variant' },
+]
 
 const { data: user, signOut } = useAuth()
-const { saveProfile, changePassword, deactivateAccount } = useProfile()
-const confirm = useConfirm()
 
-const confirmDeactivate = async () => {
-  const r = await confirm({
-    title: $t('profile.deactivateAccountConfirmTitle'),
-    message: $t('profile.deactivateAccountConfirmText'),
-    icon: 'i-mdi-alert-outline',
-    confirmText: $t('common.actions.confirm'),
-    cancelText: $t('common.messages.cancel'),
-    variant: 'danger',
-  })
-  if (r) await deactivateAccount()
-}
+// `middleware/auth` is the post-login router, not a guard, and nuxt-auth has no global one here.
 const localePath = useLocalePath()
-const toast = useToast()
+if (!user.value) await navigateTo(localePath({ name: 'autorizace' }))
+
+const { saveProfile, changePassword, deactivateAccount } = useProfile()
 const { setLocale } = useI18n()
 const { formatTime } = useTime()
+const { copy, copied } = useClipboard({ legacy: true })
+const toast = useAppToast()
 const route = useRoute()
+const router = useRouter()
+const reducedMotion = usePreferredReducedMotion()
+const deactivateDialog = useTemplateRef<{ ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'> }>(
+  'deactivateDialog',
+)
+const oldPasswordId = useId()
 
-if (!user.value) {
-  await navigateTo(localePath({ name: 'autorizace' }))
+function setTab(tab: string) {
+  return router.replace({ query: { ...route.query, tab }, hash: route.hash })
 }
 
-const draftKey = computed(() => `profileDraft-${user.value?.user.id}`)
-const draft = {
-  load: (): Profile | null => {
-    const raw = localStorage.getItem(draftKey.value)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      delete parsed.sessions
-      return parsed
-    }
-    return null
+const activeTab = computed<string>({
+  get: () => {
+    const q = Array.isArray(route.query.tab) ? route.query.tab[0] : route.query.tab
+    return tabs.some((t) => t.id === q) ? q! : 'profile'
   },
-  save: (p: Profile) => localStorage.setItem(draftKey.value, JSON.stringify({ ...p, sessions: undefined })),
-  clear: () => localStorage.removeItem(draftKey.value),
-}
-
-function revealSection(id?: string) {
-  if (!id) return
-  nextTick(() => {
-    const el = document.getElementById(id.replace('#', ''))
-    if (!el) return
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  })
-}
-
-onMounted(() => {
-  revealSection(route.hash)
-  if (route.hash) activeProfileSection.value = route.hash.slice(1)
-
-  const visibleSections = new Set<string>()
-  profileSectionObserver = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) visibleSections.add(entry.target.id)
-        else visibleSections.delete(entry.target.id)
-      }
-
-      const closest = [...visibleSections]
-        .map((id) => document.getElementById(id))
-        .filter((element): element is HTMLElement => Boolean(element))
-        .sort(
-          (a, b) => Math.abs(a.getBoundingClientRect().top - 112) - Math.abs(b.getBoundingClientRect().top - 112),
-        )[0]
-      if (closest) activeProfileSection.value = closest.id
-    },
-    { rootMargin: '-96px 0px -55% 0px', threshold: [0, 0.1, 0.5] },
-  )
-
-  for (const item of profileNavigation.value) {
-    const element = document.getElementById(item.href.slice(1))
-    if (element) profileSectionObserver.observe(element)
-  }
+  set: setTab,
 })
-watch(() => route.hash, revealSection)
 
-onBeforeUnmount(() => profileSectionObserver?.disconnect())
-
-const twoFAError = shallowRef('')
-const otpauthUrl = shallowRef('')
 const isLoading = shallowRef(false)
 const showDialog = shallowRef(false)
 const dialogType = shallowRef<'followers' | 'followed'>('followers')
-const activeTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
+const activityTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
 const originalProfile = shallowRef<Profile | null>(null)
 const isDirty = shallowRef(false)
 const showOldPassword = shallowRef(false)
+const otpauthUrl = shallowRef('')
 const profileForm = shallowReactive<Profile>({} as Profile)
-let passwordForm = shallowReactive({
-  oldPassword: '',
-  newPassword: '',
-  confirmNewPassword: '',
-})
-const lcls = locales
-const isPasswordFormValid = computed(() => {
-  return passwordForm.newPassword && passwordForm.newPassword === passwordForm.confirmNewPassword
-}) as ComputedRef<boolean>
+const passwordForm = shallowReactive({ oldPassword: '', newPassword: '', confirmNewPassword: '' })
 
-const formattedCreatedAt = computed(() => {
-  if (!profileForm.createdAt) return ''
-  return `${formatDate(profileForm.createdAt)} (${formatTime(profileForm.createdAt, 'short')})`
-})
-const {
-  data: userData,
-  pending: userDataPending,
-  error: userDataError,
-  refresh,
-} = await useFetch(`/api/users/${user.value?.user?.id}/account`)
+const { data: userData, refresh } = await useFetch(`/api/users/${user.value?.user?.id}/account`)
+
 const is2FAEnabled = shallowRef(!!userData.value?.totpSecret)
 otpauthUrl.value = userData.value?.otpauthUrl || ''
 
 if (userData.value) {
-  Object.assign(profileForm, {
-    ...userData.value,
-    handle: userData.value.username.toLowerCase().replace(/\s+/g, ''),
-  })
-  originalProfile.value = {
-    ...userData.value,
-    handle: userData.value.username.toLowerCase().replace(/\s+/g, ''),
-  }
+  const loaded = { ...userData.value, handle: toHandle(userData.value.username) }
+  Object.assign(profileForm, loaded)
+  originalProfile.value = { ...loaded }
   setLocale(userData.value.language)
 }
 
+useSeoMeta({ title: () => `${profileForm.username ?? ''} — ${$t('profile.title')}` })
+
+const handle = computed(() => toHandle(profileForm.username))
+const currentLanguage = computed(() => profileForm.language || locales[0]!.value)
+const passwordsMatch = computed(
+  () => !!passwordForm.newPassword && passwordForm.newPassword === passwordForm.confirmNewPassword,
+)
+const YEAR_MS = 365 * 24 * 60 * 60 * 1000
+const isPasswordOld = computed(() => {
+  const changedAt = userData.value?.passwordChangedAt
+  return !!changedAt && Date.now() - new Date(changedAt).getTime() > YEAR_MS
+})
+
+const formattedCreatedAt = computed(() =>
+  profileForm.createdAt ? `${formatDate(profileForm.createdAt)} (${formatTime(profileForm.createdAt, 'short')})` : '',
+)
+
+const isChanged = () => hasProfileChanges(profileForm, originalProfile.value)
+
+const { start: clearPulseLater } = useTimeoutFn(
+  (el: HTMLElement) => el.classList.remove('animate-section-pulse'),
+  1800,
+  { immediate: false },
+)
+
+// The tab switch has to land before the scroll — panels are `v-show`, and a `display: none`
+// target silently ignores `scrollIntoView`.
+async function focusSection(section?: string) {
+  if (!section) return
+  const id = sectionId(section)
+  const tab = tabForSection(id)
+  if (tab) await setTab(tab)
+  await nextTick()
+
+  const el = document.getElementById(id)
+  if (!el) return
+  el.scrollIntoView({ behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth', block: 'center' })
+  el.classList.add('animate-section-pulse')
+  clearPulseLater(el)
+}
+
+const draftKey = computed(() => `profileDraft-${user.value?.user.id}`)
+const storedDraft = useLocalStorage<Profile | null>(draftKey, null)
+const draft = {
+  load: (): Profile | null => {
+    if (!storedDraft.value) return null
+    const { sessions: _sessions, ...profile } = storedDraft.value
+    return profile as Profile
+  },
+  save: ({ sessions: _sessions, ...profile }: Profile) => (storedDraft.value = profile as Profile),
+  clear: () => (storedDraft.value = null),
+}
+
 onMounted(() => {
-  const draftData = draft.load()
-  if (draftData && !equal(draftData, originalProfile.value)) {
-    Object.assign(profileForm, draftData)
+  focusSection(route.hash)
+
+  const stored = draft.load()
+  if (stored && hasProfileChanges(stored, originalProfile.value)) {
+    Object.assign(profileForm, stored)
     isDirty.value = true
   }
 })
 
+watch(() => route.hash, focusSection)
+
 function revertChanges() {
-  if (originalProfile.value) {
-    Object.assign(profileForm, originalProfile.value)
-    draft.clear()
-    isDirty.value = false
-    toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
-  }
+  if (!originalProfile.value) return
+  Object.assign(profileForm, originalProfile.value)
+  draft.clear()
+  isDirty.value = false
+  toast.success({ message: $t('common.messages.successGeneral') })
 }
 
 function openDialog(type: 'followers' | 'followed') {
@@ -435,67 +430,107 @@ function openDialog(type: 'followers' | 'followed') {
   showDialog.value = true
 }
 
-async function updateProfile() {
-  isLoading.value = true
-  const response = await saveProfile({
-    username: profileForm.username,
-    bio: profileForm.bio,
-    avatarUrl: profileForm.avatarUrl,
-    allowNotifs: profileForm.allowNotifs,
-    allowEmail: profileForm.allowEmail,
-  })
-  Object.assign(profileForm, response)
-  await refresh()
-  Object.assign(originalProfile.value!, {
-    ...profileForm,
-    handle: profileForm.username?.toLowerCase().replace(/\s+/g, ''),
-  })
-  draft.clear()
-  isDirty.value = false
-  otpauthUrl.value = userData.value?.otpauthUrl || ''
-  isLoading.value = false
+function onTwoFAError(message: string) {
+  if (message) toast.error({ message })
 }
 
-async function exportToPDF() {
+async function onAvatarUpload() {
+  await refresh()
+  if (originalProfile.value) originalProfile.value.avatarUrl = profileForm.avatarUrl
+  isDirty.value = isChanged()
+  if (isDirty.value) draft.save(profileForm)
+  else draft.clear()
+}
+
+async function updateProfile() {
+  isLoading.value = true
   try {
-    isLoading.value = true
-    const response = await fetch('/api/users/pdf')
-    if (!response.ok) throw new Error('Failed to download PDF')
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `profile_${profileForm.username}.pdf`
-    link.click()
-    window.URL.revokeObjectURL(url)
-  } catch (err: any) {
-    toast.add({ color: 'error', title: err.message || $t('common.messages.operationFailed') })
+    const response = await saveProfile({
+      username: profileForm.username,
+      bio: profileForm.bio,
+      avatarUrl: profileForm.avatarUrl,
+      allowNotifs: profileForm.allowNotifs,
+      allowEmail: profileForm.allowEmail,
+    })
+    Object.assign(profileForm, response)
+    await refresh()
+    // Keep both copies of the derived handle in step, not just the snapshot's.
+    profileForm.handle = toHandle(profileForm.username)
+    originalProfile.value = { ...profileForm }
+    draft.clear()
+    isDirty.value = false
+    otpauthUrl.value = userData.value?.otpauthUrl || ''
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function updateLanguage(newLanguage: Language) {
+  isLoading.value = true
+  try {
+    await saveProfile({ language: newLanguage })
+    setLocale(newLanguage)
+    // Applied immediately rather than via the save bar, so neither copy may fall behind.
+    profileForm.language = newLanguage
+    if (originalProfile.value) originalProfile.value.language = newLanguage
+    isDirty.value = isChanged()
+    await refresh()
   } finally {
     isLoading.value = false
   }
 }
 
 async function handleChangePassword() {
-  if (!isPasswordFormValid.value) return
+  if (!passwordsMatch.value) return
   isLoading.value = true
-  await changePassword(passwordForm.oldPassword, passwordForm.newPassword)
-  passwordForm = { oldPassword: '', newPassword: '', confirmNewPassword: '' }
-  isLoading.value = false
+  try {
+    await changePassword(passwordForm.oldPassword, passwordForm.newPassword)
+    // Mutate in place — reassigning the binding would drop the reactive proxy the form is bound to.
+    Object.assign(passwordForm, { oldPassword: '', newPassword: '', confirmNewPassword: '' })
+  } finally {
+    isLoading.value = false
+  }
 }
 
-async function updateLanguage(newLanguage: Language) {
-  isLoading.value = true
-  await saveProfile({ language: newLanguage })
-  setLocale(newLanguage)
-  refresh()
-  isLoading.value = false
+async function confirmDeactivate() {
+  const answer = await deactivateDialog.value?.ask({
+    title: $t('profile.deactivateAccountConfirmTitle'),
+    message: $t('profile.deactivateAccountConfirmText'),
+    icon: 'mdi:alert-outline',
+    confirmText: $t('common.actions.confirm'),
+    cancelText: $t('common.actions.cancel'),
+    variant: 'danger',
+  })
+  if (answer === 'ok') await deactivateAccount()
 }
-const clipboard = useClipboard()
+
+async function exportToPDF() {
+  isLoading.value = true
+  try {
+    const response = await fetch('/api/users/pdf')
+    if (!response.ok) throw new Error($t('common.messages.operationFailed'))
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    const disposition = response.headers.get('Content-Disposition') || ''
+    const encodedFilename = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
+    link.href = url
+    link.download = encodedFilename ? decodeURIComponent(encodedFilename) : 'topiqu-profile.pdf'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  } catch (err: any) {
+    toast.error({ message: err.message || $t('common.messages.operationFailed') })
+  } finally {
+    isLoading.value = false
+  }
+}
 
 watch(
   profileForm,
   (newVal) => {
-    isDirty.value = !equal({ ...newVal, sessions: undefined }, { ...originalProfile.value, sessions: undefined })
+    isDirty.value = isChanged()
     if (isDirty.value) draft.save(newVal)
   },
   { deep: true },

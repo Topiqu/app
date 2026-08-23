@@ -1,18 +1,6 @@
-import { z } from 'zod'
 import { generateObject } from 'ai'
+import { insightSchema } from '~~/server/utils/ai/insight'
 import { consumeClientTokens } from '~~/server/utils/consumeTokens'
-
-const insightSchema = z.object({
-  summary: z.string().min(20).max(400),
-  avgScore: z.number().min(-1).max(1),
-  topEmotion: z.string().nullable(),
-  toxicity: z.number().min(0).max(1),
-  helpfulness: z.number().min(0).max(1),
-  sarcasm: z.number().min(0).max(1),
-  trend: z.enum(['up', 'down', 'stable']).optional(),
-  suggestion: z.string().max(250).optional(),
-  topPoints: z.array(z.string().max(75)).max(3).optional(),
-})
 
 export default defineMonitoredTask({
   meta: {

@@ -26,6 +26,7 @@ export default defineEventHandler(async (event) => {
   const isAdmin = user.role === 'admin' && user.clientSiteId === comment.article.clientSiteId
 
   if (!isOwner && !isAdmin) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  if (!isOwner) await requireTenantScope(event, 'CONTENT_MODERATE', comment.article.clientSiteId)
 
   const { reason } = await readBody(event)
   const deleteReason = reason?.trim() || t('common.user.violateRules')!

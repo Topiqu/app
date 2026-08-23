@@ -1,0 +1,47 @@
+import "./base"
+import "./client"
+
+enum SearchConsoleConnectionStatus {
+    CONNECTED
+    ERROR
+    REVOKED
+}
+
+model SearchConsoleConnection extends Base {
+    clientSiteId         String @unique
+    clientSite           ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    googleSubjectId      String
+    googleEmail          String?
+    propertyUrl          String?
+    permissionLevel      String?
+    encryptedRefreshToken String @omit
+    grantedScopes        String[]
+    status               SearchConsoleConnectionStatus @default(CONNECTED)
+    lastSyncAt           DateTime?
+    lastErrorAt          DateTime?
+    lastError            String?
+
+    @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
+
+model SearchConsoleMetric extends Base {
+    clientSiteId String
+    clientSite ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    propertyUrl String
+    date DateTime
+    page String
+    query String @default("")
+    country String @default("")
+    device String @default("")
+    clicks Float @default(0)
+    impressions Float @default(0)
+    ctr Float @default(0)
+    position Float @default(0)
+
+    @@unique([clientSiteId, date, page, query, country, device])
+    @@index([clientSiteId, date])
+    @@index([clientSiteId, page, date])
+    @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('all', auth().role == 'superadmin')
+}

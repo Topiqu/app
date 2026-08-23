@@ -1,45 +1,3 @@
-import { normalizePollOptions } from '~~/shared/utils/polls'
-
-function unescapeHtml(safe: string | undefined): string {
-  if (!safe) return ''
-  return safe
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-}
-
-function extractPollData(content: string, articleId: string) {
-  const pollMatch = content.match(/<div[^>]*data-type="poll"[^>]*>/)
-  if (!pollMatch) return null
-
-  const tag = pollMatch[0]
-
-  const pollIdMatch = tag.match(/data-poll-id="([^"]*)"/)
-  const idMatch = tag.match(/data-id="([^"]*)"/)
-  const questionMatch = tag.match(/data-question="([^"]*)"/)
-  const optionsMatch = tag.match(/data-options="([^"]*)"/)
-
-  if (!questionMatch || !optionsMatch) return null
-
-  try {
-    const rawOptions = unescapeHtml(optionsMatch[1])
-    const options = normalizePollOptions(JSON.parse(rawOptions))
-
-    return {
-      type: 'poll',
-      pollId: pollIdMatch ? pollIdMatch[1] : idMatch ? idMatch[1] : crypto.randomUUID(),
-      question: unescapeHtml(questionMatch[1]),
-      options,
-      articleId,
-    }
-  } catch (e) {
-    console.error('Failed to parse poll data', e)
-    return null
-  }
-}
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -51,11 +9,12 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const tag = query.tag as string | undefined
   const search = query.query as string | undefined
+  const locale = query.locale as string | undefined
 
   const db = await getEnhancedPrisma(user)
   const clientSite = await db.clientSite.findUnique({
     where: { name: slug },
-    select: { id: true },
+    select: { id: true, language: true },
   })
 
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
@@ -85,7 +44,8 @@ export default defineEventHandler(async (event) => {
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       include: {
         tags: { include: { tag: true } },
-        user: { select: { id: true, username: true, email: true, role: true, avatarUrl: true } },
+        // No email: this is an anonymous-readable payload and it gets cached.
+        user: { select: { id: true, username: true, role: true, avatarUrl: true } },
         _count: { select: { comments: true, reactions: true } },
       },
     })
@@ -120,20 +80,26 @@ export default defineEventHandler(async (event) => {
       select: { id: true, content: true },
     })
 
-    let latestPoll = null
-    if (latestPollArticle) {
-      latestPoll = extractPollData(latestPollArticle.content, latestPollArticle.id)
-    }
+    const firstPoll = latestPollArticle
+      ? articleBlocks(latestPollArticle.content).blocks.find((block) => block.type === 'poll')
+      : undefined
+    const latestPoll = firstPoll ? { ...firstPoll, articleId: latestPollArticle!.id } : null
 
     const hasMore = rows.length > take
-    const items = hasMore ? rows.slice(0, take) : rows
+    const items = await localizeArticles(db, hasMore ? rows.slice(0, take) : rows, {
+      clientSiteId: clientSite.id,
+      locale,
+      primaryLanguage: clientSite.language,
+    })
 
     return { items, hasMore, tags: allTags, latestPoll: latestPoll ?? '' }
   }
 
   if (user || search) return buildFeed()
 
-  const gen = await getGen(`feed:${clientSite.id}`)
-  const key = `feed:v${gen}:${clientSite.id}:tag=${tag ?? '_all'}:skip=${skip}:take=${take}`
-  return cached(key, 60, buildFeed)
+  const gen = await feedGen(clientSite.id)
+  // `locale` is part of the key — the payload is localized, so two locales must not share it.
+  const key = `feed:v${gen}:${clientSite.id}:tag=${tag ?? '_all'}:skip=${skip}:take=${take}:loc=${locale ?? '_def'}`
+  // 10 min is only safe because every article mutation calls invalidateFeed().
+  return cached(key, 600, buildFeed)
 })

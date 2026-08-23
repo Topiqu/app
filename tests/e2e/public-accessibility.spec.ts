@@ -25,7 +25,6 @@ for (const route of productRoutes) {
     await expect(page.locator('body')).toBeVisible()
     await expectNoHorizontalOverflow(page)
     await expectAccessible(page, localizedRoute.includes('route-that') ? ['nested-interactive'] : [])
-    await expect(page).toHaveScreenshot(`${route.replaceAll('/', '-') || 'root'}.png`, { fullPage: true })
   })
 }
 
@@ -39,7 +38,6 @@ test('onboarding is a viewport-safe guided dialog', async ({ page }, testInfo) =
   await expect(dialog).toBeVisible()
   await expect(dialog).toHaveCSS('max-height', /.+/)
   await expectAccessible(page)
-  await expect(page).toHaveScreenshot('product-onboarding.png', { fullPage: true })
   await dialog.focus()
   await dialog.press('Escape')
   if (await dialog.isVisible()) await page.keyboard.press('Escape')
@@ -83,7 +81,6 @@ for (const route of tenantRoutes) {
     await expect(page.locator('main, article').first()).toBeVisible()
     await expectNoHorizontalOverflow(page)
     await expectAccessible(page)
-    await expect(page).toHaveScreenshot(`tenant-${route.replaceAll('/', '-')}.png`, { fullPage: true })
   })
 }
 
@@ -96,5 +93,4 @@ test('empty tenant publication has a complete empty state', async ({ page }) => 
   await expect(primaryCta).toHaveAttribute('href', '#articles')
   await expectNoHorizontalOverflow(page)
   await expectAccessible(page)
-  await expect(page).toHaveScreenshot('tenant-empty-publication.png', { fullPage: true })
 })

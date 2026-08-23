@@ -111,6 +111,32 @@ describe('syncArticlePolls', () => {
     expect(db.pollOption.create).toHaveBeenCalledWith({ data: { pollId: 'new-poll-1', label: 'A', order: 0 } })
   })
 
+  it('makes an AI-authored block votable: data-id alone yields no ids to vote against', async () => {
+    const db = makeDb()
+    // Exactly what finalizeArticle emits: a random data-id, labels with no option ids,
+    // and the options JSON HTML-escaped.
+    const content =
+      `<div data-type="poll" data-id="7c9e6679-7425-40de-944b-e07fc1f90ae7" data-question="Kde by vám AI ušetřila nejvíc času?" ` +
+      `data-options="${optionsAttr([{ label: 'Třídění e-mailů' }, { label: 'Návrhy odpovědí' }])}"></div>`
+
+    const result = await syncArticlePolls(db, ARTICLE, content)
+
+    expect(db.poll.create).toHaveBeenCalledTimes(1)
+    expect(db.pollOption.create).toHaveBeenCalledTimes(2)
+    // The block is only votable once both the poll id and every option id are stamped in:
+    // Poll.vue bails before $fetch on a missing option id, and vote.post.ts 404s on a
+    // pollId with no row behind it.
+    expect(result).toContain('data-poll-id="new-poll-1"')
+    expect(result).toContain('new-opt-1')
+    expect(result).toContain('new-opt-2')
+    // data-id is not a vote target and must not be mistaken for one
+    expect(result).not.toContain('data-poll-id="7c9e6679-7425-40de-944b-e07fc1f90ae7"')
+    // the escaped options attribute round-trips into real labels, not mangled entities
+    expect(db.pollOption.create).toHaveBeenNthCalledWith(1, {
+      data: { pollId: 'new-poll-1', label: 'Třídění e-mailů', order: 0 },
+    })
+  })
+
   it('deletes polls whose block was removed', async () => {
     const db = makeDb([{ id: 'poll-keep', options: ['opt-a'] }])
     const content = pollBlock({

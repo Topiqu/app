@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
   await prisma.notification.create({
     data: {
-      message: t('notifications.userReportedComment', {
+      message: t('common.notifications.userReportedComment', {
         user: user.name || 'Anonymous',
         article: comment.article.title,
       })!,
@@ -41,5 +41,5 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  return { message: t('notifications.commentReported')! }
+  return { message: t('common.notifications.commentReported')! }
 })

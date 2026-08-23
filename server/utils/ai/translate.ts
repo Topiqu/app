@@ -4,7 +4,10 @@ import { z } from 'zod'
 import slugify from 'slugify'
 import * as cheerio from 'cheerio'
 import { generateObject } from 'ai'
+import { readFaq } from '~~/shared/utils/articleFaq'
 import { normalizePollOptions } from '~~/shared/utils/polls'
+
+import { escapeHtml } from '../sanitize'
 
 const LANGUAGE_NAMES: Record<Language, string> = {
   cs: 'Czech',
@@ -18,13 +21,13 @@ const attrToken = (i: number) => `[[ATTR_${i}]]`
 
 const TRANSLATABLE_ATTRS = ['title', 'aria-label'] as const
 
-const escapeAttr = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
-
 interface TranslatableArticle {
   title: string
   excerpt?: string | null
   content: string
+  answer?: string | null
+  keyTakeaways?: string[]
+  faq?: unknown
 }
 
 interface ExtractedPoll {
@@ -163,13 +166,43 @@ export const rebuildContent = (
   // The token lives inside a quoted attribute value in the serialized HTML, so the
   // replacement must be HTML-escaped — a stray `"`/`&` would break out of the attribute.
   attrs.forEach((val, i) => {
-    out = out.split(attrToken(i)).join(escapeAttr(val))
+    out = out.split(attrToken(i)).join(escapeHtml(val))
   })
   verbatim.forEach((html, i) => {
     out = out.split(verbatimToken(i)).join(html)
   })
   return out
 }
+
+export const translationSchema = z.object({
+  title: z.string().min(1).max(255).describe('Translated title'),
+  excerpt: z.string().max(500).describe('Translated excerpt, empty string if the source excerpt was empty'),
+  content: z.string().min(1).describe('Translated HTML with all placeholder tokens preserved'),
+  polls: z
+    .array(
+      z.object({
+        question: z.string().describe('Translated poll question'),
+        options: z.array(z.string()).describe('Translated option labels, same order as input'),
+      }),
+    )
+    .describe('Translated polls in the same order as provided'),
+  images: z
+    .array(
+      z.object({
+        alt: z.string().describe('Translated image alt text, empty if source was empty'),
+        title: z.string().describe('Translated image title, empty if source was empty'),
+      }),
+    )
+    .describe('Translated image alt/title in the same order as provided'),
+  attrs: z
+    .array(z.string())
+    .describe('Translated human-readable attribute texts (title/aria-label), same order as input'),
+  answer: z.string().describe('Translated direct answer, empty string if the source was empty'),
+  keyTakeaways: z.array(z.string()).describe('Translated takeaways, same order and count as input'),
+  faq: z
+    .array(z.object({ question: z.string(), answer: z.string() }))
+    .describe('Translated FAQ, same order and count as input'),
+})
 
 /**
  * Translates an article into `targetLang` via `aiModel('translation')`, preserving structure and poll/
@@ -190,8 +223,12 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
     - For polls: return them in the SAME order, each with the SAME number of options in the SAME order; translate only the question and option labels.
     - For images: return them in the SAME order; translate only the alt and title text. Leave an entry empty if its source is empty.
     - For attrs: return them in the SAME order; these are human-readable attribute texts (link titles, aria-labels) — translate each into ${targetName}.
+    - For keyTakeaways and faq: return the SAME number of entries in the SAME order. Never add an entry the source does not have — an empty array stays empty.
     - Produce natural, fluent ${targetName} while preserving the original tone and meaning.
   `.trim()
+
+  const sourceFaq = readFaq(article.faq)
+  const sourceTakeaways = article.keyTakeaways ?? []
 
   const { object, usage } = await generateObject({
     model: aiModel('translation'),
@@ -204,31 +241,11 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
       polls: polls.map((p) => ({ question: p.question, options: p.options.map((o) => o.label) })),
       images: images.map((img) => ({ alt: img.alt ?? '', title: img.title ?? '' })),
       attrs,
+      answer: article.answer ?? '',
+      keyTakeaways: sourceTakeaways,
+      faq: sourceFaq,
     }),
-    schema: z.object({
-      title: z.string().min(1).max(255).describe('Translated title'),
-      excerpt: z.string().max(500).optional().describe('Translated excerpt'),
-      content: z.string().min(1).describe('Translated HTML with all placeholder tokens preserved'),
-      polls: z
-        .array(
-          z.object({
-            question: z.string().describe('Translated poll question'),
-            options: z.array(z.string()).describe('Translated option labels, same order as input'),
-          }),
-        )
-        .describe('Translated polls in the same order as provided'),
-      images: z
-        .array(
-          z.object({
-            alt: z.string().describe('Translated image alt text, empty if source was empty'),
-            title: z.string().describe('Translated image title, empty if source was empty'),
-          }),
-        )
-        .describe('Translated image alt/title in the same order as provided'),
-      attrs: z
-        .array(z.string())
-        .describe('Translated human-readable attribute texts (title/aria-label), same order as input'),
-    }),
+    schema: translationSchema,
   })
 
   const rebuiltPolls: ExtractedPoll[] = polls.map((poll, i) => {
@@ -258,6 +275,13 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
     title: object.title,
     excerpt: object.excerpt?.trim() || null,
     content: rebuildContent(object.content, verbatim, rebuiltPolls, rebuiltImages, rebuiltAttrs),
+    answer: object.answer?.trim() || null,
+    // Indexed against the source, so a model that drops or invents an entry cannot change the count.
+    keyTakeaways: sourceTakeaways.map((original, i) => object.keyTakeaways?.[i]?.trim() || original),
+    faq: sourceFaq.map((entry, i) => ({
+      question: object.faq?.[i]?.question?.trim() || entry.question,
+      answer: object.faq?.[i]?.answer?.trim() || entry.answer,
+    })),
     slug: slugify(object.title, { lower: true, strict: true, trim: true }),
     usage,
   }

@@ -29,7 +29,7 @@ import slugify from 'slugify'
 definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
-const reqUrl = useRequestURL()
+const canonicalOrigin = useCanonicalOrigin()
 const localePath = useLocalePath()
 
 const tagSlug = computed(() =>
@@ -60,7 +60,7 @@ const {
 } = await useFetch(`/api/tags/slug/${tagSlug.value}`, {
   key: `tag-${tagSlug.value}`,
   query,
-  default: () => ({ id: '', name: '', slug: '', articles: [], hasMore: false }),
+  default: () => ({ id: '', name: '', slug: '', articles: [], hasMore: false, total: 0 }),
   watch: false,
 })
 
@@ -80,7 +80,7 @@ watch(page, debouncedRefresh)
 
 const canonicalUrl = computed(() => {
   const path = localePath({ name: 'stitky-slug', params: { slug: tagSlug.value } })
-  return `${reqUrl.protocol}//${reqUrl.host}${path}`
+  return `${canonicalOrigin}${path}`
 })
 
 const hasSeoPlan = computed(() => clientSite?.plan !== 'BASIC')
@@ -95,31 +95,22 @@ useSeoMeta({
   robots: () => (hasSeoPlan.value && !search.value ? 'index, follow' : 'noindex, follow'),
 })
 
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl }],
-  script: [
-    {
-      type: 'application/ld+json',
-      innerHTML: computed(() =>
-        hasSeoPlan.value && tag.value?.id
-          ? JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'CollectionPage',
-              name: tagName.value,
-              description: $t('seo.tags.description', { name: tagName.value }),
-              url: canonicalUrl.value,
-              mainEntity: {
-                '@type': 'ItemList',
-                itemListElement: tag.value.articles.map((item: { slug: string }, index: number) => ({
-                  '@type': 'ListItem',
-                  position: index + 1,
-                  url: `${reqUrl.protocol}//${reqUrl.host}${localePath({ name: 'clanky-slug', params: { slug: item.slug } })}`,
-                })),
-              },
-            })
-          : '',
-      ),
-    },
-  ],
-})
+useHead({ link: [{ rel: 'canonical', href: canonicalUrl }] })
+
+if (hasSeoPlan.value && tag.value?.id) {
+  useSchemaOrg([
+    defineWebPage({
+      '@type': 'CollectionPage',
+      name: tagName.value,
+      description: $t('seo.tags.description', { name: tagName.value }),
+    }),
+    defineItemList({
+      itemListElement: tag.value.articles.map((item: { slug: string }, index: number) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: item.slug } })}`,
+      })),
+    }),
+  ])
+}
 </script>
