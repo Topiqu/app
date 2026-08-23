@@ -21,11 +21,23 @@
         :aria-label="$t('common.actions.back')"
       />
       <NuxtLink v-else :to="localePath({ name: 'index' })" class="flex items-center justify-center gap-2">
+        <NuxtImg
+          v-if="!isPublicationSurface"
+          src="/app-logo.png"
+          alt="Topiqu"
+          width="48"
+          height="48"
+          preload
+          loading="eager"
+          fetchPriority="high"
+          class="size-12 object-contain"
+        />
         <AppMedia
+          v-else
           :src="logoSrc"
-          :originalSrc="isPublicationSurface ? '/app-logo.png' : undefined"
-          :alt="isPublicationSurface ? clientSite?.name || 'Topiqu' : 'Topiqu'"
-          :fallbackText="isPublicationSurface ? clientSite?.name : 'Topiqu'"
+          originalSrc="/app-logo.png"
+          :alt="clientSite?.name || 'Topiqu'"
+          :fallbackText="clientSite?.name"
           aspectRatio="1 / 1"
           fit="contain"
           sizes="48px"

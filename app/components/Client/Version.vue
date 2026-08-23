@@ -4,14 +4,20 @@
       color="neutral"
       variant="soft"
       trailingIcon="i-mdi-chevron-up"
-      :ui="{ base: docked ? 'w-full justify-between' : 'fixed bottom-3 right-3 z-overlay' }"
+      :ui="{ base: docked ? 'w-full min-w-0 justify-start overflow-hidden px-2' : 'fixed bottom-3 right-3 z-overlay' }"
       :aria-label="$t('articles.userMenu.remainingTokens')"
     >
-      <span class="hidden sm:inline">Topiqu {{ config.public.appVersion }}</span>
-      <UBadge :color="planBadgeColor" variant="soft">{{
+      <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
+      <UBadge class="min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
         site?.plan ?? $t('articles.userMenu.noClientAssigned')
       }}</UBadge>
-      <UBadge v-if="status?.tokenRemaining != null" :color="isLowTokens ? 'error' : 'success'" variant="soft">
+      <UBadge
+        v-if="status?.tokenRemaining != null"
+        class="ml-auto min-w-0 max-w-[8.5rem] shrink truncate tabular-nums"
+        :title="`${status.tokenRemaining}/${status.tokenLimit}`"
+        :color="isLowTokens ? 'error' : 'success'"
+        variant="soft"
+      >
         {{ status.tokenRemaining }}/{{ status.tokenLimit }}
       </UBadge>
     </UButton>

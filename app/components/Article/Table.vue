@@ -5,7 +5,11 @@
       data-article-table-toolbar
     >
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <UFormField :label="$t('articles.searchPlaceholder')" :ui="{ label: 'sr-only' }" class="w-full max-w-xl">
+        <UFormField
+          :label="$t('articles.searchPlaceholder')"
+          :ui="{ label: 'sr-only' }"
+          class="w-full min-w-0 sm:flex-1"
+        >
           <UInput
             v-model="globalFilter"
             type="search"
@@ -15,6 +19,7 @@
           />
         </UFormField>
         <UButton
+          class="shrink-0"
           color="neutral"
           variant="soft"
           icon="i-mdi-filter-variant"
@@ -24,7 +29,9 @@
           {{ $t('common.labels.filters') }}
           <UBadge v-if="activeFilterCount" color="primary" variant="solid">{{ activeFilterCount }}</UBadge>
         </UButton>
-        <Exports v-if="rows.length" :articles="rows" class="sm:ml-auto" />
+        <div v-if="rows.length" class="shrink-0">
+          <Exports :articles="rows" />
+        </div>
       </div>
       <div
         v-show="filtersOpen"
