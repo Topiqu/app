@@ -100,7 +100,6 @@
           />
         </template>
         <AuthLogout :showLabel="!collapsed" />
-        <ClientVersion v-if="!collapsed" docked />
       </div>
     </template>
   </UDashboardSidebar>

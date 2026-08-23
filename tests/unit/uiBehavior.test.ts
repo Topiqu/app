@@ -158,7 +158,7 @@ describe('Nuxt UI component behavior', () => {
     )
     await flushPromises()
     expect(signedInNotifications.text()).toContain('New comment')
-    expect(signedInNotifications.findComponent({ name: 'UChip' }).exists()).toBe(true)
+    expect(signedInNotifications.find('[data-notification-count]').exists()).toBe(true)
   })
 
   it('emits the comments payload from the Nuxt UI switch', async () => {

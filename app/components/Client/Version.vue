@@ -4,7 +4,7 @@
       color="neutral"
       variant="soft"
       trailingIcon="i-mdi-chevron-up"
-      :ui="{ base: docked ? 'w-full min-w-0 justify-start overflow-hidden px-2' : 'fixed bottom-3 right-3 z-overlay' }"
+      :ui="{ base: 'fixed bottom-3 right-3 z-overlay max-w-[calc(100vw-1.5rem)]' }"
       :aria-label="$t('articles.userMenu.remainingTokens')"
     >
       <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
@@ -118,15 +118,9 @@
 </template>
 
 <script setup lang="ts">
-const { docked = false } = defineProps<{ docked?: boolean }>()
-
 const config = useRuntimeConfig()
-const { data: session } = useAuth()
-const { data: site } = await useFetch(() => `/api/clients/${session.value?.user.id || 'unavailable'}/by-userid`, {
-  default: () => null,
-  immediate: session.value?.user.role === 'admin',
-})
 const { data: status } = await useClientSiteStatus()
+const site = computed(() => status.value)
 
 const page = shallowRef(1)
 const show = shallowRef(false)

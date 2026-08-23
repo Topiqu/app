@@ -1,5 +1,5 @@
 <template>
-  <UChip :show="unreadCount > 0" :text="String(Math.min(unreadCount, 99))" color="error" size="lg">
+  <span class="relative inline-flex">
     <UPopover v-model:open="show" :content="{ align: 'end' }" @update:open="handleOpen">
       <UButton
         color="neutral"
@@ -83,7 +83,15 @@
         </div>
       </template>
     </UPopover>
-  </UChip>
+    <span
+      v-if="unreadCount > 0"
+      data-notification-count
+      class="pointer-events-none absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-error px-1 text-[11px] font-bold leading-none tabular-nums text-white ring-2 ring-default"
+      aria-hidden="true"
+    >
+      {{ Math.min(unreadCount, 99) }}
+    </span>
+  </span>
 </template>
 
 <script lang="ts" setup>

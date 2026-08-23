@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
     where: { id: user.clientSiteId },
     select: {
       id: true,
+      name: true,
       domain: true,
       domainVerified: true,
       plan: true,

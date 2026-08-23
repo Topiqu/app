@@ -6,6 +6,7 @@ declare global {
 
 export interface ClientSiteStatus {
   id: string
+  name: string
   domain: string
   domainVerified: boolean
   plan: string

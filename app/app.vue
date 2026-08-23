@@ -11,6 +11,10 @@
     <DevOnly v-if="!isBrowserTest">
       <DevConsole />
     </DevOnly>
+
+    <ClientOnly>
+      <ClientVersion v-if="auth?.user?.role === 'admin'" />
+    </ClientOnly>
   </UApp>
 </template>
 
@@ -27,6 +31,7 @@ const adChance = useAdChance()
 const i18nHead = useLocaleHead()
 const canonicalOrigin = useCanonicalOrigin()
 const { locale } = useI18n()
+const { data: auth } = useAuth()
 const uiLocale = computed(() => (locale.value === 'cs' ? cs : en))
 const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)
 

@@ -37,8 +37,13 @@
                   <span class="text-muted">·</span>
                   <UBadge color="info" variant="soft" size="xs">{{ clientSite.plan }}</UBadge>
                 </template>
-                <UChip :color="health?.db ? 'success' : 'error'" standalone size="3xl" title="db" />
-                <UChip v-if="meta?.dirty" color="warning" standalone size="3xl" title="uncommitted changes" />
+                <span class="inline-flex items-center gap-1" :title="dbStatusLabel">
+                  <span class="size-2 shrink-0 rounded-full" :class="dbStatusClass" aria-hidden="true" />
+                  <span class="font-mono text-muted">{{
+                    health ? (health.db ? `${health.latency}ms` : 'db down') : 'db…'
+                  }}</span>
+                </span>
+                <UBadge v-if="meta?.dirty" color="warning" variant="soft" size="xs">dirty</UBadge>
               </span>
             </template>
             <template v-else>
@@ -181,19 +186,23 @@
                     />
                   </dd>
                 </div>
-                <div class="flex items-center justify-between gap-2">
+                <div class="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-2">
                   <dt class="text-muted">tenant</dt>
-                  <dd class="flex min-w-0 items-center gap-1.5">
-                    <UChip :color="clientSite ? 'success' : 'neutral'" standalone size="3xl" />
+                  <dd class="grid min-w-0 grid-cols-[0.5rem_minmax(0,1fr)] items-center gap-1.5">
+                    <span
+                      class="size-2 shrink-0 rounded-full"
+                      :class="clientSite ? 'bg-success' : 'bg-neutral-400'"
+                      aria-hidden="true"
+                    />
                     <span class="min-w-0 break-words" :class="clientSite ? 'text-highlighted' : 'text-muted'">
                       {{ clientSite?.name || 'landing' }}
                     </span>
                   </dd>
                 </div>
-                <div class="flex items-center justify-between gap-2">
+                <div class="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-2">
                   <dt class="text-muted">db</dt>
-                  <dd class="flex items-center gap-1.5">
-                    <UChip :color="health?.db ? 'success' : 'error'" standalone size="3xl" />
+                  <dd class="grid min-w-0 grid-cols-[0.5rem_minmax(0,1fr)] items-center gap-1.5">
+                    <span class="size-2 shrink-0 rounded-full" :class="dbStatusClass" aria-hidden="true" />
                     <span class="font-mono text-highlighted">{{
                       health ? (health.db ? `${health.latency}ms` : 'down') : '…'
                     }}</span>
@@ -241,6 +250,16 @@ const copyCommit = () => meta.value?.hashFull && copy(meta.value.hashFull)
 const { data: auth, signIn, getSession } = useAuth()
 const currentUser = computed(() => (auth.value as { user?: { email?: string } } | null)?.user?.email ?? 'guest')
 const isGuest = computed(() => currentUser.value === 'guest')
+const dbStatusClass = computed(() =>
+  health.value == null ? 'bg-neutral-400' : health.value.db ? 'bg-success' : 'bg-error',
+)
+const dbStatusLabel = computed(() =>
+  health.value == null
+    ? 'Database status pending'
+    : health.value.db
+      ? `Database healthy, ${health.value.latency}ms`
+      : 'Database down',
+)
 
 const seedUsers = [
   { label: 'reader', email: 'reader@test.local', icon: 'i-mdi-eye' },
@@ -253,7 +272,9 @@ const impersonate = async (email: string) => {
   if (currentUser.value === email) return
   busy.value = true
   try {
-    await signIn('credentials', { email, password: 'test1234', redirect: false })
+    const { token } = await $fetch<{ token: string }>('/api/_dev/impersonate', { method: 'POST', body: { email } })
+    const result = await signIn('credentials', { loginToken: token, redirect: false })
+    if (result?.error) throw new Error(result.error)
     reloadNuxtApp({ force: true })
   } catch {
     busy.value = false
