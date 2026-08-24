@@ -26,9 +26,18 @@
               :key="art.id"
               :to="localePath({ name: 'clanky-slug', params: { slug: art.slug } })"
               :title="art.title"
-              :icon="art.slug === currentSlug ? 'i-mdi-book-open-page-variant' : 'i-mdi-file-document-outline'"
               variant="subtle"
+              :ui="{ wrapper: 'flex-row items-center gap-3', leading: 'mb-0' }"
             >
+              <template #leading>
+                <AppMedia
+                  :src="art.imageUrl"
+                  alt=""
+                  aspectRatio="4 / 3"
+                  sizes="64px"
+                  containerClass="size-16 shrink-0 rounded-md"
+                />
+              </template>
               <template #description>
                 <UBadge v-if="art.slug === currentSlug" color="primary" variant="soft" size="sm">
                   {{ $t('series.current') }}
@@ -46,19 +55,49 @@
         v-if="series.prev"
         :to="localePath({ name: 'clanky-slug', params: { slug: series.prev.slug } })"
         :title="series.prev.title"
-        :description="$t('series.previous')"
         icon="i-mdi-arrow-left"
         variant="subtle"
-      />
+      >
+        <template #header>
+          <AppMedia
+            :src="series.prev.imageUrl"
+            alt=""
+            aspectRatio="16 / 9"
+            sizes="100vw md:50vw"
+            containerClass="w-full rounded-md"
+          />
+        </template>
+        <template #description>
+          <p class="text-xs font-medium text-muted">{{ $t('series.previous') }}</p>
+          <p v-if="series.prev.excerpt" class="mt-1 line-clamp-2 text-sm text-toned">
+            {{ series.prev.excerpt }}
+          </p>
+        </template>
+      </UPageCard>
       <div v-else class="hidden md:block" />
       <UPageCard
         v-if="series.next"
         :to="localePath({ name: 'clanky-slug', params: { slug: series.next.slug } })"
         :title="series.next.title"
-        :description="$t('series.nextPart')"
         icon="i-mdi-arrow-right"
         variant="outline"
-      />
+      >
+        <template #header>
+          <AppMedia
+            :src="series.next.imageUrl"
+            alt=""
+            aspectRatio="16 / 9"
+            sizes="100vw md:50vw"
+            containerClass="w-full rounded-md"
+          />
+        </template>
+        <template #description>
+          <p class="text-xs font-medium text-muted">{{ $t('series.nextPart') }}</p>
+          <p v-if="series.next.excerpt" class="mt-1 line-clamp-2 text-sm text-toned">
+            {{ series.next.excerpt }}
+          </p>
+        </template>
+      </UPageCard>
     </div>
   </section>
 </template>
@@ -69,13 +108,14 @@ const props = defineProps<{
     name: string
     current: number
     total: number
-    prev?: { slug: string; title: string; imageUrl?: string | null } | null
-    next?: { slug: string; title: string; imageUrl?: string | null } | null
+    prev?: { slug: string; title: string; excerpt?: string | null; imageUrl?: string | null } | null
+    next?: { slug: string; title: string; excerpt?: string | null; imageUrl?: string | null } | null
     articles?: Array<{
       id: string
       title: string
       slug: string
       seriesOrder: number
+      imageUrl?: string | null
     }>
   }
 }>()

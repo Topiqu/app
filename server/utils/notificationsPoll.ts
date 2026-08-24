@@ -16,7 +16,7 @@ export const buildPollFindArgs = (userId: string, since: Date | undefined): Pris
   if (!since) return null
   return {
     where: { userId, deletedAt: null, createdAt: { gt: since } },
-    include: { article: { select: { title: true, slug: true } } },
+    include: { article: { select: { title: true, slug: true, imageUrl: true } } },
     orderBy: { createdAt: 'desc' },
     take: POLL_MAX_BATCH,
   }

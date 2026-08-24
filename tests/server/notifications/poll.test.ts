@@ -30,7 +30,7 @@ describe('buildPollFindArgs', () => {
   it('includes the related article for rendering', () => {
     const args = buildPollFindArgs(USER, new Date())
 
-    expect(args?.include).toEqual({ article: { select: { title: true, slug: true } } })
+    expect(args?.include).toEqual({ article: { select: { title: true, slug: true, imageUrl: true } } })
   })
 })
 

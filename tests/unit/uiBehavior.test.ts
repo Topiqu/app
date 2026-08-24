@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
       isRead: boolean
       createdAt: string
       articleId: null
+      article?: { slug: string; title: string; imageUrl: string | null } | null
       count: number
     }[]
     unreadCount: number
@@ -159,6 +160,40 @@ describe('Nuxt UI component behavior', () => {
     await flushPromises()
     expect(signedInNotifications.text()).toContain('New comment')
     expect(signedInNotifications.find('[data-notification-count]').exists()).toBe(true)
+  })
+
+  it('renders an article thumbnail for like notifications', async () => {
+    mocks.authData = { user: { id: 'user-1', role: 'user' } }
+    mocks.notificationData = {
+      notifications: [
+        {
+          id: 'notification-1',
+          type: 'LIKE',
+          message: 'Someone liked your article',
+          isRead: false,
+          createdAt: '2026-08-13T10:00:00.000Z',
+          articleId: null,
+          article: {
+            slug: 'article-with-cover',
+            title: 'Article with cover',
+            imageUrl: '/article-cover.webp',
+          },
+          count: 1,
+        },
+      ],
+      unreadCount: 1,
+      hasMore: false,
+    }
+
+    const wrapper = mount(
+      { components: { NotificationBar }, template: '<Suspense><NotificationBar /></Suspense>' },
+      { global },
+    )
+    await flushPromises()
+
+    const thumbnail = wrapper.getComponent({ name: 'AppMedia' })
+    expect(thumbnail.props('src')).toBe('/article-cover.webp')
+    expect(thumbnail.props('sizes')).toBe('64px')
   })
 
   it('emits the comments payload from the Nuxt UI switch', async () => {

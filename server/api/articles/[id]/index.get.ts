@@ -175,6 +175,7 @@ export default defineEventHandler(async (event) => {
       select: {
         id: true,
         title: true,
+        excerpt: true,
         slug: true,
         imageUrl: true,
         seriesOrder: true,

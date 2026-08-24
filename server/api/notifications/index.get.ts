@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
         select: {
           title: true,
           slug: true,
+          imageUrl: true,
         },
       },
     },

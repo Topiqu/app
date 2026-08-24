@@ -33,6 +33,20 @@
                         {{ n.article.title }}
                       </ULink>
                     </div>
+                    <ULink
+                      v-if="n.type === 'LIKE' && n.article?.imageUrl && n.article.slug"
+                      :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } })"
+                      class="shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      :aria-label="n.article.title"
+                    >
+                      <AppMedia
+                        :src="n.article.imageUrl"
+                        alt=""
+                        aspectRatio="1 / 1"
+                        sizes="64px"
+                        containerClass="size-16 rounded-md"
+                      />
+                    </ULink>
                     <UButton
                       color="error"
                       variant="ghost"
@@ -104,7 +118,7 @@ type Notif = {
   isRead: boolean
   createdAt: string
   articleId: string | null
-  article?: { slug: string; title: string } | null
+  article?: { slug: string; title: string; imageUrl: string | null } | null
   count: number
   link?: string | null
 }
