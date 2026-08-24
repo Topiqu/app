@@ -51,104 +51,35 @@
           />
         </section>
 
-        <div v-if="!isBasic" v-show="activeTab === 'integrations'" class="space-y-8">
-          <section>
-            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-              <UIcon size="20" name="i-mdi-google-analytics" class="text-orange-500" />
-              {{ $t('common.preferences.external') }}
-            </h3>
-
-            <UCard>
-              <div class="space-y-6">
-                <UFormField :label="$t('common.preferences.integrations.analytics')" :ui="{ label: 'sr-only' }">
-                  <UCheckbox v-model="form.allowGtag" :label="$t('common.preferences.integrations.analytics')" />
-                </UFormField>
-                <UFormField v-if="form.allowGtag" :label="$t('common.preferences.integrations.measurementId')">
-                  <UInput v-model="form.gtagId" placeholder="G-XXXXXXXXXX" leadingIcon="i-mdi-tag-outline" />
-                </UFormField>
-
-                <div v-if="isSuperadmin" class="pt-4 border-t border-default">
-                  <UFormField :label="$t('common.preferences.integrations.ads')" :ui="{ label: 'sr-only' }">
-                    <UCheckbox v-model="form.allowAds" :label="$t('common.preferences.integrations.ads')" />
-                  </UFormField>
-                  <UFormField v-if="form.allowAds" :label="$t('common.preferences.integrations.networkCode')">
-                    <UInput v-model="form.gamNetworkCode" placeholder="XXXXXXXXXX" leadingIcon="i-mdi-code-tags" />
-                  </UFormField>
-                </div>
-              </div>
-            </UCard>
-          </section>
-
-          <section>
-            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-              <UIcon size="20" name="i-mdi-key-chain-variant" />
-              {{ $t('common.preferences.api.title') }}
-            </h3>
-
-            <UCard>
-              <div v-if="!form.apiKey" class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="text-sm text-muted">
-                  {{ $t('common.preferences.api.description') }}
-                </div>
-                <UButton color="neutral" variant="soft" icon="i-mdi-plus" class="shrink-0" @click="generateApiKey">
-                  {{ $t('common.preferences.api.generate') }}
-                </UButton>
-              </div>
-
-              <div v-else class="space-y-3">
-                <UFormField :label="$t('common.preferences.api.label')">
-                  <UInput :modelValue="form.apiKey" :type="apiVisible ? 'text' : 'password'" readonly class="w-full">
-                    <template #trailing>
-                      <div class="flex items-center gap-1">
-                        <UButton
-                          square
-                          variant="ghost"
-                          size="sm"
-                          color="neutral"
-                          :icon="apiVisible ? 'i-mdi-eye-off-outline' : 'i-mdi-eye-outline'"
-                          :aria-label="
-                            apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')
-                          "
-                          :title="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
-                          @click="apiVisible = !apiVisible"
-                        />
-                        <UButton
-                          square
-                          variant="ghost"
-                          size="sm"
-                          color="neutral"
-                          :icon="apiCopied ? 'i-mdi-check' : 'i-mdi-content-copy'"
-                          :aria-label="
-                            apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')
-                          "
-                          :title="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
-                          @click="copyApi(form.apiKey)"
-                        />
-                      </div>
-                    </template>
-                  </UInput>
-                </UFormField>
-
-                <div class="flex items-start gap-2 text-xs text-muted">
-                  <UIcon size="16" name="i-mdi-shield-alert-outline" class="shrink-0 mt-0.5" />
-                  <p>{{ $t('common.preferences.api.warning') }}</p>
-                </div>
-              </div>
-            </UCard>
-          </section>
-
-          <section>
-            <LazyFormClientLinkedIn
-              :clientSiteId="client?.id ?? ''"
-              :mode="form.linkedinMode"
-              :type="form.linkedinCompanyType"
-              :brandProfile="form.linkedinBrandProfile"
-              @update:mode="form.linkedinMode = $event"
-              @update:type="form.linkedinCompanyType = $event"
-              @update:brandProfile="form.linkedinBrandProfile = $event"
-            />
-          </section>
-        </div>
+        <FormClientIntegrationsCatalog
+          v-if="!isBasic"
+          v-show="activeTab === 'integrations'"
+          :clientSiteId="client?.id ?? ''"
+          :apiKey="form.apiKey"
+          :apiVisible="apiVisible"
+          :apiCopied="apiCopied"
+          :allowGtag="form.allowGtag"
+          :gtagId="form.gtagId"
+          :isSuperadmin="isSuperadmin"
+          :allowAds="form.allowAds"
+          :gamNetworkCode="form.gamNetworkCode"
+          :dirty="isDirty"
+          :currentPlan="client?.plan ?? 'BASIC'"
+          :linkedinMode="form.linkedinMode"
+          :linkedinType="form.linkedinCompanyType"
+          :linkedinBrandProfile="form.linkedinBrandProfile"
+          @update:allowGtag="form.allowGtag = $event"
+          @update:gtagId="form.gtagId = $event"
+          @update:allowAds="form.allowAds = $event"
+          @update:gamNetworkCode="form.gamNetworkCode = $event"
+          @update:linkedinMode="form.linkedinMode = $event"
+          @update:linkedinType="form.linkedinCompanyType = $event"
+          @update:linkedinBrandProfile="form.linkedinBrandProfile = $event"
+          @generateApiKey="generateApiKey"
+          @toggleApi="apiVisible = !apiVisible"
+          @copyApi="copyApi(form.apiKey)"
+          @save="savePreferences"
+        />
 
         <section v-if="hasAi" v-show="activeTab === 'ai'">
           <UCard>
@@ -195,22 +126,25 @@
       </div>
     </div>
 
-    <div class="pointer-events-none sticky bottom-4 z-10 flex justify-center sm:justify-end">
+    <div class="pointer-events-none sticky bottom-4 z-10 flex justify-center">
       <UAlert
         v-if="isDirty"
-        class="pointer-events-auto w-auto"
+        class="pointer-events-auto w-full max-w-xl shadow-lg"
         color="warning"
         variant="soft"
         icon="i-mdi-content-save-alert-outline"
         :title="$t('common.preferences.unsaved')"
+        :description="$t('common.preferences.unsavedDescription')"
       >
         <template #actions>
-          <UButton color="neutral" variant="ghost" size="sm" @click="resetForm">
-            {{ $t('common.actions.reset') }}
-          </UButton>
-          <UButton size="sm" @click="savePreferences">
-            {{ $t('common.actions.saveChanges') }}
-          </UButton>
+          <div class="flex w-full justify-end gap-2">
+            <UButton color="neutral" variant="ghost" size="sm" @click="resetForm">
+              {{ $t('common.actions.reset') }}
+            </UButton>
+            <UButton size="sm" @click="savePreferences">
+              {{ $t('common.actions.saveChanges') }}
+            </UButton>
+          </div>
         </template>
       </UAlert>
     </div>
@@ -348,6 +282,17 @@ const resetForm = async () => {
 
 const generateApiKey = async () => {
   if (!clientId.value) return
+  if (form.value.apiKey) {
+    const confirmed = await confirm({
+      title: $t('common.preferences.api.regenerateTitle'),
+      message: $t('common.preferences.api.regenerateWarning'),
+      icon: 'i-mdi-key-remove',
+      confirmText: $t('common.preferences.api.regenerateConfirm'),
+      cancelText: $t('common.messages.deleteCancel'),
+      variant: 'danger',
+    })
+    if (!confirmed) return
+  }
   try {
     const res = await $fetch<{ apiKey: string }>(`/api/clients/${clientId.value}/api-key`, { method: 'POST' })
     form.value.apiKey = res.apiKey
@@ -358,16 +303,4 @@ const generateApiKey = async () => {
   }
 }
 
-onBeforeRouteLeave(async () => {
-  if (!isDirty.value) return true
-  const r = await confirm({
-    title: $t('common.messages.closeConfirmTitle'),
-    message: $t('common.messages.closeConfirmText'),
-    icon: 'i-mdi-alert-outline',
-    confirmText: $t('common.messages.closeConfirmButton'),
-    cancelText: $t('common.messages.deleteCancel'),
-    variant: 'danger',
-  })
-  return r
-})
 </script>

@@ -72,15 +72,10 @@
 }
 
 .confirm-dialog-content {
-  top: 50% !important;
-  right: auto !important;
-  bottom: auto !important;
-  left: 50% !important;
   width: min(calc(100vw - 2rem), 28rem) !important;
   height: auto !important;
   max-width: 28rem !important;
   max-height: calc(100dvh - 2rem) !important;
-  transform: translate(-50%, -50%) !important;
   border-radius: var(--topiqu-surface-radius) !important;
 }
 

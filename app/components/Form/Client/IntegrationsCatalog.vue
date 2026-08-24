@@ -7,165 +7,204 @@
       </p>
     </div>
 
-    <div class="grid gap-3 sm:grid-cols-2">
-      <UButton
-        v-for="item in services"
-        :key="item.id"
-        type="button"
-        class="group flex min-h-32 flex-col rounded-2xl border border-neutral-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-indigo-500/60"
-        @click="activeDialog = item.id"
-      >
-        <span class="flex w-full items-start justify-between gap-3">
-          <span class="flex items-center gap-3">
-            <span
-              class="grid size-10 place-items-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300"
-            >
-              <Icon :name="item.icon" class="size-5" />
-            </span>
-            <span class="font-semibold text-neutral-900 dark:text-white">{{ item.title }}</span>
-          </span>
-          <span
-            :class="[
-              'rounded-full border px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider',
-              item.plan === 'premium'
-                ? 'border-orange-200 bg-orange-100 text-orange-700 dark:border-orange-400/20 dark:bg-orange-500/15 dark:text-orange-300'
-                : 'border-sky-200 bg-sky-100 text-sky-700 dark:border-sky-400/20 dark:bg-sky-500/15 dark:text-sky-300',
-            ]"
-            >{{ item.planLabel }}</span
-          >
-        </span>
-        <span class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">{{ item.description }}</span>
-        <span class="mt-auto flex items-center justify-between gap-3 pt-4">
-          <span v-if="item.status" class="text-xs font-medium text-emerald-600 dark:text-emerald-400">{{
-            item.status
-          }}</span>
-          <span class="ml-auto flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
-            {{ $t('common.integrationsCatalog.open') }}
-            <Icon name="mdi:arrow-right" class="size-4 transition group-hover:translate-x-0.5" />
-          </span>
-        </span>
-      </UButton>
+    <div class="flex items-center justify-between gap-3 rounded-xl border border-default bg-elevated/50 px-4 py-3">
+      <span class="text-sm font-medium text-muted">{{ $t('common.preferences.currentPlan') }}</span>
+      <UBadge color="primary" variant="soft" size="lg">{{ currentPlanLabel }}</UBadge>
     </div>
 
-    <section class="space-y-3 border-t border-neutral-200 pt-7 dark:border-neutral-700">
-      <div>
-        <h2 class="text-lg font-bold text-neutral-900 dark:text-white">
-          {{ $t('common.integrationsCatalog.developerTitle') }}
-        </h2>
-        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          {{ $t('common.integrationsCatalog.developerDescription') }}
-        </p>
-      </div>
-      <div class="grid gap-3 lg:grid-cols-2">
-        <article
-          class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-700 dark:bg-neutral-900"
-        >
-          <div class="flex items-start justify-between gap-3">
-            <span class="flex items-center gap-3 font-semibold text-neutral-900 dark:text-white">
-              <span
-                class="grid size-10 place-items-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-300"
-                ><Icon name="mdi:key-chain-variant" class="size-5"
-              /></span>
-              {{ $t('common.preferences.api.title') }}
-            </span>
-            <span
-              class="rounded-full border border-sky-200 bg-sky-100 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-sky-700 dark:border-sky-400/20 dark:bg-sky-500/15 dark:text-sky-300"
-              >Pro+</span
-            >
-          </div>
-          <p class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
-            {{ $t('common.preferences.api.description') }}
-          </p>
-          <ul class="mt-4 space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
-            <li v-for="benefit in apiBenefits" :key="benefit" class="flex gap-2">
-              <Icon name="mdi:check-circle-outline" class="mt-0.5 size-4 shrink-0 text-emerald-500" />{{ benefit }}
-            </li>
-          </ul>
-          <div v-if="!apiKey" class="mt-5">
-            <UButton color="neutral" variant="soft" @click="$emit('generateApiKey')"
-              ><Icon name="mdi:plus" class="mr-1.5 size-4" />{{ $t('common.preferences.api.generate') }}</UButton
-            >
-          </div>
-          <div v-else class="mt-5 space-y-3">
-            <div class="relative">
-              <UFormField :label="$t('common.preferences.api.title')">
-                <UInput :modelValue="apiKey" :type="apiVisible ? 'text' : 'password'" readonly />
-              </UFormField>
-              <div class="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-                <UButton
-                  square
-                  borderless
-                  size="sm"
-                  color="neutral"
-                  variant="soft"
-                  :icon="apiVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'"
-                  @click="$emit('toggleApi')"
-                />
-                <UButton
-                  square
-                  borderless
-                  size="sm"
-                  color="neutral"
-                  variant="soft"
-                  :icon="apiCopied ? 'mdi:check' : 'mdi:content-copy'"
-                  @click="$emit('copyApi')"
-                />
-              </div>
-            </div>
-            <p class="flex items-start gap-2 text-xs text-neutral-500">
-              <Icon name="mdi:shield-alert-outline" class="mt-0.5 size-4 shrink-0" />{{
-                $t('common.preferences.api.warning')
-              }}
-            </p>
-            <UButton size="sm" color="neutral" variant="soft" @click="$emit('generateApiKey')">
-              <Icon name="mdi:refresh" class="mr-1.5 size-4" />{{ $t('common.preferences.api.revoke') }}
-            </UButton>
-          </div>
-        </article>
+    <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem]">
+      <UFormField :label="$t('common.integrationsCatalog.search')" :ui="{ label: 'sr-only' }">
+        <UInput
+          v-model="filterQuery"
+          class="w-full"
+          icon="i-mdi-magnify"
+          :placeholder="$t('common.integrationsCatalog.search')"
+        />
+      </UFormField>
+      <UFormField :label="$t('common.integrationsCatalog.planFilter')" :ui="{ label: 'sr-only' }">
+        <USelect v-model="planFilter" class="w-full" valueKey="value" labelKey="label" :items="planFilterItems" />
+      </UFormField>
+    </div>
 
-        <article
-          class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-700 dark:bg-neutral-900"
-        >
-          <div class="flex items-start justify-between gap-3">
-            <span class="flex items-center gap-3 font-semibold text-neutral-900 dark:text-white">
-              <span
-                class="grid size-10 place-items-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"
-                ><Icon name="mdi:wordpress" class="size-5"
-              /></span>
-              {{ $t('common.integrationsCatalog.wordpressTitle') }}
-            </span>
-            <span
-              class="rounded-full border border-sky-200 bg-sky-100 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-sky-700 dark:border-sky-400/20 dark:bg-sky-500/15 dark:text-sky-300"
-              >Pro+</span
-            >
+    <section
+      v-for="section in visibleSections"
+      :key="section.id"
+      :class="[
+        'space-y-4 rounded-2xl border p-4 sm:p-5',
+        section.available && section.id === 'premium'
+          ? 'border-amber-200 border-l-4 border-l-amber-400 bg-amber-50/60 dark:border-amber-400/20 dark:border-l-amber-400 dark:bg-amber-500/5'
+          : section.available
+            ? 'border-sky-200 border-l-4 border-l-sky-500 bg-sky-50/60 dark:border-sky-400/20 dark:border-l-sky-400 dark:bg-sky-500/5'
+            : 'border-dashed border-default border-l-4 border-l-neutral-300 bg-elevated/30 dark:border-l-neutral-700',
+      ]"
+    >
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+        <div class="flex items-start gap-3">
+          <UBadge :color="section.available ? (section.id === 'premium' ? 'warning' : 'info') : 'neutral'" variant="soft" size="lg">
+            {{ section.label }}
+          </UBadge>
+          <div>
+            <h2 class="font-semibold text-highlighted">{{ section.title }}</h2>
+            <p class="mt-1 text-sm text-muted">{{ section.description }}</p>
           </div>
-          <p class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
-            {{ $t('common.integrationsCatalog.wordpressDescription') }}
-          </p>
-          <ul class="mt-4 space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
-            <li v-for="benefit in wordpressBenefits" :key="benefit" class="flex gap-2">
-              <Icon name="mdi:check-circle-outline" class="mt-0.5 size-4 shrink-0 text-emerald-500" />{{ benefit }}
-            </li>
-          </ul>
-          <ol class="mt-5 space-y-3 border-t border-neutral-100 pt-4 text-sm dark:border-neutral-800">
-            <li v-for="(step, index) in wordpressSteps" :key="step" class="flex gap-3">
-              <span
-                class="grid size-6 shrink-0 place-items-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300"
-                >{{ index + 1 }}</span
-              ><span>{{ step }}</span>
-            </li>
-          </ol>
-        </article>
+        </div>
+        <span v-if="section.available" class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-success">
+          <Icon name="mdi:check-circle" class="size-4" />{{ $t('common.integrationsCatalog.includedInPlan') }}
+        </span>
+        <UBadge v-else color="neutral" variant="outline" icon="i-mdi-lock-outline">
+          {{ $t('common.integrationsCatalog.requiresPlan', { plan: section.label }) }}
+        </UBadge>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+        <UCard
+          v-for="card in section.cards"
+          :key="card.id"
+          :class="!section.available && 'opacity-70'"
+          :ui="{ body: 'flex h-full min-h-44 flex-col' }"
+        >
+          <template v-if="card.kind === 'service'">
+            <div class="flex items-start justify-between gap-3">
+              <span class="flex items-center gap-3 font-semibold text-highlighted">
+                <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-white shadow-sm dark:bg-neutral-900">
+                  <FormClientIntegrationLogo :name="card.logo" />
+                </span>
+                {{ card.title }}
+              </span>
+              <span v-if="card.status" class="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                {{ card.status }}
+              </span>
+            </div>
+            <p class="mt-4 text-sm leading-relaxed text-muted">{{ card.description }}</p>
+            <div class="mt-auto flex justify-end pt-5">
+              <UButton
+                v-if="section.available"
+                size="sm"
+                color="neutral"
+                variant="soft"
+                trailingIcon="i-mdi-arrow-right"
+                :label="$t('common.integrationsCatalog.open')"
+                @click="openDialog(card.id)"
+              />
+              <UButton
+                v-else
+                disabled
+                size="sm"
+                color="neutral"
+                variant="soft"
+                icon="i-mdi-lock-outline"
+                :label="$t('common.integrationsCatalog.requiresPlan', { plan: section.label })"
+              />
+            </div>
+          </template>
+
+          <template v-else-if="card.kind === 'api'">
+            <div class="flex items-center gap-3 font-semibold text-highlighted">
+              <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                <Icon name="mdi:key-chain-variant" class="size-5" />
+              </span>
+              {{ $t('common.preferences.api.title') }}
+            </div>
+            <p class="mt-4 text-sm leading-relaxed text-muted">
+              {{ $t('common.preferences.api.description') }}
+            </p>
+            <ul class="mt-4 space-y-2 text-sm text-muted">
+              <li v-for="benefit in apiBenefits" :key="benefit" class="flex gap-2">
+                <Icon name="mdi:check-circle-outline" class="mt-0.5 size-4 shrink-0 text-emerald-500" />{{ benefit }}
+              </li>
+            </ul>
+            <div v-if="!apiKey" class="mt-5">
+              <UButton
+                color="neutral"
+                variant="soft"
+                icon="i-mdi-plus"
+                :label="$t('common.preferences.api.generate')"
+                :disabled="!section.available"
+                @click="$emit('generateApiKey')"
+              />
+            </div>
+            <div v-else class="mt-5 space-y-3">
+              <UFormField :label="$t('common.preferences.api.title')">
+                <div class="flex items-center gap-2" data-api-key-row>
+                  <UInput
+                    class="min-w-0 flex-1"
+                    :modelValue="apiKey"
+                    :type="apiVisible ? 'text' : 'password'"
+                    readonly
+                  />
+                  <div class="flex shrink-0 items-center gap-1" data-api-key-actions>
+                    <UButton
+                      square
+                      size="sm"
+                      color="neutral"
+                      variant="soft"
+                      :icon="apiVisible ? 'i-mdi-eye-off-outline' : 'i-mdi-eye-outline'"
+                      :aria-label="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
+                      :disabled="!section.available"
+                      @click="$emit('toggleApi')"
+                    />
+                    <UButton
+                      square
+                      size="sm"
+                      color="neutral"
+                      variant="soft"
+                      :icon="apiCopied ? 'i-mdi-check' : 'i-mdi-content-copy'"
+                      :aria-label="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
+                      :disabled="!section.available"
+                      @click="$emit('copyApi')"
+                    />
+                  </div>
+                </div>
+              </UFormField>
+              <p class="flex items-start gap-2 text-xs text-muted">
+                <Icon name="mdi:shield-alert-outline" class="mt-0.5 size-4 shrink-0" />{{
+                  $t('common.preferences.api.warning')
+                }}
+              </p>
+              <UButton
+                size="sm"
+                color="neutral"
+                variant="soft"
+                icon="i-mdi-refresh"
+                :label="$t('common.preferences.api.revoke')"
+                :disabled="!section.available"
+                @click="$emit('generateApiKey')"
+              />
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="flex items-start justify-between gap-3">
+              <span class="flex items-center gap-3 font-semibold text-highlighted">
+                <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-white shadow-sm dark:bg-neutral-900">
+                  <FormClientIntegrationLogo name="wordpress" />
+                </span>
+                {{ card.title }}
+              </span>
+              <UBadge color="neutral" variant="outline" size="sm">TBD</UBadge>
+            </div>
+            <p class="mt-4 text-sm leading-relaxed text-muted">
+              {{ card.description }}
+            </p>
+          </template>
+        </UCard>
       </div>
     </section>
 
-    <Modal v-model="gscOpen" :title="$t('common.searchConsole.title')" class="max-w-2xl">
-      <template #content>
+    <UEmpty
+      v-if="visibleSections.length === 0"
+      icon="i-mdi-puzzle-remove-outline"
+      :title="$t('common.integrationsCatalog.noResults')"
+      :description="$t('common.integrationsCatalog.noResultsDescription')"
+    />
+
+    <UModal v-model:open="gscOpen" :title="$t('common.searchConsole.title')" :ui="{ content: 'max-w-2xl' }">
+      <template #body>
         <FormClientDialogIntro
           icon="mdi:chart-timeline-variant-shimmer"
           :description="$t('common.integrationsCatalog.gscDescription')"
           plan="premium"
-          planLabel="Premium+"
+          planLabel="Premium"
           :benefits="[$t('common.integrationsCatalog.gscBenefitOne'), $t('common.integrationsCatalog.gscBenefitTwo')]"
           :steps="[
             $t('common.integrationsCatalog.gscStepOne'),
@@ -177,15 +216,15 @@
           <FormClientSearchConsole embedded />
         </div>
       </template>
-    </Modal>
+    </UModal>
 
-    <Modal v-model="analyticsOpen" title="Google Analytics" class="max-w-2xl">
-      <template #content>
+    <UModal v-model:open="analyticsOpen" title="Google Analytics" :ui="{ content: 'max-w-2xl' }">
+      <template #body>
         <FormClientDialogIntro
           icon="mdi:google-analytics"
           :description="$t('common.integrationsCatalog.analyticsDescription')"
           plan="pro"
-          planLabel="Pro+"
+          planLabel="Pro"
           :benefits="[
             $t('common.integrationsCatalog.analyticsBenefitOne'),
             $t('common.integrationsCatalog.analyticsBenefitTwo'),
@@ -238,15 +277,15 @@
       <template #footer
         ><UButton :disabled="!dirty" @click="$emit('save')">{{ $t('common.actions.saveChanges') }}</UButton></template
       >
-    </Modal>
+    </UModal>
 
-    <Modal v-model="linkedinOpen" title="LinkedIn" class="max-w-2xl">
-      <template #content>
+    <UModal v-model:open="linkedinOpen" title="LinkedIn" :ui="{ content: 'max-w-2xl' }">
+      <template #body>
         <FormClientDialogIntro
           icon="mdi:linkedin"
           :description="$t('common.integrationsCatalog.linkedinDescription')"
           plan="pro"
-          planLabel="Pro+"
+          planLabel="Pro"
           :benefits="[
             $t('common.integrationsCatalog.linkedinBenefitOne'),
             $t('common.integrationsCatalog.linkedinBenefitTwo'),
@@ -273,7 +312,7 @@
       <template #footer
         ><UButton :disabled="!dirty" @click="$emit('save')">{{ $t('common.actions.saveChanges') }}</UButton></template
       >
-    </Modal>
+    </UModal>
   </section>
 </template>
 
@@ -289,6 +328,7 @@ const props = defineProps<{
   allowAds: boolean
   gamNetworkCode: string
   dirty: boolean
+  currentPlan: 'BASIC' | 'PRO' | 'PREMIUM' | 'CUSTOM'
   linkedinMode?: 'HitL' | 'FullAuto'
   linkedinType?: 'pages' | 'personal'
   linkedinBrandProfile?: { tone: string; audience: string; doList: string[]; dontList: string[] }
@@ -309,7 +349,31 @@ defineEmits<{
 }>()
 
 type DialogId = 'gsc' | 'analytics' | 'linkedin'
+type ServiceCard = {
+  kind: 'service'
+  id: DialogId
+  title: string
+  logo: 'analytics' | 'google' | 'linkedin'
+  status: string | null
+  description: string
+}
+type CatalogCard =
+  | ServiceCard
+  | { kind: 'api'; id: 'api'; title: string; description: string }
+  | { kind: 'wordpress'; id: 'wordpress'; title: string; description: string }
+type PlanSection = {
+  id: 'pro' | 'premium'
+  label: string
+  title: string
+  description: string
+  cards: CatalogCard[]
+}
+type PlanLane = PlanSection & { available: boolean }
+
 const activeDialog = shallowRef<DialogId | null>(null)
+const openDialog = (id: DialogId) => {
+  activeDialog.value = id
+}
 const dialogModel = (id: DialogId) =>
   computed({
     get: () => activeDialog.value === id,
@@ -320,50 +384,99 @@ const dialogModel = (id: DialogId) =>
 const gscOpen = dialogModel('gsc')
 const analyticsOpen = dialogModel('analytics')
 const linkedinOpen = dialogModel('linkedin')
+const filterQuery = shallowRef('')
+const planFilter = shallowRef<'available' | 'all' | 'pro' | 'premium'>('available')
+const planFilterItems = computed(() => [
+  { value: 'available', label: $t('common.integrationsCatalog.availableForMe') },
+  { value: 'all', label: $t('common.integrationsCatalog.allPlans') },
+  { value: 'pro', label: 'Pro' },
+  { value: 'premium', label: 'Premium' },
+])
+const currentPlanLabel = computed(() => {
+  if (props.currentPlan === 'PRO') return 'Pro'
+  if (props.currentPlan === 'PREMIUM') return 'Premium'
+  if (props.currentPlan === 'CUSTOM') return 'Custom'
+  return 'Basic'
+})
+const hasPlanAccess = (minimumPlan: PlanSection['id']) => {
+  if (props.currentPlan === 'CUSTOM' || props.currentPlan === 'PREMIUM') return true
+  return props.currentPlan === 'PRO' && minimumPlan === 'pro'
+}
 
-const services = computed(() => [
+const planSections = computed<PlanSection[]>(() => [
   {
-    id: 'gsc' as const,
-    title: $t('common.searchConsole.title'),
-    icon: 'mdi:google',
-    plan: 'premium' as const,
-    planLabel: 'Premium+',
-    status: null,
-    description: $t('common.integrationsCatalog.gscDescription'),
+    id: 'pro',
+    label: 'Pro',
+    title: $t('common.integrationsCatalog.proTitle'),
+    description: $t('common.integrationsCatalog.proDescription'),
+    cards: [
+      {
+        kind: 'service',
+        id: 'analytics',
+        title: 'Google Analytics',
+        logo: 'analytics',
+        status: props.allowGtag ? $t('common.integrationsCatalog.active') : null,
+        description: $t('common.integrationsCatalog.analyticsDescription'),
+      },
+      {
+        kind: 'service',
+        id: 'linkedin',
+        title: 'LinkedIn',
+        logo: 'linkedin',
+        status: null,
+        description: $t('common.integrationsCatalog.linkedinDescription'),
+      },
+      {
+        kind: 'api',
+        id: 'api',
+        title: $t('common.preferences.api.title'),
+        description: $t('common.preferences.api.description'),
+      },
+      {
+        kind: 'wordpress',
+        id: 'wordpress',
+        title: $t('common.integrationsCatalog.wordpressTitle'),
+        description: $t('common.integrationsCatalog.wordpressDescription'),
+      },
+    ],
   },
   {
-    id: 'analytics' as const,
-    title: 'Google Analytics',
-    icon: 'mdi:google-analytics',
-    plan: 'pro' as const,
-    planLabel: 'Pro+',
-    status: props.allowGtag ? $t('common.integrationsCatalog.active') : null,
-    description: $t('common.integrationsCatalog.analyticsDescription'),
-  },
-  {
-    id: 'linkedin' as const,
-    title: 'LinkedIn',
-    icon: 'mdi:linkedin',
-    plan: 'pro' as const,
-    planLabel: 'Pro+',
-    status: null,
-    description: $t('common.integrationsCatalog.linkedinDescription'),
+    id: 'premium',
+    label: 'Premium',
+    title: $t('common.integrationsCatalog.premiumTitle'),
+    description: $t('common.integrationsCatalog.premiumDescription'),
+    cards: [
+      {
+        kind: 'service',
+        id: 'gsc',
+        title: $t('common.searchConsole.title'),
+        logo: 'google',
+        status: null,
+        description: $t('common.integrationsCatalog.gscDescription'),
+      },
+    ],
   },
 ])
+
+const visibleSections = computed<PlanLane[]>(() => {
+  const query = filterQuery.value.trim().toLocaleLowerCase()
+  return planSections.value
+    .filter((section) => {
+      if (planFilter.value === 'available') return hasPlanAccess(section.id)
+      return planFilter.value === 'all' || section.id === planFilter.value
+    })
+    .map((section) => ({
+      ...section,
+      available: hasPlanAccess(section.id),
+      cards: section.cards.filter(
+        (card) => !query || `${card.title} ${card.description}`.toLocaleLowerCase().includes(query),
+      ),
+    }))
+    .filter((section) => section.cards.length > 0)
+})
 
 const apiBenefits = computed(() => [
   $t('common.integrationsCatalog.apiBenefitOne'),
   $t('common.integrationsCatalog.apiBenefitTwo'),
-])
-
-const wordpressBenefits = computed(() => [
-  $t('common.integrationsCatalog.wordpressBenefitOne'),
-  $t('common.integrationsCatalog.wordpressBenefitTwo'),
-])
-
-const wordpressSteps = computed(() => [
-  $t('common.integrationsCatalog.wordpressStepOne'),
-  $t('common.integrationsCatalog.wordpressStepTwo'),
-  $t('common.integrationsCatalog.wordpressStepThree'),
 ])
 </script>

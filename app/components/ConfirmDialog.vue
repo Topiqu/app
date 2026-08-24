@@ -1,5 +1,7 @@
 <template>
   <UModal
+    portal
+    scrollable
     :title="title"
     data-confirm-dialog
     :ui="{
