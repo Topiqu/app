@@ -40,6 +40,11 @@ export default defineEventHandler(async (event) => {
     include: {
       tags: { include: { tag: true } },
       user: { select: { id: true, username: true, email: true, role: true, avatarUrl: true } },
+      reactions: {
+        where: user?.id ? { userId: user.id } : { id: '' },
+        select: { id: true },
+        take: 1,
+      },
       _count: { select: { comments: true, reactions: true } },
     },
     omit: { content: true },
@@ -55,5 +60,7 @@ export default defineEventHandler(async (event) => {
     .sort((a, b) => b.matchCount - a.matchCount)
     .slice(0, take)
 
-  return localizeArticles(prisma, articles, { clientSiteId, locale, primaryLanguage })
+  const localized = await localizeArticles(prisma, articles, { clientSiteId, locale, primaryLanguage })
+
+  return localized.map(({ reactions, ...article }) => ({ ...article, likedByUser: reactions.length > 0 }))
 })

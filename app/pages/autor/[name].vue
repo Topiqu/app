@@ -35,6 +35,16 @@
 <script setup lang="ts">
 import type { ArticleCardData } from '~~/shared/types/article'
 
+type AuthorArticlesResponse = {
+  id: string
+  username: string
+  avatarUrl: string | null
+  bio: string | null
+  articles: Array<{ articleId: string; article: ArticleCardData }>
+  hasMore: boolean
+  total: number
+}
+
 definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
@@ -55,13 +65,14 @@ const query = computed(() => ({
 }))
 
 const clientSite = await useClientSite()
+const authorApiPath = `/api/articles/${encodeURIComponent(username.value)}/by-author`
 
 const {
   data: author,
   pending,
   refresh,
   error,
-} = await useFetch(`/api/articles/${username.value}/by-author`, {
+} = await useFetch<AuthorArticlesResponse>(authorApiPath, {
   key: `author-${username.value}`,
   query,
   default: () => ({
@@ -81,7 +92,7 @@ if (error.value || (!pending.value && !author.value?.id)) {
 }
 
 const authorName = computed(() => author.value.username || '')
-const articles = computed(() => author.value.articles.map((a) => (a as { article: ArticleCardData }).article))
+const articles = computed(() => author.value.articles.map(({ article }) => article))
 
 const debouncedRefresh = useDebounceFn(() => refresh(), 300)
 watch([search, sort], () => {

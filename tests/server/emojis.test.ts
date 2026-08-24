@@ -49,3 +49,27 @@ describe('custom emoji deletion', () => {
     expect(remove).toContain('deletedReactions: emoji._count.emojiReactions')
   })
 })
+
+describe('custom emoji optimistic UI', () => {
+  const component = source('app/components/Emoji/Create.vue')
+
+  it('shows a local create preview before starting the upload and removes it afterward', () => {
+    const optimistic = component.indexOf('optimisticEmojis.value.push')
+    const request = component.indexOf("$fetch<{ emoji: Omit<EmojiRecord, '_count'> }>('/api/emojis'")
+    const cleanup = component.indexOf('optimisticEmojis.value = optimisticEmojis.value.filter')
+
+    expect(optimistic).toBeGreaterThan(-1)
+    expect(request).toBeGreaterThan(optimistic)
+    expect(cleanup).toBeGreaterThan(request)
+  })
+
+  it('removes a deleted emoji before the request and restores it on failure', () => {
+    const optimisticRemoval = component.indexOf('filter((candidate) => candidate.id !== emoji.id)')
+    const request = component.indexOf('$fetch(`/api/emojis/${emoji.id}`')
+    const rollback = component.indexOf('restored.splice')
+
+    expect(optimisticRemoval).toBeGreaterThan(-1)
+    expect(request).toBeGreaterThan(optimisticRemoval)
+    expect(rollback).toBeGreaterThan(request)
+  })
+})
