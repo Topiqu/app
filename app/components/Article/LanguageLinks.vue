@@ -1,6 +1,17 @@
 <template>
+  <UDropdownMenu v-if="target === 'public' && links.length > 1" :items="publicItems">
+    <UButton
+      color="neutral"
+      variant="soft"
+      icon="i-mdi-translate"
+      trailingIcon="i-mdi-chevron-down"
+      :label="currentLabel"
+      :aria-label="$t('articles.translations.languageTabs')"
+    />
+  </UDropdownMenu>
+
   <nav
-    v-if="links.length > 1"
+    v-else-if="links.length > 1"
     class="inline-flex items-center gap-1"
     :aria-label="$t('articles.translations.languageTabs')"
   >
@@ -58,6 +69,15 @@ const links = computed(() =>
       target === 'editor'
         ? { path: localePath({ name: 'admin-editor-id', params: { id: articleRef } }), query: { lang: link.language } }
         : localePath({ name: 'clanky-slug', params: { slug: link.slug } }, link.language),
+  })),
+)
+
+const currentLabel = computed(() => $t(`languages.${current ?? links.value[0]?.language}`))
+const publicItems = computed(() =>
+  links.value.map((link) => ({
+    label: $t(`languages.${link.language}`),
+    icon: link.current ? 'i-mdi-check' : 'i-mdi-translate',
+    onSelect: () => navigateTo(link.to),
   })),
 )
 </script>

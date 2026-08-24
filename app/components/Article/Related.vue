@@ -1,8 +1,19 @@
 <template>
-  <section v-if="articles && articles.length" class="mt-20">
-    <h2 class="text-2xl font-bold mb-8 tracking-tight">{{ $t('articles.relatedArticles.title') }}</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <ArticleCard v-for="article in articles" :key="article.id" :article="article" variant="compact" layout="column" />
+  <section v-if="pending || articles.length" class="mt-20">
+    <h2 class="mb-8 text-2xl font-bold tracking-tight">{{ $t('articles.relatedArticles.title') }}</h2>
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <template v-if="pending && !articles.length">
+        <USkeleton v-for="index in 3" :key="index" class="aspect-[4/3] rounded-xl" />
+      </template>
+      <template v-else>
+        <ArticleCard
+          v-for="article in articles"
+          :key="article.id"
+          :article="article"
+          variant="compact"
+          layout="column"
+        />
+      </template>
     </div>
   </section>
 </template>

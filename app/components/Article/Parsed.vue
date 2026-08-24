@@ -17,7 +17,6 @@ import { optimizeArticleImages } from '~~/shared/utils/articleImages'
 const props = withDefaults(defineProps<{ blocks: ArticleBlock[]; articleId: string; discloseAi?: boolean }>(), {
   discloseAi: true,
 })
-const image = useImage()
 const root = useTemplateRef<HTMLElement>('root')
 
 const handleMediaError = (event: Event) => {
@@ -65,6 +64,6 @@ const visibleHtml = (html: string) => {
     .replace(/<p(?:\s[^>]*)?>\s*(?:<br\s*\/?>|&nbsp;|\u00a0)?\s*<\/p>/gi, '')
     .replace(/(<p(?:\s[^>]*)?>)\s*(<img\b[^>]*>)\s*(<\/p>)/gi, '$1$2$3')
 
-  return optimizeArticleImages(normalized, (src, width) => image(src, { width, format: 'webp', quality: 75 }))
+  return optimizeArticleImages(normalized)
 }
 </script>

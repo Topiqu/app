@@ -1,17 +1,26 @@
 <template>
-  <UCard class="m-4">
-    <h4 class="mb-2 text-lg font-semibold text-highlighted">{{ poll.question }}</h4>
-    <div v-for="opt in poll.options" :key="opt.id" class="mb-2 space-y-1">
+  <UCard class="not-prose my-8">
+    <h4 class="mb-4 text-lg font-semibold text-highlighted">{{ poll.question }}</h4>
+    <div v-for="opt in poll.options" :key="opt.id" class="mb-3 space-y-1.5">
       <UButton
-        :color="hasVoted && opt.id === getTopOption ? 'success' : 'neutral'"
-        :variant="hasVoted && opt.id === getTopOption ? 'soft' : 'ghost'"
+        :color="selectedOption === opt.id ? 'primary' : 'neutral'"
+        :variant="selectedOption === opt.id ? 'soft' : 'ghost'"
         :disabled="hasVoted"
-        class="w-full"
+        class="w-full ring-inset"
+        :class="selectedOption === opt.id ? 'ring-2 ring-primary/50' : ''"
+        :aria-pressed="selectedOption === opt.id"
         @click="vote(opt.id)"
       >
-        <span class="flex w-full items-center justify-between">
-          {{ opt.label }}
-          <span v-if="hasVoted" class="text-xs opacity-80"> {{ getPercentage(opt.id) }}% </span>
+        <span class="flex w-full min-w-0 items-center gap-2 text-left">
+          <UIcon
+            :name="selectedOption === opt.id ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'"
+            class="size-5 shrink-0"
+          />
+          <span class="min-w-0 flex-1">{{ opt.label }}</span>
+          <UBadge v-if="selectedOption === opt.id" color="primary" variant="soft" size="xs">
+            {{ $t('articles.poll.yourVote') }}
+          </UBadge>
+          <span v-if="hasVoted" class="shrink-0 text-xs tabular-nums opacity-80">{{ getPercentage(opt.id) }}%</span>
         </span>
       </UButton>
       <UProgress
@@ -22,7 +31,7 @@
         size="sm"
       />
     </div>
-    <div v-if="hasVoted" class="mb-4 text-sm text-muted">
+    <div v-if="hasVoted" class="mt-4 text-sm text-muted">
       ({{ `${getTotalVotes} ${$t('articles.votes').toLowerCase()}` }})
     </div>
   </UCard>
@@ -62,13 +71,6 @@ const getPercentage = (optionId?: string) => {
 }
 
 const getTotalVotes = computed(() => Object.values(voteCounts).reduce((sum, count) => sum + count, 0))
-
-const getTopOption = computed(() =>
-  Object.entries(voteCounts).reduce(
-    (top, [opt, count]) => (count > (voteCounts[top] || 0) ? opt : top),
-    Object.keys(voteCounts)[0] || '',
-  ),
-)
 
 const vote = async (optionId?: string) => {
   if (hasVoted.value || !optionId) return

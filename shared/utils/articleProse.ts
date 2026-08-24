@@ -38,15 +38,16 @@ export const ARTICLE_PROSE_CLASS = [
  * so adjacent borders cannot double up.
  */
 const TABLE_CELLS = [
-  '[&_table]:w-full [&_table]:border-collapse [&_table]:text-[0.95em] [&_table]:leading-relaxed',
-  '[&_th]:px-3.5 [&_th]:py-2.5 [&_th]:text-left [&_th]:font-semibold',
-  '[&_th]:bg-gray-50 [&_th]:text-gray-900 dark:[&_th]:bg-gray-800 dark:[&_th]:text-gray-100',
-  '[&_td]:px-3.5 [&_td]:py-2.5 [&_td]:align-top [&_td]:text-gray-700 dark:[&_td]:text-gray-300',
-  '[&_tbody_tr]:border-t [&_tbody_tr]:border-gray-200 dark:[&_tbody_tr]:border-gray-700',
+  '[&_table]:w-full [&_table]:border-separate [&_table]:border-spacing-0 [&_table]:text-[0.95em] [&_table]:leading-relaxed',
+  '[&_th]:border-b [&_th]:border-gray-300 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-wide',
+  '[&_th]:bg-gray-100 [&_th]:text-gray-800 dark:[&_th]:border-gray-600 dark:[&_th]:bg-gray-800 dark:[&_th]:text-gray-100',
+  '[&_td]:border-b [&_td]:border-gray-200 [&_td]:px-4 [&_td]:py-3 [&_td]:align-top [&_td]:text-gray-700 dark:[&_td]:border-gray-700 dark:[&_td]:text-gray-300',
+  '[&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:nth-child(even)]:bg-gray-50/70 dark:[&_tbody_tr:nth-child(even)]:bg-gray-800/35',
+  '[&_tbody_tr]:transition-colors [&_tbody_tr:hover]:bg-blue-50/70 dark:[&_tbody_tr:hover]:bg-blue-950/25',
 ]
 
 export const ARTICLE_TABLE_CLASS = [
-  'not-prose my-6 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700',
+  'not-prose my-8 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900',
   ...TABLE_CELLS,
 ].join(' ')
 
