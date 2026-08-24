@@ -29,6 +29,14 @@ describe('client site routes behind a session', () => {
     expect(code).toContain('requireTenantMember(event, id)')
   })
 
+  it('returns the complete editable brand kit to tenant settings', () => {
+    const code = source('server/api/clients/[id]/index.get.ts')
+
+    for (const field of ['tagline', 'faviconUrl', 'typographyPreset']) {
+      expect(code).toContain(`${field}: clientSite.${field}`)
+    }
+  })
+
   it('derives the owner status route from the session, never from a route param', () => {
     const code = source('server/api/clients/status.get.ts')
 
