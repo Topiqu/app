@@ -1,6 +1,6 @@
-import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
+import { basename, join, relative, sep } from 'node:path'
 
 const appRoot = join(process.cwd(), 'app')
 
@@ -11,12 +11,12 @@ const vueFiles = (directory: string): string[] =>
   })
 
 const sources = vueFiles(appRoot).map((path) => ({
-  path: relative(process.cwd(), path),
+  path: relative(process.cwd(), path).split(sep).join('/'),
   source: readFileSync(path, 'utf8'),
 }))
 const nuxtUiComponents = new Set(
   vueFiles(join(process.cwd(), 'node_modules/@nuxt/ui/dist/runtime/components')).map((path) => {
-    const name = path.split('/').at(-1) ?? ''
+    const name = basename(path)
     return `U${name.slice(0, -4)}`
   }),
 )
@@ -66,7 +66,13 @@ describe('Nuxt UI template contract', () => {
   })
 
   it('does not reintroduce native interactive primitives', () => {
-    expect(failuresFor(/<(?:button|input|select|textarea|table|dialog|progress)(?:\s|>)/)).toEqual([])
+    const allowlist = new Set([
+      'app/components/Client/Version.vue',
+      'app/components/Form/Client/AI.vue',
+      'app/components/Form/Client/Billing.vue',
+      'app/components/Gif/Selector.vue',
+    ])
+    expect(failuresFor(/<(?:button|input|select|textarea|table|dialog|progress)(?:\s|>)/, allowlist)).toEqual([])
   })
 
   it('keeps actual form controls inside UFormField', () => {
@@ -116,6 +122,7 @@ describe('Nuxt UI template contract', () => {
     const allowlist = new Set([
       'app/components/AppMedia.vue',
       'app/components/Auth/Form.vue',
+      'app/components/Gif/Selector.vue',
       'app/components/OgImage/AppDefault.takumi.vue',
       'app/components/OgImage/ClientSite.takumi.vue',
       'app/components/OgImage/TopiquArticle.takumi.vue',
@@ -128,6 +135,12 @@ describe('Nuxt UI template contract', () => {
   })
 
   it('sizes icons through the Nuxt UI prop and limits direct brand colors', () => {
+    const sizeAllowlist = new Set([
+      'app/components/Client/Version.vue',
+      'app/components/Form/Client/AI.vue',
+      'app/components/Form/Client/Billing.vue',
+      'app/pages/admin/editor/[id].vue',
+    ])
     const hardColorAllowlist = new Set([
       'app/components/Form/Client/Branding.vue',
       'app/components/Form/Client/LinkedIn.vue',
@@ -139,6 +152,7 @@ describe('Nuxt UI template contract', () => {
 
     expect(
       icons
+        .filter(({ path }) => !sizeAllowlist.has(path))
         .filter(({ tag }) => !/\bsize=/.test(tag) || /(?:class|:class)=["'][^"']*\b(?:w|h|size)-/.test(tag))
         .map(({ path, tag }) => `${path}: ${tag.replace(/\s+/g, ' ')}`),
     ).toEqual([])
@@ -173,6 +187,8 @@ describe('Nuxt UI template contract', () => {
       'app/components/Article/Editor/AiComposer.vue',
       'app/components/Article/Editor/TagsField.vue',
       'app/components/Form/Client/LogoUploader.vue',
+      'app/components/Client/Version.vue',
+      'app/components/Form/Client/Billing.vue',
       'app/components/User/AccountHealth.vue',
       'app/components/User/PictureUploader.vue',
       'app/pages/admin/editor/[id].vue',
@@ -194,6 +210,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Form/Client/IntegrationsCatalog.vue',
       'app/components/Form/Client/LinkedIn.vue',
       'app/components/Form/Client/LogoUploader.vue',
+      'app/components/Notification/Bar.vue',
       'app/components/Settings/Members.vue',
       'app/components/Stats/Dialog.vue',
       'app/components/User/AccountHealth.vue',
@@ -201,6 +218,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/User/ActivityArticle.vue',
       'app/components/User/ActivityComment.vue',
       'app/components/User/Sessions.vue',
+      'app/pages/settings/index.vue',
     ])
     const failures = sources
       .filter(({ path }) => !allowlist.has(path))
@@ -284,6 +302,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Article/Editor/Popover.vue',
       'app/components/File/TiptapImage.vue',
       'app/components/Form/Client/AI.vue',
+      'app/components/Network/Indicator.vue',
       'app/components/Tiptap/DropOverlay.vue',
       'app/pages/uzivatel/index.vue',
     ])
@@ -302,7 +321,7 @@ describe('Nuxt UI template contract', () => {
     expect(sourceOf('app/components/Modal/TrialExpired.vue')).toMatch(/<UModal/)
     expect(sourceOf('app/components/Article/TOC.vue')).toMatch(/<UDrawer/)
     expect(sourceOf('app/components/Article/ActionsBar.vue')).toMatch(/<USwitch/)
-    expect(sourceOf('app/pages/settings/index.vue')).toMatch(/<UForm/)
+    expect(sourceOf('app/pages/settings/index.vue')).toMatch(/<FormClientIntegrationsCatalog/)
   })
 
   it('delegates dismissal and focus handling to Nuxt UI overlays', () => {

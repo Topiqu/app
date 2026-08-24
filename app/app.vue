@@ -2,7 +2,7 @@
   <UApp :locale="uiLocale">
     <NuxtLoadingIndicator class="z-top" :color="computedThemeColor" />
     <NuxtRouteAnnouncer />
-    <StatusBar />
+    <NetworkIndicator />
 
     <NuxtLayout>
       <NuxtPage />
