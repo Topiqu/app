@@ -45,41 +45,6 @@ const routerVolarBridge = defineNuxtModule({
   },
 })
 
-const CONSENT_REGIONS = [
-  'AT',
-  'BE',
-  'BG',
-  'HR',
-  'CY',
-  'CZ',
-  'DK',
-  'EE',
-  'FI',
-  'FR',
-  'DE',
-  'GR',
-  'HU',
-  'IE',
-  'IT',
-  'LV',
-  'LT',
-  'LU',
-  'MT',
-  'NL',
-  'PL',
-  'PT',
-  'RO',
-  'SK',
-  'SI',
-  'ES',
-  'SE',
-  'IS',
-  'LI',
-  'NO',
-  'GB',
-  'CH',
-]
-
 const CONSENT_DEFAULT = {
   ad_storage: 'denied',
   ad_user_data: 'denied',
@@ -88,7 +53,6 @@ const CONSENT_DEFAULT = {
   functionality_storage: 'granted',
   security_storage: 'granted',
   wait_for_update: 500,
-  region: CONSENT_REGIONS,
 } as const
 
 // Signed-in surfaces. `@nuxtjs/robots` emits each one again under every locale prefix, so they
@@ -127,12 +91,11 @@ export default defineNuxtConfig({
       cdnUrl: process.env.CDN_URL || 'https://cdn.topiqu.com',
       baseDomain: process.env.BASE_DOMAIN || 'topiqu.com',
       baseUrl: SITE_URL,
+      adsensePublisherId: process.env.NUXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-9731440718321055',
       turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || '',
       sentry: {
         dsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',
         environment: APP_ENV,
-        tracesSampleRate: IS_PROD ? 0.2 : 1.0,
-        replaysSessionSampleRate: IS_PROD ? 0.1 : 0,
       },
     },
     turnstile: { secretKey: process.env.TURNSTILE_SECRET_KEY || '' },
@@ -147,18 +110,6 @@ export default defineNuxtConfig({
     awsS3BucketName: process.env.AWS_S3_BUCKET_NAME || '',
   },
 
-  app: {
-    head: {
-      meta: [{ name: 'google-adsense-account', content: 'ca-pub-9731440718321055' }],
-      script: [
-        {
-          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9731440718321055',
-          async: true,
-          crossorigin: 'anonymous',
-        },
-      ],
-    },
-  },
   nitro: {
     experimental: {
       tasks: true,
@@ -226,6 +177,8 @@ export default defineNuxtConfig({
   ],
 
   gtag: {
+    initMode: 'manual',
+    config: { cookie_domain: 'none' },
     initCommands: [['consent', 'default', { ...CONSENT_DEFAULT }]],
   },
 

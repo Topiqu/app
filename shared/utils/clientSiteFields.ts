@@ -1,6 +1,6 @@
 import type { ClientSite, SocialPlatform } from '@prisma/client'
 
-export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan', 'tokenLimit', 'gamNetworkCode', 'allowAds'] as const
+export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan', 'tokenLimit'] as const
 
 export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'name',
@@ -19,6 +19,7 @@ export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'autoRelease',
   'gtagId',
   'allowGtag',
+  'gamNetworkCode',
   'aiToneOfVoice',
   'aiControversyLevel',
   'translationMode',
@@ -46,7 +47,6 @@ export const PUBLIC_CLIENT_SITE_FIELDS = [
   'currency',
   'gtagId',
   'allowGtag',
-  'allowAds',
   'allowShapes',
   'discloseAiContent',
   'gamNetworkCode',

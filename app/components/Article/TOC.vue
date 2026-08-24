@@ -1,6 +1,6 @@
 <template>
-  <div v-if="state.headings.length" class="contents">
-    <ClientOnly>
+  <div class="contents">
+    <ClientOnly v-if="state.headings.length">
       <UDrawer
         v-model:open="isMobileOpen"
         direction="right"
@@ -42,10 +42,11 @@
     </ClientOnly>
 
     <aside
+      v-if="state.headings.length || $slots.sidebar"
       class="sticky top-[calc(var(--topiqu-header-height)+1.5rem)] hidden max-h-[calc(100dvh-var(--topiqu-header-height)-3rem)] min-w-0 self-start overflow-y-auto overscroll-contain lg:block"
-      :aria-label="String($t('articles.tableOfContents.title'))"
+      :aria-label="String($t(state.headings.length ? 'articles.tableOfContents.title' : 'common.advertisement'))"
     >
-      <div>
+      <div v-if="state.headings.length">
         <h2 class="flex items-center gap-2 text-sm font-semibold text-highlighted">
           <UIcon name="i-mdi-format-align-left" size="16" />
           {{ $t('articles.tableOfContents.title') }}
@@ -69,6 +70,9 @@
             </li>
           </ul>
         </nav>
+      </div>
+      <div v-if="$slots.sidebar" :class="state.headings.length ? 'mt-8 border-t border-default pt-6' : ''">
+        <slot name="sidebar" />
       </div>
     </aside>
   </div>

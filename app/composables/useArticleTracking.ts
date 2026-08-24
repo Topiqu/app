@@ -1,4 +1,5 @@
 export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
+  const consentDecision = useConsentDecision()
   const lastViewedAt = useSessionStorage<number | null>(
     computed(() => `viewed-${articleIdRef.value ?? 'pending'}`),
     null,
@@ -15,7 +16,9 @@ export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
     return result.visitorId
   }
 
-  const trackView = () => {
+  let viewPending = false
+
+  const recordView = () => {
     if (!articleIdRef.value || !import.meta.client) return
     const now = Date.now()
 
@@ -28,6 +31,20 @@ export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
       // Ignored
     }
   }
+
+  const trackView = () => {
+    if (!hasAnalyticsConsent(consentDecision.value)) {
+      viewPending = true
+      return
+    }
+    recordView()
+  }
+
+  watch(consentDecision, () => {
+    if (!viewPending || !hasAnalyticsConsent(consentDecision.value)) return
+    viewPending = false
+    recordView()
+  })
 
   return { getVisitorId, trackView }
 }

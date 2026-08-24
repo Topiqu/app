@@ -28,7 +28,6 @@ const settingsPayload = () => ({
   translationMode: 'HYBRID',
   translationLanguages: ['en'],
   gamNetworkCode: '123456',
-  allowAds: true,
 })
 
 describe('client site PATCH field masks', () => {
@@ -43,6 +42,7 @@ describe('client site PATCH field masks', () => {
     const tenantSlice = pickFields(settingsPayload(), TENANT_EDITABLE_CLIENT_SITE_FIELDS)
 
     for (const field of PRIVILEGED_CLIENT_SITE_FIELDS) expect(tenantSlice).not.toHaveProperty(field)
+    expect(tenantSlice).toHaveProperty('gamNetworkCode', '123456')
   })
 
   it('drops keys the caller never sent so untouched columns are not overwritten', () => {

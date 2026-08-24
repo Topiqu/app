@@ -41,7 +41,6 @@ export interface ClientSettingsForm {
   aiControversyLevel: string
   gtagId: string
   gamNetworkCode: string
-  allowAds: boolean
   apiKey: string
   autoRelease: boolean
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
@@ -71,7 +70,6 @@ const emptyForm = (): ClientSettingsForm => ({
   aiControversyLevel: '',
   gtagId: '',
   gamNetworkCode: '',
-  allowAds: false,
   apiKey: '',
   autoRelease: false,
   translationMode: 'OFF',
@@ -126,7 +124,6 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     translationMode: client.translationMode ?? 'OFF',
     translationLanguages: client.translationLanguages ?? [],
     discloseAiContent: client.discloseAiContent ?? false,
-    allowAds: client.allowAds,
     allowGtag: client.allowGtag ?? false,
     linkedinMode: li?.mode ?? 'HitL',
     linkedinBrandProfile: li?.brandProfile ?? { tone: '', audience: '', doList: [], dontList: [] },

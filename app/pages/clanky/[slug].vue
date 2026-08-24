@@ -187,7 +187,25 @@
           :allowComments="data.allowedComments"
         />
       </div>
-      <ArticleTOC />
+      <ArticleTOC>
+        <template #sidebar>
+          <AdSlot
+            v-if="showArticleAds"
+            :key="`article-sidebar-${data.id}`"
+            adUnitPath="/article/sidebar"
+            slotId="article-sidebar-ad"
+            :sizes="[
+              [160, 600],
+              [120, 600],
+            ]"
+            :sizeMapping="articleSidebarMapping"
+            :targeting="{ article_id: data.id, placement: 'sidebar' }"
+            width="160px"
+            height="600px"
+            showLabel
+          />
+        </template>
+      </ArticleTOC>
     </div>
   </div>
   <Status v-else-if="status" :status="status" :message="status === 'error' ? `${error?.message}` : ''" />
@@ -198,9 +216,12 @@ import type { User } from '@zenstackhq/runtime/models'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
 import { readFaq } from '~~/shared/utils/articleFaq'
+import { tenantGamEnabled } from '~~/shared/utils/advertising'
 import { canManageArticle } from '~~/shared/utils/articleEditor'
 import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
 import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
+
+import type { GamSizeMapping } from '~/composables/useGam'
 
 import { presentSourceUrl, sourceFaviconUrl } from '~/utils/sourcePresentation'
 
@@ -214,6 +235,12 @@ const isOpen = shallowRef(true)
 
 const { data: session } = useAuth()
 const clientSite = await useClientSite()
+const { marketingGranted } = useConsent(() => clientSite)
+const showArticleAds = computed(() => tenantGamEnabled(clientSite?.gamNetworkCode) && marketingGranted.value)
+const articleSidebarMapping: GamSizeMapping[] = [
+  { viewport: [1024, 0], sizes: [[160, 600]] },
+  { viewport: [0, 0], sizes: [] },
+]
 const slug = computed(() => route.params.slug as string)
 
 const { locale } = useI18n()

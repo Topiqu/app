@@ -617,7 +617,6 @@ model ClientSite {
   gtagId                       String?
   apiKey                       String?
   gamNetworkCode               String?
-  allowAds                     Boolean                  @default(false)
   allowGtag                    Boolean?
   allowShapes                  Boolean                  @default(false)
   aiToneOfVoice                String?

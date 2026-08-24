@@ -7,8 +7,8 @@
     leaveFromClass="opacity-100 max-h-[1000px]"
     leaveToClass="opacity-0 max-h-0"
   >
-    <div v-show="!isEmpty" class="flex flex-col items-center my-4">
-      <div v-if="showLabel" class="text-[10px] uppercase tracking-widest text-gray-400 mb-1 self-start md:self-center">
+    <div v-show="!isEmpty" class="my-4 flex flex-col items-center">
+      <div v-if="showLabel" class="mb-1 self-start text-[10px] tracking-widest text-gray-400 uppercase md:self-center">
         {{ $t('common.advertisement', 'Ad') }}
       </div>
 
@@ -31,6 +31,8 @@
 <script setup lang="ts">
 /// <reference types="@types/google-publisher-tag" />
 
+import type { GamSizeMapping } from '~/composables/useGam'
+
 const props = defineProps<{
   adUnitPath: string
   sizes: number[][] | 'fluid'
@@ -39,11 +41,12 @@ const props = defineProps<{
   width?: string
   height?: string
   showLabel?: boolean
+  sizeMapping?: GamSizeMapping[]
 }>()
 
 const loading = shallowRef(true)
 const isEmpty = shallowRef(false)
-const { defineSlot, destroySlots } = useGamAds()
+const gam = useGamAds()
 
 const internalSlotId = props.slotId ?? useId()
 
@@ -60,24 +63,41 @@ const reservedHeight = computed(() => {
   return 'auto'
 })
 
-onMounted(async () => {
-  if (window.googletag && window.googletag.cmd) {
-    window.googletag.cmd.push(() => {
-      const pubads = window.googletag.pubads() as any
-
-      pubads.addEventListener('slotRenderEnded', (event: any) => {
-        if (event.slot.getSlotElementId() === internalSlotId) {
-          loading.value = false
-          isEmpty.value = event.isEmpty
-        }
-      })
-    })
+const loadSlot = async () => {
+  const initialized = await gam.initialize()
+  if (!initialized || !window.googletag) {
+    loading.value = false
+    isEmpty.value = true
+    return
   }
 
-  await defineSlot(props.adUnitPath, props.sizes as googletag.GeneralSize, internalSlotId, props.targeting)
-})
+  window.googletag.cmd.push(() => {
+    const pubads = window.googletag.pubads()
+
+    pubads.addEventListener('slotRenderEnded', (event) => {
+      if (event.slot.getSlotElementId() === internalSlotId) {
+        loading.value = false
+        isEmpty.value = event.isEmpty
+      }
+    })
+  })
+
+  const defined = await gam.defineSlot(
+    props.adUnitPath,
+    props.sizes as googletag.GeneralSize,
+    internalSlotId,
+    props.targeting,
+    props.sizeMapping,
+  )
+  if (!defined) {
+    loading.value = false
+    isEmpty.value = true
+  }
+}
+
+onMounted(loadSlot)
 
 onBeforeUnmount(() => {
-  destroySlots([internalSlotId])
+  gam.destroySlots([internalSlotId])
 })
 </script>

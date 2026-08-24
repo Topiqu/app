@@ -40,7 +40,11 @@
     >
       <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div class="flex items-start gap-3">
-          <UBadge :color="section.available ? (section.id === 'premium' ? 'warning' : 'info') : 'neutral'" variant="soft" size="lg">
+          <UBadge
+            :color="section.available ? (section.id === 'premium' ? 'warning' : 'info') : 'neutral'"
+            variant="soft"
+            size="lg"
+          >
             {{ section.label }}
           </UBadge>
           <div>
@@ -66,7 +70,9 @@
           <template v-if="card.kind === 'service'">
             <div class="flex items-start justify-between gap-3">
               <span class="flex items-center gap-3 font-semibold text-highlighted">
-                <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-white shadow-sm dark:bg-neutral-900">
+                <span
+                  class="grid size-10 shrink-0 place-items-center rounded-lg bg-white shadow-sm dark:bg-neutral-900"
+                >
                   <FormClientIntegrationLogo :name="card.logo" />
                 </span>
                 {{ card.title }}
@@ -176,7 +182,9 @@
           <template v-else>
             <div class="flex items-start justify-between gap-3">
               <span class="flex items-center gap-3 font-semibold text-highlighted">
-                <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-white shadow-sm dark:bg-neutral-900">
+                <span
+                  class="grid size-10 shrink-0 place-items-center rounded-lg bg-white shadow-sm dark:bg-neutral-900"
+                >
                   <FormClientIntegrationLogo name="wordpress" />
                 </span>
                 {{ card.title }}
@@ -253,20 +261,11 @@
             icon="mdi:tag-outline"
             @update:modelValue="$emit('update:gtagId', String($event))"
           />
-          <div v-if="isSuperadmin" class="space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-700">
-            <label class="flex cursor-pointer items-center justify-between gap-4">
-              <span class="font-medium">Google Ad Manager</span>
-              <FormField
-                :modelValue="allowAds"
-                type="checkbox"
-                class="w-auto"
-                @update:modelValue="$emit('update:allowAds', Boolean($event))"
-              />
-            </label>
+          <div class="space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-700">
+            <p class="text-sm text-muted">{{ $t('common.integrationsCatalog.gamDescription') }}</p>
             <FormField
-              v-if="allowAds"
               :modelValue="gamNetworkCode"
-              label="Network Code"
+              :label="$t('common.integrationsCatalog.gamNetworkCode')"
               placeholder="XXXXXXXXXX"
               icon="mdi:code-tags"
               @update:modelValue="$emit('update:gamNetworkCode', String($event))"
@@ -324,8 +323,6 @@ const props = defineProps<{
   apiCopied: boolean
   allowGtag: boolean
   gtagId: string
-  isSuperadmin: boolean
-  allowAds: boolean
   gamNetworkCode: string
   dirty: boolean
   currentPlan: 'BASIC' | 'PRO' | 'PREMIUM' | 'CUSTOM'
@@ -337,7 +334,6 @@ const props = defineProps<{
 defineEmits<{
   'update:allowGtag': [value: boolean]
   'update:gtagId': [value: string]
-  'update:allowAds': [value: boolean]
   'update:gamNetworkCode': [value: string]
   'update:linkedinMode': [value: 'HitL' | 'FullAuto']
   'update:linkedinType': [value: 'pages' | 'personal']

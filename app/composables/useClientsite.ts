@@ -1,9 +1,5 @@
 import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
-declare global {
-  var gtagInit: boolean | undefined
-}
-
 export interface ClientSiteStatus {
   id: string
   name: string
@@ -21,8 +17,6 @@ export interface ClientSiteStatus {
 }
 
 export const useClientSite = async () => {
-  if (import.meta.client && globalThis.gtagInit === undefined) globalThis.gtagInit = false
-
   const raw = useRequestURL().hostname ?? ''
   const hostname = raw?.split(':')[0]?.replace(/^www\./, '')
 
@@ -32,10 +26,6 @@ export const useClientSite = async () => {
     return null
   }
 
-  // Resolved before the await: `admin` middleware calls this, and a composable that reaches for
-  // the Nuxt instance past an await point there throws on SSR (`experimental.asyncContext` is off).
-  const gtag = import.meta.client ? useGtag() : null
-
   const { data } = await useAsyncData(
     `clientsite-${hostname}`,
     () => $fetch<PublicClientSite>(`/api/clients/slug/${hostname}` as string),
@@ -43,13 +33,6 @@ export const useClientSite = async () => {
       getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
     },
   )
-
-  const gtagId = data.value?.gtagId
-
-  if (gtag && data.value?.plan !== 'BASIC' && gtagId && data.value?.allowGtag && !globalThis.gtagInit) {
-    gtag.initialize(gtagId)
-    globalThis.gtagInit = true
-  }
 
   return data.value
 }

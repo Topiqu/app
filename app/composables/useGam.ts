@@ -8,15 +8,19 @@ declare global {
 
 interface ClientData {
   gamNetworkCode: string
-  allowAds: boolean
   id: string
   plan: string
   category?: string
 }
 
+export interface GamSizeMapping {
+  viewport: [number, number]
+  sizes: googletag.GeneralSize
+}
+
 let isInitialized = false
 let cachedClient: ClientData | null = null
-let gptScriptPromise: Promise<void> | null = null
+let gptScriptPromise: Promise<boolean> | null = null
 
 export const useGamAds = () => {
   const fetchClientData = async () => {
@@ -37,10 +41,11 @@ export const useGamAds = () => {
     if (typeof window === 'undefined') return
     if (gptScriptPromise) return gptScriptPromise
 
-    gptScriptPromise = new Promise<void>((resolve) => {
+    gptScriptPromise = new Promise<boolean>((resolve) => {
       fetchClientData().then((client) => {
-        if (!client?.gamNetworkCode || !client.allowAds) {
+        if (!client?.gamNetworkCode) {
           gptScriptPromise = null
+          resolve(false)
           return
         }
 
@@ -48,7 +53,7 @@ export const useGamAds = () => {
 
         if (document.getElementById('gpt-script')) {
           isInitialized = true
-          resolve()
+          resolve(true)
           return
         }
 
@@ -80,13 +85,13 @@ export const useGamAds = () => {
 
             window.googletag.enableServices()
             isInitialized = true
-            resolve()
+            resolve(true)
           })
         }
 
         script.onerror = () => {
           gptScriptPromise = null
-          resolve()
+          resolve(false)
         }
       })
     })
@@ -99,13 +104,14 @@ export const useGamAds = () => {
     sizes: googletag.GeneralSize,
     slotId: string,
     targeting?: Record<string, string | string[]>,
+    sizeMapping?: GamSizeMapping[],
   ) => {
-    await initialize()
+    const initialized = await initialize()
 
-    if (!isInitialized || !window.googletag) return
+    if (!initialized || !isInitialized || !window.googletag) return false
 
     const client = cachedClient
-    if (!client?.gamNetworkCode) return
+    if (!client?.gamNetworkCode) return false
 
     window.googletag.cmd.push(() => {
       const cleanPath = adUnitPath.startsWith('/') ? adUnitPath : `/${adUnitPath}`
@@ -123,6 +129,13 @@ export const useGamAds = () => {
 
       if (!slot) return
 
+      if (sizeMapping?.length) {
+        const builder = window.googletag.sizeMapping()
+        for (const entry of sizeMapping) builder.addSize(entry.viewport, entry.sizes)
+        const mapping = builder.build()
+        if (mapping) slot.defineSizeMapping(mapping)
+      }
+
       if (targeting) {
         Object.entries(targeting).forEach(([k, v]) => {
           slot.setTargeting(k, v)
@@ -132,6 +145,8 @@ export const useGamAds = () => {
       slot.addService(window.googletag.pubads())
       window.googletag.display(slotId)
     })
+
+    return true
   }
 
   const refreshAds = (slots?: googletag.Slot[]) => {

@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
-  const { user, membership } = await requireTenantMember(event, id)
+  const { membership } = await requireTenantMember(event, id)
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id },
@@ -61,6 +61,7 @@ export default defineEventHandler(async (event) => {
         socials: clientSite.socials,
         allowGtag: clientSite.allowGtag,
         gtagId: clientSite.gtagId,
+        gamNetworkCode: clientSite.gamNetworkCode,
         linkedinCompanies: clientSite.linkedinCompanies,
       }
     : {}
@@ -104,6 +105,5 @@ export default defineEventHandler(async (event) => {
     ...billing,
     ...ai,
     ...(hasTenantScope(membership, 'API_KEY_CONTROL') ? { apiKey: clientSite.apiKey } : {}),
-    ...(user.role === 'superadmin' ? { allowAds: clientSite.allowAds, gamNetworkCode: clientSite.gamNetworkCode } : {}),
   }
 })

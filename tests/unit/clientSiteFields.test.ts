@@ -11,10 +11,12 @@ import {
 
 describe('client site field partition', () => {
   it('keeps revenue and entitlement fields out of tenant reach', () => {
-    for (const field of ['plan', 'tokenLimit', 'gamNetworkCode', 'allowAds']) {
+    for (const field of ['plan', 'tokenLimit']) {
       expect(PRIVILEGED_CLIENT_SITE_FIELDS).toContain(field)
       expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).not.toContain(field)
     }
+    expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).toContain('gamNetworkCode')
+    expect(PRIVILEGED_CLIENT_SITE_FIELDS).not.toContain('gamNetworkCode')
   })
 
   it('never lets a field sit in both sets', () => {
@@ -31,7 +33,7 @@ describe('client site field partition', () => {
   })
 
   it('builds a zod pick mask from a field list', () => {
-    expect(fieldMask(['plan', 'allowAds'] as const)).toEqual({ plan: true, allowAds: true })
+    expect(fieldMask(['plan', 'tokenLimit'] as const)).toEqual({ plan: true, tokenLimit: true })
   })
 
   it('produces disjoint masks', () => {

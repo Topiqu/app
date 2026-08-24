@@ -32,10 +32,19 @@ describe('dashboard UI polish contracts', () => {
   })
 
   it('keeps plan and token details in the bottom-right app layer', () => {
-    expect(source('app/app.vue')).toContain('<ClientVersion v-if="auth?.user?.role === \'admin\'" />')
+    expect(source('app/app.vue')).toContain('<ClientVersion v-if="consentLauncher === \'client-version\'" />')
+    expect(source('app/app.vue')).toContain(
+      '<ConsentSettingsButton v-else-if="consentLauncher === \'cookie-button\'" />',
+    )
     expect(source('app/components/Header.vue')).not.toContain('<ClientVersion')
     expect(source('app/components/Sidebar.vue')).not.toContain('<ClientVersion')
-    expect(source('app/components/Client/Version.vue')).toContain("'fixed bottom-3 right-3 z-overlay")
+    const clientVersion = source('app/components/Client/Version.vue')
+    expect(clientVersion).toContain('bottom-action-bar fixed right-3 bottom-3 z-overlay')
+    expect(clientVersion).toContain('data-consent-settings')
+    expect(source('app/components/ConsentSettingsButton.vue')).toContain(
+      'bottom-action-bar fixed right-3 bottom-3 z-overlay',
+    )
+    expect(source('app/assets/styles/main.css')).toContain('body:has(.bottom-action-bar) .back-to-top')
   })
 
   it('renders a priced, benefit-led billing upsell with a compact action', () => {

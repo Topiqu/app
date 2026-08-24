@@ -27,7 +27,6 @@ const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
     autoRelease: true,
     translationMode: 'AUTO',
     translationLanguages: ['en'],
-    allowAds: true,
     allowGtag: true,
     ...overrides,
   }) as unknown as ClientSite
@@ -42,7 +41,6 @@ describe('buildClientSettingsForm', () => {
     expect(form.linkedinCompanyType).toBe('pages')
     expect(form.keywords).toEqual([])
     expect(form.socials).toEqual([])
-    expect(form.allowAds).toBe(false)
     expect(form.apiKey).toBe('')
     expect(form.aiUser).toEqual({ username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' })
     expect(buildClientSettingsForm(undefined)).toEqual(form)
@@ -69,7 +67,6 @@ describe('buildClientSettingsForm', () => {
       autoRelease: true,
       translationMode: 'AUTO',
       translationLanguages: ['en'],
-      allowAds: true,
       allowGtag: true,
     })
     expect(form.aiUser).toEqual({

@@ -60,8 +60,6 @@
           :apiCopied="apiCopied"
           :allowGtag="form.allowGtag"
           :gtagId="form.gtagId"
-          :isSuperadmin="isSuperadmin"
-          :allowAds="form.allowAds"
           :gamNetworkCode="form.gamNetworkCode"
           :dirty="isDirty"
           :currentPlan="client?.plan ?? 'BASIC'"
@@ -70,7 +68,6 @@
           :linkedinBrandProfile="form.linkedinBrandProfile"
           @update:allowGtag="form.allowGtag = $event"
           @update:gtagId="form.gtagId = $event"
-          @update:allowAds="form.allowAds = $event"
           @update:gamNetworkCode="form.gamNetworkCode = $event"
           @update:linkedinMode="form.linkedinMode = $event"
           @update:linkedinType="form.linkedinCompanyType = $event"
@@ -247,12 +244,10 @@ const toggleFeature = async ({ code, enabled }: { code: 'AI' | 'SENTIMENT' | 'AR
 const savePreferences = async () => {
   if (!clientId.value) return toast.add({ color: 'error', title: $t('common.preferences.messages.noClientId') })
   try {
-    const { allowAds, gamNetworkCode, ...tenantForm } = form.value
     await $fetch(`/api/clients/${clientId.value}` as `/api/clients/:id`, {
       method: 'PATCH',
       body: {
-        ...tenantForm,
-        ...(isSuperadmin.value ? { allowAds, gamNetworkCode } : {}),
+        ...form.value,
         logoUrl: form.value.logoUrl,
         socials: form.value.socials.filter((s) => s.url.trim()),
         aiUser: client.value?.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
@@ -302,5 +297,4 @@ const generateApiKey = async () => {
     toast.add({ color: 'error', title: $t('common.preferences.api.generateFailed') })
   }
 }
-
 </script>

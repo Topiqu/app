@@ -8,12 +8,16 @@
       <NuxtPage />
     </NuxtLayout>
 
+    <ConsentManager :site="clientSite" :enabled="isPublicationSurface" />
+    <AdSenseLoader :enabled="isPublicationSurface && platformAdsEnabledForPlan(clientSite?.plan) && marketingGranted" />
+
     <DevOnly v-if="!isBrowserTest">
       <DevConsole />
     </DevOnly>
 
     <ClientOnly>
-      <ClientVersion v-if="auth?.user?.role === 'admin'" />
+      <ClientVersion v-if="consentLauncher === 'client-version'" />
+      <ConsentSettingsButton v-else-if="consentLauncher === 'cookie-button'" />
     </ClientOnly>
   </UApp>
 </template>
@@ -21,6 +25,8 @@
 <script setup lang="ts">
 import { cs, en } from '@nuxt/ui/locale'
 import { toAbsoluteUrl } from '~~/shared/utils/seo'
+import { consentLauncherFor } from '~~/shared/utils/consent'
+import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
 
 import { resolveTenantTheme, themeColors } from '~/composables/theme'
 
@@ -34,8 +40,11 @@ const { locale } = useI18n()
 const { data: auth } = useAuth()
 const uiLocale = computed(() => (locale.value === 'cs' ? cs : en))
 const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)
+const { marketingGranted } = useConsent(() => clientSite)
 
 const isArticleRoute = computed(() => String(route.name ?? '').startsWith('clanky-slug'))
+const isPublicationSurface = computed(() => resolvePageShell(route.meta.shell) === 'publication')
+const consentLauncher = computed(() => consentLauncherFor(auth.value?.user?.role, isPublicationSurface.value))
 const i18nLinks = computed(() =>
   (i18nHead.value.link ?? [])
     .filter((link) => !(isArticleRoute.value && link.rel === 'alternate'))

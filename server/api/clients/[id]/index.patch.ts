@@ -29,6 +29,7 @@ export default defineEventHandler(async (event) => {
     'linkedinBrandProfile',
     'gtagId',
     'allowGtag',
+    'gamNetworkCode',
   ]
   if (user.role !== 'superadmin' && integrationFields.some((field) => field in body))
     await requireTenantScope(event, 'INTEGRATION_CONTROL', id)
@@ -74,7 +75,7 @@ export default defineEventHandler(async (event) => {
     : TENANT_EDITABLE_CLIENT_SITE_FIELDS
   const UpdateSchema = models.ClientSiteScalarSchema.pick(fieldMask(editableFields)).partial()
 
-  const parsed = UpdateSchema.safeParse(pickFields(scalarBody, TENANT_EDITABLE_CLIENT_SITE_FIELDS))
+  const parsed = UpdateSchema.safeParse(pickFields(scalarBody, editableFields))
   if (!parsed.success) {
     throw createError({ statusCode: 400, message: parsed.error.message })
   }

@@ -173,6 +173,10 @@
   box-shadow: 0 0.5rem 1.5rem color-mix(in srgb, var(--ui-primary) 24%, transparent);
 }
 
+body:has(.bottom-action-bar) .back-to-top {
+  bottom: max(4.5rem, calc(env(safe-area-inset-bottom) + 4rem));
+}
+
 .disabled-primary-action:disabled {
   background: var(--ui-bg-accented);
   color: var(--ui-text-muted);
@@ -183,6 +187,10 @@
 @media (min-width: 640px) {
   .back-to-top {
     bottom: max(3rem, calc(env(safe-area-inset-bottom) + 1.5rem));
+  }
+
+  body:has(.bottom-action-bar) .back-to-top {
+    bottom: max(5rem, calc(env(safe-area-inset-bottom) + 4.5rem));
   }
 }
 
