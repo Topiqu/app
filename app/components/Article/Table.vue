@@ -138,6 +138,16 @@
         <template #createdAt-cell="{ row }">{{ formatTime(row.original.createdAt, 'shortDatetime') }}</template>
         <template #actions-cell="{ row }">
           <div class="flex justify-end gap-1">
+            <UTooltip :text="$t('articles.openArticle')">
+              <UButton
+                :to="articleUrl(row.original.slug)"
+                icon="i-mdi-eye-outline"
+                color="neutral"
+                variant="ghost"
+                square
+                :aria-label="$t('articles.openArticle')"
+              />
+            </UTooltip>
             <UTooltip :text="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''">
               <UButton
                 icon="i-mdi-pencil"
@@ -195,6 +205,14 @@
             <p class="text-xs text-muted">{{ formatTime(article.createdAt, 'shortDatetime') }}</p>
           </div>
           <div class="flex flex-col gap-1">
+            <UButton
+              :to="articleUrl(article.slug)"
+              icon="i-mdi-eye-outline"
+              color="neutral"
+              variant="ghost"
+              square
+              :aria-label="$t('articles.openArticle')"
+            />
             <UButton
               icon="i-mdi-pencil"
               color="neutral"
@@ -395,7 +413,7 @@ const columns = computed<TableColumn<ArticleWithDetails>[]>(() => [
     header: $t('articles.columns.date'),
     meta: { class: { th: 'hidden w-48 xl:table-cell', td: 'hidden w-48 whitespace-nowrap xl:table-cell' } },
   },
-  { id: 'actions', header: $t('common.actions.more'), meta: { class: { th: 'w-28', td: 'w-28' } } },
+  { id: 'actions', header: $t('articles.columns.actions'), meta: { class: { th: 'w-32', td: 'w-32' } } },
 ])
 
 const toggleSort = (field: 'title' | 'status' | 'createdAt') => {

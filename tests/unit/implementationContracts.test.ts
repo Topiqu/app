@@ -178,6 +178,8 @@ describe('systemic UX implementation contracts', () => {
     expect(detail).toContain('OR: [{ slug }, { id: slug }]')
     expect(detail).toContain('sourceSlug: baseSlug')
     expect(actions).toContain('article.sourceSlug || article.slug')
+    expect(actions).toContain('@update="onStatusUpdate"')
+    expect(actions).not.toContain('<UBadge')
     expect(review).toContain('query: { lang: row.language }')
   })
 
@@ -207,6 +209,8 @@ describe('systemic UX implementation contracts', () => {
     expect(homepage).not.toContain('<ArticleCard v-if="heroArticle?.slug"')
     expect(table).toContain("base: 'w-full min-w-[48rem] table-fixed'")
     expect(table).not.toContain("label: $t('common.actions.view')")
+    expect(table.match(/:aria-label="\$t\('articles\.openArticle'\)"/g)).toHaveLength(2)
+    expect(table).toContain("header: $t('articles.columns.actions')")
     expect(source('app/components/Exports.vue')).toContain('<UDropdownMenu')
     expect(tags).toContain('const editDraft')
     expect(tags).not.toContain('useDebounceFn(async (tag')

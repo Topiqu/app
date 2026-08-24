@@ -4,10 +4,7 @@
       <template v-if="isAdmin">
         <div class="flex items-center gap-2">
           <span class="font-medium">{{ $t('articles.columns.status') }}</span>
-          <ArticleStatusCell :onUpdate="onStatusUpdate" :row="{ original: article }" />
-          <UBadge v-if="article.status === 'published'" color="success" variant="soft" size="sm">
-            {{ $t('articles.status.published') }}
-          </UBadge>
+          <ArticleStatusCell :row="{ original: article }" @update="onStatusUpdate" />
         </div>
         <span>|</span>
         <div class="flex items-center gap-2">
