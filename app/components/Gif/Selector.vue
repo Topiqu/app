@@ -66,7 +66,7 @@
                 @click="selectCategory(category)"
               >
                 <AppMedia
-                  :src="category.gif?.images?.fixed_height?.url"
+                  :src="category.gif ? categoryPreview(category.gif) : null"
                   :alt="category.name"
                   :fallbackText="category.name"
                   aspectRatio="4 / 3"
@@ -102,7 +102,7 @@
                 @click="selectGif(gif, dismiss)"
               >
                 <AppMedia
-                  :src="gif.images.fixed_height.url"
+                  :src="gifPreview(gif)"
                   :originalSrc="gif.images.original.url"
                   :alt="gif.title || $t('articles.comments.addGif')"
                   aspectRatio="1 / 1"
@@ -199,6 +199,9 @@ interface GiphyImage {
 interface GiphyImages {
   fixed_height: GiphyImage
   original: GiphyImage
+  fixed_height_still?: GiphyImage
+  fixed_width_small?: GiphyImage
+  preview_webp?: GiphyImage
 }
 interface GiphyGif {
   id: string
@@ -245,6 +248,11 @@ const errorMessage = (error: unknown) =>
   (error as { data?: { message?: string }; message?: string })?.data?.message ||
   (error as { message?: string })?.message ||
   $t('common.messages.loadFailedText')
+
+const categoryPreview = (gif: GiphyGif) =>
+  gif.images.fixed_height_still?.url || gif.images.preview_webp?.url || gif.images.fixed_height.url
+const gifPreview = (gif: GiphyGif) =>
+  gif.images.fixed_width_small?.url || gif.images.preview_webp?.url || gif.images.fixed_height.url
 
 const loadCategories = async () => {
   categoriesLoading.value = true
