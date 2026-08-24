@@ -413,11 +413,7 @@ const customPrompt = shallowRef('')
 const aiPhase = shallowRef<'writing' | 'images'>('writing')
 const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
 const serializeSourceState = () =>
-  JSON.stringify({
-    article: editedArticle.value,
-    tags: [...articleTags.value].sort(),
-    seriesId: selectedSeries.value?.id ?? null,
-  })
+  articleEditorSnapshot(editedArticle.value, articleTags.value, selectedSeries.value?.id ?? null)
 const sourceBaseline = shallowRef(serializeSourceState())
 
 const { idle } = useIdle(5 * 60 * 1000)
