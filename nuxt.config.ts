@@ -131,7 +131,15 @@ export default defineNuxtConfig({
       dirs: ['shared/zod/models', 'server/utils', '#auth'],
     },
     externals: {
-      inline: ['html-encoding-sniffer', '@exodus/bytes', 'uncrypto', '@upstash/redis', 'vue', '@vue/server-renderer'],
+      inline: [
+        'html-encoding-sniffer',
+        '@exodus/bytes',
+        'uncrypto',
+        '@upstash/redis',
+        'vue',
+        '@vue/server-renderer',
+        'unhead',
+      ],
     },
     serverAssets: [
       { baseName: 'emails:locales', dir: '../emails/locales' },
