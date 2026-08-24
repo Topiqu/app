@@ -749,6 +749,11 @@
       "email": "E-mailová adresa",
       "send": "Odeslat pozvánku",
       "search": "Hledat členy",
+      "filters": {
+        "all": "Všichni",
+        "owners": "Vlastníci",
+        "members": "Členové"
+      },
       "owner": "Vlastník",
       "member": "Člen",
       "you": "Vy",
@@ -801,6 +806,7 @@
       "mostTokens": "Nejvíce tokenů",
       "valueBonus": "+{0} % value",
       "tokens": "tokenů",
+      "articlesEstimate": "≈ {count} článků",
       "upgradeToPremium": "Povýšit na PREMIUM"
     }
   },

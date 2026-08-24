@@ -749,6 +749,11 @@
       "email": "Email address",
       "send": "Send invitation",
       "search": "Search members",
+      "filters": {
+        "all": "All",
+        "owners": "Owners",
+        "members": "Members"
+      },
       "owner": "Owner",
       "member": "Member",
       "you": "You",
@@ -801,6 +806,7 @@
       "mostTokens": "Most tokens",
       "valueBonus": "+{0}% value",
       "tokens": "tokens",
+      "articlesEstimate": "≈ {count} articles",
       "upgradeToPremium": "Upgrade to PREMIUM"
     }
   },
