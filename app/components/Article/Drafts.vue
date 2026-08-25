@@ -54,7 +54,12 @@
             :key="draft.id"
             class="group relative min-w-0 overflow-hidden rounded-xl border border-default bg-default transition hover:border-primary/50 hover:shadow-md focus-within:ring-2 focus-within:ring-primary"
           >
-            <button type="button" class="block size-full min-w-0 text-left" @click="selectDraft(draft)">
+            <ULink
+              as="button"
+              type="button"
+              class="block size-full min-w-0 text-left"
+              @click="selectDraft(draft)"
+            >
               <AppMedia
                 :src="draft.imageUrl"
                 :alt="draft.title || $t('articles.articleCard.imageAlt')"
@@ -70,11 +75,10 @@
                   {{ draft.excerpt }}
                 </p>
                 <div class="flex min-w-0 items-center gap-1.5 border-t border-default pt-2 text-xs text-muted">
-                  <UIcon class="shrink-0" size="14" name="i-mdi-clock-outline" />
                   <span class="truncate">{{ format(draft.createdAt, dateFormat, { locale: dateLocale }) }}</span>
                 </div>
               </div>
-            </button>
+            </ULink>
             <UTooltip :text="$t('common.actions.delete')">
               <UButton
                 color="error"

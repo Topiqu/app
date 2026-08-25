@@ -7,6 +7,7 @@ import { AI_GROUNDING_TOKENS, ANSWER_ENGINE_BOTS } from './shared/utils/crawlers
 const APP_ENV = process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
 const IS_PROD = APP_ENV === 'production'
 const IS_BROWSER_TEST = Boolean(process.env.TEST_DATABASE_URL)
+const IS_UNIT_TEST = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST)
 const USE_PRODUCTION_SECURITY = IS_PROD && !IS_BROWSER_TEST
 const SITE_URL = (() => {
   try {
@@ -499,6 +500,8 @@ export default defineNuxtConfig({
   },
 
   pwa: {
+    disable: IS_UNIT_TEST,
+    client: { registerPlugin: !IS_UNIT_TEST },
     registerType: 'autoUpdate',
     manifest: {
       name: 'Topiqu AI Blog',

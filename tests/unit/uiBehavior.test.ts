@@ -68,7 +68,7 @@ const global = {
     UAlert: true,
     UBadge: true,
     UIcon: true,
-    ULink: true,
+    ULink: { name: 'ULink', template: '<a><slot /></a>' },
     UTooltip: { template: '<div><slot /></div>' },
     UScrollArea: { template: '<div><slot /></div>' },
     UProgress: true,

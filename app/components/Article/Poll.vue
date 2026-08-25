@@ -5,17 +5,13 @@
       <UButton
         :color="selectedOption === opt.id ? 'primary' : 'neutral'"
         :variant="selectedOption === opt.id ? 'soft' : 'ghost'"
+        :icon="selectedOption === opt.id ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'"
         :disabled="hasVoted"
-        class="w-full ring-inset"
-        :class="selectedOption === opt.id ? 'ring-2 ring-primary/50' : ''"
+        class="w-full"
         :aria-pressed="selectedOption === opt.id"
         @click="vote(opt.id)"
       >
         <span class="flex w-full min-w-0 items-center gap-2 text-left">
-          <UIcon
-            :name="selectedOption === opt.id ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'"
-            class="size-5 shrink-0"
-          />
           <span class="min-w-0 flex-1">{{ opt.label }}</span>
           <UBadge v-if="selectedOption === opt.id" color="primary" variant="soft" size="xs">
             {{ $t('articles.poll.yourVote') }}
