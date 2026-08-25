@@ -68,11 +68,9 @@ export default defineEventHandler(async (event) => {
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   const sessionId = getCookie(event, 'anon_session')
   const { clientSiteId: requestedClientSiteId, locale } = getQuery<{ clientSiteId?: string; locale?: Language }>(event)
-  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
-  const clientSiteId = requestedClientSiteId || (isAdmin ? user?.clientSiteId : undefined)
+  const clientSiteId = requestedClientSiteId || sessionTenantId(user)
   if (!clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-  if (user?.role === 'admin' && clientSiteId !== user.clientSiteId)
-    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  const isAdmin = hasArticleAdminAccess(user, clientSiteId)
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
