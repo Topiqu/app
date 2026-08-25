@@ -53,6 +53,8 @@
       aspectRatio="16 / 9"
       fit="contain"
       sizes="100vw lg:1200px"
+      :width="1200"
+      :height="675"
       containerClass="w-full rounded-lg"
     />
   </div>

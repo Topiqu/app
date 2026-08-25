@@ -19,6 +19,7 @@ export const putToCdn = async (
   body: Uint8Array,
   contentType: string,
   metadata?: Record<string, string>,
+  options?: { cacheControl?: string },
 ) => {
   const config = useRuntimeConfig()
 
@@ -31,6 +32,7 @@ export const putToCdn = async (
       Body: body,
       ContentType: contentType,
       Metadata: metadata,
+      CacheControl: options?.cacheControl,
     }),
   )
 

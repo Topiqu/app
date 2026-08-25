@@ -21,6 +21,8 @@ export interface ImageProvider {
 export interface ArticleImage {
   url: string
   kind: ImageKind
+  width?: number
+  height?: number
   alt?: string
   credit?: ImageCredit
 }

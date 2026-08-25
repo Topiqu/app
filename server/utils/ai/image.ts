@@ -1,5 +1,7 @@
 import { generateImage as generateImg } from 'ai'
 
+import { IMMUTABLE_IMAGE_CACHE_CONTROL, optimizeGeneratedImage } from '../images/optimize'
+
 const IMAGE_EXTENSIONS: Record<string, string> = {
   'image/webp': 'webp',
   'image/png': 'png',
@@ -26,13 +28,16 @@ export const generateImage = async (
     providerOptions: { openai: { quality: 'medium' } },
   })
 
+  const optimized = await optimizeGeneratedImage(output.image.uint8Array)
   const filename =
     (filenamePrefix ? filenamePrefix + '-' : '') +
     `${Date.now()}` +
     (filenameSuffix ? '-' + filenameSuffix : ``) +
-    `.${imageExtension(output.image.mediaType)}`
+    `.${optimized.extension}`
 
-  const url = await putToCdn(`${outputDir}/${filename}`, output.image.uint8Array, output.image.mediaType)
+  const url = await putToCdn(`${outputDir}/${filename}`, optimized.data, optimized.contentType, undefined, {
+    cacheControl: IMMUTABLE_IMAGE_CACHE_CONTROL,
+  })
 
-  return { ...output, url }
+  return { ...output, url, width: optimized.width, height: optimized.height }
 }

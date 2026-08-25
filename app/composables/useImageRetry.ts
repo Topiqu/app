@@ -20,10 +20,10 @@ export const useImageRetry = (
 ) => {
   const currentSrc = shallowRef<string | null>(null)
   const isRetrying = shallowRef(false)
+  const usingOriginal = shallowRef(false)
 
   const maxRetries = 3
   let retryCount = 0
-  let usingOriginal = false
   let timeoutId: ReturnType<typeof setTimeout> | null = null
   let settleTimeoutId: ReturnType<typeof setTimeout> | null = null
 
@@ -39,7 +39,7 @@ export const useImageRetry = (
     ([newUrl]) => {
       clearTimers()
       retryCount = 0
-      usingOriginal = false
+      usingOriginal.value = false
       isRetrying.value = false
       currentSrc.value = newUrl || null
     },
@@ -57,7 +57,7 @@ export const useImageRetry = (
     settleTimeoutId = null
     const primaryUrl = toValue(source)
     const fallbackUrl = originalSource ? toValue(originalSource) : undefined
-    const rawUrl = usingOriginal ? fallbackUrl : primaryUrl
+    const rawUrl = usingOriginal.value ? fallbackUrl : primaryUrl
 
     if (!rawUrl) {
       isRetrying.value = false
@@ -66,8 +66,8 @@ export const useImageRetry = (
     }
 
     if (retryCount >= maxRetries) {
-      if (!usingOriginal && fallbackUrl && fallbackUrl !== primaryUrl) {
-        usingOriginal = true
+      if (!usingOriginal.value && fallbackUrl && fallbackUrl !== primaryUrl) {
+        usingOriginal.value = true
         retryCount = 0
         currentSrc.value = fallbackUrl
         return
@@ -105,6 +105,7 @@ export const useImageRetry = (
   return {
     currentSrc,
     isRetrying,
+    usingOriginal,
     handleError,
     handleLoad,
   }
