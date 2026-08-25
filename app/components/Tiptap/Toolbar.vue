@@ -203,6 +203,11 @@ const sk = useTiptapShortcuts()
 const alignments = ['left', 'center', 'right', 'justify'] as const
 
 const tableCommands = [
+  {
+    key: 'insertTable',
+    icon: 'mdi-table-plus',
+    run: (c: ChainedCommands) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }),
+  },
   { key: 'addColumnAfter', icon: 'mdi-table-column-plus-after', run: (c: ChainedCommands) => c.addColumnAfter() },
   { key: 'deleteColumn', icon: 'mdi-table-column-remove', run: (c: ChainedCommands) => c.deleteColumn() },
   { key: 'addRowAfter', icon: 'mdi-table-row-plus-after', run: (c: ChainedCommands) => c.addRowAfter() },
