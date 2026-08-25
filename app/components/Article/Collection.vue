@@ -23,24 +23,28 @@
       </UCard>
     </div>
 
-    <div v-else-if="articles.length" class="grid auto-rows-fr gap-6 sm:grid-cols-2">
-      <ArticleCard v-for="article in articles" :key="article.id" :article="article">
-        <template v-if="$slots.actions" #actions="slotProps">
-          <slot name="actions" v-bind="slotProps" />
-        </template>
-      </ArticleCard>
+    <template v-else-if="articles.length">
+      <div class="grid auto-rows-fr gap-6 sm:grid-cols-2">
+        <ArticleCard v-for="article in articles" :key="article.id" :article="article">
+          <template v-if="$slots.actions" #actions="slotProps">
+            <slot name="actions" v-bind="slotProps" />
+          </template>
+        </ArticleCard>
+      </div>
 
-      <UPagination
-        v-model:page="page"
-        :total="Math.max(totalPages, 1)"
-        :itemsPerPage="1"
-        color="neutral"
-        variant="outline"
-        activeColor="primary"
-        activeVariant="solid"
-        showEdges
-      />
-    </div>
+      <div v-if="totalPages > 1" class="flex justify-center border-t border-default pt-8">
+        <UPagination
+          v-model:page="page"
+          :total="totalPages"
+          :itemsPerPage="1"
+          color="neutral"
+          variant="outline"
+          activeColor="primary"
+          activeVariant="solid"
+          showEdges
+        />
+      </div>
+    </template>
 
     <UEmpty v-else icon="i-mdi-file-search-outline" :description="$t('articles.noResults.message')" />
   </div>

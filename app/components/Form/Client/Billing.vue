@@ -127,7 +127,7 @@
           >
             <span class="flex min-h-6 items-start justify-between gap-2">
               <UIcon
-                :name="pendingAction === `pack-${pack.id}` ? 'i-mdi-loading' : 'i-mdi-lightning-bolt'"
+                :name="pendingAction === `pack-${pack.id}` ? 'i-mdi-loading' : `i-${pack.icon}`"
                 class="size-5 text-warning"
                 :class="pendingAction === `pack-${pack.id}` ? 'animate-spin' : ''"
               />

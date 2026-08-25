@@ -29,22 +29,26 @@ export default defineEventHandler(async (event) => {
   if (!current) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   const tagIds = current.tags.map((tag) => tag.tagId)
-  if (tagIds.length === 0) return []
 
   const candidates = await prisma.article.findMany({
     where: {
       // Tag.clientSiteId is nullable, so a global tag matches across tenants without this.
       clientSiteId,
       id: { not: current.id },
-      tags: { some: { tagId: { in: tagIds } } },
       ...(isAdmin ? {} : { status: 'published' }),
     },
     include: {
       tags: { include: { tag: true } },
       user: { select: { id: true, username: true, email: true, role: true, avatarUrl: true } },
+      reactions: {
+        where: user?.id ? { userId: user.id } : { id: '' },
+        select: { id: true },
+        take: 1,
+      },
       _count: { select: { comments: true, reactions: true } },
     },
     omit: { content: true },
+    orderBy: [{ releaseAt: 'desc' }, { createdAt: 'desc' }],
     take: take * 10,
   })
 
@@ -56,5 +60,7 @@ export default defineEventHandler(async (event) => {
     .sort((a, b) => b.matchCount - a.matchCount)
     .slice(0, take)
 
-  return localizeArticles(prisma, articles, { clientSiteId, locale, primaryLanguage })
+  const localized = await localizeArticles(prisma, articles, { clientSiteId, locale, primaryLanguage })
+
+  return localized.map(({ reactions, ...article }) => ({ ...article, likedByUser: reactions.length > 0 }))
 })

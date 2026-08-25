@@ -52,7 +52,7 @@
                 v-for="pack in tokenPacks"
                 :key="pack.id"
                 type="button"
-                class="relative min-w-0 rounded-xl border p-2.5 text-left transition disabled:cursor-wait disabled:opacity-60"
+                class="relative min-w-0 rounded-xl border p-3 text-left transition disabled:cursor-wait disabled:opacity-60"
                 :class="
                   pack.featured
                     ? 'border-primary bg-primary/10 hover:bg-primary/15'
@@ -63,18 +63,25 @@
               >
                 <span class="flex items-center justify-between gap-1">
                   <UIcon
-                    :name="checkoutPack === pack.id ? 'i-mdi-loading' : 'i-mdi-lightning-bolt'"
-                    class="size-4 text-warning"
+                    :name="checkoutPack === pack.id ? 'i-mdi-loading' : `i-${pack.icon}`"
+                    class="size-5 text-primary"
                     :class="checkoutPack === pack.id ? 'animate-spin' : ''"
                   />
                   <UBadge v-if="pack.valueBonus" color="success" variant="soft" size="xs">
                     +{{ pack.valueBonus }}%
                   </UBadge>
                 </span>
-                <span class="mt-2 block text-sm font-bold tabular-nums text-highlighted">
-                  {{ (pack.tokens / 1000).toLocaleString(locale) }}k
+                <span class="mt-2 block truncate text-sm font-semibold text-highlighted">{{ pack.name }}</span>
+                <span class="mt-1 block text-lg font-bold tabular-nums text-highlighted">
+                  {{ pack.tokens.toLocaleString(locale) }}
                 </span>
-                <span class="block text-xs font-medium text-muted">{{ pack.price }}</span>
+                <span class="block text-xs text-muted">{{ $t('common.tokens.tokens') }}</span>
+                <span class="mt-2 flex items-end justify-between gap-2 border-t border-default pt-2">
+                  <span class="text-xs text-muted">{{
+                    $t('common.tokens.articlesEstimate', { count: pack.articles })
+                  }}</span>
+                  <strong class="shrink-0 text-sm text-highlighted">{{ pack.price }}</strong>
+                </span>
               </button>
             </div>
             <div class="grid grid-cols-1 gap-2">

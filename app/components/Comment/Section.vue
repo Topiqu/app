@@ -105,12 +105,9 @@
       />
       <div ref="sentinel" class="h-4"></div>
       <UProgress v-if="loading" />
-      <UAlert
-        v-if="!hasMore && comments.length"
-        color="neutral"
-        variant="subtle"
-        :title="$t('articles.comments.noComments')"
-      />
+      <p v-if="!hasMore && comments.length" class="text-center text-sm text-muted">
+        {{ $t('articles.comments.noMoreComments') }}
+      </p>
     </div>
     <UEmpty v-else icon="i-mdi-comment-off-outline" :title="$t('articles.comments.noComments')" />
   </section>

@@ -47,6 +47,9 @@ export default defineEventHandler(async (event) => {
     ? {
         focus: clientSite.focus,
         description: clientSite.description,
+        tagline: clientSite.tagline,
+        faviconUrl: clientSite.faviconUrl,
+        typographyPreset: clientSite.typographyPreset,
         generationFrequency: clientSite.generationFrequency,
         keywords: clientSite.keywords,
         audience: clientSite.audience,

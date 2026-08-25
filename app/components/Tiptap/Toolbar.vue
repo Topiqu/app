@@ -1,6 +1,6 @@
 <template>
   <div
-    class="sticky top-24 z-10 min-w-0 max-w-full overflow-hidden rounded-t-[var(--topiqu-surface-radius)] border-b border-default bg-default px-1 py-1.5 sm:px-2 md:top-16"
+    class="sticky top-0 z-20 min-w-0 max-w-full overflow-hidden rounded-t-[var(--topiqu-surface-radius)] border-b border-default bg-default/95 px-1 py-1.5 shadow-sm backdrop-blur sm:px-2"
     data-editor-toolbar
   >
     <div

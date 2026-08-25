@@ -44,8 +44,8 @@
         <UButton
           v-if="perms.reply"
           size="sm"
-          :color="state.userReaction?.type === 'LIKE' ? 'success' : 'neutral'"
-          :variant="state.userReaction?.type === 'LIKE' ? 'solid' : 'soft'"
+          color="neutral"
+          variant="soft"
           icon="i-mdi-reply"
           :aria-label="$t('articles.comments.submitReply')"
           @click="emit('reply', comment)"
@@ -104,14 +104,22 @@
       class="mt-4 sm:mt-5 flex items-center justify-between flex-wrap gap-2 sm:gap-3 pb-2 sm:pb-4 md:pb-6"
     >
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-        <UButton size="sm" color="neutral" variant="soft" icon="i-mdi-thumb-up-outline" @click="updateReaction('LIKE')">
+        <UButton
+          size="sm"
+          :color="state.userReaction?.type === 'LIKE' ? 'success' : 'neutral'"
+          :variant="state.userReaction?.type === 'LIKE' ? 'solid' : 'soft'"
+          :icon="state.userReaction?.type === 'LIKE' ? 'i-mdi-thumb-up' : 'i-mdi-thumb-up-outline'"
+          :aria-pressed="state.userReaction?.type === 'LIKE'"
+          @click="updateReaction('LIKE')"
+        >
           <span>{{ state.likes }}</span>
         </UButton>
         <UButton
           size="sm"
           :color="state.userReaction?.type === 'DISLIKE' ? 'error' : 'neutral'"
           :variant="state.userReaction?.type === 'DISLIKE' ? 'solid' : 'soft'"
-          icon="i-mdi-thumb-down-outline"
+          :icon="state.userReaction?.type === 'DISLIKE' ? 'i-mdi-thumb-down' : 'i-mdi-thumb-down-outline'"
+          :aria-pressed="state.userReaction?.type === 'DISLIKE'"
           @click="updateReaction('DISLIKE')"
         >
           <span>{{ state.dislikes }}</span>

@@ -38,8 +38,14 @@ export default defineEventHandler(async (event) => {
       include: {
         user: { select: { username: true } },
         tags: { include: { tag: true } },
+        reactions: {
+          where: user?.id ? { userId: user.id } : { id: '' },
+          select: { id: true },
+          take: 1,
+        },
         _count: { select: { reactions: true } },
       },
+      omit: { content: true },
     }),
     db.article.count({ where: visibleWhere }),
   ])
@@ -52,12 +58,13 @@ export default defineEventHandler(async (event) => {
     username: author.username,
     avatarUrl: author.avatarUrl,
     bio: author.bio,
-    articles: items.map((a) => ({
-      articleId: a.id,
+    articles: items.map(({ reactions, ...article }) => ({
+      articleId: article.id,
       article: {
-        ...a,
-        likes: a._count.reactions,
-        views: a.views,
+        ...article,
+        likes: article._count.reactions,
+        likedByUser: reactions.length > 0,
+        views: article.views,
       },
     })),
     hasMore,

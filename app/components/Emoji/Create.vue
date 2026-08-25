@@ -149,7 +149,7 @@
           <div>
             <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{{ $t('emoji.libraryTitle') }}</h3>
             <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-              {{ $t('emoji.libraryCount', { count: emojis?.length || 0 }) }}
+              {{ $t('emoji.libraryCount', { count: libraryEmojis.length }) }}
             </p>
           </div>
           <label class="relative sm:w-64">
@@ -167,7 +167,7 @@
           </label>
         </div>
 
-        <div v-if="loading && !emojis?.length" class="py-8 text-center text-sm text-gray-500">
+        <div v-if="loading && !libraryEmojis.length" class="py-8 text-center text-sm text-gray-500">
           {{ $t('common.loading') }}
         </div>
         <div v-else-if="error" class="py-8 text-center text-sm text-red-500">{{ $t('emoji.loadFailed') }}</div>
@@ -200,7 +200,7 @@
               variant="ghost"
               icon="mdi:delete-outline"
               class="text-red-500"
-              :loading="deletingIds.has(emoji.id)"
+              :loading="emoji.id.startsWith('optimistic-') || deletingIds.has(emoji.id)"
               :aria="$t('emoji.deleteAria', { shortcode: emoji.shortcode })"
               @click="confirmDelete(emoji)"
             />
@@ -259,6 +259,7 @@ const search = shallowRef('')
 const isDragging = shallowRef(false)
 const submitting = shallowRef(false)
 const deletingIds = reactive(new Set<string>())
+const optimisticEmojis = ref<EmojiRecord[]>([])
 
 const {
   open: openPicker,
@@ -271,10 +272,12 @@ const {
 
 const { data: emojis, pending: loading, error, refresh } = await useFetch<EmojiRecord[]>('/api/emojis')
 
+const sortEmojis = (items: EmojiRecord[]) => items.sort((a, b) => a.shortcode.localeCompare(b.shortcode))
+const libraryEmojis = computed(() => sortEmojis([...(emojis.value || []), ...optimisticEmojis.value]))
 const filteredEmojis = computed(() => {
   const query = normalizeEmojiShortcode(search.value)
-  if (!query) return emojis.value || []
-  return (emojis.value || []).filter((emoji) => emoji.shortcode.includes(query))
+  if (!query) return libraryEmojis.value
+  return libraryEmojis.value.filter((emoji) => emoji.shortcode.includes(query))
 })
 
 const existingShortcodes = computed(() => new Set((emojis.value || []).map((emoji) => emoji.shortcode)))
@@ -375,15 +378,31 @@ const submitQueue = async () => {
   const createdNames: string[] = []
 
   for (const item of [...queue.value]) {
+    const optimisticId = `optimistic-${item.id}`
+    optimisticEmojis.value.push({
+      id: optimisticId,
+      shortcode: item.shortcode,
+      imageUrl: item.previewUrl,
+      _count: { emojiReactions: 0 },
+    })
     try {
       const formData = new FormData()
       formData.append('file', item.file)
       formData.append('shortcode', item.shortcode)
-      await $fetch('/api/emojis', { method: 'POST', body: formData })
+      const response = await $fetch<{ emoji: Omit<EmojiRecord, '_count'> }>('/api/emojis', {
+        method: 'POST',
+        body: formData,
+      })
+      emojis.value = sortEmojis([
+        ...(emojis.value || []).filter((emoji) => emoji.id !== response.emoji.id),
+        { ...response.emoji, _count: { emojiReactions: 0 } },
+      ])
       createdNames.push(item.shortcode)
       removeQueued(item)
     } catch (requestError: any) {
       item.errorMessage = requestError.data?.message || requestError.data?.statusMessage || $t('emoji.createFailed')
+    } finally {
+      optimisticEmojis.value = optimisticEmojis.value.filter((emoji) => emoji.id !== optimisticId)
     }
   }
 
@@ -411,11 +430,15 @@ const confirmDelete = async (emoji: EmojiRecord) => {
   if (result !== 'ok') return
 
   deletingIds.add(emoji.id)
+  const previousIndex = (emojis.value || []).findIndex((candidate) => candidate.id === emoji.id)
+  emojis.value = (emojis.value || []).filter((candidate) => candidate.id !== emoji.id)
   try {
     await $fetch(`/api/emojis/${emoji.id}` as `/api/emojis/:id`, { method: 'DELETE' })
     toast.success({ message: $t('emoji.deleteSuccess') })
-    await refresh()
   } catch (requestError: any) {
+    const restored = [...(emojis.value || [])]
+    restored.splice(Math.max(0, previousIndex), 0, emoji)
+    emojis.value = restored
     toast.error({ message: requestError.data?.message || $t('emoji.deleteFailed') })
   } finally {
     deletingIds.delete(emoji.id)

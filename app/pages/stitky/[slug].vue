@@ -2,7 +2,7 @@
   <div class="mx-auto max-w-4xl px-4">
     <UPage>
       <Back />
-      <UPageHeader :title="`${$t('articles.tagsArticles')} ${tagName}`">
+      <UPageHeader :title="$t('articles.tagsArticles', { name: tagName })">
         <template #headline>
           <UBadge color="primary" variant="soft" icon="i-mdi-tag-outline">{{ tagName }}</UBadge>
         </template>

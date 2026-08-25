@@ -35,6 +35,19 @@ export const useArticleScrollState = () =>
     showHeader: false,
   }))
 
+export const articleReadingProgress = (
+  scrollTop: number,
+  viewportHeight: number,
+  viewportTop: number,
+  contentRect: Pick<DOMRect, 'top' | 'height'>,
+) => {
+  const contentTop = scrollTop + contentRect.top - viewportTop
+  const contentEnd = contentTop + contentRect.height - viewportHeight
+  const range = Math.max(1, contentEnd - contentTop)
+  const percentage = Math.min(100, Math.max(0, ((scrollTop - contentTop) / range) * 100))
+  return Math.round(percentage * 10) / 10
+}
+
 export const useArticleScrollContext = (content: Ref<HTMLElement | null>, hero: Ref<HTMLElement | null>) => {
   const state = useArticleScrollState()
   const scrollContainer = shallowRef<HTMLElement | null>(null)
@@ -64,10 +77,14 @@ export const useArticleScrollContext = (content: Ref<HTMLElement | null>, hero: 
     const scroller = scrollContainer.value
     const scrollTop = scroller?.scrollTop ?? window.scrollY
     const viewportHeight = scroller?.clientHeight ?? window.innerHeight
-    const scrollHeight = scroller?.scrollHeight ?? document.documentElement.scrollHeight
-    const scrollRange = Math.max(1, scrollHeight - viewportHeight)
     const viewportTop = scroller?.getBoundingClientRect().top ?? 0
-    state.value.progress = Math.round(Math.min(100, Math.max(0, (scrollTop / scrollRange) * 1000)) / 10)
+    const scrollHeight = scroller?.scrollHeight ?? document.documentElement.scrollHeight
+    state.value.progress = articleReadingProgress(
+      scrollTop,
+      viewportHeight,
+      viewportTop,
+      content.value.getBoundingClientRect(),
+    )
     state.value.showHeader = Boolean(hero.value && hero.value.getBoundingClientRect().bottom <= viewportTop)
 
     const activationLine = viewportTop + 24

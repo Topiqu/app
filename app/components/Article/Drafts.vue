@@ -35,8 +35,8 @@
           </UFormField>
         </div>
 
-        <div v-if="loading" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <UCard v-for="n in 8" :key="n">
+        <div v-if="loading" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <UCard v-for="n in 4" :key="n">
             <USkeleton class="h-40 w-full" />
             <div class="mt-3 space-y-3">
               <USkeleton class="h-4 w-3/4" />
@@ -47,54 +47,47 @@
 
         <div
           v-else-if="filteredDrafts.length"
-          class="grid max-h-[36rem] grid-cols-1 gap-6 overflow-y-auto pr-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          class="grid max-h-[min(36rem,65dvh)] grid-cols-1 gap-4 overflow-x-hidden overflow-y-auto p-0.5 pr-2 sm:grid-cols-2"
         >
-          <UPageCard v-for="draft in filteredDrafts" :key="draft.id" class="relative">
-            <div class="aspect-video overflow-hidden">
+          <article
+            v-for="draft in filteredDrafts"
+            :key="draft.id"
+            class="group relative min-w-0 overflow-hidden rounded-xl border border-default bg-default transition hover:border-primary/50 hover:shadow-md focus-within:ring-2 focus-within:ring-primary"
+          >
+            <button type="button" class="block size-full min-w-0 text-left" @click="selectDraft(draft)">
               <AppMedia
                 :src="draft.imageUrl"
                 :alt="draft.title || $t('articles.articleCard.imageAlt')"
                 aspectRatio="16 / 9"
-                sizes="100vw sm:50vw lg:25vw"
-                containerClass="size-full rounded-lg"
+                sizes="100vw sm:400px"
+                containerClass="w-full rounded-none"
               />
-            </div>
-            <div class="flex flex-1 flex-col gap-3">
-              <h3 class="break-words text-base font-medium tracking-tight text-highlighted">
-                {{ draft.title || $t('articles.editor.drafts.untitled', [draft.id.slice(-4)]) }}
-              </h3>
-              <p v-if="draft.excerpt" class="line-clamp-2 flex-1 text-sm leading-snug text-muted">
-                {{ draft.excerpt }}
-              </p>
-              <USeparator />
-              <div class="flex items-center justify-between text-xs text-muted">
-                <div class="flex items-center gap-1.5">
-                  <UIcon size="14" name="i-mdi-clock-outline" />{{
-                    format(draft.createdAt, dateFormat, { locale: dateLocale })
-                  }}
+              <div class="min-w-0 space-y-2 p-4 pr-12">
+                <h3 class="line-clamp-2 text-base font-semibold tracking-tight text-highlighted">
+                  {{ draft.title || $t('articles.editor.drafts.untitled', [draft.id.slice(-4)]) }}
+                </h3>
+                <p v-if="draft.excerpt" class="line-clamp-2 text-sm leading-snug text-muted">
+                  {{ draft.excerpt }}
+                </p>
+                <div class="flex min-w-0 items-center gap-1.5 border-t border-default pt-2 text-xs text-muted">
+                  <UIcon class="shrink-0" size="14" name="i-mdi-clock-outline" />
+                  <span class="truncate">{{ format(draft.createdAt, dateFormat, { locale: dateLocale }) }}</span>
                 </div>
-                <UTooltip :text="$t('common.actions.delete')">
-                  <UButton
-                    color="error"
-                    variant="ghost"
-                    size="sm"
-                    square
-                    icon="i-mdi-delete"
-                    class="relative z-10"
-                    :aria-label="$t('common.actions.delete')"
-                    @click.stop="deleteDraft(draft.id)"
-                  />
-                </UTooltip>
               </div>
-            </div>
-            <UButton
-              color="neutral"
-              variant="link"
-              class="absolute inset-0"
-              :aria-label="draft.title || $t('articles.editor.drafts.untitled', [draft.id.slice(-4)])"
-              @click="selectDraft(draft)"
-            />
-          </UPageCard>
+            </button>
+            <UTooltip :text="$t('common.actions.delete')">
+              <UButton
+                color="error"
+                variant="soft"
+                size="sm"
+                square
+                icon="i-mdi-delete"
+                class="absolute right-3 bottom-3 z-10"
+                :aria-label="$t('common.actions.delete')"
+                @click.stop="deleteDraft(draft.id)"
+              />
+            </UTooltip>
+          </article>
         </div>
 
         <UEmpty v-else icon="i-mdi-file-search-outline" :title="$t('common.noResults')" />

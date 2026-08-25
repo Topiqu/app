@@ -2,7 +2,7 @@
   <div class="flex min-w-0 max-w-full flex-col" @keydown.tab.exact.stop @keydown.shift.tab.exact.stop>
     <template v-if="editor">
       <div
-        class="relative min-w-0 max-w-full overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-default"
+        class="relative min-w-0 max-w-full overflow-visible rounded-[var(--topiqu-surface-radius)] border border-default bg-default"
         @dragenter.prevent="onDragEnter"
         @dragover.prevent
         @dragleave.prevent="onDragLeave"

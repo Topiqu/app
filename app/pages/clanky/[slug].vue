@@ -36,25 +36,28 @@
           />
         </div>
 
-        <!-- Only renders with a real published translation, so a language here never falls back. -->
-        <ArticleLanguageLinks v-if="hasTranslations" class="mt-4" :links="alternates" :current="data.language" />
-
-        <div
-          v-if="clientSite?.discloseAiContent && data.aiInvolvement !== 'NONE'"
-          class="inline-flex w-fit items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-        >
-          <Icon name="mdi:robot-outline" class="h-4 w-4" />
-          {{ $t(`articles.aiDisclosure.${data.aiInvolvement}`) }}
+        <div v-if="hasTranslations || showsAiDisclosure" class="flex flex-wrap items-center gap-2">
+          <!-- Only renders with a real published translation, so a language here never falls back. -->
+          <ArticleLanguageLinks v-if="hasTranslations" :links="alternates" :current="data.language" />
+          <span
+            v-if="showsAiDisclosure"
+            class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+          >
+            <Icon name="mdi:robot-outline" class="size-4" />
+            {{ $t(`articles.aiDisclosure.${data.aiInvolvement}`) }}
+          </span>
         </div>
 
-        <div v-if="hasTags" class="mt-4 flex flex-wrap gap-2.5">
+        <div v-if="hasTags" class="flex flex-wrap gap-2.5">
           <NuxtLink
             v-for="t in data.tags"
             :key="t.tag.slug"
             :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
             class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <UBadge color="neutral" variant="soft" size="sm" icon="i-mdi-tag">{{ t.tag.name }}</UBadge>
+            <UBadge color="neutral" variant="soft" size="lg" icon="i-mdi-tag" class="px-3 py-1.5 text-sm">
+              {{ t.tag.name }}
+            </UBadge>
           </NuxtLink>
         </div>
 
@@ -270,7 +273,8 @@ const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/
 
 const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/${slug.value}/related`, {
   lazy: true,
-  query: { limit: 3, clientSiteId: data.value?.clientSiteId },
+  default: () => [],
+  query: computed(() => ({ limit: 3, clientSiteId: data.value?.clientSiteId, locale: data.value?.language })),
 })
 
 const primaryLocale = computed(() => clientSite?.language ?? 'en')
@@ -383,6 +387,7 @@ const toggleLike = async () => {
 
 const faqEntries = computed(() => readFaq(data.value?.faq))
 const hasTags = computed(() => !!data.value?.tags?.length)
+const showsAiDisclosure = computed(() => !!clientSite?.discloseAiContent && data.value?.aiInvolvement !== 'NONE')
 const requestUrl = useRequestURL()
 const fullUrl = computed(() => new URL(route.fullPath, requestUrl.origin).href)
 const breadcrumbs = computed(() => [
