@@ -310,6 +310,9 @@ export default defineNuxtConfig({
   },
 
   security: {
+    // Sentry injects per-build debug IDs after Vite has named hashed chunks. SRI can therefore
+    // bind SSR HTML to a different body served under the same chunk URL across deployments.
+    sri: false,
     rateLimiter: {
       interval: 10 * 1000,
       tokensPerInterval: IS_BROWSER_TEST ? 10_000 : 300,
@@ -365,6 +368,9 @@ export default defineNuxtConfig({
     xssValidator: false,
   },
   routeRules: {
+    // A service worker must revalidate on every navigation/deploy; caching this file can leave
+    // clients controlled by an obsolete Workbox routing table for hours.
+    '/sw.js': { headers: { 'cache-control': 'no-cache, no-store, must-revalidate' } },
     '/manifest.webmanifest': { headers: { 'content-type': 'application/manifest+json' } },
     '/sitemap.xml': { headers: { 'content-type': 'application/xml' }, security: { rateLimiter: CRAWL_LIMIT } },
     '/robots.txt': { security: { rateLimiter: CRAWL_LIMIT } },
@@ -522,6 +528,9 @@ export default defineNuxtConfig({
       // ],
     },
     workbox: {
+      // This is an SSR application, not an app-shell build. `/` is intentionally absent from
+      // precache, so Workbox must let navigations reach Nitro instead of binding them to `/`.
+      navigateFallback: null,
       runtimeCaching: [
         {
           urlPattern: /^https:\/\/topiqu\.com\/.*$/,

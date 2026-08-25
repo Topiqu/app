@@ -2,7 +2,7 @@
 
 import { enableAutoUnmount } from '@vue/test-utils'
 import { defineComponent, nextTick, ref } from 'vue'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 
 import UModal from '../../node_modules/@nuxt/ui/dist/runtime/components/Modal.vue'
@@ -91,7 +91,7 @@ describe('real Nuxt UI overlay and keyboard behavior', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
     await waitForOverlay()
     expect(document.body.textContent).not.toContain('Profile')
-    expect(document.activeElement).toBe(trigger.element)
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger.element))
   })
 
   it('selects onboarding-style radio cards with arrow keys', async () => {

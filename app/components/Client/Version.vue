@@ -27,7 +27,9 @@
       </UButton>
 
       <template #content>
-        <UCard class="w-[92vw] max-w-sm">
+        <UCard
+          class="max-h-[calc(100dvh-5rem)] w-[92vw] max-w-sm overflow-x-hidden overflow-y-auto overscroll-contain"
+        >
           <div class="flex flex-col gap-5">
             <div class="space-y-2">
               <div class="flex items-center justify-between gap-3 text-sm">
@@ -47,7 +49,7 @@
               :description="$t('articles.userMenu.lowTokensHint')"
             />
 
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-1 gap-2 min-[22rem]:grid-cols-2">
               <button
                 v-for="pack in tokenPacks"
                 :key="pack.id"
@@ -77,7 +79,7 @@
                 </span>
                 <span class="block text-xs text-muted">{{ $t('common.tokens.tokens') }}</span>
                 <span class="mt-2 flex items-end justify-between gap-2 border-t border-default pt-2">
-                  <span class="text-xs text-muted">{{
+                  <span class="min-w-0 break-words text-xs text-muted">{{
                     $t('common.tokens.articlesEstimate', { count: pack.articles })
                   }}</span>
                   <strong class="shrink-0 text-sm text-highlighted">{{ pack.price }}</strong>

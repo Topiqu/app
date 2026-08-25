@@ -40,11 +40,21 @@ describe('dashboard UI polish contracts', () => {
     expect(source('app/components/Sidebar.vue')).not.toContain('<ClientVersion')
     const clientVersion = source('app/components/Client/Version.vue')
     expect(clientVersion).toContain('bottom-action-bar fixed right-3 bottom-3 z-overlay')
+    expect(clientVersion).toContain('max-h-[calc(100dvh-5rem)]')
+    expect(clientVersion).toContain('overflow-x-hidden overflow-y-auto overscroll-contain')
+    expect(clientVersion).toContain('grid-cols-1 gap-2 min-[22rem]:grid-cols-2')
     expect(clientVersion).toContain('data-consent-settings')
     expect(source('app/components/ConsentSettingsButton.vue')).toContain(
       'bottom-action-bar fixed right-3 bottom-3 z-overlay',
     )
     expect(source('app/assets/styles/main.css')).toContain('body:has(.bottom-action-bar) .back-to-top')
+  })
+
+  it('keeps SSR navigation out of the PWA app-shell cache', () => {
+    const config = source('nuxt.config.ts')
+    expect(config).toContain('sri: false')
+    expect(config).toContain("'/sw.js': { headers: { 'cache-control': 'no-cache, no-store, must-revalidate' } }")
+    expect(config).toContain('navigateFallback: null')
   })
 
   it('renders a priced, benefit-led billing upsell with a compact action', () => {
