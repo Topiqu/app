@@ -1,9 +1,8 @@
-import { join } from 'node:path'
-import { homedir } from 'node:os'
 import { defineConfig, devices } from '@playwright/test'
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL
 const useCompiledServer = process.env.PLAYWRIGHT_USE_BUILD === '1'
+const releaseSmokeTest = /release-smoke\.spec\.ts/
 if (!testDatabaseUrl) {
   throw new Error(
     'TEST_DATABASE_URL is required. Browser tests never run against a development or production database.',
@@ -37,19 +36,19 @@ export default defineConfig({
     { name: 'setup', testMatch: /auth\.setup\.ts/ },
     {
       name: 'mobile-light-en',
-      testIgnore: [/auth\.setup\.ts/, /wide-qa\.spec\.ts/],
+      testIgnore: [/auth\.setup\.ts/, /wide-qa\.spec\.ts/, releaseSmokeTest],
       dependencies: ['setup'],
       use: { ...devices['iPhone 13'], viewport: { width: 360, height: 800 }, colorScheme: 'light', locale: 'en-US' },
     },
     {
       name: 'tablet-dark-cs',
-      testIgnore: [/auth\.setup\.ts/, /wide-qa\.spec\.ts/],
+      testIgnore: [/auth\.setup\.ts/, /wide-qa\.spec\.ts/, releaseSmokeTest],
       dependencies: ['setup'],
       use: { ...devices['iPad (gen 7)'], viewport: { width: 768, height: 1024 }, colorScheme: 'dark', locale: 'cs-CZ' },
     },
     {
       name: 'desktop-light-en',
-      testIgnore: [/auth\.setup\.ts/, /wide-qa\.spec\.ts/],
+      testIgnore: [/auth\.setup\.ts/, /wide-qa\.spec\.ts/, releaseSmokeTest],
       dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],
@@ -60,7 +59,7 @@ export default defineConfig({
     },
     {
       name: 'desktop-dark-cs',
-      testIgnore: [/auth\.setup\.ts/, /wide-qa\.spec\.ts/],
+      testIgnore: [/auth\.setup\.ts/, /wide-qa\.spec\.ts/, releaseSmokeTest],
       dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],
@@ -80,11 +79,20 @@ export default defineConfig({
         locale: 'cs-CZ',
       },
     },
+    {
+      name: 'release-smoke',
+      testMatch: releaseSmokeTest,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 1000 },
+        serviceWorkers: 'allow',
+      },
+    },
   ],
   webServer: {
     command: useCompiledServer
-      ? `${join(homedir(), '.bun/bin/bun')} .output/server/index.mjs`
-      : `${join(homedir(), '.bun/bin/bun')} run dev --host 127.0.0.1 --port 4173`,
+      ? 'bun .output/server/index.mjs'
+      : 'bun run dev --host 127.0.0.1 --port 4173',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     env: {
