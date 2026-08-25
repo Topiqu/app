@@ -55,7 +55,7 @@
             :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
             class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <UBadge color="neutral" variant="soft" size="lg" icon="i-mdi-tag" class="px-3 py-1.5 text-sm">
+            <UBadge color="neutral" variant="soft" size="lg" icon="i-mdi-tag">
               {{ t.tag.name }}
             </UBadge>
           </NuxtLink>
