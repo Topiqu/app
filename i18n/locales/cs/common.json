@@ -546,17 +546,29 @@
       "annually": "rok",
       "companyLogo": {
         "label": "Logo blogu",
-        "description": "PNG, JPEG nebo WebP, max. 10 MB. Logo se uloží na průhledném širokém plátně vhodném pro hlavičku i domovskou stránku.",
+        "description": "PNG, JPEG nebo WebP, max. 10 MB. V editoru můžete zachovat celé logo nebo nastavit vlastní široký výřez.",
         "edit": "Nahradit a upravit logo",
         "remove": "Odstranit logo",
         "editorTitle": "Umístění loga",
         "dragHint": "Tažením logo umístěte, posuvníkem jej přibližte nebo oddalte. Šachovnice představuje průhledné pozadí.",
         "save": "Použít logo"
       },
+      "brandAsset": {
+        "displayMode": "Způsob umístění",
+        "showWhole": "Zobrazit celé",
+        "crop": "Oříznout",
+        "showWholeHelp": "Celý obrázek zůstane viditelný; volné místo bude průhledné.",
+        "cropHelp": "Obrázek vyplní celý rámeček. Tažením nastavte důležitou část výřezu.",
+        "zoom": "Přiblížení"
+      },
       "branding": {
         "identity": "Identita",
         "favicon": "Favicon",
-        "faviconHelp": "Čtvercové PNG, JPEG nebo WebP, 32-512 px, maximálně 512 KB",
+        "faviconHelp": "PNG, JPEG nebo WebP, max. 10 MB. Editor připraví čtvercový favicon 256 × 256 px.",
+        "faviconEdit": "Nahradit a upravit favicon",
+        "faviconRemove": "Odstranit favicon",
+        "faviconEditorTitle": "Umístění faviconu",
+        "faviconSave": "Použít favicon",
         "tagline": "Tagline",
         "taglinePlaceholder": "Krátká věta, která popisuje vaši publikaci",
         "visualStyle": "Vizuální styl",

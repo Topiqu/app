@@ -546,17 +546,29 @@
       "annually": "year",
       "companyLogo": {
         "label": "Company Logo",
-        "description": "PNG, JPEG, or WebP, up to 10 MB. The logo is saved on a transparent wide canvas suited to the header and homepage.",
+        "description": "PNG, JPEG, or WebP, up to 10 MB. Keep the complete logo or create a custom wide crop in the editor.",
         "edit": "Replace and edit logo",
         "remove": "Remove logo",
         "editorTitle": "Position logo",
         "dragHint": "Drag to position the logo and use the slider to zoom in or out. The checkerboard represents transparency.",
         "save": "Use logo"
       },
+      "brandAsset": {
+        "displayMode": "Placement mode",
+        "showWhole": "Show whole image",
+        "crop": "Crop to fill",
+        "showWholeHelp": "The complete image remains visible; unused space stays transparent.",
+        "cropHelp": "The image fills the frame. Drag it to choose the important part of the crop.",
+        "zoom": "Zoom"
+      },
       "branding": {
         "identity": "Identity",
         "favicon": "Favicon",
-        "faviconHelp": "Square PNG, JPEG or WebP, 32-512 px, maximum 512 KB",
+        "faviconHelp": "PNG, JPEG, or WebP, up to 10 MB. The editor creates a square 256 × 256 px favicon.",
+        "faviconEdit": "Replace and edit favicon",
+        "faviconRemove": "Remove favicon",
+        "faviconEditorTitle": "Position favicon",
+        "faviconSave": "Use favicon",
         "tagline": "Tagline",
         "taglinePlaceholder": "A short line describing your publication",
         "visualStyle": "Visual style",

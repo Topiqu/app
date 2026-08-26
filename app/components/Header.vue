@@ -38,13 +38,12 @@
           originalSrc="/app-logo.png"
           :alt="clientSite?.name || 'Topiqu'"
           :fallbackText="clientSite?.name"
-          aspectRatio="1 / 1"
+          aspectRatio="16 / 5"
           fit="contain"
-          sizes="48px"
-          :width="48"
-          :height="48"
+          sizes="128px"
+          :width="128"
           priority
-          containerClass="size-12 bg-transparent"
+          containerClass="h-10 w-32 shrink-0 bg-transparent"
         />
       </NuxtLink>
     </template>

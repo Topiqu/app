@@ -8,12 +8,8 @@
         :label="$t('common.preferences.companyLogo.label')"
         :description="$t('common.preferences.companyLogo.description')"
       >
-        <FileUploader
-          compact
+        <FormClientLogoUploader
           :imageUrl="logoUrl"
-          type="client-logo"
-          :maxWidth="3840"
-          :maxHeight="2160"
           @upload="emit('update:logoUrl', { url: $event.url, optimizedUrl: $event.optimizedUrl })"
         />
       </UFormField>
@@ -22,16 +18,9 @@
         :label="$t('common.preferences.branding.favicon')"
         :description="$t('common.preferences.branding.faviconHelp')"
       >
-        <FileUploader
-          compact
-          aspectRatio="1 / 1"
+        <FormClientLogoUploader
           :imageUrl="faviconUrl"
-          type="client-favicon"
-          :minWidth="32"
-          :minHeight="32"
-          :maxWidth="512"
-          :maxHeight="512"
-          :maxSize="512000"
+          assetType="favicon"
           @upload="emit('update:faviconUrl', $event)"
         />
       </UFormField>
@@ -191,9 +180,11 @@
         :src="logoUrl"
         originalSrc="/app-logo.png"
         :alt="name"
-        aspectRatio="1 / 1"
+        aspectRatio="16 / 5"
         fit="contain"
-        containerClass="size-12 rounded-[var(--ui-radius)] bg-elevated"
+        sizes="160px"
+        :width="320"
+        containerClass="w-40 rounded-[var(--ui-radius)] bg-transparent"
       />
       <p v-if="localTagline" class="mt-5 text-sm font-semibold text-[var(--topiqu-tenant-accent)]">
         {{ localTagline }}

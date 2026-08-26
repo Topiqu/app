@@ -1,12 +1,26 @@
+import type { MaybeRefOrGetter } from 'vue'
+
 const MAX_AVATAR_BYTES = 10 * 1024 * 1024
 type Translate = (key: string) => string
+export type ImageFrameFit = 'cover' | 'contain'
+
+export const imageFrameScale = (
+  sourceWidth: number,
+  sourceHeight: number,
+  frameWidth: number,
+  frameHeight: number,
+  fit: ImageFrameFit,
+) => {
+  const scales = [frameWidth / sourceWidth, frameHeight / sourceHeight]
+  return fit === 'contain' ? Math.min(...scales) : Math.max(...scales)
+}
 
 interface CropperOptions {
   viewportWidth?: number
   viewportHeight?: number
   outputWidth?: number
   outputHeight?: number
-  fit?: 'cover' | 'contain'
+  fit?: MaybeRefOrGetter<ImageFrameFit>
 }
 
 export function useAvatarCropper(t: Translate, onPreview: (url: string | null) => void, options: CropperOptions = {}) {
@@ -14,7 +28,7 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
   const viewportHeight = options.viewportHeight ?? 288
   const outputWidth = options.outputWidth ?? 1024
   const outputHeight = options.outputHeight ?? 1024
-  const fit = options.fit ?? 'cover'
+  const fit = () => toValue(options.fit) ?? 'cover'
   const selectedFile = shallowRef<File | null>(null)
   const draftUrl = useObjectUrl(selectedFile)
   const sourceImage = shallowRef<HTMLImageElement | null>(null)
@@ -38,7 +52,7 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
     const image = sourceImage.value
     if (!image) return {}
     const { width, height } = rotatedDimensions(image)
-    const scale = baseScale(width, height, viewportWidth, viewportHeight) * zoom.value
+    const scale = imageFrameScale(width, height, viewportWidth, viewportHeight, fit()) * zoom.value
     return {
       left: `calc(50% + ${offset.x}px)`,
       top: `calc(50% + ${offset.y}px)`,
@@ -71,16 +85,11 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
     }
   }
 
-  function baseScale(width: number, height: number, frameWidth: number, frameHeight: number) {
-    const scales = [frameWidth / width, frameHeight / height]
-    return fit === 'contain' ? Math.min(...scales) : Math.max(...scales)
-  }
-
   function clampOffset() {
     const image = sourceImage.value
     if (!image) return
     const { width, height } = rotatedDimensions(image)
-    const scale = baseScale(width, height, viewportWidth, viewportHeight) * zoom.value
+    const scale = imageFrameScale(width, height, viewportWidth, viewportHeight, fit()) * zoom.value
     const maxX = Math.abs(width * scale - viewportWidth) / 2
     const maxY = Math.abs(height * scale - viewportHeight) / 2
     offset.x = Math.max(-maxX, Math.min(maxX, offset.x))
@@ -129,7 +138,7 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
     image.src = url
   })
 
-  watch([zoom, rotation], clampOffset)
+  watch([zoom, rotation, fit], clampOffset)
 
   async function render() {
     const image = sourceImage.value
@@ -141,7 +150,7 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
     if (!context) throw new Error(t('common.avatar.processingError'))
 
     const { width, height } = rotatedDimensions(image)
-    const scale = baseScale(width, height, outputWidth, outputHeight) * zoom.value
+    const scale = imageFrameScale(width, height, outputWidth, outputHeight, fit()) * zoom.value
     context.translate(
       outputWidth / 2 + offset.x * (outputWidth / viewportWidth),
       outputHeight / 2 + offset.y * (outputHeight / viewportHeight),
@@ -168,6 +177,7 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
     previewStyle,
     render,
     reset,
+    resetCrop,
     rotation,
     zoom,
   }
