@@ -39,6 +39,7 @@
     </template>
 
     <template #default="{ collapsed }">
+      <TenantSwitcher v-if="auth?.user?.role === 'admin'" :collapsed="collapsed" />
       <UNavigationMenu
         :items="navigationItems"
         orientation="vertical"

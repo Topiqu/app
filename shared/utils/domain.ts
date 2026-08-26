@@ -6,6 +6,41 @@ export const normalizeDomain = (value: string) =>
     .replace(/\/$/, '')
     .replace(/\.$/, '')
 
+export const RESERVED_SUBDOMAINS = new Set([
+  'www',
+  'api',
+  'admin',
+  'app',
+  'mail',
+  'cdn',
+  'static',
+  'help',
+  'support',
+  'docs',
+  'auth',
+  'login',
+  'logout',
+  'register',
+  'master',
+  'topiqu',
+  'status',
+  'dashboard',
+  'billing',
+])
+
+export type SubdomainReason = 'empty' | 'tooShort' | 'invalid' | 'reserved'
+
+const SUBDOMAIN_RE = /^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$/
+
+export const validateSubdomain = (value: string): SubdomainReason | null => {
+  const subdomain = value.trim().toLowerCase()
+  if (!subdomain) return 'empty'
+  if (subdomain.length < 3) return 'tooShort'
+  if (!SUBDOMAIN_RE.test(subdomain)) return 'invalid'
+  if (RESERVED_SUBDOMAINS.has(subdomain)) return 'reserved'
+  return null
+}
+
 /** Bare hostname of a `Host` header: no scheme, no port, no `www.`. */
 export const toHostname = (value: string) =>
   normalizeDomain(value)

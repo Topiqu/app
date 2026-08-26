@@ -68,6 +68,7 @@ describe('tenant audit trail', () => {
       'server/api/tenant/members/[id].patch.ts',
       'server/api/tenant/members/[id].delete.ts',
       'server/api/tenant/active.post.ts',
+      'server/api/tenant/index.post.ts',
     ]
       .map((file) => readFileSync(resolve(process.cwd(), file), 'utf8'))
       .join('\n')
@@ -81,6 +82,7 @@ describe('tenant audit trail', () => {
       'TENANT_MEMBER_SCOPES_CHANGED',
       'TENANT_MEMBER_REMOVED',
       'ACTIVE_TENANT_CHANGED',
+      'TENANT_CREATED',
     ])
       expect(files).toContain(`action: '${action}'`)
   })
@@ -102,6 +104,19 @@ describe('tenant boundary wiring', () => {
     expect(endpoint).toContain('prisma.session.update')
     expect(endpoint).not.toContain('prisma.user.update')
     expect(source('server/api/auth/[...].ts')).toContain('activeSession?.clientSiteId')
+  })
+
+  it('creates self-service blogs as Basic tenants owned by the current user', () => {
+    const endpoint = source('server/api/tenant/index.post.ts')
+    const createDialog = source('app/components/TenantCreate.vue')
+
+    expect(endpoint).toContain("plan: 'BASIC'")
+    expect(endpoint).toContain("role: 'OWNER'")
+    expect(endpoint).toContain('MAX_OWNED_BASIC_TENANTS = 3')
+    expect(endpoint).toContain('tx.session.update')
+    expect(endpoint).not.toContain('stripe')
+    expect(createDialog).toContain("$fetch('/api/tenant'")
+    expect(source('app/components/Sidebar.vue')).toContain('<TenantSwitcher')
   })
 
   it('revalidates kicked sessions and protects analytics and tags', () => {

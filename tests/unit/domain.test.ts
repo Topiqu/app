@@ -6,6 +6,8 @@ import {
   isManagedDomain,
   isValidDomain,
   normalizeDomain,
+  RESERVED_SUBDOMAINS,
+  validateSubdomain,
 } from '../../shared/utils/domain'
 
 describe('domain rules', () => {
@@ -24,6 +26,14 @@ describe('domain rules', () => {
     expect(isValidDomain('blog.example.com')).toBe(true)
     expect(isValidDomain('-blog.example.com')).toBe(false)
     expect(isValidDomain('blog..example.com')).toBe(false)
+  })
+
+  it('shares subdomain syntax and reserved names across onboarding flows', () => {
+    expect(validateSubdomain('my-blog')).toBeNull()
+    expect(validateSubdomain('ab')).toBe('tooShort')
+    expect(validateSubdomain('-blog')).toBe('invalid')
+    expect(validateSubdomain('admin')).toBe('reserved')
+    expect(RESERVED_SUBDOMAINS.has('api')).toBe(true)
   })
 
   it('treats another tenant as foreign, and a tenantless root host as no conflict', () => {
