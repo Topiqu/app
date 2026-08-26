@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
 
+import { canOptimizeImageUrl } from '~~/shared/utils/imageHosts'
 import { optimizeArticleImages } from '~~/shared/utils/articleImages'
 
 // Blocks come pre-built. Splitting here (in `onMounted`) left the SSR HTML with an empty body.
@@ -18,6 +19,9 @@ const props = withDefaults(defineProps<{ blocks: ArticleBlock[]; articleId: stri
   discloseAi: true,
 })
 const root = useTemplateRef<HTMLElement>('root')
+const image = useImage()
+const transformArticleImage = (source: string, width: number) =>
+  canOptimizeImageUrl(source) ? image(source, { width, format: 'webp', quality: 82 }) : null
 
 const handleMediaError = (event: Event) => {
   const failed = event.target
@@ -64,6 +68,6 @@ const visibleHtml = (html: string) => {
     .replace(/<p(?:\s[^>]*)?>\s*(?:<br\s*\/?>|&nbsp;|\u00a0)?\s*<\/p>/gi, '')
     .replace(/(<p(?:\s[^>]*)?>)\s*(<img\b[^>]*>)\s*(<\/p>)/gi, '$1$2$3')
 
-  return optimizeArticleImages(normalized)
+  return optimizeArticleImages(normalized, transformArticleImage)
 }
 </script>

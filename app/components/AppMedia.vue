@@ -1,19 +1,36 @@
 <template>
   <div
+    ref="mediaRoot"
     class="relative overflow-hidden bg-elevated"
     :class="containerClass"
     :style="{ aspectRatio }"
     :aria-busy="isRetrying || undefined"
     :data-media-state="mediaState"
   >
-    <img
-      v-if="currentSrc"
-      ref="imageElement"
+    <NuxtImg
+      v-if="currentSrc && shouldOptimize"
       :src="currentSrc"
       :alt="alt"
+      :width="width"
+      :height="height"
+      format="webp"
+      :quality="82"
       :loading="priority ? 'eager' : 'lazy'"
       :fetchpriority="priority ? 'high' : 'auto'"
       :sizes="sizes"
+      class="absolute inset-0 size-full transition-opacity"
+      :class="[fit === 'contain' ? 'object-contain' : 'object-cover', hasLoaded ? 'opacity-100' : 'opacity-0']"
+      @load="handleMediaLoad"
+      @error="handleMediaError"
+    />
+    <img
+      v-else-if="currentSrc"
+      :src="currentSrc"
+      :alt="alt"
+      :width="width"
+      :height="height"
+      :loading="priority ? 'eager' : 'lazy'"
+      :fetchpriority="priority ? 'high' : 'auto'"
       class="absolute inset-0 size-full transition-opacity"
       :class="[fit === 'contain' ? 'object-contain' : 'object-cover', hasLoaded ? 'opacity-100' : 'opacity-0']"
       @load="handleMediaLoad"
@@ -29,6 +46,8 @@
 </template>
 
 <script setup lang="ts">
+import { canOptimizeImageUrl } from '~~/shared/utils/imageHosts'
+
 const props = withDefaults(
   defineProps<{
     src?: string | null
@@ -40,6 +59,8 @@ const props = withDefaults(
     fallbackText?: string
     priority?: boolean
     sizes?: string
+    width?: number
+    height?: number
     containerClass?: string
   }>(),
   {
@@ -54,12 +75,18 @@ const props = withDefaults(
   },
 )
 
-const { currentSrc, isRetrying, handleError, handleLoad } = useImageRetry(
+const { currentSrc, isRetrying, usingOriginal, handleError, handleLoad } = useImageRetry(
   () => props.src,
   () => props.originalSrc,
 )
 const hasLoaded = shallowRef(false)
-const imageElement = useTemplateRef<HTMLImageElement>('imageElement')
+const mediaRoot = useTemplateRef<HTMLElement>('mediaRoot')
+const shouldOptimize = computed(() =>
+  // Nuxt Image treats a query string as part of the IPX source path. Once a
+  // cache-busting retry starts, request the source directly so
+  // `?topiqu_retry=…` remains a query instead of becoming `%3F…` in the path.
+  Boolean(currentSrc.value && !isRetrying.value && !usingOriginal.value && canOptimizeImageUrl(currentSrc.value)),
+)
 
 watch(currentSrc, () => {
   hasLoaded.value = false
@@ -75,8 +102,9 @@ const handleMediaLoad = () => {
 }
 
 onMounted(() => {
-  if (!imageElement.value?.complete) return
-  if (imageElement.value.naturalWidth > 0) handleMediaLoad()
+  const image = mediaRoot.value?.querySelector('img')
+  if (!image?.complete) return
+  if (image.naturalWidth > 0) handleMediaLoad()
   else handleMediaError()
 })
 const mediaState = computed(() => {

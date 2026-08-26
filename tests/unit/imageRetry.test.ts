@@ -39,6 +39,7 @@ describe('image retry URLs', () => {
 
     state.handleError()
     expect(state.currentSrc.value).toBe(original.value)
+    expect(state.usingOriginal.value).toBe(true)
     expect(state.isRetrying.value).toBe(true)
     scope.stop()
   })

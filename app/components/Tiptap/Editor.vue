@@ -24,7 +24,7 @@
           :editor
           class="editor-canvas min-h-96 min-w-0 max-w-full overflow-hidden text-highlighted"
           :class="[EDITOR_TABLE_CLASS, contentClass]"
-          @click.stop.prevent="handleEditorClick"
+          @click.stop="handleEditorClick"
         />
         <TiptapDropOverlay :active="isDragging && edit" />
       </div>

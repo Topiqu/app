@@ -63,9 +63,10 @@ describe('buildImageHtml', () => {
   // `[slug].vue` hides when a tenant turns disclosure off, so the span must hold the label and
   // its separator and nothing else — the caption itself has to survive the strip.
   it('labels a generated picture as AI and never prints a credit for it', () => {
-    const html = buildImageHtml(image({ kind: 'ai' }), 'Hardware budoucnosti', LABELS)
+    const html = buildImageHtml(image({ kind: 'ai', width: 1280, height: 800 }), 'Hardware budoucnosti', LABELS)
 
     expect(html).toContain('<span data-ai-disclosure>Ilustrační obrázek (AI): </span>Hardware budoucnosti')
+    expect(html).toContain('width="1280" height="800"')
     expect(html).not.toContain('foto:')
   })
 

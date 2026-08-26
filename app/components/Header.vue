@@ -41,6 +41,8 @@
           aspectRatio="1 / 1"
           fit="contain"
           sizes="48px"
+          :width="48"
+          :height="48"
           priority
           containerClass="size-12 bg-transparent"
         />

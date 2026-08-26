@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { TIME_PRESETS } from '../../shared/utils/time'
+import { formatArticleDate, TIME_PRESETS, TOPIQU_TIME_ZONE } from '../../shared/utils/time'
 
 const fmt = (locale: string, preset: keyof typeof TIME_PRESETS, date: Date) =>
   new Intl.DateTimeFormat(locale, TIME_PRESETS[preset]).format(date)
 
-const DATE = new Date(2026, 5, 4, 14, 5)
+const DATE = new Date('2026-06-04T12:05:00Z')
 
 describe('TIME_PRESETS', () => {
   it('renders a localized long date per locale', () => {
@@ -23,11 +23,17 @@ describe('TIME_PRESETS', () => {
   })
 
   it('includes time for datetime and time presets', () => {
-    expect(fmt('cs', 'datetime', DATE)).toContain(':')
-    expect(fmt('cs', 'time', DATE)).toMatch(/^\d{2}:\d{2}$/)
+    expect(fmt('cs', 'datetime', DATE)).toContain('14:05')
+    expect(fmt('cs', 'time', DATE)).toBe('14:05')
   })
 
   it('zero-pads day and month in shortDatetime', () => {
     expect(fmt('cs', 'shortDatetime', DATE)).toMatch(/04\.\s?06\.\s?2026/)
+  })
+
+  it('pins dates to one timezone for SSR and hydration', () => {
+    expect(TOPIQU_TIME_ZONE).toBe('Europe/Prague')
+    expect(formatArticleDate(DATE, 'cs')).toBe('4. června 2026, 14:05')
+    expect(formatArticleDate(DATE, 'en')).toBe('Jun 4, 2026, 14:05')
   })
 })

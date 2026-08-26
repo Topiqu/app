@@ -457,8 +457,6 @@ onUnmounted(() => {
   border-radius: 0.75rem;
   max-height: 600px;
   cursor: pointer;
-  opacity: 0;
-  animation: fade-in-image 0.6s ease-out forwards;
 }
 .prose small {
   color: #4b5563 !important;

@@ -1,6 +1,7 @@
 {
   "name": "topiqu-blog",
   "private": true,
+  "packageManager": "bun@1.3.14",
   "type": "module",
   "scripts": {
     "build": "bun zenstack:generate && bun prisma:deploy && nuxt build",
@@ -19,6 +20,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:release": "playwright test --project=release-smoke",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",

@@ -232,9 +232,15 @@ export default defineNuxtConfig({
     runtimeCacheStorage: true,
   },
   image: {
-    quality: 90,
+    quality: 82,
     format: ['avif', 'webp', 'png'],
     domains: [...IMAGE_HOSTS],
+    ipx: {
+      // CDN article keys are timestamped/unique, so transformed variants are immutable too.
+      http: { maxAge: 31_536_000, ignoreCacheControl: true },
+      // Local public assets keep a shorter TTL because their URL is not content-hashed.
+      fs: { maxAge: 86_400 },
+    },
   },
 
   typescript: {
@@ -363,6 +369,10 @@ export default defineNuxtConfig({
           'https://ep2.adtrafficquality.google',
           'https://challenges.cloudflare.com',
         ],
+        // Nuxt Image uses this fixed handler to replay image failures that happen
+        // before hydration. Permit only that exact inline attribute, not arbitrary
+        // inline event handlers.
+        'script-src-attr': ["'unsafe-hashes'", "'sha256-bwK6T5wZVTANitXbrTsel7kl/PyCjCd/Dq5Qoz3imjM='"],
       },
     },
     xssValidator: false,

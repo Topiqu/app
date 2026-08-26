@@ -56,9 +56,10 @@ export const buildImageHtml = (image: ArticleImage, caption: string, labels: Cap
   // Falls back to the provider's description, then to a decorative empty alt — repeating a
   // search keyword there is worse for a screen reader than saying nothing.
   const alt = escapeHtml(trimmed || image.alt?.trim() || '')
+  const dimensions = image.width && image.height ? ` width="${image.width}" height="${image.height}"` : ''
 
   return (
-    `<p style="text-align: center;"><img src="${escapeHtml(image.url)}" alt="${alt}" />` +
+    `<p style="text-align: center;"><img src="${escapeHtml(image.url)}" alt="${alt}"${dimensions} />` +
     (line ? `<br><small style="color: gray;">${line}</small>` : '') +
     `</p>`
   )

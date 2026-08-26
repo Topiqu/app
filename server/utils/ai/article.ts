@@ -305,8 +305,8 @@ export const finalizeArticle = async (
   // downstream throws, so this is the only place the cause exists.
   const tryGenerateImage = async (prompt: string, opts?: { filenameSuffix?: string }) => {
     try {
-      const { url } = await generateImage(prompt, { ...generateImageOptions, ...opts })
-      return url
+      const { url, width, height } = await generateImage(prompt, { ...generateImageOptions, ...opts })
+      return { url, width, height }
     } catch (error) {
       await reportCaughtError('Article image generation failed', error, { prompt })
       return null
@@ -317,14 +317,15 @@ export const finalizeArticle = async (
   let articleImageCredit: CoverCredit | null = null
   if (object.coverImage) {
     const hit = object.coverImage.type === 'generate' ? null : await findCoverImage(object.coverImage.query)
-    articleImageUrl = hit?.url ?? (await tryGenerateImage(object.coverImage.query)) ?? ''
+    const generated = hit ? null : await tryGenerateImage(object.coverImage.query)
+    articleImageUrl = hit?.url ?? generated?.url ?? ''
 
     // Whatever it turned out to be, not what was asked for: a stock lookup that came back empty
     // silently became a generated picture, and that is the case the reader most needs told.
     if (articleImageUrl) articleImageCredit = hit ? { kind: 'illustration', credit: hit.credit } : { kind: 'ai' }
   } else {
     // Legacy fallback just in case AI omits it
-    articleImageUrl = (await tryGenerateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024))) ?? ''
+    articleImageUrl = (await tryGenerateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024)))?.url ?? ''
     if (articleImageUrl) articleImageCredit = { kind: 'ai' }
   }
 
@@ -340,9 +341,9 @@ export const finalizeArticle = async (
 
     if (!allowsGeneratedFallback(instruction.type)) return null
 
-    const url = await tryGenerateImage(instruction.query, { filenameSuffix: idx.toString() })
+    const generated = await tryGenerateImage(instruction.query, { filenameSuffix: idx.toString() })
 
-    return url ? { url, kind: 'ai' } : null
+    return generated ? { ...generated, kind: 'ai' } : null
   }
 
   const settledImages = await Promise.all(

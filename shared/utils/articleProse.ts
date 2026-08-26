@@ -31,38 +31,16 @@ export const ARTICLE_PROSE_CLASS = [
 
 /**
  * Tables opt out of `prose` entirely. Every typography rule is `:where(…):not(:where(…))` —
- * specificity 0,0,0 — so the preset's own later rules win on source order alone: they overrode
- * the `cssExtend` cell padding and zeroed the inline padding of first/last cells. Winning that
- * race means matching the preset's internal selector strings, which is not a contract. `not-prose`
- * is, so the wrapper claims the table and styles it outright. Rules sit on the row, not the cell,
- * so adjacent borders cannot double up.
+ * specificity 0,0,0 — so the preset's own later rules win on source order alone. `not-prose` is
+ * the supported opt-out; the semantic `article-table` hook is styled explicitly in `main.css`,
+ * which also avoids relying on Tailwind to discover descendant variants inside this TS constant.
  */
-const TABLE_CELLS = [
-  '[&_table]:w-full [&_table]:border-separate [&_table]:border-spacing-0 [&_table]:text-[0.95em] [&_table]:leading-relaxed',
-  '[&_th]:border-b [&_th]:border-gray-300 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-wide',
-  '[&_th]:bg-gray-100 [&_th]:text-gray-800 dark:[&_th]:border-gray-600 dark:[&_th]:bg-gray-800 dark:[&_th]:text-gray-100',
-  '[&_td]:border-b [&_td]:border-gray-200 [&_td]:px-4 [&_td]:py-3 [&_td]:align-top [&_td]:text-gray-700 dark:[&_td]:border-gray-700 dark:[&_td]:text-gray-300',
-  '[&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:nth-child(even)]:bg-gray-50/70 dark:[&_tbody_tr:nth-child(even)]:bg-gray-800/35',
-  '[&_tbody_tr]:transition-colors [&_tbody_tr:hover]:bg-blue-50/70 dark:[&_tbody_tr:hover]:bg-blue-950/25',
-]
-
 export const ARTICLE_TABLE_CLASS = [
-  'not-prose my-8 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900',
-  ...TABLE_CELLS,
+  'article-table not-prose my-8 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900',
 ].join(' ')
 
 /**
- * The editing surface. Same cells as the published table, plus the chrome only TipTap emits:
- * its `.tableWrapper` scroll box, the column-resize handle and the selected-cell tint. Vertical
- * dividers are deliberate here and absent when published — while editing, cell bounds are an
- * affordance; while reading, they are noise.
+ * The editing surface uses a separate semantic hook because TipTap adds editor-only chrome: its
+ * `.tableWrapper` scroll box, column-resize handles and selected-cell overlay.
  */
-export const EDITOR_TABLE_CLASS = [
-  ...TABLE_CELLS,
-  '[&_.tableWrapper]:my-6 [&_.tableWrapper]:overflow-x-auto',
-  '[&_table]:rounded-lg [&_table]:border [&_table]:border-gray-200 dark:[&_table]:border-gray-700',
-  '[&_th]:border [&_th]:border-gray-200 dark:[&_th]:border-gray-700',
-  '[&_td]:border [&_td]:border-gray-200 dark:[&_td]:border-gray-700',
-  '[&_.selectedCell]:bg-blue-100/60 dark:[&_.selectedCell]:bg-blue-900/40',
-  '[&_.column-resize-handle]:w-0.5 [&_.column-resize-handle]:bg-blue-500',
-].join(' ')
+export const EDITOR_TABLE_CLASS = 'editor-table'
