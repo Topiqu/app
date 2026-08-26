@@ -1,6 +1,5 @@
-import { randomBytes } from 'node:crypto'
 import { z } from 'zod'
-
+import { randomBytes } from 'node:crypto'
 import { ThemeSchema } from '~~/shared/zod/enums/Theme.schema'
 import { domainVerificationDefaults, normalizeDomain, validateSubdomain } from '~~/shared/utils/domain'
 
@@ -10,7 +9,9 @@ const schema = z.object({
   name: z.string().trim().min(1).max(80),
   subdomain: z.string().trim().toLowerCase(),
   language: z.enum(['cs', 'en']),
-  theme: ThemeSchema.default('indigo'),
+  // ThemeSchema is generated against zod/v3, so composing it into a v4 object infers `unknown`; its
+  // option list is the part worth sharing anyway.
+  theme: z.enum(ThemeSchema.options).default('indigo'),
 })
 
 export default defineEventHandler(async (event) => {
