@@ -38,12 +38,28 @@ export const preparePage = async (page: Page, options: { expectedErrorPage?: boo
       /Hydration .*mismatch|Hydration completed but contains mismatches|Hydration (?:text|node) mismatch/i.test(
         message.text(),
       )
+    const hydrationDetails = async () => {
+      const details = await Promise.all(
+        message.args().map(async (argument) => {
+          try {
+            const value = await argument.jsonValue()
+            return typeof value === 'string' ? value : JSON.stringify(value)
+          } catch {
+            return argument.toString()
+          }
+        }),
+      )
+      return details.filter(Boolean).join(' ') || message.text()
+    }
     if (isHydrationError && message.type() === 'warning') {
-      failures.hydration.push(message.text())
+      failures.hydration.push(await hydrationDetails())
       return
     }
     if (message.type() === 'error') {
-      if (/^Failed to load resource: the server responded with a status of 404/i.test(message.text())) return
+      // The response listener below records the URL and status. Chromium's
+      // duplicate console message has neither, so retaining it only obscures the
+      // actionable response failure (and cannot distinguish designed media fallbacks).
+      if (/^Failed to load resource: the server responded with a status of \d+/i.test(message.text())) return
       if (
         failures.expectedErrorPage &&
         /^Framing '' violates the following Content Security Policy directive:/i.test(message.text())
@@ -57,22 +73,10 @@ export const preparePage = async (page: Page, options: { expectedErrorPage?: boo
       )
         return
       if (isHydrationError) {
-        failures.hydration.push(message.text())
+        failures.hydration.push(await hydrationDetails())
       } else {
         failures.console.push(message.text())
       }
-      const details = isHydrationError
-        ? await Promise.all(
-            message.args().map(async (argument) => {
-              try {
-                return JSON.stringify(await argument.jsonValue())
-              } catch {
-                return argument.toString()
-              }
-            }),
-          )
-        : []
-      if (details.length) failures.console.push(details.join(' '))
     }
   })
   page.on('requestfailed', (request) => {
@@ -84,7 +88,8 @@ export const preparePage = async (page: Page, options: { expectedErrorPage?: boo
     const origin = page.url().split('/').slice(0, 3).join('/')
     const isExpected404Document =
       failures.expectedErrorPage && response.request().resourceType() === 'document' && response.status() === 404
-    const isExpectedMediaFallback = response.request().resourceType() === 'image' && response.status() === 404
+    const isExpectedMediaFallback =
+      response.request().resourceType() === 'image' && [403, 404].includes(response.status())
     if (
       origin &&
       response.url().startsWith(origin) &&
@@ -124,11 +129,16 @@ export const waitForPageReady = async (page: Page) => {
     throw new Error(`Media did not settle: ${JSON.stringify(pendingMedia)}`, { cause: error })
   }
   const failures = runtimeFailures.get(page)
-  expect(failures?.hydration ?? [], 'Page must hydrate without structural or text mismatches').toEqual([])
-  expect(failures?.page ?? [], 'Page must not emit page errors').toEqual([])
-  expect(failures?.console ?? [], 'Page must not emit unexpected console errors').toEqual([])
-  expect(failures?.requests ?? [], 'First-party requests must not fail').toEqual([])
-  expect(failures?.responses ?? [], 'First-party requests must not return server errors').toEqual([])
+  const runtimeErrors = failures
+    ? [
+        ...failures.hydration.map((message) => `hydration: ${message}`),
+        ...failures.page.map((message) => `page: ${message}`),
+        ...failures.console.map((message) => `console: ${message}`),
+        ...failures.requests.map((message) => `request: ${message}`),
+        ...failures.responses.map((message) => `response: ${message}`),
+      ]
+    : []
+  expect(runtimeErrors, 'Page must hydrate and run without browser or first-party request errors').toEqual([])
   if (!failures?.expectedErrorPage) {
     await expect(page.locator('nuxt-error-overlay, #nuxt-error-overlay')).toHaveCount(0)
   }

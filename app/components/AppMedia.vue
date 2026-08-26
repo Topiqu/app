@@ -82,7 +82,10 @@ const { currentSrc, isRetrying, usingOriginal, handleError, handleLoad } = useIm
 const hasLoaded = shallowRef(false)
 const mediaRoot = useTemplateRef<HTMLElement>('mediaRoot')
 const shouldOptimize = computed(() =>
-  Boolean(currentSrc.value && !usingOriginal.value && canOptimizeImageUrl(currentSrc.value)),
+  // Nuxt Image treats a query string as part of the IPX source path. Once a
+  // cache-busting retry starts, request the source directly so
+  // `?topiqu_retry=…` remains a query instead of becoming `%3F…` in the path.
+  Boolean(currentSrc.value && !isRetrying.value && !usingOriginal.value && canOptimizeImageUrl(currentSrc.value)),
 )
 
 watch(currentSrc, () => {

@@ -316,6 +316,10 @@ export default defineNuxtConfig({
   },
 
   security: {
+    // A service worker can keep an older HTML document alive while a new release
+    // replaces its chunks. SRI would pin that mutable asset URL to the old hash
+    // and make an otherwise valid cross-release navigation fail.
+    sri: false,
     rateLimiter: {
       interval: 10 * 1000,
       tokensPerInterval: IS_BROWSER_TEST ? 10_000 : 300,
@@ -366,11 +370,16 @@ export default defineNuxtConfig({
           'https://ep2.adtrafficquality.google',
           'https://challenges.cloudflare.com',
         ],
+        // Nuxt Image uses this fixed handler to replay image failures that happen
+        // before hydration. Permit only that exact inline attribute, not arbitrary
+        // inline event handlers.
+        'script-src-attr': ["'unsafe-hashes'", "'sha256-bwK6T5wZVTANitXbrTsel7kl/PyCjCd/Dq5Qoz3imjM='"],
       },
     },
     xssValidator: false,
   },
   routeRules: {
+    '/sw.js': { headers: { 'cache-control': 'no-store, no-cache, must-revalidate' } },
     '/manifest.webmanifest': { headers: { 'content-type': 'application/manifest+json' } },
     '/sitemap.xml': { headers: { 'content-type': 'application/xml' }, security: { rateLimiter: CRAWL_LIMIT } },
     '/robots.txt': { security: { rateLimiter: CRAWL_LIMIT } },
@@ -528,6 +537,9 @@ export default defineNuxtConfig({
       // ],
     },
     workbox: {
+      // The app is SSR and tenant-aware. Caching `/` as an SPA navigation shell
+      // can combine stale HTML with chunks from a newer release.
+      navigateFallback: null,
       runtimeCaching: [
         {
           urlPattern: /^https:\/\/topiqu\.com\/.*$/,
