@@ -338,6 +338,23 @@ main {
   }
 }
 
+/* Reads transparent areas of a logo or favicon as transparent rather than as a white plate. */
+.transparency-grid {
+  --transparency-square: var(--ui-bg-accented);
+  background-color: var(--ui-bg);
+  background-image:
+    linear-gradient(45deg, var(--transparency-square) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--transparency-square) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--transparency-square) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--transparency-square) 75%);
+  background-size: 16px 16px;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
+}
+
 .z-header {
   z-index: var(--topiqu-layer-header);
 }

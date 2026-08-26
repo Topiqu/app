@@ -122,11 +122,19 @@ watch(
   (val) => (previewUrl.value = val || null),
 )
 
+const formatBytes = (bytes: number) => (bytes < 1e6 ? `${Math.round(bytes / 1e3)} kB` : `${(bytes / 1e6).toFixed(1)} MB`)
+
 const constraints = computed(() => {
   const defaults =
     {
       'client-logo': { maxWidth: 3840, maxHeight: 2160, maxSize: 8e6 },
-      'client-favicon': { minWidth: 32, minHeight: 32, maxWidth: 512, maxHeight: 512, maxSize: 512e3 },
+      'client-favicon': {
+        minWidth: FAVICON_MIN_SIZE,
+        minHeight: FAVICON_MIN_SIZE,
+        maxWidth: FAVICON_MAX_SIZE,
+        maxHeight: FAVICON_MAX_SIZE,
+        maxSize: FAVICON_MAX_BYTES,
+      },
       'user-avatar': { maxWidth: 3840, maxHeight: 2160, maxSize: 5e6 },
       'article-image': { maxWidth: 3840, maxHeight: 2160, minWidth: 300, minHeight: 200, maxSize: 5e6 },
       emoji: { maxWidth: 128, maxHeight: 128, maxSize: 1e6 },
@@ -137,7 +145,7 @@ const constraints = computed(() => {
 const constraintInfo = computed(() => {
   const c = constraints.value
   return [
-    c.maxSize && `Max ${(c.maxSize / 1e6).toFixed(1)}MB`,
+    c.maxSize && `Max ${formatBytes(c.maxSize)}`,
     (c.maxWidth || c.maxHeight) && `${c.maxWidth || '∞'}×${c.maxHeight || '∞'}px`,
   ].filter(Boolean)
 })
@@ -148,54 +156,59 @@ const cancelUpload = () => {
   emit('upload', { url: '', optimizedUrl: '' })
 }
 
-const validate = (condition: boolean, msg: string) => {
-  if (condition) {
-    toast.add({ color: 'error', title: msg })
-    selectedFile.value = null
-    return false
-  }
-  return true
+// Resolves null instead of rejecting: a file the browser cannot decode must surface a reason, not hang the promise.
+const loadImage = (src: string) =>
+  new Promise<HTMLImageElement | null>((resolve) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => resolve(null)
+    image.src = src
+  })
+
+const rejectionReason = async (file: File, src: string) => {
+  const c = constraints.value
+  const isFavicon = props.type === 'client-favicon'
+
+  if (!file.type.startsWith('image/')) return $t('common.upload.notImage')
+  if (isFavicon && !isFaviconMimeType(file.type))
+    return $t('common.upload.formatNotAllowed', { actual: file.type.replace('image/', '').toUpperCase() })
+  if (c.maxSize && file.size > c.maxSize)
+    return $t('common.upload.tooLarge', { actual: formatBytes(file.size), limit: formatBytes(c.maxSize) })
+  if (c.minSize && file.size < c.minSize)
+    return $t('common.upload.tooSmall', { actual: formatBytes(file.size), limit: formatBytes(c.minSize) })
+
+  const image = await loadImage(src)
+  if (!image) return $t('common.upload.unreadable')
+
+  const { naturalWidth: width, naturalHeight: height } = image
+  const actual = `${width} × ${height}`
+  if (isFavicon && width !== height) return $t('common.upload.notSquare', { actual })
+  if ((c.maxWidth && width > c.maxWidth) || (c.maxHeight && height > c.maxHeight))
+    return $t('common.upload.dimensionsTooLarge', { actual, limit: `${c.maxWidth ?? '∞'} × ${c.maxHeight ?? '∞'}` })
+  if ((c.minWidth && width < c.minWidth) || (c.minHeight && height < c.minHeight))
+    return $t('common.upload.dimensionsTooSmall', { actual, limit: `${c.minWidth ?? 0} × ${c.minHeight ?? 0}` })
+  return null
 }
 
 const handleFile = async (file: File) => {
   if (props.disabled) return
-  if (!validate(!file.type.startsWith('image/'), $t('common.messages.operationFailed'))) return
-  if (
-    props.type === 'client-favicon' &&
-    !validate(!['image/png', 'image/jpeg', 'image/webp'].includes(file.type), $t('common.messages.operationFailed'))
-  )
-    return
-
-  const c = constraints.value
-  const maxSize = c.maxSize
-  if (!validate(!!maxSize && file.size > maxSize, `Příliš velký (max ${((maxSize ?? 0) / 1e6).toFixed(1)} MB)`)) return
-  if (!validate(!!c.minSize && file.size < c.minSize, `Příliš malý`)) return
 
   const objectUrl = URL.createObjectURL(file)
-  const img = await new Promise<HTMLImageElement>((r) => {
-    const i = new Image()
-    i.onload = () => r(i)
-    i.src = objectUrl
-  })
-
-  if (props.type === 'client-favicon' && !validate(img.width !== img.height, $t('common.messages.operationFailed')))
+  const reason = await rejectionReason(file, objectUrl)
+  if (reason) {
+    URL.revokeObjectURL(objectUrl)
+    selectedFile.value = null
+    toast.add({
+      color: 'error',
+      icon: 'i-mdi-image-off-outline',
+      title: $t('common.upload.rejected'),
+      description: reason,
+      duration: 8000,
+    })
     return
+  }
 
-  if (
-    !validate(
-      (!!c.maxWidth && img.width > c.maxWidth) || (!!c.maxHeight && img.height > c.maxHeight),
-      `Rozměry příliš velké`,
-    )
-  )
-    return
-  if (
-    !validate(
-      (!!c.minWidth && img.width < c.minWidth) || (!!c.minHeight && img.height < c.minHeight),
-      `Rozměry příliš malé`,
-    )
-  )
-    return
-
+  const c = constraints.value
   isProcessing.value = true
   previewUrl.value = objectUrl
 
@@ -212,8 +225,16 @@ const handleFile = async (file: File) => {
     const { url, optimizedUrl } = await $fetch('/api/upload', { method: 'POST', body: formData })
     emit('upload', { url, optimizedUrl })
   } catch (e: any) {
-    toast.add({ color: 'error', title: $t('common.avatar.uploadError') + e.data?.message })
+    toast.add({
+      color: 'error',
+      icon: 'i-mdi-cloud-off-outline',
+      title: $t('common.avatar.uploadError'),
+      description: e?.data?.message || e?.message,
+      duration: 8000,
+    })
+    previewUrl.value = props.imageUrl || null
     selectedFile.value = null
+    URL.revokeObjectURL(objectUrl)
   } finally {
     isProcessing.value = false
   }

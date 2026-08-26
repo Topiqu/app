@@ -2,9 +2,11 @@
   <div class="space-y-3">
     <UButton
       type="button"
-      class="group relative flex items-center justify-center overflow-hidden rounded-2xl border border-default bg-elevated shadow-sm transition hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-      :class="isFavicon ? 'size-24' : 'h-20 w-48'"
+      color="neutral"
+      variant="ghost"
       :aria-label="editLabel"
+      class="group relative justify-center overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default p-0 hover:bg-transparent"
+      :class="[isFavicon ? 'size-24' : 'h-20 w-48', imageUrl ? 'transparency-grid' : 'bg-elevated']"
       @click="openEditor"
     >
       <AppMedia
@@ -17,11 +19,11 @@
         :width="isFavicon ? 96 : 192"
         containerClass="size-full bg-transparent"
       />
-      <Icon v-else name="mdi:image-plus-outline" class="size-10 text-muted" />
+      <Icon v-else name="mdi:image-plus-outline" class="size-9 text-dimmed" />
       <span
-        class="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
+        class="absolute inset-0 grid place-items-center bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
       >
-        <Icon name="mdi:image-edit-outline" class="size-8" />
+        <Icon name="mdi:image-edit-outline" class="size-7" />
       </span>
     </UButton>
 
@@ -41,110 +43,121 @@
       </UButton>
     </div>
 
-    <Modal v-model="open" :title="editorTitle" :onClose="closeEditor" class="max-w-lg">
-      <template #content>
+    <UModal
+      v-model:open="open"
+      scrollable
+      :title="editorTitle"
+      :dismissible="!busy"
+      :ui="{ content: 'max-w-lg' }"
+    >
+      <template #body>
         <div class="flex flex-col gap-5">
-          <UButton
+          <UFileUpload
             v-if="!draftUrl"
-            type="button"
-            class="flex h-56 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-default transition-colors hover:border-primary hover:bg-elevated"
-            @click="chooseFile()"
-          >
-            <Icon name="mdi:image-plus-outline" class="size-10 text-primary" />
-            <span class="font-medium">{{ $t('common.avatar.chooseImage') }}</span>
-            <span class="text-xs text-muted">{{ $t('common.avatar.requirements') }}</span>
-          </UButton>
+            v-model="pickedFile"
+            size="lg"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            icon="i-mdi-cloud-upload-outline"
+            :label="$t('common.avatar.chooseImage')"
+            :description="$t('common.avatar.requirements')"
+            :preview="false"
+            class="min-h-52"
+          />
 
           <template v-else>
-            <UFormField :label="$t('common.preferences.brandAsset.displayMode')">
-              <UFieldGroup class="w-full">
-                <UButton
-                  type="button"
-                  class="flex-1 justify-center"
-                  :color="displayMode === 'contain' ? 'primary' : 'neutral'"
-                  :variant="displayMode === 'contain' ? 'solid' : 'outline'"
-                  icon="i-mdi-fit-to-screen-outline"
-                  :aria-pressed="displayMode === 'contain'"
-                  @click="displayMode = 'contain'"
-                >
-                  {{ $t('common.preferences.brandAsset.showWhole') }}
-                </UButton>
-                <UButton
-                  type="button"
-                  class="flex-1 justify-center"
-                  :color="displayMode === 'cover' ? 'primary' : 'neutral'"
-                  :variant="displayMode === 'cover' ? 'solid' : 'outline'"
-                  icon="i-mdi-crop"
-                  :aria-pressed="displayMode === 'cover'"
-                  @click="displayMode = 'cover'"
-                >
-                  {{ $t('common.preferences.brandAsset.crop') }}
-                </UButton>
-              </UFieldGroup>
-            </UFormField>
-
-            <p class="text-sm text-muted">
-              {{
-                displayMode === 'contain'
-                  ? $t('common.preferences.brandAsset.showWholeHelp')
-                  : $t('common.preferences.brandAsset.cropHelp')
-              }}
-            </p>
-
             <div
-              ref="cropArea"
-              class="relative mx-auto max-w-full touch-none overflow-hidden rounded-2xl bg-[linear-gradient(45deg,#e5e7eb_25%,transparent_25%),linear-gradient(-45deg,#e5e7eb_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#e5e7eb_75%),linear-gradient(-45deg,transparent_75%,#e5e7eb_75%)] bg-[length:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px] shadow-lg ring-4 ring-default dark:bg-gray-800"
-              :style="{ width: `${viewportWidth}px`, height: `${viewportHeight}px` }"
-              :class="isSwiping ? 'cursor-grabbing' : 'cursor-grab'"
+              role="group"
+              :aria-label="$t('common.preferences.brandAsset.displayMode')"
+              class="flex gap-1 rounded-[var(--ui-radius)] bg-elevated p-1"
             >
-              <NuxtImg
-                :src="draftUrl"
-                alt=""
-                draggable="false"
-                class="pointer-events-none absolute max-w-none select-none"
-                :style="previewStyle"
-              />
-              <div v-if="busy" class="absolute inset-0 flex items-center justify-center bg-black/45 text-white">
-                <UIcon name="i-mdi-loading" size="36" class="animate-spin" />
-              </div>
+              <UButton
+                type="button"
+                class="flex-1 justify-center"
+                :color="displayMode === 'contain' ? 'primary' : 'neutral'"
+                :variant="displayMode === 'contain' ? 'soft' : 'ghost'"
+                icon="i-mdi-fit-to-screen-outline"
+                :aria-pressed="displayMode === 'contain'"
+                @click="displayMode = 'contain'"
+              >
+                {{ $t('common.preferences.brandAsset.showWhole') }}
+              </UButton>
+              <UButton
+                type="button"
+                class="flex-1 justify-center"
+                :color="displayMode === 'cover' ? 'primary' : 'neutral'"
+                :variant="displayMode === 'cover' ? 'soft' : 'ghost'"
+                icon="i-mdi-crop"
+                :aria-pressed="displayMode === 'cover'"
+                @click="displayMode = 'cover'"
+              >
+                {{ $t('common.preferences.brandAsset.crop') }}
+              </UButton>
             </div>
 
-            <p class="text-center text-xs text-muted">{{ $t('common.preferences.companyLogo.dragHint') }}</p>
-            <UFormField :label="$t('common.preferences.brandAsset.zoom')">
-              <UInput
-                v-model.number="zoom"
-                type="range"
-                :min="displayMode === 'cover' ? 1 : 0.5"
-                max="3"
-                step="0.01"
-                class="w-full"
-                :disabled="busy"
-              />
+            <div class="flex flex-col items-center gap-3">
+              <div
+                ref="cropArea"
+                class="transparency-grid relative max-w-full touch-none overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default"
+                :style="{ width: `${viewportWidth}px`, height: `${viewportHeight}px` }"
+                :class="isSwiping ? 'cursor-grabbing' : 'cursor-grab'"
+              >
+                <NuxtImg
+                  :src="draftUrl"
+                  alt=""
+                  draggable="false"
+                  class="pointer-events-none absolute max-w-none select-none"
+                  :style="previewStyle"
+                />
+                <div v-if="busy" class="absolute inset-0 grid place-items-center bg-default/70 backdrop-blur-sm">
+                  <UIcon name="i-mdi-loading" size="32" class="animate-spin text-primary" />
+                </div>
+              </div>
+              <p class="text-balance text-center text-xs text-muted">{{ stageHint }}</p>
+            </div>
+
+            <UFormField :label="$t('common.preferences.brandAsset.zoom')" :hint="`${zoom.toFixed(1)}×`">
+              <USlider v-model="zoom" :min="minZoom" :max="3" :step="0.01" :disabled="busy" />
             </UFormField>
-            <div class="flex flex-wrap justify-center gap-2">
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <UFieldGroup>
+                <UButton
+                  square
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                  icon="i-mdi-rotate-left"
+                  :aria-label="$t('common.avatar.rotateLeft')"
+                  :title="$t('common.avatar.rotateLeft')"
+                  :disabled="busy"
+                  @click="rotation -= 90"
+                />
+                <UButton
+                  square
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                  icon="i-mdi-rotate-right"
+                  :aria-label="$t('common.avatar.rotateRight')"
+                  :title="$t('common.avatar.rotateRight')"
+                  :disabled="busy"
+                  @click="rotation += 90"
+                />
+                <UButton
+                  square
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                  icon="i-mdi-backup-restore"
+                  :aria-label="$t('common.preferences.brandAsset.resetView')"
+                  :title="$t('common.preferences.brandAsset.resetView')"
+                  :disabled="busy"
+                  @click="resetCrop"
+                />
+              </UFieldGroup>
               <UButton
                 color="neutral"
-                variant="soft"
-                size="sm"
-                icon="i-mdi-rotate-left"
-                :disabled="busy"
-                @click="rotation -= 90"
-              >
-                {{ $t('common.avatar.rotateLeft') }}
-              </UButton>
-              <UButton
-                color="neutral"
-                variant="soft"
-                size="sm"
-                icon="i-mdi-rotate-right"
-                :disabled="busy"
-                @click="rotation += 90"
-              >
-                {{ $t('common.avatar.rotateRight') }}
-              </UButton>
-              <UButton
-                color="neutral"
-                variant="soft"
+                variant="ghost"
                 size="sm"
                 icon="i-mdi-image-edit-outline"
                 :disabled="busy"
@@ -155,9 +168,14 @@
             </div>
           </template>
 
-          <p v-if="errorMessage" role="alert" class="rounded-xl bg-error/10 p-3 text-sm text-error">
-            {{ errorMessage }}
-          </p>
+          <UAlert
+            v-if="errorMessage"
+            role="alert"
+            color="error"
+            variant="soft"
+            icon="i-mdi-alert-circle-outline"
+            :description="errorMessage"
+          />
         </div>
       </template>
 
@@ -171,7 +189,7 @@
           </UButton>
         </div>
       </template>
-    </Modal>
+    </UModal>
   </div>
 </template>
 
@@ -208,15 +226,44 @@ const saveLabel = computed(() =>
 
 const open = shallowRef(false)
 const busy = shallowRef(false)
-const { chooseFile, cropArea, draftUrl, errorMessage, isSwiping, previewStyle, render, reset, resetCrop, rotation, zoom } =
-  useAvatarCropper($t, () => undefined, {
-    viewportWidth,
-    viewportHeight,
-    outputWidth,
-    outputHeight,
-    fit: renderFit,
-  })
+const pickedFile = shallowRef<File | null>(null)
+const {
+  acceptFile,
+  chooseFile,
+  cropArea,
+  draftUrl,
+  errorMessage,
+  isSwiping,
+  previewStyle,
+  render,
+  reset,
+  resetCrop,
+  rotation,
+  zoom,
+} = useAvatarCropper($t, () => undefined, {
+  viewportWidth,
+  viewportHeight,
+  outputWidth,
+  outputHeight,
+  fit: renderFit,
+})
 
+const minZoom = computed(() => (displayMode.value === 'cover' ? 1 : 0.5))
+// cropHelp already tells the user to drag; contain mode only becomes draggable once zoom pushes the image past the frame.
+const stageHint = computed(() =>
+  displayMode.value === 'cover'
+    ? $t('common.preferences.brandAsset.cropHelp')
+    : [$t('common.preferences.brandAsset.showWholeHelp'), zoom.value > 1 && $t('common.avatar.dragHint')]
+        .filter(Boolean)
+        .join(' · '),
+)
+
+// Handing the file straight to the cropper and clearing the picker lets a rejected file be picked again.
+watch(pickedFile, (file) => {
+  if (!file) return
+  acceptFile(file)
+  pickedFile.value = null
+})
 watch(displayMode, () => resetCrop())
 
 function openEditor() {
@@ -225,10 +272,16 @@ function openEditor() {
 
 function closeEditor() {
   if (busy.value) return
-  reset()
-  displayMode.value = 'contain'
   open.value = false
 }
+
+// Escape, the overlay and the close icon bypass closeEditor, so the draft is discarded on the state itself.
+watch(open, (isOpen) => {
+  if (isOpen) return
+  reset()
+  pickedFile.value = null
+  displayMode.value = 'contain'
+})
 
 async function saveAsset() {
   busy.value = true
@@ -241,8 +294,6 @@ async function saveAsset() {
     form.append('maxHeight', String(outputHeight))
     const result = await $fetch<{ url: string; optimizedUrl: string }>('/api/upload', { method: 'POST', body: form })
     emit('upload', { url: result.url, optimizedUrl: result.optimizedUrl })
-    reset()
-    displayMode.value = 'contain'
     open.value = false
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || $t('common.avatar.uploadError')

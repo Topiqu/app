@@ -65,17 +65,21 @@ describe('settings integrations catalog', () => {
     expect(catalog).not.toContain("label: 'Premium+'")
   })
 
-  it('centers a wider unsaved changes bar', () => {
+  it('floats the unsaved changes bar from one shared component', () => {
     const settings = source('app/pages/settings/index.vue')
+    const profile = source('app/pages/uzivatel/index.vue')
+    const bar = source('app/components/UnsavedBar.vue')
     const confirmDialog = source('app/components/ConfirmDialog.vue')
     const styles = source('app/assets/styles/main.css')
 
-    expect(settings).toContain('class="pointer-events-none sticky bottom-4 z-10 flex justify-center"')
-    expect(settings).toContain('class="pointer-events-auto w-full max-w-xl shadow-lg"')
-    expect(settings).toContain(":description=\"$t('common.preferences.unsavedDescription')\"")
-    expect(settings).toContain('class="flex w-full justify-end gap-2"')
-    expect(settings).not.toContain('sm:justify-end')
+    expect(settings).toContain('<UnsavedBar :dirty="isDirty" :loading="isSaving"')
+    expect(profile).toContain('<UnsavedBar :dirty="isDirty" :loading="isLoading"')
+    expect(settings).not.toContain('sticky bottom-4')
     expect(settings).not.toContain('onBeforeRouteLeave')
+    expect(bar).toContain('<Teleport to="body">')
+    expect(bar).toContain('fixed inset-x-0 bottom-4 z-header')
+    expect(bar).toContain("$t('common.preferences.unsavedDescription')")
+    expect(bar).toContain('motion-reduce:hidden')
     expect(confirmDialog).toMatch(/<UModal\s+portal\s+scrollable/)
     expect(styles).not.toMatch(/\.confirm-dialog-content\s*{[^}]*\b(?:top|left|transform):/s)
   })

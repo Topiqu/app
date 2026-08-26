@@ -111,9 +111,7 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
     resetDialog()
   }
 
-  onChange((files) => {
-    const file = files?.[0]
-    if (!file) return
+  function acceptFile(file: File) {
     errorMessage.value = ''
     if (!file.type.startsWith('image/') || file.size > MAX_AVATAR_BYTES) {
       errorMessage.value = file.size > MAX_AVATAR_BYTES ? t('common.avatar.tooLarge') : t('common.avatar.invalidFile')
@@ -122,7 +120,9 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
     }
     selectedFile.value = file
     resetCrop()
-  })
+  }
+
+  onChange((files) => files?.[0] && acceptFile(files[0]))
 
   watch(draftUrl, (url) => {
     if (!url) return onPreview(null)
@@ -169,6 +169,7 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
   }
 
   return {
+    acceptFile,
     chooseFile,
     cropArea,
     draftUrl,

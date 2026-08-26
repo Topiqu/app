@@ -97,7 +97,6 @@
     "settings": "Settings",
     "remove": "Remove",
     "continue": "Continue",
-    "unsavedChanges": "Unsaved changes!",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "advertisement": "Advertisement",
@@ -377,6 +376,19 @@
       "logout": "Log out",
       "welcomeBack": "Welcome back"
     },
+    "upload": {
+      "rejected": "Image not accepted",
+      "notImage": "Choose an image file.",
+      "formatNotAllowed": "The {actual} format is not supported here. Use PNG, JPEG or WebP.",
+      "notSquare": "The image has to be square, this one is {actual} px.",
+      "faviconSquare": "The favicon has to be a square image.",
+      "faviconDimensions": "The favicon must be between {min} and {max} px.",
+      "tooLarge": "The file has {actual}, the limit is {limit}.",
+      "tooSmall": "The file has {actual}, at least {limit} is required.",
+      "dimensionsTooLarge": "The image is {actual} px, the maximum is {limit} px.",
+      "dimensionsTooSmall": "The image is {actual} px, the minimum is {limit} px.",
+      "unreadable": "The image could not be read. It is damaged or in an unsupported format."
+    },
     "labels": {
       "username": "Username",
       "email": "Email",
@@ -550,7 +562,6 @@
         "edit": "Replace and edit logo",
         "remove": "Remove logo",
         "editorTitle": "Position logo",
-        "dragHint": "Drag to position the logo and use the slider to zoom in or out. The checkerboard represents transparency.",
         "save": "Use logo"
       },
       "brandAsset": {
@@ -559,6 +570,7 @@
         "crop": "Crop to fill",
         "showWholeHelp": "The complete image remains visible; unused space stays transparent.",
         "cropHelp": "The image fills the frame. Drag it to choose the important part of the crop.",
+        "resetView": "Reset zoom and position",
         "zoom": "Zoom"
       },
       "branding": {
@@ -796,6 +808,38 @@
         "AI_USE": "Use AI tools",
         "ANALYTICS_READ": "View analytics",
         "CONTENT_MODERATE": "Moderate comments and content"
+      }
+    },
+    "tenant": {
+      "switcher": "Switch blog",
+      "switchFailed": "The blog could not be switched.",
+      "owner": "Owner",
+      "member": "Member",
+      "createTitle": "Create a new blog",
+      "createDescription": "Create another personal or test blog under your account.",
+      "name": "Blog name",
+      "namePlaceholder": "My new blog",
+      "subdomain": "Subdomain",
+      "subdomainPlaceholder": "my-blog",
+      "checking": "Checking availability…",
+      "available": "Subdomain is available",
+      "language": "Primary language",
+      "theme": "Color theme",
+      "basicTitle": "The blog will use the Basic plan",
+      "basicDescription": "No additional trial is created. You can change the plan later in the blog settings.",
+      "createAction": "Create blog",
+      "created": "Blog created",
+      "limitReached": "You have reached the limit of three owned Basic blogs.",
+      "subdomainTaken": "This subdomain is no longer available.",
+      "nameTaken": "A blog with this name already exists.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "failed": "The blog could not be created.",
+      "domainReasons": {
+        "empty": "Enter a subdomain.",
+        "tooShort": "The subdomain must contain at least 3 characters.",
+        "invalid": "Use lowercase letters, numbers, and hyphens only.",
+        "reserved": "This subdomain is reserved.",
+        "taken": "This subdomain is already taken."
       }
     },
     "invitation": {

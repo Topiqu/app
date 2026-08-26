@@ -27,6 +27,23 @@ describe('publication brand assets', () => {
     expect(uploader).toContain("isFavicon.value ? 'client-favicon' : 'client-logo'")
   })
 
+  it('builds the editor from system primitives instead of a restyled button', () => {
+    const uploader = source('app/components/Form/Client/LogoUploader.vue')
+    const styles = source('app/assets/styles/main.css')
+
+    // A bare <UButton> defaults to solid primary, which is what turned the whole dropzone into a blue slab.
+    expect(uploader).toContain('<UFileUpload')
+    expect(uploader).toContain('<UModal')
+    expect(uploader).toContain('<USlider')
+    expect(uploader).not.toContain('h-56')
+    expect(uploader).not.toContain("type=\"range\"")
+    // The checkerboard reads transparency from theme tokens, so it no longer needs a hardcoded gray per color scheme.
+    expect(uploader).toContain('transparency-grid')
+    expect(uploader).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
+    expect(styles).toContain('.transparency-grid')
+    expect(styles).toContain('--transparency-square: var(--ui-bg-accented)')
+  })
+
   it('renders the normalized wide logo without requesting a square crop', () => {
     const header = source('app/components/Header.vue')
     const home = source('app/pages/index.vue')

@@ -22,6 +22,26 @@ const nuxtUiComponents = new Set(
 )
 const sourceOf = (path: string) => sources.find((file) => file.path === path)?.source ?? ''
 
+const templateOf = (source: string) => {
+  const start = source.indexOf('<template>')
+  const end = source.lastIndexOf('</template>')
+  return start >= 0 && end > start ? source.slice(start, end) : ''
+}
+
+// Nuxt names a component after its path, collapsing repeated segments and dropping a trailing `index`.
+const localComponents = new Set(
+  vueFiles(join(appRoot, 'components')).map((path) => {
+    const segments = relative(join(appRoot, 'components'), path)
+      .split(sep)
+      .join('/')
+      .replace(/\.vue$/, '')
+      .split('/')
+      .map((segment) => segment[0]!.toUpperCase() + segment.slice(1))
+    if (segments.at(-1) === 'Index') segments.pop()
+    return segments.filter((segment, index) => segment !== segments[index - 1]).join('')
+  }),
+)
+
 const openingTags = (source: string) => {
   const tags: { name: string; tag: string; start: number; end: number }[] = []
   const matcher = /<(?<name>U[A-Z][A-Za-z0-9]*)\b/g
@@ -63,6 +83,48 @@ describe('Nuxt UI template contract', () => {
   it('only references components shipped by the installed Nuxt UI version', () => {
     const used = new Set(sources.flatMap(({ source }) => openingTags(source).map(({ name }) => name)))
     expect([...used].filter((name) => !nuxtUiComponents.has(name)).sort()).toEqual([])
+  })
+
+  // A tag that resolves to nothing renders nothing: `<Modal>` silently swallowed the whole brand-asset editor.
+  it('only renders components that actually resolve', () => {
+    const external = new Set([
+      'BubbleMenu',
+      'ClientOnly',
+      'DefinePicker',
+      'DevOnly',
+      'EditorContent',
+      'Icon',
+      'NodeViewWrapper',
+      'NuxtImg',
+      'NuxtLayout',
+      'NuxtLink',
+      'NuxtLoadingIndicator',
+      'NuxtPage',
+      'NuxtRouteAnnouncer',
+      'NuxtTime',
+      'Qrcode',
+      'ReusePicker',
+      'Teleport',
+      'Transition',
+      'VueEasyLightbox',
+    ])
+    const unresolved = [
+      ...new Set(
+        sources.flatMap(({ source }) =>
+          [...templateOf(source).matchAll(/<([A-Z][A-Za-z0-9]*)[\s/>]/g)].map((match) => match[1] ?? ''),
+        ),
+      ),
+    ]
+      .filter(
+        (name) =>
+          !external.has(name) &&
+          !nuxtUiComponents.has(name) &&
+          !localComponents.has(name) &&
+          !localComponents.has(name.replace(/^Lazy/, '')),
+      )
+      .sort()
+
+    expect(unresolved).toEqual([])
   })
 
   it('does not reintroduce native interactive primitives', () => {
@@ -256,7 +318,6 @@ describe('Nuxt UI template contract', () => {
       'app/components/Form/Client/SearchConsole.vue',
       'app/components/Stats/Dialog.vue',
       'app/components/User/Activity.vue',
-      'app/pages/uzivatel/index.vue',
     ])
     expect(failuresFor(/\banimate-pulse\b/i, allowlist)).toEqual([])
   })
@@ -295,7 +356,6 @@ describe('Nuxt UI template contract', () => {
       'app/components/Tiptap/Editor.vue',
       'app/pages/clanky/[slug].vue',
       'app/pages/index.vue',
-      'app/pages/uzivatel/index.vue',
     ])
     const transitionAllowlist = new Set([
       'app/components/AdSlot.vue',
@@ -304,7 +364,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Form/Client/AI.vue',
       'app/components/Network/Indicator.vue',
       'app/components/Tiptap/DropOverlay.vue',
-      'app/pages/uzivatel/index.vue',
+      'app/components/UnsavedBar.vue',
     ])
     expect(failuresFor(/<style(?:\s|>)/, styleAllowlist)).toEqual([])
     expect(failuresFor(/<(?:Transition|transition)(?:\s|>)/, transitionAllowlist)).toEqual([])
