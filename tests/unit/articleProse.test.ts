@@ -37,11 +37,18 @@ describe('article prose presentation contract', () => {
     expect(css).toContain('padding: 0.75rem 1rem')
   })
 
-  it('does not leave inline article images permanently transparent', () => {
+  it('shows complete inline images across the article body and keeps them connected to the lightbox', () => {
     const page = readFileSync(resolve(process.cwd(), 'app/pages/clanky/[slug].vue'), 'utf8')
+    const lightbox = readFileSync(resolve(process.cwd(), 'app/components/Article/Lightbox.vue'), 'utf8')
     const imageRule = page.match(/\.article-content p img\s*\{([^}]*)\}/)?.[1] ?? ''
 
     expect(imageRule).not.toContain('opacity: 0')
     expect(imageRule).not.toContain('fade-in-image')
+    expect(imageRule).toMatch(/width:\s*100%/)
+    expect(imageRule).toMatch(/height:\s*auto/)
+    expect(imageRule).toContain('object-fit: contain')
+    expect(imageRule).not.toContain('max-height')
+    expect(lightbox).toContain("selector = 'p img'")
+    expect(lightbox).not.toContain("selector = '.prose p img'")
   })
 })

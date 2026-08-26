@@ -454,9 +454,13 @@ onUnmounted(() => {
 /* No vertical padding: the wrapping `<p>` already carries a prose margin, and this stacked a third
    spacing on top of it. */
 .article-content p img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
   border-radius: 0.75rem;
-  max-height: 600px;
-  cursor: pointer;
+  object-fit: contain;
+  cursor: zoom-in;
 }
 .article-content small {
   color: #4b5563 !important;
