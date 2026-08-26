@@ -52,9 +52,8 @@
               />
             </UFormField>
             <UFormField :label="$t('master.clientCreate.fields.logo.label')">
-              <FileUploader
+              <FormClientLogoUploader
                 :imageUrl="newClient.logoUrl"
-                type="client-logo"
                 @upload="((newClient.logoUrl = $event.url), (newClient.optimizedUrl = $event.optimizedUrl))"
               />
             </UFormField>

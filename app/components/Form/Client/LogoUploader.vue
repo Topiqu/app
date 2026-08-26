@@ -2,158 +2,269 @@
   <div class="space-y-3">
     <UButton
       type="button"
-      class="group relative flex size-36 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm transition hover:border-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-500 dark:border-gray-700 dark:bg-gray-800"
-      :aria-label="$t('common.preferences.companyLogo.edit')"
+      color="neutral"
+      variant="ghost"
+      :aria-label="editLabel"
+      class="group relative justify-center overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default p-0 hover:bg-transparent"
+      :class="[isFavicon ? 'size-24' : 'h-20 w-48', imageUrl ? 'transparency-grid' : 'bg-elevated']"
       @click="openEditor"
     >
-      <NuxtImg
-        v-if="logoUrl"
-        :src="logoUrl"
-        width="144"
-        height="144"
+      <AppMedia
+        v-if="imageUrl"
+        :src="imageUrl"
+        :alt="assetAlt"
+        :aspectRatio="outputAspectRatio"
         fit="contain"
-        class="size-full object-contain p-3"
-        :alt="$t('common.avatar.alt.company')"
+        :sizes="isFavicon ? '96px' : '192px'"
+        :width="isFavicon ? 96 : 192"
+        containerClass="size-full bg-transparent"
       />
-      <Icon v-else name="mdi:image-plus-outline" class="size-10 text-gray-400" />
+      <Icon v-else name="mdi:image-plus-outline" class="size-9 text-dimmed" />
       <span
-        class="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
+        class="absolute inset-0 grid place-items-center bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
       >
-        <Icon name="mdi:image-edit-outline" class="size-8" />
+        <Icon name="mdi:image-edit-outline" class="size-7" />
       </span>
     </UButton>
 
     <div class="flex flex-wrap gap-2">
-      <UButton color="neutral" variant="soft" size="sm" icon="mdi:image-edit-outline" @click="openEditor">
-        {{ logoUrl ? $t('common.preferences.companyLogo.edit') : $t('common.actions.clickToUpload') }}
+      <UButton color="neutral" variant="soft" size="sm" icon="i-mdi-image-edit-outline" @click="openEditor">
+        {{ imageUrl ? editLabel : $t('common.actions.clickToUpload') }}
       </UButton>
-      <UButton v-if="logoUrl" color="error" variant="soft" size="sm" icon="mdi:delete-outline" @click="removeLogo">
-        {{ $t('common.preferences.companyLogo.remove') }}
+      <UButton
+        v-if="imageUrl"
+        color="error"
+        variant="soft"
+        size="sm"
+        icon="i-mdi-delete-outline"
+        @click="removeAsset"
+      >
+        {{ removeLabel }}
       </UButton>
     </div>
 
-    <Modal
-      v-model="open"
-      :title="$t('common.preferences.companyLogo.editorTitle')"
-      :onClose="closeEditor"
-      class="max-w-lg"
+    <UModal
+      v-model:open="open"
+      scrollable
+      :title="editorTitle"
+      :dismissible="!busy"
+      :ui="{ content: 'max-w-lg' }"
     >
-      <template #content>
+      <template #body>
         <div class="flex flex-col gap-5">
-          <UButton
+          <UFileUpload
             v-if="!draftUrl"
-            type="button"
-            class="flex h-56 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-300 transition-colors hover:border-indigo-500 hover:bg-indigo-50/50 dark:border-gray-600 dark:hover:bg-indigo-950/20"
-            @click="chooseFile()"
-          >
-            <Icon name="mdi:image-plus-outline" class="size-10 text-indigo-500" />
-            <span class="font-medium">{{ $t('common.avatar.chooseImage') }}</span>
-            <span class="text-xs text-gray-500">{{ $t('common.avatar.requirements') }}</span>
-          </UButton>
+            v-model="pickedFile"
+            size="lg"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            icon="i-mdi-cloud-upload-outline"
+            :label="$t('common.avatar.chooseImage')"
+            :description="$t('common.avatar.requirements')"
+            :preview="false"
+            class="min-h-52"
+          />
 
           <template v-else>
             <div
-              ref="cropArea"
-              class="relative mx-auto max-w-full touch-none overflow-hidden rounded-2xl bg-[linear-gradient(45deg,#e5e7eb_25%,transparent_25%),linear-gradient(-45deg,#e5e7eb_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#e5e7eb_75%),linear-gradient(-45deg,transparent_75%,#e5e7eb_75%)] bg-[length:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px] shadow-lg ring-4 ring-gray-100 dark:bg-gray-800 dark:ring-gray-700"
-              :style="{ width: `${LOGO_VIEWPORT_WIDTH}px`, height: `${LOGO_VIEWPORT_HEIGHT}px` }"
-              :class="isSwiping ? 'cursor-grabbing' : 'cursor-grab'"
+              role="group"
+              :aria-label="$t('common.preferences.brandAsset.displayMode')"
+              class="flex gap-1 rounded-[var(--ui-radius)] bg-elevated p-1"
             >
-              <NuxtImg
-                :src="draftUrl"
-                alt=""
-                draggable="false"
-                class="pointer-events-none absolute max-w-none select-none"
-                :style="previewStyle"
-              />
-              <div v-if="busy" class="absolute inset-0 flex items-center justify-center bg-black/45 text-white">
-                <Icon name="mdi:loading" class="size-9 animate-spin" />
-              </div>
+              <UButton
+                type="button"
+                class="flex-1 justify-center"
+                :color="displayMode === 'contain' ? 'primary' : 'neutral'"
+                :variant="displayMode === 'contain' ? 'soft' : 'ghost'"
+                icon="i-mdi-fit-to-screen-outline"
+                :aria-pressed="displayMode === 'contain'"
+                @click="displayMode = 'contain'"
+              >
+                {{ $t('common.preferences.brandAsset.showWhole') }}
+              </UButton>
+              <UButton
+                type="button"
+                class="flex-1 justify-center"
+                :color="displayMode === 'cover' ? 'primary' : 'neutral'"
+                :variant="displayMode === 'cover' ? 'soft' : 'ghost'"
+                icon="i-mdi-crop"
+                :aria-pressed="displayMode === 'cover'"
+                @click="displayMode = 'cover'"
+              >
+                {{ $t('common.preferences.brandAsset.crop') }}
+              </UButton>
             </div>
 
-            <p class="text-center text-xs text-gray-500">{{ $t('common.preferences.companyLogo.dragHint') }}</p>
-            <label class="flex items-center gap-3 text-sm">
-              <Icon name="mdi:magnify-plus-outline" class="size-5" />
-              <UInput
-                v-model.number="zoom"
-                type="range"
-                min="0.5"
-                max="3"
-                step="0.01"
-                class="grow accent-indigo-600"
-                :disabled="busy"
-              />
-            </label>
-            <div class="flex flex-wrap justify-center gap-2">
-              <UButton
-                color="neutral"
-                variant="soft"
-                size="sm"
-                icon="mdi:rotate-left"
-                :disabled="busy"
-                @click="rotation -= 90"
-                >{{ $t('common.avatar.rotateLeft') }}</UButton
+            <div class="flex flex-col items-center gap-3">
+              <div
+                ref="cropArea"
+                class="transparency-grid relative max-w-full touch-none overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default"
+                :style="{ width: `${viewportWidth}px`, height: `${viewportHeight}px` }"
+                :class="isSwiping ? 'cursor-grabbing' : 'cursor-grab'"
               >
+                <NuxtImg
+                  :src="draftUrl"
+                  alt=""
+                  draggable="false"
+                  class="pointer-events-none absolute max-w-none select-none"
+                  :style="previewStyle"
+                />
+                <div v-if="busy" class="absolute inset-0 grid place-items-center bg-default/70 backdrop-blur-sm">
+                  <UIcon name="i-mdi-loading" size="32" class="animate-spin text-primary" />
+                </div>
+              </div>
+              <p class="text-balance text-center text-xs text-muted">{{ stageHint }}</p>
+            </div>
+
+            <UFormField :label="$t('common.preferences.brandAsset.zoom')" :hint="`${zoom.toFixed(1)}×`">
+              <USlider v-model="zoom" :min="minZoom" :max="3" :step="0.01" :disabled="busy" />
+            </UFormField>
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <UFieldGroup>
+                <UButton
+                  square
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                  icon="i-mdi-rotate-left"
+                  :aria-label="$t('common.avatar.rotateLeft')"
+                  :title="$t('common.avatar.rotateLeft')"
+                  :disabled="busy"
+                  @click="rotation -= 90"
+                />
+                <UButton
+                  square
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                  icon="i-mdi-rotate-right"
+                  :aria-label="$t('common.avatar.rotateRight')"
+                  :title="$t('common.avatar.rotateRight')"
+                  :disabled="busy"
+                  @click="rotation += 90"
+                />
+                <UButton
+                  square
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                  icon="i-mdi-backup-restore"
+                  :aria-label="$t('common.preferences.brandAsset.resetView')"
+                  :title="$t('common.preferences.brandAsset.resetView')"
+                  :disabled="busy"
+                  @click="resetCrop"
+                />
+              </UFieldGroup>
               <UButton
                 color="neutral"
-                variant="soft"
+                variant="ghost"
                 size="sm"
-                icon="mdi:rotate-right"
-                :disabled="busy"
-                @click="rotation += 90"
-                >{{ $t('common.avatar.rotateRight') }}</UButton
-              >
-              <UButton
-                color="neutral"
-                variant="soft"
-                size="sm"
-                icon="mdi:image-edit-outline"
+                icon="i-mdi-image-edit-outline"
                 :disabled="busy"
                 @click="chooseFile()"
-                >{{ $t('common.actions.change') }}</UButton
               >
+                {{ $t('common.actions.change') }}
+              </UButton>
             </div>
           </template>
 
-          <p
+          <UAlert
             v-if="errorMessage"
             role="alert"
-            class="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300"
-          >
-            {{ errorMessage }}
-          </p>
+            color="error"
+            variant="soft"
+            icon="i-mdi-alert-circle-outline"
+            :description="errorMessage"
+          />
         </div>
       </template>
 
       <template #footer>
         <div class="flex w-full justify-end gap-2">
-          <UButton color="neutral" variant="soft" size="lg" :disabled="busy" @click="closeEditor">{{
-            $t('common.close')
-          }}</UButton>
-          <UButton v-if="draftUrl" size="lg" icon="mdi:check" :loading="busy" @click="saveLogo">{{
-            $t('common.preferences.companyLogo.save')
-          }}</UButton>
+          <UButton color="neutral" variant="soft" size="lg" :disabled="busy" @click="closeEditor">
+            {{ $t('common.close') }}
+          </UButton>
+          <UButton v-if="draftUrl" size="lg" icon="i-mdi-check" :loading="busy" @click="saveAsset">
+            {{ saveLabel }}
+          </UButton>
         </div>
       </template>
-    </Modal>
+    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ logoUrl: string }>()
+type BrandAssetType = 'logo' | 'favicon'
+
+const props = withDefaults(defineProps<{ imageUrl: string; assetType?: BrandAssetType }>(), { assetType: 'logo' })
 const emit = defineEmits<{ upload: [payload: { url: string; optimizedUrl: string }] }>()
+
+const isFavicon = computed(() => props.assetType === 'favicon')
+const viewportWidth = isFavicon.value ? 288 : 336
+const viewportHeight = isFavicon.value ? 288 : 105
+const outputWidth = isFavicon.value ? 256 : 1280
+const outputHeight = isFavicon.value ? 256 : 400
+const outputAspectRatio = isFavicon.value ? '1 / 1' : '16 / 5'
+const displayMode = shallowRef<'contain' | 'cover'>('contain')
+const renderFit = computed(() => displayMode.value)
+
+const assetAlt = computed(() =>
+  isFavicon.value ? $t('common.preferences.branding.favicon') : $t('common.avatar.alt.company'),
+)
+const editLabel = computed(() =>
+  isFavicon.value ? $t('common.preferences.branding.faviconEdit') : $t('common.preferences.companyLogo.edit'),
+)
+const removeLabel = computed(() =>
+  isFavicon.value ? $t('common.preferences.branding.faviconRemove') : $t('common.preferences.companyLogo.remove'),
+)
+const editorTitle = computed(() =>
+  isFavicon.value ? $t('common.preferences.branding.faviconEditorTitle') : $t('common.preferences.companyLogo.editorTitle'),
+)
+const saveLabel = computed(() =>
+  isFavicon.value ? $t('common.preferences.branding.faviconSave') : $t('common.preferences.companyLogo.save'),
+)
 
 const open = shallowRef(false)
 const busy = shallowRef(false)
-const LOGO_VIEWPORT_WIDTH = 336
-const LOGO_VIEWPORT_HEIGHT = 144
-const { chooseFile, cropArea, draftUrl, errorMessage, isSwiping, previewStyle, render, reset, rotation, zoom } =
-  useAvatarCropper($t, () => undefined, {
-    viewportWidth: LOGO_VIEWPORT_WIDTH,
-    viewportHeight: LOGO_VIEWPORT_HEIGHT,
-    outputWidth: 1400,
-    outputHeight: 600,
-    fit: 'contain',
-  })
+const pickedFile = shallowRef<File | null>(null)
+const {
+  acceptFile,
+  chooseFile,
+  cropArea,
+  draftUrl,
+  errorMessage,
+  isSwiping,
+  previewStyle,
+  render,
+  reset,
+  resetCrop,
+  rotation,
+  zoom,
+} = useAvatarCropper($t, () => undefined, {
+  viewportWidth,
+  viewportHeight,
+  outputWidth,
+  outputHeight,
+  fit: renderFit,
+})
+
+const minZoom = computed(() => (displayMode.value === 'cover' ? 1 : 0.5))
+// cropHelp already tells the user to drag; contain mode only becomes draggable once zoom pushes the image past the frame.
+const stageHint = computed(() =>
+  displayMode.value === 'cover'
+    ? $t('common.preferences.brandAsset.cropHelp')
+    : [$t('common.preferences.brandAsset.showWholeHelp'), zoom.value > 1 && $t('common.avatar.dragHint')]
+        .filter(Boolean)
+        .join(' · '),
+)
+
+// Handing the file straight to the cropper and clearing the picker lets a rejected file be picked again.
+watch(pickedFile, (file) => {
+  if (!file) return
+  acceptFile(file)
+  pickedFile.value = null
+})
+watch(displayMode, () => resetCrop())
 
 function openEditor() {
   open.value = true
@@ -161,22 +272,28 @@ function openEditor() {
 
 function closeEditor() {
   if (busy.value) return
-  reset()
   open.value = false
 }
 
-async function saveLogo() {
+// Escape, the overlay and the close icon bypass closeEditor, so the draft is discarded on the state itself.
+watch(open, (isOpen) => {
+  if (isOpen) return
+  reset()
+  pickedFile.value = null
+  displayMode.value = 'contain'
+})
+
+async function saveAsset() {
   busy.value = true
   errorMessage.value = ''
   try {
     const form = new FormData()
-    form.append('file', await render(), 'logo.webp')
-    form.append('type', 'client-logo')
-    form.append('maxWidth', '1400')
-    form.append('maxHeight', '600')
-    const result = await $fetch('/api/upload', { method: 'POST', body: form })
+    form.append('file', await render(), isFavicon.value ? 'favicon.webp' : 'logo.webp')
+    form.append('type', isFavicon.value ? 'client-favicon' : 'client-logo')
+    form.append('maxWidth', String(outputWidth))
+    form.append('maxHeight', String(outputHeight))
+    const result = await $fetch<{ url: string; optimizedUrl: string }>('/api/upload', { method: 'POST', body: form })
     emit('upload', { url: result.url, optimizedUrl: result.optimizedUrl })
-    reset()
     open.value = false
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || $t('common.avatar.uploadError')
@@ -185,7 +302,7 @@ async function saveLogo() {
   }
 }
 
-function removeLogo() {
+function removeAsset() {
   emit('upload', { url: '', optimizedUrl: '' })
 }
 </script>

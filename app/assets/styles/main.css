@@ -255,8 +255,71 @@ main {
 .article-content :where(h1, h2, h3, h4) {
   color: var(--ui-text-highlighted);
   font-family: var(--ui-font-sans);
+  font-weight: 700;
   line-height: 1.2;
+  letter-spacing: -0.025em;
   text-wrap: balance;
+}
+
+/* Article typography is explicit because Tailwind's core does not provide the `prose-*`
+   variants. Keeping these rules on the semantic hook also styles server-rendered CMS HTML. */
+.article-content h1 {
+  margin-block: 0 1.25rem;
+  font-size: clamp(1.875rem, 1.65rem + 0.9vw, 2.5rem);
+  font-weight: 800;
+}
+
+.article-content h2 {
+  margin-block: 3rem 1rem;
+  font-size: clamp(1.375rem, 1.3rem + 0.3vw, 1.5rem);
+}
+
+.article-content h3 {
+  margin-block: 2rem 0.75rem;
+  font-size: 1.25rem;
+}
+
+.article-content h4 {
+  margin-block: 1.5rem 0.5rem;
+  font-size: 1.125rem;
+}
+
+.article-content p {
+  margin-block: 1.25rem;
+}
+
+.article-content :where(ul, ol) {
+  margin-block: 1.25rem;
+  padding-inline-start: 1.625rem;
+}
+
+.article-content ul {
+  list-style: disc;
+}
+
+.article-content ol {
+  list-style: decimal;
+}
+
+.article-content li {
+  margin-block: 0.375rem;
+}
+
+.article-content a {
+  color: var(--ui-primary);
+  text-decoration: none;
+}
+
+.article-content a:hover {
+  text-decoration: underline;
+}
+
+.article-content :where(figure, video) {
+  margin-block: 2rem;
+}
+
+.article-content hr {
+  margin-block: 2.5rem;
 }
 
 .editorial-enter {
@@ -273,6 +336,23 @@ main {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Reads transparent areas of a logo or favicon as transparent rather than as a white plate. */
+.transparency-grid {
+  --transparency-square: var(--ui-bg-accented);
+  background-color: var(--ui-bg);
+  background-image:
+    linear-gradient(45deg, var(--transparency-square) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--transparency-square) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--transparency-square) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--transparency-square) 75%);
+  background-size: 16px 16px;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
 }
 
 .z-header {

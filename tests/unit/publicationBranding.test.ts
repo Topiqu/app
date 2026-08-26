@@ -1,3 +1,5 @@
+import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import { presentSourceUrl, sourceFaviconUrl } from '../../app/utils/sourcePresentation'
@@ -64,5 +66,30 @@ describe('source URL presentation', () => {
     expect(presentSourceUrl('not a URL')).toEqual({ hostname: 'not a URL', path: '', valid: false })
     expect(sourceFaviconUrl('not a URL')).toBeUndefined()
     expect(sourceFaviconUrl('https://example.com/a')).toContain('domain=example.com')
+  })
+})
+
+describe('tenant branding stays current after a save', () => {
+  const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
+
+  it('lets a manual refresh bypass the cached tenant payload', () => {
+    const composable = source('app/composables/useClientSite.ts')
+
+    // getCachedData used to return the payload unconditionally, which silently defeated refreshNuxtData.
+    expect(composable).toContain("ctx.cause === 'refresh:manual' ? undefined")
+    expect(composable).toContain('export const refreshClientSite')
+    // One fetch definition behind both readers, so the snapshot and the live ref cannot drift apart.
+    expect(composable.match(/useAsyncData\(/g)).toHaveLength(2)
+  })
+
+  it('reads the header logo from the live entry and refreshes it on save', () => {
+    const header = source('app/components/Header.vue')
+    const settings = source('app/pages/settings/index.vue')
+
+    // The header lives in the persistent layout, so a snapshot would survive the save unchanged.
+    expect(header).toContain('await useLiveClientSite()')
+    expect(header).not.toContain('await useClientSite()')
+    expect(header).toContain("logoSrc = computed(() => clientSite.value?.logoUrl || '/app-logo.png')")
+    expect(settings).toContain('refreshClientSite()')
   })
 })

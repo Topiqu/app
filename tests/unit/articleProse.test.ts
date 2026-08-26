@@ -6,13 +6,24 @@ import { ARTICLE_PROSE_CLASS, ARTICLE_TABLE_CLASS, EDITOR_TABLE_CLASS } from '..
 
 describe('article prose presentation contract', () => {
   it('keeps publication typography responsive and dark-mode aware', () => {
-    expect(ARTICLE_PROSE_CLASS).toContain('prose')
     expect(ARTICLE_PROSE_CLASS).toContain('max-w-[68ch]')
-    expect(ARTICLE_PROSE_CLASS).toContain('dark:prose-invert')
+    expect(ARTICLE_PROSE_CLASS).not.toMatch(/\bprose(?:-|\b)/)
     expect(ARTICLE_PROSE_CLASS).not.toMatch(/\bspace-y-/)
     expect(ARTICLE_PROSE_CLASS).not.toMatch(/\bbg-white\b|\bshadow-|\bborder\b|\brounded-/)
-    expect(ARTICLE_PROSE_CLASS).toContain('prose-p:my-5')
-    expect(ARTICLE_PROSE_CLASS).toContain('prose-h2:mt-12')
+
+    const css = readFileSync(resolve(process.cwd(), 'app/assets/styles/main.css'), 'utf8')
+    expect(css).toMatch(/\.article-content h2\s*\{[^}]*margin-block: 3rem 1rem/s)
+    expect(css).toMatch(/\.article-content h2\s*\{[^}]*font-size:/s)
+    expect(css).toMatch(/\.article-content p\s*\{[^}]*margin-block: 1\.25rem/s)
+  })
+
+  it('renders wide publication logos without requesting a square crop', () => {
+    const header = readFileSync(resolve(process.cwd(), 'app/components/Header.vue'), 'utf8')
+
+    expect(header).toContain('aspectRatio="16 / 5"')
+    expect(header).toContain('containerClass="h-10 w-32 shrink-0 bg-transparent"')
+    expect(header).toContain(':width="128"')
+    expect(header).not.toMatch(/:width="128"[\s\S]*?:height="128"/)
   })
 
   it('keeps rendered and editor tables horizontally safe', () => {
@@ -28,7 +39,7 @@ describe('article prose presentation contract', () => {
 
   it('does not leave inline article images permanently transparent', () => {
     const page = readFileSync(resolve(process.cwd(), 'app/pages/clanky/[slug].vue'), 'utf8')
-    const imageRule = page.match(/\.prose p img\s*\{([^}]*)\}/)?.[1] ?? ''
+    const imageRule = page.match(/\.article-content p img\s*\{([^}]*)\}/)?.[1] ?? ''
 
     expect(imageRule).not.toContain('opacity: 0')
     expect(imageRule).not.toContain('fade-in-image')

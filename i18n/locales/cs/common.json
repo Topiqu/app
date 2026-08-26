@@ -97,7 +97,6 @@
     "settings": "Nastavení",
     "remove": "Odebrat",
     "continue": "Pokračovat",
-    "unsavedChanges": "Neuložené změny!",
     "showPassword": "Zobrazit heslo",
     "hidePassword": "Skrýt heslo",
     "advertisement": "Reklama",
@@ -377,6 +376,19 @@
       "logout": "Odhlásit se",
       "welcomeBack": "Vítejte zpět"
     },
+    "upload": {
+      "rejected": "Obrázek nelze použít",
+      "notImage": "Vyberte soubor s obrázkem.",
+      "formatNotAllowed": "Formát {actual} tady není podporovaný. Použijte PNG, JPEG nebo WebP.",
+      "notSquare": "Obrázek musí být čtvercový, tenhle má {actual} px.",
+      "faviconSquare": "Favicon musí být čtvercový obrázek.",
+      "faviconDimensions": "Favicon musí mít mezi {min} a {max} px.",
+      "tooLarge": "Soubor má {actual}, limit je {limit}.",
+      "tooSmall": "Soubor má {actual}, potřeba je aspoň {limit}.",
+      "dimensionsTooLarge": "Obrázek má {actual} px, maximum je {limit} px.",
+      "dimensionsTooSmall": "Obrázek má {actual} px, minimum je {limit} px.",
+      "unreadable": "Obrázek se nepodařilo načíst. Je poškozený nebo v nepodporovaném formátu."
+    },
     "labels": {
       "username": "Uživatelské jméno",
       "email": "E-mail",
@@ -546,17 +558,29 @@
       "annually": "rok",
       "companyLogo": {
         "label": "Logo blogu",
-        "description": "PNG, JPEG nebo WebP, max. 10 MB. Logo se uloží na průhledném širokém plátně vhodném pro hlavičku i domovskou stránku.",
+        "description": "PNG, JPEG nebo WebP, max. 10 MB. V editoru můžete zachovat celé logo nebo nastavit vlastní široký výřez.",
         "edit": "Nahradit a upravit logo",
         "remove": "Odstranit logo",
         "editorTitle": "Umístění loga",
-        "dragHint": "Tažením logo umístěte, posuvníkem jej přibližte nebo oddalte. Šachovnice představuje průhledné pozadí.",
         "save": "Použít logo"
+      },
+      "brandAsset": {
+        "displayMode": "Způsob umístění",
+        "showWhole": "Zobrazit celé",
+        "crop": "Oříznout",
+        "showWholeHelp": "Celý obrázek zůstane viditelný; volné místo bude průhledné.",
+        "cropHelp": "Obrázek vyplní celý rámeček. Tažením nastavte důležitou část výřezu.",
+        "resetView": "Vrátit přiblížení a posun",
+        "zoom": "Přiblížení"
       },
       "branding": {
         "identity": "Identita",
         "favicon": "Favicon",
-        "faviconHelp": "Čtvercové PNG, JPEG nebo WebP, 32-512 px, maximálně 512 KB",
+        "faviconHelp": "PNG, JPEG nebo WebP, max. 10 MB. Editor připraví čtvercový favicon 256 × 256 px.",
+        "faviconEdit": "Nahradit a upravit favicon",
+        "faviconRemove": "Odstranit favicon",
+        "faviconEditorTitle": "Umístění faviconu",
+        "faviconSave": "Použít favicon",
         "tagline": "Tagline",
         "taglinePlaceholder": "Krátká věta, která popisuje vaši publikaci",
         "visualStyle": "Vizuální styl",
@@ -784,6 +808,38 @@
         "AI_USE": "Používat AI nástroje",
         "ANALYTICS_READ": "Zobrazovat analytiku",
         "CONTENT_MODERATE": "Moderovat komentáře a obsah"
+      }
+    },
+    "tenant": {
+      "switcher": "Přepnout blog",
+      "switchFailed": "Blog se nepodařilo přepnout.",
+      "owner": "Vlastník",
+      "member": "Člen",
+      "createTitle": "Vytvořit nový blog",
+      "createDescription": "Založte další osobní nebo testovací blog pod svým účtem.",
+      "name": "Název blogu",
+      "namePlaceholder": "Můj nový blog",
+      "subdomain": "Subdoména",
+      "subdomainPlaceholder": "muj-blog",
+      "checking": "Kontroluji dostupnost…",
+      "available": "Subdoména je dostupná",
+      "language": "Hlavní jazyk",
+      "theme": "Barevný motiv",
+      "basicTitle": "Blog vznikne v tarifu Basic",
+      "basicDescription": "Další zkušební období se nezakládá. Tarif můžete později změnit v nastavení blogu.",
+      "createAction": "Vytvořit blog",
+      "created": "Blog byl vytvořen",
+      "limitReached": "Dosáhli jste limitu tří vlastních Basic blogů.",
+      "subdomainTaken": "Tato subdoména už není dostupná.",
+      "nameTaken": "Blog s tímto názvem už existuje.",
+      "rateLimited": "Příliš mnoho pokusů. Zkuste to později.",
+      "failed": "Blog se nepodařilo vytvořit.",
+      "domainReasons": {
+        "empty": "Zadejte subdoménu.",
+        "tooShort": "Subdoména musí mít alespoň 3 znaky.",
+        "invalid": "Použijte pouze malá písmena, čísla a pomlčky.",
+        "reserved": "Tato subdoména je rezervovaná.",
+        "taken": "Tato subdoména už je obsazená."
       }
     },
     "invitation": {

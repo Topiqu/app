@@ -123,28 +123,7 @@
       </div>
     </div>
 
-    <div class="pointer-events-none sticky bottom-4 z-10 flex justify-center">
-      <UAlert
-        v-if="isDirty"
-        class="pointer-events-auto w-full max-w-xl shadow-lg"
-        color="warning"
-        variant="soft"
-        icon="i-mdi-content-save-alert-outline"
-        :title="$t('common.preferences.unsaved')"
-        :description="$t('common.preferences.unsavedDescription')"
-      >
-        <template #actions>
-          <div class="flex w-full justify-end gap-2">
-            <UButton color="neutral" variant="ghost" size="sm" @click="resetForm">
-              {{ $t('common.actions.reset') }}
-            </UButton>
-            <UButton size="sm" @click="savePreferences">
-              {{ $t('common.actions.saveChanges') }}
-            </UButton>
-          </div>
-        </template>
-      </UAlert>
-    </div>
+    <UnsavedBar :dirty="isDirty" :loading="isSaving" @reset="resetForm" @save="savePreferences" />
   </div>
 </template>
 
@@ -164,6 +143,7 @@ const router = useRouter()
 const { copy: copyApi, copied: apiCopied } = useClipboard({ legacy: true })
 const confirm = useConfirm()
 const apiVisible = shallowRef(false)
+const isSaving = shallowRef(false)
 
 const clientId = computed(() => auth.value?.user.clientSiteId)
 const isSuperadmin = computed(() => auth.value?.user.role === 'superadmin')
@@ -243,6 +223,7 @@ const toggleFeature = async ({ code, enabled }: { code: 'AI' | 'SENTIMENT' | 'AR
 
 const savePreferences = async () => {
   if (!clientId.value) return toast.add({ color: 'error', title: $t('common.preferences.messages.noClientId') })
+  isSaving.value = true
   try {
     await $fetch(`/api/clients/${clientId.value}` as `/api/clients/:id`, {
       method: 'PATCH',
@@ -254,11 +235,14 @@ const savePreferences = async () => {
       },
     })
     toast.add({ color: 'success', title: $t('common.messages.successGeneralTitle') })
-    await refresh()
+    // The publication surface reads the tenant from its own cached entry, which this PATCH just made stale.
+    await Promise.all([refresh(), refreshClientSite()])
     form.value = buildClientSettingsForm(client.value)
     pristine.value = buildClientSettingsForm(client.value)
-  } catch {
-    toast.add({ color: 'error', title: $t('common.messages.saveFailed') })
+  } catch (e: any) {
+    toast.add({ color: 'error', title: $t('common.messages.saveFailed'), description: e?.data?.message })
+  } finally {
+    isSaving.value = false
   }
 }
 

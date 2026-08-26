@@ -246,14 +246,14 @@
         <div class="mt-6 space-y-4 border-t border-neutral-200 pt-6 dark:border-neutral-700">
           <label class="flex cursor-pointer items-center justify-between gap-4">
             <span class="font-medium">{{ $t('common.integrationsCatalog.enableAnalytics') }}</span>
-            <FormField
+            <AppFormField
               :modelValue="allowGtag"
               type="checkbox"
               class="w-auto"
               @update:modelValue="$emit('update:allowGtag', Boolean($event))"
             />
           </label>
-          <FormField
+          <AppFormField
             v-if="allowGtag"
             :modelValue="gtagId"
             label="Measurement ID"
@@ -263,7 +263,7 @@
           />
           <div class="space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-700">
             <p class="text-sm text-muted">{{ $t('common.integrationsCatalog.gamDescription') }}</p>
-            <FormField
+            <AppFormField
               :modelValue="gamNetworkCode"
               :label="$t('common.integrationsCatalog.gamNetworkCode')"
               placeholder="XXXXXXXXXX"

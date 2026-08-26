@@ -16,10 +16,11 @@
             originalSrc="/app-logo.png"
             :fallbackText="clientSite?.name || 'Topiqu'"
             :alt="$t('common.avatar.alt.company')"
-            aspectRatio="1 / 1"
+            aspectRatio="16 / 5"
             fit="contain"
-            sizes="72px"
-            containerClass="size-16 shrink-0 rounded-[var(--topiqu-surface-radius)] bg-elevated sm:size-20"
+            sizes="160px sm:208px"
+            :width="416"
+            containerClass="w-40 shrink-0 rounded-[var(--topiqu-surface-radius)] bg-transparent sm:w-52"
           />
           <p v-if="clientSite?.tagline" class="text-sm font-semibold text-primary">{{ clientSite.tagline }}</p>
         </div>

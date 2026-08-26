@@ -242,36 +242,7 @@
       </div>
     </div>
 
-    <Teleport to="body">
-      <div class="pointer-events-none fixed inset-x-0 bottom-4 z-header flex justify-center px-4 sm:px-6">
-        <Transition
-          enterActiveClass="transition duration-200 ease-out"
-          enterFromClass="opacity-0 translate-y-2"
-          enterToClass="opacity-100 translate-y-0"
-          leaveActiveClass="transition duration-150 ease-in"
-          leaveFromClass="opacity-100 translate-y-0"
-          leaveToClass="opacity-0 translate-y-2"
-        >
-          <div
-            v-if="isDirty"
-            class="pointer-events-auto flex items-center gap-3 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 bg-white/95 dark:bg-neutral-900/95 backdrop-blur py-2 pl-4 pr-2 shadow-xl"
-          >
-            <span class="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
-              <span class="size-2 rounded-full bg-amber-500 animate-pulse" />
-              {{ $t('common.unsavedChanges') }}
-            </span>
-            <div class="flex items-center gap-1.5">
-              <UButton size="sm" color="neutral" variant="ghost" :disabled="isLoading" @click="revertChanges">
-                {{ $t('common.actions.reset') }}
-              </UButton>
-              <UButton size="sm" :disabled="isLoading" :loading="isLoading" @click="updateProfile">
-                {{ $t('common.actions.saveChanges') }}
-              </UButton>
-            </div>
-          </div>
-        </Transition>
-      </div>
-    </Teleport>
+    <UnsavedBar :dirty="isDirty" :loading="isLoading" @reset="revertChanges" @save="updateProfile" />
 
     <LazyUserFollowDialog v-model="showDialog" :type="dialogType" />
     <AppConfirmDialog ref="deactivateDialog" />
