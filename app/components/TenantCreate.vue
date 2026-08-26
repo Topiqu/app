@@ -19,7 +19,7 @@
               :placeholder="$t('common.tenant.subdomainPlaceholder')"
               @update:modelValue="setSubdomain"
             />
-            <UBadge color="neutral" variant="outline" class="rounded-l-none px-3">.{{ baseDomain }}</UBadge>
+            <UBadge color="neutral" variant="outline" size="lg">.{{ baseDomain }}</UBadge>
           </UFieldGroup>
           <template #help>
             <span v-if="availability === 'checking'" class="text-muted">{{ $t('common.tenant.checking') }}</span>
