@@ -432,6 +432,8 @@ model Article {
   /// not an enum: the catalogue is tuned by editing that file, and the cron reads the column
   /// back only to avoid repeating a shape. NULL for anything a human wrote.
   format           String?
+  /// The narrower dramaturgical variant selected inside `format`; NULL for legacy/manual work.
+  structureVariant String?
   prompt           String?
 
   @@unique([slug, clientSiteId])

@@ -1,4 +1,4 @@
-export type SlotKind = 'IMAGE' | 'POLL'
+export type SlotKind = 'IMAGE' | 'POLL' | 'VIDEO'
 
 export type ContentSlot = { slot: number; html: string }
 
@@ -31,4 +31,4 @@ export const applyContentSlots = (content: string, kind: SlotKind, slots: Conten
  * author's body as literal text.
  */
 export const stripContentSlots = (content: string) =>
-  applyContentSlots(applyContentSlots(content, 'IMAGE', []), 'POLL', [])
+  applyContentSlots(applyContentSlots(applyContentSlots(content, 'IMAGE', []), 'POLL', []), 'VIDEO', [])

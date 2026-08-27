@@ -3,6 +3,7 @@ import type { EventStream } from 'h3'
 import slugify from 'slugify'
 import { linkableSources } from '~~/shared/utils/articleSources'
 import { consumeClientTokens } from '~~/server/utils/consumeTokens'
+import { getSearchOpportunities, searchOpportunitySignal } from '~~/server/utils/searchConsole/opportunities'
 
 interface GlobalThis {
   eventStreams?: Map<string, Set<EventStream>>
@@ -64,6 +65,38 @@ const processClient = async (client: any) => {
   const clientSiteId = client.id
   const defaultLang = client.language
 
+  let searchSignals: string[] = []
+  try {
+    const opportunities = await getSearchOpportunities(clientSiteId, 28, 15)
+    const seenQueries = new Set<string>()
+    searchSignals = opportunities
+      .filter((opportunity) => {
+        const key = opportunity.reason.query.trim().toLocaleLowerCase()
+        if (!key || seenQueries.has(key)) return false
+        seenQueries.add(key)
+        return true
+      })
+      .slice(0, 5)
+      .map(searchOpportunitySignal)
+  } catch (err) {
+    // Search Console is enrichment, never a prerequisite for scheduled generation.
+    await logAction({
+      action: 'CRON_TOPIC_SEARCH_SIGNALS_FAILED',
+      clientSiteId,
+      metadata: { error: (err as any).message },
+    })
+  }
+
+  const recentStructures = client.articles.slice(0, 12).map((article: any) => {
+    const modules = [
+      article.answer ? 'answer' : null,
+      article.keyTakeaways?.length ? 'takeaways' : null,
+      Array.isArray(article.faq) && article.faq.length ? 'faq' : null,
+      article.polls?.length ? 'poll' : null,
+    ].filter(Boolean)
+    return `${article.format || 'unclassified'} / ${article.structureVariant || 'unclassified'} / ${modules.join('+') || 'no optional modules'}`
+  })
+
   const topicInput = {
     focus: client.focus,
     audience: client.audience,
@@ -72,7 +105,9 @@ const processClient = async (client: any) => {
     recentExcerpts: client.articles.map((a: any) => a.excerpt).filter(Boolean),
     // Newest first — the picker's rule is about the last few, so the order carries meaning.
     recentFormats: client.articles.map((a: any) => a.format).filter(Boolean),
+    recentStructures,
     suggestion: client.communityInsight?.suggestion,
+    searchSignals,
   }
 
   // Topic first, then the article. The writer used to receive the whole selection template as its
@@ -99,7 +134,9 @@ const processClient = async (client: any) => {
     ? `## TOPIC
   Topic: ${topic.topic}
   Angle: ${topic.angle}
-  Format: ${topic.format}`
+  Format: ${topic.format}
+  Structure: ${topic.variant}
+  Optional modules: ${topic.modules.join(', ') || 'none'}`
     : `## TOPIC RULES
   - Do NOT create an article that is semantically similar to previous ones.
   - Similarity = same topic, argument, or thesis, not wording.
@@ -138,6 +175,8 @@ const processClient = async (client: any) => {
     ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt, {
       research: topic ? researchRequest(topic) : false,
       format: topic?.format,
+      variant: topic?.variant,
+      modules: topic?.modules,
     }))
   } catch (err) {
     await logAction({
@@ -204,6 +243,7 @@ const processClient = async (client: any) => {
         keyTakeaways: generated.keyTakeaways,
         faq: generated.faq,
         format: topic?.format ?? null,
+        structureVariant: topic?.variant ?? null,
         clientSiteId,
         status,
         aiInvolvement: 'FULL',
@@ -361,7 +401,19 @@ export default defineMonitoredTask({
         generationFrequency: true,
         communityInsight: true,
         lastGeneratedAt: true,
-        articles: { select: { excerpt: true, format: true }, orderBy: { createdAt: 'desc' }, take: 30 },
+        articles: {
+          select: {
+            excerpt: true,
+            format: true,
+            structureVariant: true,
+            answer: true,
+            keyTakeaways: true,
+            faq: true,
+            polls: { select: { id: true }, take: 1 },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 30,
+        },
         users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
       },
       where: {

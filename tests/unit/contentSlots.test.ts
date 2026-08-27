@@ -81,8 +81,8 @@ describe('replaceSlot', () => {
 // The recovery path for a stream that ends without a `final` — a failed finalization, a billing
 // throw, an author who hit Stop. Whatever the cause, the markers are nobody's to fill by then.
 describe('stripContentSlots', () => {
-  it('removes both kinds in one pass', () => {
-    expect(stripContentSlots('<p>a</p>[[IMAGE1]]<p>b</p>[[POLL1]][[IMAGE2]]')).toBe('<p>a</p><p>b</p>')
+  it('removes every supported kind in one pass', () => {
+    expect(stripContentSlots('<p>a</p>[[IMAGE1]]<p>b</p>[[POLL1]][[VIDEO1]][[IMAGE2]]')).toBe('<p>a</p><p>b</p>')
   })
 
   it('leaves a body that never had markers untouched', () => {

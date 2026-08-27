@@ -25,9 +25,11 @@ describe('generate-article cron row', () => {
   })
 
   // Unwritten, the picker sees no history and drifts back to one shape for every article.
-  it('persists the format the topic picker chose, and feeds it back', () => {
+  it('persists the format and structure the topic picker chose, and feeds both back', () => {
     expect(task).toMatch(/format:\s*topic\?\.format/)
+    expect(task).toMatch(/structureVariant:\s*topic\?\.variant/)
     expect(task).toMatch(/recentFormats:/)
-    expect(task).toMatch(/select:\s*{\s*excerpt:\s*true,\s*format:\s*true\s*}/)
+    expect(task).toMatch(/recentStructures/)
+    expect(task).toMatch(/excerpt:\s*true,[\s\S]*format:\s*true,[\s\S]*structureVariant:\s*true/)
   })
 })
