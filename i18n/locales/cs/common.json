@@ -2,7 +2,7 @@
   "common": {
     "searchConsole": {
       "title": "Google Search Console",
-      "premiumOnly": "Analýza výkonu a AI doporučení ze Search Console jsou dostupné v plánu PREMIUM.",
+      "premiumOnly": "Search Console intelligence je dostupná v plánu PREMIUM a v CUSTOM s aktivní integrací.",
       "connectTitle": "Propojte skutečný výkon s obsahovou strategií",
       "connectDescription": "Topiqu získá pouze přístup ke čtení a použije data pro metriky článků a návrhy optimalizací.",
       "connect": "Připojit Google účet",
@@ -10,7 +10,16 @@
       "noProperty": "Vyberte Search Console property",
       "chooseProperty": "Který web patří k tomuto projektu?",
       "choosePlaceholder": "Vyberte property",
-      "lastSync": "Poslední synchronizace:"
+      "lastSync": "Poslední synchronizace:",
+      "autopilotTitle": "SEO Autopilot",
+      "autopilotDescription": "Zapněte automatické úpravy CTR a cílené rozšiřování obsahu. Denně se změní nejvýše jeden článek, každý článek má 7denní pauzu a stejná dvojice článku a dotazu 30denní. Nové plánované články využívají nepokrytou poptávku a dál respektují nastavení publikace.",
+      "autopilotLastRun": "Poslední kontrola:",
+      "rollback": "Vrátit",
+      "rollbackSuccess": "Poslední automatická změna byla vrácena.",
+      "actions": {
+        "SEO_AUTOPILOT_CTR_OPTIMIZED": "Optimalizován snippet",
+        "SEO_AUTOPILOT_CONTENT_REFRESHED": "Rozšířen obsah"
+      }
     },
     "integrationsCatalog": {
       "title": "Integrace",

@@ -3,7 +3,13 @@ import type { EventStream } from 'h3'
 import slugify from 'slugify'
 import { linkableSources } from '~~/shared/utils/articleSources'
 import { consumeClientTokens } from '~~/server/utils/consumeTokens'
-import { getSearchOpportunities, searchOpportunitySignal } from '~~/server/utils/searchConsole/opportunities'
+import { isExistingArticleOpportunity } from '~~/server/utils/searchConsole/autopilot'
+import {
+  getSearchOpportunities,
+  getSearchTrends,
+  searchOpportunitySignal,
+  searchTrendSignal,
+} from '~~/server/utils/searchConsole/opportunities'
 
 interface GlobalThis {
   eventStreams?: Map<string, Set<EventStream>>
@@ -67,17 +73,56 @@ const processClient = async (client: any) => {
 
   let searchSignals: string[] = []
   try {
-    const opportunities = await getSearchOpportunities(clientSiteId, 28, 15)
+    const opportunities = client.searchConsoleConnection?.propertyUrl && client.features?.length
+      ? await getSearchOpportunities(clientSiteId, 28, 15)
+      : []
+    const [publishedSlugs, translatedSlugs] = await Promise.all([
+      prisma.article.findMany({
+        where: { clientSiteId, status: 'published' },
+        select: { id: true, slug: true },
+      }),
+      prisma.articleTranslation.findMany({
+        where: { clientSiteId, status: 'PUBLISHED', slug: { not: null } },
+        select: { articleId: true, slug: true },
+      }),
+    ])
+    const articleIdBySlug = new Map(publishedSlugs.map((article) => [article.slug, article.id]))
+    for (const translation of translatedSlugs) {
+      if (translation.slug) articleIdBySlug.set(translation.slug, translation.articleId)
+    }
+    const trends = client.searchConsoleConnection?.autopilotEnabled ? await getSearchTrends(clientSiteId) : []
+    const existingArticleQueries = new Set(
+      [...opportunities.map((opportunity) => opportunity.reason), ...trends]
+        .filter((row) => isExistingArticleOpportunity(row.page, articleIdBySlug))
+        .map((row) => row.query.trim().toLocaleLowerCase())
+        .filter(Boolean),
+    )
+    const risingSignals = client.searchConsoleConnection?.autopilotEnabled
+      ? trends
+          .filter(
+            (trend) =>
+              trend.impressions >= 200 &&
+              (trend.impressionGrowth ?? 0) >= 0.5 &&
+              !existingArticleQueries.has(trend.query.trim().toLocaleLowerCase()),
+          )
+          .sort((a, b) => b.impressions - a.impressions)
+          .slice(0, 5)
+          .map(searchTrendSignal)
+      : []
     const seenQueries = new Set<string>()
-    searchSignals = opportunities
+    const opportunitySignals = opportunities
       .filter((opportunity) => {
         const key = opportunity.reason.query.trim().toLocaleLowerCase()
-        if (!key || seenQueries.has(key)) return false
+        // If any result for this query is already an article, the SEO autopilot may refresh it.
+        // Feeding a homepage/tag-page row for that same query to the picker would still create
+        // cannibalisation, so the exclusion is query-wide rather than URL-local.
+        if (!key || seenQueries.has(key) || existingArticleQueries.has(key)) return false
         seenQueries.add(key)
         return true
       })
       .slice(0, 5)
       .map(searchOpportunitySignal)
+    searchSignals = [...risingSignals, ...opportunitySignals].slice(0, 5)
   } catch (err) {
     // Search Console is enrichment, never a prerequisite for scheduled generation.
     await logAction({
@@ -401,6 +446,12 @@ export default defineMonitoredTask({
         generationFrequency: true,
         communityInsight: true,
         lastGeneratedAt: true,
+        searchConsoleConnection: { select: { propertyUrl: true, autopilotEnabled: true } },
+        features: {
+          where: { isActive: true, feature: { code: 'SEARCH_CONSOLE' } },
+          select: { id: true },
+          take: 1,
+        },
         articles: {
           select: {
             excerpt: true,

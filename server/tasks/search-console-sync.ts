@@ -2,14 +2,17 @@ import { format, subDays } from 'date-fns'
 
 import { decryptSearchConsoleToken } from '../utils/searchConsole/crypto'
 
-export default defineTask({
-  meta: { name: 'search-console-sync', description: 'Sync finalized Search Console performance for PREMIUM tenants' },
+export default defineMonitoredTask({
+  meta: { name: 'search-console-sync', description: 'Sync finalized performance for Search Console-enabled tenants' },
   async run() {
     const connections = await prisma.searchConsoleConnection.findMany({
       where: {
         status: { in: ['CONNECTED', 'ERROR'] },
         propertyUrl: { not: null },
-        clientSite: { plan: { in: ['PREMIUM', 'CUSTOM'] } },
+        clientSite: {
+          plan: { in: ['PREMIUM', 'CUSTOM'] },
+          ...activeFeatureFilter('SEARCH_CONSOLE'),
+        },
       },
     })
     let synced = 0

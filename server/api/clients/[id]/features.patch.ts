@@ -105,6 +105,7 @@ export default defineEventHandler(async (event) => {
       .then((r) => r.map((x) => x.feature.code as FeatureCode))
 
     await syncAutoRelease(tx, clientId, activeFeatures)
+    await syncSeoAutopilot(tx, clientId, activeFeatures)
 
     const { monthlyPayment, annualPayment } = await recalcFeatureBilling(
       tx,

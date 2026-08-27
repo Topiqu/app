@@ -20,6 +20,10 @@ model SearchConsoleConnection extends Base {
     lastSyncAt           DateTime?
     lastErrorAt          DateTime?
     lastError            String?
+    /// Explicit tenant opt-in for autonomous SEO writes. Reading GSC data and showing
+    /// opportunities remain available while this is false.
+    autopilotEnabled     Boolean @default(false)
+    autopilotLastRunAt   DateTime?
 
     @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
     @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))

@@ -912,6 +912,10 @@ model SearchConsoleConnection {
   lastSyncAt            DateTime?
   lastErrorAt           DateTime?
   lastError             String?
+  /// Explicit tenant opt-in for autonomous SEO writes. Reading GSC data and showing
+  /// opportunities remain available while this is false.
+  autopilotEnabled      Boolean                       @default(false)
+  autopilotLastRunAt    DateTime?
 }
 
 model SearchConsoleMetric {

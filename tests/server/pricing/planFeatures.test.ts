@@ -5,6 +5,7 @@ import {
   billableFeatureWhere,
   billableMonthlyTotal,
   syncAutoRelease,
+  syncSeoAutopilot,
   getAllowedFeatures,
   getDependents,
   getMissingDependencies,
@@ -190,6 +191,27 @@ describe('syncAutoRelease', () => {
     await syncAutoRelease(tx as any, 'cs1', [])
 
     expect(tx.clientSite.updateMany).toHaveBeenCalled()
+  })
+})
+
+describe('syncSeoAutopilot', () => {
+  it('turns autopilot off when Search Console or AI becomes inactive', async () => {
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 })
+    await syncSeoAutopilot({ searchConsoleConnection: { updateMany } } as any, 'cs1', ['SEARCH_CONSOLE'])
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { clientSiteId: 'cs1', autopilotEnabled: true },
+      data: { autopilotEnabled: false },
+    })
+  })
+
+  it('keeps the opt-in when both required features remain active', async () => {
+    const updateMany = vi.fn()
+    await syncSeoAutopilot(
+      { searchConsoleConnection: { updateMany } } as any,
+      'cs1',
+      ['AI', 'SEARCH_CONSOLE'],
+    )
+    expect(updateMany).not.toHaveBeenCalled()
   })
 })
 

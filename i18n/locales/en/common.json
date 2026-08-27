@@ -2,7 +2,7 @@
   "common": {
     "searchConsole": {
       "title": "Google Search Console",
-      "premiumOnly": "Search Console performance intelligence and AI recommendations are available on PREMIUM.",
+      "premiumOnly": "Search Console intelligence is available on PREMIUM and CUSTOM plans with the integration enabled.",
       "connectTitle": "Connect real performance to your content strategy",
       "connectDescription": "Topiqu requests read-only access and uses the data for article metrics and optimization recommendations.",
       "connect": "Connect Google account",
@@ -10,7 +10,16 @@
       "noProperty": "Choose a Search Console property",
       "chooseProperty": "Which website belongs to this project?",
       "choosePlaceholder": "Choose a property",
-      "lastSync": "Last sync:"
+      "lastSync": "Last sync:",
+      "autopilotTitle": "SEO Autopilot",
+      "autopilotDescription": "Opt in to automatic CTR fixes and focused content refreshes. At most one article is changed per day, with a 7-day article cooldown and 30 days for the same article-query pair. Scheduled new articles use uncovered search demand and still follow your publishing settings.",
+      "autopilotLastRun": "Last checked:",
+      "rollback": "Undo",
+      "rollbackSuccess": "The last autonomous change was reverted.",
+      "actions": {
+        "SEO_AUTOPILOT_CTR_OPTIMIZED": "Snippet optimized",
+        "SEO_AUTOPILOT_CONTENT_REFRESHED": "Content expanded"
+      }
     },
     "integrationsCatalog": {
       "title": "Integrations",
