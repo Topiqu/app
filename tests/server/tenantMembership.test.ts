@@ -116,6 +116,9 @@ describe('tenant boundary wiring', () => {
     expect(endpoint).toContain('tx.session.update')
     expect(endpoint).not.toContain('stripe')
     expect(createDialog).toContain("$fetch('/api/tenant'")
+    expect(createDialog).toContain("$fetch<{ url: string | null }>('/api/stripe/subscribe'")
+    expect(createDialog).toContain("{ id: 'review', label: $t('common.tenant.steps.review') }")
+    expect(createDialog).toContain("$t('common.actions.selectTheme', { theme })")
     expect(source('app/components/Sidebar.vue')).toContain('<TenantSwitcher')
   })
 
