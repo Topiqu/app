@@ -261,16 +261,40 @@
             icon="mdi:tag-outline"
             @update:modelValue="$emit('update:gtagId', String($event))"
           />
-          <div class="space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-700">
-            <p class="text-sm text-muted">{{ $t('common.integrationsCatalog.gamDescription') }}</p>
-            <AppFormField
-              :modelValue="gamNetworkCode"
-              :label="$t('common.integrationsCatalog.gamNetworkCode')"
-              placeholder="XXXXXXXXXX"
-              icon="mdi:code-tags"
-              @update:modelValue="$emit('update:gamNetworkCode', String($event))"
-            />
-          </div>
+        </div>
+      </template>
+      <template #footer
+        ><UButton :disabled="!dirty" @click="$emit('save')">{{ $t('common.actions.saveChanges') }}</UButton></template
+      >
+    </UModal>
+
+    <UModal v-model:open="gamOpen" title="Google Ad Manager" :ui="{ content: 'max-w-2xl' }">
+      <template #body>
+        <FormClientDialogIntro
+          icon="mdi:google-ads"
+          :description="$t('common.integrationsCatalog.gamDescription')"
+          plan="pro"
+          planLabel="Pro"
+          :benefits="[$t('common.integrationsCatalog.gamBenefitOne'), $t('common.integrationsCatalog.gamBenefitTwo')]"
+          :steps="[
+            $t('common.integrationsCatalog.gamStepOne'),
+            $t('common.integrationsCatalog.gamStepTwo'),
+            $t('common.integrationsCatalog.gamStepThree'),
+          ]"
+        />
+        <div class="mt-6 space-y-4 border-t border-neutral-200 pt-6 dark:border-neutral-700">
+          <AppFormField
+            :modelValue="gamNetworkCode"
+            :label="$t('common.integrationsCatalog.gamNetworkCode')"
+            placeholder="XXXXXXXXXX"
+            icon="mdi:code-tags"
+            @update:modelValue="$emit('update:gamNetworkCode', String($event))"
+          />
+          <p class="flex items-start gap-2 text-xs text-muted">
+            <Icon name="mdi:shield-check-outline" class="mt-0.5 size-4 shrink-0" />{{
+              $t('common.integrationsCatalog.gamConsentNote')
+            }}
+          </p>
         </div>
       </template>
       <template #footer
@@ -344,12 +368,12 @@ defineEmits<{
   save: []
 }>()
 
-type DialogId = 'gsc' | 'analytics' | 'linkedin'
+type DialogId = 'gsc' | 'analytics' | 'gam' | 'linkedin'
 type ServiceCard = {
   kind: 'service'
   id: DialogId
   title: string
-  logo: 'analytics' | 'google' | 'linkedin'
+  logo: 'admanager' | 'analytics' | 'google' | 'linkedin'
   status: string | null
   description: string
 }
@@ -379,6 +403,7 @@ const dialogModel = (id: DialogId) =>
   })
 const gscOpen = dialogModel('gsc')
 const analyticsOpen = dialogModel('analytics')
+const gamOpen = dialogModel('gam')
 const linkedinOpen = dialogModel('linkedin')
 const filterQuery = shallowRef('')
 const planFilter = shallowRef<'available' | 'all' | 'pro' | 'premium'>('available')
@@ -413,6 +438,14 @@ const planSections = computed<PlanSection[]>(() => [
         logo: 'analytics',
         status: props.allowGtag ? $t('common.integrationsCatalog.active') : null,
         description: $t('common.integrationsCatalog.analyticsDescription'),
+      },
+      {
+        kind: 'service',
+        id: 'gam',
+        title: 'Google Ad Manager',
+        logo: 'admanager',
+        status: props.gamNetworkCode ? $t('common.integrationsCatalog.active') : null,
+        description: $t('common.integrationsCatalog.gamDescription'),
       },
       {
         kind: 'service',

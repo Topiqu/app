@@ -146,6 +146,16 @@ describe('consent integration contracts', () => {
     expect(source('i18n/locales/cs/common.json')).not.toContain('Počítá zobrazení článků')
   })
 
+  it('gives the consent banner a role its element is allowed to carry', () => {
+    const banner = source('app/components/ConsentManager.vue').split('</template>')[0]!
+
+    // `aside` implies `complementary`, which does not allow `dialog` — the banner then lands in
+    // the accessibility tree as a malformed node, and agents navigate by that tree.
+    expect(banner).not.toContain('<aside')
+    expect(banner).toContain('role="dialog"')
+    expect(banner).toContain('aria-labelledby="consent-title"')
+  })
+
   it('renders one responsive tenant GAM placement in the article sidebar', () => {
     const article = source('app/pages/clanky/[slug].vue')
 

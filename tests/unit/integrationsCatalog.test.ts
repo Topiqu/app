@@ -4,6 +4,11 @@ import { describe, expect, it } from 'vitest'
 
 const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
+// Read from disk, not `import`: the i18n plugin compiles imported locale JSON into message
+// functions, so every string assertion against it would pass vacuously.
+const catalogMessages = (locale: string): Record<string, string> =>
+  JSON.parse(source(`i18n/locales/${locale}/common.json`)).common.integrationsCatalog
+
 describe('settings integrations catalog', () => {
   it('keeps the Search Console connection reachable from settings', () => {
     const settings = source('app/pages/settings/index.vue')
@@ -39,6 +44,34 @@ describe('settings integrations catalog', () => {
     expect(settings).toContain("variant: 'danger'")
   })
 
+  it('gives Google Ad Manager its own card instead of hiding it in the Analytics dialog', () => {
+    const catalog = source('app/components/Form/Client/IntegrationsCatalog.vue')
+    const analyticsDialog = catalog.slice(
+      catalog.indexOf('v-model:open="analyticsOpen"'),
+      catalog.indexOf('v-model:open="gamOpen"'),
+    )
+
+    expect(catalog).toContain("id: 'gam'")
+    expect(catalog).toContain("title: 'Google Ad Manager'")
+    expect(catalog).toContain("logo: 'admanager'")
+    expect(catalog).toContain('v-model:open="gamOpen"')
+    expect(analyticsDialog).not.toContain('gamNetworkCode')
+    expect(source('app/components/Form/Client/IntegrationLogo.vue')).toContain("return 'mdi:google-ads'")
+  })
+
+  it('keeps the Ad Manager card findable by the title+description filter under either name', () => {
+    for (const catalog of [catalogMessages('cs'), catalogMessages('en')]) {
+      expect(catalog.gamDescription).toContain('Google Ad Manager')
+      expect(catalog.gamDescription).toContain('GAM')
+      expect(catalog.gamBenefitOne).toBeTruthy()
+      expect(catalog.gamBenefitTwo).toBeTruthy()
+      expect(catalog.gamStepOne).toContain('/article/sidebar')
+      expect(catalog.gamStepTwo).toBeTruthy()
+      expect(catalog.gamStepThree).toBeTruthy()
+      expect(catalog.gamConsentNote).toBeTruthy()
+    }
+  })
+
   it('offers text and plan filters and renders service-specific logos', () => {
     const catalog = source('app/components/Form/Client/IntegrationsCatalog.vue')
     const logos = source('app/components/Form/Client/IntegrationLogo.vue')
@@ -47,8 +80,8 @@ describe('settings integrations catalog', () => {
     expect(catalog).toContain('v-model="planFilter"')
     expect(catalog).toContain('<FormClientIntegrationLogo :name="card.logo" />')
     expect(logos).toContain('fill="#4285F4"')
-    expect(logos).toContain("text-[#0a66c2]")
-    expect(logos).toContain("text-[#21759b]")
+    expect(logos).toContain('text-[#0a66c2]')
+    expect(logos).toContain('text-[#21759b]')
   })
 
   it('defaults to available integrations and marks inaccessible plan lanes as locked', () => {
@@ -59,7 +92,7 @@ describe('settings integrations catalog', () => {
     expect(catalog).toContain("$t('common.integrationsCatalog.requiresPlan'")
     expect(catalog).toContain("$t('common.integrationsCatalog.includedInPlan')")
     expect(catalog).not.toContain("$t('common.features.includedInPlan')")
-    expect(catalog).toContain('if (planFilter.value === \'available\') return hasPlanAccess(section.id)')
+    expect(catalog).toContain("if (planFilter.value === 'available') return hasPlanAccess(section.id)")
     expect(settings).toContain(':currentPlan="client?.plan ?? \'BASIC\'"')
     expect(catalog).not.toContain("label: 'Pro+'")
     expect(catalog).not.toContain("label: 'Premium+'")

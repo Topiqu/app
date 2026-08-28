@@ -45,11 +45,13 @@
           v-for="option in filters"
           :key="option"
           type="button"
-          class="rounded-lg px-3 py-2 text-xs font-medium transition"
+          color="neutral"
+          variant="ghost"
+          class="cursor-pointer rounded-lg px-3 py-2 text-xs font-medium transition"
           :class="
             filter === option
-              ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-              : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              ? 'bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200'
+              : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800'
           "
           @click="filter = option"
         >

@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  allowedModulesFor,
   ARTICLE_FORMATS,
   ARTICLE_FORMAT_NAMES,
   applyFormat,
   formatMenu,
   formatRules,
   isArticleFormat,
+  isStructureVariantFor,
 } from '../../../server/utils/ai/formats'
 
 const full = {
@@ -14,62 +16,86 @@ const full = {
   keyTakeaways: ['Prices rose 12% in 2025'],
   faq: [{ question: 'How much?', answer: 'Twelve percent.' }],
   polls: [{ question: 'Which first?', options: ['A', 'B'] }],
+  videos: [{ url: 'https://youtu.be/dQw4w9WgXcQ', caption: 'Demo' }],
 }
 
 describe('format catalogue', () => {
-  it('offers every format to the picker', () => {
+  it('offers every format, variant and module choice to the picker', () => {
     const menu = formatMenu()
 
-    for (const name of ARTICLE_FORMAT_NAMES) expect(menu).toContain(`- ${name}:`)
+    for (const name of ARTICLE_FORMAT_NAMES) {
+      expect(menu).toContain(`- ${name}:`)
+      for (const variant of Object.keys(ARTICLE_FORMATS[name].variants)) expect(menu).toContain(variant)
+    }
+    expect(menu).toContain('Optional modules')
   })
 
-  it('narrows an unknown string', () => {
+  it('narrows formats and format-specific variants', () => {
     expect(isArticleFormat('guide')).toBe(true)
     expect(isArticleFormat('verdict')).toBe(false)
-    expect(isArticleFormat(undefined)).toBe(false)
+    expect(isStructureVariantFor('analysis', 'claim-audit')).toBe(true)
+    expect(isStructureVariantFor('guide', 'claim-audit')).toBe(false)
   })
 })
 
 describe('formatRules', () => {
-  it.each(ARTICLE_FORMAT_NAMES)('%s never mentions an element it forbids', (name) => {
+  it.each(ARTICLE_FORMAT_NAMES)('%s describes its selected variant and module budget', (name) => {
     const spec = ARTICLE_FORMATS[name]
-    const rules = formatRules(name)
+    const variant = Object.keys(spec.variants)[0]!
+    const rules = formatRules(name, variant, spec.defaultModules)
 
     expect(rules).toContain(`${spec.words[0]}-${spec.words[1]} words`)
-    if (!spec.table) expect(rules).toContain('must NOT contain')
-    if (!spec.faq) expect(rules).toContain('"faq": return an empty array')
-    if (!spec.answer) expect(rules).toContain('"answer": return an empty string')
-    if (!spec.takeaways) expect(rules).toContain('"keyTakeaways": return an empty array')
+    expect(rules).toContain(`Structure variant: ${variant}`)
+    if (!spec.defaultModules.includes('table')) expect(rules).toContain('must NOT contain an HTML table')
+    if (!spec.defaultModules.includes('faq')) expect(rules).toContain('"faq": return an empty array')
+    if (!spec.defaultModules.includes('answer')) expect(rules).toContain('"answer": return an empty string')
   })
 
-  // The closing verdict section is the single most recognisable tell, and no format wants one.
-  it.each([...ARTICLE_FORMAT_NAMES, undefined])('%s bans the closing verdict and the contrast pair', (name) => {
+  it.each([...ARTICLE_FORMAT_NAMES, undefined])('%s bans the closing verdict and contrast pair', (name) => {
     const rules = formatRules(name)
 
     expect(rules).toMatch(/Verdict|Verdikt/)
     expect(rules).toContain('not X, but Y')
   })
 
-  it('leaves the manual flow the full menu', () => {
+  it('leaves the manual flow broad but makes optional blocks default to none', () => {
     const rules = formatRules()
 
-    expect(rules).toContain('Tables and polls are both optional')
+    expect(rules).toContain('Tables, polls and videos are optional')
     expect(rules).not.toContain('must NOT contain')
   })
 })
 
 describe('applyFormat', () => {
-  it('clears what the format does not carry', () => {
-    const opinion = applyFormat(full, 'opinion')
+  it('keeps only explicitly selected structured modules', () => {
+    const opinion = applyFormat(full, 'opinion', [])
 
     expect(opinion.answer).toBe('')
     expect(opinion.keyTakeaways).toEqual([])
     expect(opinion.faq).toEqual([])
-    // opinion keeps polls — the point is that the clearing is per element, not all-or-nothing.
-    expect(opinion.polls).toHaveLength(1)
+    expect(opinion.polls).toEqual([])
+    expect(opinion.videos).toEqual([])
   })
 
-  it('keeps what the format does carry', () => {
+  it('keeps selected modules and removes allowed but unselected ones', () => {
+    const guide = applyFormat(full, 'guide', ['faq', 'youtube'])
+
+    expect(guide.answer).toBe('')
+    expect(guide.keyTakeaways).toEqual([])
+    expect(guide.faq).toEqual(full.faq)
+    expect(guide.polls).toEqual([])
+    expect(guide.videos).toEqual(full.videos)
+  })
+
+  it('silently drops modules the format does not allow', () => {
+    const story = applyFormat(full, 'story', ['faq', 'youtube'])
+
+    expect(story.faq).toEqual([])
+    expect(story.videos).toEqual(full.videos)
+    expect(allowedModulesFor('story')).toEqual(['youtube'])
+  })
+
+  it('retains legacy defaults when modules were not specified', () => {
     const guide = applyFormat(full, 'guide')
 
     expect(guide.answer).toBe(full.answer)
@@ -78,18 +104,7 @@ describe('applyFormat', () => {
     expect(guide.polls).toEqual([])
   })
 
-  // The manual editor flow has no format and must not be silently stripped.
   it('is a passthrough without a format', () => {
     expect(applyFormat(full, undefined)).toEqual(full)
-  })
-
-  it.each(ARTICLE_FORMAT_NAMES)('%s agrees with its own catalogue entry', (name) => {
-    const spec = ARTICLE_FORMATS[name]
-    const applied = applyFormat(full, name)
-
-    expect(applied.answer === '').toBe(!spec.answer)
-    expect(applied.keyTakeaways!.length > 0).toBe(spec.takeaways)
-    expect(applied.faq!.length > 0).toBe(spec.faq)
-    expect(applied.polls!.length > 0).toBe(spec.poll)
   })
 })

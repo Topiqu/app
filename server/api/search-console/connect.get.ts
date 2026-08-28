@@ -6,8 +6,14 @@ export default defineEventHandler(async (event) => {
   const user = await requireUser(event, { role: ['admin', 'superadmin'], clientSite: true })
   const clientSiteId = user.clientSiteId!
   if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', clientSiteId)
-  const site = await prisma.clientSite.findUnique({ where: { id: clientSiteId }, select: { plan: true } })
-  if (!site || !['PREMIUM', 'CUSTOM'].includes(site.plan))
+  const site = await prisma.clientSite.findUnique({
+    where: { id: clientSiteId },
+    select: {
+      plan: true,
+      features: { where: { isActive: true, feature: { code: 'SEARCH_CONSOLE' } }, select: { id: true }, take: 1 },
+    },
+  })
+  if (!site || !['PREMIUM', 'CUSTOM'].includes(site.plan) || !site.features.length)
     throw createError({ statusCode: 403, message: 'Search Console intelligence requires PREMIUM' })
   const clientId = searchConsoleClientId()
   if (!clientId) throw createError({ statusCode: 503, message: 'Google Search Console OAuth is not configured' })

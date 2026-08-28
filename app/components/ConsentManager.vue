@@ -1,5 +1,5 @@
 <template>
-  <aside
+  <div
     v-if="showBanner"
     class="z-popover fixed inset-x-3 bottom-3 mx-auto max-w-3xl rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-4 shadow-2xl sm:bottom-5 sm:p-5"
     role="dialog"
@@ -23,7 +23,7 @@
       </UButton>
       <UButton @click="acceptAll">{{ $t('common.consent.accept') }}</UButton>
     </div>
-  </aside>
+  </div>
 
   <UModal v-model:open="settingsOpen" :title="$t('common.consent.settingsTitle')" :ui="{ content: 'max-w-xl' }">
     <template #body>

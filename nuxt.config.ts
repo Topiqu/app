@@ -122,6 +122,8 @@ export default defineNuxtConfig({
           '0 15 * * *': ['generate-article'],
           '*/30 * * * *': ['sentiment-analysis'],
           '0 3 * * *': ['community-insights'],
+          '0 2 * * *': ['search-console-sync'],
+          '30 2 * * *': ['search-console-autopilot'],
           '*/5 * * * *': ['translate-pending'],
           '0 4 * * *': ['gam-sync'],
         }

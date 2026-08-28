@@ -1,14 +1,17 @@
 import type { Language } from '@prisma/client'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
+import type { ArticleModule, ArticleStructureVariant } from './formats'
 
 import { z } from 'zod'
 import { generateObject, generateText, streamObject } from 'ai'
+import { stripUntrustedIframes, youtubeEmbedUrl } from '~~/shared/utils/youtube'
 
 import type { ArticleImage } from '../images/types'
 
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { allowsGeneratedFallback, findCoverImage, findStockImage } from '../images/chain'
-import { applyFormat, ARTICLE_FORMATS, formatRules, type ArticleFormat } from './formats'
+import { escapeHtml } from '../sanitize'
+import { applyFormat, formatRules, selectedModulesFor, type ArticleFormat } from './formats'
 
 const imageInstruction = z.object({
   type: z
@@ -25,7 +28,7 @@ export const articleSchema = z.object({
     .min(500)
     .max(20000)
     .describe(
-      'The article body at the length the format asks for, with h2, h3, strong, blockquote, underline, italic and ul/ol/li. Never pad between blocks with <br> or empty paragraphs — the stylesheet owns the spacing. Include image slots like [[IMAGE1]] where they should appear.',
+      'The article body at the length the format asks for, with h2, h3, strong, blockquote, underline, italic and ul/ol/li. Never pad between blocks with <br> or empty paragraphs — the stylesheet owns the spacing. Include numbered image, poll or video slots where selected.',
     ),
   answer: z
     .string()
@@ -68,6 +71,15 @@ export const articleSchema = z.object({
       }),
     )
     .describe('Array of polls corresponding to slots in content, empty array if none'),
+  videos: z
+    .array(
+      z.object({
+        url: z.string().url().max(1000).describe('A real youtube.com or youtu.be URL found in the research brief'),
+        caption: z.string().min(3).max(200).describe('A factual caption in the article language'),
+      }),
+    )
+    .max(1)
+    .describe('One verified YouTube video corresponding to [[VIDEO1]], or an empty array'),
   tags: z
     .array(z.string())
     .max(5)
@@ -124,7 +136,17 @@ export type ResearchOption = { query: string } | false | undefined
 const buildArticleConfig = async (
   clientSiteId: string,
   prompt: string,
-  { research: researchOption, format }: { research?: ResearchOption; format?: ArticleFormat } = {},
+  {
+    research: researchOption,
+    format,
+    variant,
+    modules,
+  }: {
+    research?: ResearchOption
+    format?: ArticleFormat
+    variant?: ArticleStructureVariant | null
+    modules?: readonly ArticleModule[]
+  } = {},
 ) => {
   const {
     tokenRemaining,
@@ -195,9 +217,10 @@ const buildArticleConfig = async (
 
   // No format is the manual editor flow, where the author's prompt is the brief — it keeps the
   // full menu, and only the cron's topic picker spends a format.
-  const spec = format ? ARTICLE_FORMATS[format] : null
-  const pollsAllowed = spec ? spec.poll : true
-  const tablesAllowed = spec ? spec.table : true
+  const selectedModules = format ? selectedModulesFor(format, modules) : null
+  const pollsAllowed = selectedModules ? selectedModules.includes('poll') : true
+  const tablesAllowed = selectedModules ? selectedModules.includes('table') : true
+  const videosAllowed = selectedModules ? selectedModules.includes('youtube') : true
 
   const instructions = `
       You are a professional content writer focusing on ${focus || 'common topics'}.
@@ -216,13 +239,14 @@ const buildArticleConfig = async (
         "coverImage": {"type": "stock", "query": "search keyword OR generation prompt"},
         "images": [{"type": "photo", "query": "keyword for IMAGE1", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
+        "videos": [{"url": "https://www.youtube.com/watch?v=...", "caption": "what the video contributes"}],
         "tags": ["ID's of relevant tags from the provided tags list, up to 5, that best fit the article topic"],
         "sources": ["full source URL 1", "full source URL 2", ...]
       }.
       The title must be engaging.
       Start the body at h2 — the page already renders the title as its h1.
 
-      ${formatRules(format)}
+      ${formatRules(format, variant, modules)}
 
       Naturally incorporate keywords if provided.
       ${keywords && `Keywords: ${JSON.stringify(keywords)}`}.
@@ -250,6 +274,13 @@ const buildArticleConfig = async (
       Keep tables to a maximum of 4 columns so they stay readable on mobile, and never put an image, a poll slot or a nested table inside a cell.
       A table earns its place by holding figures the reader compares across rows. Never build one out of prose.`
           : 'Never render a <table>. Whatever figures this format needs belong in the prose.'
+      }
+
+      YouTube video:
+      ${
+        videosAllowed
+          ? 'A video is optional and the default is none. Use at most one [[VIDEO1]] slot only for a YouTube URL that appears verbatim in the research brief and materially demonstrates, documents or explains the subject. Return the URL and caption in videos. If the brief contains no suitable YouTube URL, return [] and write no slot. Never invent or reconstruct a video URL.'
+          : 'Return an empty videos array and never write a [[VIDEO]] slot into the content.'
       }
 
       Twitter/X Embeds:
@@ -362,7 +393,7 @@ export const finalizeArticle = async (
 
   // Before the slots are filled: the image attribution carries a deliberate mid-paragraph `<br>`
   // that this pass must not see as padding.
-  object.content = dropBlankLines(object.content)
+  object.content = dropBlankLines(stripUntrustedIframes(object.content))
   object.content = applyContentSlots(object.content, 'IMAGE', generatedImages)
 
   const polls = (object.polls ?? []).map((poll, idx) => {
@@ -376,17 +407,35 @@ export const finalizeArticle = async (
   })
   object.content = applyContentSlots(object.content, 'POLL', polls)
 
+  const videos = (object.videos ?? []).flatMap((video, idx) => {
+    const src = youtubeEmbedUrl(video.url)
+    if (!src) return []
+    const caption = escapeHtml(video.caption)
+    return [
+      {
+        slot: idx + 1,
+        html: `<figure class="article-video"><div data-youtube-video><iframe class="youtube-video" src="${src}" title="${caption}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><figcaption>${caption}</figcaption></figure>`,
+      },
+    ]
+  })
+  object.content = applyContentSlots(object.content, 'VIDEO', videos)
+
   return { ...object, articleImageUrl, articleImageCredit }
 }
 
 export const generateArticle = async (
   clientSiteId: string,
   prompt: string,
-  opts?: { research?: ResearchOption; format?: ArticleFormat },
+  opts?: {
+    research?: ResearchOption
+    format?: ArticleFormat
+    variant?: ArticleStructureVariant | null
+    modules?: readonly ArticleModule[]
+  },
 ) => {
   const { config, language, researchTokens } = await buildArticleConfig(clientSiteId, prompt, opts)
   const { object, usage } = await generateObject(config)
-  const finalized = await finalizeArticle(applyFormat(object, opts?.format), language)
+  const finalized = await finalizeArticle(applyFormat(object, opts?.format, opts?.modules), language)
 
   return { ...finalized, usage, researchTokens }
 }

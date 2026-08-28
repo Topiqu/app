@@ -24,9 +24,13 @@ export default defineEventHandler(async (event) => {
 
   const site = await prisma.clientSite.findUnique({
     where: { id: payload.clientSiteId },
-    select: { domain: true, plan: true },
+    select: {
+      domain: true,
+      plan: true,
+      features: { where: { isActive: true, feature: { code: 'SEARCH_CONSOLE' } }, select: { id: true }, take: 1 },
+    },
   })
-  if (!site || !['PREMIUM', 'CUSTOM'].includes(site.plan))
+  if (!site || !['PREMIUM', 'CUSTOM'].includes(site.plan) || !site.features.length)
     throw createError({ statusCode: 403, message: 'Search Console intelligence requires PREMIUM' })
 
   // The callback lands on AUTH_ORIGIN's host, settings live on the tenant's; `strategy: 'prefix'` also

@@ -22,6 +22,9 @@ type FeatureSyncDb = {
     findUnique: (args: any) => Promise<any>
     updateMany: (args: any) => Promise<unknown>
   }
+  searchConsoleConnection: {
+    updateMany: (args: any) => Promise<unknown>
+  }
 }
 
 export const FEATURE_CODES: FeatureCode[] = ['AI', 'SENTIMENT', 'ARTICLE_CRONS', 'SEARCH_CONSOLE']
@@ -96,6 +99,16 @@ export const syncAutoRelease = async (tx: FeatureSyncDb, clientSiteId: string, a
   await tx.clientSite.updateMany({
     where: { id: clientSiteId, autoRelease: true },
     data: { autoRelease: false },
+  })
+}
+
+/** Losing either data access or AI must require a fresh explicit autopilot opt-in later. */
+export const syncSeoAutopilot = async (tx: FeatureSyncDb, clientSiteId: string, active: FeatureCode[]) => {
+  if (active.includes('SEARCH_CONSOLE') && active.includes('AI')) return
+
+  await tx.searchConsoleConnection.updateMany({
+    where: { clientSiteId, autopilotEnabled: true },
+    data: { autopilotEnabled: false },
   })
 }
 
@@ -187,6 +200,7 @@ export const syncPlanFeatures = async (tx: FeatureSyncDb, clientSiteId: string, 
   )
 
   await syncAutoRelease(tx, clientSiteId, nextActive)
+  await syncSeoAutopilot(tx, clientSiteId, nextActive)
   await recalcFeatureBilling(tx, clientSiteId, plan, site.billingPlan)
 
   return nextActive

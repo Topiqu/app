@@ -66,6 +66,35 @@
         <p v-if="data.connection.lastSyncAt" class="text-xs text-neutral-500">
           {{ $t('common.searchConsole.lastSync') }} <NuxtTime :datetime="data.connection.lastSyncAt" relative />
         </p>
+        <div
+          v-if="data.connection.propertyUrl"
+          class="flex items-start justify-between gap-4 border-t border-neutral-200 pt-4 dark:border-neutral-700"
+        >
+          <div>
+            <p class="font-medium">{{ $t('common.searchConsole.autopilotTitle') }}</p>
+            <p class="mt-1 text-sm text-neutral-500">{{ $t('common.searchConsole.autopilotDescription') }}</p>
+            <p v-if="data.connection.autopilotLastRunAt" class="mt-1 text-xs text-neutral-500">
+              {{ $t('common.searchConsole.autopilotLastRun') }}
+              <NuxtTime :datetime="data.connection.autopilotLastRunAt" relative />
+            </p>
+          </div>
+          <USwitch
+            :modelValue="data.connection.autopilotEnabled"
+            :disabled="autopilotPending"
+            :aria-label="$t('common.searchConsole.autopilotTitle')"
+            class="mt-1 shrink-0"
+            @update:modelValue="setAutopilot"
+          />
+        </div>
+        <div v-if="data.lastAction" class="flex items-center justify-between gap-3 text-xs text-neutral-500">
+          <span>
+            {{ $t(`common.searchConsole.actions.${data.lastAction.action}`) }}:
+            “{{ data.lastAction.query }}” · <NuxtTime :datetime="data.lastAction.createdAt" relative />
+          </span>
+          <UButton size="xs" color="neutral" variant="ghost" :loading="rollbackPending" @click="rollbackLastAction">
+            {{ $t('common.searchConsole.rollback') }}
+          </UButton>
+        </div>
       </div>
     </div>
   </section>
@@ -76,7 +105,14 @@ defineProps<{ embedded?: boolean }>()
 
 interface Status {
   eligible: boolean
-  connection: null | { googleEmail: string | null; propertyUrl: string | null; lastSyncAt: string | null }
+  lastAction: null | { id: string; action: string; createdAt: string; articleId: string; query: string }
+  connection: null | {
+    googleEmail: string | null
+    propertyUrl: string | null
+    lastSyncAt: string | null
+    autopilotEnabled: boolean
+    autopilotLastRunAt: string | null
+  }
 }
 interface Property {
   siteUrl: string
@@ -86,6 +122,8 @@ const toast = useAppToast()
 const { data, pending, refresh } = await useFetch<Status>('/api/search-console/status')
 const properties = shallowRef<Property[]>([])
 const selectedProperty = shallowRef('')
+const autopilotPending = shallowRef(false)
+const rollbackPending = shallowRef(false)
 const propertyItems = computed(() => properties.value.map((property) => property.siteUrl))
 const connect = () => {
   window.location.href = '/api/search-console/connect'
@@ -108,5 +146,26 @@ const saveProperty = async () => {
 const disconnect = async () => {
   await $fetch('/api/search-console', { method: 'DELETE' })
   await refresh()
+}
+const setAutopilot = async (enabled: boolean) => {
+  autopilotPending.value = true
+  try {
+    await $fetch('/api/search-console/autopilot', { method: 'PATCH', body: { enabled } })
+    toast.success({ message: $t('common.messages.saveSuccess') })
+    await refresh()
+  } finally {
+    autopilotPending.value = false
+  }
+}
+const rollbackLastAction = async () => {
+  if (!data.value?.lastAction) return
+  rollbackPending.value = true
+  try {
+    await $fetch(`/api/search-console/autopilot/${data.value.lastAction.id}/rollback`, { method: 'POST' })
+    toast.success({ message: $t('common.searchConsole.rollbackSuccess') })
+    await refresh()
+  } finally {
+    rollbackPending.value = false
+  }
 }
 </script>

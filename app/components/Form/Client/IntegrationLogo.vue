@@ -21,15 +21,17 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ name: 'analytics' | 'google' | 'linkedin' | 'wordpress' }>()
+const props = defineProps<{ name: 'admanager' | 'analytics' | 'google' | 'linkedin' | 'wordpress' }>()
 
 const icon = computed(() => {
+  if (props.name === 'admanager') return 'mdi:google-ads'
   if (props.name === 'analytics') return 'mdi:google-analytics'
   if (props.name === 'linkedin') return 'mdi:linkedin'
   return 'mdi:wordpress'
 })
 
 const color = computed(() => {
+  if (props.name === 'admanager') return 'text-[#34a853]'
   if (props.name === 'analytics') return 'text-[#e37400]'
   if (props.name === 'linkedin') return 'text-[#0a66c2]'
   return 'text-[#21759b]'

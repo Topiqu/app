@@ -10,23 +10,23 @@
       "error": "Could not open checkout. Please try again.",
       "toPro": {
         "title": "Grow your blog with the PRO plan",
-        "description": "Unlock AI generation, advanced SEO and 70% revenue share.",
+        "description": "AI generation, scheduled publishing, advanced SEO and a custom domain.",
         "features": [
           "AI article generation + monthly token bundle",
           "Advanced SEO optimization",
           "Import of existing articles",
-          "70% revenue share in your favor"
+          "Custom domain"
         ]
       },
       "toPremium": {
         "title": "Maximum power with the PREMIUM plan",
-        "description": "Everything in PRO plus AI sentiment, priority indexing and 90% revenue share.",
+        "description": "Everything in PRO plus sentiment analysis, Search Console and priority indexing.",
         "features": [
           "AI Sentiment & automatic images",
           "Priority indexing and sourcing",
           "Custom emojis & branding",
           "Priority 24/7 support",
-          "90% revenue share in your favor"
+          "Search Console intelligence"
         ]
       }
     }

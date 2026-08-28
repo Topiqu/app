@@ -13,7 +13,10 @@
 <script setup lang="ts">
 import VueEasyLightbox from 'vue-easy-lightbox'
 
-const { sourceRef, selector = '.prose p img' } = defineProps<{
+// The source element already scopes the query to the published body. Do not couple this to a
+// typography utility class: the article no longer uses `.prose`, which previously left every
+// inline image outside the lightbox collection.
+const { sourceRef, selector = 'p img' } = defineProps<{
   sourceRef: HTMLElement | null
   selector?: string
 }>()

@@ -5,6 +5,8 @@ import { decryptSearchConsoleToken } from '../../utils/searchConsole/crypto'
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event, { role: ['admin', 'superadmin'], clientSite: true })
   if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', user.clientSiteId)
+  if (!(await hasActiveFeature(prisma, user.clientSiteId!, 'SEARCH_CONSOLE')))
+    throw createError({ statusCode: 403, message: 'Search Console intelligence requires PREMIUM' })
   const body = z.object({ propertyUrl: z.string().min(1).max(2048) }).parse(await readBody(event))
   const connection = await prisma.searchConsoleConnection.findUnique({ where: { clientSiteId: user.clientSiteId! } })
   if (!connection) throw createError({ statusCode: 404, message: 'Search Console is not connected' })

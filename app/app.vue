@@ -33,6 +33,7 @@ import { resolveTenantTheme, themeColors } from '~/composables/theme'
 const reqUrl = useRequestURL()
 const route = useRoute()
 const clientSite = await useClientSite()
+const liveClientSite = await useLiveClientSite()
 const adChance = useAdChance()
 const i18nHead = useLocaleHead()
 const canonicalOrigin = useCanonicalOrigin()
@@ -112,7 +113,7 @@ useHead(() => ({
     ...i18nLinks.value,
     {
       rel: 'icon',
-      href: clientSite?.faviconUrl || clientSite?.logoUrl || '/favicon.ico',
+      href: liveClientSite.value?.faviconUrl || liveClientSite.value?.logoUrl || '/favicon.ico',
     },
     ...(clientSite
       ? [
