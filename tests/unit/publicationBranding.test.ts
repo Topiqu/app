@@ -83,10 +83,13 @@ describe('tenant branding stays current after a save', () => {
   })
 
   it('reads the header logo from the live entry and refreshes it on save', () => {
+    const app = source('app/app.vue')
     const header = source('app/components/Header.vue')
     const settings = source('app/pages/settings/index.vue')
 
-    // The header lives in the persistent layout, so a snapshot would survive the save unchanged.
+    // Both the head and header persist across navigation, so a snapshot would survive the save unchanged.
+    expect(app).toContain('const liveClientSite = await useLiveClientSite()')
+    expect(app).toContain('href: liveClientSite.value?.faviconUrl || liveClientSite.value?.logoUrl')
     expect(header).toContain('await useLiveClientSite()')
     expect(header).not.toContain('await useClientSite()')
     expect(header).toContain("logoSrc = computed(() => clientSite.value?.logoUrl || '/app-logo.png')")
