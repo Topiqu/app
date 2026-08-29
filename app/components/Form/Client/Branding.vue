@@ -104,10 +104,13 @@
         class="publication-surface rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-6 lg:hidden"
         :style="previewStyle"
       >
-        <p v-if="localTagline" class="text-sm font-semibold text-[var(--topiqu-tenant-accent)]">
+        <h3 class="text-3xl font-black text-highlighted">{{ name }}</h3>
+        <p
+          v-if="localTagline"
+          class="mt-3 max-w-[46ch] text-balance break-words border-l-2 border-[var(--topiqu-tenant-accent)] pl-4 text-base font-semibold leading-snug text-highlighted"
+        >
           {{ localTagline }}
         </p>
-        <h3 class="mt-2 text-3xl font-black text-highlighted">{{ name }}</h3>
         <p v-if="localDescription" class="mt-2 line-clamp-3 text-sm text-muted">{{ localDescription }}</p>
         <span
           class="publication-primary-cta mt-5 inline-flex rounded-[var(--ui-radius)] px-3 py-2 text-sm font-semibold"
@@ -186,10 +189,13 @@
         :width="320"
         containerClass="w-40 rounded-[var(--ui-radius)] bg-transparent"
       />
-      <p v-if="localTagline" class="mt-5 text-sm font-semibold text-[var(--topiqu-tenant-accent)]">
+      <h3 class="mt-5 text-3xl font-black text-highlighted">{{ name }}</h3>
+      <p
+        v-if="localTagline"
+        class="mt-3 max-w-[46ch] text-balance break-words border-l-2 border-[var(--topiqu-tenant-accent)] pl-4 text-base font-semibold leading-snug text-highlighted"
+      >
         {{ localTagline }}
       </p>
-      <h3 class="mt-2 text-3xl font-black text-highlighted">{{ name }}</h3>
       <p v-if="localDescription" class="mt-2 line-clamp-3 text-sm text-muted">{{ localDescription }}</p>
       <span
         class="publication-primary-cta mt-5 inline-flex rounded-[var(--ui-radius)] px-3 py-2 text-sm font-semibold"

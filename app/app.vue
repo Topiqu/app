@@ -24,8 +24,8 @@
 
 <script setup lang="ts">
 import { cs, en } from '@nuxt/ui/locale'
-import { toAbsoluteUrl } from '~~/shared/utils/seo'
 import { consentLauncherFor } from '~~/shared/utils/consent'
+import { brandTitle, toAbsoluteUrl } from '~~/shared/utils/seo'
 import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
 
 import { resolveTenantTheme, themeColors } from '~/composables/theme'
@@ -74,10 +74,10 @@ const computedThemeColor = computed(() => themeColors[resolveTenantTheme(clientS
 
 useSeoMeta({
   title: () => clientSite?.name || 'Topiqu',
-  description: () => clientSite?.description || 'Moderní blogovací platforma',
+  description: () => clientSite?.description || clientSite?.tagline || 'Moderní blogovací platforma',
   author: () => clientSite?.name || 'Topiqu',
-  ogTitle: () => clientSite?.name || 'Topiqu',
-  ogDescription: () => clientSite?.description || 'Moderní blogovací platforma',
+  ogTitle: () => brandTitle(clientSite?.name, clientSite?.tagline) || 'Topiqu',
+  ogDescription: () => clientSite?.description || clientSite?.tagline || 'Moderní blogovací platforma',
   ogLocale: () => (clientSite?.language === 'cs' ? 'cs_CZ' : 'en_US'),
   ogImageWidth: 1200,
   ogImageHeight: 600,
@@ -91,7 +91,7 @@ const targetLogoUrl = clientSite?.logoUrl || `${reqUrl.origin}/app-logo.png`
 if (clientSite) {
   defineOgImage('ClientSite', {
     title: clientSite.name,
-    description: clientSite.description || '',
+    description: clientSite.description || clientSite.tagline || '',
     siteName: clientSite.name,
     siteLogo: targetLogoUrl,
     themeColor: computedThemeColor.value,

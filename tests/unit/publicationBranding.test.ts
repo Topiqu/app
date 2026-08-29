@@ -96,3 +96,19 @@ describe('tenant branding stays current after a save', () => {
     expect(settings).toContain('refreshClientSite()')
   })
 })
+
+describe('tagline in publication metadata', () => {
+  const app = readFileSync(resolve(process.cwd(), 'app/app.vue'), 'utf8')
+
+  it('backs an empty description with the tagline rather than the platform boilerplate', () => {
+    for (const key of ['description', 'ogDescription']) {
+      expect(app).toContain(`${key}: () => clientSite?.description || clientSite?.tagline ||`)
+    }
+    expect(app).toContain('description: clientSite.description || clientSite.tagline')
+  })
+
+  it('carries the tagline into og:title but leaves <title> as the bare name', () => {
+    expect(app).toContain('ogTitle: () => brandTitle(clientSite?.name, clientSite?.tagline)')
+    expect(app).toContain("title: () => clientSite?.name || 'Topiqu',")
+  })
+})

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { buildCanonicalOrigin, toAbsoluteUrl } from '../../shared/utils/seo'
+import { brandTitle, buildCanonicalOrigin, toAbsoluteUrl } from '../../shared/utils/seo'
 
 describe('buildCanonicalOrigin', () => {
   it('forces https and strips www by default', () => {
@@ -38,5 +38,20 @@ describe('toAbsoluteUrl', () => {
 
   it('falls back to the input when the origin is unusable', () => {
     expect(toAbsoluteUrl('/en', '')).toBe('/en')
+  })
+})
+
+describe('brandTitle', () => {
+  it('joins the publication name and its tagline for og:title', () => {
+    expect(brandTitle('Pixbo', 'Nezávislý deník o městě')).toBe('Pixbo — Nezávislý deník o městě')
+  })
+
+  it('leaves no dangling dash when the tenant never wrote a tagline', () => {
+    expect(brandTitle('Pixbo', null)).toBe('Pixbo')
+    expect(brandTitle('Pixbo', '')).toBe('Pixbo')
+  })
+
+  it('returns an empty string the caller can fall back from', () => {
+    expect(brandTitle(null, null)).toBe('')
   })
 })

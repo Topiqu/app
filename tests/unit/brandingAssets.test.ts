@@ -52,6 +52,7 @@ describe('publication brand assets', () => {
     expect(header).toContain(':width="128"')
     expect(header).not.toContain(':height="128"')
     expect(home).toContain('aspectRatio="16 / 5"')
-    expect(home).toContain('containerClass="w-40 shrink-0')
+    expect(home).toContain('containerClass="w-40 ')
+    expect(home).not.toContain(':height="416"')
   })
 })
