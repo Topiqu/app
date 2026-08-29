@@ -139,13 +139,13 @@
       "title": "Zatím tu nic není",
       "message": "První článek se právě chystá. Vrať se za chvíli.",
       "owner": {
-        "badge": "Tohle vidíš jen ty",
+        "badge": "Tuto stránku vidíte jen vy",
         "title": "Blog je připravený na první článek",
-        "message": "Návštěvníkům se ukáže tato stránka a vyhledávačům říkáme, aby ji neindexovaly, dokud nevyjde první článek. Můžeš ho napsat sám, nebo si ho nechat vygenerovat.",
+        "message": "Návštěvníkům se ukáže tato stránka a vyhledávačům říkáme, aby ji neindexovaly, dokud nevyjde první článek. Můžete ho napsat sami, nebo si ho nechat vygenerovat, pokud váš tarif a zůstatek tokenů podporují AI.",
         "writeCta": "Napsat první článek",
         "aiCta": "Vygenerovat AI",
         "adminCta": "Přejít do administrace",
-        "checklistTitle": "Než blog spustíš",
+        "checklistTitle": "Než blog spustíte",
         "progress": "Hotovo {done} ze {total}",
         "locked": "Dostupné ve vyšším tarifu",
         "steps": {
@@ -155,15 +155,15 @@
           },
           "branding": {
             "title": "Dodělat vzhled",
-            "description": "Přidej logo a krátký popis blogu."
+            "description": "Přidejte logo a krátký popis blogu."
           },
           "voice": {
             "title": "Nastavit tón a publikum",
-            "description": "Řekni AI, pro koho píše a o čem blog je."
+            "description": "Nastavte, pro koho má AI psát a o čem blog je."
           },
           "domain": {
             "title": "Ověřit doménu",
-            "description": "Nasměruj doménu na blog a potvrď DNS záznam."
+            "description": "Nasměrujte doménu na blog a potvrďte DNS záznam."
           }
         }
       }

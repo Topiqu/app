@@ -211,10 +211,36 @@
               {{
                 usesCustomDomain
                   ? $t('common.tenant.customDomainDescription')
-                  : $t('common.tenant.subdomainDescription')
+                  : form.plan === 'BASIC'
+                    ? $t('common.tenant.subdomainDescription')
+                    : $t('common.tenant.paidSubdomainDescription')
               }}
             </p>
           </div>
+
+          <UFormField v-if="form.plan !== 'BASIC'" :label="$t('common.tenant.domainType')">
+            <div class="grid gap-3 sm:grid-cols-2">
+              <button
+                v-for="option in domainTypeOptions"
+                :key="option.value"
+                type="button"
+                class="flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                :class="
+                  form.domainType === option.value
+                    ? 'border-primary bg-primary/10 text-highlighted'
+                    : 'border-default bg-default text-muted hover:border-primary/50 hover:bg-primary/5 hover:text-highlighted'
+                "
+                :aria-pressed="form.domainType === option.value"
+                @click="form.domainType = option.value"
+              >
+                <UIcon :name="option.icon" size="22" class="mt-0.5 shrink-0" />
+                <span>
+                  <span class="block text-sm font-semibold">{{ option.label }}</span>
+                  <span class="mt-0.5 block text-xs leading-5 text-muted">{{ option.description }}</span>
+                </span>
+              </button>
+            </div>
+          </UFormField>
 
           <UFormField :label="$t('common.tenant.name')">
             <UInput v-model="form.name" autofocus :placeholder="$t('common.tenant.namePlaceholder')" class="w-full" />
@@ -353,6 +379,7 @@ const form = reactive({
   theme: 'indigo' as ThemeKey,
   plan: 'BASIC' as SelectedPlan,
   interval: 'month' as BillingInterval,
+  domainType: 'SUBDOMAIN' as 'SUBDOMAIN' | 'CUSTOM',
 })
 const subdomainTouched = shallowRef(false)
 const availability = shallowRef<Availability>('idle')
@@ -371,7 +398,22 @@ const languageOptions = computed(() => [
   { label: $t('languages.en'), code: 'EN', value: 'en' as const },
 ])
 
-const usesCustomDomain = computed(() => form.plan !== 'BASIC')
+const domainTypeOptions = computed(() => [
+  {
+    value: 'SUBDOMAIN' as const,
+    label: $t('common.tenant.subdomain'),
+    description: $t('common.tenant.paidSubdomainDescription'),
+    icon: 'i-mdi-link-variant',
+  },
+  {
+    value: 'CUSTOM' as const,
+    label: $t('common.tenant.customDomain'),
+    description: $t('common.tenant.paidCustomDomainDescription'),
+    icon: 'i-mdi-web',
+  },
+])
+
+const usesCustomDomain = computed(() => form.plan !== 'BASIC' && form.domainType === 'CUSTOM')
 const domainType = computed(() => (usesCustomDomain.value ? 'CUSTOM' : 'SUBDOMAIN'))
 const requestedDomain = computed(() => (usesCustomDomain.value ? form.customDomain : form.subdomain))
 const selectedDomain = computed(() => (usesCustomDomain.value ? form.customDomain : `${form.subdomain}.${baseDomain}`))
@@ -482,6 +524,13 @@ watch(
   },
 )
 
+watch(
+  () => form.plan,
+  (plan) => {
+    if (plan === 'BASIC') form.domainType = 'SUBDOMAIN'
+  },
+)
+
 const checkAvailability = useDebounceFn(async () => {
   const requested = requestedDomain.value
   const requestedType = domainType.value
@@ -529,6 +578,7 @@ watch(open, (value) => {
   form.theme = 'indigo'
   form.plan = 'BASIC'
   form.interval = 'month'
+  form.domainType = 'SUBDOMAIN'
   subdomainTouched.value = false
   availability.value = 'idle'
   availabilityReason.value = null
