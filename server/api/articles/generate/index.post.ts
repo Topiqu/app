@@ -57,22 +57,7 @@ export default defineEventHandler(async (event) => {
 
   const abortController = new AbortController()
   let textDone = false
-
-  // Node request/response `close` events are transport lifecycle signals, not reliable reader
-  // cancellation signals behind proxies and serverless adapters. Nitro propagates a cancelled
-  // response into ReadableStream.cancel(), which is the only place where we abort the model.
-  let generation: Awaited<ReturnType<typeof streamArticle>>
-  try {
-    generation = await streamArticle(clientSiteId, prompt, abortController.signal)
-  } catch (error) {
-    await auditAttempt('MANUAL_GENERATION_FAILED', {
-      stage: 'initialization',
-      error: error instanceof Error ? error.message : String(error),
-    })
-    await reportCaughtError('Article generation initialization failed', error, { attemptId, clientSiteId })
-    throw error
-  }
-  const { result, finalize, researchTokens } = generation
+  let generation: Awaited<ReturnType<typeof streamArticle>> | undefined
 
   const encoder = new TextEncoder()
   let clientAlive = true
@@ -87,8 +72,18 @@ export default defineEventHandler(async (event) => {
 
   const stream = new ReadableStream({
     async start(controller) {
+      // Bun closes an HTTP connection after 10 seconds without bytes by default. Research and the
+      // writer's time-to-first-token can both exceed that, so keep the response active below both
+      // Bun's idle timeout and Cloudflare's proxy timeout while useful work is still running.
+      const heartbeat = setInterval(() => send(controller, { type: 'heartbeat' }), 5_000)
+
       try {
         send(controller, { type: 'phase', phase: 'writing' })
+
+        // Research used to run before the Response existed. A slow web-search call therefore left
+        // the origin completely silent and Bun could kill the request before streaming began.
+        generation = await streamArticle(clientSiteId, prompt, abortController.signal)
+        const { result, finalize, researchTokens } = generation
 
         for await (const partial of result.partialObjectStream) {
           send(controller, { type: 'partial', object: partial })
@@ -142,12 +137,12 @@ export default defineEventHandler(async (event) => {
           // Stopped mid-generation: bill best-effort for the partial usage we actually spent.
           // Research is included because it completes before the first token streams, so Stop
           // never gets it back.
-          const usage = await result.usage.catch(() => null)
+          const usage = await generation?.result.usage.catch(() => null)
           if (usage?.totalTokens) {
             try {
               await consumeClientTokens(
                 clientSiteId,
-                usage.totalTokens,
+                usage.totalTokens + (generation?.researchTokens ?? 0),
                 'MANUAL_GENERATION_ABORTED',
                 { attemptId, stage: textDone ? 'finalization' : 'writing' },
                 event,
@@ -174,13 +169,14 @@ export default defineEventHandler(async (event) => {
           // `error` hook and Sentry never sees a caught throw — without this the author got a
           // generic toast and production had no record at all.
           await auditAttempt('MANUAL_GENERATION_FAILED', {
-            stage: textDone ? 'finalization' : 'writing',
+            stage: generation ? (textDone ? 'finalization' : 'writing') : 'initialization',
             error: error?.message || String(error),
           })
           await reportCaughtError('Article generation stream failed', error, { attemptId, clientSiteId })
           send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })
         }
       } finally {
+        clearInterval(heartbeat)
         try {
           controller.close()
         } catch {
@@ -188,8 +184,12 @@ export default defineEventHandler(async (event) => {
         }
       }
     },
-    cancel() {
+    async cancel(reason) {
       if (!textDone) abortController.abort()
+      await auditAttempt('MANUAL_GENERATION_CANCELLED', {
+        stage: generation ? (textDone ? 'finalization' : 'writing') : 'initialization',
+        reason: reason instanceof Error ? reason.message : typeof reason === 'string' ? reason : null,
+      })
     },
   })
 
