@@ -38,13 +38,14 @@ export default defineEventHandler(async (event) => {
   const abortController = new AbortController()
   let textDone = false
 
-  // Client disconnect (tab close) or explicit Stop → cancel the LLM, but only while it's
-  // still writing. Once the text is done we always finish finalize + billing server-side,
-  // so a drop near the end can never skip the charge.
-  const onClose = () => {
-    if (!textDone) abortController.abort()
+  // `IncomingMessage.close` means that the request body has finished too, not just that the
+  // browser disconnected. Behind a proxy it fires immediately after this POST is received and
+  // used to abort every generation before the first NDJSON chunk. Watch the outgoing response:
+  // its premature close is the actual signal that the reader went away.
+  const onResponseClose = () => {
+    if (!event.node.res.writableEnded && !textDone) abortController.abort()
   }
-  event.node.req.on('close', onClose)
+  event.node.res.on('close', onResponseClose)
 
   const { result, finalize, researchTokens } = await streamArticle(clientSiteId, prompt, abortController.signal)
 
@@ -129,7 +130,7 @@ export default defineEventHandler(async (event) => {
           send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })
         }
       } finally {
-        event.node.req.off('close', onClose)
+        event.node.res.off('close', onResponseClose)
         try {
           controller.close()
         } catch {
