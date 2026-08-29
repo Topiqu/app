@@ -98,10 +98,10 @@ export default defineEventHandler(async (event) => {
   const aiUserPayload = aiUser
   const currentAiUser = clientSite.users[0]
   const hasAiPayload = aiUserPayload && Object.values(aiUserPayload).some((v) => v !== '')
-  const requestedTokenLimit = isSuperadmin ? data.tokenLimit : undefined
-  const effectiveTokenLimit = requestedTokenLimit ?? clientSite.tokenLimit ?? 0
 
-  if (hasAiPayload && effectiveTokenLimit > 0) {
+  // AI identity and writing preferences are configuration, not token consumption. Keeping them
+  // editable on Basic lets the client prepare the workspace before activating AI generation.
+  if (hasAiPayload) {
     // `avatarUrl` is deliberately absent: it belongs to `ai-avatar.post`/`.delete`, which write it
     // straight to the row. Saving settings used to send it back and blank it out.
     const aiData = {
@@ -136,15 +136,6 @@ export default defineEventHandler(async (event) => {
         metadata: { aiUserId: newAi.id },
       })
     }
-  } else if (requestedTokenLimit === 0 && currentAiUser) {
-    await db.user.delete({ where: { id: currentAiUser.id } })
-    await logAction({
-      action: 'AI_USER_DELETE',
-      userId: user.id,
-      clientSiteId: id,
-      ip: getIp(event),
-      metadata: { aiUserId: currentAiUser.id },
-    })
   }
 
   if (socials) {

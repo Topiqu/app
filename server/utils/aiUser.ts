@@ -15,9 +15,8 @@ export async function resolveAiUser(event: H3Event, clientSiteId: string, create
     throw createError({ statusCode: 403, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
-  const site = await db.clientSite.findUnique({ where: { id: clientSiteId }, select: { id: true, tokenLimit: true } })
+  const site = await db.clientSite.findUnique({ where: { id: clientSiteId }, select: { id: true } })
   if (!site) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
-  if (!site.tokenLimit) throw createError({ statusCode: 403, message: t('common.errors.unauthorized')! })
 
   const existing = await db.user.findFirst({
     where: { clientSiteId, role: 'ai' },

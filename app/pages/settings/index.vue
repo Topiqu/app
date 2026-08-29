@@ -6,7 +6,6 @@
       </h1>
 
       <LazyClientPreferencesGuide
-        v-if="!isBasic"
         hydrateOnInteraction
         :focus="form.focus"
         :audience="form.audience"
@@ -46,8 +45,27 @@
         </section>
 
         <section v-show="activeTab === 'content'">
+          <UAlert
+            v-if="isBasic"
+            class="mb-5"
+            color="primary"
+            variant="soft"
+            icon="i-mdi-information-outline"
+            :title="$t('common.preferences.softGate.contentTitle')"
+            :description="$t('common.preferences.softGate.contentDescription')"
+          >
+            <template #actions>
+              <UButton
+                :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
+                color="neutral"
+                variant="soft"
+                size="sm"
+              >
+                {{ $t('common.preferences.softGate.action') }}
+              </UButton>
+            </template>
+          </UAlert>
           <LazyFormClientContent
-            v-if="!isBasic"
             :focus="form.focus"
             :audience="form.audience"
             :language="form.language"
@@ -57,25 +75,6 @@
             @update:language="form.language = $event as typeof form.language"
             @update:keywords="form.keywords = $event"
           />
-          <UCard v-else>
-            <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-              <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                <UIcon name="i-mdi-text-box-outline" size="26" />
-              </span>
-              <div class="min-w-0 flex-1">
-                <h2 class="font-semibold text-highlighted">{{ $t('common.preferences.upsell.contentTitle') }}</h2>
-                <p class="mt-1 text-sm leading-6 text-muted">
-                  {{ $t('common.preferences.upsell.contentDescription') }}
-                </p>
-              </div>
-              <UButton
-                :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
-                icon="i-mdi-arrow-up-circle-outline"
-              >
-                {{ $t('common.preferences.upsell.action') }}
-              </UButton>
-            </div>
-          </UCard>
         </section>
 
         <FormClientIntegrationsCatalog
@@ -105,7 +104,27 @@
         />
 
         <section v-show="activeTab === 'ai'">
-          <UCard v-if="hasAi">
+          <UAlert
+            v-if="isBasic"
+            class="mb-5"
+            color="primary"
+            variant="soft"
+            icon="i-mdi-information-outline"
+            :title="$t('common.preferences.softGate.aiTitle')"
+            :description="$t('common.preferences.softGate.aiDescription')"
+          >
+            <template #actions>
+              <UButton
+                :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
+                color="neutral"
+                variant="soft"
+                size="sm"
+              >
+                {{ $t('common.preferences.softGate.action') }}
+              </UButton>
+            </template>
+          </UAlert>
+          <UCard>
             <LazyFormClientAI
               :clientId="clientId ?? ''"
               :username="form.aiUser.username"
@@ -128,6 +147,7 @@
               :currency="client?.currency ?? 'EUR'"
               :plan="client?.plan ?? 'BASIC'"
               :billingPlan="client?.billingPlan ?? 'MONTHLY'"
+              :setupOnly="isBasic"
               @toggle:feature="toggleFeature"
               @update:username="form.aiUser.username = $event"
               @update:bio="form.aiUser.bio = $event"
@@ -139,23 +159,6 @@
               @update:translationLanguages="form.translationLanguages = $event"
               @update:discloseAiContent="form.discloseAiContent = $event"
             />
-          </UCard>
-          <UCard v-else>
-            <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-              <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                <UIcon name="i-mdi-robot-outline" size="26" />
-              </span>
-              <div class="min-w-0 flex-1">
-                <h2 class="font-semibold text-highlighted">{{ $t('common.preferences.upsell.aiTitle') }}</h2>
-                <p class="mt-1 text-sm leading-6 text-muted">{{ $t('common.preferences.upsell.aiDescription') }}</p>
-              </div>
-              <UButton
-                :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
-                icon="i-mdi-arrow-up-circle-outline"
-              >
-                {{ $t('common.preferences.upsell.action') }}
-              </UButton>
-            </div>
           </UCard>
         </section>
 
@@ -211,7 +214,6 @@ const allowedFeatures = computed(
 )
 
 const isBasic = computed(() => client.value?.plan === 'BASIC')
-const hasAi = computed(() => !isBasic.value && (client.value?.tokenLimit ?? 0) > 0)
 const showBilling = computed(() => client.value?.billingPlan !== 'PERMANENT')
 const can = (scope: string) =>
   isSuperadmin.value || tenantAccess.value?.role === 'OWNER' || tenantAccess.value?.scopes.includes(scope)
@@ -276,7 +278,7 @@ const savePreferences = async () => {
         ...form.value,
         logoUrl: form.value.logoUrl,
         socials: form.value.socials.filter((s) => s.url.trim()),
-        aiUser: client.value?.tokenLimit && client.value.tokenLimit > 0 ? form.value.aiUser : undefined,
+        aiUser: form.value.aiUser,
       },
     })
     toast.add({ color: 'success', title: $t('common.messages.successGeneralTitle') })

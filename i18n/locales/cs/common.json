@@ -491,11 +491,11 @@
         "billing": "Fakturace",
         "members": "Členové"
       },
-      "upsell": {
-        "contentTitle": "Obsahová strategie je dostupná od tarifu Pro",
-        "contentDescription": "Nastavte zaměření, publikum, jazyk a klíčová témata, ze kterých AI vychází při přípravě článků.",
-        "aiTitle": "AI nástroje jsou dostupné od tarifu Pro",
-        "aiDescription": "Vyšší tarif zpřístupní generování článků, nastavení AI autora, překlady a automatizaci.",
+      "softGate": {
+        "contentTitle": "Obsahovou strategii si můžete připravit už nyní",
+        "contentDescription": "Nastavení se uloží i v tarifu Basic. Až budete chtít podle něj generovat články pomocí AI, stačí přejít na Pro nebo Premium.",
+        "aiTitle": "Připravte si AI autora předem",
+        "aiDescription": "Profil, styl psaní i překlady si můžete nastavit a uložit. Samotné generování a automatizace se zpřístupní po přechodu na Pro nebo Premium.",
         "action": "Porovnat tarify"
       },
       "currentPlan": "Aktuální tarif",
