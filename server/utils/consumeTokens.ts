@@ -6,6 +6,7 @@ export async function consumeClientTokens(
   action: string,
   metadata: Record<string, any> = {},
   event?: H3Event,
+  userId?: string,
 ) {
   const clientTokens = Math.ceil(apiTokens * TOKEN_RATIO)
 
@@ -23,6 +24,7 @@ export async function consumeClientTokens(
 
   await logAction({
     action,
+    userId,
     clientSiteId,
     metadata: {
       ...metadata,
