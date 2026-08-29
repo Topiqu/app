@@ -94,12 +94,10 @@
               />
               <UButton
                 v-else
-                disabled
+                :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
                 size="sm"
-                color="neutral"
-                variant="soft"
-                icon="i-mdi-lock-outline"
-                :label="$t('common.integrationsCatalog.requiresPlan', { plan: section.label })"
+                icon="i-mdi-arrow-up-circle-outline"
+                :label="$t('common.integrationsCatalog.upgradeToPlan', { plan: section.label })"
               />
             </div>
           </template>
@@ -355,6 +353,8 @@ const props = defineProps<{
   linkedinBrandProfile?: { tone: string; audience: string; doList: string[]; dontList: string[] }
 }>()
 
+const localePath = useLocalePath()
+
 defineEmits<{
   'update:allowGtag': [value: boolean]
   'update:gtagId': [value: string]
@@ -406,7 +406,9 @@ const analyticsOpen = dialogModel('analytics')
 const gamOpen = dialogModel('gam')
 const linkedinOpen = dialogModel('linkedin')
 const filterQuery = shallowRef('')
-const planFilter = shallowRef<'available' | 'all' | 'pro' | 'premium'>('available')
+const planFilter = shallowRef<'available' | 'all' | 'pro' | 'premium'>(
+  props.currentPlan === 'BASIC' ? 'all' : 'available',
+)
 const planFilterItems = computed(() => [
   { value: 'available', label: $t('common.integrationsCatalog.availableForMe') },
   { value: 'all', label: $t('common.integrationsCatalog.allPlans') },

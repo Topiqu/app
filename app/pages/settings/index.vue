@@ -45,8 +45,9 @@
           />
         </section>
 
-        <section v-if="!isBasic" v-show="activeTab === 'content'">
+        <section v-show="activeTab === 'content'">
           <LazyFormClientContent
+            v-if="!isBasic"
             :focus="form.focus"
             :audience="form.audience"
             :language="form.language"
@@ -56,10 +57,28 @@
             @update:language="form.language = $event as typeof form.language"
             @update:keywords="form.keywords = $event"
           />
+          <UCard v-else>
+            <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                <UIcon name="i-mdi-text-box-outline" size="26" />
+              </span>
+              <div class="min-w-0 flex-1">
+                <h2 class="font-semibold text-highlighted">{{ $t('common.preferences.upsell.contentTitle') }}</h2>
+                <p class="mt-1 text-sm leading-6 text-muted">
+                  {{ $t('common.preferences.upsell.contentDescription') }}
+                </p>
+              </div>
+              <UButton
+                :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
+                icon="i-mdi-arrow-up-circle-outline"
+              >
+                {{ $t('common.preferences.upsell.action') }}
+              </UButton>
+            </div>
+          </UCard>
         </section>
 
         <FormClientIntegrationsCatalog
-          v-if="!isBasic"
           v-show="activeTab === 'integrations'"
           :clientSiteId="client?.id ?? ''"
           :apiKey="form.apiKey"
@@ -85,8 +104,8 @@
           @save="savePreferences"
         />
 
-        <section v-if="hasAi" v-show="activeTab === 'ai'">
-          <UCard>
+        <section v-show="activeTab === 'ai'">
+          <UCard v-if="hasAi">
             <LazyFormClientAI
               :clientId="clientId ?? ''"
               :username="form.aiUser.username"
@@ -121,6 +140,23 @@
               @update:discloseAiContent="form.discloseAiContent = $event"
             />
           </UCard>
+          <UCard v-else>
+            <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                <UIcon name="i-mdi-robot-outline" size="26" />
+              </span>
+              <div class="min-w-0 flex-1">
+                <h2 class="font-semibold text-highlighted">{{ $t('common.preferences.upsell.aiTitle') }}</h2>
+                <p class="mt-1 text-sm leading-6 text-muted">{{ $t('common.preferences.upsell.aiDescription') }}</p>
+              </div>
+              <UButton
+                :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
+                icon="i-mdi-arrow-up-circle-outline"
+              >
+                {{ $t('common.preferences.upsell.action') }}
+              </UButton>
+            </div>
+          </UCard>
         </section>
 
         <section v-if="showBilling" v-show="activeTab === 'billing'">
@@ -147,6 +183,7 @@ const toast = useToast()
 const { data: auth } = useAuth()
 const route = useRoute()
 const router = useRouter()
+const localePath = useLocalePath()
 const { copy: copyApi, copied: apiCopied } = useClipboard({ legacy: true })
 const confirm = useConfirm()
 const apiVisible = shallowRef(false)
@@ -155,9 +192,11 @@ const isSaving = shallowRef(false)
 const clientId = computed(() => auth.value?.user.clientSiteId)
 const isSuperadmin = computed(() => auth.value?.user.role === 'superadmin')
 
-const { data: client, refresh } = await useFetch<ClientSite>(`/api/clients/${auth.value?.user.clientSiteId}`)
-const { data: features } = await useFetch(`/api/features`)
-const { data: tenantAccess } = await useFetch<{ role: 'OWNER' | 'MEMBER'; scopes: string[] }>('/api/tenant/access')
+const { data: client, refresh } = await useFetch<ClientSite>(() => `/api/clients/${clientId.value}`)
+const { data: features } = await useFetch(`/api/features`, { watch: [clientId] })
+const { data: tenantAccess } = await useFetch<{ role: 'OWNER' | 'MEMBER'; scopes: string[] }>('/api/tenant/access', {
+  watch: [clientId],
+})
 const rate = await useCurrencyRate(client.value?.currency ?? 'EUR')
 
 const form = ref(buildClientSettingsForm(client.value))
@@ -181,15 +220,14 @@ const tabs = computed<TabItem[]>(() => {
   const t: TabItem[] = []
   if (can('TENANT_SETTINGS'))
     t.push({ id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'i-mdi-palette-outline' })
-  t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'i-mdi-account-group-outline' })
-  if (!isBasic.value && can('TENANT_SETTINGS')) {
+  if (can('TENANT_SETTINGS')) {
     t.push({ id: 'content', labelKey: 'common.preferences.tabs.content', icon: 'i-mdi-text-box-outline' })
   }
-  if (!isBasic.value && can('INTEGRATION_CONTROL')) {
+  if (can('INTEGRATION_CONTROL')) {
     t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'i-mdi-puzzle-outline' })
   }
-  if (hasAi.value && can('AI_USE'))
-    t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'i-mdi-robot-outline' })
+  if (can('AI_USE')) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'i-mdi-robot-outline' })
+  t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'i-mdi-account-group-outline' })
   if (showBilling.value && can('BILLING_CHANGE'))
     t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'i-mdi-credit-card-outline' })
   return t

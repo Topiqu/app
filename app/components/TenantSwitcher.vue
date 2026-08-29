@@ -46,7 +46,9 @@ const switchTenant = async (clientSiteId: string) => {
   try {
     await $fetch('/api/tenant/active', { method: 'POST', body: { clientSiteId } })
     await getSession()
-    window.location.reload()
+    // Tenant-scoped useFetch/useAsyncData entries may otherwise keep the previous plan and feature set.
+    clearNuxtData()
+    await reloadNuxtApp({ force: true })
   } catch {
     toast.add({ color: 'error', title: $t('common.tenant.switchFailed') })
   } finally {
