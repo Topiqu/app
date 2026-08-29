@@ -501,6 +501,51 @@
         "networkCode": "Network code"
       },
       "explanation": "Preferences Explanation",
+      "guide": {
+        "title": "How the AI reads your brief",
+        "intro": "These four values go straight into the AI's instructions — first when it picks a topic, then when it writes the article. The more specific they are, the less generic the output.",
+        "flow": {
+          "brief": "Content brief",
+          "topic": "Topic pick",
+          "article": "Written article",
+          "publish": "Publication"
+        },
+        "usedIn": "Where it shows up",
+        "good": "Works",
+        "bad": "Doesn't work",
+        "empty": "If you leave it empty",
+        "focus": {
+          "usedIn": "Topic pick · Article writing · Comment insights",
+          "description": "Sets what gets written about and from which angle. It holds both the topic selection and the tone of the whole article together.",
+          "good": "objective gaming journalism, emphasis on the technical side of Unreal Engine and player freedom",
+          "bad": "games",
+          "empty": "The AI falls back to \"general topics\" and writes anything loosely related to the site."
+        },
+        "audience": {
+          "usedIn": "Topic pick · Article writing · Comment insights",
+          "description": "Drives vocabulary, sentence length and how much the AI explains. It is the difference between \"explain from scratch\" and \"skip the basics\".",
+          "good": "game developers who know Unreal but don't work in it daily",
+          "bad": "everyone",
+          "empty": "The AI falls back to \"wide audience\" and explains things your readers already know."
+        },
+        "language": {
+          "usedIn": "Article writing",
+          "description": "The language new articles are written in.",
+          "warning": "Keep the other three fields in the same language. If you don't, the AI writes the whole article in the language of those inputs instead of this choice."
+        },
+        "keywords": {
+          "usedIn": "Topic pick · Article writing · The site meta keywords",
+          "description": "They pull topic selection toward the areas you want to cover. The AI then works them into the text naturally, not by force.",
+          "good": "5–15 terms that genuinely describe your subject",
+          "bad": "fifty generic words piled up for SEO",
+          "empty": "Topics come from focus and audience alone.",
+          "note": "These are not SEO tags to stuff. With Search Console connected, real search queries can raise a topic's priority, but they never override focus or audience."
+        },
+        "preview": {
+          "title": "This is what the AI sees",
+          "hint": "A live preview of what you have filled in right now. Greyed values are the fallbacks the AI substitutes for an empty field."
+        }
+      },
       "monthlyTitle": "Monthly Price",
       "annuallyTitle": "Yearly Price",
       "annualy": "Yearly",
@@ -615,12 +660,12 @@
       },
       "focus": {
         "label": "Focus",
-        "help": "The main topic and angle. It sets what gets written about, and why.",
+        "help": "The main topic and angle.",
         "placeholder": "e.g. objective gaming journalism with an emphasis on Unreal Engine"
       },
       "audience": {
         "label": "Target Audience",
-        "help": "Who you write for. It shapes style, vocabulary and technical depth.",
+        "help": "Who you write for.",
         "placeholder": "e.g. young adults 18–25, game developers"
       },
       "language": {
@@ -633,7 +678,7 @@
       },
       "keywords": {
         "label": "Keywords",
-        "help": "Topics that should recur in the output. Also used for SEO.",
+        "help": "Topics that should recur in the output.",
         "placeholder": "e.g. Unreal Engine, AI in games",
         "hint": "Add with Enter or a comma.",
         "remove": "Remove {0}",

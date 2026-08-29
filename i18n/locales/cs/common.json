@@ -501,6 +501,51 @@
         "networkCode": "Kód sítě"
       },
       "explanation": "Vysvětlení preferencí",
+      "guide": {
+        "title": "Jak AI čte vaše zadání",
+        "intro": "Tyhle čtyři údaje se vkládají přímo do zadání pro AI — nejdřív když vybírá téma, potom když píše článek. Čím konkrétnější jsou, tím míň generický výstup.",
+        "flow": {
+          "brief": "Obsahový brief",
+          "topic": "Výběr tématu",
+          "article": "Napsaný článek",
+          "publish": "Publikace"
+        },
+        "usedIn": "Kde se projeví",
+        "good": "Funguje",
+        "bad": "Nefunguje",
+        "empty": "Když necháte prázdné",
+        "focus": {
+          "usedIn": "Výběr tématu · Psaní článku · Insighty z komentářů",
+          "description": "Určuje, o čem se píše a s jakým úhlem pohledu. Drží pohromadě výběr témat i vyznění celého článku.",
+          "good": "objektivní herní žurnalistika, důraz na technickou stránku Unreal Enginu a svobodu hráče",
+          "bad": "hry",
+          "empty": "AI si dosadí „obecná témata“ a bude psát cokoliv, co k webu volně sedí."
+        },
+        "audience": {
+          "usedIn": "Výběr tématu · Psaní článku · Insighty z komentářů",
+          "description": "Řídí slovník, délku vět i to, kolik věcí AI vysvětluje. Je to rozdíl mezi „vysvětli od začátku“ a „přeskoč základy“.",
+          "good": "vývojáři her, kteří Unreal znají, ale nedělají v něm denně",
+          "bad": "všichni",
+          "empty": "AI si dosadí „široké publikum“ a bude vysvětlovat i to, co vaši čtenáři dávno vědí."
+        },
+        "language": {
+          "usedIn": "Psaní článku",
+          "description": "Jazyk, ve kterém vznikají nové články.",
+          "warning": "Zbylá tři pole držte ve stejném jazyce. Když je vyplníte jinak, AI napíše celý článek podle jazyka vstupů, ne podle téhle volby."
+        },
+        "keywords": {
+          "usedIn": "Výběr tématu · Psaní článku · Meta keywords webu",
+          "description": "Posouvají výběr témat k oblastem, o kterých chcete psát. AI je pak do textu zapracuje přirozeně, ne na sílu.",
+          "good": "5–15 pojmů, kterými se vaše téma opravdu popisuje",
+          "bad": "padesát obecných slov naskládaných kvůli SEO",
+          "empty": "Témata vzniknou jen ze zaměření a cílové skupiny.",
+          "note": "Nejsou to SEO tagy k naskládání. S připojenou Search Console můžou reálné dotazy z vyhledávání téma upřednostnit, ale zaměření ani cílovou skupinu nepřebijí."
+        },
+        "preview": {
+          "title": "Takhle vaše zadání vidí AI",
+          "hint": "Živý náhled z toho, co máte právě vyplněné. Šedě jsou náhradní hodnoty, které si AI dosadí za prázdné pole."
+        }
+      },
       "monthlyTitle": "Měsíční cena",
       "annuallyTitle": "Roční cena",
       "annualy": "Ročně",
@@ -615,12 +660,12 @@
       },
       "focus": {
         "label": "Zaměření",
-        "help": "Hlavní téma a úhel pohledu. Určuje, o čem se píše a s jakým záměrem.",
+        "help": "Hlavní téma a úhel pohledu.",
         "placeholder": "Např. objektivní herní žurnalistika s důrazem na Unreal Engine"
       },
       "audience": {
         "label": "Cílová skupina",
-        "help": "Pro koho píšete. Ovlivňuje styl, slovník i technickou úroveň.",
+        "help": "Pro koho píšete.",
         "placeholder": "Např. mladí dospělí 18–25 let, vývojáři her"
       },
       "language": {
@@ -633,7 +678,7 @@
       },
       "keywords": {
         "label": "Klíčová slova",
-        "help": "Témata, která se mají ve výstupech objevovat častěji. Používají se i pro SEO.",
+        "help": "Témata, která se mají ve výstupech objevovat častěji.",
         "placeholder": "Např. Unreal Engine, AI ve hrách",
         "hint": "Přidejte klávesou Enter nebo čárkou.",
         "remove": "Odebrat {0}",

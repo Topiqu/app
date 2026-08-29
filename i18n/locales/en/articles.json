@@ -255,24 +255,6 @@
     "relatedArticles": {
       "title": "Related Articles"
     },
-    "preferencesExplanation": {
-      "title": "Preferences Explanation",
-      "focus": {
-        "title": "Focus",
-        "description": "The main theme or direction of the content. Helps refine the tone and intent of the outputs.",
-        "example": "E.g., 'Objective gaming journalism', 'Tech news with a focus on Unreal Engine'."
-      },
-      "targetAudience": {
-        "title": "Target Audience",
-        "description": "Defines who the content is for. Helps tailor the style, language, and technical level.",
-        "example": "E.g., 'Young adults 18–25 years', 'Game developers and IT professionals'."
-      },
-      "keywords": {
-        "title": "Keywords",
-        "description": "Prominent topics or terms to appear more frequently in outputs. Also used for SEO.",
-        "example": "E.g., 'Unreal Engine, AI in games, RPG, player freedom'."
-      }
-    },
     "userMenu": {
       "noBio": "No bio",
       "companyLogoAlt": "Company logo",

@@ -5,7 +5,14 @@
         {{ $t('common.preferences.title') }}
       </h1>
 
-      <LazyClientHint v-if="!isBasic" hydrateOnInteraction>
+      <LazyClientPreferencesGuide
+        v-if="!isBasic"
+        hydrateOnInteraction
+        :focus="form.focus"
+        :audience="form.audience"
+        :language="form.language"
+        :keywords="form.keywords"
+      >
         <UButton
           square
           variant="ghost"
@@ -15,7 +22,7 @@
           :aria-label="$t('common.preferences.explanation')"
           :title="$t('common.preferences.explanation')"
         />
-      </LazyClientHint>
+      </LazyClientPreferencesGuide>
     </header>
 
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">

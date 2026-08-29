@@ -255,24 +255,6 @@
     "relatedArticles": {
       "title": "Související články"
     },
-    "preferencesExplanation": {
-      "title": "Vysvětlení předvoleb",
-      "focus": {
-        "title": "Zaměření",
-        "description": "Hlavní téma nebo směr obsahu. Pomáhá upřesnit tón a záměr výstupů.",
-        "example": "Např. 'Objektivní herní žurnalistika', 'Technologické novinky se zaměřením na Unreal Engine'."
-      },
-      "targetAudience": {
-        "title": "Cílová skupina",
-        "description": "Určuje, pro koho je obsah určen. Pomáhá přizpůsobit styl, jazyk a technickou úroveň.",
-        "example": "Např. 'Mladí dospělí 18–25 let', 'Vývojáři her a IT profesionálové'."
-      },
-      "keywords": {
-        "title": "Klíčová slova",
-        "description": "Výrazná témata nebo pojmy, která se mají častěji objevovat ve výstupech. Používají se také pro SEO.",
-        "example": "Např. 'Unreal Engine, AI ve hrách, RPG, svoboda hráče'."
-      }
-    },
     "userMenu": {
       "noBio": "Žádné bio",
       "companyLogoAlt": "Logo společnosti",
