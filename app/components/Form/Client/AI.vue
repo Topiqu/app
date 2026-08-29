@@ -1,6 +1,9 @@
 <template>
   <div class="space-y-8">
-    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-6">
+    <div
+      v-if="!setupOnly"
+      class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-6"
+    >
       <div class="grid grid-cols-1 gap-3">
         <FormClientFeatureToggle
           icon="i-mdi-robot-outline"
@@ -212,7 +215,7 @@
 
     <div
       class="flex flex-col gap-6 p-8 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
-      :class="!aiEnabled && 'opacity-60 pointer-events-none'"
+      :class="!aiEnabled && !setupOnly && 'opacity-60 pointer-events-none'"
     >
       <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
         <Icon name="mdi:translate" class="w-6 h-6" />
@@ -313,6 +316,7 @@ const props = defineProps<{
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
   discloseAiContent: boolean
+  setupOnly?: boolean
 }>()
 const emit = defineEmits<{
   'update:username': [string]

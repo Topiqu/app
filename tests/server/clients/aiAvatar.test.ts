@@ -24,8 +24,8 @@ describe('AI author avatar access control', () => {
     expect(util).toContain("where: { clientSiteId, role: 'ai' }")
   })
 
-  it('refuses sites with no AI allowance', () => {
-    expect(util).toContain('if (!site.tokenLimit)')
+  it('allows preparing an AI identity before the site has a token allowance', () => {
+    expect(util).not.toContain('site.tokenLimit')
   })
 })
 

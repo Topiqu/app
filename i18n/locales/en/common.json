@@ -491,11 +491,11 @@
         "billing": "Billing",
         "members": "Members"
       },
-      "upsell": {
-        "contentTitle": "Content strategy is available from Pro",
-        "contentDescription": "Define the focus, audience, language, and key topics that guide AI-generated articles.",
-        "aiTitle": "AI tools are available from Pro",
-        "aiDescription": "Upgrade to unlock article generation, the AI author, translations, and automation.",
+      "softGate": {
+        "contentTitle": "You can prepare your content strategy now",
+        "contentDescription": "These settings are saved on Basic. When you are ready to generate AI articles from them, upgrade to Pro or Premium.",
+        "aiTitle": "Prepare your AI author in advance",
+        "aiDescription": "Set up and save the profile, writing style, and translations now. Generation and automation unlock on Pro or Premium.",
         "action": "Compare plans"
       },
       "currentPlan": "Current plan",
