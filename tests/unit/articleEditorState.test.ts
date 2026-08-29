@@ -41,4 +41,10 @@ describe('articleEditorSnapshot', () => {
       articleEditorSnapshot({ ...article, content: '<p></p>' }, [], null),
     )
   })
+
+  it('ignores the blank source row inserted when the empty editor mounts', () => {
+    expect(articleEditorSnapshot({ ...article, sources: [] }, [], null)).toBe(
+      articleEditorSnapshot({ ...article, sources: ['', '   '] }, [], null),
+    )
+  })
 })
