@@ -1,26 +1,11 @@
-import type { H3Event } from 'h3'
-
 import { randomUUID } from 'node:crypto'
-
-// The visitor identity is server-issued, never read from the body: the whole point of the dedup
-// index is that the caller cannot pick which row it collides with.
-const readSessionId = (event: H3Event) => {
-  const existing = getCookie(event, 'anon_session')
-  if (existing) return existing
-
-  // Same name, maxAge and flags as `vote.post.ts` writes — two endpoints setting one cookie with
-  // different attributes would flap it on every other request.
-  const issued = randomUUID()
-  setCookie(event, 'anon_session', issued, { maxAge: 30 * 24 * 60 * 60 })
-  return issued
-}
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'Missing article ID' })
 
   const user = (await getServerSession(event))?.user
-  const sessionId = user?.id ?? readSessionId(event)
+  const sessionId = user?.id ?? issueAnonSession(event)
 
   // Published only — an admin previewing a draft used to inflate the counter the dashboard
   // then reported as readership.

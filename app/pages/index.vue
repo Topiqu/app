@@ -316,6 +316,7 @@ interface HomeArticle {
   publishedAt?: string | null
   readingTime: number | null
   views: number
+  likedByUser?: boolean
   user: { id: string; username: string; avatarUrl: string | null } | null
   tags: { tag: { id: string; name: string; slug: string } }[]
   _count: { comments: number; reactions: number } | null

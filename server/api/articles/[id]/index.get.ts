@@ -34,7 +34,7 @@ const PUBLIC_FIELDS = {
 const ADMIN_FIELDS = { prompt: true, savedAmount: true, savedTimeMinutes: true } as const
 
 /** `reactions` is scoped to the caller: unfiltered it shipped every liker's id to answer one bool. */
-const articleSelect = (isAdmin: boolean, viewer: { userId?: string; sessionId?: string }) => ({
+const articleSelect = (isAdmin: boolean, viewer: { userId?: string; sessionId?: string | null }) => ({
   ...PUBLIC_FIELDS,
   ...(isAdmin ? ADMIN_FIELDS : {}),
   user: {
@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   const slug = getRouterParam(event, 'id')
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-  const sessionId = getCookie(event, 'anon_session')
+  const sessionId = readAnonSession(event)
   const { clientSiteId: requestedClientSiteId, locale } = getQuery<{ clientSiteId?: string; locale?: Language }>(event)
   const clientSiteId = requestedClientSiteId || sessionTenantId(user)
   if (!clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
