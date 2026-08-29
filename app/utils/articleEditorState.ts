@@ -33,7 +33,9 @@ export const articleEditorSnapshot = (
     imageCredit: article.imageCredit ?? null,
     status: article.status ?? null,
     releaseAt: article.releaseAt instanceof Date ? article.releaseAt.toISOString() : (article.releaseAt ?? null),
-    sources: article.sources ?? [],
+    // The sources editor mounts with one blank input for convenience. The API strips blank rows
+    // before saving, so they are presentation state rather than unsaved article data.
+    sources: (article.sources ?? []).map((source) => source.trim()).filter(Boolean),
     savedAmount: article.savedAmount ?? null,
     savedTimeMinutes: article.savedTimeMinutes ?? null,
     aiInvolvement: article.aiInvolvement ?? null,
