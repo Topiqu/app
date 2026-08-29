@@ -3,6 +3,7 @@ import type { Language } from '@prisma/client'
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
+  const sessionId = user?.id ? null : readAnonSession(event)
 
   const slug = getRouterParam(event, 'id')
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event) => {
       tags: { include: { tag: true } },
       user: { select: { id: true, username: true, email: true, role: true, avatarUrl: true } },
       reactions: {
-        where: user?.id ? { userId: user.id } : { id: '' },
+        where: user?.id ? { userId: user.id } : sessionId ? { sessionId, userId: null } : { id: '' },
         select: { id: true },
         take: 1,
       },

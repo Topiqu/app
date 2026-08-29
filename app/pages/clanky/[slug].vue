@@ -308,10 +308,6 @@ const imageCredit = computed(() => (data.value?.imageCredit as CoverCredit | nul
 defineOgImage('TopiquArticle', ogImageOptions.value)
 
 const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
-const anonymousLike = useSessionStorage(
-  computed(() => `liked-${data.value?.slug ?? 'pending'}`),
-  false,
-)
 
 const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh, getVisitorId)
 
@@ -359,29 +355,20 @@ const toggleFollow = async () => {
 
 const toggleLike = async () => {
   if (!data.value?.slug) return
-  let visitorId = null
-  if (!session.value?.user.id) {
-    visitorId = await getVisitorId()
-  }
-
-  const hasLiked = anonymousLike.value
-  if (hasLiked && !session.value?.user.id) anonymousLike.value = false
 
   try {
+    // No visitor id: the endpoint resolves the session or the server-issued anon_session cookie.
     const res = await $fetch<{ liked: boolean; likes: number }>(`/api/articles/${data.value.id}/reaction`, {
       method: 'POST',
-      body: { visitorId },
     })
 
     if (data.value) {
       data.value.likedByUser = res.liked
       data.value.likes = res.likes
     }
-
-    if (!session.value?.user.id) anonymousLike.value = res.liked
-  } catch {
-    toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
-    if (hasLiked && !session.value?.user.id) anonymousLike.value = true
+  } catch (e: any) {
+    // Carries the server's reason, which for a like is usually the rate limit.
+    toast.add({ color: 'error', title: $t('articles.comments.reactionFailed'), description: e?.data?.message })
   }
 }
 
@@ -416,12 +403,6 @@ watchEffect(() => {
 onMounted(() => {
   trackView()
   articleLikeBus.on(toggleLike)
-
-  if (data.value?.slug && !session.value?.user.id) {
-    if (anonymousLike.value && !data.value.likedByUser) {
-      data.value.likedByUser = true
-    }
-  }
 })
 
 onUnmounted(() => {

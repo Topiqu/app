@@ -168,18 +168,15 @@ const normalizedTags = computed(() =>
 const tagLimit = computed(() => (props.variant === 'compact' ? 2 : 3))
 const visibleTags = computed(() => normalizedTags.value.slice(0, tagLimit.value))
 const liking = shallowRef(false)
-const { data: session } = useAuth()
-const { getVisitorId } = useArticleTracking(computed(() => props.article.id))
 const toast = useToast()
 
 const toggleLike = async () => {
   if (liking.value) return
   liking.value = true
   try {
-    const visitorId = session.value?.user.id ? null : await getVisitorId()
+    // No visitor id: the endpoint resolves the session or the server-issued anon_session cookie.
     const result = await $fetch<{ liked: boolean; likes: number }>(`/api/articles/${props.article.id}/reaction`, {
       method: 'POST',
-      body: { visitorId },
     })
     // Homepage filters can remount the same article in a different rail. Store the
     // response by article ID so every instance reads the same reaction state.
@@ -187,8 +184,9 @@ const toggleLike = async () => {
       ...reactionState.value,
       [props.article.id]: result,
     }
-  } catch {
-    toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
+  } catch (e: any) {
+    // Carries the server's reason, which for a like is usually the rate limit.
+    toast.add({ color: 'error', title: $t('articles.comments.reactionFailed'), description: e?.data?.message })
   } finally {
     liking.value = false
   }

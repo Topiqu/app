@@ -10,20 +10,17 @@
         class="editorial-enter flex max-w-2xl flex-col justify-center space-y-6 py-6 md:col-span-1 lg:col-span-5"
         style="--enter-order: 0"
       >
-        <div class="flex items-center gap-4">
-          <AppMedia
-            :src="clientSite?.logoUrl"
-            originalSrc="/app-logo.png"
-            :fallbackText="clientSite?.name || 'Topiqu'"
-            :alt="$t('common.avatar.alt.company')"
-            aspectRatio="16 / 5"
-            fit="contain"
-            sizes="160px sm:208px"
-            :width="416"
-            containerClass="w-40 shrink-0 rounded-[var(--topiqu-surface-radius)] bg-transparent sm:w-52"
-          />
-          <p v-if="clientSite?.tagline" class="text-sm font-semibold text-primary">{{ clientSite.tagline }}</p>
-        </div>
+        <AppMedia
+          :src="clientSite?.logoUrl"
+          originalSrc="/app-logo.png"
+          :fallbackText="clientSite?.name || 'Topiqu'"
+          :alt="$t('common.avatar.alt.company')"
+          aspectRatio="16 / 5"
+          fit="contain"
+          sizes="160px sm:208px"
+          :width="416"
+          containerClass="w-40 rounded-[var(--topiqu-surface-radius)] bg-transparent sm:w-52"
+        />
         <h1 v-if="clientSite?.logoUrl" class="sr-only">
           {{ clientSite?.name ?? $t('common.labels.title') }}
         </h1>
@@ -34,6 +31,12 @@
             {{ clientSite?.name ?? $t('common.labels.title') }}
           </h1>
         </div>
+        <p
+          v-if="clientSite?.tagline"
+          class="max-w-[46ch] text-balance break-words border-l-2 border-[var(--topiqu-tenant-accent)] pl-4 text-base font-semibold leading-snug text-highlighted"
+        >
+          {{ clientSite.tagline }}
+        </p>
         <p v-if="clientSite?.description" class="line-clamp-4 max-w-[60ch] text-lg leading-8 text-muted">
           {{ clientSite.description }}
         </p>
@@ -313,6 +316,7 @@ interface HomeArticle {
   publishedAt?: string | null
   readingTime: number | null
   views: number
+  likedByUser?: boolean
   user: { id: string; username: string; avatarUrl: string | null } | null
   tags: { tag: { id: string; name: string; slug: string } }[]
   _count: { comments: number; reactions: number } | null

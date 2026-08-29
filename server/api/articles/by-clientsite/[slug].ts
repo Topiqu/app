@@ -46,6 +46,13 @@ export default defineEventHandler(async (event) => {
         tags: { include: { tag: true } },
         // No email: this is an anonymous-readable payload and it gets cached.
         user: { select: { id: true, username: true, role: true, avatarUrl: true } },
+        // Scoped to the caller so the payload answers one bool instead of shipping every liker's
+        // id. Safe to cache: the cached branch below is anonymous-only, where this is always empty.
+        reactions: {
+          where: user?.id ? { userId: user.id } : { id: '' },
+          select: { id: true },
+          take: 1,
+        },
         _count: { select: { comments: true, reactions: true } },
       },
     })
@@ -86,11 +93,15 @@ export default defineEventHandler(async (event) => {
     const latestPoll = firstPoll ? { ...firstPoll, articleId: latestPollArticle!.id } : null
 
     const hasMore = rows.length > take
-    const items = await localizeArticles(db, hasMore ? rows.slice(0, take) : rows, {
+    const localized = await localizeArticles(db, hasMore ? rows.slice(0, take) : rows, {
       clientSiteId: clientSite.id,
       locale,
       primaryLanguage: clientSite.language,
     })
+    const items = localized.map(({ reactions, ...article }) => ({
+      ...article,
+      likedByUser: reactions.length > 0,
+    }))
 
     return { items, hasMore, tags: allTags, latestPoll: latestPoll ?? '' }
   }

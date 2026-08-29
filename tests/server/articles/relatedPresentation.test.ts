@@ -6,7 +6,9 @@ const source = readFileSync(resolve(process.cwd(), 'server/api/articles/[id]/rel
 
 describe('related article presentation', () => {
   it('queries only the current viewer reaction and returns a boolean to cards', () => {
-    expect(source).toContain("where: user?.id ? { userId: user.id } : { id: '' }")
+    expect(source).toContain(
+      "where: user?.id ? { userId: user.id } : sessionId ? { sessionId, userId: null } : { id: '' }",
+    )
     expect(source).toContain('select: { id: true }')
     expect(source).toContain('likedByUser: reactions.length > 0')
     expect(source).toContain('map(({ reactions, ...article })')

@@ -5,7 +5,12 @@
     </h1>
     <USeparator class="max-w-12" />
 
-    <p v-if="site?.tagline" class="text-sm font-semibold text-primary">{{ site.tagline }}</p>
+    <p
+      v-if="site?.tagline"
+      class="max-w-[46ch] text-balance break-words text-base font-semibold leading-snug text-highlighted"
+    >
+      {{ site.tagline }}
+    </p>
 
     <p v-if="site?.description" class="max-w-xl text-balance text-lg leading-relaxed text-muted">
       {{ site.description }}

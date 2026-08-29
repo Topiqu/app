@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import { Prisma } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
@@ -20,10 +19,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
   }
 
-  const sessionId = user?.id ? null : getCookie(event, 'anon_session') || randomUUID()
-  if (!user?.id && sessionId) {
-    setCookie(event, 'anon_session', sessionId, { maxAge: 30 * 24 * 60 * 60 })
-  }
+  const sessionId = user?.id ? null : issueAnonSession(event)
 
   try {
     await prisma.pollResult.create({

@@ -1,5 +1,3 @@
-import { randomUUID } from 'crypto'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -10,8 +8,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   }
 
-  const sessionId = user?.id ? null : getCookie(event, 'anon_session') || randomUUID()
-  if (!user?.id && sessionId) setCookie(event, 'anon_session', sessionId, { maxAge: 30 * 24 * 60 * 60 })
+  // Read-only: this route only reports counts, so it must not mint an identity for a crawler.
+  // A first-time visitor has no cookie yet and correctly reads back no vote of their own.
+  const sessionId = user?.id ? null : readAnonSession(event)
 
   const grouped = await prisma.pollResult.groupBy({
     by: ['optionId'],

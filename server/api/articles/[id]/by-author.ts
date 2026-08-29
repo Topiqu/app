@@ -1,6 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
+  const sessionId = user?.id ? null : readAnonSession(event)
   const username = decodeURIComponent(getRouterParam(event, 'id')!.trim())
   if (!username) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
         user: { select: { username: true } },
         tags: { include: { tag: true } },
         reactions: {
-          where: user?.id ? { userId: user.id } : { id: '' },
+          where: user?.id ? { userId: user.id } : sessionId ? { sessionId, userId: null } : { id: '' },
           select: { id: true },
           take: 1,
         },

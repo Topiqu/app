@@ -33,6 +33,12 @@ export default defineEventHandler(async (event) => {
       include: {
         tags: { include: { tag: true } },
         user: { select: { id: true, username: true, role: true, avatarUrl: true } },
+        // Scoped to the caller, and empty on the cached branch below, which is anonymous-only.
+        reactions: {
+          where: user?.id ? { userId: user.id } : { id: '' },
+          select: { id: true },
+          take: 1,
+        },
         _count: { select: { comments: true, reactions: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -48,7 +54,11 @@ export default defineEventHandler(async (event) => {
       locale,
       primaryLanguage: clientSite.language,
     })
-    const [featured, ...recommended] = localized
+    const cards = localized.map(({ reactions, ...article }) => ({
+      ...article,
+      likedByUser: reactions.length > 0,
+    }))
+    const [featured, ...recommended] = cards
     return { featured, recommended, totalArticles }
   }
 

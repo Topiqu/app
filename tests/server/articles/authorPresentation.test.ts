@@ -11,7 +11,9 @@ describe('author article presentation', () => {
   })
 
   it('returns lightweight cards with the current viewer reaction', () => {
-    expect(endpoint).toContain("where: user?.id ? { userId: user.id } : { id: '' }")
+    expect(endpoint).toContain(
+      "where: user?.id ? { userId: user.id } : sessionId ? { sessionId, userId: null } : { id: '' }",
+    )
     expect(endpoint).toContain('omit: { content: true }')
     expect(endpoint).toContain('likedByUser: reactions.length > 0')
     expect(endpoint).toContain('items.map(({ reactions, ...article })')
