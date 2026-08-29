@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { randomUUID } from 'node:crypto'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -19,39 +20,59 @@ export default defineEventHandler(async (event) => {
     }).parse,
   )
 
+  const clientSiteId = user.clientSiteId
+  const attemptId = randomUUID()
+  const auditAttempt = async (action: string, metadata: Record<string, unknown> = {}) => {
+    try {
+      await logAction({
+        action,
+        userId: user.id,
+        clientSiteId,
+        ip: getIp(event),
+        metadata: { attemptId, ...metadata },
+      })
+    } catch (error) {
+      await reportCaughtError('Manual generation audit logging failed', error, { action, attemptId, clientSiteId })
+    }
+  }
+
+  await auditAttempt('MANUAL_GENERATION_STARTED', { promptLength: prompt.length })
+
   const client = await prisma.clientSite.findUnique({
-    where: { id: user.clientSiteId },
+    where: { id: clientSiteId },
     select: { plan: true, humanHourlyRateUsd: true, humanWordsPerHour: true },
   })
 
   if (!client) {
+    await auditAttempt('MANUAL_GENERATION_FAILED', { stage: 'preflight', reason: 'client_not_found' })
     throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
   }
 
   // Read off the row already fetched rather than `requireAiPlan`, which would cost a second query.
   // Without this the only brake was the token balance, so an expired trial kept generating.
   if (!hasAiPlan(client.plan)) {
+    await auditAttempt('MANUAL_GENERATION_REJECTED', { stage: 'preflight', reason: 'plan' })
     throw createError({ statusCode: 403, message: t('common.errors.featureNotInPlan')! })
   }
 
-  const clientSiteId = user.clientSiteId
   const abortController = new AbortController()
   let textDone = false
 
-  // `IncomingMessage.close` means that the request body has finished too, not just that the
-  // browser disconnected. Behind a proxy it fires immediately after this POST is received and
-  // used to abort every generation before the first NDJSON chunk. Watch the outgoing response:
-  // its premature close is the actual signal that the reader went away.
-  const onResponseClose = () => {
-    if (!event.node.res.writableEnded && !textDone) abortController.abort()
+  // Node request/response `close` events are transport lifecycle signals, not reliable reader
+  // cancellation signals behind proxies and serverless adapters. Nitro propagates a cancelled
+  // response into ReadableStream.cancel(), which is the only place where we abort the model.
+  let generation: Awaited<ReturnType<typeof streamArticle>>
+  try {
+    generation = await streamArticle(clientSiteId, prompt, abortController.signal)
+  } catch (error) {
+    await auditAttempt('MANUAL_GENERATION_FAILED', {
+      stage: 'initialization',
+      error: error instanceof Error ? error.message : String(error),
+    })
+    await reportCaughtError('Article generation initialization failed', error, { attemptId, clientSiteId })
+    throw error
   }
-  event.node.res.on('close', onResponseClose)
-
-  const { result, finalize, researchTokens } = await streamArticle(clientSiteId, prompt, abortController.signal)
-
-  setResponseHeader(event, 'Content-Type', 'application/x-ndjson; charset=utf-8')
-  setResponseHeader(event, 'Cache-Control', 'no-cache, no-transform')
-  setResponseHeader(event, 'X-Accel-Buffering', 'no')
+  const { result, finalize, researchTokens } = generation
 
   const encoder = new TextEncoder()
   let clientAlive = true
@@ -64,7 +85,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  return new ReadableStream({
+  const stream = new ReadableStream({
     async start(controller) {
       try {
         send(controller, { type: 'phase', phase: 'writing' })
@@ -103,9 +124,18 @@ export default defineEventHandler(async (event) => {
         await consumeClientTokens(
           clientSiteId,
           (usage.totalTokens || 0) + researchTokens,
-          'GENERATE_ARTICLE',
-          { ...finalized, usage, researchTokens, metrics, aiInvolvement: 'ASSIST', createdAt: new Date() },
+          'MANUAL_GENERATION_COMPLETED',
+          {
+            attemptId,
+            title: finalized.title,
+            usage,
+            researchTokens,
+            metrics,
+            aiInvolvement: 'ASSIST',
+            createdAt: new Date(),
+          },
           event,
+          user.id,
         )
       } catch (error: any) {
         if (abortController.signal.aborted) {
@@ -114,23 +144,43 @@ export default defineEventHandler(async (event) => {
           // never gets it back.
           const usage = await result.usage.catch(() => null)
           if (usage?.totalTokens) {
-            await consumeClientTokens(
-              clientSiteId,
-              usage.totalTokens,
-              'GENERATE_ARTICLE',
-              { aborted: true },
-              event,
-            ).catch(() => {})
+            try {
+              await consumeClientTokens(
+                clientSiteId,
+                usage.totalTokens,
+                'MANUAL_GENERATION_ABORTED',
+                { attemptId, stage: textDone ? 'finalization' : 'writing' },
+                event,
+                user.id,
+              )
+            } catch (billingError) {
+              await auditAttempt('MANUAL_GENERATION_ABORTED', {
+                stage: textDone ? 'finalization' : 'writing',
+                billingError: billingError instanceof Error ? billingError.message : String(billingError),
+              })
+              await reportCaughtError('Aborted article generation billing failed', billingError, {
+                attemptId,
+                clientSiteId,
+              })
+            }
+          } else {
+            await auditAttempt('MANUAL_GENERATION_ABORTED', {
+              stage: textDone ? 'finalization' : 'writing',
+              apiTokens: 0,
+            })
           }
         } else {
           // The response is already a 200 with a half-written body, so this can never reach Nitro's
           // `error` hook and Sentry never sees a caught throw — without this the author got a
           // generic toast and production had no record at all.
-          await reportCaughtError('Article generation stream failed', error, { clientSiteId })
+          await auditAttempt('MANUAL_GENERATION_FAILED', {
+            stage: textDone ? 'finalization' : 'writing',
+            error: error?.message || String(error),
+          })
+          await reportCaughtError('Article generation stream failed', error, { attemptId, clientSiteId })
           send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })
         }
       } finally {
-        event.node.res.off('close', onResponseClose)
         try {
           controller.close()
         } catch {
@@ -140,6 +190,14 @@ export default defineEventHandler(async (event) => {
     },
     cancel() {
       if (!textDone) abortController.abort()
+    },
+  })
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'application/x-ndjson; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      'X-Accel-Buffering': 'no',
     },
   })
 })
