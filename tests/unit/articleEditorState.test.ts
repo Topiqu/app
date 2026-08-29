@@ -35,4 +35,10 @@ describe('articleEditorSnapshot', () => {
     expect(articleEditorSnapshot(article, ['tag-b'], 'series-1')).not.toBe(baseline)
     expect(articleEditorSnapshot(article, ['tag-a'], 'series-2')).not.toBe(baseline)
   })
+
+  it('treats TipTap empty markup as the untouched empty article body', () => {
+    expect(articleEditorSnapshot({ ...article, content: '' }, [], null)).toBe(
+      articleEditorSnapshot({ ...article, content: '<p></p>' }, [], null),
+    )
+  })
 })
