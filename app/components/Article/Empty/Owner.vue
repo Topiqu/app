@@ -25,6 +25,7 @@
         {{ $t('articles.empty.owner.writeCta') }}
       </UButton>
       <UButton
+        v-if="canGenerateAi"
         :to="localePath({ name: 'admin-editor-id', params: { id: 'new' }, query: { ai: '1' } })"
         color="neutral"
         variant="outline"
@@ -79,12 +80,17 @@
 import type { RouteLocationRaw } from 'vue-router'
 import type { EmptySetupStepId, EmptySiteInfo } from '~~/shared/utils/emptySite'
 
+import { hasAiPlan } from '~~/shared/utils/plans'
 import { buildEmptySetupSteps, emptySetupProgress } from '~~/shared/utils/emptySite'
 
 const { site } = defineProps<{ site?: EmptySiteInfo | null }>()
 
 const localePath = useLocalePath()
+const config = useRuntimeConfig()
 const { data: status } = await useClientSiteStatus()
+const canGenerateAi = computed(
+  () => hasAiPlan(status.value?.plan ?? site?.plan) && Number(status.value?.tokenRemaining ?? 0) > 0,
+)
 
 const stepMeta: Record<EmptySetupStepId, { icon: string; to: () => RouteLocationRaw }> = {
   article: {
@@ -106,7 +112,10 @@ const stepMeta: Record<EmptySetupStepId, { icon: string; to: () => RouteLocation
 }
 
 const steps = computed(() =>
-  buildEmptySetupSteps({ ...site, focus: status.value?.focus, audience: status.value?.audience }),
+  buildEmptySetupSteps(
+    { ...site, focus: status.value?.focus, audience: status.value?.audience },
+    String(config.public.baseDomain || 'topiqu.com'),
+  ),
 )
 const progress = computed(() => emptySetupProgress(steps.value))
 const rows = computed(() => steps.value.map((step) => ({ ...step, ...stepMeta[step.id], to: stepMeta[step.id].to() })))

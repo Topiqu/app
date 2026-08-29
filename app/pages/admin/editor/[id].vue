@@ -723,9 +723,11 @@ const hasChanges = computed(() => {
 })
 
 const allowNavigation = shallowRef(false)
+const pendingDestination = shallowRef<string | null>(null)
 
-onBeforeRouteLeave(() => {
+onBeforeRouteLeave((to) => {
   if (allowNavigation.value || !hasChanges.value) return true
+  pendingDestination.value = to.fullPath
   discardConfirmOpen.value = true
   return false
 })
@@ -739,16 +741,18 @@ if (import.meta.client) {
 
 const goBack = () => {
   if (hasChanges.value) {
+    pendingDestination.value = localePath({ name: 'admin' })
     discardConfirmOpen.value = true
     return
   }
   router.push(localePath({ name: 'admin' }))
 }
 
-const confirmDiscard = () => {
-  discardConfirmOpen.value = false
+const confirmDiscard = async () => {
+  const destination = pendingDestination.value ?? localePath({ name: 'admin' })
   allowNavigation.value = true
-  router.push(localePath({ name: 'admin' }))
+  discardConfirmOpen.value = false
+  await router.push(destination)
 }
 
 const discardTranslation = async () => {

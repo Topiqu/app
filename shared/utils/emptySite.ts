@@ -1,4 +1,5 @@
 import { hasAiPlan } from './plans'
+import { isManagedDomain } from './domain'
 
 export interface EmptySiteInfo {
   name?: string | null
@@ -8,6 +9,7 @@ export interface EmptySiteInfo {
   focus?: string | null
   audience?: string | null
   plan?: string | null
+  domain?: string | null
   domainVerified?: boolean | null
 }
 
@@ -19,15 +21,19 @@ export interface EmptySetupStep {
   locked: boolean
 }
 
-export const buildEmptySetupSteps = (site?: EmptySiteInfo | null): EmptySetupStep[] => {
+export const buildEmptySetupSteps = (site?: EmptySiteInfo | null, baseDomain?: string): EmptySetupStep[] => {
   const aiPlan = hasAiPlan(site?.plan)
 
-  return [
+  const steps: EmptySetupStep[] = [
     { id: 'article', done: false, locked: false },
     { id: 'branding', done: Boolean(site?.logoUrl && site?.description), locked: false },
     { id: 'voice', done: aiPlan && Boolean(site?.focus && site?.audience), locked: !aiPlan },
-    { id: 'domain', done: Boolean(site?.domainVerified), locked: false },
   ]
+
+  if (site?.domain && !isManagedDomain(site.domain, baseDomain))
+    steps.push({ id: 'domain', done: Boolean(site.domainVerified), locked: false })
+
+  return steps
 }
 
 export const emptySetupProgress = (steps: EmptySetupStep[]) => {

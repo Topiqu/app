@@ -13,6 +13,7 @@ describe('empty site setup steps', () => {
       focus: 'devops',
       audience: 'engineers',
       plan: 'PRO',
+      domain: 'news.example.com',
       domainVerified: true,
     }
 
@@ -27,12 +28,25 @@ describe('empty site setup steps', () => {
   })
 
   it('locks the AI voice step on plans without AI and keeps it out of the progress total', () => {
-    const basic = { plan: 'BASIC', focus: 'devops', audience: 'engineers' }
+    const basic = { plan: 'BASIC', domain: 'acme.topiqu.com', focus: 'devops', audience: 'engineers' }
     const voice = stepById(basic, 'voice')
 
     expect(voice.locked).toBe(true)
     expect(voice.done).toBe(false)
-    expect(emptySetupProgress(buildEmptySetupSteps(basic)).total).toBe(3)
+    expect(emptySetupProgress(buildEmptySetupSteps(basic)).total).toBe(2)
+  })
+
+  it('omits domain verification for a managed subdomain', () => {
+    expect(buildEmptySetupSteps({ domain: 'acme.topiqu.com', domainVerified: true })).not.toContainEqual(
+      expect.objectContaining({ id: 'domain' }),
+    )
+  })
+
+  it('keeps domain verification for a custom domain', () => {
+    expect(stepById({ domain: 'blog.example.com', domainVerified: false }, 'domain')).toMatchObject({
+      done: false,
+      locked: false,
+    })
   })
 
   it.each(['PRO', 'PREMIUM', 'CUSTOM'])('unlocks the AI voice step on %s', (plan) => {
@@ -46,6 +60,6 @@ describe('empty site setup steps', () => {
     const steps = buildEmptySetupSteps(null)
 
     expect(steps.every((step) => !step.done)).toBe(true)
-    expect(emptySetupProgress(steps)).toEqual({ done: 0, total: 3, percent: 0 })
+    expect(emptySetupProgress(steps)).toEqual({ done: 0, total: 2, percent: 0 })
   })
 })

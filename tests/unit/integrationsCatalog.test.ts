@@ -84,15 +84,18 @@ describe('settings integrations catalog', () => {
     expect(logos).toContain('text-[#21759b]')
   })
 
-  it('defaults to available integrations and marks inaccessible plan lanes as locked', () => {
+  it('shows locked integrations as an upsell on Basic and defaults to available integrations elsewhere', () => {
     const catalog = source('app/components/Form/Client/IntegrationsCatalog.vue')
     const settings = source('app/pages/settings/index.vue')
 
-    expect(catalog).toContain("shallowRef<'available' | 'all' | 'pro' | 'premium'>('available')")
+    expect(catalog).toMatch(
+      /shallowRef<'available' \| 'all' \| 'pro' \| 'premium'>\(\s*props\.currentPlan === 'BASIC' \? 'all' : 'available'/,
+    )
     expect(catalog).toContain("$t('common.integrationsCatalog.requiresPlan'")
     expect(catalog).toContain("$t('common.integrationsCatalog.includedInPlan')")
     expect(catalog).not.toContain("$t('common.features.includedInPlan')")
     expect(catalog).toContain("if (planFilter.value === 'available') return hasPlanAccess(section.id)")
+    expect(catalog).toContain("$t('common.integrationsCatalog.upgradeToPlan'")
     expect(settings).toContain(':currentPlan="client?.plan ?? \'BASIC\'"')
     expect(catalog).not.toContain("label: 'Pro+'")
     expect(catalog).not.toContain("label: 'Premium+'")
