@@ -1,5 +1,10 @@
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
+import {
+  ARTICLE_GENERATION_FORMATS,
+  ARTICLE_GENERATION_MODULES,
+  RESEARCH_DEPTHS,
+} from '~~/shared/utils/articleGeneration'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -13,10 +18,21 @@ export default defineEventHandler(async (event) => {
 
   await ensureMinAccountAge(event, user.id)
 
-  const { prompt } = await readValidatedBody(
+  const { prompt, options } = await readValidatedBody(
     event,
     z.object({
       prompt: z.string().nonempty(t('common.errors.missing')!),
+      options: z
+        .object({
+          format: z.enum(ARTICLE_GENERATION_FORMATS),
+          modules: z.array(z.enum(ARTICLE_GENERATION_MODULES)).max(ARTICLE_GENERATION_MODULES.length),
+          research: z.object({
+            enabled: z.boolean(),
+            depth: z.enum(RESEARCH_DEPTHS),
+            fallbackWithoutResearch: z.boolean(),
+          }),
+        })
+        .optional(),
     }).parse,
   )
 
@@ -80,14 +96,32 @@ export default defineEventHandler(async (event) => {
       const heartbeat = setInterval(() => send(controller, { type: 'heartbeat' }), 5_000)
 
       try {
-        send(controller, { type: 'phase', phase: 'writing' })
-        await auditAttempt('MANUAL_GENERATION_RESEARCH_STARTED')
+        send(controller, {
+          type: 'phase',
+          phase: options?.research.enabled === false ? 'writing' : 'research',
+          attemptId,
+        })
+        await auditAttempt(
+          options?.research.enabled === false
+            ? 'MANUAL_GENERATION_RESEARCH_SKIPPED'
+            : 'MANUAL_GENERATION_RESEARCH_STARTED',
+          options ? { depth: options.research.depth } : {},
+        )
 
         // Research used to run before the Response existed. A slow web-search call therefore left
         // the origin completely silent and Bun could kill the request before streaming began.
-        generation = await streamArticle(clientSiteId, prompt, abortController.signal)
-        const { result, finalize, researchTokens } = generation
-        await auditAttempt('MANUAL_GENERATION_WRITER_STARTED', { researchTokens })
+        generation = await streamArticle(clientSiteId, prompt, {
+          abortSignal: abortController.signal,
+          research: options?.research.enabled === false ? false : undefined,
+          researchDepth: options?.research.depth,
+          fallbackWithoutResearch: options?.research.fallbackWithoutResearch,
+          format: options?.format,
+          modules: options?.modules,
+        })
+        const { result, finalize, researchTokens, research } = generation
+        send(controller, { type: 'research', ...research })
+        send(controller, { type: 'phase', phase: 'writing' })
+        await auditAttempt('MANUAL_GENERATION_WRITER_STARTED', { researchTokens, research })
 
         writerFirstPartialTimer = setTimeout(() => {
           timedOutStage = 'writer_first_partial'
@@ -183,7 +217,9 @@ export default defineEventHandler(async (event) => {
           // generic toast and production had no record at all.
           await auditAttempt('MANUAL_GENERATION_FAILED', {
             stage: timedOutStage ?? (generation ? (textDone ? 'finalization' : 'writing') : 'research'),
-            error: timedOutStage ? 'Timed out before the writer produced its first partial' : error?.message || String(error),
+            error: timedOutStage
+              ? 'Timed out before the writer produced its first partial'
+              : error?.message || String(error),
           })
           await reportCaughtError('Article generation stream failed', error, { attemptId, clientSiteId, timedOutStage })
           send(controller, {

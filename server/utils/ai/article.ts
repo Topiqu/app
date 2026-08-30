@@ -1,5 +1,6 @@
 import type { Language } from '@prisma/client'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
+import type { ResearchDepth } from '~~/shared/utils/articleGeneration'
 
 import { z } from 'zod'
 import { generateObject, generateText, streamObject } from 'ai'
@@ -100,16 +101,28 @@ type ArticleObject = (typeof articleSchema)['_output']
 
 /** The brief's own output ceiling. Web search bills input and search context on top of it, so this
  *  is a headroom guard for the balance check, never the real cost — that comes back as `usage`. */
-const RESEARCH_TOKENS = 1200
-const RESEARCH_TIMEOUT_MS = 45_000
+const RESEARCH_CONFIG = {
+  quick: { maxOutputTokens: 700, timeoutMs: 25_000, searchContextSize: 'low' },
+  standard: { maxOutputTokens: 1200, timeoutMs: 45_000, searchContextSize: 'medium' },
+  deep: { maxOutputTokens: 1800, timeoutMs: 65_000, searchContextSize: 'high' },
+} as const satisfies Record<
+  ResearchDepth,
+  { maxOutputTokens: number; timeoutMs: number; searchContextSize: 'low' | 'medium' | 'high' }
+>
 
 /** Minimum balance to start an article at all, before research is considered. */
 const ARTICLE_TOKEN_FLOOR = 1500
 
-const researchTopic = async (prompt: string, abortSignal?: AbortSignal) => {
+const researchTopic = async (
+  prompt: string,
+  depth: ResearchDepth = 'standard',
+  fallbackWithoutResearch = true,
+  abortSignal?: AbortSignal,
+) => {
+  const researchConfig = RESEARCH_CONFIG[depth]
   const researchSignal = abortSignal
-    ? AbortSignal.any([abortSignal, AbortSignal.timeout(RESEARCH_TIMEOUT_MS)])
-    : AbortSignal.timeout(RESEARCH_TIMEOUT_MS)
+    ? AbortSignal.any([abortSignal, AbortSignal.timeout(researchConfig.timeoutMs)])
+    : AbortSignal.timeout(researchConfig.timeoutMs)
 
   try {
     const { text, usage } = await generateText({
@@ -123,24 +136,28 @@ const researchTopic = async (prompt: string, abortSignal?: AbortSignal) => {
         Do not write an article, an intro, or any prose beyond the facts.
       `.trim(),
       prompt,
-      maxOutputTokens: RESEARCH_TOKENS,
-      tools: { web_search: aiWebSearchTool() as never },
+      maxOutputTokens: researchConfig.maxOutputTokens,
+      tools: { web_search: aiWebSearchTool(researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })
 
-    return { brief: text.trim() || null, tokens: usage?.totalTokens ?? 0 }
+    const brief = text.trim() || null
+    const sourceCount = brief ? new Set(brief.match(/https?:\/\/[^\s)\]}>,]+/g) ?? []).size : 0
+    return { brief, tokens: usage?.totalTokens ?? 0, sourceCount, status: 'completed' as const }
   } catch (error) {
     // Stop means stop. Only the research-specific timeout degrades to an ungrounded article.
     if (abortSignal?.aborted) throw error
+    if (!fallbackWithoutResearch) throw error
 
     // Degrading to ungrounded is the whole point of the catch, but it is also indistinguishable
     // from "the plan has no research" once the article lands with an empty `sources` array.
     await reportCaughtError('Article research failed, continuing ungrounded', error, {
       promptLength: prompt.length,
-      timeoutMs: RESEARCH_TIMEOUT_MS,
+      timeoutMs: researchConfig.timeoutMs,
+      depth,
     })
 
-    return { brief: null, tokens: 0 }
+    return { brief: null, tokens: 0, sourceCount: 0, status: 'fallback' as const }
   }
 }
 
@@ -159,12 +176,16 @@ const buildArticleConfig = async (
     format,
     variant,
     modules,
+    researchDepth = 'standard',
+    fallbackWithoutResearch = true,
     abortSignal,
   }: {
     research?: ResearchOption
     format?: ArticleFormat
     variant?: ArticleStructureVariant | null
     modules?: readonly ArticleModule[]
+    researchDepth?: ResearchDepth
+    fallbackWithoutResearch?: boolean
     abortSignal?: AbortSignal
   } = {},
 ) => {
@@ -222,10 +243,14 @@ const buildArticleConfig = async (
   // guaranteed outcome everywhere else — with no brief the model is told to return one. Open to
   // every plan now; the only gate left is the balance, because the brief bills on top of the
   // article and must not eat the floor the article itself needs.
-  const searchOn = tokenRemaining >= ARTICLE_TOKEN_FLOOR + RESEARCH_TOKENS
+  const researchBudget = RESEARCH_CONFIG[researchDepth].maxOutputTokens
+  const searchOn = tokenRemaining >= ARTICLE_TOKEN_FLOOR + researchBudget
   const researchQuery = researchOption === undefined ? prompt : researchOption ? researchOption.query : null
-  const { brief, tokens: researchTokens } =
-    searchOn && researchQuery ? await researchTopic(researchQuery, abortSignal) : { brief: null, tokens: 0 }
+  const researchResult =
+    searchOn && researchQuery
+      ? await researchTopic(researchQuery, researchDepth, fallbackWithoutResearch, abortSignal)
+      : { brief: null, tokens: 0, sourceCount: 0, status: 'skipped' as const }
+  const { brief, tokens: researchTokens } = researchResult
 
   const researchPrompt = brief
     ? `\nResearch brief (gathered from live web search — this is your only factual grounding):\n${brief}\nEvery entry in "sources" MUST be a URL that appears verbatim in this brief. If the brief lists no URLs, return an empty sources array. Never invent or reconstruct a source URL.`
@@ -317,6 +342,7 @@ const buildArticleConfig = async (
     // invisible to the writer's own token count. It went unbilled entirely while research was a
     // PREMIUM perk, and opening the gate would have multiplied that leak across every tenant.
     researchTokens,
+    research: { status: researchResult.status, sourceCount: researchResult.sourceCount, depth: researchDepth },
     config: {
       model: aiModel('articleWriter'),
       maxOutputTokens,
@@ -451,6 +477,8 @@ export const generateArticle = async (
     format?: ArticleFormat
     variant?: ArticleStructureVariant | null
     modules?: readonly ArticleModule[]
+    researchDepth?: ResearchDepth
+    fallbackWithoutResearch?: boolean
   },
 ) => {
   const { config, language, researchTokens } = await buildArticleConfig(clientSiteId, prompt, opts)
@@ -460,14 +488,25 @@ export const generateArticle = async (
   return { ...finalized, usage, researchTokens }
 }
 
-export const streamArticle = async (clientSiteId: string, prompt: string, abortSignal?: AbortSignal) => {
-  const { config, language, researchTokens } = await buildArticleConfig(clientSiteId, prompt, { abortSignal })
-  const result = streamObject({ ...config, abortSignal })
+export const streamArticle = async (
+  clientSiteId: string,
+  prompt: string,
+  opts: {
+    abortSignal?: AbortSignal
+    research?: ResearchOption
+    researchDepth?: ResearchDepth
+    fallbackWithoutResearch?: boolean
+    format?: ArticleFormat
+    modules?: readonly ArticleModule[]
+  } = {},
+) => {
+  const { config, language, researchTokens, research } = await buildArticleConfig(clientSiteId, prompt, opts)
+  const result = streamObject({ ...config, abortSignal: opts.abortSignal })
 
   // The caption labels follow the site's language, which only this side knows — so the endpoint
   // keeps handing over just the object and its image callback.
   const finalize = (object: ArticleObject, onImage?: (image: FinalizeImage) => void) =>
-    finalizeArticle(object, language, onImage)
+    finalizeArticle(applyFormat(object, opts.format, opts.modules), language, onImage)
 
-  return { result, finalize, researchTokens }
+  return { result, finalize, researchTokens, research }
 }

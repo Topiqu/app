@@ -412,8 +412,52 @@
         "generateButton": "Generate AI Content",
         "stopButton": "Stop",
         "generating": "Writing…",
+        "neutralAuthor": "Prepare a new article",
+        "neutralWorking": "A new article is being prepared",
+        "planDescription": "Set the output before starting. You will see exactly what will be used.",
+        "outputLabel": "Output type",
+        "researchLabel": "Verify the topic on the web",
+        "researchDescription": "Finds current material and only allows sources that were actually retrieved.",
+        "depthLabel": "Research depth",
+        "researchFallback": "If research fails, continue without sources",
+        "researchOff": "without research",
+        "modulesLabel": "Article components",
+        "modulesDescription": "Choose only blocks that give the reader concrete value.",
+        "planSummary": "{format} · {research} · {modules} selected modules",
+        "done": "Done",
+        "elapsed": "Elapsed {seconds}s",
+        "waiting": "No new output for {seconds}s. The request is still running and can be stopped safely.",
+        "researchSources": "Research complete, sources found: {count}",
+        "researchSourceBadge": "Sources: {count}",
+        "researchStatus": {
+          "fallback": "No sources",
+          "skipped": "Skipped"
+        },
+        "wordsWritten": "The draft currently contains about {count} words.",
+        "output": {
+          "news": "News report",
+          "analysis": "Analysis",
+          "guide": "Guide",
+          "comparison": "Comparison",
+          "opinion": "Opinion",
+          "story": "Story"
+        },
+        "depth": {
+          "quick": "Quick",
+          "standard": "Standard",
+          "deep": "Deep"
+        },
+        "module": {
+          "answer": "Direct answer",
+          "takeaways": "Key takeaways",
+          "faq": "FAQ",
+          "poll": "Reader poll",
+          "table": "Comparison table",
+          "youtube": "YouTube video"
+        },
+        "phaseResearch": "Verifying facts and finding sources…",
         "phaseWriting": "Writing…",
-        "phaseImages": "Generating images…",
+        "phaseImages": "Adding suitable media…",
         "aiContentStopped": "Generation stopped",
         "enhance": "Improve prompt",
         "enhanceUndo": "Undo",
@@ -421,8 +465,9 @@
         "topicLabel": "Article topic",
         "topicPlaceholder": "What should the article be about? Add angle, audience or key points…",
         "step": {
+          "research": "Research and sources",
           "writing": "Writing",
-          "images": "Images"
+          "images": "Media"
         },
         "formats": {
           "howto": {

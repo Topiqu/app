@@ -254,6 +254,7 @@
           <ArticleEditorSettingsPanel
             v-model:selectedSeries="selectedSeries"
             v-model:customPrompt="customPrompt"
+            v-model:aiOptions="aiOptions"
             v-model:releaseAt="releaseAtInput"
             v-model:sources="sourcesModel"
             v-model:aiOpen="aiOpen"
@@ -262,6 +263,11 @@
             :articleTags="articleTags"
             :aiGenerating="aiGenerating"
             :aiPhase="aiPhase"
+            :aiAuthorName="clientStatus?.aiUser?.username"
+            :aiElapsedSeconds="aiElapsedSeconds"
+            :aiLastActivitySeconds="aiLastActivitySeconds"
+            :aiWordCount="aiWordCount"
+            :aiResearch="aiResearch"
             @upload="handleUpload"
             @generate="generateAIContent"
             @stop="stopGeneration"
@@ -327,6 +333,7 @@
         <ArticleEditorSettingsPanel
           v-model:selectedSeries="selectedSeries"
           v-model:customPrompt="customPrompt"
+          v-model:aiOptions="aiOptions"
           v-model:releaseAt="releaseAtInput"
           v-model:sources="sourcesModel"
           v-model:aiOpen="aiOpen"
@@ -335,6 +342,11 @@
           :articleTags="articleTags"
           :aiGenerating="aiGenerating"
           :aiPhase="aiPhase"
+          :aiAuthorName="clientStatus?.aiUser?.username"
+          :aiElapsedSeconds="aiElapsedSeconds"
+          :aiLastActivitySeconds="aiLastActivitySeconds"
+          :aiWordCount="aiWordCount"
+          :aiResearch="aiResearch"
           @upload="handleUpload"
           @generate="generateAIContent"
           @stop="stopGeneration"
@@ -368,6 +380,9 @@
 import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
+import { defaultArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
+
+import type { GenerationPhase, GenerationResearchResult } from '~/composables/useArticleGeneration'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
@@ -379,6 +394,7 @@ const { t } = useI18n()
 const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
 
 const clientSite = await useClientSite()
+const { data: clientStatus } = await useClientSiteStatus()
 const requestFetch = useRequestFetch()
 
 const isNew = route.params.id === 'new'
@@ -410,7 +426,22 @@ const selectedSeries = shallowRef<any>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
 const customPrompt = shallowRef('')
-const aiPhase = shallowRef<'writing' | 'images'>('writing')
+const aiOptions = ref(defaultArticleGenerationOptions())
+const aiPhase = shallowRef<GenerationPhase>('research')
+const aiResearch = shallowRef<GenerationResearchResult | null>(null)
+const aiStartedAt = shallowRef(0)
+const aiLastActivityAt = shallowRef(0)
+const aiClock = useNow({ interval: 1_000 })
+const aiElapsedSeconds = computed(() =>
+  aiStartedAt.value ? Math.max(0, Math.floor((aiClock.value.getTime() - aiStartedAt.value) / 1_000)) : 0,
+)
+const aiLastActivitySeconds = computed(() =>
+  aiLastActivityAt.value ? Math.max(0, Math.floor((aiClock.value.getTime() - aiLastActivityAt.value) / 1_000)) : 0,
+)
+const aiWordCount = computed(() => {
+  const text = (editedArticle.value.content ?? '').replace(/<[^>]*>/g, ' ').trim()
+  return text ? text.split(/\s+/).length : 0
+})
 const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
 const serializeSourceState = () =>
   articleEditorSnapshot(editedArticle.value, articleTags.value, selectedSeries.value?.id ?? null)
@@ -638,15 +669,20 @@ const handleUpload = (file: { url: string; optimizedUrl: string }) => {
 
 const generateAIContent = async () => {
   aiGenerating.value = true
-  aiPhase.value = 'writing'
+  aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
+  aiResearch.value = null
+  aiStartedAt.value = Date.now()
+  aiLastActivityAt.value = aiStartedAt.value
   try {
-    const outcome = await streamGenerate(customPrompt.value || 'Empty...', {
+    const outcome = await streamGenerate(customPrompt.value, aiOptions.value, {
       onPartial: (partial) => {
         if (partial.title != null) editedArticle.value.title = partial.title
         if (partial.perex != null) editedArticle.value.excerpt = partial.perex
         if (partial.content != null) editedArticle.value.content = partial.content
       },
       onPhase: (phase) => (aiPhase.value = phase),
+      onResearch: (research) => (aiResearch.value = research),
+      onActivity: () => (aiLastActivityAt.value = Date.now()),
       onImage: ({ slot, html }) => {
         editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
       },
@@ -659,10 +695,14 @@ const generateAIContent = async () => {
         })
       },
     })
-    if (outcome === 'aborted') toast.add({ color: 'info', title: 'AI Generation Stopped' })
-    else toast.add({ color: 'success', title: 'AI Content Generated' })
-  } catch {
-    toast.add({ color: 'error', title: 'AI Generation Failed' })
+    if (outcome === 'aborted') toast.add({ color: 'info', title: t('articles.editor.ai.aiContentStopped') })
+    else toast.add({ color: 'success', title: t('articles.editor.aiContentGenerated') })
+  } catch (error: any) {
+    toast.add({
+      color: 'error',
+      title: t('articles.editor.aiContentFailed'),
+      description: error?.message || undefined,
+    })
   } finally {
     aiGenerating.value = false
   }

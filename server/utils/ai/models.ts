@@ -23,4 +23,5 @@ export const aiImageModel = (task: AiImageTask) => {
   return IMAGE_PROVIDERS[provider](id)
 }
 
-export const aiWebSearchTool = () => openAi.tools.webSearch({ searchContextSize: 'high' })
+export const aiWebSearchTool = (searchContextSize: 'low' | 'medium' | 'high' = 'high') =>
+  openAi.tools.webSearch({ searchContextSize })

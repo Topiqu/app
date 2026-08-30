@@ -13,6 +13,7 @@ export interface ClientSiteStatus {
   firstPaidAt: string | null
   focus: string | null
   audience: string | null
+  aiUser: { username: string; avatarUrl: string | null } | null
   hasActiveSubscription: boolean
 }
 

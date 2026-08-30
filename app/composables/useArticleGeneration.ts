@@ -1,14 +1,25 @@
+import type { ArticleGenerationOptions, ResearchDepth } from '~~/shared/utils/articleGeneration'
+
 interface PartialArticle {
   title?: string
   perex?: string
   content?: string
 }
 
-type GenerationPhase = 'writing' | 'images'
+export type GenerationPhase = 'research' | 'writing' | 'images'
+
+export interface GenerationResearchResult {
+  status: 'completed' | 'fallback' | 'skipped'
+  sourceCount: number
+  depth: ResearchDepth
+}
 
 interface StreamHandlers {
   onPartial?: (partial: PartialArticle) => void
   onPhase?: (phase: GenerationPhase) => void
+  onResearch?: (result: GenerationResearchResult) => void
+  onAttempt?: (attemptId: string) => void
+  onActivity?: () => void
   onImage?: (image: { slot: number; html: string }) => void
   onFinal: (article: Record<string, any>) => void
 }
@@ -21,7 +32,11 @@ export const useArticleGeneration = () => {
 
   const stop = () => controller?.abort()
 
-  const streamGenerate = async (prompt: string, handlers: StreamHandlers): Promise<'completed' | 'aborted'> => {
+  const streamGenerate = async (
+    prompt: string,
+    options: ArticleGenerationOptions,
+    handlers: StreamHandlers,
+  ): Promise<'completed' | 'aborted'> => {
     controller = new AbortController()
     generating.value = true
 
@@ -29,7 +44,7 @@ export const useArticleGeneration = () => {
       const res = await fetch('/api/articles/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, options }),
         signal: controller.signal,
       })
 
@@ -43,6 +58,7 @@ export const useArticleGeneration = () => {
       let buffer = ''
 
       let lastPartialAt = 0
+      let receivedFinal = false
       let pendingPartial: PartialArticle | null = null
       const flushPartial = () => {
         if (!pendingPartial) return
@@ -60,6 +76,7 @@ export const useArticleGeneration = () => {
           const now = Date.now()
           if (now - lastPartialAt >= PARTIAL_THROTTLE_MS) {
             handlers.onPartial?.(msg.object ?? {})
+            handlers.onActivity?.()
             lastPartialAt = now
             pendingPartial = null
           } else {
@@ -69,10 +86,19 @@ export const useArticleGeneration = () => {
         }
 
         flushPartial()
-        if (msg.type === 'phase') handlers.onPhase?.(msg.phase)
-        else if (msg.type === 'image') handlers.onImage?.({ slot: msg.slot, html: msg.html })
-        else if (msg.type === 'final') handlers.onFinal(msg.article)
-        else if (msg.type === 'error') throw new Error(msg.message)
+        if (msg.type === 'phase') {
+          handlers.onPhase?.(msg.phase)
+          handlers.onActivity?.()
+          if (msg.attemptId) handlers.onAttempt?.(msg.attemptId)
+        } else if (msg.type === 'research') {
+          handlers.onResearch?.(msg)
+          handlers.onActivity?.()
+        } else if (msg.type === 'image') handlers.onImage?.({ slot: msg.slot, html: msg.html })
+        else if (msg.type === 'final') {
+          receivedFinal = true
+          handlers.onFinal(msg.article)
+          handlers.onActivity?.()
+        } else if (msg.type === 'error') throw new Error(msg.message)
       }
 
       for (;;) {
@@ -85,6 +111,8 @@ export const useArticleGeneration = () => {
       }
       if (buffer.trim()) consume(buffer)
       flushPartial()
+
+      if (!receivedFinal) throw new Error('Generation stream ended before the article was completed.')
 
       return 'completed'
     } catch (error) {
