@@ -412,8 +412,52 @@
         "generateButton": "Generovat obsah AI",
         "stopButton": "Zastavit",
         "generating": "Píšu…",
+        "neutralAuthor": "Připravit nový článek",
+        "neutralWorking": "Připravuje se nový článek",
+        "planDescription": "Nastavte podobu výstupu. Před spuštěním přesně uvidíte, co se použije.",
+        "outputLabel": "Typ výstupu",
+        "researchLabel": "Ověřit téma na webu",
+        "researchDescription": "Vyhledá aktuální podklady a dovolí uvést pouze skutečně nalezené zdroje.",
+        "depthLabel": "Hloubka výzkumu",
+        "researchFallback": "Pokud se výzkum nezdaří, pokračovat bez zdrojů",
+        "researchOff": "bez výzkumu",
+        "modulesLabel": "Součásti článku",
+        "modulesDescription": "Vyberte jen bloky, které mají pro čtenáře konkrétní hodnotu.",
+        "planSummary": "{format} · {research} · {modules} vybraných modulů",
+        "done": "Hotovo",
+        "elapsed": "Uplynulo {seconds} s",
+        "waiting": "Poslední nový výstup před {seconds} s. Požadavek stále běží; lze jej bezpečně zastavit.",
+        "researchSources": "Výzkum dokončen, nalezeno zdrojů: {count}",
+        "researchSourceBadge": "Zdrojů: {count}",
+        "researchStatus": {
+          "fallback": "Bez zdrojů",
+          "skipped": "Přeskočeno"
+        },
+        "wordsWritten": "V konceptu je nyní přibližně {count} slov.",
+        "output": {
+          "news": "Zpráva",
+          "analysis": "Analýza",
+          "guide": "Návod",
+          "comparison": "Srovnání",
+          "opinion": "Komentář",
+          "story": "Příběh"
+        },
+        "depth": {
+          "quick": "Rychlá",
+          "standard": "Běžná",
+          "deep": "Hloubková"
+        },
+        "module": {
+          "answer": "Přímá odpověď",
+          "takeaways": "Klíčové body",
+          "faq": "Časté otázky",
+          "poll": "Anketa",
+          "table": "Srovnávací tabulka",
+          "youtube": "Video z YouTube"
+        },
+        "phaseResearch": "Ověřují se fakta a hledají zdroje…",
         "phaseWriting": "Píšu…",
-        "phaseImages": "Generuji obrázky…",
+        "phaseImages": "Doplňují se vhodná média…",
         "aiContentStopped": "Generování zastaveno",
         "enhance": "Vylepšit zadání",
         "enhanceUndo": "Vrátit původní",
@@ -421,8 +465,9 @@
         "topicLabel": "Téma článku",
         "topicPlaceholder": "O čem má článek být? Doplň úhel pohledu, publikum nebo klíčové body…",
         "step": {
+          "research": "Výzkum a zdroje",
           "writing": "Píšu",
-          "images": "Obrázky"
+          "images": "Média"
         },
         "formats": {
           "howto": {

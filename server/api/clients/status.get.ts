@@ -20,12 +20,17 @@ export default defineEventHandler(async (event) => {
       focus: true,
       audience: true,
       stripeSubscriptionId: true,
+      users: {
+        where: { role: 'ai' },
+        take: 1,
+        select: { username: true, avatarUrl: true },
+      },
     },
   })
 
   if (!clientSite) return null
 
-  const { stripeSubscriptionId, ...status } = clientSite
+  const { stripeSubscriptionId, users, ...status } = clientSite
 
-  return { ...status, hasActiveSubscription: !!stripeSubscriptionId }
+  return { ...status, aiUser: users[0] ?? null, hasActiveSubscription: !!stripeSubscriptionId }
 })

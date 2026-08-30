@@ -19,7 +19,7 @@ describe('manual article generation stream', () => {
   })
 
   it('starts the response before research and keeps Bun from closing an idle generation', () => {
-    expect(endpoint.indexOf("send(controller, { type: 'phase', phase: 'writing' })")).toBeLessThan(
+    expect(endpoint.indexOf("phase: options?.research.enabled === false ? 'writing' : 'research'")).toBeLessThan(
       endpoint.indexOf('generation = await streamArticle('),
     )
     expect(endpoint).toMatch(/setInterval\(\(\) => send\(controller, { type: 'heartbeat' }\), 5_000\)/)
@@ -27,12 +27,25 @@ describe('manual article generation stream', () => {
   })
 
   it('bounds both the research wait and writer time to first partial', () => {
-    expect(articleGenerator).toContain('const RESEARCH_TIMEOUT_MS = 45_000')
-    expect(articleGenerator).toContain('AbortSignal.timeout(RESEARCH_TIMEOUT_MS)')
+    expect(articleGenerator).toContain('standard: { maxOutputTokens: 1200, timeoutMs: 45_000')
+    expect(articleGenerator).toContain('AbortSignal.timeout(researchConfig.timeoutMs)')
     expect(articleGenerator).toContain('abortSignal: researchSignal')
-    expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_RESEARCH_STARTED'")
+    expect(endpoint).toContain("'MANUAL_GENERATION_RESEARCH_STARTED'")
     expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_WRITER_STARTED'")
-    expect(endpoint).toMatch(/timedOutStage = 'writer_first_partial'[\s\S]*abortController\.abort\(\)[\s\S]*}, 90_000\)/)
+    expect(endpoint).toMatch(
+      /timedOutStage = 'writer_first_partial'[\s\S]*abortController\.abort\(\)[\s\S]*}, 90_000\)/,
+    )
+  })
+
+  it('streams truthful phases and passes the selected editorial plan to the generator', () => {
+    expect(endpoint).toContain("phase: options?.research.enabled === false ? 'writing' : 'research'")
+    expect(endpoint).toContain("send(controller, { type: 'research', ...research })")
+    expect(endpoint).toContain("send(controller, { type: 'phase', phase: 'writing' })")
+    expect(endpoint).toContain("send(controller, { type: 'phase', phase: 'images' })")
+    expect(endpoint).toContain('researchDepth: options?.research.depth')
+    expect(endpoint).toContain('fallbackWithoutResearch: options?.research.fallbackWithoutResearch')
+    expect(endpoint).toContain('format: options?.format')
+    expect(endpoint).toContain('modules: options?.modules')
   })
 
   it('records the complete manual generation lifecycle with a correlation id', () => {

@@ -249,12 +249,12 @@ const generate = async () => {
   finalized.value = false
 
   try {
-    const outcome = await streamGenerate(prompt, {
+    const outcome = await streamGenerate(prompt, defaultArticleGenerationOptions(), {
       onPartial: (partial) => {
         if (partial.content != null) streamedWords.value = countHtmlWords(partial.content)
         emit('partial', partial)
       },
-      onPhase: (next) => (phase.value = next),
+      onPhase: (next) => (phase.value = next === 'research' ? 'writing' : next),
       onImage: (image) => emit('image', image),
       onFinal: (article) => {
         finalized.value = true
