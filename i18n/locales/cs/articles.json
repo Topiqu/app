@@ -411,7 +411,7 @@
         "learnMore": "Zjistit více",
         "generateButton": "Generovat obsah AI",
         "stopButton": "Zastavit",
-        "generating": "Píšu…",
+        "generating": "Generování článku",
         "neutralAuthor": "Připravit nový článek",
         "neutralWorking": "Připravuje se nový článek",
         "planDescription": "Nastavte podobu výstupu. Před spuštěním přesně uvidíte, co se použije.",
@@ -419,14 +419,16 @@
         "researchLabel": "Ověřit téma na webu",
         "researchDescription": "Vyhledá aktuální podklady a dovolí uvést pouze skutečně nalezené zdroje.",
         "depthLabel": "Hloubka výzkumu",
-        "researchFallback": "Pokud se výzkum nezdaří, pokračovat bez zdrojů",
+        "researchFallback": "Pokračovat bez zdrojů",
         "researchOff": "bez výzkumu",
         "modulesLabel": "Součásti článku",
         "modulesDescription": "Vyberte jen bloky, které mají pro čtenáře konkrétní hodnotu.",
         "planSummary": "{format} · {research} · {modules} vybraných modulů",
         "done": "Hotovo",
         "elapsed": "Uplynulo {seconds} s",
-        "waiting": "Poslední nový výstup před {seconds} s. Požadavek stále běží; lze jej bezpečně zastavit.",
+        "waiting": "Bez nových dat {seconds} s. Po 30 s se běh automaticky zastaví.",
+        "writerIdleError": "Generování bylo zastaveno: autor 30 sekund neposlal žádná data.",
+        "writerDeadlineError": "Generování bylo zastaveno po dosažení 90sekundového limitu psaní.",
         "researchSources": "Výzkum dokončen, nalezeno zdrojů: {count}",
         "researchSourceBadge": "Zdrojů: {count}",
         "researchStatus": {
@@ -441,6 +443,20 @@
           "comparison": "Srovnání",
           "opinion": "Komentář",
           "story": "Příběh"
+        },
+        "outputDescription": {
+          "news": "Co se stalo a koho se to týká.",
+          "analysis": "Souvislosti, důkazy a dopady.",
+          "guide": "Praktický postup krok za krokem.",
+          "comparison": "Možnosti vedle sebe podle stejných kritérií.",
+          "opinion": "Jasný postoj podložený argumenty.",
+          "story": "Jeden případ vyprávěný v souvislostech."
+        },
+        "writingStage": {
+          "starting": "Připravuje se osnova článku…",
+          "title": "Titulek je připravený, vzniká úvod…",
+          "intro": "Úvod je připravený, píše se hlavní text…",
+          "body": "Text článku se průběžně doplňuje…"
         },
         "depth": {
           "quick": "Rychlá",
@@ -466,7 +482,7 @@
         "topicPlaceholder": "O čem má článek být? Doplň úhel pohledu, publikum nebo klíčové body…",
         "step": {
           "research": "Výzkum a zdroje",
-          "writing": "Píšu",
+          "writing": "Text článku",
           "images": "Média"
         },
         "formats": {

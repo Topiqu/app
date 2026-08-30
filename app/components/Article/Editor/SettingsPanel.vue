@@ -250,7 +250,11 @@ import {
   type ArticleGenerationOptions,
 } from '~~/shared/utils/articleGeneration'
 
-import type { GenerationPhase, GenerationResearchResult } from '~/composables/useArticleGeneration'
+import type {
+  GenerationPhase,
+  GenerationResearchResult,
+  GenerationWritingStage,
+} from '~/composables/useArticleGeneration'
 
 const props = defineProps<{
   article?: ArticleWithDetails
@@ -263,6 +267,7 @@ const props = defineProps<{
   aiLastActivitySeconds: number
   aiWordCount: number
   aiResearch?: GenerationResearchResult | null
+  aiWritingStage: GenerationWritingStage
 }>()
 
 const selectedSeries = defineModel<unknown>('selectedSeries')
@@ -280,12 +285,18 @@ const { t } = useI18n()
 
 const activeHeading = computed(() => props.aiAuthorName || t('articles.editor.ai.neutralWorking'))
 const activeDescription = computed(() =>
-  t(`articles.editor.ai.phase${props.aiPhase[0]!.toUpperCase()}${props.aiPhase.slice(1)}`),
+  props.aiPhase === 'writing'
+    ? t(`articles.editor.ai.writingStage.${props.aiWritingStage}`)
+    : t(`articles.editor.ai.phase${props.aiPhase[0]!.toUpperCase()}${props.aiPhase.slice(1)}`),
 )
 const currentPhaseIndex = computed(() => phases.indexOf(props.aiPhase))
 const allowedModules = computed(() => ARTICLE_GENERATION_ALLOWED_MODULES[aiOptions.value.format])
 const formatItems = computed(() =>
-  formats.map((value) => ({ value, label: t(`articles.editor.ai.output.${value}`) })),
+  formats.map((value) => ({
+    value,
+    label: t(`articles.editor.ai.output.${value}`),
+    description: t(`articles.editor.ai.outputDescription.${value}`),
+  })),
 )
 const depthItems = computed(() => depths.map((value) => ({ value, label: t(`articles.editor.ai.depth.${value}`) })))
 const moduleItems = computed(() =>
@@ -300,7 +311,10 @@ const phaseState = (index: number) =>
 const phaseDetail = computed(() => {
   if (props.aiPhase === 'research' && props.aiResearch?.status === 'completed')
     return t('articles.editor.ai.researchSources', { count: props.aiResearch.sourceCount })
-  if (props.aiPhase === 'writing') return t('articles.editor.ai.wordsWritten', { count: props.aiWordCount })
+  if (props.aiPhase === 'writing')
+    return props.aiWordCount > 0
+      ? t('articles.editor.ai.wordsWritten', { count: props.aiWordCount })
+      : t(`articles.editor.ai.writingStage.${props.aiWritingStage}`)
   return t(`articles.editor.ai.phase${props.aiPhase[0]!.toUpperCase()}${props.aiPhase.slice(1)}`)
 })
 const phaseDoneLabel = (phase: GenerationPhase) => {

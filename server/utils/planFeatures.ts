@@ -102,6 +102,24 @@ export const syncAutoRelease = async (tx: FeatureSyncDb, clientSiteId: string, a
   })
 }
 
+/** The feature toggle is the client's scheduling control. Keeping a separate `NONE` value while
+ *  the feature says enabled creates a configuration that can never run and cannot be repaired in
+ *  client settings. Preserve an explicit DAILY/WEEKLY choice; otherwise use DAILY as the default. */
+export const syncGenerationSchedule = async (tx: FeatureSyncDb, clientSiteId: string, active: FeatureCode[]) => {
+  if (active.includes('ARTICLE_CRONS')) {
+    await tx.clientSite.updateMany({
+      where: { id: clientSiteId, generationFrequency: 'NONE' },
+      data: { generationFrequency: 'DAILY' },
+    })
+    return
+  }
+
+  await tx.clientSite.updateMany({
+    where: { id: clientSiteId, generationFrequency: { not: 'NONE' } },
+    data: { generationFrequency: 'NONE' },
+  })
+}
+
 /** Losing either data access or AI must require a fresh explicit autopilot opt-in later. */
 export const syncSeoAutopilot = async (tx: FeatureSyncDb, clientSiteId: string, active: FeatureCode[]) => {
   if (active.includes('SEARCH_CONSOLE') && active.includes('AI')) return
@@ -200,6 +218,7 @@ export const syncPlanFeatures = async (tx: FeatureSyncDb, clientSiteId: string, 
   )
 
   await syncAutoRelease(tx, clientSiteId, nextActive)
+  await syncGenerationSchedule(tx, clientSiteId, nextActive)
   await syncSeoAutopilot(tx, clientSiteId, nextActive)
   await recalcFeatureBilling(tx, clientSiteId, plan, site.billingPlan)
 

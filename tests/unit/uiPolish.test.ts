@@ -136,7 +136,8 @@ describe('dashboard UI polish contracts', () => {
     const toolbar = source('app/components/Tiptap/Toolbar.vue')
     const styles = source('app/assets/styles/main.css')
 
-    expect(page).toContain('lg:grid-cols-[minmax(0,1fr)_24rem]')
+    expect(page).toContain('lg:grid-cols-[minmax(0,1fr)_30rem]')
+    expect(page).toContain('max-w-7xl')
     expect(page).toContain('class="mt-4 min-w-0 max-w-full"')
     expect(editor).toContain('flex min-w-0 max-w-full flex-col')
     expect(toolbar).toContain('overflow-x-auto overscroll-x-contain')

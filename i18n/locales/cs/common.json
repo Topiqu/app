@@ -699,6 +699,14 @@
         "confirmTitle": "Povolit automatické publikování?",
         "confirmMessage": "Jste si jistí? AI může občas generovat nepřesnosti. Důrazně doporučujeme články před vydáním kontrolovat."
       },
+      "generationFrequency": {
+        "label": "Frekvence článků",
+        "description": "Jak často má AI autor připravit nový článek.",
+        "options": {
+          "DAILY": "Každý den",
+          "WEEKLY": "Jednou týdně"
+        }
+      },
       "aiDisclosure": {
         "title": "Označovat obsah vytvořený s AI",
         "desc": "Veřejně zobrazí míru zapojení AI u článku a označí obrázky vygenerované AI."

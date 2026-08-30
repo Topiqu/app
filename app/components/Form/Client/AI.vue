@@ -100,6 +100,13 @@
         </div>
       </div>
     </Transition>
+    <UFormField
+      v-if="aiEnabled && articleCronsEnabled"
+      :label="$t('common.preferences.generationFrequency.label')"
+      :description="$t('common.preferences.generationFrequency.description')"
+    >
+      <URadioGroup v-model="generationFrequency" :items="generationFrequencyOptions" orientation="horizontal" />
+    </UFormField>
     <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
       <div class="flex items-center gap-4">
         <Icon name="mdi:information-outline" class="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -304,6 +311,7 @@ const props = defineProps<{
   sentimentEnabled: boolean
   articleCronsEnabled: boolean
   autoRelease: boolean
+  generationFrequency: 'DAILY' | 'WEEKLY' | 'NONE'
   canEnableAi: boolean
   canEnableSentiment: boolean
   canEnableArticleCrons: boolean
@@ -325,6 +333,7 @@ const emit = defineEmits<{
   'update:aiControversyLevel': [string | null]
   'update:avatarUrl': [string]
   'update:autoRelease': [boolean]
+  'update:generationFrequency': ['DAILY' | 'WEEKLY']
   'update:translationMode': ['OFF' | 'MANUAL' | 'AUTO' | 'HYBRID']
   'update:translationLanguages': [string[]]
   'update:discloseAiContent': [boolean]
@@ -337,6 +346,16 @@ const translationMode = computed({
   get: () => props.translationMode,
   set: (v) => emit('update:translationMode', v),
 })
+const generationFrequency = computed<'DAILY' | 'WEEKLY'>({
+  get: () => (props.generationFrequency === 'WEEKLY' ? 'WEEKLY' : 'DAILY'),
+  set: (value) => emit('update:generationFrequency', value),
+})
+const generationFrequencyOptions = computed(() =>
+  (['DAILY', 'WEEKLY'] as const).map((value) => ({
+    value,
+    label: t(`common.preferences.generationFrequency.options.${value}`),
+  })),
+)
 
 const translationModeOptions = computed(() =>
   (['OFF', 'MANUAL', 'AUTO', 'HYBRID'] as const).map((value) => ({

@@ -5,6 +5,7 @@ import {
   billableFeatureWhere,
   billableMonthlyTotal,
   syncAutoRelease,
+  syncGenerationSchedule,
   syncSeoAutopilot,
   getAllowedFeatures,
   getDependents,
@@ -191,6 +192,30 @@ describe('syncAutoRelease', () => {
     await syncAutoRelease(tx as any, 'cs1', [])
 
     expect(tx.clientSite.updateMany).toHaveBeenCalled()
+  })
+})
+
+describe('syncGenerationSchedule', () => {
+  const makeTx = () => ({ clientSite: { updateMany: vi.fn(async () => ({ count: 1 })) } })
+
+  it('gives an enabled cron feature a useful daily default', async () => {
+    const tx = makeTx()
+    await syncGenerationSchedule(tx as any, 'cs1', ['AI', 'ARTICLE_CRONS'])
+
+    expect(tx.clientSite.updateMany).toHaveBeenCalledWith({
+      where: { id: 'cs1', generationFrequency: 'NONE' },
+      data: { generationFrequency: 'DAILY' },
+    })
+  })
+
+  it('turns the stored schedule off with the feature', async () => {
+    const tx = makeTx()
+    await syncGenerationSchedule(tx as any, 'cs1', ['AI'])
+
+    expect(tx.clientSite.updateMany).toHaveBeenCalledWith({
+      where: { id: 'cs1', generationFrequency: { not: 'NONE' } },
+      data: { generationFrequency: 'NONE' },
+    })
   })
 })
 

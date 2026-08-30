@@ -699,6 +699,14 @@
         "confirmTitle": "Enable Automatic Publishing?",
         "confirmMessage": "Are you sure? AI may occasionally generate inaccuracies. We still recommend reviewing content before publication. If enabled, content will go live immediately without your approval."
       },
+      "generationFrequency": {
+        "label": "Article frequency",
+        "description": "How often the AI author should prepare a new article.",
+        "options": {
+          "DAILY": "Every day",
+          "WEEKLY": "Once a week"
+        }
+      },
       "aiDisclosure": {
         "title": "Label AI-assisted content",
         "desc": "Publicly shows the level of AI involvement in an article and labels AI-generated images."

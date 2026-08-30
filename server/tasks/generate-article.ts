@@ -44,7 +44,10 @@ const MIN_TOKENS = 7000
 /** Why each scheduled site was left out of this run — `not_due` is the only benign answer. */
 const skippedSites = async (pickedIds: string[]) => {
   const scheduled = await prisma.clientSite.findMany({
-    where: { generationFrequency: { in: ['DAILY', 'WEEKLY'] }, id: { notIn: pickedIds } },
+    where: {
+      id: { notIn: pickedIds },
+      OR: [{ generationFrequency: { in: ['DAILY', 'WEEKLY'] } }, activeFeatureFilter('ARTICLE_CRONS')],
+    },
     select: {
       id: true,
       name: true,
@@ -59,8 +62,12 @@ const skippedSites = async (pickedIds: string[]) => {
     clientSiteId: site.id,
     name: site.name,
     lastGeneratedAt: site.lastGeneratedAt?.toISOString() ?? null,
+    generationFrequency: site.generationFrequency,
+    tokenRemaining: site.tokenRemaining,
     reason: !site.features.length
       ? 'feature_inactive'
+      : site.generationFrequency === 'NONE'
+        ? 'frequency_disabled'
       : (site.tokenRemaining ?? 0) <= MIN_TOKENS
         ? 'insufficient_tokens'
         : 'not_due',
@@ -488,6 +495,22 @@ export default defineMonitoredTask({
     // The `where` above drops a client without leaving a trace, so a site that stopped generating
     // looks exactly like a site with nothing due. Name the reason instead of guessing it later.
     const skipped = await skippedSites(clients.map((client) => client.id))
+
+    // BetterStack captures the task summary, but a tenant-specific configuration failure also
+    // belongs in the audit chain where support and the client can find it. `not_due` is normal and
+    // would only add daily noise, so persist the actionable reasons.
+    for (const site of skipped) {
+      if (site.reason === 'not_due') continue
+      await logAction({
+        action: 'CRON_ARTICLE_SKIPPED',
+        clientSiteId: site.clientSiteId,
+        metadata: {
+          reason: site.reason,
+          generationFrequency: site.generationFrequency,
+          tokenRemaining: site.tokenRemaining,
+        },
+      })
+    }
 
     const BATCH_SIZE = 5
 
