@@ -705,11 +705,25 @@
         "options": {
           "DAILY": "Every day",
           "WEEKLY": "Once a week"
+        },
+        "optionDescriptions": {
+          "DAILY": "A new draft is prepared each day once the previous run is complete.",
+          "WEEKLY": "One new draft every seven days for a slower publishing rhythm."
         }
       },
       "aiDisclosure": {
         "title": "Label AI-assisted content",
         "desc": "Publicly shows the level of AI involvement in an article and labels AI-generated images."
+      },
+      "aiPage": {
+        "title": "AI and automation",
+        "description": "Configure the author, writing style, and how content is prepared and published.",
+        "capabilities": "Available features",
+        "capabilitiesDescription": "Enable the features AI can use when managing your content.",
+        "automation": "Scheduled publishing",
+        "automationDescription": "Set the publishing rhythm and whether new articles should be reviewed first.",
+        "transparency": "Transparency",
+        "transparencyDescription": "Choose how the use of AI is communicated to readers."
       },
       "translation": {
         "title": "Automatic Translations",
@@ -731,6 +745,7 @@
       },
       "aiAuthor": {
         "title": "AI Author Settings",
+        "description": "This identity appears on articles and shapes the character of the resulting copy.",
         "username": {
           "label": "AI Name",
           "placeholder": "AI Name"
@@ -753,6 +768,7 @@
         },
         "controversyLevel": {
           "label": "Controversy Level",
+          "help": "Higher levels allow stronger opinions, not weaker standards for factual accuracy.",
           "placeholder": "How much should the AI engage in controversial topics?",
           "options": {
             "NONE": "None (safe topics)",

@@ -705,11 +705,25 @@
         "options": {
           "DAILY": "Každý den",
           "WEEKLY": "Jednou týdně"
+        },
+        "optionDescriptions": {
+          "DAILY": "Nový koncept se připraví každý den, jakmile je předchozí běh uzavřený.",
+          "WEEKLY": "Jeden nový koncept za sedm dní. Vhodné pro pomalejší publikační rytmus."
         }
       },
       "aiDisclosure": {
         "title": "Označovat obsah vytvořený s AI",
         "desc": "Veřejně zobrazí míru zapojení AI u článku a označí obrázky vygenerované AI."
+      },
+      "aiPage": {
+        "title": "AI a automatizace",
+        "description": "Nastavte autora, styl psaní a způsob, jakým se obsah připravuje a publikuje.",
+        "capabilities": "Dostupné funkce",
+        "capabilitiesDescription": "Zapněte funkce, které má AI při správě obsahu používat.",
+        "automation": "Plánované publikování",
+        "automationDescription": "Určete publikační rytmus a zda mají nové články nejdříve projít kontrolou.",
+        "transparency": "Transparentnost",
+        "transparencyDescription": "Nastavte, jak bude použití AI komunikováno čtenářům."
       },
       "translation": {
         "title": "Automatické překlady",
@@ -731,6 +745,7 @@
       },
       "aiAuthor": {
         "title": "Nastavení AI autora",
+        "description": "Tato identita se zobrazuje u článků a určuje charakter výsledného textu.",
         "username": {
           "label": "Jméno AI",
           "placeholder": "Jméno AI"
@@ -753,6 +768,7 @@
         },
         "controversyLevel": {
           "label": "Míra kontroverze",
+          "help": "Vyšší úroveň dovolí autorovi formulovat výraznější názory, ne obcházet fakta.",
           "placeholder": "Jak moc se má AI pouštět do kontroverzních témat?",
           "options": {
             "NONE": "Žádná (bezpečná témata)",

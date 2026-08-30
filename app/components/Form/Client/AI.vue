@@ -1,10 +1,113 @@
 <template>
-  <div class="space-y-8">
-    <div
-      v-if="!setupOnly"
-      class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-6"
-    >
-      <div class="grid grid-cols-1 gap-3">
+  <div class="space-y-10">
+    <header>
+      <h2 class="text-xl font-bold text-highlighted">{{ $t('common.preferences.aiPage.title') }}</h2>
+      <p class="mt-1 max-w-2xl text-sm leading-6 text-muted">
+        {{ $t('common.preferences.aiPage.description') }}
+      </p>
+    </header>
+
+    <section class="space-y-4">
+      <div>
+        <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.aiAuthor.title') }}</h3>
+        <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiAuthor.description') }}</p>
+      </div>
+
+      <div class="overflow-hidden rounded-2xl border border-default bg-default shadow-sm">
+        <div class="grid gap-6 border-b border-default p-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:p-6">
+          <div class="flex flex-col items-start gap-2">
+            <AppFormLabel :text="$t('common.avatar.ai.label')" />
+            <UserPictureUploader
+              v-model="avatarUrl"
+              :api="`/api/clients/${clientId}/ai-avatar`"
+              :name="username || $t('common.preferences.aiAuthor.title')"
+            >
+              <template #default="{ open }">
+                <button
+                  type="button"
+                  class="group relative rounded-full outline-none ring-1 ring-default transition hover:ring-primary focus-visible:ring-2 focus-visible:ring-primary"
+                  :aria-label="`${$t('common.actions.change')} ${$t('common.avatar.ai.label')}`"
+                  @click="open"
+                >
+                  <UserPicture :url="avatarUrl" size="xl" :name="username || $t('common.preferences.aiAuthor.title')" />
+                  <span
+                    class="absolute inset-0 grid place-items-center rounded-full bg-neutral-950/0 text-white transition group-hover:bg-neutral-950/45 group-focus-visible:bg-neutral-950/45"
+                  >
+                    <UIcon
+                      name="i-mdi-camera-outline"
+                      class="size-6 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
+                    />
+                  </span>
+                </button>
+              </template>
+            </UserPictureUploader>
+            <span class="text-xs text-muted">{{ $t('common.actions.change') }}</span>
+          </div>
+
+          <div class="grid min-w-0 gap-5">
+            <AppFormField
+              v-model="username"
+              :label="$t('common.preferences.aiAuthor.username.label')"
+              :placeholder="$t('common.preferences.aiAuthor.username.placeholder')"
+              type="text"
+            />
+            <div class="flex flex-col gap-2">
+              <AppFormLabel :text="$t('common.preferences.aiAuthor.bio.label')" />
+              <AppFormField
+                v-model="bio"
+                :placeholder="$t('common.preferences.aiAuthor.bio.placeholder')"
+                :maxLength="300"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid gap-x-8 gap-y-6 p-5 sm:p-6 lg:grid-cols-2">
+          <div class="flex min-w-0 flex-col gap-2">
+            <AppFormLabel :text="$t('common.preferences.aiAuthor.toneOfVoice.label')" />
+            <AppFormField
+              v-model="aiToneOfVoice"
+              type="text"
+              :placeholder="$t('common.preferences.aiAuthor.toneOfVoice.placeholder')"
+            />
+            <div class="mt-1 flex flex-wrap gap-2">
+              <UButton
+                v-for="suggestion in toneSuggestions"
+                :key="suggestion"
+                color="neutral"
+                :variant="aiToneOfVoice.includes(suggestion) ? 'soft' : 'outline'"
+                size="xs"
+                class="rounded-full"
+                @click="toggleToneSuggestion(suggestion)"
+              >
+                {{ suggestion }}
+              </UButton>
+            </div>
+          </div>
+
+          <div class="flex min-w-0 flex-col gap-2">
+            <AppFormLabel :text="$t('common.preferences.aiAuthor.controversyLevel.label')" />
+            <USelectMenu
+              v-model="aiControversyLevel"
+              valueKey="value"
+              labelKey="label"
+              :items="controversyOptions"
+              upwards
+            />
+            <p class="text-xs leading-5 text-muted">
+              {{ $t('common.preferences.aiAuthor.controversyLevel.help') }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div v-if="!setupOnly" class="space-y-4">
+      <div>
+        <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.aiPage.capabilities') }}</h3>
+        <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiPage.capabilitiesDescription') }}</p>
+      </div>
+      <div class="grid gap-3 rounded-2xl border border-default bg-muted/30 p-3 sm:p-4">
         <FormClientFeatureToggle
           icon="i-mdi-robot-outline"
           accentRing="ring-2 ring-blue-500"
@@ -48,231 +151,122 @@
         />
       </div>
     </div>
-    <Transition
-      enterActiveClass="transition duration-300 ease-out"
-      enterFromClass="transform -translate-y-4 opacity-0"
-      enterToClass="transform translate-y-0 opacity-100"
-      leaveActiveClass="transition duration-200 ease-in"
-      leaveFromClass="transform translate-y-0 opacity-100"
-      leaveToClass="transform -translate-y-4 opacity-0"
-    >
-      <div
-        v-if="aiEnabled && articleCronsEnabled"
-        class="rounded-2xl border p-5 flex items-center gap-4 transition-colors duration-300"
-        :class="
-          autoRelease
-            ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
-            : 'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700'
-        "
-      >
-        <div
-          class="p-2 rounded-full"
-          :class="
-            autoRelease
-              ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-500'
-          "
-        >
-          <Icon :name="autoRelease ? 'mdi:publish' : 'mdi:file-document-edit-outline'" class="w-6 h-6" />
-        </div>
 
-        <div class="flex-1">
-          <div
-            class="font-semibold text-sm"
-            :class="autoRelease ? 'text-amber-900 dark:text-amber-100' : 'text-gray-900 dark:text-gray-100'"
-          >
-            {{ $t('common.preferences.autoRelease.title') }}
-          </div>
-          <div
-            class="text-xs leading-tight"
-            :class="autoRelease ? 'text-amber-700 dark:text-amber-300' : 'text-gray-500 dark:text-gray-400'"
-          >
-            {{ autoRelease ? $t('common.preferences.autoRelease.warning') : $t('common.preferences.autoRelease.desc') }}
-          </div>
-        </div>
+    <section v-if="aiEnabled && articleCronsEnabled" class="space-y-4">
+      <div>
+        <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.aiPage.automation') }}</h3>
+        <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiPage.automationDescription') }}</p>
+      </div>
 
-        <div class="flex items-center">
-          <UCheckbox
+      <div class="divide-y divide-default overflow-hidden rounded-2xl border border-default bg-default shadow-sm">
+        <div class="flex items-start gap-4 p-5 sm:p-6">
+          <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-muted">
+            <Icon :name="autoRelease ? 'mdi:publish' : 'mdi:file-document-edit-outline'" class="size-5" />
+          </div>
+
+          <div class="flex-1">
+            <div class="text-sm font-semibold text-highlighted">
+              {{ $t('common.preferences.autoRelease.title') }}
+            </div>
+            <div class="mt-1 text-sm leading-5 text-muted">
+              {{
+                autoRelease ? $t('common.preferences.autoRelease.warning') : $t('common.preferences.autoRelease.desc')
+              }}
+            </div>
+          </div>
+
+          <USwitch
             :modelValue="autoRelease"
-            class="!w-5 !h-5 cursor-pointer"
+            :aria-label="$t('common.preferences.autoRelease.title')"
             @update:modelValue="(val) => handleAutoReleaseToggle(val as boolean)"
           />
         </div>
-      </div>
-    </Transition>
-    <UFormField
-      v-if="aiEnabled && articleCronsEnabled"
-      :label="$t('common.preferences.generationFrequency.label')"
-      :description="$t('common.preferences.generationFrequency.description')"
-    >
-      <URadioGroup v-model="generationFrequency" :items="generationFrequencyOptions" orientation="horizontal" />
-    </UFormField>
-    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
-      <div class="flex items-center gap-4">
-        <Icon name="mdi:information-outline" class="h-6 w-6 text-blue-600 dark:text-blue-400" />
-        <div class="flex-1">
-          <div class="font-semibold text-gray-900 dark:text-gray-100">
-            {{ $t('common.preferences.aiDisclosure.title') }}
-          </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400">{{ $t('common.preferences.aiDisclosure.desc') }}</div>
+        <div class="p-5 sm:p-6">
+          <h4 class="text-sm font-semibold text-highlighted">
+            {{ $t('common.preferences.generationFrequency.label') }}
+          </h4>
+          <p class="mb-4 mt-1 text-sm leading-5 text-muted">
+            {{ $t('common.preferences.generationFrequency.description') }}
+          </p>
+          <UFormField :label="$t('common.preferences.generationFrequency.label')" :ui="{ label: 'sr-only' }">
+            <URadioGroup
+              v-model="generationFrequency"
+              :items="generationFrequencyOptions"
+              variant="card"
+              class="grid gap-3 sm:grid-cols-2"
+            />
+          </UFormField>
         </div>
-        <UCheckbox
+      </div>
+    </section>
+
+    <section class="space-y-4">
+      <div>
+        <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.aiPage.transparency') }}</h3>
+        <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiPage.transparencyDescription') }}</p>
+      </div>
+      <div class="flex items-start gap-4 rounded-2xl border border-default bg-default p-5 shadow-sm sm:p-6">
+        <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-muted">
+          <Icon name="mdi:information-outline" class="size-5" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-sm font-semibold text-highlighted">{{ $t('common.preferences.aiDisclosure.title') }}</div>
+          <div class="mt-1 text-sm leading-5 text-muted">{{ $t('common.preferences.aiDisclosure.desc') }}</div>
+        </div>
+        <USwitch
           :modelValue="props.discloseAiContent"
-          class="!h-5 !w-5 cursor-pointer"
+          :aria-label="$t('common.preferences.aiDisclosure.title')"
           @update:modelValue="emit('update:discloseAiContent', $event as boolean)"
         />
       </div>
-    </div>
-    <div
-      class="flex flex-col gap-6 p-8 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
-    >
-      <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
-        <Icon name="mdi:robot" class="w-6 h-6" />
-        {{ $t('common.preferences.aiAuthor.title') }}
-      </h3>
-      <div class="space-y-6">
-        <AppFormField
-          v-model="username"
-          :label="$t('common.preferences.aiAuthor.username.label')"
-          :placeholder="$t('common.preferences.aiAuthor.username.placeholder')"
-          type="text"
-        />
-        <div class="flex flex-col gap-2">
-          <AppFormLabel :text="$t('common.avatar.ai.label')" />
-          <div class="flex flex-col items-center gap-2">
-            <UserPictureUploader
-              v-model="avatarUrl"
-              :api="`/api/clients/${clientId}/ai-avatar`"
-              :name="username || $t('common.preferences.aiAuthor.title')"
-            >
-              <template #default="{ open }">
-                <button
-                  type="button"
-                  class="group relative rounded-full ring-4 ring-white shadow-md outline-none transition hover:scale-[1.03] hover:ring-blue-200 focus-visible:ring-blue-500 dark:ring-gray-800 dark:hover:ring-blue-800"
-                  :aria-label="`${$t('common.actions.change')} ${$t('common.avatar.ai.label')}`"
-                  @click="open"
-                >
-                  <UserPicture :url="avatarUrl" size="xl" :name="username || $t('common.preferences.aiAuthor.title')" />
-                  <span
-                    class="absolute inset-0 grid place-items-center rounded-full bg-black/0 text-white transition group-hover:bg-black/45 group-focus-visible:bg-black/45"
-                  >
-                    <UIcon
-                      name="i-mdi-camera-outline"
-                      class="size-7 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
-                    />
-                  </span>
-                  <span
-                    class="absolute bottom-0 right-0 grid size-8 place-items-center rounded-full bg-primary text-white ring-2 ring-white dark:ring-gray-800"
-                  >
-                    <UIcon name="i-mdi-pencil" class="size-4" />
-                  </span>
-                </button>
-              </template>
-            </UserPictureUploader>
-            <span class="text-xs font-medium text-blue-700 dark:text-blue-300">
-              {{ $t('common.actions.change') }}
-            </span>
+    </section>
+
+    <section class="space-y-4" :class="!aiEnabled && !setupOnly && 'opacity-60 pointer-events-none'">
+      <div>
+        <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.translation.title') }}</h3>
+        <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.translation.desc') }}</p>
+      </div>
+
+      <div class="rounded-2xl border border-default bg-default p-5 shadow-sm sm:p-6">
+        <div class="grid gap-6 lg:grid-cols-2">
+          <div class="flex min-w-0 flex-col gap-2">
+            <AppFormLabel :text="$t('common.preferences.translation.mode.label')" />
+            <USelectMenu
+              v-model="translationMode"
+              valueKey="value"
+              labelKey="label"
+              :items="translationModeOptions"
+              upwards
+            />
+          </div>
+
+          <div v-if="translationMode !== 'OFF'" class="flex min-w-0 flex-col gap-2">
+            <AppFormLabel :text="$t('common.preferences.translation.targetLangs.label')" />
+            <div v-if="targetLangOptions.length" class="flex flex-wrap gap-2">
+              <UButton
+                v-for="lang in targetLangOptions"
+                :key="lang"
+                color="neutral"
+                :variant="translationLanguages.includes(lang) ? 'soft' : 'outline'"
+                size="sm"
+                @click="toggleTargetLang(lang)"
+              >
+                {{ $t(`languages.${lang}`) }}
+              </UButton>
+            </div>
+            <p v-else class="text-xs text-muted">{{ $t('common.preferences.translation.targetLangs.empty') }}</p>
           </div>
         </div>
-        <div class="flex flex-col gap-2">
-          <AppFormLabel :text="$t('common.preferences.aiAuthor.bio.label')" />
-          <AppFormField
-            v-model="bio"
-            :placeholder="$t('common.preferences.aiAuthor.bio.placeholder')"
-            :maxLength="300"
-          />
-        </div>
-        <div class="flex flex-col gap-2">
-          <AppFormLabel :text="$t('common.preferences.aiAuthor.toneOfVoice.label')" />
-          <AppFormField
-            v-model="aiToneOfVoice"
-            type="text"
-            :placeholder="$t('common.preferences.aiAuthor.toneOfVoice.placeholder')"
-          />
-          <div class="flex flex-wrap gap-2 mt-1">
-            <UButton
-              v-for="suggestion in toneSuggestions"
-              :key="suggestion"
-              color="neutral"
-              variant="soft"
-              class="!px-3 !py-1 !min-h-0 !h-auto !text-xs !font-medium !rounded-full transition-colors border"
-              :class="
-                aiToneOfVoice.includes(suggestion)
-                  ? 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60'
-                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700'
-              "
-              @click="toggleToneSuggestion(suggestion)"
-            >
-              {{ suggestion }}
-            </UButton>
-          </div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <AppFormLabel :text="$t('common.preferences.aiAuthor.controversyLevel.label')" />
-          <USelectMenu
-            v-model="aiControversyLevel"
-            valueKey="value"
-            labelKey="label"
-            :items="controversyOptions"
-            upwards
-          />
+
+        <div
+          v-if="translationMode === 'AUTO' || translationMode === 'HYBRID'"
+          class="mt-5 flex items-start gap-3 border-t border-default pt-5 text-muted"
+        >
+          <Icon name="mdi:information-outline" class="mt-0.5 size-4 shrink-0" />
+          <p class="text-xs leading-5">{{ $t('common.preferences.translation.tokenWarning') }}</p>
         </div>
       </div>
-    </div>
-
-    <div
-      class="flex flex-col gap-6 p-8 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40"
-      :class="!aiEnabled && !setupOnly && 'opacity-60 pointer-events-none'"
-    >
-      <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
-        <Icon name="mdi:translate" class="w-6 h-6" />
-        {{ $t('common.preferences.translation.title') }}
-      </h3>
-      <p class="text-xs text-gray-600 dark:text-gray-400 -mt-4">{{ $t('common.preferences.translation.desc') }}</p>
-
-      <div class="flex flex-col gap-2">
-        <AppFormLabel :text="$t('common.preferences.translation.mode.label')" />
-        <USelectMenu
-          v-model="translationMode"
-          valueKey="value"
-          labelKey="label"
-          :items="translationModeOptions"
-          upwards
-        />
-      </div>
-
-      <div v-if="translationMode !== 'OFF'" class="flex flex-col gap-2">
-        <AppFormLabel :text="$t('common.preferences.translation.targetLangs.label')" />
-        <div v-if="targetLangOptions.length" class="flex flex-wrap gap-2">
-          <UButton
-            v-for="lang in targetLangOptions"
-            :key="lang"
-            color="neutral"
-            variant="soft"
-            class="!px-3 !py-1 !min-h-0 !h-auto !text-xs !font-medium !rounded-full transition-colors border"
-            :class="
-              translationLanguages.includes(lang)
-                ? 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300'
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
-            "
-            @click="toggleTargetLang(lang)"
-          >
-            {{ $t(`languages.${lang}`) }}
-          </UButton>
-        </div>
-        <p v-else class="text-xs text-gray-500">{{ $t('common.preferences.translation.targetLangs.empty') }}</p>
-      </div>
-
-      <div
-        v-if="translationMode === 'AUTO' || translationMode === 'HYBRID'"
-        class="flex items-start gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800"
-      >
-        <Icon name="mdi:alert-outline" class="w-5 h-5 mt-0.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-        <p class="text-xs leading-tight text-amber-800 dark:text-amber-200">
-          {{ $t('common.preferences.translation.tokenWarning') }}
-        </p>
-      </div>
-    </div>
+    </section>
 
     <AppConfirmDialog
       v-model:open="showAutoReleaseModal"
@@ -354,6 +348,7 @@ const generationFrequencyOptions = computed(() =>
   (['DAILY', 'WEEKLY'] as const).map((value) => ({
     value,
     label: t(`common.preferences.generationFrequency.options.${value}`),
+    description: t(`common.preferences.generationFrequency.optionDescriptions.${value}`),
   })),
 )
 

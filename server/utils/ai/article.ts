@@ -81,7 +81,10 @@ export const articleSchema = z.object({
   videos: z
     .array(
       z.object({
-        url: z.string().url().max(1000).describe('A real youtube.com or youtu.be URL found in the research brief'),
+        // Responses structured output rejects JSON Schema's `format: uri`. This stays a bounded
+        // string in the model contract; `youtubeEmbedUrl()` performs the authoritative allowlist
+        // validation before anything reaches article HTML.
+        url: z.string().max(1000).describe('A real youtube.com or youtu.be URL found in the research brief'),
         caption: z.string().min(3).max(200).describe('A factual caption in the article language'),
       }),
     )
