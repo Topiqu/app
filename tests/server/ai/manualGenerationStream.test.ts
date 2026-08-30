@@ -26,15 +26,24 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain('clearInterval(heartbeat)')
   })
 
-  it('bounds both the research wait and writer time to first partial', () => {
+  it('bounds research, writer inactivity, and total writing time', () => {
     expect(articleGenerator).toContain('standard: { maxOutputTokens: 1200, timeoutMs: 45_000')
     expect(articleGenerator).toContain('AbortSignal.timeout(researchConfig.timeoutMs)')
     expect(articleGenerator).toContain('abortSignal: researchSignal')
     expect(endpoint).toContain("'MANUAL_GENERATION_RESEARCH_STARTED'")
     expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_WRITER_STARTED'")
-    expect(endpoint).toMatch(
-      /timedOutStage = 'writer_first_partial'[\s\S]*abortController\.abort\(\)[\s\S]*}, 90_000\)/,
-    )
+    expect(endpoint).toContain('30_000 - (now - lastWriterDataAt)')
+    expect(endpoint).toContain('90_000 - (now - writerStartedAt)')
+    expect(endpoint).toContain('const next = await Promise.race([')
+    expect(endpoint).toContain('writerIterator.next()')
+    expect(endpoint).toContain('reject(new Error(timeoutStage))')
+    expect(endpoint).not.toContain('result.partialObjectStream')
+  })
+
+  it('forwards real provider activity without exposing the raw structured output', () => {
+    expect(endpoint).toContain("send(controller, { type: 'activity', phase: 'writing', writingStage })")
+    expect(endpoint).toContain("send(controller, { type: 'partial', object: partial, writingStage })")
+    expect(endpoint).not.toContain('textDelta: part.textDelta')
   })
 
   it('streams truthful phases and passes the selected editorial plan to the generator', () => {

@@ -7,6 +7,7 @@ interface PartialArticle {
 }
 
 export type GenerationPhase = 'research' | 'writing' | 'images'
+export type GenerationWritingStage = 'starting' | 'title' | 'intro' | 'body'
 
 export interface GenerationResearchResult {
   status: 'completed' | 'fallback' | 'skipped'
@@ -18,6 +19,7 @@ interface StreamHandlers {
   onPartial?: (partial: PartialArticle) => void
   onPhase?: (phase: GenerationPhase) => void
   onResearch?: (result: GenerationResearchResult) => void
+  onWritingStage?: (stage: GenerationWritingStage) => void
   onAttempt?: (attemptId: string) => void
   onActivity?: () => void
   onImage?: (image: { slot: number; html: string }) => void
@@ -73,6 +75,7 @@ export const useArticleGeneration = () => {
         const msg = JSON.parse(trimmed)
 
         if (msg.type === 'partial') {
+          if (msg.writingStage) handlers.onWritingStage?.(msg.writingStage)
           const now = Date.now()
           if (now - lastPartialAt >= PARTIAL_THROTTLE_MS) {
             handlers.onPartial?.(msg.object ?? {})
@@ -92,6 +95,9 @@ export const useArticleGeneration = () => {
           if (msg.attemptId) handlers.onAttempt?.(msg.attemptId)
         } else if (msg.type === 'research') {
           handlers.onResearch?.(msg)
+          handlers.onActivity?.()
+        } else if (msg.type === 'activity') {
+          if (msg.writingStage) handlers.onWritingStage?.(msg.writingStage)
           handlers.onActivity?.()
         } else if (msg.type === 'image') handlers.onImage?.({ slot: msg.slot, html: msg.html })
         else if (msg.type === 'final') {

@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-12 pt-6">
+  <div class="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-12 pt-6">
     <div
       role="region"
       data-editor-command-bar
@@ -197,7 +197,7 @@
 
     <div
       class="grid flex-1 items-start gap-8"
-      :class="settingsExpanded ? 'lg:grid-cols-[minmax(0,1fr)_24rem]' : 'lg:grid-cols-[minmax(0,1fr)_3rem]'"
+      :class="settingsExpanded ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : 'lg:grid-cols-[minmax(0,1fr)_3rem]'"
     >
       <div class="min-w-0 flex flex-col gap-6">
         <UFormField :label="$t('common.labels.articleTitle')">
@@ -268,6 +268,7 @@
             :aiLastActivitySeconds="aiLastActivitySeconds"
             :aiWordCount="aiWordCount"
             :aiResearch="aiResearch"
+            :aiWritingStage="aiWritingStage"
             @upload="handleUpload"
             @generate="generateAIContent"
             @stop="stopGeneration"
@@ -347,6 +348,7 @@
           :aiLastActivitySeconds="aiLastActivitySeconds"
           :aiWordCount="aiWordCount"
           :aiResearch="aiResearch"
+          :aiWritingStage="aiWritingStage"
           @upload="handleUpload"
           @generate="generateAIContent"
           @stop="stopGeneration"
@@ -382,7 +384,11 @@ import type { ArticleWithDetails } from '~~/types/article'
 import slugify from 'slugify'
 import { defaultArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
 
-import type { GenerationPhase, GenerationResearchResult } from '~/composables/useArticleGeneration'
+import type {
+  GenerationPhase,
+  GenerationResearchResult,
+  GenerationWritingStage,
+} from '~/composables/useArticleGeneration'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
@@ -429,6 +435,7 @@ const customPrompt = shallowRef('')
 const aiOptions = ref(defaultArticleGenerationOptions())
 const aiPhase = shallowRef<GenerationPhase>('research')
 const aiResearch = shallowRef<GenerationResearchResult | null>(null)
+const aiWritingStage = shallowRef<GenerationWritingStage>('starting')
 const aiStartedAt = shallowRef(0)
 const aiLastActivityAt = shallowRef(0)
 const aiClock = useNow({ interval: 1_000 })
@@ -671,6 +678,7 @@ const generateAIContent = async () => {
   aiGenerating.value = true
   aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
   aiResearch.value = null
+  aiWritingStage.value = 'starting'
   aiStartedAt.value = Date.now()
   aiLastActivityAt.value = aiStartedAt.value
   try {
@@ -682,6 +690,7 @@ const generateAIContent = async () => {
       },
       onPhase: (phase) => (aiPhase.value = phase),
       onResearch: (research) => (aiResearch.value = research),
+      onWritingStage: (stage) => (aiWritingStage.value = stage),
       onActivity: () => (aiLastActivityAt.value = Date.now()),
       onImage: ({ slot, html }) => {
         editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)

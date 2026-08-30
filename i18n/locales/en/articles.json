@@ -411,7 +411,7 @@
         "learnMore": "Learn More",
         "generateButton": "Generate AI Content",
         "stopButton": "Stop",
-        "generating": "Writing…",
+        "generating": "Generating article",
         "neutralAuthor": "Prepare a new article",
         "neutralWorking": "A new article is being prepared",
         "planDescription": "Set the output before starting. You will see exactly what will be used.",
@@ -419,14 +419,16 @@
         "researchLabel": "Verify the topic on the web",
         "researchDescription": "Finds current material and only allows sources that were actually retrieved.",
         "depthLabel": "Research depth",
-        "researchFallback": "If research fails, continue without sources",
+        "researchFallback": "Continue without sources",
         "researchOff": "without research",
         "modulesLabel": "Article components",
         "modulesDescription": "Choose only blocks that give the reader concrete value.",
         "planSummary": "{format} · {research} · {modules} selected modules",
         "done": "Done",
         "elapsed": "Elapsed {seconds}s",
-        "waiting": "No new output for {seconds}s. The request is still running and can be stopped safely.",
+        "waiting": "No new data for {seconds}s. The run will stop automatically after 30s.",
+        "writerIdleError": "Generation stopped because the writer sent no data for 30 seconds.",
+        "writerDeadlineError": "Generation stopped after reaching the 90-second writing limit.",
         "researchSources": "Research complete, sources found: {count}",
         "researchSourceBadge": "Sources: {count}",
         "researchStatus": {
@@ -441,6 +443,20 @@
           "comparison": "Comparison",
           "opinion": "Opinion",
           "story": "Story"
+        },
+        "outputDescription": {
+          "news": "What happened and who it affects.",
+          "analysis": "Context, evidence, and consequences.",
+          "guide": "A practical step-by-step procedure.",
+          "comparison": "Options assessed against the same criteria.",
+          "opinion": "A clear position supported by arguments.",
+          "story": "One case told in context."
+        },
+        "writingStage": {
+          "starting": "Preparing the article structure…",
+          "title": "The headline is ready; preparing the introduction…",
+          "intro": "The introduction is ready; writing the main text…",
+          "body": "The article text is being added progressively…"
         },
         "depth": {
           "quick": "Quick",
@@ -466,7 +482,7 @@
         "topicPlaceholder": "What should the article be about? Add angle, audience or key points…",
         "step": {
           "research": "Research and sources",
-          "writing": "Writing",
+          "writing": "Article text",
           "images": "Media"
         },
         "formats": {

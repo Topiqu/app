@@ -74,8 +74,8 @@ export default defineEventHandler(async (event) => {
   const abortController = new AbortController()
   let textDone = false
   let generation: Awaited<ReturnType<typeof streamArticle>> | undefined
-  let writerFirstPartialTimer: ReturnType<typeof setTimeout> | undefined
-  let timedOutStage: 'writer_first_partial' | null = null
+  let writerWaitTimer: ReturnType<typeof setTimeout> | undefined
+  let timedOutStage: 'writer_idle' | 'writer_deadline' | null = null
 
   const encoder = new TextEncoder()
   let clientAlive = true
@@ -123,17 +123,54 @@ export default defineEventHandler(async (event) => {
         send(controller, { type: 'phase', phase: 'writing' })
         await auditAttempt('MANUAL_GENERATION_WRITER_STARTED', { researchTokens, research })
 
-        writerFirstPartialTimer = setTimeout(() => {
-          timedOutStage = 'writer_first_partial'
-          abortController.abort()
-        }, 90_000)
+        const writerStartedAt = Date.now()
+        let lastWriterDataAt = writerStartedAt
+        let lastActivitySentAt = 0
+        let writingStage: 'starting' | 'title' | 'intro' | 'body' = 'starting'
+        const writerIterator = result.fullStream[Symbol.asyncIterator]()
+        for (;;) {
+          const now = Date.now()
+          const idleRemaining = Math.max(0, 30_000 - (now - lastWriterDataAt))
+          const deadlineRemaining = Math.max(0, 90_000 - (now - writerStartedAt))
+          const timeoutStage = idleRemaining <= deadlineRemaining ? 'writer_idle' : 'writer_deadline'
+          const timeoutMs = Math.min(idleRemaining, deadlineRemaining)
 
-        for await (const partial of result.partialObjectStream) {
-          if (writerFirstPartialTimer) {
-            clearTimeout(writerFirstPartialTimer)
-            writerFirstPartialTimer = undefined
+          // Do not rely on AbortSignal to unblock a provider iterator. The race rejects our own
+          // request on time even if the SDK/provider ignores abort and leaves `next()` pending.
+          const next = await Promise.race([
+            writerIterator.next(),
+            new Promise<never>((_, reject) => {
+              writerWaitTimer = setTimeout(() => {
+                timedOutStage = timeoutStage
+                abortController.abort()
+                reject(new Error(timeoutStage))
+              }, timeoutMs)
+            }),
+          ]).finally(() => {
+            if (writerWaitTimer) clearTimeout(writerWaitTimer)
+            writerWaitTimer = undefined
+          })
+
+          if (next.done) break
+          const part = next.value
+          if (part.type === 'error') throw part.error
+          if (part.type === 'finish') continue
+
+          lastWriterDataAt = Date.now()
+          if (part.type === 'object') {
+            const partial = part.object
+            writingStage = partial.content ? 'body' : partial.perex ? 'intro' : partial.title ? 'title' : writingStage
+            send(controller, { type: 'partial', object: partial, writingStage })
           }
-          send(controller, { type: 'partial', object: partial })
+
+          // Structured output can produce real JSON deltas before enough of a field exists for a
+          // partial object. Forward a throttled activity signal so the UI distinguishes active
+          // generation from a stalled provider without exposing raw JSON or model reasoning.
+          const activityAt = Date.now()
+          if (activityAt - lastActivitySentAt >= 1_000) {
+            send(controller, { type: 'activity', phase: 'writing', writingStage })
+            lastActivitySentAt = activityAt
+          }
         }
         textDone = true
 
@@ -218,20 +255,24 @@ export default defineEventHandler(async (event) => {
           await auditAttempt('MANUAL_GENERATION_FAILED', {
             stage: timedOutStage ?? (generation ? (textDone ? 'finalization' : 'writing') : 'research'),
             error: timedOutStage
-              ? 'Timed out before the writer produced its first partial'
+              ? timedOutStage === 'writer_idle'
+                ? 'Writer produced no data for 30 seconds'
+                : 'Writer exceeded the 90 second generation deadline'
               : error?.message || String(error),
           })
           await reportCaughtError('Article generation stream failed', error, { attemptId, clientSiteId, timedOutStage })
           send(controller, {
             type: 'error',
             message: timedOutStage
-              ? 'AI generation timed out before producing content.'
+              ? timedOutStage === 'writer_idle'
+                ? t('articles.editor.ai.writerIdleError')
+                : t('articles.editor.ai.writerDeadlineError')
               : error?.message || t('articles.editor.aiContentFailed'),
           })
         }
       } finally {
         clearInterval(heartbeat)
-        if (writerFirstPartialTimer) clearTimeout(writerFirstPartialTimer)
+        if (writerWaitTimer) clearTimeout(writerWaitTimer)
         try {
           controller.close()
         } catch {
