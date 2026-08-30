@@ -58,6 +58,8 @@ export default defineEventHandler(async (event) => {
   const abortController = new AbortController()
   let textDone = false
   let generation: Awaited<ReturnType<typeof streamArticle>> | undefined
+  let writerFirstPartialTimer: ReturnType<typeof setTimeout> | undefined
+  let timedOutStage: 'writer_first_partial' | null = null
 
   const encoder = new TextEncoder()
   let clientAlive = true
@@ -79,13 +81,24 @@ export default defineEventHandler(async (event) => {
 
       try {
         send(controller, { type: 'phase', phase: 'writing' })
+        await auditAttempt('MANUAL_GENERATION_RESEARCH_STARTED')
 
         // Research used to run before the Response existed. A slow web-search call therefore left
         // the origin completely silent and Bun could kill the request before streaming began.
         generation = await streamArticle(clientSiteId, prompt, abortController.signal)
         const { result, finalize, researchTokens } = generation
+        await auditAttempt('MANUAL_GENERATION_WRITER_STARTED', { researchTokens })
+
+        writerFirstPartialTimer = setTimeout(() => {
+          timedOutStage = 'writer_first_partial'
+          abortController.abort()
+        }, 90_000)
 
         for await (const partial of result.partialObjectStream) {
+          if (writerFirstPartialTimer) {
+            clearTimeout(writerFirstPartialTimer)
+            writerFirstPartialTimer = undefined
+          }
           send(controller, { type: 'partial', object: partial })
         }
         textDone = true
@@ -133,7 +146,7 @@ export default defineEventHandler(async (event) => {
           user.id,
         )
       } catch (error: any) {
-        if (abortController.signal.aborted) {
+        if (abortController.signal.aborted && !timedOutStage) {
           // Stopped mid-generation: bill best-effort for the partial usage we actually spent.
           // Research is included because it completes before the first token streams, so Stop
           // never gets it back.
@@ -169,14 +182,20 @@ export default defineEventHandler(async (event) => {
           // `error` hook and Sentry never sees a caught throw — without this the author got a
           // generic toast and production had no record at all.
           await auditAttempt('MANUAL_GENERATION_FAILED', {
-            stage: generation ? (textDone ? 'finalization' : 'writing') : 'initialization',
-            error: error?.message || String(error),
+            stage: timedOutStage ?? (generation ? (textDone ? 'finalization' : 'writing') : 'research'),
+            error: timedOutStage ? 'Timed out before the writer produced its first partial' : error?.message || String(error),
           })
-          await reportCaughtError('Article generation stream failed', error, { attemptId, clientSiteId })
-          send(controller, { type: 'error', message: error?.message || t('articles.editor.aiContentFailed') })
+          await reportCaughtError('Article generation stream failed', error, { attemptId, clientSiteId, timedOutStage })
+          send(controller, {
+            type: 'error',
+            message: timedOutStage
+              ? 'AI generation timed out before producing content.'
+              : error?.message || t('articles.editor.aiContentFailed'),
+          })
         }
       } finally {
         clearInterval(heartbeat)
+        if (writerFirstPartialTimer) clearTimeout(writerFirstPartialTimer)
         try {
           controller.close()
         } catch {
