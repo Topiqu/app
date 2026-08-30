@@ -1,6 +1,6 @@
 import type { Language } from '@prisma/client'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
-import type { ResearchDepth } from '~~/shared/utils/articleGeneration'
+import type { ArticleMediaProgress, ResearchDepth } from '~~/shared/utils/articleGeneration'
 
 import { z } from 'zod'
 import { generateObject, generateText, streamObject } from 'ai'
@@ -123,6 +123,7 @@ const researchTopic = async (
   abortSignal?: AbortSignal,
 ) => {
   const researchConfig = RESEARCH_CONFIG[depth]
+  const currentDateTime = new Date().toISOString()
   const researchSignal = abortSignal
     ? AbortSignal.any([abortSignal, AbortSignal.timeout(researchConfig.timeoutMs)])
     : AbortSignal.timeout(researchConfig.timeoutMs)
@@ -132,8 +133,11 @@ const researchTopic = async (
       model: aiModel('articleResearch'),
       instructions: `
         You are a research assistant preparing grounding material for another writer.
+        The current date and time is ${currentDateTime}. Treat it as authoritative.
         Search the live web for the user's topic.
-        Return a compact brief: 5-10 verified facts, each on its own line.
+        Prefer primary, official and recently updated sources. For news, search explicitly for the latest development.
+        If a source announces something for a date before ${currentDateTime}, verify what actually happened after that date. Never describe an already elapsed announcement as upcoming.
+        Return a compact brief: 5-10 verified facts, each on its own line, including the supporting URL and relevant event or publication date on that same line.
         Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
         Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
         Do not write an article, an intro, or any prose beyond the facts.
@@ -269,9 +273,11 @@ const buildArticleConfig = async (
   const pollsAllowed = selectedModules ? selectedModules.includes('poll') : true
   const tablesAllowed = selectedModules ? selectedModules.includes('table') : true
   const videosAllowed = selectedModules ? selectedModules.includes('youtube') : true
+  const currentDateTime = new Date().toISOString()
 
   const instructions = `
       You are a professional content writer focusing on ${focus || 'common topics'}.
+      The current date and time is ${currentDateTime}. This is authoritative and more important than dates implied by the user prompt or older sources.
       Write a detailed, well-structured article based on the user prompt aiming on ${audience || 'wide audience'}.
       Use appropriate headings, subheadings, and formatting.
       ${aiToneOfVoice ? `Write in the following tone of voice: ${aiToneOfVoice}.` : ''}
@@ -293,6 +299,8 @@ const buildArticleConfig = async (
       }.
       The title must be engaging.
       Start the body at h2 — the page already renders the title as its h1.
+      Before writing, compare every time-sensitive claim in the research brief with ${currentDateTime}. Never call a past date upcoming, future or scheduled. If the brief does not establish what happened after an elapsed announced date, omit the claim instead of repeating the outdated announcement.
+      Never claim that pre-orders, products, trailers, events or bonuses are available unless the research brief explicitly confirms their current availability as of ${currentDateTime}.
 
       ${formatRules(format, variant, modules)}
 
@@ -357,6 +365,11 @@ const buildArticleConfig = async (
 }
 
 type FinalizeImage = { slot: number; html: string }
+type FinalizeCallbacks = {
+  onImage?: (image: FinalizeImage) => void
+  onMedia?: (progress: ArticleMediaProgress) => void
+  abortSignal?: AbortSignal
+}
 
 /** Falls back to English wording rather than dropping the disclosure when a key is missing. */
 const captionLabels = async (language: Language): Promise<CaptionLabels> => {
@@ -372,8 +385,9 @@ const captionLabels = async (language: Language): Promise<CaptionLabels> => {
 export const finalizeArticle = async (
   object: ArticleObject,
   language: Language = 'en',
-  onImage?: (image: FinalizeImage) => void,
+  callbacks: FinalizeCallbacks = {},
 ) => {
+  const { onImage, onMedia, abortSignal } = callbacks
   const generateImageOptions = {
     outputDir: 'article-images',
     filenamePrefix: 'article',
@@ -385,7 +399,7 @@ export const finalizeArticle = async (
   // downstream throws, so this is the only place the cause exists.
   const tryGenerateImage = async (prompt: string, opts?: { filenameSuffix?: string }) => {
     try {
-      const { url, width, height } = await generateImage(prompt, { ...generateImageOptions, ...opts })
+      const { url, width, height } = await generateImage(prompt, { ...generateImageOptions, ...opts, abortSignal })
       return { url, width, height }
     } catch (error) {
       await reportCaughtError('Article image generation failed', error, { prompt })
@@ -395,6 +409,10 @@ export const finalizeArticle = async (
 
   let articleImageUrl = ''
   let articleImageCredit: CoverCredit | null = null
+  const mediaTotal = 1 + object.images.length
+  let mediaCompleted = 0
+  let mediaFound = 0
+  onMedia?.({ stage: 'cover', completed: mediaCompleted, total: mediaTotal, found: mediaFound })
   if (object.coverImage) {
     const hit = object.coverImage.type === 'generate' ? null : await findCoverImage(object.coverImage.query)
     const generated = hit ? null : await tryGenerateImage(object.coverImage.query)
@@ -408,6 +426,14 @@ export const finalizeArticle = async (
     articleImageUrl = (await tryGenerateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024)))?.url ?? ''
     if (articleImageUrl) articleImageCredit = { kind: 'ai' }
   }
+  mediaCompleted += 1
+  if (articleImageUrl) mediaFound += 1
+  onMedia?.({
+    stage: object.images.length ? 'content' : 'complete',
+    completed: mediaCompleted,
+    total: mediaTotal,
+    found: mediaFound,
+  })
 
   const labels = await captionLabels(language)
 
@@ -428,17 +454,25 @@ export const finalizeArticle = async (
 
   const settledImages = await Promise.all(
     object.images.map(async (img, idx) => {
-      const resolved = await resolveImage(img, idx)
-      if (!resolved) return null
+      const resolved = await resolveImage(img, idx).finally(() => {
+        mediaCompleted += 1
+      })
+      if (!resolved) {
+        onMedia?.({ stage: 'content', completed: mediaCompleted, total: mediaTotal, found: mediaFound })
+        return null
+      }
 
       const image = { slot: idx + 1, html: buildImageHtml(resolved, img.caption, labels) }
+      mediaFound += 1
       onImage?.(image)
+      onMedia?.({ stage: 'content', completed: mediaCompleted, total: mediaTotal, found: mediaFound })
 
       return image
     }),
   )
 
   const generatedImages = settledImages.filter((image) => image !== null)
+  onMedia?.({ stage: 'complete', completed: mediaTotal, total: mediaTotal, found: mediaFound })
 
   // Before the slots are filled: the image attribution carries a deliberate mid-paragraph `<br>`
   // that this pass must not see as padding.
@@ -508,8 +542,8 @@ export const streamArticle = async (
 
   // The caption labels follow the site's language, which only this side knows — so the endpoint
   // keeps handing over just the object and its image callback.
-  const finalize = (object: ArticleObject, onImage?: (image: FinalizeImage) => void) =>
-    finalizeArticle(applyFormat(object, opts.format, opts.modules), language, onImage)
+  const finalize = (object: ArticleObject, callbacks?: FinalizeCallbacks) =>
+    finalizeArticle(applyFormat(object, opts.format, opts.modules), language, callbacks)
 
   return { result, finalize, researchTokens, research }
 }

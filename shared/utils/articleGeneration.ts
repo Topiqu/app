@@ -16,6 +16,13 @@ export const ARTICLE_GENERATION_ALLOWED_MODULES: Record<ArticleGenerationFormat,
 export const RESEARCH_DEPTHS = ['quick', 'standard', 'deep'] as const
 export type ResearchDepth = (typeof RESEARCH_DEPTHS)[number]
 
+export interface ArticleMediaProgress {
+  stage: 'cover' | 'content' | 'complete'
+  completed: number
+  total: number
+  found: number
+}
+
 export interface ArticleGenerationOptions {
   format: ArticleGenerationFormat
   modules: ArticleGenerationModule[]

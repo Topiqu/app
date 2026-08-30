@@ -268,6 +268,7 @@
             :aiLastActivitySeconds="aiLastActivitySeconds"
             :aiWordCount="aiWordCount"
             :aiResearch="aiResearch"
+            :aiMedia="aiMedia"
             :aiWritingStage="aiWritingStage"
             @upload="handleUpload"
             @generate="generateAIContent"
@@ -348,6 +349,7 @@
           :aiLastActivitySeconds="aiLastActivitySeconds"
           :aiWordCount="aiWordCount"
           :aiResearch="aiResearch"
+          :aiMedia="aiMedia"
           :aiWritingStage="aiWritingStage"
           @upload="handleUpload"
           @generate="generateAIContent"
@@ -382,7 +384,7 @@
 import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
-import { defaultArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
+import { defaultArticleGenerationOptions, type ArticleMediaProgress } from '~~/shared/utils/articleGeneration'
 
 import type {
   GenerationPhase,
@@ -435,6 +437,7 @@ const customPrompt = shallowRef('')
 const aiOptions = ref(defaultArticleGenerationOptions())
 const aiPhase = shallowRef<GenerationPhase>('research')
 const aiResearch = shallowRef<GenerationResearchResult | null>(null)
+const aiMedia = shallowRef<ArticleMediaProgress | null>(null)
 const aiWritingStage = shallowRef<GenerationWritingStage>('starting')
 const aiStartedAt = shallowRef(0)
 const aiLastActivityAt = shallowRef(0)
@@ -678,6 +681,7 @@ const generateAIContent = async () => {
   aiGenerating.value = true
   aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
   aiResearch.value = null
+  aiMedia.value = null
   aiWritingStage.value = 'starting'
   aiStartedAt.value = Date.now()
   aiLastActivityAt.value = aiStartedAt.value
@@ -690,6 +694,7 @@ const generateAIContent = async () => {
       },
       onPhase: (phase) => (aiPhase.value = phase),
       onResearch: (research) => (aiResearch.value = research),
+      onMedia: (media) => (aiMedia.value = media),
       onWritingStage: (stage) => (aiWritingStage.value = stage),
       onActivity: () => (aiLastActivityAt.value = Date.now()),
       onImage: ({ slot, html }) => {
@@ -701,7 +706,18 @@ const generateAIContent = async () => {
           excerpt: article.perex,
           content: article.content,
           imageUrl: article.articleImageUrl,
+          imageCredit: article.articleImageCredit ?? null,
+          sources: article.sources ?? [],
+          answer: article.answer || null,
+          keyTakeaways: article.keyTakeaways ?? [],
+          faq: article.faq ?? [],
+          format: aiOptions.value.format,
+          aiInvolvement: 'FULL',
+          totalWords: article.metrics?.totalWords ?? 0,
+          savedAmount: article.metrics?.savedAmount ?? 0,
+          savedTimeMinutes: article.metrics?.savedTimeMinutes ?? 0,
         })
+        articleTags.value = Array.isArray(article.tags) ? article.tags : []
       },
     })
     if (outcome === 'aborted') toast.add({ color: 'info', title: t('articles.editor.ai.aiContentStopped') })

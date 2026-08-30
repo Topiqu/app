@@ -163,7 +163,7 @@
                 </UButton>
               </div>
               <p v-if="aiLastActivitySeconds >= 20" class="mt-2 text-xs leading-5 text-warning">
-                {{ $t('articles.editor.ai.waiting', { seconds: aiLastActivitySeconds }) }}
+                {{ waitingMessage }}
               </p>
             </div>
           </div>
@@ -246,6 +246,7 @@ import {
   ARTICLE_GENERATION_MODULES,
   ARTICLE_GENERATION_ALLOWED_MODULES,
   RESEARCH_DEPTHS,
+  type ArticleMediaProgress,
   type ArticleGenerationFormat,
   type ArticleGenerationOptions,
 } from '~~/shared/utils/articleGeneration'
@@ -267,6 +268,7 @@ const props = defineProps<{
   aiLastActivitySeconds: number
   aiWordCount: number
   aiResearch?: GenerationResearchResult | null
+  aiMedia?: ArticleMediaProgress | null
   aiWritingStage: GenerationWritingStage
 }>()
 
@@ -315,7 +317,23 @@ const phaseDetail = computed(() => {
     return props.aiWordCount > 0
       ? t('articles.editor.ai.wordsWritten', { count: props.aiWordCount })
       : t(`articles.editor.ai.writingStage.${props.aiWritingStage}`)
+  if (props.aiPhase === 'images' && props.aiMedia) {
+    if (props.aiMedia.stage === 'cover') return t('articles.editor.ai.mediaCover')
+    if (props.aiMedia.stage === 'complete')
+      return t('articles.editor.ai.mediaComplete', { count: props.aiMedia.found })
+    return t('articles.editor.ai.mediaProgress', {
+      completed: props.aiMedia.completed,
+      total: props.aiMedia.total,
+      found: props.aiMedia.found,
+    })
+  }
   return t(`articles.editor.ai.phase${props.aiPhase[0]!.toUpperCase()}${props.aiPhase.slice(1)}`)
+})
+const waitingMessage = computed(() => {
+  if (props.aiPhase === 'writing')
+    return t('articles.editor.ai.waitingWriting', { seconds: props.aiLastActivitySeconds })
+  if (props.aiPhase === 'images') return t('articles.editor.ai.waitingImages')
+  return t('articles.editor.ai.waitingResearch')
 })
 const phaseDoneLabel = (phase: GenerationPhase) => {
   if (phase !== 'research' || !props.aiResearch) return t('articles.editor.ai.done')

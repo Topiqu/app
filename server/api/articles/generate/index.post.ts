@@ -182,7 +182,11 @@ export default defineEventHandler(async (event) => {
         // Finalization is the only step that fills `[[IMAGEn]]`/`[[POLLn]]`, so its failure used to
         // reach the author as an article full of raw markers. It is best-effort now: the text is
         // written and already billable, and one dead image call must not cost the whole draft.
-        const finalized = await finalize(object, (image) => send(controller, { type: 'image', ...image })).catch(
+        const finalized = await finalize(object, {
+          abortSignal: abortController.signal,
+          onImage: (image) => send(controller, { type: 'image', ...image }),
+          onMedia: (media) => send(controller, { type: 'media', ...media }),
+        }).catch(
           async (error) => {
             await reportCaughtError('Article finalization failed', error, { clientSiteId })
             return {
@@ -281,7 +285,7 @@ export default defineEventHandler(async (event) => {
       }
     },
     async cancel(reason) {
-      if (!textDone) abortController.abort()
+      abortController.abort()
       await auditAttempt('MANUAL_GENERATION_CANCELLED', {
         stage: generation ? (textDone ? 'finalization' : 'writing') : 'initialization',
         reason: reason instanceof Error ? reason.message : typeof reason === 'string' ? reason : null,

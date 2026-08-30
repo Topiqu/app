@@ -55,6 +55,20 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain('fallbackWithoutResearch: options?.research.fallbackWithoutResearch')
     expect(endpoint).toContain('format: options?.format')
     expect(endpoint).toContain('modules: options?.modules')
+    expect(endpoint).toContain("onMedia: (media) => send(controller, { type: 'media', ...media })")
+  })
+
+  it('keeps media finalization observable and cancellable', () => {
+    expect(endpoint).toContain('abortSignal: abortController.signal')
+    expect(endpoint).toMatch(/async cancel\([^)]*\)\s*{\s*abortController\.abort\(\)/)
+    expect(articleGenerator).toContain("onMedia?.({ stage: 'cover'")
+    expect(articleGenerator).toContain("stage: 'complete'")
+  })
+
+  it('grounds time-sensitive claims against the actual generation date', () => {
+    expect(articleGenerator).toContain('The current date and time is ${currentDateTime}. Treat it as authoritative.')
+    expect(articleGenerator).toContain('Never describe an already elapsed announcement as upcoming.')
+    expect(articleGenerator).toContain('Never call a past date upcoming, future or scheduled.')
   })
 
   it('records the complete manual generation lifecycle with a correlation id', () => {

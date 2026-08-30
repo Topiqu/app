@@ -18,14 +18,20 @@ export const generateImage = async (
     outputDir?: string
     filenamePrefix?: string
     filenameSuffix?: string
+    abortSignal?: AbortSignal
   } = {},
 ) => {
-  const { outputDir = 'article-images', filenamePrefix = 'article', filenameSuffix } = opts
+  const { outputDir = 'article-images', filenamePrefix = 'article', filenameSuffix, abortSignal } = opts
+
+  const imageSignal = abortSignal
+    ? AbortSignal.any([abortSignal, AbortSignal.timeout(45_000)])
+    : AbortSignal.timeout(45_000)
 
   const output = await generateImg({
     model: aiImageModel('articleImage'),
     prompt: prompt.trim().slice(0, 1024),
     providerOptions: { openai: { quality: 'medium' } },
+    abortSignal: imageSignal,
   })
 
   const optimized = await optimizeGeneratedImage(output.image.uint8Array)

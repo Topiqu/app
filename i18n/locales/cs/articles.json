@@ -426,7 +426,9 @@
         "planSummary": "{format} · {research} · {modules} vybraných modulů",
         "done": "Hotovo",
         "elapsed": "Uplynulo {seconds} s",
-        "waiting": "Bez nových dat {seconds} s. Po 30 s se běh automaticky zastaví.",
+        "waitingWriting": "Autor {seconds} s neposlal další část textu. Psaní se automaticky zastaví po 30 s bez dat.",
+        "waitingResearch": "Ověřování zdrojů trvá déle než obvykle. Běh je stále aktivní a lze jej bezpečně zastavit.",
+        "waitingImages": "Příprava obrázku může trvat až 45 s. Pokud jej služba nedodá, článek se dokončí bez něj.",
         "writerIdleError": "Generování bylo zastaveno: autor 30 sekund neposlal žádná data.",
         "writerDeadlineError": "Generování bylo zastaveno po dosažení 90sekundového limitu psaní.",
         "researchSources": "Výzkum dokončen, nalezeno zdrojů: {count}",
@@ -473,7 +475,10 @@
         },
         "phaseResearch": "Ověřují se fakta a hledají zdroje…",
         "phaseWriting": "Píšu…",
-        "phaseImages": "Doplňují se vhodná média…",
+        "phaseImages": "Připravují se obrázky a vložený obsah…",
+        "mediaCover": "Připravuje se úvodní obrázek…",
+        "mediaProgress": "Připravují se obrázky v článku ({completed} z {total}); nalezeno {found}.",
+        "mediaComplete": "Obrázky jsou připravené. Použito: {count}.",
         "aiContentStopped": "Generování zastaveno",
         "enhance": "Vylepšit zadání",
         "enhanceUndo": "Vrátit původní",
@@ -483,7 +488,7 @@
         "step": {
           "research": "Výzkum a zdroje",
           "writing": "Text článku",
-          "images": "Média"
+          "images": "Obrázky a vložený obsah"
         },
         "formats": {
           "howto": {
