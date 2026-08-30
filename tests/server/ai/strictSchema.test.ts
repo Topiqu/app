@@ -12,6 +12,7 @@ type JsonSchemaNode = {
   properties?: Record<string, JsonSchemaNode>
   required?: string[]
   additionalProperties?: boolean
+  format?: string
   items?: JsonSchemaNode
   anyOf?: JsonSchemaNode[]
   oneOf?: JsonSchemaNode[]
@@ -39,6 +40,14 @@ const collectStrictViolations = (node: JsonSchemaNode, path = '(root)', out: str
   return out
 }
 
+const collectFormats = (node: JsonSchemaNode, out: string[] = []) => {
+  if (node.format) out.push(node.format)
+  Object.values(node.properties ?? {}).forEach((child) => collectFormats(child, out))
+  if (node.items) collectFormats(node.items, out)
+  for (const key of ['anyOf', 'oneOf', 'allOf'] as const) node[key]?.forEach((branch) => collectFormats(branch, out))
+  return out
+}
+
 describe('OpenAI strict structured-output compatibility', () => {
   it.each([
     ['articleSchema', articleSchema],
@@ -57,5 +66,11 @@ describe('OpenAI strict structured-output compatibility', () => {
     )
 
     expect(violations).toEqual(['(root): not in "required" — b'])
+  })
+
+  it('does not emit unsupported string formats in the article response schema', () => {
+    const jsonSchema = zodSchema(articleSchema).jsonSchema as JsonSchemaNode
+
+    expect(collectFormats(jsonSchema)).toEqual([])
   })
 })
