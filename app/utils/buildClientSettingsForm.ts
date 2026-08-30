@@ -43,6 +43,7 @@ export interface ClientSettingsForm {
   gamNetworkCode: string
   apiKey: string
   autoRelease: boolean
+  generationFrequency: 'DAILY' | 'WEEKLY' | 'NONE'
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
   discloseAiContent: boolean
@@ -72,6 +73,7 @@ const emptyForm = (): ClientSettingsForm => ({
   gamNetworkCode: '',
   apiKey: '',
   autoRelease: false,
+  generationFrequency: 'NONE',
   translationMode: 'OFF',
   translationLanguages: [],
   discloseAiContent: false,
@@ -121,6 +123,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     gtagId: client.gtagId ?? '',
     gamNetworkCode: client.gamNetworkCode ?? '',
     autoRelease: client.autoRelease ?? false,
+    generationFrequency: client.generationFrequency ?? 'NONE',
     translationMode: client.translationMode ?? 'OFF',
     translationLanguages: client.translationLanguages ?? [],
     discloseAiContent: client.discloseAiContent ?? false,

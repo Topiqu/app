@@ -32,4 +32,11 @@ describe('generate-article cron row', () => {
     expect(task).toMatch(/recentStructures/)
     expect(task).toMatch(/excerpt:\s*true,[\s\S]*format:\s*true,[\s\S]*structureVariant:\s*true/)
   })
+
+  it('reports active cron features whose stored frequency still disables scheduling', () => {
+    expect(task).toContain("activeFeatureFilter('ARTICLE_CRONS')")
+    expect(task).toContain("'frequency_disabled'")
+    expect(task).toContain("action: 'CRON_ARTICLE_SKIPPED'")
+    expect(task).toContain("if (site.reason === 'not_due') continue")
+  })
 })
