@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 const endpoint = readFileSync(resolve(process.cwd(), 'server/api/articles/generate/index.post.ts'), 'utf8')
+const articleGenerator = readFileSync(resolve(process.cwd(), 'server/utils/ai/article.ts'), 'utf8')
 
 describe('manual article generation stream', () => {
   it('leaves transport close events alone and aborts only when the stream reader cancels', () => {
@@ -23,6 +24,15 @@ describe('manual article generation stream', () => {
     )
     expect(endpoint).toMatch(/setInterval\(\(\) => send\(controller, { type: 'heartbeat' }\), 5_000\)/)
     expect(endpoint).toContain('clearInterval(heartbeat)')
+  })
+
+  it('bounds both the research wait and writer time to first partial', () => {
+    expect(articleGenerator).toContain('const RESEARCH_TIMEOUT_MS = 45_000')
+    expect(articleGenerator).toContain('AbortSignal.timeout(RESEARCH_TIMEOUT_MS)')
+    expect(articleGenerator).toContain('abortSignal: researchSignal')
+    expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_RESEARCH_STARTED'")
+    expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_WRITER_STARTED'")
+    expect(endpoint).toMatch(/timedOutStage = 'writer_first_partial'[\s\S]*abortController\.abort\(\)[\s\S]*}, 90_000\)/)
   })
 
   it('records the complete manual generation lifecycle with a correlation id', () => {

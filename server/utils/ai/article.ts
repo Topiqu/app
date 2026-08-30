@@ -1,6 +1,5 @@
 import type { Language } from '@prisma/client'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
-import type { ArticleModule, ArticleStructureVariant } from './formats'
 
 import { z } from 'zod'
 import { generateObject, generateText, streamObject } from 'ai'
@@ -8,10 +7,17 @@ import { stripUntrustedIframes, youtubeEmbedUrl } from '~~/shared/utils/youtube'
 
 import type { ArticleImage } from '../images/types'
 
+import { escapeHtml } from '../sanitize'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { allowsGeneratedFallback, findCoverImage, findStockImage } from '../images/chain'
-import { escapeHtml } from '../sanitize'
-import { applyFormat, formatRules, selectedModulesFor, type ArticleFormat } from './formats'
+import {
+  applyFormat,
+  formatRules,
+  selectedModulesFor,
+  type ArticleFormat,
+  type ArticleModule,
+  type ArticleStructureVariant,
+} from './formats'
 
 const imageInstruction = z.object({
   type: z
@@ -95,11 +101,16 @@ type ArticleObject = (typeof articleSchema)['_output']
 /** The brief's own output ceiling. Web search bills input and search context on top of it, so this
  *  is a headroom guard for the balance check, never the real cost — that comes back as `usage`. */
 const RESEARCH_TOKENS = 1200
+const RESEARCH_TIMEOUT_MS = 45_000
 
 /** Minimum balance to start an article at all, before research is considered. */
 const ARTICLE_TOKEN_FLOOR = 1500
 
-const researchTopic = async (prompt: string) => {
+const researchTopic = async (prompt: string, abortSignal?: AbortSignal) => {
+  const researchSignal = abortSignal
+    ? AbortSignal.any([abortSignal, AbortSignal.timeout(RESEARCH_TIMEOUT_MS)])
+    : AbortSignal.timeout(RESEARCH_TIMEOUT_MS)
+
   try {
     const { text, usage } = await generateText({
       model: aiModel('articleResearch'),
@@ -114,13 +125,20 @@ const researchTopic = async (prompt: string) => {
       prompt,
       maxOutputTokens: RESEARCH_TOKENS,
       tools: { web_search: aiWebSearchTool() as never },
+      abortSignal: researchSignal,
     })
 
     return { brief: text.trim() || null, tokens: usage?.totalTokens ?? 0 }
   } catch (error) {
+    // Stop means stop. Only the research-specific timeout degrades to an ungrounded article.
+    if (abortSignal?.aborted) throw error
+
     // Degrading to ungrounded is the whole point of the catch, but it is also indistinguishable
     // from "the plan has no research" once the article lands with an empty `sources` array.
-    await reportCaughtError('Article research failed, continuing ungrounded', error, { prompt })
+    await reportCaughtError('Article research failed, continuing ungrounded', error, {
+      promptLength: prompt.length,
+      timeoutMs: RESEARCH_TIMEOUT_MS,
+    })
 
     return { brief: null, tokens: 0 }
   }
@@ -141,11 +159,13 @@ const buildArticleConfig = async (
     format,
     variant,
     modules,
+    abortSignal,
   }: {
     research?: ResearchOption
     format?: ArticleFormat
     variant?: ArticleStructureVariant | null
     modules?: readonly ArticleModule[]
+    abortSignal?: AbortSignal
   } = {},
 ) => {
   const {
@@ -205,7 +225,7 @@ const buildArticleConfig = async (
   const searchOn = tokenRemaining >= ARTICLE_TOKEN_FLOOR + RESEARCH_TOKENS
   const researchQuery = researchOption === undefined ? prompt : researchOption ? researchOption.query : null
   const { brief, tokens: researchTokens } =
-    searchOn && researchQuery ? await researchTopic(researchQuery) : { brief: null, tokens: 0 }
+    searchOn && researchQuery ? await researchTopic(researchQuery, abortSignal) : { brief: null, tokens: 0 }
 
   const researchPrompt = brief
     ? `\nResearch brief (gathered from live web search — this is your only factual grounding):\n${brief}\nEvery entry in "sources" MUST be a URL that appears verbatim in this brief. If the brief lists no URLs, return an empty sources array. Never invent or reconstruct a source URL.`
@@ -441,7 +461,7 @@ export const generateArticle = async (
 }
 
 export const streamArticle = async (clientSiteId: string, prompt: string, abortSignal?: AbortSignal) => {
-  const { config, language, researchTokens } = await buildArticleConfig(clientSiteId, prompt)
+  const { config, language, researchTokens } = await buildArticleConfig(clientSiteId, prompt, { abortSignal })
   const result = streamObject({ ...config, abortSignal })
 
   // The caption labels follow the site's language, which only this side knows — so the endpoint
