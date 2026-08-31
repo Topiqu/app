@@ -1,3 +1,5 @@
+import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -14,6 +16,21 @@ import {
   toDateTimeLocal,
   wrapIndex,
 } from '../../shared/utils/articleEditor'
+
+const editorSource = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
+const previewSource = readFileSync(resolve(process.cwd(), 'app/components/Article/Editor/Preview.vue'), 'utf8')
+
+describe('generated article modules', () => {
+  it('renders extraction fields in both the editor canvas and its preview', () => {
+    expect(editorSource).toContain(':answer="editedArticle.answer"')
+    expect(editorSource).toContain(':takeaways="editedArticle.keyTakeaways ?? []"')
+    expect(editorSource).toContain(':entries="readFaq(editedArticle.faq)"')
+    expect(previewSource).toContain('<ArticleSummary :answer="answer" :takeaways="takeaways" />')
+    expect(previewSource).toContain('<ArticleFaq :entries="readFaq(faq)" />')
+    expect(editorSource).toContain("aiOptions.value.modules.includes('images')")
+    expect(editorSource).toContain("t('articles.editor.aiImagesUnavailable')")
+  })
+})
 
 describe('canManageArticle', () => {
   const article = { clientSiteId: 'site-1' }

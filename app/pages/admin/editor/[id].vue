@@ -218,8 +218,12 @@
           />
         </UFormField>
 
+        <ArticleSummary :answer="editedArticle.answer" :takeaways="editedArticle.keyTakeaways ?? []" />
+
         <div class="mt-4 min-w-0 max-w-full">
           <TiptapEditor v-model="bodyModel" :edit="bodyEditable" class="min-h-[500px]" />
+
+          <ArticleFaq :entries="readFaq(editedArticle.faq)" />
 
           <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
             <UButton size="sm" icon="i-mdi-file-document-outline" @click="draftsOpen = true">
@@ -268,6 +272,7 @@
             :aiLastActivitySeconds="aiLastActivitySeconds"
             :aiWordCount="aiWordCount"
             :aiResearch="aiResearch"
+            :aiMedia="aiMedia"
             :aiWritingStage="aiWritingStage"
             @upload="handleUpload"
             @generate="generateAIContent"
@@ -320,6 +325,9 @@
           :articleId="editedArticle.id"
           :title="titleModel"
           :excerpt="excerptModel"
+          :answer="editedArticle.answer"
+          :takeaways="editedArticle.keyTakeaways ?? []"
+          :faq="editedArticle.faq"
           :content="bodyModel"
           :imageUrl="editedArticle.imageUrl"
           :tags="articleTags"
@@ -348,6 +356,7 @@
           :aiLastActivitySeconds="aiLastActivitySeconds"
           :aiWordCount="aiWordCount"
           :aiResearch="aiResearch"
+          :aiMedia="aiMedia"
           :aiWritingStage="aiWritingStage"
           @upload="handleUpload"
           @generate="generateAIContent"
@@ -382,7 +391,8 @@
 import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
-import { defaultArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
+import { readFaq } from '~~/shared/utils/articleFaq'
+import { defaultArticleGenerationOptions, type ArticleMediaProgress } from '~~/shared/utils/articleGeneration'
 
 import type {
   GenerationPhase,
@@ -422,6 +432,9 @@ const init = (): ArticleWithDetails =>
     status: 'draft',
     releaseAt: null,
     sources: [],
+    answer: null,
+    keyTakeaways: [],
+    faq: [],
     savedAmount: 0,
     savedTimeMinutes: 0,
     aiInvolvement: 'NONE',
@@ -435,6 +448,7 @@ const customPrompt = shallowRef('')
 const aiOptions = ref(defaultArticleGenerationOptions())
 const aiPhase = shallowRef<GenerationPhase>('research')
 const aiResearch = shallowRef<GenerationResearchResult | null>(null)
+const aiMedia = shallowRef<ArticleMediaProgress | null>(null)
 const aiWritingStage = shallowRef<GenerationWritingStage>('starting')
 const aiStartedAt = shallowRef(0)
 const aiLastActivityAt = shallowRef(0)
@@ -675,9 +689,11 @@ const handleUpload = (file: { url: string; optimizedUrl: string }) => {
 }
 
 const generateAIContent = async () => {
+  let selectedImagesMissing = false
   aiGenerating.value = true
   aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
   aiResearch.value = null
+  aiMedia.value = null
   aiWritingStage.value = 'starting'
   aiStartedAt.value = Date.now()
   aiLastActivityAt.value = aiStartedAt.value
@@ -690,21 +706,35 @@ const generateAIContent = async () => {
       },
       onPhase: (phase) => (aiPhase.value = phase),
       onResearch: (research) => (aiResearch.value = research),
+      onMedia: (media) => (aiMedia.value = media),
       onWritingStage: (stage) => (aiWritingStage.value = stage),
       onActivity: () => (aiLastActivityAt.value = Date.now()),
       onImage: ({ slot, html }) => {
         editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
       },
       onFinal: (article) => {
+        selectedImagesMissing = aiOptions.value.modules.includes('images') && !/<img\b/i.test(article.content ?? '')
         Object.assign(editedArticle.value, {
           title: article.title,
           excerpt: article.perex,
           content: article.content,
           imageUrl: article.articleImageUrl,
+          imageCredit: article.articleImageCredit ?? null,
+          sources: article.sources ?? [],
+          answer: article.answer || null,
+          keyTakeaways: article.keyTakeaways ?? [],
+          faq: article.faq ?? [],
+          format: aiOptions.value.format,
+          aiInvolvement: 'FULL',
+          totalWords: article.metrics?.totalWords ?? 0,
+          savedAmount: article.metrics?.savedAmount ?? 0,
+          savedTimeMinutes: article.metrics?.savedTimeMinutes ?? 0,
         })
+        articleTags.value = Array.isArray(article.tags) ? article.tags : []
       },
     })
     if (outcome === 'aborted') toast.add({ color: 'info', title: t('articles.editor.ai.aiContentStopped') })
+    else if (selectedImagesMissing) toast.add({ color: 'warning', title: t('articles.editor.aiImagesUnavailable') })
     else toast.add({ color: 'success', title: t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
     toast.add({

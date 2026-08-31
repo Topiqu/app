@@ -27,6 +27,16 @@ export default defineEventHandler(async (event) => {
 
   const contentWithIds = stampHeadingIds(body.content)
 
+  // A full manual generation is written by the configured AI author just like a scheduled one.
+  // The signed-in member remains the actor in the audit log; `userId` here is public authorship.
+  const aiAuthor =
+    body.aiInvolvement === 'FULL'
+      ? await db.user.findFirst({
+          where: { clientSiteId: user.clientSiteId, role: 'ai' },
+          select: { id: true },
+        })
+      : null
+
   const tagsRelation =
     body.tags && Array.isArray(body.tags) && body.tags.length > 0
       ? { create: body.tags.map((tagId: string) => ({ tag: { connect: { id: tagId } } })) }
@@ -38,7 +48,7 @@ export default defineEventHandler(async (event) => {
       seriesOrder,
       content: sanitizeHtml(contentWithIds),
       clientSiteId: user.clientSiteId,
-      userId: user.id,
+      userId: aiAuthor?.id ?? user.id,
       tags: tagsRelation,
     },
   })

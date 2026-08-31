@@ -422,11 +422,13 @@
         "researchFallback": "Continue without sources",
         "researchOff": "without research",
         "modulesLabel": "Article components",
-        "modulesDescription": "Choose only blocks that give the reader concrete value.",
+        "modulesDescription": "Selected blocks are generated. A video is embedded only when research finds a verified YouTube URL.",
         "planSummary": "{format} · {research} · {modules} selected modules",
         "done": "Done",
         "elapsed": "Elapsed {seconds}s",
-        "waiting": "No new data for {seconds}s. The run will stop automatically after 30s.",
+        "waitingWriting": "The author has not sent more text for {seconds}s. Writing stops automatically after 30s without data.",
+        "waitingResearch": "Source verification is taking longer than usual. The run is still active and can be stopped safely.",
+        "waitingImages": "Preparing an image can take up to 45s. If the service does not return one, the article will finish without it.",
         "writerIdleError": "Generation stopped because the writer sent no data for 30 seconds.",
         "writerDeadlineError": "Generation stopped after reaching the 90-second writing limit.",
         "researchSources": "Research complete, sources found: {count}",
@@ -469,11 +471,15 @@
           "faq": "FAQ",
           "poll": "Reader poll",
           "table": "Comparison table",
+          "images": "Images in the article",
           "youtube": "YouTube video"
         },
         "phaseResearch": "Verifying facts and finding sources…",
         "phaseWriting": "Writing…",
-        "phaseImages": "Adding suitable media…",
+        "phaseImages": "Preparing images and embedded content…",
+        "mediaCover": "Preparing the cover image…",
+        "mediaProgress": "Preparing article images ({completed} of {total}); found {found}.",
+        "mediaComplete": "Images are ready. Used: {count}.",
         "aiContentStopped": "Generation stopped",
         "enhance": "Improve prompt",
         "enhanceUndo": "Undo",
@@ -483,7 +489,7 @@
         "step": {
           "research": "Research and sources",
           "writing": "Article text",
-          "images": "Media"
+          "images": "Images and embedded content"
         },
         "formats": {
           "howto": {
@@ -520,6 +526,7 @@
       "createSuccess": "Article created successfully",
       "createFailed": "Failed to create article",
       "aiContentGenerated": "AI content generated successfully",
+      "aiImagesUnavailable": "The article is ready, but the selected images could not be obtained",
       "aiContentFailed": "Failed to generate AI content",
       "loadFailed": "Failed to load the article",
       "metaBar": "Article metadata",

@@ -55,6 +55,33 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain('fallbackWithoutResearch: options?.research.fallbackWithoutResearch')
     expect(endpoint).toContain('format: options?.format')
     expect(endpoint).toContain('modules: options?.modules')
+    expect(endpoint).toContain("onMedia: (media) => send(controller, { type: 'media', ...media })")
+  })
+
+  it('keeps media finalization observable and cancellable', () => {
+    expect(endpoint).toContain('abortSignal: abortController.signal')
+    expect(endpoint).toMatch(/async cancel\([^)]*\)\s*{\s*abortController\.abort\(\)/)
+    expect(articleGenerator).toContain("onMedia?.({ stage: 'cover'")
+    expect(articleGenerator).toContain("stage: 'complete'")
+    expect(articleGenerator).toContain('if (!articleImageUrl && object.coverImage)')
+  })
+
+  it('grounds time-sensitive claims against the actual generation date', () => {
+    expect(articleGenerator).toContain('The current date and time is ${currentDateTime}. Treat it as authoritative.')
+    expect(articleGenerator).toContain('Never describe an already elapsed announcement as upcoming.')
+    expect(articleGenerator).toContain('Never call a past date upcoming, future or scheduled.')
+  })
+
+  it('researches a verified YouTube URL when the author selected the video module', () => {
+    expect(articleGenerator).toContain("selectedModulesFor(format, modules).includes('youtube')")
+    expect(articleGenerator).toContain('Search specifically for one relevant official or primary-source YouTube video')
+    expect(articleGenerator).toContain('The author selected a YouTube video.')
+  })
+
+  it('requires matching body image slots when the author selected images', () => {
+    expect(articleGenerator).toContain("selectedModules.includes('images')")
+    expect(articleGenerator).toContain('The author selected images in the article body.')
+    expect(articleGenerator).toContain('Do not return an empty images array.')
   })
 
   it('records the complete manual generation lifecycle with a correlation id', () => {

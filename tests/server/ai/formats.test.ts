@@ -16,6 +16,7 @@ const full = {
   keyTakeaways: ['Prices rose 12% in 2025'],
   faq: [{ question: 'How much?', answer: 'Twelve percent.' }],
   polls: [{ question: 'Which first?', options: ['A', 'B'] }],
+  images: [{ type: 'photo', query: 'Prague', caption: 'Prague' }],
   videos: [{ url: 'https://youtu.be/dQw4w9WgXcQ', caption: 'Demo' }],
 }
 
@@ -47,6 +48,7 @@ describe('formatRules', () => {
     expect(rules).toContain(`${spec.words[0]}-${spec.words[1]} words`)
     expect(rules).toContain(`Structure variant: ${variant}`)
     if (!spec.defaultModules.includes('table')) expect(rules).toContain('must NOT contain an HTML table')
+    if (!spec.defaultModules.includes('images')) expect(rules).toContain('must NOT contain images in the body')
     if (!spec.defaultModules.includes('faq')) expect(rules).toContain('"faq": return an empty array')
     if (!spec.defaultModules.includes('answer')) expect(rules).toContain('"answer": return an empty string')
   })
@@ -64,6 +66,13 @@ describe('formatRules', () => {
     expect(rules).toContain('Tables, polls and videos are optional')
     expect(rules).not.toContain('must NOT contain')
   })
+
+  it('requires body image slots when the images module is selected', () => {
+    const rules = formatRules('news', null, ['images'])
+
+    expect(rules).toContain('must contain 1-4 useful images in the body')
+    expect(rules).not.toContain('must NOT contain images in the body')
+  })
 })
 
 describe('applyFormat', () => {
@@ -74,16 +83,18 @@ describe('applyFormat', () => {
     expect(opinion.keyTakeaways).toEqual([])
     expect(opinion.faq).toEqual([])
     expect(opinion.polls).toEqual([])
+    expect(opinion.images).toEqual([])
     expect(opinion.videos).toEqual([])
   })
 
   it('keeps selected modules and removes allowed but unselected ones', () => {
-    const guide = applyFormat(full, 'guide', ['faq', 'youtube'])
+    const guide = applyFormat(full, 'guide', ['faq', 'images', 'youtube'])
 
     expect(guide.answer).toBe('')
     expect(guide.keyTakeaways).toEqual([])
     expect(guide.faq).toEqual(full.faq)
     expect(guide.polls).toEqual([])
+    expect(guide.images).toEqual(full.images)
     expect(guide.videos).toEqual(full.videos)
   })
 
@@ -92,7 +103,8 @@ describe('applyFormat', () => {
 
     expect(story.faq).toEqual([])
     expect(story.videos).toEqual(full.videos)
-    expect(allowedModulesFor('story')).toEqual(['youtube'])
+    expect(story.images).toEqual([])
+    expect(allowedModulesFor('story')).toEqual(['images', 'youtube'])
   })
 
   it('retains legacy defaults when modules were not specified', () => {

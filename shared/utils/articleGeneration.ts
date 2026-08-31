@@ -1,20 +1,27 @@
 export const ARTICLE_GENERATION_FORMATS = ['news', 'analysis', 'guide', 'comparison', 'opinion', 'story'] as const
 export type ArticleGenerationFormat = (typeof ARTICLE_GENERATION_FORMATS)[number]
 
-export const ARTICLE_GENERATION_MODULES = ['answer', 'takeaways', 'faq', 'poll', 'table', 'youtube'] as const
+export const ARTICLE_GENERATION_MODULES = ['answer', 'takeaways', 'faq', 'poll', 'table', 'images', 'youtube'] as const
 export type ArticleGenerationModule = (typeof ARTICLE_GENERATION_MODULES)[number]
 
 export const ARTICLE_GENERATION_ALLOWED_MODULES: Record<ArticleGenerationFormat, readonly ArticleGenerationModule[]> = {
-  news: ['answer', 'takeaways', 'poll', 'youtube'],
-  analysis: ['answer', 'takeaways', 'table', 'youtube'],
-  guide: ['answer', 'takeaways', 'faq', 'youtube'],
-  comparison: ['answer', 'takeaways', 'faq', 'poll', 'table', 'youtube'],
-  opinion: ['poll', 'youtube'],
-  story: ['youtube'],
+  news: ['answer', 'takeaways', 'poll', 'images', 'youtube'],
+  analysis: ['answer', 'takeaways', 'table', 'images', 'youtube'],
+  guide: ['answer', 'takeaways', 'faq', 'images', 'youtube'],
+  comparison: ['answer', 'takeaways', 'faq', 'poll', 'table', 'images', 'youtube'],
+  opinion: ['poll', 'images', 'youtube'],
+  story: ['images', 'youtube'],
 }
 
 export const RESEARCH_DEPTHS = ['quick', 'standard', 'deep'] as const
 export type ResearchDepth = (typeof RESEARCH_DEPTHS)[number]
+
+export interface ArticleMediaProgress {
+  stage: 'cover' | 'content' | 'complete'
+  completed: number
+  total: number
+  found: number
+}
 
 export interface ArticleGenerationOptions {
   format: ArticleGenerationFormat

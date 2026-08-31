@@ -164,6 +164,13 @@ describe('tenant boundary wiring', () => {
     expect(update).toContain('body.status = ArticleStatus.draft')
     expect(update).toContain('body.status === ArticleStatus.published) body.releaseAt = null')
   })
+
+  it('attributes fully generated manual articles to the configured AI author', () => {
+    const create = source('server/api/articles/index.post.ts')
+    expect(create).toContain("body.aiInvolvement === 'FULL'")
+    expect(create).toContain("role: 'ai'")
+    expect(create).toContain('userId: aiAuthor?.id ?? user.id')
+  })
 })
 
 describe('invitation onboarding wiring', () => {

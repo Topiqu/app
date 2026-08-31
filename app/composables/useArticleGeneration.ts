@@ -1,4 +1,8 @@
-import type { ArticleGenerationOptions, ResearchDepth } from '~~/shared/utils/articleGeneration'
+import type {
+  ArticleGenerationOptions,
+  ArticleMediaProgress,
+  ResearchDepth,
+} from '~~/shared/utils/articleGeneration'
 
 interface PartialArticle {
   title?: string
@@ -23,6 +27,7 @@ interface StreamHandlers {
   onAttempt?: (attemptId: string) => void
   onActivity?: () => void
   onImage?: (image: { slot: number; html: string }) => void
+  onMedia?: (progress: ArticleMediaProgress) => void
   onFinal: (article: Record<string, any>) => void
 }
 
@@ -99,7 +104,13 @@ export const useArticleGeneration = () => {
         } else if (msg.type === 'activity') {
           if (msg.writingStage) handlers.onWritingStage?.(msg.writingStage)
           handlers.onActivity?.()
-        } else if (msg.type === 'image') handlers.onImage?.({ slot: msg.slot, html: msg.html })
+        } else if (msg.type === 'image') {
+          handlers.onImage?.({ slot: msg.slot, html: msg.html })
+          handlers.onActivity?.()
+        } else if (msg.type === 'media') {
+          handlers.onMedia?.(msg)
+          handlers.onActivity?.()
+        }
         else if (msg.type === 'final') {
           receivedFinal = true
           handlers.onFinal(msg.article)
