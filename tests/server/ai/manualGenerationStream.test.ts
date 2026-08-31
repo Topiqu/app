@@ -74,8 +74,14 @@ describe('manual article generation stream', () => {
 
   it('researches a verified YouTube URL when the author selected the video module', () => {
     expect(articleGenerator).toContain("selectedModulesFor(format, modules).includes('youtube')")
-    expect(articleGenerator).toContain('Search specifically for one relevant official or primary-source YouTube video')
+    expect(articleGenerator).toContain('Search specifically for one existing, directly relevant YouTube video')
+    expect(articleGenerator).toContain('https://www.youtube.com/oembed')
+    expect(articleGenerator).toContain('youtubeVideoId(candidate)')
     expect(articleGenerator).toContain('The author selected a YouTube video.')
+  })
+
+  it('streams the authoritative token balance after billing', () => {
+    expect(endpoint).toContain("send(controller, { type: 'billing', ...billing })")
   })
 
   it('requires matching body image slots when the author selected images', () => {

@@ -1,5 +1,6 @@
 import type {
   ArticleGenerationOptions,
+  ArticleGenerationBilling,
   ArticleMediaProgress,
   ResearchDepth,
 } from '~~/shared/utils/articleGeneration'
@@ -28,6 +29,7 @@ interface StreamHandlers {
   onActivity?: () => void
   onImage?: (image: { slot: number; html: string }) => void
   onMedia?: (progress: ArticleMediaProgress) => void
+  onBilling?: (billing: ArticleGenerationBilling) => void
   onFinal: (article: Record<string, any>) => void
 }
 
@@ -110,8 +112,10 @@ export const useArticleGeneration = () => {
         } else if (msg.type === 'media') {
           handlers.onMedia?.(msg)
           handlers.onActivity?.()
-        }
-        else if (msg.type === 'final') {
+        } else if (msg.type === 'billing') {
+          handlers.onBilling?.(msg)
+          handlers.onActivity?.()
+        } else if (msg.type === 'final') {
           receivedFinal = true
           handlers.onFinal(msg.article)
           handlers.onActivity?.()

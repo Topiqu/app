@@ -68,5 +68,6 @@ export async function consumeClientTokens(
     clientTokensUsed: clientTokens,
     fullyCovered: debit.fullyCovered,
     apiTokens,
+    tokenRemaining: debit.remaining,
   }
 }

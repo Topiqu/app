@@ -273,6 +273,7 @@
             :aiWordCount="aiWordCount"
             :aiResearch="aiResearch"
             :aiMedia="aiMedia"
+            :aiLastResult="aiLastResult"
             :aiWritingStage="aiWritingStage"
             @upload="handleUpload"
             @generate="generateAIContent"
@@ -357,6 +358,7 @@
           :aiWordCount="aiWordCount"
           :aiResearch="aiResearch"
           :aiMedia="aiMedia"
+          :aiLastResult="aiLastResult"
           :aiWritingStage="aiWritingStage"
           @upload="handleUpload"
           @generate="generateAIContent"
@@ -392,7 +394,13 @@ import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
 import { readFaq } from '~~/shared/utils/articleFaq'
-import { defaultArticleGenerationOptions, type ArticleMediaProgress } from '~~/shared/utils/articleGeneration'
+import {
+  defaultArticleGenerationOptions,
+  type ArticleGenerationBilling,
+  type ArticleGenerationModule,
+  type ArticleGenerationResult,
+  type ArticleMediaProgress,
+} from '~~/shared/utils/articleGeneration'
 
 import type {
   GenerationPhase,
@@ -449,6 +457,7 @@ const aiOptions = ref(defaultArticleGenerationOptions())
 const aiPhase = shallowRef<GenerationPhase>('research')
 const aiResearch = shallowRef<GenerationResearchResult | null>(null)
 const aiMedia = shallowRef<ArticleMediaProgress | null>(null)
+const aiLastResult = shallowRef<ArticleGenerationResult | null>(null)
 const aiWritingStage = shallowRef<GenerationWritingStage>('starting')
 const aiStartedAt = shallowRef(0)
 const aiLastActivityAt = shallowRef(0)
@@ -689,7 +698,12 @@ const handleUpload = (file: { url: string; optimizedUrl: string }) => {
 }
 
 const generateAIContent = async () => {
-  let selectedImagesMissing = false
+  let missingModules: ArticleGenerationModule[] = []
+  let billing: ArticleGenerationBilling | null = null
+  let finalReceived = false
+  let sourceCount = 0
+  let mediaFound = 0
+  let mediaTotal = 0
   aiGenerating.value = true
   aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
   aiResearch.value = null
@@ -697,6 +711,7 @@ const generateAIContent = async () => {
   aiWritingStage.value = 'starting'
   aiStartedAt.value = Date.now()
   aiLastActivityAt.value = aiStartedAt.value
+  aiLastResult.value = null
   try {
     const outcome = await streamGenerate(customPrompt.value, aiOptions.value, {
       onPartial: (partial) => {
@@ -705,15 +720,40 @@ const generateAIContent = async () => {
         if (partial.content != null) editedArticle.value.content = partial.content
       },
       onPhase: (phase) => (aiPhase.value = phase),
-      onResearch: (research) => (aiResearch.value = research),
-      onMedia: (media) => (aiMedia.value = media),
+      onResearch: (research) => {
+        aiResearch.value = research
+        sourceCount = research.sourceCount
+      },
+      onMedia: (media) => {
+        aiMedia.value = media
+        mediaFound = media.found
+        mediaTotal = media.total
+      },
+      onBilling: (result) => {
+        billing = result
+        if (clientStatus.value) {
+          clientStatus.value.tokenRemaining = result.tokenRemaining
+          clientStatus.value.totalUsage = (clientStatus.value.totalUsage ?? 0) + result.clientTokensUsed
+        }
+      },
       onWritingStage: (stage) => (aiWritingStage.value = stage),
       onActivity: () => (aiLastActivityAt.value = Date.now()),
       onImage: ({ slot, html }) => {
         editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
       },
       onFinal: (article) => {
-        selectedImagesMissing = aiOptions.value.modules.includes('images') && !/<img\b/i.test(article.content ?? '')
+        finalReceived = true
+        const content = article.content ?? ''
+        const delivered: Record<ArticleGenerationModule, boolean> = {
+          answer: Boolean(article.answer),
+          takeaways: Boolean(article.keyTakeaways?.length),
+          faq: Boolean(article.faq?.length),
+          poll: /data-type=["']poll["']/i.test(content),
+          table: /<table\b/i.test(content),
+          images: /<img\b/i.test(content),
+          youtube: /data-youtube-video/i.test(content),
+        }
+        missingModules = aiOptions.value.modules.filter((module) => !delivered[module])
         Object.assign(editedArticle.value, {
           title: article.title,
           excerpt: article.perex,
@@ -733,10 +773,34 @@ const generateAIContent = async () => {
         articleTags.value = Array.isArray(article.tags) ? article.tags : []
       },
     })
+    const durationSeconds = Math.max(1, Math.round((Date.now() - aiStartedAt.value) / 1_000))
+    aiLastResult.value = {
+      status: outcome === 'aborted' ? 'stopped' : missingModules.length ? 'partial' : 'completed',
+      durationSeconds,
+      sourceCount: sourceCount || editedArticle.value.sources?.length || 0,
+      wordCount: aiWordCount.value,
+      mediaFound,
+      mediaTotal,
+      tokenUsage: (billing as ArticleGenerationBilling | null)?.clientTokensUsed ?? null,
+      tokenRemaining: (billing as ArticleGenerationBilling | null)?.tokenRemaining ?? null,
+      missingModules,
+    }
     if (outcome === 'aborted') toast.add({ color: 'info', title: t('articles.editor.ai.aiContentStopped') })
-    else if (selectedImagesMissing) toast.add({ color: 'warning', title: t('articles.editor.aiImagesUnavailable') })
+    else if (missingModules.includes('images'))
+      toast.add({ color: 'warning', title: t('articles.editor.aiImagesUnavailable') })
     else toast.add({ color: 'success', title: t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
+    aiLastResult.value = {
+      status: finalReceived ? 'partial' : 'failed',
+      durationSeconds: Math.max(1, Math.round((Date.now() - aiStartedAt.value) / 1_000)),
+      sourceCount,
+      wordCount: aiWordCount.value,
+      mediaFound,
+      mediaTotal,
+      tokenUsage: (billing as ArticleGenerationBilling | null)?.clientTokensUsed ?? null,
+      tokenRemaining: (billing as ArticleGenerationBilling | null)?.tokenRemaining ?? null,
+      missingModules: finalReceived ? missingModules : aiOptions.value.modules,
+    }
     toast.add({
       color: 'error',
       title: t('articles.editor.aiContentFailed'),
@@ -744,6 +808,7 @@ const generateAIContent = async () => {
     })
   } finally {
     aiGenerating.value = false
+    await refreshClientSiteStatus().catch(() => undefined)
   }
 }
 

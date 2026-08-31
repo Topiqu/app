@@ -24,4 +24,15 @@ describe('token accounting', () => {
     expect(migration).toContain('"tokenRemaining" <= "tokenLimit"')
     expect(migration).toContain('ClientSite_tokenRemaining_nonnegative')
   })
+
+  it('normalizes legacy writes before checks during a rolling deployment', () => {
+    const migration = readFileSync(
+      'prisma/migrations/20260831123000_token_capacity_rolling_deploy/migration.sql',
+      'utf8',
+    )
+
+    expect(migration).toContain('BEFORE INSERT OR UPDATE OF "tokenLimit", "tokenRemaining"')
+    expect(migration).toContain('NEW."tokenRemaining" := GREATEST')
+    expect(migration).toContain('NEW."tokenLimit" := GREATEST')
+  })
 })

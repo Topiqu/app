@@ -53,3 +53,6 @@ export const useClientSiteStatus = () => {
 
   return useAsyncData('clientsite-status', () => requestFetch<ClientSiteStatus | null>('/api/clients/status'))
 }
+
+/** Refreshes the shared status ref used by the editor, navigation and token balance surfaces. */
+export const refreshClientSiteStatus = () => refreshNuxtData('clientsite-status')

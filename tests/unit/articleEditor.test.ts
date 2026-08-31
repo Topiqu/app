@@ -27,7 +27,7 @@ describe('generated article modules', () => {
     expect(editorSource).toContain(':entries="readFaq(editedArticle.faq)"')
     expect(previewSource).toContain('<ArticleSummary :answer="answer" :takeaways="takeaways" />')
     expect(previewSource).toContain('<ArticleFaq :entries="readFaq(faq)" />')
-    expect(editorSource).toContain("aiOptions.value.modules.includes('images')")
+    expect(editorSource).toContain("missingModules.includes('images')")
     expect(editorSource).toContain("t('articles.editor.aiImagesUnavailable')")
   })
 })

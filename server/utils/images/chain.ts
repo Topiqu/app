@@ -15,9 +15,17 @@ export const imageChains: Record<'photo' | 'stock', ImageProvider[]> = {
 }
 
 const firstHit = async (providers: ImageProvider[], query: string) => {
-  for (const provider of providers) {
-    const image = await provider.search(query)
-    if (image) return image
+  // Archive search gets markedly worse with sentence-like model prompts. Retry deterministic,
+  // progressively shorter subject queries before declaring that licensed web sources have no hit.
+  const words = query.trim().split(/\s+/).filter(Boolean)
+  const queries = [query.trim(), words.slice(0, 6).join(' '), words.slice(0, 3).join(' ')].filter(
+    (value, index, all) => value.length > 0 && all.indexOf(value) === index,
+  )
+  for (const candidate of queries) {
+    for (const provider of providers) {
+      const image = await provider.search(candidate)
+      if (image) return image
+    }
   }
 
   return null

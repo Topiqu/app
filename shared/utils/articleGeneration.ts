@@ -23,6 +23,26 @@ export interface ArticleMediaProgress {
   found: number
 }
 
+export interface ArticleGenerationBilling {
+  clientTokensCharged: number
+  clientTokensUsed: number
+  fullyCovered: boolean
+  apiTokens: number
+  tokenRemaining: number
+}
+
+export interface ArticleGenerationResult {
+  status: 'completed' | 'partial' | 'stopped' | 'failed'
+  durationSeconds: number
+  sourceCount: number
+  wordCount: number
+  mediaFound: number
+  mediaTotal: number
+  tokenUsage: number | null
+  tokenRemaining: number | null
+  missingModules: ArticleGenerationModule[]
+}
+
 export interface ArticleGenerationOptions {
   format: ArticleGenerationFormat
   modules: ArticleGenerationModule[]
