@@ -26,6 +26,9 @@ export type ArticleWithDetails = {
   imageCredit?: unknown
   createdAt: string
   excerpt: string | null
+  answer?: string | null
+  keyTakeaways?: string[]
+  faq?: unknown
   readingTime: number | null
   views: number
   releaseAt: Date | string | null

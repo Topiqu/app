@@ -218,8 +218,12 @@
           />
         </UFormField>
 
+        <ArticleSummary :answer="editedArticle.answer" :takeaways="editedArticle.keyTakeaways ?? []" />
+
         <div class="mt-4 min-w-0 max-w-full">
           <TiptapEditor v-model="bodyModel" :edit="bodyEditable" class="min-h-[500px]" />
+
+          <ArticleFaq :entries="readFaq(editedArticle.faq)" />
 
           <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
             <UButton size="sm" icon="i-mdi-file-document-outline" @click="draftsOpen = true">
@@ -321,6 +325,9 @@
           :articleId="editedArticle.id"
           :title="titleModel"
           :excerpt="excerptModel"
+          :answer="editedArticle.answer"
+          :takeaways="editedArticle.keyTakeaways ?? []"
+          :faq="editedArticle.faq"
           :content="bodyModel"
           :imageUrl="editedArticle.imageUrl"
           :tags="articleTags"
@@ -384,6 +391,7 @@
 import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
+import { readFaq } from '~~/shared/utils/articleFaq'
 import { defaultArticleGenerationOptions, type ArticleMediaProgress } from '~~/shared/utils/articleGeneration'
 
 import type {
@@ -424,6 +432,9 @@ const init = (): ArticleWithDetails =>
     status: 'draft',
     releaseAt: null,
     sources: [],
+    answer: null,
+    keyTakeaways: [],
+    faq: [],
     savedAmount: 0,
     savedTimeMinutes: 0,
     aiInvolvement: 'NONE',
@@ -678,6 +689,7 @@ const handleUpload = (file: { url: string; optimizedUrl: string }) => {
 }
 
 const generateAIContent = async () => {
+  let selectedImagesMissing = false
   aiGenerating.value = true
   aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
   aiResearch.value = null
@@ -701,6 +713,7 @@ const generateAIContent = async () => {
         editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
       },
       onFinal: (article) => {
+        selectedImagesMissing = aiOptions.value.modules.includes('images') && !/<img\b/i.test(article.content ?? '')
         Object.assign(editedArticle.value, {
           title: article.title,
           excerpt: article.perex,
@@ -721,6 +734,7 @@ const generateAIContent = async () => {
       },
     })
     if (outcome === 'aborted') toast.add({ color: 'info', title: t('articles.editor.ai.aiContentStopped') })
+    else if (selectedImagesMissing) toast.add({ color: 'warning', title: t('articles.editor.aiImagesUnavailable') })
     else toast.add({ color: 'success', title: t('articles.editor.aiContentGenerated') })
   } catch (error: any) {
     toast.add({

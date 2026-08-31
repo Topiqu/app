@@ -121,6 +121,7 @@ const researchTopic = async (
   depth: ResearchDepth = 'standard',
   fallbackWithoutResearch = true,
   abortSignal?: AbortSignal,
+  youtubeRequested = false,
 ) => {
   const researchConfig = RESEARCH_CONFIG[depth]
   const currentDateTime = new Date().toISOString()
@@ -139,6 +140,11 @@ const researchTopic = async (
         If a source announces something for a date before ${currentDateTime}, verify what actually happened after that date. Never describe an already elapsed announcement as upcoming.
         Return a compact brief: 5-10 verified facts, each on its own line, including the supporting URL and relevant event or publication date on that same line.
         Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
+        ${
+          youtubeRequested
+            ? 'The author requested a YouTube embed. Search specifically for one relevant official or primary-source YouTube video and include its full watch URL in the facts and Sources section when you retrieve a suitable one.'
+            : ''
+        }
         Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
         Do not write an article, an intro, or any prose beyond the facts.
       `.trim(),
@@ -253,9 +259,10 @@ const buildArticleConfig = async (
   const researchBudget = RESEARCH_CONFIG[researchDepth].maxOutputTokens
   const searchOn = tokenRemaining >= ARTICLE_TOKEN_FLOOR + researchBudget
   const researchQuery = researchOption === undefined ? prompt : researchOption ? researchOption.query : null
+  const youtubeRequested = format ? selectedModulesFor(format, modules).includes('youtube') : false
   const researchResult =
     searchOn && researchQuery
-      ? await researchTopic(researchQuery, researchDepth, fallbackWithoutResearch, abortSignal)
+      ? await researchTopic(researchQuery, researchDepth, fallbackWithoutResearch, abortSignal, youtubeRequested)
       : { brief: null, tokens: 0, sourceCount: 0, status: 'skipped' as const }
   const { brief, tokens: researchTokens } = researchResult
 
@@ -270,6 +277,7 @@ const buildArticleConfig = async (
   // No format is the manual editor flow, where the author's prompt is the brief — it keeps the
   // full menu, and only the cron's topic picker spends a format.
   const selectedModules = format ? selectedModulesFor(format, modules) : null
+  const imagesSelected = selectedModules ? selectedModules.includes('images') : null
   const pollsAllowed = selectedModules ? selectedModules.includes('poll') : true
   const tablesAllowed = selectedModules ? selectedModules.includes('table') : true
   const videosAllowed = selectedModules ? selectedModules.includes('youtube') : true
@@ -315,7 +323,13 @@ const buildArticleConfig = async (
       - Use 'generate': ONLY for what cannot be photographed — abstract ideas, humor, non-existent concepts (e.g. "AI eating old code"). Provide a detailed generation prompt. NEVER use it for a real person, a real place or a real event.
       Each content image also needs a "caption": one factual sentence, in the same language as the article, saying what is in the picture — for 'photo' name who or what it is and when. Never write "Illustrative image", "AI generated", "Source:" or any credit into the caption; the system adds those itself.
 
-      If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.
+      ${
+        imagesSelected === true
+          ? 'The author selected images in the article body. Include 1-4 useful image slots in appropriate places using [[IMAGE1]], [[IMAGE2]], etc., and provide exactly one corresponding instruction per slot in the images array. Do not return an empty images array.'
+          : imagesSelected === false
+            ? 'Return an empty images array and never write an [[IMAGE]] slot into the content.'
+            : 'If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.'
+      }
       ${
         pollsAllowed
           ? 'A poll is optional and the default is none. Add one only where it opens a question the article deliberately leaves open — at most 2 slots as [[POLL1]], [[POLL2]], with the question and 2-5 options per poll in the polls array. Otherwise return an empty polls array and write no slot.'
@@ -335,7 +349,7 @@ const buildArticleConfig = async (
       YouTube video:
       ${
         videosAllowed
-          ? 'A video is optional and the default is none. Use at most one [[VIDEO1]] slot only for a YouTube URL that appears verbatim in the research brief and materially demonstrates, documents or explains the subject. Return the URL and caption in videos. If the brief contains no suitable YouTube URL, return [] and write no slot. Never invent or reconstruct a video URL.'
+          ? 'The author selected a YouTube video. Use one [[VIDEO1]] slot when the research brief contains a suitable YouTube URL that materially demonstrates, documents or explains the subject, and return that URL and its caption in videos. If the brief contains no suitable YouTube URL, return [] and write no slot. Never invent or reconstruct a video URL.'
           : 'Return an empty videos array and never write a [[VIDEO]] slot into the content.'
       }
 
@@ -423,6 +437,12 @@ export const finalizeArticle = async (
     if (articleImageUrl) articleImageCredit = hit ? { kind: 'illustration', credit: hit.credit } : { kind: 'ai' }
   } else {
     // Legacy fallback just in case AI omits it
+    articleImageUrl = (await tryGenerateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024)))?.url ?? ''
+    if (articleImageUrl) articleImageCredit = { kind: 'ai' }
+  }
+  if (!articleImageUrl && object.coverImage) {
+    // A catalogue miss followed by a failed generation still deserves one simpler attempt. The
+    // title and perex are usually a more portable image prompt than the writer's detailed query.
     articleImageUrl = (await tryGenerateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024)))?.url ?? ''
     if (articleImageUrl) articleImageCredit = { kind: 'ai' }
   }

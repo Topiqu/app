@@ -21,12 +21,16 @@
       </span>
     </div>
 
+    <ArticleSummary :answer="answer" :takeaways="takeaways" />
+
     <div v-if="hasBody" :class="ARTICLE_PROSE_CLASS">
       <ArticleParsed :blocks="previewBlocks" :articleId="articleId ?? ''" />
     </div>
     <p v-else class="text-sm text-gray-500 dark:text-gray-400">
       {{ $t('articles.editor.preview.empty') }}
     </p>
+
+    <ArticleFaq :entries="readFaq(faq)" />
 
     <div v-if="filledSources.length" class="pt-6 border-t border-gray-200 dark:border-gray-700">
       <h2 class="flex items-center gap-2 text-lg font-medium text-gray-700 dark:text-gray-300">
@@ -43,6 +47,7 @@
 </template>
 
 <script setup lang="ts">
+import { readFaq } from '~~/shared/utils/articleFaq'
 import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
 
 /**
@@ -53,11 +58,17 @@ import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
  */
 const {
   content,
+  answer,
+  takeaways = [],
+  faq,
   tags = [],
   sources = [],
 } = defineProps<{
   title?: string | null
   excerpt?: string | null
+  answer?: string | null
+  takeaways?: string[]
+  faq?: unknown
   content?: string | null
   imageUrl?: string | null
   articleId?: string

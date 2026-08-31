@@ -1,6 +1,6 @@
 /** The broad editorial shape, chosen before the article is written. */
 export type ArticleFormat = 'news' | 'analysis' | 'guide' | 'comparison' | 'opinion' | 'story'
-export type ArticleModule = 'answer' | 'takeaways' | 'faq' | 'poll' | 'table' | 'youtube'
+export type ArticleModule = 'answer' | 'takeaways' | 'faq' | 'poll' | 'table' | 'images' | 'youtube'
 
 type VariantSpec = { shape: string; structure: string }
 type FormatSpec = {
@@ -16,7 +16,7 @@ export const ARTICLE_FORMATS = {
   news: {
     shape: 'A report on something that just happened. Lead with what changed and who it hits.',
     words: [350, 550],
-    allowedModules: ['answer', 'takeaways', 'poll', 'youtube'],
+    allowedModules: ['answer', 'takeaways', 'poll', 'images', 'youtube'],
     defaultModules: ['answer', 'takeaways'],
     variants: {
       'breaking-brief': {
@@ -36,7 +36,7 @@ export const ARTICLE_FORMATS = {
   analysis: {
     shape: 'Takes one claim, number or decision apart and shows what holds up.',
     words: [700, 1100],
-    allowedModules: ['answer', 'takeaways', 'table', 'youtube'],
+    allowedModules: ['answer', 'takeaways', 'table', 'images', 'youtube'],
     defaultModules: ['answer', 'takeaways'],
     variants: {
       'claim-audit': {
@@ -64,7 +64,7 @@ export const ARTICLE_FORMATS = {
   guide: {
     shape: 'Procedural. The reader came to do the thing, not to read about it.',
     words: [700, 1100],
-    allowedModules: ['answer', 'takeaways', 'faq', 'youtube'],
+    allowedModules: ['answer', 'takeaways', 'faq', 'images', 'youtube'],
     defaultModules: ['answer', 'takeaways', 'faq'],
     variants: {
       'step-by-step': {
@@ -92,7 +92,7 @@ export const ARTICLE_FORMATS = {
   comparison: {
     shape: 'Two or more options side by side, with the case for each and who it suits.',
     words: [600, 900],
-    allowedModules: ['answer', 'takeaways', 'faq', 'poll', 'table', 'youtube'],
+    allowedModules: ['answer', 'takeaways', 'faq', 'poll', 'table', 'images', 'youtube'],
     defaultModules: ['answer', 'takeaways', 'faq', 'table'],
     variants: {
       'head-to-head': {
@@ -120,7 +120,7 @@ export const ARTICLE_FORMATS = {
   opinion: {
     shape: "An argument in the author's own voice. It takes a position and defends it.",
     words: [500, 800],
-    allowedModules: ['poll', 'youtube'],
+    allowedModules: ['poll', 'images', 'youtube'],
     defaultModules: ['poll'],
     variants: {
       'contrarian-case': {
@@ -148,7 +148,7 @@ export const ARTICLE_FORMATS = {
   story: {
     shape: 'A narrative — one case, one person, one sequence of events, told in order.',
     words: [600, 900],
-    allowedModules: ['youtube'],
+    allowedModules: ['images', 'youtube'],
     defaultModules: [],
     variants: {
       chronology: {
@@ -176,7 +176,7 @@ export const ARTICLE_FORMATS = {
 } as const satisfies Record<ArticleFormat, FormatSpec>
 
 export const ARTICLE_FORMAT_NAMES = Object.keys(ARTICLE_FORMATS) as ArticleFormat[]
-export const ARTICLE_MODULE_NAMES = ['answer', 'takeaways', 'faq', 'poll', 'table', 'youtube'] as const
+export const ARTICLE_MODULE_NAMES = ['answer', 'takeaways', 'faq', 'poll', 'table', 'images', 'youtube'] as const
 export const ARTICLE_STRUCTURE_VARIANTS = ARTICLE_FORMAT_NAMES.flatMap((format) =>
   Object.keys(ARTICLE_FORMATS[format].variants),
 )
@@ -223,8 +223,11 @@ const moduleRules = (selected: readonly ArticleModule[]) => {
     has('poll')
       ? 'This article may use one reader poll where a genuine choice or disagreement remains.'
       : 'This article must NOT contain a reader poll.',
+    has('images')
+      ? 'This article must contain 1-4 useful images in the body, each represented by a numbered image slot and matching image instruction.'
+      : 'This article must NOT contain images in the body.',
     has('youtube')
-      ? 'This article may embed one relevant YouTube video when the research provides a real YouTube URL. Never invent a URL.'
+      ? 'This article should embed one relevant YouTube video when the research provides a real YouTube URL. Never invent a URL.'
       : 'This article must NOT contain a YouTube video.',
   ].join('\n')
 }
@@ -288,6 +291,7 @@ type Formattable = {
   keyTakeaways?: string[]
   faq?: { question: string; answer: string }[]
   polls?: unknown[]
+  images?: unknown[]
   videos?: unknown[]
 }
 
@@ -307,6 +311,7 @@ export const applyFormat = <T extends Formattable>(
     keyTakeaways: has('takeaways') ? object.keyTakeaways : [],
     faq: has('faq') ? object.faq : [],
     polls: has('poll') ? object.polls : [],
+    images: has('images') ? object.images : [],
     videos: has('youtube') ? object.videos : [],
   } as T
 }
