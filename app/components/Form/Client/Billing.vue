@@ -95,15 +95,12 @@
             {{ $t('common.preferences.billing.tokenBalance') }}
           </span>
           <span class="tabular-nums text-neutral-500 dark:text-neutral-400">
-            {{ (client.tokenRemaining ?? 0).toLocaleString() }}
+            {{ (client.tokenRemaining ?? 0).toLocaleString() }} / {{ (client.tokenLimit ?? 0).toLocaleString() }}
           </span>
         </div>
-        <div v-if="!balanceIncludesExtras" class="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+        <div class="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
           <div class="h-full rounded-full bg-emerald-500 transition-all" :style="{ width: `${tokenPercent}%` }" />
         </div>
-        <p v-else class="text-xs text-neutral-500 dark:text-neutral-400">
-          {{ $t('articles.userMenu.balanceIncludesExtras') }}
-        </p>
       </div>
 
       <div class="space-y-2">
@@ -351,8 +348,6 @@ const tokenPercent = computed(() => {
   if (limit <= 0) return 0
   return Math.min(100, Math.round(((client?.tokenRemaining ?? 0) / limit) * 100))
 })
-const balanceIncludesExtras = computed(() => (client?.tokenRemaining ?? 0) > (client?.tokenLimit ?? 0))
-
 const hasSubscription = computed(() => !!client?.stripeCustomerId)
 
 const {

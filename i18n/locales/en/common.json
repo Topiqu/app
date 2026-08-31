@@ -583,7 +583,7 @@
         "monthly": "– Monthly billing",
         "intervalMonthly": "Monthly",
         "intervalAnnual": "Annual",
-        "tokenBalance": "Token balance",
+        "tokenBalance": "Token balance / capacity",
         "buyTokens": "Buy tokens",
         "manage": "Manage subscription & invoices",
         "openPortal": "Manage billing",

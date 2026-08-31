@@ -27,9 +27,7 @@
       </UButton>
 
       <template #content>
-        <UCard
-          class="max-h-[calc(100dvh-5rem)] w-[92vw] max-w-sm overflow-x-hidden overflow-y-auto overscroll-contain"
-        >
+        <UCard class="max-h-[calc(100dvh-5rem)] w-[92vw] max-w-sm overflow-x-hidden overflow-y-auto overscroll-contain">
           <div class="flex flex-col gap-5">
             <div class="space-y-2">
               <div class="flex items-center justify-between gap-3 text-sm">
@@ -46,7 +44,7 @@
               variant="soft"
               icon="i-mdi-alert"
               :title="$t('articles.userMenu.lowTokensWarning')"
-              :description="$t('articles.userMenu.lowTokensHint')"
+              :description="$t('articles.userMenu.lowTokensHint', { percent: 20 })"
             />
 
             <div class="grid grid-cols-1 gap-2 min-[22rem]:grid-cols-2">

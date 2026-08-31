@@ -186,22 +186,19 @@ export default defineEventHandler(async (event) => {
           abortSignal: abortController.signal,
           onImage: (image) => send(controller, { type: 'image', ...image }),
           onMedia: (media) => send(controller, { type: 'media', ...media }),
-        }).catch(
-          async (error) => {
-            await reportCaughtError('Article finalization failed', error, { clientSiteId })
-            return {
-              ...object,
-              content: stripContentSlots(object.content),
-              articleImageUrl: '',
-              articleImageCredit: null,
-            }
-          },
-        )
+        }).catch(async (error) => {
+          await reportCaughtError('Article finalization failed', error, { clientSiteId })
+          return {
+            ...object,
+            content: stripContentSlots(object.content),
+            articleImageUrl: '',
+            articleImageCredit: null,
+          }
+        })
         const metrics = calculateArticleMetrics(finalized.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
 
-        // Handed over before billing. `consumeClientTokens` throws on a negative balance, and it
-        // threw *after* the decrement and *before* this send — so the one generation that emptied
-        // the wallet was charged and then thrown away.
+        // Handed over before billing. Exact usage only exists after generation; accounting records
+        // it and clamps the spendable balance at zero if this final call exceeded the remainder.
         send(controller, { type: 'final', article: { ...finalized, metrics, aiInvolvement: 'ASSIST' } })
 
         await consumeClientTokens(

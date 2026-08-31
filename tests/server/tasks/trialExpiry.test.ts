@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import { expiredTrialWhere } from '../../../server/utils/trialDowngrade'
@@ -36,6 +37,13 @@ const matchesWhere = (candidate: Row, now: Date) => {
 }
 
 describe('expiredTrialWhere', () => {
+  it('keeps retained or purchased balance within the downgraded capacity', () => {
+    const source = readFileSync('server/utils/trialDowngrade.ts', 'utf8')
+
+    expect(source).toContain('Math.max(EXPIRED_TRIAL_TOKEN_LIMIT, balance?.tokenRemaining ?? 0)')
+    expect(source).toContain("data: { plan: 'BASIC', tokenLimit }")
+  })
+
   it('cuts off exactly TRIAL_DAYS back', () => {
     expect(expiredTrialWhere(NOW).createdAt.lte).toEqual(daysBefore(TRIAL_DAYS))
   })

@@ -583,7 +583,7 @@
         "monthly": "– Měsíční platba",
         "intervalMonthly": "Měsíčně",
         "intervalAnnual": "Ročně",
-        "tokenBalance": "Zůstatek tokenů",
+        "tokenBalance": "Zůstatek / kapacita tokenů",
         "buyTokens": "Dokoupit tokeny",
         "manage": "Spravovat předplatné a faktury",
         "openPortal": "Spravovat fakturaci",
