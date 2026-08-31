@@ -129,8 +129,8 @@
           }
         },
         "tokenLimit": {
-          "label": "Limit tokenů",
-          "placeholder": "Limit tokenů"
+          "label": "Kapacita tokenů",
+          "placeholder": "Maximální přidělená kapacita"
         }
       },
       "actions": {
@@ -199,8 +199,8 @@
           "label": "Frekvence generování"
         },
         "tokenLimit": {
-          "label": "Limit tokenů",
-          "placeholder": "Limit tokenů"
+          "label": "Kapacita tokenů",
+          "placeholder": "Maximální přidělená kapacita"
         },
         "focus": {
           "label": "Focus firmy",

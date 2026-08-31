@@ -129,8 +129,8 @@
           }
         },
         "tokenLimit": {
-          "label": "Token Limit",
-          "placeholder": "Token Limit"
+          "label": "Token capacity",
+          "placeholder": "Maximum allocated capacity"
         }
       },
       "actions": {
@@ -199,8 +199,8 @@
           "label": "Generation Frequency"
         },
         "tokenLimit": {
-          "label": "Token Limit",
-          "placeholder": "Token Limit"
+          "label": "Token capacity",
+          "placeholder": "Maximum allocated capacity"
         },
         "focus": {
           "label": "Company Focus",

@@ -78,6 +78,7 @@ export default defineEventHandler(async (event) => {
       await prisma.clientSite.update({
         where: { id: clientSiteId },
         data: {
+          tokenLimit: { increment: tokens },
           tokenRemaining: { increment: tokens },
         },
       })

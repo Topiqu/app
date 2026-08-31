@@ -17,16 +17,17 @@ export const expiredTrialWhere = (now: Date) => ({
   createdAt: { lte: new Date(now.getTime() - TRIAL_DAYS * 24 * 60 * 60 * 1000) },
 })
 
-/**
- * `tokenRemaining` is deliberately untouched — a trial tenant can have bought a token pack, and
- * clearing the balance would delete a purchase. The plan gate on generation is what stops an
- * expired trial from spending what is left.
- */
+/** Preserve the balance because it may include a purchase, and keep capacity at least as large as
+ * that balance. The plan gate stops an expired trial from spending it until the tenant upgrades. */
 export const downgradeExpiredTrial = async (clientSiteId: string, site?: TrialInfo) => {
+  let tokenLimit = EXPIRED_TRIAL_TOKEN_LIMIT
   await prisma.$transaction(async (tx) => {
+    const balance = await tx.clientSite.findUnique({ where: { id: clientSiteId }, select: { tokenRemaining: true } })
+    tokenLimit = Math.max(EXPIRED_TRIAL_TOKEN_LIMIT, balance?.tokenRemaining ?? 0)
+
     await tx.clientSite.update({
       where: { id: clientSiteId },
-      data: { plan: 'BASIC', tokenLimit: EXPIRED_TRIAL_TOKEN_LIMIT },
+      data: { plan: 'BASIC', tokenLimit },
     })
 
     await syncPlanFeatures(tx, clientSiteId, 'BASIC')
@@ -35,6 +36,6 @@ export const downgradeExpiredTrial = async (clientSiteId: string, site?: TrialIn
   await logAction({
     action: 'TRIAL_EXPIRED',
     clientSiteId,
-    metadata: { from: site?.plan ?? null, tokenLimit: EXPIRED_TRIAL_TOKEN_LIMIT },
+    metadata: { from: site?.plan ?? null, tokenLimit },
   })
 }
