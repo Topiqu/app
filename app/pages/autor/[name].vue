@@ -1,24 +1,45 @@
 <template>
-  <div class="mx-auto max-w-4xl px-4">
-    <UPage>
+  <div class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="min-w-0 w-full">
       <Back />
-      <UPageHeader :title="`${$t('articles.authorsArticles')} ${authorName}`">
-        <div class="flex items-center gap-4">
+      <UPageHeader :title="authorName">
+        <div class="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center">
           <AppMedia
             :src="author.avatarUrl"
             :alt="$t('common.avatar.alt.author', [authorName])"
             :fallbackText="authorName"
             aspectRatio="1 / 1"
-            sizes="64px"
-            containerClass="size-16 shrink-0 rounded-full"
+            sizes="96px"
+            containerClass="size-24 shrink-0 rounded-full"
           />
           <div class="min-w-0">
-            <p class="font-semibold text-highlighted">{{ authorName }}</p>
-            <p v-if="author.bio" class="text-sm text-muted">{{ author.bio }}</p>
+            <p v-if="author.bio" class="max-w-2xl text-sm leading-6 text-muted">{{ author.bio }}</p>
+            <dl class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
+              <div>
+                <dt class="sr-only">{{ $t('stats.articleCount') }}</dt>
+                <dd>
+                  <strong class="text-highlighted">{{ author.articleCount }}</strong> {{ $t('stats.articleCount') }}
+                </dd>
+              </div>
+              <div>
+                <dt class="sr-only">{{ $t('profile.followers') }}</dt>
+                <dd>
+                  <strong class="text-highlighted">{{ author.followerCount }}</strong> {{ $t('profile.followers') }}
+                </dd>
+              </div>
+              <div>
+                <dt class="sr-only">{{ $t('profile.following', [author.followingCount]) }}</dt>
+                <dd>{{ $t('profile.following', [author.followingCount]) }}</dd>
+              </div>
+              <div>
+                <dt class="sr-only">{{ $t('common.user.joined', [formatDate(author.joinedAt)]) }}</dt>
+                <dd>{{ $t('common.user.joined', [formatDate(author.joinedAt)]) }}</dd>
+              </div>
+            </dl>
           </div>
         </div>
       </UPageHeader>
-      <UPageBody>
+      <div class="min-w-0 w-full pt-4 pb-8">
         <ArticleCollection
           v-model:search="search"
           v-model:sort="sort"
@@ -27,19 +48,17 @@
           :pending
           :hasMore="author.hasMore"
         />
-      </UPageBody>
-    </UPage>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ArticleCardData } from '~~/shared/types/article'
+import type { ArticleCardData, PublicAuthorSummary } from '~~/shared/types/article'
 
-type AuthorArticlesResponse = {
-  id: string
-  username: string
-  avatarUrl: string | null
-  bio: string | null
+import { formatDate } from '~~/shared/utils'
+
+type AuthorArticlesResponse = PublicAuthorSummary & {
   articles: Array<{ articleId: string; article: ArticleCardData }>
   hasMore: boolean
   total: number
@@ -83,6 +102,14 @@ const {
     total: 0,
     bio: '',
     avatarUrl: '',
+    joinedAt: '',
+    roleLabel: '',
+    articleCount: 0,
+    followerCount: 0,
+    followingCount: 0,
+    commentCount: 0,
+    totalArticleViews: 0,
+    totalArticleLikes: 0,
   }),
   watch: false,
 })

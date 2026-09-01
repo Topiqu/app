@@ -27,7 +27,12 @@ export default defineEventHandler(async (event) => {
         : ('published' as const),
   }
 
-  const [articles, total] = await Promise.all([
+  const publicWhere = {
+    userId: author.id,
+    clientSiteId: author.clientSiteId ?? undefined,
+    status: 'published' as const,
+  }
+  const [articles, total, counts, stats, totalArticleLikes] = await Promise.all([
     db.article.findMany({
       where: {
         ...visibleWhere,
@@ -37,7 +42,7 @@ export default defineEventHandler(async (event) => {
       skip,
       orderBy: { [field]: order },
       include: {
-        user: { select: { username: true } },
+        user: { select: { id: true, username: true, avatarUrl: true } },
         tags: { include: { tag: true } },
         reactions: {
           where: user?.id ? { userId: user.id } : sessionId ? { sessionId, userId: null } : { id: '' },
@@ -49,6 +54,12 @@ export default defineEventHandler(async (event) => {
       omit: { content: true },
     }),
     db.article.count({ where: visibleWhere }),
+    db.user.findUnique({
+      where: { id: author.id },
+      select: { createdAt: true, role: true, _count: { select: { comments: true, followers: true, following: true } } },
+    }),
+    db.article.aggregate({ where: publicWhere, _count: { id: true }, _sum: { views: true } }),
+    db.articleReaction.count({ where: { article: publicWhere } }),
   ])
 
   const hasMore = articles.length > take
@@ -59,6 +70,14 @@ export default defineEventHandler(async (event) => {
     username: author.username,
     avatarUrl: author.avatarUrl,
     bio: author.bio,
+    joinedAt: counts!.createdAt,
+    roleLabel: counts!.role === 'reader' ? 'Reader' : 'Author',
+    articleCount: stats._count.id,
+    followerCount: counts!._count.followers,
+    followingCount: counts!._count.following,
+    commentCount: counts!._count.comments,
+    totalArticleViews: stats._sum.views ?? 0,
+    totalArticleLikes,
     articles: items.map(({ reactions, ...article }) => ({
       articleId: article.id,
       article: {

@@ -3,7 +3,7 @@
     :src="url"
     :alt="(name || '') + ' ' + $t('common.avatar.alt.profile')"
     :fallbackText="name || undefined"
-    fallbackIcon="i-mdi-account-circle-outline"
+    fallbackIcon="mdi:account-circle-outline"
     aspectRatio="1 / 1"
     :sizes="pixelSize"
     :containerClass="`${sizeClass} shrink-0 rounded-full`"
