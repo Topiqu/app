@@ -10,7 +10,7 @@
     >
       <template #default="{ open }">
         <UButton
-          icon="i-mdi-file-image"
+          icon="mdi:file-image"
           color="neutral"
           variant="ghost"
           :aria-label="$t('common.actions.clickToUpload')"
