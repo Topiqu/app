@@ -1,13 +1,13 @@
 <template>
-  <div class="mx-auto max-w-4xl px-4">
-    <UPage>
+  <div class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="min-w-0 w-full">
       <Back />
-      <UPageHeader :title="$t('articles.tagsArticles', { name: tagName })">
+      <UPageHeader :title="$t('articles.tagsArticles', { name: tagName })" :ui="{ root: 'pt-2' }">
         <template #headline>
-          <UBadge color="primary" variant="soft" icon="i-mdi-tag-outline">{{ tagName }}</UBadge>
+          <UBadge color="primary" variant="soft" icon="mdi:tag-outline">{{ tagName }}</UBadge>
         </template>
       </UPageHeader>
-      <UPageBody>
+      <div class="min-w-0 w-full pt-4 pb-8">
         <ArticleCollection
           v-model:search="search"
           v-model:sort="sort"
@@ -16,8 +16,8 @@
           :pending
           :hasMore="tag.hasMore"
         />
-      </UPageBody>
-    </UPage>
+      </div>
+    </div>
   </div>
 </template>
 

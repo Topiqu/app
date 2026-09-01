@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
       article: {
         include: {
           tags: { include: { tag: true } },
-          user: { select: { id: true, username: true, email: true, role: true, avatarUrl: true } },
+          user: { select: { id: true, username: true, role: true, avatarUrl: true } },
           _count: { select: { comments: true, reactions: true } },
         },
       },

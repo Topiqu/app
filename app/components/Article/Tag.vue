@@ -7,7 +7,7 @@
         <UFieldGroup v-for="tag in articleTags" :key="tag.tagId">
           <UBadge color="primary" variant="soft" size="lg">{{ tag.tag.name }}</UBadge>
           <UButton
-            icon="i-mdi-close"
+            icon="mdi:close"
             size="sm"
             color="neutral"
             variant="ghost"
