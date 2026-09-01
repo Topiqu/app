@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-[100dvh] max-w-full pt-16"
+    class="flex min-h-[100dvh] max-w-full flex-col pt-16"
     :class="[shell === 'dashboard' ? 'bg-muted' : 'bg-default', { 'publication-surface': isPublicationSurface }]"
     :style="publicationStyle"
   >
@@ -15,13 +15,13 @@
       <Sidebar v-model:isOpen="isSidebarOpen" />
       <UDashboardPanel>
         <div class="topiqu-dashboard-scroll min-h-0 flex-1 overflow-y-auto">
-          <UMain><slot /></UMain>
-          <Footer />
+          <UMain :class="shell === 'dashboard' ? 'h-full min-h-full' : ''"><slot /></UMain>
+          <Footer v-if="shell !== 'dashboard'" />
         </div>
       </UDashboardPanel>
     </UDashboardGroup>
     <template v-else>
-      <UMain><slot /></UMain>
+      <UMain class="flex min-h-0 flex-1 flex-col"><slot /></UMain>
       <Footer />
     </template>
     <template v-if="auth?.user?.role === 'admin'">
@@ -60,4 +60,14 @@ const publicationStyle = computed(() => {
 onMounted(() => {
   isSidebarOpen.value = false
 })
+
+watch(
+  () => route.path,
+  async () => {
+    if (resolvePageShell(route.meta.shell) !== 'publication') return
+    await nextTick()
+    document.querySelector<HTMLElement>('.topiqu-dashboard-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  },
+)
 </script>
