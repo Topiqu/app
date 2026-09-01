@@ -3,7 +3,7 @@
     color="neutral"
     variant="ghost"
     type="button"
-    icon="i-mdi-arrow-left"
+    icon="mdi:arrow-left"
     :aria-label="$t('common.actions.back')"
     @click="navigate"
   >

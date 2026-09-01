@@ -6,7 +6,7 @@
       variant="solid"
       square
       class="back-to-top fixed right-6 z-30 sm:right-8"
-      icon="i-mdi-arrow-up"
+      icon="mdi:arrow-up"
       size="lg"
       :aria-label="$t('common.actions.backToTop')"
       @click="scrollToTop"

@@ -1,6 +1,6 @@
 <template>
   <section
-    class="rounded-2xl border bg-white dark:bg-neutral-900 shadow-sm p-5 sm:p-6"
+    class="rounded-[var(--topiqu-surface-radius)] border bg-white p-5 shadow-sm dark:bg-neutral-900 sm:p-6"
     :class="danger ? 'border-red-200 dark:border-red-900/60' : 'border-neutral-200 dark:border-neutral-800'"
   >
     <header v-if="title" class="flex items-start justify-between gap-4 mb-5">
