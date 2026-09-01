@@ -24,7 +24,7 @@ describe('homepage hero identity', () => {
   })
 
   it('reads as a masthead: mark, then name, then tagline, then description', () => {
-    expect(at('containerClass="w-40 rounded-')).toBeLessThan(at('v-if="clientSite?.logoUrl" class="sr-only"'))
+    expect(at('containerClass="h-28 w-48 rounded-')).toBeLessThan(at('v-if="clientSite?.logoUrl" class="sr-only"'))
     expect(at('v-if="clientSite?.logoUrl" class="sr-only"')).toBeLessThan(at('v-if="clientSite?.tagline"'))
     expect(at('v-if="clientSite?.tagline"')).toBeLessThan(at('v-if="clientSite?.description"'))
   })

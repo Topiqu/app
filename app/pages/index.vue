@@ -3,23 +3,25 @@
 
   <div v-else class="mx-auto max-w-7xl space-y-16 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
     <section
-      class="grid gap-4 md:grid-cols-2 lg:min-h-[calc(100dvh-var(--topiqu-header-height)-6rem)] lg:grid-cols-12 lg:items-stretch"
+      ref="heroSection"
+      class="relative grid gap-6 md:grid-cols-2 lg:-mt-12 lg:min-h-[calc(100dvh-var(--topiqu-header-height))] lg:grid-cols-12 lg:items-center"
       data-editorial-hero
     >
       <div
-        class="editorial-enter flex max-w-2xl flex-col justify-center space-y-6 py-6 md:col-span-1 lg:col-span-5"
-        style="--enter-order: 0"
+        class="editorial-enter flex max-w-2xl flex-col items-center justify-center space-y-6 py-8 text-center md:col-span-1 lg:col-span-5 lg:py-12"
+        style="--enter-order: 0; transform: translateY(0.75rem)"
       >
         <AppMedia
           :src="clientSite?.logoUrl"
-          originalSrc="/app-logo.png"
           :fallbackText="clientSite?.name || 'Topiqu'"
+          :fallbackBorder="false"
           :alt="$t('common.avatar.alt.company')"
-          aspectRatio="16 / 5"
+          aspectRatio="1 / 1"
           fit="contain"
-          sizes="160px sm:208px"
-          :width="416"
-          containerClass="w-40 rounded-[var(--topiqu-surface-radius)] bg-transparent sm:w-52"
+          sizes="224px sm:288px"
+          :width="576"
+          :height="576"
+          containerClass="aspect-square w-full max-w-56 rounded-(--topiqu-surface-radius) bg-transparent sm:max-w-64 lg:max-w-72"
         />
         <h1 v-if="clientSite?.logoUrl" class="sr-only">
           {{ clientSite?.name ?? $t('common.labels.title') }}
@@ -33,17 +35,17 @@
         </div>
         <p
           v-if="clientSite?.tagline"
-          class="max-w-[46ch] text-balance break-words border-l-2 border-[var(--topiqu-tenant-accent)] pl-4 text-base font-semibold leading-snug text-highlighted"
+          class="max-w-[46ch] text-balance break-words border-b-2 border-[var(--topiqu-tenant-accent)] px-4 pb-3 text-base font-semibold leading-snug text-highlighted"
         >
           {{ clientSite.tagline }}
         </p>
         <p v-if="clientSite?.description" class="line-clamp-4 max-w-[60ch] text-lg leading-8 text-muted">
           {{ clientSite.description }}
         </p>
-        <div class="flex flex-wrap gap-3">
+        <div class="flex flex-wrap justify-center gap-3">
           <UButton
             :to="primaryCtaTo"
-            icon="i-mdi-arrow-right"
+            icon="mdi:arrow-right"
             trailing
             class="publication-primary-cta"
             data-primary-cta
@@ -57,7 +59,7 @@
             to="#articles"
             color="neutral"
             variant="soft"
-            icon="i-mdi-format-list-bulleted"
+            icon="mdi:format-list-bulleted"
           >
             {{ $t('articles.home.browseArticles') }}
           </UButton>
@@ -66,7 +68,7 @@
 
       <article
         v-if="heroArticle?.slug"
-        class="editorial-enter group relative flex min-h-[28rem] flex-col overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-default md:col-span-1 lg:min-h-0"
+        class="editorial-enter group relative flex min-h-[28rem] flex-col overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default md:col-span-1 lg:grid lg:h-[72dvh] lg:max-h-[46rem] lg:min-h-[32rem] lg:grid-rows-2 lg:self-center"
         :class="hasHeroRail ? 'lg:col-span-5' : 'lg:col-span-7'"
         style="--enter-order: 1"
       >
@@ -76,14 +78,22 @@
           :aria-label="heroArticle.title"
         />
         <AppMedia
+          v-if="heroArticle.imageUrl"
           :src="heroArticle.imageUrl"
           :alt="heroArticle.title"
           priority
           aspectRatio="16 / 10"
           sizes="100vw md:50vw lg:42vw"
-          containerClass="min-h-56 w-full flex-1"
+          containerClass="min-h-56 w-full flex-1 lg:h-full"
         />
-        <div class="space-y-3 p-5 sm:p-6">
+        <div
+          v-else
+          class="grid min-h-28 place-items-center border-b border-dashed border-default bg-elevated text-primary"
+        >
+          <UIcon name="mdi:newspaper-variant-outline" size="36" aria-hidden="true" />
+          <span class="sr-only">{{ heroArticle.title }}</span>
+        </div>
+        <div class="flex min-h-0 flex-1 flex-col gap-3 p-5 sm:p-6">
           <div v-if="heroTags.length" class="flex flex-wrap gap-2">
             <UBadge v-for="tag in heroTags" :key="tag.id" color="primary" variant="soft">{{ tag.name }}</UBadge>
           </div>
@@ -92,11 +102,37 @@
           </h2>
           <p v-if="heroExcerpt" class="line-clamp-2 text-sm leading-6 text-muted">{{ heroExcerpt }}</p>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
-            <span>{{ formatDate(heroArticle.publishedAt || heroArticle.createdAt) }}</span>
+            <span>{{ formatDate(heroArticle.publishedAt || heroArticle.createdAt, locale) }}</span>
             <span v-if="heroArticle.readingTime">{{ $t('articles.readingTime', [heroArticle.readingTime]) }}</span>
             <span class="inline-flex items-center gap-1"
-              ><UIcon name="i-mdi-eye-outline" size="16" />{{ heroArticle.views ?? 0 }}</span
+              ><UIcon name="mdi:eye-outline" size="16" />{{ heroArticle.views ?? 0 }}</span
             >
+          </div>
+          <div class="relative z-20 mt-auto space-y-3 pt-2" data-article-footer>
+            <USeparator />
+            <div class="flex min-h-9 items-center justify-between gap-3">
+              <UserCard v-if="heroArticle.user" :user="{ ...heroArticle.user, bio: null }" />
+              <span v-else />
+              <div class="flex shrink-0 items-center gap-1">
+                <UButton
+                  :icon="heroLiked ? 'mdi:heart' : 'mdi:heart-outline'"
+                  :color="heroLiked ? 'error' : 'neutral'"
+                  variant="ghost"
+                  square
+                  :loading="heroLiking"
+                  :aria-label="$t('common.actions.like')"
+                  @click="toggleHeroLike"
+                />
+                <UButton
+                  icon="mdi:share-variant-outline"
+                  color="neutral"
+                  variant="ghost"
+                  square
+                  :aria-label="$t('common.actions.share')"
+                  @click="shareHeroArticle"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </article>
@@ -104,24 +140,24 @@
 
       <aside
         v-if="hasHeroRail"
-        class="editorial-enter grid gap-4 md:col-span-2 md:grid-cols-2 lg:col-span-2 lg:grid-cols-1"
+        class="editorial-enter grid gap-4 md:col-span-2 md:grid-cols-2 lg:col-span-2 lg:h-[36dvh] lg:max-h-[23rem] lg:min-h-[18rem] lg:grid-cols-1 lg:grid-rows-2 lg:self-center"
         style="--enter-order: 2"
       >
         <article
           v-if="tags[0]"
-          class="relative flex min-h-36 flex-col justify-between rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated p-4"
+          class="relative flex min-h-36 flex-col justify-between rounded-(--topiqu-surface-radius) border border-default bg-elevated p-4"
         >
           <NuxtLink
             :to="localePath({ name: 'stitky-slug', params: { slug: tags[0].slug } })"
             class="absolute inset-0"
             :aria-label="tags[0].name"
           />
-          <UIcon name="i-mdi-pound" size="24" class="text-primary" />
+          <UIcon name="mdi:pound" size="24" class="text-primary" />
           <span class="line-clamp-2 text-lg font-bold text-highlighted">{{ tags[0].name }}</span>
         </article>
         <div
           v-if="feat?.totalArticles"
-          class="flex min-h-36 flex-col justify-between rounded-[var(--topiqu-surface-radius)] border border-default p-4"
+          class="flex min-h-36 flex-col justify-between rounded-(--topiqu-surface-radius) border border-default p-4"
         >
           <span class="text-sm font-medium text-muted">{{ $t('stats.articleCount') }}</span>
           <strong class="text-4xl font-black tabular-nums text-highlighted">{{
@@ -129,37 +165,62 @@
           }}</strong>
         </div>
       </aside>
+
+      <Transition name="fade-slide">
+        <UButton
+          v-if="showScrollCue"
+          to="#recommended"
+          square
+          color="neutral"
+          variant="soft"
+          icon="mdi:chevron-down"
+          class="absolute bottom-3 left-1/2 z-20 hidden -translate-x-1/2 animate-bounce rounded-full lg:inline-flex motion-reduce:animate-none"
+          :aria-label="$t('articles.home.browseArticles')"
+          @click="showScrollCue = false"
+        />
+      </Transition>
     </section>
 
     <section v-if="tags.length" class="space-y-5" aria-labelledby="topic-explorer-title">
       <h2 id="topic-explorer-title" class="text-2xl font-bold tracking-tight text-highlighted">
         {{ $t('articles.home.exploreTopics') }}
       </h2>
-      <div class="-mx-1 flex max-w-full gap-2 overflow-x-auto px-1 pb-2">
-        <UBadge
+      <div class="topic-strip -mx-1 flex max-w-full snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-3" tabindex="0">
+        <UButton
           v-for="tag in tags"
           :key="tag.id"
           as="button"
           type="button"
-          size="lg"
+          size="sm"
           :color="selectedTag === tag.name ? 'primary' : 'neutral'"
           :variant="selectedTag === tag.name ? 'solid' : 'soft'"
           :aria-pressed="selectedTag === tag.name"
-          class="shrink-0"
+          icon="mdi:tag-outline"
+          :ui="{
+            base: 'min-h-11 shrink-0 snap-start rounded-[var(--ui-radius)] px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+          }"
           @click="selectTopic(tag.name)"
         >
           {{ tag.name }}
-        </UBadge>
+        </UButton>
       </div>
     </section>
 
-    <section v-if="recommendedArticles.length" class="space-y-6" aria-labelledby="recommended-title">
+    <section
+      v-if="recommendedArticles.length"
+      id="recommended"
+      class="scroll-mt-24 space-y-6"
+      aria-labelledby="recommended-title"
+    >
       <h2 id="recommended-title" class="text-3xl font-bold tracking-tight text-highlighted">
         {{ $t('articles.home.recommended') }}
       </h2>
       <div class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
         <ArticleCard :article="recommendedArticles[0]!" variant="featured" />
-        <div v-if="recommendedArticles.length > 1" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
+        <div
+          v-if="recommendedArticles.length > 1"
+          class="grid h-full gap-6 sm:grid-cols-2 lg:grid-cols-1 lg:grid-rows-2"
+        >
           <ArticleCard
             v-for="article in recommendedArticles.slice(1, 3)"
             :key="article.id"
@@ -177,7 +238,8 @@
 
       <div
         v-if="hasContent || hasFilters"
-        class="sticky top-0 z-20 -mx-4 space-y-3 border-b border-default bg-default px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+        class="sticky z-20 w-full space-y-3 border border-transparent border-b-default bg-default/95 px-3 py-3 backdrop-blur"
+        :class="hasDashboardChrome ? 'top-0' : 'top-[var(--topiqu-header-height)]'"
       >
         <UFormField :label="$t('articles.searchPlaceholder')" :ui="{ label: 'sr-only' }" class="w-full">
           <UInput
@@ -186,7 +248,7 @@
             type="search"
             :placeholder="$t('articles.searchPlaceholder')"
             :aria-label="$t('articles.searchPlaceholder')"
-            icon="i-mdi-magnify"
+            icon="mdi:magnify"
             class="w-full"
           />
         </UFormField>
@@ -194,7 +256,7 @@
           <UBadge
             as="button"
             type="button"
-            size="sm"
+            size="md"
             :color="selectedTag === '' ? 'primary' : 'neutral'"
             :variant="selectedTag === '' ? 'solid' : 'soft'"
             :aria-pressed="selectedTag === ''"
@@ -207,7 +269,7 @@
             :key="tag.id"
             as="button"
             type="button"
-            size="sm"
+            size="md"
             :color="selectedTag === tag.name ? 'primary' : 'neutral'"
             :variant="selectedTag === tag.name ? 'solid' : 'soft'"
             :aria-pressed="selectedTag === tag.name"
@@ -231,7 +293,7 @@
           :index="idx"
         />
       </div>
-      <UEmpty v-else icon="i-mdi-file-search-outline" :title="$t('articles.noResults.message')" />
+      <UEmpty v-else icon="mdi:file-search-outline" :title="$t('articles.noResults.message')" />
 
       <div v-if="hasMore" class="text-center pt-4">
         <UButton :disabled="pending" :loading="pending" @click="loadMore">
@@ -287,7 +349,7 @@
           <h3 class="text-xl font-bold tracking-tight text-highlighted">{{ $t('common.auth.loginPrompt') }}</h3>
           <p class="mt-2 text-sm text-muted">{{ $t('common.auth.loginToComment') }}</p>
           <div class="mt-4">
-            <UButton :to="localePath({ name: 'autorizace' })" color="neutral" variant="solid" icon="i-mdi-login">
+            <UButton :to="localePath({ name: 'autorizace' })" color="neutral" variant="solid" icon="mdi:login">
               {{ $t('common.auth.login') }}
             </UButton>
           </div>
@@ -323,6 +385,7 @@ interface HomeArticle {
 }
 
 const { data: auth } = useAuth()
+const hasDashboardChrome = computed(() => ['admin', 'superadmin'].includes(auth.value?.user?.role || ''))
 const localePath = useLocalePath()
 const { locale } = useI18n()
 const clientSite = await useClientSite()
@@ -334,6 +397,34 @@ const page = shallowRef<number>(1)
 const limit = shallowRef<number>(15)
 const selectedTag = shallowRef<string>('')
 const searchQuery = shallowRef<string>('')
+const heroSection = useTemplateRef<HTMLElement>('heroSection')
+const showScrollCue = shallowRef(false)
+let scrollCueTimer: ReturnType<typeof setTimeout> | null = null
+
+const scheduleScrollCue = () => {
+  if (scrollCueTimer) clearTimeout(scrollCueTimer)
+  showScrollCue.value = false
+  const scroller = heroSection.value?.closest<HTMLElement>('.topiqu-dashboard-scroll')
+  if ((scroller?.scrollTop ?? window.scrollY) >= 8) return
+  scrollCueTimer = setTimeout(() => {
+    showScrollCue.value = (scroller?.scrollTop ?? window.scrollY) < 8
+  }, 4000)
+}
+
+onMounted(() => {
+  scheduleScrollCue()
+})
+
+useEventListener(
+  () => heroSection.value?.closest<HTMLElement>('.topiqu-dashboard-scroll') ?? window,
+  'scroll',
+  scheduleScrollCue,
+  { passive: true },
+)
+
+onBeforeUnmount(() => {
+  if (scrollCueTimer) clearTimeout(scrollCueTimer)
+})
 
 const query = computed(() => ({
   page: page.value,
@@ -416,10 +507,71 @@ const latestArticle = computed(
     )[0] ?? null,
 )
 const heroArticle = computed(() => featured.value || latestArticle.value)
+const heroArticlePath = computed(() =>
+  heroArticle.value?.slug ? localePath({ name: 'clanky-slug', params: { slug: heroArticle.value.slug } }) : '#',
+)
+const heroReactionState = useState<Record<string, { liked: boolean; likes: number }>>(
+  'article-card-reactions',
+  () => ({}),
+)
+const heroReaction = computed(() => {
+  const article = heroArticle.value
+  if (!article) return { liked: false, likes: 0 }
+  return (
+    heroReactionState.value[article.id] ?? {
+      liked: Boolean(article.likedByUser),
+      likes: article._count?.reactions ?? 0,
+    }
+  )
+})
+const heroLiked = computed(() => heroReaction.value.liked)
+const heroLiking = shallowRef(false)
+const toast = useToast()
+
+const toggleHeroLike = async () => {
+  const article = heroArticle.value
+  if (!article || heroLiking.value) return
+  heroLiking.value = true
+  try {
+    const result = await $fetch<{ liked: boolean; likes: number }>(`/api/articles/${article.id}/reaction`, {
+      method: 'POST',
+    })
+    heroReactionState.value = { ...heroReactionState.value, [article.id]: result }
+  } catch (error: any) {
+    toast.add({
+      color: 'error',
+      title: $t('articles.comments.reactionFailed'),
+      description: error?.data?.message,
+    })
+  } finally {
+    heroLiking.value = false
+  }
+}
+
+const shareHeroArticle = async () => {
+  const article = heroArticle.value
+  if (!article) return
+  const url = new URL(heroArticlePath.value, window.location.origin).href
+  try {
+    if (navigator.share) await navigator.share({ title: article.title, url })
+    else await navigator.clipboard.writeText(url)
+    await $fetch(`/api/articles/${article.id}/share`, {
+      method: 'POST',
+      body: { platform: 'OTHER' },
+    })
+  } catch (error) {
+    if ((error as DOMException)?.name !== 'AbortError') {
+      toast.add({ color: 'error', title: $t('common.messages.operationFailed') })
+    }
+  }
+}
 const primaryCtaArticle = computed(() => latestArticle.value || featured.value)
 const primaryCtaTo = computed(() =>
   primaryCtaArticle.value?.slug
-    ? localePath({ name: 'clanky-slug', params: { slug: primaryCtaArticle.value.slug } })
+    ? localePath({
+        name: 'clanky-slug',
+        params: { slug: primaryCtaArticle.value.slug },
+      })
     : '#articles',
 )
 const heroTags = computed(() =>
