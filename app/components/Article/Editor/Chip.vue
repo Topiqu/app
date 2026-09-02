@@ -6,13 +6,7 @@
     class="inline-flex items-center gap-1.5 max-w-56 rounded-full border font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     :class="[size === 'md' ? 'h-8 px-3 text-xs' : 'h-6 px-2.5 text-[11px]', surface, text]"
   >
-    <Icon
-      v-if="icon"
-      :name="icon"
-      class="shrink-0"
-      :class="size === 'md' ? 'w-3.5 h-3.5' : 'w-3 h-3'"
-      aria-hidden="true"
-    />
+    <UIcon v-if="icon" :name="icon" :size="size === 'md' ? 14 : 12" class="shrink-0" aria-hidden="true" />
     <!-- `text` is handed out because base.scss colours bare `span`/`label`/`a` directly, which
          beats anything inherited from this button: a slot that wraps its label in an element has
          to restate the colour, and guessing it in the consumer is how the series pill went dark

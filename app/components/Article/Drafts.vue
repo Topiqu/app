@@ -14,7 +14,7 @@
               v-model="searchQuery"
               :placeholder="$t('common.search')"
               :disabled="loading"
-              icon="i-mdi-magnify"
+              icon="mdi:magnify"
               class="w-full"
             />
           </UFormField>
@@ -54,12 +54,7 @@
             :key="draft.id"
             class="group relative min-w-0 overflow-hidden rounded-xl border border-default bg-default transition hover:border-primary/50 hover:shadow-md focus-within:ring-2 focus-within:ring-primary"
           >
-            <ULink
-              as="button"
-              type="button"
-              class="block size-full min-w-0 text-left"
-              @click="selectDraft(draft)"
-            >
+            <ULink as="button" type="button" class="block size-full min-w-0 text-left" @click="selectDraft(draft)">
               <AppMedia
                 :src="draft.imageUrl"
                 :alt="draft.title || $t('articles.articleCard.imageAlt')"
@@ -85,7 +80,7 @@
                 variant="soft"
                 size="sm"
                 square
-                icon="i-mdi-delete"
+                icon="mdi:delete"
                 class="absolute right-3 bottom-3 z-10"
                 :aria-label="$t('common.actions.delete')"
                 @click.stop="deleteDraft(draft.id)"
@@ -94,7 +89,7 @@
           </article>
         </div>
 
-        <UEmpty v-else icon="i-mdi-file-search-outline" :title="$t('common.noResults')" />
+        <UEmpty v-else icon="mdi:file-search-outline" :title="$t('common.noResults')" />
       </div>
     </template>
   </UModal>
@@ -124,9 +119,9 @@ const searchQuery = shallowRef('')
 const sortOption = shallowRef<'newest' | 'oldest' | 'alphabetical'>('newest')
 
 const sortItems = [
-  { value: 'newest', label: t('common.sortOptions.newest'), icon: 'i-mdi-clock-outline' },
-  { value: 'oldest', label: t('common.sortOptions.oldest'), icon: 'i-mdi-clock' },
-  { value: 'alphabetical', label: 'A-Z', icon: 'i-mdi-sort-alphabetical-ascending' },
+  { value: 'newest', label: t('common.sortOptions.newest'), icon: 'mdi:clock-outline' },
+  { value: 'oldest', label: t('common.sortOptions.oldest'), icon: 'mdi:clock' },
+  { value: 'alphabetical', label: 'A-Z', icon: 'mdi:sort-alphabetical-ascending' },
 ]
 
 const localDrafts = ref<ArticleDraft[]>([...props.drafts])

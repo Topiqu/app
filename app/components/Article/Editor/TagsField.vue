@@ -38,7 +38,7 @@
           @click="toggle(option.id)"
           @mousemove="highlighted = index"
         >
-          <Icon
+          <UIcon
             :name="isSelected(option.id) ? 'mdi:checkbox-marked-circle' : 'mdi:checkbox-blank-circle-outline'"
             class="w-3.5 h-3.5 shrink-0"
             :class="isSelected(option.id) ? 'text-indigo-500' : 'text-gray-300 dark:text-gray-600'"
@@ -61,7 +61,7 @@
           @click="createTag"
           @mousemove="highlighted = options.length"
         >
-          <Icon
+          <UIcon
             :name="creating ? 'mdi:loading' : 'mdi:plus'"
             class="w-3.5 h-3.5 shrink-0 text-indigo-500"
             :class="{ 'animate-spin motion-reduce:animate-none': creating }"

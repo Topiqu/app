@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-6" data-article-settings-panel>
     <section class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
-        <UIcon size="16" name="i-mdi-image-outline" />
+        <UIcon size="16" name="mdi:image-outline" />
         {{ $t('common.labels.image') }}
       </h3>
       <FileUploader
@@ -30,8 +30,8 @@
           variant="ghost"
           type="button"
           class="w-full"
-          icon="i-mdi-file-edit-outline"
-          :trailingIcon="aiOpen ? 'i-mdi-chevron-up' : 'i-mdi-chevron-down'"
+          icon="mdi:file-edit-outline"
+          :trailingIcon="aiOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"
           :label="$t('common.labels.aiGeneration')"
         />
         <template #content>
@@ -180,7 +180,7 @@
                   size="xs"
                   color="neutral"
                   variant="ghost"
-                  icon="i-mdi-stop-circle-outline"
+                  icon="mdi:stop-circle-outline"
                   @click="$emit('stop')"
                 >
                   {{ $t('articles.editor.ai.stopButton') }}
@@ -199,7 +199,7 @@
 
     <section class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
-        <UIcon size="16" name="i-mdi-bookmark-multiple-outline" />
+        <UIcon size="16" name="mdi:bookmark-multiple-outline" />
         {{ $t('common.labels.series') }}
       </h3>
       <ArticleSeriesSelector v-model="selectedSeries" />
@@ -209,7 +209,7 @@
 
     <section class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
-        <UIcon size="16" name="i-mdi-tag-multiple-outline" />
+        <UIcon size="16" name="mdi:tag-multiple-outline" />
         {{ $t('common.labels.tags') }}
       </h3>
       <TagsManager
@@ -225,7 +225,7 @@
 
     <section class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
-        <UIcon size="16" name="i-mdi-calendar-clock" />
+        <UIcon size="16" name="mdi:calendar-clock" />
         {{ $t('common.labels.releaseDate') }}
       </h3>
       <UFormField :label="$t('common.labels.releaseDate')" :ui="{ label: 'sr-only' }">
@@ -252,7 +252,7 @@
           size="sm"
           color="neutral"
           variant="ghost"
-          icon="i-mdi-close"
+          icon="mdi:close"
           @click="$emit('quickRelease', 'clear')"
         >
           {{ $t('articles.releaseQuick.clear') }}
@@ -378,10 +378,10 @@ const planSummary = computed(() =>
 )
 const resultIcon = computed(() =>
   props.aiLastResult?.status === 'completed'
-    ? 'i-mdi-check-decagram'
+    ? 'mdi:check-decagram'
     : props.aiLastResult?.status === 'failed'
-      ? 'i-mdi-alert-circle-outline'
-      : 'i-mdi-progress-alert',
+      ? 'mdi:alert-circle-outline'
+      : 'mdi:progress-alert',
 )
 const resultDescription = computed(() => {
   const result = props.aiLastResult
