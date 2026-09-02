@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full flex-col items-center gap-8">
-    <UBadge color="warning" variant="soft" icon="i-mdi-eye-off-outline">
+    <UBadge color="warning" variant="soft" icon="mdi:eye-off-outline">
       {{ $t('articles.empty.owner.badge') }}
     </UBadge>
 
@@ -19,7 +19,7 @@
     <div class="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
       <UButton
         :to="localePath({ name: 'admin-editor-id', params: { id: 'new' } })"
-        icon="i-mdi-pencil-plus-outline"
+        icon="mdi:pencil-plus-outline"
         size="lg"
       >
         {{ $t('articles.empty.owner.writeCta') }}
@@ -29,7 +29,7 @@
         :to="localePath({ name: 'admin-editor-id', params: { id: 'new' }, query: { ai: '1' } })"
         color="neutral"
         variant="outline"
-        icon="i-mdi-sparkles"
+        icon="mdi:sparkles"
         size="lg"
       >
         {{ $t('articles.empty.owner.aiCta') }}
@@ -56,13 +56,13 @@
             variant="ghost"
             :title="$t(`articles.empty.owner.steps.${step.id}.title`)"
             :description="$t(`articles.empty.owner.steps.${step.id}.description`)"
-            :icon="step.done ? 'i-mdi-check-circle' : step.icon"
+            :icon="step.done ? 'mdi:check-circle' : step.icon"
           />
           <UAlert
             v-else
             color="neutral"
             variant="subtle"
-            icon="i-mdi-lock-outline"
+            icon="mdi:lock-outline"
             :title="$t(`articles.empty.owner.steps.${step.id}.title`)"
             :description="$t('articles.empty.owner.locked')"
           />
@@ -70,7 +70,7 @@
       </ul>
     </UCard>
 
-    <UButton :to="localePath({ name: 'admin' })" color="neutral" variant="link" trailingIcon="i-mdi-arrow-right">
+    <UButton :to="localePath({ name: 'admin' })" color="neutral" variant="link" trailingIcon="mdi:arrow-right">
       {{ $t('articles.empty.owner.adminCta') }}
     </UButton>
   </div>
@@ -94,19 +94,19 @@ const canGenerateAi = computed(
 
 const stepMeta: Record<EmptySetupStepId, { icon: string; to: () => RouteLocationRaw }> = {
   article: {
-    icon: 'i-mdi-file-document-edit-outline',
+    icon: 'mdi:file-document-edit-outline',
     to: () => localePath({ name: 'admin-editor-id', params: { id: 'new' } }),
   },
   branding: {
-    icon: 'i-mdi-palette-outline',
+    icon: 'mdi:palette-outline',
     to: () => localePath({ name: 'settings', query: { tab: 'branding' } }),
   },
   voice: {
-    icon: 'i-mdi-robot-outline',
+    icon: 'mdi:robot-outline',
     to: () => localePath({ name: 'settings', query: { tab: 'content' } }),
   },
   domain: {
-    icon: 'i-mdi-web-check',
+    icon: 'mdi:web-check',
     to: () => localePath({ name: 'admin' }),
   },
 }
