@@ -15,9 +15,6 @@
           <strong class="text-lg text-primary">Topiqu</strong>
         </div>
         <span v-else class="text-sm font-semibold text-highlighted">{{ clientSite.name }}</span>
-        <UButton color="neutral" variant="soft" icon="i-mdi-cookie-settings-outline" @click="settingsOpen = true">
-          {{ $t('common.consent.openSettings') }}
-        </UButton>
       </div>
     </UFooter>
   </div>
@@ -25,5 +22,4 @@
 
 <script setup lang="ts">
 const clientSite = await useClientSite()
-const { settingsOpen } = useConsent(clientSite)
 </script>

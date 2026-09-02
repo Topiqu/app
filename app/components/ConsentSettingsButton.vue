@@ -4,8 +4,10 @@
       square
       color="neutral"
       variant="soft"
-      icon="i-mdi-cookie-settings-outline"
-      :ui="{ base: 'bottom-action-bar fixed right-3 bottom-3 z-overlay shadow-lg' }"
+      icon="mdi:cookie-settings-outline"
+      :ui="{
+        base: 'bottom-action-bar fixed right-6 bottom-4 z-overlay size-11 rounded-[var(--ui-radius)] border border-default bg-default shadow-lg sm:right-8 sm:bottom-6',
+      }"
       :aria-label="$t('common.consent.openSettings')"
       @click="settingsOpen = true"
     />
