@@ -10,7 +10,7 @@
     >
       <div class="flex items-center gap-3 min-w-0">
         <UButton
-          icon="i-mdi-arrow-left"
+          icon="mdi:arrow-left"
           color="neutral"
           variant="soft"
           :aria-label="$t('common.actions.back') || 'Back'"
@@ -40,13 +40,22 @@
             class="inline-flex items-center gap-1 text-[11px] font-medium text-primary"
             aria-live="polite"
           >
-            <Icon name="mdi:loading" class="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
+            <UIcon name="mdi:loading" class="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
             {{ $t('articles.editor.ai.generating') }}
           </span>
         </div>
       </div>
 
       <div class="flex w-full items-center gap-2 overflow-x-auto md:ml-auto md:w-auto md:overflow-visible">
+        <ArticleEditorLanguageTabs
+          v-if="isNew || tr.enabled"
+          v-model="editorLanguageModel"
+          class="shrink-0"
+          :primaryLanguage="primaryLanguage"
+          :targetLanguages="editorTargetLanguages"
+          :byLanguage="tr.byLanguage"
+          :sourceValue="isNew ? primaryLanguage : ''"
+        />
         <div v-if="autosaveVisible" class="hidden md:flex items-center gap-1.5 text-xs text-muted" aria-live="polite">
           <UIcon :name="saveStatusIcon" size="16" class="transition duration-300" :class="saveStatusClass" />
           <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
@@ -60,13 +69,13 @@
           v-if="livePath"
           :to="livePath"
           target="_blank"
-          icon="i-mdi-open-in-new"
+          icon="mdi:open-in-new"
           color="neutral"
           variant="ghost"
           :aria-label="$t('common.actions.view')"
         />
         <UButton
-          icon="i-mdi-eye-outline"
+          icon="mdi:eye-outline"
           color="neutral"
           variant="ghost"
           :aria-label="$t('articles.editor.preview.title')"
@@ -74,7 +83,7 @@
         />
 
         <UButton
-          icon="i-mdi-cog"
+          icon="mdi:cog"
           color="neutral"
           variant="soft"
           class="lg:hidden"
@@ -111,17 +120,14 @@
 
     <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
 
-    <div v-if="!isNew && tr.enabled" class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <ArticleEditorLanguageTabs
-        v-model="activeLanguageModel"
-        :primaryLanguage="primaryLanguage"
-        :targetLanguages="tr.targetLanguages"
-        :byLanguage="tr.byLanguage"
-      />
+    <div
+      v-if="!isNew && tr.enabled && !tr.isSource"
+      class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end"
+    >
       <div v-if="!tr.isSource" class="flex flex-wrap items-center gap-2">
         <UButton
           v-if="!tr.hasBody"
-          icon="i-mdi-translate"
+          icon="mdi:translate"
           :loading="tr.pending === 'translate'"
           :disabled="Boolean(tr.pending)"
           @click="tr.translateNow()"
@@ -132,7 +138,7 @@
           <UButton
             color="neutral"
             variant="soft"
-            icon="i-mdi-content-save-outline"
+            icon="mdi:content-save-outline"
             :loading="tr.pending === 'save'"
             :disabled="Boolean(tr.pending) || !tr.isDirty"
             @click="tr.save()"
@@ -140,7 +146,7 @@
             {{ $t('common.actions.saveChanges') }}
           </UButton>
           <UButton
-            icon="i-mdi-check-circle-outline"
+            icon="mdi:check-circle-outline"
             :loading="tr.pending === 'publish'"
             :disabled="Boolean(tr.pending) || tr.isDirty"
             @click="tr.save('PUBLISHED')"
@@ -150,7 +156,7 @@
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-mdi-translate"
+            icon="mdi:translate"
             :loading="tr.pending === 'translate'"
             :disabled="Boolean(tr.pending) || tr.isDirty"
             @click="tr.translateNow()"
@@ -160,7 +166,7 @@
           <UButton
             color="error"
             variant="ghost"
-            icon="i-mdi-delete-outline"
+            icon="mdi:delete-outline"
             :disabled="Boolean(tr.pending)"
             @click="discardTranslationOpen = true"
           >
@@ -175,7 +181,7 @@
       class="mb-6"
       color="neutral"
       variant="soft"
-      icon="i-mdi-translate"
+      icon="mdi:translate"
       :title="$t(`articles.translations.status.${tr.active?.status ?? 'MISSING'}`)"
       :description="$t(`articles.translations.empty.${tr.active?.status ?? 'MISSING'}`)"
     />
@@ -184,7 +190,7 @@
       v-if="!isNew && tr.error"
       class="mb-6"
       color="error"
-      icon="i-mdi-alert-circle-outline"
+      icon="mdi:alert-circle-outline"
       :title="$t('common.messages.loadFailedTitle')"
       :description="$t('common.messages.loadFailedText')"
     >
@@ -226,28 +232,25 @@
           <ArticleFaq :entries="readFaq(editedArticle.faq)" />
 
           <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
-            <UButton size="sm" icon="i-mdi-file-document-outline" @click="draftsOpen = true">
+            <UButton size="sm" icon="mdi:file-document-outline" @click="draftsOpen = true">
               {{ $t('articles.editor.drafts.loadDrafts') }}
             </UButton>
             <UAlert
               v-if="successMessage"
               color="success"
               variant="soft"
-              icon="i-mdi-check-circle"
+              icon="mdi:check-circle"
               :title="successMessage"
             />
           </div>
         </div>
       </div>
-      <aside class="sticky top-20 hidden max-h-[calc(100dvh-6rem)] self-start overflow-y-auto lg:block">
-        <div
-          v-if="settingsExpanded"
-          class="rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5"
-        >
+      <aside class="sticky top-20 hidden self-start lg:block">
+        <div v-if="settingsExpanded" class="rounded-(--topiqu-surface-radius) border border-default bg-default p-5">
           <div class="mb-5 flex items-center justify-between gap-3">
             <h2 class="font-semibold text-highlighted">{{ $t('articles.editor.settingsTitle') }}</h2>
             <UButton
-              icon="i-mdi-chevron-right"
+              icon="mdi:chevron-right"
               color="neutral"
               variant="ghost"
               square
@@ -285,7 +288,7 @@
         </div>
         <UButton
           v-else
-          icon="i-mdi-cog-outline"
+          icon="mdi:cog-outline"
           color="neutral"
           variant="soft"
           square
@@ -305,7 +308,7 @@
           <UButton color="neutral" variant="ghost" @click="discardTranslationOpen = false">
             {{ $t('common.actions.cancel') }}
           </UButton>
-          <UButton color="error" icon="i-mdi-delete-outline" @click="discardTranslation">
+          <UButton color="error" icon="mdi:delete-outline" @click="discardTranslation">
             {{ $t('articles.translations.actions.discard') }}
           </UButton>
         </div>
@@ -380,7 +383,7 @@
           <UButton color="neutral" variant="ghost" @click="discardConfirmOpen = false">{{
             $t('common.actions.cancel')
           }}</UButton>
-          <UButton color="error" size="sm" icon="i-mdi-trash-can-outline" @click="confirmDiscard">
+          <UButton color="error" size="sm" icon="mdi:trash-can-outline" @click="confirmDiscard">
             {{ $t('common.messages.discardConfirm') }}
           </UButton>
         </div>
@@ -394,12 +397,13 @@ import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
 import { readFaq } from '~~/shared/utils/articleFaq'
+import { translationDraft } from '~~/shared/utils/articleTranslations'
 import {
-  defaultArticleGenerationOptions,
   type ArticleGenerationBilling,
   type ArticleGenerationModule,
   type ArticleGenerationResult,
   type ArticleMediaProgress,
+  defaultArticleGenerationOptions,
 } from '~~/shared/utils/articleGeneration'
 
 import type {
@@ -414,6 +418,7 @@ const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
 const toast = useAppToast()
+const confirm = useConfirm()
 const { t } = useI18n()
 const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
 
@@ -449,6 +454,11 @@ const init = (): ArticleWithDetails =>
   }) as unknown as ArticleWithDetails
 
 const editedArticle = ref(init())
+const newArticleLanguage = shallowRef<Language>((clientSite?.language as Language) ?? 'en')
+const newLanguageDrafts = reactive<Record<Language, ReturnType<typeof translationDraft>>>({
+  cs: translationDraft(),
+  en: translationDraft(),
+})
 const selectedSeries = shallowRef<any>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
@@ -522,7 +532,7 @@ if (!isNew) {
 // the source, anything else edits that translation through the same fields.
 // Product routes intentionally have no public-domain client-site payload. The detail contract
 // carries the resolved source language, so editor tabs remain correct in the persistent shell.
-const primaryLanguage = article.value?.language ?? clientSite?.language ?? 'en'
+const primaryLanguage = (article.value?.language ?? clientSite?.language ?? 'en') as Language
 
 // `?lang=` lets the admin table deep-link straight to a language. The primary language is the
 // source tab, which the composable represents as an empty string. Seeded at construction rather
@@ -532,15 +542,45 @@ const initialLang = !isNew && requestedLang && requestedLang !== primaryLanguage
 
 const tr = reactive(useArticleTranslations(article.value?.id, initialLang))
 const discardTranslationOpen = shallowRef(false)
+const requestLanguageSwitch = async (language: string) => {
+  if (language === tr.activeLang) return
+  if (tr.isDirty) {
+    const discard = await confirm({
+      title: t('articles.translations.unsaved'),
+      message: t('common.messages.discardChangesText'),
+      confirmText: t('common.messages.discardConfirm'),
+      cancelText: t('common.actions.cancel'),
+      variant: 'danger',
+    })
+    if (!discard) return
+    tr.draft = translationDraft(tr.active)
+  }
+  tr.activeLang = language
+}
 const activeLanguageModel = computed({
   get: () => tr.activeLang,
   set: (language: string) => {
-    if (language === tr.activeLang) return
-    if (tr.isDirty) {
-      toast.add({ color: 'warning', title: t('articles.translations.unsaved') })
-      return
-    }
-    tr.activeLang = language
+    void requestLanguageSwitch(language)
+  },
+})
+const editorTargetLanguages = computed(() =>
+  isNew ? (['cs', 'en'] as Language[]).filter((language) => language !== primaryLanguage) : tr.targetLanguages,
+)
+const editorLanguageModel = computed({
+  get: () => (isNew ? newArticleLanguage.value : activeLanguageModel.value),
+  set: (language: string) => {
+    if (isNew) {
+      newLanguageDrafts[newArticleLanguage.value] = {
+        title: editedArticle.value.title ?? '',
+        excerpt: editedArticle.value.excerpt ?? '',
+        content: editedArticle.value.content ?? '',
+      }
+      const next = newLanguageDrafts[language as Language]
+      editedArticle.value.title = next.title
+      editedArticle.value.excerpt = next.excerpt
+      editedArticle.value.content = next.content
+      newArticleLanguage.value = language as Language
+    } else activeLanguageModel.value = language
   },
 })
 
@@ -564,10 +604,11 @@ const bodyEditable = computed(() => tr.isSource || tr.hasBody)
 watch(
   () => tr.activeLang,
   (language) => {
-    const query = { ...route.query }
-    if (language) query.lang = language
-    else delete query.lang
-    router.replace({ query })
+    if (!import.meta.client) return
+    const url = new URL(window.location.href)
+    if (language) url.searchParams.set('lang', language)
+    else url.searchParams.delete('lang')
+    window.history.replaceState(window.history.state, '', url)
   },
 )
 
@@ -606,7 +647,7 @@ const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.val
 const saveConfirmed = shallowRef(false)
 const { start: clearSaveConfirmed } = useTimeoutFn(() => (saveConfirmed.value = false), 1400, { immediate: false })
 const saveStatusIcon = computed(() =>
-  saving.value ? 'i-mdi-cloud-sync' : saveConfirmed.value ? 'i-mdi-check-circle' : 'i-mdi-cloud-check',
+  saving.value ? 'mdi:cloud-sync' : saveConfirmed.value ? 'mdi:check-circle' : 'mdi:cloud-check',
 )
 const saveStatusClass = computed(() =>
   saving.value
@@ -640,7 +681,12 @@ const releaseAtInput = computed<string | null>({
 })
 
 const updateSlug = () => {
-  if (isNew) editedArticle.value.slug = slugify(editedArticle.value.title, { lower: true, strict: true, trim: true })
+  if (isNew)
+    editedArticle.value.slug = slugify(editedArticle.value.title, {
+      lower: true,
+      strict: true,
+      trim: true,
+    })
 }
 const addTag = (id: string) => {
   if (!articleTags.value.includes(id)) articleTags.value.push(id)
@@ -785,10 +831,21 @@ const generateAIContent = async () => {
       tokenRemaining: (billing as ArticleGenerationBilling | null)?.tokenRemaining ?? null,
       missingModules,
     }
-    if (outcome === 'aborted') toast.add({ color: 'info', title: t('articles.editor.ai.aiContentStopped') })
+    if (outcome === 'aborted')
+      toast.add({
+        color: 'info',
+        title: t('articles.editor.ai.aiContentStopped'),
+      })
     else if (missingModules.includes('images'))
-      toast.add({ color: 'warning', title: t('articles.editor.aiImagesUnavailable') })
-    else toast.add({ color: 'success', title: t('articles.editor.aiContentGenerated') })
+      toast.add({
+        color: 'warning',
+        title: t('articles.editor.aiImagesUnavailable'),
+      })
+    else
+      toast.add({
+        color: 'success',
+        title: t('articles.editor.aiContentGenerated'),
+      })
   } catch (error: any) {
     aiLastResult.value = {
       status: finalReceived ? 'partial' : 'failed',
@@ -814,7 +871,16 @@ const generateAIContent = async () => {
 
 const submit = async (targetStatus: 'draft' | 'published') => {
   if (submitting.value) return
-  if (!editedArticle.value.title) return toast.add({ color: 'error', title: 'Title is required' })
+  if (isNew) {
+    newLanguageDrafts[newArticleLanguage.value] = {
+      title: editedArticle.value.title ?? '',
+      excerpt: editedArticle.value.excerpt ?? '',
+      content: editedArticle.value.content ?? '',
+    }
+  }
+  const sourceDraft = isNew ? newLanguageDrafts[primaryLanguage] : null
+  if (!(sourceDraft?.title ?? editedArticle.value.title))
+    return toast.add({ color: 'error', title: 'Title is required' })
 
   const releaseAt = editedArticle.value.releaseAt ? new Date(editedArticle.value.releaseAt) : null
   const schedulesForLater = targetStatus === 'published' && !!releaseAt && releaseAt.getTime() > Date.now()
@@ -822,6 +888,14 @@ const submit = async (targetStatus: 'draft' | 'published') => {
 
   const payload = {
     ...editedArticle.value,
+    ...(sourceDraft
+      ? {
+          title: sourceDraft.title,
+          excerpt: sourceDraft.excerpt,
+          content: sourceDraft.content,
+          slug: slugify(sourceDraft.title, { lower: true, strict: true, trim: true }),
+        }
+      : {}),
     status: targetStatus,
     imageUrl: editedArticle.value.imageUrl,
     articleSeriesId: selectedSeries.value?.id || null,
@@ -833,8 +907,24 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   submitting.value = true
   try {
     if (isNew) {
-      const created = await $fetch<{ slug: string }>('/api/articles', { method: 'POST', body: payload })
-      toast.add({ color: 'success', title: targetStatus === 'published' ? 'Article published' : 'Draft created' })
+      const created = await $fetch<{ id: string; slug: string }>('/api/articles', {
+        method: 'POST',
+        body: payload,
+      })
+      await Promise.all(
+        (Object.entries(newLanguageDrafts) as [Language, ReturnType<typeof translationDraft>][])
+          .filter(([language, draft]) => language !== primaryLanguage && draft.title && draft.content)
+          .map(([language, draft]) =>
+            $fetch(`/api/articles/${created.id}/translations`, {
+              method: 'POST',
+              body: { language, ...draft },
+            }),
+          ),
+      )
+      toast.add({
+        color: 'success',
+        title: targetStatus === 'published' ? 'Article published' : 'Draft created',
+      })
       await invalidateArticlesAndStats()
       // The route param is the slug, and changing it remounts the page (Nuxt's default page key
       // interpolates params) — which is what we want exactly once: `useArticleTranslations` bakes
@@ -843,18 +933,28 @@ const submit = async (targetStatus: 'draft' | 'published') => {
       allowNavigation.value = true
       await router.replace(localePath({ name: 'admin-editor-id', params: { id: created.slug } }))
     } else {
-      await $fetch(`/api/articles/${article.value!.id}`, { method: 'PATCH', body: payload })
+      await $fetch(`/api/articles/${article.value!.id}`, {
+        method: 'PATCH',
+        body: payload,
+      })
       toast.add({ color: 'success', title: 'Article updated' })
       await invalidateArticles()
       // Stay in the document. Re-baseline the two fields `hasChanges` compares, or leaving would
       // prompt to discard work that is already saved.
-      article.value = { ...article.value!, title: payload.title, content: payload.content }
+      article.value = {
+        ...article.value!,
+        title: payload.title,
+        content: payload.content,
+      }
       editedArticle.value.status = effectiveStatus
       editedArticle.value.sources = payload.sources
       sourceBaseline.value = serializeSourceState()
     }
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || 'Error saving article' })
+    toast.add({
+      color: 'error',
+      title: e.data?.message || 'Error saving article',
+    })
   } finally {
     submitting.value = false
   }
@@ -907,7 +1007,12 @@ const discardTranslation = async () => {
 watch(
   () => editedArticle.value.title,
   (newTitle) => {
-    if (isNew) editedArticle.value.slug = slugify(newTitle, { lower: true, strict: true, trim: true })
+    if (isNew)
+      editedArticle.value.slug = slugify(newTitle, {
+        lower: true,
+        strict: true,
+        trim: true,
+      })
   },
 )
 </script>

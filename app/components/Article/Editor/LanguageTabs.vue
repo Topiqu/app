@@ -1,26 +1,18 @@
 <template>
-  <div
-    class="flex items-center gap-1 rounded-lg border border-default bg-muted p-1"
-    role="tablist"
-    :aria-label="$t('articles.translations.languageTabs')"
-  >
+  <UDropdownMenu :items="menuItems" :content="{ align: 'end' }">
     <UButton
-      v-for="tab in tabs"
-      :key="tab.lang"
       type="button"
-      role="tab"
-      :aria-selected="tab.lang === modelValue"
-      :title="tab.hint"
       size="sm"
-      :color="tab.lang === modelValue ? 'primary' : 'neutral'"
-      :variant="tab.lang === modelValue ? 'solid' : 'ghost'"
-      class="uppercase tracking-wide"
-      @click="modelValue = tab.lang"
+      color="neutral"
+      variant="ghost"
+      icon="mdi:translate"
+      trailingIcon="mdi:chevron-down"
+      class="uppercase tracking-wide text-muted hover:text-highlighted"
+      :aria-label="$t('articles.translations.languageTabs')"
     >
-      {{ tab.code }}
-      <span v-if="tab.dot" class="w-1.5 h-1.5 rounded-full" :class="tab.dot" />
+      {{ activeTab?.code }}
     </UButton>
-  </div>
+  </UDropdownMenu>
 </template>
 
 <script setup lang="ts">
@@ -28,17 +20,23 @@ import { translationStatusDot, type ArticleTranslationRow } from '~~/shared/util
 
 const modelValue = defineModel<string>({ required: true })
 
-const { primaryLanguage, targetLanguages, byLanguage } = defineProps<{
+const {
+  primaryLanguage,
+  targetLanguages,
+  byLanguage,
+  sourceValue = '',
+} = defineProps<{
   primaryLanguage: string
   targetLanguages: string[]
   byLanguage: Record<string, ArticleTranslationRow | undefined>
+  sourceValue?: string
 }>()
 
 const { t } = useI18n()
 
 /** The source tab is `''` so the page can branch on one flag; the label still shows its code. */
 const tabs = computed(() => [
-  { lang: '', code: primaryLanguage, hint: t('articles.translations.sourceTab'), dot: '' },
+  { lang: sourceValue, code: primaryLanguage, hint: t('articles.translations.sourceTab'), dot: '' },
   ...targetLanguages.map((lang) => ({
     lang,
     code: lang,
@@ -46,4 +44,14 @@ const tabs = computed(() => [
     dot: translationStatusDot(byLanguage[lang]?.status),
   })),
 ])
+const activeTab = computed(() => tabs.value.find((tab) => tab.lang === modelValue.value) ?? tabs.value[0])
+const menuItems = computed(() =>
+  tabs.value.map((tab) => ({
+    label: tab.hint,
+    icon: tab.lang === modelValue.value ? 'mdi:check' : 'mdi:translate',
+    onSelect: () => {
+      modelValue.value = tab.lang
+    },
+  })),
+)
 </script>
