@@ -4,7 +4,7 @@
       <h2
         class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-500 dark:text-gray-400"
       >
-        <Icon name="mdi:auto-fix" class="w-3.5 h-3.5 text-indigo-500" />
+        <UIcon name="mdi:auto-fix" class="w-3.5 h-3.5 text-indigo-500" />
         {{ $t('common.labels.aiGeneration') }}
       </h2>
       <span
@@ -18,7 +18,7 @@
     </div>
 
     <div
-      class="relative overflow-hidden rounded-2xl border bg-white dark:bg-gray-900 transition-colors"
+      class="relative overflow-hidden rounded-(--topiqu-surface-radius) border bg-white dark:bg-gray-900 transition-colors"
       :class="
         generating || focused
           ? 'border-indigo-400 dark:border-indigo-500/70'
@@ -74,13 +74,13 @@
                     : 'text-gray-300 dark:text-gray-600'
               "
             >
-              <Icon
+              <UIcon
                 v-if="stepState(step) === 'done'"
                 name="mdi:check-circle"
                 class="w-3.5 h-3.5 shrink-0"
                 aria-hidden="true"
               />
-              <Icon
+              <UIcon
                 v-else-if="stepState(step) === 'active'"
                 name="mdi:loading"
                 class="w-3.5 h-3.5 shrink-0 animate-spin motion-reduce:animate-none"
@@ -90,7 +90,7 @@
                 <span class="w-1.5 h-1.5 rounded-full bg-current" />
               </span>
               <span class="truncate">{{ $t(`articles.editor.ai.step.${step}`) }}</span>
-              <Icon
+              <UIcon
                 v-if="i < steps.length - 1"
                 name="mdi:chevron-right"
                 class="w-3.5 h-3.5 text-gray-300 dark:text-gray-700 shrink-0"
@@ -164,7 +164,12 @@ const promptId = useId()
 
 const steps: Phase[] = ['writing', 'images']
 
-const formats = computed(() => AI_FORMATS.map((id) => ({ id, label: t(`articles.editor.ai.formats.${id}.label`) })))
+const formats = computed(() =>
+  AI_FORMATS.map((id) => ({
+    id,
+    label: t(`articles.editor.ai.formats.${id}.label`),
+  })),
+)
 
 const focused = shallowRef(false)
 const enhancing = shallowRef(false)
@@ -178,7 +183,9 @@ const finalized = shallowRef(false)
 const streamedWords = shallowRef(0)
 const elapsedMs = shallowRef(0)
 
-const { textarea, input: topic } = useTextareaAutosize({ styleProp: 'minHeight' })
+const { textarea, input: topic } = useTextareaAutosize({
+  styleProp: 'minHeight',
+})
 
 const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
 
@@ -218,7 +225,9 @@ const enhance = async () => {
     originalTopic.value = before
     enhancedTopic.value = prompt
   } catch (e: any) {
-    toast.error({ message: e.data?.message || t('articles.editor.ai.enhanceFailed') })
+    toast.error({
+      message: e.data?.message || t('articles.editor.ai.enhanceFailed'),
+    })
   } finally {
     enhancing.value = false
   }
