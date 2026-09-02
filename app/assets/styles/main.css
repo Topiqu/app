@@ -68,7 +68,34 @@
 .publication-surface {
   --topiqu-tenant-accent: var(--topiqu-tenant-accent-light, var(--ui-primary));
   --ui-primary: var(--topiqu-tenant-accent);
-  font-family: var(--topiqu-publication-font, ui-sans-serif, system-ui, sans-serif);
+  font-family: var(
+    --topiqu-publication-font,
+    Inter,
+    'Noto Sans',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif
+  );
+}
+
+/* Editorial fallbacks stay bounded and intentional when remote media fails. */
+.article-content figure {
+  margin-block: 2.25rem;
+}
+
+.article-content blockquote {
+  margin-block: 2rem;
+  border-left: 3px solid var(--topiqu-tenant-accent);
+  border-radius: var(--ui-radius);
+  padding: 1rem 1.25rem;
+  line-height: 1.75;
+}
+
+.topic-strip {
+  scrollbar-width: thin;
+  overscroll-behavior-inline: contain;
 }
 
 .confirm-dialog-content {
@@ -213,25 +240,30 @@ main {
 }
 
 .article-inline-image-fallback {
-  display: inline-flex;
-  min-height: 2.5rem;
+  display: grid;
+  min-height: 7rem;
   max-width: 100%;
-  align-items: center;
+  place-items: center;
   gap: 0.5rem;
-  margin-block: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  margin-block: 1.75rem;
+  padding: 1.25rem;
   border: 1px solid var(--ui-border);
-  border-radius: var(--ui-radius);
+  border-radius: var(--topiqu-surface-radius);
   background: var(--ui-bg-elevated);
   color: var(--ui-text-muted);
   font-family: var(--ui-font-sans);
   font-size: 0.875rem;
-  line-height: 1.25rem;
+  line-height: 1.5rem;
+  text-align: center;
 }
 
-.article-inline-image-fallback::before {
-  content: '\1F5BC';
-  flex: none;
+.article-inline-image-fallback__mark {
+  width: 2rem;
+  height: 2rem;
+  background: currentColor;
+  opacity: 0.8;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M21 19V5c0-1.1-.9-2-2-2H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2M8.5 13.5l2.5 3.01L14.5 12l4.5 6H5z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 
 .topiqu-dashboard-scroll {
@@ -247,7 +279,16 @@ main {
 .article-content {
   max-width: 68ch;
   color: var(--ui-text);
-  font-family: var(--ui-font-sans);
+  font-family: var(
+    --topiqu-publication-font,
+    Inter,
+    'Noto Sans',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif
+  );
   font-size: clamp(1rem, 0.96rem + 0.16vw, 1.125rem);
   line-height: 1.72;
 }
@@ -373,15 +414,27 @@ main {
 
 .article-content blockquote,
 .tiptap blockquote {
-  margin-block: 1rem;
+  position: relative;
+  margin-block: 1.75rem;
+  border: 1px solid var(--ui-border);
   border-left: 4px solid var(--ui-primary);
-  border-radius: calc(var(--ui-radius) * 0.6);
-  background: var(--ui-bg-elevated);
-  padding: 0.75rem 1rem;
+  border-radius: var(--topiqu-surface-radius);
+  background: color-mix(in oklab, var(--ui-primary) 5%, var(--ui-bg));
+  padding: 1.1rem 1.25rem 1.1rem 1.5rem;
   color: var(--ui-text);
   font-family: inherit;
   font-style: normal;
   font-weight: 500;
+  quotes: none;
+}
+
+.article-content blockquote > :first-child,
+.tiptap blockquote > :first-child {
+  margin-top: 0;
+}
+.article-content blockquote > :last-child,
+.tiptap blockquote > :last-child {
+  margin-bottom: 0;
 }
 
 /* Published tables are server-wrapped with `.article-table`. Keeping the descendant rules in

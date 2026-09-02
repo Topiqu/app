@@ -21,11 +21,11 @@
       </template>
 
       <div class="flex items-center gap-2">
-        <UIcon size="16" name="i-mdi-calendar" />{{ formatDate(article.createdAt) }}
+        <UIcon size="16" name="mdi:calendar" />{{ formatDate(article.createdAt) }}
       </div>
       <span>|</span>
       <div class="flex items-center gap-2">
-        <UIcon size="16" name="i-mdi-clock-outline" />{{ $t('articles.readingTime', [article.readingTime]) }}
+        <UIcon size="16" name="mdi:clock-outline" />{{ $t('articles.readingTime', [article.readingTime]) }}
       </div>
     </div>
 
@@ -34,11 +34,11 @@
         <span>{{ formatNumber(article.views) }}x {{ $t('stats.totalViews.title') }}</span>
       </div>
       <div class="flex items-center gap-1">
-        <UIcon size="16" name="i-mdi-heart" :class="article.likedByUser ? 'text-error' : 'text-muted'" />
+        <UIcon size="16" name="mdi:heart" :class="article.likedByUser ? 'text-error' : 'text-muted'" />
         <span>{{ formatNumber(article.likes) }}</span>
       </div>
       <div class="flex items-center gap-1">
-        <UIcon size="16" name="i-mdi-share-variant" /><span>{{ formatNumber(article.shared) }}</span>
+        <UIcon size="16" name="mdi:share-variant" /><span>{{ formatNumber(article.shared) }}</span>
       </div>
 
       <UButton
@@ -46,7 +46,7 @@
         color="primary"
         variant="soft"
         square
-        icon="i-mdi-pencil"
+        icon="mdi:pencil"
         :to="localePath({ name: 'admin-editor-id', params: { id: article.sourceSlug || article.slug } })"
         :aria-label="$t('common.actions.edit')"
       />

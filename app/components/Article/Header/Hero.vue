@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-4">
     <div v-if="series" class="flex items-center gap-3">
-      <UBadge color="primary" variant="soft" icon="i-mdi-bookshelf">
+      <UBadge color="primary" variant="soft" icon="mdi:bookshelf">
         {{ $t('series.label', 'Série') }}
       </UBadge>
       <span class="text-sm font-medium text-muted">
@@ -16,25 +16,18 @@
     </h1>
 
     <div class="flex items-center gap-3 text-muted">
-      <UserPicture :url="author.avatarUrl" :size="'md'" :name="author.username" />
-      <div class="flex flex-col">
+      <UserCard
+        v-if="author.id && author.username"
+        :user="{ id: author.id, username: author.username, avatarUrl: author.avatarUrl, bio: author.bio }"
+        size="large"
+        :roleLabel="$t('articles.articleCard.author')"
+      />
+      <div v-if="showFollowButton" class="flex flex-col">
         <div class="flex items-center gap-2">
-          <ULink v-if="author.username" :to="localePath({ name: 'autor-name', params: { name: author.username } })">
-            {{ author.username }}
-          </ULink>
-          <span v-else class="text-[17px] font-medium text-highlighted">{{ $t('common.user.notAvailable') }}</span>
-          <span class="text-sm italic text-muted">• {{ $t('articles.articleCard.author') }}</span>
-        </div>
-        <div class="flex items-center gap-2 mt-1">
-          <UBadge color="neutral" variant="soft" icon="i-mdi-account-group">
-            {{ followerCount }}
-            {{ $t('profile.followers') }}
-          </UBadge>
           <UButton
-            v-if="showFollowButton"
             :color="isFollowing ? 'primary' : 'neutral'"
             :variant="isFollowing ? 'solid' : 'soft'"
-            :icon="isFollowing ? 'i-mdi-account-check' : 'i-mdi-account-plus'"
+            :icon="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
             @click="$emit('follow')"
           >
             {{ isFollowing ? $t('profile.unfollow') : $t('profile.follow') }}
@@ -43,9 +36,12 @@
       </div>
     </div>
 
-    <UCard v-if="excerpt"
-      ><p class="text-lg italic leading-relaxed text-highlighted md:text-xl">{{ excerpt }}</p></UCard
+    <p
+      v-if="excerpt"
+      class="rounded-[var(--ui-radius)] border-l-3 border-primary bg-elevated px-5 py-4 text-lg italic leading-relaxed text-highlighted md:text-xl"
     >
+      {{ excerpt }}
+    </p>
 
     <AppMedia
       :src="imageUrl"
@@ -63,11 +59,9 @@
 <script setup lang="ts">
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
-const localePath = useLocalePath()
-
 defineProps<{
   title: string
-  author: { username: string; avatarUrl?: string | null }
+  author: { id?: string; username: string; avatarUrl?: string | null; bio?: string | null }
   followerCount: number
   isFollowing: boolean
   showFollowButton: boolean

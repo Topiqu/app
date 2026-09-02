@@ -15,9 +15,15 @@ import { canOptimizeImageUrl } from '~~/shared/utils/imageHosts'
 import { optimizeArticleImages } from '~~/shared/utils/articleImages'
 
 // Blocks come pre-built. Splitting here (in `onMounted`) left the SSR HTML with an empty body.
-const props = withDefaults(defineProps<{ blocks: ArticleBlock[]; articleId: string; discloseAi?: boolean }>(), {
-  discloseAi: true,
-})
+const {
+  blocks,
+  articleId,
+  discloseAi = true,
+} = defineProps<{
+  blocks: ArticleBlock[]
+  articleId: string
+  discloseAi?: boolean
+}>()
 const root = useTemplateRef<HTMLElement>('root')
 const image = useImage()
 const transformArticleImage = (source: string, width: number) =>
@@ -40,7 +46,12 @@ const handleMediaError = (event: Event) => {
   fallback.className = 'article-inline-image-fallback'
   fallback.setAttribute('role', 'img')
   fallback.setAttribute('aria-label', failed.alt || $t('articles.columns.imageUrl'))
-  fallback.textContent = failed.alt || $t('articles.columns.imageUrl')
+  const icon = document.createElement('span')
+  icon.className = 'article-inline-image-fallback__mark'
+  icon.setAttribute('aria-hidden', 'true')
+  const label = document.createElement('span')
+  label.textContent = failed.alt || failed.currentSrc.split('/').pop() || $t('articles.columns.imageUrl')
+  fallback.append(icon, label)
   failed.replaceWith(fallback)
 }
 
@@ -58,7 +69,7 @@ onMounted(() => {
 // The span is the current format. The two text alternatives keep the toggle effective for old
 // articles and for captions round-tripped through TipTap, which may flatten unknown attributes.
 const visibleHtml = (html: string) => {
-  const visible = props.discloseAi
+  const visible = discloseAi
     ? html
     : html
         .replace(/<span\s+data-ai-disclosure(?:="")?>(.*?)<\/span>/gi, '')

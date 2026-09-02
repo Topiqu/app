@@ -3,8 +3,8 @@
     <UButton
       color="neutral"
       variant="soft"
-      icon="i-mdi-translate"
-      trailingIcon="i-mdi-chevron-down"
+      icon="mdi:translate"
+      trailingIcon="mdi:chevron-down"
       :label="currentLabel"
       :aria-label="$t('articles.translations.languageTabs')"
     />
@@ -76,7 +76,7 @@ const currentLabel = computed(() => $t(`languages.${current ?? links.value[0]?.l
 const publicItems = computed(() =>
   links.value.map((link) => ({
     label: $t(`languages.${link.language}`),
-    icon: link.current ? 'i-mdi-check' : 'i-mdi-translate',
+    icon: link.current ? 'mdi:check' : 'mdi:translate',
     onSelect: () => navigateTo(link.to),
   })),
 )

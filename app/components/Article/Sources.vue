@@ -41,7 +41,7 @@
           </div>
         </div>
         <UButton
-          icon="i-mdi-delete"
+          icon="mdi:delete"
           color="error"
           variant="ghost"
           square
@@ -50,7 +50,7 @@
         />
       </li>
     </ol>
-    <UButton icon="i-mdi-plus" color="neutral" variant="soft" size="sm" @click="addSource">
+    <UButton icon="mdi:plus" color="neutral" variant="soft" size="sm" @click="addSource">
       {{ $t('articles.tags.addButton') }}
     </UButton>
   </fieldset>
