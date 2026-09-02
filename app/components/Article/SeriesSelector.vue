@@ -10,7 +10,7 @@
           :color="open ? 'primary' : 'neutral'"
           :variant="open ? 'soft' : 'outline'"
           class="w-full"
-          trailingIcon="i-mdi-chevron-down"
+          trailingIcon="mdi:chevron-down"
         >
           <span
             class="break-words text-left text-sm font-medium transition-colors"
@@ -25,7 +25,7 @@
     <UCard v-if="modelValue" class="mt-1">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3 overflow-hidden">
-          <UIcon name="i-mdi-playlist-play" size="20" class="shrink-0" />
+          <UIcon name="mdi:playlist-play" size="20" class="shrink-0" />
           <div class="flex flex-col min-w-0">
             <span class="break-words text-sm font-semibold text-highlighted">
               {{ modelValue.name }}
@@ -41,7 +41,7 @@
           variant="ghost"
           type="button"
           square
-          icon="i-mdi-close"
+          icon="mdi:close"
           :title="$t('common.actions.delete')"
           @click="modelValue = null"
         />
@@ -71,7 +71,7 @@
           <UButton
             size="sm"
             color="primary"
-            icon="i-mdi-check"
+            icon="mdi:check"
             :disabled="!newSeriesName.trim()"
             @click="createAndSelect"
           >
@@ -102,7 +102,7 @@ const seriesItems = computed(() =>
   series.value.map((s) => ({
     id: s.id,
     label: s.name,
-    icon: 'i-mdi-bookmark-outline',
+    icon: 'mdi:bookmark-outline',
     onSelect: () => (modelValue.value = s),
   })),
 )
@@ -110,7 +110,7 @@ const seriesItems = computed(() =>
 const createItem = computed(() => ({
   id: 'create',
   label: $t('series.createNew', 'Vytvořit novou sérii...'),
-  icon: 'i-mdi-plus-circle-outline',
+  icon: 'mdi:plus-circle-outline',
   onSelect: () => (createModal.value = true),
 }))
 
