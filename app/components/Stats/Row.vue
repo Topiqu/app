@@ -17,7 +17,7 @@
     </span>
     <!-- Decorative: the metric is named by the unit in `value` ("4 zobrazení"), so the glyph
          repeats it rather than carrying it. -->
-    <Icon
+    <UIcon
       v-else-if="icon"
       :name="icon"
       class="size-4 shrink-0 text-neutral-400 dark:text-neutral-500"

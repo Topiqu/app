@@ -1,5 +1,15 @@
 <template>
-  <UModal v-model:open="open" :title="$t('stats.title')" class="max-w-5xl">
+  <UModal
+    v-model:open="open"
+    :title="$t('stats.title')"
+    :ui="{
+      content:
+        'stats-dialog flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none flex-col max-sm:size-full max-sm:max-h-none max-sm:rounded-none sm:w-[min(72rem,calc(100vw-3rem))]',
+      header: 'shrink-0',
+      body: 'min-h-0 flex-1 overflow-y-auto p-5 sm:p-6',
+      footer: 'shrink-0',
+    }"
+  >
     <template #default="actions">
       <slot v-bind="actions" />
     </template>
@@ -8,7 +18,7 @@
       <div class="flex w-full min-w-0 items-center justify-between gap-3">
         <h2 class="truncate text-lg font-semibold text-highlighted">{{ $t('stats.title') }}</h2>
         <UButton
-          icon="i-mdi-close"
+          icon="mdi:close"
           color="neutral"
           variant="ghost"
           square
@@ -37,7 +47,7 @@
       </div>
 
       <div v-else-if="loadFailed" class="flex flex-col items-center gap-3 py-12 text-center">
-        <Icon name="mdi:alert-circle-outline" class="size-10 text-red-500" />
+        <UIcon name="mdi:alert-circle-outline" class="size-10 text-red-500" />
         <p class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
           {{ $t('common.messages.loadFailedTitle') }}
         </p>
@@ -46,16 +56,16 @@
       </div>
 
       <div v-else-if="stats.articleCount === 0" class="flex flex-col items-center gap-3 py-12 text-center">
-        <Icon name="mdi:book-off-outline" class="size-10 text-neutral-300 dark:text-neutral-600" />
+        <UIcon name="mdi:book-off-outline" class="size-10 text-neutral-300 dark:text-neutral-600" />
         <p class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{{ $t('stats.noArticles.title') }}</p>
         <p class="text-sm text-neutral-500 dark:text-neutral-400">{{ $t('stats.noArticles.description') }}</p>
       </div>
 
-      <div v-else class="space-y-10">
+      <div v-else class="grid gap-x-10 gap-y-7 lg:grid-cols-2 lg:items-start">
         <!-- BASIC sees the offer before the half-empty report, not after scrolling past it. -->
         <div
           v-if="isBasicPlan"
-          class="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-5 sm:flex-row sm:items-center sm:justify-between dark:border-neutral-800 dark:bg-neutral-800/40"
+          class="flex flex-col gap-3 rounded-(--topiqu-surface-radius) border border-neutral-200 bg-neutral-50 p-5 sm:flex-row sm:items-center sm:justify-between dark:border-neutral-800 dark:bg-neutral-800/40 lg:col-span-2"
         >
           <div class="min-w-0">
             <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
@@ -74,7 +84,7 @@
 
         <!-- The payload: three numbers the whole modal exists to deliver. -->
         <section
-          class="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:divide-x sm:divide-neutral-200 dark:sm:divide-neutral-800"
+          class="grid grid-cols-1 gap-6 rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated/40 p-5 sm:grid-cols-3 sm:divide-x sm:divide-default lg:col-span-2"
         >
           <div class="sm:pr-6">
             <p class="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -110,7 +120,7 @@
             >
               {{ $t('stats.savedAmount.title') }}
               <span v-tippy="{ content: savingsTooltip, theme: 'light', placement: 'top' }" class="inline-flex">
-                <Icon name="mdi:help-circle-outline" class="size-3.5 cursor-help" />
+                <UIcon name="mdi:help-circle-outline" class="size-3.5 cursor-help" />
               </span>
             </p>
             <p
@@ -124,162 +134,186 @@
           </div>
         </section>
 
-        <section>
-          <StatsSectionHeading :title="$t('stats.sections.content')" :note="concentrationNote" />
-          <div class="mt-3 space-y-1">
-            <StatsRow
-              v-if="stats.topArticle"
-              icon="mdi:trophy-outline"
-              :label="stats.topArticle.title"
-              :value="plural('stats.viewsUnit', stats.topArticle.views)"
-              :to="localePath({ name: 'clanky-slug', params: { slug: stats.topArticle.slug } })"
-            />
-            <StatsRow
-              v-if="stats.topLikedArticle"
-              icon="mdi:heart-outline"
-              :label="stats.topLikedArticle.title"
-              :value="plural('stats.topLikedArticle.likes', stats.topLikedArticle.likes)"
-              :to="localePath({ name: 'clanky-slug', params: { slug: stats.topLikedArticle.slug } })"
-            />
-            <StatsRow
-              v-if="stats.topCommentedArticle"
-              icon="mdi:comment-outline"
-              :label="stats.topCommentedArticle.title"
-              :value="plural('articles.comments.unit', stats.topCommentedArticle.comments)"
-              :to="localePath({ name: 'clanky-slug', params: { slug: stats.topCommentedArticle.slug } })"
-            />
-            <p v-if="!hasContentHighlights" class="py-2 text-sm text-neutral-500 dark:text-neutral-400">
-              {{ $t('stats.topArticle.noViews') }}
-            </p>
-          </div>
-        </section>
-
-        <section v-if="!isBasicPlan">
-          <StatsSectionHeading :title="$t('stats.topTag.title')">
-            <template v-if="stats.topTags.length > COLLAPSED_TAGS" #action>
-              <UButton
-                type="button"
-                color="primary"
-                variant="ghost"
-                size="xs"
-                :aria-expanded="showAllTags"
-                aria-controls="stats-top-tags"
-                @click="showAllTags = !showAllTags"
-              >
-                {{ showAllTags ? $t('common.actions.showLess') : $t('stats.topTag.showAll') }}
-              </UButton>
-            </template>
-          </StatsSectionHeading>
-
-          <div v-if="stats.topTags.length" id="stats-top-tags" class="mt-3 space-y-1">
-            <StatsRow
-              v-for="(tag, i) in visibleTags"
-              :key="tag.name"
-              :rank="i + 1"
-              :label="tag.name"
-              :bar="topTagViews ? tag.views / topTagViews : 0"
-              :value="plural('stats.viewsUnit', tag.views)"
-            />
-          </div>
-          <p v-else class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">{{ $t('stats.topTag.noTags') }}</p>
-        </section>
-
-        <section>
-          <StatsSectionHeading :title="$t('stats.sections.audience')" />
-          <div class="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
-            <div>
-              <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ $t('stats.followerCount') }}</p>
-              <p class="mt-0.5 text-xl font-semibold tabular-nums text-neutral-900 dark:text-neutral-100">
-                {{ formatCount(stats.followerCount) }}
+        <div class="grid gap-7 lg:col-span-2 lg:grid-cols-2 [&>section]:h-full">
+          <section class="flex flex-col rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5">
+            <StatsSectionHeading :title="$t('stats.sections.content')" :note="concentrationNote" />
+            <div class="mt-3 flex flex-1 flex-col justify-evenly gap-1">
+              <StatsRow
+                v-if="stats.topArticle"
+                icon="mdi:trophy-outline"
+                :label="stats.topArticle.title"
+                :value="plural('stats.viewsUnit', stats.topArticle.views)"
+                :to="localePath({ name: 'clanky-slug', params: { slug: stats.topArticle.slug } })"
+              />
+              <StatsRow
+                v-if="stats.topLikedArticle"
+                icon="mdi:heart-outline"
+                :label="stats.topLikedArticle.title"
+                :value="plural('stats.topLikedArticle.likes', stats.topLikedArticle.likes)"
+                :to="localePath({ name: 'clanky-slug', params: { slug: stats.topLikedArticle.slug } })"
+              />
+              <StatsRow
+                v-if="stats.topCommentedArticle"
+                icon="mdi:comment-outline"
+                :label="stats.topCommentedArticle.title"
+                :value="plural('articles.comments.unit', stats.topCommentedArticle.comments)"
+                :to="localePath({ name: 'clanky-slug', params: { slug: stats.topCommentedArticle.slug } })"
+              />
+              <p v-if="!hasContentHighlights" class="py-2 text-sm text-neutral-500 dark:text-neutral-400">
+                {{ $t('stats.topArticle.noViews') }}
               </p>
             </div>
-            <div v-if="!isBasicPlan">
-              <p
-                v-tippy="{ content: $t('stats.engagementRate.tooltip'), theme: 'light', placement: 'top' }"
-                class="inline-flex cursor-help items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400"
-              >
-                {{ $t('stats.engagementRate.title') }}
-                <Icon name="mdi:help-circle-outline" class="size-3.5" />
-              </p>
-              <p class="mt-0.5 text-xl font-semibold tabular-nums text-neutral-900 dark:text-neutral-100">
-                {{ formatPercent(stats.engagementRate) }}
-              </p>
-            </div>
-            <div v-if="!isBasicPlan">
-              <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ $t('stats.totalShares.title') }}</p>
-              <p class="mt-0.5 text-xl font-semibold tabular-nums text-neutral-900 dark:text-neutral-100">
-                {{ formatCount(stats.totalShares) }}
-              </p>
-            </div>
-          </div>
+          </section>
 
-          <div
-            v-if="stats.topAuthor"
-            class="mt-4 flex items-center gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-800"
+          <section
+            v-if="!isBasicPlan"
+            class="rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5"
           >
-            <UserPicture :url="stats.topAuthor.avatarUrl" :name="stats.topAuthor.username" />
-            <div class="min-w-0">
-              <p class="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                {{ stats.topAuthor.username }}
-              </p>
-              <p class="text-xs text-neutral-500 dark:text-neutral-400">
-                {{ $t('stats.topAuthor.title') }} · {{ plural('stats.articlesWritten', stats.topAuthor.articleCount) }}
-              </p>
-            </div>
-          </div>
-        </section>
+            <StatsSectionHeading :title="$t('stats.topTag.title')">
+              <template v-if="stats.topTags.length > COLLAPSED_TAGS" #action>
+                <UButton
+                  type="button"
+                  color="primary"
+                  variant="ghost"
+                  size="xs"
+                  :aria-expanded="showAllTags"
+                  aria-controls="stats-top-tags"
+                  @click="showAllTags = !showAllTags"
+                >
+                  {{ showAllTags ? $t('common.actions.showLess') : $t('stats.topTag.showAll') }}
+                </UButton>
+              </template>
+            </StatsSectionHeading>
 
-        <section v-if="aiShare !== null">
-          <StatsSectionHeading :title="$t('stats.sections.authorship')" />
-          <!-- The savings figure above only counts FULL articles; this is why it is what it is. -->
-          <div class="mt-3 flex h-2 overflow-hidden rounded-full bg-neutral-900/[0.06] dark:bg-white/10">
-            <span class="bg-emerald-500/80" :style="{ width: `${aiShare.full * 100}%` }" />
-            <span class="bg-emerald-500/35" :style="{ width: `${aiShare.assist * 100}%` }" />
-          </div>
-          <dl class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs">
-            <div v-for="entry in aiShare.legend" :key="entry.key" class="flex items-center gap-1.5">
-              <span class="size-2 shrink-0 rounded-full" :class="entry.dot" />
-              <dt class="text-neutral-500 dark:text-neutral-400">{{ $t(`stats.aiInvolvement.${entry.key}`) }}</dt>
-              <dd class="font-medium tabular-nums text-neutral-900 dark:text-neutral-100">{{ entry.count }}</dd>
+            <div v-if="stats.topTags.length" id="stats-top-tags" class="mt-3 space-y-1">
+              <StatsRow
+                v-for="(tag, i) in visibleTags"
+                :key="tag.name"
+                :rank="i + 1"
+                :label="tag.name"
+                :bar="topTagViews ? tag.views / topTagViews : 0"
+                :value="plural('stats.viewsUnit', tag.views)"
+              />
             </div>
-          </dl>
-        </section>
+            <p v-else class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">{{ $t('stats.topTag.noTags') }}</p>
+          </section>
 
-        <section v-if="insight">
-          <StatsSectionHeading :title="$t('stats.sentiment.title')" />
-          <div
-            class="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40"
+          <section class="rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5">
+            <StatsSectionHeading :title="$t('stats.sections.audience')" />
+            <div class="mt-3 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+              <div>
+                <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ $t('stats.followerCount') }}</p>
+                <p class="mt-0.5 text-xl font-semibold tabular-nums text-neutral-900 dark:text-neutral-100">
+                  {{ formatCount(stats.followerCount) }}
+                </p>
+              </div>
+              <div v-if="!isBasicPlan">
+                <p
+                  v-tippy="{ content: $t('stats.engagementRate.tooltip'), theme: 'light', placement: 'top' }"
+                  class="inline-flex cursor-help items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400"
+                >
+                  {{ $t('stats.engagementRate.title') }}
+                  <UIcon name="mdi:help-circle-outline" class="size-3.5" />
+                </p>
+                <p class="mt-0.5 text-xl font-semibold tabular-nums text-neutral-900 dark:text-neutral-100">
+                  {{ formatPercent(stats.engagementRate) }}
+                </p>
+              </div>
+              <div v-if="!isBasicPlan">
+                <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ $t('stats.totalShares.title') }}</p>
+                <p class="mt-0.5 text-xl font-semibold tabular-nums text-neutral-900 dark:text-neutral-100">
+                  {{ formatCount(stats.totalShares) }}
+                </p>
+              </div>
+            </div>
+
+            <div
+              v-if="stats.topAuthor"
+              class="mt-4 flex items-center gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-800"
+            >
+              <UserPicture :url="stats.topAuthor.avatarUrl" :name="stats.topAuthor.username" />
+              <div class="min-w-0">
+                <p class="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                  {{ stats.topAuthor.username }}
+                </p>
+                <p class="text-xs text-neutral-500 dark:text-neutral-400">
+                  {{ $t('stats.topAuthor.title') }} ·
+                  {{ plural('stats.articlesWritten', stats.topAuthor.articleCount) }}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section
+            v-if="aiShare !== null"
+            class="flex flex-col rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5"
           >
-            <p class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{{ insight.summary }}</p>
-            <div class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs">
-              <span class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
-                <Icon name="mdi:emoticon-happy-outline" class="size-4 shrink-0 text-neutral-400" />
-                {{ insight.topEmotion }}
-              </span>
-              <span class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
-                <Icon name="mdi:fire" class="size-4 shrink-0 text-neutral-400" />
-                {{ $t('stats.sentiment.toxicity', { value: formatPercent(insight.toxicity) }) }}
-              </span>
-              <span class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
-                <Icon name="mdi:lightbulb-on-outline" class="size-4 shrink-0 text-neutral-400" />
-                {{ insight.suggestion }}
-              </span>
+            <StatsSectionHeading :title="$t('stats.sections.authorship')" />
+            <!-- The savings figure above only counts FULL articles; this is why it is what it is. -->
+            <div class="mt-3 lg:flex lg:flex-1 lg:flex-col lg:justify-center">
+              <div class="flex h-2 overflow-hidden rounded-full bg-neutral-900/[0.06] dark:bg-white/10">
+                <span class="bg-emerald-500/80" :style="{ width: `${aiShare.full * 100}%` }" />
+                <span class="bg-emerald-500/35" :style="{ width: `${aiShare.assist * 100}%` }" />
+              </div>
+              <dl class="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                <div
+                  v-for="entry in aiShare.legend"
+                  :key="entry.key"
+                  class="flex items-center gap-1.5 lg:flex-col lg:items-start lg:rounded-[var(--ui-radius)] lg:bg-elevated lg:p-3"
+                >
+                  <UIcon :name="entry.icon" class="hidden size-5 text-primary lg:block" />
+                  <div class="flex min-w-0 items-center gap-1.5">
+                    <span class="size-2 shrink-0 rounded-full lg:hidden" :class="entry.dot" />
+                    <dt class="truncate text-neutral-500 dark:text-neutral-400">
+                      {{ $t(`stats.aiInvolvement.${entry.key}`) }}
+                    </dt>
+                  </div>
+                  <dd class="font-semibold tabular-nums text-neutral-900 lg:text-lg dark:text-neutral-100">
+                    {{ entry.count }}
+                  </dd>
+                </div>
+              </dl>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section v-if="!isBasicPlan">
-          <LazyCharts
-            kind="trend"
-            :title="$t('stats.charts.viewsByDay', { days: viewsChart.labels.length })"
-            :label="$t('stats.totalViews.title')"
-            :categoryHeading="$t('stats.charts.day')"
-            :labels="viewsChart.labels"
-            :values="viewsChart.values"
-          />
-          <p v-if="stats.trackingSince" class="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-            {{ $t('stats.charts.trackingSince', { date: formatDate(stats.trackingSince) }) }}
-          </p>
+          <section
+            v-if="insight"
+            class="rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5 lg:col-span-2"
+          >
+            <StatsSectionHeading :title="$t('stats.sentiment.title')" />
+            <div
+              class="mt-3 rounded-(--topiqu-surface-radius) border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40"
+            >
+              <p class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{{ insight.summary }}</p>
+              <div class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs">
+                <span class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                  <UIcon name="mdi:emoticon-happy-outline" class="size-4 shrink-0 text-neutral-400" />
+                  {{ insight.topEmotion }}
+                </span>
+                <span class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                  <UIcon name="mdi:fire" class="size-4 shrink-0 text-neutral-400" />
+                  {{ $t('stats.sentiment.toxicity', { value: formatPercent(insight.toxicity) }) }}
+                </span>
+                <span class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                  <UIcon name="mdi:lightbulb-on-outline" class="size-4 shrink-0 text-neutral-400" />
+                  {{ insight.suggestion }}
+                </span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section v-if="!isBasicPlan" class="grid items-stretch gap-6 lg:col-span-2 lg:grid-cols-2">
+          <div class="min-w-0">
+            <LazyCharts
+              kind="trend"
+              :title="$t('stats.charts.viewsByDay', { days: viewsChart.labels.length })"
+              :label="$t('stats.totalViews.title')"
+              :categoryHeading="$t('stats.charts.day')"
+              :labels="viewsChart.labels"
+              :values="viewsChart.values"
+            />
+          </div>
           <LazyCharts
             v-if="stats.totalShares > 0"
             kind="breakdown"
@@ -292,6 +326,12 @@
             :colors="shareChart.colors"
           />
         </section>
+        <p
+          v-if="!isBasicPlan && stats.trackingSince"
+          class="-mt-2 text-center text-xs text-neutral-500 dark:text-neutral-400 lg:col-span-2"
+        >
+          {{ $t('stats.charts.trackingSince', { date: formatDate(stats.trackingSince) }) }}
+        </p>
       </div>
     </template>
 
@@ -367,10 +407,19 @@ const { data: rawInsight } = useQuery({
 const countFormat = computed(() => new Intl.NumberFormat(locale.value))
 const decimalFormat = computed(() => new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 }))
 const percentFormat = computed(
-  () => new Intl.NumberFormat(locale.value, { style: 'percent', maximumFractionDigits: 1 }),
+  () =>
+    new Intl.NumberFormat(locale.value, {
+      style: 'percent',
+      maximumFractionDigits: 1,
+    }),
 )
 const dateFormat = computed(
-  () => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'long', year: 'numeric' }),
+  () =>
+    new Intl.DateTimeFormat(locale.value, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }),
 )
 const dayLabel = computed(() => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'numeric' }))
 
@@ -416,7 +465,11 @@ const stats = computed(() => ({
   articleCount: dashboard.value?.articleCount || 0,
   publishedCount: dashboard.value?.publishedCount || 0,
   draftCount: dashboard.value?.draftCount || 0,
-  aiInvolvement: dashboard.value?.aiInvolvement ?? { NONE: 0, ASSIST: 0, FULL: 0 },
+  aiInvolvement: dashboard.value?.aiInvolvement ?? {
+    NONE: 0,
+    ASSIST: 0,
+    FULL: 0,
+  },
   savings: dashboard.value?.savings ?? {
     words: 0,
     minutes: 0,
@@ -467,9 +520,14 @@ const aiShare = computed(() => {
     full: FULL / total,
     assist: ASSIST / total,
     legend: [
-      { key: 'FULL', count: FULL, dot: 'bg-emerald-500/80' },
-      { key: 'ASSIST', count: ASSIST, dot: 'bg-emerald-500/35' },
-      { key: 'NONE', count: NONE, dot: 'bg-neutral-900/[0.15] dark:bg-white/20' },
+      { key: 'FULL', count: FULL, dot: 'bg-emerald-500/80', icon: 'mdi:robot-outline' },
+      { key: 'ASSIST', count: ASSIST, dot: 'bg-emerald-500/35', icon: 'mdi:account-edit-outline' },
+      {
+        key: 'NONE',
+        count: NONE,
+        dot: 'bg-neutral-900/[0.15] dark:bg-white/20',
+        icon: 'mdi:pencil-outline',
+      },
     ],
   }
 })

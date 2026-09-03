@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-6 grid grid-cols-2 gap-2 sm:mb-8 sm:grid-cols-3 lg:grid-cols-5" data-profile-metrics>
+  <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" data-profile-metrics>
     <UButton
       v-for="item in interactiveStats"
       :key="item.label"
@@ -18,7 +18,7 @@
     <UButton
       color="neutral"
       variant="soft"
-      icon="i-mdi-thumb-up"
+      icon="mdi:thumb-up"
       :label="`${$t('profile.likes')}: ${likesCount ?? 0}`"
       size="xs"
       class="w-full"
@@ -45,25 +45,25 @@ const emit = defineEmits<{
 
 const interactiveStats = computed(() => [
   {
-    icon: 'i-mdi-account-multiple',
+    icon: 'mdi:account-multiple',
     label: $t('profile.following'),
     value: props.followers ?? 0,
     action: () => emit('open-dialog', 'followed'),
   },
   {
-    icon: 'i-mdi-account-multiple',
+    icon: 'mdi:account-multiple',
     label: $t('profile.followers'),
     value: props.following ?? 0,
     action: () => emit('open-dialog', 'followers'),
   },
   {
-    icon: 'i-mdi-heart',
+    icon: 'mdi:heart',
     label: $t('profile.likedArticles'),
     value: props.likedArticles?.length ?? 0,
     action: () => emit('update-tab', 'likedArticles'),
   },
   {
-    icon: 'i-mdi-comment-multiple-outline',
+    icon: 'mdi:comment-multiple-outline',
     label: $t('articles.comments.title'),
     value: props.commentsCount ?? 0,
     action: () => emit('update-tab', 'comments'),
