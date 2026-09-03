@@ -5,7 +5,7 @@
       size="sm"
       color="error"
       variant="solid"
-      icon="i-mdi-close"
+      icon="mdi:close"
       class="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
       :title="$t('common.close')"
       @click.stop.prevent="deleteNode"

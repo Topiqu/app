@@ -10,7 +10,7 @@
     >
       <UFieldGroup class="shrink-0">
         <UButton
-          icon="i-mdi-undo"
+          icon="mdi:undo"
           color="neutral"
           variant="ghost"
           :title="sk($t('articles.editor.toolbar.undo'), 'Mod+Z')"
@@ -19,7 +19,7 @@
           @click="run((c) => c.undo())"
         />
         <UButton
-          icon="i-mdi-redo"
+          icon="mdi:redo"
           color="neutral"
           variant="ghost"
           :title="sk($t('articles.editor.toolbar.redo'), 'Mod+Shift+Z')"
@@ -43,7 +43,7 @@
 
       <UFieldGroup class="shrink-0">
         <UButton
-          icon="i-mdi-format-list-bulleted"
+          icon="mdi:format-list-bulleted"
           color="neutral"
           variant="ghost"
           :title="sk($t('articles.editor.toolbar.bulletList'), 'Mod+Shift+8')"
@@ -52,7 +52,7 @@
           @click="run((c) => c.toggleBulletList())"
         />
         <UButton
-          icon="i-mdi-format-list-numbered"
+          icon="mdi:format-list-numbered"
           color="neutral"
           variant="ghost"
           :title="sk($t('articles.editor.toolbar.numberedList'), 'Mod+Shift+7')"
@@ -61,7 +61,7 @@
           @click="run((c) => c.toggleOrderedList())"
         />
         <UButton
-          icon="i-mdi-format-quote-open"
+          icon="mdi:format-quote-open"
           color="neutral"
           variant="ghost"
           :title="$t('articles.editor.toolbar.blockquote')"
@@ -74,7 +74,7 @@
       <UFieldGroup class="shrink-0">
         <FileInput :uploadImage="onUploadFile" @close="emit('focusEditor')" />
         <UButton
-          icon="i-mdi-image-plus"
+          icon="mdi:image-plus"
           color="neutral"
           variant="ghost"
           :title="$t('articles.editor.toolbar.insertImage')"
@@ -82,7 +82,7 @@
           @click="emit('openLink', { type: 'image' })"
         />
         <UButton
-          icon="i-mdi-link"
+          icon="mdi:link"
           color="neutral"
           variant="ghost"
           :title="sk($t('articles.editor.toolbar.link'), 'Mod+K')"
@@ -91,7 +91,7 @@
           @click="emit('openLink', { type: 'link', url: editor.getAttributes('link').href })"
         />
         <UButton
-          icon="i-mdi-youtube"
+          icon="mdi:youtube"
           color="neutral"
           variant="ghost"
           :title="$t('articles.editor.toolbar.insertYoutube')"
@@ -99,7 +99,7 @@
           @click="emit('openLink', { type: 'youtube' })"
         />
         <UButton
-          icon="i-mdi-poll"
+          icon="mdi:poll"
           color="neutral"
           variant="ghost"
           :title="$t('articles.editor.toolbar.insertPoll')"
@@ -123,7 +123,7 @@
       </UFieldGroup>
       <UFieldGroup class="shrink-0">
         <UButton
-          icon="i-mdi-format-indent-increase"
+          icon="mdi:format-indent-increase"
           color="neutral"
           variant="ghost"
           :title="$t('articles.editor.toolbar.indent')"
@@ -131,7 +131,7 @@
           @click="run((c) => c.indent())"
         />
         <UButton
-          icon="i-mdi-format-indent-decrease"
+          icon="mdi:format-indent-decrease"
           color="neutral"
           variant="ghost"
           :title="$t('articles.editor.toolbar.outdent')"
@@ -142,7 +142,7 @@
 
       <UFieldGroup class="shrink-0">
         <UButton
-          icon="i-mdi-minus"
+          icon="mdi:minus"
           color="neutral"
           variant="ghost"
           :title="$t('articles.editor.toolbar.horizontalRule')"
@@ -150,7 +150,7 @@
           @click="run((c) => c.setHorizontalRule())"
         />
         <UButton
-          icon="i-mdi-format-clear"
+          icon="mdi:format-clear"
           color="neutral"
           variant="ghost"
           :title="$t('articles.editor.toolbar.clearFormatting')"
@@ -161,7 +161,7 @@
 
       <UPopover>
         <UButton
-          icon="i-mdi-table-edit"
+          icon="mdi:table-edit"
           color="neutral"
           variant="ghost"
           :aria-label="$t('articles.editor.toolbar.table')"
@@ -225,13 +225,13 @@ const onUploadFile = async (files: FileList | null) => {
 }
 
 const headingItems = computed<Array<{ label: string; value: string; icon?: string }>>(() => [
-  { value: 'p', label: $t('articles.editor.toolbar.paragraph'), icon: 'i-mdi-format-paragraph' },
-  { value: 'h1', label: $t('articles.editor.toolbar.heading', { level: 1 }), icon: 'i-mdi-format-header-1' },
-  { value: 'h2', label: $t('articles.editor.toolbar.heading', { level: 2 }), icon: 'i-mdi-format-header-2' },
-  { value: 'h3', label: $t('articles.editor.toolbar.heading', { level: 3 }), icon: 'i-mdi-format-header-3' },
-  { value: 'h4', label: $t('articles.editor.toolbar.heading', { level: 4 }), icon: 'i-mdi-format-header-4' },
-  { value: 'h5', label: $t('articles.editor.toolbar.heading', { level: 5 }), icon: 'i-mdi-format-header-5' },
-  { value: 'h6', label: $t('articles.editor.toolbar.heading', { level: 6 }), icon: 'i-mdi-format-header-6' },
+  { value: 'p', label: $t('articles.editor.toolbar.paragraph'), icon: 'mdi:format-paragraph' },
+  { value: 'h1', label: $t('articles.editor.toolbar.heading', { level: 1 }), icon: 'mdi:format-header-1' },
+  { value: 'h2', label: $t('articles.editor.toolbar.heading', { level: 2 }), icon: 'mdi:format-header-2' },
+  { value: 'h3', label: $t('articles.editor.toolbar.heading', { level: 3 }), icon: 'mdi:format-header-3' },
+  { value: 'h4', label: $t('articles.editor.toolbar.heading', { level: 4 }), icon: 'mdi:format-header-4' },
+  { value: 'h5', label: $t('articles.editor.toolbar.heading', { level: 5 }), icon: 'mdi:format-header-5' },
+  { value: 'h6', label: $t('articles.editor.toolbar.heading', { level: 6 }), icon: 'mdi:format-header-6' },
 ])
 
 const headingValue = computed({

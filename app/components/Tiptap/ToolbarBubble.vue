@@ -6,35 +6,35 @@
   >
     <UFieldGroup role="toolbar" :aria-label="$t('articles.editor.title')">
       <UButton
-        icon="i-mdi-format-bold"
+        icon="mdi:format-bold"
         :title="sk($t('articles.editor.toolbar.bold'), 'Mod+B')"
         :aria-label="$t('articles.editor.toolbar.bold')"
         :active="editor.isActive('bold')"
         @click="run((c) => c.toggleBold())"
       />
       <UButton
-        icon="i-mdi-format-italic"
+        icon="mdi:format-italic"
         :title="sk($t('articles.editor.toolbar.italic'), 'Mod+I')"
         :aria-label="$t('articles.editor.toolbar.italic')"
         :active="editor.isActive('italic')"
         @click="run((c) => c.toggleItalic())"
       />
       <UButton
-        icon="i-mdi-format-underline"
+        icon="mdi:format-underline"
         :title="sk($t('articles.editor.toolbar.underline'), 'Mod+U')"
         :aria-label="$t('articles.editor.toolbar.underline')"
         :active="editor.isActive('underline')"
         @click="run((c) => c.toggleUnderline())"
       />
       <UButton
-        icon="i-mdi-format-strikethrough"
+        icon="mdi:format-strikethrough"
         :title="sk($t('articles.editor.toolbar.strikethrough'), 'Mod+Shift+X')"
         :aria-label="$t('articles.editor.toolbar.strikethrough')"
         :active="editor.isActive('strike')"
         @click="run((c) => c.toggleStrike())"
       />
       <UButton
-        icon="i-mdi-link"
+        icon="mdi:link"
         :title="sk($t('articles.editor.toolbar.link'), 'Mod+K')"
         :aria-label="$t('articles.editor.toolbar.link')"
         :active="editor.isActive('link')"

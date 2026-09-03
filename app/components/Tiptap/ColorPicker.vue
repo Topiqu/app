@@ -6,7 +6,7 @@
       square
       class="relative"
       :aria-label="$t('articles.editor.toolbar.textColor')"
-      icon="i-mdi-palette-outline"
+      icon="mdi:palette-outline"
     >
       <template #trailing>
         <span
