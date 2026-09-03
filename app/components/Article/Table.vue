@@ -1,9 +1,11 @@
 <template>
-  <div class="mb-10 w-full space-y-4" data-article-table :data-search-query="globalFilter">
-    <div
-      class="space-y-3 sm:sticky sm:top-0 sm:z-20 sm:border-b sm:border-default sm:bg-default/95 sm:py-3 sm:backdrop-blur"
-      data-article-table-toolbar
-    >
+  <div
+    ref="listOrigin"
+    class="flex min-h-0 w-full flex-1 flex-col gap-4 sm:overflow-hidden"
+    data-article-table
+    :data-search-query="globalFilter"
+  >
+    <div class="shrink-0 space-y-3 border-b border-default bg-default py-3" data-article-table-toolbar>
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
         <UFormField
           :label="$t('articles.searchPlaceholder')"
@@ -14,7 +16,7 @@
             v-model="globalFilter"
             type="search"
             :placeholder="$t('articles.searchPlaceholder')"
-            icon="i-mdi-magnify"
+            icon="mdi:magnify"
             class="w-full"
           />
         </UFormField>
@@ -22,7 +24,7 @@
           class="shrink-0"
           color="neutral"
           variant="soft"
-          icon="i-mdi-filter-variant"
+          icon="mdi:filter-variant"
           :aria-expanded="filtersOpen"
           @click="filtersOpen = !filtersOpen"
         >
@@ -35,7 +37,7 @@
       </div>
       <div
         v-show="filtersOpen"
-        class="grid gap-3 overflow-y-auto overscroll-contain rounded-[var(--topiqu-surface-radius)] border border-default p-4 sm:max-h-[min(22rem,calc(100dvh-8rem))] sm:grid-cols-2 lg:grid-cols-3"
+        class="grid gap-3 overflow-y-auto overscroll-contain rounded-(--topiqu-surface-radius) border border-default p-4 sm:max-h-[min(22rem,calc(100dvh-8rem))] sm:grid-cols-2 lg:grid-cols-3"
       >
         <UFormField :label="$t('common.labels.status')"
           ><USelect v-model="statusFilter" :items="statusItems"
@@ -45,7 +47,7 @@
         <UFormField :label="$t('common.labels.sortBy')"><USelect v-model="sortField" :items="sortItems" /></UFormField>
         <UFormField :label="$t('common.labels.order')"><USelect v-model="sortOrder" :items="orderItems" /></UFormField>
         <div class="flex items-end">
-          <UButton color="neutral" variant="soft" icon="i-mdi-filter-remove-outline" @click="clearFilters">{{
+          <UButton color="neutral" variant="soft" icon="mdi:filter-remove-outline" @click="clearFilters">{{
             $t('common.actions.clear')
           }}</UButton>
         </div>
@@ -55,12 +57,12 @@
     <UAlert
       v-if="loadFailed"
       color="error"
-      icon="i-mdi-alert-circle-outline"
+      icon="mdi:alert-circle-outline"
       :title="$t('common.messages.loadFailedTitle')"
       :description="$t('common.messages.loadFailedText')"
     >
       <template #actions>
-        <UButton icon="i-mdi-refresh" color="error" variant="soft" @click="refetch()">
+        <UButton icon="mdi:refresh" color="error" variant="soft" @click="refetch()">
           {{ $t('common.messages.retry') }}
         </UButton>
       </template>
@@ -68,20 +70,24 @@
 
     <UEmpty
       v-else-if="!isPending && rows.length === 0"
-      icon="i-mdi-file-document-outline"
+      icon="mdi:file-document-outline"
       :title="$t('articles.noResults.message')"
     />
 
     <div
       v-else
-      class="hidden overflow-x-auto rounded-[var(--topiqu-surface-radius)] border border-default sm:block"
+      class="hidden min-h-0 flex-1 overflow-auto rounded-(--topiqu-surface-radius) border border-default bg-default sm:block"
       :aria-busy="isRefetching"
     >
       <UTable
         :data="rows"
         :columns="columns"
         :loading="isPending || isRefetching"
-        :ui="{ base: 'w-full min-w-[48rem] table-fixed' }"
+        :ui="{
+          root: 'overflow-visible',
+          base: 'w-full min-w-[48rem] table-fixed',
+          thead: 'sticky top-0 z-20 bg-default shadow-[0_1px_0_var(--ui-border)]',
+        }"
       >
         <template #title-header>
           <UButton color="neutral" variant="ghost" :trailingIcon="sortIcon('title')" @click="toggleSort('title')">
@@ -141,7 +147,7 @@
             <UTooltip :text="$t('articles.openArticle')">
               <UButton
                 :to="articleUrl(row.original.slug)"
-                icon="i-mdi-eye-outline"
+                icon="mdi:eye-outline"
                 color="neutral"
                 variant="ghost"
                 square
@@ -150,7 +156,7 @@
             </UTooltip>
             <UTooltip :text="row.original.status === 'archived' ? $t('articles.messages.archivedCannotEdit') : ''">
               <UButton
-                icon="i-mdi-pencil"
+                icon="mdi:pencil"
                 color="neutral"
                 variant="ghost"
                 :disabled="row.original.status === 'archived'"
@@ -160,7 +166,7 @@
             </UTooltip>
             <UDropdownMenu :items="desktopActionItems(row.original)">
               <UButton
-                icon="i-mdi-dots-vertical"
+                icon="mdi:dots-vertical"
                 color="neutral"
                 variant="ghost"
                 square
@@ -207,14 +213,14 @@
           <div class="flex flex-col gap-1">
             <UButton
               :to="articleUrl(article.slug)"
-              icon="i-mdi-eye-outline"
+              icon="mdi:eye-outline"
               color="neutral"
               variant="ghost"
               square
               :aria-label="$t('articles.openArticle')"
             />
             <UButton
-              icon="i-mdi-pencil"
+              icon="mdi:pencil"
               color="neutral"
               variant="ghost"
               square
@@ -224,7 +230,7 @@
             />
             <LazyArticleTag :articleId="article.id" hydrateOnInteraction>
               <UButton
-                icon="i-mdi-tag-outline"
+                icon="mdi:tag-outline"
                 color="neutral"
                 variant="ghost"
                 square
@@ -233,7 +239,7 @@
             </LazyArticleTag>
             <UDropdownMenu :items="mobileActionItems(article)">
               <UButton
-                icon="i-mdi-dots-vertical"
+                icon="mdi:dots-vertical"
                 color="neutral"
                 variant="ghost"
                 square
@@ -245,7 +251,7 @@
       </UCard>
     </div>
 
-    <div v-if="totalPages > 1" class="flex justify-center">
+    <div v-if="totalPages > 1" class="flex shrink-0 justify-center pb-2">
       <UPagination
         :page="page"
         :total="totalPages"
@@ -290,6 +296,7 @@ const primaryLanguage = clientSite?.language ?? 'en'
 // target from the public tenant context without fetching private settings separately.
 const targetLanguage = primaryLanguage === 'cs' ? 'en' : 'cs'
 const translatingArticleId = shallowRef<string | null>(null)
+const listOrigin = useTemplateRef<HTMLElement>('listOrigin')
 
 const hasTargetTranslation = (article: ArticleWithDetails) =>
   article.translations?.some((translation) => translation.language === targetLanguage) ?? false
@@ -305,7 +312,9 @@ const translateArticle = async (article: ArticleWithDetails) => {
     await invalidateArticleLists()
     toast.success({ message: $t('articles.translations.messages.translated') })
   } catch (e: any) {
-    toast.error({ message: e?.data?.message || $t('common.messages.operationFailed') })
+    toast.error({
+      message: e?.data?.message || $t('common.messages.operationFailed'),
+    })
   } finally {
     translatingArticleId.value = null
   }
@@ -391,12 +400,22 @@ const columns = computed<TableColumn<ArticleWithDetails>[]>(() => [
     accessorKey: 'imageUrl',
     header: $t('articles.columns.imageUrl'),
     enableSorting: false,
-    meta: { class: { th: 'hidden w-20 lg:table-cell', td: 'hidden w-20 lg:table-cell' } },
+    meta: {
+      class: {
+        th: 'hidden w-20 lg:table-cell',
+        td: 'hidden w-20 lg:table-cell',
+      },
+    },
   },
   {
     accessorKey: 'title',
     header: $t('articles.columns.title'),
-    meta: { class: { th: 'w-auto overflow-hidden', td: 'min-w-0 max-w-0 overflow-hidden' } },
+    meta: {
+      class: {
+        th: 'w-auto overflow-hidden',
+        td: 'min-w-0 max-w-0 overflow-hidden',
+      },
+    },
   },
   {
     accessorKey: 'status',
@@ -406,14 +425,28 @@ const columns = computed<TableColumn<ArticleWithDetails>[]>(() => [
   {
     id: 'languages',
     header: $t('articles.translations.languageTabs'),
-    meta: { class: { th: 'hidden w-36 lg:table-cell', td: 'hidden w-36 lg:table-cell' } },
+    meta: {
+      class: {
+        th: 'hidden w-36 lg:table-cell',
+        td: 'hidden w-36 lg:table-cell',
+      },
+    },
   },
   {
     accessorKey: 'createdAt',
     header: $t('articles.columns.date'),
-    meta: { class: { th: 'hidden w-48 xl:table-cell', td: 'hidden w-48 whitespace-nowrap xl:table-cell' } },
+    meta: {
+      class: {
+        th: 'hidden w-48 xl:table-cell',
+        td: 'hidden w-48 whitespace-nowrap xl:table-cell',
+      },
+    },
   },
-  { id: 'actions', header: $t('articles.columns.actions'), meta: { class: { th: 'w-32', td: 'w-32' } } },
+  {
+    id: 'actions',
+    header: $t('articles.columns.actions'),
+    meta: { class: { th: 'w-32', td: 'w-32' } },
+  },
 ])
 
 const toggleSort = (field: 'title' | 'status' | 'createdAt') => {
@@ -426,13 +459,19 @@ const toggleSort = (field: 'title' | 'status' | 'createdAt') => {
 const sortIcon = (field: string) =>
   sortField.value === field
     ? sortOrder.value === 'asc'
-      ? 'i-mdi-arrow-up'
-      : 'i-mdi-arrow-down'
-    : 'i-mdi-unfold-more-horizontal'
+      ? 'mdi:arrow-up'
+      : 'mdi:arrow-down'
+    : 'mdi:unfold-more-horizontal'
 
 const setPage = (nextPage: number) => {
   page.value = Math.min(Math.max(nextPage, 1), Math.max(totalPages.value, 1))
   router.push({ query: { ...listQuery.value, limit: undefined } })
+  nextTick(() =>
+    listOrigin.value?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    }),
+  )
 }
 
 const syncUrl = () => {
@@ -463,21 +502,37 @@ const clearFilters = () => {
 
 const { mutate: setStatus } = useMutation({
   mutation: async ({ id, status }: { id: string; status: ArticleStatus }) => {
-    await $fetch(`/api/articles/${id}` as `/api/articles/:id`, { method: 'PATCH', body: { status } })
+    await $fetch(`/api/articles/${id}` as `/api/articles/:id`, {
+      method: 'PATCH',
+      body: { status },
+    })
   },
   onSuccess: (_data, { status }) =>
-    toast.add({ color: 'success', title: 'Status ' + $t(`articles.status.${status}`).toLocaleLowerCase() }),
+    toast.add({
+      color: 'success',
+      title: 'Status ' + $t(`articles.status.${status}`).toLocaleLowerCase(),
+    }),
   onError: (error: any) =>
-    toast.add({ color: 'error', title: error.data?.message || $t('articles.messages.statusChangeFailed') }),
+    toast.add({
+      color: 'error',
+      title: error.data?.message || $t('articles.messages.statusChangeFailed'),
+    }),
   onSettled: invalidateArticleLists,
 })
 
 const debouncedSetStatus = useDebounceFn((id: string, status: ArticleStatus) => setStatus({ id, status }), 100)
 const { mutate: deleteArticle, isLoading: isDeleting } = useMutation({
   mutation: async (id: string) => $fetch<unknown>(`/api/articles/${id}` as string, { method: 'DELETE' }),
-  onSuccess: () => toast.add({ color: 'success', title: $t('articles.messages.deleteSuccess') }),
+  onSuccess: () =>
+    toast.add({
+      color: 'success',
+      title: $t('articles.messages.deleteSuccess'),
+    }),
   onError: (error: any) =>
-    toast.add({ color: 'error', title: error.data?.message || $t('articles.messages.deleteFailed') }),
+    toast.add({
+      color: 'error',
+      title: error.data?.message || $t('articles.messages.deleteFailed'),
+    }),
   onSettled: invalidateArticlesAndStats,
 })
 
@@ -485,7 +540,7 @@ async function del(id: string) {
   const confirmed = await confirm({
     title: $t('common.messages.deleteConfirmTitle'),
     message: $t('common.messages.deleteConfirmText'),
-    icon: 'i-mdi-alert-outline',
+    icon: 'mdi:alert-outline',
     confirmText: $t('common.actions.delete'),
     cancelText: $t('common.messages.deleteCancel'),
     variant: 'danger',
@@ -496,9 +551,21 @@ async function del(id: string) {
 const { exportJson, exportCsv, exportPdf } = useExport()
 const exportItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
   [
-    { label: $t('articles.export.title.json'), icon: 'i-mdi-code-json', onSelect: () => exportJson(article) },
-    { label: $t('articles.export.title.csv'), icon: 'i-mdi-file-delimited', onSelect: () => exportCsv(article) },
-    { label: $t('articles.export.title.pdf'), icon: 'i-mdi-file-pdf-box', onSelect: () => exportPdf(article) },
+    {
+      label: $t('articles.export.title.json'),
+      icon: 'mdi:code-json',
+      onSelect: () => exportJson(article),
+    },
+    {
+      label: $t('articles.export.title.csv'),
+      icon: 'mdi:file-delimited',
+      onSelect: () => exportCsv(article),
+    },
+    {
+      label: $t('articles.export.title.pdf'),
+      icon: 'mdi:file-pdf-box',
+      onSelect: () => exportPdf(article),
+    },
   ],
 ]
 
@@ -508,7 +575,7 @@ const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] =
       label: hasTargetTranslation(article)
         ? $t('articles.translations.actions.retranslate')
         : $t('articles.translations.actions.translate'),
-      icon: 'i-mdi-translate',
+      icon: 'mdi:translate',
       disabled: translatingArticleId.value === article.id,
       onSelect: () => translateArticle(article),
     },
@@ -516,7 +583,7 @@ const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] =
   [
     {
       label: $t('articles.tags.title'),
-      icon: 'i-mdi-tag-outline',
+      icon: 'mdi:tag-outline',
       onSelect: () => {
         tagTargetId.value = article.id
         tagOpen.value = true
@@ -527,7 +594,7 @@ const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] =
   [
     {
       label: $t('common.actions.delete'),
-      icon: 'i-mdi-delete',
+      icon: 'mdi:delete',
       color: 'error',
       onSelect: () => del(article.id),
     },
@@ -540,7 +607,7 @@ const mobileActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] =>
       label: hasTargetTranslation(article)
         ? $t('articles.translations.actions.retranslate')
         : $t('articles.translations.actions.translate'),
-      icon: 'i-mdi-translate',
+      icon: 'mdi:translate',
       disabled: translatingArticleId.value === article.id,
       onSelect: () => translateArticle(article),
     },
@@ -548,7 +615,7 @@ const mobileActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] =>
   [
     {
       label: $t('common.actions.delete'),
-      icon: 'i-mdi-delete',
+      icon: 'mdi:delete',
       color: 'error',
       onSelect: () => del(article.id),
     },

@@ -14,7 +14,7 @@
       </UFormField>
       <UIcon
         v-if="props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()"
-        name="i-mdi-hourglass"
+        name="mdi:hourglass"
         size="16"
         class="ml-2 text-info"
       />
@@ -41,9 +41,9 @@ const tooltip = computed(() =>
 )
 
 const statusItems = [
-  { value: 'draft', label: $t('articles.status.draft'), icon: 'i-mdi-pencil-outline' },
-  { value: 'published', label: $t('articles.status.published'), icon: 'i-mdi-earth' },
-  { value: 'archived', label: $t('articles.status.archived'), icon: 'i-mdi-archive' },
+  { value: 'draft', label: $t('articles.status.draft'), icon: 'mdi:pencil-outline' },
+  { value: 'published', label: $t('articles.status.published'), icon: 'mdi:earth' },
+  { value: 'archived', label: $t('articles.status.archived'), icon: 'mdi:archive' },
 ]
 
 const model = computed({

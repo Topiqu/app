@@ -3,8 +3,8 @@
     <UButton
       color="neutral"
       variant="soft"
-      icon="i-mdi-export-variant"
-      trailingIcon="i-mdi-chevron-down"
+      icon="mdi:export-variant"
+      trailingIcon="mdi:chevron-down"
       :loading="exporting !== null"
       :disabled="exporting !== null"
     >
@@ -35,7 +35,7 @@
           <UAlert
             color="warning"
             variant="soft"
-            icon="i-mdi-clock-outline"
+            icon="mdi:clock-outline"
             :description="$t(`articles.export.warning.note.${pendingType}`)"
           />
         </div>
@@ -66,17 +66,17 @@ const exporting = shallowRef<'json' | 'csv' | 'pdf' | null>(null)
 const exportItems = computed(() => [
   {
     label: $t('articles.export.title.json'),
-    icon: 'i-mdi-code-json',
+    icon: 'mdi:code-json',
     onSelect: () => handleExport(exportJson, 'json'),
   },
   {
     label: $t('articles.export.title.csv'),
-    icon: 'i-mdi-file-delimited',
+    icon: 'mdi:file-delimited',
     onSelect: () => handleExport(exportCsv, 'csv'),
   },
   {
     label: $t('articles.export.title.pdf'),
-    icon: 'i-mdi-file-pdf-box',
+    icon: 'mdi:file-pdf-box',
     onSelect: () => handleExport(exportPdf, 'pdf'),
   },
 ])
