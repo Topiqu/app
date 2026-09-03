@@ -1,13 +1,13 @@
 <template>
   <div class="space-y-4">
     <div
-      class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
+      class="rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
     >
       <div class="text-xs uppercase text-neutral-600 dark:text-neutral-300 mb-2">
         {{ $t('common.preferences.currentPlan') }}
       </div>
       <div class="flex items-center gap-2">
-        <Icon name="mdi:check-circle" class="size-7 text-emerald-500" />
+        <UIcon name="mdi:check-circle" class="size-7 text-emerald-500" />
         <div>
           <div class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
             {{ client?.plan }}
@@ -24,10 +24,10 @@
 
     <div
       v-if="client?.billingPlan !== 'PERMANENT' && client?.nextBillingAt"
-      class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
+      class="rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
     >
       <div class="flex items-center gap-2 text-xs uppercase text-neutral-600 dark:text-neutral-300 mb-2">
-        <Icon name="mdi:calendar-clock" class="size-4" />
+        <UIcon name="mdi:calendar-clock" class="size-4" />
         {{ $t('common.preferences.nextPayment') }}
       </div>
       <div class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
@@ -40,10 +40,10 @@
 
     <div
       v-if="client?.billingPlan === 'ANNUAL'"
-      class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
+      class="rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
     >
       <div class="flex items-center gap-2 text-xs uppercase text-emerald-600 dark:text-emerald-400 mb-2">
-        <Icon name="mdi:currency-usd-off" class="size-4" />
+        <UIcon name="mdi:currency-usd-off" class="size-4" />
         {{ $t('common.preferences.savingsTitle') }}
       </div>
       <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
@@ -53,7 +53,7 @@
 
     <div v-if="(client?.monthlyPayment ?? 0) > 0" class="grid gap-4 sm:grid-cols-2">
       <div
-        class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
+        class="rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
       >
         <div class="text-neutral-600 dark:text-neutral-300 text-xs uppercase tracking-wider mb-1">
           {{ $t('common.preferences.monthlyTitle') }}
@@ -65,7 +65,7 @@
       </div>
 
       <div
-        class="relative rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm"
+        class="relative rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
       >
         <div class="text-neutral-600 dark:text-neutral-300 text-xs uppercase tracking-wider mb-1">
           {{ $t('common.preferences.annuallyTitle') }}
@@ -78,7 +78,7 @@
           <div
             class="flex items-center gap-1 bg-emerald-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg"
           >
-            <Icon name="mdi:tag-outline" class="size-4" />
+            <UIcon name="mdi:tag-outline" class="size-4" />
             -20 %
           </div>
         </div>
@@ -87,7 +87,7 @@
 
     <div
       v-if="client && client.billingPlan !== 'PERMANENT'"
-      class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-5 shadow-sm space-y-5"
+      class="space-y-5 rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
     >
       <div v-if="(client.tokenLimit ?? 0) > 0" class="space-y-2">
         <div class="flex items-center justify-between text-sm">
@@ -112,7 +112,7 @@
             v-for="pack in tokenPacks"
             :key="pack.id"
             type="button"
-            class="group relative min-w-0 rounded-xl border p-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
+            class="group relative min-w-0 rounded-[var(--ui-radius)] border p-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
             :class="
               pack.featured
                 ? 'border-primary bg-primary/5 shadow-sm hover:bg-primary/10'
@@ -124,7 +124,7 @@
           >
             <span class="flex min-h-6 items-start justify-between gap-2">
               <UIcon
-                :name="pendingAction === `pack-${pack.id}` ? 'i-mdi-loading' : `i-${pack.icon}`"
+                :name="pendingAction === `pack-${pack.id}` ? 'mdi:loading' : pack.icon"
                 class="size-5 text-warning"
                 :class="pendingAction === `pack-${pack.id}` ? 'animate-spin' : ''"
               />
@@ -150,7 +150,7 @@
 
       <div v-if="hasSubscription" class="flex pt-1">
         <UButton color="neutral" variant="soft" :loading="pendingAction === 'portal'" @click="openPortal">
-          <Icon name="mdi:receipt-text-outline" class="mr-1.5 size-4" />
+          <UIcon name="mdi:receipt-text-outline" class="mr-1.5 size-4" />
           {{ $t('common.preferences.billing.manage') }}
         </UButton>
       </div>
@@ -158,11 +158,11 @@
 
     <section
       v-if="upgradeTarget"
-      class="overflow-hidden rounded-[var(--topiqu-surface-radius)] bg-gradient-to-br from-primary-50 via-white to-emerald-50 p-5 ring ring-primary-200 dark:from-primary-950/50 dark:via-neutral-900 dark:to-emerald-950/30 dark:ring-primary-800 sm:p-6"
+      class="overflow-hidden rounded-(--topiqu-surface-radius) bg-gradient-to-br from-primary-50 via-white to-emerald-50 p-5 ring ring-primary-200 dark:from-primary-950/50 dark:via-neutral-900 dark:to-emerald-950/30 dark:ring-primary-800 sm:p-6"
     >
       <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div class="min-w-0">
-          <UBadge color="primary" variant="soft" icon="i-mdi-rocket-launch">
+          <UBadge color="primary" variant="soft" icon="mdi:rocket-launch">
             {{ $t('common.preferences.billing.recommended') }}
           </UBadge>
           <h2 class="mt-3 text-xl font-bold text-highlighted sm:text-2xl">
@@ -174,14 +174,16 @@
           <ul class="mt-4 grid gap-x-6 gap-y-2 text-sm text-toned sm:grid-cols-2">
             <li v-for="feature in upsellFeatures" :key="feature" class="flex items-start gap-2">
               <span class="mt-0.5 shrink-0 text-emerald-500">
-                <UIcon name="i-mdi-check-circle" size="18" />
+                <UIcon name="mdi:check-circle" size="18" />
               </span>
               <span>{{ feature }}</span>
             </li>
           </ul>
         </div>
 
-        <div class="min-w-[15rem] rounded-xl bg-default/85 p-4 ring ring-default backdrop-blur-sm">
+        <div
+          class="min-w-[15rem] rounded-(--topiqu-surface-radius) bg-default/85 p-4 ring ring-default backdrop-blur-sm"
+        >
           <div class="flex items-center gap-1 rounded-full bg-elevated p-1">
             <UButton
               type="button"
@@ -223,7 +225,7 @@
 
           <UButton
             class="mt-4"
-            icon="i-mdi-arrow-up-circle-outline"
+            icon="mdi:arrow-up-circle-outline"
             :loading="pendingAction === 'upgrade'"
             @click="upgrade"
           >
@@ -236,7 +238,7 @@
 
     <section
       v-if="hasSubscription"
-      class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden"
+      class="overflow-hidden rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900"
       aria-labelledby="billing-invoices-title"
     >
       <div
@@ -251,7 +253,7 @@
           </p>
         </div>
         <UButton color="neutral" variant="soft" size="sm" :loading="pendingAction === 'portal'" @click="openPortal">
-          <Icon name="mdi:cog-outline" class="mr-1.5 size-4" />
+          <UIcon name="mdi:cog-outline" class="mr-1.5 size-4" />
           {{ $t('common.preferences.billing.openPortal') }}
         </UButton>
       </div>
@@ -299,7 +301,7 @@
               color="neutral"
               variant="soft"
               size="sm"
-              trailingIcon="i-mdi-open-in-new"
+              trailingIcon="mdi:open-in-new"
             >
               {{ $t('common.preferences.billing.viewInvoice') }}
             </UButton>
@@ -312,7 +314,7 @@
               variant="ghost"
               size="sm"
               square
-              icon="i-mdi-file-pdf-box"
+              icon="mdi:file-pdf-box"
               :aria-label="$t('common.preferences.billing.downloadInvoice', { number: invoice.number ?? '' })"
               :title="$t('common.preferences.billing.downloadPdf')"
             />
@@ -333,7 +335,10 @@ import type { ClientSite } from '~/utils/buildClientSettingsForm'
 
 import { buildTokenPackViews } from '~/utils/tokenPackPresentation'
 
-const { client, rate } = defineProps<{ client: ClientSite | null; rate: number }>()
+const { client, rate } = defineProps<{
+  client: ClientSite | null
+  rate: number
+}>()
 
 const toast = useAppToast()
 const { locale, tm, rt, t } = useI18n()
@@ -363,7 +368,10 @@ const {
 const upgradeTarget = computed(() => getUpgradeTarget(client?.plan, !!client?.stripeSubscriptionId))
 const { data: planPricing } = await useLazyFetch<PlanPricing>('/api/stripe/plans', {
   immediate: Boolean(upgradeTarget.value),
-  default: () => ({ PRO: { month: null, year: null }, PREMIUM: { month: null, year: null } }),
+  default: () => ({
+    PRO: { month: null, year: null },
+    PREMIUM: { month: null, year: null },
+  }),
 })
 const upsellKey = computed(() => (upgradeTarget.value === 'PREMIUM' ? 'toPremium' : 'toPro'))
 const upsellFeatures = computed<string[]>(() => {
@@ -375,7 +383,10 @@ const selectedPlanPrice = computed<PlanPrice | null>(() => {
   return planPricing.value?.[upgradeTarget.value]?.[checkoutInterval.value] ?? null
 })
 const formatMinorAmount = (amount: number, currency: string) => {
-  const formatter = new Intl.NumberFormat(locale.value, { style: 'currency', currency })
+  const formatter = new Intl.NumberFormat(locale.value, {
+    style: 'currency',
+    currency,
+  })
   const digits = formatter.resolvedOptions().maximumFractionDigits ?? 2
   return formatter.format(amount / 10 ** digits)
 }
@@ -410,7 +421,10 @@ const buyTokens = (pack: string) => redirectTo('/api/stripe/checkout', `pack-${p
 const openPortal = () => redirectTo('/api/stripe/portal', 'portal', {})
 const upgrade = () => {
   if (!upgradeTarget.value) return
-  redirectTo('/api/stripe/subscribe', 'upgrade', { plan: upgradeTarget.value, interval: checkoutInterval.value })
+  redirectTo('/api/stripe/subscribe', 'upgrade', {
+    plan: upgradeTarget.value,
+    interval: checkoutInterval.value,
+  })
 }
 
 const billingPlanText = computed(() => {
@@ -442,7 +456,10 @@ const nextBillingAmountText = computed(() => {
 })
 
 const formatInvoiceAmount = (amount: number, currency: string) => {
-  const formatter = new Intl.NumberFormat(locale.value, { style: 'currency', currency })
+  const formatter = new Intl.NumberFormat(locale.value, {
+    style: 'currency',
+    currency,
+  })
   const fractionDigits = formatter.resolvedOptions().maximumFractionDigits ?? 2
   return formatter.format(amount / 10 ** fractionDigits)
 }
