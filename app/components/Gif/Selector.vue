@@ -10,7 +10,7 @@
           <div class="flex items-center gap-2">
             <UButton
               v-if="selectedCategory"
-              icon="i-mdi-arrow-left"
+              icon="mdi:arrow-left"
               size="sm"
               color="neutral"
               variant="ghost"
@@ -23,7 +23,7 @@
                 v-model="searchQuery"
                 type="search"
                 :placeholder="$t('common.search')"
-                icon="i-mdi-magnify"
+                icon="mdi:magnify"
                 class="w-full"
               />
             </UFormField>
@@ -42,12 +42,12 @@
           class="m-4"
           color="error"
           variant="soft"
-          icon="i-mdi-alert-circle-outline"
+          icon="mdi:alert-circle-outline"
           :title="$t('common.messages.loadFailedTitle')"
           :description="initialError"
         >
           <template #actions>
-            <UButton color="error" variant="soft" icon="i-mdi-refresh" @click="initialize(true)">
+            <UButton color="error" variant="soft" icon="mdi:refresh" @click="initialize(true)">
               {{ $t('common.messages.retry') }}
             </UButton>
           </template>
@@ -112,12 +112,12 @@
               </UButton>
               <USkeleton v-for="i in loadingMore ? 3 : 0" :key="`more-${i}`" class="aspect-square" />
             </div>
-            <UEmpty v-else-if="!gifsLoading" icon="i-mdi-emoticon-sad-outline" :title="$t('common.noResults')" />
+            <UEmpty v-else-if="!gifsLoading" icon="mdi:emoticon-sad-outline" :title="$t('common.noResults')" />
             <div ref="gifSentinel" class="h-1" aria-hidden="true" />
             <div v-if="gifsError" class="mt-3 text-center">
               <UAlert color="error" variant="soft" :title="gifsError">
                 <template #actions>
-                  <UButton color="error" variant="soft" icon="i-mdi-refresh" @click="loadGifs(false)">
+                  <UButton color="error" variant="soft" icon="mdi:refresh" @click="loadGifs(false)">
                     {{ $t('common.messages.retry') }}
                   </UButton>
                 </template>
@@ -167,7 +167,7 @@
       color="neutral"
       variant="ghost"
       square
-      icon="i-mdi-gif"
+      icon="mdi:gif"
       :aria-label="$t('articles.comments.addGif')"
     />
     <template #body><ReusePicker :dismiss="closePicker" /></template>
@@ -183,7 +183,7 @@
       color="neutral"
       variant="ghost"
       square
-      icon="i-mdi-gif"
+      icon="mdi:gif"
       :aria-label="$t('articles.comments.addGif')"
     />
     <template #content="{ close }"><ReusePicker :dismiss="close" /></template>

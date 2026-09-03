@@ -1,16 +1,18 @@
 <template>
-  <div v-if="content" class="relative w-full max-w-[200px]">
-    <AppMedia
+  <div
+    v-if="content"
+    class="relative mt-2 inline-block max-w-[min(100%,24rem)] overflow-hidden rounded-[var(--ui-radius)] align-top"
+  >
+    <NuxtImg
       :src="optimizedContent"
       alt="GIF"
-      aspectRatio="1 / 1"
-      fit="contain"
-      sizes="200px"
-      containerClass="w-full rounded-lg"
+      width="480"
+      sizes="240px sm:320px md:480px"
+      class="block h-auto max-h-72 w-auto max-w-full object-contain"
     />
     <UButton
       v-if="cancellable"
-      icon="i-mdi-close"
+      icon="mdi:close"
       color="error"
       variant="solid"
       size="sm"

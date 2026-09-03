@@ -1,7 +1,7 @@
 <template>
   <section class="mx-auto mt-14 w-full" :aria-label="$t('articles.comments.title')">
     <div class="mb-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-      <UIcon size="32" name="i-mdi-comment-multiple-outline" />
+      <UIcon size="32" name="mdi:comment-multiple-outline" />
       <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
         {{ $t('articles.comments.title') }} <span class="text-xl text-muted">({{ commCount }})</span>
       </h2>
@@ -23,14 +23,16 @@
                 v-model="newComment"
                 :maxlength="maxLength"
                 class="min-h-[100px] w-full"
-                :ui="{ leading: 'items-center self-stretch', trailing: 'items-start pt-1.5' }"
+                :ui="{ base: 'pr-14', leading: 'items-center self-stretch' }"
                 :placeholder="$t('articles.comments.commentPlaceholder')"
                 required
                 :disabled="isSubmitting"
               >
-                <template #leading><UIcon name="i-mdi-comment-outline" size="20" class="text-muted" /></template>
-                <template #trailing><GifSelector @select="handleGifSelect" /></template>
+                <template #leading><UIcon name="mdi:comment-outline" size="20" class="text-muted" /></template>
               </UTextarea>
+              <div class="absolute right-2 top-2 z-10">
+                <GifSelector @select="handleGifSelect" />
+              </div>
               <div class="mt-1 flex justify-between text-xs text-muted">
                 <span>{{ characterCount }} / {{ maxLength }}</span>
                 <UBadge v-if="characterCount >= maxLength" color="error" variant="soft" size="sm">
@@ -40,26 +42,24 @@
               <Gif v-model:content="selectedGifUrl" cancellable />
             </div>
           </UFormField>
-          <UAlert
-            v-if="replyingTo"
-            color="info"
-            variant="soft"
-            icon="i-mdi-reply"
-            :title="$t('articles.comments.replyingTo', [replyingTo.user?.username || $t('common.user.notAvailable')])"
-            :description="replyingTo.content"
-          >
-            <template #actions>
-              <UButton
-                icon="i-mdi-close"
-                size="sm"
-                color="error"
-                variant="ghost"
-                square
-                :aria-label="$t('common.cancelAction')"
-                @click="replyingTo = null"
-              />
-            </template>
-          </UAlert>
+          <div v-if="replyingTo" class="flex items-start gap-3 rounded-[var(--topiqu-surface-radius)] bg-elevated p-4">
+            <UIcon name="mdi:reply" class="mt-0.5 size-5 shrink-0 text-primary" />
+            <div class="min-w-0 flex-1">
+              <p class="font-medium text-highlighted">
+                {{ $t('articles.comments.replyingTo', [replyingTo.user?.username || $t('common.user.notAvailable')]) }}
+              </p>
+              <p class="mt-1 line-clamp-2 text-sm text-muted">{{ replyingTo.content }}</p>
+            </div>
+            <UButton
+              icon="mdi:close"
+              size="sm"
+              color="neutral"
+              variant="ghost"
+              square
+              :aria-label="$t('common.cancelAction')"
+              @click="replyingTo = null"
+            />
+          </div>
           <UButton
             type="submit"
             :loading="isSubmitting"
@@ -76,21 +76,24 @@
       variant="soft"
       :title="$t('articles.comments.commentsDisabled')"
     />
-    <UAlert v-else class="mb-10" color="info" variant="soft" :title="$t('common.auth.loginToComment')">
-      <template #actions>
-        <UButton :to="localePath({ name: 'autorizace' })" color="primary" variant="solid" size="sm">
-          {{ $t('common.auth.login') }}
-        </UButton>
-      </template>
-    </UAlert>
+    <div
+      v-else
+      class="mb-10 flex flex-col gap-4 rounded-(--topiqu-surface-radius) border border-default bg-elevated p-4 sm:flex-row sm:items-center"
+    >
+      <UIcon name="mdi:comment-edit-outline" size="28" class="shrink-0 text-primary" />
+      <p class="min-w-0 flex-1 text-sm leading-6 text-muted">{{ $t('common.auth.loginToComment') }}</p>
+      <UButton :to="localePath({ name: 'autorizace' })" color="primary" variant="solid" size="sm">
+        {{ $t('common.auth.login') }}
+      </UButton>
+    </div>
     <UProgress v-if="loading && !comments.length" class="mb-10" />
     <UAlert
       v-else-if="error"
       color="error"
-      icon="i-mdi-alert-circle"
+      icon="mdi:alert-circle"
       :title="$t('articles.comments.errorLoadingComments', { 0: error.message })"
     />
-    <div v-else-if="filteredComments.length" class="w-full max-w-full p-0.25 space-y-6">
+    <div v-else-if="filteredComments.length" class="w-full max-w-full space-y-6">
       <Comment
         v-for="comment in filteredComments"
         :key="comment.id"
@@ -103,13 +106,10 @@
         @dislike="handleDislike"
         @refresh="refresh"
       />
-      <div ref="sentinel" class="h-4"></div>
+      <div v-if="hasMore" ref="sentinel" class="h-px" aria-hidden="true" />
       <UProgress v-if="loading" />
-      <p v-if="!hasMore && comments.length" class="text-center text-sm text-muted">
-        {{ $t('articles.comments.noMoreComments') }}
-      </p>
     </div>
-    <UEmpty v-else icon="i-mdi-comment-off-outline" :title="$t('articles.comments.noComments')" />
+    <UEmpty v-else icon="mdi:comment-off-outline" :title="$t('articles.comments.noComments')" />
   </section>
 </template>
 
@@ -126,7 +126,11 @@ const toast = useToast(),
   { data: session } = useAuth()
 const confirm = useConfirm()
 const localePath = useLocalePath()
-const props = defineProps<{ articleId: string; commCount: number; allowComments: boolean }>()
+const props = defineProps<{
+  articleId: string
+  commCount: number
+  allowComments: boolean
+}>()
 
 const newComment = shallowRef(''),
   selectedGifUrl = shallowRef<string | null>(null),
@@ -137,9 +141,21 @@ const newComment = shallowRef(''),
 const commentState = computed(() => ({ comment: newComment.value }))
 const sort = shallowRef('createdAt:desc'),
   sortItems = [
-    { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'i-mdi-clock-outline' },
-    { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'i-mdi-clock-time-twelve-outline' },
-    { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'i-mdi-heart' },
+    {
+      label: $t('common.sortOptions.newest'),
+      value: 'createdAt:desc',
+      icon: 'mdi:clock-outline',
+    },
+    {
+      label: $t('common.sortOptions.oldest'),
+      value: 'createdAt:asc',
+      icon: 'mdi:clock-time-twelve-outline',
+    },
+    {
+      label: $t('common.sortOptions.mostInteresting'),
+      value: 'likes:desc',
+      icon: 'mdi:heart',
+    },
   ]
 const page = shallowRef(1),
   limit = 2,
@@ -184,7 +200,9 @@ watch(
     e &&
     toast.add({
       color: 'error',
-      title: $t('articles.comments.errorLoadingComments', { 0: e.message || $t('common.error') }),
+      title: $t('articles.comments.errorLoadingComments', {
+        0: e.message || $t('common.error'),
+      }),
     }),
 )
 useInfiniteScroll(
@@ -224,7 +242,10 @@ const submitComment = async () => {
     commCount.value += 1
     await refresh()
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || $t('common.messages.operationFailed') })
+    toast.add({
+      color: 'error',
+      title: e.data?.message || $t('common.messages.operationFailed'),
+    })
   } finally {
     isSubmitting.value = false
   }
