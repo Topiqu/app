@@ -37,7 +37,7 @@
             variant="ghost"
             size="sm"
             square
-            :icon="copied ? 'i-mdi-check' : 'i-mdi-content-copy'"
+            :icon="copied ? 'mdi:check' : 'mdi:content-copy'"
             :aria-label="$t('common.actions.copy')"
             @click="copy()"
           />
@@ -92,22 +92,22 @@ const MESSAGES = {
 } as const
 
 const DEFAULT_ICONS = {
-  error: 'i-mdi-alert-circle',
-  pending: 'i-mdi-loading',
-  success: 'i-mdi-check-circle',
-  idle: 'i-mdi-pause-circle',
+  error: 'mdi:alert-circle',
+  pending: 'mdi:loading',
+  success: 'mdi:check-circle',
+  idle: 'mdi:pause-circle',
 } as const
 
 const ERROR_ICONS: Record<number, string> = {
-  400: 'i-mdi-alert-octagon',
-  401: 'i-mdi-lock-off',
-  403: 'i-mdi-shield-off',
-  404: 'i-mdi-map-marker-off',
-  409: 'i-mdi-alert-decagram',
-  422: 'i-mdi-file-alert',
-  429: 'i-mdi-timer-off',
-  500: 'i-mdi-server-off',
-  503: 'i-mdi-cloud-alert',
-  504: 'i-mdi-network-off',
+  400: 'mdi:alert-octagon',
+  401: 'mdi:lock-off',
+  403: 'mdi:shield-off',
+  404: 'mdi:map-marker-off',
+  409: 'mdi:alert-decagram',
+  422: 'mdi:file-alert',
+  429: 'mdi:timer-off',
+  500: 'mdi:server-off',
+  503: 'mdi:cloud-alert',
+  504: 'mdi:network-off',
 }
 </script>
