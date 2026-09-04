@@ -1,7 +1,7 @@
 <template>
   <section>
     <h3 v-if="!embedded" class="mb-4 flex items-center gap-2 text-lg font-semibold">
-      <Icon name="mdi:google" class="size-5 text-blue-500" />
+      <UIcon name="mdi:google" class="size-5 text-blue-500" />
       {{ $t('common.searchConsole.title') }}
       <span
         class="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
@@ -12,12 +12,15 @@
       :class="
         embedded
           ? ''
-          : 'rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-900'
+          : 'rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900'
       "
     >
-      <div v-if="pending" class="h-20 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
+      <div
+        v-if="pending"
+        class="h-20 animate-pulse rounded-(--topiqu-surface-radius) bg-neutral-100 dark:bg-neutral-800"
+      />
       <div v-else-if="!data?.eligible" class="flex items-start gap-3 text-sm text-neutral-600 dark:text-neutral-400">
-        <Icon name="mdi:lock-outline" class="mt-0.5 size-5 shrink-0" />
+        <UIcon name="mdi:lock-outline" class="mt-0.5 size-5 shrink-0" />
         <p>{{ $t('common.searchConsole.premiumOnly') }}</p>
       </div>
       <div v-else-if="!data.connection" class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -28,7 +31,7 @@
           </p>
         </div>
         <UButton class="shrink-0" @click="connect"
-          ><Icon name="mdi:google" class="mr-2 size-4" />{{ $t('common.searchConsole.connect') }}</UButton
+          ><UIcon name="mdi:google" class="mr-2 size-4" />{{ $t('common.searchConsole.connect') }}</UButton
         >
       </div>
       <div v-else class="space-y-4">
@@ -88,8 +91,8 @@
         </div>
         <div v-if="data.lastAction" class="flex items-center justify-between gap-3 text-xs text-neutral-500">
           <span>
-            {{ $t(`common.searchConsole.actions.${data.lastAction.action}`) }}:
-            “{{ data.lastAction.query }}” · <NuxtTime :datetime="data.lastAction.createdAt" relative />
+            {{ $t(`common.searchConsole.actions.${data.lastAction.action}`) }}: “{{ data.lastAction.query }}” ·
+            <NuxtTime :datetime="data.lastAction.createdAt" relative />
           </span>
           <UButton size="xs" color="neutral" variant="ghost" :loading="rollbackPending" @click="rollbackLastAction">
             {{ $t('common.searchConsole.rollback') }}
@@ -105,7 +108,13 @@ defineProps<{ embedded?: boolean }>()
 
 interface Status {
   eligible: boolean
-  lastAction: null | { id: string; action: string; createdAt: string; articleId: string; query: string }
+  lastAction: null | {
+    id: string
+    action: string
+    createdAt: string
+    articleId: string
+    query: string
+  }
   connection: null | {
     googleEmail: string | null
     propertyUrl: string | null
@@ -139,7 +148,10 @@ watch(
   { immediate: true },
 )
 const saveProperty = async () => {
-  await $fetch('/api/search-console/property', { method: 'PATCH', body: { propertyUrl: selectedProperty.value } })
+  await $fetch('/api/search-console/property', {
+    method: 'PATCH',
+    body: { propertyUrl: selectedProperty.value },
+  })
   toast.success({ message: $t('common.messages.saveSuccess') })
   await refresh()
 }
@@ -150,7 +162,10 @@ const disconnect = async () => {
 const setAutopilot = async (enabled: boolean) => {
   autopilotPending.value = true
   try {
-    await $fetch('/api/search-console/autopilot', { method: 'PATCH', body: { enabled } })
+    await $fetch('/api/search-console/autopilot', {
+      method: 'PATCH',
+      body: { enabled },
+    })
     toast.success({ message: $t('common.messages.saveSuccess') })
     await refresh()
   } finally {

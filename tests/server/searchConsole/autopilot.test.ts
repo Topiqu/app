@@ -51,9 +51,7 @@ describe('Search Console autopilot policy', () => {
     const articles = new Map([['enterprise-security', 'article-1']])
     expect(selectSeoAutopilotCandidate([trend({ impressions: 199 })], articles)).toBeNull()
     expect(selectSeoAutopilotCandidate([trend()], new Map())).toBeNull()
-    expect(
-      selectSeoAutopilotCandidate([trend()], articles, new Set(['article-1\u0000enterprise security'])),
-    ).toBeNull()
+    expect(selectSeoAutopilotCandidate([trend()], articles, new Set(['article-1\u0000enterprise security']))).toBeNull()
     expect(selectSeoAutopilotCandidate([trend()], articles, new Set(), new Set(['article-1']))).toBeNull()
   })
 

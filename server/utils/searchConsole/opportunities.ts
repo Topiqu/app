@@ -106,7 +106,11 @@ export const getSearchTrends = async (clientSiteId: string, days = 28): Promise<
       position: row._avg.position ?? 0,
       previousImpressions,
       impressionGrowth:
-        previousImpressions > 0 ? (impressions - previousImpressions) / previousImpressions : impressions > 0 ? 1 : null,
+        previousImpressions > 0
+          ? (impressions - previousImpressions) / previousImpressions
+          : impressions > 0
+            ? 1
+            : null,
     }
   })
 }
@@ -121,6 +125,7 @@ export const searchOpportunitySignal = (opportunity: SearchOpportunity) => {
 
 export const searchTrendSignal = (trend: SearchTrend) => {
   const observedQuery = trend.query.replace(/\s+/g, ' ').trim().slice(0, 160)
-  const growth = trend.impressionGrowth === null ? 'unknown growth' : `${Math.round(trend.impressionGrowth * 100)}% growth`
+  const growth =
+    trend.impressionGrowth === null ? 'unknown growth' : `${Math.round(trend.impressionGrowth * 100)}% growth`
   return `Observed uncovered query "${observedQuery}" has ${Math.round(trend.impressions)} impressions, average position ${trend.position.toFixed(1)} and ${growth} versus the previous period.`
 }

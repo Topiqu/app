@@ -68,9 +68,9 @@ const skippedSites = async (pickedIds: string[]) => {
       ? 'feature_inactive'
       : site.generationFrequency === 'NONE'
         ? 'frequency_disabled'
-      : (site.tokenRemaining ?? 0) <= MIN_TOKENS
-        ? 'insufficient_tokens'
-        : 'not_due',
+        : (site.tokenRemaining ?? 0) <= MIN_TOKENS
+          ? 'insufficient_tokens'
+          : 'not_due',
   }))
 }
 
@@ -80,9 +80,10 @@ const processClient = async (client: any) => {
 
   let searchSignals: string[] = []
   try {
-    const opportunities = client.searchConsoleConnection?.propertyUrl && client.features?.length
-      ? await getSearchOpportunities(clientSiteId, 28, 15)
-      : []
+    const opportunities =
+      client.searchConsoleConnection?.propertyUrl && client.features?.length
+        ? await getSearchOpportunities(clientSiteId, 28, 15)
+        : []
     const [publishedSlugs, translatedSlugs] = await Promise.all([
       prisma.article.findMany({
         where: { clientSiteId, status: 'published' },

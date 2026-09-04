@@ -71,17 +71,16 @@ export const selectSeoAutopilotCandidate = (
     return []
   })
 
-  return candidates.sort((a, b) => {
-    if (a.action !== b.action) return a.action === 'CTR_OPTIMIZATION' ? -1 : 1
-    return b.score - a.score
-  })[0] ?? null
+  return (
+    candidates.sort((a, b) => {
+      if (a.action !== b.action) return a.action === 'CTR_OPTIMIZATION' ? -1 : 1
+      return b.score - a.score
+    })[0] ?? null
+  )
 }
 
 /** Existing article queries belong to the refresh task, not the new-article picker. */
-export const isExistingArticleOpportunity = (
-  page: string,
-  articleIdBySlug: ReadonlyMap<string, string>,
-): boolean => {
+export const isExistingArticleOpportunity = (page: string, articleIdBySlug: ReadonlyMap<string, string>): boolean => {
   const slug = articleSlugFromSearchPage(page)
   return Boolean(slug && articleIdBySlug.has(slug))
 }
