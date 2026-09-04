@@ -2,7 +2,7 @@
   <ArticleCard :article="cardArticle" variant="compact" :layout="grid ? 'column' : 'responsive-row'">
     <template #actions>
       <UButton
-        icon="i-mdi-heart-broken-outline"
+        icon="mdi:heart-broken-outline"
         square
         size="sm"
         color="error"
@@ -11,7 +11,7 @@
         @click="$emit('unlike', article.id)"
       />
       <UButton
-        icon="i-mdi-share-variant-outline"
+        icon="mdi:share-variant-outline"
         square
         size="sm"
         color="neutral"
