@@ -30,7 +30,7 @@
             variant="ghost"
             size="xs"
             square
-            :icon="collapsed ? 'i-mdi-chevron-double-right' : 'i-mdi-chevron-double-left'"
+            :icon="collapsed ? 'mdi:chevron-double-right' : 'mdi:chevron-double-left'"
             :aria-label="collapsed ? $t('common.actions.expand') : $t('common.actions.collapse')"
             @click="collapse(!collapsed)"
           />
@@ -52,7 +52,8 @@
       <div class="flex w-full flex-col gap-1">
         <template v-if="auth?.user?.role === 'admin'">
           <UButton
-            icon="i-mdi-tag-outline"
+            class="text-muted hover:text-highlighted"
+            icon="mdi:tag-outline"
             color="neutral"
             variant="ghost"
             :label="collapsed ? undefined : $t('articles.tags.manageTags')"
@@ -62,7 +63,8 @@
           />
           <EmojiCreate v-if="auth?.user?.plan !== 'BASIC'">
             <UButton
-              icon="i-mdi-emoticon"
+              class="text-muted hover:text-highlighted"
+              icon="mdi:emoticon"
               color="neutral"
               variant="ghost"
               :label="collapsed ? undefined : $t('emoji.create')"
@@ -71,7 +73,8 @@
             />
           </EmojiCreate>
           <UButton
-            icon="i-mdi-chart-bar"
+            class="text-muted hover:text-highlighted"
+            icon="mdi:chart-bar"
             color="neutral"
             variant="ghost"
             :label="collapsed ? undefined : $t('stats.title')"
@@ -82,7 +85,7 @@
         </template>
         <template v-else-if="auth?.user?.role === 'superadmin'">
           <UButton
-            icon="i-mdi-account-plus"
+            icon="mdi:account-plus"
             color="neutral"
             variant="ghost"
             :label="collapsed ? undefined : $t('master.clientCreate.title')"
@@ -91,7 +94,7 @@
             @click="clientCreateOpen = true"
           />
           <UButton
-            icon="i-mdi-account-group"
+            icon="mdi:account-group"
             color="neutral"
             variant="ghost"
             :label="collapsed ? undefined : $t('master.userList.title')"
@@ -120,20 +123,20 @@ const userListOpen = useState('dashboard-user-list-open', () => false)
 const navigationItems = computed<NavigationMenuItem[]>(() => {
   const publication = {
     label: $t('common.navigation.publication'),
-    icon: 'i-mdi-newspaper-variant-outline',
+    icon: 'mdi:newspaper-variant-outline',
     to: localePath({ name: 'index' }),
   }
   if (auth.value?.user.role === 'superadmin') {
-    return [{ label: $t('master.title'), icon: 'i-mdi-home', to: localePath({ name: 'master' }) }, publication]
+    return [{ label: $t('master.title'), icon: 'mdi:home', to: localePath({ name: 'master' }) }, publication]
   }
   return [
-    { label: $t('common.navigation.dashboard'), icon: 'i-mdi-home', to: localePath({ name: 'admin' }) },
+    { label: $t('common.navigation.dashboard'), icon: 'mdi:home', to: localePath({ name: 'admin' }) },
     {
       label: $t('articles.addArticle'),
-      icon: 'i-mdi-pencil',
+      icon: 'mdi:pencil',
       to: localePath({ name: 'admin-editor-id', params: { id: 'new' } }),
     },
-    { label: $t('common.navigation.settings'), icon: 'i-mdi-cog', to: localePath({ name: 'settings' }) },
+    { label: $t('common.navigation.settings'), icon: 'mdi:cog', to: localePath({ name: 'settings' }) },
     publication,
   ]
 })

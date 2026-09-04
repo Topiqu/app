@@ -35,7 +35,7 @@ describe('DevConsole position persistence', () => {
   it('clamps persisted coordinates into the current viewport', () => {
     expect(
       clampDevConsolePosition({ x: 2000, y: -100 }, { width: 1440, height: 900 }, { width: 240, height: 300 }),
-    ).toEqual({ x: 1192, y: 72 })
+    ).toEqual({ x: 1192, y: 8 })
   })
 
   it('rejects malformed stores and coordinates', () => {

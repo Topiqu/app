@@ -22,7 +22,7 @@ export const clampDevConsolePosition = (
   const y = finiteCoordinate(input.y, fallback.y)
   return {
     x: Math.min(Math.max(8, x), Math.max(8, viewport.width - panel.width - 8)),
-    y: Math.min(Math.max(72, y), Math.max(72, viewport.height - panel.height - 8)),
+    y: Math.min(Math.max(8, y), Math.max(8, viewport.height - panel.height - 8)),
   }
 }
 
