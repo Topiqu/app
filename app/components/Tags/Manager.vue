@@ -37,7 +37,7 @@
           color="neutral"
           variant="ghost"
           class="tag-destructive-control"
-          icon="i-mdi-close"
+          icon="mdi:close"
           size="sm"
           square
           :aria-label="$t('common.actions.deleteTag')"
@@ -46,7 +46,7 @@
         />
       </div>
     </div>
-    <UEmpty v-else icon="i-mdi-tag-off-outline" :title="$t('articles.tags.noTagsFound')" />
+    <UEmpty v-else icon="mdi:tag-off-outline" :title="$t('articles.tags.noTagsFound')" />
   </div>
 </template>
 

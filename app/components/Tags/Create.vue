@@ -22,7 +22,7 @@
           <UInput
             v-model="searchQuery"
             :placeholder="$t('articles.tags.searchPlaceholder')"
-            icon="i-mdi-magnify"
+            icon="mdi:magnify"
             class="w-full"
           />
         </UFormField>
@@ -30,11 +30,11 @@
         <UAlert
           v-else-if="error"
           color="error"
-          icon="i-mdi-alert-circle-outline"
+          icon="mdi:alert-circle-outline"
           :title="$t('common.messages.loadFailedTitle')"
         >
           <template #actions>
-            <UButton icon="i-mdi-refresh" color="error" variant="soft" @click="refresh()">
+            <UButton icon="mdi:refresh" color="error" variant="soft" @click="refresh()">
               {{ $t('common.messages.retry') }}
             </UButton>
           </template>
@@ -57,7 +57,7 @@
               variant="ghost"
               size="sm"
               square
-              icon="i-mdi-pencil"
+              icon="mdi:pencil"
               :aria-label="$t('common.actions.edit')"
               :title="$t('common.actions.edit')"
               @click="startEditing(t.id)"
@@ -75,7 +75,7 @@
                 color="primary"
                 size="sm"
                 square
-                icon="i-mdi-check"
+                icon="mdi:check"
                 :aria-label="$t('common.actions.saveChanges')"
                 @click="saveEdit(t)"
               />
@@ -84,7 +84,7 @@
                 variant="ghost"
                 size="sm"
                 square
-                icon="i-mdi-close"
+                icon="mdi:close"
                 :aria-label="$t('common.actions.cancel')"
                 @click="cancelEdit"
               />
@@ -96,7 +96,7 @@
               class="tag-destructive-control"
               size="sm"
               square
-              icon="i-mdi-delete"
+              icon="mdi:delete"
               :aria-label="$t('common.actions.deleteTag')"
               :title="$t('common.actions.deleteTag')"
               @click="deleteTag(t.id, t.name)"
@@ -166,7 +166,7 @@ const confirmDelete = async (name: string) => {
   const r = await confirm({
     title: $t('common.messages.deleteConfirmTitle'),
     message: $t('articles.tags.deleteConfirmText', [name]),
-    icon: 'i-mdi-alert-outline',
+    icon: 'mdi:alert-outline',
     confirmText: $t('common.actions.delete'),
     cancelText: $t('common.messages.deleteCancel'),
     variant: 'danger',
