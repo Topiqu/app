@@ -7,7 +7,7 @@
           <UInput
             v-model="form.email"
             type="email"
-            icon="i-mdi-envelope"
+            icon="mdi:envelope"
             class="w-full"
             placeholder="example@domain.tld"
             autocomplete="email"
@@ -37,8 +37,8 @@
             v-model="form.password"
             :type="showPassword ? 'text' : 'password'"
             class="w-full"
-            icon="i-mdi-lock"
-            :trailingIcon="showPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
+            icon="mdi:lock"
+            :trailingIcon="showPassword ? 'mdi:eye-off' : 'mdi:eye'"
             required
             :minlength="4"
             :maxlength="124"
@@ -53,8 +53,8 @@
             v-model="form.passwordConfirm"
             :type="showPasswordConfirm ? 'text' : 'password'"
             class="w-full"
-            icon="i-mdi-lock-check"
-            :trailingIcon="showPasswordConfirm ? 'i-mdi-eye-off' : 'i-mdi-eye'"
+            icon="mdi:lock-check"
+            :trailingIcon="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'"
             required
             :minlength="4"
             :maxlength="124"

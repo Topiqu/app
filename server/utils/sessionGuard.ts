@@ -1,6 +1,8 @@
 import type { H3Event } from 'h3'
 
-const isProduction = process.env.NODE_ENV === 'production'
+// Compiled browser tests run with NODE_ENV=production, but still use loopback HTTP.
+// Keep their cookies host-only and non-secure just like the auth handler does.
+const isProduction = process.env.NODE_ENV === 'production' && !process.env.TEST_DATABASE_URL
 
 export const sessionCookieName = `${isProduction ? '__Secure-' : ''}next-auth.session-token`
 
