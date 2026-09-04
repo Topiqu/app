@@ -1,10 +1,15 @@
 <template>
   <span class="relative inline-flex">
-    <UPopover v-model:open="show" :content="{ align: 'end' }" @update:open="handleOpen">
+    <UPopover
+      v-model:open="show"
+      :content="{ align: 'end' }"
+      :ui="{ content: 'overflow-hidden rounded-(--topiqu-surface-radius) p-0' }"
+      @update:open="handleOpen"
+    >
       <UButton
         color="neutral"
         variant="ghost"
-        icon="i-mdi-bell-outline"
+        icon="mdi:bell-outline"
         square
         :aria-label="$t('common.actions.openNotifications')"
         :title="$t(pollActive ? 'common.notifications.pollingActive' : 'common.notifications.pollingPaused')"
@@ -14,66 +19,64 @@
         <div class="w-[26rem] max-w-[95vw]">
           <template v-if="auth?.user">
             <UScrollArea v-if="notifications.length" class="max-h-[30rem]">
-              <div ref="scroll" class="flex flex-col gap-2 p-2">
-                <UCard v-for="n in notifications" :key="n.id" variant="subtle">
-                  <div class="flex min-w-0 items-start gap-3">
-                    <UIcon :name="notificationIcon(n.type)" size="24" class="shrink-0" />
+              <div ref="scroll" class="divide-y divide-default bg-default">
+                <div v-for="n in notifications" :key="n.id" class="p-4">
+                  <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
+                    <UIcon :name="notificationIcon(n.type)" size="20" class="mt-0.5 shrink-0 text-muted" />
                     <div class="min-w-0 flex-1">
-                      <p class="text-sm text-highlighted">
+                      <p class="text-sm font-medium leading-5 text-highlighted">
                         {{ n.message }}
                         <UBadge v-if="n.count > 1" color="error" variant="soft" size="sm">×{{ n.count }}</UBadge>
                       </p>
                       <p class="mt-1 text-xs text-muted">{{ formatDate(n.createdAt) }}</p>
-                      <ULink v-if="n.link" :to="n.link">{{ $t('common.actions.view') }}</ULink>
+                      <ULink v-if="n.link" :to="n.link" class="mt-1 block text-sm">{{
+                        $t('common.actions.view')
+                      }}</ULink>
                       <ULink
                         v-if="n.article?.slug"
                         :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } })"
-                        class="block break-words"
+                        class="mt-1 block line-clamp-2 break-words text-sm leading-5 text-muted hover:text-primary"
                       >
                         {{ n.article.title }}
                       </ULink>
                     </div>
-                    <ULink
-                      v-if="n.type === 'LIKE' && n.article?.imageUrl && n.article.slug"
-                      :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } })"
-                      class="shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                      :aria-label="n.article.title"
-                    >
-                      <AppMedia
-                        :src="n.article.imageUrl"
-                        alt=""
-                        aspectRatio="1 / 1"
-                        sizes="64px"
-                        containerClass="size-16 rounded-md"
+                    <div class="flex items-start gap-1">
+                      <ULink
+                        v-if="n.type === 'LIKE' && n.article?.imageUrl && n.article.slug"
+                        :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } })"
+                        class="shrink-0 rounded-[var(--ui-radius)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                        :aria-label="n.article.title"
+                      >
+                        <AppMedia
+                          :src="n.article.imageUrl"
+                          alt=""
+                          aspectRatio="1 / 1"
+                          sizes="56px"
+                          containerClass="size-14 rounded-[var(--ui-radius)]"
+                        />
+                      </ULink>
+                      <UButton
+                        color="error"
+                        variant="ghost"
+                        icon="mdi:close"
+                        size="xs"
+                        square
+                        :aria-label="$t('common.actions.deleteNotification')"
+                        :title="$t('common.actions.deleteNotification')"
+                        @click.stop="del(n.id)"
                       />
-                    </ULink>
-                    <UButton
-                      color="error"
-                      variant="ghost"
-                      icon="i-mdi-close-circle"
-                      size="sm"
-                      square
-                      :aria-label="$t('common.actions.deleteNotification')"
-                      :title="$t('common.actions.deleteNotification')"
-                      @click.stop="del(n.id)"
-                    />
+                    </div>
                   </div>
-                </UCard>
+                </div>
                 <div ref="sentinel" class="h-px" />
                 <UProgress v-if="loading" />
-                <UAlert
-                  v-else-if="!hasMore"
-                  color="neutral"
-                  variant="subtle"
-                  :title="$t('common.notifications.noMore')"
-                />
               </div>
             </UScrollArea>
-            <UEmpty v-else icon="i-mdi-bell-off-outline" :title="$t('common.notifications.empty')" />
+            <UEmpty v-else icon="mdi:bell-off-outline" :title="$t('common.notifications.empty')" />
           </template>
 
-          <UCard v-else variant="subtle">
-            <div class="flex flex-col gap-4">
+          <div v-else class="bg-default p-4">
+            <div class="flex flex-col gap-2">
               <AppMedia
                 src="/app-logo.png"
                 :alt="$t('common.avatar.alt.company')"
@@ -93,7 +96,7 @@
                 {{ $t('common.auth.register') }}
               </UButton>
             </div>
-          </UCard>
+          </div>
         </div>
       </template>
     </UPopover>
@@ -122,7 +125,11 @@ type Notif = {
   count: number
   link?: string | null
 }
-type FetchResponse = { notifications: Notif[]; unreadCount: number; hasMore: boolean }
+type FetchResponse = {
+  notifications: Notif[]
+  unreadCount: number
+  hasMore: boolean
+}
 
 const show = shallowRef(false)
 const page = shallowRef(1)
@@ -160,7 +167,11 @@ const poll = async () => {
     const fresh = res.notifications.filter((n) => n?.id && !known.has(n.id))
     if (fresh.length) {
       data.value = [...fresh, ...data.value]
-      for (const n of fresh) useAppToast().add({ color: 'success', title: `Nová notifikace: ${n.message}` })
+      for (const n of fresh)
+        useAppToast().add({
+          color: 'success',
+          title: `Nová notifikace: ${n.message}`,
+        })
     }
     unreadCount.value = res.unreadCount
   } catch {
@@ -168,7 +179,9 @@ const poll = async () => {
   }
 }
 
-const { pause, resume } = useIntervalFn(poll, POLL_INTERVAL_MS, { immediate: false })
+const { pause, resume } = useIntervalFn(poll, POLL_INTERVAL_MS, {
+  immediate: false,
+})
 
 watch(
   pollActive,
@@ -193,7 +206,11 @@ watch(
 )
 
 watch(error, (e) => {
-  if (e) useAppToast().add({ color: 'error', title: `Chyba při načítání: ${e.message || 'Neznámá chyba'}` })
+  if (e)
+    useAppToast().add({
+      color: 'error',
+      title: `Chyba při načítání: ${e.message || 'Neznámá chyba'}`,
+    })
 })
 
 const notifications = computed(() => {
@@ -204,7 +221,11 @@ const notifications = computed(() => {
       const ex = map.get(key)!
       ex.count++
       if (new Date(n.createdAt) > new Date(ex.createdAt))
-        Object.assign(ex, { createdAt: n.createdAt, id: n.id, isRead: n.isRead })
+        Object.assign(ex, {
+          createdAt: n.createdAt,
+          id: n.id,
+          isRead: n.isRead,
+        })
     } else map.set(key, { ...n, count: 1 })
   }
   return [...map.values()]
@@ -219,13 +240,13 @@ const handleOpen = (open: boolean) => {
 
 const notificationIcon = (type: string) =>
   ({
-    COMMENT: 'i-mdi-comment-outline',
-    LIKE: 'i-mdi-thumb-up-outline',
-    FOLLOW: 'i-mdi-account-plus-outline',
-    MENTION: 'i-mdi-at',
-    ARTICLE_PUBLISHED: 'i-mdi-post-outline',
-    SYSTEM: 'i-mdi-alert-circle-outline',
-  })[type] || 'i-mdi-bell-outline'
+    COMMENT: 'mdi:comment-outline',
+    LIKE: 'mdi:thumb-up-outline',
+    FOLLOW: 'mdi:account-plus-outline',
+    MENTION: 'mdi:at',
+    ARTICLE_PUBLISHED: 'mdi:post-outline',
+    SYSTEM: 'mdi:alert-circle-outline',
+  })[type] || 'mdi:bell-outline'
 
 const del = async (id: string) => {
   try {
@@ -243,7 +264,10 @@ const del = async (id: string) => {
     })
     unreadCount.value = data.value.filter((n) => !n.isRead).length
   } catch (e: any) {
-    useAppToast().add({ color: 'error', title: `Chyba při mazání: ${e.data?.message || 'Neznámá chyba'}` })
+    useAppToast().add({
+      color: 'error',
+      title: `Chyba při mazání: ${e.data?.message || 'Neznámá chyba'}`,
+    })
   }
 }
 

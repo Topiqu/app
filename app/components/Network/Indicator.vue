@@ -18,7 +18,7 @@
         class="flex items-center gap-2.5 rounded-full px-4 py-2.5 text-inverted shadow-xl transition-colors duration-300"
         :class="isOnline ? 'bg-success' : 'bg-error'"
       >
-        <UIcon :name="isOnline ? 'i-mdi-wifi' : 'i-mdi-wifi-off'" size="18" aria-hidden="true" />
+        <UIcon :name="isOnline ? 'mdi:wifi' : 'mdi:wifi-off'" size="18" aria-hidden="true" />
         <span class="text-sm font-medium">
           {{ isOnline ? $t('common.connection.online') : $t('common.connection.offline') }}
         </span>
