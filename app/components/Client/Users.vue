@@ -7,12 +7,12 @@
         <h2 class="text-lg font-semibold text-highlighted">{{ $t('master.clientUsers.title') }}</h2>
         <div class="flex items-center gap-1">
           <UserCreate :clientId="props.clientId" @create="refresh">
-            <UButton color="success" variant="soft" icon="i-mdi-plus" :label="$t('common.actions.addUser')" />
+            <UButton color="success" variant="soft" icon="mdi:plus" :label="$t('common.actions.addUser')" />
           </UserCreate>
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-mdi-close"
+            icon="mdi:close"
             square
             :aria-label="$t('common.close')"
             @click="open = false"
@@ -24,7 +24,7 @@
     <template #body>
       <div class="mb-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_10rem]">
         <UFormField :label="$t('common.actions.search')" :ui="{ label: 'sr-only' }">
-          <UInput v-model="search" icon="i-mdi-magnify" :placeholder="$t('common.actions.search')" />
+          <UInput v-model="search" icon="mdi:magnify" :placeholder="$t('common.actions.search')" />
         </UFormField>
         <UFormField :label="$t('master.clientUsers.headers.role')" :ui="{ label: 'sr-only' }">
           <USelect v-model="roleFilter" :items="roleItems" />
@@ -35,7 +35,7 @@
       </div>
       <UEmpty
         v-if="filteredUsers.length === 0"
-        icon="i-mdi-account-off-outline"
+        icon="mdi:account-off-outline"
         :title="$t('master.clientUsers.empty')"
       />
       <UTable v-else class="hidden sm:block" :data="filteredUsers" :columns="userColumns">
@@ -55,16 +55,16 @@
           <UBadge v-if="row.original.role !== 'ai'" color="primary" variant="subtle">
             {{ row.original.role }}
           </UBadge>
-          <UIcon v-else size="24" name="i-mdi-robot" class="text-primary" />
+          <UIcon v-else size="24" name="mdi:robot" class="text-primary" />
         </template>
         <template #actions-cell="{ row }">
           <div class="flex justify-end gap-2">
             <UserEdit :user="row.original" @saved="refresh">
-              <UButton icon="i-mdi-pencil" color="neutral" variant="ghost" :aria-label="$t('common.actions.edit')" />
+              <UButton icon="mdi:pencil" color="neutral" variant="ghost" :aria-label="$t('common.actions.edit')" />
             </UserEdit>
             <UButton
               v-if="row.original.deletedAt === null"
-              icon="i-mdi-delete"
+              icon="mdi:delete"
               color="error"
               variant="ghost"
               :aria-label="$t('master.clientUsers.blockDialog.confirm')"
@@ -72,7 +72,7 @@
             />
             <UButton
               v-else
-              icon="i-mdi-lock-open"
+              icon="mdi:lock-open"
               color="success"
               variant="ghost"
               :aria-label="$t('master.clientUsers.messages.restored')"
@@ -101,7 +101,7 @@
             <div class="flex shrink-0 items-center gap-1">
               <UserEdit :user="user" @saved="refresh">
                 <UButton
-                  icon="i-mdi-pencil"
+                  icon="mdi:pencil"
                   color="neutral"
                   variant="ghost"
                   square
@@ -109,7 +109,7 @@
                 />
               </UserEdit>
               <UButton
-                :icon="user.deletedAt === null ? 'i-mdi-delete' : 'i-mdi-lock-open'"
+                :icon="user.deletedAt === null ? 'mdi:delete' : 'mdi:lock-open'"
                 :color="user.deletedAt === null ? 'error' : 'success'"
                 variant="ghost"
                 square
@@ -181,7 +181,7 @@ const del = async (id: string) => {
   const r = await confirm({
     title: t('master.clientUsers.blockDialog.title'),
     message: t('master.clientUsers.blockDialog.text'),
-    icon: 'i-mdi-alert-outline',
+    icon: 'mdi:alert-outline',
     confirmText: t('master.clientUsers.blockDialog.confirm'),
     cancelText: t('master.clientUsers.blockDialog.cancel'),
     variant: 'danger',
