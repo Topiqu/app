@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-6">
-    <div class="rounded-2xl bg-neutral-50 p-4 dark:bg-neutral-800/60">
+    <div class="rounded-(--topiqu-surface-radius) bg-neutral-50 p-4 dark:bg-neutral-800/60">
       <div class="flex flex-wrap items-center gap-3">
         <span
           class="grid size-10 place-items-center rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300"
         >
-          <Icon :name="icon" class="size-5" />
+          <UIcon :name="icon" class="size-5" />
         </span>
         <span
           :class="[
@@ -24,11 +24,11 @@
     <div class="grid gap-6 sm:grid-cols-2">
       <section>
         <h3 class="flex items-center gap-2 font-semibold">
-          <Icon name="mdi:sparkles" class="size-5 text-emerald-500" />{{ $t('common.integrationsCatalog.benefits') }}
+          <UIcon name="mdi:sparkles" class="size-5 text-emerald-500" />{{ $t('common.integrationsCatalog.benefits') }}
         </h3>
         <ul class="mt-3 space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
           <li v-for="benefit in benefits" :key="benefit" class="flex gap-2">
-            <Icon name="mdi:check-circle-outline" class="mt-0.5 size-4 shrink-0 text-emerald-500" />{{ benefit }}
+            <UIcon name="mdi:check-circle-outline" class="mt-0.5 size-4 shrink-0 text-emerald-500" />{{ benefit }}
           </li>
         </ul>
       </section>

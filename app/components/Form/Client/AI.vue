@@ -13,7 +13,7 @@
         <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiAuthor.description') }}</p>
       </div>
 
-      <div class="overflow-hidden rounded-2xl border border-default bg-default shadow-sm">
+      <div class="overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default">
         <div class="grid gap-6 border-b border-default p-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:p-6">
           <div class="flex flex-col items-start gap-2">
             <AppFormLabel :text="$t('common.avatar.ai.label')" />
@@ -34,7 +34,7 @@
                     class="absolute inset-0 grid place-items-center rounded-full bg-neutral-950/0 text-white transition group-hover:bg-neutral-950/45 group-focus-visible:bg-neutral-950/45"
                   >
                     <UIcon
-                      name="i-mdi-camera-outline"
+                      name="mdi:camera-outline"
                       class="size-6 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
                     />
                   </span>
@@ -107,9 +107,9 @@
         <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.aiPage.capabilities') }}</h3>
         <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiPage.capabilitiesDescription') }}</p>
       </div>
-      <div class="grid gap-3 rounded-2xl border border-default bg-muted/30 p-3 sm:p-4">
+      <div class="grid gap-3 rounded-(--topiqu-surface-radius) border border-default bg-muted/30 p-3 sm:p-4">
         <FormClientFeatureToggle
-          icon="i-mdi-robot-outline"
+          icon="mdi:robot-outline"
           accentRing="ring-2 ring-blue-500"
           accentIcon="text-blue-600 dark:text-blue-400"
           :title="$t('common.features.ai')"
@@ -123,7 +123,7 @@
         />
 
         <FormClientFeatureToggle
-          icon="i-mdi-emoticon-happy-outline"
+          icon="mdi:emoticon-happy-outline"
           accentRing="ring-2 ring-emerald-500"
           accentIcon="text-emerald-600 dark:text-emerald-400"
           :title="$t('common.features.sentiment')"
@@ -137,7 +137,7 @@
         />
 
         <FormClientFeatureToggle
-          icon="i-mdi-clock-outline"
+          icon="mdi:clock-outline"
           accentRing="ring-2 ring-violet-500"
           accentIcon="text-violet-600 dark:text-violet-400"
           :title="$t('common.features.articleCrons')"
@@ -158,10 +158,12 @@
         <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiPage.automationDescription') }}</p>
       </div>
 
-      <div class="divide-y divide-default overflow-hidden rounded-2xl border border-default bg-default shadow-sm">
+      <div
+        class="divide-y divide-default overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default"
+      >
         <div class="flex items-start gap-4 p-5 sm:p-6">
           <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-muted">
-            <Icon :name="autoRelease ? 'mdi:publish' : 'mdi:file-document-edit-outline'" class="size-5" />
+            <UIcon :name="autoRelease ? 'mdi:publish' : 'mdi:file-document-edit-outline'" class="size-5" />
           </div>
 
           <div class="flex-1">
@@ -205,9 +207,9 @@
         <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.aiPage.transparency') }}</h3>
         <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiPage.transparencyDescription') }}</p>
       </div>
-      <div class="flex items-start gap-4 rounded-2xl border border-default bg-default p-5 shadow-sm sm:p-6">
+      <div class="flex items-start gap-4 rounded-(--topiqu-surface-radius) border border-default bg-default p-5 sm:p-6">
         <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-muted">
-          <Icon name="mdi:information-outline" class="size-5" />
+          <UIcon name="mdi:information-outline" class="size-5" />
         </div>
         <div class="min-w-0 flex-1">
           <div class="text-sm font-semibold text-highlighted">{{ $t('common.preferences.aiDisclosure.title') }}</div>
@@ -227,7 +229,7 @@
         <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.translation.desc') }}</p>
       </div>
 
-      <div class="rounded-2xl border border-default bg-default p-5 shadow-sm sm:p-6">
+      <div class="rounded-(--topiqu-surface-radius) border border-default bg-default p-5 sm:p-6">
         <div class="grid gap-6 lg:grid-cols-2">
           <div class="flex min-w-0 flex-col gap-2">
             <AppFormLabel :text="$t('common.preferences.translation.mode.label')" />
@@ -262,7 +264,7 @@
           v-if="translationMode === 'AUTO' || translationMode === 'HYBRID'"
           class="mt-5 flex items-start gap-3 border-t border-default pt-5 text-muted"
         >
-          <Icon name="mdi:information-outline" class="mt-0.5 size-4 shrink-0" />
+          <UIcon name="mdi:information-outline" class="mt-0.5 size-4 shrink-0" />
           <p class="text-xs leading-5">{{ $t('common.preferences.translation.tokenWarning') }}</p>
         </div>
       </div>
@@ -272,7 +274,7 @@
       v-model:open="showAutoReleaseModal"
       :title="$t('common.preferences.autoRelease.confirmTitle')"
       :message="$t('common.preferences.autoRelease.confirmMessage')"
-      icon="i-mdi-alert-rhombus-outline"
+      icon="mdi:alert-rhombus-outline"
       :confirmText="$t('common.actions.enable')"
       :cancelText="$t('common.actions.cancel')"
       @confirm="confirmAutoRelease"
@@ -282,7 +284,7 @@
       v-model:open="showAiDisableModal"
       :title="$t('common.features.disableAiTitle')"
       :message="$t('common.features.disableAiMessage')"
-      icon="i-mdi-alert-rhombus-outline"
+      icon="mdi:alert-rhombus-outline"
       variant="danger"
       :confirmText="$t('common.actions.disable')"
       :cancelText="$t('common.actions.cancel')"
@@ -311,7 +313,11 @@ const props = defineProps<{
   canEnableArticleCrons: boolean
   togglePending?: boolean
   currency: string
-  features: { code: string; priceMonthly: number; priceAnnual?: number | null }[]
+  features: {
+    code: string
+    priceMonthly: number
+    priceAnnual?: number | null
+  }[]
   plan: string
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT'
   language: string
@@ -373,8 +379,14 @@ const showAiDisableModal = shallowRef(false)
 
 const rate = await useCurrencyRate(props.currency)
 
-const username = computed({ get: () => props.username, set: (v) => emit('update:username', v) })
-const bio = computed({ get: () => props.bio, set: (v) => emit('update:bio', v) })
+const username = computed({
+  get: () => props.username,
+  set: (v) => emit('update:username', v),
+})
+const bio = computed({
+  get: () => props.bio,
+  set: (v) => emit('update:bio', v),
+})
 const aiToneOfVoice = computed({
   get: () => props.aiToneOfVoice ?? '',
   set: (v) => emit('update:aiToneOfVoice', v || null),
@@ -398,10 +410,22 @@ const aiControversyLevel = computed({
 })
 
 const controversyOptions = computed(() => [
-  { value: 'NONE', label: t('common.preferences.aiAuthor.controversyLevel.options.NONE') },
-  { value: 'LOW', label: t('common.preferences.aiAuthor.controversyLevel.options.LOW') },
-  { value: 'MEDIUM', label: t('common.preferences.aiAuthor.controversyLevel.options.MEDIUM') },
-  { value: 'HIGH', label: t('common.preferences.aiAuthor.controversyLevel.options.HIGH') },
+  {
+    value: 'NONE',
+    label: t('common.preferences.aiAuthor.controversyLevel.options.NONE'),
+  },
+  {
+    value: 'LOW',
+    label: t('common.preferences.aiAuthor.controversyLevel.options.LOW'),
+  },
+  {
+    value: 'MEDIUM',
+    label: t('common.preferences.aiAuthor.controversyLevel.options.MEDIUM'),
+  },
+  {
+    value: 'HIGH',
+    label: t('common.preferences.aiAuthor.controversyLevel.options.HIGH'),
+  },
 ])
 
 const toneSuggestions = computed(() => [
@@ -435,7 +459,11 @@ const confirmAutoRelease = () => {
 
 const toggle = (code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS') => {
   const current =
-    { AI: props.aiEnabled, SENTIMENT: props.sentimentEnabled, ARTICLE_CRONS: props.articleCronsEnabled }[code] ?? false
+    {
+      AI: props.aiEnabled,
+      SENTIMENT: props.sentimentEnabled,
+      ARTICLE_CRONS: props.articleCronsEnabled,
+    }[code] ?? false
 
   if (code === 'AI' && current && (props.sentimentEnabled || props.articleCronsEnabled)) {
     showAiDisableModal.value = true

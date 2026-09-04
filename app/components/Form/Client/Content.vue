@@ -8,7 +8,7 @@
     </div>
 
     <div
-      class="divide-y divide-neutral-200 rounded-2xl border border-neutral-200 bg-white shadow-sm dark:divide-neutral-800 dark:border-neutral-700 dark:bg-neutral-900"
+      class="divide-y divide-neutral-200 rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white dark:divide-neutral-800 dark:border-neutral-700 dark:bg-neutral-900"
     >
       <div class="grid gap-x-8 gap-y-2.5 p-5 sm:p-6 lg:grid-cols-[12.5rem_minmax(0,1fr)]">
         <div>
@@ -86,7 +86,7 @@
                 square
                 color="error"
                 variant="ghost"
-                icon="i-mdi-close"
+                icon="mdi:close"
                 :aria-label="$t('common.preferences.keywords.remove', [keyword])"
                 @click.stop="removeKeyword(index)"
               />
