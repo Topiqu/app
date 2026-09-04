@@ -33,11 +33,11 @@ const { data: client, pending } = await useFetch<ClientSite>(() => `/api/clients
 })
 
 const platformIcons: Record<SocialPlatform, string> = {
-  FACEBOOK: 'i-mdi-facebook',
-  TWITTER: 'i-mdi-alpha-x-circle',
-  INSTAGRAM: 'i-mdi-instagram',
-  LINKEDIN: 'i-mdi-linkedin',
-  YOUTUBE: 'i-mdi-youtube',
-  OTHER: 'i-mdi-web',
+  FACEBOOK: 'mdi:facebook',
+  TWITTER: 'mdi:alpha-x-circle',
+  INSTAGRAM: 'mdi:instagram',
+  LINKEDIN: 'mdi:linkedin',
+  YOUTUBE: 'mdi:youtube',
+  OTHER: 'mdi:web',
 }
 </script>

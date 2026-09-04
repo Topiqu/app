@@ -17,7 +17,7 @@
       d="M12 5.97c1.47 0 2.79.51 3.83 1.5l2.87-2.88A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.94 5.5l3.34 2.59c.79-2.36 3-4.12 5.6-4.12Z"
     />
   </svg>
-  <Icon v-else :name="icon" class="size-6" :class="color" aria-hidden="true" />
+  <UIcon v-else :name="icon" class="size-6" :class="color" aria-hidden="true" />
 </template>
 
 <script setup lang="ts">
