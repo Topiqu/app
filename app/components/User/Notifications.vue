@@ -1,7 +1,7 @@
 <template>
   <ul class="divide-y divide-neutral-100 dark:divide-neutral-800">
     <li v-for="option in options" :key="option.id" class="flex items-start gap-3 py-4 first:pt-0 last:pb-0">
-      <Icon :name="option.icon" class="mt-0.5 size-4 shrink-0 text-neutral-400 dark:text-neutral-500" />
+      <UIcon :name="option.icon" class="mt-0.5 size-4 shrink-0 text-neutral-400 dark:text-neutral-500" />
 
       <div class="min-w-0 flex-1">
         <label :for="option.id" class="cursor-pointer text-sm font-medium text-neutral-900 dark:text-neutral-100">

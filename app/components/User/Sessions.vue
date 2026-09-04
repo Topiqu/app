@@ -7,7 +7,7 @@
         class="flex flex-col gap-3 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
       >
         <div class="flex min-w-0 items-start gap-3">
-          <Icon :name="deviceIcon(session)" class="mt-0.5 size-5 shrink-0 text-neutral-400 dark:text-neutral-500" />
+          <UIcon :name="deviceIcon(session)" class="mt-0.5 size-5 shrink-0 text-neutral-400 dark:text-neutral-500" />
           <div class="min-w-0">
             <p class="flex flex-wrap items-center gap-2 text-sm font-medium text-neutral-900 dark:text-neutral-100">
               <span class="truncate">

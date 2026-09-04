@@ -9,7 +9,7 @@
         size="sm"
         color="neutral"
         variant="soft"
-        icon="i-mdi-file-pdf-box"
+        icon="mdi:file-pdf-box"
         :disabled="isLoading"
         :aria-label="$t('profile.exportToPDF')"
         :title="$t('profile.exportToPDF')"
@@ -118,7 +118,7 @@
                   v-if="isPasswordOld"
                   class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
                 >
-                  <Icon name="mdi:clock-alert-outline" class="size-3.5" />
+                  <UIcon name="mdi:clock-alert-outline" class="size-3.5" />
                   {{ $t('profile.passwordOld') }}
                 </span>
               </div>
@@ -138,7 +138,7 @@
                       color="neutral"
                       variant="link"
                       size="sm"
-                      :icon="showOldPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
+                      :icon="showOldPassword ? 'mdi:eye-off' : 'mdi:eye'"
                       :aria-label="showOldPassword ? $t('common.hidePassword') : $t('common.showPassword')"
                       @click="showOldPassword = !showOldPassword"
                     />
@@ -159,7 +159,7 @@
               <UButton
                 :disabled="isLoading || !passwordsMatch"
                 :loading="isLoading"
-                icon="i-mdi-lock-reset"
+                icon="mdi:lock-reset"
                 class="w-full"
                 @click="handleChangePassword"
               >
@@ -203,7 +203,7 @@
               :disabled="isLoading"
               color="error"
               variant="soft"
-              icon="i-mdi-account-cancel-outline"
+              icon="mdi:account-cancel-outline"
               @click="confirmDeactivate"
             >
               {{ $t('profile.deactivateAccount') }}

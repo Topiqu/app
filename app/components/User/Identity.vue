@@ -19,11 +19,11 @@
         class="mt-4 flex flex-wrap justify-center sm:justify-start gap-x-5 gap-y-1.5 text-xs text-neutral-500 dark:text-neutral-400"
       >
         <span class="inline-flex items-center gap-1.5 min-w-0">
-          <Icon name="mdi:email-outline" class="size-4 shrink-0" />
+          <UIcon name="mdi:email-outline" class="size-4 shrink-0" />
           <span class="truncate">{{ email }}</span>
         </span>
         <span v-if="createdAt" class="inline-flex items-center gap-1.5">
-          <Icon name="mdi:calendar-blank-outline" class="size-4 shrink-0" />
+          <UIcon name="mdi:calendar-blank-outline" class="size-4 shrink-0" />
           {{ $t('common.user.joined', [formatDate(createdAt)]) }}
         </span>
       </div>

@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <div v-if="!enabled && !showForm" class="flex items-start justify-between gap-3">
       <p class="text-sm text-neutral-500 dark:text-neutral-400 text-pretty">{{ $t('profile.scanTotp') }}</p>
-      <UButton :disabled="isLoading" icon="i-mdi-shield-lock-outline" class="shrink-0" @click="enable2FA">
+      <UButton :disabled="isLoading" icon="mdi:shield-lock-outline" class="shrink-0" @click="enable2FA">
         {{ $t('profile.enable2FA') }}
       </UButton>
     </div>
@@ -23,7 +23,7 @@
         <p v-if="error" class="text-xs text-red-600 dark:text-red-400">{{ error }}</p>
         <UButton
           :disabled="isLoading || !totpCode"
-          icon="i-mdi-check-circle-outline"
+          icon="mdi:check-circle-outline"
           color="success"
           variant="soft"
           class="w-full"
@@ -36,7 +36,7 @@
       <UButton
         v-else-if="enabled"
         :disabled="isLoading"
-        icon="i-mdi-shield-off-outline"
+        icon="mdi:shield-off-outline"
         color="error"
         variant="soft"
         class="mx-auto w-full max-w-xs"

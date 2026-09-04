@@ -6,7 +6,7 @@
       v-if="!showQR"
       class="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-neutral-900/60 backdrop-blur-md"
     >
-      <UButton size="sm" color="neutral" variant="soft" icon="i-mdi-eye" @click="showQR = true">{{
+      <UButton size="sm" color="neutral" variant="soft" icon="mdi:eye" @click="showQR = true">{{
         $t('profile.showQR')
       }}</UButton>
     </div>
@@ -38,7 +38,7 @@
             square
             color="neutral"
             variant="ghost"
-            icon="i-mdi-content-copy"
+            icon="mdi:content-copy"
             :aria-label="$t('common.actions.copyLink')"
             @click="copySecret"
           />
@@ -52,7 +52,7 @@
       square
       color="neutral"
       variant="ghost"
-      icon="i-mdi-eye-off"
+      icon="mdi:eye-off"
       class="absolute right-1 top-1"
       :aria-label="$t('profile.hideQR')"
       :title="$t('profile.hideQR')"

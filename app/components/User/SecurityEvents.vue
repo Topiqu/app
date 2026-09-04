@@ -2,7 +2,7 @@
   <div>
     <ul v-if="events?.length" class="divide-y divide-neutral-100 dark:divide-neutral-800">
       <li v-for="entry in events" :key="entry.id" class="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-        <Icon
+        <UIcon
           :name="eventIcon(entry.action)"
           class="mt-0.5 size-4 shrink-0"
           :class="

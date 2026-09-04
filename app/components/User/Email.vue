@@ -5,7 +5,7 @@
         v-model="email"
         disabled
         class="w-full"
-        :trailingIcon="isEmailVerified ? 'i-mdi-check-circle' : 'i-mdi-alert-circle'"
+        :trailingIcon="isEmailVerified ? 'mdi:check-circle' : 'mdi:alert-circle'"
       />
     </UFormField>
     <div v-if="!isEmailVerified" class="space-y-3">
@@ -13,7 +13,7 @@
         :disabled="isLoading || isVerificationCodeSent"
         class="w-full"
         :loading="isLoading"
-        icon="i-mdi-email-send"
+        icon="mdi:email-send"
         @click="sendVerificationCode"
       >
         {{ $t('common.auth.sendCode') }}
@@ -26,7 +26,7 @@
           :disabled="isLoading || !verificationCode"
           class="w-full"
           :loading="isLoading"
-          icon="i-mdi-check"
+          icon="mdi:check"
           @click="verifyEmail"
         >
           {{ $t('common.auth.verify') }}

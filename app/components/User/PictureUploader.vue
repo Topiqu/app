@@ -18,7 +18,7 @@
       <div class="grow flex flex-col gap-8">
         <div v-if="!draftUrl" class="my-8 flex w-full flex-col items-center justify-center gap-5">
           <UserPicture :url="displayAvatar" size="xl" :name="name ?? auth?.user.name" />
-          <UButton icon="i-mdi-image-edit-outline" size="lg" @click="chooseFile()">
+          <UButton icon="mdi:image-edit-outline" size="lg" @click="chooseFile()">
             {{ $t('common.avatar.chooseImage') }}
           </UButton>
           <p class="text-center text-xs text-muted">{{ $t('common.avatar.requirements') }}</p>
@@ -41,7 +41,7 @@
               v-if="busy"
               class="absolute inset-0 bg-black/45 flex flex-col items-center justify-center gap-3 text-white"
             >
-              <Icon name="mdi:loading" class="size-9 animate-spin" />
+              <UIcon name="mdi:loading" class="size-9 animate-spin" />
               <span class="text-sm font-medium">{{ uploadLabel }}</span>
               <div class="w-40 h-1.5 rounded-full overflow-hidden bg-white/30">
                 <div class="h-full bg-white transition-[width]" :style="{ width: `${progress}%` }" />
@@ -52,7 +52,7 @@
           <div class="space-y-3">
             <p class="text-center text-xs text-gray-500">{{ $t('common.avatar.dragHint') }}</p>
             <label class="flex items-center gap-3 text-sm">
-              <Icon name="mdi:magnify-plus-outline" class="size-5" />
+              <UIcon name="mdi:magnify-plus-outline" class="size-5" />
               <UInput
                 v-model.number="zoom"
                 type="range"
@@ -102,7 +102,7 @@
             role="alert"
             class="rounded-xl bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-700 dark:text-red-300 flex gap-2"
           >
-            <Icon name="mdi:alert-circle-outline" class="size-5 shrink-0" />
+            <UIcon name="mdi:alert-circle-outline" class="size-5 shrink-0" />
             {{ errorMessage }}
           </div>
         </template>
@@ -111,13 +111,13 @@
 
     <template #footer="{ close }">
       <div class="flex gap-4 justify-end">
-        <UButton v-if="currentAvatar" color="error" variant="soft" icon="i-mdi-delete-outline" @click="confirmRemove">
+        <UButton v-if="currentAvatar" color="error" variant="soft" icon="mdi:delete-outline" @click="confirmRemove">
           {{ $t('common.avatar.remove') }}
         </UButton>
         <UButton color="neutral" variant="soft" size="lg" @click="(closeEditor(), close())">{{
           $t('common.close')
         }}</UButton>
-        <UButton v-if="draftUrl" :loading="busy" icon="i-mdi-content-save" @click="saveAvatar">
+        <UButton v-if="draftUrl" :loading="busy" icon="mdi:content-save" @click="saveAvatar">
           {{ $t('common.actions.save') }}
         </UButton>
       </div>
