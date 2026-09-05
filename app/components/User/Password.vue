@@ -13,7 +13,7 @@
             color="neutral"
             variant="link"
             size="sm"
-            :icon="showPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
+            :icon="showPassword ? 'mdi:eye-off' : 'mdi:eye'"
             :aria-label="showPassword ? $t('common.hidePassword') : $t('common.showPassword')"
             @click="showPassword = !showPassword"
           />

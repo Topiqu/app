@@ -35,7 +35,7 @@
           v-if="cancelText"
           color="neutral"
           variant="outline"
-          icon="i-mdi-close"
+          icon="mdi:close"
           :label="cancelText"
           class="confirm-dialog-button"
           @click="emit('close', false)"
@@ -43,7 +43,7 @@
         <UButton
           :color="confirmColor"
           variant="solid"
-          icon="i-mdi-check"
+          icon="mdi:check"
           :label="confirmText"
           class="confirm-dialog-button confirm-dialog-button-primary"
           @click="emit('close', true)"
@@ -81,9 +81,9 @@ const resolvedIcon = computed(
   () =>
     props.icon ||
     (props.variant === 'danger'
-      ? 'i-mdi-alert-outline'
+      ? 'mdi:alert-outline'
       : props.variant === 'success'
-        ? 'i-mdi-check-circle-outline'
-        : 'i-mdi-help-circle-outline'),
+        ? 'mdi:check-circle-outline'
+        : 'mdi:help-circle-outline'),
 )
 </script>

@@ -3,7 +3,7 @@
     <div v-if="!embedded" class="flex items-center justify-between">
       <div>
         <h3 class="text-lg font-semibold flex items-center gap-2">
-          <Icon name="mdi:linkedin" class="w-5 h-5 text-blue-600" />
+          <UIcon name="mdi:linkedin" class="w-5 h-5 text-blue-600" />
           {{ $t('common.preferences.linkedin.title') }}
         </h3>
         <p class="text-sm text-neutral-500">{{ $t('common.preferences.linkedin.description') }}</p>
@@ -15,14 +15,14 @@
         class="bg-[#0A66C2] hover:bg-[#004182] text-white text-xs py-1"
         @click="connectLinkedIn"
       >
-        <Icon name="mdi:account" class="mr-1" />
+        <UIcon name="mdi:account" size="16" class="mr-1" />
         {{ $t('common.preferences.linkedin.connect') }}
       </UButton>
       <div v-else class="flex flex-col items-end">
         <div
           class="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full"
         >
-          <Icon name="mdi:check-circle" /> {{ connectedLabel }}
+          <UIcon name="mdi:check-circle" size="16" /> {{ connectedLabel }}
         </div>
         <UButton color="neutral" variant="link" size="xs" @click="connectLinkedIn">
           {{ $t('common.preferences.linkedin.reconnect') }}
@@ -31,13 +31,13 @@
     </div>
 
     <UButton v-if="embedded && !isConnected" variant="solid" class="bg-[#0A66C2] text-white" @click="connectLinkedIn">
-      <Icon name="mdi:account" class="mr-1" />
+      <UIcon name="mdi:account" size="16" class="mr-1" />
       {{ $t('common.preferences.linkedin.connect') }}
     </UButton>
 
     <div v-if="embedded && isConnected" class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-2 text-sm font-medium text-emerald-600">
-        <Icon name="mdi:check-circle" /> {{ connectedLabel }}
+        <UIcon name="mdi:check-circle" size="16" /> {{ connectedLabel }}
       </div>
       <UButton color="neutral" variant="link" size="xs" @click="connectLinkedIn">
         {{ $t('common.preferences.linkedin.reconnect') }}
@@ -46,7 +46,7 @@
 
     <div
       v-if="isConnected"
-      class="bg-white/5 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10 space-y-6"
+      class="space-y-6 rounded-(--topiqu-surface-radius) border border-white/10 bg-white/5 p-6 backdrop-blur-sm dark:bg-black/20"
     >
       <div>
         <h4 class="font-medium mb-3">{{ $t('common.preferences.linkedin.mode.label') }}</h4>

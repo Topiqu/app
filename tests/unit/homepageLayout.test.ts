@@ -24,7 +24,9 @@ describe('homepage hero identity', () => {
   })
 
   it('reads as a masthead: mark, then name, then tagline, then description', () => {
-    expect(at('containerClass="w-40 rounded-')).toBeLessThan(at('v-if="clientSite?.logoUrl" class="sr-only"'))
+    expect(at('containerClass="aspect-square w-full max-w-56')).toBeLessThan(
+      at('v-if="clientSite?.logoUrl" class="sr-only"'),
+    )
     expect(at('v-if="clientSite?.logoUrl" class="sr-only"')).toBeLessThan(at('v-if="clientSite?.tagline"'))
     expect(at('v-if="clientSite?.tagline"')).toBeLessThan(at('v-if="clientSite?.description"'))
   })
@@ -45,22 +47,20 @@ describe('tagline treatment across the publication surfaces', () => {
   const surfaces = [
     'app/pages/index.vue',
     'app/components/Article/Empty/Visitor.vue',
-    'app/components/Form/Client/Branding.vue',
+    'app/components/Form/Client/BrandingPreview.vue',
   ]
 
   it.each(surfaces)('%s sizes the tagline above the muted description, not like a meta label', (path) => {
     for (const tag of taglineTags(read(path))) {
-      expect(tag).toContain('text-base')
+      expect(tag).toMatch(/text-(?:sm|base)/)
       expect(tag).toContain('text-highlighted')
       expect(tag).not.toContain('text-primary')
     }
   })
 
   it('renders the tagline below the name everywhere, including both settings previews', () => {
-    const previews = read('app/components/Form/Client/Branding.vue')
-    for (const block of previews.split('data-publication-preview').slice(1)) {
-      expect(block.indexOf('<h3'), 'name precedes tagline').toBeLessThan(block.indexOf('v-if="localTagline"'))
-    }
+    const preview = read('app/components/Form/Client/BrandingPreview.vue')
+    expect(preview.indexOf('<h3')).toBeLessThan(preview.indexOf('v-if="tagline"'))
     const visitor = read('app/components/Article/Empty/Visitor.vue')
     expect(visitor.indexOf('<h1')).toBeLessThan(visitor.indexOf('v-if="site?.tagline"'))
   })

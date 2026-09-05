@@ -5,8 +5,8 @@
         <div class="flex items-center gap-3">
           <div class="flex size-8 items-center justify-center">
             <UProgress v-if="isLoading" size="xs" class="w-5" />
-            <UIcon v-else-if="hasVoted" size="20" name="i-mdi-check" />
-            <UIcon v-else size="20" name="i-mdi-message-question-outline" />
+            <UIcon v-else-if="hasVoted" size="20" name="mdi:check" />
+            <UIcon v-else size="20" name="mdi:message-question-outline" />
           </div>
 
           <div class="flex flex-col">
@@ -29,7 +29,7 @@
             size="lg"
             color="neutral"
             variant="soft"
-            icon="i-mdi-thumb-up-outline"
+            icon="mdi:thumb-up-outline"
             :disabled="isLoading"
             :aria-label="$t('common.yes')"
             :title="$t('common.yes')"
@@ -39,7 +39,7 @@
             size="lg"
             :color="showReasonInput ? 'error' : 'neutral'"
             :variant="showReasonInput ? 'solid' : 'soft'"
-            icon="i-mdi-thumb-down-outline"
+            icon="mdi:thumb-down-outline"
             :aria-label="$t('common.no')"
             :title="$t('common.no')"
             :disabled="isLoading"
@@ -69,7 +69,7 @@
               color="primary"
               variant="solid"
               size="sm"
-              icon="i-mdi-paper-airplane"
+              icon="mdi:paper-airplane"
               :disabled="!reasonText || reasonText.length < 3"
               :loading="isLoading"
               @click="submitVote(false)"

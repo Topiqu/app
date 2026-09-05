@@ -10,14 +10,20 @@
       <AuthForgot :mode="internalMode" @update:mode="internalMode = $event" />
     </div>
     <UCard v-else>
-      <UTabs v-model="authTab" :items="authTabs" variant="link" class="mb-6 w-full" />
+      <UTabs
+        v-model="authTab"
+        :items="authTabs"
+        variant="link"
+        class="mb-6 w-full"
+        :ui="{ list: 'grid grid-cols-2', trigger: 'w-full justify-center text-center' }"
+      />
       <UForm v-if="!verifyMode && internalMode !== 'totp'" :state="form" :schema="authSchema" @submit="submit">
         <div class="space-y-5 text-sm">
           <UFormField :label="$t('profile.email')" name="email">
             <UInput
               v-model="form.email"
               type="email"
-              icon="i-mdi-envelope"
+              icon="mdi:envelope"
               class="w-full"
               placeholder="example@domain.tld"
               autocomplete="email"
@@ -28,7 +34,7 @@
             <UInput
               v-model="form.username"
               type="text"
-              icon="i-mdi-account"
+              icon="mdi:account"
               class="w-full"
               autocomplete="username"
               placeholder="Joe Doe"
@@ -42,7 +48,7 @@
               <UInput
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
-                icon="i-mdi-lock"
+                icon="mdi:lock"
                 class="w-full"
                 autocomplete="current-password"
                 placeholder="********"
@@ -56,7 +62,7 @@
                     color="neutral"
                     variant="link"
                     size="sm"
-                    :icon="showPassword ? 'i-mdi-eye-off' : 'i-mdi-eye'"
+                    :icon="showPassword ? 'mdi:eye-off' : 'mdi:eye'"
                     :aria-label="$t('common.actions.togglePassword')"
                     @click="showPassword = !showPassword"
                   />
@@ -82,7 +88,7 @@
               type="button"
               color="neutral"
               variant="outline"
-              icon="i-mdi-google"
+              icon="mdi:google"
               block
               @click="handleSocialAuth('google')"
             >
@@ -92,7 +98,7 @@
               type="button"
               color="neutral"
               variant="outline"
-              icon="i-mdi-github"
+              icon="mdi:github"
               block
               @click="handleSocialAuth('github')"
             >

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-2xl bg-neutral-100/70 p-2 dark:bg-neutral-800/50"
+    class="rounded-(--topiqu-surface-radius) bg-neutral-100/70 p-2 dark:bg-neutral-800/50"
     role="group"
     :aria-label="$t('emoji.commentPreview')"
   >
@@ -11,7 +11,7 @@
         size="sm"
         color="neutral"
         variant="ghost"
-        icon="i-mdi-chevron-left"
+        icon="mdi:chevron-left"
         :aria-label="$t('emoji.previousPreview')"
         @click="emit('previous')"
       />
@@ -24,13 +24,13 @@
         size="sm"
         color="neutral"
         variant="ghost"
-        icon="i-mdi-chevron-right"
+        icon="mdi:chevron-right"
         :aria-label="$t('emoji.nextPreview')"
         @click="emit('next')"
       />
     </div>
     <div
-      class="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-900"
+      class="rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-900"
     >
       <div class="flex items-center gap-3">
         <div
@@ -45,8 +45,8 @@
       </div>
       <p class="mt-3 text-sm text-neutral-700 dark:text-neutral-200">{{ $t('emoji.previewComment') }}</p>
       <div class="mt-4 flex items-center gap-2">
-        <UButton size="sm" color="neutral" variant="soft" icon="i-mdi-thumb-up-outline"><span>3</span></UButton>
-        <UButton size="sm" color="neutral" variant="soft" icon="i-mdi-thumb-down-outline"><span>0</span></UButton>
+        <UButton size="sm" color="neutral" variant="soft" icon="mdi:thumb-up-outline"><span>3</span></UButton>
+        <UButton size="sm" color="neutral" variant="soft" icon="mdi:thumb-down-outline"><span>0</span></UButton>
         <EmojiReactionChip :imageUrl :shortcode :count="1" />
       </div>
     </div>
@@ -54,6 +54,11 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ imageUrl: string; shortcode: string; current: number; total: number }>()
+defineProps<{
+  imageUrl: string
+  shortcode: string
+  current: number
+  total: number
+}>()
 const emit = defineEmits<{ previous: []; next: [] }>()
 </script>

@@ -3,7 +3,7 @@
     v-if="isCustomDomain && !clientSite?.domainVerified"
     color="warning"
     variant="soft"
-    icon="i-mdi-shield-alert"
+    icon="mdi:shield-alert"
     :title="$t('domainVerification.title')"
     :description="$t('domainVerification.description', { domain: clientSite?.domain, target: 'topiqu.com' })"
   >

@@ -14,7 +14,7 @@
         color="error"
         variant="solid"
         size="sm"
-        icon="i-mdi-link-off"
+        icon="mdi:link-off"
         class="mt-3"
         @click="emit('remove')"
       >
@@ -24,7 +24,7 @@
     <template #footer>
       <div class="flex w-full justify-end gap-2">
         <UButton color="neutral" variant="ghost" @click="isOpen = false">{{ $t('common.close') }}</UButton>
-        <UButton :disabled="!!error" icon="i-mdi-check" @click="confirm">{{ $t('common.continue') }}</UButton>
+        <UButton :disabled="!!error" icon="mdi:check" @click="confirm">{{ $t('common.continue') }}</UButton>
       </div>
     </template>
   </UModal>
@@ -51,7 +51,7 @@ const title = computed(() =>
       : $t('articles.sources.youtube'),
 )
 
-const icon = computed(() => (type === 'image' ? 'i-mdi-image' : type === 'youtube' ? 'i-mdi-youtube' : 'i-mdi-link'))
+const icon = computed(() => (type === 'image' ? 'mdi:image' : type === 'youtube' ? 'mdi:youtube' : 'mdi:link'))
 
 const isValidUrl = (raw: string) => {
   try {

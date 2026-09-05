@@ -4,7 +4,7 @@
       v-if="session?.user"
       color="neutral"
       variant="ghost"
-      icon="i-mdi-emoticon-outline"
+      icon="mdi:emoticon-outline"
       :aria-label="$t('articles.comments.addReaction')"
     />
     <template #content="{ close }">
@@ -14,10 +14,10 @@
           v-else-if="error"
           color="error"
           variant="soft"
-          icon="i-mdi-alert-circle-outline"
+          icon="mdi:alert-circle-outline"
           :title="$t('common.error')"
         />
-        <UEmpty v-else-if="!emojis?.length" size="sm" icon="i-mdi-emoticon-sad-outline" :title="$t('common.noItems')" />
+        <UEmpty v-else-if="!emojis?.length" size="sm" icon="mdi:emoticon-sad-outline" :title="$t('common.noItems')" />
         <div v-else class="grid grid-cols-5 gap-2">
           <UTooltip v-for="emoji in emojis" :key="emoji.id" :text="emoji.shortcode">
             <UButton

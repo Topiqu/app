@@ -11,13 +11,13 @@
             <span class="rounded-full bg-elevated px-2.5 py-1 text-xs font-medium text-toned">
               {{ $t(`common.preferences.guide.flow.${step}`) }}
             </span>
-            <UIcon v-if="index < flow.length - 1" name="i-mdi-chevron-right" size="16" class="text-dimmed" />
+            <UIcon v-if="index < flow.length - 1" name="mdi:chevron-right" size="16" class="text-dimmed" />
           </li>
         </ol>
 
         <section class="rounded-xl border border-default bg-elevated/40 p-4">
           <h3 class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted">
-            <UIcon name="i-mdi-code-braces" size="16" />
+            <UIcon name="mdi:code-braces" size="16" />
             {{ $t('common.preferences.guide.preview.title') }}
           </h3>
           <dl class="mt-3 space-y-1 font-mono text-xs sm:text-sm">
@@ -50,7 +50,7 @@
           <div v-if="section.examples" class="mt-3 grid gap-2 sm:grid-cols-2">
             <div class="rounded-lg border border-success/30 bg-success/5 p-3">
               <p class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-success">
-                <UIcon name="i-mdi-check-circle-outline" size="16" />
+                <UIcon name="mdi:check-circle-outline" size="16" />
                 {{ $t('common.preferences.guide.good') }}
               </p>
               <p class="mt-1.5 text-sm leading-relaxed text-toned">
@@ -59,7 +59,7 @@
             </div>
             <div class="rounded-lg border border-error/30 bg-error/5 p-3">
               <p class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-error">
-                <UIcon name="i-mdi-close-circle-outline" size="16" />
+                <UIcon name="mdi:close-circle-outline" size="16" />
                 {{ $t('common.preferences.guide.bad') }}
               </p>
               <p class="mt-1.5 text-sm leading-relaxed text-toned">
@@ -74,7 +74,7 @@
             :class="section.filled ? 'text-muted' : 'bg-warning/10 text-warning'"
           >
             <UIcon
-              :name="section.filled ? 'i-mdi-information-outline' : 'i-mdi-alert-outline'"
+              :name="section.filled ? 'mdi:information-outline' : 'mdi:alert-outline'"
               size="16"
               class="mt-0.5 shrink-0"
             />
@@ -88,7 +88,7 @@
             v-if="section.extra"
             class="mt-3 flex gap-2 rounded-lg bg-elevated/60 p-2.5 text-sm leading-relaxed text-muted"
           >
-            <UIcon name="i-mdi-lightbulb-outline" size="16" class="mt-0.5 shrink-0" />
+            <UIcon name="mdi:lightbulb-outline" size="16" class="mt-0.5 shrink-0" />
             <span>{{ $t(`common.preferences.guide.${section.key}.${section.extra}`) }}</span>
           </p>
         </section>
@@ -120,10 +120,10 @@ const openDialog = () => (open.value = true)
 const flow = ['brief', 'topic', 'article', 'publish'] as const
 
 const sections = computed(() => [
-  { key: 'focus', icon: 'i-mdi-bullseye', filled: Boolean(focus.trim()), examples: true, extra: '' },
-  { key: 'audience', icon: 'i-mdi-account-group-outline', filled: Boolean(audience.trim()), examples: true, extra: '' },
-  { key: 'language', icon: 'i-mdi-translate', filled: true, examples: false, extra: 'warning' },
-  { key: 'keywords', icon: 'i-mdi-tag-multiple-outline', filled: keywords.length > 0, examples: true, extra: 'note' },
+  { key: 'focus', icon: 'mdi:bullseye', filled: Boolean(focus.trim()), examples: true, extra: '' },
+  { key: 'audience', icon: 'mdi:account-group-outline', filled: Boolean(audience.trim()), examples: true, extra: '' },
+  { key: 'language', icon: 'mdi:translate', filled: true, examples: false, extra: 'warning' },
+  { key: 'keywords', icon: 'mdi:tag-multiple-outline', filled: keywords.length > 0, examples: true, extra: 'note' },
 ])
 
 // Mirrors the block the model actually receives (server/utils/ai/topic.ts) — field names and the

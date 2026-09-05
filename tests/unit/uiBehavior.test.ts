@@ -193,7 +193,7 @@ describe('Nuxt UI component behavior', () => {
 
     const thumbnail = wrapper.getComponent({ name: 'AppMedia' })
     expect(thumbnail.props('src')).toBe('/article-cover.webp')
-    expect(thumbnail.props('sizes')).toBe('64px')
+    expect(thumbnail.props('sizes')).toBe('56px')
   })
 
   it('emits the comments payload from the Nuxt UI switch', async () => {
@@ -253,7 +253,7 @@ describe('Nuxt UI component behavior', () => {
     })
 
     const buttons = wrapper.findAllComponents({ name: 'UButton' })
-    expect(buttons.find((button) => button.props('icon') === 'i-mdi-undo')!.props('disabled')).toBe(true)
-    expect(buttons.find((button) => button.props('icon') === 'i-mdi-format-list-bulleted')!.props('active')).toBe(true)
+    expect(buttons.find((button) => button.props('icon') === 'mdi:undo')!.props('disabled')).toBe(true)
+    expect(buttons.find((button) => button.props('icon') === 'mdi:format-list-bulleted')!.props('active')).toBe(true)
   })
 })

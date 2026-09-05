@@ -1,6 +1,8 @@
 import type { MaybeRefOrGetter } from 'vue'
 
-import { onUnmounted, shallowRef, toValue, watch } from 'vue'
+import { onScopeDispose, shallowRef, toValue, watch } from 'vue'
+
+const failedImageUrls = new Set<string>()
 
 export const buildImageRetryUrl = (url: string, attempt: number) => {
   const separator = url.includes('?') ? '&' : '?'
@@ -8,9 +10,9 @@ export const buildImageRetryUrl = (url: string, attempt: number) => {
 }
 
 export const canCacheBustImageUrl = (url: string) => {
-  if (url.startsWith('//') || url.startsWith('/api/')) return false
-  if (!url.startsWith('/') && !/^https?:\/\//i.test(url) && !/^[^:]+\.(?:avif|gif|jpe?g|png|webp)(?:\?|$)/i.test(url))
-    return false
+  // Missing app-owned files are deterministic 404s. Retrying them with a new query string only
+  // causes visible flashes and duplicate requests whenever the component is mounted again.
+  if (!/^https?:\/\//i.test(url)) return false
   return !/[?&](?:signature|sig|token|x-amz-[^=]*|expires|auth)=/i.test(url)
 }
 
@@ -22,7 +24,9 @@ export const useImageRetry = (
   const isRetrying = shallowRef(false)
   const usingOriginal = shallowRef(false)
 
-  const maxRetries = 3
+  // The browser already performs transport-level retries. Re-requesting a failed asset under a
+  // different URL creates flicker, defeats caching and repeatedly hits permanently missing files.
+  const maxRetries = 0
   let retryCount = 0
   let timeoutId: ReturnType<typeof setTimeout> | null = null
   let settleTimeoutId: ReturnType<typeof setTimeout> | null = null
@@ -36,17 +40,26 @@ export const useImageRetry = (
 
   watch(
     () => [toValue(source), originalSource ? toValue(originalSource) : undefined] as const,
-    ([newUrl]) => {
+    ([newUrl, newOriginalUrl]) => {
       clearTimers()
       retryCount = 0
       usingOriginal.value = false
       isRetrying.value = false
-      currentSrc.value = newUrl || null
+      if (newUrl && !failedImageUrls.has(newUrl)) {
+        currentSrc.value = newUrl
+      } else if (newOriginalUrl && !failedImageUrls.has(newOriginalUrl)) {
+        usingOriginal.value = true
+        currentSrc.value = newOriginalUrl
+      } else {
+        currentSrc.value = null
+      }
     },
     { immediate: true },
   )
 
   const handleLoad = () => {
+    const loadedUrl = usingOriginal.value && originalSource ? toValue(originalSource) : toValue(source)
+    if (loadedUrl) failedImageUrls.delete(loadedUrl)
     isRetrying.value = false
     retryCount = 0
     clearTimers()
@@ -67,6 +80,7 @@ export const useImageRetry = (
 
     if (retryCount >= maxRetries) {
       if (!usingOriginal.value && fallbackUrl && fallbackUrl !== primaryUrl) {
+        failedImageUrls.add(rawUrl)
         usingOriginal.value = true
         retryCount = 0
         currentSrc.value = fallbackUrl
@@ -74,6 +88,7 @@ export const useImageRetry = (
       }
 
       isRetrying.value = false
+      failedImageUrls.add(rawUrl)
       currentSrc.value = null
       return
     }
@@ -98,7 +113,7 @@ export const useImageRetry = (
     }, delay)
   }
 
-  onUnmounted(() => {
+  onScopeDispose(() => {
     clearTimers()
   })
 

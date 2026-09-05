@@ -1,5 +1,5 @@
 <template>
-  <label :for="forId" class="block text-sm font-medium text-highlighted">
+  <label :for="forId" class="inline-flex items-center gap-1.5 text-sm font-medium text-highlighted">
     <UIcon v-if="icon" :name="icon" size="16" />
     {{ text }}
   </label>

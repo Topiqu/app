@@ -14,7 +14,7 @@
       <UAlert
         color="warning"
         variant="soft"
-        icon="i-mdi-clock-alert-outline"
+        icon="mdi:clock-alert-outline"
         :title="$t('billing.trialEnded.note', 'Pokud máte dotazy nebo potřebujete čas navíc, napište nám na podporu.')"
       />
     </template>
@@ -24,7 +24,7 @@
         <UButton color="neutral" variant="soft" size="lg" @click="continueFree">
           {{ $t('billing.trialEnded.freeAction', 'Pokračovat s omezenou verzí zdarma') }}
         </UButton>
-        <UButton icon="i-mdi-rocket-launch" size="lg" @click="goToBilling">
+        <UButton icon="mdi:rocket-launch" size="lg" @click="goToBilling">
           {{ $t('billing.trialEnded.upgradeAction', 'Přejít na placený plán') }}
         </UButton>
       </div>

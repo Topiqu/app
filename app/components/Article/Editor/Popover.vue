@@ -13,10 +13,11 @@
     >
       <template #default="{ textTone }">
         <span class="truncate" :class="textTone"><slot name="trigger" /></span>
-        <Icon
+        <UIcon
           name="mdi:chevron-down"
+          :size="size === 'md' ? 14 : 12"
           class="shrink-0 transition-transform opacity-60"
-          :class="[size === 'md' ? 'w-3.5 h-3.5' : 'w-3 h-3', { 'rotate-180': open }]"
+          :class="{ 'rotate-180': open }"
           aria-hidden="true"
         />
       </template>
@@ -35,7 +36,7 @@
         ref="panel"
         role="dialog"
         :aria-label="label"
-        class="absolute top-full z-popover mt-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl ring-1 ring-black/5 dark:ring-white/10"
+        class="absolute top-full z-popover mt-2 p-3 rounded-(--topiqu-surface-radius) border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl ring-1 ring-black/5 dark:ring-white/10"
         :class="align === 'right' ? 'right-0' : 'left-0'"
         @keydown.escape="closeAndRestore"
       >

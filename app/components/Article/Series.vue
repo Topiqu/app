@@ -15,7 +15,7 @@
         color="neutral"
         variant="soft"
         :label="showFullList ? $t('series.hideList') : $t('series.showList')"
-        :trailingIcon="showFullList ? 'i-mdi-chevron-up' : 'i-mdi-chevron-down'"
+        :trailingIcon="showFullList ? 'mdi:chevron-up' : 'mdi:chevron-down'"
       />
 
       <template #content>
@@ -55,7 +55,7 @@
         v-if="series.prev"
         :to="localePath({ name: 'clanky-slug', params: { slug: series.prev.slug } })"
         :title="series.prev.title"
-        icon="i-mdi-arrow-left"
+        icon="mdi:arrow-left"
         variant="subtle"
       >
         <template #header>
@@ -79,7 +79,7 @@
         v-if="series.next"
         :to="localePath({ name: 'clanky-slug', params: { slug: series.next.slug } })"
         :title="series.next.title"
-        icon="i-mdi-arrow-right"
+        icon="mdi:arrow-right"
         variant="outline"
       >
         <template #header>

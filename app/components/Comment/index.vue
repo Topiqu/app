@@ -1,12 +1,15 @@
 <template>
-  <UCard :id="`comment-${comment.id}`" class="relative w-full min-w-fit">
-    <div class="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-2 z-10">
+  <article
+    :id="`comment-${comment.id}`"
+    class="relative w-full min-w-0 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 sm:p-5"
+  >
+    <div class="absolute right-3 top-3 z-10 flex gap-1">
       <UButton
         v-if="perms.report"
         square
         variant="ghost"
         size="sm"
-        icon="i-mdi-flag-outline"
+        icon="mdi:flag-outline"
         color="warning"
         :aria-label="$t('articles.comments.reportComment')"
         :title="$t('articles.comments.reportComment')"
@@ -17,7 +20,7 @@
         square
         variant="ghost"
         size="sm"
-        icon="i-mdi-account-cancel"
+        icon="mdi:account-cancel"
         color="warning"
         :aria-label="$t('articles.comments.banUser')"
         :title="$t('articles.comments.banUser')"
@@ -25,7 +28,7 @@
       />
     </div>
 
-    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 sm:pr-4 md:pr-6">
+    <header class="flex min-w-0 items-start gap-3 sm:pr-64">
       <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
         <UserCard v-if="userCardProps" :user="userCardProps" />
         <UBadge v-else-if="perms.isBanned" color="error" variant="soft">
@@ -39,56 +42,59 @@
         </UBadge>
         <span v-else class="font-semibold text-highlighted">{{ $t('common.user.notAvailable') }}</span>
       </div>
+    </header>
 
-      <div v-if="!comment.deletedAt" class="flex flex-col gap-1 sm:gap-2">
-        <UButton
-          v-if="perms.reply"
-          size="sm"
-          color="neutral"
-          variant="soft"
-          icon="i-mdi-reply"
-          :aria-label="$t('articles.comments.submitReply')"
-          @click="emit('reply', comment)"
-        >
-          <span class="hidden sm:inline">{{ $t('articles.comments.reply') }}</span>
-        </UButton>
-        <UButton
-          v-if="perms.deleteOwn"
-          size="sm"
-          color="error"
-          variant="soft"
-          icon="i-mdi-delete"
-          :aria-label="$t('articles.comments.deleteComment')"
-          @click="emit('delete', comment, null)"
-        >
-          <span class="hidden sm:inline">{{ $t('articles.comments.deleteComment') }}</span>
-        </UButton>
-        <UButton
-          v-else-if="perms.moderateDelete"
-          size="sm"
-          color="error"
-          variant="soft"
-          icon="i-mdi-delete"
-          :aria-label="$t('articles.comments.deleteCommentAdmin')"
-          @click="showDeleteModal = true"
-        >
-          <span class="hidden sm:inline">{{ $t('articles.comments.deleteCommentAdmin') }}</span>
-        </UButton>
-        <UButton
-          v-if="perms.unban"
-          size="sm"
-          color="success"
-          variant="soft"
-          icon="i-mdi-account-check"
-          :aria-label="$t('articles.comments.unbanUser')"
-          @click="unbanUser"
-        >
-          <span class="hidden sm:inline">{{ $t('articles.comments.unbanUser') }}</span>
-        </UButton>
-      </div>
+    <div
+      v-if="!comment.deletedAt"
+      class="mt-3 flex shrink-0 flex-wrap justify-end gap-1 sm:absolute sm:right-5 sm:top-5 sm:mt-0"
+    >
+      <UButton
+        v-if="perms.reply"
+        size="sm"
+        color="neutral"
+        variant="soft"
+        icon="mdi:reply"
+        :aria-label="$t('articles.comments.submitReply')"
+        @click="emit('reply', comment)"
+      >
+        <span class="hidden sm:inline">{{ $t('articles.comments.reply') }}</span>
+      </UButton>
+      <UButton
+        v-if="perms.deleteOwn"
+        size="sm"
+        color="error"
+        variant="soft"
+        icon="mdi:delete"
+        :aria-label="$t('articles.comments.deleteComment')"
+        @click="emit('delete', comment, null)"
+      >
+        <span class="hidden sm:inline">{{ $t('articles.comments.deleteComment') }}</span>
+      </UButton>
+      <UButton
+        v-else-if="perms.moderateDelete"
+        size="sm"
+        color="error"
+        variant="soft"
+        icon="mdi:delete"
+        :aria-label="$t('articles.comments.deleteCommentAdmin')"
+        @click="showDeleteModal = true"
+      >
+        <span class="hidden sm:inline">{{ $t('articles.comments.deleteCommentAdmin') }}</span>
+      </UButton>
+      <UButton
+        v-if="perms.unban"
+        size="sm"
+        color="success"
+        variant="soft"
+        icon="mdi:account-check"
+        :aria-label="$t('articles.comments.unbanUser')"
+        @click="unbanUser"
+      >
+        <span class="hidden sm:inline">{{ $t('articles.comments.unbanUser') }}</span>
+      </UButton>
     </div>
 
-    <div class="mt-2 text-xs text-muted sm:text-sm">{{ formatDate(comment.createdAt) }}</div>
+    <div class="mt-2 text-xs text-muted sm:text-sm">{{ formatDate(comment.createdAt, locale) }}</div>
 
     <p
       class="mt-2 sm:mt-3 whitespace-pre-line text-xs sm:text-sm md:text-base break-words"
@@ -97,18 +103,18 @@
       {{ displayContent }}
     </p>
 
-    <Gif v-if="comment.gifUrl && !comment.deletedAt && !perms.isBanned" :content="comment.gifUrl" class="mt-2" />
+    <Gif v-if="comment.gifUrl && !comment.deletedAt && !perms.isBanned" :content="comment.gifUrl" />
 
     <div
       v-if="!comment.deletedAt && !perms.isBanned"
-      class="mt-4 sm:mt-5 flex items-center justify-between flex-wrap gap-2 sm:gap-3 pb-2 sm:pb-4 md:pb-6"
+      class="mt-4 flex flex-wrap items-center justify-between gap-2 sm:mt-5 sm:gap-3"
     >
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
         <UButton
           size="sm"
           :color="state.userReaction?.type === 'LIKE' ? 'success' : 'neutral'"
           :variant="state.userReaction?.type === 'LIKE' ? 'solid' : 'soft'"
-          :icon="state.userReaction?.type === 'LIKE' ? 'i-mdi-thumb-up' : 'i-mdi-thumb-up-outline'"
+          :icon="state.userReaction?.type === 'LIKE' ? 'mdi:thumb-up' : 'mdi:thumb-up-outline'"
           :aria-pressed="state.userReaction?.type === 'LIKE'"
           @click="updateReaction('LIKE')"
         >
@@ -118,7 +124,7 @@
           size="sm"
           :color="state.userReaction?.type === 'DISLIKE' ? 'error' : 'neutral'"
           :variant="state.userReaction?.type === 'DISLIKE' ? 'solid' : 'soft'"
-          :icon="state.userReaction?.type === 'DISLIKE' ? 'i-mdi-thumb-down' : 'i-mdi-thumb-down-outline'"
+          :icon="state.userReaction?.type === 'DISLIKE' ? 'mdi:thumb-down' : 'mdi:thumb-down-outline'"
           :aria-pressed="state.userReaction?.type === 'DISLIKE'"
           @click="updateReaction('DISLIKE')"
         >
@@ -141,7 +147,7 @@
           :text="$t('articles.comments.likedByAuthor', [authorData?.username || $t('common.user.notAvailable')])"
         >
           <div class="flex items-center gap-1">
-            <UIcon size="20" name="i-mdi-heart" class="text-error" />
+            <UIcon size="20" name="mdi:heart" class="text-error" />
             <UserPicture :url="authorData?.avatarUrl" size="mn" :name="authorData?.username" />
           </div>
         </UTooltip>
@@ -224,7 +230,7 @@
         </div>
       </template>
     </UModal>
-  </UCard>
+  </article>
 </template>
 
 <script setup lang="ts">
@@ -232,7 +238,11 @@ import type { CommentWithReplies } from '~~/types/comment'
 
 import { formatDate } from '~~/shared/utils'
 
-const props = defineProps<{ comment: CommentWithReplies; isReplying: boolean; depth: number }>()
+const props = defineProps<{
+  comment: CommentWithReplies
+  isReplying: boolean
+  depth: number
+}>()
 const emit = defineEmits<{
   (e: 'reply' | 'like' | 'dislike', c: CommentWithReplies): void
   (e: 'delete', c: CommentWithReplies, reason: string | null): void
@@ -241,6 +251,7 @@ const emit = defineEmits<{
 
 const toast = useToast()
 const confirm = useConfirm()
+const { locale } = useI18n()
 
 const showDeleteModal = shallowRef(false)
 const showBanModal = shallowRef(false)
@@ -270,17 +281,8 @@ const userCardProps = computed(() => {
   return {
     id: props.comment.userId,
     username: u.username,
-    email: u.email!,
-    createdAt: u.createdAt,
     avatarUrl: u.avatarUrl,
     bio: u.bio,
-    lastLogin: u.lastLogin,
-    commentsCount: u.commentsCount,
-    likesCount: u.likesCount,
-    dislikesCount: u.dislikesCount,
-    followers: u.followers,
-    following: u.following,
-    role: u.role,
   }
 })
 
@@ -299,7 +301,10 @@ const report = async () => {
   )
     return
   try {
-    await $fetch('/api/notifications', { method: 'POST', body: { commentId: props.comment.id } })
+    await $fetch('/api/notifications', {
+      method: 'POST',
+      body: { commentId: props.comment.id },
+    })
     toast.add({ color: 'success', title: $t('common.messages.reportSuccess') })
   } catch {
     toast.add({ color: 'error', title: $t('common.messages.reportFailed') })
@@ -327,17 +332,26 @@ const banUser = async () => {
     banReason.value = ''
     banExpiresAt.value = null
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || $t('articles.comments.banFailed') })
+    toast.add({
+      color: 'error',
+      title: e.data?.message || $t('articles.comments.banFailed'),
+    })
   }
 }
 
 const unbanUser = async () => {
   try {
     await $fetch(`/api/bans/${props.comment.id}`, { method: 'DELETE' })
-    toast.add({ color: 'success', title: $t('articles.comments.unbanSuccess') })
+    toast.add({
+      color: 'success',
+      title: $t('articles.comments.unbanSuccess'),
+    })
     emit('refresh')
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || $t('articles.comments.unbanFailed') })
+    toast.add({
+      color: 'error',
+      title: e.data?.message || $t('articles.comments.unbanFailed'),
+    })
   }
 }
 </script>

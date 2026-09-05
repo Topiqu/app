@@ -1,5 +1,5 @@
 <template>
-  <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+  <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_28rem]">
     <div class="flex min-w-0 flex-col gap-8">
       <h2 data-branding-section="identity" class="text-lg font-semibold text-highlighted">
         {{ $t('common.preferences.branding.identity') }}
@@ -50,7 +50,7 @@
           <UButton
             color="neutral"
             variant="outline"
-            trailingIcon="i-mdi-chevron-down"
+            trailingIcon="mdi:chevron-down"
             :label="localTheme"
             :style="{ borderInlineStart: `2rem solid ${currentThemeColor}` }"
           />
@@ -77,7 +77,7 @@
           <div
             v-for="preset in typographyPresets"
             :key="preset.value"
-            class="rounded-[var(--topiqu-surface-radius)] border"
+            class="rounded-(--topiqu-surface-radius) border"
             :class="typographyPreset === preset.value ? 'border-primary bg-primary/5' : 'border-default bg-default'"
             :style="{ fontFamily: preset.font }"
           >
@@ -99,23 +99,15 @@
         </div>
       </UFormField>
 
-      <div
-        data-publication-preview
-        class="publication-surface rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-6 lg:hidden"
-        :style="previewStyle"
-      >
-        <h3 class="text-3xl font-black text-highlighted">{{ name }}</h3>
-        <p
-          v-if="localTagline"
-          class="mt-3 max-w-[46ch] text-balance break-words border-l-2 border-[var(--topiqu-tenant-accent)] pl-4 text-base font-semibold leading-snug text-highlighted"
-        >
-          {{ localTagline }}
-        </p>
-        <p v-if="localDescription" class="mt-2 line-clamp-3 text-sm text-muted">{{ localDescription }}</p>
-        <span
-          class="publication-primary-cta mt-5 inline-flex rounded-[var(--ui-radius)] px-3 py-2 text-sm font-semibold"
-          >{{ $t('articles.home.latestStory') }}</span
-        >
+      <div class="lg:hidden">
+        <FormClientBrandingPreview
+          :logoUrl="logoUrl"
+          :name="name"
+          :tagline="localTagline"
+          :description="localDescription"
+          :currentTheme="localTheme"
+          :typographyPreset="typographyPreset"
+        />
       </div>
 
       <div class="flex flex-col gap-6">
@@ -127,7 +119,7 @@
             <UButton
               color="neutral"
               variant="soft"
-              icon="i-mdi-plus"
+              icon="mdi:plus"
               :label="$t('common.preferences.branding.addSocial')"
             />
           </UDropdownMenu>
@@ -150,7 +142,7 @@
                 color="neutral"
                 variant="ghost"
                 square
-                icon="i-mdi-trash-can-outline"
+                icon="mdi:trash-can-outline"
                 class="ml-auto"
                 :aria-label="$t('common.actions.delete')"
                 @click="removeSocial(index)"
@@ -174,33 +166,15 @@
       </div>
     </div>
 
-    <aside
-      data-publication-preview
-      class="publication-surface sticky top-24 hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-6 lg:block"
-      :style="previewStyle"
-    >
-      <AppMedia
-        :src="logoUrl"
-        originalSrc="/app-logo.png"
-        :alt="name"
-        aspectRatio="16 / 5"
-        fit="contain"
-        sizes="160px"
-        :width="320"
-        containerClass="w-40 rounded-[var(--ui-radius)] bg-transparent"
+    <aside data-publication-preview class="sticky top-24 hidden lg:block">
+      <FormClientBrandingPreview
+        :logoUrl="logoUrl"
+        :name="name"
+        :tagline="localTagline"
+        :description="localDescription"
+        :currentTheme="localTheme"
+        :typographyPreset="typographyPreset"
       />
-      <h3 class="mt-5 text-3xl font-black text-highlighted">{{ name }}</h3>
-      <p
-        v-if="localTagline"
-        class="mt-3 max-w-[46ch] text-balance break-words border-l-2 border-[var(--topiqu-tenant-accent)] pl-4 text-base font-semibold leading-snug text-highlighted"
-      >
-        {{ localTagline }}
-      </p>
-      <p v-if="localDescription" class="mt-2 line-clamp-3 text-sm text-muted">{{ localDescription }}</p>
-      <span
-        class="publication-primary-cta mt-5 inline-flex rounded-[var(--ui-radius)] px-3 py-2 text-sm font-semibold"
-        >{{ $t('articles.home.latestStory') }}</span
-      >
     </aside>
   </div>
 </template>
@@ -210,19 +184,20 @@ import type { SocialPlatform } from '@prisma/client'
 
 import { ThemeSchema } from '~~/shared/zod/enums'
 
-import { themeColors, type ThemeKey } from '~/composables/theme'
+import { type ThemeKey, themeColors } from '~/composables/theme'
 
-const props = defineProps<{
-  logoUrl: string
-  description: string
-  tagline: string
-  faviconUrl: string
-  typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM'
-  socials: { platform: SocialPlatform; url: string }[]
-  name: string
-  domain: string
-  currentTheme: string
-}>()
+const { logoUrl, description, tagline, faviconUrl, typographyPreset, socials, name, domain, currentTheme } =
+  defineProps<{
+    logoUrl: string
+    description: string
+    tagline: string
+    faviconUrl: string
+    typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM'
+    socials: { platform: SocialPlatform; url: string }[]
+    name: string
+    domain: string
+    currentTheme: string
+  }>()
 
 const emit = defineEmits<{
   'update:logoUrl': [url: { url: string; optimizedUrl: string }]
@@ -237,32 +212,38 @@ const emit = defineEmits<{
 const themes = ThemeSchema.options
 
 const localDescription = computed({
-  get: () => props.description,
+  get: () => description,
   set: (value) => emit('update:description', value),
 })
 const localTagline = computed({
-  get: () => props.tagline,
+  get: () => tagline,
   set: (value) => emit('update:tagline', value),
 })
 const typographyPresets = computed(() => [
-  { value: 'MODERN' as const, label: $t('common.preferences.branding.modern'), font: '"Manrope Variable", sans-serif' },
+  {
+    value: 'MODERN' as const,
+    label: $t('common.preferences.branding.modern'),
+    font: '"Manrope Variable", sans-serif',
+  },
   {
     value: 'EDITORIAL' as const,
     label: $t('common.preferences.branding.editorial'),
     font: '"Source Serif 4 Variable", serif',
   },
-  { value: 'SYSTEM' as const, label: $t('common.preferences.branding.system'), font: 'system-ui, sans-serif' },
+  {
+    value: 'SYSTEM' as const,
+    label: $t('common.preferences.branding.system'),
+    font: 'system-ui, sans-serif',
+  },
 ])
-const previewStyle = computed(() => tenantThemeStyle(props.currentTheme, props.typographyPreset))
-
 const localTheme = computed({
-  get: () => props.currentTheme,
+  get: () => currentTheme,
   set: (value: string) => emit('update:currentTheme', value),
 })
 const currentThemeColor = computed(() => themeColors[localTheme.value as ThemeKey] || themeColors.indigo)
 
 const localSocials = computed({
-  get: () => props.socials,
+  get: () => socials,
   set: (value) => emit('update:socials', value),
 })
 
@@ -278,12 +259,12 @@ const availableSocialItems = computed(() =>
 )
 
 const platformIcons: Record<SocialPlatform, string> = {
-  FACEBOOK: 'i-mdi-facebook',
-  TWITTER: 'i-mdi-alpha-x-circle',
-  INSTAGRAM: 'i-mdi-instagram',
-  LINKEDIN: 'i-mdi-linkedin',
-  YOUTUBE: 'i-mdi-youtube',
-  OTHER: 'i-mdi-web',
+  FACEBOOK: 'mdi:facebook',
+  TWITTER: 'mdi:alpha-x-circle',
+  INSTAGRAM: 'mdi:instagram',
+  LINKEDIN: 'mdi:linkedin',
+  YOUTUBE: 'mdi:youtube',
+  OTHER: 'mdi:web',
 }
 
 const platformColors: Record<SocialPlatform, string> = {
@@ -296,12 +277,12 @@ const platformColors: Record<SocialPlatform, string> = {
 }
 
 const platformPlaceholders = computed(() => ({
-  FACEBOOK: `https://facebook.com/${props.name ?? ''}`,
-  TWITTER: `https://x.com/${props.name ?? ''}`,
-  INSTAGRAM: `https://instagram.com/${props.name ?? ''}`,
-  LINKEDIN: `https://linkedin.com/company/${props.name ?? ''}`,
-  YOUTUBE: `https://youtube.com/@${props.name ?? ''}`,
-  OTHER: `https://${props.domain ?? ''}.cz`,
+  FACEBOOK: `https://facebook.com/${name ?? ''}`,
+  TWITTER: `https://x.com/${name ?? ''}`,
+  INSTAGRAM: `https://instagram.com/${name ?? ''}`,
+  LINKEDIN: `https://linkedin.com/company/${name ?? ''}`,
+  YOUTUBE: `https://youtube.com/@${name ?? ''}`,
+  OTHER: `https://${domain ?? ''}.cz`,
 }))
 
 const addSocial = (platform: SocialPlatform) => {

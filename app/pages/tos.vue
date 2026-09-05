@@ -15,7 +15,7 @@
         <section v-for="(section, index) in sections" :key="index" class="group">
           <h2 class="text-2xl font-semibold text-highlighted mb-4 flex items-center gap-3">
             <span class="flex items-center justify-center w-10 h-10 rounded-lg bg-elevated">
-              <UIcon name="i-mdi-file-document-outline" size="24" />
+              <UIcon name="mdi:file-document-outline" size="24" />
             </span>
             {{ rt(section.title) }}
           </h2>
@@ -24,7 +24,7 @@
       </div>
 
       <div class="mt-16 pt-8 border-t border-default flex justify-center">
-        <UButton to="/" size="lg" icon="i-mdi-arrow-left">
+        <UButton to="/" size="lg" icon="mdi:arrow-left">
           {{ $t('common.actions.home') }}
         </UButton>
       </div>

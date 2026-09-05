@@ -1,14 +1,14 @@
 <template>
   <div
     v-if="showBanner"
-    class="z-popover fixed inset-x-3 bottom-3 mx-auto max-w-3xl rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-4 shadow-2xl sm:bottom-5 sm:p-5"
+    class="z-popover fixed inset-x-3 bottom-3 mx-auto max-w-3xl rounded-(--topiqu-surface-radius) border border-default bg-default p-4 shadow-2xl sm:bottom-5 sm:p-5"
     role="dialog"
     aria-modal="false"
     aria-labelledby="consent-title"
     aria-describedby="consent-description"
   >
     <div class="flex items-start gap-3">
-      <UIcon name="i-mdi-cookie-outline" size="24" class="mt-0.5 shrink-0 text-primary" />
+      <UIcon name="mdi:cookie-outline" size="24" class="mt-0.5 shrink-0 text-primary" />
       <div class="min-w-0 flex-1">
         <h2 id="consent-title" class="font-bold text-highlighted">{{ $t('common.consent.title') }}</h2>
         <p id="consent-description" class="mt-1 text-sm leading-6 text-muted">{{ $t('common.consent.banner') }}</p>
@@ -79,7 +79,10 @@
 <script setup lang="ts">
 import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
-const props = defineProps<{ site: PublicClientSite | null | undefined; enabled: boolean }>()
+const props = defineProps<{
+  site: PublicClientSite | null | undefined
+  enabled: boolean
+}>()
 const { decision, settingsOpen, capabilities, needsDecision, analyticsGranted, marketingGranted, save } = useConsent(
   () => props.site,
 )
@@ -108,7 +111,11 @@ const applyChoice = async (choices: { analytics: boolean; marketing: boolean }) 
   }
 }
 
-const saveDraft = () => applyChoice({ analytics: analyticsDraft.value, marketing: marketingDraft.value })
+const saveDraft = () =>
+  applyChoice({
+    analytics: analyticsDraft.value,
+    marketing: marketingDraft.value,
+  })
 const acceptAll = () => applyChoice({ analytics: true, marketing: true })
 const rejectAll = () => applyChoice({ analytics: false, marketing: false })
 

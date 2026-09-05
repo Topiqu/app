@@ -21,3 +21,19 @@ export type ArticleCardData = {
 
 export type ArticleCardVariant = 'standard' | 'featured' | 'compact'
 export type ArticleCardLayout = 'column' | 'responsive-row'
+
+/** Public-safe author data. Never add account, authentication, or contact fields here. */
+export type PublicAuthorSummary = {
+  id: string
+  username: string
+  avatarUrl: string | null
+  bio: string | null
+  joinedAt: string | Date
+  roleLabel: string
+  articleCount: number
+  followerCount: number
+  followingCount: number
+  commentCount: number
+  totalArticleViews: number
+  totalArticleLikes: number
+}

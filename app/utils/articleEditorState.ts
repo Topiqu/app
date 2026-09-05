@@ -14,11 +14,7 @@ export interface ArticleEditorSourceState {
 }
 
 /** Only persisted editor inputs belong in the dirty check; API-derived counters and relations do not. */
-export const articleEditorSnapshot = (
-  article: ArticleEditorSourceState,
-  tags: string[],
-  seriesId?: string | null,
-) => {
+export const articleEditorSnapshot = (article: ArticleEditorSourceState, tags: string[], seriesId?: string | null) => {
   // TipTap represents an untouched empty document as `<p></p>`, while a freshly initialized
   // article starts with an empty string. They are the same persisted value and must not make the
   // editor appear dirty before the author types anything.

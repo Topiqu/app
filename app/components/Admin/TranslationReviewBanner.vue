@@ -1,10 +1,10 @@
 <template>
   <section
     v-if="translations.length"
-    class="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-5 flex flex-col gap-4"
+    class="rounded-(--topiqu-surface-radius) border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-5 flex flex-col gap-4"
   >
     <header class="flex items-center gap-2">
-      <Icon name="mdi:translate" class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+      <UIcon name="mdi:translate" class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
       <h2 class="font-semibold text-sm text-amber-900 dark:text-amber-100">
         {{ $t('articles.translations.reviewQueue.title', total, { count: total }) }}
       </h2>
@@ -39,7 +39,7 @@
             preset="relative"
             class="text-xs text-gray-500 dark:text-gray-400"
           />
-          <Icon name="mdi:arrow-right" class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+          <UIcon name="mdi:arrow-right" class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
         </UButton>
       </li>
     </ul>

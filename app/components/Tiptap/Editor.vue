@@ -2,7 +2,7 @@
   <div class="flex min-w-0 max-w-full flex-col" @keydown.tab.exact.stop @keydown.shift.tab.exact.stop>
     <template v-if="editor">
       <div
-        class="relative min-w-0 max-w-full overflow-visible rounded-[var(--topiqu-surface-radius)] border border-default bg-default"
+        class="relative min-w-0 max-w-full overflow-visible rounded-(--topiqu-surface-radius) border border-default bg-default"
         @dragenter.prevent="onDragEnter"
         @dragover.prevent
         @dragleave.prevent="onDragLeave"
@@ -22,7 +22,7 @@
 
         <EditorContent
           :editor
-          class="editor-canvas min-h-96 min-w-0 max-w-full overflow-hidden text-highlighted"
+          class="article-content editor-canvas min-h-96 min-w-0 max-w-full! overflow-hidden text-highlighted"
           :class="[EDITOR_TABLE_CLASS, contentClass]"
           @click.stop="handleEditorClick"
         />

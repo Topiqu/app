@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
     },
     include: {
       tags: { include: { tag: true } },
-      user: { select: { id: true, username: true, email: true, role: true, avatarUrl: true } },
+      user: { select: { id: true, username: true, role: true, avatarUrl: true } },
       reactions: {
         where: user?.id ? { userId: user.id } : sessionId ? { sessionId, userId: null } : { id: '' },
         select: { id: true },

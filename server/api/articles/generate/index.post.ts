@@ -201,7 +201,7 @@ export default defineEventHandler(async (event) => {
         // it and clamps the spendable balance at zero if this final call exceeded the remainder.
         send(controller, { type: 'final', article: { ...finalized, metrics, aiInvolvement: 'ASSIST' } })
 
-        await consumeClientTokens(
+        const billing = await consumeClientTokens(
           clientSiteId,
           (usage.totalTokens || 0) + researchTokens,
           'MANUAL_GENERATION_COMPLETED',
@@ -217,6 +217,7 @@ export default defineEventHandler(async (event) => {
           event,
           user.id,
         )
+        send(controller, { type: 'billing', ...billing })
       } catch (error: any) {
         if (abortController.signal.aborted && !timedOutStage) {
           // Stopped mid-generation: bill best-effort for the partial usage we actually spent.

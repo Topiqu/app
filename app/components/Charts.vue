@@ -1,5 +1,5 @@
 <template>
-  <UCard as="figure" class="mt-6">
+  <UCard as="figure" class="h-full" :ui="{ body: 'flex h-full flex-col' }">
     <figcaption class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">{{ title }}</h2>
       <UButton
@@ -17,14 +17,14 @@
     </div>
 
     <!-- The table twin: the values stay readable when the colours don't carry them. -->
-    <details class="mt-4 text-sm">
+    <details class="mt-auto pt-4 text-sm">
       <summary class="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
         {{ $t('stats.charts.showTable') }}
       </summary>
       <UTable :data="tableRows" :columns="tableColumns">
         <template #category-cell="{ row }">
           <span class="inline-flex items-center gap-2">
-            <Icon
+            <UIcon
               v-if="row.original.icon"
               :name="row.original.icon"
               class="size-5 shrink-0"

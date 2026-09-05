@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-6" data-article-settings-panel>
     <section class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
-        <UIcon size="16" name="i-mdi-image-outline" />
+        <UIcon size="16" name="mdi:image-outline" />
         {{ $t('common.labels.image') }}
       </h3>
       <FileUploader
@@ -30,8 +30,8 @@
           variant="ghost"
           type="button"
           class="w-full"
-          icon="i-mdi-file-edit-outline"
-          :trailingIcon="aiOpen ? 'i-mdi-chevron-up' : 'i-mdi-chevron-down'"
+          icon="mdi:file-edit-outline"
+          :trailingIcon="aiOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"
           :label="$t('common.labels.aiGeneration')"
         />
         <template #content>
@@ -46,6 +46,37 @@
             </div>
 
             <div v-if="!aiGenerating" class="flex flex-col gap-5 p-4">
+              <div
+                v-if="aiLastResult"
+                class="overflow-hidden rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 via-default to-success/10 shadow-sm"
+                aria-live="polite"
+              >
+                <div class="flex items-start gap-3 border-b border-primary/15 px-4 py-4">
+                  <span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+                    <UIcon :name="resultIcon" size="22" />
+                  </span>
+                  <div class="min-w-0">
+                    <p class="font-semibold text-highlighted">
+                      {{ $t(`articles.editor.ai.result.${aiLastResult.status}`) }}
+                    </p>
+                    <p class="mt-1 text-xs leading-5 text-muted">{{ resultDescription }}</p>
+                  </div>
+                </div>
+                <dl class="grid grid-cols-2 gap-px bg-default/60 sm:grid-cols-3">
+                  <div v-for="metric in resultMetrics" :key="metric.label" class="bg-default/80 px-3 py-3">
+                    <dt class="text-[11px] uppercase tracking-wide text-muted">{{ metric.label }}</dt>
+                    <dd class="mt-1 text-sm font-semibold text-highlighted">{{ metric.value }}</dd>
+                  </div>
+                </dl>
+                <div
+                  v-if="aiLastResult.missingModules.length"
+                  class="border-t border-warning/20 px-4 py-3 text-xs text-warning"
+                >
+                  {{ $t('articles.editor.ai.result.missing') }}
+                  {{ aiLastResult.missingModules.map(moduleLabel).join(', ') }}
+                </div>
+              </div>
+
               <UFormField :label="$t('articles.editor.ai.topicLabel')">
                 <UTextarea
                   v-model="customPrompt"
@@ -77,19 +108,12 @@
                       $t('articles.editor.ai.researchDescription')
                     }}</span>
                   </span>
-                  <USwitch
-                    v-model="aiOptions.research.enabled"
-                    :aria-label="$t('articles.editor.ai.researchLabel')"
-                  />
+                  <USwitch v-model="aiOptions.research.enabled" :aria-label="$t('articles.editor.ai.researchLabel')" />
                 </label>
                 <div v-if="aiOptions.research.enabled" class="border-t border-default px-3 py-3">
                   <p class="mb-2 text-xs font-medium text-muted">{{ $t('articles.editor.ai.depthLabel') }}</p>
                   <UFormField :label="$t('articles.editor.ai.depthLabel')" :ui="{ label: 'sr-only' }">
-                    <URadioGroup
-                      v-model="aiOptions.research.depth"
-                      :items="depthItems"
-                      orientation="horizontal"
-                    />
+                    <URadioGroup v-model="aiOptions.research.depth" :items="depthItems" orientation="horizontal" />
                   </UFormField>
                   <UCheckbox
                     v-model="aiOptions.research.fallbackWithoutResearch"
@@ -156,7 +180,7 @@
                   size="xs"
                   color="neutral"
                   variant="ghost"
-                  icon="i-mdi-stop-circle-outline"
+                  icon="mdi:stop-circle-outline"
                   @click="$emit('stop')"
                 >
                   {{ $t('articles.editor.ai.stopButton') }}
@@ -175,7 +199,7 @@
 
     <section class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
-        <UIcon size="16" name="i-mdi-bookmark-multiple-outline" />
+        <UIcon size="16" name="mdi:bookmark-multiple-outline" />
         {{ $t('common.labels.series') }}
       </h3>
       <ArticleSeriesSelector v-model="selectedSeries" />
@@ -185,7 +209,7 @@
 
     <section class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
-        <UIcon size="16" name="i-mdi-tag-multiple-outline" />
+        <UIcon size="16" name="mdi:tag-multiple-outline" />
         {{ $t('common.labels.tags') }}
       </h3>
       <TagsManager
@@ -201,7 +225,7 @@
 
     <section class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
-        <UIcon size="16" name="i-mdi-calendar-clock" />
+        <UIcon size="16" name="mdi:calendar-clock" />
         {{ $t('common.labels.releaseDate') }}
       </h3>
       <UFormField :label="$t('common.labels.releaseDate')" :ui="{ label: 'sr-only' }">
@@ -228,7 +252,7 @@
           size="sm"
           color="neutral"
           variant="ghost"
-          icon="i-mdi-close"
+          icon="mdi:close"
           @click="$emit('quickRelease', 'clear')"
         >
           {{ $t('articles.releaseQuick.clear') }}
@@ -249,6 +273,8 @@ import {
   type ArticleMediaProgress,
   type ArticleGenerationFormat,
   type ArticleGenerationOptions,
+  type ArticleGenerationModule,
+  type ArticleGenerationResult,
 } from '~~/shared/utils/articleGeneration'
 
 import type {
@@ -269,6 +295,7 @@ const props = defineProps<{
   aiWordCount: number
   aiResearch?: GenerationResearchResult | null
   aiMedia?: ArticleMediaProgress | null
+  aiLastResult?: ArticleGenerationResult | null
   aiWritingStage: GenerationWritingStage
 }>()
 
@@ -319,8 +346,7 @@ const phaseDetail = computed(() => {
       : t(`articles.editor.ai.writingStage.${props.aiWritingStage}`)
   if (props.aiPhase === 'images' && props.aiMedia) {
     if (props.aiMedia.stage === 'cover') return t('articles.editor.ai.mediaCover')
-    if (props.aiMedia.stage === 'complete')
-      return t('articles.editor.ai.mediaComplete', { count: props.aiMedia.found })
+    if (props.aiMedia.stage === 'complete') return t('articles.editor.ai.mediaComplete', { count: props.aiMedia.found })
     return t('articles.editor.ai.mediaProgress', {
       completed: props.aiMedia.completed,
       total: props.aiMedia.total,
@@ -350,6 +376,39 @@ const planSummary = computed(() =>
     modules: aiOptions.value.modules.length,
   }),
 )
+const resultIcon = computed(() =>
+  props.aiLastResult?.status === 'completed'
+    ? 'mdi:check-decagram'
+    : props.aiLastResult?.status === 'failed'
+      ? 'mdi:alert-circle-outline'
+      : 'mdi:progress-alert',
+)
+const resultDescription = computed(() => {
+  const result = props.aiLastResult
+  if (!result) return ''
+  return result.missingModules.length
+    ? t('articles.editor.ai.result.descriptionPartial', { count: result.missingModules.length })
+    : t('articles.editor.ai.result.descriptionComplete')
+})
+const resultMetrics = computed(() => {
+  const result = props.aiLastResult
+  if (!result) return []
+  return [
+    { label: t('articles.editor.ai.result.words'), value: result.wordCount.toLocaleString() },
+    { label: t('articles.editor.ai.result.sources'), value: result.sourceCount.toLocaleString() },
+    { label: t('articles.editor.ai.result.media'), value: `${result.mediaFound}/${result.mediaTotal}` },
+    { label: t('articles.editor.ai.result.time'), value: `${result.durationSeconds} s` },
+    {
+      label: t('articles.editor.ai.result.tokens'),
+      value: result.tokenUsage == null ? '—' : result.tokenUsage.toLocaleString(),
+    },
+    {
+      label: t('articles.editor.ai.result.balance'),
+      value: result.tokenRemaining == null ? '—' : result.tokenRemaining.toLocaleString(),
+    },
+  ]
+})
+const moduleLabel = (module: ArticleGenerationModule) => t(`articles.editor.ai.module.${module}`)
 const selectFormat = (format: ArticleGenerationFormat) => {
   aiOptions.value.format = format
   aiOptions.value.modules = aiOptions.value.modules.filter((module) =>

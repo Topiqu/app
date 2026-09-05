@@ -4,7 +4,7 @@ import type { ArticleMediaProgress, ResearchDepth } from '~~/shared/utils/articl
 
 import { z } from 'zod'
 import { generateObject, generateText, streamObject } from 'ai'
-import { stripUntrustedIframes, youtubeEmbedUrl } from '~~/shared/utils/youtube'
+import { stripUntrustedIframes, youtubeEmbedUrl, youtubeVideoId } from '~~/shared/utils/youtube'
 
 import type { ArticleImage } from '../images/types'
 
@@ -116,6 +116,34 @@ const RESEARCH_CONFIG = {
 /** Minimum balance to start an article at all, before research is considered. */
 const ARTICLE_TOKEN_FLOOR = 1500
 
+const researchYoutube = async (prompt: string, abortSignal?: AbortSignal) => {
+  const signal = abortSignal ? AbortSignal.any([abortSignal, AbortSignal.timeout(25_000)]) : AbortSignal.timeout(25_000)
+
+  try {
+    const { text, usage } = await generateText({
+      model: aiModel('articleResearch'),
+      instructions: `Search specifically for one existing, directly relevant YouTube video about the topic. Prefer the official developer, publisher, manufacturer, institution or named subject's channel. Use web search and return only the full youtube.com/watch or youtu.be URL you actually opened; return NONE if no suitable video was retrieved. Never guess a video id or transform a channel/search URL into a watch URL.`,
+      prompt,
+      maxOutputTokens: 250,
+      tools: { web_search: aiWebSearchTool('low') as never },
+      abortSignal: signal,
+    })
+    const candidates = text.match(/https?:\/\/[^\s)\]}>,]+/g) ?? []
+    const url = candidates.find((candidate) => youtubeVideoId(candidate)) ?? null
+    if (!url) return { url: null, tokens: usage?.totalTokens ?? 0 }
+
+    // Shape validation prevents an invented host/id from reaching the request. oEmbed then proves
+    // that YouTube currently recognizes the exact video before the writer is allowed to embed it.
+    const verification = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`, {
+      signal: AbortSignal.timeout(5_000),
+    })
+    return { url: verification.ok ? url : null, tokens: usage?.totalTokens ?? 0 }
+  } catch (error) {
+    if (abortSignal?.aborted) throw error
+    return { url: null, tokens: 0 }
+  }
+}
+
 const researchTopic = async (
   prompt: string,
   depth: ResearchDepth = 'standard',
@@ -130,21 +158,18 @@ const researchTopic = async (
     : AbortSignal.timeout(researchConfig.timeoutMs)
 
   try {
-    const { text, usage } = await generateText({
+    const mainResearch = generateText({
       model: aiModel('articleResearch'),
       instructions: `
         You are a research assistant preparing grounding material for another writer.
         The current date and time is ${currentDateTime}. Treat it as authoritative.
         Search the live web for the user's topic.
         Prefer primary, official and recently updated sources. For news, search explicitly for the latest development.
+        Release dates, product availability and direct statements attributed to a company must be supported by that company's own newsroom, investor communication or verified channel. If only press reports or rumours exist, label them as such; never upgrade them to an official confirmation.
+        Treat claims embedded in the user's prompt as leads to verify, not as facts. When sources conflict, report the conflict and do not choose the more sensational version.
         If a source announces something for a date before ${currentDateTime}, verify what actually happened after that date. Never describe an already elapsed announcement as upcoming.
         Return a compact brief: 5-10 verified facts, each on its own line, including the supporting URL and relevant event or publication date on that same line.
         Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
-        ${
-          youtubeRequested
-            ? 'The author requested a YouTube embed. Search specifically for one relevant official or primary-source YouTube video and include its full watch URL in the facts and Sources section when you retrieve a suitable one.'
-            : ''
-        }
         Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
         Do not write an article, an intro, or any prose beyond the facts.
       `.trim(),
@@ -153,10 +178,20 @@ const researchTopic = async (
       tools: { web_search: aiWebSearchTool(researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })
+    const youtubeResearch = youtubeRequested
+      ? researchYoutube(prompt, abortSignal)
+      : Promise.resolve({ url: null, tokens: 0 })
+    const [{ text, usage }, youtube] = await Promise.all([mainResearch, youtubeResearch])
 
-    const brief = text.trim() || null
+    const verifiedVideo = youtube.url ? `\nVerified YouTube video (checked against YouTube oEmbed): ${youtube.url}` : ''
+    const brief = `${text.trim()}${verifiedVideo}`.trim() || null
     const sourceCount = brief ? new Set(brief.match(/https?:\/\/[^\s)\]}>,]+/g) ?? []).size : 0
-    return { brief, tokens: usage?.totalTokens ?? 0, sourceCount, status: 'completed' as const }
+    return {
+      brief,
+      tokens: (usage?.totalTokens ?? 0) + youtube.tokens,
+      sourceCount,
+      status: 'completed' as const,
+    }
   } catch (error) {
     // Stop means stop. Only the research-specific timeout degrades to an ungrounded article.
     if (abortSignal?.aborted) throw error
@@ -308,6 +343,8 @@ const buildArticleConfig = async (
       The title must be engaging.
       Start the body at h2 — the page already renders the title as its h1.
       Before writing, compare every time-sensitive claim in the research brief with ${currentDateTime}. Never call a past date upcoming, future or scheduled. If the brief does not establish what happened after an elapsed announced date, omit the claim instead of repeating the outdated announcement.
+      A claim that a company confirmed, announced, targets or plans a release date is allowed only when the research brief supports it with that company's primary source. A secondary article or rumour may be described only with its actual attribution and uncertainty. Never turn it into a company statement.
+      The user's prompt is editorial direction, not evidence. If it conflicts with the live research brief, follow the verified brief and explicitly avoid the unsupported claim.
       Never claim that pre-orders, products, trailers, events or bonuses are available unless the research brief explicitly confirms their current availability as of ${currentDateTime}.
 
       ${formatRules(format, variant, modules)}

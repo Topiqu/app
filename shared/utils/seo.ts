@@ -16,5 +16,4 @@ export const toAbsoluteUrl = (href: string, origin: string) => {
 }
 
 /** og:title only — the plain name stays in <title>. Drops the dash when the tenant has no tagline. */
-export const brandTitle = (name?: string | null, tagline?: string | null) =>
-  [name, tagline].filter(Boolean).join(' — ')
+export const brandTitle = (name?: string | null, tagline?: string | null) => [name, tagline].filter(Boolean).join(' — ')

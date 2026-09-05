@@ -41,6 +41,25 @@ describe('findStockImage', () => {
     expect(result).toMatchObject({ kind: 'photo', image: { url: 'https://openverse/x.jpg' } })
   })
 
+  it('retries a sentence-like archive query with a shorter subject query', async () => {
+    const archive: ImageProvider = {
+      name: 'wikimedia',
+      search: vi.fn(async (query) => (query === 'The Witcher 4 Ciri protagonist Kovir' ? hit('wikimedia') : null)),
+    }
+    const result = await findStockImage(
+      'photo',
+      'The Witcher 4 Ciri protagonist Kovir technical demonstration screenshot',
+      chains({ photo: [archive] }),
+    )
+
+    expect(archive.search).toHaveBeenNthCalledWith(
+      1,
+      'The Witcher 4 Ciri protagonist Kovir technical demonstration screenshot',
+    )
+    expect(archive.search).toHaveBeenNthCalledWith(2, 'The Witcher 4 Ciri protagonist Kovir')
+    expect(result).toMatchObject({ kind: 'photo', image: { url: 'https://wikimedia/x.jpg' } })
+  })
+
   it('relabels a photo that only stock could answer as an illustration', async () => {
     const result = await findStockImage('photo', 'q', chains({ photo: [provider('wikimedia', null)] }))
 

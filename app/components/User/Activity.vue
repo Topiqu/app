@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-5">
-    <div class="flex w-fit gap-1 rounded-xl bg-muted p-1" role="tablist">
+    <div class="flex w-fit gap-1 rounded-[var(--ui-radius)] bg-muted p-1" role="tablist">
       <UButton
         v-for="tab in tabs"
         :key="tab.id"
@@ -22,7 +22,7 @@
         <UInput
           v-model="searchQuery"
           name="activitySearch"
-          icon="i-mdi-magnify"
+          icon="mdi:magnify"
           :placeholder="$t('common.search')"
           class="w-full"
         />
@@ -61,12 +61,16 @@
     </div>
 
     <div v-if="pending && !items.length" class="space-y-3">
-      <div v-for="i in 3" :key="i" class="h-28 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
+      <div
+        v-for="i in 3"
+        :key="i"
+        class="h-28 animate-pulse rounded-(--topiqu-surface-radius) bg-neutral-100 dark:bg-neutral-800"
+      />
     </div>
 
     <div
       v-else-if="error"
-      class="rounded-xl border border-red-200 bg-red-50 p-5 text-center dark:border-red-900/60 dark:bg-red-900/20"
+      class="rounded-(--topiqu-surface-radius) border border-red-200 bg-red-50 p-5 text-center dark:border-red-900/60 dark:bg-red-900/20"
     >
       <p class="text-sm font-medium text-red-600 dark:text-red-400">{{ error?.message || $t('common.error') }}</p>
     </div>
@@ -127,9 +131,6 @@
         >
           {{ $t('common.pagination.next') }}
         </UButton>
-        <p v-else-if="items.length" class="text-sm text-neutral-400 dark:text-neutral-500">
-          {{ $t('common.pagination.end') }}
-        </p>
       </div>
     </template>
 
@@ -143,20 +144,30 @@ import { compareBySort, matchesFilters } from '~/utils/activityFilters'
 import type { ActivityArticle } from './ActivityArticle.vue'
 import type { ActivityComment } from './ActivityComment.vue'
 
-const { activeTab } = defineProps<{ activeTab: 'likedArticles' | 'comments' }>()
+const { activeTab } = defineProps<{
+  activeTab: 'likedArticles' | 'comments'
+}>()
 
-defineEmits<{ (e: 'update:activeTab', value: 'likedArticles' | 'comments'): void }>()
+defineEmits<(e: 'update:activeTab', value: 'likedArticles' | 'comments') => void>()
 
 const localePath = useLocalePath()
 const toast = useAppToast()
 const { copy } = useClipboard({ legacy: true })
-const deleteDialog = useTemplateRef<{ ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'> }>(
-  'deleteDialog',
-)
+const deleteDialog = useTemplateRef<{
+  ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'>
+}>('deleteDialog')
 
 const tabs = [
-  { id: 'likedArticles', label: 'articles.activity.tabs.likedArticles', icon: 'mdi:heart-outline' },
-  { id: 'comments', label: 'articles.activity.tabs.comments', icon: 'mdi:comment-outline' },
+  {
+    id: 'likedArticles',
+    label: 'articles.activity.tabs.likedArticles',
+    icon: 'mdi:heart-outline',
+  },
+  {
+    id: 'comments',
+    label: 'articles.activity.tabs.comments',
+    icon: 'mdi:comment-outline',
+  },
 ] as const
 
 const sortOption = shallowRef('createdAt:desc')
@@ -170,10 +181,26 @@ const allArticles = ref<ActivityArticle[]>([])
 const allComments = ref<ActivityComment[]>([])
 
 const allSortItems = [
-  { label: $t('common.sortOptions.newest'), value: 'createdAt:desc', icon: 'mdi:clock-outline' },
-  { label: $t('common.sortOptions.oldest'), value: 'createdAt:asc', icon: 'mdi:clock-time-twelve-outline' },
-  { label: $t('common.sortOptions.mostInteresting'), value: 'likes:desc', icon: 'mdi:heart' },
-  { label: $t('common.sortOptions.mostViews'), value: 'views:desc', icon: 'mdi:eye-outline' },
+  {
+    label: $t('common.sortOptions.newest'),
+    value: 'createdAt:desc',
+    icon: 'mdi:clock-outline',
+  },
+  {
+    label: $t('common.sortOptions.oldest'),
+    value: 'createdAt:asc',
+    icon: 'mdi:clock-time-twelve-outline',
+  },
+  {
+    label: $t('common.sortOptions.mostInteresting'),
+    value: 'likes:desc',
+    icon: 'mdi:heart',
+  },
+  {
+    label: $t('common.sortOptions.mostViews'),
+    value: 'views:desc',
+    icon: 'mdi:eye-outline',
+  },
 ]
 // Comments have no view count to sort by.
 const sortItems = computed(() =>
@@ -256,7 +283,9 @@ async function unlikeArticle(articleId: string) {
     await refresh()
     toast.success({ message: $t('common.messages.successGeneral') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || e.message || $t('common.messages.operationFailed') })
+    toast.error({
+      message: e.data?.message || e.message || $t('common.messages.operationFailed'),
+    })
   }
 }
 
@@ -278,7 +307,10 @@ async function confirmDelete(commentId: string) {
   if (answer !== 'ok') return
 
   try {
-    await $fetch(`/api/comments/${commentId}`, { method: 'DELETE', body: { reason: '' } })
+    await $fetch(`/api/comments/${commentId}`, {
+      method: 'DELETE',
+      body: { reason: '' },
+    })
     const prune = (comments: ActivityComment[]): ActivityComment[] =>
       comments
         .filter((c) => c.id !== commentId)
@@ -287,7 +319,9 @@ async function confirmDelete(commentId: string) {
     await refresh()
     toast.success({ message: $t('common.messages.deleteSuccess') })
   } catch (e: any) {
-    toast.error({ message: e.data?.message || e.message || $t('common.messages.operationFailed') })
+    toast.error({
+      message: e.data?.message || e.message || $t('common.messages.operationFailed'),
+    })
   }
 }
 

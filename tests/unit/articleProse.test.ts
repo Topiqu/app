@@ -21,7 +21,7 @@ describe('article prose presentation contract', () => {
     const header = readFileSync(resolve(process.cwd(), 'app/components/Header.vue'), 'utf8')
 
     expect(header).toContain('aspectRatio="16 / 5"')
-    expect(header).toContain('containerClass="h-10 w-32 shrink-0 bg-transparent"')
+    expect(header).toMatch(/containerClass="h-10 w-32 shrink-0 bg-transparent[^"]*"/)
     expect(header).toContain(':width="128"')
     expect(header).not.toMatch(/:width="128"[\s\S]*?:height="128"/)
   })

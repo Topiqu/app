@@ -1,6 +1,6 @@
 <template>
   <article
-    class="rounded-xl p-4"
+    class="rounded-(--topiqu-surface-radius) p-4"
     :class="
       nested
         ? 'border-l-2 border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 ml-6 sm:ml-10'
@@ -21,22 +21,22 @@
       :to="localePath({ name: 'clanky-slug', params: { slug: comment.articleSlug } }) + `#comment-${comment.id}`"
       class="mt-2 inline-flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-neutral-100"
     >
-      <Icon name="mdi:file-document-outline" class="size-3.5 shrink-0" />
+      <UIcon name="mdi:file-document-outline" class="size-3.5 shrink-0" />
       {{ comment.articleTitle }}
     </NuxtLink>
 
     <div class="mt-3 flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
       <span class="flex items-center gap-1">
-        <Icon name="mdi:thumb-up-outline" class="size-3.5" />
+        <UIcon name="mdi:thumb-up-outline" class="size-3.5" />
         <span class="tabular-nums">{{ comment.likesCount }}</span>
       </span>
       <span class="flex items-center gap-1">
-        <Icon name="mdi:thumb-down-outline" class="size-3.5" />
+        <UIcon name="mdi:thumb-down-outline" class="size-3.5" />
         <span class="tabular-nums">{{ comment.dislikesCount }}</span>
       </span>
       <UButton
         v-if="isOwn"
-        icon="i-mdi-delete-outline"
+        icon="mdi:delete-outline"
         square
         size="sm"
         color="neutral"
@@ -82,9 +82,12 @@ export type ActivityComment = Pick<_Comment, 'id' | 'content' | 'userId' | 'pare
   deletedAt?: string | null
 }
 
-const { comment } = defineProps<{ comment: ActivityComment; nested?: boolean }>()
+const { comment } = defineProps<{
+  comment: ActivityComment
+  nested?: boolean
+}>()
 
-defineEmits<{ (e: 'delete', id: string): void }>()
+defineEmits<(e: 'delete', id: string) => void>()
 
 const localePath = useLocalePath()
 const { data: session } = useAuth()

@@ -10,7 +10,7 @@
               class="flex min-w-0 items-center gap-2"
               :class="index === breadcrumbs.length - 1 ? 'flex-1' : 'shrink-0'"
             >
-              <UIcon v-if="index > 0" name="i-mdi-chevron-right" size="16" />
+              <UIcon v-if="index > 0" name="mdi:chevron-right" size="16" />
               <ULink v-if="index < breadcrumbs.length - 1" :to="item.to">
                 {{ item.label }}
               </ULink>
@@ -43,7 +43,7 @@
             v-if="showsAiDisclosure"
             class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
           >
-            <Icon name="mdi:robot-outline" class="size-4" />
+            <UIcon name="mdi:robot-outline" class="size-4" />
             {{ $t(`articles.aiDisclosure.${data.aiInvolvement}`) }}
           </span>
         </div>
@@ -55,7 +55,7 @@
             :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
             class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <UBadge color="neutral" variant="soft" size="lg" icon="i-mdi-tag">
+            <UBadge color="neutral" variant="soft" size="lg" icon="mdi:tag">
               {{ t.tag.name }}
             </UBadge>
           </NuxtLink>
@@ -75,7 +75,7 @@
           <UButton
             :color="data.likedByUser ? 'error' : 'neutral'"
             :variant="data.likedByUser ? 'soft' : 'ghost'"
-            icon="i-mdi-heart"
+            icon="mdi:heart"
             square
             :aria-label="$t('common.actions.like')"
             @click="toggleLike"
@@ -83,7 +83,7 @@
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-mdi-link-variant"
+            icon="mdi:link-variant"
             square
             :aria-label="$t('common.actions.copyLink')"
             @click="copyLink(fullUrl)"
@@ -93,7 +93,7 @@
             target="_blank"
             color="neutral"
             variant="ghost"
-            icon="i-mdi-twitter"
+            icon="mdi:twitter"
             square
             aria-label="X"
             @click="share('TWITTER')"
@@ -103,7 +103,7 @@
             target="_blank"
             color="neutral"
             variant="ghost"
-            icon="i-mdi-linkedin"
+            icon="mdi:linkedin"
             square
             aria-label="LinkedIn"
             @click="share('LINKEDIN')"
@@ -137,27 +137,28 @@
           <UButton
             color="neutral"
             variant="soft"
-            icon="i-mdi-book-open-page-variant"
-            :trailingIcon="isOpen ? 'i-mdi-chevron-up' : 'i-mdi-chevron-down'"
+            icon="mdi:book-open-page-variant"
+            :trailingIcon="isOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"
             :label="`${$t('articles.columns.sources')} (${data.sources.length})`"
             class="w-full"
           />
           <template #content>
-            <ol class="mt-3 overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated">
+            <ol class="mt-3 overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-elevated">
               <li
                 v-for="(source, index) in data.sources"
                 :key="`${index}-${source}`"
-                class="grid min-w-0 grid-cols-[1.5rem_1.25rem_minmax(0,1fr)_2.25rem] items-center gap-2 p-3 not-last:border-b not-last:border-default"
+                class="grid min-w-0 grid-cols-[1.25rem_1.5rem_minmax(0,1fr)_2.25rem] items-center gap-2 py-3 pl-1 pr-3 not-last:border-b not-last:border-default"
               >
                 <span class="text-right text-xs tabular-nums text-muted">{{ Number(index) + 1 }}</span>
                 <AppMedia
                   :src="sourceFaviconUrl(source)"
                   :alt="''"
-                  :fallbackText="presentSourceUrl(source).hostname"
+                  fallbackIcon="mdi:web"
+                  :fallbackBorder="false"
                   aspectRatio="1 / 1"
                   fit="contain"
                   sizes="20px"
-                  containerClass="size-5 shrink-0 rounded-sm"
+                  containerClass="size-5 shrink-0 rounded-sm bg-transparent"
                 />
                 <div class="min-w-0">
                   <p class="truncate text-sm font-medium text-highlighted">{{ presentSourceUrl(source).hostname }}</p>
@@ -175,7 +176,7 @@
                     size="sm"
                     color="neutral"
                     variant="ghost"
-                    icon="i-mdi-open-in-new"
+                    icon="mdi:open-in-new"
                     :aria-label="source"
                   />
                 </UTooltip>
@@ -274,7 +275,11 @@ const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/
 const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/${slug.value}/related`, {
   lazy: true,
   default: () => [],
-  query: computed(() => ({ limit: 3, clientSiteId: data.value?.clientSiteId, locale: data.value?.language })),
+  query: computed(() => ({
+    limit: 3,
+    clientSiteId: data.value?.clientSiteId,
+    locale: data.value?.language,
+  })),
 })
 
 const primaryLocale = computed(() => clientSite?.language ?? 'en')
@@ -302,7 +307,9 @@ const canonicalUrl = computed(() => {
 
 useArticleSeo(data, clientSite, canonicalUrl, alternateLinks)
 
-const ogImageOptions = computed(() => ({ backgroundImage: data.value?.imageUrl }))
+const ogImageOptions = computed(() => ({
+  backgroundImage: data.value?.imageUrl,
+}))
 const imageCredit = computed(() => (data.value?.imageCredit as CoverCredit | null) ?? null)
 
 defineOgImage('TopiquArticle', ogImageOptions.value)
@@ -322,7 +329,10 @@ const toggleFollow = async () => {
       })
       isFollowing.value = false
       if (data.value) data.value.followerCount = response.followerCount ?? 0
-      toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
+      toast.add({
+        color: 'success',
+        title: $t('common.messages.successGeneral'),
+      })
     } else {
       const response = await $fetch<{ followerCount: number }>(`/api/follows/`, {
         method: 'POST',
@@ -330,7 +340,10 @@ const toggleFollow = async () => {
       })
       isFollowing.value = true
       if (data.value) data.value.followerCount = response.followerCount ?? 0
-      toast.add({ color: 'success', title: $t('profile.messages.followSuccess', [data.value.user.username]) })
+      toast.add({
+        color: 'success',
+        title: $t('profile.messages.followSuccess', [data.value.user.username]),
+      })
     }
     await refreshFollows()
   } catch (e: unknown) {
@@ -368,7 +381,11 @@ const toggleLike = async () => {
     }
   } catch (e: any) {
     // Carries the server's reason, which for a like is usually the rate limit.
-    toast.add({ color: 'error', title: $t('articles.comments.reactionFailed'), description: e?.data?.message })
+    toast.add({
+      color: 'error',
+      title: $t('articles.comments.reactionFailed'),
+      description: e?.data?.message,
+    })
   }
 }
 
@@ -379,7 +396,10 @@ const requestUrl = useRequestURL()
 const fullUrl = computed(() => new URL(route.fullPath, requestUrl.origin).href)
 const breadcrumbs = computed(() => [
   { label: $t('common.actions.home'), to: localePath({ name: 'index' }) },
-  { label: $t('articles.title'), to: `${localePath({ name: 'index' })}#articles` },
+  {
+    label: $t('articles.title'),
+    to: `${localePath({ name: 'index' })}#articles`,
+  },
   { label: data.value?.title || '', to: route.fullPath },
 ])
 

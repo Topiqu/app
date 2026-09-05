@@ -112,7 +112,7 @@ describe('network indicator markup', () => {
   })
 
   it('signals the state without relying on color alone', () => {
-    expect(source).toContain("isOnline ? 'i-mdi-wifi' : 'i-mdi-wifi-off'")
+    expect(source).toContain("isOnline ? 'mdi:wifi' : 'mdi:wifi-off'")
   })
 
   it('clears the bottom-right quota pill and the centred unsaved-changes bar', () => {

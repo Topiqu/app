@@ -16,6 +16,8 @@ export default function globalSetup() {
   })
 
   if (result.status !== 0) {
-    throw new Error(`Could not seed browser fixtures.\n${result.error?.message ?? ''}\n${result.stdout}\n${result.stderr}`)
+    throw new Error(
+      `Could not seed browser fixtures.\n${result.error?.message ?? ''}\n${result.stdout}\n${result.stderr}`,
+    )
   }
 }

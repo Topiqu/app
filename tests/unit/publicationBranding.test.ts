@@ -92,7 +92,7 @@ describe('tenant branding stays current after a save', () => {
     expect(app).toContain('href: liveClientSite.value?.faviconUrl || liveClientSite.value?.logoUrl')
     expect(header).toContain('await useLiveClientSite()')
     expect(header).not.toContain('await useClientSite()')
-    expect(header).toContain("logoSrc = computed(() => clientSite.value?.logoUrl || '/app-logo.png')")
+    expect(header).toContain('logoSrc = computed(() => clientSite.value?.logoUrl || null)')
     expect(settings).toContain('refreshClientSite()')
   })
 })

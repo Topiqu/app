@@ -37,7 +37,7 @@
     <ul class="mt-5 divide-y divide-neutral-100 dark:divide-neutral-800">
       <li v-for="check in data?.checks" :key="check.label" class="flex items-center justify-between gap-3 py-2.5">
         <span class="flex min-w-0 items-center gap-2 text-sm">
-          <Icon
+          <UIcon
             :name="check.ok ? 'mdi:check-circle' : 'mdi:alert-circle-outline'"
             class="size-4 shrink-0"
             :class="check.ok ? 'text-green-600 dark:text-green-500' : 'text-amber-600 dark:text-amber-500'"

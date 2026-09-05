@@ -17,7 +17,7 @@
           variant="ghost"
           size="sm"
           color="neutral"
-          icon="i-mdi-information-outline"
+          icon="mdi:information-outline"
           :aria-label="$t('common.preferences.explanation')"
           :title="$t('common.preferences.explanation')"
         />
@@ -50,7 +50,7 @@
             class="mb-5"
             color="primary"
             variant="soft"
-            icon="i-mdi-information-outline"
+            icon="mdi:information-outline"
             :title="$t('common.preferences.softGate.contentTitle')"
             :description="$t('common.preferences.softGate.contentDescription')"
           >
@@ -109,7 +109,7 @@
             class="mb-5"
             color="primary"
             variant="soft"
-            icon="i-mdi-information-outline"
+            icon="mdi:information-outline"
             :title="$t('common.preferences.softGate.aiTitle')"
             :description="$t('common.preferences.softGate.aiDescription')"
           >
@@ -221,17 +221,17 @@ const can = (scope: string) =>
 const tabs = computed<TabItem[]>(() => {
   const t: TabItem[] = []
   if (can('TENANT_SETTINGS'))
-    t.push({ id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'i-mdi-palette-outline' })
+    t.push({ id: 'branding', labelKey: 'common.preferences.tabs.branding', icon: 'mdi:palette-outline' })
   if (can('TENANT_SETTINGS')) {
-    t.push({ id: 'content', labelKey: 'common.preferences.tabs.content', icon: 'i-mdi-text-box-outline' })
+    t.push({ id: 'content', labelKey: 'common.preferences.tabs.content', icon: 'mdi:text-box-outline' })
   }
   if (can('INTEGRATION_CONTROL')) {
-    t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'i-mdi-puzzle-outline' })
+    t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'mdi:puzzle-outline' })
   }
-  if (can('AI_USE')) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'i-mdi-robot-outline' })
-  t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'i-mdi-account-group-outline' })
+  if (can('AI_USE')) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
+  t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'mdi:account-group-outline' })
   if (showBilling.value && can('BILLING_CHANGE'))
-    t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'i-mdi-credit-card-outline' })
+    t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'mdi:credit-card-outline' })
   return t
 })
 
@@ -312,7 +312,7 @@ const generateApiKey = async () => {
     const confirmed = await confirm({
       title: $t('common.preferences.api.regenerateTitle'),
       message: $t('common.preferences.api.regenerateWarning'),
-      icon: 'i-mdi-key-remove',
+      icon: 'mdi:key-remove',
       confirmText: $t('common.preferences.api.regenerateConfirm'),
       cancelText: $t('common.messages.deleteCancel'),
       variant: 'danger',

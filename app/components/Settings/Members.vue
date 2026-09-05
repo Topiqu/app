@@ -7,7 +7,7 @@
       </div>
       <UButton
         v-if="data?.canControl"
-        icon="i-mdi-account-plus-outline"
+        icon="mdi:account-plus-outline"
         class="shrink-0"
         @click="showInvite = !showInvite"
       >
@@ -17,7 +17,7 @@
 
     <UForm
       v-if="showInvite"
-      class="rounded-2xl border border-violet-200 bg-violet-50/50 p-5 dark:border-violet-800 dark:bg-violet-950/20 space-y-5"
+      class="space-y-5 rounded-(--topiqu-surface-radius) border border-violet-200 bg-violet-50/50 p-5 dark:border-violet-800 dark:bg-violet-950/20"
       @submit.prevent="invite"
     >
       <div>
@@ -39,8 +39,10 @@
     </UForm>
 
     <div v-if="showDirectoryControls" class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-      <UInput v-model="search" :placeholder="$t('common.members.search')" leadingIcon="i-mdi-magnify" />
-      <div class="flex rounded-xl border border-neutral-200 bg-white p-1 dark:border-neutral-700 dark:bg-neutral-900">
+      <UInput v-model="search" :placeholder="$t('common.members.search')" leadingIcon="mdi:magnify" />
+      <div
+        class="flex rounded-[var(--ui-radius)] border border-neutral-200 bg-white p-1 dark:border-neutral-700 dark:bg-neutral-900"
+      >
         <UButton
           v-for="option in filters"
           :key="option"
@@ -64,7 +66,7 @@
       <article
         v-for="member in pagedMembers"
         :key="member.id"
-        class="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900"
+        class="overflow-hidden rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900"
       >
         <div class="grid lg:grid-cols-[17rem_minmax(0,1fr)]">
           <div
@@ -112,7 +114,7 @@
                 square
                 color="error"
                 variant="soft"
-                icon="i-mdi-account-remove-outline"
+                icon="mdi:account-remove-outline"
                 :aria-label="$t('common.members.remove')"
                 :loading="removingId === member.id"
                 :disabled="!!removingId"
@@ -135,7 +137,7 @@
                   :modelValue="member.scopes.includes(scope)"
                   @update:modelValue="toggle(member, scope)"
                 />
-                <Icon v-else-if="hasScope(member, scope)" name="mdi:check" class="mr-1 inline size-3" />
+                <UIcon v-else-if="hasScope(member, scope)" name="mdi:check" class="mr-1 inline size-3" />
                 {{ $t(`common.members.scopes.${scope}`) }}
               </label>
             </div>
@@ -144,7 +146,7 @@
       </article>
       <div
         v-if="!pagedMembers.length"
-        class="rounded-2xl border border-dashed border-neutral-300 p-10 text-center text-sm text-neutral-500 dark:border-neutral-700"
+        class="rounded-(--topiqu-surface-radius) border border-dashed border-neutral-300 p-10 text-center text-sm text-neutral-500 dark:border-neutral-700"
       >
         {{ $t('common.members.noResults') }}
       </div>
@@ -154,7 +156,7 @@
 
     <section class="border-t border-neutral-200 pt-6 dark:border-neutral-700">
       <div class="mb-3 flex items-center gap-2">
-        <Icon name="mdi:email-clock-outline" class="size-5 text-amber-500" />
+        <UIcon name="mdi:email-clock-outline" class="size-5 text-amber-500" />
         <h3 class="font-semibold">{{ $t('common.members.pending') }}</h3>
         <span class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs dark:bg-neutral-800">{{
           filteredInvitations.length
@@ -162,13 +164,13 @@
       </div>
       <div
         v-if="filteredInvitations.length"
-        class="overflow-hidden rounded-2xl border border-neutral-200 bg-white divide-y divide-neutral-200 dark:border-neutral-700 dark:bg-neutral-900 dark:divide-neutral-700"
+        class="divide-y divide-neutral-200 overflow-hidden rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white dark:divide-neutral-700 dark:border-neutral-700 dark:bg-neutral-900"
       >
         <div v-for="item in filteredInvitations" :key="item.id" class="flex items-center gap-3 p-4">
           <div
             class="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950"
           >
-            <Icon name="mdi:account-clock-outline" class="size-5" />
+            <UIcon name="mdi:account-clock-outline" class="size-5" />
           </div>
           <div class="min-w-0 flex-1">
             <div class="truncate text-sm font-medium">{{ item.email }}</div>
@@ -180,7 +182,7 @@
             square
             color="neutral"
             variant="soft"
-            icon="i-mdi-email-sync-outline"
+            icon="mdi:email-sync-outline"
             :aria-label="$t('common.members.resend')"
             @click="resend(item.id)"
           />
@@ -188,7 +190,7 @@
             square
             color="error"
             variant="soft"
-            icon="i-mdi-close"
+            icon="mdi:close"
             :aria-label="$t('common.members.revoke')"
             @click="revoke(item.id)"
           />
@@ -196,9 +198,9 @@
       </div>
       <div
         v-else
-        class="rounded-2xl border border-dashed border-neutral-300 px-5 py-8 text-center dark:border-neutral-700"
+        class="rounded-(--topiqu-surface-radius) border border-dashed border-neutral-300 px-5 py-8 text-center dark:border-neutral-700"
       >
-        <Icon name="mdi:account-plus-outline" class="mx-auto size-8 text-neutral-400" />
+        <UIcon name="mdi:account-plus-outline" class="mx-auto size-8 text-neutral-400" />
         <p class="mt-2 text-sm text-neutral-500">{{ $t('common.members.noPending') }}</p>
         <UButton v-if="data?.canControl" class="mx-auto mt-4" size="sm" @click="showInvite = true">
           {{ $t('common.members.inviteFirst') }}
@@ -215,7 +217,12 @@ type Member = {
   role: 'OWNER' | 'MEMBER'
   scopes: Scope[]
   createdAt: string
-  user: { id: string; username: string; email: string; avatarUrl: string | null }
+  user: {
+    id: string
+    username: string
+    email: string
+    avatarUrl: string | null
+  }
 }
 type Invitation = { id: string; email: string; expiresAt: string }
 const scopes = [
@@ -231,7 +238,12 @@ const scopes = [
   'ANALYTICS_READ',
   'CONTENT_MODERATE',
 ] as const
-const scopeItems = computed(() => scopes.map((value) => ({ value, label: $t(`common.members.scopes.${value}`) })))
+const scopeItems = computed(() =>
+  scopes.map((value) => ({
+    value,
+    label: $t(`common.members.scopes.${value}`),
+  })),
+)
 const filters = ['all', 'owners', 'members'] as const
 const { data, refresh } = await useFetch<{
   members: Member[]
@@ -284,7 +296,10 @@ const canEdit = (member: Member) =>
 const invite = async () => {
   busy.value = true
   try {
-    await $fetch('/api/tenant/invitations', { method: 'POST', body: { email: email.value, scopes: selected.value } })
+    await $fetch('/api/tenant/invitations', {
+      method: 'POST',
+      body: { email: email.value, scopes: selected.value },
+    })
     email.value = ''
     showInvite.value = false
     await refresh()
@@ -297,14 +312,19 @@ const toggle = async (member: Member, scope: Scope) => {
   const next = member.scopes.includes(scope)
     ? member.scopes.filter((item) => item !== scope)
     : [...member.scopes, scope]
-  await $fetch(`/api/tenant/members/${member.id}`, { method: 'PATCH', body: { scopes: next } })
+  await $fetch(`/api/tenant/members/${member.id}`, {
+    method: 'PATCH',
+    body: { scopes: next },
+  })
   await refresh()
 }
 const remove = async (member: Member) => {
   const response = await confirm({
     title: t('common.members.removeConfirmTitle'),
-    message: t('common.members.removeConfirmMessage', { name: member.user.username }),
-    icon: 'i-mdi-account-remove-outline',
+    message: t('common.members.removeConfirmMessage', {
+      name: member.user.username,
+    }),
+    icon: 'mdi:account-remove-outline',
     confirmText: t('common.members.remove'),
     cancelText: t('common.actions.cancel'),
     variant: 'danger',
@@ -315,9 +335,15 @@ const remove = async (member: Member) => {
   try {
     await $fetch(`/api/tenant/members/${member.id}`, { method: 'DELETE' })
     await refresh()
-    toast.success({ message: t('common.members.removeSuccess', { name: member.user.username }) })
+    toast.success({
+      message: t('common.members.removeSuccess', {
+        name: member.user.username,
+      }),
+    })
   } catch (error: any) {
-    toast.error({ message: error.data?.message || t('common.members.removeFailed') })
+    toast.error({
+      message: error.data?.message || t('common.members.removeFailed'),
+    })
   } finally {
     removingId.value = undefined
   }

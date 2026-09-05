@@ -7,7 +7,7 @@
         variant="ghost"
         type="button"
         square
-        icon="i-mdi-console"
+        icon="mdi:console"
         class="fixed bottom-4 left-4 z-devtools"
         aria-label="Open DevConsole"
         data-dev-console
@@ -28,7 +28,7 @@
           @pointerdown="startDrag"
         >
           <span class="flex min-w-0 items-center gap-1.5">
-            <UIcon name="i-mdi-drag-vertical" size="16" class="-ml-1 shrink-0" />
+            <UIcon name="mdi:drag-vertical" size="16" class="-ml-1 shrink-0" />
             <template v-if="collapsed">
               <span class="flex min-w-0 items-center gap-1.5 text-[10px] font-medium">
                 <UIcon :name="activeView.icon" size="12" class="shrink-0" />
@@ -47,7 +47,7 @@
               </span>
             </template>
             <template v-else>
-              <UIcon name="i-mdi-console" size="14" class="shrink-0" />
+              <UIcon name="mdi:console" size="14" class="shrink-0" />
               <span class="text-xs font-semibold text-highlighted">DevConsole</span>
             </template>
           </span>
@@ -58,7 +58,7 @@
               variant="ghost"
               square
               size="xs"
-              :icon="collapsed ? 'i-mdi-chevron-down' : 'i-mdi-chevron-up'"
+              :icon="collapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'"
               :aria-label="collapsed ? 'Expand' : 'Collapse'"
               @pointerdown.stop
               @click="collapsed = !collapsed"
@@ -69,7 +69,7 @@
               variant="ghost"
               square
               size="xs"
-              icon="i-mdi-close"
+              icon="mdi:close"
               aria-label="Hide DevConsole"
               @pointerdown.stop
               @click="visible = false"
@@ -102,7 +102,7 @@
                   v-if="view !== 'auto'"
                   color="warning"
                   variant="soft"
-                  icon="i-mdi-alert"
+                  icon="mdi:alert"
                   :description="`forcing ${view} - overrides resolver`"
                 />
               </section>
@@ -141,7 +141,7 @@
                   </UButton>
                 </div>
                 <p class="flex items-start gap-1 text-xs text-muted">
-                  <UIcon size="12" :name="isGuest ? 'i-mdi-account-off' : 'i-mdi-account-check'" class="shrink-0" />
+                  <UIcon size="12" :name="isGuest ? 'mdi:account-off' : 'mdi:account-check'" class="shrink-0" />
                   <span class="min-w-0 break-all font-mono text-highlighted">{{ currentUser }}</span>
                 </p>
               </section>
@@ -180,7 +180,7 @@
                       type="button"
                       :disabled="!meta?.hash"
                       square
-                      :icon="copied ? 'i-mdi-check' : 'i-mdi-content-copy'"
+                      :icon="copied ? 'mdi:check' : 'mdi:content-copy'"
                       :title="copied ? 'Copied' : 'Copy commit hash'"
                       @click="copyCommit"
                     />
@@ -221,8 +221,8 @@
 import type { DevView } from '~/composables/useDevView'
 
 const views = [
-  { id: 'auto', icon: 'i-mdi-auto-fix' },
-  { id: 'tenant', icon: 'i-mdi-office-building' },
+  { id: 'auto', icon: 'mdi:auto-fix' },
+  { id: 'tenant', icon: 'mdi:office-building' },
 ] satisfies { id: DevView; icon: string }[]
 const view = useDevView()
 const activeView = computed(() => views.find((v) => v.id === view.value) ?? views[0]!)
@@ -262,9 +262,9 @@ const dbStatusLabel = computed(() =>
 )
 
 const seedUsers = [
-  { label: 'reader', email: 'reader@test.local', icon: 'i-mdi-eye' },
-  { label: 'admin', email: 'admin@test.local', icon: 'i-mdi-shield-account' },
-  { label: 'super', email: 'super@test.local', icon: 'i-mdi-crown' },
+  { label: 'reader', email: 'reader@test.local', icon: 'mdi:eye' },
+  { label: 'admin', email: 'admin@test.local', icon: 'mdi:shield-account' },
+  { label: 'super', email: 'super@test.local', icon: 'mdi:crown' },
 ]
 const busy = shallowRef(false)
 

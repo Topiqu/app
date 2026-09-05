@@ -16,8 +16,10 @@
           <UProgress :modelValue="((step + 1) / steps.length) * 100" size="sm" />
           <ol class="grid grid-cols-4 gap-1 sm:gap-2" :aria-label="$t('common.tenant.stepsLabel')">
             <li v-for="(item, index) in steps" :key="item.id" class="min-w-0">
-              <button
+              <UButton
                 type="button"
+                color="neutral"
+                variant="ghost"
                 class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
                 :class="index === step ? 'bg-primary/10 font-semibold text-primary' : 'text-muted'"
                 :aria-current="index === step ? 'step' : undefined"
@@ -32,11 +34,11 @@
                       : 'border-default bg-default text-muted'
                   "
                 >
-                  <UIcon v-if="index !== step && isStepComplete(index)" name="i-mdi-check" size="12" />
+                  <UIcon v-if="index !== step && isStepComplete(index)" name="mdi:check" size="12" />
                   <template v-else>{{ index + 1 }}</template>
                 </span>
                 <span class="truncate">{{ item.label }}</span>
-              </button>
+              </UButton>
             </li>
           </ol>
         </div>
@@ -52,7 +54,7 @@
               v-for="plan in planOptions"
               :key="plan.value"
               type="button"
-              class="group relative flex min-h-40 cursor-pointer flex-col overflow-hidden rounded-xl border p-4 text-left shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:scale-[0.99] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              class="group relative flex min-h-64 min-w-0 cursor-pointer flex-col items-stretch justify-start overflow-hidden rounded-[var(--topiqu-surface-radius)] border p-4 text-left whitespace-normal shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:scale-[0.99] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
               :class="planCardClass(plan.value, form.plan === plan.value)"
               :aria-pressed="form.plan === plan.value"
               @click="form.plan = plan.value"
@@ -73,13 +75,17 @@
                 </span>
                 <UIcon
                   v-if="form.plan === plan.value"
-                  name="i-mdi-check-circle"
+                  name="mdi:check-circle"
                   :class="planCheckClass(plan.value)"
                   size="21"
                 />
               </span>
-              <span class="relative mt-4 text-sm font-bold text-highlighted">{{ plan.label }}</span>
-              <span class="relative mt-1 text-xs leading-5 text-muted">{{ plan.description }}</span>
+              <span class="relative mt-4 block w-full break-words text-sm font-bold leading-5 text-highlighted">{{
+                plan.label
+              }}</span>
+              <span class="relative mt-1 block w-full break-words text-xs leading-5 text-muted">{{
+                plan.description
+              }}</span>
             </button>
           </div>
 
@@ -109,7 +115,7 @@
           <UAlert
             color="neutral"
             variant="soft"
-            :icon="form.plan === 'BASIC' ? 'i-mdi-information-outline' : 'i-mdi-lock-outline'"
+            :icon="form.plan === 'BASIC' ? 'mdi:information-outline' : 'mdi:lock-outline'"
             :title="form.plan === 'BASIC' ? $t('common.tenant.basicTitle') : $t('common.tenant.checkoutTitle')"
             :description="
               form.plan === 'BASIC' ? $t('common.tenant.basicDescription') : $t('common.tenant.checkoutDescription')
@@ -120,10 +126,12 @@
         <div v-else-if="step === 1" class="space-y-5">
           <UFormField :label="$t('common.tenant.language')">
             <div class="grid gap-3 sm:grid-cols-2">
-              <button
+              <UButton
                 v-for="language in languageOptions"
                 :key="language.value"
                 type="button"
+                color="neutral"
+                variant="ghost"
                 class="flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 :class="
                   form.language === language.value
@@ -156,11 +164,11 @@
                 </span>
                 <UIcon
                   v-if="form.language === language.value"
-                  name="i-mdi-check-circle"
+                  name="mdi:check-circle"
                   class="ml-auto text-primary"
                   size="20"
                 />
-              </button>
+              </UButton>
             </div>
           </UFormField>
 
@@ -169,10 +177,12 @@
             <p class="mt-1 text-sm text-muted">{{ $t('common.tenant.themeDescription') }}</p>
           </div>
           <div class="grid grid-cols-5 gap-3 sm:grid-cols-8">
-            <button
+            <UButton
               v-for="theme in themes"
               :key="theme"
               type="button"
+              color="neutral"
+              variant="ghost"
               class="relative mx-auto size-11 cursor-pointer rounded-xl border-2 shadow-sm transition-transform hover:scale-105 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
               :class="
                 form.theme === theme
@@ -184,12 +194,13 @@
               :aria-pressed="form.theme === theme"
               @click="form.theme = theme"
             >
-              <Icon
+              <UIcon
                 v-if="form.theme === theme"
                 name="mdi:check-bold"
-                class="pointer-events-none absolute inset-0 z-10 m-auto size-5 text-white drop-shadow-md"
+                size="20"
+                class="pointer-events-none absolute inset-0 z-10 m-auto text-inverted drop-shadow-md"
               />
-            </button>
+            </UButton>
           </div>
           <div class="flex items-center gap-3 rounded-xl border border-default bg-muted/50 p-4">
             <span class="size-9 shrink-0 rounded-lg" :style="{ backgroundColor: themeColors[form.theme] }" />
@@ -220,10 +231,12 @@
 
           <UFormField v-if="form.plan !== 'BASIC'" :label="$t('common.tenant.domainType')">
             <div class="grid gap-3 sm:grid-cols-2">
-              <button
+              <UButton
                 v-for="option in domainTypeOptions"
                 :key="option.value"
                 type="button"
+                color="neutral"
+                variant="ghost"
                 class="flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 :class="
                   form.domainType === option.value
@@ -238,7 +251,7 @@
                   <span class="block text-sm font-semibold">{{ option.label }}</span>
                   <span class="mt-0.5 block text-xs leading-5 text-muted">{{ option.description }}</span>
                 </span>
-              </button>
+              </UButton>
             </div>
           </UFormField>
 
@@ -261,13 +274,13 @@
               :modelValue="form.customDomain"
               class="w-full"
               :placeholder="$t('common.tenant.customDomainPlaceholder')"
-              icon="i-mdi-web"
+              icon="mdi:web"
               @update:modelValue="setCustomDomain"
             />
             <template #help>
               <span v-if="availability === 'checking'" class="text-muted">{{ $t('common.tenant.checking') }}</span>
               <span v-else-if="availability === 'available'" class="inline-flex items-center gap-1 text-success">
-                <UIcon name="i-mdi-check-circle" size="16" />
+                <UIcon name="mdi:check-circle" size="16" />
                 {{ usesCustomDomain ? $t('common.tenant.customDomainAvailable') : $t('common.tenant.available') }}
               </span>
               <span v-else-if="availabilityReason" class="text-error">
@@ -280,7 +293,7 @@
             v-if="usesCustomDomain"
             color="neutral"
             variant="soft"
-            icon="i-mdi-dns-outline"
+            icon="mdi:dns-outline"
             :title="$t('common.tenant.dnsTitle')"
             :description="$t('common.tenant.dnsDescription')"
           />
@@ -310,7 +323,7 @@
           <UAlert
             color="neutral"
             variant="soft"
-            :icon="form.plan === 'BASIC' ? 'i-mdi-information-outline' : 'i-mdi-lock-outline'"
+            :icon="form.plan === 'BASIC' ? 'mdi:information-outline' : 'mdi:lock-outline'"
             :title="form.plan === 'BASIC' ? $t('common.tenant.basicTitle') : $t('common.tenant.checkoutTitle')"
             :description="
               form.plan === 'BASIC' ? $t('common.tenant.basicDescription') : $t('common.tenant.checkoutDescription')
@@ -325,21 +338,16 @@
         <UButton v-if="step === 0" color="neutral" variant="soft" :disabled="creating" @click="open = false">
           {{ $t('common.close') }}
         </UButton>
-        <UButton v-else color="neutral" variant="soft" icon="i-mdi-arrow-left" :disabled="creating" @click="step--">
+        <UButton v-else color="neutral" variant="soft" icon="mdi:arrow-left" :disabled="creating" @click="step--">
           {{ $t('common.actions.back') }}
         </UButton>
 
-        <UButton
-          v-if="step < steps.length - 1"
-          trailingIcon="i-mdi-arrow-right"
-          :disabled="!canContinue"
-          @click="step++"
-        >
+        <UButton v-if="step < steps.length - 1" trailingIcon="mdi:arrow-right" :disabled="!canContinue" @click="step++">
           {{ $t('common.actions.continue') }}
         </UButton>
         <UButton
           v-else
-          :icon="form.plan === 'BASIC' ? 'i-mdi-plus' : 'i-mdi-credit-card-outline'"
+          :icon="form.plan === 'BASIC' ? 'mdi:plus' : 'mdi:credit-card-outline'"
           :loading="creating"
           :disabled="!canCreate"
           @click="createTenant"
@@ -403,13 +411,13 @@ const domainTypeOptions = computed(() => [
     value: 'SUBDOMAIN' as const,
     label: $t('common.tenant.subdomain'),
     description: $t('common.tenant.paidSubdomainDescription'),
-    icon: 'i-mdi-link-variant',
+    icon: 'mdi:link-variant',
   },
   {
     value: 'CUSTOM' as const,
     label: $t('common.tenant.customDomain'),
     description: $t('common.tenant.paidCustomDomainDescription'),
-    icon: 'i-mdi-web',
+    icon: 'mdi:web',
   },
 ])
 
@@ -435,13 +443,13 @@ const planOptions = computed(() => [
     value: 'BASIC' as const,
     label: `Basic · ${$t('common.tenant.free')}`,
     description: $t('common.tenant.basicDescription'),
-    icon: 'i-mdi-feather',
+    icon: 'mdi:feather',
   },
   ...(['PRO', 'PREMIUM'] as const).map((plan) => ({
     value: plan,
     label: `${plan} · ${formatMinorAmount(planPricing.value?.[plan]?.[form.interval] ?? null)}`,
     description: $t(`admin.upgrade.${plan === 'PRO' ? 'toPro' : 'toPremium'}.description`),
-    icon: plan === 'PRO' ? 'i-mdi-rocket-launch' : 'i-mdi-crown',
+    icon: plan === 'PRO' ? 'mdi:rocket-launch' : 'mdi:crown',
   })),
 ])
 
@@ -487,24 +495,24 @@ const intervalLabel = (interval: BillingInterval) =>
   $t(`common.preferences.billing.${interval === 'month' ? 'intervalMonthly' : 'intervalAnnual'}`)
 
 const summaryRows = computed(() => [
-  { label: $t('common.tenant.name'), value: form.name, icon: 'i-mdi-web' },
+  { label: $t('common.tenant.name'), value: form.name, icon: 'mdi:web' },
   {
     label: usesCustomDomain.value ? $t('common.tenant.customDomain') : $t('common.tenant.subdomain'),
     value: selectedDomain.value,
-    icon: 'i-mdi-link',
+    icon: 'mdi:link',
   },
   {
     label: $t('common.tenant.language'),
     value: languageOptions.value.find((option) => option.value === form.language)?.label ?? form.language,
-    icon: 'i-mdi-translate',
+    icon: 'mdi:translate',
   },
   {
     label: $t('common.tenant.theme'),
     value: form.theme,
-    icon: 'i-mdi-palette-outline',
+    icon: 'mdi:palette-outline',
     swatch: themeColors[form.theme],
   },
-  { label: $t('common.tenant.steps.plan'), value: form.plan, icon: 'i-mdi-crown-outline' },
+  { label: $t('common.tenant.steps.plan'), value: form.plan, icon: 'mdi:crown-outline' },
 ])
 
 const slugify = (value: string) =>

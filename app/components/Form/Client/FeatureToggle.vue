@@ -6,7 +6,7 @@
       disabled && 'opacity-60 cursor-not-allowed',
     ]"
   >
-    <Icon :name="icon" class="w-6 h-6 mt-0.5 flex-shrink-0" :class="accentIcon" />
+    <UIcon :name="icon" class="w-6 h-6 mt-0.5 flex-shrink-0" :class="accentIcon" />
     <div class="flex-1 min-w-0">
       <div class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ title }}</div>
       <div class="text-xs text-gray-600 dark:text-gray-400 leading-tight">{{ description }}</div>
@@ -18,7 +18,7 @@
           </span>
         </span>
         <span v-else class="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400">
-          <Icon name="mdi:check-decagram-outline" class="w-3.5 h-3.5" />
+          <UIcon name="mdi:check-decagram-outline" class="w-3.5 h-3.5" />
           {{ $t('common.features.includedInPlan') }}
         </span>
         <span v-if="price && billingPlan === 'ANNUAL'" class="text-emerald-600 dark:text-emerald-400 font-medium">

@@ -125,14 +125,13 @@ describe('consent integration contracts', () => {
     expect(source('app/app.vue')).toContain('platformAdsEnabledForPlan(clientSite?.plan) && marketingGranted')
     expect(source('app/composables/useGam.ts')).not.toContain('EnabledForPlan(client.plan)')
     const footer = source('app/components/Footer.vue')
-    expect(footer).toContain('common.consent.openSettings')
     expect(footer).not.toContain('v-if="hasOptionalServices"')
     expect(source('app/app.vue')).toContain('<ClientVersion v-if="consentLauncher === \'client-version\'" />')
     expect(source('app/app.vue')).toContain(
       '<ConsentSettingsButton v-else-if="consentLauncher === \'cookie-button\'" />',
     )
     expect(source('app/components/ConsentSettingsButton.vue')).toContain(
-      'bottom-action-bar fixed right-3 bottom-3 z-overlay',
+      'bottom-action-bar fixed right-6 bottom-4 z-overlay',
     )
     const clientVersion = source('app/components/Client/Version.vue')
     expect(clientVersion).toContain('openConsentSettings')

@@ -1,68 +1,86 @@
 <template>
-  <div class="mb-10 space-y-4 px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <UFormField :label="$t('master.clientTable.search')" :ui="{ label: 'sr-only' }" class="w-full max-w-xl">
-        <UInput
-          v-model="globalFilter"
-          type="search"
-          :placeholder="$t('master.clientTable.search')"
-          icon="i-mdi-magnify"
-          class="w-full"
-        />
-      </UFormField>
-      <UButton
-        color="neutral"
-        variant="soft"
-        icon="i-mdi-filter-variant"
-        :aria-expanded="filtersOpen"
-        @click="filtersOpen = !filtersOpen"
+  <div ref="listOrigin" class="flex min-h-0 w-full flex-1 flex-col gap-4 sm:overflow-hidden" data-client-table>
+    <div class="shrink-0 space-y-3 border-b border-default bg-default py-3" data-client-table-toolbar>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <UFormField
+          :label="$t('master.clientTable.search')"
+          :ui="{ label: 'sr-only' }"
+          class="w-full min-w-0 sm:flex-1"
+        >
+          <UInput
+            v-model="globalFilter"
+            type="search"
+            :placeholder="$t('master.clientTable.search')"
+            icon="mdi:magnify"
+            class="w-full"
+          />
+        </UFormField>
+        <UButton
+          class="shrink-0"
+          color="neutral"
+          variant="soft"
+          icon="mdi:filter-variant"
+          :aria-expanded="filtersOpen"
+          @click="filtersOpen = !filtersOpen"
+        >
+          {{ $t('common.labels.filters') }}
+          <UBadge v-if="activeFilterCount" color="primary" variant="solid">{{ activeFilterCount }}</UBadge>
+        </UButton>
+      </div>
+      <div
+        v-show="filtersOpen"
+        class="grid gap-3 rounded-(--topiqu-surface-radius) border border-default p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        {{ $t('common.labels.filters') }}
-        <UBadge v-if="activeFilterCount" color="primary" variant="solid">{{ activeFilterCount }}</UBadge>
-      </UButton>
-    </div>
-    <div
-      v-show="filtersOpen"
-      class="grid gap-3 rounded-[var(--topiqu-surface-radius)] border border-default p-4 sm:grid-cols-2 lg:grid-cols-4"
-    >
-      <UFormField :label="$t('master.clientTable.headers.domain')"><UInput v-model="domainFilter" /></UFormField>
-      <UFormField :label="$t('master.clientTable.headers.plan')"
-        ><USelect v-model="planFilter" :items="planItems"
-      /></UFormField>
-      <UFormField :label="$t('common.labels.status')"
-        ><USelect v-model="statusFilter" :items="statusItems"
-      /></UFormField>
-      <UFormField :label="$t('common.labels.dateFrom')"><UInput v-model="dateFrom" type="date" /></UFormField>
-      <UFormField :label="$t('common.labels.dateTo')"><UInput v-model="dateTo" type="date" /></UFormField>
-      <UFormField :label="$t('common.labels.sortBy')"><USelect v-model="sortField" :items="sortItems" /></UFormField>
-      <UFormField :label="$t('common.labels.order')"><USelect v-model="sortOrder" :items="orderItems" /></UFormField>
-      <div class="flex items-end">
-        <UButton color="neutral" variant="soft" icon="i-mdi-filter-remove-outline" @click="clearFilters">{{
-          $t('common.actions.clear')
-        }}</UButton>
+        <UFormField :label="$t('master.clientTable.headers.domain')"><UInput v-model="domainFilter" /></UFormField>
+        <UFormField :label="$t('master.clientTable.headers.plan')"
+          ><USelect v-model="planFilter" :items="planItems"
+        /></UFormField>
+        <UFormField :label="$t('common.labels.status')"
+          ><USelect v-model="statusFilter" :items="statusItems"
+        /></UFormField>
+        <UFormField :label="$t('common.labels.dateFrom')"><UInput v-model="dateFrom" type="date" /></UFormField>
+        <UFormField :label="$t('common.labels.dateTo')"><UInput v-model="dateTo" type="date" /></UFormField>
+        <UFormField :label="$t('common.labels.sortBy')"><USelect v-model="sortField" :items="sortItems" /></UFormField>
+        <UFormField :label="$t('common.labels.order')"><USelect v-model="sortOrder" :items="orderItems" /></UFormField>
+        <div class="flex items-end">
+          <UButton color="neutral" variant="soft" icon="mdi:filter-remove-outline" @click="clearFilters">{{
+            $t('common.actions.clear')
+          }}</UButton>
+        </div>
       </div>
     </div>
 
     <UAlert
       v-if="loadFailed"
       color="error"
-      icon="i-mdi-alert-circle-outline"
+      icon="mdi:alert-circle-outline"
       :title="$t('common.messages.loadFailedTitle')"
       :description="$t('common.messages.loadFailedText')"
     >
       <template #actions>
-        <UButton icon="i-mdi-refresh" color="error" variant="soft" @click="refetch()">
+        <UButton icon="mdi:refresh" color="error" variant="soft" @click="refetch()">
           {{ $t('common.messages.retry') }}
         </UButton>
       </template>
     </UAlert>
 
+    <UEmpty v-else-if="!isRefetching && rows.length === 0" icon="mdi:domain-off" :title="$t('common.noResults')" />
+
     <div
       v-else
-      class="hidden overflow-x-auto rounded-[var(--topiqu-surface-radius)] border border-default sm:block"
+      class="hidden min-h-0 flex-1 overflow-auto rounded-(--topiqu-surface-radius) border border-default bg-default sm:block"
       :aria-busy="isRefetching"
     >
-      <UTable :data="rows" :columns="columns" :loading="isRefetching" :ui="{ base: 'min-w-[52rem] table-fixed' }">
+      <UTable
+        :data="rows"
+        :columns="columns"
+        :loading="isRefetching"
+        :ui="{
+          root: 'overflow-visible',
+          base: 'w-full min-w-[52rem] table-fixed',
+          thead: 'sticky top-0 z-20 bg-default shadow-[0_1px_0_var(--ui-border)]',
+        }"
+      >
         <template #name-header>
           <UButton color="neutral" variant="ghost" :trailingIcon="sortIcon('name')" @click="toggleSort('name')">
             {{ t('master.clientTable.headers.name') }}
@@ -109,18 +127,18 @@
           <div class="flex justify-end gap-2">
             <ClientUsers :clientId="row.original.id">
               <UButton
-                icon="i-mdi-account-multiple-outline"
+                icon="mdi:account-multiple-outline"
                 color="neutral"
                 variant="ghost"
                 :aria-label="$t('master.clientUsers.title')"
               />
             </ClientUsers>
             <ClientEdit :client="row.original" @saved="invalidateClients">
-              <UButton icon="i-mdi-pencil" color="neutral" variant="ghost" :aria-label="$t('common.actions.edit')" />
+              <UButton icon="mdi:pencil" color="neutral" variant="ghost" :aria-label="$t('common.actions.edit')" />
             </ClientEdit>
             <UButton
               v-if="!row.original.deletedAt"
-              icon="i-mdi-delete"
+              icon="mdi:delete"
               color="error"
               variant="ghost"
               :aria-label="$t('master.clientTable.actions.deleteDeactivate')"
@@ -128,7 +146,7 @@
             />
             <UButton
               v-else
-              icon="i-mdi-lock-open"
+              icon="mdi:lock-open"
               color="success"
               variant="ghost"
               :aria-label="$t('master.clientTable.actions.activate')"
@@ -139,7 +157,7 @@
       </UTable>
     </div>
 
-    <div v-if="!loadFailed" class="space-y-3 sm:hidden" :aria-busy="isRefetching">
+    <div v-if="!loadFailed && rows.length" class="space-y-3 sm:hidden" :aria-busy="isRefetching">
       <UCard v-for="client in rows" :key="client.id">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0 space-y-1">
@@ -163,7 +181,7 @@
           <div class="flex shrink-0 items-center gap-1">
             <ClientUsers :clientId="client.id">
               <UButton
-                icon="i-mdi-account-multiple-outline"
+                icon="mdi:account-multiple-outline"
                 color="neutral"
                 variant="ghost"
                 :aria-label="$t('master.clientUsers.title')"
@@ -171,7 +189,7 @@
             </ClientUsers>
             <UDropdownMenu :items="actionItems(client)">
               <UButton
-                icon="i-mdi-dots-vertical"
+                icon="mdi:dots-vertical"
                 color="neutral"
                 variant="ghost"
                 :aria-label="$t('master.clientTable.headers.actions')"
@@ -182,7 +200,7 @@
       </UCard>
     </div>
 
-    <div v-if="!loadFailed && totalPages > 1" class="flex justify-center">
+    <div v-if="!loadFailed && totalPages > 1" class="flex shrink-0 justify-center pb-2">
       <UPagination
         :page="page"
         :total="totalPages"
@@ -207,10 +225,10 @@
         <UButton color="neutral" variant="ghost" @click="deleteOpen = false">
           {{ t('master.clientTable.deleteDialog.cancel') }}
         </UButton>
-        <UButton color="warning" icon="i-mdi-archive-arrow-down" @click="performDelete('soft')">
+        <UButton color="warning" icon="mdi:archive-arrow-down" @click="performDelete('soft')">
           {{ t('master.clientTable.deleteDialog.deny') }}
         </UButton>
-        <UButton color="error" icon="i-mdi-delete-forever" @click="performDelete('hard')">
+        <UButton color="error" icon="mdi:delete-forever" @click="performDelete('hard')">
           {{ t('master.clientTable.deleteDialog.confirm') }}
         </UButton>
       </div>
@@ -232,6 +250,7 @@ const router = useRouter()
 type ClientRow = ClientSite & { userCount: number }
 
 const deleteOpen = shallowRef(false)
+const listOrigin = useTemplateRef<HTMLElement>('listOrigin')
 const deleteTarget = shallowRef<{ id: string; name: string } | null>(null)
 const limit = 20
 const page = shallowRef(Number(route.query.page) || 1)
@@ -288,7 +307,10 @@ const {
   refetch,
 } = useQuery({
   key: () => ['clients', 'list', listQuery.value],
-  query: () => requestFetch<{ data: ClientRow[]; total: number }>('/api/clients', { query: listQuery.value }),
+  query: () =>
+    requestFetch<{ data: ClientRow[]; total: number }>('/api/clients', {
+      query: listQuery.value,
+    }),
   placeholderData: (previous) => previous,
 })
 
@@ -313,8 +335,16 @@ const columns = computed<TableColumn<ClientRow>[]>(() => [
     header: t('master.clientTable.headers.domain'),
     meta: { class: { th: 'w-48', td: 'w-48 max-w-48' } },
   },
-  { id: 'status', header: t('common.labels.status'), meta: { class: { th: 'w-28', td: 'w-28' } } },
-  { accessorKey: 'plan', header: t('master.clientTable.headers.plan'), meta: { class: { th: 'w-32', td: 'w-32' } } },
+  {
+    id: 'status',
+    header: t('common.labels.status'),
+    meta: { class: { th: 'w-28', td: 'w-28' } },
+  },
+  {
+    accessorKey: 'plan',
+    header: t('master.clientTable.headers.plan'),
+    meta: { class: { th: 'w-32', td: 'w-32' } },
+  },
   {
     accessorKey: 'userCount',
     header: t('master.clientTable.headers.users'),
@@ -325,7 +355,11 @@ const columns = computed<TableColumn<ClientRow>[]>(() => [
     header: t('master.clientTable.headers.createdAt'),
     meta: { class: { th: 'w-36', td: 'w-36 whitespace-nowrap' } },
   },
-  { id: 'actions', header: t('master.clientTable.headers.actions'), meta: { class: { th: 'w-40', td: 'w-40' } } },
+  {
+    id: 'actions',
+    header: t('master.clientTable.headers.actions'),
+    meta: { class: { th: 'w-40', td: 'w-40' } },
+  },
 ])
 
 const toggleSort = (field: 'name' | 'domain' | 'plan' | 'createdAt') => {
@@ -338,21 +372,29 @@ const toggleSort = (field: 'name' | 'domain' | 'plan' | 'createdAt') => {
 const sortIcon = (field: string) =>
   sortField.value === field
     ? sortOrder.value === 'asc'
-      ? 'i-mdi-arrow-up'
-      : 'i-mdi-arrow-down'
-    : 'i-mdi-unfold-more-horizontal'
+      ? 'mdi:arrow-up'
+      : 'mdi:arrow-down'
+    : 'mdi:unfold-more-horizontal'
 
 const formatCreatedAt = (value: Date | string) =>
   new Date(value).toLocaleString(locale.value === 'cs' ? 'cs-CZ' : 'en-US')
 
 watch([debouncedFilter, debouncedDomain, planFilter, statusFilter, dateFrom, dateTo, sortField, sortOrder], () => {
   page.value = 1
-  router.replace({ query: { ...listQuery.value, page: undefined, limit: undefined } })
+  router.replace({
+    query: { ...listQuery.value, page: undefined, limit: undefined },
+  })
 })
 
 const setPage = (nextPage: number) => {
   page.value = Math.min(Math.max(nextPage, 1), Math.max(totalPages.value, 1))
   router.push({ query: { ...listQuery.value, limit: undefined } })
+  nextTick(() =>
+    listOrigin.value?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    }),
+  )
 }
 
 const clearFilters = () => {
@@ -376,7 +418,7 @@ const actionItems = (client: ClientRow): DropdownMenuItem[] => [
     label: client.deletedAt
       ? t('master.clientTable.actions.activate')
       : t('master.clientTable.actions.deleteDeactivate'),
-    icon: client.deletedAt ? 'i-mdi-lock-open' : 'i-mdi-delete',
+    icon: client.deletedAt ? 'mdi:lock-open' : 'mdi:delete',
     color: client.deletedAt ? 'success' : 'error',
     onSelect: () => (client.deletedAt ? restore(client.id) : del(client.id, client.name)),
   },
@@ -397,7 +439,10 @@ const performDelete = async (mode: 'hard' | 'soft') => {
       ),
     })
   } catch (error: any) {
-    toast.add({ color: 'error', title: error.data?.message || t('master.clientTable.messages.deleteFailed') })
+    toast.add({
+      color: 'error',
+      title: error.data?.message || t('master.clientTable.messages.deleteFailed'),
+    })
   } finally {
     deleteTarget.value = null
     await invalidateClients()
@@ -408,17 +453,26 @@ const restore = async (id: string) => {
   const confirmed = await confirm({
     title: t('master.clientTable.activateDialog.title'),
     message: t('master.clientTable.activateDialog.text'),
-    icon: 'i-mdi-help-circle-outline',
+    icon: 'mdi:help-circle-outline',
     confirmText: t('master.clientTable.activateDialog.confirm'),
     cancelText: t('master.clientTable.activateDialog.cancel'),
     variant: 'success',
   })
   if (!confirmed) return
   try {
-    await $fetch(`/api/clients/${id}` as `api/clients/:id`, { method: 'PATCH', body: { deletedAt: null } })
-    toast.add({ color: 'success', title: t('master.clientTable.messages.activated') })
+    await $fetch(`/api/clients/${id}` as `api/clients/:id`, {
+      method: 'PATCH',
+      body: { deletedAt: null },
+    })
+    toast.add({
+      color: 'success',
+      title: t('master.clientTable.messages.activated'),
+    })
   } catch (error: any) {
-    toast.add({ color: 'error', title: error.data?.message || t('master.clientTable.messages.activateFailed') })
+    toast.add({
+      color: 'error',
+      title: error.data?.message || t('master.clientTable.messages.activateFailed'),
+    })
   } finally {
     await invalidateClients()
   }

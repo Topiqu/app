@@ -7,7 +7,9 @@
       </p>
     </div>
 
-    <div class="flex items-center justify-between gap-3 rounded-xl border border-default bg-elevated/50 px-4 py-3">
+    <div
+      class="flex items-center justify-between gap-3 rounded-(--topiqu-surface-radius) border border-default bg-elevated/50 px-4 py-3"
+    >
       <span class="text-sm font-medium text-muted">{{ $t('common.preferences.currentPlan') }}</span>
       <UBadge color="primary" variant="soft" size="lg">{{ currentPlanLabel }}</UBadge>
     </div>
@@ -17,7 +19,7 @@
         <UInput
           v-model="filterQuery"
           class="w-full"
-          icon="i-mdi-magnify"
+          icon="mdi:magnify"
           :placeholder="$t('common.integrationsCatalog.search')"
         />
       </UFormField>
@@ -30,7 +32,7 @@
       v-for="section in visibleSections"
       :key="section.id"
       :class="[
-        'space-y-4 rounded-2xl border p-4 sm:p-5',
+        'space-y-4 rounded-(--topiqu-surface-radius) border p-4 sm:p-5',
         section.available && section.id === 'premium'
           ? 'border-amber-200 border-l-4 border-l-amber-400 bg-amber-50/60 dark:border-amber-400/20 dark:border-l-amber-400 dark:bg-amber-500/5'
           : section.available
@@ -53,9 +55,9 @@
           </div>
         </div>
         <span v-if="section.available" class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-success">
-          <Icon name="mdi:check-circle" class="size-4" />{{ $t('common.integrationsCatalog.includedInPlan') }}
+          <UIcon name="mdi:check-circle" class="size-4" />{{ $t('common.integrationsCatalog.includedInPlan') }}
         </span>
-        <UBadge v-else color="neutral" variant="outline" icon="i-mdi-lock-outline">
+        <UBadge v-else color="neutral" variant="outline" icon="mdi:lock-outline">
           {{ $t('common.integrationsCatalog.requiresPlan', { plan: section.label }) }}
         </UBadge>
       </div>
@@ -88,7 +90,7 @@
                 size="sm"
                 color="neutral"
                 variant="soft"
-                trailingIcon="i-mdi-arrow-right"
+                trailingIcon="mdi:arrow-right"
                 :label="$t('common.integrationsCatalog.open')"
                 @click="openDialog(card.id)"
               />
@@ -96,7 +98,7 @@
                 v-else
                 :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
                 size="sm"
-                icon="i-mdi-arrow-up-circle-outline"
+                icon="mdi:arrow-up-circle-outline"
                 :label="$t('common.integrationsCatalog.upgradeToPlan', { plan: section.label })"
               />
             </div>
@@ -105,7 +107,7 @@
           <template v-else-if="card.kind === 'api'">
             <div class="flex items-center gap-3 font-semibold text-highlighted">
               <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                <Icon name="mdi:key-chain-variant" class="size-5" />
+                <UIcon name="mdi:key-chain-variant" class="size-5" />
               </span>
               {{ $t('common.preferences.api.title') }}
             </div>
@@ -114,14 +116,14 @@
             </p>
             <ul class="mt-4 space-y-2 text-sm text-muted">
               <li v-for="benefit in apiBenefits" :key="benefit" class="flex gap-2">
-                <Icon name="mdi:check-circle-outline" class="mt-0.5 size-4 shrink-0 text-emerald-500" />{{ benefit }}
+                <UIcon name="mdi:check-circle-outline" class="mt-0.5 size-4 shrink-0 text-emerald-500" />{{ benefit }}
               </li>
             </ul>
             <div v-if="!apiKey" class="mt-5">
               <UButton
                 color="neutral"
                 variant="soft"
-                icon="i-mdi-plus"
+                icon="mdi:plus"
                 :label="$t('common.preferences.api.generate')"
                 :disabled="!section.available"
                 @click="$emit('generateApiKey')"
@@ -142,7 +144,7 @@
                       size="sm"
                       color="neutral"
                       variant="soft"
-                      :icon="apiVisible ? 'i-mdi-eye-off-outline' : 'i-mdi-eye-outline'"
+                      :icon="apiVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'"
                       :aria-label="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
                       :disabled="!section.available"
                       @click="$emit('toggleApi')"
@@ -152,7 +154,7 @@
                       size="sm"
                       color="neutral"
                       variant="soft"
-                      :icon="apiCopied ? 'i-mdi-check' : 'i-mdi-content-copy'"
+                      :icon="apiCopied ? 'mdi:check' : 'mdi:content-copy'"
                       :aria-label="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
                       :disabled="!section.available"
                       @click="$emit('copyApi')"
@@ -161,7 +163,7 @@
                 </div>
               </UFormField>
               <p class="flex items-start gap-2 text-xs text-muted">
-                <Icon name="mdi:shield-alert-outline" class="mt-0.5 size-4 shrink-0" />{{
+                <UIcon name="mdi:shield-alert-outline" class="mt-0.5 size-4 shrink-0" />{{
                   $t('common.preferences.api.warning')
                 }}
               </p>
@@ -169,7 +171,7 @@
                 size="sm"
                 color="neutral"
                 variant="soft"
-                icon="i-mdi-refresh"
+                icon="mdi:refresh"
                 :label="$t('common.preferences.api.revoke')"
                 :disabled="!section.available"
                 @click="$emit('generateApiKey')"
@@ -199,7 +201,7 @@
 
     <UEmpty
       v-if="visibleSections.length === 0"
-      icon="i-mdi-puzzle-remove-outline"
+      icon="mdi:puzzle-remove-outline"
       :title="$t('common.integrationsCatalog.noResults')"
       :description="$t('common.integrationsCatalog.noResultsDescription')"
     />
@@ -289,7 +291,7 @@
             @update:modelValue="$emit('update:gamNetworkCode', String($event))"
           />
           <p class="flex items-start gap-2 text-xs text-muted">
-            <Icon name="mdi:shield-check-outline" class="mt-0.5 size-4 shrink-0" />{{
+            <UIcon name="mdi:shield-check-outline" class="mt-0.5 size-4 shrink-0" />{{
               $t('common.integrationsCatalog.gamConsentNote')
             }}
           </p>
@@ -350,7 +352,12 @@ const props = defineProps<{
   currentPlan: 'BASIC' | 'PRO' | 'PREMIUM' | 'CUSTOM'
   linkedinMode?: 'HitL' | 'FullAuto'
   linkedinType?: 'pages' | 'personal'
-  linkedinBrandProfile?: { tone: string; audience: string; doList: string[]; dontList: string[] }
+  linkedinBrandProfile?: {
+    tone: string
+    audience: string
+    doList: string[]
+    dontList: string[]
+  }
 }>()
 
 const localePath = useLocalePath()
@@ -361,7 +368,14 @@ defineEmits<{
   'update:gamNetworkCode': [value: string]
   'update:linkedinMode': [value: 'HitL' | 'FullAuto']
   'update:linkedinType': [value: 'pages' | 'personal']
-  'update:linkedinBrandProfile': [value: { tone: string; audience: string; doList: string[]; dontList: string[] }]
+  'update:linkedinBrandProfile': [
+    value: {
+      tone: string
+      audience: string
+      doList: string[]
+      dontList: string[]
+    },
+  ]
   generateApiKey: []
   toggleApi: []
   copyApi: []
@@ -410,7 +424,10 @@ const planFilter = shallowRef<'available' | 'all' | 'pro' | 'premium'>(
   props.currentPlan === 'BASIC' ? 'all' : 'available',
 )
 const planFilterItems = computed(() => [
-  { value: 'available', label: $t('common.integrationsCatalog.availableForMe') },
+  {
+    value: 'available',
+    label: $t('common.integrationsCatalog.availableForMe'),
+  },
   { value: 'all', label: $t('common.integrationsCatalog.allPlans') },
   { value: 'pro', label: 'Pro' },
   { value: 'premium', label: 'Premium' },

@@ -13,7 +13,7 @@
     <template #footer>
       <div class="flex w-full justify-end gap-2">
         <UButton color="neutral" variant="ghost" @click="cancel">{{ $t('common.close') }}</UButton>
-        <UButton icon="i-mdi-check" @click="confirm">{{ $t('common.actions.saveChanges') }}</UButton>
+        <UButton icon="mdi:check" @click="confirm">{{ $t('common.actions.saveChanges') }}</UButton>
       </div>
     </template>
   </UModal>

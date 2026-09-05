@@ -8,7 +8,7 @@
         :disabled="disabled || isProcessing"
         :preview="true"
         position="inside"
-        icon="i-mdi-cloud-upload-outline"
+        icon="mdi:cloud-upload-outline"
         :label="previewUrl ? $t('common.actions.change') : $t('common.actions.clickToUpload')"
         :description="`${$t('common.labels.orDrag')} · ${$t('common.labels.pasteImage')} (Ctrl+V)`"
         reset
@@ -50,7 +50,7 @@
     </UFormField>
 
     <div v-if="previewUrl" class="mt-2 flex items-center justify-end gap-2">
-      <UButton type="button" color="neutral" variant="soft" size="sm" icon="i-mdi-refresh" @click="openPicker">
+      <UButton type="button" color="neutral" variant="soft" size="sm" icon="mdi:refresh" @click="openPicker">
         {{ $t('common.actions.change') }}
       </UButton>
       <UButton
@@ -59,7 +59,7 @@
         variant="soft"
         size="sm"
         square
-        icon="i-mdi-delete"
+        icon="mdi:delete"
         :aria-label="$t('common.remove')"
         @click="cancelUpload"
       />
@@ -122,7 +122,8 @@ watch(
   (val) => (previewUrl.value = val || null),
 )
 
-const formatBytes = (bytes: number) => (bytes < 1e6 ? `${Math.round(bytes / 1e3)} kB` : `${(bytes / 1e6).toFixed(1)} MB`)
+const formatBytes = (bytes: number) =>
+  bytes < 1e6 ? `${Math.round(bytes / 1e3)} kB` : `${(bytes / 1e6).toFixed(1)} MB`
 
 const constraints = computed(() => {
   const defaults =
@@ -200,7 +201,7 @@ const handleFile = async (file: File) => {
     selectedFile.value = null
     toast.add({
       color: 'error',
-      icon: 'i-mdi-image-off-outline',
+      icon: 'mdi:image-off-outline',
       title: $t('common.upload.rejected'),
       description: reason,
       duration: 8000,
@@ -227,7 +228,7 @@ const handleFile = async (file: File) => {
   } catch (e: any) {
     toast.add({
       color: 'error',
-      icon: 'i-mdi-cloud-off-outline',
+      icon: 'mdi:cloud-off-outline',
       title: $t('common.avatar.uploadError'),
       description: e?.data?.message || e?.message,
       duration: 8000,

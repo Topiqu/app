@@ -1,6 +1,6 @@
 <template>
   <UButton
-    icon="i-mdi-logout"
+    icon="mdi:logout"
     :title="$t('common.auth.logout')"
     :aria-label="$t('common.auth.logout')"
     color="error"

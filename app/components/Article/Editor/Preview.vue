@@ -17,7 +17,7 @@
         :key="name"
         class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700! bg-white dark:text-gray-200! dark:bg-gray-800 border-gray-200 dark:border-gray-600"
       >
-        <Icon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />{{ name }}
+        <UIcon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />{{ name }}
       </span>
     </div>
 
@@ -34,7 +34,7 @@
 
     <div v-if="filledSources.length" class="pt-6 border-t border-gray-200 dark:border-gray-700">
       <h2 class="flex items-center gap-2 text-lg font-medium text-gray-700 dark:text-gray-300">
-        <Icon name="mdi:book-open-page-variant" class="w-5 h-5 text-blue-500 dark:text-blue-400" aria-hidden="true" />
+        <UIcon name="mdi:book-open-page-variant" class="w-5 h-5 text-blue-500 dark:text-blue-400" aria-hidden="true" />
         {{ $t('articles.columns.sources') }}
       </h2>
       <ul class="mt-4 flex flex-col gap-2 pl-1 list-none">

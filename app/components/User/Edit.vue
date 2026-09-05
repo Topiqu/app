@@ -104,7 +104,7 @@ const confirmClose = async () => {
   const r = await confirm({
     title: t('common.messages.closeConfirmTitle'),
     message: t('common.messages.closeConfirmText'),
-    icon: 'i-mdi-alert-outline',
+    icon: 'mdi:alert-outline',
     confirmText: t('common.messages.closeConfirmButton'),
     cancelText: t('common.messages.deleteCancel'),
     variant: 'danger',

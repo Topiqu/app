@@ -21,11 +21,11 @@ const color = computed(() => {
 const icon = computed(() => {
   switch (status) {
     case 'published':
-      return 'i-mdi-check-circle-outline'
+      return 'mdi:check-circle-outline'
     case 'archived':
-      return 'i-mdi-archive-outline'
+      return 'mdi:archive-outline'
     default:
-      return 'i-mdi-circle-edit-outline'
+      return 'mdi:circle-edit-outline'
   }
 })
 

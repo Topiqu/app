@@ -5,7 +5,7 @@
     <template #body>
       <div class="flex flex-col gap-4">
         <UFormField :label="$t('master.userList.searchPlaceholder')" :ui="{ label: 'sr-only' }">
-          <UInput v-model="searchQuery" :placeholder="$t('master.userList.searchPlaceholder')" icon="i-mdi-search" />
+          <UInput v-model="searchQuery" :placeholder="$t('master.userList.searchPlaceholder')" icon="mdi:search" />
         </UFormField>
 
         <UProgress v-if="fetching && !users?.length" />
@@ -29,18 +29,18 @@
                       </UBadge>
                     </div>
                     <span class="mt-1 break-all text-sm text-muted">
-                      <UIcon size="16" name="i-mdi-email-outline" class="inline-block mr-1 align-text-bottom" />
+                      <UIcon size="16" name="mdi:email-outline" class="inline-block mr-1 align-text-bottom" />
                       {{ user.email ?? $t('master.userList.notAvailable') }}
                     </span>
 
                     <div class="flex items-center gap-3 mt-2 text-xs text-muted">
-                      <UBadge v-if="user.clientSite?.name" color="neutral" variant="soft" icon="i-mdi-domain">
+                      <UBadge v-if="user.clientSite?.name" color="neutral" variant="soft" icon="mdi:domain">
                         {{ user.clientSite.name }}
                       </UBadge>
                       <UBadge
                         color="neutral"
                         variant="soft"
-                        icon="i-mdi-comment-outline"
+                        icon="mdi:comment-outline"
                         :title="$t('master.userList.labels.comments')"
                       >
                         {{ user._count?.comments || 0 }}
@@ -55,7 +55,7 @@
                     v-if="user.deletedAt === null"
                     color="error"
                     variant="solid"
-                    icon="i-mdi-lock"
+                    icon="mdi:lock"
                     square
                     :aria-label="$t('common.actions.blockUser')"
                     :title="$t('common.actions.blockUser')"
@@ -65,7 +65,7 @@
                     v-else
                     color="warning"
                     variant="solid"
-                    icon="i-mdi-lock-open"
+                    icon="mdi:lock-open"
                     square
                     :aria-label="$t('common.actions.restoreUser')"
                     :title="$t('common.actions.restoreUser')"
@@ -76,7 +76,7 @@
             </UCard>
           </div>
           <div ref="sentinel" class="h-4"></div>
-          <UEmpty v-if="!users?.length" icon="i-mdi-account-off-outline" :title="$t('master.userList.noUsers')" />
+          <UEmpty v-if="!users?.length" icon="mdi:account-off-outline" :title="$t('master.userList.noUsers')" />
           <UProgress v-if="fetching && users.length" />
         </div>
       </div>
@@ -170,7 +170,7 @@ const del = async (id: string | undefined) => {
   const r = await confirm({
     title: t('master.userList.blockDialog.title'),
     message: t('master.userList.blockDialog.text'),
-    icon: 'i-mdi-alert-outline',
+    icon: 'mdi:alert-outline',
     confirmText: t('master.userList.blockDialog.confirm'),
     cancelText: t('master.userList.blockDialog.cancel'),
     variant: 'danger',

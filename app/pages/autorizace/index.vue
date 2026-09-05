@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-8">
+  <div class="flex min-h-0 flex-1 items-center justify-center px-4 py-8 [@media(max-height:42rem)]:items-start">
     <div class="w-full max-w-md">
       <AuthForm :mode="initialMode" :redirectTo="invitationRedirect" />
     </div>

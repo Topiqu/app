@@ -13,7 +13,7 @@
           v-if="dirty"
           role="status"
           aria-live="polite"
-          class="pointer-events-auto flex w-full max-w-xl items-center gap-3 rounded-2xl border border-default bg-default/85 p-2 pl-4 shadow-xl ring-1 ring-warning/15 backdrop-blur-md sm:w-auto sm:rounded-full"
+          class="pointer-events-auto flex w-full max-w-xl items-center gap-3 rounded-(--topiqu-surface-radius) border border-default bg-default/85 p-2 pl-4 shadow-xl ring-1 ring-warning/15 backdrop-blur-md sm:w-auto sm:rounded-full"
         >
           <span class="relative flex size-2.5 shrink-0">
             <span
@@ -36,7 +36,7 @@
             <UButton color="neutral" variant="ghost" size="sm" :disabled="loading" @click="emit('reset')">
               {{ $t('common.actions.reset') }}
             </UButton>
-            <UButton size="sm" icon="i-mdi-content-save-outline" :loading @click="emit('save')">
+            <UButton size="sm" icon="mdi:content-save-outline" :loading @click="emit('save')">
               {{ $t('common.actions.saveChanges') }}
             </UButton>
           </span>

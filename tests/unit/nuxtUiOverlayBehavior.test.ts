@@ -2,8 +2,8 @@
 
 import { enableAutoUnmount } from '@vue/test-utils'
 import { defineComponent, nextTick, ref } from 'vue'
-import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import UModal from '../../node_modules/@nuxt/ui/dist/runtime/components/Modal.vue'
 import UButton from '../../node_modules/@nuxt/ui/dist/runtime/components/Button.vue'

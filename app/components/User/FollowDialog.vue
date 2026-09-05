@@ -13,7 +13,7 @@
         />
         <UEmpty
           v-else-if="!data?.length"
-          icon="i-mdi-account-off-outline"
+          icon="mdi:account-off-outline"
           :description="type === 'followers' ? $t('profile.noFollowers') : $t('profile.noFollowing')"
         />
         <div v-else class="grid gap-4">

@@ -19,28 +19,20 @@ describe('image retry URLs', () => {
     expect(canCacheBustImageUrl('//cdn.test/image.webp')).toBe(false)
     expect(canCacheBustImageUrl('/api/private-image?id=1')).toBe(false)
     expect(canCacheBustImageUrl('https://cdn.test/image.webp?w=640')).toBe(true)
-    expect(canCacheBustImageUrl('/uploads/image.webp')).toBe(true)
+    expect(canCacheBustImageUrl('/uploads/image.webp')).toBe(false)
   })
 
-  it('retries an optimized source before falling back to the stable original', async () => {
-    vi.useFakeTimers()
+  it('falls back immediately instead of repeatedly reloading a failed optimized source', () => {
     const source = ref('https://cdn.test/optimized.webp')
     const original = ref('https://uploads.test/original.jpg')
     const scope = effectScope()
     const state = scope.run(() => useImageRetry(source, original))!
 
     expect(state.currentSrc.value).toBe(source.value)
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      state.handleError()
-      expect(state.isRetrying.value).toBe(true)
-      await vi.advanceTimersByTimeAsync(500 * 2 ** (attempt - 1))
-      expect(state.currentSrc.value).toBe(buildImageRetryUrl(source.value, attempt))
-    }
-
     state.handleError()
     expect(state.currentSrc.value).toBe(original.value)
     expect(state.usingOriginal.value).toBe(true)
-    expect(state.isRetrying.value).toBe(true)
+    expect(state.isRetrying.value).toBe(false)
     scope.stop()
   })
 

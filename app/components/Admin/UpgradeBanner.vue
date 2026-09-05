@@ -3,7 +3,7 @@
     v-if="target"
     color="primary"
     variant="soft"
-    icon="i-mdi-rocket-launch"
+    icon="mdi:rocket-launch"
     :title="$t(`admin.upgrade.${i18nKey}.title`)"
     :description="$t(`admin.upgrade.${i18nKey}.description`)"
     :ui="{ root: 'relative pr-12' }"
@@ -12,7 +12,7 @@
       class="absolute right-3 top-3"
       color="neutral"
       variant="ghost"
-      icon="i-mdi-close"
+      icon="mdi:close"
       square
       size="sm"
       :aria-label="$t('common.close')"
@@ -21,7 +21,7 @@
     <template #description>
       <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-1">
         <li v-for="feature in features" :key="feature" class="flex items-start gap-2 text-sm leading-relaxed">
-          <UIcon size="16" name="i-mdi-check-circle" class="mt-0.5 shrink-0" />
+          <UIcon size="16" name="mdi:check-circle" class="mt-0.5 shrink-0" />
           <span>{{ feature }}</span>
         </li>
       </ul>
@@ -31,7 +31,7 @@
         <UButton
           color="primary"
           variant="solid"
-          icon="i-mdi-star-four-points"
+          icon="mdi:star-four-points"
           :loading="loading"
           :disabled="loading"
           @click="upgrade"

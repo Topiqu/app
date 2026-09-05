@@ -14,7 +14,7 @@
 const theme = useThemeStore()
 const hydrated = shallowRef(false)
 const icon = computed(() =>
-  hydrated.value ? (theme.isDark ? 'i-mdi-weather-sunny' : 'i-mdi-weather-night') : 'i-mdi-monitor',
+  hydrated.value ? (theme.isDark ? 'mdi:weather-sunny' : 'mdi:weather-night') : 'mdi:monitor',
 )
 
 onMounted(() => (hydrated.value = true))

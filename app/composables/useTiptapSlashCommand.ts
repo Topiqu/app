@@ -15,40 +15,40 @@ export function useTiptapSlashCommand(handlers: SlashCommandHandlers) {
     [
       {
         title: 'Heading 1',
-        icon: 'i-mdi-format-header-1',
+        icon: 'mdi:format-header-1',
         command: ({ editor, range }: any) =>
           editor.chain().focus().deleteRange(range).setNode('heading', { level: 1 }).run(),
       },
       {
         title: 'Heading 2',
-        icon: 'i-mdi-format-header-2',
+        icon: 'mdi:format-header-2',
         command: ({ editor, range }: any) =>
           editor.chain().focus().deleteRange(range).setNode('heading', { level: 2 }).run(),
       },
       {
         title: 'Heading 3',
-        icon: 'i-mdi-format-header-3',
+        icon: 'mdi:format-header-3',
         command: ({ editor, range }: any) =>
           editor.chain().focus().deleteRange(range).setNode('heading', { level: 3 }).run(),
       },
       {
         title: 'Bullet List',
-        icon: 'i-mdi-format-list-bulleted',
+        icon: 'mdi:format-list-bulleted',
         command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).toggleBulletList().run(),
       },
       {
         title: 'Numbered List',
-        icon: 'i-mdi-format-list-numbered',
+        icon: 'mdi:format-list-numbered',
         command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
       },
       {
         title: 'Quote',
-        icon: 'i-mdi-format-quote-open',
+        icon: 'mdi:format-quote-open',
         command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).setBlockquote().run(),
       },
       {
         title: 'Image',
-        icon: 'i-mdi-image',
+        icon: 'mdi:image',
         command: ({ editor, range }: any) => {
           editor.chain().focus().deleteRange(range).run()
           handlers.openImagePrompt()
@@ -56,7 +56,7 @@ export function useTiptapSlashCommand(handlers: SlashCommandHandlers) {
       },
       {
         title: 'YouTube',
-        icon: 'i-mdi-youtube',
+        icon: 'mdi:youtube',
         command: ({ editor, range }: any) => {
           editor.chain().focus().deleteRange(range).run()
           handlers.openYoutubePrompt()
@@ -64,7 +64,7 @@ export function useTiptapSlashCommand(handlers: SlashCommandHandlers) {
       },
       {
         title: 'Poll',
-        icon: 'i-mdi-poll',
+        icon: 'mdi:poll',
         command: ({ editor, range }: any) => {
           editor.chain().focus().deleteRange(range).run()
           handlers.insertPoll()

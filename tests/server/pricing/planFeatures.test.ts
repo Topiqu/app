@@ -231,11 +231,7 @@ describe('syncSeoAutopilot', () => {
 
   it('keeps the opt-in when both required features remain active', async () => {
     const updateMany = vi.fn()
-    await syncSeoAutopilot(
-      { searchConsoleConnection: { updateMany } } as any,
-      'cs1',
-      ['AI', 'SEARCH_CONSOLE'],
-    )
+    await syncSeoAutopilot({ searchConsoleConnection: { updateMany } } as any, 'cs1', ['AI', 'SEARCH_CONSOLE'])
     expect(updateMany).not.toHaveBeenCalled()
   })
 })

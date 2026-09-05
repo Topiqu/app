@@ -21,9 +21,9 @@ export interface TokenPackView {
 }
 
 export const PACK_PRESENTATION: Record<string, TokenPackPresentation> = {
-  '10000': { label: 'common.tokens.pack10k', icon: FALLBACK_PACK_ICON },
-  '25000': { label: 'common.tokens.pack25k', icon: 'mdi:star-half-full' },
-  '50000': { label: 'common.tokens.pack50k', icon: 'mdi:diamond-stone' },
+  '10000': { label: 'common.tokens.pack10k', icon: 'mdi:package-variant-closed' },
+  '25000': { label: 'common.tokens.pack25k', icon: 'mdi:layers-triple-outline' },
+  '50000': { label: 'common.tokens.pack50k', icon: 'mdi:lightning-bolt-outline' },
   '75000': { label: 'common.tokens.pack75k', icon: 'mdi:rocket-launch', featured: true },
 }
 

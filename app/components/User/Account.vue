@@ -7,7 +7,7 @@
       :label="auth.user.name"
       :aria-label="auth.user.name || $t('common.user.viewProfile')"
       :title="auth.user.name"
-      trailingIcon="i-mdi-chevron-down"
+      trailingIcon="mdi:chevron-down"
       :ui="{ label: 'hidden max-w-40 truncate sm:block' }"
     >
       <template #leading>
@@ -18,9 +18,9 @@
       v-else
       color="neutral"
       variant="ghost"
-      icon="i-mdi-account-circle"
+      icon="mdi:account-circle"
       :label="$t('common.auth.login')"
-      trailingIcon="i-mdi-chevron-down"
+      trailingIcon="mdi:chevron-down"
     />
 
     <template #content>
@@ -52,17 +52,17 @@
 
               <div class="grid grid-cols-3 divide-x divide-default rounded-lg bg-elevated p-2 text-center">
                 <div class="min-w-0 px-1">
-                  <UIcon name="i-mdi-thumb-up-outline" size="18" />
+                  <UIcon name="mdi:thumb-up-outline" size="18" />
                   <strong class="block text-sm tabular-nums text-highlighted">{{ userData.likesCount || 0 }}</strong>
                   <span class="block truncate text-xs text-muted">{{ $t('common.user.likes') }}</span>
                 </div>
                 <div class="min-w-0 px-1">
-                  <UIcon name="i-mdi-thumb-down-outline" size="18" />
+                  <UIcon name="mdi:thumb-down-outline" size="18" />
                   <strong class="block text-sm tabular-nums text-highlighted">{{ userData.dislikesCount || 0 }}</strong>
                   <span class="block truncate text-xs text-muted">{{ $t('common.user.dislikes') }}</span>
                 </div>
                 <div class="min-w-0 px-1">
-                  <UIcon name="i-mdi-comment-outline" size="18" />
+                  <UIcon name="mdi:comment-outline" size="18" />
                   <strong class="block text-sm tabular-nums text-highlighted">{{ userData.commentsCount || 0 }}</strong>
                   <span class="block truncate text-xs text-muted">{{ $t('common.user.comments') }}</span>
                 </div>
@@ -76,7 +76,7 @@
               <div class="flex items-center gap-2 border-t border-default pt-3">
                 <UButton
                   :to="localePath({ name: 'uzivatel' })"
-                  icon="i-mdi-account-outline"
+                  icon="mdi:account-outline"
                   color="neutral"
                   variant="soft"
                   :ui="{ base: 'flex-1 justify-center' }"
@@ -95,7 +95,7 @@
           <span class="sr-only">{{ $t('common.loading') }}</span>
         </div>
 
-        <div v-else class="flex flex-col gap-4 text-center">
+        <div v-else class="flex flex-col gap-2 p-4 text-center">
           <AppMedia
             src="/app-logo.png"
             :alt="$t('articles.userMenu.companyLogoAlt')"
@@ -104,7 +104,7 @@
             sizes="80px"
             containerClass="mx-auto size-20 bg-transparent"
           />
-          <div>
+          <div class="mb-2">
             <h3 class="text-lg font-semibold text-highlighted">{{ $t('common.auth.welcomeBack') }}</h3>
             <p class="text-sm text-muted">{{ $t('common.auth.loginPrompt') }}</p>
           </div>
@@ -169,11 +169,11 @@ const planColor = computed(() =>
 )
 const planIcon = computed(() =>
   clientData.value?.plan === 'PREMIUM'
-    ? 'i-mdi-crown'
+    ? 'mdi:crown'
     : clientData.value?.plan === 'PRO'
-      ? 'i-mdi-star'
+      ? 'mdi:star'
       : clientData.value?.plan === 'CUSTOM'
-        ? 'i-mdi-diamond'
+        ? 'mdi:diamond'
         : undefined,
 )
 

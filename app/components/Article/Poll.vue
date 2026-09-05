@@ -5,7 +5,7 @@
       <UButton
         :color="selectedOption === opt.id ? 'primary' : 'neutral'"
         :variant="selectedOption === opt.id ? 'soft' : 'ghost'"
-        :icon="selectedOption === opt.id ? 'i-mdi-check-circle' : 'i-mdi-circle-outline'"
+        :icon="selectedOption === opt.id ? 'mdi:check-circle' : 'mdi:circle-outline'"
         :disabled="hasVoted"
         class="w-full"
         :aria-pressed="selectedOption === opt.id"

@@ -51,25 +51,40 @@ export const articleReadingProgress = (
 export const useArticleScrollContext = (content: Ref<HTMLElement | null>, hero: Ref<HTMLElement | null>) => {
   const state = useArticleScrollState()
   const scrollContainer = shallowRef<HTMLElement | null>(null)
+  let animationFrame: number | null = null
 
   const collectHeadings = () => {
     if (!content.value) return
     const usedIds = new Set<string>()
-    state.value.headings = Array.from(content.value.querySelectorAll<HTMLElement>('h1, h2, h3')).map(
-      (heading, index) => {
-        const baseId = heading.id || normalizeHeadingId(heading.textContent || '', index)
-        let id = baseId
-        let duplicate = 2
-        while (usedIds.has(id)) id = `${baseId}-${duplicate++}`
-        usedIds.add(id)
-        heading.id = id
-        return {
-          id,
-          level: Number(heading.tagName.slice(1)) as 1 | 2 | 3,
-          text: heading.textContent?.trim() || id,
-        }
-      },
-    )
+    const headings = Array.from(content.value.querySelectorAll<HTMLElement>('h1, h2, h3')).map((heading, index) => {
+      const baseId = heading.id || normalizeHeadingId(heading.textContent || '', index)
+      let id = baseId
+      let duplicate = 2
+      while (usedIds.has(id)) id = `${baseId}-${duplicate++}`
+      usedIds.add(id)
+      heading.id = id
+      return {
+        id,
+        level: Number(heading.tagName.slice(1)) as 1 | 2 | 3,
+        text: heading.textContent?.trim() || id,
+      }
+    })
+    const unchanged =
+      headings.length === state.value.headings.length &&
+      headings.every((heading, index) => {
+        const current = state.value.headings[index]
+        return current?.id === heading.id && current.level === heading.level && current.text === heading.text
+      })
+    if (!unchanged) state.value.headings = headings
+  }
+
+  const scheduleUpdate = (collect = false) => {
+    if (!import.meta.client || animationFrame !== null) return
+    animationFrame = requestAnimationFrame(() => {
+      animationFrame = null
+      if (collect) collectHeadings()
+      update()
+    })
   }
 
   const update = () => {
@@ -106,12 +121,17 @@ export const useArticleScrollContext = (content: Ref<HTMLElement | null>, hero: 
     update()
   })
   useResizeObserver(content, () => {
-    collectHeadings()
-    update()
+    scheduleUpdate(true)
   })
-  useEventListener(() => scrollContainer.value ?? window, 'scroll', update, { passive: true })
+  useEventListener(
+    () => scrollContainer.value ?? window,
+    'scroll',
+    () => scheduleUpdate(),
+    { passive: true },
+  )
 
   onUnmounted(() => {
+    if (animationFrame !== null) cancelAnimationFrame(animationFrame)
     state.value = { activeId: '', headings: [], progress: 0, showHeader: false }
   })
 

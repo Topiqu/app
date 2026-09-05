@@ -8,7 +8,7 @@
         <UCard>
           <div class="flex flex-col gap-6">
             <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
-              <UIcon size="20" name="i-mdi-information-outline" />
+              <UIcon size="20" name="mdi:information-outline" />
               {{ $t('master.clientCreate.sections.basic') }}
             </h3>
             <UFormField :label="$t('master.clientCreate.fields.name.label')">
@@ -64,7 +64,7 @@
         <UCard>
           <div class="flex flex-col gap-6">
             <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
-              <UIcon size="20" name="i-mdi-target" />
+              <UIcon size="20" name="mdi:target" />
               {{ $t('master.clientCreate.sections.seo') }}
             </h3>
             <UFormField :label="$t('master.clientCreate.fields.description.label')">
@@ -104,7 +104,7 @@
         <UCard>
           <div class="flex flex-col gap-6">
             <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
-              <UIcon size="20" name="i-mdi-account-key-outline" />
+              <UIcon size="20" name="mdi:account-key-outline" />
               {{ $t('master.clientCreate.sections.admin') }}
             </h3>
             <UFormField :label="$t('master.clientCreate.fields.adminEmail.label')">
@@ -134,7 +134,7 @@
         <UCard>
           <div class="flex flex-col gap-6">
             <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
-              <UIcon size="20" name="i-mdi-credit-card-outline" />
+              <UIcon size="20" name="mdi:credit-card-outline" />
               {{ $t('master.clientCreate.sections.subscription') }}
             </h3>
             <UFormField :label="$t('master.clientCreate.fields.plan.label')">
@@ -178,7 +178,7 @@
         <UCard v-if="newClient.tokenLimit > 0">
           <div class="flex flex-col gap-6">
             <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
-              <UIcon size="20" name="i-mdi-robot" />
+              <UIcon size="20" name="mdi:robot" />
               {{ $t('master.clientCreate.aiSettings.title') }}
             </h3>
             <UFormField :label="$t('master.clientCreate.aiSettings.name.label')">
@@ -235,7 +235,7 @@
               size="sm"
               color="primary"
               variant="solid"
-              icon="i-mdi-content-copy"
+              icon="mdi:content-copy"
               :aria-label="t('master.clientCreate.messages.copyPassword')"
               :title="t('master.clientCreate.messages.copyPassword')"
               @click="copyPassword"

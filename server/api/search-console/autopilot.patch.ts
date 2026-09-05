@@ -18,7 +18,10 @@ export default defineEventHandler(async (event) => {
   })
   const active = new Set(site?.features.map((row) => row.feature.code) ?? [])
   if (enabled && (!site || !['PREMIUM', 'CUSTOM'].includes(site.plan) || !active.has('SEARCH_CONSOLE')))
-    throw createError({ statusCode: 403, message: 'Search Console Autopilot requires an active Search Console feature' })
+    throw createError({
+      statusCode: 403,
+      message: 'Search Console Autopilot requires an active Search Console feature',
+    })
   if (enabled && !active.has('AI'))
     throw createError({ statusCode: 409, message: 'Enable AI before enabling Search Console Autopilot' })
 

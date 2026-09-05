@@ -16,7 +16,7 @@
       {{ site.description }}
     </p>
 
-    <UBadge color="neutral" variant="soft" icon="i-mdi-clock-outline">
+    <UBadge color="neutral" variant="soft" icon="mdi:clock-outline">
       {{ $t('articles.empty.badge') }}
     </UBadge>
 

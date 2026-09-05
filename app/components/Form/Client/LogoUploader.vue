@@ -5,7 +5,7 @@
       color="neutral"
       variant="ghost"
       :aria-label="editLabel"
-      class="group relative justify-center overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default p-0 hover:bg-transparent"
+      class="group relative justify-center overflow-hidden rounded-(--topiqu-surface-radius) border border-default p-0 hover:bg-transparent"
       :class="[isFavicon ? 'size-24' : 'h-20 w-48', imageUrl ? 'transparency-grid' : 'bg-elevated']"
       @click="openEditor"
     >
@@ -19,37 +19,24 @@
         :width="isFavicon ? 96 : 192"
         containerClass="size-full bg-transparent"
       />
-      <Icon v-else name="mdi:image-plus-outline" class="size-9 text-dimmed" />
+      <UIcon v-else name="mdi:image-plus-outline" class="size-9 text-dimmed" />
       <span
         class="absolute inset-0 grid place-items-center bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
       >
-        <Icon name="mdi:image-edit-outline" class="size-7" />
+        <UIcon name="mdi:image-edit-outline" class="size-7" />
       </span>
     </UButton>
 
     <div class="flex flex-wrap gap-2">
-      <UButton color="neutral" variant="soft" size="sm" icon="i-mdi-image-edit-outline" @click="openEditor">
+      <UButton color="neutral" variant="soft" size="sm" icon="mdi:image-edit-outline" @click="openEditor">
         {{ imageUrl ? editLabel : $t('common.actions.clickToUpload') }}
       </UButton>
-      <UButton
-        v-if="imageUrl"
-        color="error"
-        variant="soft"
-        size="sm"
-        icon="i-mdi-delete-outline"
-        @click="removeAsset"
-      >
+      <UButton v-if="imageUrl" color="error" variant="soft" size="sm" icon="mdi:delete-outline" @click="removeAsset">
         {{ removeLabel }}
       </UButton>
     </div>
 
-    <UModal
-      v-model:open="open"
-      scrollable
-      :title="editorTitle"
-      :dismissible="!busy"
-      :ui="{ content: 'max-w-lg' }"
-    >
+    <UModal v-model:open="open" scrollable :title="editorTitle" :dismissible="!busy" :ui="{ content: 'max-w-lg' }">
       <template #body>
         <div class="flex flex-col gap-5">
           <UFileUpload
@@ -57,7 +44,7 @@
             v-model="pickedFile"
             size="lg"
             accept="image/jpeg,image/png,image/webp,image/gif"
-            icon="i-mdi-cloud-upload-outline"
+            icon="mdi:cloud-upload-outline"
             :label="$t('common.avatar.chooseImage')"
             :description="$t('common.avatar.requirements')"
             :preview="false"
@@ -75,7 +62,7 @@
                 class="flex-1 justify-center"
                 :color="displayMode === 'contain' ? 'primary' : 'neutral'"
                 :variant="displayMode === 'contain' ? 'soft' : 'ghost'"
-                icon="i-mdi-fit-to-screen-outline"
+                icon="mdi:fit-to-screen-outline"
                 :aria-pressed="displayMode === 'contain'"
                 @click="displayMode = 'contain'"
               >
@@ -86,7 +73,7 @@
                 class="flex-1 justify-center"
                 :color="displayMode === 'cover' ? 'primary' : 'neutral'"
                 :variant="displayMode === 'cover' ? 'soft' : 'ghost'"
-                icon="i-mdi-crop"
+                icon="mdi:crop"
                 :aria-pressed="displayMode === 'cover'"
                 @click="displayMode = 'cover'"
               >
@@ -97,7 +84,7 @@
             <div class="flex flex-col items-center gap-3">
               <div
                 ref="cropArea"
-                class="transparency-grid relative max-w-full touch-none overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default"
+                class="transparency-grid relative max-w-full touch-none overflow-hidden rounded-(--topiqu-surface-radius) border border-default"
                 :style="{ width: `${viewportWidth}px`, height: `${viewportHeight}px` }"
                 :class="isSwiping ? 'cursor-grabbing' : 'cursor-grab'"
               >
@@ -109,7 +96,7 @@
                   :style="previewStyle"
                 />
                 <div v-if="busy" class="absolute inset-0 grid place-items-center bg-default/70 backdrop-blur-sm">
-                  <UIcon name="i-mdi-loading" size="32" class="animate-spin text-primary" />
+                  <UIcon name="mdi:loading" size="32" class="animate-spin text-primary" />
                 </div>
               </div>
               <p class="text-balance text-center text-xs text-muted">{{ stageHint }}</p>
@@ -126,7 +113,7 @@
                   color="neutral"
                   variant="subtle"
                   size="sm"
-                  icon="i-mdi-rotate-left"
+                  icon="mdi:rotate-left"
                   :aria-label="$t('common.avatar.rotateLeft')"
                   :title="$t('common.avatar.rotateLeft')"
                   :disabled="busy"
@@ -137,7 +124,7 @@
                   color="neutral"
                   variant="subtle"
                   size="sm"
-                  icon="i-mdi-rotate-right"
+                  icon="mdi:rotate-right"
                   :aria-label="$t('common.avatar.rotateRight')"
                   :title="$t('common.avatar.rotateRight')"
                   :disabled="busy"
@@ -148,7 +135,7 @@
                   color="neutral"
                   variant="subtle"
                   size="sm"
-                  icon="i-mdi-backup-restore"
+                  icon="mdi:backup-restore"
                   :aria-label="$t('common.preferences.brandAsset.resetView')"
                   :title="$t('common.preferences.brandAsset.resetView')"
                   :disabled="busy"
@@ -159,7 +146,7 @@
                 color="neutral"
                 variant="ghost"
                 size="sm"
-                icon="i-mdi-image-edit-outline"
+                icon="mdi:image-edit-outline"
                 :disabled="busy"
                 @click="chooseFile()"
               >
@@ -173,7 +160,7 @@
             role="alert"
             color="error"
             variant="soft"
-            icon="i-mdi-alert-circle-outline"
+            icon="mdi:alert-circle-outline"
             :description="errorMessage"
           />
         </div>
@@ -184,7 +171,7 @@
           <UButton color="neutral" variant="soft" size="lg" :disabled="busy" @click="closeEditor">
             {{ $t('common.close') }}
           </UButton>
-          <UButton v-if="draftUrl" size="lg" icon="i-mdi-check" :loading="busy" @click="saveAsset">
+          <UButton v-if="draftUrl" size="lg" icon="mdi:check" :loading="busy" @click="saveAsset">
             {{ saveLabel }}
           </UButton>
         </div>
@@ -197,7 +184,9 @@
 type BrandAssetType = 'logo' | 'favicon'
 
 const props = withDefaults(defineProps<{ imageUrl: string; assetType?: BrandAssetType }>(), { assetType: 'logo' })
-const emit = defineEmits<{ upload: [payload: { url: string; optimizedUrl: string }] }>()
+const emit = defineEmits<{
+  upload: [payload: { url: string; optimizedUrl: string }]
+}>()
 
 const isFavicon = computed(() => props.assetType === 'favicon')
 const viewportWidth = isFavicon.value ? 288 : 336
@@ -218,7 +207,9 @@ const removeLabel = computed(() =>
   isFavicon.value ? $t('common.preferences.branding.faviconRemove') : $t('common.preferences.companyLogo.remove'),
 )
 const editorTitle = computed(() =>
-  isFavicon.value ? $t('common.preferences.branding.faviconEditorTitle') : $t('common.preferences.companyLogo.editorTitle'),
+  isFavicon.value
+    ? $t('common.preferences.branding.faviconEditorTitle')
+    : $t('common.preferences.companyLogo.editorTitle'),
 )
 const saveLabel = computed(() =>
   isFavicon.value ? $t('common.preferences.branding.faviconSave') : $t('common.preferences.companyLogo.save'),

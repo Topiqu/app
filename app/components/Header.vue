@@ -7,7 +7,7 @@
         color="neutral"
         variant="ghost"
         square
-        icon="i-mdi-menu"
+        icon="mdi:menu"
         :aria-label="$t('common.actions.openMenu')"
         @click="isSidebarOpen = true"
       />
@@ -17,10 +17,16 @@
         color="neutral"
         variant="ghost"
         square
-        icon="i-mdi-arrow-left"
+        icon="mdi:arrow-left"
         :aria-label="$t('common.actions.back')"
       />
-      <NuxtLink v-else :to="localePath({ name: 'index' })" class="flex items-center justify-center gap-2">
+      <NuxtLink
+        :to="localePath({ name: 'index' })"
+        class="flex items-center justify-center gap-2 transition-[width,opacity] motion-reduce:transition-none"
+        :class="articleState.showHeader && articleHeader ? 'pointer-events-none w-0 overflow-hidden opacity-0' : ''"
+        :aria-hidden="articleState.showHeader && !!articleHeader"
+        :tabindex="articleState.showHeader && articleHeader ? -1 : undefined"
+      >
         <NuxtImg
           v-if="!isPublicationSurface"
           src="/app-logo.png"
@@ -35,24 +41,24 @@
         <AppMedia
           v-else
           :src="logoSrc"
-          originalSrc="/app-logo.png"
           :alt="clientSite?.name || 'Topiqu'"
-          :fallbackText="clientSite?.name"
+          :fallbackText="clientSite?.name || 'Topiqu'"
+          :fallbackBorder="false"
           aspectRatio="16 / 5"
           fit="contain"
           sizes="128px"
           :width="128"
           priority
-          containerClass="h-10 w-32 shrink-0 bg-transparent"
+          containerClass="h-10 w-32 shrink-0 bg-transparent [&_[aria-hidden]]:translate-x-px"
         />
       </NuxtLink>
+      <p
+        v-if="articleState.showHeader && articleHeader"
+        class="max-w-[42vw] truncate text-sm font-semibold text-highlighted sm:max-w-[55vw]"
+      >
+        {{ articleHeader.title }}
+      </p>
     </template>
-    <p
-      v-if="articleState.showHeader && articleHeader"
-      class="max-w-[45vw] truncate text-sm font-semibold text-highlighted sm:max-w-[55vw]"
-    >
-      {{ articleHeader.title }}
-    </p>
     <template #right>
       <div class="flex items-center justify-between gap-2">
         <UButton
@@ -60,7 +66,7 @@
           :color="articleHeader.liked ? 'error' : 'neutral'"
           :variant="articleHeader.liked ? 'soft' : 'ghost'"
           square
-          :icon="articleHeader.liked ? 'i-mdi-heart' : 'i-mdi-heart-outline'"
+          :icon="articleHeader.liked ? 'mdi:heart' : 'mdi:heart-outline'"
           :aria-label="$t('common.actions.like')"
           @click="articleLikeBus.emit()"
         />
@@ -70,7 +76,7 @@
           color="neutral"
           variant="ghost"
           square
-          icon="i-mdi-pencil"
+          icon="mdi:pencil"
           :aria-label="$t('common.actions.edit')"
         />
         <UserAccount />
@@ -108,5 +114,5 @@ const isArticleRoute = computed(() => String(route.name || '').includes('clanky-
 const shell = computed(() => resolvePageShell(route.meta.shell))
 const showDashboard = computed(() => canRenderDashboardShell(shell.value, auth.value?.user.role))
 const isPublicationSurface = computed(() => Boolean(clientSite.value && shell.value === 'publication'))
-const logoSrc = computed(() => clientSite.value?.logoUrl || '/app-logo.png')
+const logoSrc = computed(() => clientSite.value?.logoUrl || null)
 </script>

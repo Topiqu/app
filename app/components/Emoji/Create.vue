@@ -14,7 +14,7 @@
           <div
             class="grid size-9 shrink-0 place-items-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300"
           >
-            <Icon name="mdi:emoticon-plus-outline" class="size-5" />
+            <UIcon name="mdi:emoticon-plus-outline" class="size-5" />
           </div>
           <div>
             <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{{ $t('emoji.addTitle') }}</h3>
@@ -26,7 +26,7 @@
 
         <UButton
           type="button"
-          class="group flex min-h-24 w-full items-center gap-4 rounded-2xl border border-dashed px-5 py-4 text-left transition-colors"
+          class="group flex min-h-24 w-full items-center gap-4 rounded-(--topiqu-surface-radius) border border-dashed px-5 py-4 text-left transition-colors"
           :class="
             isDragging
               ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-950/30'
@@ -41,7 +41,7 @@
           <div
             class="grid size-11 shrink-0 place-items-center rounded-xl bg-white text-indigo-500 shadow-sm ring-1 ring-neutral-200 transition-transform group-hover:-translate-y-0.5 dark:bg-neutral-800 dark:ring-neutral-700"
           >
-            <Icon name="mdi:tray-arrow-up" class="size-5" />
+            <UIcon name="mdi:tray-arrow-up" class="size-5" />
           </div>
           <div class="min-w-0 flex-1">
             <span class="block text-sm font-semibold text-neutral-800 dark:text-neutral-100">{{
@@ -49,11 +49,11 @@
             }}</span>
             <span class="mt-1 block text-xs text-neutral-500 dark:text-neutral-400">{{ $t('emoji.dropHint') }}</span>
           </div>
-          <Icon name="mdi:chevron-right" class="hidden size-5 text-neutral-400 sm:block" />
+          <UIcon name="mdi:chevron-right" class="hidden size-5 text-neutral-400 sm:block" />
         </UButton>
 
         <div v-if="queue.length" class="grid items-start gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <div class="rounded-2xl bg-neutral-100/70 p-2 dark:bg-neutral-800/50">
+          <div class="rounded-(--topiqu-surface-radius) bg-neutral-100/70 p-2 dark:bg-neutral-800/50">
             <div class="flex items-center justify-between px-2 pb-2 pt-1">
               <span class="text-xs font-semibold text-neutral-700 dark:text-neutral-200">{{
                 $t('emoji.queueTitle')
@@ -91,7 +91,7 @@
                     class="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-indigo-500 text-white ring-2 ring-white dark:ring-neutral-700"
                     aria-hidden="true"
                   >
-                    <Icon name="mdi:eye" class="size-2.5" />
+                    <UIcon name="mdi:eye" class="size-2.5" />
                   </span>
                 </UButton>
 
@@ -152,18 +152,13 @@
               {{ $t('emoji.libraryCount', { count: libraryEmojis.length }) }}
             </p>
           </div>
-          <label class="relative sm:w-64">
+          <label class="relative sm:w-72">
             <span class="sr-only">{{ $t('emoji.searchPlaceholder') }}</span>
-            <Icon
+            <UIcon
               name="mdi:magnify"
               class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
             />
-            <UInput
-              v-model="search"
-              type="search"
-              :placeholder="$t('emoji.searchPlaceholder')"
-              class="w-full rounded-xl border-0 bg-neutral-100 py-2 pl-9 pr-3 text-sm text-neutral-800 ring-1 ring-inset ring-neutral-200 outline-none transition focus:ring-2 focus:ring-indigo-400 dark:bg-neutral-800 dark:text-neutral-100 dark:ring-neutral-700"
-            />
+            <UInput v-model="search" type="search" :placeholder="$t('emoji.searchPlaceholder')" class="w-full" />
           </label>
         </div>
 
@@ -173,7 +168,7 @@
         <div v-else-if="error" class="py-8 text-center text-sm text-red-500">{{ $t('emoji.loadFailed') }}</div>
         <div
           v-else-if="filteredEmojis.length"
-          class="mt-4 max-h-72 space-y-1 overflow-y-auto rounded-2xl bg-neutral-100/70 p-2 dark:bg-neutral-800/50"
+          class="mt-4 max-h-72 space-y-1 overflow-y-auto rounded-(--topiqu-surface-radius) bg-neutral-100/70 p-2 dark:bg-neutral-800/50"
         >
           <div
             v-for="emoji in filteredEmojis"
@@ -187,23 +182,66 @@
                 <NuxtImg :src="emoji.imageUrl" :alt="emoji.shortcode" class="size-6 object-contain" />
               </span>
               <div class="min-w-0">
-                <p class="truncate text-sm font-medium">:{{ emoji.shortcode }}:</p>
+                <UInput
+                  v-if="editingId === emoji.id"
+                  v-model="editingShortcode"
+                  maxlength="50"
+                  autofocus
+                  class="w-full"
+                  @keyup.enter="saveEmoji(emoji)"
+                  @keyup.esc="cancelEditing"
+                />
+                <p v-else class="truncate text-sm font-medium">:{{ emoji.shortcode }}:</p>
                 <p class="text-xs text-neutral-500 dark:text-neutral-400">
                   {{ $t('emoji.reactionCount', { count: emoji._count.emojiReactions }) }}
                 </p>
               </div>
             </div>
-            <UButton
-              type="button"
-              square
-              size="sm"
-              variant="ghost"
-              icon="mdi:delete-outline"
-              class="text-red-500"
-              :loading="emoji.id.startsWith('optimistic-') || deletingIds.has(emoji.id)"
-              :aria="$t('emoji.deleteAria', { shortcode: emoji.shortcode })"
-              @click="confirmDelete(emoji)"
-            />
+            <div class="flex shrink-0 items-center gap-1">
+              <template v-if="editingId === emoji.id">
+                <UButton
+                  type="button"
+                  square
+                  size="md"
+                  icon="mdi:check"
+                  :aria-label="$t('common.actions.save')"
+                  @click="saveEmoji(emoji)"
+                />
+                <UButton
+                  type="button"
+                  square
+                  size="md"
+                  color="neutral"
+                  variant="ghost"
+                  icon="mdi:close"
+                  :aria-label="$t('common.cancelAction')"
+                  @click="cancelEditing"
+                />
+              </template>
+              <template v-else>
+                <UButton
+                  type="button"
+                  square
+                  size="md"
+                  color="neutral"
+                  variant="ghost"
+                  icon="mdi:pencil-outline"
+                  :aria-label="$t('common.actions.edit')"
+                  @click="startEditing(emoji)"
+                />
+                <UButton
+                  type="button"
+                  square
+                  size="md"
+                  color="error"
+                  variant="ghost"
+                  icon="mdi:delete-outline"
+                  :loading="emoji.id.startsWith('optimistic-') || deletingIds.has(emoji.id)"
+                  :aria="$t('emoji.deleteAria', { shortcode: emoji.shortcode })"
+                  @click="confirmDelete(emoji)"
+                />
+              </template>
+            </div>
           </div>
         </div>
         <div
@@ -216,7 +254,7 @@
     </template>
 
     <template #footer>
-      <div class="mt-6 flex flex-shrink-0 justify-end gap-3 border-t pt-4">
+      <div class="flex w-full flex-shrink-0 justify-end gap-3">
         <UButton type="button" color="neutral" variant="soft" size="lg" :disabled="submitting" @click="confirmClose">{{
           $t('common.messages.deleteCancel')
         }}</UButton>
@@ -248,11 +286,15 @@ interface EmojiRecord {
 }
 
 const MAX_SOURCE_BYTES = 5 * 1024 * 1024
+const editingId = shallowRef('')
+const editingShortcode = shallowRef('')
 const ACCEPTED_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
 
 const toast = useAppToast()
 const open = defineModel<boolean>()
-const dialog = useTemplateRef<{ ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'> }>('dialog')
+const dialog = useTemplateRef<{
+  ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'>
+}>('dialog')
 const queue = ref<QueuedEmoji[]>([])
 const selectedPreviewId = shallowRef('')
 const search = shallowRef('')
@@ -323,7 +365,9 @@ const uniqueShortcode = (filename: string) => {
 const addFiles = (files: File[]) => {
   for (const file of files) {
     if (!ACCEPTED_TYPES.has(file.type)) {
-      toast.error({ message: $t('emoji.unsupportedFile', { name: file.name }) })
+      toast.error({
+        message: $t('emoji.unsupportedFile', { name: file.name }),
+      })
       continue
     }
     if (file.size > MAX_SOURCE_BYTES) {
@@ -433,16 +477,39 @@ const confirmDelete = async (emoji: EmojiRecord) => {
   const previousIndex = (emojis.value || []).findIndex((candidate) => candidate.id === emoji.id)
   emojis.value = (emojis.value || []).filter((candidate) => candidate.id !== emoji.id)
   try {
-    await $fetch(`/api/emojis/${emoji.id}` as `/api/emojis/:id`, { method: 'DELETE' })
+    await $fetch(`/api/emojis/${emoji.id}` as `/api/emojis/:id`, {
+      method: 'DELETE',
+    })
     toast.success({ message: $t('emoji.deleteSuccess') })
   } catch (requestError: any) {
     const restored = [...(emojis.value || [])]
     restored.splice(Math.max(0, previousIndex), 0, emoji)
     emojis.value = restored
-    toast.error({ message: requestError.data?.message || $t('emoji.deleteFailed') })
+    toast.error({
+      message: requestError.data?.message || $t('emoji.deleteFailed'),
+    })
   } finally {
     deletingIds.delete(emoji.id)
   }
+}
+
+const startEditing = (emoji: EmojiRecord) => {
+  editingId.value = emoji.id
+  editingShortcode.value = emoji.shortcode
+}
+const cancelEditing = () => {
+  editingId.value = ''
+  editingShortcode.value = ''
+}
+const saveEmoji = async (emoji: EmojiRecord) => {
+  const shortcode = normalizeEmojiShortcode(editingShortcode.value)
+  if (!isValidEmojiShortcode(shortcode)) return
+  const response = await $fetch<{ emoji: EmojiRecord }>(`/api/emojis/${emoji.id}` as `/api/emojis/:id`, {
+    method: 'PATCH',
+    body: { shortcode },
+  })
+  emoji.shortcode = response.emoji.shortcode
+  cancelEditing()
 }
 
 const discardQueue = () => {

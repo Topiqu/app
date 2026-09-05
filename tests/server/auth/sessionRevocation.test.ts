@@ -108,6 +108,9 @@ describe('revocation is enforced server-side', () => {
 
   it('derives the cookie name from one shared constant', () => {
     expect(source('server/api/auth/[...].ts')).toContain('name: sessionCookieName')
+    expect(source('server/utils/sessionGuard.ts')).toContain(
+      "process.env.NODE_ENV === 'production' && !process.env.TEST_DATABASE_URL",
+    )
     expect(source('server/api/auth/[...].ts')).not.toContain('next-auth.session-token')
   })
 })

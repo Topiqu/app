@@ -40,12 +40,13 @@ describe('dashboard UI polish contracts', () => {
     expect(source('app/components/Sidebar.vue')).not.toContain('<ClientVersion')
     const clientVersion = source('app/components/Client/Version.vue')
     expect(clientVersion).toContain('bottom-action-bar fixed right-3 bottom-3 z-overlay')
-    expect(clientVersion).toContain('max-h-[calc(100dvh-5rem)]')
-    expect(clientVersion).toContain('overflow-x-hidden overflow-y-auto overscroll-contain')
+    expect(clientVersion).toContain('<USlideover')
+    expect(clientVersion).toContain('side="right"')
+    expect(clientVersion).toContain('min-h-0 overflow-y-auto overscroll-contain')
     expect(clientVersion).toContain('grid-cols-1 gap-2 min-[22rem]:grid-cols-2')
     expect(clientVersion).toContain('data-consent-settings')
     expect(source('app/components/ConsentSettingsButton.vue')).toContain(
-      'bottom-action-bar fixed right-3 bottom-3 z-overlay',
+      'bottom-action-bar fixed right-6 bottom-4 z-overlay',
     )
     expect(source('app/assets/styles/main.css')).toContain('body:has(.bottom-action-bar) .back-to-top')
   })
@@ -76,7 +77,7 @@ describe('dashboard UI polish contracts', () => {
   it('keeps reaction state across homepage card remounts', () => {
     const card = source('app/components/Article/Card.vue')
     expect(card).toContain("'article-card-reactions'")
-    expect(card).toContain('[props.article.id]: result')
+    expect(card).toContain('[article.id]: result')
   })
 
   it('renders explicit account-health icons and visible notification switches', () => {
@@ -124,7 +125,7 @@ describe('dashboard UI polish contracts', () => {
     const editor = source('app/pages/admin/editor/[id].vue')
     expect(editor).toContain('sm:flex md:hidden')
     expect(editor).toContain('saveConfirmed')
-    expect(editor).toContain('i-mdi-check-circle')
+    expect(editor).toContain('mdi:check-circle')
     const stats = source('app/components/Stats/Dialog.vue')
     expect(stats).toContain('PLATFORM_COLORS')
     expect(source('app/components/Charts.vue')).toContain('#category-cell')

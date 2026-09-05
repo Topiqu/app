@@ -1,6 +1,6 @@
 <template>
   <section
-    class="custom-ui flex flex-col sm:flex-row sm:flex-wrap sm:items-start gap-x-6 gap-y-4 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+    class="custom-ui flex flex-col sm:flex-row sm:flex-wrap sm:items-start gap-x-6 gap-y-4 p-4 rounded-(--topiqu-surface-radius) border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
     :aria-label="$t('articles.editor.metaBar')"
   >
     <div class="flex flex-col gap-2 min-w-0">
