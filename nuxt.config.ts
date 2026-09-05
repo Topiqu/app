@@ -227,7 +227,13 @@ export default defineNuxtConfig({
     ],
   },
 
-  sourcemap: { client: 'hidden' },
+  // Bun can emit mappings that make source-map's WASM consumer trap while Nuxt is
+  // enhancing a development error. Keep deploy-time maps for Sentry, but do not run
+  // the fragile mapping pass in the local dev error renderer.
+  sourcemap: {
+    client: IS_PROD ? 'hidden' : false,
+    server: IS_PROD,
+  },
   ogImage: {
     enabled: IS_PROD,
     debug: process.env.NODE_ENV === 'development',
@@ -262,7 +268,10 @@ export default defineNuxtConfig({
     provider: 'none',
     clientBundle: {
       icons: [
+        'mdi:account-edit-outline',
+        'mdi:alpha-x',
         'mdi:arrow-down',
+        'mdi:arrow-up',
         'mdi:check-all',
         'mdi:chevron-down',
         'mdi:chevron-double-left',
@@ -279,10 +288,22 @@ export default defineNuxtConfig({
         'mdi:format-align-left',
         'mdi:format-align-right',
         'mdi:lightbulb-outline',
+        'mdi:lightning-bolt-outline',
+        'mdi:linkedin',
+        'mdi:link-variant',
+        'mdi:content-copy',
+        'mdi:layers-triple-outline',
         'mdi:monitor',
         'mdi:open-in-new',
         'mdi:page-layout-sidebar-left',
+        'mdi:package-variant',
+        'mdi:package-variant-closed',
         'mdi:pound',
+        'mdi:rocket-launch',
+        'mdi:robot-outline',
+        'mdi:pencil-outline',
+        'mdi:share-variant-outline',
+        'mdi:twitter',
         'mdi:upload',
         'mdi:weather-night',
         'mdi:weather-sunny',

@@ -17,9 +17,7 @@ test('production article assets stay loadable across service-worker activation',
     .evaluateAll((elements) => [
       ...new Set(
         elements
-          .map((element) =>
-            element instanceof HTMLScriptElement ? element.src : (element as HTMLLinkElement).href,
-          )
+          .map((element) => (element instanceof HTMLScriptElement ? element.src : (element as HTMLLinkElement).href))
           .filter((url) => url && new URL(url).origin === location.origin),
       ),
     ])
