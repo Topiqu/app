@@ -196,6 +196,7 @@
               :items="generationFrequencyOptions"
               variant="card"
               class="grid gap-3 sm:grid-cols-2"
+              :ui="{ item: 'rounded-(--topiqu-surface-radius)' }"
             />
           </UFormField>
         </div>

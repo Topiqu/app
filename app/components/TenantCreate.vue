@@ -305,7 +305,7 @@
             <p class="mt-1 text-sm text-muted">{{ $t('common.tenant.reviewDescription') }}</p>
           </div>
 
-          <dl class="overflow-hidden rounded-xl border border-default divide-y divide-default">
+          <dl class="overflow-hidden rounded-(--topiqu-surface-radius) border border-default divide-y divide-default">
             <div v-for="row in summaryRows" :key="row.label" class="flex items-center gap-4 bg-default px-4 py-3">
               <UIcon :name="row.icon" size="20" class="shrink-0 text-muted" />
               <dt class="w-28 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted">{{ row.label }}</dt>

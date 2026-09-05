@@ -1,6 +1,6 @@
 <template>
   <label
-    class="flex items-start gap-3 py-3 px-4 rounded-lg border transition-all duration-200 select-none cursor-pointer"
+    class="flex items-start gap-3 py-3 px-4 rounded-(--topiqu-surface-radius) border transition-all duration-200 select-none cursor-pointer"
     :class="[
       active ? `${accentRing} border-transparent bg-white dark:bg-gray-800` : idleClass,
       disabled && 'opacity-60 cursor-not-allowed',
