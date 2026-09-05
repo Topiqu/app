@@ -107,7 +107,7 @@ describe('consent settings launcher', () => {
 describe('consent integration contracts', () => {
   it('keeps external measurement manual and loads AdSense only through the tenant-aware component', () => {
     const config = source('nuxt.config.ts')
-    const clientSite = source('app/composables/useClientsite.ts')
+    const clientSite = source('app/composables/useClientSite.ts')
 
     expect(config).toContain("initMode: 'manual'")
     expect(config).toContain("cookie_domain: 'none'")
