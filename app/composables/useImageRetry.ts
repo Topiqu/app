@@ -1,6 +1,6 @@
 import type { MaybeRefOrGetter } from 'vue'
 
-import { onUnmounted, shallowRef, toValue, watch } from 'vue'
+import { onScopeDispose, shallowRef, toValue, watch } from 'vue'
 
 const failedImageUrls = new Set<string>()
 
@@ -113,7 +113,7 @@ export const useImageRetry = (
     }, delay)
   }
 
-  onUnmounted(() => {
+  onScopeDispose(() => {
     clearTimers()
   })
 

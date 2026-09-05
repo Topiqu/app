@@ -46,7 +46,7 @@ describe('dashboard UI polish contracts', () => {
     expect(clientVersion).toContain('grid-cols-1 gap-2 min-[22rem]:grid-cols-2')
     expect(clientVersion).toContain('data-consent-settings')
     expect(source('app/components/ConsentSettingsButton.vue')).toContain(
-      'bottom-action-bar fixed right-3 bottom-3 z-overlay',
+      'bottom-action-bar fixed right-6 bottom-4 z-overlay',
     )
     expect(source('app/assets/styles/main.css')).toContain('body:has(.bottom-action-bar) .back-to-top')
   })
@@ -77,7 +77,7 @@ describe('dashboard UI polish contracts', () => {
   it('keeps reaction state across homepage card remounts', () => {
     const card = source('app/components/Article/Card.vue')
     expect(card).toContain("'article-card-reactions'")
-    expect(card).toContain('[props.article.id]: result')
+    expect(card).toContain('[article.id]: result')
   })
 
   it('renders explicit account-health icons and visible notification switches', () => {

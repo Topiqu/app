@@ -193,7 +193,7 @@ describe('Nuxt UI component behavior', () => {
 
     const thumbnail = wrapper.getComponent({ name: 'AppMedia' })
     expect(thumbnail.props('src')).toBe('/article-cover.webp')
-    expect(thumbnail.props('sizes')).toBe('64px')
+    expect(thumbnail.props('sizes')).toBe('56px')
   })
 
   it('emits the comments payload from the Nuxt UI switch', async () => {
