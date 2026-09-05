@@ -253,7 +253,7 @@ describe('Nuxt UI component behavior', () => {
     })
 
     const buttons = wrapper.findAllComponents({ name: 'UButton' })
-    expect(buttons.find((button) => button.props('icon') === 'i-mdi-undo')!.props('disabled')).toBe(true)
-    expect(buttons.find((button) => button.props('icon') === 'i-mdi-format-list-bulleted')!.props('active')).toBe(true)
+    expect(buttons.find((button) => button.props('icon') === 'mdi:undo')!.props('disabled')).toBe(true)
+    expect(buttons.find((button) => button.props('icon') === 'mdi:format-list-bulleted')!.props('active')).toBe(true)
   })
 })

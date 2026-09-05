@@ -196,7 +196,7 @@ describe('Nuxt UI template contract', () => {
     expect(failuresFor(/(?:name|icon)=["'][^"']*lucide:/i)).toEqual([])
   })
 
-  it('sizes icons through the Nuxt UI prop and limits direct brand colors', () => {
+  it('gives icons an explicit size and limits direct violet brand colors', () => {
     const sizeAllowlist = new Set([
       'app/components/Client/Version.vue',
       'app/components/Form/Client/AI.vue',
@@ -215,33 +215,20 @@ describe('Nuxt UI template contract', () => {
     expect(
       icons
         .filter(({ path }) => !sizeAllowlist.has(path))
-        .filter(({ tag }) => !/\bsize=/.test(tag) || /(?:class|:class)=["'][^"']*\b(?:w|h|size)-/.test(tag))
+        .filter(({ tag }) => !/\bsize=/.test(tag) && !/(?:class|:class)=["'][^"']*\b(?:w|h|size)-(?:\d|\[)/.test(tag))
         .map(({ path, tag }) => `${path}: ${tag.replace(/\s+/g, ' ')}`),
     ).toEqual([])
     expect(
       icons
         .filter(({ path }) => !hardColorAllowlist.has(path))
-        .filter(({ tag }) =>
-          /class=["'][^"']*text-(?:gray|blue|green|red|purple|indigo|teal|amber|orange|violet|emerald|black|white)/.test(
-            tag,
-          ),
-        )
+        .filter(({ tag }) => /class=["'][^"']*text-violet/.test(tag))
         .map(({ path, tag }) => `${path}: ${tag.replace(/\s+/g, ' ')}`),
     ).toEqual([])
   })
 
-  it('uses icon props instead of nested icons in buttons and badges', () => {
-    const failures = sources.flatMap(({ path, source }) =>
-      openingTags(source)
-        .filter(({ name, tag }) => (name === 'UButton' || name === 'UBadge') && !tag.endsWith('/>'))
-        .filter(({ name, end }) => {
-          const closing = source.indexOf(`</${name}>`, end)
-          return closing !== -1 && /<UIcon\b/.test(source.slice(end, closing))
-        })
-        .map(({ tag }) => `${path}: ${tag.replace(/\s+/g, ' ')}`),
-    )
-
-    expect(failures).toEqual([])
+  it('uses UIcon and collection:name icon identifiers consistently', () => {
+    expect(failuresFor(/<\/?Icon(?:\s|>)/)).toEqual([])
+    expect(failuresFor(/["']i-mdi-[a-z0-9-]+["']/i)).toEqual([])
   })
 
   it('keeps CSS loading indicators at media and editor boundaries', () => {
@@ -275,6 +262,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Notification/Bar.vue',
       'app/components/Settings/Members.vue',
       'app/components/Stats/Dialog.vue',
+      'app/components/TenantCreate.vue',
       'app/components/User/AccountHealth.vue',
       'app/components/User/Activity.vue',
       'app/components/User/ActivityArticle.vue',

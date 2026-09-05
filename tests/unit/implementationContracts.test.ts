@@ -41,7 +41,7 @@ describe('systemic UX implementation contracts', () => {
     expect(source('app/components/ConfirmDialog.vue')).toContain("content: 'confirm-dialog-content max-w-md'")
     expect(source('app/components/Article/Tag.vue')).toContain("content: 'max-w-xl'")
     expect(source('app/components/Tags/Create.vue')).toContain("content: 'max-w-3xl'")
-    expect(source('app/components/Stats/Dialog.vue')).toContain('class="max-w-5xl"')
+    expect(source('app/components/Stats/Dialog.vue')).toContain('max-w-6xl max-sm:size-full')
     expect(source('app/app.config.ts')).toContain('max-sm:size-full')
   })
 
@@ -75,7 +75,7 @@ describe('systemic UX implementation contracts', () => {
     expect(upgrade).toContain('class="absolute right-3 top-3"')
     expect(version).toContain('max-w-[8.5rem]')
     expect(table).toContain('class="w-full min-w-0 sm:flex-1"')
-    expect(homepage).toContain('class="sticky top-0 z-20')
+    expect(homepage).toContain('class="sticky top-[var(--topiqu-header-height)] z-20')
     expect(card).toContain('space-y-3')
     expect(comments).toContain("leading: 'items-center self-stretch'")
     expect(source('app/components/Sidebar.vue')).toContain("collapsed ? 'justify-center' : 'justify-between'")
