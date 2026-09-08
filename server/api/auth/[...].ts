@@ -59,6 +59,8 @@ function GitHubProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>)
     id: 'github',
     name: 'GitHub',
     type: 'oauth',
+    // GitHub returns this issuer in the RFC 9207 callback `iss` parameter.
+    issuer: 'https://github.com/login/oauth',
     authorization: { url: 'https://github.com/login/oauth/authorize', params: { scope: 'read:user user:email' } },
     token: 'https://github.com/login/oauth/access_token',
     userinfo: {
