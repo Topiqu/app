@@ -5,6 +5,8 @@ import { authenticator } from 'otplib'
 import { NuxtAuthHandler } from '#auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
+import { logAuthError } from '../../utils/authErrorLogger'
+
 interface BaseOAuthProfile {
   id?: string
   sub?: string
@@ -46,15 +48,8 @@ function GoogleProvider<P extends BaseOAuthProfile>(options: OAuthUserConfig<P>)
 }
 
 async function fetchGitHubProfile(tokens: any) {
-  const profile = await fetch('https://api.github.com/user', {
-    headers: { Authorization: `Bearer ${tokens.access_token}` },
-  }).then((res) => res.json())
-
-  const emails = await fetch('https://api.github.com/user/emails', {
-    headers: { Authorization: `Bearer ${tokens.access_token}` },
-  })
-    .then((res) => res.json())
-    .catch(() => [])
+  const profile = await fetchGitHubOAuthResource('profile', tokens.access_token)
+  const emails = await fetchGitHubOAuthResource('emails', tokens.access_token)
 
   return { ...profile, email: verifiedGitHubEmail(emails) }
 }
@@ -174,6 +169,7 @@ async function authorizeWithOnboardingToken(loginToken: string, req: any) {
 }
 
 export default NuxtAuthHandler({
+  logger: { error: logAuthError },
   secret: useRuntimeConfig().auth.secret,
   cookies: {
     sessionToken: {
