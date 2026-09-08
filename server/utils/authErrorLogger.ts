@@ -1,12 +1,19 @@
 import * as Sentry from '@sentry/nuxt'
 
 import { logger } from './logger'
+import { sanitizeAuthErrorMessage } from './authErrorMessage'
 
 // Never forward NextAuth metadata: it can contain profiles, tokens and request bodies.
 export function logAuthError(code: string, metadata: unknown) {
   const details = metadata && typeof metadata === 'object' ? (metadata as Record<string, unknown>) : {}
   const error = details.error ?? metadata
-  const message = error && typeof error === 'object' && 'message' in error ? String(error.message) : ''
+  const message =
+    error && typeof error === 'object' && 'message' in error
+      ? String(error.message)
+      : typeof error === 'string'
+        ? error
+        : ''
+  const errorMessage = sanitizeAuthErrorMessage(message)
   const provider = details.providerId === 'github' || details.providerId === 'google' ? details.providerId : 'unknown'
   const reason =
     message.match(
@@ -18,12 +25,13 @@ export function logAuthError(code: string, metadata: unknown) {
     message.match(/GitHub (?:profile|emails) (?:HTTP \d{3}|request failed|invalid response)/)?.[0] ??
     'unclassified_auth_error'
   const safeCode = /^[A-Z_]+$/.test(code) ? code : 'AUTH_ERROR'
-  const safeError = new Error(`${safeCode}: ${reason}`)
+  const safeError = new Error(`${safeCode}: ${reason === 'unclassified_auth_error' ? errorMessage || reason : reason}`)
   void logger.error(`[auth] ${safeError.message}`, {
     source: 'auth',
     code: safeCode,
     provider,
     reason,
+    errorMessage,
   })
   Sentry.withScope((scope) => {
     // Callback URLs and inherited HTTP breadcrumbs can carry authorization codes.
