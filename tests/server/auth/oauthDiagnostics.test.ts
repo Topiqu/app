@@ -3,6 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { logAuthError } from '../../../server/utils/authErrorLogger'
 import { fetchGitHubOAuthResource } from '../../../server/utils/githubOAuth'
 
+const betterStack = vi.hoisted(() => ({ error: vi.fn().mockResolvedValue(undefined) }))
+vi.mock('../../../server/utils/logger', () => ({ logger: betterStack }))
+
 const sentry = vi.hoisted(() => ({
   captureException: vi.fn(),
   scope: { clearBreadcrumbs: vi.fn(), addEventProcessor: vi.fn(), setTag: vi.fn(), setFingerprint: vi.fn() },
@@ -29,6 +32,12 @@ describe('OAuth diagnostics', () => {
     })
     expect(sentry.captureException.mock.calls[0][0].message).toBe('OAUTH_CALLBACK_ERROR: invalid_client')
     expect(sentry.scope.setTag).toHaveBeenCalledWith('auth.provider', 'github')
+    expect(betterStack.error).toHaveBeenCalledWith('[auth] OAUTH_CALLBACK_ERROR: invalid_client', {
+      source: 'auth',
+      code: 'OAUTH_CALLBACK_ERROR',
+      provider: 'github',
+      reason: 'invalid_client',
+    })
     const process = sentry.scope.addEventProcessor.mock.calls[0][0]
     expect(process({ request: { url: '?code=private' }, user: {}, extra: {}, contexts: {} })).toEqual({})
   })

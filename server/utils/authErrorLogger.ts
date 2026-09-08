@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/nuxt'
 
+import { logger } from './logger'
+
 // Never forward NextAuth metadata: it can contain profiles, tokens and request bodies.
 export function logAuthError(code: string, metadata: unknown) {
   const details = metadata && typeof metadata === 'object' ? (metadata as Record<string, unknown>) : {}
@@ -17,7 +19,12 @@ export function logAuthError(code: string, metadata: unknown) {
     'unclassified_auth_error'
   const safeCode = /^[A-Z_]+$/.test(code) ? code : 'AUTH_ERROR'
   const safeError = new Error(`${safeCode}: ${reason}`)
-  console.error('[auth]', safeError.message, { provider })
+  void logger.error(`[auth] ${safeError.message}`, {
+    source: 'auth',
+    code: safeCode,
+    provider,
+    reason,
+  })
   Sentry.withScope((scope) => {
     // Callback URLs and inherited HTTP breadcrumbs can carry authorization codes.
     scope.clearBreadcrumbs()
