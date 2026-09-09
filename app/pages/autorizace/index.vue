@@ -1,15 +1,28 @@
 <template>
   <div class="flex min-h-0 flex-1 items-center justify-center px-4 py-8 [@media(max-height:42rem)]:items-start">
     <div class="w-full max-w-md">
+      <UAlert
+        v-if="errorKey"
+        role="alert"
+        color="error"
+        variant="soft"
+        icon="i-mdi-alert-circle-outline"
+        :title="$t('common.auth.signInFailedTitle')"
+        :description="$t(errorKey)"
+        class="mb-4"
+      />
       <AuthForm :mode="initialMode" :redirectTo="invitationRedirect" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { authErrorKey } from '../../../shared/utils/authError'
+
 definePageMeta({ middleware: 'auth', shell: 'product', dashboardSidebar: false })
 
 const route = useRoute()
+const errorKey = computed(() => authErrorKey(route.query.error))
 const localePath = useLocalePath()
 const toast = useToast()
 const { signIn, getSession, data } = useAuth()
