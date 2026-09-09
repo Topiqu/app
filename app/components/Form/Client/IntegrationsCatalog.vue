@@ -189,11 +189,22 @@
                 </span>
                 {{ card.title }}
               </span>
-              <UBadge color="neutral" variant="outline" size="sm">TBD</UBadge>
             </div>
             <p class="mt-4 text-sm leading-relaxed text-muted">
               {{ card.description }}
             </p>
+            <div class="mt-auto flex justify-end pt-5">
+              <UButton
+                to="https://wordpress.org/plugins/topiqu-sync/"
+                target="_blank"
+                rel="noopener noreferrer"
+                size="sm"
+                color="neutral"
+                variant="soft"
+                trailingIcon="mdi:open-in-new"
+                :label="$t('common.integrationsCatalog.open')"
+              />
+            </div>
           </template>
         </UCard>
       </div>
