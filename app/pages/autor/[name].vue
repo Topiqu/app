@@ -32,8 +32,8 @@
                 <dd>{{ $t('profile.following', [author.followingCount]) }}</dd>
               </div>
               <div>
-                <dt class="sr-only">{{ $t('common.user.joined', [formatDate(author.joinedAt)]) }}</dt>
-                <dd>{{ $t('common.user.joined', [formatDate(author.joinedAt)]) }}</dd>
+                <dt class="sr-only">{{ $t('common.user.joined', [formatDate(author.joinedAt, locale)]) }}</dt>
+                <dd>{{ $t('common.user.joined', [formatDate(author.joinedAt, locale)]) }}</dd>
               </div>
             </dl>
           </div>
@@ -67,6 +67,7 @@ type AuthorArticlesResponse = PublicAuthorSummary & {
 definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
+const { locale } = useI18n()
 const canonicalOrigin = useCanonicalOrigin()
 const localePath = useLocalePath()
 

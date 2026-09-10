@@ -69,7 +69,7 @@
               </div>
 
               <div class="flex items-center justify-between gap-3 text-xs text-muted">
-                <span class="truncate">{{ $t('common.user.joined', [formatDate(userData.createdAt)]) }}</span>
+                <span class="truncate">{{ $t('common.user.joined', [formatDate(userData.createdAt, locale)]) }}</span>
                 <span v-if="userData.role === 'admin'" class="max-w-28 truncate">{{ clientData?.name }}</span>
               </div>
 
@@ -150,6 +150,7 @@ interface Client {
 }
 
 const { data: auth } = useAuth()
+const { locale } = useI18n()
 const localePath = useLocalePath()
 const toast = useToast()
 

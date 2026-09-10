@@ -276,7 +276,7 @@ const localePath = useLocalePath()
 if (!user.value) await navigateTo(localePath({ name: 'autorizace' }))
 
 const { saveProfile, changePassword, deactivateAccount } = useProfile()
-const { setLocale } = useI18n()
+const { locale, setLocale } = useI18n()
 const { formatTime } = useTime()
 const { copy, copied } = useClipboard({ legacy: true })
 const toast = useAppToast()
@@ -337,7 +337,9 @@ const isPasswordOld = computed(() => {
 })
 
 const formattedCreatedAt = computed(() =>
-  profileForm.createdAt ? `${formatDate(profileForm.createdAt)} (${formatTime(profileForm.createdAt, 'short')})` : '',
+  profileForm.createdAt
+    ? `${formatDate(profileForm.createdAt, locale.value)} (${formatTime(profileForm.createdAt, 'short')})`
+    : '',
 )
 
 const isChanged = () => hasProfileChanges(profileForm, originalProfile.value)
