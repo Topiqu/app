@@ -77,14 +77,7 @@
 
           <div v-else class="bg-default p-4">
             <div class="flex flex-col gap-2">
-              <AppMedia
-                src="/app-logo.png"
-                :alt="$t('common.avatar.alt.company')"
-                aspectRatio="1 / 1"
-                fit="contain"
-                sizes="96px"
-                containerClass="mx-auto size-24 bg-transparent"
-              />
+              <AppLogo :alt="$t('common.avatar.alt.company')" class="mx-auto size-24" />
               <p class="text-center text-sm text-muted">{{ $t('common.notifications.loginPrompt') }}</p>
               <UButton :to="localePath({ name: 'autorizace' })" block>{{ $t('common.auth.login') }}</UButton>
               <UButton

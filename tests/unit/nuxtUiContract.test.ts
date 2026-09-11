@@ -181,8 +181,11 @@ describe('Nuxt UI template contract', () => {
     expect(failures).toEqual([])
   })
 
-  it('uses NuxtImg outside OG and external auth brand assets', () => {
+  it('uses NuxtImg outside OG and static brand assets', () => {
     const allowlist = new Set([
+      // These bundled brand assets are served directly, without an image transformation request.
+      'app/components/AppLogo.vue',
+      'app/components/Header.vue',
       'app/components/AppMedia.vue',
       'app/components/Auth/Form.vue',
       'app/components/Gif/Selector.vue',

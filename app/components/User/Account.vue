@@ -96,14 +96,7 @@
         </div>
 
         <div v-else class="flex flex-col gap-2 p-4 text-center">
-          <AppMedia
-            src="/app-logo.png"
-            :alt="$t('articles.userMenu.companyLogoAlt')"
-            aspectRatio="1 / 1"
-            fit="contain"
-            sizes="80px"
-            containerClass="mx-auto size-20 bg-transparent"
-          />
+          <AppLogo :alt="$t('articles.userMenu.companyLogoAlt')" class="mx-auto size-20" />
           <div class="mb-2">
             <h3 class="text-lg font-semibold text-highlighted">{{ $t('common.auth.welcomeBack') }}</h3>
             <p class="text-sm text-muted">{{ $t('common.auth.loginPrompt') }}</p>
