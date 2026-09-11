@@ -22,19 +22,31 @@ export const generateSessionToken = async (
     where: {
       userId: user.id,
       revoked: false,
+      deletedAt: null,
       device: deviceName,
       os: osName,
       browser: browserName,
     },
-    select: { id: true, ip: true },
+    select: { id: true, ip: true, clientSiteId: true },
   })
+
+  const memberships = await prisma.tenantMembership.findMany({
+    where: { userId: user.id, deletedAt: null, clientSite: { deletedAt: null } },
+    select: { clientSiteId: true },
+    orderBy: { createdAt: 'asc' },
+  })
+  const clientSiteId =
+    memberships.find((membership) => membership.clientSiteId === existingSession?.clientSiteId)?.clientSiteId ??
+    memberships.find((membership) => membership.clientSiteId === user.clientSiteId)?.clientSiteId ??
+    memberships[0]?.clientSiteId ??
+    null
 
   let sessionId: string
 
   if (existingSession) {
     sessionId = existingSession.id
 
-    const dataToUpdate: any = { lastUsedAt: new Date() }
+    const dataToUpdate: any = { lastUsedAt: new Date(), clientSiteId }
 
     if (existingSession.ip !== ipAddress) {
       dataToUpdate.ip = ipAddress
@@ -73,7 +85,7 @@ export const generateSessionToken = async (
         country: geo.country,
         lastUsedAt: new Date(),
         revoked: false,
-        clientSiteId: user.clientSiteId,
+        clientSiteId,
       },
     })
 
