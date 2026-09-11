@@ -48,7 +48,7 @@ describe('article prose presentation contract', () => {
     expect(imageRule).toMatch(/height:\s*auto/)
     expect(imageRule).toContain('object-fit: contain')
     expect(imageRule).not.toContain('max-height')
-    expect(lightbox).toContain("selector = 'p img'")
+    expect(lightbox).toContain("selector = 'img[data-article-lightbox]'")
     expect(lightbox).not.toContain("selector = '.prose p img'")
   })
 })

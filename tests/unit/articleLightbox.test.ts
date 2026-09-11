@@ -14,7 +14,7 @@ describe('ArticleLightbox', () => {
   it('opens published article images without requiring the removed prose class', async () => {
     const source = document.createElement('article')
     source.className = 'article-content'
-    source.innerHTML = '<p><img src="/inline-image.webp" alt="Code design"></p>'
+    source.innerHTML = '<p><img src="/inline-image.webp" data-article-lightbox="true" alt="Code design"></p>'
     document.body.append(source)
 
     const wrapper = mount(ArticleLightbox, {
@@ -41,6 +41,34 @@ describe('ArticleLightbox', () => {
       { src: new URL('/inline-image.webp', window.location.href).href, title: 'Code design' },
     ])
 
+    wrapper.unmount()
+  })
+
+  it('keeps a responsive image clickable when currentSrc changes after collection', async () => {
+    const source = document.createElement('article')
+    source.innerHTML = '<p><img src="/original.webp" data-article-lightbox="true" alt="Responsive"></p>'
+    document.body.append(source)
+    const image = source.querySelector('img')!
+
+    const wrapper = mount(ArticleLightbox, {
+      props: { sourceRef: source },
+      global: {
+        stubs: {
+          VueEasyLightbox: {
+            name: 'VueEasyLightbox',
+            props: ['visible', 'imgs', 'index'],
+            template: '<div data-lightbox />',
+          },
+        },
+      },
+    })
+
+    await nextTick()
+    image.setAttribute('src', '/optimized-1024.webp')
+    image.click()
+    await nextTick()
+
+    expect(wrapper.getComponent({ name: 'VueEasyLightbox' }).props('visible')).toBe(true)
     wrapper.unmount()
   })
 })
