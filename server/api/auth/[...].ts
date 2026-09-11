@@ -171,6 +171,7 @@ async function authorizeWithOnboardingToken(loginToken: string, req: any) {
 }
 
 export default NuxtAuthHandler({
+  pages: { signIn: '/auth-error', error: '/auth-error' },
   logger: { error: logAuthError },
   secret: useRuntimeConfig().auth.secret,
   cookies: {
@@ -286,6 +287,21 @@ export default NuxtAuthHandler({
   ],
   session: { strategy: 'jwt' },
   callbacks: {
+    async signIn({ user, account }) {
+      if (!isOAuthSignIn(account)) return true
+      const existingUser = user.email
+        ? await prisma.user.findFirst({ where: { email: user.email, deletedAt: null } })
+        : null
+      const error = !user.email
+        ? 'oauth_email_unverified'
+        : !canLinkOAuthIdentity(existingUser)
+          ? 'oauth_local_account_unverified'
+          : undefined
+      if (!error) return true
+      logAuthError('OAUTH_CALLBACK_HANDLER_ERROR', { providerId: account.provider, error: new Error(error) })
+      // A signIn redirect stops authentication before the JWT callback loses the error code.
+      return `/auth-error?error=${error}`
+    },
     async redirect({ url, baseUrl }) {
       if (url.startsWith('/')) return `${baseUrl}${url}`
       try {

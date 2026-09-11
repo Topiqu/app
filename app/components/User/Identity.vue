@@ -24,7 +24,7 @@
         </span>
         <span v-if="createdAt" class="inline-flex items-center gap-1.5">
           <UIcon name="mdi:calendar-blank-outline" class="size-4 shrink-0" />
-          {{ $t('common.user.joined', [formatDate(createdAt)]) }}
+          {{ $t('common.user.joined', [formatDate(createdAt, locale)]) }}
         </span>
       </div>
     </div>
@@ -33,6 +33,8 @@
 
 <script setup lang="ts">
 import { formatDate } from '~~/shared/utils'
+
+const { locale } = useI18n()
 
 // Every field is optional: the page renders this panel before `/account` resolves (and while an
 // unauthenticated visit is still being redirected), when `profileForm` is still an empty object.

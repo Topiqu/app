@@ -21,11 +21,12 @@ describe('settings integrations catalog', () => {
     expect(catalog).not.toContain('<Modal ')
   })
 
-  it('presents WordPress with its description and a TBD status without setup instructions', () => {
+  it('presents WordPress with its description and a link to the published plugin', () => {
     const catalog = source('app/components/Form/Client/IntegrationsCatalog.vue')
 
     expect(catalog).toContain("description: $t('common.integrationsCatalog.wordpressDescription')")
-    expect(catalog).toContain('>TBD</UBadge>')
+    expect(catalog).not.toContain('>TBD</UBadge>')
+    expect(catalog).toContain('to="https://wordpress.org/plugins/topiqu-sync/"')
     expect(catalog).not.toContain("$t('common.integrationsCatalog.wordpressStepOne')")
     expect(catalog).not.toContain("$t('common.integrationsCatalog.wordpressBenefitOne')")
   })

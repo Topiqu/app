@@ -38,14 +38,25 @@
             :type="showPassword ? 'text' : 'password'"
             class="w-full"
             icon="mdi:lock"
-            :trailingIcon="showPassword ? 'mdi:eye-off' : 'mdi:eye'"
             required
             :minlength="4"
             :maxlength="124"
             placeholder="********"
             autocomplete="new-password"
-            @click:trailing="showPassword = !showPassword"
-          />
+          >
+            <template #trailing>
+              <UButton
+                type="button"
+                color="neutral"
+                variant="link"
+                size="sm"
+                :icon="showPassword ? 'mdi:eye-off' : 'mdi:eye'"
+                :aria-label="showPassword ? $t('common.hidePassword') : $t('common.showPassword')"
+                :aria-pressed="showPassword"
+                @click="showPassword = !showPassword"
+              />
+            </template>
+          </UInput>
         </UFormField>
 
         <UFormField :label="$t('common.auth.passwordConfirm')" name="passwordConfirm">
@@ -54,14 +65,25 @@
             :type="showPasswordConfirm ? 'text' : 'password'"
             class="w-full"
             icon="mdi:lock-check"
-            :trailingIcon="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'"
             required
             :minlength="4"
             :maxlength="124"
             placeholder="********"
             autocomplete="new-password"
-            @click:trailing="showPasswordConfirm = !showPasswordConfirm"
-          />
+          >
+            <template #trailing>
+              <UButton
+                type="button"
+                color="neutral"
+                variant="link"
+                size="sm"
+                :icon="showPasswordConfirm ? 'mdi:eye-off' : 'mdi:eye'"
+                :aria-label="showPasswordConfirm ? $t('common.hidePassword') : $t('common.showPassword')"
+                :aria-pressed="showPasswordConfirm"
+                @click="showPasswordConfirm = !showPasswordConfirm"
+              />
+            </template>
+          </UInput>
         </UFormField>
 
         <UButton type="submit" :loading="submitting" :disabled="submitting" block>
