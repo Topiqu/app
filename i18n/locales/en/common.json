@@ -1,5 +1,10 @@
 {
   "common": {
+    "entry": {
+      "title": "Create your first blog",
+      "description": "Set up your blog, then start writing and publishing articles with Topiqu.",
+      "retry": "Try again"
+    },
     "searchConsole": {
       "title": "Google Search Console",
       "premiumOnly": "Search Console intelligence is available on PREMIUM and CUSTOM plans with the integration enabled.",

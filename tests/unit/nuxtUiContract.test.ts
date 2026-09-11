@@ -246,6 +246,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/User/PictureUploader.vue',
       'app/pages/admin/editor/[id].vue',
       'app/pages/invitation/[token].vue',
+      'app/pages/start.vue',
     ])
     expect(failuresFor(/\banimate-(?:spin|rotate)\b|svg-spinners:|role=["']progressbar["']/i, allowlist)).toEqual([])
   })

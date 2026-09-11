@@ -191,7 +191,7 @@ describe('invitation onboarding wiring', () => {
   it('returns credentials registration and verification to the invitation', () => {
     const authPage = source('app/pages/autorizace/index.vue')
     const form = source('app/components/Auth/Form.vue')
-    expect(authPage).toContain(':redirectTo="invitationRedirect"')
+    expect(authPage).toContain(':redirectTo="invitationRedirect || appRedirect"')
     expect(form.match(/afterSignIn\(user\.role\)/g)?.length).toBeGreaterThanOrEqual(3)
   })
 

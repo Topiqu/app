@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
   return prisma.tenantMembership.findMany({
-    where: { userId: user.id, deletedAt: null },
+    where: { userId: user.id, deletedAt: null, clientSite: { deletedAt: null } },
     orderBy: { createdAt: 'asc' },
     select: {
       clientSiteId: true,

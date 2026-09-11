@@ -1,5 +1,10 @@
 {
   "common": {
+    "entry": {
+      "title": "Založte svůj první blog",
+      "description": "Nastavte si blog a začněte psát a publikovat články s Topiqu.",
+      "retry": "Zkusit znovu"
+    },
     "searchConsole": {
       "title": "Google Search Console",
       "premiumOnly": "Search Console intelligence je dostupná v plánu PREMIUM a v CUSTOM s aktivní integrací.",

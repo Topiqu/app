@@ -58,14 +58,6 @@ onMounted(() => {
   document.documentElement.dataset.topiquHydrated = 'true'
 })
 
-const localePath = useLocalePath()
-
-const isAppHost = reqUrl.hostname.replace(/^www\./, '') === 'app.topiqu.com'
-
-if (isAppHost && String(route.name || '').startsWith('index')) {
-  await navigateTo(localePath({ name: 'autorizace' }))
-}
-
 if (clientSite) {
   adChance.assign(clientSite.id, clientSite.plan)
 }
