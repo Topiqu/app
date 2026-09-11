@@ -16,7 +16,7 @@ export default defineMonitoredTask({
       select: { id: true, name: true, communityInsight: true, language: true, focus: true, audience: true },
     })
 
-    const updates = await Promise.all(
+    const updates = await Promise.allSettled(
       sites.map(async (site) => {
         const comments = await prisma.comment.findMany({
           where: {
@@ -43,30 +43,31 @@ export default defineMonitoredTask({
           })
         }
 
-        const current = calculateAverages(comments.map((c) => c.sentiment))
-        const prevInsight = site.communityInsight as any
-        const trend = prevInsight?.avgScore
-          ? (() => {
-              const delta = current.avgScore - (prevInsight.avgScore || 0)
-              if (delta > 0.1) return 'up'
-              if (delta < -0.1) return 'down'
-              return 'stable'
-            })()
-          : undefined
+        return withTokenReservation(site.id, 1500, 'COMMUNITY_INSIGHT', async () => {
+          const current = calculateAverages(comments.map((c) => c.sentiment))
+          const prevInsight = site.communityInsight as any
+          const trend = prevInsight?.avgScore
+            ? (() => {
+                const delta = current.avgScore - (prevInsight.avgScore || 0)
+                if (delta > 0.1) return 'up'
+                if (delta < -0.1) return 'down'
+                return 'stable'
+              })()
+            : undefined
 
-        const sampleTexts = comments
-          .slice(0, 8)
-          .map((c) => c.content.slice(0, 180))
-          .join('\n---\n')
+          const sampleTexts = comments
+            .slice(0, 8)
+            .map((c) => c.content.slice(0, 180))
+            .join('\n---\n')
 
-        let newInsight: any = site.communityInsight
-        let logMetadata: any = {}
+          let newInsight: any = site.communityInsight
+          let logMetadata: any = {}
 
-        try {
-          const { object, usage } = await generateObject({
-            model: aiModel('communityInsight'),
-            instructions: `You are a community analyst. Respond in the client's language: ${site.language}. Summary must be 250 characters or less. Count every character. Return ONLY valid JSON. No extra text.`,
-            prompt: `
+          try {
+            const { object, usage } = await generateObject({
+              model: aiModel('communityInsight'),
+              instructions: `You are a community analyst. Respond in the client's language: ${site.language}. Summary must be 250 characters or less. Count every character. Return ONLY valid JSON. No extra text.`,
+              prompt: `
               Client: ${site.name}
               Comments: ${comments.length} (24h)
               Avg score: ${current.avgScore.toFixed(2)}
@@ -82,67 +83,76 @@ export default defineMonitoredTask({
 
               Write 1–2 sentence summary (MAX 250 CHARS). Add short suggestion if needed, relevant to client's focus and audience: ${site.focus}, ${site.audience}.
             `.trim(),
-            schema: insightSchema,
-            temperature: 0,
-            maxRetries: 1,
-          })
+              schema: insightSchema,
+              temperature: 0,
+              maxRetries: 1,
+            })
 
-          await consumeClientTokens(site.id, usage.totalTokens!, 'COMMUNITY_INSIGHT_GENERATED', {
-            commentCount: comments.length,
-            avgScore: current.avgScore,
-            topEmotion: current.topEmotion,
-          })
+            await consumeClientTokens(site.id, usage.totalTokens!, 'COMMUNITY_INSIGHT_GENERATED', {
+              usage,
+              commentCount: comments.length,
+              avgScore: current.avgScore,
+              topEmotion: current.topEmotion,
+            })
 
-          newInsight = {
-            ...object,
-            trend,
-            helpfulness: current.helpfulness,
-            sarcasm: current.sarcasm,
-            topPoints: current.topPoints,
+            newInsight = {
+              ...object,
+              trend,
+              helpfulness: current.helpfulness,
+              sarcasm: current.sarcasm,
+              topPoints: current.topPoints,
+            }
+            logMetadata = {
+              usage,
+              avgScore: current.avgScore,
+              topEmotion: current.topEmotion,
+              toxicity: current.toxicity,
+              helpfulness: current.helpfulness,
+              sarcasm: current.sarcasm,
+              topPoints: current.topPoints,
+              commentCount: comments.length,
+            }
+
+            await logAction({
+              action: 'COMMUNITY_INSIGHT_GENERATED',
+              clientSiteId: site.id,
+              metadata: logMetadata,
+            })
+          } catch (err: any) {
+            await recordTokenUsage(site.id, 0, { failed: true })
+            console.error(`[community-insights] AI failed for site ${site.id}`, err)
+            await logAction({
+              action: 'COMMUNITY_INSIGHT_FAILED',
+              clientSiteId: site.id,
+              metadata: { error: err.message, siteId: site.id },
+            })
+
+            newInsight = {
+              error: true,
+              reason: 'AI_VALIDATION_FAIL',
+              previous: site.communityInsight,
+              updatedAt: now.toISOString(),
+            }
           }
-          logMetadata = {
-            usage,
-            avgScore: current.avgScore,
-            topEmotion: current.topEmotion,
-            toxicity: current.toxicity,
-            helpfulness: current.helpfulness,
-            sarcasm: current.sarcasm,
-            topPoints: current.topPoints,
-            commentCount: comments.length,
-          }
 
-          await logAction({
-            action: 'COMMUNITY_INSIGHT_GENERATED',
-            clientSiteId: site.id,
-            metadata: logMetadata,
+          return prisma.clientSite.update({
+            where: { id: site.id },
+            data: {
+              communityInsight: newInsight,
+              insightUpdatedAt: now,
+            },
           })
-        } catch (err: any) {
-          console.error(`[community-insights] AI failed for site ${site.id}`, err)
-          await logAction({
-            action: 'COMMUNITY_INSIGHT_FAILED',
-            clientSiteId: site.id,
-            metadata: { error: err.message, siteId: site.id },
-          })
-
-          newInsight = {
-            error: true,
-            reason: 'AI_VALIDATION_FAIL',
-            previous: site.communityInsight,
-            updatedAt: now.toISOString(),
-          }
-        }
-
-        return prisma.clientSite.update({
-          where: { id: site.id },
-          data: {
-            communityInsight: newInsight,
-            insightUpdatedAt: now,
-          },
         })
       }),
     )
 
-    return { result: { updated: updates.length, timestamp: now.toISOString() } }
+    return {
+      result: {
+        updated: updates.filter((row) => row.status === 'fulfilled').length,
+        failed: updates.filter((row) => row.status === 'rejected').length,
+        timestamp: now.toISOString(),
+      },
+    }
   },
 })
 

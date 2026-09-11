@@ -33,9 +33,10 @@ export const topicSchema = z
       .describe('One structure variant listed under the selected format.'),
     modules: z
       .array(z.enum(ARTICLE_MODULE_NAMES))
-      .max(3)
+      .min(1)
+      .max(4)
       .describe(
-        'Zero to three useful optional modules allowed by the selected format. Empty is valid; never add a module merely for decoration.',
+        'One to four useful modules allowed by the selected format. Pick the set that serves this topic; no particular module type is universally required.',
       ),
     needsResearch: z
       .boolean()
@@ -101,7 +102,8 @@ A feed where every piece has the same shape reads as generated even when each pi
 Recent format / variant / module combinations, most recent first:
 ${input.recentStructures?.length ? input.recentStructures.map((structure) => `- ${structure}`).join('\n') : '- nothing yet'}
 Do not repeat a variant from the three most recent articles. Vary the optional module set too, but
-never add FAQ, poll, table, summary fields or video merely to look different. An empty module set is valid.
+select at least one useful module for every article. No individual type is mandatory: choose from
+the selected format according to the topic, and never add FAQ, poll, table, images or video merely to look different.
 
 ## COMMUNITY SIGNAL
 ${input.suggestion || 'none'}

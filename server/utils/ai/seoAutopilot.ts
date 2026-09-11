@@ -39,7 +39,7 @@ ${article.content.slice(0, 12000)}
 
 Rewrite only the title and excerpt so they accurately answer the observed search intent.`,
   })
-  return { result: object, tokens: usage.totalTokens ?? 0 }
+  return { result: object, tokens: usage.totalTokens ?? 0, usage }
 }
 
 export const generateContentRefresh = async (article: SeoArticle, signal: SeoSignal) => {
@@ -58,5 +58,5 @@ ${article.content.slice(0, 30000)}
 
 Create one non-duplicative section that better satisfies the observed query. contentHtml must contain paragraphs and optional h3/list elements, but no h1 or h2; heading is returned separately.`,
   })
-  return { result: object, tokens: usage.totalTokens ?? 0 }
+  return { result: object, tokens: usage.totalTokens ?? 0, usage }
 }

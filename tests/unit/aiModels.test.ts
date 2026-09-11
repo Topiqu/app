@@ -62,6 +62,11 @@ describe('AI model registry', () => {
     expect(aiModelId('articleResearch')).not.toMatch(/^gpt-image-/)
   })
 
+  it('routes the independent article copy desk through a text model', () => {
+    expect(aiModelProvider('articleEditor')).toBe('openai')
+    expect(aiModelId('articleEditor')).toBe('gpt-5.6-luna')
+  })
+
   it('generates article images with an OpenAI image model', () => {
     expect(aiImageModelProvider('articleImage')).toBe('openai')
     expect(aiImageModelId('articleImage')).toMatch(/^gpt-image-/)

@@ -27,16 +27,15 @@
         :aria-hidden="articleState.showHeader && !!articleHeader"
         :tabindex="articleState.showHeader && articleHeader ? -1 : undefined"
       >
-        <NuxtImg
+        <img
           v-if="!isPublicationSurface"
-          src="/app-logo.png"
+          src="/logo.png"
           alt="Topiqu"
-          width="48"
-          height="48"
-          preload
+          width="628"
+          height="237"
           loading="eager"
-          fetchPriority="high"
-          class="size-12 object-contain"
+          fetchpriority="high"
+          class="h-12 w-auto max-w-36 rounded-md object-contain"
         />
         <AppMedia
           v-else

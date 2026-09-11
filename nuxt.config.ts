@@ -124,7 +124,7 @@ export default defineNuxtConfig({
           '0 3 * * *': ['community-insights'],
           '0 2 * * *': ['search-console-sync'],
           '30 2 * * *': ['search-console-autopilot'],
-          '*/5 * * * *': ['translate-pending'],
+          '*/5 * * * *': ['translate-pending', 'token-wallet-maintenance'],
           '0 4 * * *': ['gam-sync'],
         }
       : undefined,
@@ -547,18 +547,18 @@ export default defineNuxtConfig({
       short_name: 'Topiqu',
       description: 'Moderní blogovací platforma poháněná AI',
       theme_color: '#2d5ebc',
-      // icons: [
-      //   {
-      //     src: '/icons/icon-192x192.png',
-      //     sizes: '192x192',
-      //     type: 'image/png',
-      //   },
-      //   {
-      //     src: '/icons/icon-512x512.png',
-      //     sizes: '512x512',
-      //     type: 'image/png',
-      //   },
-      // ],
+      icons: [
+        {
+          src: '/icons/icon-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+        },
+        {
+          src: '/icons/icon-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+        },
+      ],
     },
     workbox: {
       // This is an SSR application, not an app-shell build. `/` is intentionally absent from

@@ -33,6 +33,7 @@ export const optimizeArticleImages = (html: string, transform?: ArticleImageTran
 
     const attrs: Record<string, string> = {
       'data-original-src': escapeAttribute(src),
+      'data-article-lightbox': 'true',
       loading: 'lazy',
       decoding: 'async',
     }

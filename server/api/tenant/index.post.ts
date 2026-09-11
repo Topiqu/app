@@ -100,7 +100,6 @@ export default defineEventHandler(async (event) => {
           language: body.language,
           theme: body.theme,
           plan: 'BASIC',
-          tokenLimit: 0,
           tokenRemaining: 0,
           ...domainVerificationDefaults(domain, randomBytes(24).toString('base64url'), baseDomain),
         },

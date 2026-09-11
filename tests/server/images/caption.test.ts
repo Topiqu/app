@@ -54,7 +54,9 @@ describe('buildImageHtml', () => {
   it('keeps the <p><img> shape the editor and lightbox depend on', () => {
     const html = buildImageHtml(image(), 'Summit v Ženevě', LABELS)
 
-    expect(html).toMatch(/^<p style="text-align: center;"><img src="https:\/\/cdn\/x\.jpg" alt="Summit v Ženevě" \/>/)
+    expect(html).toMatch(
+      /^<p style="text-align: center;"><img src="https:\/\/cdn\/x\.jpg" alt="Summit v Ženevě" data-article-lightbox="true" \/>/,
+    )
     expect(html).toContain('<br><small')
     expect(html).not.toContain('<figure')
   })

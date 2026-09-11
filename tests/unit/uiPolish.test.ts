@@ -107,7 +107,8 @@ describe('dashboard UI polish contracts', () => {
 
   it('resolves ClientVersion from the active tenant status', () => {
     const version = source('app/components/Client/Version.vue')
-    expect(version).toContain('const { data: status } = await useClientSiteStatus()')
+    expect(version).toContain('await useClientSiteStatus()')
+    expect(version).not.toContain('tokenLimit')
     expect(version).not.toContain('/by-userid')
     expect(source('server/api/clients/status.get.ts')).toContain('name: true')
   })

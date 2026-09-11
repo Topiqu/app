@@ -50,9 +50,10 @@ export const useArticleGeneration = () => {
     generating.value = true
 
     try {
+      const requestKey = crypto.randomUUID()
       const res = await fetch('/api/articles/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': requestKey },
         body: JSON.stringify({ prompt, options }),
         signal: controller.signal,
       })

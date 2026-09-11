@@ -64,6 +64,7 @@ describe('manual article generation stream', () => {
     expect(articleGenerator).toContain("onMedia?.({ stage: 'cover'")
     expect(articleGenerator).toContain("stage: 'complete'")
     expect(articleGenerator).toContain('if (!articleImageUrl && object.coverImage)')
+    expect(articleGenerator).toContain('if (!articleImageUrl && firstBodyImage)')
   })
 
   it('grounds time-sensitive claims against the actual generation date', () => {

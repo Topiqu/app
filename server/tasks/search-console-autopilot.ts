@@ -113,91 +113,95 @@ export default defineMonitoredTask({
           position: candidate.position,
         }
 
-        if (candidate.action === 'CTR_OPTIMIZATION') {
-          const generated = await generateCtrOptimization(
-            { ...article, language: connection.clientSite.language },
-            signal,
-          )
-          if (!generated.tokens) continue
-          await consumeClientTokens(connection.clientSiteId, generated.tokens, 'SEO_AUTOPILOT_CTR_TOKENS', {
-            articleId: article.id,
-            query: candidate.query,
-          })
-          await prisma.article.update({
-            where: { id: article.id },
-            data: { title: generated.result.title, excerpt: generated.result.excerpt },
-          })
-          await syncArticleTranslationQueue(prisma, article.id, connection.clientSiteId, { contentChanged: true })
-          await invalidateFeed(connection.clientSiteId)
-          await logAction({
-            action: 'SEO_AUTOPILOT_CTR_OPTIMIZED',
-            clientSiteId: connection.clientSiteId,
-            metadata: {
+        await withTokenReservation(connection.clientSiteId, 5000, 'SEO_AUTOPILOT', async () => {
+          if (candidate.action === 'CTR_OPTIMIZATION') {
+            const generated = await generateCtrOptimization(
+              { ...article, language: connection.clientSite.language },
+              signal,
+            )
+            if (!generated.tokens) return
+            await consumeClientTokens(connection.clientSiteId, generated.tokens, 'SEO_AUTOPILOT_CTR_TOKENS', {
+              usage: generated.usage,
               articleId: article.id,
               query: candidate.query,
-              page: candidate.page,
-              signal,
-              before: { title: article.title, excerpt: article.excerpt },
-              after: generated.result,
-            },
-          })
-        } else {
-          const generated = await generateContentRefresh(
-            { ...article, language: connection.clientSite.language },
-            signal,
-          )
-          if (!generated.tokens) continue
-          const addition = sanitizeHtml(
-            `<section data-topiqu-seo-refresh="true"><h2>${generated.result.heading}</h2>${generated.result.contentHtml}</section>`,
-          )
-          const content = stampHeadingIds(`${article.content}\n${addition}`)
-          if (content.length > 50000) {
-            await logAction({
-              action: 'SEO_AUTOPILOT_SKIPPED_CONTENT_LIMIT',
-              clientSiteId: connection.clientSiteId,
-              metadata: { articleId: article.id, query: candidate.query },
             })
-            continue
-          }
-          await consumeClientTokens(connection.clientSiteId, generated.tokens, 'SEO_AUTOPILOT_REFRESH_TOKENS', {
-            articleId: article.id,
-            query: candidate.query,
-          })
-          const metrics = calculateArticleMetrics(
-            content,
-            connection.clientSite.humanHourlyRateUsd,
-            connection.clientSite.humanWordsPerHour,
-          )
-          await prisma.article.update({
-            where: { id: article.id },
-            data: {
-              content,
-              totalWords: metrics.totalWords,
-              savedAmount: metrics.savedAmount,
-              savedTimeMinutes: metrics.savedTimeMinutes,
-            },
-          })
-          await syncArticleTranslationQueue(prisma, article.id, connection.clientSiteId, { contentChanged: true })
-          await invalidateFeed(connection.clientSiteId)
-          await logAction({
-            action: 'SEO_AUTOPILOT_CONTENT_REFRESHED',
-            clientSiteId: connection.clientSiteId,
-            metadata: {
+            await prisma.article.update({
+              where: { id: article.id },
+              data: { title: generated.result.title, excerpt: generated.result.excerpt },
+            })
+            await syncArticleTranslationQueue(prisma, article.id, connection.clientSiteId, { contentChanged: true })
+            await invalidateFeed(connection.clientSiteId)
+            await logAction({
+              action: 'SEO_AUTOPILOT_CTR_OPTIMIZED',
+              clientSiteId: connection.clientSiteId,
+              metadata: {
+                articleId: article.id,
+                query: candidate.query,
+                page: candidate.page,
+                signal,
+                before: { title: article.title, excerpt: article.excerpt },
+                after: generated.result,
+              },
+            })
+          } else {
+            const generated = await generateContentRefresh(
+              { ...article, language: connection.clientSite.language },
+              signal,
+            )
+            if (!generated.tokens) return
+            const addition = sanitizeHtml(
+              `<section data-topiqu-seo-refresh="true"><h2>${generated.result.heading}</h2>${generated.result.contentHtml}</section>`,
+            )
+            const content = stampHeadingIds(`${article.content}\n${addition}`)
+            if (content.length > 50000) {
+              await logAction({
+                action: 'SEO_AUTOPILOT_SKIPPED_CONTENT_LIMIT',
+                clientSiteId: connection.clientSiteId,
+                metadata: { articleId: article.id, query: candidate.query },
+              })
+              return
+            }
+            await consumeClientTokens(connection.clientSiteId, generated.tokens, 'SEO_AUTOPILOT_REFRESH_TOKENS', {
+              usage: generated.usage,
               articleId: article.id,
               query: candidate.query,
-              page: candidate.page,
-              signal,
-              before: {
-                content: article.content,
-                totalWords: article.totalWords,
-                savedAmount: article.savedAmount,
-                savedTimeMinutes: article.savedTimeMinutes,
+            })
+            const metrics = calculateArticleMetrics(
+              content,
+              connection.clientSite.humanHourlyRateUsd,
+              connection.clientSite.humanWordsPerHour,
+            )
+            await prisma.article.update({
+              where: { id: article.id },
+              data: {
+                content,
+                totalWords: metrics.totalWords,
+                savedAmount: metrics.savedAmount,
+                savedTimeMinutes: metrics.savedTimeMinutes,
               },
-              after: { content, heading: generated.result.heading },
-            },
-          })
-        }
-        changed++
+            })
+            await syncArticleTranslationQueue(prisma, article.id, connection.clientSiteId, { contentChanged: true })
+            await invalidateFeed(connection.clientSiteId)
+            await logAction({
+              action: 'SEO_AUTOPILOT_CONTENT_REFRESHED',
+              clientSiteId: connection.clientSiteId,
+              metadata: {
+                articleId: article.id,
+                query: candidate.query,
+                page: candidate.page,
+                signal,
+                before: {
+                  content: article.content,
+                  totalWords: article.totalWords,
+                  savedAmount: article.savedAmount,
+                  savedTimeMinutes: article.savedTimeMinutes,
+                },
+                after: { content, heading: generated.result.heading },
+              },
+            })
+          }
+          changed++
+        })
       } catch (error) {
         await logAction({
           action: 'SEO_AUTOPILOT_FAILED',

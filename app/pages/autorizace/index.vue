@@ -6,12 +6,12 @@
         role="alert"
         color="error"
         variant="soft"
-        icon="i-mdi-alert-circle-outline"
+        icon="mdi:alert-circle-outline"
         :title="$t('common.auth.signInFailedTitle')"
         :description="$t(errorKey)"
         class="mb-4"
       />
-      <AuthForm :mode="initialMode" :redirectTo="invitationRedirect" />
+      <AuthForm :mode="initialMode" :redirectTo="invitationRedirect || appRedirect" />
     </div>
   </div>
 </template>
@@ -24,6 +24,8 @@ definePageMeta({ middleware: 'auth', shell: 'product', dashboardSidebar: false }
 const route = useRoute()
 const errorKey = computed(() => authErrorKey(route.query.error))
 const localePath = useLocalePath()
+const appRedirect =
+  useRequestURL().hostname.replace(/^www\./, '') === 'app.topiqu.com' ? localePath({ name: 'start' }) : undefined
 const toast = useToast()
 const { signIn, getSession, data } = useAuth()
 
@@ -45,6 +47,7 @@ const finishOnboardingLogin = async (token: string) => {
     const role = data.value?.user?.role
     toast.add({ color: 'success', title: $t('common.auth.loginSuccess') })
 
+    if (appRedirect) return navigateTo(appRedirect)
     if (role === 'superadmin') return navigateTo(localePath({ name: 'master' }))
     if (role === 'admin') return navigateTo(localePath({ name: 'admin' }))
     return navigateTo(localePath({ name: 'uzivatel' }))

@@ -21,9 +21,17 @@ export default defineEventHandler(async (event) => {
     }).parse,
   )
 
-  const { text, usage } = await enhancePrompt(prompt)
+  return withTokenReservation(
+    user.clientSiteId,
+    1000,
+    'ENHANCE_PROMPT',
+    async () => {
+      const { text, usage } = await enhancePrompt(prompt)
 
-  await consumeClientTokens(user.clientSiteId, usage.totalTokens ?? 0, 'ENHANCE_PROMPT', {}, event)
+      await consumeClientTokens(user.clientSiteId, usage.totalTokens ?? 0, 'ENHANCE_PROMPT', { usage }, event)
 
-  return { prompt: text }
+      return { prompt: text }
+    },
+    tokenRequestKey(event, user.clientSiteId, 'ENHANCE_PROMPT'),
+  )
 })

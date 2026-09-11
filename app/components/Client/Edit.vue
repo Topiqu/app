@@ -74,13 +74,7 @@
               ]"
             />
           </UFormField>
-          <UFormField :label="$t('master.clientEdit.fields.tokenLimit.label')">
-            <UInputNumber
-              v-model="editedClient.tokenLimit"
-              :placeholder="$t('master.clientEdit.fields.tokenLimit.placeholder')"
-              :min="0"
-            />
-          </UFormField>
+          <ClientWalletAdjustment :clientSiteId="client.id" />
         </div>
       </div>
     </template>
@@ -122,7 +116,6 @@ const editedClient = ref({
   domain: props.client.domain,
   plan: props.client.plan,
   generationFrequency: props.client.generationFrequency,
-  tokenLimit: props.client.tokenLimit,
   description: props.client.description || '',
   logoUrl: props.client.logoUrl || '',
   optimizedUrl: '',

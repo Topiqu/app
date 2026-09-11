@@ -138,7 +138,10 @@ describe('consent integration contracts', () => {
     expect(clientVersion).toContain('consentSettingsOpen.value = true')
     expect(clientVersion).toContain('show.value = false')
     expect(clientVersion).toContain('data-client-version-bar')
-    expect(clientVersion.indexOf('data-consent-settings')).toBeGreaterThan(clientVersion.indexOf('</UPopover>'))
+    // The cog sits inside the bottom bar, after the version trigger — not loose in the slideover.
+    expect(clientVersion.indexOf('data-consent-settings')).toBeGreaterThan(
+      clientVersion.indexOf('data-client-version-bar'),
+    )
     expect(source('app/assets/styles/main.css')).toContain('body:has(.bottom-action-bar) .back-to-top')
     expect(source('app/components/ConsentManager.vue')).toContain('window.location.reload()')
     expect(source('app/components/ConsentManager.vue')).toContain("const adConsent = marketing ? 'granted' : 'denied'")

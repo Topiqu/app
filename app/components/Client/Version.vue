@@ -8,7 +8,7 @@
       color="neutral"
       variant="soft"
       trailingIcon="mdi:chevron-up"
-      :aria-label="$t('articles.userMenu.remainingTokens')"
+      :aria-label="$t('common.wallet.title')"
       @click="show = true"
     >
       <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
@@ -18,11 +18,11 @@
       <UBadge
         v-if="status?.tokenRemaining != null"
         class="ml-auto min-w-0 max-w-[8.5rem] shrink truncate tabular-nums"
-        :title="`${status.tokenRemaining}/${status.tokenLimit}`"
+        :title="$t('common.wallet.available')"
         :color="isLowTokens ? 'error' : 'success'"
         variant="soft"
       >
-        {{ status.tokenRemaining }}/{{ status.tokenLimit }}
+        {{ status.tokenRemaining.toLocaleString(locale) }}
       </UBadge>
     </UButton>
 
@@ -42,24 +42,72 @@
   <USlideover
     v-model:open="show"
     side="right"
-    :title="$t('articles.userMenu.remainingTokens')"
+    :title="$t('common.wallet.title')"
     class="w-full sm:max-w-xl"
     :ui="{
       content: 'w-full sm:max-w-xl rounded-none sm:rounded-l-[var(--topiqu-surface-radius)]',
-      body: 'min-h-0 overflow-y-auto overscroll-contain sm:overflow-hidden sm:py-4',
+      body: 'min-h-0 overflow-y-auto overscroll-contain sm:py-4',
     }"
   >
     <template #body>
-      <div class="flex min-h-0 min-w-0 flex-col gap-5 sm:h-full sm:gap-4">
+      <div class="flex min-h-0 min-w-0 flex-col gap-5 sm:gap-4">
         <div class="flex min-w-0 shrink-0 flex-col gap-5 sm:gap-3">
-          <div class="space-y-2">
-            <div class="flex items-center justify-between gap-3 text-sm">
-              <span class="font-semibold text-highlighted">{{ $t('articles.userMenu.remainingTokens') }}</span>
-              <span class="text-muted">{{ status?.tokenRemaining ?? 0 }} / {{ status?.tokenLimit ?? 20000 }}</span>
+          <section>
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <h3 class="text-xs font-medium uppercase tracking-wider text-muted">
+                  {{ $t('common.wallet.available') }}
+                </h3>
+                <p class="mt-1 flex flex-wrap items-baseline gap-x-1.5">
+                  <span
+                    class="text-3xl font-bold leading-none tracking-tight tabular-nums"
+                    :class="isLowTokens ? 'text-error' : 'text-highlighted'"
+                    >{{ tokenRemaining.toLocaleString(locale) }}</span
+                  >
+                  <span class="text-sm text-muted">{{ $t('common.wallet.unit') }}</span>
+                </p>
+              </div>
+              <UTooltip :text="$t('common.wallet.neverExpires')">
+                <UButton
+                  square
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  icon="mdi:information-outline"
+                  :aria-label="$t('common.wallet.neverExpires')"
+                />
+              </UTooltip>
             </div>
-            <UProgress :modelValue="remainingPercent" :color="isLowTokens ? 'error' : 'success'" />
-            <p class="text-xs text-muted">{{ $t('articles.userMenu.totalConsumed', [status?.totalUsage ?? 0]) }}</p>
-          </div>
+
+            <dl v-if="wallet" class="mt-3 grid gap-1.5 border-t border-default pt-3 text-sm">
+              <div v-if="wallet.reserved > 0">
+                <div class="flex items-baseline justify-between gap-3">
+                  <dt class="min-w-0 text-muted">{{ $t('common.wallet.reserved') }}</dt>
+                  <dd class="shrink-0 tabular-nums text-highlighted">
+                    {{ wallet.reserved.toLocaleString(locale) }}
+                  </dd>
+                </div>
+                <p class="mt-0.5 text-xs text-muted">{{ $t('common.wallet.reservedHint') }}</p>
+              </div>
+              <div class="flex items-baseline justify-between gap-3">
+                <dt class="min-w-0 text-muted">{{ $t('common.wallet.periodUsage', { period: usagePeriod }) }}</dt>
+                <dd class="shrink-0 tabular-nums text-highlighted">
+                  {{ wallet.periodUsage.toLocaleString(locale) }}
+                </dd>
+              </div>
+              <div
+                v-for="(grant, index) in wallet.expiring"
+                :key="index"
+                class="flex items-baseline justify-between gap-3"
+              >
+                <dt class="min-w-0 text-muted">
+                  {{ $t('common.wallet.expires') }}
+                  <AppTime v-if="grant.expiresAt" :datetime="grant.expiresAt" preset="short" />
+                </dt>
+                <dd class="shrink-0 tabular-nums text-highlighted">{{ grant.remaining.toLocaleString(locale) }}</dd>
+              </div>
+            </dl>
+          </section>
 
           <UAlert
             v-if="isLowTokens"
@@ -67,9 +115,10 @@
             variant="soft"
             icon="mdi:alert"
             :title="$t('articles.userMenu.lowTokensWarning')"
-            :description="$t('articles.userMenu.lowTokensHint', { percent: 20 })"
+            :description="$t('common.wallet.lowBalance')"
           />
 
+          <USeparator :label="$t('common.wallet.topup')" />
           <div class="grid grid-cols-1 gap-2 min-[22rem]:grid-cols-2">
             <button
               v-for="pack in tokenPacks"
@@ -121,6 +170,41 @@
           </div>
         </div>
 
+        <section class="space-y-3" :aria-label="$t('common.wallet.history')">
+          <USeparator :label="$t('common.wallet.history')" />
+          <UAlert v-if="walletError" color="error" :title="$t('common.messages.loadFailedTitle')">
+            <template #actions
+              ><UButton @click="refreshWallet()">{{ $t('common.messages.retry') }}</UButton></template
+            >
+          </UAlert>
+          <div
+            class="max-h-[min(40dvh,20rem)] overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
+            tabindex="0"
+            role="region"
+            :aria-label="$t('common.wallet.history')"
+          >
+            <div
+              v-for="entry in ledger"
+              :key="entry.id"
+              class="flex items-start justify-between gap-3 border-b border-default py-2"
+            >
+              <div class="min-w-0">
+                <p class="break-words text-sm">{{ $t(`common.wallet.kinds.${entry.kind}`) }}</p>
+                <p class="break-words text-xs text-muted">{{ entry.reason }}</p>
+                <AppTime :datetime="entry.createdAt" preset="shortDatetime" class="text-xs text-muted" />
+              </div>
+              <span class="shrink-0 tabular-nums"
+                >{{ entry.amount > 0 ? '+' : '' }}{{ entry.amount.toLocaleString(locale) }}</span
+              >
+            </div>
+            <p v-if="!ledger.length && walletState !== 'pending'" class="text-sm text-muted">
+              {{ $t('common.wallet.empty') }}
+            </p>
+          </div>
+          <UButton v-if="walletData?.nextCursor" block :loading="walletState === 'pending'" @click="loadMoreCredit">{{
+            $t('common.pagination.next')
+          }}</UButton>
+        </section>
         <div class="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
           <USeparator :label="$t('articles.userMenu.recentActions')" />
 
@@ -140,7 +224,13 @@
           <div v-else-if="logStatus === 'pending' && !logs.items.length" class="space-y-2" aria-busy="true">
             <USkeleton v-for="index in 3" :key="index" class="h-12 w-full" />
           </div>
-          <div v-else-if="logs.items.length" class="min-h-0">
+          <div
+            v-else-if="logs.items.length"
+            class="min-h-0 max-h-[min(40dvh,20rem)] overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
+            tabindex="0"
+            role="region"
+            :aria-label="$t('articles.userMenu.recentActions')"
+          >
             <ol class="grid gap-x-4 sm:grid-cols-2">
               <li
                 v-for="log in logs.items"
@@ -162,7 +252,15 @@
           </div>
           <UEmpty v-else icon="mdi:history" :title="$t('articles.userMenu.recentActions')" />
 
-          <UButton v-if="logs.hasMore" color="neutral" variant="soft" block @click="loadMore">
+          <UButton
+            v-if="logs.hasMore"
+            color="neutral"
+            variant="soft"
+            block
+            :loading="logStatus === 'pending'"
+            :disabled="!!logError"
+            @click="loadMore"
+          >
             {{ $t('common.pagination.next') }}
           </UButton>
 
@@ -184,7 +282,7 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const { locale, t } = useI18n()
-const { data: status } = await useClientSiteStatus()
+const { data: status, refresh: refreshStatus } = await useClientSiteStatus()
 const site = computed(() => status.value)
 const tokenPacks = computed(() => buildTokenPackViews(t, locale.value))
 
@@ -193,6 +291,31 @@ const show = shallowRef(false)
 const checkoutPack = shallowRef<string | null>(null)
 const logs = reactive<{ items: any[]; hasMore: boolean }>({ items: [], hasMore: false })
 const consentSettingsOpen = useConsentSettingsOpen()
+const creditCursor = ref<string | null>(null)
+const ledger = ref<{ id: string; kind: string; amount: number; reason: string; createdAt: string }[]>([])
+const {
+  data: walletData,
+  refresh: refreshWallet,
+  error: walletError,
+  status: walletState,
+} = await useFetch(() => `/api/clients/${site.value?.id}/wallet`, {
+  query: computed(() => ({ cursor: creditCursor.value || undefined })),
+  immediate: false,
+  watch: false,
+})
+watch(walletData, (value) => {
+  if (!value) return
+  ledger.value = Array.from(
+    new Map(
+      (creditCursor.value ? [...ledger.value, ...value.items] : value.items).map((item) => [item.id, item]),
+    ).values(),
+  )
+})
+const loadMoreCredit = async () => {
+  if (walletState.value === 'pending' || !walletData.value?.nextCursor) return
+  creditCursor.value = walletData.value.nextCursor
+  await refreshWallet()
+}
 
 const openConsentSettings = () => {
   show.value = false
@@ -210,12 +333,23 @@ const {
   watch: false,
 })
 
-watch(show, async (isOpen) => {
+const openWallet = async (isOpen: boolean) => {
   if (!isOpen || !site.value?.id) return
   page.value = 1
   logs.items = []
-  await refresh()
-})
+  creditCursor.value = null
+  ledger.value = []
+  await Promise.all([refresh(), refreshWallet(), refreshStatus()])
+}
+// Keep these separate: a shallow ref in a multi-source watcher forces the callback
+// on status refresh too, even when the tenant ID has not changed.
+watch(show, openWallet)
+watch(
+  () => site.value?.id,
+  () => {
+    if (show.value) void openWallet(true)
+  },
+)
 
 watch(
   response,
@@ -230,19 +364,22 @@ watch(
 )
 
 const loadMore = async () => {
-  if (!logs.hasMore) return
+  if (!logs.hasMore || logStatus.value === 'pending') return
   page.value++
   await refresh()
 }
 
 const tokenRemaining = computed(() => status.value?.tokenRemaining ?? 0)
-const tokenLimit = computed(() => status.value?.tokenLimit ?? 0)
-const hasTokenPlan = computed(() => tokenLimit.value > 0)
-
-const remainingPercent = computed(() =>
-  hasTokenPlan.value ? Math.min(100, Math.max(0, (tokenRemaining.value / tokenLimit.value) * 100)) : 0,
+const isLowTokens = computed(() => tokenRemaining.value < 1000)
+// Summary numbers come from the status payload, which is already loaded — the paginated
+// /wallet fetch is deliberately not the source, it would render zeros until it resolves.
+const wallet = computed(() => status.value?.wallet)
+const usagePeriod = computed(() =>
+  new Date(wallet.value?.periodStart ?? Date.now()).toLocaleString(locale.value, {
+    month: 'long',
+    timeZone: TOPIQU_TIME_ZONE,
+  }),
 )
-const isLowTokens = computed(() => remainingPercent.value <= 20)
 const planBadgeColor = computed(() =>
   site.value?.plan === 'PREMIUM'
     ? 'warning'

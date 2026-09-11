@@ -17,6 +17,7 @@ describe('optimizeArticleImages', () => {
     expect(html).toContain('sizes="(min-width: 768px) 68ch, calc(100vw - 2rem)"')
     expect(html).toContain('loading="lazy" decoding="async"')
     expect(html).toContain('data-original-src="https://cdn.example/image.png?a=1&amp;b=2"')
+    expect(html).toContain('data-article-lightbox="true"')
     expect(html).toContain('alt="Preview"')
   })
 

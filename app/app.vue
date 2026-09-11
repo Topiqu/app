@@ -58,14 +58,6 @@ onMounted(() => {
   document.documentElement.dataset.topiquHydrated = 'true'
 })
 
-const localePath = useLocalePath()
-
-const isAppHost = reqUrl.hostname.replace(/^www\./, '') === 'app.topiqu.com'
-
-if (isAppHost && String(route.name || '').startsWith('index')) {
-  await navigateTo(localePath({ name: 'autorizace' }))
-}
-
 if (clientSite) {
   adChance.assign(clientSite.id, clientSite.plan)
 }
@@ -113,8 +105,9 @@ useHead(() => ({
     ...i18nLinks.value,
     {
       rel: 'icon',
-      href: liveClientSite.value?.faviconUrl || liveClientSite.value?.logoUrl || '/favicon.ico',
+      href: liveClientSite.value?.faviconUrl || liveClientSite.value?.logoUrl || '/favicon.ico?v=20260908',
     },
+    ...(liveClientSite.value ? [] : [{ rel: 'apple-touch-icon' as const, href: '/apple-touch-icon.png' }]),
     ...(clientSite
       ? [
           {

@@ -1,8 +1,8 @@
 === Topiqu Sync ===
-Contributors: topiqu
+Contributors: topiqu2
 Tags: content sync, articles, publishing, import, headless
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.0
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -38,7 +38,7 @@ Imported article data and downloaded images are stored in the WordPress database
 
 1. Install and activate Topiqu Sync.
 2. Open **Settings > Topiqu Sync**.
-3. Enter the public URL of the Topiqu service and the API key from the Topiqu site's integration settings.
+3. Enter the final HTTPS URL of the Topiqu service (without redirects) and the API key from the Topiqu site's integration settings.
 4. Select the WordPress author, synchronization interval, update policy, and missing-article behavior.
 5. Save the settings and use **Test connection**.
 6. Run **Synchronize now** and review the imported posts under **Posts**.
@@ -64,6 +64,10 @@ WP-Cron is triggered by site traffic. For predictable production scheduling, inv
 = Does it import translations? =
 
 Version 1.0.0 imports the primary source-language article. Full WPML or Polylang translation mapping is not included.
+
+= What if synchronization stays locked after a server crash? =
+
+The lock is released when synchronization finishes, including normal PHP error shutdown. After an abrupt process termination or server crash, first confirm that no synchronization worker is running, then use `wp option delete topiqu_sync_lock` to remove the abandoned lock. Locks do not expire automatically, so a long-running import cannot overlap with another worker.
 
 == Privacy ==
 

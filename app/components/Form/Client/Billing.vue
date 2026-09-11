@@ -89,18 +89,16 @@
       v-if="client && client.billingPlan !== 'PERMANENT'"
       class="space-y-5 rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
     >
-      <div v-if="(client.tokenLimit ?? 0) > 0" class="space-y-2">
+      <div class="space-y-2">
         <div class="flex items-center justify-between text-sm">
           <span class="font-medium text-neutral-700 dark:text-neutral-200">
             {{ $t('common.preferences.billing.tokenBalance') }}
           </span>
           <span class="tabular-nums text-neutral-500 dark:text-neutral-400">
-            {{ (client.tokenRemaining ?? 0).toLocaleString() }} / {{ (client.tokenLimit ?? 0).toLocaleString() }}
+            {{ (client.tokenRemaining ?? 0).toLocaleString() }}
           </span>
         </div>
-        <div class="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
-          <div class="h-full rounded-full bg-emerald-500 transition-all" :style="{ width: `${tokenPercent}%` }" />
-        </div>
+        <p class="text-xs text-muted">{{ $t('common.wallet.explanation') }}</p>
       </div>
 
       <div class="space-y-2">
@@ -348,11 +346,6 @@ const tokenPacks = computed(() => buildTokenPackViews(t, locale.value))
 const pendingAction = ref<string | null>(null)
 const checkoutInterval = ref<'month' | 'year'>(client?.billingPlan === 'ANNUAL' ? 'year' : 'month')
 
-const tokenPercent = computed(() => {
-  const limit = client?.tokenLimit ?? 0
-  if (limit <= 0) return 0
-  return Math.min(100, Math.round(((client?.tokenRemaining ?? 0) / limit) * 100))
-})
 const hasSubscription = computed(() => !!client?.stripeCustomerId)
 
 const {

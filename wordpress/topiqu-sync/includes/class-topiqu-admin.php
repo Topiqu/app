@@ -28,9 +28,14 @@ final class Topiqu_Admin {
         $old = get_option('topiqu_sync_settings', array());
         $modes = array('safe', 'overwrite', 'new_only');
         $intervals = array('manual', 'topiqu_15_minutes', 'topiqu_hourly', 'topiqu_daily');
-        $api_key = trim((string) ($input['api_key'] ?? ''));
+        $api_key = sanitize_text_field((string) ($input['api_key'] ?? ''));
+        $api_url = untrailingslashit(esc_url_raw((string) ($input['api_url'] ?? '')));
+        if ('https' !== wp_parse_url($api_url, PHP_URL_SCHEME)) {
+            add_settings_error('topiqu_sync', 'topiqu_https', __('Topiqu URL must use HTTPS.', 'topiqu-sync'));
+            return $old;
+        }
         return array(
-            'api_url' => untrailingslashit(esc_url_raw((string) ($input['api_url'] ?? ''))),
+            'api_url' => $api_url,
             'api_key' => '' !== $api_key ? $api_key : (string) ($old['api_key'] ?? ''),
             'interval' => in_array($input['interval'] ?? '', $intervals, true) ? $input['interval'] : 'topiqu_15_minutes',
             'author_id' => absint($input['author_id'] ?? 0),
@@ -56,6 +61,7 @@ final class Topiqu_Admin {
             $this->redirect('error', $response->get_error_message());
         }
         $site = $response['data'];
+        /* translators: 1: Topiqu site name, 2: number of published articles. */
         $message = sprintf(__('Connected to %1$s — %2$d published articles.', 'topiqu-sync'), (string) ($site['name'] ?? 'Topiqu'), (int) ($site['articleCount'] ?? 0));
         $this->redirect('success', $message);
     }
@@ -67,6 +73,7 @@ final class Topiqu_Admin {
             $this->redirect('error', $result->get_error_message());
         }
         $message = sprintf(
+            /* translators: 1: created posts, 2: updated posts, 3: skipped posts, 4: drafted posts, 5: errors. */
             __('Synchronization finished: %1$d created, %2$d updated, %3$d skipped, %4$d drafted, %5$d errors.', 'topiqu-sync'),
             $result['created'], $result['updated'], $result['skipped'], $result['drafted'], count($result['errors'])
         );
@@ -82,6 +89,7 @@ final class Topiqu_Admin {
 
     private function redirect(string $status, string $message): void {
         $url = add_query_arg(array('page' => 'topiqu-sync', 'topiqu_status' => $status, 'topiqu_message' => $message), admin_url('options-general.php'));
+        $url = add_query_arg('_wpnonce', wp_create_nonce('topiqu_notice'), $url);
         wp_safe_redirect($url);
         exit;
     }
@@ -98,12 +106,12 @@ final class Topiqu_Admin {
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('Topiqu Sync', 'topiqu-sync'); ?></h1>
-            <?php if (isset($_GET['topiqu_message'])) : ?>
+            <?php if (isset($_GET['_wpnonce']) && is_string($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'topiqu_notice') && isset($_GET['topiqu_message']) && is_string($_GET['topiqu_message'])) : ?>
                 <?php
-                $notice_status = isset($_GET['topiqu_status']) ? sanitize_key(wp_unslash($_GET['topiqu_status'])) : 'success';
+                $notice_status = isset($_GET['topiqu_status']) && is_string($_GET['topiqu_status']) ? sanitize_key(wp_unslash($_GET['topiqu_status'])) : 'success';
                 $notice_class = 'error' === $notice_status ? 'error' : ('warning' === $notice_status ? 'warning' : 'success');
                 ?>
-                <div class="notice notice-<?php echo esc_attr($notice_class); ?> is-dismissible"><p><?php echo esc_html(wp_unslash($_GET['topiqu_message'])); ?></p></div>
+                <div class="notice notice-<?php echo esc_attr($notice_class); ?> is-dismissible"><p><?php echo esc_html(sanitize_text_field(wp_unslash($_GET['topiqu_message']))); ?></p></div>
             <?php endif; ?>
             <p><?php esc_html_e('Import published Topiqu articles as native WordPress posts.', 'topiqu-sync'); ?></p>
             <form method="post" action="options.php">

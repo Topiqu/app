@@ -1,3 +1,5 @@
+import { CommentCreateSchema } from '~~/shared/zod/models/Comment.schema'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await requireUser(event)

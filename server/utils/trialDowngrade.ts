@@ -1,4 +1,4 @@
-import { EXPIRED_TRIAL_TOKEN_LIMIT, TRIAL_DAYS, type TrialInfo } from '~~/shared/utils/trial'
+import { TRIAL_DAYS, type TrialInfo } from '~~/shared/utils/trial'
 
 export const TRIAL_SELECT = {
   id: true,
@@ -17,17 +17,12 @@ export const expiredTrialWhere = (now: Date) => ({
   createdAt: { lte: new Date(now.getTime() - TRIAL_DAYS * 24 * 60 * 60 * 1000) },
 })
 
-/** Preserve the balance because it may include a purchase, and keep capacity at least as large as
- * that balance. The plan gate stops an expired trial from spending it until the tenant upgrades. */
+/** Plan entitlements and credit are independent. Only explicitly expiring grants can expire. */
 export const downgradeExpiredTrial = async (clientSiteId: string, site?: TrialInfo) => {
-  let tokenLimit = EXPIRED_TRIAL_TOKEN_LIMIT
   await prisma.$transaction(async (tx) => {
-    const balance = await tx.clientSite.findUnique({ where: { id: clientSiteId }, select: { tokenRemaining: true } })
-    tokenLimit = Math.max(EXPIRED_TRIAL_TOKEN_LIMIT, balance?.tokenRemaining ?? 0)
-
     await tx.clientSite.update({
       where: { id: clientSiteId },
-      data: { plan: 'BASIC', tokenLimit },
+      data: { plan: 'BASIC' },
     })
 
     await syncPlanFeatures(tx, clientSiteId, 'BASIC')
@@ -36,6 +31,6 @@ export const downgradeExpiredTrial = async (clientSiteId: string, site?: TrialIn
   await logAction({
     action: 'TRIAL_EXPIRED',
     clientSiteId,
-    metadata: { from: site?.plan ?? null, tokenLimit },
+    metadata: { from: site?.plan ?? null },
   })
 }

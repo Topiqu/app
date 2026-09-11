@@ -14,14 +14,7 @@
           :to="localePath({ name: auth?.user?.role === 'superadmin' ? 'master' : 'admin' })"
           class="flex min-w-0 items-center gap-2"
         >
-          <AppMedia
-            src="/app-logo.png"
-            alt=""
-            aspectRatio="1 / 1"
-            fit="contain"
-            sizes="32px"
-            containerClass="size-8 shrink-0 bg-transparent"
-          />
+          <AppLogo alt="" class="size-8" />
           <span class="truncate font-bold">Topiqu</span>
         </NuxtLink>
         <UTooltip :text="collapsed ? $t('common.actions.expand') : $t('common.actions.collapse')">

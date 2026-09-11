@@ -41,7 +41,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400 })
   }
 
-  if (stripeEvent.type === 'checkout.session.completed') {
+  if (
+    stripeEvent.type === 'checkout.session.completed' ||
+    stripeEvent.type === 'checkout.session.async_payment_succeeded'
+  ) {
     const session = stripeEvent.data.object as Stripe.Checkout.Session
     const clientSiteId = session.client_reference_id ?? session.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
@@ -74,13 +77,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const tokens = Number(session.metadata?.tokens ?? 0)
-    if (tokens > 0) {
-      await prisma.clientSite.update({
-        where: { id: clientSiteId },
-        data: {
-          tokenLimit: { increment: tokens },
-          tokenRemaining: { increment: tokens },
-        },
+    if (Number.isSafeInteger(tokens) && tokens > 0 && session.payment_status === 'paid') {
+      await creditTokens({
+        clientSiteId,
+        amount: tokens,
+        source: 'PURCHASE',
+        idempotencyKey: `stripe:checkout:${session.id}`,
+        reason: 'Token purchase',
       })
     }
     return { received: true }

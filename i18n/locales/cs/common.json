@@ -1,5 +1,42 @@
 {
   "common": {
+    "entry": {
+      "title": "Založte svůj první blog",
+      "description": "Nastavte si blog a začněte psát a publikovat články s Topiqu.",
+      "retry": "Zkusit znovu"
+    },
+    "wallet": {
+      "title": "Kredit",
+      "available": "K dispozici",
+      "unit": "kreditů",
+      "bonusExpiry": "Bonusový kredit expiruje za 30 dní. Běžné připsání kreditu neexpiruje.",
+      "generationReservation": "Před generováním rezervujeme 10 000 kreditů. Účtujeme skutečnou spotřebu, nejvýše tuto částku; zbytek uvolníme. Neúspěšná úloha se neúčtuje, při Stop účtujeme již odvedenou práci.",
+      "neverExpires": "Kredit neexpiruje.",
+      "explanation": "Kredit není měsíční limit. Nevyčerpaný zůstává, dokoupený neexpiruje a změna tarifu ho nenuluje.",
+      "reserved": "Blokováno běžícími úlohami",
+      "reservedHint": "Po dokončení úlohy strhneme skutečnou spotřebu a zbytek vrátíme zpět.",
+      "periodUsage": "Spotřeba za {period}",
+      "expires": "Propagační kredit vyprší",
+      "lowBalance": "Kredit dochází. Před spuštěním úlohy ověříme, zda pokryje její rezervaci.",
+      "topup": "Dobít kredit",
+      "history": "Historie kreditu",
+      "empty": "Zatím žádné pohyby kreditu.",
+      "initial": "Počáteční kredit",
+      "adjustment": "Úprava kreditu",
+      "reason": "Povinný důvod",
+      "amount": "Počet kreditů",
+      "operation": "ID původní operace (pro vrácení)",
+      "apply": "Provést úpravu",
+      "kinds": {
+        "CREDIT": "Připsání kreditu",
+        "DEBIT": "Spotřeba",
+        "RELEASE": "Uvolnění rezervace",
+        "EXPIRY": "Expirace",
+        "REFUND": "Vrácení kreditu",
+        "BONUS": "Bonus",
+        "ADJUSTMENT": "Ruční odečet"
+      }
+    },
     "searchConsole": {
       "title": "Google Search Console",
       "premiumOnly": "Search Console intelligence je dostupná v plánu PREMIUM a v CUSTOM s aktivní integrací.",
@@ -986,14 +1023,14 @@
       "declined": "Pozvánka odmítnuta"
     },
     "tokens": {
-      "pack10k": "Balíček 10k tokenů",
-      "pack25k": "Balíček 25k tokenů",
-      "pack50k": "Balíček 50k tokenů",
-      "pack75k": "Balíček 75k tokenů",
+      "pack10k": "Balíček 10k kreditů",
+      "pack25k": "Balíček 25k kreditů",
+      "pack50k": "Balíček 50k kreditů",
+      "pack75k": "Balíček 75k kreditů",
       "bestValue": "Nejvýhodnější",
-      "mostTokens": "Nejvíce tokenů",
-      "valueBonus": "+{0} % value",
-      "tokens": "tokenů",
+      "mostTokens": "Nejvíce kreditů",
+      "valueBonus": "+{0} % navíc",
+      "tokens": "kreditů",
       "articlesEstimate": "≈ {count} článků",
       "upgradeToPremium": "Povýšit na PREMIUM"
     }

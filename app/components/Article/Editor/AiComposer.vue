@@ -1,5 +1,6 @@
 <template>
   <section class="custom-ui flex flex-col gap-2.5">
+    <p class="text-xs text-muted">{{ $t('common.wallet.generationReservation') }}</p>
     <div class="flex items-center justify-between gap-2">
       <h2
         class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-500 dark:text-gray-400"

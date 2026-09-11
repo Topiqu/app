@@ -212,6 +212,10 @@ Never do these. They are what makes writing read as machine-made:
 - Do not close a section with an aphorism that restates what the section just said.
 - Vary it: sentence length, paragraph length, and the number of paragraphs per section must differ across the article.
 - Write the specific noun. No "it", "this" or "that" standing in for the subject of a paragraph.
+- Never manufacture timeliness with phrases such as "for readers in [month/year]" or "at the time of writing". State a date only when it changes the fact, deadline or decision.
+- Never narrate the limits of the research with phrases such as "available sources do not confirm", "the exact extent must be assessed individually" or repeated instructions to verify the subject elsewhere. Narrow or omit the unsupported claim.
+- The body gets no second summary. Perex, direct answer and key takeaways already carry that job; do not repeat them as "verified facts", "practical recommendations" or a recap list in the content.
+- Every paragraph must add a distinct fact, named example, mechanism, comparison or consequence. If deleting a paragraph loses no information, delete it before returning the article.
 `.trim()
 
 const moduleRules = (selected: readonly ArticleModule[]) => {
@@ -239,10 +243,10 @@ const extractionRules = (selected: readonly ArticleModule[]) => {
       ? '- "answer": lead with the answer itself and name the subject explicitly. 40-60 words.'
       : '- "answer": return an empty string.',
     has('takeaways')
-      ? '- "keyTakeaways": 3-5 standalone facts — "Prices rose 12% in 2025", not "We look at how prices moved".'
+      ? '- "keyTakeaways": 2-4 distinct standalone facts — "Prices rose 12% in 2025", not "We look at how prices moved". Never split or paraphrase one fact to reach a count.'
       : '- "keyTakeaways": return an empty array.',
     has('faq')
-      ? '- "faq": 2-5 questions a reader would actually type. Fewer is better and [] is valid when the evidence raises no real questions.'
+      ? '- "faq": exactly 2-5 questions a reader would actually type. Do not return an empty array.'
       : '- "faq": return an empty array.',
   ].join('\n')
 }
@@ -260,7 +264,7 @@ Tables, polls and videos are optional and the default is none. Add one only when
 
 Extraction fields:
 - "answer": 40-60 words answering the title outright, or an empty string.
-- "keyTakeaways": 3-5 standalone facts, or [].
+- "keyTakeaways": 2-4 distinct standalone facts, or []. Never split or paraphrase one fact to reach a count.
 - "faq": 2-5 real reader questions, or [].
 All three are in the article's language and every claim in them is also supported by the body.
 
@@ -275,7 +279,7 @@ ${ANTI_FORMULA}
   return `
 Format: ${format}. ${spec.shape}
 ${variantSpec ? `Structure variant: ${variant}. ${variantSpec.shape}\nRequired progression: ${variantSpec.structure}` : ''}
-Length: ${spec.words[0]}-${spec.words[1]} words. Follow the progression, but choose natural headings rather than naming its steps.
+Length budget: ${spec.words[0]}-${spec.words[1]} words when the evidence supports it. Never reach the lower bound by repeating, generalising or adding generic advice; a shorter complete article is the correct result. Follow the progression, but choose natural headings rather than naming its steps.
 ${moduleRules(selected)}
 
 Extraction fields:

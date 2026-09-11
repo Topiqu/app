@@ -13,10 +13,9 @@
 <script setup lang="ts">
 import VueEasyLightbox from 'vue-easy-lightbox'
 
-// The source element already scopes the query to the published body. Do not couple this to a
-// typography utility class: the article no longer uses `.prose`, which previously left every
-// inline image outside the lightbox collection.
-const { sourceRef, selector = 'p img' } = defineProps<{
+// The source element scopes the query to the published body; the marker is applied during image
+// rendering and avoids coupling zoom behavior to paragraph/figure or typography markup.
+const { sourceRef, selector = 'img[data-article-lightbox]' } = defineProps<{
   sourceRef: HTMLElement | null
   selector?: string
 }>()
@@ -25,6 +24,7 @@ const open = defineModel<boolean>('open', { default: false })
 const index = defineModel<number>('index', { default: 0 })
 
 const images = shallowRef<{ src: string; title?: string }[]>([])
+const imageElements = shallowRef<HTMLImageElement[]>([])
 
 const onIndexChange = (_oldIndex: number, newIndex: number) => {
   index.value = newIndex
@@ -32,7 +32,8 @@ const onIndexChange = (_oldIndex: number, newIndex: number) => {
 
 const collect = () => {
   if (!sourceRef) return
-  images.value = [...sourceRef.querySelectorAll<HTMLImageElement>(selector)].map((img) => ({
+  imageElements.value = [...sourceRef.querySelectorAll<HTMLImageElement>(selector)]
+  images.value = imageElements.value.map((img) => ({
     src: img.currentSrc || img.src,
     title: img.alt || undefined,
   }))
@@ -52,8 +53,11 @@ useEventListener(
   (e: MouseEvent) => {
     const img = (e.target as HTMLElement | null)?.closest<HTMLImageElement>('img')
     if (!img?.matches(selector)) return
-    const i = images.value.findIndex((x) => x.src === (img.currentSrc || img.src))
+    // `currentSrc` can switch after responsive `srcset` selection. Element identity is stable and
+    // avoids losing the click merely because the browser picked a different optimized width.
+    const i = imageElements.value.indexOf(img)
     if (i === -1) return
+    images.value[i] = { src: img.currentSrc || img.src, title: img.alt || undefined }
     index.value = i
     open.value = true
   },

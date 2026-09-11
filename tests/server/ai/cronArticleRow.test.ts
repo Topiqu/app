@@ -26,11 +26,35 @@ describe('generate-article cron row', () => {
 
   // Unwritten, the picker sees no history and drifts back to one shape for every article.
   it('persists the format and structure the topic picker chose, and feeds both back', () => {
-    expect(task).toMatch(/format:\s*topic\?\.format/)
+    expect(task).toMatch(/format:\s*cronFormat/)
     expect(task).toMatch(/structureVariant:\s*topic\?\.variant/)
     expect(task).toMatch(/recentFormats:/)
     expect(task).toMatch(/recentStructures/)
     expect(task).toMatch(/excerpt:\s*true,[\s\S]*format:\s*true,[\s\S]*structureVariant:\s*true/)
+  })
+
+  it('applies the scheduled media policy and reports requested versus delivered modules', () => {
+    expect(task).toContain('selectedModulesFor(topic.format, topic.modules)')
+    expect(task).toMatch(/modules:\s*cronModules/)
+    expect(task).toContain('requestedModules: cronModules')
+    expect(task).toContain('missingModules')
+    expect(task).toContain('bodyImages:')
+    expect(task).toContain('youtubeVideos:')
+  })
+
+  it('uses one visible generation audit action instead of duplicating token billing', () => {
+    expect(task).toContain("'CRON_ARTICLE_TOKEN_USAGE'")
+    expect(task.match(/action: 'CRON_GENERATE_ARTICLE'/g)).toHaveLength(1)
+  })
+
+  it('copy-edits scheduled articles and never auto-publishes a failed review', () => {
+    expect(task).toContain('editorialReview: true')
+    expect(task).toContain('generated.editorialTokens')
+    expect(task).toContain('generated.editorialReview?.approved === true')
+    expect(task).toContain("generated.research?.status === 'completed'")
+    expect(task).toContain('generated.research?.sourceCount > 0')
+    expect(task).toMatch(/client\.autoRelease && qualityApproved \? 'published' : 'draft'/)
+    expect(task).toContain('heldFromAutoRelease')
   })
 
   it('reports active cron features whose stored frequency still disables scheduling', () => {
