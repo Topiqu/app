@@ -6,7 +6,15 @@ export interface ClientSiteStatus {
   domain: string
   domainVerified: boolean
   plan: string
-  tokenLimit: number | null
+  wallet: {
+    available: number
+    reserved: number
+    balance: number
+    periodUsage: number
+    periodStart: string
+    priceVersion: string
+    expiring: { remaining: number; expiresAt: string | null; source: string }[]
+  }
   tokenRemaining: number | null
   totalUsage: number | null
   createdAt: string

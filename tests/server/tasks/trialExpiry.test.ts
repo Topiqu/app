@@ -37,11 +37,12 @@ const matchesWhere = (candidate: Row, now: Date) => {
 }
 
 describe('expiredTrialWhere', () => {
-  it('keeps retained or purchased balance within the downgraded capacity', () => {
+  it('changes entitlement without resetting wallet credit', () => {
     const source = readFileSync('server/utils/trialDowngrade.ts', 'utf8')
 
-    expect(source).toContain('Math.max(EXPIRED_TRIAL_TOKEN_LIMIT, balance?.tokenRemaining ?? 0)')
-    expect(source).toContain("data: { plan: 'BASIC', tokenLimit }")
+    expect(source).not.toContain('tokenLimit')
+    expect(source).not.toContain('tokenRemaining')
+    expect(source).toContain("data: { plan: 'BASIC' }")
   })
 
   it('cuts off exactly TRIAL_DAYS back', () => {

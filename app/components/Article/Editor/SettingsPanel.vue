@@ -133,6 +133,7 @@
 
               <div class="border-t border-default pt-4">
                 <p class="mb-3 text-xs leading-5 text-muted">{{ planSummary }}</p>
+                <p class="text-xs text-muted">{{ $t('common.wallet.generationReservation') }}</p>
                 <UButton block :disabled="!customPrompt.trim()" @click="$emit('generate')">
                   {{ $t('articles.editor.ai.generateButton') }}
                 </UButton>

@@ -125,7 +125,7 @@ export default defineEventHandler(async (event) => {
   doc.rect(0, 0, PAGE.width, 116).fill(COLORS.surface)
   doc.rect(0, 0, 7, 116).fill(COLORS.violet)
   try {
-    doc.image(join(process.cwd(), 'public', 'app-logo.png'), PAGE.left, 26, { fit: [110, 34] })
+    doc.image(join(process.cwd(), 'public', 'logo.png'), PAGE.left, 26, { fit: [110, 34] })
   } catch {
     doc.font(font).fontSize(18).fillColor(COLORS.violet).text('Topiqu', PAGE.left, 32)
   }

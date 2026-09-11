@@ -2,8 +2,8 @@ import { z } from 'zod'
 import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
-import { TRIAL_PLAN } from '~~/shared/utils/trial'
 import { saveUserWithLogging } from '~~/server/utils/userLog'
+import { TRIAL_PLAN, TRIAL_DAYS } from '~~/shared/utils/trial'
 import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
 import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 
@@ -63,11 +63,22 @@ export default defineEventHandler(async (event) => {
           // The trial is a real plan, not a UI state — `firstPaidAt` stays null as the paid
           // marker, and `trial-expiry` drops a card-less tenant back to BASIC after TRIAL_DAYS.
           plan: TRIAL_PLAN,
-          tokenRemaining: 25000,
-          tokenLimit: 25000,
+          tokenRemaining: 0,
           firstPaidAt: null,
         },
       })
+
+      await creditTokens(
+        {
+          clientSiteId: site.id,
+          amount: 25000,
+          source: 'TRIAL',
+          idempotencyKey: `trial:${site.id}`,
+          reason: 'Welcome trial credit',
+          expiresAt: new Date(Date.now() + TRIAL_DAYS * 86400000),
+        },
+        tx,
+      )
 
       // Crons filter on ClientFeature rows, not on the plan column, so a trial without them
       // would silently skip sentiment and article generation — the parts it exists to show off.

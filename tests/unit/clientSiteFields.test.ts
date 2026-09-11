@@ -11,12 +11,14 @@ import {
 
 describe('client site field partition', () => {
   it('keeps revenue and entitlement fields out of tenant reach', () => {
-    for (const field of ['plan', 'tokenLimit']) {
+    for (const field of ['plan']) {
       expect(PRIVILEGED_CLIENT_SITE_FIELDS).toContain(field)
       expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).not.toContain(field)
     }
     expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).toContain('gamNetworkCode')
     expect(PRIVILEGED_CLIENT_SITE_FIELDS).not.toContain('gamNetworkCode')
+    expect(PRIVILEGED_CLIENT_SITE_FIELDS).not.toContain('tokenLimit')
+    expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).not.toContain('tokenRemaining')
   })
 
   it('never lets a field sit in both sets', () => {
@@ -61,7 +63,6 @@ describe('public client site read projection', () => {
       'stripeCustomerId',
       'stripeSubscriptionId',
       'stripePriceId',
-      'tokenLimit',
       'tokenRemaining',
       'totalUsage',
       'monthlyPayment',

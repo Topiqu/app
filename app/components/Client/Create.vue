@@ -164,18 +164,14 @@
                 ]"
               />
             </UFormField>
-            <UFormField :label="$t('master.clientCreate.fields.tokenLimit.label')">
-              <UInputNumber
-                v-model="newClient.tokenLimit"
-                :placeholder="$t('master.clientCreate.fields.tokenLimit.placeholder')"
-                :min="0"
-              />
+            <UFormField :label="$t('common.wallet.initial')">
+              <UInputNumber v-model="newClient.initialCredit" :placeholder="$t('common.wallet.initial')" :min="0" />
             </UFormField>
           </div>
         </UCard>
 
         <!-- AI Settings -->
-        <UCard v-if="newClient.tokenLimit > 0">
+        <UCard v-if="newClient.initialCredit > 0">
           <div class="flex flex-col gap-6">
             <h3 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
               <UIcon size="20" name="mdi:robot" />
@@ -277,7 +273,7 @@ const initClient = () => ({
   plan: 'BASIC' as 'BASIC' | 'PRO' | 'PREMIUM' | 'CUSTOM',
   generationFrequency: 'NONE' as 'NONE' | 'DAILY' | 'WEEKLY',
   optimizedUrl: '',
-  tokenLimit: 0,
+  initialCredit: 0,
   focus: '',
   keywords: [] as string[],
   description: '',
@@ -306,11 +302,11 @@ const customDomainPlaceholder = computed(() =>
 )
 
 const isFormValid = computed(() => {
-  const { name, domain, customDomain, domainType, email, tokenLimit, aiUser } = newClient.value
+  const { name, domain, customDomain, domainType, email, initialCredit, aiUser } = newClient.value
   if (!name || !email) return false
   if (domainType === 'SUBDOMAIN' && !domain) return false
   if (domainType === 'CUSTOM' && !customDomain) return false
-  if (tokenLimit > 0 && !aiUser.name) return false
+  if (initialCredit > 0 && !aiUser.name) return false
   return true
 })
 
@@ -353,7 +349,7 @@ const createClient = async () => {
         ...newClient.value,
         keywords: newClient.value.keywords.length ? newClient.value.keywords : undefined,
         logoUrl: newClient.value.logoUrl,
-        aiUser: newClient.value.tokenLimit > 0 ? newClient.value.aiUser : undefined,
+        aiUser: newClient.value.initialCredit > 0 ? newClient.value.aiUser : undefined,
         domain: newClient.value.domainType === 'SUBDOMAIN' ? newClient.value.domain : newClient.value.customDomain,
         customDomain: undefined,
       },

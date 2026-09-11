@@ -15,7 +15,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   if (!isValidDomain(body.domain)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
-  if (body.tokenLimit > 0 && !body.aiUser?.name)
+  const initialCredit = body.initialCredit ?? 0
+  if (!Number.isSafeInteger(initialCredit) || initialCredit < 0 || initialCredit > 10000000)
+    throw createError({ statusCode: 400, message: 'Invalid initial credit' })
+  if (initialCredit > 0 && !body.aiUser?.name)
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const [existingUser, existingSubdomain] = await Promise.all([
@@ -37,8 +40,7 @@ export default defineEventHandler(async (event) => {
         ...domainVerificationDefaults(body.domain, randomBytes(24).toString('base64url')),
         plan: body.plan,
         generationFrequency: body.generationFrequency,
-        tokenLimit: body.tokenLimit,
-        tokenRemaining: body.tokenLimit,
+        tokenRemaining: 0,
         focus: body.focus || '',
         keywords:
           Array.isArray(body.keywords) && body.keywords.every((k: any) => typeof k === 'string') && body.keywords.length
@@ -50,7 +52,19 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    if (body.tokenLimit > 0 && body.aiUser?.name) {
+    if (initialCredit > 0)
+      await creditTokens(
+        {
+          clientSiteId: clientSite.id,
+          amount: initialCredit,
+          source: 'ADMIN',
+          actorId: session.id,
+          idempotencyKey: `initial:${clientSite.id}`,
+          reason: 'Initial credit assigned by administrator',
+        },
+        tx,
+      )
+    if (initialCredit > 0 && body.aiUser?.name) {
       await tx.user.create({
         data: {
           username: body.aiUser.name,
@@ -97,7 +111,6 @@ export default defineEventHandler(async (event) => {
       domain: clientSite.domain,
       plan: clientSite.plan,
       generationFrequency: clientSite.generationFrequency,
-      tokenLimit: clientSite.tokenLimit,
       keywords: clientSite.keywords,
       focus: clientSite.focus,
       description: clientSite.description,

@@ -238,7 +238,7 @@ const buildArticleConfig = async (
   } = {},
 ) => {
   const {
-    tokenRemaining,
+    tokenRemaining: unreservedTokens,
     focus,
     keywords,
     audience,
@@ -262,6 +262,7 @@ const buildArticleConfig = async (
     where: { id: clientSiteId },
   })
 
+  const tokenRemaining = currentTokenOperation()?.budget ?? unreservedTokens
   if (!tokenRemaining || tokenRemaining < ARTICLE_TOKEN_FLOOR)
     throw createError({
       statusCode: 403,

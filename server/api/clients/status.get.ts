@@ -12,7 +12,6 @@ export default defineEventHandler(async (event) => {
       domain: true,
       domainVerified: true,
       plan: true,
-      tokenLimit: true,
       tokenRemaining: true,
       totalUsage: true,
       createdAt: true,
@@ -32,5 +31,12 @@ export default defineEventHandler(async (event) => {
 
   const { stripeSubscriptionId, users, ...status } = clientSite
 
-  return { ...status, aiUser: users[0] ?? null, hasActiveSubscription: !!stripeSubscriptionId }
+  const wallet = await getTokenWallet(user.clientSiteId)
+  return {
+    ...status,
+    tokenRemaining: wallet.available,
+    wallet,
+    aiUser: users[0] ?? null,
+    hasActiveSubscription: !!stripeSubscriptionId,
+  }
 })

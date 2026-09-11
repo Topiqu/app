@@ -1,0 +1,69 @@
+import "./client"
+
+model TokenWallet {
+    id String @id
+    clientSite ClientSite @relation(fields: [id], references: [id], onDelete: Restrict)
+    grants TokenCreditGrant[]
+    operations TokenOperation[]
+    entries TokenLedgerEntry[]
+    balance Int @default(0)
+    reserved Int @default(0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    @@deny('all', true)
+}
+
+model TokenCreditGrant {
+    id String @id @default(uuid())
+    clientSiteId String
+    wallet TokenWallet @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    entries TokenLedgerEntry[]
+    source String
+    amount Int
+    remaining Int
+    expiresAt DateTime?
+    idempotencyKey String @unique
+    createdAt DateTime @default(now())
+    @@index([clientSiteId, expiresAt])
+    @@deny('all', true)
+}
+
+model TokenOperation {
+    id String @id @default(uuid())
+    clientSiteId String
+    wallet TokenWallet @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    entries TokenLedgerEntry[]
+    action String
+    status String @default('RESERVED')
+    reserved Int
+    charged Int @default(0)
+    actual Int @default(0)
+    allocations Json
+    metadata Json
+    priceVersion String
+    idempotencyKey String @unique
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+    completedAt DateTime?
+    @@index([clientSiteId, createdAt])
+    @@index([status, expiresAt])
+    @@deny('all', true)
+}
+
+model TokenLedgerEntry {
+    id String @id @default(uuid())
+    clientSiteId String
+    wallet TokenWallet @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    kind String
+    amount Int
+    operationId String?
+    operation TokenOperation? @relation(fields: [operationId], references: [id], onDelete: Restrict)
+    grantId String?
+    grant TokenCreditGrant? @relation(fields: [grantId], references: [id], onDelete: Restrict)
+    actorId String?
+    reason String
+    idempotencyKey String @unique
+    createdAt DateTime @default(now())
+    @@index([clientSiteId, createdAt, id])
+    @@deny('all', true)
+}

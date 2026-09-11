@@ -1,4 +1,7 @@
+import { createError } from 'h3'
 import { PrismaClient } from '@prisma/client'
+
+import { creditTokens } from '../server/utils/tokenWallet'
 
 const AMOUNT = Number(process.env.SEED_TOKENS ?? 50000)
 const url = process.env.DATABASE_URL ?? ''
@@ -11,6 +14,7 @@ if (!['localhost', '127.0.0.1'].includes(host) && process.env.SEED_FORCE !== '1'
 }
 
 const prisma = new PrismaClient()
+Object.assign(globalThis, { prisma, createError })
 
 const sites = await prisma.clientSite.findMany({
   select: { id: true, name: true, plan: true, tokenRemaining: true, generationFrequency: true, lastGeneratedAt: true },
@@ -38,10 +42,16 @@ if (!target) {
   process.exit(1)
 }
 
+await creditTokens({
+  clientSiteId: target.id,
+  amount: AMOUNT,
+  source: 'ADMIN',
+  reason: 'Local development credit',
+  idempotencyKey: `seed:${target.id}:${process.env.SEED_CREDIT_KEY ?? 'wallet-v1'}`,
+})
 const updated = await prisma.clientSite.update({
   where: { id: target.id },
   data: {
-    tokenRemaining: AMOUNT,
     plan: 'PREMIUM',
     generationFrequency: 'DAILY',
     lastGeneratedAt: null,

@@ -9,6 +9,7 @@ import "./models/linkedin"
 import "./models/log"
 import "./models/ads"
 import "./models/searchConsole"
+import "./models/tokenWallet"
 
 generator client {
     provider = "prisma-client-js"

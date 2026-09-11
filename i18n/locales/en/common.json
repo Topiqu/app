@@ -5,6 +5,38 @@
       "description": "Set up your blog, then start writing and publishing articles with Topiqu.",
       "retry": "Try again"
     },
+    "wallet": {
+      "title": "Credit",
+      "available": "Available",
+      "unit": "credits",
+      "bonusExpiry": "Bonus credit expires in 30 days. Regular credit adjustments do not expire.",
+      "generationReservation": "We reserve 10,000 credits before generation. You pay actual usage, capped at this amount; unused credit is released. Failed work is free; Stop charges work already performed.",
+      "neverExpires": "Credit never expires.",
+      "explanation": "Credit is not a monthly allowance. Unused credit rolls over, purchased credit never expires, and changing plan does not reset it.",
+      "reserved": "Held by running tasks",
+      "reservedHint": "When a task finishes we charge actual usage and release the rest back to you.",
+      "periodUsage": "Used in {period}",
+      "expires": "Promotional credit expires",
+      "lowBalance": "Credit is running low. We check that it covers the reservation before starting a task.",
+      "topup": "Add credit",
+      "history": "Credit history",
+      "empty": "No credit movements yet.",
+      "initial": "Initial credit",
+      "adjustment": "Credit adjustment",
+      "reason": "Required reason",
+      "amount": "Credit amount",
+      "operation": "Original operation ID (for refunds)",
+      "apply": "Apply adjustment",
+      "kinds": {
+        "CREDIT": "Credit added",
+        "DEBIT": "Usage",
+        "RELEASE": "Reservation released",
+        "EXPIRY": "Expired credit",
+        "REFUND": "Refund",
+        "BONUS": "Bonus",
+        "ADJUSTMENT": "Manual debit"
+      }
+    },
     "searchConsole": {
       "title": "Google Search Console",
       "premiumOnly": "Search Console intelligence is available on PREMIUM and CUSTOM plans with the integration enabled.",
@@ -991,14 +1023,14 @@
       "declined": "Invitation declined"
     },
     "tokens": {
-      "pack10k": "Token Pack 10k",
-      "pack25k": "Token Pack 25k",
-      "pack50k": "Token Pack 50k",
-      "pack75k": "Token Pack 75k",
+      "pack10k": "Credit pack 10k",
+      "pack25k": "Credit pack 25k",
+      "pack50k": "Credit pack 50k",
+      "pack75k": "Credit pack 75k",
       "bestValue": "Best value",
-      "mostTokens": "Most tokens",
-      "valueBonus": "+{0}% value",
-      "tokens": "tokens",
+      "mostTokens": "Most credit",
+      "valueBonus": "+{0}% extra",
+      "tokens": "credits",
       "articlesEstimate": "≈ {count} articles",
       "upgradeToPremium": "Upgrade to PREMIUM"
     }

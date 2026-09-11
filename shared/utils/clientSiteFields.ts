@@ -1,6 +1,6 @@
 import type { ClientSite, SocialPlatform } from '@prisma/client'
 
-export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan', 'tokenLimit'] as const
+export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan'] as const
 
 export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'name',
@@ -57,7 +57,6 @@ export const CLIENT_SITE_SECRET_FIELDS = [
   'stripeCustomerId',
   'stripeSubscriptionId',
   'stripePriceId',
-  'tokenLimit',
   'tokenRemaining',
   'totalUsage',
   'monthlyPayment',

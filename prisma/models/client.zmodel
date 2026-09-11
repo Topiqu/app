@@ -1,4 +1,5 @@
 import "./base"
+import "./tokenWallet"
 import "./article"
 import "./user"
 import "./comment"
@@ -87,8 +88,8 @@ model ClientSite extends Base {
     faviconUrl           String?             @length(0, 255, "URL faviconu musí mít max. 255 znaků")
     typographyPreset     PublicationTypography @default(MODERN)
     generationFrequency  GenerationFrequency @default(NONE)
-    tokenLimit           Int?                @default(0)
     tokenRemaining       Int?                @default(0)
+    tokenWallet          TokenWallet?
     totalUsage           Int?                @default(0)
     autoRelease          Boolean             @default(false)
     keywords             Json?

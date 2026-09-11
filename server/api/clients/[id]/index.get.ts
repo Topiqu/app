@@ -82,7 +82,6 @@ export default defineEventHandler(async (event) => {
     : {}
   const ai = hasTenantScope(membership, 'AI_USE')
     ? {
-        tokenLimit: clientSite.tokenLimit,
         tokenRemaining: clientSite.tokenRemaining,
         totalUsage: clientSite.totalUsage,
         autoRelease: clientSite.autoRelease,
