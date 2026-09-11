@@ -47,6 +47,16 @@ describe('generate-article cron row', () => {
     expect(task.match(/action: 'CRON_GENERATE_ARTICLE'/g)).toHaveLength(1)
   })
 
+  it('copy-edits scheduled articles and never auto-publishes a failed review', () => {
+    expect(task).toContain('editorialReview: true')
+    expect(task).toContain('generated.editorialTokens')
+    expect(task).toContain('generated.editorialReview?.approved === true')
+    expect(task).toContain("generated.research?.status === 'completed'")
+    expect(task).toContain('generated.research?.sourceCount > 0')
+    expect(task).toMatch(/client\.autoRelease && qualityApproved \? 'published' : 'draft'/)
+    expect(task).toContain('heldFromAutoRelease')
+  })
+
   it('reports active cron features whose stored frequency still disables scheduling', () => {
     expect(task).toContain("activeFeatureFilter('ARTICLE_CRONS')")
     expect(task).toContain("'frequency_disabled'")

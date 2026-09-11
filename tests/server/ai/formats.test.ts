@@ -60,6 +60,17 @@ describe('formatRules', () => {
     expect(rules).toContain('not X, but Y')
   })
 
+  it('forbids filler, artificial timeliness and a second summary in the body', () => {
+    const rules = formatRules('news')
+
+    expect(rules).toContain('for readers in [month/year]')
+    expect(rules).toContain('available sources do not confirm')
+    expect(rules).toContain('The body gets no second summary')
+    expect(rules).toContain('If deleting a paragraph loses no information')
+    expect(rules).toContain('Never reach the lower bound by repeating')
+    expect(rules).toContain('Never split or paraphrase one fact to reach a count')
+  })
+
   it('leaves the manual flow broad but makes optional blocks default to none', () => {
     const rules = formatRules()
 

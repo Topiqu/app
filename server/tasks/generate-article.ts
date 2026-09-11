@@ -238,6 +238,7 @@ const processClient = async (client: any) =>
         format: cronFormat,
         variant: topic?.variant,
         modules: cronModules,
+        editorialReview: true,
       }))
     } catch (err) {
       await logAction({
@@ -249,7 +250,7 @@ const processClient = async (client: any) =>
     }
 
     const tokens =
-      (usage.totalTokens ?? 0) + topicTokens + (generated.researchTokens ?? 0)
+      (usage.totalTokens ?? 0) + topicTokens + (generated.researchTokens ?? 0) + (generated.editorialTokens ?? 0)
     if (tokens <= 0) return { clientSiteId, status: 'failed', stage: 'usage', error: 'zero_token_usage' }
 
     try {
@@ -257,6 +258,7 @@ const processClient = async (client: any) =>
         usage,
         topicTokens,
         researchTokens: generated.researchTokens ?? 0,
+        editorialTokens: generated.editorialTokens ?? 0,
         title: generated.title,
         tags: generated.tags,
       })
@@ -271,7 +273,11 @@ const processClient = async (client: any) =>
 
     const metrics = calculateArticleMetrics(generated.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
 
-    const status = client.autoRelease ? 'published' : 'draft'
+    const researchRequired = cronFormat === 'news' || topic?.needsResearch === true
+    const researchApproved =
+      !researchRequired || (generated.research?.status === 'completed' && generated.research?.sourceCount > 0)
+    const qualityApproved = generated.editorialReview?.approved === true && researchApproved
+    const status = client.autoRelease && qualityApproved ? 'published' : 'draft'
 
     const article = await prisma.$transaction(async (ctx: any) => {
       const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
@@ -363,6 +369,8 @@ const processClient = async (client: any) =>
         sources: generated.sources?.length ?? 0,
         tokens,
         researched: topic ? researchRequest(topic) !== false : false,
+        editorialReview: generated.editorialReview,
+        researchApproved,
       },
     })
 
@@ -467,6 +475,9 @@ const processClient = async (client: any) =>
         metadata: {
           articleId: article.id,
           title: article.title,
+          heldFromAutoRelease: client.autoRelease && !qualityApproved,
+          editorialReview: generated.editorialReview,
+          researchApproved,
         },
       })
     }
@@ -480,6 +491,8 @@ const processClient = async (client: any) =>
       requestedModules: cronModules,
       missingModules,
       cover: Boolean(generated.articleImageUrl),
+      qualityApproved,
+      researchApproved,
     }
   })
 

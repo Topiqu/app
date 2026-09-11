@@ -58,7 +58,7 @@ describe('buildTopicPrompt', () => {
     expect(prompt).toContain('guide, guide, analysis')
     expect(prompt).toContain('three most recent')
     expect(prompt).toContain('guide / checklist / faq')
-    expect(prompt).toContain('An empty module set is valid')
+    expect(prompt).toContain('select at least one useful module')
   })
 
   it('frames Search Console as optional enrichment', () => {
@@ -121,5 +121,11 @@ describe('topicSchema editorial choices', () => {
 
   it('rejects a module the format cannot carry', () => {
     expect(topicSchema.safeParse({ ...BASE_TOPIC, modules: ['faq'] }).success).toBe(false)
+  })
+
+  it('requires a useful module set without requiring any specific module type', () => {
+    expect(topicSchema.safeParse({ ...BASE_TOPIC, modules: [] }).success).toBe(false)
+    expect(topicSchema.safeParse({ ...BASE_TOPIC, modules: ['images'] }).success).toBe(true)
+    expect(topicSchema.safeParse({ ...BASE_TOPIC, modules: ['table'] }).success).toBe(true)
   })
 })

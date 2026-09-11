@@ -11,6 +11,7 @@ import type { ArticleImage } from '../images/types'
 import { escapeHtml } from '../sanitize'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { allowsGeneratedFallback, findCoverImage, findStockImage } from '../images/chain'
+import { buildRevisionPrompt, reviewArticle, type EditorialReview } from './articleQuality'
 import {
   applyFormat,
   formatRules,
@@ -29,7 +30,7 @@ const imageInstruction = z.object({
 
 export const articleSchema = z.object({
   title: z.string().min(5).max(500).describe('Catchy title 5-15 words'),
-  perex: z.string().min(20).max(1000).describe('Short introductory paragraph (3-4 sentences)'),
+  perex: z.string().min(20).max(1000).describe('Short introductory paragraph (1-2 sentences)'),
   content: z
     .string()
     .min(500)
@@ -45,8 +46,8 @@ export const articleSchema = z.object({
     ),
   keyTakeaways: z
     .array(z.string().min(10).max(200))
-    .max(5)
-    .describe('3-5 standalone factual takeaways, or empty when the format does not summarise'),
+    .max(4)
+    .describe('2-4 distinct factual takeaways, or empty when the format does not summarise'),
   faq: z
     .array(
       z.object({
@@ -329,7 +330,7 @@ const buildArticleConfig = async (
       Respond ONLY in valid JSON format with the structure:
       {
         "title": "catchy title 5-15 words",
-        "perex": "short introductory paragraph (3-4 sentences)",
+        "perex": "short introductory paragraph (1-2 sentences)",
         "answer": "40-60 words answering the title's question outright",
         "keyTakeaways": ["standalone factual sentence", "..."] or [],
         "faq": [{"question": "...", "answer": "..."}] or [],
@@ -370,14 +371,14 @@ const buildArticleConfig = async (
       }
       ${
         pollsAllowed
-          ? 'A poll is optional and the default is none. Add one only where it opens a question the article deliberately leaves open — at most 2 slots as [[POLL1]], [[POLL2]], with the question and 2-5 options per poll in the polls array. Otherwise return an empty polls array and write no slot.'
+          ? 'A poll is optional. Add one only where it opens a genuine question the article deliberately leaves open — at most 2 slots as [[POLL1]], [[POLL2]], with the question and 2-5 options per poll. Otherwise return an empty polls array and write no slot.'
           : 'Return an empty polls array and never write a [[POLL]] slot into the content.'
       }
 
       ${
         tablesAllowed
           ? `Tables:
-      When the article compares options or presents figures (prices, budgets, specs, timelines), render them as a real HTML table, never as tab- or pipe-separated text.
+      The author selected a table. Render one useful real HTML table comparing consistent facts across rows, never tab- or pipe-separated text.
       Use proper markup: <table><thead><tr><th>…</th></tr></thead><tbody><tr><td>…</td></tr></tbody></table>.
       Keep tables to a maximum of 4 columns so they stay readable on mobile, and never put an image, a poll slot or a nested table inside a cell.
       A table earns its place by holding figures the reader compares across rows. Never build one out of prose.`
@@ -401,6 +402,7 @@ const buildArticleConfig = async (
 
   return {
     language,
+    researchBrief: brief,
     // Billed on top of `usage` by every caller: the brief is a separate model call, so it is
     // invisible to the writer's own token count. It went unbilled entirely while research was a
     // PREMIUM perk, and opening the gate would have multiplied that leak across every tenant.
@@ -520,7 +522,7 @@ export const finalizeArticle = async (
         return null
       }
 
-      const image = { slot: idx + 1, html: buildImageHtml(resolved, img.caption, labels) }
+      const image = { slot: idx + 1, html: buildImageHtml(resolved, img.caption, labels), resolved }
       mediaFound += 1
       onImage?.(image)
       onMedia?.({ stage: 'content', completed: mediaCompleted, total: mediaTotal, found: mediaFound })
@@ -529,7 +531,17 @@ export const finalizeArticle = async (
     }),
   )
 
-  const generatedImages = settledImages.filter((image) => image !== null)
+  const generatedImages = settledImages.filter((image) => image !== null).map(({ slot, html }) => ({ slot, html }))
+
+  // If both dedicated cover attempts failed, reuse the first successfully resolved body visual.
+  // This costs no extra generation and prevents a scheduled article from losing its hero while
+  // still keeping the original kind/credit disclosure accurate.
+  const firstBodyImage = settledImages.find((image) => image !== null)?.resolved
+  if (!articleImageUrl && firstBodyImage) {
+    articleImageUrl = firstBodyImage.url
+    articleImageCredit = { kind: firstBodyImage.kind, credit: firstBodyImage.credit }
+    mediaFound += 1
+  }
   onMedia?.({ stage: 'complete', completed: mediaTotal, total: mediaTotal, found: mediaFound })
 
   // Before the slots are filled: the image attribution carries a deliberate mid-paragraph `<br>`
@@ -574,13 +586,55 @@ export const generateArticle = async (
     modules?: readonly ArticleModule[]
     researchDepth?: ResearchDepth
     fallbackWithoutResearch?: boolean
+    editorialReview?: boolean
   },
 ) => {
-  const { config, language, researchTokens } = await buildArticleConfig(clientSiteId, prompt, opts)
-  const { object, usage } = await generateObject(config)
+  const { config, language, researchTokens, researchBrief, research } = await buildArticleConfig(
+    clientSiteId,
+    prompt,
+    opts,
+  )
+  const first = await generateObject(config)
+  let object = first.object
+  let editorialTokens = 0
+  let editorialReview: (EditorialReview & { revised: boolean }) | null = null
+
+  if (opts?.editorialReview) {
+    try {
+      const context = {
+        prompt,
+        researchBrief,
+        format: opts.format,
+      }
+      const initial = await reviewArticle(object, context)
+      editorialTokens += initial.usage.totalTokens ?? 0
+      editorialReview = { ...initial.review, revised: false }
+
+      if (!initial.review.approved) {
+        const revision = await generateObject({
+          ...config,
+          prompt: buildRevisionPrompt(prompt, object, initial.review),
+        })
+        editorialTokens += revision.usage.totalTokens ?? 0
+        object = revision.object
+
+        const checked = await reviewArticle(object, context)
+        editorialTokens += checked.usage.totalTokens ?? 0
+        editorialReview = { ...checked.review, revised: true }
+      }
+    } catch (error) {
+      await reportCaughtError('Article editorial review failed', error, { clientSiteId })
+      editorialReview = {
+        approved: false,
+        revised: false,
+        issues: [{ code: 'broken_structure', note: 'The automated editorial review did not complete.' }],
+      }
+    }
+  }
+
   const finalized = await finalizeArticle(applyFormat(object, opts?.format, opts?.modules), language)
 
-  return { ...finalized, usage, researchTokens }
+  return { ...finalized, usage: first.usage, researchTokens, research, editorialTokens, editorialReview }
 }
 
 export const streamArticle = async (
