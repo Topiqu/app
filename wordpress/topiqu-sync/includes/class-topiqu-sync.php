@@ -13,15 +13,22 @@ final class Topiqu_Sync {
     }
 
     public function run() {
-        if (get_transient(self::LOCK)) {
+        if (!add_option(self::LOCK, wp_generate_uuid4(), '', false)) {
             return new WP_Error('topiqu_locked', __('A Topiqu synchronization is already running.', 'topiqu-sync'));
         }
-        set_transient(self::LOCK, time(), 10 * MINUTE_IN_SECONDS);
+        // Release even on a fatal error; never expire a lock while its worker is active.
+        $lock_owner = get_option(self::LOCK);
+        register_shutdown_function(static function () use ($lock_owner): void {
+            if (get_option(self::LOCK) === $lock_owner) {
+                delete_option(self::LOCK);
+            }
+        });
 
         $result = array('created' => 0, 'updated' => 0, 'skipped' => 0, 'drafted' => 0, 'errors' => array());
         $remote_ids = array();
         $page = 1;
         $complete = false;
+        $expected_total = null;
 
         try {
             do {
@@ -29,11 +36,17 @@ final class Topiqu_Sync {
                 if (is_wp_error($response)) {
                     return $this->finish_error($result, $response);
                 }
-                $articles = is_array($response['data']) ? $response['data'] : array();
+                $articles = $response['data'];
+                $total = $response['meta']['total'] ?? null;
+                if (!is_int($total) || $total < 0 || array_values($articles) !== $articles
+                    || (null !== $expected_total && $expected_total !== $total)) {
+                    return $this->finish_error($result, new WP_Error('topiqu_invalid_page', __('Topiqu returned invalid or changing pagination. Please retry.', 'topiqu-sync')));
+                }
+                $expected_total = $total;
                 foreach ($articles as $article) {
-                    if (empty($article['id'])) {
-                        $result['errors'][] = __('An article without an ID was skipped.', 'topiqu-sync');
-                        continue;
+                    if (!is_array($article) || !isset($article['id']) || !is_string($article['id']) || '' === trim($article['id'])
+                        || in_array($article['id'], $remote_ids, true)) {
+                        return $this->finish_error($result, new WP_Error('topiqu_invalid_article', __('Topiqu returned an invalid or duplicate article ID.', 'topiqu-sync')));
                     }
                     $remote_ids[] = (string) $article['id'];
                     $outcome = $this->upsert($article);
@@ -43,17 +56,19 @@ final class Topiqu_Sync {
                         ++$result[$outcome];
                     }
                 }
-                $total = isset($response['meta']['total']) ? (int) $response['meta']['total'] : count($articles);
                 ++$page;
             } while (count($remote_ids) < $total && !empty($articles));
 
-            $complete = count($remote_ids) >= $total;
+            $complete = count($remote_ids) === $total;
+            if (!$complete) {
+                return $this->finish_error($result, new WP_Error('topiqu_incomplete', __('Topiqu returned an incomplete article list. No missing posts were drafted.', 'topiqu-sync')));
+            }
             if ($complete && empty($result['errors'])) {
                 $result['drafted'] = $this->reconcile_missing($remote_ids);
             }
-            return $this->finish($result, $complete ? 'success' : 'error');
+            return $this->finish($result, empty($result['errors']) ? 'success' : 'error');
         } finally {
-            delete_transient(self::LOCK);
+            delete_option(self::LOCK);
         }
     }
 
@@ -68,7 +83,8 @@ final class Topiqu_Sync {
             'fields' => 'ids',
         ));
         $post_id = $existing ? (int) $existing[0] : 0;
-        $remote_updated = sanitize_text_field((string) ($article['updatedAt'] ?? ''));
+        // Keep this an opaque revision token, including on SQLite date coercion.
+        $remote_updated = 'revision:' . sanitize_text_field((string) ($article['updatedAt'] ?? ''));
 
         if ($post_id && get_post_meta($post_id, '_topiqu_updated_at', true) === $remote_updated) {
             return 'skipped';

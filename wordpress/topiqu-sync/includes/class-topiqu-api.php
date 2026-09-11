@@ -24,9 +24,13 @@ final class Topiqu_API {
             return new WP_Error('topiqu_not_configured', __('Topiqu API URL and key are required.', 'topiqu-sync'));
         }
 
+        if ('https' !== wp_parse_url($this->base_url, PHP_URL_SCHEME)) {
+            return new WP_Error('topiqu_https_required', __('Topiqu URL must use HTTPS.', 'topiqu-sync'));
+        }
+
         $response = wp_safe_remote_get($this->base_url . $path, array(
             'timeout' => 20,
-            'redirection' => 2,
+            'redirection' => 0,
             'headers' => array(
                 'Accept' => 'application/json',
                 'User-Agent' => 'Topiqu-Sync/' . TOPIQU_SYNC_VERSION,
@@ -41,10 +45,11 @@ final class Topiqu_API {
         $status = wp_remote_retrieve_response_code($response);
         $body = json_decode(wp_remote_retrieve_body($response), true);
         if ($status < 200 || $status >= 300) {
-            $message = is_array($body) && !empty($body['message']) ? $body['message'] : sprintf(__('Topiqu API returned HTTP %d.', 'topiqu-sync'), $status);
+            /* translators: %d: HTTP status code returned by the Topiqu API. */
+            $message = is_array($body) && !empty($body['message']) && is_string($body['message']) ? $body['message'] : sprintf(__('Topiqu API returned HTTP %d.', 'topiqu-sync'), $status);
             return new WP_Error('topiqu_http_error', sanitize_text_field($message), array('status' => $status));
         }
-        if (!is_array($body) || !array_key_exists('data', $body)) {
+        if (!is_array($body) || !isset($body['data']) || !is_array($body['data'])) {
             return new WP_Error('topiqu_invalid_response', __('Topiqu API returned an invalid response.', 'topiqu-sync'));
         }
         return $body;
