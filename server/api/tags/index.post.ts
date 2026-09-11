@@ -1,3 +1,5 @@
+import { TagCreateSchema } from '~~/shared/zod/models/Tag.schema'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
 
