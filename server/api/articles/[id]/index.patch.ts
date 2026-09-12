@@ -1,5 +1,4 @@
 import { ArticleStatus, type NotificationType } from '@prisma/client'
-
 import { ArticleUpdateSchema } from '~~/shared/zod/models/Article.schema'
 
 export default defineEventHandler(async (event) => {
