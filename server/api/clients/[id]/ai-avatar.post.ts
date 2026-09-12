@@ -26,6 +26,7 @@ export default defineEventHandler(async (event) => {
     throw error
   }
 
+  await invalidateAuthor(aiUser!.id)
   await logAction({
     action: 'AI_USER_UPDATE',
     userId: user.id,

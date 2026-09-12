@@ -111,6 +111,7 @@ export default defineEventHandler(async (event) => {
 
     if (currentAiUser) {
       await db.user.update({ where: { id: currentAiUser.id }, data: aiData })
+      await invalidateAuthor(currentAiUser.id)
       await logAction({
         action: 'AI_USER_UPDATE',
         userId: user.id,

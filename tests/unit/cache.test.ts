@@ -194,6 +194,59 @@ describe('invalidateFeed', () => {
   })
 })
 
+describe('author summaries', () => {
+  it('shares a summary for five minutes and invalidates only the edited author', async () => {
+    const { cachedAuthor, invalidateAuthor } = await loadCache()
+    const first = vi.fn().mockResolvedValue({ username: 'Before' })
+    const other = vi.fn().mockResolvedValue({ username: 'Other' })
+    await cachedAuthor('one', first)
+    await cachedAuthor('two', other)
+    await cachedAuthor('one', first)
+    expect(first).toHaveBeenCalledTimes(1)
+    expect(mockInstance.ttls.get('author:one:v0')).toBe(300)
+
+    await invalidateAuthor('one')
+    first.mockResolvedValue({ username: 'After' })
+    await expect(cachedAuthor('one', first)).resolves.toEqual({ username: 'After' })
+    await cachedAuthor('two', other)
+    expect(first).toHaveBeenCalledTimes(2)
+    expect(other).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not resurrect an old in-flight summary after a profile edit', async () => {
+    const { cachedAuthor, invalidateAuthor } = await loadCache()
+    let finish!: (value: string) => void
+    let started!: () => void
+    const loading = new Promise<void>((resolve) => {
+      started = resolve
+    })
+    const oldRequest = cachedAuthor('one', () => {
+      started()
+      return new Promise<string>((resolve) => {
+        finish = resolve
+      })
+    })
+    await loading
+    await invalidateAuthor('one')
+    await cachedAuthor('one', async () => 'new')
+    finish('old')
+    await oldRequest
+    await expect(cachedAuthor('one', async () => 'unexpected')).resolves.toBe('new')
+  })
+
+  it('falls back without Redis and does not cache loader failures', async () => {
+    const { cachedAuthor } = await loadCache({ configured: false })
+    await expect(cachedAuthor('one', async () => 'fresh')).resolves.toBe('fresh')
+    const configured = await loadCache()
+    await expect(
+      configured.cachedAuthor('one', async () => {
+        throw new Error('missing')
+      }),
+    ).rejects.toThrow('missing')
+    await expect(configured.cachedAuthor('one', async () => 'created')).resolves.toBe('created')
+  })
+})
+
 describe('consumeRateLimit', () => {
   it('shares counters through Redis and rejects after the configured limit', async () => {
     const { consumeRateLimit } = await loadCache()

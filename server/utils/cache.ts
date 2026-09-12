@@ -126,6 +126,14 @@ export const feedGen = (clientSiteId: string) => getGen(feedNs(clientSiteId))
  */
 export const invalidateFeed = (clientSiteId: string) => bumpGen(feedNs(clientSiteId))
 
+/** Public author summaries tolerate five-minute-old counters, but profile edits expire immediately. */
+export async function cachedAuthor<T>(userId: string, load: () => Promise<T>): Promise<T> {
+  const generation = await getGen(`author:${userId}`)
+  return cached(`author:${userId}:v${generation}`, 300, load)
+}
+
+export const invalidateAuthor = (userId: string) => bumpGen(`author:${userId}`)
+
 const fallbackLimits = new Map<string, { count: number; resetAt: number }>()
 
 export async function consumeRateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {

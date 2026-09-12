@@ -259,9 +259,7 @@ const deleteReason = shallowRef('')
 const banReason = shallowRef('')
 const banExpiresAt = shallowRef<string | null>(null)
 
-const { data: authorData } = await useFetch(`/api/users/${props.comment.article.userId}/author`, {
-  key: `author-${props.comment.article.userId}`,
-})
+const { data: authorData } = useAuthorSummary(() => props.comment.article.userId)
 
 const commentRef = computed(() => props.comment)
 const isReplyingRef = computed(() => props.isReplying)

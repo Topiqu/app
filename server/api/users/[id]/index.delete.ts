@@ -17,5 +17,6 @@ export default defineEventHandler(async (event) => {
     data: { deletedAt: new Date() },
   })
 
+  await invalidateAuthor(userId)
   return { message: t('common.messages.successGeneral')! }
 })
