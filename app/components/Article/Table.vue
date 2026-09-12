@@ -287,13 +287,14 @@ const toast = useAppToast()
 const { invalidateArticleLists, invalidateArticlesAndStats } = useCacheInvalidation()
 const confirm = useConfirm()
 const localePath = useLocalePath()
-const articleUrl = (slug: string) => localePath({ name: 'clanky-slug', params: { slug } })
+const articleUrl = (slug: string) =>
+  publicationUrl(clientSite.value, localePath({ name: 'clanky-slug', params: { slug } }, clientSite.value?.language))
 const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
-const clientSite = await useClientSite()
-const primaryLanguage = clientSite?.language ?? 'en'
+const { data: clientSite } = await useClientSiteStatus()
+const primaryLanguage = clientSite.value?.language ?? 'en'
 // Language currently has two enum values (cs/en), so the table can derive the only possible
-// target from the public tenant context without fetching private settings separately.
+// target from the active tenant status without fetching private settings separately.
 const targetLanguage = primaryLanguage === 'cs' ? 'en' : 'cs'
 const translatingArticleId = shallowRef<string | null>(null)
 const listOrigin = useTemplateRef<HTMLElement>('listOrigin')

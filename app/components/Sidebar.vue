@@ -112,11 +112,15 @@ const statsOpen = useState('dashboard-stats-open', () => false)
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
 
+const { data: clientStatus } = await useClientSiteStatus()
+
 const navigationItems = computed<NavigationMenuItem[]>(() => {
   const publication = {
     label: $t('common.navigation.publication'),
     icon: 'mdi:newspaper-variant-outline',
-    to: localePath({ name: 'index' }),
+    to: publicationUrl(clientStatus.value),
+    external: true,
+    disabled: !publicationUrl(clientStatus.value),
   }
   if (auth.value?.user.role === 'superadmin') {
     return [{ label: $t('master.title'), icon: 'mdi:home', to: localePath({ name: 'master' }) }, publication]

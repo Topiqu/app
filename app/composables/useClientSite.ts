@@ -3,6 +3,7 @@ import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 export interface ClientSiteStatus {
   id: string
   name: string
+  language: 'cs' | 'en'
   domain: string
   domainVerified: boolean
   plan: string
