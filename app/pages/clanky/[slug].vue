@@ -143,45 +143,7 @@
             class="w-full"
           />
           <template #content>
-            <ol class="mt-3 overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-elevated">
-              <li
-                v-for="(source, index) in data.sources"
-                :key="`${index}-${source}`"
-                class="grid min-w-0 grid-cols-[1.25rem_1.5rem_minmax(0,1fr)_2.25rem] items-center gap-2 py-3 pl-1 pr-3 not-last:border-b not-last:border-default"
-              >
-                <span class="text-right text-xs tabular-nums text-muted">{{ Number(index) + 1 }}</span>
-                <AppMedia
-                  :src="sourceFaviconUrl(source)"
-                  :alt="''"
-                  fallbackIcon="mdi:web"
-                  :fallbackBorder="false"
-                  aspectRatio="1 / 1"
-                  fit="contain"
-                  sizes="20px"
-                  containerClass="size-5 shrink-0 rounded-sm bg-transparent"
-                />
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-medium text-highlighted">{{ presentSourceUrl(source).hostname }}</p>
-                  <p v-if="presentSourceUrl(source).path" class="truncate text-xs text-muted">
-                    {{ presentSourceUrl(source).path }}
-                  </p>
-                </div>
-                <UTooltip :text="source">
-                  <UButton
-                    v-if="presentSourceUrl(source).valid"
-                    :to="source"
-                    target="_blank"
-                    rel="noreferrer"
-                    square
-                    size="sm"
-                    color="neutral"
-                    variant="ghost"
-                    icon="mdi:open-in-new"
-                    :aria-label="source"
-                  />
-                </UTooltip>
-              </li>
-            </ol>
+            <ArticleSourceList :sources="data.sources" class="mt-3" />
           </template>
         </UCollapsible>
 
@@ -226,8 +188,6 @@ import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
 import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
 
 import type { GamSizeMapping } from '~/composables/useGam'
-
-import { presentSourceUrl, sourceFaviconUrl } from '~/utils/sourcePresentation'
 
 definePageMeta({ shell: 'publication' })
 

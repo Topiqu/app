@@ -186,6 +186,7 @@ describe('Nuxt UI template contract', () => {
       // These bundled brand assets are served directly, without an image transformation request.
       'app/components/AppLogo.vue',
       'app/components/Header.vue',
+      'app/components/Sidebar.vue',
       'app/components/AppMedia.vue',
       'app/components/Auth/Form.vue',
       'app/components/Gif/Selector.vue',
