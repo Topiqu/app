@@ -10,7 +10,7 @@
       "available": "Available",
       "unit": "credits",
       "bonusExpiry": "Bonus credit expires in 30 days. Regular credit adjustments do not expire.",
-      "generationReservation": "We reserve 10,000 credits before generation. You pay actual usage, capped at this amount; unused credit is released. Failed work is free; Stop charges work already performed.",
+      "generationReservation": "Each generation holds a budget based on its research and selected components. Only actual usage is charged; the rest is released.",
       "neverExpires": "Credit never expires.",
       "explanation": "Credit is not a monthly allowance. Unused credit rolls over, purchased credit never expires, and changing plan does not reset it.",
       "reserved": "Held by running tasks",

@@ -3,6 +3,8 @@ import {
   ARTICLE_GENERATION_FORMATS,
   ARTICLE_GENERATION_MODULES,
   RESEARCH_DEPTHS,
+  articleGenerationReservation,
+  defaultArticleGenerationOptions,
 } from '~~/shared/utils/articleGeneration'
 
 export default defineEventHandler(async (event) => {
@@ -52,7 +54,12 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  await auditAttempt('MANUAL_GENERATION_STARTED', { promptLength: prompt.length })
+  await auditAttempt('MANUAL_GENERATION_STARTED', {
+    promptLength: prompt.length,
+    format: options?.format ?? null,
+    modules: options?.modules ?? [],
+    researchDepth: options?.research.enabled ? options.research.depth : null,
+  })
 
   const client = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
@@ -98,7 +105,13 @@ export default defineEventHandler(async (event) => {
     models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') },
   }
 
-  const reservation = await reserveTokens(clientSiteId, 10000, 'MANUAL_GENERATION', attemptId)
+  const generationOptions = options ?? defaultArticleGenerationOptions()
+  const reservation = await reserveTokens(
+    clientSiteId,
+    articleGenerationReservation(generationOptions, TOKEN_RATIO),
+    'MANUAL_GENERATION',
+    attemptId,
+  )
   const stream = new ReadableStream({
     async start(controller) {
       return runReservedTokens(reservation, async () => {
@@ -108,6 +121,7 @@ export default defineEventHandler(async (event) => {
         const heartbeat = setInterval(() => send(controller, { type: 'heartbeat' }), 5_000)
 
         try {
+          send(controller, { type: 'reservation', credits: reservation.reserved })
           send(controller, {
             type: 'phase',
             phase: options?.research.enabled === false ? 'writing' : 'research',
