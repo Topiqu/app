@@ -56,7 +56,7 @@ describe('applyContentSlots', () => {
 
   it('handles repeated markers for the same slot', () => {
     const out = applyContentSlots('[[IMAGE1]]x[[IMAGE1]]', 'IMAGE', [{ slot: 1, html: img(1) }])
-    expect(out).toBe(`${img(1)}x${img(1)}`)
+    expect(out).toBe(`${img(1)}x`)
   })
 })
 

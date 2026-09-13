@@ -12,7 +12,7 @@ interface PartialArticle {
 }
 
 export type GenerationPhase = 'research' | 'writing' | 'images'
-export type GenerationWritingStage = 'starting' | 'title' | 'intro' | 'body'
+export type GenerationWritingStage = 'starting' | 'title' | 'intro' | 'body' | 'review'
 
 export interface GenerationResearchResult {
   status: 'completed' | 'fallback' | 'skipped'

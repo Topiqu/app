@@ -1,5 +1,6 @@
 import type { ImageProvider, StockImage } from './types'
 
+import { matchesImageQuery } from './selection'
 import { fetchJson, imageApiHeaders } from './http'
 
 const SEARCH_URL = 'https://api.openverse.org/v1/images/'
@@ -45,7 +46,8 @@ export const openverseImage = (result: OpenverseResult): StockImage | null => {
   }
 }
 
-export const pickOpenverseImage = (results: OpenverseResult[]): StockImage | null => {
+export const pickOpenverseImage = (results: OpenverseResult[], query?: string): StockImage | null => {
+  results = query ? results.filter((result) => matchesImageQuery(result.title, query)) : results
   const landscape = results.find((result) => !!result.width && !!result.height && result.width > result.height)
 
   return openverseImage(landscape ?? results[0] ?? {})
@@ -67,7 +69,7 @@ export const openverse: ImageProvider = {
       // Anonymous access is heavily rate-limited; registering a client raises the ceiling.
       const data = await fetchJson(url, { headers: imageApiHeaders() })
 
-      return pickOpenverseImage(data?.results ?? [])
+      return pickOpenverseImage(data?.results ?? [], query)
     } catch (error) {
       console.error('[images/openverse] search failed:', error)
 

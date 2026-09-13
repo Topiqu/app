@@ -5,7 +5,7 @@
       <h2
         class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-500 dark:text-gray-400"
       >
-        <UIcon name="mdi:auto-fix" class="w-3.5 h-3.5 text-indigo-500" />
+        <UIcon name="mdi:pencil-outline" class="w-3.5 h-3.5 text-indigo-500" />
         {{ $t('common.labels.aiGeneration') }}
       </h2>
       <span
@@ -121,7 +121,7 @@
             </ArticleEditorChip>
             <ArticleEditorChip
               v-else
-              :icon="enhancing ? 'mdi:loading' : 'mdi:creation-outline'"
+              :icon="enhancing ? 'mdi:loading' : 'mdi:file-edit-outline'"
               size="md"
               :disabled="!canEnhance"
               @click="enhance"
@@ -130,7 +130,7 @@
             </ArticleEditorChip>
             <UButton
               size="sm"
-              icon="mdi:auto-fix"
+              icon="mdi:pencil-outline"
               :disabled="!canGenerate"
               class="bg-indigo-600! hover:bg-indigo-700! text-white! border-transparent!"
               @click="generate"

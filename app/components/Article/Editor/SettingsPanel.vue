@@ -26,22 +26,24 @@
     <section class="flex flex-col gap-3">
       <UCollapsible v-model:open="aiOpen">
         <UButton
-          color="neutral"
-          variant="ghost"
+          color="primary"
+          variant="soft"
+          size="lg"
           type="button"
           class="w-full"
+          :ui="{ trailingIcon: 'ms-auto' }"
           icon="mdi:file-edit-outline"
           :trailingIcon="aiOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"
           :label="$t('common.labels.aiGeneration')"
         />
         <template #content>
-          <div class="mt-3 overflow-hidden rounded-lg border border-default bg-default">
-            <div class="border-b border-default px-4 py-3">
-              <p class="text-sm font-semibold text-highlighted">
-                {{ aiGenerating ? activeHeading : aiAuthorName || $t('articles.editor.ai.neutralAuthor') }}
+          <div class="mt-3 overflow-hidden rounded-lg border border-primary/30 bg-default shadow-sm">
+            <div class="border-b border-primary/20 border-t-4 border-t-primary bg-primary/5 px-4 py-4">
+              <p class="text-lg font-semibold text-highlighted">
+                {{ aiGenerating ? activeHeading : $t('articles.editor.ai.createTitle') }}
               </p>
-              <p class="mt-0.5 text-xs leading-5 text-muted">
-                {{ aiGenerating ? activeDescription : $t('articles.editor.ai.planDescription') }}
+              <p v-if="aiGenerating || aiAuthorName" class="mt-1 text-sm leading-5 text-muted">
+                {{ aiGenerating ? activeDescription : aiAuthorName }}
               </p>
             </div>
 
@@ -81,62 +83,161 @@
                 <UTextarea
                   v-model="customPrompt"
                   :placeholder="$t('articles.editor.ai.topicPlaceholder')"
+                  :rows="4"
                   class="w-full"
                   autoresize
                 />
               </UFormField>
 
-              <fieldset class="flex flex-col gap-2">
-                <legend class="mb-1 text-xs font-medium text-muted">{{ $t('articles.editor.ai.outputLabel') }}</legend>
-                <UFormField :label="$t('articles.editor.ai.outputLabel')" :ui="{ label: 'sr-only' }">
-                  <URadioGroup
-                    v-model="aiOptions.format"
-                    :items="formatItems"
-                    variant="card"
-                    @update:modelValue="selectFormat"
-                  />
-                </UFormField>
-              </fieldset>
+              <UFormField
+                :label="$t('articles.editor.ai.outputLabel')"
+                :description="$t(`articles.editor.ai.outputDescription.${aiOptions.format}`)"
+              >
+                <USelect
+                  :modelValue="aiOptions.format"
+                  :items="formatItems"
+                  class="w-full"
+                  @update:modelValue="selectFormat"
+                />
+              </UFormField>
 
-              <div class="rounded-md border border-default">
-                <label class="flex cursor-pointer items-start justify-between gap-3 px-3 py-3">
-                  <span>
-                    <span class="block text-sm font-medium text-highlighted">{{
-                      $t('articles.editor.ai.researchLabel')
-                    }}</span>
-                    <span class="mt-0.5 block text-xs leading-5 text-muted">{{
-                      $t('articles.editor.ai.researchDescription')
-                    }}</span>
-                  </span>
-                  <USwitch v-model="aiOptions.research.enabled" :aria-label="$t('articles.editor.ai.researchLabel')" />
-                </label>
-                <div v-if="aiOptions.research.enabled" class="border-t border-default px-3 py-3">
-                  <p class="mb-2 text-xs font-medium text-muted">{{ $t('articles.editor.ai.depthLabel') }}</p>
-                  <UFormField :label="$t('articles.editor.ai.depthLabel')" :ui="{ label: 'sr-only' }">
-                    <URadioGroup v-model="aiOptions.research.depth" :items="depthItems" orientation="horizontal" />
+              <div class="border-t border-default pt-5">
+                <USwitch
+                  v-model="aiOptions.research.enabled"
+                  :aria-label="$t('articles.editor.ai.researchLabel')"
+                  :label="$t('articles.editor.ai.researchLabel')"
+                  :description="$t('articles.editor.ai.researchDescription')"
+                  :ui="{ root: 'flex-row-reverse justify-between', wrapper: 'ms-0 me-3' }"
+                />
+                <div v-if="aiOptions.research.enabled" class="mt-4 flex flex-col gap-4">
+                  <fieldset>
+                    <legend class="mb-2 text-sm font-medium text-highlighted">
+                      {{ $t('articles.editor.ai.depthLabel') }}
+                    </legend>
+                    <div class="flex rounded-md bg-elevated p-1">
+                      <label v-for="depth in depthItems" :key="depth.value" class="relative flex-1 cursor-pointer">
+                        <input
+                          v-model="aiOptions.research.depth"
+                          type="radio"
+                          :name="researchDepthName"
+                          :value="depth.value"
+                          class="peer sr-only"
+                        />
+                        <span
+                          class="flex min-h-10 items-center justify-center rounded text-sm text-muted peer-checked:bg-default peer-checked:font-semibold peer-checked:text-primary peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary"
+                          >{{ depth.label }}</span
+                        >
+                      </label>
+                    </div>
+                  </fieldset>
+                  <UFormField :label="$t('articles.editor.ai.noSourcesLabel')">
+                    <USelect v-model="researchFallback" :items="fallbackItems" class="w-full" />
                   </UFormField>
-                  <UCheckbox
-                    v-model="aiOptions.research.fallbackWithoutResearch"
-                    :label="$t('articles.editor.ai.researchFallback')"
-                    :aria-label="$t('articles.editor.ai.researchFallback')"
-                  />
                 </div>
               </div>
 
-              <fieldset>
-                <legend class="text-xs font-medium text-muted">{{ $t('articles.editor.ai.modulesLabel') }}</legend>
-                <p class="mb-2 mt-1 text-xs leading-5 text-muted">{{ $t('articles.editor.ai.modulesDescription') }}</p>
-                <UFormField :label="$t('articles.editor.ai.modulesLabel')" :ui="{ label: 'sr-only' }">
-                  <UCheckboxGroup v-model="aiOptions.modules" :items="moduleItems" />
-                </UFormField>
-              </fieldset>
+              <div class="flex flex-col gap-4 border-t border-default pt-5">
+                <fieldset>
+                  <legend class="mb-3 text-sm font-medium text-highlighted">
+                    {{ $t('articles.editor.ai.modulesLabel') }}
+                    <span class="ms-2 font-normal text-muted">{{
+                      $t('articles.editor.ai.selectedCount', { count: aiOptions.modules.length })
+                    }}</span>
+                  </legend>
+                  <div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2">
+                    <label
+                      v-for="item in contentModuleItems"
+                      :key="item.value"
+                      class="flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 text-sm"
+                      :class="
+                        item.disabled
+                          ? 'cursor-not-allowed border-default bg-elevated text-muted'
+                          : aiOptions.modules.includes(item.value)
+                            ? 'cursor-pointer border-primary/60 bg-primary/10 font-medium text-highlighted'
+                            : 'cursor-pointer border-default text-highlighted hover:border-primary/50 hover:bg-elevated'
+                      "
+                    >
+                      <input
+                        v-model="aiOptions.modules"
+                        type="checkbox"
+                        :value="item.value"
+                        :disabled="item.disabled"
+                        class="size-4 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      />
+                      <span
+                        >{{ item.label
+                        }}<span v-if="item.disabled" class="mt-0.5 block text-xs font-normal">{{
+                          $t('articles.editor.ai.moduleUnavailable')
+                        }}</span></span
+                      >
+                    </label>
+                  </div>
+                </fieldset>
+                <fieldset>
+                  <legend class="mb-1 text-sm font-medium text-highlighted">
+                    {{ $t('articles.editor.ai.mediaLabel') }}
+                  </legend>
+                  <div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2">
+                    <label
+                      v-for="item in mediaModuleItems"
+                      :key="item.value"
+                      class="flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 text-sm"
+                      :class="
+                        item.disabled
+                          ? 'cursor-not-allowed border-default bg-elevated text-muted'
+                          : aiOptions.modules.includes(item.value)
+                            ? 'cursor-pointer border-primary/60 bg-primary/10 font-medium text-highlighted'
+                            : 'cursor-pointer border-default text-highlighted hover:border-primary/50 hover:bg-elevated'
+                      "
+                    >
+                      <input
+                        v-model="aiOptions.modules"
+                        type="checkbox"
+                        :value="item.value"
+                        :disabled="item.disabled"
+                        class="size-4 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      />
+                      <span
+                        >{{ item.label
+                        }}<span v-if="item.disabled" class="mt-0.5 block text-xs font-normal">{{
+                          $t('articles.editor.ai.moduleUnavailable')
+                        }}</span></span
+                      >
+                    </label>
+                  </div>
+                  <UCheckbox
+                    v-model="aiOptions.allowGeneratedImages"
+                    :aria-label="$t('articles.editor.ai.allowGeneratedImages')"
+                    :label="$t('articles.editor.ai.allowGeneratedImages')"
+                    :description="$t('articles.editor.ai.generatedImagesFallback')"
+                    class="mt-3"
+                  />
+                  <p v-if="aiOptions.modules.includes('youtube')" class="mt-1 text-sm leading-5 text-muted">
+                    {{ $t('articles.editor.ai.youtubeHint') }}
+                  </p>
+                </fieldset>
+              </div>
 
-              <div class="border-t border-default pt-4">
-                <p class="mb-3 text-xs leading-5 text-muted">{{ planSummary }}</p>
-                <p class="text-xs text-muted">{{ $t('common.wallet.generationReservation') }}</p>
-                <UButton block :disabled="!customPrompt.trim()" @click="$emit('generate')">
+              <div class="-mx-4 -mb-4 flex flex-col gap-3 border-t border-primary/20 bg-elevated/60 p-4">
+                <div class="text-sm leading-5" aria-live="polite">
+                  <p class="font-medium text-highlighted">{{ planSummary }}</p>
+                  <p class="mt-1 text-muted">{{ selectedModuleSummary }}</p>
+                </div>
+                <UButton block size="lg" :disabled="!customPrompt.trim()" @click="$emit('generate')">
                   {{ $t('articles.editor.ai.generateButton') }}
                 </UButton>
+                <div class="text-sm leading-5 text-muted">
+                  <p class="font-medium text-highlighted">{{ $t('articles.editor.ai.reservationLabel') }}</p>
+                  <p class="mt-1">{{ $t('articles.editor.ai.reservationSummary') }}</p>
+                  <details class="mt-2">
+                    <summary
+                      class="w-fit cursor-pointer rounded text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary"
+                    >
+                      {{ $t('articles.editor.ai.billingDetails') }}
+                    </summary>
+                    <p class="mt-2">{{ $t('articles.editor.ai.billingExplanation') }}</p>
+                  </details>
+                </div>
               </div>
             </div>
 
@@ -312,6 +413,7 @@ const modules = ARTICLE_GENERATION_MODULES
 const depths = RESEARCH_DEPTHS
 const phases: GenerationPhase[] = ['research', 'writing', 'images']
 const { t } = useI18n()
+const researchDepthName = useId()
 
 const activeHeading = computed(() => props.aiAuthorName || t('articles.editor.ai.neutralWorking'))
 const activeDescription = computed(() =>
@@ -336,11 +438,32 @@ const moduleItems = computed(() =>
     disabled: !allowedModules.value.includes(value),
   })),
 )
+const contentModuleItems = computed(() =>
+  moduleItems.value.filter((item) => !['images', 'youtube'].includes(item.value)),
+)
+const mediaModuleItems = computed(() => moduleItems.value.filter((item) => ['images', 'youtube'].includes(item.value)))
+const selectedModuleSummary = computed(() =>
+  aiOptions.value.modules.length
+    ? aiOptions.value.modules.map(moduleLabel).join(' · ')
+    : t('articles.editor.ai.noModules'),
+)
+const researchFallback = computed({
+  get: () => (aiOptions.value.research.fallbackWithoutResearch ? 'continue' : 'stop'),
+  set: (value: string) => {
+    aiOptions.value.research.fallbackWithoutResearch = value === 'continue'
+  },
+})
+const fallbackItems = computed(() => [
+  { value: 'stop', label: t('articles.editor.ai.noSourcesStop') },
+  { value: 'continue', label: t('articles.editor.ai.researchFallback') },
+])
 const phaseState = (index: number) =>
   index < currentPhaseIndex.value ? 'done' : index === currentPhaseIndex.value ? 'active' : 'pending'
 const phaseDetail = computed(() => {
   if (props.aiPhase === 'research' && props.aiResearch?.status === 'completed')
     return t('articles.editor.ai.researchSources', { count: props.aiResearch.sourceCount })
+  if (props.aiPhase === 'writing' && props.aiWritingStage === 'review')
+    return t('articles.editor.ai.writingStage.review')
   if (props.aiPhase === 'writing')
     return props.aiWordCount > 0
       ? t('articles.editor.ai.wordsWritten', { count: props.aiWordCount })
@@ -357,6 +480,8 @@ const phaseDetail = computed(() => {
   return t(`articles.editor.ai.phase${props.aiPhase[0]!.toUpperCase()}${props.aiPhase.slice(1)}`)
 })
 const waitingMessage = computed(() => {
+  if (props.aiPhase === 'writing' && props.aiWritingStage === 'review')
+    return t('articles.editor.ai.writingStage.review')
   if (props.aiPhase === 'writing')
     return t('articles.editor.ai.waitingWriting', { seconds: props.aiLastActivitySeconds })
   if (props.aiPhase === 'images') return t('articles.editor.ai.waitingImages')
@@ -369,7 +494,7 @@ const phaseDoneLabel = (phase: GenerationPhase) => {
   return t(`articles.editor.ai.researchStatus.${props.aiResearch.status}`)
 }
 const planSummary = computed(() =>
-  t('articles.editor.ai.planSummary', {
+  t('articles.editor.ai.outputSummary', {
     format: t(`articles.editor.ai.output.${aiOptions.value.format}`),
     research: aiOptions.value.research.enabled
       ? t(`articles.editor.ai.depth.${aiOptions.value.research.depth}`)

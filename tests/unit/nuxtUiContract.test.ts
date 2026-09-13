@@ -129,6 +129,9 @@ describe('Nuxt UI template contract', () => {
 
   it('does not reintroduce native interactive primitives', () => {
     const allowlist = new Set([
+      // Native array checkboxes/radio inputs are intentional here. Their keyboard/checked
+      // state and independent module selection are exercised by articleGenerationModules.test.ts.
+      'app/components/Article/Editor/SettingsPanel.vue',
       'app/components/Client/Version.vue',
       'app/components/Form/Client/AI.vue',
       'app/components/Form/Client/Billing.vue',

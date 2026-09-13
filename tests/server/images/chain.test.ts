@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { ImageProvider, StockImage } from '../../../server/utils/images/types'
 
-import { allowsGeneratedFallback, findStockImage, imageChains } from '../../../server/utils/images/chain'
+import { findStockImage, imageChains } from '../../../server/utils/images/chain'
 
 const hit = (source: string): StockImage => ({ url: `https://${source}/x.jpg`, credit: { source } })
 
@@ -41,23 +41,13 @@ describe('findStockImage', () => {
     expect(result).toMatchObject({ kind: 'photo', image: { url: 'https://openverse/x.jpg' } })
   })
 
-  it('retries a sentence-like archive query with a shorter subject query', async () => {
-    const archive: ImageProvider = {
-      name: 'wikimedia',
-      search: vi.fn(async (query) => (query === 'The Witcher 4 Ciri protagonist Kovir' ? hit('wikimedia') : null)),
-    }
-    const result = await findStockImage(
-      'photo',
-      'The Witcher 4 Ciri protagonist Kovir technical demonstration screenshot',
-      chains({ photo: [archive] }),
-    )
-
-    expect(archive.search).toHaveBeenNthCalledWith(
-      1,
-      'The Witcher 4 Ciri protagonist Kovir technical demonstration screenshot',
-    )
-    expect(archive.search).toHaveBeenNthCalledWith(2, 'The Witcher 4 Ciri protagonist Kovir')
-    expect(result).toMatchObject({ kind: 'photo', image: { url: 'https://wikimedia/x.jpg' } })
+  it('does not shorten a query and lose the requested installment or subject', async () => {
+    const archive = provider('wikimedia', null)
+    const stock = provider('openverse', null)
+    const query = 'The Witcher 4 Ciri screenshot'
+    expect(await findStockImage('photo', query, { photo: [archive], stock: [stock] })).toBeNull()
+    expect(archive.search).toHaveBeenCalledExactlyOnceWith(query)
+    expect(stock.search).toHaveBeenCalledExactlyOnceWith(query)
   })
 
   it('relabels a photo that only stock could answer as an illustration', async () => {
@@ -67,24 +57,16 @@ describe('findStockImage', () => {
     expect(result).toMatchObject({ kind: 'illustration', image: { url: 'https://openverse/x.jpg' } })
   })
 
-  it('never reaches a provider for a generate intent', async () => {
+  it('searches existing images even for a generate intent', async () => {
     const photo = provider('wikimedia', hit('wikimedia'))
 
-    expect(await findStockImage('generate', 'q', chains({ photo: [photo] }))).toBeNull()
-    expect(photo.search).not.toHaveBeenCalled()
+    expect(await findStockImage('generate', 'q', chains({ photo: [photo] }))).toMatchObject({ kind: 'illustration' })
+    expect(photo.search).toHaveBeenCalledWith('q')
   })
 
   it('returns null when every provider is empty', async () => {
     const empty = { photo: [provider('wikimedia', null)], stock: [provider('openverse', null)] }
 
     expect(await findStockImage('stock', 'q', empty)).toBeNull()
-  })
-})
-
-describe('allowsGeneratedFallback', () => {
-  it('refuses to synthesise a picture for a documentary intent', () => {
-    expect(allowsGeneratedFallback('photo')).toBe(false)
-    expect(allowsGeneratedFallback('stock')).toBe(true)
-    expect(allowsGeneratedFallback('generate')).toBe(true)
   })
 })

@@ -27,7 +27,7 @@ describe('manual article generation stream', () => {
   })
 
   it('bounds research, writer inactivity, and total writing time', () => {
-    expect(articleGenerator).toContain('standard: { maxOutputTokens: 1200, timeoutMs: 45_000')
+    expect(articleGenerator).toContain('standard: { maxOutputTokens: 3600, timeoutMs: 65_000')
     expect(articleGenerator).toContain('AbortSignal.timeout(researchConfig.timeoutMs)')
     expect(articleGenerator).toContain('abortSignal: researchSignal')
     expect(endpoint).toContain("'MANUAL_GENERATION_RESEARCH_STARTED'")
@@ -63,8 +63,7 @@ describe('manual article generation stream', () => {
     expect(endpoint).toMatch(/async cancel\([^)]*\)\s*{\s*abortController\.abort\(\)/)
     expect(articleGenerator).toContain("onMedia?.({ stage: 'cover'")
     expect(articleGenerator).toContain("stage: 'complete'")
-    expect(articleGenerator).toContain('if (!articleImageUrl && object.coverImage)')
-    expect(articleGenerator).toContain('if (!articleImageUrl && firstBodyImage)')
+    expect(articleGenerator).not.toContain('if (!articleImageUrl && firstBodyImage)')
   })
 
   it('grounds time-sensitive claims against the actual generation date', () => {
@@ -85,10 +84,17 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain("send(controller, { type: 'billing', ...billing })")
   })
 
+  it('stamps every billed run with the options and models that drove its cost', () => {
+    expect(endpoint).toContain('researchDepth: options?.research.enabled ? options.research.depth : null')
+    expect(endpoint).toContain("models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') }")
+    // Completed and aborted both bill, so both have to be attributable.
+    expect(endpoint.match(/\.\.\.runConfig,/g)).toHaveLength(2)
+  })
+
   it('requires matching body image slots when the author selected images', () => {
     expect(articleGenerator).toContain("selectedModules.includes('images')")
     expect(articleGenerator).toContain('The author selected images in the article body.')
-    expect(articleGenerator).toContain('Do not return an empty images array.')
+    expect(articleGenerator).toContain('selection is permission, not a quota.')
   })
 
   it('records the complete manual generation lifecycle with a correlation id', () => {

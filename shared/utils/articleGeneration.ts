@@ -45,6 +45,7 @@ export interface ArticleGenerationResult {
 
 export interface ArticleGenerationOptions {
   format: ArticleGenerationFormat
+  allowGeneratedImages?: boolean
   modules: ArticleGenerationModule[]
   research: {
     enabled: boolean
@@ -55,6 +56,7 @@ export interface ArticleGenerationOptions {
 
 export const defaultArticleGenerationOptions = (): ArticleGenerationOptions => ({
   format: 'news',
+  allowGeneratedImages: false,
   modules: ['answer', 'takeaways'],
   research: {
     enabled: true,
