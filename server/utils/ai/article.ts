@@ -138,22 +138,23 @@ const researchYoutube = async (prompt: string, abortSignal?: AbortSignal) => {
   try {
     const { text, usage } = await generateText({
       model: aiModel('articleResearch'),
-      instructions: `Search specifically for one existing, directly relevant YouTube video about the topic. Prefer the official developer, publisher, manufacturer, institution or named subject's channel. Use web search and return only the full youtube.com/watch or youtu.be URL you actually opened; return NONE if no suitable video was retrieved. Never guess a video id or transform a channel/search URL into a watch URL.`,
+      instructions: `Search for existing, directly relevant YouTube videos about the topic. Prefer the official developer, publisher, manufacturer, institution or named subject's channel. Return up to three full youtube.com/watch or youtu.be URLs you actually opened, ordered by relevance; return NONE if no suitable video was retrieved. Never guess a video id or transform a channel/search URL into a watch URL.`,
       prompt,
       maxOutputTokens: 250,
       tools: { web_search: aiWebSearchTool('low') as never },
       abortSignal: signal,
     })
     const candidates = text.match(/https?:\/\/[^\s)\]}>,]+/g) ?? []
-    const url = candidates.find((candidate) => youtubeVideoId(candidate)) ?? null
-    if (!url) return { url: null, tokens: usage?.totalTokens ?? 0 }
+    const urls = [...new Set(candidates.filter((candidate) => youtubeVideoId(candidate)))].slice(0, 3)
 
-    // Shape validation prevents an invented host/id from reaching the request. oEmbed then proves
-    // that YouTube currently recognizes the exact video before the writer is allowed to embed it.
-    const verification = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`, {
-      signal: AbortSignal.timeout(5_000),
-    })
-    return { url: verification.ok ? url : null, tokens: usage?.totalTokens ?? 0 }
+    // Try the next retrieved candidate when the best result disappeared or rejects oEmbed.
+    for (const url of urls) {
+      const verification = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`, {
+        signal: AbortSignal.timeout(5_000),
+      }).catch(() => null)
+      if (verification?.ok) return { url, tokens: usage?.totalTokens ?? 0 }
+    }
+    return { url: null, tokens: usage?.totalTokens ?? 0 }
   } catch (error) {
     if (abortSignal?.aborted) throw error
     return { url: null, tokens: 0 }
@@ -376,6 +377,10 @@ const buildArticleConfig = async (
       }.
       The title must be engaging.
       Start the body at h2 — the page already renders the title as its h1.
+      Fact-checking is an internal editing discipline, not the voice of the article. State supported facts directly.
+      Do not narrate the verification process, tell readers to "be cautious", or repeatedly explain what cannot be inferred.
+      When the assignment's premise is wrong or stale, correct it once in plain language, then move to the useful current story. Do not build the whole article around defensive caveats.
+      Use uncertainty only where it changes the reader's understanding, and express it once. Omit unsupported side claims instead of filling paragraphs with disclaimers.
       Before writing, compare every time-sensitive claim in the research brief with ${currentDateTime}. Never call a past date upcoming, future or scheduled. If the brief does not establish what happened after an elapsed announced date, omit the claim instead of repeating the outdated announcement.
       A claim that a company confirmed, announced, targets or plans a release date is allowed only when the research brief supports it with that company's primary source. A secondary article or rumour may be described only with its actual attribution and uncertainty. Never turn it into a company statement.
       Check continuity and chronology for every named entity. Do not invent returns, survival, resurrection, flashbacks or future appearances to connect names from the prompt. Omit unsupported names entirely, including polls, FAQ and takeaways.

@@ -16,6 +16,26 @@ export const ARTICLE_GENERATION_ALLOWED_MODULES: Record<ArticleGenerationFormat,
 export const RESEARCH_DEPTHS = ['quick', 'standard', 'deep'] as const
 export type ResearchDepth = (typeof RESEARCH_DEPTHS)[number]
 
+/**
+ * Worst normal-path provider usage plus input headroom, expressed before TOKEN_RATIO conversion.
+ * Each run holds only its own budget, so independent editors can generate concurrently.
+ */
+const ARTICLE_GENERATION_BUDGET = {
+  withoutResearch: 24_000,
+  quick: 38_000,
+  standard: 40_000,
+  deep: 43_000,
+  youtube: 500,
+} as const
+
+export const articleGenerationReservation = (options: ArticleGenerationOptions, tokenRatio = 1) => {
+  const researchBudget = options.research.enabled
+    ? ARTICLE_GENERATION_BUDGET[options.research.depth]
+    : ARTICLE_GENERATION_BUDGET.withoutResearch
+  const videoBudget = options.modules.includes('youtube') ? ARTICLE_GENERATION_BUDGET.youtube : 0
+  return Math.ceil((researchBudget + videoBudget) * tokenRatio)
+}
+
 export interface ArticleMediaProgress {
   stage: 'cover' | 'content' | 'complete'
   completed: number

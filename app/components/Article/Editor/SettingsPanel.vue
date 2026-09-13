@@ -241,24 +241,61 @@
               </div>
             </div>
 
-            <div v-else class="p-4" aria-live="polite">
-              <ol class="flex flex-col gap-1">
+            <div v-else class="p-4" aria-live="polite" aria-atomic="false">
+              <div class="mb-4 overflow-hidden rounded-md border border-primary/20 bg-primary/5">
+                <div class="h-1 bg-primary/10" aria-hidden="true">
+                  <div
+                    class="h-full bg-primary transition-[width] duration-500 motion-reduce:transition-none"
+                    :style="{ width: progressWidth }"
+                  />
+                </div>
+                <div class="flex items-start gap-3 px-3 py-3">
+                  <span
+                    class="relative mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-primary/12 text-primary"
+                  >
+                    <UIcon :name="phaseIcons[aiPhase]" size="18" aria-hidden="true" />
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-highlighted">{{ phaseDetail }}</p>
+                    <template v-if="aiPhase === 'research'">
+                      <p class="mt-1 line-clamp-2 text-xs leading-5 text-muted">
+                        {{ $t('articles.editor.ai.researchTarget', { topic: customPrompt }) }}
+                      </p>
+                      <p class="mt-1 text-xs leading-5 text-muted">{{ $t('articles.editor.ai.researchMethod') }}</p>
+                    </template>
+                    <p v-else-if="aiPhase === 'writing' && aiWordCount" class="mt-1 text-xs text-muted">
+                      {{ $t('articles.editor.ai.wordsWritten', { count: aiWordCount }) }}
+                    </p>
+                    <p v-if="aiReservedTokens" class="mt-2 text-[11px] tabular-nums text-muted">
+                      {{ $t('articles.editor.ai.reservedDuringRun', { count: aiReservedTokens.toLocaleString() }) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <ol class="flex flex-col gap-0.5">
                 <li
                   v-for="(phase, index) in phases"
                   :key="phase"
-                  class="grid grid-cols-[1rem_1fr_auto] items-start gap-2 rounded-md px-2 py-2"
+                  class="grid grid-cols-[1.75rem_1fr_auto] items-start gap-2 rounded-md px-2 py-2.5"
                   :class="aiPhase === phase ? 'bg-elevated' : ''"
                 >
                   <span
-                    class="mt-1 size-2 rounded-full border"
+                    class="grid size-7 place-items-center rounded-full border"
                     :class="
                       phaseState(index) === 'done'
-                        ? 'border-success bg-success'
+                        ? 'border-success/30 bg-success/10 text-success'
                         : phaseState(index) === 'active'
-                          ? 'border-primary bg-primary'
-                          : 'border-muted'
+                          ? 'border-primary/30 bg-primary/10 text-primary'
+                          : 'border-default text-muted'
                     "
-                  />
+                  >
+                    <UIcon
+                      :name="phaseState(index) === 'done' ? 'mdi:check' : phaseIcons[phase]"
+                      size="15"
+                      aria-hidden="true"
+                    />
+                  </span>
                   <span>
                     <span
                       class="block text-sm font-medium"
@@ -277,7 +314,10 @@
               </ol>
 
               <div class="mt-3 flex items-center justify-between gap-3 border-t border-default pt-3 text-xs text-muted">
-                <span>{{ $t('articles.editor.ai.elapsed', { seconds: aiElapsedSeconds }) }}</span>
+                <span class="inline-flex items-center gap-1.5 tabular-nums">
+                  <span class="size-1.5 rounded-full bg-success" />
+                  {{ $t('articles.editor.ai.elapsed', { seconds: aiElapsedSeconds }) }}
+                </span>
                 <UButton
                   size="xs"
                   color="neutral"
@@ -397,6 +437,7 @@ const props = defineProps<{
   aiWordCount: number
   aiResearch?: GenerationResearchResult | null
   aiMedia?: ArticleMediaProgress | null
+  aiReservedTokens?: number | null
   aiLastResult?: ArticleGenerationResult | null
   aiWritingStage: GenerationWritingStage
 }>()
@@ -412,6 +453,11 @@ const formats = ARTICLE_GENERATION_FORMATS
 const modules = ARTICLE_GENERATION_MODULES
 const depths = RESEARCH_DEPTHS
 const phases: GenerationPhase[] = ['research', 'writing', 'images']
+const phaseIcons: Record<GenerationPhase, string> = {
+  research: 'mdi:magnify-scan',
+  writing: 'mdi:text-box-edit-outline',
+  images: 'mdi:image-multiple-outline',
+}
 const { t } = useI18n()
 const researchDepthName = useId()
 
@@ -422,6 +468,7 @@ const activeDescription = computed(() =>
     : t(`articles.editor.ai.phase${props.aiPhase[0]!.toUpperCase()}${props.aiPhase.slice(1)}`),
 )
 const currentPhaseIndex = computed(() => phases.indexOf(props.aiPhase))
+const progressWidth = computed(() => `${((currentPhaseIndex.value + 0.45) / phases.length) * 100}%`)
 const allowedModules = computed(() => ARTICLE_GENERATION_ALLOWED_MODULES[aiOptions.value.format])
 const formatItems = computed(() =>
   formats.map((value) => ({

@@ -227,7 +227,7 @@
         <ArticleSummary :answer="editedArticle.answer" :takeaways="editedArticle.keyTakeaways ?? []" />
 
         <div class="mt-4 min-w-0 max-w-full">
-          <TiptapEditor v-model="bodyModel" :edit="bodyEditable" class="min-h-[500px]" />
+          <TiptapEditor v-model="bodyModel" :edit="bodyEditable && !aiGenerating" class="min-h-[500px]" />
 
           <ArticleFaq :entries="readFaq(editedArticle.faq)" />
 
@@ -276,6 +276,7 @@
             :aiWordCount="aiWordCount"
             :aiResearch="aiResearch"
             :aiMedia="aiMedia"
+            :aiReservedTokens="aiReservedTokens"
             :aiLastResult="aiLastResult"
             :aiWritingStage="aiWritingStage"
             @upload="handleUpload"
@@ -361,6 +362,7 @@
           :aiWordCount="aiWordCount"
           :aiResearch="aiResearch"
           :aiMedia="aiMedia"
+          :aiReservedTokens="aiReservedTokens"
           :aiLastResult="aiLastResult"
           :aiWritingStage="aiWritingStage"
           @upload="handleUpload"
@@ -467,6 +469,7 @@ const aiOptions = ref(defaultArticleGenerationOptions())
 const aiPhase = shallowRef<GenerationPhase>('research')
 const aiResearch = shallowRef<GenerationResearchResult | null>(null)
 const aiMedia = shallowRef<ArticleMediaProgress | null>(null)
+const aiReservedTokens = shallowRef<number | null>(null)
 const aiLastResult = shallowRef<ArticleGenerationResult | null>(null)
 const aiWritingStage = shallowRef<GenerationWritingStage>('starting')
 const aiStartedAt = shallowRef(0)
@@ -753,10 +756,21 @@ const generateAIContent = async () => {
   let sourceCount = 0
   let mediaFound = 0
   let mediaTotal = 0
+  let streamedContent = ''
+  const streamedImages = new Map<number, string>()
+  const applyStreamedImages = (content: string) => {
+    let resolved = content
+    for (const [slot, html] of streamedImages) resolved = replaceSlot(resolved, 'IMAGE', slot, html)
+    return resolved
+  }
+  const presentStreamedContent = () => {
+    editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
+  }
   aiGenerating.value = true
   aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
   aiResearch.value = null
   aiMedia.value = null
+  aiReservedTokens.value = null
   aiWritingStage.value = 'starting'
   aiStartedAt.value = Date.now()
   aiLastActivityAt.value = aiStartedAt.value
@@ -766,7 +780,10 @@ const generateAIContent = async () => {
       onPartial: (partial) => {
         if (partial.title != null) editedArticle.value.title = partial.title
         if (partial.perex != null) editedArticle.value.excerpt = partial.perex
-        if (partial.content != null) editedArticle.value.content = partial.content
+        if (partial.content != null) {
+          streamedContent = partial.content
+          presentStreamedContent()
+        }
       },
       onPhase: (phase) => (aiPhase.value = phase),
       onResearch: (research) => {
@@ -785,10 +802,12 @@ const generateAIContent = async () => {
           clientStatus.value.totalUsage = (clientStatus.value.totalUsage ?? 0) + result.clientTokensUsed
         }
       },
+      onReservation: (credits) => (aiReservedTokens.value = credits),
       onWritingStage: (stage) => (aiWritingStage.value = stage),
       onActivity: () => (aiLastActivityAt.value = Date.now()),
       onImage: ({ slot, html }) => {
-        editedArticle.value.content = (editedArticle.value.content ?? '').replace(`[[IMAGE${slot}]]`, html)
+        streamedImages.set(slot, html)
+        presentStreamedContent()
       },
       onFinal: (article) => {
         finalReceived = true
@@ -839,10 +858,11 @@ const generateAIContent = async () => {
         color: 'info',
         title: t('articles.editor.ai.aiContentStopped'),
       })
-    else if (missingModules.includes('images'))
+    else if (missingModules.length)
       toast.add({
         color: 'warning',
-        title: t('articles.editor.aiImagesUnavailable'),
+        title: t('articles.editor.aiModulesUnavailable'),
+        description: missingModules.map((module) => t(`articles.editor.ai.module.${module}`)).join(', '),
       })
     else
       toast.add({
@@ -867,6 +887,8 @@ const generateAIContent = async () => {
       description: error?.message || undefined,
     })
   } finally {
+    if (!finalReceived && streamedContent)
+      editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
     aiGenerating.value = false
     await refreshClientSiteStatus().catch(() => undefined)
   }

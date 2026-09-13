@@ -108,6 +108,9 @@ model ClientSite extends Base {
     communityInsight     Json?
     insightUpdatedAt     DateTime?
     billingPlan          BillingPlans        @default(MONTHLY)
+    trialStartedAt       DateTime?
+    trialEndsAt          DateTime?
+    trialAcknowledgedAt  DateTime?
     firstPaidAt          DateTime?
     nextBillingAt        DateTime?
     lastInvoicedAt       DateTime?
@@ -148,6 +151,7 @@ model ClientSite extends Base {
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == id))
     @@allow('all', auth().role == 'superadmin')
     @@index([domain, name, plan, billingPlan])
+    @@index([trialEndsAt, trialAcknowledgedAt])
 }
 
 model Feature extends Base {

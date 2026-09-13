@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 const endpoint = readFileSync(resolve(process.cwd(), 'server/api/articles/generate/index.post.ts'), 'utf8')
 const articleGenerator = readFileSync(resolve(process.cwd(), 'server/utils/ai/article.ts'), 'utf8')
+const articleQuality = readFileSync(resolve(process.cwd(), 'server/utils/ai/articleQuality.ts'), 'utf8')
 
 describe('manual article generation stream', () => {
   it('leaves transport close events alone and aborts only when the stream reader cancels', () => {
@@ -72,9 +73,15 @@ describe('manual article generation stream', () => {
     expect(articleGenerator).toContain('Never call a past date upcoming, future or scheduled.')
   })
 
+  it('keeps strict verification out of the published article voice and revision', () => {
+    expect(articleGenerator).toContain('Fact-checking is an internal editing discipline, not the voice of the article.')
+    expect(articleGenerator).toContain('correct it once in plain language')
+    expect(articleQuality).toContain('Keep the verification process out of the published voice.')
+  })
+
   it('researches a verified YouTube URL when the author selected the video module', () => {
     expect(articleGenerator).toContain("selectedModulesFor(format, modules).includes('youtube')")
-    expect(articleGenerator).toContain('Search specifically for one existing, directly relevant YouTube video')
+    expect(articleGenerator).toContain('Search for existing, directly relevant YouTube videos')
     expect(articleGenerator).toContain('https://www.youtube.com/oembed')
     expect(articleGenerator).toContain('youtubeVideoId(candidate)')
     expect(articleGenerator).toContain('The author selected a YouTube video.')
@@ -82,6 +89,12 @@ describe('manual article generation stream', () => {
 
   it('streams the authoritative token balance after billing', () => {
     expect(endpoint).toContain("send(controller, { type: 'billing', ...billing })")
+  })
+
+  it('holds a configuration-sized budget without locking the tenant wallet', () => {
+    expect(endpoint).toContain('articleGenerationReservation(generationOptions, TOKEN_RATIO)')
+    expect(endpoint).toContain("send(controller, { type: 'reservation', credits: reservation.reserved })")
+    expect(endpoint).not.toContain('reserveAvailableTokens')
   })
 
   it('stamps every billed run with the options and models that drove its cost', () => {
@@ -104,6 +117,12 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain("'MANUAL_GENERATION_ABORTED'")
     expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_CANCELLED'")
     expect(endpoint).toContain('attemptId')
+    expect(endpoint).toContain('modules: options?.modules ?? []')
     expect(endpoint).toMatch(/event,\s*user\.id,\s*\)/)
+  })
+
+  it('tries retrieved YouTube alternatives before reporting the module unavailable', () => {
+    expect(articleGenerator).toContain('Return up to three full youtube.com/watch or youtu.be URLs')
+    expect(articleGenerator).toContain('for (const url of urls)')
   })
 })

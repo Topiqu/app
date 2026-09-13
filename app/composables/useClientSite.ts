@@ -1,3 +1,4 @@
+import type { TrialState } from '~~/shared/utils/trial'
 import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
 export interface ClientSiteStatus {
@@ -20,6 +21,11 @@ export interface ClientSiteStatus {
   totalUsage: number | null
   createdAt: string
   firstPaidAt: string | null
+  trial: {
+    state: TrialState
+    endsAt: string | null
+    daysLeft: number
+  }
   focus: string | null
   audience: string | null
   aiUser: { username: string; avatarUrl: string | null } | null
