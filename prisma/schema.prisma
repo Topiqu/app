@@ -627,6 +627,9 @@ model ClientSite {
   communityInsight             Json?
   insightUpdatedAt             DateTime?
   billingPlan                  BillingPlans             @default(MONTHLY)
+  trialStartedAt               DateTime?
+  trialEndsAt                  DateTime?
+  trialAcknowledgedAt          DateTime?
   firstPaidAt                  DateTime?
   nextBillingAt                DateTime?
   lastInvoicedAt               DateTime?
@@ -663,6 +666,7 @@ model ClientSite {
   activeSessions               Session[]                @relation("SessionActiveTenant")
 
   @@index([domain, name, plan, billingPlan])
+  @@index([trialEndsAt, trialAcknowledgedAt])
 }
 
 model Feature {
