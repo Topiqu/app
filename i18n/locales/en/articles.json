@@ -206,10 +206,10 @@
       "languages": "Languages"
     },
     "messages": {
-      "archivedCannotEdit": "Archived articles cannot be edited.",
-      "statusChangeFailed": "Could not change the article status.",
-      "deleteSuccess": "Article deleted.",
-      "deleteFailed": "Could not delete the article."
+      "archivedCannotEdit": "Archived articles cannot be edited",
+      "statusChangeFailed": "Could not change the status",
+      "deleteSuccess": "Article deleted",
+      "deleteFailed": "Could not delete the article"
     },
     "sources": {
       "add": "Add source",
@@ -409,7 +409,7 @@
         "customPromptPlaceholder": "Enter a prompt for AI article generation...",
         "notAvailable": "AI generation is not available.",
         "learnMore": "Learn More",
-        "generateButton": "Generate AI Content",
+        "generateButton": "Create article",
         "stopButton": "Stop",
         "generating": "Generating article",
         "neutralAuthor": "Prepare a new article",
@@ -417,7 +417,7 @@
         "planDescription": "Set the output before starting. You will see exactly what will be used.",
         "outputLabel": "Output type",
         "researchLabel": "Verify the topic on the web",
-        "researchDescription": "Finds current material and only allows sources that were actually retrieved.",
+        "researchDescription": "Find and verify current sources.",
         "depthLabel": "Research depth",
         "researchFallback": "Continue without sources",
         "researchOff": "without research",
@@ -458,7 +458,8 @@
           "starting": "Preparing the article structure…",
           "title": "The headline is ready; preparing the introduction…",
           "intro": "The introduction is ready; writing the main text…",
-          "body": "The article text is being added progressively…"
+          "body": "The article text is being added progressively…",
+          "review": "Checking facts and consistency…"
         },
         "depth": {
           "quick": "Quick",
@@ -527,7 +528,23 @@
             "label": "Deep dive",
             "template": "Write an in-depth analysis of:"
           }
-        }
+        },
+        "createTitle": "Create article",
+        "noSourcesLabel": "If no sources are found",
+        "noSourcesStop": "Stop generation",
+        "selectedCount": "{count} selected",
+        "mediaLabel": "Media",
+        "youtubeHint": "A video is embedded only if research finds a verified YouTube URL.",
+        "outputSummary": "{format} · {research}",
+        "noModules": "No additional components",
+        "reservationLabel": "Reservation: 10,000 credits",
+        "reservationSummary": "You pay actual usage, up to the reserved amount.",
+        "billingDetails": "Billing details",
+        "billingExplanation": "Unused credit is released. Failed generation is free. Stopping charges for work already performed.",
+        "moduleUnavailable": "Unavailable for this format",
+        "reviewFailed": "The article did not pass editorial review after revision. Generation was not charged.",
+        "allowGeneratedImages": "Allow AI illustrations as a last resort",
+        "generatedImagesFallback": "Only when no suitable existing image is found. Also applies to the cover image."
       },
       "drafts": {
         "loadDrafts": "Load Drafts",
@@ -549,12 +566,6 @@
       "searchTags": "Find or create a tag…",
       "createTag": "Create “{name}”",
       "publishImmediately": "Immediately"
-    },
-    "messages": {
-      "archivedCannotEdit": "Archived articles cannot be edited",
-      "statusChangeFailed": "Could not change the status",
-      "deleteSuccess": "Article deleted",
-      "deleteFailed": "Could not delete the article"
     },
     "image": {
       "illustration": "Illustrative image",

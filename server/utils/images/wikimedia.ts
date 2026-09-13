@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio'
 
 import type { ImageProvider, StockImage } from './types'
 
+import { matchesImageQuery } from './selection'
 import { fetchJson, imageApiHeaders } from './http'
 
 const SEARCH_URL = 'https://commons.wikimedia.org/w/api.php'
@@ -57,7 +58,12 @@ export const wikimediaImage = (page: CommonsPage): StockImage | null => {
  * Landscape first — the body renders one image per full-width paragraph. Picks on the raw fields
  * so only the winner's credit HTML is ever parsed, rather than all eight candidates'.
  */
-export const pickWikimediaPage = (pages: CommonsPage[]): CommonsPage | null => {
+export const pickWikimediaPage = (pages: CommonsPage[], query?: string): CommonsPage | null => {
+  pages = query
+    ? pages.filter((page) =>
+        matchesImageQuery([page.title, metaText(page, 'ImageDescription')].filter(Boolean).join(' '), query),
+      )
+    : pages
   const usable = [...pages]
     .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
     .filter((page) => !!page.imageinfo?.[0]?.url && RASTER.has(page.imageinfo[0]?.mime ?? ''))
@@ -70,8 +76,8 @@ export const pickWikimediaPage = (pages: CommonsPage[]): CommonsPage | null => {
   return landscape ?? usable[0] ?? null
 }
 
-export const pickWikimediaImage = (pages: CommonsPage[]): StockImage | null => {
-  const page = pickWikimediaPage(pages)
+export const pickWikimediaImage = (pages: CommonsPage[], query?: string): StockImage | null => {
+  const page = pickWikimediaPage(pages, query)
 
   return page ? wikimediaImage(page) : null
 }
@@ -96,7 +102,7 @@ export const wikimedia: ImageProvider = {
 
       const data = await fetchJson(url, { headers: imageApiHeaders() })
 
-      return pickWikimediaImage(data?.query?.pages ?? [])
+      return pickWikimediaImage(data?.query?.pages ?? [], query)
     } catch (error) {
       console.error('[images/wikimedia] search failed:', error)
 

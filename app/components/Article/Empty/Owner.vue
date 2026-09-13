@@ -29,7 +29,7 @@
         :to="localePath({ name: 'admin-editor-id', params: { id: 'new' }, query: { ai: '1' } })"
         color="neutral"
         variant="outline"
-        icon="mdi:sparkles"
+        icon="mdi:file-document-outline"
         size="lg"
       >
         {{ $t('articles.empty.owner.aiCta') }}

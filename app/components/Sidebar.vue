@@ -14,8 +14,7 @@
           :to="localePath({ name: auth?.user?.role === 'superadmin' ? 'master' : 'admin' })"
           class="flex min-w-0 items-center gap-2"
         >
-          <AppLogo alt="" class="size-8" />
-          <span class="truncate font-bold">Topiqu</span>
+          <img src="/logo.png" alt="Topiqu" width="628" height="237" class="h-10 w-auto max-w-36 object-contain" />
         </NuxtLink>
         <UTooltip :text="collapsed ? $t('common.actions.expand') : $t('common.actions.collapse')">
           <UButton
@@ -113,11 +112,15 @@ const statsOpen = useState('dashboard-stats-open', () => false)
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
 
+const { data: clientStatus } = await useClientSiteStatus()
+
 const navigationItems = computed<NavigationMenuItem[]>(() => {
   const publication = {
     label: $t('common.navigation.publication'),
     icon: 'mdi:newspaper-variant-outline',
-    to: localePath({ name: 'index' }),
+    to: publicationUrl(clientStatus.value),
+    external: true,
+    disabled: !publicationUrl(clientStatus.value),
   }
   if (auth.value?.user.role === 'superadmin') {
     return [{ label: $t('master.title'), icon: 'mdi:home', to: localePath({ name: 'master' }) }, publication]

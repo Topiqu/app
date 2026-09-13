@@ -206,10 +206,10 @@
       "languages": "Jazyky"
     },
     "messages": {
-      "archivedCannotEdit": "Archivované články nelze upravovat.",
-      "statusChangeFailed": "Stav článku se nepodařilo změnit.",
-      "deleteSuccess": "Článek byl smazán.",
-      "deleteFailed": "Článek se nepodařilo smazat."
+      "archivedCannotEdit": "Archivované články nelze upravovat",
+      "statusChangeFailed": "Stav se nepodařilo změnit",
+      "deleteSuccess": "Článek smazán",
+      "deleteFailed": "Článek se nepodařilo smazat"
     },
     "sources": {
       "add": "Přidat zdroj",
@@ -403,13 +403,13 @@
       "preview": {
         "title": "Náhled článku",
         "toggle": "Náhled článku",
-        "empty": "Článek zatím nemá obsah — přepni zpět na psaní a začni."
+        "empty": "Článek zatím nemá obsah — přepněte zpět na psaní a začněte."
       },
       "ai": {
         "customPromptPlaceholder": "Zadejte pokyn pro generování článku AI...",
         "notAvailable": "Generování AI není dostupné.",
         "learnMore": "Zjistit více",
-        "generateButton": "Generovat obsah AI",
+        "generateButton": "Vytvořit článek",
         "stopButton": "Zastavit",
         "generating": "Generování článku",
         "neutralAuthor": "Připravit nový článek",
@@ -417,7 +417,7 @@
         "planDescription": "Nastavte podobu výstupu. Před spuštěním přesně uvidíte, co se použije.",
         "outputLabel": "Typ výstupu",
         "researchLabel": "Ověřit téma na webu",
-        "researchDescription": "Vyhledá aktuální podklady a dovolí uvést pouze skutečně nalezené zdroje.",
+        "researchDescription": "Vyhledat a ověřit aktuální zdroje.",
         "depthLabel": "Hloubka výzkumu",
         "researchFallback": "Pokračovat bez zdrojů",
         "researchOff": "bez výzkumu",
@@ -458,7 +458,8 @@
           "starting": "Připravuje se osnova článku…",
           "title": "Titulek je připravený, vzniká úvod…",
           "intro": "Úvod je připravený, píše se hlavní text…",
-          "body": "Text článku se průběžně doplňuje…"
+          "body": "Text článku se průběžně doplňuje…",
+          "review": "Kontrola faktů a návaznosti textu…"
         },
         "depth": {
           "quick": "Rychlá",
@@ -500,7 +501,7 @@
         "enhanceUndo": "Vrátit původní",
         "enhanceFailed": "Vylepšení zadání se nepovedlo",
         "topicLabel": "Téma článku",
-        "topicPlaceholder": "O čem má článek být? Doplň úhel pohledu, publikum nebo klíčové body…",
+        "topicPlaceholder": "O čem má článek být? Doplňte úhel pohledu, publikum nebo klíčové body…",
         "step": {
           "research": "Výzkum a zdroje",
           "writing": "Text článku",
@@ -509,25 +510,41 @@
         "formats": {
           "howto": {
             "label": "Návod",
-            "template": "Napiš praktický návod krok za krokem na téma:"
+            "template": "Napište praktický návod krok za krokem na téma:"
           },
           "news": {
             "label": "Zpráva",
-            "template": "Napiš zpravodajský článek na téma:"
+            "template": "Napište zpravodajský článek na téma:"
           },
           "listicle": {
             "label": "Žebříček",
-            "template": "Napiš článek ve formě seznamu na téma:"
+            "template": "Napište článek ve formě seznamu na téma:"
           },
           "opinion": {
             "label": "Názor",
-            "template": "Napiš názorový komentář na téma:"
+            "template": "Napište názorový komentář na téma:"
           },
           "deepDive": {
             "label": "Analýza",
-            "template": "Napiš hloubkovou analýzu tématu:"
+            "template": "Napište hloubkovou analýzu tématu:"
           }
-        }
+        },
+        "createTitle": "Vytvořit článek",
+        "noSourcesLabel": "Pokud se nepodaří získat zdroje",
+        "noSourcesStop": "Zastavit generování",
+        "selectedCount": "Vybráno: {count}",
+        "mediaLabel": "Média",
+        "youtubeHint": "Video se vloží pouze tehdy, když rešerše najde ověřený odkaz na YouTube.",
+        "outputSummary": "{format} · {research}",
+        "noModules": "Bez doplňkových bloků",
+        "reservationLabel": "Rezervace: 10 000 kreditů",
+        "reservationSummary": "Účtuje se skutečná spotřeba, nejvýše do výše rezervace.",
+        "billingDetails": "Podrobnosti účtování",
+        "billingExplanation": "Nevyužité kredity se uvolní. Neúspěšné generování je zdarma. Při zastavení se účtuje již provedená práce.",
+        "moduleUnavailable": "Pro tento formát není dostupné",
+        "reviewFailed": "Článek neprošel redakční kontrolou ani po opravě. Generování nebylo účtováno.",
+        "allowGeneratedImages": "Povolit AI ilustrace jako poslední možnost",
+        "generatedImagesFallback": "Pouze pokud nenajdeme vhodný existující obrázek. Platí i pro titulní obrázek."
       },
       "drafts": {
         "loadDrafts": "Načíst koncepty",
@@ -549,12 +566,6 @@
       "searchTags": "Najít nebo vytvořit tag…",
       "createTag": "Vytvořit „{name}“",
       "publishImmediately": "Ihned"
-    },
-    "messages": {
-      "archivedCannotEdit": "Archivované články nelze upravovat",
-      "statusChangeFailed": "Stav se nepodařilo změnit",
-      "deleteSuccess": "Článek smazán",
-      "deleteFailed": "Článek se nepodařilo smazat"
     },
     "image": {
       "illustration": "Ilustrační obrázek",

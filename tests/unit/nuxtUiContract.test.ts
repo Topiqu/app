@@ -129,6 +129,9 @@ describe('Nuxt UI template contract', () => {
 
   it('does not reintroduce native interactive primitives', () => {
     const allowlist = new Set([
+      // Native array checkboxes/radio inputs are intentional here. Their keyboard/checked
+      // state and independent module selection are exercised by articleGenerationModules.test.ts.
+      'app/components/Article/Editor/SettingsPanel.vue',
       'app/components/Client/Version.vue',
       'app/components/Form/Client/AI.vue',
       'app/components/Form/Client/Billing.vue',
@@ -186,6 +189,7 @@ describe('Nuxt UI template contract', () => {
       // These bundled brand assets are served directly, without an image transformation request.
       'app/components/AppLogo.vue',
       'app/components/Header.vue',
+      'app/components/Sidebar.vue',
       'app/components/AppMedia.vue',
       'app/components/Auth/Form.vue',
       'app/components/Gif/Selector.vue',

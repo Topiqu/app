@@ -98,6 +98,7 @@ async function handleOAuthUser(token: any, existingUser: any, prisma: any, avata
         lastLogin: new Date(),
       },
     })
+    if (!existingUser.avatarUrl && typeof avatarValue === 'string') await invalidateAuthor(existingUser.id)
     const plan = existingUser.clientSiteId
       ? ((await prisma.clientSite.findFirst({ where: { id: existingUser.clientSiteId }, select: { plan: true } }))
           ?.plan ?? 'BASIC')

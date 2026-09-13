@@ -12,10 +12,11 @@
 
 <script lang="ts" setup>
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
-const client = await useClientSite()
-const { data: status } = await useClientSiteStatus()
 
-useSeoMeta({ title: `${client?.name} - ${$t('admin.title')}` })
+const { data: status } = await useClientSiteStatus()
+const client = status
+
+useSeoMeta({ title: () => `${client.value?.name ?? 'Topiqu'} - ${$t('admin.title')}` })
 
 const isOpen = shallowRef(false)
 

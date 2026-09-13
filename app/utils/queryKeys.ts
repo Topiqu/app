@@ -1,4 +1,7 @@
 export const queryKeys = {
+  authors: {
+    detail: (userId: string) => ['authors', userId] as const,
+  },
   articles: {
     all: ['articles'] as const,
     lists: ['articles', 'list'] as const,

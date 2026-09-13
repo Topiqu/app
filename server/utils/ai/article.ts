@@ -3,15 +3,20 @@ import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { ArticleMediaProgress, ResearchDepth } from '~~/shared/utils/articleGeneration'
 
 import { z } from 'zod'
+import { hasAiPlan } from '~~/shared/utils/plans'
 import { generateObject, generateText, streamObject } from 'ai'
 import { stripUntrustedIframes, youtubeEmbedUrl, youtubeVideoId } from '~~/shared/utils/youtube'
 
 import type { ArticleImage } from '../images/types'
 
 import { escapeHtml } from '../sanitize'
+import { findStockImage } from '../images/chain'
+import { createSteamImageSearch } from '../images/steam'
+import { createImageSelection } from '../images/selection'
+import { loadPressImages, pickPressImage } from '../images/press'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
-import { allowsGeneratedFallback, findCoverImage, findStockImage } from '../images/chain'
 import { buildRevisionPrompt, reviewArticle, type EditorialReview } from './articleQuality'
+import { filterResearchSources, researchEvidence, retrievedResearchSources } from './researchEvidence'
 import {
   applyFormat,
   formatRules,
@@ -25,7 +30,13 @@ const imageInstruction = z.object({
   type: z
     .enum(['photo', 'stock', 'generate'])
     .describe("'photo' for a real subject, 'stock' for mood, 'generate' only for what cannot be photographed"),
-  query: z.string().min(2).max(1000).describe('English search keyword, or a generation prompt for type=generate'),
+  query: z
+    .string()
+    .min(2)
+    .max(1000)
+    .describe(
+      'Short English archive search keywords naming the exact subject and installment, for every type including generate. No layout or poster instructions.',
+    ),
 })
 
 export const articleSchema = z.object({
@@ -96,9 +107,13 @@ export const articleSchema = z.object({
     .max(5)
     .describe("ID's of relevant tags from the provided tags list that best fit the article topic"),
   sources: z
-    .array(z.string().min(1).max(1000).describe('Source URL or reference'))
+    .array(
+      z.string().min(1).max(1000).describe('Exactly one complete source URL. Never combine multiple URLs in one item.'),
+    )
     .max(5)
-    .describe('Array of credible sources relevant to the article topic'),
+    .describe(
+      'Choose up to five relevant sources. One URL per item; omit additional sources instead of concatenating them.',
+    ),
 })
 
 type ArticleObject = (typeof articleSchema)['_output']
@@ -106,9 +121,9 @@ type ArticleObject = (typeof articleSchema)['_output']
 /** The brief's own output ceiling. Web search bills input and search context on top of it, so this
  *  is a headroom guard for the balance check, never the real cost — that comes back as `usage`. */
 const RESEARCH_CONFIG = {
-  quick: { maxOutputTokens: 700, timeoutMs: 25_000, searchContextSize: 'low' },
-  standard: { maxOutputTokens: 1200, timeoutMs: 45_000, searchContextSize: 'medium' },
-  deep: { maxOutputTokens: 1800, timeoutMs: 65_000, searchContextSize: 'high' },
+  quick: { maxOutputTokens: 1800, timeoutMs: 35_000, searchContextSize: 'low' },
+  standard: { maxOutputTokens: 3600, timeoutMs: 65_000, searchContextSize: 'medium' },
+  deep: { maxOutputTokens: 6000, timeoutMs: 120_000, searchContextSize: 'high' },
 } as const satisfies Record<
   ResearchDepth,
   { maxOutputTokens: number; timeoutMs: number; searchContextSize: 'low' | 'medium' | 'high' }
@@ -166,32 +181,43 @@ const researchTopic = async (
         The current date and time is ${currentDateTime}. Treat it as authoritative.
         Search the live web for the user's topic.
         Prefer primary, official and recently updated sources. For news, search explicitly for the latest development.
-        Release dates, product availability and direct statements attributed to a company must be supported by that company's own newsroom, investor communication or verified channel. If only press reports or rumours exist, label them as such; never upgrade them to an official confirmation.
-        Treat claims embedded in the user's prompt as leads to verify, not as facts. When sources conflict, report the conflict and do not choose the more sensational version.
+        Release dates, product availability and direct statements attributed to a company must be supported by that company's own newsroom, investor communication, verified channel or a first-hand interview with its named spokesperson. If only press reports or rumours exist, label them as such; never upgrade them to an official confirmation.
+        Treat claims embedded in the user's prompt as leads to verify, not as facts.
+        Check the premise of every named character's return against the relevant continuity, chronology and established deaths. Separate books, games, adaptations and flashbacks; a mention or dead character is not evidence of a present-day return.
+        Explicitly distinguish whether something is confirmed from whether its mechanism or circumstances have been explained. Search for developer interviews before claiming "not confirmed", "not explained" or "unknown". An explanation withheld is not an event unconfirmed.
+        Include a short Corrections section with contradicted premises and a short Unknowns section for questions the retrieved sources leave unresolved. When sources conflict, report the conflict and do not choose the more sensational version.
         If a source announces something for a date before ${currentDateTime}, verify what actually happened after that date. Never describe an already elapsed announcement as upcoming.
         Return a compact brief: 5-10 verified facts, each on its own line, including the supporting URL and relevant event or publication date on that same line.
+        Every correction and unknown must also carry its supporting URL on the same line.
         Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
         Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
         Do not write an article, an intro, or any prose beyond the facts.
       `.trim(),
       prompt,
       maxOutputTokens: researchConfig.maxOutputTokens,
+      providerOptions: { openai: { reasoningEffort: depth === 'deep' ? 'medium' : 'low' } },
       tools: { web_search: aiWebSearchTool(researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })
     const youtubeResearch = youtubeRequested
       ? researchYoutube(prompt, abortSignal)
       : Promise.resolve({ url: null, tokens: 0 })
-    const [{ text, usage }, youtube] = await Promise.all([mainResearch, youtubeResearch])
+    const [{ text, usage, sources, toolResults, finishReason }, youtube] = await Promise.all([
+      mainResearch,
+      youtubeResearch,
+    ])
 
+    if (finishReason === 'length') throw new Error('Research exceeded its output budget before completing the brief')
+    const evidence = researchEvidence(text, retrievedResearchSources({ sources, toolResults }))
+    if (!evidence.brief && !fallbackWithoutResearch) throw new Error('Research returned no supported source material')
     const verifiedVideo = youtube.url ? `\nVerified YouTube video (checked against YouTube oEmbed): ${youtube.url}` : ''
-    const brief = `${text.trim()}${verifiedVideo}`.trim() || null
+    const brief = `${evidence.brief ?? ''}${verifiedVideo}`.trim() || null
     const sourceCount = brief ? new Set(brief.match(/https?:\/\/[^\s)\]}>,]+/g) ?? []).size : 0
     return {
       brief,
       tokens: (usage?.totalTokens ?? 0) + youtube.tokens,
       sourceCount,
-      status: 'completed' as const,
+      status: evidence.brief ? ('completed' as const) : ('fallback' as const),
     }
   } catch (error) {
     // Stop means stop. Only the research-specific timeout degrades to an ungrounded article.
@@ -227,6 +253,7 @@ const buildArticleConfig = async (
     modules,
     researchDepth = 'standard',
     fallbackWithoutResearch = true,
+    allowGeneratedImages = true,
     abortSignal,
   }: {
     research?: ResearchOption
@@ -235,6 +262,7 @@ const buildArticleConfig = async (
     modules?: readonly ArticleModule[]
     researchDepth?: ResearchDepth
     fallbackWithoutResearch?: boolean
+    allowGeneratedImages?: boolean
     abortSignal?: AbortSignal
   } = {},
 ) => {
@@ -248,9 +276,13 @@ const buildArticleConfig = async (
     aiControversyLevel,
     communityInsight,
     language,
+    plan,
+    features,
   } = await prisma.clientSite.findFirstOrThrow({
     select: {
       tokenRemaining: true,
+      plan: true,
+      features: { where: { feature: { code: 'AI' } }, select: { isActive: true } },
       language: true,
       focus: true,
       keywords: true,
@@ -346,6 +378,8 @@ const buildArticleConfig = async (
       Start the body at h2 — the page already renders the title as its h1.
       Before writing, compare every time-sensitive claim in the research brief with ${currentDateTime}. Never call a past date upcoming, future or scheduled. If the brief does not establish what happened after an elapsed announced date, omit the claim instead of repeating the outdated announcement.
       A claim that a company confirmed, announced, targets or plans a release date is allowed only when the research brief supports it with that company's primary source. A secondary article or rumour may be described only with its actual attribution and uncertainty. Never turn it into a company statement.
+      Check continuity and chronology for every named entity. Do not invent returns, survival, resurrection, flashbacks or future appearances to connect names from the prompt. Omit unsupported names entirely, including polls, FAQ and takeaways.
+      Distinguish confirmed facts from unexplained mechanisms: "how it happened is undisclosed" never means "whether it happened is unconfirmed". A missing fact in this brief does not prove developers have never confirmed it; omit that negative claim.
       The user's prompt is editorial direction, not evidence. If it conflicts with the live research brief, follow the verified brief and explicitly avoid the unsupported claim.
       Never claim that pre-orders, products, trailers, events or bonuses are available unless the research brief explicitly confirms their current availability as of ${currentDateTime}.
 
@@ -359,12 +393,13 @@ const buildArticleConfig = async (
       For the coverImage and each image in the content you MUST pick one of three intents. You are describing what the picture needs to be, not where it comes from — the system picks the library.
       - Use 'photo': for a real, identifiable subject — a named person, place, organisation, product or event (e.g. "Vladimir Putin 2024", "Tokyo Shibuya crossing", "PlayStation 5 console"). Name the subject in English the way a photo archive would catalogue it.
       - Use 'stock': for mood, atmosphere or a generic scene where any fitting picture works (e.g. "office meeting", "gaming setup at night"). Short, precise English keyword.
-      - Use 'generate': ONLY for what cannot be photographed — abstract ideas, humor, non-existent concepts (e.g. "AI eating old code"). Provide a detailed generation prompt. NEVER use it for a real person, a real place or a real event.
+      - Use 'generate': ONLY for what cannot be photographed — abstract ideas, humor, non-existent concepts (e.g. "AI eating old code"). Provide short archive search keywords; existing suitable images are always searched first. NEVER use it for a real person, a real place or a real event.
+      Preserve the exact product, installment number and named subject in each query. For games, request a screenshot of the actual game, not cosplay, fan art, an older installment, a generic forest or a gaming desk. Do not pad the article with generic mood images. Each visual must contribute distinct relevant information.
       Each content image also needs a "caption": one factual sentence, in the same language as the article, saying what is in the picture — for 'photo' name who or what it is and when. Never write "Illustrative image", "AI generated", "Source:" or any credit into the caption; the system adds those itself.
 
       ${
         imagesSelected === true
-          ? 'The author selected images in the article body. Include 1-4 useful image slots in appropriate places using [[IMAGE1]], [[IMAGE2]], etc., and provide exactly one corresponding instruction per slot in the images array. Do not return an empty images array.'
+          ? 'The author selected images in the article body. Include up to 4 distinct useful image slots in appropriate places using [[IMAGE1]], [[IMAGE2]], etc., and provide exactly one corresponding instruction per slot in the images array. Return an empty images array if no distinct relevant visual can be specified; selection is permission, not a quota.'
           : imagesSelected === false
             ? 'Return an empty images array and never write an [[IMAGE]] slot into the content.'
             : 'If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.'
@@ -402,6 +437,7 @@ const buildArticleConfig = async (
 
   return {
     language,
+    allowGeneratedImages: allowGeneratedImages && hasAiPlan(plan) && !features?.some((feature) => !feature.isActive),
     researchBrief: brief,
     // Billed on top of `usage` by every caller: the brief is a separate model call, so it is
     // invisible to the writer's own token count. It went unbilled entirely while research was a
@@ -410,6 +446,7 @@ const buildArticleConfig = async (
     research: { status: researchResult.status, sourceCount: researchResult.sourceCount, depth: researchDepth },
     config: {
       model: aiModel('articleWriter'),
+      providerOptions: { openai: { reasoningEffort: 'low' } },
       maxOutputTokens,
       instructions,
       prompt,
@@ -423,6 +460,7 @@ type FinalizeCallbacks = {
   onImage?: (image: FinalizeImage) => void
   onMedia?: (progress: ArticleMediaProgress) => void
   abortSignal?: AbortSignal
+  allowGeneratedImages?: boolean
 }
 
 /** Falls back to English wording rather than dropping the disclosure when a key is missing. */
@@ -441,7 +479,7 @@ export const finalizeArticle = async (
   language: Language = 'en',
   callbacks: FinalizeCallbacks = {},
 ) => {
-  const { onImage, onMedia, abortSignal } = callbacks
+  const { onImage, onMedia, abortSignal, allowGeneratedImages = false } = callbacks
   const generateImageOptions = {
     outputDir: 'article-images',
     filenamePrefix: 'article',
@@ -452,6 +490,7 @@ export const finalizeArticle = async (
   // swallowing it here is exactly what makes "the images did not appear" undiagnosable — nothing
   // downstream throws, so this is the only place the cause exists.
   const tryGenerateImage = async (prompt: string, opts?: { filenameSuffix?: string }) => {
+    if (!allowGeneratedImages) return null
     try {
       const { url, width, height } = await generateImage(prompt, { ...generateImageOptions, ...opts, abortSignal })
       return { url, width, height }
@@ -461,6 +500,17 @@ export const finalizeArticle = async (
     }
   }
 
+  const acceptImage = createImageSelection()
+  const pressImages = await loadPressImages(object.sources ?? [])
+  const findSteamImage = createSteamImageSearch()
+  const findExistingImage = async (query: string, type: ArticleObject['images'][number]['type']) => {
+    const press = pickPressImage(pressImages, query, acceptImage)
+    if (press) return { image: press, kind: 'photo' as const }
+    const screenshot = await findSteamImage(query, acceptImage)
+    if (screenshot) return { image: screenshot, kind: 'illustration' as const }
+    const hit = await findStockImage(type, query)
+    return hit && acceptImage(hit.image) ? hit : null
+  }
   let articleImageUrl = ''
   let articleImageCredit: CoverCredit | null = null
   const mediaTotal = 1 + object.images.length
@@ -468,23 +518,13 @@ export const finalizeArticle = async (
   let mediaFound = 0
   onMedia?.({ stage: 'cover', completed: mediaCompleted, total: mediaTotal, found: mediaFound })
   if (object.coverImage) {
-    const hit = object.coverImage.type === 'generate' ? null : await findCoverImage(object.coverImage.query)
-    const generated = hit ? null : await tryGenerateImage(object.coverImage.query)
-    articleImageUrl = hit?.url ?? generated?.url ?? ''
-
-    // Whatever it turned out to be, not what was asked for: a stock lookup that came back empty
-    // silently became a generated picture, and that is the case the reader most needs told.
-    if (articleImageUrl) articleImageCredit = hit ? { kind: 'illustration', credit: hit.credit } : { kind: 'ai' }
-  } else {
-    // Legacy fallback just in case AI omits it
-    articleImageUrl = (await tryGenerateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024)))?.url ?? ''
-    if (articleImageUrl) articleImageCredit = { kind: 'ai' }
-  }
-  if (!articleImageUrl && object.coverImage) {
-    // A catalogue miss followed by a failed generation still deserves one simpler attempt. The
-    // title and perex are usually a more portable image prompt than the writer's detailed query.
-    articleImageUrl = (await tryGenerateImage(`${object.title} — ${object.perex}`.trim().slice(0, 1024)))?.url ?? ''
-    if (articleImageUrl) articleImageCredit = { kind: 'ai' }
+    const hit = await findExistingImage(object.coverImage.query, object.coverImage.type)
+    const generated = !hit ? await tryGenerateImage(object.coverImage.query) : null
+    articleImageUrl = hit?.image.url ?? generated?.url ?? ''
+    if (articleImageUrl) {
+      articleImageCredit = hit ? { kind: hit.kind, credit: hit.image.credit } : { kind: 'ai' }
+      if (generated) acceptImage({ url: articleImageUrl })
+    }
   }
   mediaCompleted += 1
   if (articleImageUrl) mediaFound += 1
@@ -497,19 +537,17 @@ export const finalizeArticle = async (
 
   const labels = await captionLabels(language)
 
-  /** `photo` deliberately has no generated fallback — see `findStockImage`. */
+  /** Missing photos may fall back to labelled AI illustrations when enabled. */
   const resolveImage = async (
     instruction: ArticleObject['images'][number],
     idx: number,
   ): Promise<ArticleImage | null> => {
-    const hit = await findStockImage(instruction.type, instruction.query)
+    const hit = await findExistingImage(instruction.query, instruction.type)
     if (hit) return { url: hit.image.url, kind: hit.kind, alt: hit.image.alt, credit: hit.image.credit }
-
-    if (!allowsGeneratedFallback(instruction.type)) return null
 
     const generated = await tryGenerateImage(instruction.query, { filenameSuffix: idx.toString() })
 
-    return generated ? { ...generated, kind: 'ai' } : null
+    return generated && acceptImage(generated) ? { ...generated, kind: 'ai' } : null
   }
 
   const settledImages = await Promise.all(
@@ -522,7 +560,11 @@ export const finalizeArticle = async (
         return null
       }
 
-      const image = { slot: idx + 1, html: buildImageHtml(resolved, img.caption, labels), resolved }
+      const image = {
+        slot: idx + 1,
+        html: buildImageHtml(resolved, '', labels),
+        resolved,
+      }
       mediaFound += 1
       onImage?.(image)
       onMedia?.({ stage: 'content', completed: mediaCompleted, total: mediaTotal, found: mediaFound })
@@ -533,15 +575,6 @@ export const finalizeArticle = async (
 
   const generatedImages = settledImages.filter((image) => image !== null).map(({ slot, html }) => ({ slot, html }))
 
-  // If both dedicated cover attempts failed, reuse the first successfully resolved body visual.
-  // This costs no extra generation and prevents a scheduled article from losing its hero while
-  // still keeping the original kind/credit disclosure accurate.
-  const firstBodyImage = settledImages.find((image) => image !== null)?.resolved
-  if (!articleImageUrl && firstBodyImage) {
-    articleImageUrl = firstBodyImage.url
-    articleImageCredit = { kind: firstBodyImage.kind, credit: firstBodyImage.credit }
-    mediaFound += 1
-  }
   onMedia?.({ stage: 'complete', completed: mediaTotal, total: mediaTotal, found: mediaFound })
 
   // Before the slots are filled: the image attribution carries a deliberate mid-paragraph `<br>`
@@ -586,14 +619,16 @@ export const generateArticle = async (
     modules?: readonly ArticleModule[]
     researchDepth?: ResearchDepth
     fallbackWithoutResearch?: boolean
+    allowGeneratedImages?: boolean
     editorialReview?: boolean
   },
 ) => {
-  const { config, language, researchTokens, researchBrief, research } = await buildArticleConfig(
+  const { config, language, researchTokens, researchBrief, research, allowGeneratedImages } = await buildArticleConfig(
     clientSiteId,
     prompt,
     opts,
   )
+  let groundingBrief = researchBrief
   const first = await generateObject(config)
   let object = first.object
   let editorialTokens = 0
@@ -605,20 +640,29 @@ export const generateArticle = async (
         prompt,
         researchBrief,
         format: opts.format,
+        verifyFacts: opts.research !== false,
       }
       const initial = await reviewArticle(object, context)
+      if (initial.verificationBrief)
+        groundingBrief = [groundingBrief, initial.verificationBrief].filter(Boolean).join('\n')
       editorialTokens += initial.usage.totalTokens ?? 0
       editorialReview = { ...initial.review, revised: false }
 
       if (!initial.review.approved) {
         const revision = await generateObject({
           ...config,
-          prompt: buildRevisionPrompt(prompt, object, initial.review),
+          instructions:
+            config.instructions +
+            '\nIndependent verification supersedes conflicting original research:\n' +
+            (initial.verificationBrief ?? ''),
+          prompt: buildRevisionPrompt(prompt, object, initial.review, initial.verificationBrief),
         })
         editorialTokens += revision.usage.totalTokens ?? 0
         object = revision.object
 
         const checked = await reviewArticle(object, context)
+        if (checked.verificationBrief)
+          groundingBrief = [groundingBrief, checked.verificationBrief].filter(Boolean).join('\n')
         editorialTokens += checked.usage.totalTokens ?? 0
         editorialReview = { ...checked.review, revised: true }
       }
@@ -632,7 +676,10 @@ export const generateArticle = async (
     }
   }
 
-  const finalized = await finalizeArticle(applyFormat(object, opts?.format, opts?.modules), language)
+  object.sources = filterResearchSources(object.sources, groundingBrief)
+  const finalized = await finalizeArticle(applyFormat(object, opts?.format, opts?.modules), language, {
+    allowGeneratedImages,
+  })
 
   return { ...finalized, usage: first.usage, researchTokens, research, editorialTokens, editorialReview }
 }
@@ -645,17 +692,77 @@ export const streamArticle = async (
     research?: ResearchOption
     researchDepth?: ResearchDepth
     fallbackWithoutResearch?: boolean
+    allowGeneratedImages?: boolean
     format?: ArticleFormat
     modules?: readonly ArticleModule[]
   } = {},
 ) => {
-  const { config, language, researchTokens, research } = await buildArticleConfig(clientSiteId, prompt, opts)
+  const { config, language, researchTokens, researchBrief, research, allowGeneratedImages } = await buildArticleConfig(
+    clientSiteId,
+    prompt,
+    opts,
+  )
+  let groundingBrief = researchBrief
   const result = streamObject({ ...config, abortSignal: opts.abortSignal })
 
   // The caption labels follow the site's language, which only this side knows — so the endpoint
   // keeps handing over just the object and its image callback.
   const finalize = (object: ArticleObject, callbacks?: FinalizeCallbacks) =>
-    finalizeArticle(applyFormat(object, opts.format, opts.modules), language, callbacks)
+    finalizeArticle(
+      applyFormat(
+        { ...object, sources: filterResearchSources(object.sources, groundingBrief) },
+        opts.format,
+        opts.modules,
+      ),
+      language,
+      { ...callbacks, allowGeneratedImages },
+    )
 
-  return { result, finalize, researchTokens, research }
+  let editorialTokens = 0
+  const review = async (draft: ArticleObject) => {
+    const context = {
+      prompt,
+      researchBrief,
+      format: opts.format,
+      abortSignal: opts.abortSignal,
+      verifyFacts: opts.research !== false,
+    }
+    draft.sources = filterResearchSources(draft.sources, groundingBrief)
+    const first = await reviewArticle(draft, context)
+    if (first.verificationBrief) groundingBrief = [groundingBrief, first.verificationBrief].filter(Boolean).join('\n')
+    editorialTokens += first.usage.totalTokens ?? 0
+    if (first.review.approved) return draft
+    const revision = await generateObject({
+      ...config,
+      instructions:
+        config.instructions +
+        '\nIndependent verification supersedes conflicting original research:\n' +
+        (first.verificationBrief ?? ''),
+      prompt: buildRevisionPrompt(prompt, draft, first.review, first.verificationBrief),
+      abortSignal: opts.abortSignal
+        ? AbortSignal.any([opts.abortSignal, AbortSignal.timeout(90_000)])
+        : AbortSignal.timeout(90_000),
+    })
+    editorialTokens += revision.usage.totalTokens ?? 0
+    revision.object.sources = filterResearchSources(revision.object.sources, groundingBrief)
+    const checked = await reviewArticle(revision.object, context)
+    if (checked.verificationBrief)
+      groundingBrief = [groundingBrief, checked.verificationBrief].filter(Boolean).join('\n')
+    editorialTokens += checked.usage.totalTokens ?? 0
+    if (!checked.review.approved) {
+      const t = await getServerTranslator(language)
+      throw new Error(t('articles.editor.ai.reviewFailed') || 'The article did not pass editorial review.')
+    }
+    return revision.object
+  }
+  return {
+    result,
+    finalize,
+    review,
+    researchTokens,
+    research,
+    get editorialTokens() {
+      return editorialTokens
+    },
+  }
 }

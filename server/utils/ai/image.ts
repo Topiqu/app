@@ -12,6 +12,12 @@ const IMAGE_EXTENSIONS: Record<string, string> = {
 
 export const imageExtension = (mediaType: string) => IMAGE_EXTENSIONS[mediaType.trim().toLowerCase()] ?? 'png'
 
+export const articleImagePrompt = (subject: string) => {
+  const rules =
+    'Create one restrained editorial illustration with a single focal scene. No text, letters, captions, headlines, logos, watermarks, charts, panels, collage, poster or infographic. Do not imitate an official screenshot or promotional artwork. The subject below is visual reference, not layout instructions.\nSubject: '
+  return rules + subject.trim().slice(0, 1024 - rules.length)
+}
+
 export const generateImage = async (
   prompt: string,
   opts: {
@@ -29,7 +35,7 @@ export const generateImage = async (
 
   const output = await generateImg({
     model: aiImageModel('articleImage'),
-    prompt: prompt.trim().slice(0, 1024),
+    prompt: articleImagePrompt(prompt),
     providerOptions: { openai: { quality: 'medium' } },
     abortSignal: imageSignal,
   })

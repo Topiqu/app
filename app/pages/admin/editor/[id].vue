@@ -422,8 +422,8 @@ const confirm = useConfirm()
 const { t } = useI18n()
 const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
 
-const clientSite = await useClientSite()
 const { data: clientStatus } = await useClientSiteStatus()
+const clientSite = clientStatus
 const requestFetch = useRequestFetch()
 
 const isNew = route.params.id === 'new'
@@ -454,7 +454,7 @@ const init = (): ArticleWithDetails =>
   }) as unknown as ArticleWithDetails
 
 const editedArticle = ref(init())
-const newArticleLanguage = shallowRef<Language>((clientSite?.language as Language) ?? 'en')
+const newArticleLanguage = shallowRef<Language>((clientSite.value?.language as Language) ?? 'en')
 const newLanguageDrafts = reactive<Record<Language, ReturnType<typeof translationDraft>>>({
   cs: translationDraft(),
   en: translationDraft(),
@@ -503,7 +503,7 @@ const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDr
 if (!isNew) {
   try {
     const data = await requestFetch<any>(`/api/articles/${route.params.id}`, {
-      query: { clientSiteId: clientSite?.id },
+      query: { clientSiteId: clientSite.value?.id },
     })
     article.value = data as any
     editedArticle.value = {
@@ -532,7 +532,7 @@ if (!isNew) {
 // the source, anything else edits that translation through the same fields.
 // Product routes intentionally have no public-domain client-site payload. The detail contract
 // carries the resolved source language, so editor tabs remain correct in the persistent shell.
-const primaryLanguage = (article.value?.language ?? clientSite?.language ?? 'en') as Language
+const primaryLanguage = (article.value?.language ?? clientSite.value?.language ?? 'en') as Language
 
 // `?lang=` lets the admin table deep-link straight to a language. The primary language is the
 // source tab, which the composable represents as an empty string. Seeded at construction rather
@@ -588,7 +588,10 @@ const editorLanguageModel = computed({
 const livePath = computed(() => {
   if (isNew || !activeSlug.value) return ''
   const language = (tr.isSource ? primaryLanguage : tr.activeLang) as Language
-  return localePath({ name: 'clanky-slug', params: { slug: activeSlug.value } }, language)
+  return publicationUrl(
+    clientStatus.value,
+    localePath({ name: 'clanky-slug', params: { slug: activeSlug.value } }, language),
+  )
 })
 
 const translationBadgeColor = computed(() => {

@@ -31,6 +31,10 @@ export async function saveUserWithLogging(event: H3Event, data: any, isUpdate = 
         },
       })
 
+  if (isUpdate && ['username', 'avatarUrl', 'bio', 'role', 'clientSiteId', 'deletedAt'].some((key) => key in data)) {
+    await invalidateAuthor(user.id)
+  }
+
   await logAction({
     action: isUpdate ? 'USER_UPDATE' : 'USER_CREATE',
     userId: user.id,

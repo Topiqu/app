@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { linkableSources } from '../../shared/utils/articleSources'
+import { presentSourceUrl, sourceFaviconUrl } from '../../app/utils/sourcePresentation'
 
 describe('linkableSources', () => {
   it('keeps http(s) URLs in the order the model returned them', () => {
@@ -36,5 +37,31 @@ describe('linkableSources', () => {
     expect(linkableSources(null)).toEqual([])
     expect(linkableSources('https://example.com')).toEqual([])
     expect(linkableSources([null, 42, { url: 'https://example.com' }])).toEqual([])
+  })
+})
+
+describe('source presentation', () => {
+  it('splits a source into hostname and path, dropping www and a bare slash', () => {
+    expect(presentSourceUrl('https://www.thewitcher.com/en/newsletters/tw4')).toEqual({
+      hostname: 'thewitcher.com',
+      path: '/en/newsletters/tw4',
+      valid: true,
+    })
+    expect(presentSourceUrl('https://cdprojekt.com/')).toMatchObject({ hostname: 'cdprojekt.com', path: '' })
+  })
+
+  it('looks the icon up by full URL and encodes it', () => {
+    const source = 'https://pcgamer.com/games/rpg/?page=2&sort=new'
+    const url = sourceFaviconUrl(source)
+
+    expect(url).toContain('t1.gstatic.com/faviconV2')
+    // An unencoded `&` would truncate the lookup at the first query parameter.
+    expect(url).toContain(`url=${encodeURIComponent(source)}`)
+    // The legacy endpoint only 301s here; going through it costs a redirect per icon.
+    expect(url).not.toContain('www.google.com')
+  })
+
+  it('has no icon to offer for the prose the model returns instead of a link', () => {
+    expect(sourceFaviconUrl('Český statistický úřad, 2025')).toBeUndefined()
   })
 })

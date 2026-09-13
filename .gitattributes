@@ -1,0 +1,8 @@
+# Prettier writes LF. Without this git checks out CRLF, so every file's on-disk
+# size differs from the index and the whole tree reads as modified in `git status`.
+* text=auto eol=lf
+
+*.png binary
+*.ico binary
+*.ttf binary
+*.wav binary

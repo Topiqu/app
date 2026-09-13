@@ -70,8 +70,6 @@
 </template>
 
 <script setup lang="ts">
-import type { PublicAuthorSummary } from '~~/shared/types/article'
-
 import { formatArticleDate } from '~~/shared/utils/time'
 
 const {
@@ -91,22 +89,8 @@ const {
 const localePath = useLocalePath()
 const { locale } = useI18n()
 const authorPath = computed(() => localePath({ name: 'autor-name', params: { name: user.username } }))
-const summary = shallowRef<PublicAuthorSummary | null>(null)
-const pending = shallowRef(false)
-const loadFailed = shallowRef(false)
-
-const loadSummary = async () => {
-  if (summary.value || pending.value) return
-  pending.value = true
-  loadFailed.value = false
-  try {
-    summary.value = await $fetch<PublicAuthorSummary>(`/api/users/${user.id}/author`, {
-      signal: AbortSignal.timeout(8000),
-    })
-  } catch {
-    loadFailed.value = true
-  } finally {
-    pending.value = false
-  }
-}
+const { data: summary, asyncStatus, error, refresh } = useAuthorSummary(() => user.id, false)
+const loadSummary = () => refresh()
+const pending = computed(() => asyncStatus.value === 'loading')
+const loadFailed = computed(() => !!error.value)
 </script>

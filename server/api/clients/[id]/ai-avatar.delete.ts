@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!aiUser) return { avatarUrl: null }
 
   await db.user.update({ where: { id: aiUser.id }, data: { avatarUrl: null } })
+  await invalidateAuthor(aiUser.id)
 
   await logAction({
     action: 'AI_USER_UPDATE',

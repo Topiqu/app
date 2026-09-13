@@ -24,6 +24,7 @@ export default defineEventHandler(async (event) => {
       options: z
         .object({
           format: z.enum(ARTICLE_GENERATION_FORMATS),
+          allowGeneratedImages: z.boolean().default(false),
           modules: z.array(z.enum(ARTICLE_GENERATION_MODULES)).max(ARTICLE_GENERATION_MODULES.length),
           research: z.object({
             enabled: z.boolean(),
@@ -87,6 +88,16 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // Cost swings by an order of magnitude with these, and again with the model behind them. Both go
+  // into the operation so spend can be segmented per model — numbers measured against one model say
+  // nothing after a provider switch.
+  const runConfig = {
+    format: options?.format ?? null,
+    modules: options?.modules ?? [],
+    researchDepth: options?.research.enabled ? options.research.depth : null,
+    models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') },
+  }
+
   const reservation = await reserveTokens(clientSiteId, 10000, 'MANUAL_GENERATION', attemptId)
   const stream = new ReadableStream({
     async start(controller) {
@@ -118,6 +129,7 @@ export default defineEventHandler(async (event) => {
             fallbackWithoutResearch: options?.research.fallbackWithoutResearch,
             format: options?.format,
             modules: options?.modules,
+            allowGeneratedImages: options?.allowGeneratedImages === true,
           })
           const { result, finalize, researchTokens, research } = generation
           send(controller, { type: 'research', ...research })
@@ -175,7 +187,9 @@ export default defineEventHandler(async (event) => {
           }
           textDone = true
 
-          const object = await result.object
+          send(controller, { type: 'activity', phase: 'writing', writingStage: 'review' })
+          const object = await generation.review(await result.object)
+          send(controller, { type: 'partial', object, writingStage: 'review' })
           const usage = await result.usage
 
           send(controller, { type: 'phase', phase: 'images' })
@@ -208,16 +222,18 @@ export default defineEventHandler(async (event) => {
 
           const billing = await consumeClientTokens(
             clientSiteId,
-            (usage.totalTokens || 0) + researchTokens,
+            (usage.totalTokens || 0) + researchTokens + generation.editorialTokens,
             'MANUAL_GENERATION_COMPLETED',
             {
               attemptId,
               title: finalized.title,
               usage,
               researchTokens,
+              editorialTokens: generation.editorialTokens,
               metrics,
               aiInvolvement: 'ASSIST',
               createdAt: new Date(),
+              ...runConfig,
             },
             event,
             user.id,
@@ -231,17 +247,21 @@ export default defineEventHandler(async (event) => {
             // Research is included because it completes before the first token streams, so Stop
             // never gets it back.
             const usage = await generation?.result.usage.catch(() => null)
-            if ((usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0) > 0) {
+            if (
+              (usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0) + (generation?.editorialTokens ?? 0) >
+              0
+            ) {
               try {
                 await consumeClientTokens(
                   clientSiteId,
-                  (usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0),
+                  (usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0) + (generation?.editorialTokens ?? 0),
                   'MANUAL_GENERATION_ABORTED',
                   {
                     attemptId,
                     usage,
                     researchTokens: generation?.researchTokens ?? 0,
                     stage: textDone ? 'finalization' : 'writing',
+                    ...runConfig,
                   },
                   event,
                   user.id,

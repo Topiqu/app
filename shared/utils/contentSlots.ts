@@ -15,7 +15,7 @@ export const applyContentSlots = (content: string, kind: SlotKind, slots: Conten
   const replaced = content.replace(slotPattern(kind), (_marker, digits: string) => {
     const slot = Number(digits)
     const html = bySlot.get(slot)
-    if (html === undefined) return ''
+    if (html === undefined || used.has(slot)) return ''
     used.add(slot)
     return html
   })
