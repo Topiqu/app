@@ -26,6 +26,7 @@ interface StreamHandlers {
   onResearch?: (result: GenerationResearchResult) => void
   onWritingStage?: (stage: GenerationWritingStage) => void
   onAttempt?: (attemptId: string) => void
+  onReservation?: (credits: number) => void
   onActivity?: () => void
   onImage?: (image: { slot: number; html: string }) => void
   onMedia?: (progress: ArticleMediaProgress) => void
@@ -97,7 +98,10 @@ export const useArticleGeneration = () => {
         }
 
         flushPartial()
-        if (msg.type === 'phase') {
+        if (msg.type === 'reservation') {
+          handlers.onReservation?.(msg.credits)
+          handlers.onActivity?.()
+        } else if (msg.type === 'phase') {
           handlers.onPhase?.(msg.phase)
           handlers.onActivity?.()
           if (msg.attemptId) handlers.onAttempt?.(msg.attemptId)
