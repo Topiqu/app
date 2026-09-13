@@ -65,7 +65,7 @@ describe('source URL presentation', () => {
     expect(presentSourceUrl(long).path).toContain('file.pdf')
     expect(presentSourceUrl('not a URL')).toEqual({ hostname: 'not a URL', path: '', valid: false })
     expect(sourceFaviconUrl('not a URL')).toBeUndefined()
-    expect(sourceFaviconUrl('https://example.com/a')).toContain('domain=example.com')
+    expect(sourceFaviconUrl('https://example.com/a')).toContain(`url=${encodeURIComponent('https://example.com/a')}`)
   })
 })
 

@@ -29,7 +29,7 @@
           </UFormField>
           <div v-if="source" class="mt-1.5 flex min-w-0 items-center gap-2 px-1">
             <AppMedia
-              :src="`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${source}&size=32`"
+              :src="sourceFaviconUrl(source)"
               :alt="extractDomain(source)"
               :fallbackText="extractDomain(source)"
               aspectRatio="1 / 1"
@@ -57,6 +57,8 @@
 </template>
 
 <script setup lang="ts">
+import { sourceFaviconUrl } from '~/utils/sourcePresentation'
+
 const sources = defineModel<string[]>({ required: true })
 
 defineProps<{ compact?: boolean }>()

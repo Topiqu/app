@@ -1,13 +1,45 @@
 // @vitest-environment nuxt
 
+import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import AppMedia from '../../app/components/AppMedia.vue'
 import ThemeToggle from '../../app/components/ThemeToggle.vue'
 import { resolveTenantTheme, tenantThemeStyle } from '../../app/composables/theme'
 
+afterEach(() => vi.useRealTimers())
+
 describe('stable media and theme controls', () => {
+  it('leaves an offscreen lazy image alone instead of timing it out', async () => {
+    vi.useFakeTimers()
+    const wrapper = mount(AppMedia, {
+      props: { alt: 'Source favicon', src: 'https://t1.gstatic.com/faviconV2?url=offscreen' },
+      global: { stubs: { UIcon: true, USkeleton: true } },
+    })
+
+    vi.advanceTimersByTime(10000)
+    await nextTick()
+
+    // The source list sits below the fold, so the browser has not fetched this yet.
+    expect(wrapper.find('img').exists()).toBe(true)
+    expect(wrapper.attributes('data-media-state')).toBe('loading')
+  })
+
+  it('still gives up on a priority image that never loads', async () => {
+    vi.useFakeTimers()
+    const wrapper = mount(AppMedia, {
+      props: { alt: 'Hero', src: 'https://t1.gstatic.com/faviconV2?url=stalled', priority: true },
+      global: { stubs: { UIcon: true, USkeleton: true } },
+    })
+
+    vi.advanceTimersByTime(2000)
+    await nextTick()
+
+    expect(wrapper.find('img').exists()).toBe(false)
+    expect(wrapper.attributes('data-media-state')).toBe('fallback')
+  })
+
   it('routes allowlisted images through Nuxt Image with WebP variants', () => {
     const wrapper = mount(AppMedia, {
       props: { alt: 'Article cover', src: 'https://cdn.topiqu.com/article-images/cover.png' },

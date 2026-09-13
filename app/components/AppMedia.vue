@@ -89,6 +89,7 @@ const { currentSrc, isRetrying, usingOriginal, handleError, handleLoad } = useIm
 )
 const hasLoaded = shallowRef(false)
 const mediaRoot = useTemplateRef<HTMLElement>('mediaRoot')
+const isVisible = useElementVisibility(mediaRoot)
 const shouldOptimize = computed(() =>
   // Nuxt Image treats a query string as part of the IPX source path. Once a
   // cache-busting retry starts, request the source directly so
@@ -113,15 +114,19 @@ const handleMediaLoad = () => {
   handleLoad()
 }
 
-watch(
-  currentSrc,
-  () => {
-    clearLoadTimeout()
-    hasLoaded.value = false
-    if (currentSrc.value) loadTimeout = setTimeout(handleMediaError, priority ? 2000 : 4000)
-  },
-  { immediate: true },
-)
+watch(currentSrc, () => {
+  hasLoaded.value = false
+})
+
+// A lazy image below the fold has not been requested yet, so a wall-clock timer would call it
+// failed before the browser ever fetches it — and `useImageRetry` then blocks that URL for the
+// rest of the session. Arm the stall guard only once the image is actually on screen.
+watchEffect(() => {
+  clearLoadTimeout()
+  if (!currentSrc.value || hasLoaded.value) return
+  if (!priority && !isVisible.value) return
+  loadTimeout = setTimeout(handleMediaError, priority ? 2000 : 4000)
+})
 
 onMounted(() => {
   const image = mediaRoot.value?.querySelector('img')

@@ -23,8 +23,11 @@ export const presentSourceUrl = (source: string): SourcePresentation => {
   }
 }
 
+// `www.google.com/s2/favicons?domain=` only 301s here, so request it directly — the list
+// renders one icon per source and each redirect eats into the stall timeout in `AppMedia`.
 export const sourceFaviconUrl = (source: string) => {
-  const presented = presentSourceUrl(source)
-  if (!presented.valid) return undefined
-  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(presented.hostname)}&sz=32`
+  const target = source.trim()
+  if (!presentSourceUrl(target).valid) return undefined
+  const params = `client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(target)}&size=32`
+  return `https://t1.gstatic.com/faviconV2?${params}`
 }
