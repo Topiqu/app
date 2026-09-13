@@ -1,9 +1,11 @@
-import { TRIAL_DAYS, type TrialInfo } from '~~/shared/utils/trial'
+import type { TrialInfo } from '~~/shared/utils/trial'
 
 export const TRIAL_SELECT = {
   id: true,
   plan: true,
-  createdAt: true,
+  trialStartedAt: true,
+  trialEndsAt: true,
+  trialAcknowledgedAt: true,
   firstPaidAt: true,
   stripeSubscriptionId: true,
 } as const
@@ -11,10 +13,12 @@ export const TRIAL_SELECT = {
 /** Mirrors `needsTrialDowngrade` in SQL; the predicate re-checks each row before it is written. */
 export const expiredTrialWhere = (now: Date) => ({
   plan: { not: 'BASIC' as const },
+  trialStartedAt: { not: null },
+  trialEndsAt: { not: null, lte: now },
+  trialAcknowledgedAt: null,
   firstPaidAt: null,
   stripeSubscriptionId: null,
   deletedAt: null,
-  createdAt: { lte: new Date(now.getTime() - TRIAL_DAYS * 24 * 60 * 60 * 1000) },
 })
 
 /** Plan entitlements and credit are independent. Only explicitly expiring grants can expire. */

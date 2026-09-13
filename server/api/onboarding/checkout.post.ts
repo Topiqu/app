@@ -51,6 +51,8 @@ export default defineEventHandler(async (event) => {
   }
 
   let clientSiteId: string
+  const trialStartedAt = new Date()
+  const trialEndsAt = new Date(trialStartedAt.getTime() + TRIAL_DAYS * 86400000)
   try {
     const result = await prisma.$transaction(async (tx) => {
       const site = await tx.clientSite.create({
@@ -64,6 +66,8 @@ export default defineEventHandler(async (event) => {
           // marker, and `trial-expiry` drops a card-less tenant back to BASIC after TRIAL_DAYS.
           plan: TRIAL_PLAN,
           tokenRemaining: 0,
+          trialStartedAt,
+          trialEndsAt,
           firstPaidAt: null,
         },
       })
@@ -75,7 +79,7 @@ export default defineEventHandler(async (event) => {
           source: 'TRIAL',
           idempotencyKey: `trial:${site.id}`,
           reason: 'Welcome trial credit',
-          expiresAt: new Date(Date.now() + TRIAL_DAYS * 86400000),
+          expiresAt: trialEndsAt,
         },
         tx,
       )

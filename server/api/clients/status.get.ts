@@ -16,6 +16,9 @@ export default defineEventHandler(async (event) => {
       tokenRemaining: true,
       totalUsage: true,
       createdAt: true,
+      trialStartedAt: true,
+      trialEndsAt: true,
+      trialAcknowledgedAt: true,
       firstPaidAt: true,
       focus: true,
       audience: true,
@@ -30,7 +33,17 @@ export default defineEventHandler(async (event) => {
 
   if (!clientSite) return null
 
-  const { stripeSubscriptionId, users, ...status } = clientSite
+  const state = trialState(clientSite)
+  const endsAt = clientSite.trialEndsAt?.toISOString() ?? null
+  const daysLeft = state === 'ACTIVE' ? trialDaysLeft(clientSite) : 0
+  const {
+    stripeSubscriptionId,
+    users,
+    trialStartedAt: _trialStartedAt,
+    trialEndsAt: _trialEndsAt,
+    trialAcknowledgedAt: _trialAcknowledgedAt,
+    ...status
+  } = clientSite
 
   const wallet = await getTokenWallet(user.clientSiteId)
   return {
@@ -39,5 +52,10 @@ export default defineEventHandler(async (event) => {
     wallet,
     aiUser: users[0] ?? null,
     hasActiveSubscription: !!stripeSubscriptionId,
+    trial: {
+      state,
+      endsAt,
+      daysLeft,
+    },
   }
 })

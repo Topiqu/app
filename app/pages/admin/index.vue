@@ -20,9 +20,8 @@ useSeoMeta({ title: () => `${client.value?.name ?? 'Topiqu'} - ${$t('admin.title
 
 const isOpen = shallowRef(false)
 
-// Was an inline `plan === 'BASIC'` check, which never fires now that a trial sits on TRIAL_PLAN.
 onMounted(() => {
-  isOpen.value = trialExpired(status.value)
+  isOpen.value = status.value?.trial.state === 'EXPIRED'
 })
 
 const handleContinueFree = async () => {
