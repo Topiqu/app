@@ -15,7 +15,6 @@
           fit="contain"
           sizes="128px"
           :width="256"
-          :height="256"
           containerClass="aspect-square w-full max-w-28 rounded-[var(--ui-radius)] bg-transparent"
         />
         <h3 v-if="!logoUrl" class="sr-only">{{ name }}</h3>

@@ -20,7 +20,6 @@
           fit="contain"
           sizes="224px sm:288px"
           :width="576"
-          :height="576"
           containerClass="aspect-square w-full max-w-56 rounded-(--topiqu-surface-radius) bg-transparent sm:max-w-64 lg:max-w-72"
         />
         <h1 v-if="clientSite?.logoUrl" class="sr-only">
@@ -326,36 +325,7 @@
       </aside>
     </section>
 
-    <section class="grid gap-8 border-t border-default py-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-      <div class="max-w-3xl space-y-4">
-        <h2 class="text-3xl font-bold tracking-tight text-highlighted">{{ clientSite?.name }}</h2>
-        <p v-if="clientSite?.description" class="leading-7 text-muted">{{ clientSite.description }}</p>
-        <dl class="flex flex-wrap gap-x-8 gap-y-3">
-          <div>
-            <dt class="text-sm text-muted">{{ $t('stats.articleCount') }}</dt>
-            <dd class="mt-1 text-2xl font-bold text-highlighted">
-              {{ formatNumber(feat?.totalArticles || allArticles.length) }}
-            </dd>
-          </div>
-          <div v-if="tags.length">
-            <dt class="text-sm text-muted">{{ $t('articles.tags.title') }}</dt>
-            <dd class="mt-1 text-2xl font-bold text-highlighted">{{ formatNumber(tags.length) }}</dd>
-          </div>
-        </dl>
-      </div>
-      <div class="flex flex-col items-start gap-4 lg:items-end">
-        <ClientSocials v-if="clientSite?.id" :clientSiteId="clientSite.id" />
-        <div v-if="!auth" class="max-w-md lg:text-right">
-          <h3 class="text-xl font-bold tracking-tight text-highlighted">{{ $t('common.auth.loginPrompt') }}</h3>
-          <p class="mt-2 text-sm text-muted">{{ $t('common.auth.loginToComment') }}</p>
-          <div class="mt-4">
-            <UButton :to="localePath({ name: 'autorizace' })" color="neutral" variant="solid" icon="mdi:login">
-              {{ $t('common.auth.login') }}
-            </UButton>
-          </div>
-        </div>
-      </div>
-    </section>
+    <ClientSocials v-if="clientSite?.id" :clientSiteId="clientSite.id" />
   </div>
 </template>
 
@@ -487,6 +457,7 @@ const debouncedRefresh = useDebounceFn(() => {
 watch([selectedTag, searchQuery], debouncedRefresh)
 
 const allArticles = computed(() => Array.from(articleMap.value.values()))
+const hasFilters = computed(() => Boolean(searchQuery.value || selectedTag.value))
 const featured = computed(() => feat.value?.featured ?? null)
 const recommended = computed(() => feat.value?.recommended ?? [])
 const tags = computed(() => feed.value?.tags ?? [])
@@ -499,7 +470,11 @@ const topArticles = computed(() =>
     ? [...allArticles.value].sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0)).slice(0, 3)
     : [],
 )
-const filteredArticles = computed(() => allArticles.value.filter((article) => !reservedIds.value.has(article.id)))
+// A selected tag or search is an explicit result set: do not hide matches merely because the same
+// article is also promoted in the unfiltered hero/recommended rails.
+const filteredArticles = computed(() =>
+  hasFilters.value ? allArticles.value : allArticles.value.filter((article) => !reservedIds.value.has(article.id)),
+)
 const latestArticle = computed(
   () =>
     [...allArticles.value].sort(
@@ -588,7 +563,6 @@ const heroExcerpt = computed(() =>
 )
 const hasHeroRail = computed(() => Boolean(tags.value[0] || feat.value?.totalArticles))
 
-const hasFilters = computed(() => Boolean(searchQuery.value || selectedTag.value))
 const hasContent = computed(() => allArticles.value.length > 0)
 const showFeed = computed(() => pending.value || hasFilters.value || filteredArticles.value.length > 0)
 

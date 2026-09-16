@@ -205,7 +205,9 @@
       class="grid flex-1 items-start gap-8"
       :class="settingsExpanded ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : 'lg:grid-cols-[minmax(0,1fr)_3rem]'"
     >
-      <div class="min-w-0 flex flex-col gap-6">
+      <div
+        class="min-w-0 flex flex-col gap-6 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-10rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
+      >
         <UFormField :label="$t('common.labels.articleTitle')">
           <UInput
             v-model="titleModel"
