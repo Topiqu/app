@@ -43,6 +43,12 @@ describe('homepage hero identity', () => {
   })
 })
 
+describe('homepage article filters', () => {
+  it('shows explicit tag and search matches even when they are promoted elsewhere on the homepage', () => {
+    expect(source).toContain('hasFilters.value ? allArticles.value : allArticles.value.filter')
+  })
+})
+
 describe('tagline treatment across the publication surfaces', () => {
   const surfaces = [
     'app/pages/index.vue',

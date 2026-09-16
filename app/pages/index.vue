@@ -486,6 +486,7 @@ const debouncedRefresh = useDebounceFn(() => {
 watch([selectedTag, searchQuery], debouncedRefresh)
 
 const allArticles = computed(() => Array.from(articleMap.value.values()))
+const hasFilters = computed(() => Boolean(searchQuery.value || selectedTag.value))
 const featured = computed(() => feat.value?.featured ?? null)
 const recommended = computed(() => feat.value?.recommended ?? [])
 const tags = computed(() => feed.value?.tags ?? [])
@@ -498,7 +499,11 @@ const topArticles = computed(() =>
     ? [...allArticles.value].sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0)).slice(0, 3)
     : [],
 )
-const filteredArticles = computed(() => allArticles.value.filter((article) => !reservedIds.value.has(article.id)))
+// A selected tag or search is an explicit result set: do not hide matches merely because the same
+// article is also promoted in the unfiltered hero/recommended rails.
+const filteredArticles = computed(() =>
+  hasFilters.value ? allArticles.value : allArticles.value.filter((article) => !reservedIds.value.has(article.id)),
+)
 const latestArticle = computed(
   () =>
     [...allArticles.value].sort(
@@ -587,7 +592,6 @@ const heroExcerpt = computed(() =>
 )
 const hasHeroRail = computed(() => Boolean(tags.value[0] || feat.value?.totalArticles))
 
-const hasFilters = computed(() => Boolean(searchQuery.value || selectedTag.value))
 const hasContent = computed(() => allArticles.value.length > 0)
 const showFeed = computed(() => pending.value || hasFilters.value || filteredArticles.value.length > 0)
 
