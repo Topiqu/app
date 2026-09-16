@@ -325,36 +325,7 @@
       </aside>
     </section>
 
-    <section class="grid gap-8 border-t border-default py-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-      <div class="max-w-3xl space-y-4">
-        <h2 class="text-3xl font-bold tracking-tight text-highlighted">{{ clientSite?.name }}</h2>
-        <p v-if="clientSite?.description" class="leading-7 text-muted">{{ clientSite.description }}</p>
-        <dl class="flex flex-wrap gap-x-8 gap-y-3">
-          <div>
-            <dt class="text-sm text-muted">{{ $t('stats.articleCount') }}</dt>
-            <dd class="mt-1 text-2xl font-bold text-highlighted">
-              {{ formatNumber(feat?.totalArticles || allArticles.length) }}
-            </dd>
-          </div>
-          <div v-if="tags.length">
-            <dt class="text-sm text-muted">{{ $t('articles.tags.title') }}</dt>
-            <dd class="mt-1 text-2xl font-bold text-highlighted">{{ formatNumber(tags.length) }}</dd>
-          </div>
-        </dl>
-      </div>
-      <div class="flex flex-col items-start gap-4 lg:items-end">
-        <ClientSocials v-if="clientSite?.id" :clientSiteId="clientSite.id" />
-        <div v-if="!auth" class="max-w-md lg:text-right">
-          <h3 class="text-xl font-bold tracking-tight text-highlighted">{{ $t('common.auth.loginPrompt') }}</h3>
-          <p class="mt-2 text-sm text-muted">{{ $t('common.auth.loginToComment') }}</p>
-          <div class="mt-4">
-            <UButton :to="localePath({ name: 'autorizace' })" color="neutral" variant="solid" icon="mdi:login">
-              {{ $t('common.auth.login') }}
-            </UButton>
-          </div>
-        </div>
-      </div>
-    </section>
+    <ClientSocials v-if="clientSite?.id" :clientSiteId="clientSite.id" />
   </div>
 </template>
 

@@ -49,6 +49,15 @@ describe('homepage article filters', () => {
   })
 })
 
+describe('homepage closing content', () => {
+  it('keeps useful social links without repeating the brand summary or vanity metrics', () => {
+    expect(source.match(/<ClientSocials/g)).toHaveLength(1)
+    expect(source.match(/stats\.articleCount/g)).toHaveLength(1)
+    expect(source).not.toContain("$t('articles.tags.title')")
+    expect(source).not.toContain("$t('common.auth.loginPrompt')")
+  })
+})
+
 describe('tagline treatment across the publication surfaces', () => {
   const surfaces = [
     'app/pages/index.vue',
