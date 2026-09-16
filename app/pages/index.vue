@@ -20,7 +20,6 @@
           fit="contain"
           sizes="224px sm:288px"
           :width="576"
-          :height="576"
           containerClass="aspect-square w-full max-w-56 rounded-(--topiqu-surface-radius) bg-transparent sm:max-w-64 lg:max-w-72"
         />
         <h1 v-if="clientSite?.logoUrl" class="sr-only">
