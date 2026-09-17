@@ -3,6 +3,7 @@
     <NuxtLoadingIndicator class="z-top" :color="computedThemeColor" />
     <NuxtRouteAnnouncer />
     <NetworkIndicator />
+    <AppOptimisticStatus />
 
     <NuxtLayout>
       <NuxtPage />

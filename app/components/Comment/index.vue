@@ -1,6 +1,7 @@
 <template>
   <article
     :id="`comment-${comment.id}`"
+    tabindex="-1"
     class="relative w-full min-w-0 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 sm:p-5"
   >
     <div class="absolute right-3 top-3 z-10 flex gap-1">
@@ -116,6 +117,8 @@
           :variant="state.userReaction?.type === 'LIKE' ? 'solid' : 'soft'"
           :icon="state.userReaction?.type === 'LIKE' ? 'mdi:thumb-up' : 'mdi:thumb-up-outline'"
           :aria-pressed="state.userReaction?.type === 'LIKE'"
+          :loading="reactionPending && state.userReaction?.type === 'LIKE'"
+          :disabled="reactionPending"
           @click="updateReaction('LIKE')"
         >
           <span>{{ state.likes }}</span>
@@ -126,6 +129,8 @@
           :variant="state.userReaction?.type === 'DISLIKE' ? 'solid' : 'soft'"
           :icon="state.userReaction?.type === 'DISLIKE' ? 'mdi:thumb-down' : 'mdi:thumb-down-outline'"
           :aria-pressed="state.userReaction?.type === 'DISLIKE'"
+          :loading="reactionPending && state.userReaction?.type === 'DISLIKE'"
+          :disabled="reactionPending"
           @click="updateReaction('DISLIKE')"
         >
           <span>{{ state.dislikes }}</span>
@@ -284,7 +289,12 @@ const userCardProps = computed(() => {
   }
 })
 
-const { state, updateReaction, handleEmojiReaction } = useCommentReactions(commentRef, {
+const {
+  state,
+  isPending: reactionPending,
+  updateReaction,
+  handleEmojiReaction,
+} = useCommentReactions(commentRef, {
   isAuthor: toRef(perms, 'isAuthor'),
   currentUserId: computed(() => perms.user?.id),
 })

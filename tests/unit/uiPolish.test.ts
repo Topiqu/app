@@ -76,8 +76,10 @@ describe('dashboard UI polish contracts', () => {
 
   it('keeps reaction state across homepage card remounts', () => {
     const card = source('app/components/Article/Card.vue')
-    expect(card).toContain("'article-card-reactions'")
-    expect(card).toContain('[article.id]: result')
+    const reaction = source('app/composables/useArticleReaction.ts')
+    expect(card).toContain('useArticleReaction(')
+    expect(reaction).toContain("'article-card-reactions'")
+    expect(reaction).toContain('[id]: confirmed')
   })
 
   it('renders explicit account-health icons and visible notification switches', () => {

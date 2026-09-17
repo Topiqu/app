@@ -28,6 +28,7 @@
             :followerCount="data.followerCount || 0"
             :isFollowing="isFollowing"
             :showFollowButton="!!session?.user && session.user.id !== data.user.id"
+            :followPending="followPending"
             :excerpt="data.excerpt"
             :imageUrl="data.imageUrl"
             :imageCredit="imageCredit"
@@ -73,12 +74,13 @@
 
         <div class="flex justify-end gap-4 mt-10">
           <UButton
-            :color="data.likedByUser ? 'error' : 'neutral'"
-            :variant="data.likedByUser ? 'soft' : 'ghost'"
+            :color="articleLiked ? 'error' : 'neutral'"
+            :variant="articleLiked ? 'soft' : 'ghost'"
             icon="mdi:heart"
             square
             :aria-label="$t('common.actions.like')"
-            @click="toggleLike"
+            :loading="articleReactionPending"
+            @click="toggleArticleLike"
           />
           <UButton
             color="neutral"
@@ -279,15 +281,26 @@ const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value
 const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh, getVisitorId)
 
 const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
+const followPending = shallowRef(false)
+const optimisticStatus = useOptimisticStatus()
 const toggleFollow = async () => {
   if (!session.value?.user || !data.value?.user.id)
     return toast.add({ color: 'error', title: $t('common.auth.loginPrompt') })
+  if (followPending.value) return
+
+  const previousFollowing = isFollowing.value
+  const previousCount = data.value.followerCount ?? 0
+  const nextFollowing = !previousFollowing
+  followPending.value = true
+  isFollowing.value = nextFollowing
+  data.value.followerCount = Math.max(0, previousCount + (nextFollowing ? 1 : -1))
+  optimisticStatus.saving()
+
   try {
-    if (isFollowing.value) {
+    if (previousFollowing) {
       const response = await $fetch<{ success: true; followerCount: number }>(`/api/follows/${data.value.user.id}`, {
         method: 'DELETE',
       })
-      isFollowing.value = false
       if (data.value) data.value.followerCount = response.followerCount ?? 0
       toast.add({
         color: 'success',
@@ -298,24 +311,24 @@ const toggleFollow = async () => {
         method: 'POST',
         body: { followedId: data.value.user.id },
       })
-      isFollowing.value = true
       if (data.value) data.value.followerCount = response.followerCount ?? 0
       toast.add({
         color: 'success',
         title: $t('profile.messages.followSuccess', [data.value.user.username]),
       })
     }
+    optimisticStatus.saved()
     await refreshFollows()
   } catch (e: unknown) {
     const err = e as { data?: { statusCode?: number; message?: string } }
-    if (err.data?.statusCode === 409) {
+    if (err.data?.statusCode === 409 && !previousFollowing) {
       isFollowing.value = true
-      const response = await $fetch<{ followerCount: number }>(`/api/follows/`, {
-        method: 'POST',
-        body: { followedId: data.value?.user.id },
-      })
-      if (data.value) data.value.followerCount = response.followerCount ?? 0
+      await refreshFollows()
+      optimisticStatus.saved()
     } else {
+      isFollowing.value = previousFollowing
+      if (data.value) data.value.followerCount = previousCount
+      optimisticStatus.reverted()
       toast.add({
         color: 'error',
         title:
@@ -323,31 +336,28 @@ const toggleFollow = async () => {
           (isFollowing.value ? $t('profile.messages.profileUpdateError') : $t('profile.messages.followFailed')),
       })
     }
+  } finally {
+    followPending.value = false
   }
 }
 
-const toggleLike = async () => {
-  if (!data.value?.slug) return
-
-  try {
-    // No visitor id: the endpoint resolves the session or the server-issued anon_session cookie.
-    const res = await $fetch<{ liked: boolean; likes: number }>(`/api/articles/${data.value.id}/reaction`, {
-      method: 'POST',
-    })
-
-    if (data.value) {
-      data.value.likedByUser = res.liked
-      data.value.likes = res.likes
-    }
-  } catch (e: any) {
-    // Carries the server's reason, which for a like is usually the rate limit.
-    toast.add({
-      color: 'error',
-      title: $t('articles.comments.reactionFailed'),
-      description: e?.data?.message,
-    })
-  }
+const {
+  liked: articleLiked,
+  likes: articleLikes,
+  isPending: articleReactionPending,
+  toggle: toggleArticleReaction,
+} = useArticleReaction(
+  () => data.value?.id,
+  () => ({ liked: Boolean(data.value?.likedByUser), likes: data.value?.likes ?? 0 }),
+)
+const toggleArticleLike = async () => {
+  await toggleArticleReaction()
 }
+watch([articleLiked, articleLikes], ([liked, likes]) => {
+  if (!data.value) return
+  data.value.likedByUser = liked
+  data.value.likes = likes
+})
 
 const faqEntries = computed(() => readFaq(data.value?.faq))
 const hasTags = computed(() => !!data.value?.tags?.length)
@@ -382,11 +392,11 @@ watchEffect(() => {
 
 onMounted(() => {
   trackView()
-  articleLikeBus.on(toggleLike)
+  articleLikeBus.on(toggleArticleLike)
 })
 
 onUnmounted(() => {
-  articleLikeBus.off(toggleLike)
+  articleLikeBus.off(toggleArticleLike)
   articleHeader.value = null
 })
 </script>

@@ -118,7 +118,7 @@
                   :color="heroLiked ? 'error' : 'neutral'"
                   variant="ghost"
                   square
-                  :loading="heroLiking"
+                  :loading="heroReactionPending"
                   :aria-label="$t('common.actions.like')"
                   @click="toggleHeroLike"
                 />
@@ -485,43 +485,18 @@ const heroArticle = computed(() => featured.value || latestArticle.value)
 const heroArticlePath = computed(() =>
   heroArticle.value?.slug ? localePath({ name: 'clanky-slug', params: { slug: heroArticle.value.slug } }) : '#',
 )
-const heroReactionState = useState<Record<string, { liked: boolean; likes: number }>>(
-  'article-card-reactions',
-  () => ({}),
+const {
+  liked: heroLiked,
+  isPending: heroReactionPending,
+  toggle: toggleHeroLike,
+} = useArticleReaction(
+  () => heroArticle.value?.id,
+  () => ({
+    liked: Boolean(heroArticle.value?.likedByUser),
+    likes: heroArticle.value?._count?.reactions ?? 0,
+  }),
 )
-const heroReaction = computed(() => {
-  const article = heroArticle.value
-  if (!article) return { liked: false, likes: 0 }
-  return (
-    heroReactionState.value[article.id] ?? {
-      liked: Boolean(article.likedByUser),
-      likes: article._count?.reactions ?? 0,
-    }
-  )
-})
-const heroLiked = computed(() => heroReaction.value.liked)
-const heroLiking = shallowRef(false)
 const toast = useToast()
-
-const toggleHeroLike = async () => {
-  const article = heroArticle.value
-  if (!article || heroLiking.value) return
-  heroLiking.value = true
-  try {
-    const result = await $fetch<{ liked: boolean; likes: number }>(`/api/articles/${article.id}/reaction`, {
-      method: 'POST',
-    })
-    heroReactionState.value = { ...heroReactionState.value, [article.id]: result }
-  } catch (error: any) {
-    toast.add({
-      color: 'error',
-      title: $t('articles.comments.reactionFailed'),
-      description: error?.data?.message,
-    })
-  } finally {
-    heroLiking.value = false
-  }
-}
 
 const shareHeroArticle = async () => {
   const article = heroArticle.value

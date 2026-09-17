@@ -8,12 +8,22 @@
           labelKey="label"
           :searchInput="false"
           :items="statusItems"
+          :disabled="pending"
           class="min-w-0 flex-1"
           :ui="{ base: 'w-full min-w-0', content: 'min-w-48' }"
         />
       </UFormField>
       <UIcon
-        v-if="props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()"
+        v-if="pending"
+        name="mdi:cloud-sync-outline"
+        size="16"
+        class="ml-2 text-primary"
+        aria-hidden="true"
+      />
+      <UIcon
+        v-else-if="
+          props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()
+        "
         name="mdi:hourglass"
         size="16"
         class="ml-2 text-info"
@@ -28,7 +38,7 @@ import type { ArticleStatus } from '@zenstackhq/runtime/models'
 
 import { format } from 'date-fns'
 
-const props = defineProps<{ row: { original: ArticleWithDetails } }>()
+const props = defineProps<{ row: { original: ArticleWithDetails }; pending?: boolean }>()
 const emit = defineEmits<{
   (e: 'update', id: string, newStatus: ArticleStatus): void
 }>()

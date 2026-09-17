@@ -114,13 +114,13 @@
               <div class="flex shrink-0 items-center gap-1">
                 <slot name="actions" :article="article">
                   <UButton
-                    :icon="localLiked ? 'mdi:heart' : 'mdi:heart-outline'"
-                    :color="localLiked ? 'error' : 'neutral'"
+                    :icon="liked ? 'mdi:heart' : 'mdi:heart-outline'"
+                    :color="liked ? 'error' : 'neutral'"
                     variant="ghost"
                     square
-                    :loading="liking"
+                    :loading="reactionPending"
                     :aria-label="$t('common.actions.like')"
-                    @click="toggleLike"
+                    @click="toggleReaction"
                   />
                   <UButton
                     icon="mdi:share-variant-outline"
@@ -162,16 +162,18 @@ const authorId = computed(() => article.author?.id || article.user?.id || '')
 const authorAvatar = computed(() => article.author?.avatarUrl || article.user?.avatarUrl || null)
 const displayDate = computed(() => article.publishedAt || article.createdAt)
 const comments = computed(() => article._count?.comments ?? 0)
-const reactionState = useState<Record<string, { liked: boolean; likes: number }>>('article-card-reactions', () => ({}))
-const currentReaction = computed(
-  () =>
-    reactionState.value[article.id] ?? {
-      liked: Boolean(article.likedByUser),
-      likes: article._count?.reactions ?? article.likes ?? 0,
-    },
+const {
+  liked,
+  likes: reactions,
+  isPending: reactionPending,
+  toggle: toggleReaction,
+} = useArticleReaction(
+  () => article.id,
+  () => ({
+    liked: Boolean(article.likedByUser),
+    likes: article._count?.reactions ?? article.likes ?? 0,
+  }),
 )
-const localLiked = computed(() => currentReaction.value.liked)
-const reactions = computed(() => currentReaction.value.likes)
 const shares = computed(() => article._count?.shares ?? article.shares ?? 0)
 const plainExcerpt = computed(() => (article.excerpt || article.content || '').replace(/<[^>]+>/g, '').trim())
 const normalizedTags = computed(() =>
@@ -184,30 +186,7 @@ const normalizedTags = computed(() =>
 )
 const tagLimit = computed(() => (variant === 'compact' ? 2 : 3))
 const visibleTags = computed(() => normalizedTags.value.slice(0, tagLimit.value))
-const liking = shallowRef(false)
 const toast = useToast()
-
-const toggleLike = async () => {
-  if (liking.value) return
-  liking.value = true
-  try {
-    // No visitor id: the endpoint resolves the session or the server-issued anon_session cookie.
-    const result = await $fetch<{ liked: boolean; likes: number }>(`/api/articles/${article.id}/reaction`, {
-      method: 'POST',
-    })
-    // Homepage filters can remount the same article in a different rail. Store the
-    // response by article ID so every instance reads the same reaction state.
-    reactionState.value = {
-      ...reactionState.value,
-      [article.id]: result,
-    }
-  } catch (e: any) {
-    // Carries the server's reason, which for a like is usually the rate limit.
-    toast.add({ color: 'error', title: $t('articles.comments.reactionFailed'), description: e?.data?.message })
-  } finally {
-    liking.value = false
-  }
-}
 
 const shareArticle = async () => {
   const url = new URL(articlePath.value, window.location.origin).href

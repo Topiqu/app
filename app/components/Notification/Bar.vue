@@ -7,6 +7,7 @@
       @update:open="handleOpen"
     >
       <UButton
+        ref="notificationTrigger"
         color="neutral"
         variant="ghost"
         icon="mdi:bell-outline"
@@ -20,7 +21,7 @@
           <template v-if="auth?.user">
             <UScrollArea v-if="notifications.length" class="max-h-[30rem]">
               <div ref="scroll" class="divide-y divide-default bg-default">
-                <div v-for="n in notifications" :key="n.id" class="p-4">
+                <div v-for="n in notifications" :key="n.id" :data-notification-id="n.id" class="p-4">
                   <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
                     <UIcon :name="notificationIcon(n.type)" size="20" class="mt-0.5 shrink-0 text-muted" />
                     <div class="min-w-0 flex-1">
@@ -63,6 +64,8 @@
                         square
                         :aria-label="$t('common.actions.deleteNotification')"
                         :title="$t('common.actions.deleteNotification')"
+                        :loading="deletingKeys.has(notificationKey(n))"
+                        :disabled="deletingKeys.has(notificationKey(n))"
                         @click.stop="del(n.id)"
                       />
                     </div>
@@ -123,6 +126,7 @@ type FetchResponse = {
   unreadCount: number
   hasMore: boolean
 }
+const notificationKey = (n: Notif) => [n.type, n.message, n.article?.slug ?? '', n.link ?? ''].join('|')
 
 const show = shallowRef(false)
 const page = shallowRef(1)
@@ -134,6 +138,10 @@ const data = ref<Notif[]>([])
 const unreadCount = shallowRef(0)
 const scroll = useTemplateRef('scroll')
 const sentinel = useTemplateRef('sentinel')
+const notificationTrigger = useTemplateRef<any>('notificationTrigger')
+const deletingKeys = ref(new Set<string>())
+const pendingDeletes = ref(new Map<string, Notif[]>())
+const optimisticStatus = useOptimisticStatus()
 const url = computed(() => `/api/notifications?page=${page.value}&limit=${limit}`)
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
@@ -157,16 +165,19 @@ const poll = async () => {
       query: { since: data.value[0]?.createdAt ?? undefined },
     })
     const known = new Set(data.value.map((n) => n.id))
-    const fresh = res.notifications.filter((n) => n?.id && !known.has(n.id))
+    const fresh = res.notifications.filter(
+      (n) => n?.id && !known.has(n.id) && !deletingKeys.value.has(notificationKey(n)),
+    )
     if (fresh.length) {
       data.value = [...fresh, ...data.value]
       for (const n of fresh)
         useAppToast().add({
           color: 'success',
-          title: `Nová notifikace: ${n.message}`,
+          title: $t('common.notifications.newNotification', { message: n.message }),
         })
     }
-    unreadCount.value = res.unreadCount
+    const hiddenUnread = [...pendingDeletes.value.values()].flat().filter((n) => !n.isRead).length
+    unreadCount.value = Math.max(0, res.unreadCount - hiddenUnread)
   } catch {
     // next tick retries
   }
@@ -189,8 +200,10 @@ watch(
   fetchedData,
   async (v) => {
     if (!v) return
-    data.value = page.value === 1 ? v.notifications : [...data.value, ...v.notifications]
-    unreadCount.value = v.unreadCount || 0
+    const visible = v.notifications.filter((n) => !deletingKeys.value.has(notificationKey(n)))
+    data.value = page.value === 1 ? visible : [...data.value, ...visible]
+    const hiddenUnread = [...pendingDeletes.value.values()].flat().filter((n) => !n.isRead).length
+    unreadCount.value = Math.max(0, (v.unreadCount || 0) - hiddenUnread)
     hasMore.value = v.hasMore && data.value.length < max
     if (data.value.length >= max) hasMore.value = false
     if (scroll.value && v.notifications.length) await nextTick()
@@ -202,7 +215,7 @@ watch(error, (e) => {
   if (e)
     useAppToast().add({
       color: 'error',
-      title: `Chyba při načítání: ${e.message || 'Neznámá chyba'}`,
+      title: $t('common.notifications.loadFailed', { message: e.message || $t('common.error') }),
     })
 })
 
@@ -241,26 +254,58 @@ const notificationIcon = (type: string) =>
     SYSTEM: 'mdi:alert-circle-outline',
   })[type] || 'mdi:bell-outline'
 
+const focusAfterRemoval = async (id?: string) => {
+  await nextTick()
+  const target = id
+    ? scroll.value?.querySelector<HTMLElement>(
+        `[data-notification-id="${id}"] button, [data-notification-id="${id}"] a`,
+      )
+    : null
+  target?.focus()
+  if (!target) (notificationTrigger.value?.$el as HTMLElement | undefined)?.focus?.()
+}
+
 const del = async (id: string) => {
+  const rendered = notifications.value
+  const renderedIndex = rendered.findIndex((n) => n.id === id)
+  const focusId = rendered[renderedIndex + 1]?.id ?? rendered[renderedIndex - 1]?.id
+  const target = data.value.find((n) => n.id === id)
+  if (!target) return
+  const key = notificationKey(target)
+  if (deletingKeys.value.has(key)) return
+  const toDelete = data.value.filter((n) => notificationKey(n) === key)
+  const removedUnread = toDelete.filter((n) => !n.isRead).length
+
+  deletingKeys.value = new Set([...deletingKeys.value, key])
+  pendingDeletes.value = new Map(pendingDeletes.value).set(key, toDelete)
+  data.value = data.value.filter((n) => notificationKey(n) !== key)
+  unreadCount.value = Math.max(0, unreadCount.value - removedUnread)
+  optimisticStatus.saving()
+  void focusAfterRemoval(focusId)
+
   try {
-    const target = data.value.find((n) => n.id === id)
-    if (!target) return
-    const key = [target.type, target.message, target.article?.slug ?? '', target.link ?? ''].join('|')
-    const toDelete = data.value.filter((n) => {
-      const nKey = [n.type, n.message, n.article?.slug ?? '', n.link ?? ''].join('|')
-      return nKey === key
-    })
     await Promise.all(toDelete.map((n) => $fetch(`/api/notifications/${n.id}`, { method: 'DELETE' })))
-    data.value = data.value.filter((n) => {
-      const nKey = [n.type, n.message, n.article?.slug ?? '', n.link ?? ''].join('|')
-      return nKey !== key
-    })
-    unreadCount.value = data.value.filter((n) => !n.isRead).length
+    optimisticStatus.saved()
   } catch (e: any) {
+    const known = new Set(data.value.map((n) => n.id))
+    data.value = [...data.value, ...toDelete.filter((n) => !known.has(n.id))].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+    unreadCount.value += removedUnread
+    optimisticStatus.reverted()
     useAppToast().add({
       color: 'error',
-      title: `Chyba při mazání: ${e.data?.message || 'Neznámá chyba'}`,
+      title: $t('common.notifications.deleteFailed', {
+        message: e.data?.message || $t('common.error'),
+      }),
     })
+  } finally {
+    const nextDeleting = new Set(deletingKeys.value)
+    nextDeleting.delete(key)
+    deletingKeys.value = nextDeleting
+    const nextDeletes = new Map(pendingDeletes.value)
+    nextDeletes.delete(key)
+    pendingDeletes.value = nextDeletes
   }
 }
 
