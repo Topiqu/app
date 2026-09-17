@@ -11,7 +11,7 @@
             :highlight="isDuplicate"
             @input="updateSlug"
           />
-          <UButton :disabled="isDuplicate || !newTag.name.trim()" @click="createTag">
+          <UButton :disabled="isDuplicate || !newTag.name.trim()" :loading="creating" @click="createTag">
             {{ $t('articles.tags.addButton') }}
           </UButton>
         </div>
@@ -43,7 +43,10 @@
           <div
             v-for="t in filteredTags"
             :key="t.id"
+            :data-tag-id="t.id"
+            tabindex="-1"
             class="flex min-w-0 items-center gap-2 rounded-[var(--ui-radius)] border border-default bg-elevated p-2"
+            :class="pendingTagIds.has(t.id) ? 'opacity-60' : ''"
           >
             <span
               v-if="editingTagId !== t.id"
@@ -99,6 +102,8 @@
               icon="mdi:delete"
               :aria-label="$t('common.actions.deleteTag')"
               :title="$t('common.actions.deleteTag')"
+              :loading="pendingTagIds.has(t.id)"
+              :disabled="pendingTagIds.has(t.id)"
               @click="deleteTag(t.id, t.name)"
             />
           </div>
@@ -118,14 +123,27 @@
 <script setup lang="ts">
 import slugify from 'slugify'
 
+type TagItem = { id: string; name: string }
+
 const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 const confirm = useConfirm()
-const { data: tags, refresh, status, error } = useFetch('/api/tags', { default: () => [], immediate: false })
+const {
+  data: tags,
+  refresh,
+  status,
+  error,
+} = useFetch<TagItem[]>('/api/tags', {
+  default: () => [],
+  immediate: false,
+})
 const newTag = reactive({ name: '', slug: '' })
 const searchQuery = shallowRef('')
 const editingTagId = shallowRef<string | null>(null)
 const editDraft = shallowRef('')
+const creating = shallowRef(false)
+const pendingTagIds = ref(new Set<string>())
+const optimisticStatus = useOptimisticStatus()
 
 watch(open, (isOpen) => {
   if (isOpen) refresh()
@@ -145,20 +163,29 @@ const updateSlug = () => {
 }
 
 const createTag = async () => {
-  if (!newTag.name.trim() || isDuplicate.value) return
+  if (!newTag.name.trim() || isDuplicate.value || creating.value) return
+  const draft = { name: newTag.name.trim(), slug: newTag.slug }
+  const optimisticId = `optimistic-${crypto.randomUUID?.() ?? Date.now()}`
+  creating.value = true
+  tags.value.push({ id: optimisticId, name: draft.name })
+  Object.assign(newTag, { name: '', slug: '' })
+  optimisticStatus.saving()
   try {
-    await $fetch('/api/tags', {
+    const created = await $fetch<{ id: string; name: string }>('/api/tags', {
       method: 'POST',
-      body: {
-        name: newTag.name,
-        slug: newTag.slug,
-      },
+      body: draft,
     })
-    Object.assign(newTag, { name: '', slug: '' })
-    await refresh()
+    const index = tags.value.findIndex((tag) => tag.id === optimisticId)
+    if (index >= 0) tags.value.splice(index, 1, created)
+    optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('articles.tags.createSuccess') })
   } catch (error: any) {
+    tags.value = tags.value.filter((tag) => tag.id !== optimisticId)
+    Object.assign(newTag, draft)
+    optimisticStatus.reverted()
     toast.add({ color: 'error', title: $t('articles.tags.createFailed') + error.data?.message })
+  } finally {
+    creating.value = false
   }
 }
 
@@ -177,12 +204,29 @@ const confirmDelete = async (name: string) => {
 const deleteTag = async (id: string, name: string) => {
   const confirmed = await confirmDelete(name)
   if (!confirmed) return
+  const index = tags.value.findIndex((tag) => tag.id === id)
+  if (index < 0 || pendingTagIds.value.has(id)) return
+  const removed = tags.value[index]!
+  const focusId = tags.value[index + 1]?.id ?? tags.value[index - 1]?.id
+  tags.value.splice(index, 1)
+  pendingTagIds.value = new Set([...pendingTagIds.value, id])
+  optimisticStatus.saving()
+  await nextTick()
+  if (focusId) document.querySelector<HTMLElement>(`[data-tag-id="${focusId}"]`)?.focus()
   try {
     await $fetch(`/api/tags/${id}`, { method: 'DELETE' })
-    await refresh()
+    optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
   } catch (error: any) {
+    tags.value.splice(index, 0, removed)
+    optimisticStatus.reverted()
+    await nextTick()
+    document.querySelector<HTMLElement>(`[data-tag-id="${id}"]`)?.focus()
     toast.add({ color: 'error', title: $t('common.messages.deleteFailed') + error.data?.message })
+  } finally {
+    const pending = new Set(pendingTagIds.value)
+    pending.delete(id)
+    pendingTagIds.value = pending
   }
 }
 
@@ -206,17 +250,32 @@ const editError = computed(() => {
 
 const saveEdit = async (tag: { id: string }) => {
   const name = editDraft.value.trim()
-  if (!name || editError.value) return
+  if (!name || editError.value || pendingTagIds.value.has(tag.id)) return
+  const target = tags.value.find((item) => item.id === tag.id)
+  if (!target) return
+  const previousName = target.name
+  target.name = name
+  pendingTagIds.value = new Set([...pendingTagIds.value, tag.id])
+  cancelEdit()
+  optimisticStatus.saving()
   try {
-    await $fetch(`/api/tags/${tag.id}`, {
+    const response = await $fetch<{ tag: { name: string } }>(`/api/tags/${tag.id}`, {
       method: 'PATCH',
       body: { name, slug: slugify(name, { lower: true, strict: true, trim: true }) },
     })
-    await refresh()
-    cancelEdit()
+    target.name = response.tag.name
+    optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('articles.tags.updateSuccess') })
   } catch (error: any) {
+    target.name = previousName
+    editingTagId.value = tag.id
+    editDraft.value = name
+    optimisticStatus.reverted()
     toast.add({ color: 'error', title: $t('articles.tags.updateFailed') + error.data?.message })
+  } finally {
+    const pending = new Set(pendingTagIds.value)
+    pending.delete(tag.id)
+    pendingTagIds.value = pending
   }
 }
 </script>

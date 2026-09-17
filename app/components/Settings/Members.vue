@@ -1,5 +1,5 @@
 <template>
-  <section class="space-y-6">
+  <section ref="membersSection" class="space-y-6">
     <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100">{{ $t('common.members.title') }}</h2>
@@ -66,6 +66,8 @@
       <article
         v-for="member in pagedMembers"
         :key="member.id"
+        :data-member-id="member.id"
+        tabindex="-1"
         class="overflow-hidden rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900"
       >
         <div class="grid lg:grid-cols-[17rem_minmax(0,1fr)]">
@@ -135,6 +137,7 @@
                 <UCheckbox
                   v-if="canEdit(member)"
                   :modelValue="member.scopes.includes(scope)"
+                  :disabled="pendingMemberIds.has(member.id)"
                   @update:modelValue="toggle(member, scope)"
                 />
                 <UIcon v-else-if="hasScope(member, scope)" name="mdi:check" class="mr-1 inline size-3" />
@@ -184,6 +187,8 @@
             variant="soft"
             icon="mdi:email-sync-outline"
             :aria-label="$t('common.members.resend')"
+            :loading="resendingIds.has(item.id)"
+            :disabled="resendingIds.has(item.id) || revokingIds.has(item.id)"
             @click="resend(item.id)"
           />
           <UButton
@@ -192,6 +197,8 @@
             variant="soft"
             icon="mdi:close"
             :aria-label="$t('common.members.revoke')"
+            :loading="revokingIds.has(item.id)"
+            :disabled="revokingIds.has(item.id) || resendingIds.has(item.id)"
             @click="revoke(item.id)"
           />
         </div>
@@ -256,6 +263,10 @@ const selected = ref<Scope[]>(['ARTICLE_WRITE'])
 const showInvite = shallowRef(false)
 const busy = shallowRef(false)
 const removingId = shallowRef<string>()
+const pendingMemberIds = ref(new Set<string>())
+const revokingIds = ref(new Set<string>())
+const resendingIds = ref(new Set<string>())
+const membersSection = useTemplateRef<HTMLElement>('membersSection')
 const search = shallowRef('')
 const filter = shallowRef<(typeof filters)[number]>('all')
 const page = shallowRef(1)
@@ -263,6 +274,7 @@ const pageSize = 8
 const toast = useAppToast()
 const { t } = useI18n()
 const confirm = useConfirm()
+const optimisticStatus = useOptimisticStatus()
 const normalizedSearch = computed(() => search.value.trim().toLocaleLowerCase())
 const filteredMembers = computed(() =>
   (data.value?.members ?? []).filter((member) => {
@@ -309,14 +321,30 @@ const invite = async () => {
   }
 }
 const toggle = async (member: Member, scope: Scope) => {
+  if (pendingMemberIds.value.has(member.id)) return
+  const previous = [...member.scopes]
   const next = member.scopes.includes(scope)
     ? member.scopes.filter((item) => item !== scope)
     : [...member.scopes, scope]
-  await $fetch(`/api/tenant/members/${member.id}`, {
-    method: 'PATCH',
-    body: { scopes: next },
-  })
-  await refresh()
+  member.scopes = next
+  pendingMemberIds.value = new Set([...pendingMemberIds.value, member.id])
+  optimisticStatus.saving()
+  try {
+    const updated = await $fetch<{ scopes: Scope[] }>(`/api/tenant/members/${member.id}`, {
+      method: 'PATCH',
+      body: { scopes: next },
+    })
+    member.scopes = updated.scopes
+    optimisticStatus.saved()
+  } catch (error: any) {
+    member.scopes = previous
+    optimisticStatus.reverted()
+    toast.error({ message: error.data?.message || t('common.messages.operationFailed') })
+  } finally {
+    const pending = new Set(pendingMemberIds.value)
+    pending.delete(member.id)
+    pendingMemberIds.value = pending
+  }
 }
 const remove = async (member: Member) => {
   const response = await confirm({
@@ -331,16 +359,27 @@ const remove = async (member: Member) => {
   })
   if (!response) return
 
+  const index = data.value?.members.findIndex((item) => item.id === member.id) ?? -1
+  const focusId = data.value?.members[index + 1]?.id ?? data.value?.members[index - 1]?.id
   removingId.value = member.id
+  if (data.value && index >= 0) data.value.members.splice(index, 1)
+  optimisticStatus.saving()
+  await nextTick()
+  if (focusId) membersSection.value?.querySelector<HTMLElement>(`[data-member-id="${focusId}"]`)?.focus()
   try {
     await $fetch(`/api/tenant/members/${member.id}`, { method: 'DELETE' })
-    await refresh()
+    optimisticStatus.saved()
     toast.success({
       message: t('common.members.removeSuccess', {
         name: member.user.username,
       }),
     })
   } catch (error: any) {
+    if (data.value && !data.value.members.some((item) => item.id === member.id))
+      data.value.members.splice(Math.max(0, index), 0, member)
+    optimisticStatus.reverted()
+    await nextTick()
+    membersSection.value?.querySelector<HTMLElement>(`[data-member-id="${member.id}"]`)?.focus()
     toast.error({
       message: error.data?.message || t('common.members.removeFailed'),
     })
@@ -349,12 +388,38 @@ const remove = async (member: Member) => {
   }
 }
 const revoke = async (id: string) => {
-  await $fetch(`/api/tenant/invitations/${id}`, { method: 'DELETE' })
-  await refresh()
+  if (!data.value || revokingIds.value.has(id)) return
+  const index = data.value.invitations.findIndex((item) => item.id === id)
+  if (index < 0) return
+  const invitation = data.value.invitations[index]!
+  revokingIds.value = new Set([...revokingIds.value, id])
+  data.value.invitations.splice(index, 1)
+  optimisticStatus.saving()
+  try {
+    await $fetch(`/api/tenant/invitations/${id}`, { method: 'DELETE' })
+    optimisticStatus.saved()
+  } catch (error: any) {
+    data.value.invitations.splice(index, 0, invitation)
+    optimisticStatus.reverted()
+    toast.error({ message: error.data?.message || t('common.messages.operationFailed') })
+  } finally {
+    const pending = new Set(revokingIds.value)
+    pending.delete(id)
+    revokingIds.value = pending
+  }
 }
 const resend = async (id: string) => {
-  await $fetch(`/api/tenant/invitations/${id}/resend`, { method: 'POST' })
-  toast.success({ message: $t('common.members.sent') })
-  await refresh()
+  if (resendingIds.value.has(id)) return
+  resendingIds.value = new Set([...resendingIds.value, id])
+  try {
+    await $fetch(`/api/tenant/invitations/${id}/resend`, { method: 'POST' })
+    toast.success({ message: $t('common.members.sent') })
+  } catch (error: any) {
+    toast.error({ message: error.data?.message || t('common.messages.operationFailed') })
+  } finally {
+    const pending = new Set(resendingIds.value)
+    pending.delete(id)
+    resendingIds.value = pending
+  }
 }
 </script>

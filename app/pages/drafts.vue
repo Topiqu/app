@@ -20,7 +20,7 @@
       <UAlert v-else-if="error" color="error" variant="soft" :description="error.message" />
 
       <div v-else class="space-y-4">
-        <UCard v-for="draft in filteredDrafts" :key="draft.id">
+        <UCard v-for="draft in filteredDrafts" :key="draft.id" :aria-busy="pendingDraftIds.has(draft.id)">
           <div class="flex flex-col gap-4">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div class="min-w-0">
@@ -51,13 +51,23 @@
             </div>
 
             <div v-if="draft.status === 'AWAITING_APPROVAL' || draft.status === 'DRAFT'" class="flex flex-wrap gap-2">
-              <UButton color="success" @click="approveDraft(draft.id)">{{
-                $t('articles.workflowDrafts.approve')
+              <UButton
+                color="success"
+                :loading="pendingDraftIds.has(draft.id)"
+                :disabled="pendingDraftIds.has(draft.id)"
+                @click="approveDraft(draft.id)"
+                >{{ $t('articles.workflowDrafts.approve') }}</UButton
+              >
+              <UButton color="error" :disabled="pendingDraftIds.has(draft.id)" @click="rejectDraft(draft.id)">{{
+                $t('articles.workflowDrafts.reject')
               }}</UButton>
-              <UButton color="error" @click="rejectDraft(draft.id)">{{ $t('articles.workflowDrafts.reject') }}</UButton>
-              <UButton color="primary" @click="publishDraft(draft.id)">{{
-                $t('articles.workflowDrafts.publish')
-              }}</UButton>
+              <UButton
+                color="primary"
+                :loading="publishingId === draft.id"
+                :disabled="pendingDraftIds.has(draft.id) || !!publishingId"
+                @click="publishDraft(draft.id)"
+                >{{ $t('articles.workflowDrafts.publish') }}</UButton
+              >
             </div>
           </div>
         </UCard>
@@ -85,9 +95,13 @@
           <UButton color="neutral" variant="ghost" @click="rejectOpen = false">{{
             $t('common.actions.cancel')
           }}</UButton>
-          <UButton color="error" :disabled="!rejectReason.trim()" @click="submitRejection">{{
-            $t('articles.workflowDrafts.reject')
-          }}</UButton>
+          <UButton
+            color="error"
+            :loading="!!rejectTarget && pendingDraftIds.has(rejectTarget)"
+            :disabled="!rejectReason.trim()"
+            @click="submitRejection"
+            >{{ $t('articles.workflowDrafts.reject') }}</UButton
+          >
         </div>
       </template>
     </UModal>
@@ -95,6 +109,8 @@
 </template>
 
 <script setup lang="ts">
+import type { DraftStatus } from '@prisma/client'
+
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
 const filterStatus = shallowRef('')
@@ -103,6 +119,9 @@ const confirm = useConfirm()
 const rejectOpen = shallowRef(false)
 const rejectReason = shallowRef('')
 const rejectTarget = shallowRef<string | null>(null)
+const pendingDraftIds = ref(new Set<string>())
+const publishingId = shallowRef<string | null>(null)
+const optimisticStatus = useOptimisticStatus()
 const { data: drafts, pending, error, refresh } = await useFetch('/api/drafts')
 
 const filteredDrafts = computed<any[]>(() => {
@@ -127,11 +146,25 @@ function statusColor(status: string): 'success' | 'info' | 'warning' | 'error' |
 }
 
 async function approveDraft(id: string) {
+  if (pendingDraftIds.value.has(id)) return
+  const draft = drafts.value?.find((item: any) => item.id === id)
+  if (!draft) return
+  const previousStatus = draft.status
+  draft.status = 'APPROVED'
+  pendingDraftIds.value = new Set([...pendingDraftIds.value, id])
+  optimisticStatus.saving()
   try {
-    await $fetch(`/api/drafts/${id}/approve`, { method: 'POST' })
-    refresh()
+    const response = await $fetch<{ draft: { status: DraftStatus } }>(`/api/drafts/${id}/approve`, { method: 'POST' })
+    draft.status = response.draft.status
+    optimisticStatus.saved()
   } catch (err: any) {
+    draft.status = previousStatus
+    optimisticStatus.reverted()
     toast.add({ color: 'error', title: err.message || $t('articles.workflowDrafts.approvalFailed') })
+  } finally {
+    const pending = new Set(pendingDraftIds.value)
+    pending.delete(id)
+    pendingDraftIds.value = pending
   }
 }
 
@@ -143,15 +176,34 @@ async function rejectDraft(id: string) {
 
 async function submitRejection() {
   if (!rejectTarget.value || !rejectReason.value.trim()) return
+  const id = rejectTarget.value
+  if (pendingDraftIds.value.has(id)) return
+  const draft = drafts.value?.find((item: any) => item.id === id)
+  if (!draft) return
+  const previousStatus = draft.status
+  const reason = rejectReason.value.trim()
+  draft.status = 'REJECTED'
+  rejectOpen.value = false
+  pendingDraftIds.value = new Set([...pendingDraftIds.value, id])
+  optimisticStatus.saving()
   try {
-    await $fetch(`/api/drafts/${rejectTarget.value}/reject`, {
+    const response = await $fetch<{ draft: { status: DraftStatus } }>(`/api/drafts/${id}/reject`, {
       method: 'POST',
-      body: { reason: rejectReason.value.trim() },
+      body: { reason },
     })
-    await refresh()
-    rejectOpen.value = false
+    draft.status = response.draft.status
+    optimisticStatus.saved()
   } catch (err: any) {
+    draft.status = previousStatus
+    rejectTarget.value = id
+    rejectReason.value = reason
+    rejectOpen.value = true
+    optimisticStatus.reverted()
     toast.add({ color: 'error', title: err.message || $t('articles.workflowDrafts.rejectionFailed') })
+  } finally {
+    const pending = new Set(pendingDraftIds.value)
+    pending.delete(id)
+    pendingDraftIds.value = pending
   }
 }
 
@@ -163,12 +215,15 @@ async function publishDraft(id: string) {
     cancelText: $t('common.actions.cancel'),
   })
   if (!confirmed) return
+  publishingId.value = id
   try {
     await $fetch(`/api/publish/${id}`, { method: 'POST' })
     await refresh()
     toast.add({ color: 'success', title: $t('articles.workflowDrafts.publishSuccess') })
   } catch (err: any) {
     toast.add({ color: 'error', title: err.message || $t('articles.workflowDrafts.publishFailed') })
+  } finally {
+    publishingId.value = null
   }
 }
 </script>
