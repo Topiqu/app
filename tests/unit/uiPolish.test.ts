@@ -91,6 +91,14 @@ describe('dashboard UI polish contracts', () => {
     expect(source('app/components/User/Notifications.vue')).toContain('<USwitch')
   })
 
+  it('keeps the persistent account trigger aligned with the freshly saved profile', () => {
+    const account = source('app/components/User/Account.vue')
+    const profile = source('app/composables/useProfile.ts')
+    expect(account).toContain(':label="displayName"')
+    expect(account).toContain('userData.value?.username || auth.value?.user.name')
+    expect(profile).toContain('user.value.user.name = response.username')
+  })
+
   it('keeps GIF categories full-sized and switches the Giphy mark with the color mode', () => {
     const gif = source('app/components/Gif/Selector.vue')
     expect(gif).toContain('relative aspect-[4/3] w-full')

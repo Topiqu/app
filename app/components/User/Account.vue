@@ -4,14 +4,14 @@
       v-if="auth"
       color="neutral"
       variant="ghost"
-      :label="auth.user.name"
-      :aria-label="auth.user.name || $t('common.user.viewProfile')"
-      :title="auth.user.name"
+      :label="displayName"
+      :aria-label="displayName || $t('common.user.viewProfile')"
+      :title="displayName"
       trailingIcon="mdi:chevron-down"
       :ui="{ label: 'hidden max-w-40 truncate sm:block' }"
     >
       <template #leading>
-        <UserPicture :url="auth.user.avatarUrl" :name="auth.user.name" size="sm" />
+        <UserPicture :url="displayAvatarUrl" :name="displayName" size="sm" />
       </template>
     </UButton>
     <UButton
@@ -151,6 +151,8 @@ const userData = ref<User | null>(null)
 const clientData = ref<Client | null>(null)
 const show = shallowRef(false)
 const loadedUserId = shallowRef<string | null>(null)
+const displayName = computed(() => userData.value?.username || auth.value?.user.name || '')
+const displayAvatarUrl = computed(() => userData.value?.avatarUrl ?? auth.value?.user.avatarUrl ?? null)
 
 const planColor = computed(() =>
   clientData.value?.plan === 'PREMIUM'
@@ -198,6 +200,15 @@ watch(
     userData.value = null
     clientData.value = null
     loadedUserId.value = null
+  },
+)
+
+watch(
+  () => [auth.value?.user?.name, auth.value?.user?.avatarUrl] as const,
+  ([name, avatarUrl]) => {
+    if (!userData.value || userData.value.id !== auth.value?.user?.id) return
+    if (name) userData.value.username = name
+    userData.value.avatarUrl = avatarUrl ?? undefined
   },
 )
 </script>
