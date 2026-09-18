@@ -13,6 +13,7 @@ import {
   isCustomPlan,
   planFeatureSync,
   recalcFeatureBilling,
+  syncPlanFeatures,
 } from '../../../server/utils/planFeatures'
 
 describe('getAllowedFeatures', () => {
@@ -272,6 +273,43 @@ describe('recalcFeatureBilling', () => {
     expect(await recalcFeatureBilling(tx as any, 'cs1', 'CUSTOM', 'PERMANENT', now)).toEqual({
       monthlyPayment: 0,
       annualPayment: 0,
+    })
+  })
+})
+
+describe('syncPlanFeatures lock order', () => {
+  it('locks ClientSite through Prisma before reading or writing ClientFeature', async () => {
+    const calls: string[] = []
+    const tx = {
+      clientSite: {
+        update: vi.fn(async () => {
+          calls.push('clientSite.update')
+          return { plan: 'BASIC', billingPlan: 'MONTHLY' }
+        }),
+        updateMany: vi.fn(async () => {
+          calls.push('clientSite.updateMany')
+          return { count: 1 }
+        }),
+      },
+      clientFeature: {
+        findMany: vi.fn(async () => {
+          calls.push('clientFeature.findMany')
+          return []
+        }),
+        upsert: vi.fn(),
+        updateMany: vi.fn(),
+      },
+      feature: { findMany: vi.fn() },
+      searchConsoleConnection: { updateMany: vi.fn(async () => ({ count: 0 })) },
+    }
+
+    await syncPlanFeatures(tx as any, 'cs1')
+
+    expect(calls.slice(0, 2)).toEqual(['clientSite.update', 'clientFeature.findMany'])
+    expect(tx.clientSite.update).toHaveBeenCalledWith({
+      where: { id: 'cs1' },
+      data: { updatedAt: expect.any(Date) },
+      select: { plan: true, billingPlan: true },
     })
   })
 })

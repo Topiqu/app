@@ -29,10 +29,6 @@ export default defineEventHandler(async (event) => {
   ])
   await prisma.$transaction([
     prisma.tenantMembership.delete({ where: { id } }),
-    prisma.session.updateMany({
-      where: { userId: target.userId, clientSiteId: membership.clientSiteId },
-      data: { clientSiteId: next?.clientSiteId ?? null },
-    }),
     ...(user?.clientSiteId === membership.clientSiteId
       ? [
           prisma.user.update({
@@ -41,6 +37,10 @@ export default defineEventHandler(async (event) => {
           }),
         ]
       : []),
+    prisma.session.updateMany({
+      where: { userId: target.userId, clientSiteId: membership.clientSiteId },
+      data: { clientSiteId: next?.clientSiteId ?? null },
+    }),
   ])
   await logAction({
     action: 'TENANT_MEMBER_REMOVED',

@@ -18,7 +18,7 @@ export default defineMonitoredTask({
           user: { select: { username: true, language: true } },
         },
       })
-      if (!articles.length) return { result: { count: 0, timestamp: now.toISOString() } }
+      if (!articles.length) return { result: { count: 0, timestamp: now.toISOString() }, published: [] }
       // console.log(articles)
 
       const articleIds = articles.map((a) => a.id)
@@ -32,17 +32,6 @@ export default defineMonitoredTask({
       for (const a of articles) {
         await syncArticleTranslationQueue(ctx, a.id, a.clientSiteId)
       }
-
-      await Promise.all(
-        articles.map((a) =>
-          logAction({
-            action: 'ARTICLE_PUBLISHED',
-            userId: a.userId,
-            clientSiteId: a.clientSiteId,
-            metadata: { articleId: a.id, title: a.title },
-          }),
-        ),
-      )
 
       await Promise.all(
         articles.map(async (a) => {
@@ -83,11 +72,23 @@ export default defineMonitoredTask({
         await ctx.notification.createMany({ data: batch, skipDuplicates: true })
       }
 
-      return { result: { count: update.count, timestamp: now.toISOString() } }
+      return { result: { count: update.count, timestamp: now.toISOString() }, published: articles }
     })
+
+    // The global audit-chain lock must not hold this transaction's Article locks while it waits.
+    await Promise.all(
+      (result.published ?? []).map((article) =>
+        logAction({
+          action: 'ARTICLE_PUBLISHED',
+          userId: article.userId,
+          clientSiteId: article.clientSiteId,
+          metadata: { articleId: article.id, title: article.title },
+        }),
+      ),
+    )
 
     // After commit — a rolled-back publish must not flush anyone's listings.
     await Promise.all([...touched].map(invalidateFeed))
-    return result
+    return { result: result.result }
   },
 })

@@ -89,7 +89,7 @@ export default defineEventHandler(async (event) => {
       // Never fatal: `syncPlanFeatures` throws on an unseeded Feature catalog, and signup is the
       // one path that must not depend on it. The plan column alone still unlocks the UI.
       try {
-        await syncPlanFeatures(tx, site.id, TRIAL_PLAN)
+        await syncPlanFeatures(tx, site.id)
       } catch (error) {
         console.error('TRIAL_FEATURE_PROVISIONING_FAILED', site.id, error)
       }

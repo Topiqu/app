@@ -15,7 +15,7 @@ import {
  * `stripeCustomerId` survives either way, or the tenant loses portal access to their invoices.
  */
 const revokeToBasic = async (clientSiteId: string, { clearSubscription }: { clearSubscription: boolean }) => {
-  await prisma.$transaction(async (tx) => {
+  await serializableTransaction(async (tx) => {
     await tx.clientSite.update({
       where: { id: clientSiteId },
       data: {
@@ -25,7 +25,7 @@ const revokeToBasic = async (clientSiteId: string, { clearSubscription }: { clea
       },
     })
 
-    await syncPlanFeatures(tx, clientSiteId, 'BASIC')
+    await syncPlanFeatures(tx, clientSiteId)
   })
 }
 
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
       const derivedPlan = planFromPriceId(priceId) ?? (isSubscribablePlan(metadataPlan) ? metadataPlan : null)
       const paid = marksFirstPayment(subscription?.status, derivedPlan)
 
-      await prisma.$transaction(async (tx) => {
+      await serializableTransaction(async (tx) => {
         await tx.clientSite.update({
           where: { id: clientSiteId },
           data: {
@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
           },
         })
 
-        if (derivedPlan) await syncPlanFeatures(tx, clientSiteId, derivedPlan as ClientPlan)
+        if (derivedPlan) await syncPlanFeatures(tx, clientSiteId)
       })
       return { received: true }
     }
@@ -108,7 +108,7 @@ export default defineEventHandler(async (event) => {
 
     // Fires on both trial-end promotion and portal-driven plan changes (PRO↔PREMIUM).
     if (subscription.status === 'active' && derivedPlan) {
-      await prisma.$transaction(async (tx) => {
+      await serializableTransaction(async (tx) => {
         await tx.clientSite.update({
           where: { id: clientSiteId },
           data: {
@@ -118,7 +118,7 @@ export default defineEventHandler(async (event) => {
           },
         })
 
-        await syncPlanFeatures(tx, clientSiteId, derivedPlan as ClientPlan)
+        await syncPlanFeatures(tx, clientSiteId)
       })
     }
     return { received: true }
