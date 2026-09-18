@@ -6,7 +6,7 @@
         :color="selectedOption === opt.id ? 'primary' : 'neutral'"
         :variant="selectedOption === opt.id ? 'soft' : 'ghost'"
         :icon="selectedOption === opt.id ? 'mdi:check-circle' : 'mdi:circle-outline'"
-        :disabled="hasVoted"
+        :disabled="hasVoted || voting"
         class="w-full"
         :aria-pressed="selectedOption === opt.id"
         @click="vote(opt.id)"
@@ -45,6 +45,8 @@ const voteCounts = reactive<Record<string, number>>({})
 const hasVoted = ref<boolean>(false)
 const selectedOption = ref<string | null>(null)
 const toast = useToast()
+const voting = shallowRef(false)
+const optimisticStatus = useOptimisticStatus()
 
 const fetchResults = async () => {
   if (!props.articleId || !props.poll.pollId) return
@@ -67,9 +69,20 @@ const getPercentage = (optionId?: string) => {
 }
 
 const getTotalVotes = computed(() => Object.values(voteCounts).reduce((sum, count) => sum + count, 0))
+const replaceVoteCounts = (next: Record<string, number>) => {
+  for (const option of props.poll.options) if (option.id) voteCounts[option.id] = next[option.id] ?? 0
+}
 
 const vote = async (optionId?: string) => {
-  if (hasVoted.value || !optionId) return
+  if (hasVoted.value || voting.value || !optionId) return
+  const previousCounts = { ...voteCounts }
+  const previousSelection = selectedOption.value
+  const previousHasVoted = hasVoted.value
+  voting.value = true
+  hasVoted.value = true
+  selectedOption.value = optionId
+  voteCounts[optionId] = (voteCounts[optionId] ?? 0) + 1
+  optimisticStatus.saving()
   try {
     const res = await $fetch<{ pollResult: string; voteCounts: Record<string, number> }>(
       `/api/articles/${props.articleId}/vote`,
@@ -78,11 +91,16 @@ const vote = async (optionId?: string) => {
         body: { pollId: props.poll.pollId, optionId },
       },
     )
-    hasVoted.value = true
-    selectedOption.value = optionId
-    Object.assign(voteCounts, res.voteCounts)
+    replaceVoteCounts(res.voteCounts)
+    optimisticStatus.saved()
   } catch (e: any) {
+    replaceVoteCounts(previousCounts)
+    hasVoted.value = previousHasVoted
+    selectedOption.value = previousSelection
+    optimisticStatus.reverted()
     toast.add({ color: 'error', title: e.data?.message })
+  } finally {
+    voting.value = false
   }
 }
 

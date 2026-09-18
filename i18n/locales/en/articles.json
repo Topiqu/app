@@ -491,6 +491,8 @@
           "failed": "Generation failed",
           "descriptionComplete": "All selected components were inserted and the token balance is current.",
           "descriptionPartial": "{count} selected components could not be inserted. The result remains in the editor for review.",
+          "descriptionReview": "The complete result remains in the editor because the automated editorial review still found an issue.",
+          "reviewWarning": "Editorial review still recommends a manual check before publishing.",
           "missing": "Missing:",
           "words": "Words",
           "sources": "Sources",
@@ -545,7 +547,8 @@
         "billingDetails": "Billing details",
         "billingExplanation": "Unused credit is released. Failed generation is free. Stopping charges for work already performed.",
         "moduleUnavailable": "Unavailable for this format",
-        "reviewFailed": "The article did not pass editorial review after revision. Generation was not charged.",
+        "reviewFailed": "The article did not pass editorial review after revision.",
+        "reviewWarning": "Article generated; please review it before publishing",
         "allowGeneratedImages": "Allow AI illustrations as a last resort",
         "generatedImagesFallback": "Only when no suitable existing image is found. Also applies to the cover image."
       },

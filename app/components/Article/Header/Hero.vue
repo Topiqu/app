@@ -28,6 +28,8 @@
             :color="isFollowing ? 'primary' : 'neutral'"
             :variant="isFollowing ? 'solid' : 'soft'"
             :icon="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
+            :loading="followPending"
+            :disabled="followPending"
             @click="$emit('follow')"
           >
             {{ isFollowing ? $t('profile.unfollow') : $t('profile.follow') }}
@@ -65,6 +67,7 @@ defineProps<{
   followerCount: number
   isFollowing: boolean
   showFollowButton: boolean
+  followPending?: boolean
   excerpt?: string | null
   imageUrl?: string | null
   imageCredit?: CoverCredit | null

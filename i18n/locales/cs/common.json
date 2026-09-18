@@ -263,7 +263,10 @@
       "pollingPaused": "Notifikace jsou pozastavené",
       "noMore": "Žádné další notifikace",
       "empty": "Žádné nové notifikace",
-      "loginPrompt": "Přihlaste se a sledujte novinky a aktivity na platformě."
+      "loginPrompt": "Přihlaste se a sledujte novinky a aktivity na platformě.",
+      "newNotification": "Nové oznámení: {message}",
+      "loadFailed": "Oznámení se nepodařilo načíst: {message}",
+      "deleteFailed": "Oznámení se nepodařilo smazat: {message}"
     },
     "actions": {
       "get_started": "Začít integraci",
@@ -503,6 +506,11 @@
       "savedAgo": "Uloženo",
       "savingNow": "Ukládá se…",
       "unsaved": "Neuloženo",
+      "optimistic": {
+        "saving": "Ukládám změnu…",
+        "saved": "Změna byla uložena.",
+        "reverted": "Změnu se nepodařilo uložit a byla vrácena."
+      },
       "discardChangesTitle": "Zahodit změny?",
       "discardChangesText": "Všechny neuložené změny budou ztraceny.",
       "discardConfirm": "Zahodit",

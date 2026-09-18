@@ -203,6 +203,7 @@ export default defineEventHandler(async (event) => {
 
           send(controller, { type: 'activity', phase: 'writing', writingStage: 'review' })
           const object = await generation.review(await result.object)
+          send(controller, { type: 'review', review: generation.editorialReview })
           send(controller, { type: 'partial', object, writingStage: 'review' })
           const usage = await result.usage
 
@@ -244,6 +245,7 @@ export default defineEventHandler(async (event) => {
               usage,
               researchTokens,
               editorialTokens: generation.editorialTokens,
+              editorialReview: generation.editorialReview,
               metrics,
               aiInvolvement: 'ASSIST',
               createdAt: new Date(),

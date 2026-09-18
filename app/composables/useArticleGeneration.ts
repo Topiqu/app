@@ -30,6 +30,7 @@ interface StreamHandlers {
   onActivity?: () => void
   onImage?: (image: { slot: number; html: string }) => void
   onMedia?: (progress: ArticleMediaProgress) => void
+  onReview?: (review: { approved: boolean; revised: boolean }) => void
   onBilling?: (billing: ArticleGenerationBilling) => void
   onFinal: (article: Record<string, any>) => void
 }
@@ -116,6 +117,9 @@ export const useArticleGeneration = () => {
           handlers.onActivity?.()
         } else if (msg.type === 'media') {
           handlers.onMedia?.(msg)
+          handlers.onActivity?.()
+        } else if (msg.type === 'review') {
+          handlers.onReview?.(msg.review)
           handlers.onActivity?.()
         } else if (msg.type === 'billing') {
           handlers.onBilling?.(msg)

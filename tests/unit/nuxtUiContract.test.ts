@@ -380,7 +380,10 @@ describe('Nuxt UI template contract', () => {
   it('keeps the migrated overlay and state primitives in place', () => {
     expect(sourceOf('app/components/Notification/Bar.vue')).toMatch(/<UPopover/)
     expect(sourceOf('app/components/User/Account.vue')).toMatch(/<UPopover/)
+    expect(sourceOf('app/components/User/Card.vue')).toContain('<UPopover')
+    expect(sourceOf('app/components/User/Card.vue')).toContain('mode="hover"')
     expect(sourceOf('app/components/User/Card.vue')).toContain('@pointerenter="loadSummary"')
+    expect(sourceOf('app/components/User/Card.vue')).not.toContain('group-hover/author')
     expect(sourceOf('app/components/Modal/TrialExpired.vue')).toMatch(/<UModal/)
     expect(sourceOf('app/components/Article/TOC.vue')).toMatch(/<UDrawer/)
     expect(sourceOf('app/components/Article/ActionsBar.vue')).toMatch(/<USwitch/)

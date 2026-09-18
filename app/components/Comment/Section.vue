@@ -100,6 +100,8 @@
         :comment="comment"
         :depth="1"
         :isReplying="!!replyingTo"
+        :class="optimisticCommentIds.has(comment.id) ? 'opacity-60' : ''"
+        :aria-busy="optimisticCommentIds.has(comment.id) || deletingCommentIds.has(comment.id)"
         @reply="handleReply"
         @delete="handleDelete"
         @like="handleLike"
@@ -139,6 +141,9 @@ const newComment = shallowRef(''),
   commentForm = useTemplateRef<HTMLElement>('commentForm'),
   sentinel = useTemplateRef('sentinel')
 const commentState = computed(() => ({ comment: newComment.value }))
+const optimisticCommentIds = ref(new Set<string>())
+const deletingCommentIds = ref(new Set<string>())
+const optimisticStatus = useOptimisticStatus()
 const sort = shallowRef('createdAt:desc'),
   sortItems = [
     {
@@ -216,37 +221,131 @@ useInfiniteScroll(
 )
 const handleGifSelect = (g: GiphyGif) => (selectedGifUrl.value = g.images.original.url)
 
+const insertReply = (list: CommentWithReplies[], parentId: string, comment: CommentWithReplies): boolean => {
+  for (const item of list) {
+    if (item.id === parentId) {
+      item.replies.push(comment)
+      return true
+    }
+    if (insertReply(item.replies, parentId, comment)) return true
+  }
+  return false
+}
+
+const removeComment = (list: CommentWithReplies[], id: string): CommentWithReplies[] =>
+  list
+    .filter((comment) => comment.id !== id)
+    .map((comment) => ({ ...comment, replies: removeComment(comment.replies, id) }))
+
+const replaceComment = (list: CommentWithReplies[], id: string, patch: Partial<CommentWithReplies>): boolean => {
+  for (const item of list) {
+    if (item.id === id) {
+      Object.assign(item, patch)
+      return true
+    }
+    if (replaceComment(item.replies, id, patch)) return true
+  }
+  return false
+}
+
 const submitComment = async () => {
   if (!newComment.value.trim() || isSubmitting.value || (replyingTo.value && replyingTo.value.deletedAt)) return
+  const draft = {
+    content: newComment.value,
+    gifUrl: selectedGifUrl.value,
+    parent: replyingTo.value,
+  }
+  const currentUser = session.value?.user as any
+  const optimisticId = `optimistic-${crypto.randomUUID?.() ?? Date.now()}`
+  const optimisticComment: CommentWithReplies = {
+    id: optimisticId,
+    content: draft.content,
+    gifUrl: draft.gifUrl,
+    createdAt: new Date(),
+    userId: currentUser?.id ?? '',
+    parentId: draft.parent?.id ?? null,
+    deletedAt: null,
+    articleId: props.articleId,
+    user: {
+      username: currentUser?.username ?? currentUser?.name ?? '',
+      avatarUrl: currentUser?.avatarUrl,
+      createdAt: new Date().toISOString(),
+      commentsCount: 0,
+      likesCount: 0,
+      dislikesCount: 0,
+      followers: 0,
+      following: 0,
+      role: currentUser?.role ?? 'user',
+      isBanned: false,
+    },
+    article: { clientSiteId: currentUser?.clientSiteId ?? '', userId: '' },
+    likes: 0,
+    dislikes: 0,
+    replies: [],
+    userReaction: null,
+    emojiReactions: [],
+    depth: draft.parent ? (draft.parent.depth ?? 0) + 1 : 0,
+    isLikedByAuthor: false,
+  }
+
   isSubmitting.value = true
+  optimisticCommentIds.value = new Set([...optimisticCommentIds.value, optimisticId])
+  if (!draft.parent || !insertReply(comments.value, draft.parent.id, optimisticComment))
+    comments.value = [optimisticComment, ...comments.value]
+  else triggerRef(comments)
+  commCount.value += 1
+  newComment.value = ''
+  selectedGifUrl.value = null
+  replyingTo.value = null
+  optimisticStatus.saving()
+
   try {
-    await $fetch('/api/comments', {
+    const created = await $fetch<{
+      id: string
+      content: string
+      gifUrl: string | null
+      createdAt: string
+      parentId: string | null
+    }>('/api/comments', {
       method: 'POST',
       body: {
         articleId: props.articleId,
-        content: newComment.value,
-        gifUrl: selectedGifUrl.value,
-        parentId: replyingTo.value?.id,
+        content: draft.content,
+        gifUrl: draft.gifUrl,
+        parentId: draft.parent?.id,
         userId: session?.value?.user?.id,
       },
     })
+    replaceComment(comments.value, optimisticId, {
+      id: created.id,
+      content: created.content,
+      gifUrl: created.gifUrl,
+      createdAt: new Date(created.createdAt),
+      parentId: created.parentId,
+    })
+    triggerRef(comments)
     toast.add({
       color: 'success',
-      title: replyingTo.value ? $t('articles.comments.replySubmitted') : $t('articles.comments.commentAdded'),
+      title: draft.parent ? $t('articles.comments.replySubmitted') : $t('articles.comments.commentAdded'),
     })
-    newComment.value = ''
-    selectedGifUrl.value = null
-    replyingTo.value = null
+    optimisticStatus.saved()
     page.value = 1
-    comments.value = []
-    commCount.value += 1
     await refresh()
   } catch (e: any) {
+    comments.value = removeComment(comments.value, optimisticId)
+    commCount.value = Math.max(0, commCount.value - 1)
+    newComment.value = draft.content
+    selectedGifUrl.value = draft.gifUrl
+    replyingTo.value = draft.parent
+    optimisticStatus.reverted()
     toast.add({
       color: 'error',
       title: e.data?.message || $t('common.messages.operationFailed'),
     })
   } finally {
+    const nextOptimistic = new Set(optimisticCommentIds.value)
+    nextOptimistic.delete(optimisticId)
+    optimisticCommentIds.value = nextOptimistic
     isSubmitting.value = false
   }
 }
@@ -280,18 +379,31 @@ const handleDelete = async (c: CommentWithReplies, r: string | null) => {
   )
     return
 
+  const previousDeletedAt = c.deletedAt
   markAsDeleted(comments.value, c.id)
   triggerRef(comments)
+  deletingCommentIds.value = new Set([...deletingCommentIds.value, c.id])
+  optimisticStatus.saving()
 
   try {
     await $fetch(`/api/comments/${c.id}`, {
       method: 'DELETE',
       body: { reason: r },
     })
+    optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
+    await nextTick()
+    document.getElementById(`comment-${c.id}`)?.focus?.()
   } catch (e) {
+    c.deletedAt = previousDeletedAt
+    triggerRef(comments)
+    optimisticStatus.reverted()
     console.error(e)
     toast.add({ color: 'error', title: $t('common.messages.deleteFailed') })
+  } finally {
+    const nextDeleting = new Set(deletingCommentIds.value)
+    nextDeleting.delete(c.id)
+    deletingCommentIds.value = nextDeleting
   }
 }
 const handleLike = (c: CommentWithReplies) => !c.deletedAt

@@ -22,20 +22,20 @@ export default defineEventHandler(async (event) => {
 
   const before = await prisma.clientSite.findUnique({
     where: { id: clientId },
-    select: {
-      plan: true,
-      billingPlan: true,
-      monthlyPayment: true,
-      annualPayment: true,
-    },
+    select: { id: true },
   })
 
   if (!before) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
-  const oldMonthly = before.monthlyPayment ?? 0
-  const oldAnnual = before.annualPayment ?? 0
+  const result = await serializableTransaction(async (tx) => {
+    // Take the same parent-row lock as every plan transition, then use the current plan rather
+    // than the preflight snapshot. This closes both the deadlock inversion and a stale-plan race.
+    const lockedSite = await tx.clientSite.update({
+      where: { id: clientId },
+      data: { updatedAt: now },
+      select: { plan: true, billingPlan: true, monthlyPayment: true, annualPayment: true },
+    })
 
-  const result = await prisma.$transaction(async (tx) => {
     const activeBefore = await tx.clientFeature
       .findMany({
         where: { clientSiteId: clientId, isActive: true },
@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
       .then((r) => r.map((x) => x.feature.code as FeatureCode))
 
     if (enabled) {
-      if (!getAllowedFeatures(before.plan)[code])
+      if (!getAllowedFeatures(lockedSite.plan)[code])
         throw createError({ statusCode: 403, message: t('common.errors.featureNotInPlan') ?? 'Feature not in plan' })
 
       if (getMissingDependencies(code, activeBefore).length)
@@ -111,12 +111,20 @@ export default defineEventHandler(async (event) => {
     const { monthlyPayment, annualPayment } = await recalcFeatureBilling(
       tx,
       clientId,
-      before.plan,
-      before.billingPlan,
+      lockedSite.plan,
+      lockedSite.billingPlan,
       now,
     )
 
-    return { activeFeatures, monthlyPayment, annualPayment }
+    return {
+      activeFeatures,
+      monthlyPayment,
+      annualPayment,
+      plan: lockedSite.plan,
+      billingPlan: lockedSite.billingPlan,
+      oldMonthly: lockedSite.monthlyPayment ?? 0,
+      oldAnnual: lockedSite.annualPayment ?? 0,
+    }
   })
 
   await logAction({
@@ -126,16 +134,20 @@ export default defineEventHandler(async (event) => {
     metadata: {
       toggledFeature: code,
       enabled,
-      plan: before.plan,
-      billingPlan: before.billingPlan,
-      monthlyBefore: oldMonthly,
+      plan: result.plan,
+      billingPlan: result.billingPlan,
+      monthlyBefore: result.oldMonthly,
       monthlyAfter: result.monthlyPayment,
-      annualBefore: oldAnnual,
+      annualBefore: result.oldAnnual,
       annualAfter: result.annualPayment,
       activeFeatures: result.activeFeatures,
     },
     ip: getRequestIP(event),
   })
 
-  return result
+  return {
+    activeFeatures: result.activeFeatures,
+    monthlyPayment: result.monthlyPayment,
+    annualPayment: result.annualPayment,
+  }
 })

@@ -31,6 +31,10 @@ export function useProfile() {
       method: 'PATCH',
       body: partial,
     })
+    // The header persists across route changes and reads from the auth session snapshot. Keep the
+    // identity fields in that snapshot aligned with the freshly saved account response.
+    if (response.username) user.value.user.name = response.username
+    if ('avatarUrl' in response) user.value.user.avatarUrl = response.avatarUrl
     toast.add({ color: 'success', title: t('common.messages.successGeneralTitle') })
     return response
   }

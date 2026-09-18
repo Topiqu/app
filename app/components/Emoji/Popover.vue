@@ -25,6 +25,8 @@
               variant="soft"
               square
               :aria-label="emoji.shortcode"
+              :loading="pendingEmojiIds.has(emoji.id)"
+              :disabled="pendingEmojiIds.has(emoji.id)"
               @click="toggleEmoji(emoji.id, close)"
             >
               <AppMedia
@@ -62,6 +64,8 @@ const emit = defineEmits<{
 const toast = useToast()
 const { data: session } = useAuth()
 const open = shallowRef(false)
+const pendingEmojiIds = ref(new Set<string>())
+const optimisticStatus = useOptimisticStatus()
 
 const {
   data: emojis,
@@ -75,6 +79,7 @@ watch(open, (isOpen) => {
 })
 
 const toggleEmoji = async (emojiId: string, close: () => void) => {
+  if (pendingEmojiIds.value.has(emojiId)) return
   const emoji = emojis.value!.find((e) => e.id === emojiId)!
   emit('reaction', {
     commentId: props.commentId,
@@ -84,10 +89,14 @@ const toggleEmoji = async (emojiId: string, close: () => void) => {
     userId: session.value!.user.id,
   })
   close()
+  pendingEmojiIds.value = new Set([...pendingEmojiIds.value, emojiId])
+  optimisticStatus.saving()
   try {
     const res = await $fetch('/api/emojis/reaction', { method: 'POST', body: { commentId: props.commentId, emojiId } })
     if (!res.success) throw new Error()
+    optimisticStatus.saved()
   } catch {
+    optimisticStatus.reverted()
     toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
     emit('reaction', {
       commentId: props.commentId,
@@ -97,6 +106,10 @@ const toggleEmoji = async (emojiId: string, close: () => void) => {
       userId: session.value!.user.id,
       revert: true,
     })
+  } finally {
+    const pending = new Set(pendingEmojiIds.value)
+    pending.delete(emojiId)
+    pendingEmojiIds.value = pending
   }
 }
 </script>

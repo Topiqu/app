@@ -20,6 +20,7 @@ type FeatureSyncDb = {
   }
   clientSite: {
     findUnique: (args: any) => Promise<any>
+    update: (args: any) => Promise<any>
     updateMany: (args: any) => Promise<unknown>
   }
   searchConsoleConnection: {
@@ -163,10 +164,16 @@ export const recalcFeatureBilling = async (
   return { monthlyPayment, annualPayment }
 }
 
-/** Entry point for every plan transition: provision, revoke, then re-assert autoRelease + price. */
-export const syncPlanFeatures = async (tx: FeatureSyncDb, clientSiteId: string, plan: ClientPlan) => {
-  const site = await tx.clientSite.findUnique({ where: { id: clientSiteId }, select: { billingPlan: true } })
-  if (!site) return []
+/** Entry point for every plan transition: lock the tenant, provision/revoke, then re-assert
+ * autoRelease + price. A Prisma update obtains PostgreSQL's row lock without raw SQL. Keeping
+ * ClientSite first prevents a ClientFeature -> ClientSite inversion against billing webhooks. */
+export const syncPlanFeatures = async (tx: FeatureSyncDb, clientSiteId: string) => {
+  const site = await tx.clientSite.update({
+    where: { id: clientSiteId },
+    data: { updatedAt: new Date() },
+    select: { plan: true, billingPlan: true },
+  })
+  const plan = site.plan as ClientPlan
 
   const active = await tx.clientFeature
     .findMany({

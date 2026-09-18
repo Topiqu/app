@@ -4,7 +4,7 @@
 
     <template #body>
       <div class="flex flex-wrap gap-2">
-        <UFieldGroup v-for="tag in articleTags" :key="tag.tagId">
+        <UFieldGroup v-for="tag in displayArticleTags" :key="tag.tagId">
           <UBadge color="primary" variant="soft" size="lg">{{ tag.tag.name }}</UBadge>
           <UButton
             icon="mdi:close"
@@ -12,7 +12,7 @@
             color="neutral"
             variant="ghost"
             class="tag-destructive-control"
-            :loading="isRemoving"
+            :loading="removingTagIds.has(tag.tagId)"
             :disabled="isBusy"
             square
             :aria-label="$t('common.remove')"
@@ -39,7 +39,7 @@
           <UFieldGroup class="w-full">
             <USelectMenu
               v-model="selectedTagId"
-              :items="availableTags"
+              :items="displayAvailableTags"
               valueKey="id"
               labelKey="name"
               :placeholder="$t('articles.tags.selectExistingTag')"
@@ -72,6 +72,11 @@ const requestFetch = useRequestFetch()
 
 const newTag = shallowReactive<{ name: string; slug: string }>({ name: '', slug: '' })
 const selectedTagId = shallowRef<string>('')
+const optimisticArticleTags = ref<ArticleTagRow[]>([])
+const removingTagIds = ref(new Set<string>())
+const isAdding = shallowRef(false)
+const isCreating = shallowRef(false)
+const optimisticStatus = useOptimisticStatus()
 
 type ArticleTagRow = { tagId: string; tag: { id: string; name: string } }
 type AvailableTag = { id: string; name: string }
@@ -88,65 +93,106 @@ const { data: availableTags } = useQuery({
   placeholderData: () => [],
 })
 
+const displayArticleTags = computed(() => [
+  ...(articleTags.value ?? []).filter((row) => !removingTagIds.value.has(row.tagId)),
+  ...optimisticArticleTags.value,
+])
+const displayAvailableTags = computed(() => {
+  const assigned = new Set(displayArticleTags.value.map((row) => row.tagId))
+  const removed = (articleTags.value ?? []).filter((row) => removingTagIds.value.has(row.tagId)).map((row) => row.tag)
+  return [...(availableTags.value ?? []).filter((tag) => !assigned.has(tag.id)), ...removed]
+})
+
 const invalidateTags = () => invalidateArticleDetail(props.articleId)
 
 const updateSlug = () => (newTag.slug = slugify(newTag.name, { lower: true, strict: true, trim: true }))
 
-const onTagError = (e: any) =>
-  toast.add({ color: 'error', title: e.data?.message || $t('articles.tags.operationFailed') })
-
-const { mutate: addTag, isLoading: isAdding } = useMutation({
-  mutation: async (tagId: string) => {
+const addTag = async (tagId: string) => {
+  const tag = displayAvailableTags.value.find((item) => item.id === tagId)
+  if (!tag || isBusy.value) return
+  const optimistic = { tagId, tag }
+  isAdding.value = true
+  optimisticArticleTags.value.push(optimistic)
+  optimisticStatus.saving()
+  try {
     await $fetch(`/api/articles/${props.articleId}/tags` as `/api/articles/:id/tags`, {
       method: 'POST',
       body: { tagId },
     })
-  },
-  onSuccess: () => toast.add({ color: 'success', title: $t('articles.tags.addTagSuccess') }),
-  onError: onTagError,
-  onSettled: invalidateTags,
-})
+    await invalidateTags()
+    optimisticStatus.saved()
+    toast.add({ color: 'success', title: $t('articles.tags.addTagSuccess') })
+  } catch (e: any) {
+    optimisticStatus.reverted()
+    toast.add({ color: 'error', title: e.data?.message || $t('articles.tags.operationFailed') })
+  } finally {
+    optimisticArticleTags.value = optimisticArticleTags.value.filter((row) => row !== optimistic)
+    isAdding.value = false
+  }
+}
 
-const { mutate: removeTag, isLoading: isRemoving } = useMutation({
-  mutation: async (tagId: string) => {
+const removeTag = async (tagId: string) => {
+  if (isBusy.value || removingTagIds.value.has(tagId)) return
+  removingTagIds.value = new Set([...removingTagIds.value, tagId])
+  optimisticStatus.saving()
+  try {
     await $fetch(`/api/articles/${props.articleId}/tags/${tagId}`, { method: 'DELETE' })
-  },
-  onSuccess: () => toast.add({ color: 'success', title: $t('articles.tags.removeTagSuccess') }),
-  onError: onTagError,
-  onSettled: invalidateTags,
-})
+    await invalidateTags()
+    optimisticStatus.saved()
+    toast.add({ color: 'success', title: $t('articles.tags.removeTagSuccess') })
+  } catch (e: any) {
+    optimisticStatus.reverted()
+    toast.add({ color: 'error', title: e.data?.message || $t('articles.tags.operationFailed') })
+  } finally {
+    const removing = new Set(removingTagIds.value)
+    removing.delete(tagId)
+    removingTagIds.value = removing
+  }
+}
 
-const { mutate: createAndAddTag, isLoading: isCreating } = useMutation({
-  mutation: async () => {
-    const tag = await $fetch('/api/tags', {
+const createAndAddTag = async () => {
+  const draft = { name: newTag.name.trim(), slug: newTag.slug }
+  const optimisticId = `optimistic-${crypto.randomUUID?.() ?? Date.now()}`
+  const optimistic = { tagId: optimisticId, tag: { id: optimisticId, name: draft.name } }
+  isCreating.value = true
+  optimisticArticleTags.value.push(optimistic)
+  newTag.name = ''
+  newTag.slug = ''
+  optimisticStatus.saving()
+  try {
+    const tag = await $fetch<{ id: string }>('/api/tags', {
       method: 'POST',
-      body: { name: newTag.name.trim(), slug: newTag.slug },
+      body: draft,
     })
     await $fetch(`/api/articles/${props.articleId}/tags` as `/api/articles/:id/tags`, {
       method: 'POST',
       body: { tagId: tag.id },
     })
-  },
-  onSuccess: () => {
-    newTag.name = ''
-    newTag.slug = ''
+    await Promise.all([invalidateTags(), invalidateTagLibrary()])
+    optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('articles.tags.addTagSuccess') })
-  },
-  onError: (e: any) => toast.add({ color: 'error', title: e.data?.message || $t('articles.tags.addCustomTagFailed') }),
-  onSettled: () => Promise.all([invalidateTags(), invalidateTagLibrary()]),
-})
+  } catch (e: any) {
+    newTag.name = draft.name
+    newTag.slug = draft.slug
+    optimisticStatus.reverted()
+    toast.add({ color: 'error', title: e.data?.message || $t('articles.tags.addCustomTagFailed') })
+  } finally {
+    optimisticArticleTags.value = optimisticArticleTags.value.filter((row) => row !== optimistic)
+    isCreating.value = false
+  }
+}
 
-const isBusy = computed(() => isAdding.value || isRemoving.value || isCreating.value)
+const isBusy = computed(() => isAdding.value || removingTagIds.value.size > 0 || isCreating.value)
 
 const addCustomTag = () => {
   if (!newTag.name.trim() || isBusy.value) return
   updateSlug()
-  createAndAddTag()
+  void createAndAddTag()
 }
 
 const addExistingTag = () => {
   if (!selectedTagId.value || isBusy.value) return
-  addTag(selectedTagId.value)
+  void addTag(selectedTagId.value)
   selectedTagId.value = ''
 }
 </script>

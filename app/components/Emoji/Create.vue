@@ -302,6 +302,7 @@ const isDragging = shallowRef(false)
 const submitting = shallowRef(false)
 const deletingIds = reactive(new Set<string>())
 const optimisticEmojis = ref<EmojiRecord[]>([])
+const optimisticStatus = useOptimisticStatus()
 
 const {
   open: openPicker,
@@ -420,6 +421,8 @@ const submitQueue = async () => {
   if (!canSubmit.value || submitting.value) return
   submitting.value = true
   const createdNames: string[] = []
+  let failed = false
+  optimisticStatus.saving()
 
   for (const item of [...queue.value]) {
     const optimisticId = `optimistic-${item.id}`
@@ -444,6 +447,7 @@ const submitQueue = async () => {
       createdNames.push(item.shortcode)
       removeQueued(item)
     } catch (requestError: any) {
+      failed = true
       item.errorMessage = requestError.data?.message || requestError.data?.statusMessage || $t('emoji.createFailed')
     } finally {
       optimisticEmojis.value = optimisticEmojis.value.filter((emoji) => emoji.id !== optimisticId)
@@ -451,6 +455,8 @@ const submitQueue = async () => {
   }
 
   submitting.value = false
+  if (failed) optimisticStatus.reverted()
+  else optimisticStatus.saved()
   if (createdNames.length) {
     await refresh()
     toast.success({
@@ -476,15 +482,18 @@ const confirmDelete = async (emoji: EmojiRecord) => {
   deletingIds.add(emoji.id)
   const previousIndex = (emojis.value || []).findIndex((candidate) => candidate.id === emoji.id)
   emojis.value = (emojis.value || []).filter((candidate) => candidate.id !== emoji.id)
+  optimisticStatus.saving()
   try {
     await $fetch(`/api/emojis/${emoji.id}` as `/api/emojis/:id`, {
       method: 'DELETE',
     })
+    optimisticStatus.saved()
     toast.success({ message: $t('emoji.deleteSuccess') })
   } catch (requestError: any) {
     const restored = [...(emojis.value || [])]
     restored.splice(Math.max(0, previousIndex), 0, emoji)
     emojis.value = restored
+    optimisticStatus.reverted()
     toast.error({
       message: requestError.data?.message || $t('emoji.deleteFailed'),
     })
@@ -504,12 +513,24 @@ const cancelEditing = () => {
 const saveEmoji = async (emoji: EmojiRecord) => {
   const shortcode = normalizeEmojiShortcode(editingShortcode.value)
   if (!isValidEmojiShortcode(shortcode)) return
-  const response = await $fetch<{ emoji: EmojiRecord }>(`/api/emojis/${emoji.id}` as `/api/emojis/:id`, {
-    method: 'PATCH',
-    body: { shortcode },
-  })
-  emoji.shortcode = response.emoji.shortcode
+  const previous = emoji.shortcode
+  emoji.shortcode = shortcode
   cancelEditing()
+  optimisticStatus.saving()
+  try {
+    const response = await $fetch<{ emoji: EmojiRecord }>(`/api/emojis/${emoji.id}` as `/api/emojis/:id`, {
+      method: 'PATCH',
+      body: { shortcode },
+    })
+    emoji.shortcode = response.emoji.shortcode
+    optimisticStatus.saved()
+  } catch (requestError: any) {
+    emoji.shortcode = previous
+    editingId.value = emoji.id
+    editingShortcode.value = shortcode
+    optimisticStatus.reverted()
+    toast.error({ message: requestError.data?.message || $t('common.messages.operationFailed') })
+  }
 }
 
 const discardQueue = () => {

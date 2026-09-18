@@ -24,6 +24,8 @@ export function useCommentReactions(
   opts: { isAuthor: Ref<boolean>; currentUserId: Ref<string | undefined> },
 ) {
   const toast = useToast()
+  const isPending = shallowRef(false)
+  const optimisticStatus = useOptimisticStatus()
 
   const snapshot = (c: CommentWithReplies) => ({
     likes: c.likes ?? 0,
@@ -39,6 +41,7 @@ export function useCommentReactions(
   const counter: Record<ReactionType, 'likes' | 'dislikes'> = { LIKE: 'likes', DISLIKE: 'dislikes' }
 
   async function updateReaction(type: ReactionType) {
+    if (isPending.value) return
     const prev = state.userReaction?.type
     const isOff = prev === type
     const switching = !!prev && prev !== type
@@ -47,15 +50,21 @@ export function useCommentReactions(
     state[counter[type]] += isOff ? -1 : 1
     state.userReaction = isOff ? null : { type }
     if (opts.isAuthor.value) state.isLikedByAuthor = type === 'LIKE' && !isOff
+    isPending.value = true
+    optimisticStatus.saving()
 
     try {
       await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: comment.value.id, type } })
+      optimisticStatus.saved()
     } catch {
       if (switching && prev) state[counter[prev]]++
       state[counter[type]] += isOff ? 1 : -1
       state.userReaction = prev ? { type: prev } : null
       if (opts.isAuthor.value) state.isLikedByAuthor = state.userReaction?.type === 'LIKE'
+      optimisticStatus.reverted()
       toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
+    } finally {
+      isPending.value = false
     }
   }
 
@@ -82,5 +91,5 @@ export function useCommentReactions(
     }
   }
 
-  return { state, updateReaction, handleEmojiReaction }
+  return { state, isPending, updateReaction, handleEmojiReaction }
 }

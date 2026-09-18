@@ -77,12 +77,12 @@
     <div
       v-else
       class="hidden min-h-0 flex-1 overflow-auto rounded-(--topiqu-surface-radius) border border-default bg-default sm:block"
-      :aria-busy="isRefetching"
+      :aria-busy="isPending"
     >
       <UTable
         :data="rows"
         :columns="columns"
-        :loading="isPending || isRefetching"
+        :loading="isPending"
         :ui="{
           root: 'overflow-visible',
           base: 'w-full min-w-[48rem] table-fixed',
@@ -131,7 +131,7 @@
           </NuxtLink>
         </template>
         <template #status-cell="{ row }">
-          <ArticleStatusCell :row="row" @update="debouncedSetStatus" />
+          <ArticleStatusCell :row="row" :pending="pendingStatusIds.has(row.original.id)" @update="debouncedSetStatus" />
         </template>
         <template #languages-cell="{ row }">
           <ArticleLanguageLinks
@@ -181,7 +181,7 @@
     <div v-if="isPending" class="space-y-3 sm:hidden">
       <UCard v-for="n in 5" :key="n"><USkeleton class="h-28 w-full" /></UCard>
     </div>
-    <div v-else-if="rows.length" class="space-y-3 sm:hidden" :aria-busy="isRefetching">
+    <div v-else-if="rows.length" class="space-y-3 sm:hidden" :aria-busy="pendingStatusIds.size > 0">
       <UCard v-for="article in rows" :key="article.id">
         <div class="flex gap-3">
           <NuxtLink :to="articleUrl(article.slug)" class="block shrink-0">
@@ -201,7 +201,11 @@
             >
               {{ article.title }}
             </NuxtLink>
-            <ArticleStatusCell :row="{ original: article }" @update="debouncedSetStatus" />
+            <ArticleStatusCell
+              :row="{ original: article }"
+              :pending="pendingStatusIds.has(article.id)"
+              @update="debouncedSetStatus"
+            />
             <ArticleLanguageLinks
               :links="languageLinks(article)"
               :current="primaryLanguage"
@@ -378,7 +382,6 @@ const listQuery = computed(() => ({
 
 const {
   data: articles,
-  asyncStatus,
   isPending,
   error,
   refetch,
@@ -389,9 +392,17 @@ const {
   placeholderData: (previous) => previous,
 })
 
-const rows = computed(() => articles.value?.data ?? [])
+const optimisticStatuses = ref<Record<string, ArticleStatus>>({})
+const pendingStatusIds = ref(new Set<string>())
+const optimisticStatus = useOptimisticStatus()
+const rows = computed(() =>
+  (articles.value?.data ?? []).map((article) =>
+    optimisticStatuses.value[article.id]
+      ? { ...article, status: optimisticStatuses.value[article.id] as ArticleStatus }
+      : article,
+  ),
+)
 const totalPages = computed(() => Math.ceil((articles.value?.total ?? 0) / limit))
-const isRefetching = computed(() => asyncStatus.value === 'loading' && !isPending.value)
 const loadFailed = computed(() => !!error.value && rows.value.length === 0)
 const activeFilterCount = computed(
   () => [statusFilter.value !== 'all', dateFrom.value, dateTo.value].filter(Boolean).length,
@@ -501,27 +512,41 @@ const clearFilters = () => {
   sortOrder.value = 'desc'
 }
 
-const { mutate: setStatus } = useMutation({
-  mutation: async ({ id, status }: { id: string; status: ArticleStatus }) => {
+const setStatus = async ({ id, status }: { id: string; status: ArticleStatus }) => {
+  if (pendingStatusIds.value.has(id)) return
+  const previous = rows.value.find((article) => article.id === id)?.status
+  optimisticStatuses.value = { ...optimisticStatuses.value, [id]: status }
+  pendingStatusIds.value = new Set([...pendingStatusIds.value, id])
+  optimisticStatus.saving()
+
+  try {
     await $fetch(`/api/articles/${id}` as `/api/articles/:id`, {
       method: 'PATCH',
       body: { status },
     })
-  },
-  onSuccess: (_data, { status }) =>
     toast.add({
       color: 'success',
       title: 'Status ' + $t(`articles.status.${status}`).toLocaleLowerCase(),
-    }),
-  onError: (error: any) =>
+    })
+    await invalidateArticleLists()
+    optimisticStatus.saved()
+  } catch (error: any) {
+    if (previous) optimisticStatuses.value = { ...optimisticStatuses.value, [id]: previous }
+    optimisticStatus.reverted()
     toast.add({
       color: 'error',
       title: error.data?.message || $t('articles.messages.statusChangeFailed'),
-    }),
-  onSettled: invalidateArticleLists,
-})
+    })
+  } finally {
+    const { [id]: _finished, ...rest } = optimisticStatuses.value
+    optimisticStatuses.value = rest
+    const nextPending = new Set(pendingStatusIds.value)
+    nextPending.delete(id)
+    pendingStatusIds.value = nextPending
+  }
+}
 
-const debouncedSetStatus = useDebounceFn((id: string, status: ArticleStatus) => setStatus({ id, status }), 100)
+const debouncedSetStatus = useDebounceFn((id: string, status: ArticleStatus) => void setStatus({ id, status }), 100)
 const { mutate: deleteArticle, isLoading: isDeleting } = useMutation({
   mutation: async (id: string) => $fetch<unknown>(`/api/articles/${id}` as string, { method: 'DELETE' }),
   onSuccess: () =>

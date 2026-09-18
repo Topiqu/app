@@ -10,6 +10,8 @@ export function useArticleActions(
   const toast = useToast()
   const clipboard = useClipboard()
   const { data: session } = useAuth()
+  const optimisticStatus = useOptimisticStatus()
+  const statusPending = shallowRef(false)
 
   const resolvedData = computed(() => toValue(dataRef))
 
@@ -48,6 +50,7 @@ export function useArticleActions(
 
     const next = !article.allowedComments
     article.allowedComments = next
+    optimisticStatus.saving()
     try {
       await $fetch(`/api/articles/${article.id}`, {
         method: 'PATCH',
@@ -61,17 +64,26 @@ export function useArticleActions(
             : t('articles.comments.commentsDisabledSuccess'),
         ]),
       })
+      optimisticStatus.saved()
     } catch (e: unknown) {
       const err = e as { data?: { message?: string } }
       toast.add({ color: 'error', title: err.data?.message || t('common.messages.operationFailed') })
       article.allowedComments = !article.allowedComments
+      optimisticStatus.reverted()
     }
   }
 
   const debouncedSetStatus = useDebounceFn(async (id: string, status: string) => {
+    const article = resolvedData.value
+    if (!article || statusPending.value) return
+    const previous = article.status
+    article.status = status
+    statusPending.value = true
+    optimisticStatus.saving()
     try {
       await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
       await refreshContext()
+      optimisticStatus.saved()
       toast.add({
         color: 'success',
         title: t('articles.status.changeSuccess', [
@@ -79,8 +91,12 @@ export function useArticleActions(
         ]),
       })
     } catch (e: unknown) {
+      article.status = previous
+      optimisticStatus.reverted()
       const err = e as { data?: { message?: string } }
       toast.add({ color: 'error', title: err.data?.message || t('common.messages.statusChangeFailed') })
+    } finally {
+      statusPending.value = false
     }
   }, 100)
 

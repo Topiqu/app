@@ -77,6 +77,12 @@
                   {{ $t('articles.editor.ai.result.missing') }}
                   {{ aiLastResult.missingModules.map(moduleLabel).join(', ') }}
                 </div>
+                <div
+                  v-if="aiLastResult.reviewApproved === false"
+                  class="border-t border-warning/20 px-4 py-3 text-xs text-warning"
+                >
+                  {{ $t('articles.editor.ai.result.reviewWarning') }}
+                </div>
               </div>
 
               <UFormField :label="$t('articles.editor.ai.topicLabel')">
@@ -561,6 +567,8 @@ const resultDescription = computed(() => {
   if (!result) return ''
   return result.missingModules.length
     ? t('articles.editor.ai.result.descriptionPartial', { count: result.missingModules.length })
+    : result.reviewApproved === false
+      ? t('articles.editor.ai.result.descriptionReview')
     : t('articles.editor.ai.result.descriptionComplete')
 })
 const resultMetrics = computed(() => {

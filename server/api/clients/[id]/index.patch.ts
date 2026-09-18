@@ -1,4 +1,4 @@
-import type { SocialPlatform } from '@prisma/client'
+import type { Prisma, SocialPlatform } from '@prisma/client'
 
 import { randomBytes } from 'crypto'
 import { models } from '~~/shared/zod'
@@ -192,11 +192,22 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const updatedSite = await db.clientSite.update({
+  const planChanged = data.plan !== undefined && data.plan !== clientSite.plan
+  const updateArgs = {
     where: { id },
     data,
-    include: { socials: true, users: { where: { role: 'ai' }, take: 1 } },
-  })
+    include: { socials: true, users: { where: { role: 'ai' as const }, take: 1 } },
+  } satisfies Prisma.ClientSiteUpdateArgs
+
+  // A plan column without matching ClientFeature rows is not a valid committed state. Keep the
+  // superadmin plan write and entitlement synchronization behind the same tenant-row lock.
+  const updatedSite = planChanged
+    ? await serializableTransaction(async (tx) => {
+        const site = await tx.clientSite.update(updateArgs)
+        await syncPlanFeatures(tx, id)
+        return site
+      })
+    : await db.clientSite.update(updateArgs)
 
   if (domainChanged) {
     await logAction({
@@ -206,10 +217,6 @@ export default defineEventHandler(async (event) => {
       ip: getIp(event),
       metadata: { previousDomain: clientSite.domain, domain: updatedSite.domain, verificationReset: true },
     })
-  }
-
-  if (updatedSite.plan !== clientSite.plan) {
-    await prisma.$transaction((tx) => syncPlanFeatures(tx, id, updatedSite.plan))
   }
 
   await logAction({

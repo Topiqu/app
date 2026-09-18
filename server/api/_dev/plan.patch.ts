@@ -13,9 +13,9 @@ export default defineEventHandler(async (event) => {
 
   // Same transition path as the Stripe webhook / superadmin edit, or a locally switched
   // plan leaves features and billing behind and dev stops reproducing production.
-  await prisma.$transaction(async (tx) => {
+  await serializableTransaction(async (tx) => {
     await tx.clientSite.update({ where: { id }, data: { plan } })
-    await syncPlanFeatures(tx, id, plan)
+    await syncPlanFeatures(tx, id)
   })
 
   return { ok: true }

@@ -326,7 +326,10 @@
       "pollingPaused": "Notifications are paused",
       "noMore": "No more notifications",
       "empty": "No new notifications",
-      "loginPrompt": "Sign in to follow news and activity on the platform."
+      "loginPrompt": "Sign in to follow news and activity on the platform.",
+      "newNotification": "New notification: {message}",
+      "loadFailed": "Notifications could not be loaded: {message}",
+      "deleteFailed": "Notification could not be deleted: {message}"
     },
     "avatar": {
       "title": "Avatar",
@@ -503,6 +506,11 @@
       "savedAgo": "Saved",
       "savingNow": "Saving…",
       "unsaved": "Unsaved",
+      "optimistic": {
+        "saving": "Saving change…",
+        "saved": "Change saved.",
+        "reverted": "The change could not be saved and was reverted."
+      },
       "discardChangesTitle": "Discard changes?",
       "discardChangesText": "All unsaved changes will be lost.",
       "discardConfirm": "Discard",

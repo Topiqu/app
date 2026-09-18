@@ -23,13 +23,13 @@ export const expiredTrialWhere = (now: Date) => ({
 
 /** Plan entitlements and credit are independent. Only explicitly expiring grants can expire. */
 export const downgradeExpiredTrial = async (clientSiteId: string, site?: TrialInfo) => {
-  await prisma.$transaction(async (tx) => {
+  await serializableTransaction(async (tx) => {
     await tx.clientSite.update({
       where: { id: clientSiteId },
       data: { plan: 'BASIC' },
     })
 
-    await syncPlanFeatures(tx, clientSiteId, 'BASIC')
+    await syncPlanFeatures(tx, clientSiteId)
   })
 
   await logAction({

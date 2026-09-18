@@ -61,6 +61,7 @@ export interface ArticleGenerationResult {
   tokenUsage: number | null
   tokenRemaining: number | null
   missingModules: ArticleGenerationModule[]
+  reviewApproved: boolean | null
 }
 
 export interface ArticleGenerationOptions {
