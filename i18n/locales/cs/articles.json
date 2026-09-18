@@ -491,6 +491,8 @@
           "failed": "Generování selhalo",
           "descriptionComplete": "Všechny vybrané části byly vloženy a stav tokenů je aktuální.",
           "descriptionPartial": "{count} vybraných částí se nepodařilo vložit. Výsledek zůstává v editoru k úpravě.",
+          "descriptionReview": "Kompletní výsledek zůstává v editoru, protože automatická redakční kontrola stále našla problém.",
+          "reviewWarning": "Redakční kontrola stále doporučuje ruční ověření před publikací.",
           "missing": "Chybí:",
           "words": "Slova",
           "sources": "Zdroje",
@@ -545,7 +547,8 @@
         "billingDetails": "Podrobnosti účtování",
         "billingExplanation": "Nevyužité kredity se uvolní. Neúspěšné generování je zdarma. Při zastavení se účtuje již provedená práce.",
         "moduleUnavailable": "Pro tento formát není dostupné",
-        "reviewFailed": "Článek neprošel redakční kontrolou ani po opravě. Generování nebylo účtováno.",
+        "reviewFailed": "Článek neprošel redakční kontrolou ani po opravě.",
+        "reviewWarning": "Článek byl vygenerován; před publikací jej prosím zkontrolujte",
         "allowGeneratedImages": "Povolit AI ilustrace jako poslední možnost",
         "generatedImagesFallback": "Pouze pokud nenajdeme vhodný existující obrázek. Platí i pro titulní obrázek."
       },

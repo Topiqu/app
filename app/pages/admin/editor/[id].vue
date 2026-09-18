@@ -758,6 +758,7 @@ const generateAIContent = async () => {
   let sourceCount = 0
   let mediaFound = 0
   let mediaTotal = 0
+  let reviewApproved: boolean | null = null
   let streamedContent = ''
   const streamedImages = new Map<number, string>()
   const applyStreamedImages = (content: string) => {
@@ -797,6 +798,7 @@ const generateAIContent = async () => {
         mediaFound = media.found
         mediaTotal = media.total
       },
+      onReview: (review) => (reviewApproved = review.approved),
       onBilling: (result) => {
         billing = result
         if (clientStatus.value) {
@@ -845,7 +847,8 @@ const generateAIContent = async () => {
     })
     const durationSeconds = Math.max(1, Math.round((Date.now() - aiStartedAt.value) / 1_000))
     aiLastResult.value = {
-      status: outcome === 'aborted' ? 'stopped' : missingModules.length ? 'partial' : 'completed',
+      status:
+        outcome === 'aborted' ? 'stopped' : missingModules.length || reviewApproved === false ? 'partial' : 'completed',
       durationSeconds,
       sourceCount: sourceCount || editedArticle.value.sources?.length || 0,
       wordCount: aiWordCount.value,
@@ -854,6 +857,7 @@ const generateAIContent = async () => {
       tokenUsage: (billing as ArticleGenerationBilling | null)?.clientTokensUsed ?? null,
       tokenRemaining: (billing as ArticleGenerationBilling | null)?.tokenRemaining ?? null,
       missingModules,
+      reviewApproved,
     }
     if (outcome === 'aborted')
       toast.add({
@@ -865,6 +869,11 @@ const generateAIContent = async () => {
         color: 'warning',
         title: t('articles.editor.aiModulesUnavailable'),
         description: missingModules.map((module) => t(`articles.editor.ai.module.${module}`)).join(', '),
+      })
+    else if (reviewApproved === false)
+      toast.add({
+        color: 'warning',
+        title: t('articles.editor.ai.reviewWarning'),
       })
     else
       toast.add({
@@ -882,6 +891,7 @@ const generateAIContent = async () => {
       tokenUsage: (billing as ArticleGenerationBilling | null)?.clientTokensUsed ?? null,
       tokenRemaining: (billing as ArticleGenerationBilling | null)?.tokenRemaining ?? null,
       missingModules: finalReceived ? missingModules : aiOptions.value.modules,
+      reviewApproved,
     }
     toast.add({
       color: 'error',

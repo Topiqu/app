@@ -38,26 +38,33 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('manual editorial review', () => {
-  it('reviews all modules, revises a rejected draft, and accounts for every completed call', async () => {
+  it('fact-checks once, revises a rejected manual draft, and accounts for both calls', async () => {
     const revision = { ...draft, title: 'Ciri leads The Witcher 4' }
     vi.mocked(generateObject)
       .mockResolvedValueOnce(response(rejected, 10) as never)
       .mockResolvedValueOnce(response(revision, 20) as never)
-      .mockResolvedValueOnce(response(approved, 30) as never)
     const generation = await streamArticle('site', 'Write a report', { research: false })
     expect(await generation.review(draft)).toEqual(revision)
-    expect(generation.editorialTokens).toBe(60)
+    expect(generation.editorialReview).toMatchObject({
+      approved: true,
+      revised: true,
+      checkedAfterRevision: false,
+      resolvedIssues: rejected.issues,
+    })
+    expect(generateObject).toHaveBeenCalledTimes(2)
+    expect(generation.editorialTokens).toBe(30)
     expect(vi.mocked(generateObject).mock.calls[0]![0].prompt).toContain('"polls":[]')
   })
 
-  it('rejects the result when revision still fails review', async () => {
+  it('returns the reviewed original with a warning when the revision call fails', async () => {
     vi.mocked(generateObject)
       .mockResolvedValueOnce(response(rejected, 10) as never)
-      .mockResolvedValueOnce(response(draft, 20) as never)
-      .mockResolvedValueOnce(response(rejected, 30) as never)
+      .mockRejectedValueOnce(new Error('revision unavailable'))
+    vi.stubGlobal('reportCaughtError', vi.fn())
     const generation = await streamArticle('site', 'Write a report', { research: false })
-    await expect(generation.review(draft)).rejects.toThrow('Review failed')
-    expect(generation.editorialTokens).toBe(60)
+    expect(await generation.review(draft)).toEqual(draft)
+    expect(generation.editorialReview).toMatchObject({ approved: false, revised: false })
+    expect(generation.editorialTokens).toBe(10)
   })
 
   it('does not rewrite an approved draft', async () => {

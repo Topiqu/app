@@ -106,8 +106,8 @@ describe('manual article generation stream', () => {
 
   it('requires matching body image slots when the author selected images', () => {
     expect(articleGenerator).toContain("selectedModules.includes('images')")
-    expect(articleGenerator).toContain('The author selected images in the article body.')
-    expect(articleGenerator).toContain('selection is permission, not a quota.')
+    expect(articleGenerator).toContain('The author explicitly requested images in the article body.')
+    expect(articleGenerator).toContain('This is a requested deliverable: never return an empty images array.')
   })
 
   it('records the complete manual generation lifecycle with a correlation id', () => {
@@ -124,5 +124,13 @@ describe('manual article generation stream', () => {
   it('tries retrieved YouTube alternatives before reporting the module unavailable', () => {
     expect(articleGenerator).toContain('Return up to three full youtube.com/watch or youtu.be URLs')
     expect(articleGenerator).toContain('for (const url of urls)')
+    expect(articleGenerator).toContain('retrievedResearchSources(result)')
+  })
+
+  it('uses one strict review, then proceeds to media finalization after any revision', () => {
+    expect(endpoint).toContain("send(controller, { type: 'review', review: generation.editorialReview })")
+    const streamImplementation = articleGenerator.slice(articleGenerator.indexOf('export const streamArticle'))
+    expect(streamImplementation.match(/reviewArticle\(/g)).toHaveLength(1)
+    expect(streamImplementation).toContain('checkedAfterRevision: false')
   })
 })

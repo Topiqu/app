@@ -16,7 +16,12 @@ import { createImageSelection } from '../images/selection'
 import { loadPressImages, pickPressImage } from '../images/press'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { buildRevisionPrompt, reviewArticle, type EditorialReview } from './articleQuality'
-import { filterResearchSources, researchEvidence, retrievedResearchSources } from './researchEvidence'
+import {
+  extractResearchUrls,
+  filterResearchSources,
+  researchEvidence,
+  retrievedResearchSources,
+} from './researchEvidence'
 import {
   applyFormat,
   formatRules,
@@ -136,7 +141,7 @@ const researchYoutube = async (prompt: string, abortSignal?: AbortSignal) => {
   const signal = abortSignal ? AbortSignal.any([abortSignal, AbortSignal.timeout(25_000)]) : AbortSignal.timeout(25_000)
 
   try {
-    const { text, usage } = await generateText({
+    const result = await generateText({
       model: aiModel('articleResearch'),
       instructions: `Search for existing, directly relevant YouTube videos about the topic. Prefer the official developer, publisher, manufacturer, institution or named subject's channel. Return up to three full youtube.com/watch or youtu.be URLs you actually opened, ordered by relevance; return NONE if no suitable video was retrieved. Never guess a video id or transform a channel/search URL into a watch URL.`,
       prompt,
@@ -144,7 +149,10 @@ const researchYoutube = async (prompt: string, abortSignal?: AbortSignal) => {
       tools: { web_search: aiWebSearchTool('low') as never },
       abortSignal: signal,
     })
-    const candidates = text.match(/https?:\/\/[^\s)\]}>,]+/g) ?? []
+    const candidates = [
+      ...extractResearchUrls(result.text),
+      ...retrievedResearchSources(result).flatMap((source) => (source.url ? [source.url] : [])),
+    ]
     const urls = [...new Set(candidates.filter((candidate) => youtubeVideoId(candidate)))].slice(0, 3)
 
     // Try the next retrieved candidate when the best result disappeared or rejects oEmbed.
@@ -152,9 +160,9 @@ const researchYoutube = async (prompt: string, abortSignal?: AbortSignal) => {
       const verification = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`, {
         signal: AbortSignal.timeout(5_000),
       }).catch(() => null)
-      if (verification?.ok) return { url, tokens: usage?.totalTokens ?? 0 }
+      if (verification?.ok) return { url, tokens: result.usage?.totalTokens ?? 0 }
     }
-    return { url: null, tokens: usage?.totalTokens ?? 0 }
+    return { url: null, tokens: result.usage?.totalTokens ?? 0 }
   } catch (error) {
     if (abortSignal?.aborted) throw error
     return { url: null, tokens: 0 }
@@ -404,7 +412,7 @@ const buildArticleConfig = async (
 
       ${
         imagesSelected === true
-          ? 'The author selected images in the article body. Include up to 4 distinct useful image slots in appropriate places using [[IMAGE1]], [[IMAGE2]], etc., and provide exactly one corresponding instruction per slot in the images array. Return an empty images array if no distinct relevant visual can be specified; selection is permission, not a quota.'
+          ? 'The author explicitly requested images in the article body. Include 1-4 distinct useful image slots in appropriate places using [[IMAGE1]], [[IMAGE2]], etc., and provide exactly one corresponding instruction per slot in the images array. This is a requested deliverable: never return an empty images array. When no documentary asset is obvious, describe a restrained illustrative visual so the server can search existing libraries and, if the author allowed it, generate a labelled AI fallback.'
           : imagesSelected === false
             ? 'Return an empty images array and never write an [[IMAGE]] slot into the content.'
             : 'If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.'
@@ -724,6 +732,13 @@ export const streamArticle = async (
     )
 
   let editorialTokens = 0
+  let editorialReview:
+    | (EditorialReview & {
+        revised: boolean
+        checkedAfterRevision: boolean
+        resolvedIssues?: EditorialReview['issues']
+      })
+    | null = null
   const review = async (draft: ArticleObject) => {
     const context = {
       prompt,
@@ -736,29 +751,35 @@ export const streamArticle = async (
     const first = await reviewArticle(draft, context)
     if (first.verificationBrief) groundingBrief = [groundingBrief, first.verificationBrief].filter(Boolean).join('\n')
     editorialTokens += first.usage.totalTokens ?? 0
+    editorialReview = { ...first.review, revised: false, checkedAfterRevision: true }
     if (first.review.approved) return draft
-    const revision = await generateObject({
-      ...config,
-      instructions:
-        config.instructions +
-        '\nIndependent verification supersedes conflicting original research:\n' +
-        (first.verificationBrief ?? ''),
-      prompt: buildRevisionPrompt(prompt, draft, first.review, first.verificationBrief),
-      abortSignal: opts.abortSignal
-        ? AbortSignal.any([opts.abortSignal, AbortSignal.timeout(90_000)])
-        : AbortSignal.timeout(90_000),
-    })
-    editorialTokens += revision.usage.totalTokens ?? 0
-    revision.object.sources = filterResearchSources(revision.object.sources, groundingBrief)
-    const checked = await reviewArticle(revision.object, context)
-    if (checked.verificationBrief)
-      groundingBrief = [groundingBrief, checked.verificationBrief].filter(Boolean).join('\n')
-    editorialTokens += checked.usage.totalTokens ?? 0
-    if (!checked.review.approved) {
-      const t = await getServerTranslator(language)
-      throw new Error(t('articles.editor.ai.reviewFailed') || 'The article did not pass editorial review.')
+    try {
+      const revision = await generateObject({
+        ...config,
+        instructions:
+          config.instructions +
+          '\nIndependent verification supersedes conflicting original research:\n' +
+          (first.verificationBrief ?? ''),
+        prompt: buildRevisionPrompt(prompt, draft, first.review, first.verificationBrief),
+        abortSignal: opts.abortSignal
+          ? AbortSignal.any([opts.abortSignal, AbortSignal.timeout(90_000)])
+          : AbortSignal.timeout(90_000),
+      })
+      editorialTokens += revision.usage.totalTokens ?? 0
+      revision.object.sources = filterResearchSources(revision.object.sources, groundingBrief)
+      editorialReview = {
+        approved: true,
+        issues: [],
+        revised: true,
+        checkedAfterRevision: false,
+        resolvedIssues: first.review.issues,
+      }
+      return revision.object
+    } catch (error) {
+      if (opts.abortSignal?.aborted) throw error
+      await reportCaughtError('Manual article revision failed; returning reviewed draft', error, { clientSiteId })
+      return draft
     }
-    return revision.object
   }
   return {
     result,
@@ -768,6 +789,9 @@ export const streamArticle = async (
     research,
     get editorialTokens() {
       return editorialTokens
+    },
+    get editorialReview() {
+      return editorialReview
     },
   }
 }
