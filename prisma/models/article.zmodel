@@ -4,6 +4,7 @@ import "./user"
 import "./comment"
 import "./notification"
 import "./poll"
+import "./visibility"
 
 enum ArticleStatus {
     draft
@@ -88,6 +89,9 @@ model Article extends Base, Ownable {
     shares           ArticleShare[]
     viewEvents       ArticleView[]
     feedbacks        ArticleFeedback[]
+    aiReferralVisits AiReferralVisit[]
+    aiCitations      AiCitation[]
+    aiOpportunities  AiVisibilityOpportunity[]
     pollResults      PollResult[]
     polls            Poll[]
     notifications    Notification[]    @relation("ArticleNotifications")

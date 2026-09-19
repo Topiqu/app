@@ -7,6 +7,7 @@ import "./linkedin"
 import "./log"
 import "./ads"
 import "./searchConsole"
+import "./visibility"
 
 enum GenerationFrequency {
     NONE
@@ -143,6 +144,12 @@ model ClientSite extends Base {
     adEarnings           AdEarning[]
     searchConsoleConnection SearchConsoleConnection?
     searchConsoleMetrics SearchConsoleMetric[]
+    aiCrawlerDays       AiCrawlerDaily[]
+    aiReferralVisits    AiReferralVisit[]
+    aiVisibilityPrompts AiVisibilityPrompt[]
+    aiVisibilityRuns    AiVisibilityRun[]
+    aiCitations         AiCitation[]
+    aiOpportunities     AiVisibilityOpportunity[]
     tenantMemberships    TenantMembership[]
     tenantInvitations    TenantInvitation[]
     activeSessions       Session[] @relation("SessionActiveTenant")

@@ -25,7 +25,10 @@ export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
     if (lastViewedAt.value && now - lastViewedAt.value < 1000 * 60 * 30) return
 
     try {
-      $fetch(`/api/articles/${articleIdRef.value}/view`, { method: 'POST' })
+      $fetch(`/api/articles/${articleIdRef.value}/view`, {
+        method: 'POST',
+        body: { referrer: document.referrer || undefined },
+      })
       lastViewedAt.value = now
     } catch {
       // Ignored

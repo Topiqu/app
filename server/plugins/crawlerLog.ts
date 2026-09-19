@@ -1,5 +1,6 @@
 import { toHostname } from '~~/shared/utils/domain'
 import { detectCrawler } from '~~/shared/utils/crawlers'
+import { crawlerKind, crawlerSurface } from '~~/shared/utils/aiVisibility'
 
 // Assets dominate request volume and say nothing about crawl coverage.
 const IGNORED =
@@ -19,11 +20,55 @@ export default defineNitroPlugin((nitroApp) => {
     if (!crawler) return
 
     const status = event.node.res.statusCode
+    const tenant = await cachedTenantByHost(event)
+
+    if (tenant) {
+      const now = new Date()
+      const date = new Date(now)
+      date.setUTCHours(0, 0, 0, 0)
+      try {
+        await prisma.aiCrawlerDaily.upsert({
+          where: {
+            clientSiteId_date_bot_path: { clientSiteId: tenant.id, date, bot: crawler.bot, path },
+          },
+          create: {
+            clientSiteId: tenant.id,
+            date,
+            bot: crawler.bot,
+            kind: crawlerKind(crawler.kind),
+            surface: crawlerSurface(path),
+            path,
+            requestCount: 1,
+            successCount: status < 400 ? 1 : 0,
+            errorCount: status >= 400 ? 1 : 0,
+            rateLimitedCount: status === 429 ? 1 : 0,
+            firstSeenAt: now,
+            lastSeenAt: now,
+          },
+          update: {
+            requestCount: { increment: 1 },
+            successCount: { increment: status < 400 ? 1 : 0 },
+            errorCount: { increment: status >= 400 ? 1 : 0 },
+            rateLimitedCount: { increment: status === 429 ? 1 : 0 },
+            lastSeenAt: now,
+          },
+        })
+      } catch (error) {
+        await logger.error('crawler persistence failed', {
+          source: 'crawler',
+          bot: crawler.bot,
+          clientSiteId: tenant.id,
+          path,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
 
     await logger.info(`crawl:${crawler.bot}`, {
       source: 'crawler',
       bot: crawler.bot,
       kind: crawler.kind,
+      clientSiteId: tenant?.id,
       host: toHostname(getRequestHost(event, { xForwardedHost: true }) || ''),
       path,
       status,

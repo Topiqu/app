@@ -466,7 +466,7 @@ const newLanguageDrafts = reactive<Record<Language, ReturnType<typeof translatio
 const selectedSeries = shallowRef<any>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
-const customPrompt = shallowRef('')
+const customPrompt = shallowRef(typeof route.query.prompt === 'string' ? route.query.prompt.slice(0, 5000) : '')
 const aiOptions = ref(defaultArticleGenerationOptions())
 const aiPhase = shallowRef<GenerationPhase>('research')
 const aiResearch = shallowRef<GenerationResearchResult | null>(null)
@@ -740,7 +740,7 @@ const aiGenerating = shallowRef(false)
 // Expanded while there is nothing to lose, or on the `?ai=1` deep link. Generation rewrites the
 // whole article, so a permanently open composer serves no mid-article iteration — it just pushed
 // the title below the fold on every visit.
-const aiOpen = shallowRef(isBlank.value || route.query.ai === '1')
+const aiOpen = shallowRef(isBlank.value || route.query.ai === '1' || !!customPrompt.value)
 
 const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
 

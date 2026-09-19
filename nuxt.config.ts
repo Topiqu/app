@@ -126,6 +126,7 @@ export default defineNuxtConfig({
           '30 2 * * *': ['search-console-autopilot'],
           '*/5 * * * *': ['translate-pending', 'token-wallet-maintenance'],
           '0 4 * * *': ['gam-sync'],
+          '0 5 * * 1': ['ai-visibility-monitor'],
         }
       : undefined,
     preset: 'bun',
@@ -450,6 +451,7 @@ export default defineNuxtConfig({
           'en/legal.json',
           'en/admin.json',
           'en/domainVerification.json',
+          'en/visibility.json',
           'master_en.json',
         ],
       },
@@ -471,6 +473,7 @@ export default defineNuxtConfig({
           'cs/legal.json',
           'cs/admin.json',
           'cs/domainVerification.json',
+          'cs/visibility.json',
           'master_cs.json',
         ],
       },

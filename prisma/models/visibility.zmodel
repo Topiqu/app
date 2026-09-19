@@ -1,0 +1,183 @@
+import "./base"
+import "./client"
+import "./article"
+
+enum AiCrawlerKind {
+    ANSWER_ENGINE
+    TRAINING
+    SEARCH
+}
+
+enum AiCrawlerSurface {
+    ARTICLE
+    MARKDOWN
+    LLMS
+    RSS
+    HOMEPAGE
+    OTHER
+}
+
+enum AiReferralChannel {
+    CHATGPT
+    PERPLEXITY
+    GEMINI
+    COPILOT
+    CLAUDE
+    OTHER_AI
+}
+
+enum AiPromptIntent {
+    DISCOVERY
+    COMPARISON
+    PROBLEM
+    HOW_TO
+    OTHER
+}
+
+enum AiPromptSource {
+    MANUAL
+    GENERATED
+    SEARCH_CONSOLE
+}
+
+enum AiVisibilityProvider {
+    OPENAI
+}
+
+enum AiVisibilityRunStatus {
+    RUNNING
+    SUCCEEDED
+    FAILED
+}
+
+enum AiOpportunityKind {
+    UPDATE_ARTICLE
+    CREATE_ARTICLE
+}
+
+enum AiOpportunityStatus {
+    OPEN
+    DISMISSED
+    RESOLVED
+}
+
+model AiCrawlerDaily extends Base {
+    clientSiteId    String
+    clientSite      ClientSite       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    date            DateTime         @db.Date
+    bot             String
+    kind            AiCrawlerKind
+    surface         AiCrawlerSurface
+    path            String
+    requestCount    Int              @default(0)
+    successCount    Int              @default(0)
+    errorCount      Int              @default(0)
+    rateLimitedCount Int             @default(0)
+    firstSeenAt     DateTime
+    lastSeenAt      DateTime
+
+    @@unique([clientSiteId, date, bot, path])
+    @@index([clientSiteId, date])
+    @@index([clientSiteId, kind, date])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+}
+
+model AiReferralVisit extends Base {
+    clientSiteId String
+    clientSite   ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    articleId    String
+    article      Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    channel      AiReferralChannel
+    sessionId    String            @omit
+    referrerHost String
+    visitedOn    DateTime          @db.Date
+
+    @@unique([articleId, sessionId, visitedOn, channel])
+    @@index([clientSiteId, visitedOn])
+    @@index([clientSiteId, channel, visitedOn])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+}
+
+model AiVisibilityPrompt extends Base {
+    clientSiteId     String
+    clientSite       ClientSite              @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    text             String                  @length(3, 1000)
+    language         Language
+    country          String                  @default("")
+    intent           AiPromptIntent          @default(OTHER)
+    source           AiPromptSource          @default(MANUAL)
+    active           Boolean                 @default(true)
+    lastRunAt        DateTime?
+    runs             AiVisibilityRun[]
+    opportunities    AiVisibilityOpportunity[]
+
+    @@unique([clientSiteId, text, language, country])
+    @@index([clientSiteId, active, lastRunAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+    @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+}
+
+model AiVisibilityRun extends Base {
+    clientSiteId   String
+    clientSite     ClientSite             @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    promptId       String
+    prompt         AiVisibilityPrompt     @relation(fields: [promptId], references: [id], onDelete: Cascade)
+    provider       AiVisibilityProvider
+    model          String
+    status         AiVisibilityRunStatus  @default(RUNNING)
+    executedAt     DateTime                @default(now())
+    searchedWeb    Boolean                 @default(false)
+    brandMentioned Boolean                 @default(false)
+    responseText   String?
+    error           String?
+    citationCount  Int                     @default(0)
+    usage           Json?
+    citations       AiCitation[]
+
+    @@index([clientSiteId, executedAt])
+    @@index([promptId, executedAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+}
+
+model AiCitation extends Base {
+    clientSiteId String
+    clientSite   ClientSite       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    runId        String
+    run          AiVisibilityRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+    articleId    String?
+    article      Article?         @relation(fields: [articleId], references: [id], onDelete: SetNull)
+    url          String
+    normalizedUrl String
+    domain       String
+    title        String?
+    owned        Boolean          @default(false)
+    position     Int
+
+    @@unique([runId, normalizedUrl])
+    @@index([clientSiteId, owned, createdAt])
+    @@index([articleId, createdAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+}
+
+model AiVisibilityOpportunity extends Base {
+    clientSiteId  String
+    clientSite    ClientSite             @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    promptId      String
+    prompt        AiVisibilityPrompt     @relation(fields: [promptId], references: [id], onDelete: Cascade)
+    articleId     String?
+    article       Article?               @relation(fields: [articleId], references: [id], onDelete: SetNull)
+    kind          AiOpportunityKind
+    status        AiOpportunityStatus    @default(OPEN)
+    reason        String
+    citedDomains  String[]
+    sampleSize    Int
+    ownedHits     Int
+    externalHits  Int
+    firstSeenAt   DateTime
+    lastSeenAt    DateTime
+
+    @@unique([clientSiteId, promptId])
+    @@index([clientSiteId, status, lastSeenAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+    @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+}

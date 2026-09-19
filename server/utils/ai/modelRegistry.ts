@@ -10,6 +10,7 @@ export const AI_MODELS = {
   promptEnhance: { provider: 'openai', id: 'gpt-5.6-luna' },
   sentiment: { provider: 'openai', id: 'gpt-5.6-luna' },
   communityInsight: { provider: 'openai', id: 'gpt-5.6-luna' },
+  visibility: { provider: 'openai', id: 'gpt-5.6-luna' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export const AI_IMAGE_MODELS = {

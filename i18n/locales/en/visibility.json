@@ -1,0 +1,91 @@
+{
+  "visibility": {
+    "title": "AI visibility",
+    "eyebrow": "Discovery and citations",
+    "description": "See when AI systems fetch your publication, send readers, or cite it in monitored answers.",
+    "methodology": "Crawler fetches and referrals are observed traffic. Citation coverage is a recurring sample of monitored prompts, not a count of every private AI conversation.",
+    "window": "Last {days} days",
+    "metrics": {
+      "fetches": "AI bot fetches",
+      "pages": "Pages discovered",
+      "referrals": "Confirmed AI visits",
+      "coverage": "Sampled citation coverage"
+    },
+    "emptyValue": "Not measured",
+    "crawlers": {
+      "title": "AI discovery",
+      "description": "Server-observed requests, separated by answer engines, training crawlers, and classic search.",
+      "bot": "Bot",
+      "kind": "Purpose",
+      "requests": "Fetches",
+      "pages": "Pages",
+      "lastSeen": "Last seen",
+      "empty": "No recognised AI crawler has fetched this publication yet.",
+      "kinds": {
+        "ANSWER_ENGINE": "Answer engine",
+        "TRAINING": "Training",
+        "SEARCH": "Search"
+      }
+    },
+    "referrals": {
+      "title": "Confirmed AI referrals",
+      "description": "Visits with an AI service as their referrer. Apps that omit referrers cannot be counted, so this is a lower bound.",
+      "empty": "No confirmed AI referral has been recorded yet."
+    },
+    "prompts": {
+      "title": "Monitored prompts",
+      "description": "Topiqu checks these questions with live web search and stores the answer and cited URLs.",
+      "add": "Add prompt",
+      "suggest": "Suggest from project",
+      "placeholder": "What question should AI search answer?",
+      "run": "Check now",
+      "pause": "Pause",
+      "resume": "Resume",
+      "remove": "Remove",
+      "runs": "No checks | {count} check | {count} checks",
+      "created": "Prompt added.",
+      "suggested": "{count} prompts added.",
+      "empty": "Add a buyer question or create suggestions from your focus and Search Console data.",
+      "premium": "Citation checks are available on Premium and Custom plans."
+    },
+    "runs": {
+      "title": "Recent citation checks",
+      "sampled": "Sampled via {provider}",
+      "cited": "Your site was cited",
+      "notCited": "Your site was not cited",
+      "failed": "Check failed",
+      "citations": "Cited sources",
+      "response": "Sample answer",
+      "empty": "Run a monitored prompt to establish the first citation baseline."
+    },
+    "opportunities": {
+      "title": "Visibility opportunities",
+      "description": "Repeated gaps only: other sources were cited in at least two samples while this publication was absent.",
+      "update": "Improve article",
+      "create": "Create article",
+      "dismiss": "Dismiss",
+      "reopen": "Reopen",
+      "evidence": "Your site: {owned}/{samples} · other sources: {external}/{samples}",
+      "domains": "Sources being cited: {domains}",
+      "empty": "No repeated visibility gap has enough evidence yet."
+    },
+    "channels": {
+      "CHATGPT": "ChatGPT",
+      "PERPLEXITY": "Perplexity",
+      "GEMINI": "Gemini",
+      "COPILOT": "Copilot",
+      "CLAUDE": "Claude",
+      "OTHER_AI": "Other AI"
+    },
+    "status": {
+      "SUCCEEDED": "Completed",
+      "FAILED": "Failed",
+      "RUNNING": "Running"
+    },
+    "messages": {
+      "runStarted": "Citation check completed.",
+      "saved": "Changes saved.",
+      "failed": "AI visibility could not be updated."
+    }
+  }
+}

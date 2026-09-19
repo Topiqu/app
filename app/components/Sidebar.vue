@@ -128,6 +128,11 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
   return [
     { label: $t('common.navigation.dashboard'), icon: 'mdi:home', to: localePath({ name: 'admin' }) },
     {
+      label: $t('visibility.title'),
+      icon: 'mdi:radar',
+      to: localePath({ name: 'admin-visibility' }),
+    },
+    {
       label: $t('articles.addArticle'),
       icon: 'mdi:pencil',
       to: localePath({ name: 'admin-editor-id', params: { id: 'new' } }),

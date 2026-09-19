@@ -24,4 +24,8 @@ export const queryKeys = {
     dashboard: ['stats', 'dashboard'] as const,
     sentiment: ['stats', 'sentiment'] as const,
   },
+  visibility: {
+    all: ['visibility'] as const,
+    overview: ['visibility', 'overview'] as const,
+  },
 } as const
