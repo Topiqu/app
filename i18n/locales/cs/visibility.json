@@ -35,6 +35,8 @@
     "prompts": {
       "title": "Sledované prompty",
       "description": "Topiqu pravidelně ověří tyto otázky pomocí živého webového vyhledávání a uloží odpověď i citované URL.",
+      "questionLabel": "Otázka pro AI vyhledávání",
+      "languageLabel": "Jazyk",
       "add": "Přidat prompt",
       "suggest": "Navrhnout z projektu",
       "placeholder": "Na jakou otázku má AI vyhledávání odpovědět?",

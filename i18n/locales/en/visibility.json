@@ -35,6 +35,8 @@
     "prompts": {
       "title": "Monitored prompts",
       "description": "Topiqu checks these questions with live web search and stores the answer and cited URLs.",
+      "questionLabel": "Question for AI search",
+      "languageLabel": "Language",
       "add": "Add prompt",
       "suggest": "Suggest from project",
       "placeholder": "What question should AI search answer?",
