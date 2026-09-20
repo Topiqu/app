@@ -16,13 +16,13 @@
         site?.plan ?? $t('articles.userMenu.noClientAssigned')
       }}</UBadge>
       <UBadge
-        v-if="status?.tokenRemaining != null"
+        v-if="status?.articlesRemaining != null"
         class="ml-auto min-w-0 max-w-[8.5rem] shrink truncate tabular-nums"
         :title="$t('common.wallet.available')"
-        :color="isLowTokens ? 'error' : 'success'"
+        :color="isLowArticles ? 'error' : 'success'"
         variant="soft"
       >
-        {{ status.tokenRemaining.toLocaleString(locale) }}
+        {{ status.articlesRemaining.toLocaleString(locale) }}
       </UBadge>
     </UButton>
 
@@ -61,8 +61,8 @@
                 <p class="mt-1 flex flex-wrap items-baseline gap-x-1.5">
                   <span
                     class="text-3xl font-bold leading-none tracking-tight tabular-nums"
-                    :class="isLowTokens ? 'text-error' : 'text-highlighted'"
-                    >{{ tokenRemaining.toLocaleString(locale) }}</span
+                    :class="isLowArticles ? 'text-error' : 'text-highlighted'"
+                    >{{ articlesRemaining.toLocaleString(locale) }}</span
                   >
                   <span class="text-sm text-muted">{{ $t('common.wallet.unit') }}</span>
                 </p>
@@ -89,15 +89,9 @@
                 </div>
                 <p class="mt-0.5 text-xs text-muted">{{ $t('common.wallet.reservedHint') }}</p>
               </div>
-              <div class="flex items-baseline justify-between gap-3">
-                <dt class="min-w-0 text-muted">{{ $t('common.wallet.periodUsage', { period: usagePeriod }) }}</dt>
-                <dd class="shrink-0 tabular-nums text-highlighted">
-                  {{ wallet.periodUsage.toLocaleString(locale) }}
-                </dd>
-              </div>
               <div
-                v-for="(grant, index) in wallet.expiring"
-                :key="index"
+                v-for="grant in wallet.grants.filter((item) => item.expiresAt)"
+                :key="grant.id"
                 class="flex items-baseline justify-between gap-3"
               >
                 <dt class="min-w-0 text-muted">
@@ -110,7 +104,7 @@
           </section>
 
           <UAlert
-            v-if="isLowTokens"
+            v-if="isLowArticles"
             color="error"
             variant="soft"
             icon="mdi:alert"
@@ -121,7 +115,7 @@
           <USeparator :label="$t('common.wallet.topup')" />
           <div class="grid grid-cols-1 gap-2 min-[22rem]:grid-cols-2">
             <button
-              v-for="pack in tokenPacks"
+              v-for="pack in articlePacks"
               :key="pack.id"
               type="button"
               class="relative min-w-0 rounded-[var(--topiqu-surface-radius)] border p-3 text-left transition disabled:cursor-wait disabled:opacity-60 sm:p-2.5"
@@ -131,7 +125,7 @@
                   : 'border-default bg-elevated hover:border-primary/40'
               "
               :disabled="checkoutPack !== null"
-              @click="buyTokens(pack.id)"
+              @click="buyArticles(pack.id)"
             >
               <span class="flex items-center justify-between gap-1">
                 <UIcon
@@ -145,13 +139,11 @@
               </span>
               <span class="mt-1.5 block truncate text-sm font-semibold text-highlighted">{{ pack.name }}</span>
               <span class="mt-1 block text-lg font-bold tabular-nums text-highlighted">
-                {{ pack.tokens.toLocaleString(locale) }}
+                {{ pack.articles.toLocaleString(locale) }}
               </span>
-              <span class="block text-xs text-muted">{{ $t('common.tokens.tokens') }}</span>
+              <span class="block text-xs text-muted">{{ $t('common.articlePacks.articles') }}</span>
               <span class="mt-1.5 flex items-end justify-between gap-2 border-t border-default pt-1.5">
-                <span class="min-w-0 break-words text-xs text-muted">{{
-                  $t('common.tokens.articlesEstimate', { count: pack.articles })
-                }}</span>
+                <span class="min-w-0 break-words text-xs text-muted">{{ $t('common.articlePacks.neverExpires') }}</span>
                 <strong class="shrink-0 text-sm text-highlighted">{{ pack.price }}</strong>
               </span>
             </button>
@@ -165,7 +157,7 @@
               block
               @click="upgrade"
             >
-              {{ $t('common.tokens.upgradeToPremium') }}
+              {{ $t('common.articlePacks.upgradeToPremium') }}
             </UButton>
           </div>
         </div>
@@ -280,11 +272,13 @@
 </template>
 
 <script setup lang="ts">
+import { buildArticlePackViews } from '~/utils/articlePackPresentation'
+
 const config = useRuntimeConfig()
 const { locale, t } = useI18n()
 const { data: status, refresh: refreshStatus } = await useClientSiteStatus()
 const site = computed(() => status.value)
-const tokenPacks = computed(() => buildTokenPackViews(t, locale.value))
+const articlePacks = computed(() => buildArticlePackViews(t, locale.value))
 
 const page = shallowRef(1)
 const show = shallowRef(false)
@@ -298,7 +292,7 @@ const {
   refresh: refreshWallet,
   error: walletError,
   status: walletState,
-} = await useFetch(() => `/api/clients/${site.value?.id}/wallet`, {
+} = await useFetch(() => `/api/clients/${site.value?.id}/article-wallet`, {
   query: computed(() => ({ cursor: creditCursor.value || undefined })),
   immediate: false,
   watch: false,
@@ -369,17 +363,11 @@ const loadMore = async () => {
   await refresh()
 }
 
-const tokenRemaining = computed(() => status.value?.tokenRemaining ?? 0)
-const isLowTokens = computed(() => tokenRemaining.value < 1000)
+const articlesRemaining = computed(() => status.value?.articlesRemaining ?? 0)
+const isLowArticles = computed(() => articlesRemaining.value <= 1)
 // Summary numbers come from the status payload, which is already loaded — the paginated
 // /wallet fetch is deliberately not the source, it would render zeros until it resolves.
-const wallet = computed(() => status.value?.wallet)
-const usagePeriod = computed(() =>
-  new Date(wallet.value?.periodStart ?? Date.now()).toLocaleString(locale.value, {
-    month: 'long',
-    timeZone: TOPIQU_TIME_ZONE,
-  }),
-)
+const wallet = computed(() => status.value?.articleWallet)
 const planBadgeColor = computed(() =>
   site.value?.plan === 'PREMIUM'
     ? 'warning'
@@ -416,7 +404,7 @@ const formatLogDetail = (metadata: unknown) => {
   return typeof value === 'string' ? value : ''
 }
 
-const buyTokens = async (pack: string) => {
+const buyArticles = async (pack: string) => {
   checkoutPack.value = pack
   try {
     const res = await $fetch('/api/stripe/checkout', {

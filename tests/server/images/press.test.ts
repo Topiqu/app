@@ -1,24 +1,41 @@
 import { describe, expect, it } from 'vitest'
 
 import { createImageSelection } from '../../../server/utils/images/selection'
-import { parsePressImages, pickPressImage } from '../../../server/utils/images/press'
+import { parsePressImages, pickPressImage, youtubeThumbnailImage } from '../../../server/utils/images/press'
 
-describe('publisher press images', () => {
-  it('takes publisher news assets, excludes branding and third-party images, and keeps distinct assets on one page', () => {
+describe('official first-party media', () => {
+  it('discovers structured and press-download assets without a publisher allowlist', () => {
     const images = parsePressImages(
-      `<h1>The Witcher IV revealed</h1>
-      <img src="https://press.cdn.cdpr.app/news/a_q90_1024x576.jpeg">
-      <img data-crystal-link="https://press.cdn.cdpr.app/news/a.jpeg">
-      <img src="https://press.cdn.cdpr.app/news/b.jpeg">
-      <img src="https://press.cdn.cdpr.app/logo.png">
-      <img src="https://untrusted.test/news/x.jpg">`,
-      'https://press.cdprojektred.com/en/news/1702/example',
+      `<head>
+        <meta property="og:site_name" content="Larian Studios">
+        <meta property="og:title" content="Divinity revealed">
+        <meta property="og:image" content="https://cdn.larian.com/divinity/hero.jpg">
+        <meta property="og:image:alt" content="Divinity official key art">
+        <script type="application/ld+json">{"image":"https://assets.example-cdn.com/divinity/battle.jpg"}</script>
+      </head><body>
+        <img class="press-gallery" data-download="https://media.example-cdn.com/divinity/characters.jpg" alt="Divinity characters">
+        <a class="press-download" href="https://downloads.example-cdn.com/divinity/world.png">Download world screenshot</a>
+        <img src="https://cdn.larian.com/divinity/logo.png">
+        <img src="https://untrusted.test/unrelated.jpg" alt="unrelated embed">
+      </body>`,
+      'https://larian.com/news/divinity-revealed',
     )
-    expect(images).toHaveLength(3)
+
+    expect(images).toHaveLength(4)
+    expect(images.every((image) => image.credit.author === 'Larian Studios')).toBe(true)
+    expect(images.every((image) => image.credit.authorUrl === 'https://larian.com/news/divinity-revealed')).toBe(true)
+    expect(images.map((image) => image.url)).not.toContain('https://untrusted.test/unrelated.jpg')
+
     const accept = createImageSelection()
-    expect(pickPressImage(images, 'The Witcher 4 Ciri official screenshot', accept)?.url).toContain('/a_')
-    expect(pickPressImage(images, 'The Witcher 4 cinematic', accept)?.url).toContain('/b.')
-    expect(pickPressImage(images, 'The Witcher 4', accept)).toBeNull()
-    expect(pickPressImage(images, 'The Witcher 3', createImageSelection())).toBeNull()
+    expect(pickPressImage(images, 'Larian Divinity hero', accept)?.url).toContain('/hero.jpg')
+    expect(pickPressImage(images, 'Divinity battle', accept)?.url).toContain('/battle.jpg')
+  })
+
+  it('derives a thumbnail only from a valid YouTube video URL', () => {
+    expect(youtubeThumbnailImage('https://www.youtube.com/watch?v=abcdefghijk', 'Official trailer')).toMatchObject({
+      url: 'https://i.ytimg.com/vi/abcdefghijk/maxresdefault.jpg',
+      alt: 'Official trailer',
+    })
+    expect(youtubeThumbnailImage('https://youtube.com/channel/not-a-video')).toBeNull()
   })
 })

@@ -44,11 +44,8 @@ export interface ArticleMediaProgress {
 }
 
 export interface ArticleGenerationBilling {
-  clientTokensCharged: number
-  clientTokensUsed: number
-  fullyCovered: boolean
-  apiTokens: number
-  tokenRemaining: number
+  articlesCharged: number
+  articlesRemaining: number
 }
 
 export interface ArticleGenerationResult {
@@ -58,8 +55,6 @@ export interface ArticleGenerationResult {
   wordCount: number
   mediaFound: number
   mediaTotal: number
-  tokenUsage: number | null
-  tokenRemaining: number | null
   missingModules: ArticleGenerationModule[]
   reviewApproved: boolean | null
 }
@@ -77,7 +72,7 @@ export interface ArticleGenerationOptions {
 
 export const defaultArticleGenerationOptions = (): ArticleGenerationOptions => ({
   format: 'news',
-  allowGeneratedImages: false,
+  allowGeneratedImages: true,
   modules: ['answer', 'takeaways'],
   research: {
     enabled: true,

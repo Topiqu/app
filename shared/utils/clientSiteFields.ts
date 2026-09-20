@@ -17,6 +17,7 @@ export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'faviconUrl',
   'typographyPreset',
   'autoRelease',
+  'aiSeriesEnabled',
   'gtagId',
   'allowGtag',
   'gamNetworkCode',

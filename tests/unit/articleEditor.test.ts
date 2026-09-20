@@ -19,6 +19,7 @@ import {
 
 const editorSource = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
 const previewSource = readFileSync(resolve(process.cwd(), 'app/components/Article/Editor/Preview.vue'), 'utf8')
+const clientSiteSource = readFileSync(resolve(process.cwd(), 'app/composables/useClientSite.ts'), 'utf8')
 
 describe('generated article modules', () => {
   it('renders extraction fields in both the editor canvas and its preview', () => {
@@ -30,6 +31,13 @@ describe('generated article modules', () => {
     expect(editorSource).toContain('else if (missingModules.length)')
     expect(editorSource).toContain("t('articles.editor.aiModulesUnavailable')")
     expect(editorSource).toContain('t(`articles.editor.ai.module.${module}`)')
+  })
+
+  it('replaces the shared wallet value and waits out reservation settlement after Stop', () => {
+    expect(clientSiteSource).toContain('status.data.value = {')
+    expect(clientSiteSource).toContain('status.articleWallet.reserved <= reservedBefore')
+    expect(editorSource).toContain('patchClientSiteArticleWallet({')
+    expect(editorSource).toContain('refreshClientSiteStatusAfterStop(reservedBefore)')
   })
 })
 

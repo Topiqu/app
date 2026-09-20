@@ -1,0 +1,69 @@
+import "./client"
+
+model ArticleCreditWallet {
+    id String @id
+    clientSite ClientSite @relation(fields: [id], references: [id], onDelete: Restrict)
+    grants ArticleCreditGrant[]
+    operations ArticleCreditOperation[]
+    entries ArticleCreditLedgerEntry[]
+    balance Int @default(0)
+    reserved Int @default(0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    @@deny('all', true)
+}
+
+model ArticleCreditGrant {
+    id String @id @default(uuid())
+    clientSiteId String
+    wallet ArticleCreditWallet @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    entries ArticleCreditLedgerEntry[]
+    source String
+    amount Int
+    remaining Int
+    expiresAt DateTime?
+    periodStart DateTime?
+    periodEnd DateTime?
+    policyVersion String
+    idempotencyKey String @unique
+    createdAt DateTime @default(now())
+    @@index([clientSiteId, expiresAt])
+    @@deny('all', true)
+}
+
+model ArticleCreditOperation {
+    id String @id @default(uuid())
+    clientSiteId String
+    wallet ArticleCreditWallet @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    entries ArticleCreditLedgerEntry[]
+    action String
+    status String @default('RESERVED')
+    reserved Int @default(1)
+    charged Int @default(0)
+    allocations Json
+    metadata Json
+    idempotencyKey String @unique
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+    completedAt DateTime?
+    @@index([clientSiteId, createdAt])
+    @@index([status, expiresAt])
+    @@deny('all', true)
+}
+
+model ArticleCreditLedgerEntry {
+    id String @id @default(uuid())
+    clientSiteId String
+    wallet ArticleCreditWallet @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    kind String
+    amount Int
+    operationId String?
+    operation ArticleCreditOperation? @relation(fields: [operationId], references: [id], onDelete: Restrict)
+    grantId String?
+    grant ArticleCreditGrant? @relation(fields: [grantId], references: [id], onDelete: Restrict)
+    reason String
+    idempotencyKey String @unique
+    createdAt DateTime @default(now())
+    @@index([clientSiteId, createdAt, id])
+    @@deny('all', true)
+}

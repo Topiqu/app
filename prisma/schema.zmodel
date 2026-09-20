@@ -10,6 +10,7 @@ import "./models/log"
 import "./models/ads"
 import "./models/searchConsole"
 import "./models/tokenWallet"
+import "./models/articleCreditWallet"
 import "./models/visibility"
 
 generator client {

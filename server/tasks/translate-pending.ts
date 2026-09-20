@@ -2,7 +2,6 @@ import type { ClientPlan } from '@prisma/client'
 
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 const BATCH_SIZE = 10
-const MIN_TRANSLATION_TOKENS = 500
 
 export default defineMonitoredTask({
   meta: {
@@ -47,7 +46,7 @@ export default defineMonitoredTask({
 
     let processed = 0
     let failed = 0
-    let skipped = 0
+    const skipped = 0
 
     for (const { id } of candidates) {
       // Atomic per-row claim: only the run that flips it out of a claimable state owns it,
@@ -75,7 +74,7 @@ export default defineMonitoredTask({
               faq: true,
             },
           },
-          clientSite: { select: { tokenRemaining: true, translationMode: true } },
+          clientSite: { select: { translationMode: true } },
         },
       })
 
@@ -85,14 +84,6 @@ export default defineMonitoredTask({
           data: { status: 'FAILED', error: 'Source article or tenant missing' },
         })
         failed++
-        continue
-      }
-
-      // Out of budget: release the claim back to PENDING so it retries once the tenant tops up,
-      // instead of paying the translation provider for a translation we can't charge for.
-      if (!row.clientSite.tokenRemaining || row.clientSite.tokenRemaining < MIN_TRANSLATION_TOKENS) {
-        await prisma.articleTranslation.update({ where: { id }, data: { status: 'PENDING' } })
-        skipped++
         continue
       }
 

@@ -147,6 +147,7 @@ model ArticleSeries extends Base {
     slug         String     @length(1, 100, "Slug série musí mít 1–100 znaků")
     description  String?    @length(0, 500)
     imageUrl     String?    @length(0, 255)
+    createdByAi  Boolean    @default(false)
 
     clientSiteId String
     clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)

@@ -47,6 +47,22 @@ describe('generate-article cron row', () => {
     expect(task.match(/action: 'CRON_GENERATE_ARTICLE'/g)).toHaveLength(1)
   })
 
+  it('never turns missing internal token telemetry into a failed customer article', () => {
+    expect(task).toContain("reportCaughtError('Scheduled article cost metering failed'")
+    expect(task).not.toContain('zero_token_usage')
+    expect(task).not.toContain('CRON_GENERATE_ARTICLE_INSUFFICIENT_TOKENS')
+  })
+
+  it('reserves one article and retains the full internal cost budget', () => {
+    expect(task).toContain('withArticleCreditReservation(')
+    expect(task).toContain("'SCHEDULED_ARTICLE'")
+    expect(task).toContain('const CRON_ARTICLE_RESERVATION = articleGenerationReservation(')
+    expect(task).toContain("modules: ['youtube']")
+    expect(task).toContain("research: { enabled: true, depth: 'standard'")
+    expect(task).toContain("withTokenReservation(client.id, CRON_ARTICLE_RESERVATION, 'GENERATE_ARTICLE'")
+    expect(task).toContain("'insufficient_articles'")
+  })
+
   it('copy-edits scheduled articles and never auto-publishes a failed review', () => {
     expect(task).toContain('editorialReview: true')
     expect(task).toContain('generated.editorialTokens')

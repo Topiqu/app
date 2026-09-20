@@ -1,5 +1,6 @@
 import "./base"
 import "./tokenWallet"
+import "./articleCreditWallet"
 import "./article"
 import "./user"
 import "./comment"
@@ -91,8 +92,10 @@ model ClientSite extends Base {
     generationFrequency  GenerationFrequency @default(NONE)
     tokenRemaining       Int?                @default(0)
     tokenWallet          TokenWallet?
+    articleCreditWallet  ArticleCreditWallet?
     totalUsage           Int?                @default(0)
     autoRelease          Boolean             @default(false)
+    aiSeriesEnabled      Boolean             @default(false)
     keywords             Json?
     audience             String?
     lastGeneratedAt      DateTime?

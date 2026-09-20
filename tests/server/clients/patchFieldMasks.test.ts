@@ -25,6 +25,7 @@ const settingsPayload = () => ({
   gtagId: '',
   allowGtag: false,
   autoRelease: false,
+  aiSeriesEnabled: true,
   translationMode: 'HYBRID',
   translationLanguages: ['en'],
   gamNetworkCode: '123456',
@@ -43,6 +44,7 @@ describe('client site PATCH field masks', () => {
 
     for (const field of PRIVILEGED_CLIENT_SITE_FIELDS) expect(tenantSlice).not.toHaveProperty(field)
     expect(tenantSlice).toHaveProperty('gamNetworkCode', '123456')
+    expect(tenantSlice).toHaveProperty('aiSeriesEnabled', true)
   })
 
   it('drops keys the caller never sent so untouched columns are not overwritten', () => {

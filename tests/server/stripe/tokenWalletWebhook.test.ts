@@ -13,7 +13,7 @@ describe('wallet checkout webhook handler', () => {
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('useStripe', () => stripe)
     vi.stubGlobal('createError', createError)
-    vi.stubGlobal('creditTokens', credit)
+    vi.stubGlobal('creditArticleCredits', credit)
   })
   afterEach(() => {
     vi.unstubAllGlobals()
@@ -29,12 +29,12 @@ describe('wallet checkout webhook handler', () => {
           mode: 'payment',
           client_reference_id: 'site_wallet',
           payment_status: paymentStatus,
-          metadata: { tokens: '500' },
+          metadata: { articles: '5' },
         },
       },
     })
     const signature = stripe.webhooks.generateTestHeaderString({ payload, secret })
-    vi.stubGlobal('readRawBody', async () => (tamper ? payload.replace('500', '900') : payload))
+    vi.stubGlobal('readRawBody', async () => (tamper ? payload.replace('"5"', '"9"') : payload))
     vi.stubGlobal('getHeader', () => signature)
     const handler = (await import('../../../server/api/stripe/webhook')).default
     return handler({} as never)
@@ -46,7 +46,7 @@ describe('wallet checkout webhook handler', () => {
       expect(credit).toHaveBeenCalledWith(
         expect.objectContaining({
           clientSiteId: 'site_wallet',
-          amount: 500,
+          amount: 5,
           source: 'PURCHASE',
           idempotencyKey: 'stripe:checkout:cs_wallet',
         }),

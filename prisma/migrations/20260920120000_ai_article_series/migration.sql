@@ -1,0 +1,5 @@
+ALTER TABLE "ClientSite"
+ADD COLUMN "aiSeriesEnabled" BOOLEAN NOT NULL DEFAULT false;
+
+ALTER TABLE "ArticleSeries"
+ADD COLUMN "createdByAi" BOOLEAN NOT NULL DEFAULT false;

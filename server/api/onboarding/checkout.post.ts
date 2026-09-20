@@ -5,6 +5,7 @@ import { logAction } from '~~/server/utils/log'
 import { saveUserWithLogging } from '~~/server/utils/userLog'
 import { TRIAL_PLAN, TRIAL_DAYS } from '~~/shared/utils/trial'
 import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
+import { TRIAL_ARTICLE_CREDITS } from '~~/shared/utils/articleCredits'
 import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
@@ -72,13 +73,13 @@ export default defineEventHandler(async (event) => {
         },
       })
 
-      await creditTokens(
+      await creditArticleCredits(
         {
           clientSiteId: site.id,
-          amount: 25000,
+          amount: TRIAL_ARTICLE_CREDITS,
           source: 'TRIAL',
           idempotencyKey: `trial:${site.id}`,
-          reason: 'Welcome trial credit',
+          reason: 'Welcome trial articles',
           expiresAt: trialEndsAt,
         },
         tx,
@@ -176,7 +177,6 @@ export default defineEventHandler(async (event) => {
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
       client_reference_id: clientSiteId,
-      payment_method_types: ['card'],
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {

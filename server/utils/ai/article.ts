@@ -7,14 +7,14 @@ import { hasAiPlan } from '~~/shared/utils/plans'
 import { generateObject, generateText, streamObject } from 'ai'
 import { stripUntrustedIframes, youtubeEmbedUrl, youtubeVideoId } from '~~/shared/utils/youtube'
 
-import type { ArticleImage } from '../images/types'
+import type { ArticleImage, StockImage } from '../images/types'
 
 import { escapeHtml } from '../sanitize'
 import { findStockImage } from '../images/chain'
 import { createSteamImageSearch } from '../images/steam'
 import { createImageSelection } from '../images/selection'
-import { loadPressImages, pickPressImage } from '../images/press'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
+import { findPressImage, loadPressImages, youtubeThumbnailImage } from '../images/press'
 import { buildRevisionPrompt, reviewArticle, type EditorialReview } from './articleQuality'
 import {
   extractResearchUrls,
@@ -175,6 +175,7 @@ const researchTopic = async (
   fallbackWithoutResearch = true,
   abortSignal?: AbortSignal,
   youtubeRequested = false,
+  imagesRequested = false,
 ) => {
   const researchConfig = RESEARCH_CONFIG[depth]
   const currentDateTime = new Date().toISOString()
@@ -199,6 +200,11 @@ const researchTopic = async (
         Return a compact brief: 5-10 verified facts, each on its own line, including the supporting URL and relevant event or publication date on that same line.
         Every correction and unknown must also carry its supporting URL on the same line.
         Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
+        ${
+          imagesRequested
+            ? 'Also identify up to four official first-party product, news, press, media or download pages owned by the subject\'s developer, publisher or organisation. Open each page before returning it. After Sources, write each suitable page on its own line as exactly "OFFICIAL MEDIA: <owner> — <full URL>". A verified official page may serve assets from its own CDN; do not list image URLs, search pages, social networks, fan sites or third-party news sites.'
+            : ''
+        }
         Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
         Do not write an article, an intro, or any prose beyond the facts.
       `.trim(),
@@ -221,11 +227,17 @@ const researchTopic = async (
     if (!evidence.brief && !fallbackWithoutResearch) throw new Error('Research returned no supported source material')
     const verifiedVideo = youtube.url ? `\nVerified YouTube video (checked against YouTube oEmbed): ${youtube.url}` : ''
     const brief = `${evidence.brief ?? ''}${verifiedVideo}`.trim() || null
+    const officialMediaPages = (evidence.brief ?? '')
+      .split('\n')
+      .filter((line) => /^\s*OFFICIAL MEDIA:/i.test(line))
+      .flatMap(extractResearchUrls)
+      .slice(0, 4)
     const sourceCount = brief ? new Set(brief.match(/https?:\/\/[^\s)\]}>,]+/g) ?? []).size : 0
     return {
       brief,
       tokens: (usage?.totalTokens ?? 0) + youtube.tokens,
       sourceCount,
+      officialMediaPages,
       status: evidence.brief ? ('completed' as const) : ('fallback' as const),
     }
   } catch (error) {
@@ -241,7 +253,7 @@ const researchTopic = async (
       depth,
     })
 
-    return { brief: null, tokens: 0, sourceCount: 0, status: 'fallback' as const }
+    return { brief: null, tokens: 0, sourceCount: 0, officialMediaPages: [], status: 'fallback' as const }
   }
 }
 
@@ -332,16 +344,25 @@ const buildArticleConfig = async (
 
   // Research used to be a PREMIUM / large-CUSTOM perk, which made an empty `sources` array the
   // guaranteed outcome everywhere else — with no brief the model is told to return one. Open to
-  // every plan now; the only gate left is the balance, because the brief bills on top of the
-  // article and must not eat the floor the article itself needs.
+  // every AI plan now. The enclosing operation's internal cost budget decides whether research
+  // fits; customer authorization is the separate one-article reservation.
   const researchBudget = RESEARCH_CONFIG[researchDepth].maxOutputTokens
   const searchOn = tokenRemaining >= ARTICLE_TOKEN_FLOOR + researchBudget
   const researchQuery = researchOption === undefined ? prompt : researchOption ? researchOption.query : null
-  const youtubeRequested = format ? selectedModulesFor(format, modules).includes('youtube') : false
+  const selectedModules = format ? selectedModulesFor(format, modules) : null
+  const youtubeRequested = selectedModules?.includes('youtube') ?? false
+  const imagesRequested = selectedModules?.includes('images') ?? false
   const researchResult =
     searchOn && researchQuery
-      ? await researchTopic(researchQuery, researchDepth, fallbackWithoutResearch, abortSignal, youtubeRequested)
-      : { brief: null, tokens: 0, sourceCount: 0, status: 'skipped' as const }
+      ? await researchTopic(
+          researchQuery,
+          researchDepth,
+          fallbackWithoutResearch,
+          abortSignal,
+          youtubeRequested,
+          imagesRequested,
+        )
+      : { brief: null, tokens: 0, sourceCount: 0, officialMediaPages: [], status: 'skipped' as const }
   const { brief, tokens: researchTokens } = researchResult
 
   const researchPrompt = brief
@@ -354,11 +375,10 @@ const buildArticleConfig = async (
 
   // No format is the manual editor flow, where the author's prompt is the brief — it keeps the
   // full menu, and only the cron's topic picker spends a format.
-  const selectedModules = format ? selectedModulesFor(format, modules) : null
   const imagesSelected = selectedModules ? selectedModules.includes('images') : null
-  const pollsAllowed = selectedModules ? selectedModules.includes('poll') : true
-  const tablesAllowed = selectedModules ? selectedModules.includes('table') : true
-  const videosAllowed = selectedModules ? selectedModules.includes('youtube') : true
+  const pollsSelected = selectedModules ? selectedModules.includes('poll') : null
+  const tablesSelected = selectedModules ? selectedModules.includes('table') : null
+  const videosSelected = selectedModules ? selectedModules.includes('youtube') : null
   const currentDateTime = new Date().toISOString()
 
   const instructions = `
@@ -418,26 +438,32 @@ const buildArticleConfig = async (
             : 'If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.'
       }
       ${
-        pollsAllowed
-          ? 'A poll is optional. Add one only where it opens a genuine question the article deliberately leaves open — at most 2 slots as [[POLL1]], [[POLL2]], with the question and 2-5 options per poll. Otherwise return an empty polls array and write no slot.'
-          : 'Return an empty polls array and never write a [[POLL]] slot into the content.'
+        pollsSelected === true
+          ? 'The author explicitly requested a poll. Include exactly one [[POLL1]] slot at a natural decision point and exactly one matching poll with a concise question and 2-5 meaningful options. Never return an empty polls array when the poll module is selected.'
+          : pollsSelected === false
+            ? 'Return an empty polls array and never write a [[POLL]] slot into the content.'
+            : 'A poll is optional. Add one only when it opens a genuine choice the article leaves to readers; otherwise return an empty polls array.'
       }
 
       ${
-        tablesAllowed
+        tablesSelected === true
           ? `Tables:
       The author selected a table. Render one useful real HTML table comparing consistent facts across rows, never tab- or pipe-separated text.
       Use proper markup: <table><thead><tr><th>…</th></tr></thead><tbody><tr><td>…</td></tr></tbody></table>.
       Keep tables to a maximum of 4 columns so they stay readable on mobile, and never put an image, a poll slot or a nested table inside a cell.
       A table earns its place by holding figures the reader compares across rows. Never build one out of prose.`
-          : 'Never render a <table>. Whatever figures this format needs belong in the prose.'
+          : tablesSelected === false
+            ? 'Never render a <table>. Whatever figures this format needs belong in the prose.'
+            : 'A table is optional. Include one only when readers need to compare consistent facts across rows.'
       }
 
       YouTube video:
       ${
-        videosAllowed
+        videosSelected === true
           ? 'The author selected a YouTube video. Use one [[VIDEO1]] slot when the research brief contains a suitable YouTube URL that materially demonstrates, documents or explains the subject, and return that URL and its caption in videos. If the brief contains no suitable YouTube URL, return [] and write no slot. Never invent or reconstruct a video URL.'
-          : 'Return an empty videos array and never write a [[VIDEO]] slot into the content.'
+          : videosSelected === false
+            ? 'Return an empty videos array and never write a [[VIDEO]] slot into the content.'
+            : 'A YouTube video is optional. Use one only when the research brief contains a suitable verified URL; never invent or reconstruct one.'
       }
 
       Twitter/X Embeds:
@@ -451,6 +477,7 @@ const buildArticleConfig = async (
   return {
     language,
     allowGeneratedImages: allowGeneratedImages && hasAiPlan(plan) && !features?.some((feature) => !feature.isActive),
+    officialMediaPages: researchResult.officialMediaPages,
     researchBrief: brief,
     // Billed on top of `usage` by every caller: the brief is a separate model call, so it is
     // invisible to the writer's own token count. It went unbilled entirely while research was a
@@ -474,6 +501,7 @@ type FinalizeCallbacks = {
   onMedia?: (progress: ArticleMediaProgress) => void
   abortSignal?: AbortSignal
   allowGeneratedImages?: boolean
+  officialMediaPages?: readonly string[]
 }
 
 /** Falls back to English wording rather than dropping the disclosure when a key is missing. */
@@ -492,7 +520,7 @@ export const finalizeArticle = async (
   language: Language = 'en',
   callbacks: FinalizeCallbacks = {},
 ) => {
-  const { onImage, onMedia, abortSignal, allowGeneratedImages = false } = callbacks
+  const { onImage, onMedia, abortSignal, allowGeneratedImages = false, officialMediaPages = [] } = callbacks
   const generateImageOptions = {
     outputDir: 'article-images',
     filenamePrefix: 'article',
@@ -514,11 +542,18 @@ export const finalizeArticle = async (
   }
 
   const acceptImage = createImageSelection()
-  const pressImages = await loadPressImages(object.sources ?? [])
+  const officialImages = [
+    ...(await loadPressImages([...officialMediaPages])),
+    ...(object.videos ?? []).flatMap((video) => {
+      const thumbnail = youtubeThumbnailImage(video.url, video.caption)
+      return thumbnail ? [thumbnail] : []
+    }),
+  ]
+  const officialImageCache = new Map<string, Promise<StockImage | null>>()
   const findSteamImage = createSteamImageSearch()
   const findExistingImage = async (query: string, type: ArticleObject['images'][number]['type']) => {
-    const press = pickPressImage(pressImages, query, acceptImage)
-    if (press) return { image: press, kind: 'photo' as const }
+    const official = await findPressImage(officialImages, query, acceptImage, officialImageCache)
+    if (official) return { image: official, kind: 'illustration' as const }
     const screenshot = await findSteamImage(query, acceptImage)
     if (screenshot) return { image: screenshot, kind: 'illustration' as const }
     const hit = await findStockImage(type, query)
@@ -556,7 +591,15 @@ export const finalizeArticle = async (
     idx: number,
   ): Promise<ArticleImage | null> => {
     const hit = await findExistingImage(instruction.query, instruction.type)
-    if (hit) return { url: hit.image.url, kind: hit.kind, alt: hit.image.alt, credit: hit.image.credit }
+    if (hit)
+      return {
+        url: hit.image.url,
+        kind: hit.kind,
+        width: hit.image.width,
+        height: hit.image.height,
+        alt: hit.image.alt,
+        credit: hit.image.credit,
+      }
 
     const generated = await tryGenerateImage(instruction.query, { filenameSuffix: idx.toString() })
 
@@ -636,11 +679,8 @@ export const generateArticle = async (
     editorialReview?: boolean
   },
 ) => {
-  const { config, language, researchTokens, researchBrief, research, allowGeneratedImages } = await buildArticleConfig(
-    clientSiteId,
-    prompt,
-    opts,
-  )
+  const { config, language, researchTokens, researchBrief, research, allowGeneratedImages, officialMediaPages } =
+    await buildArticleConfig(clientSiteId, prompt, opts)
   let groundingBrief = researchBrief
   const first = await generateObject(config)
   let object = first.object
@@ -653,6 +693,7 @@ export const generateArticle = async (
         prompt,
         researchBrief,
         format: opts.format,
+        modules: opts.modules,
         verifyFacts: opts.research !== false,
       }
       const initial = await reviewArticle(object, context)
@@ -692,6 +733,7 @@ export const generateArticle = async (
   object.sources = filterResearchSources(object.sources, groundingBrief)
   const finalized = await finalizeArticle(applyFormat(object, opts?.format, opts?.modules), language, {
     allowGeneratedImages,
+    officialMediaPages,
   })
 
   return { ...finalized, usage: first.usage, researchTokens, research, editorialTokens, editorialReview }
@@ -710,11 +752,8 @@ export const streamArticle = async (
     modules?: readonly ArticleModule[]
   } = {},
 ) => {
-  const { config, language, researchTokens, researchBrief, research, allowGeneratedImages } = await buildArticleConfig(
-    clientSiteId,
-    prompt,
-    opts,
-  )
+  const { config, language, researchTokens, researchBrief, research, allowGeneratedImages, officialMediaPages } =
+    await buildArticleConfig(clientSiteId, prompt, opts)
   let groundingBrief = researchBrief
   const result = streamObject({ ...config, abortSignal: opts.abortSignal })
 
@@ -728,7 +767,7 @@ export const streamArticle = async (
         opts.modules,
       ),
       language,
-      { ...callbacks, allowGeneratedImages },
+      { ...callbacks, allowGeneratedImages, officialMediaPages },
     )
 
   let editorialTokens = 0
@@ -744,6 +783,7 @@ export const streamArticle = async (
       prompt,
       researchBrief,
       format: opts.format,
+      modules: opts.modules,
       abortSignal: opts.abortSignal,
       verifyFacts: opts.research !== false,
     }

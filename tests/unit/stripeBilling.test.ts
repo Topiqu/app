@@ -1,21 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { planFromPriceId } from '../../server/utils/stripeWebhook'
-import { getTokenPack, TOKEN_PACKS } from '../../shared/utils/tokenPacks'
+import { ARTICLE_PACKS, getArticlePack } from '../../shared/utils/articlePacks'
 
-describe('getTokenPack', () => {
-  it('returns the pack for a known id with server-side price + tokens', () => {
-    const pack = getTokenPack('75000')
-    expect(pack).toEqual(TOKEN_PACKS['75000'])
-    expect(pack?.priceUsd).toBe(11.19)
-    expect(pack?.tokens).toBe(75000)
+describe('getArticlePack', () => {
+  it('returns the pack for a known id with server-side price and article count', () => {
+    const pack = getArticlePack('25')
+    expect(pack).toEqual(ARTICLE_PACKS['25'])
+    expect(pack?.priceUsd).toBe(29.99)
+    expect(pack?.articles).toBe(25)
   })
 
   it('rejects unknown or malformed ids (price tampering guard)', () => {
-    expect(getTokenPack('99999')).toBeNull()
-    expect(getTokenPack('')).toBeNull()
-    expect(getTokenPack(undefined)).toBeNull()
-    expect(getTokenPack(25000)).toBeNull()
+    expect(getArticlePack('99999')).toBeNull()
+    expect(getArticlePack('')).toBeNull()
+    expect(getArticlePack(undefined)).toBeNull()
+    expect(getArticlePack(25)).toBeNull()
   })
 })
 

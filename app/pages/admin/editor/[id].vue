@@ -278,7 +278,7 @@
             :aiWordCount="aiWordCount"
             :aiResearch="aiResearch"
             :aiMedia="aiMedia"
-            :aiReservedTokens="aiReservedTokens"
+            :aiReservedArticles="aiReservedArticles"
             :aiLastResult="aiLastResult"
             :aiWritingStage="aiWritingStage"
             @upload="handleUpload"
@@ -364,7 +364,7 @@
           :aiWordCount="aiWordCount"
           :aiResearch="aiResearch"
           :aiMedia="aiMedia"
-          :aiReservedTokens="aiReservedTokens"
+          :aiReservedArticles="aiReservedArticles"
           :aiLastResult="aiLastResult"
           :aiWritingStage="aiWritingStage"
           @upload="handleUpload"
@@ -471,7 +471,7 @@ const aiOptions = ref(defaultArticleGenerationOptions())
 const aiPhase = shallowRef<GenerationPhase>('research')
 const aiResearch = shallowRef<GenerationResearchResult | null>(null)
 const aiMedia = shallowRef<ArticleMediaProgress | null>(null)
-const aiReservedTokens = shallowRef<number | null>(null)
+const aiReservedArticles = shallowRef<number | null>(null)
 const aiLastResult = shallowRef<ArticleGenerationResult | null>(null)
 const aiWritingStage = shallowRef<GenerationWritingStage>('starting')
 const aiStartedAt = shallowRef(0)
@@ -752,6 +752,7 @@ const handleUpload = (file: { url: string; optimizedUrl: string }) => {
 }
 
 const generateAIContent = async () => {
+  const reservedBefore = clientStatus.value?.articleWallet.reserved ?? 0
   let missingModules: ArticleGenerationModule[] = []
   let billing: ArticleGenerationBilling | null = null
   let finalReceived = false
@@ -773,7 +774,7 @@ const generateAIContent = async () => {
   aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
   aiResearch.value = null
   aiMedia.value = null
-  aiReservedTokens.value = null
+  aiReservedArticles.value = null
   aiWritingStage.value = 'starting'
   aiStartedAt.value = Date.now()
   aiLastActivityAt.value = aiStartedAt.value
@@ -801,12 +802,26 @@ const generateAIContent = async () => {
       onReview: (review) => (reviewApproved = review.approved),
       onBilling: (result) => {
         billing = result
-        if (clientStatus.value) {
-          clientStatus.value.tokenRemaining = result.tokenRemaining
-          clientStatus.value.totalUsage = (clientStatus.value.totalUsage ?? 0) + result.clientTokensUsed
-        }
+        const reserved = Math.max(
+          reservedBefore,
+          (clientStatus.value?.articleWallet.reserved ?? 0) - (aiReservedArticles.value ?? 0),
+        )
+        patchClientSiteArticleWallet({
+          available: result.articlesRemaining,
+          reserved,
+          balance: result.articlesRemaining + reserved,
+        })
       },
-      onReservation: (credits) => (aiReservedTokens.value = credits),
+      onReservation: (articles) => {
+        aiReservedArticles.value = articles
+        const wallet = clientStatus.value?.articleWallet
+        if (wallet)
+          patchClientSiteArticleWallet({
+            available: Math.max(0, wallet.available - articles),
+            reserved: wallet.reserved + articles,
+            balance: wallet.balance,
+          })
+      },
       onWritingStage: (stage) => (aiWritingStage.value = stage),
       onActivity: () => (aiLastActivityAt.value = Date.now()),
       onImage: ({ slot, html }) => {
@@ -854,8 +869,6 @@ const generateAIContent = async () => {
       wordCount: aiWordCount.value,
       mediaFound,
       mediaTotal,
-      tokenUsage: (billing as ArticleGenerationBilling | null)?.clientTokensUsed ?? null,
-      tokenRemaining: (billing as ArticleGenerationBilling | null)?.tokenRemaining ?? null,
       missingModules,
       reviewApproved,
     }
@@ -888,8 +901,6 @@ const generateAIContent = async () => {
       wordCount: aiWordCount.value,
       mediaFound,
       mediaTotal,
-      tokenUsage: (billing as ArticleGenerationBilling | null)?.clientTokensUsed ?? null,
-      tokenRemaining: (billing as ArticleGenerationBilling | null)?.tokenRemaining ?? null,
       missingModules: finalReceived ? missingModules : aiOptions.value.modules,
       reviewApproved,
     }
@@ -902,7 +913,8 @@ const generateAIContent = async () => {
     if (!finalReceived && streamedContent)
       editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
     aiGenerating.value = false
-    await refreshClientSiteStatus().catch(() => undefined)
+    if (billing) await refreshClientSiteStatus().catch(() => undefined)
+    else await refreshClientSiteStatusAfterStop(reservedBefore).catch(() => undefined)
   }
 }
 

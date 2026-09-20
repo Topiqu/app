@@ -32,6 +32,7 @@ describe('client site field partition', () => {
     for (const field of ['name', 'theme', 'description', 'tagline', 'faviconUrl', 'typographyPreset', 'gtagId']) {
       expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).toContain(field)
     }
+    expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).toContain('aiSeriesEnabled')
   })
 
   it('builds a zod pick mask from a field list', () => {

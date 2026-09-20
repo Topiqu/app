@@ -8,17 +8,13 @@ export interface ClientSiteStatus {
   domain: string
   domainVerified: boolean
   plan: string
-  wallet: {
+  articleWallet: {
     available: number
     reserved: number
     balance: number
-    periodUsage: number
-    periodStart: string
-    priceVersion: string
-    expiring: { remaining: number; expiresAt: string | null; source: string }[]
+    grants: { id: string; remaining: number; expiresAt: string | null; periodEnd: string | null; source: string }[]
   }
-  tokenRemaining: number | null
-  totalUsage: number | null
+  articlesRemaining: number
   createdAt: string
   firstPaidAt: string | null
   trial: {
@@ -69,5 +65,32 @@ export const useClientSiteStatus = () => {
   return useAsyncData('clientsite-status', () => requestFetch<ClientSiteStatus | null>('/api/clients/status'))
 }
 
-/** Refreshes the shared status ref used by the editor, navigation and token balance surfaces. */
+/** Refreshes the shared status ref used by the editor, navigation and article balance surfaces. */
 export const refreshClientSiteStatus = () => refreshNuxtData('clientsite-status')
+
+/** Replaces the shared shallow status value so every mounted balance surface reacts immediately. */
+export const patchClientSiteArticleWallet = (patch: { available: number; reserved?: number; balance?: number }) => {
+  const status = useNuxtData<ClientSiteStatus | null>('clientsite-status')
+  if (!status.data.value) return
+  status.data.value = {
+    ...status.data.value,
+    articlesRemaining: patch.available,
+    articleWallet: {
+      ...status.data.value.articleWallet,
+      available: patch.available,
+      reserved: patch.reserved ?? status.data.value.articleWallet.reserved,
+      balance: patch.balance ?? status.data.value.articleWallet.balance,
+    },
+  }
+}
+
+/** Stop can close the response before the server settles its reservation. Refresh until that
+ * reservation disappears instead of freezing ClientVersion on the first, racing response. */
+export const refreshClientSiteStatusAfterStop = async (reservedBefore: number) => {
+  for (let attempt = 0; attempt < 12; attempt++) {
+    await refreshClientSiteStatus()
+    const status = useNuxtData<ClientSiteStatus | null>('clientsite-status').data.value
+    if (!status || status.articleWallet.reserved <= reservedBefore) return
+    await new Promise((resolve) => setTimeout(resolve, 250 * Math.min(attempt + 1, 4)))
+  }
+}

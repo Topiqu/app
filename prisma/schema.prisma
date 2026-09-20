@@ -208,6 +208,65 @@ enum SearchConsoleConnectionStatus {
   REVOKED
 }
 
+enum AiCrawlerKind {
+  ANSWER_ENGINE
+  TRAINING
+  SEARCH
+}
+
+enum AiCrawlerSurface {
+  ARTICLE
+  MARKDOWN
+  LLMS
+  RSS
+  HOMEPAGE
+  OTHER
+}
+
+enum AiReferralChannel {
+  CHATGPT
+  PERPLEXITY
+  GEMINI
+  COPILOT
+  CLAUDE
+  OTHER_AI
+}
+
+enum AiPromptIntent {
+  DISCOVERY
+  COMPARISON
+  PROBLEM
+  HOW_TO
+  OTHER
+}
+
+enum AiPromptSource {
+  MANUAL
+  GENERATED
+  SEARCH_CONSOLE
+}
+
+enum AiVisibilityProvider {
+  OPENAI
+}
+
+enum AiVisibilityRunStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+enum AiOpportunityKind {
+  UPDATE_ARTICLE
+  CREATE_ARTICLE
+}
+
+enum AiOpportunityStatus {
+  OPEN
+  DISMISSED
+  RESOLVED
+}
+
 enum NotificationType {
   COMMENT
   LIKE
@@ -381,10 +440,10 @@ model ArticleDraft {
 
 model Article {
   userId           String
-  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  id               String               @id() @default(uuid())
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime?            @updatedAt()
+  user             User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String                    @id() @default(uuid())
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime?                 @updatedAt()
   deletedAt        DateTime?
   slug             String
   title            String
@@ -395,31 +454,34 @@ model Article {
   /// attribution. Body images carry theirs inside `content`; the cover is a bare URL, so
   /// without this there is nowhere to disclose a generated hero or credit a licensed one.
   imageCredit      Json?
-  status           ArticleStatus        @default(draft)
+  status           ArticleStatus             @default(draft)
   clientSiteId     String
-  clientSite       ClientSite           @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-  views            Int                  @default(0)
-  shared           Int                  @default(0)
-  aiInvolvement    AIInvolvement        @default(NONE)
+  clientSite       ClientSite                @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  views            Int                       @default(0)
+  shared           Int                       @default(0)
+  aiInvolvement    AIInvolvement             @default(NONE)
   readingTime      Int?
   totalWords       Int?
-  savedAmount      Float                @default(0.0)
-  savedTimeMinutes Int                  @default(0)
+  savedAmount      Float                     @default(0.0)
+  savedTimeMinutes Int                       @default(0)
   publishedAt      DateTime?
   articleSeriesId  String?
-  articleSeries    ArticleSeries?       @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
-  seriesOrder      Int?                 @default(0)
+  articleSeries    ArticleSeries?            @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
+  seriesOrder      Int?                      @default(0)
   releaseAt        DateTime?
-  allowedComments  Boolean              @default(true)
+  allowedComments  Boolean                   @default(true)
   tags             ArticleTag[]
   comments         Comment[]
   reactions        ArticleReaction[]
   shares           ArticleShare[]
   viewEvents       ArticleView[]
   feedbacks        ArticleFeedback[]
+  aiReferralVisits AiReferralVisit[]
+  aiCitations      AiCitation[]
+  aiOpportunities  AiVisibilityOpportunity[]
   pollResults      PollResult[]
   polls            Poll[]
-  notifications    Notification[]       @relation("ArticleNotifications")
+  notifications    Notification[]            @relation("ArticleNotifications")
   translations     ArticleTranslation[]
   sources          String[]
   /// Direct answer to the article's question, 40–60 words, rendered above the body. Answer
@@ -478,6 +540,7 @@ model ArticleSeries {
   slug         String
   description  String?
   imageUrl     String?
+  createdByAi  Boolean    @default(false)
   clientSiteId String
   clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
   articles     Article[]
@@ -583,67 +646,69 @@ model Social {
 }
 
 model ClientSite {
-  id                           String                   @id() @default(uuid())
-  createdAt                    DateTime                 @default(now())
-  updatedAt                    DateTime?                @updatedAt()
+  id                           String                    @id() @default(uuid())
+  createdAt                    DateTime                  @default(now())
+  updatedAt                    DateTime?                 @updatedAt()
   deletedAt                    DateTime?
-  name                         String                   @unique()
-  domain                       String                   @unique()
-  domainVerified               Boolean                  @default(false)
-  domainVerificationStatus     DomainVerificationStatus @default(PENDING)
+  name                         String                    @unique()
+  domain                       String                    @unique()
+  domainVerified               Boolean                   @default(false)
+  domainVerificationStatus     DomainVerificationStatus  @default(PENDING)
   domainVerificationToken      String?
   domainVerificationIssuedAt   DateTime?
   domainVerifiedAt             DateTime?
   domainLastCheckedAt          DateTime?
-  domainRoutingVerified        Boolean                  @default(false)
-  domainVerificationFailures   Int                      @default(0)
+  domainRoutingVerified        Boolean                   @default(false)
+  domainVerificationFailures   Int                       @default(0)
   domainVerificationDegradedAt DateTime?
   domainVerificationError      String?
-  plan                         ClientPlan               @default(BASIC)
+  plan                         ClientPlan                @default(BASIC)
   focus                        String?
   description                  String?
   tagline                      String?
   logoUrl                      String?
   faviconUrl                   String?
-  typographyPreset             PublicationTypography    @default(MODERN)
-  generationFrequency          GenerationFrequency      @default(NONE)
-  tokenRemaining               Int?                     @default(0)
+  typographyPreset             PublicationTypography     @default(MODERN)
+  generationFrequency          GenerationFrequency       @default(NONE)
+  tokenRemaining               Int?                      @default(0)
   tokenWallet                  TokenWallet?
-  totalUsage                   Int?                     @default(0)
-  autoRelease                  Boolean                  @default(false)
+  articleCreditWallet          ArticleCreditWallet?
+  totalUsage                   Int?                      @default(0)
+  autoRelease                  Boolean                   @default(false)
+  aiSeriesEnabled              Boolean                   @default(false)
   keywords                     Json?
   audience                     String?
   lastGeneratedAt              DateTime?
-  humanHourlyRateUsd           Int                      @default(35)
-  humanWordsPerHour            Int                      @default(400)
+  humanHourlyRateUsd           Int                       @default(35)
+  humanWordsPerHour            Int                       @default(400)
   gtagId                       String?
   apiKey                       String?
   gamNetworkCode               String?
   allowGtag                    Boolean?
-  allowShapes                  Boolean                  @default(false)
+  allowShapes                  Boolean                   @default(false)
   aiToneOfVoice                String?
   aiControversyLevel           String?
-  discloseAiContent            Boolean                  @default(false)
+  discloseAiContent            Boolean                   @default(false)
   communityInsight             Json?
   insightUpdatedAt             DateTime?
-  billingPlan                  BillingPlans             @default(MONTHLY)
+  billingPlan                  BillingPlans              @default(MONTHLY)
   trialStartedAt               DateTime?
   trialEndsAt                  DateTime?
   trialAcknowledgedAt          DateTime?
   firstPaidAt                  DateTime?
   nextBillingAt                DateTime?
   lastInvoicedAt               DateTime?
-  monthlyPayment               Int?                     @default(0)
-  annualPayment                Int?                     @default(0)
+  monthlyPayment               Int?                      @default(0)
+  annualPayment                Int?                      @default(0)
   stripeCustomerId             String?
   stripeSubscriptionId         String?
   stripePriceId                String?
-  currency                     String?                  @default("USD")
-  lastPaidAt                   DateTime?                @default(now())
-  lastTokenRefilled            DateTime?                @default(now())
-  language                     Language                 @default(en)
-  theme                        Theme                    @default(blue)
-  translationMode              TranslationMode          @default(OFF)
+  currency                     String?                   @default("USD")
+  lastPaidAt                   DateTime?                 @default(now())
+  lastTokenRefilled            DateTime?                 @default(now())
+  language                     Language                  @default(en)
+  theme                        Theme                     @default(blue)
+  translationMode              TranslationMode           @default(OFF)
   translationLanguages         Language[]
   users                        User[]
   tags                         Tag[]
@@ -654,16 +719,22 @@ model ClientSite {
   emojis                       Emoji[]
   userBans                     UserBan[]
   socials                      Social[]
-  logs                         Log[]                    @relation("LogToClientSite")
+  logs                         Log[]                     @relation("LogToClientSite")
   features                     ClientFeature[]
   linkedinCompanies            LinkedinCompany[]
   articleTranslations          ArticleTranslation[]
   adEarnings                   AdEarning[]
   searchConsoleConnection      SearchConsoleConnection?
   searchConsoleMetrics         SearchConsoleMetric[]
+  aiCrawlerDays                AiCrawlerDaily[]
+  aiReferralVisits             AiReferralVisit[]
+  aiVisibilityPrompts          AiVisibilityPrompt[]
+  aiVisibilityRuns             AiVisibilityRun[]
+  aiCitations                  AiCitation[]
+  aiOpportunities              AiVisibilityOpportunity[]
   tenantMemberships            TenantMembership[]
   tenantInvitations            TenantInvitation[]
-  activeSessions               Session[]                @relation("SessionActiveTenant")
+  activeSessions               Session[]                 @relation("SessionActiveTenant")
 
   @@index([domain, name, plan, billingPlan])
   @@index([trialEndsAt, trialAcknowledgedAt])
@@ -764,6 +835,73 @@ model TokenLedgerEntry {
   reason         String
   idempotencyKey String            @unique()
   createdAt      DateTime          @default(now())
+
+  @@index([clientSiteId, createdAt, id])
+}
+
+model ArticleCreditWallet {
+  id         String                     @id()
+  clientSite ClientSite                 @relation(fields: [id], references: [id], onDelete: Restrict)
+  grants     ArticleCreditGrant[]
+  operations ArticleCreditOperation[]
+  entries    ArticleCreditLedgerEntry[]
+  balance    Int                        @default(0)
+  reserved   Int                        @default(0)
+  createdAt  DateTime                   @default(now())
+  updatedAt  DateTime                   @updatedAt()
+}
+
+model ArticleCreditGrant {
+  id             String                     @id() @default(uuid())
+  clientSiteId   String
+  wallet         ArticleCreditWallet        @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+  entries        ArticleCreditLedgerEntry[]
+  source         String
+  amount         Int
+  remaining      Int
+  expiresAt      DateTime?
+  periodStart    DateTime?
+  periodEnd      DateTime?
+  policyVersion  String
+  idempotencyKey String                     @unique()
+  createdAt      DateTime                   @default(now())
+
+  @@index([clientSiteId, expiresAt])
+}
+
+model ArticleCreditOperation {
+  id             String                     @id() @default(uuid())
+  clientSiteId   String
+  wallet         ArticleCreditWallet        @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+  entries        ArticleCreditLedgerEntry[]
+  action         String
+  status         String                     @default("RESERVED")
+  reserved       Int                        @default(1)
+  charged        Int                        @default(0)
+  allocations    Json
+  metadata       Json
+  idempotencyKey String                     @unique()
+  expiresAt      DateTime
+  createdAt      DateTime                   @default(now())
+  completedAt    DateTime?
+
+  @@index([clientSiteId, createdAt])
+  @@index([status, expiresAt])
+}
+
+model ArticleCreditLedgerEntry {
+  id             String                  @id() @default(uuid())
+  clientSiteId   String
+  wallet         ArticleCreditWallet     @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+  kind           String
+  amount         Int
+  operationId    String?
+  operation      ArticleCreditOperation? @relation(fields: [operationId], references: [id], onDelete: Restrict)
+  grantId        String?
+  grant          ArticleCreditGrant?     @relation(fields: [grantId], references: [id], onDelete: Restrict)
+  reason         String
+  idempotencyKey String                  @unique()
+  createdAt      DateTime                @default(now())
 
   @@index([clientSiteId, createdAt, id])
 }
@@ -1010,6 +1148,143 @@ model SearchConsoleMetric {
   @@unique([clientSiteId, date, page, query, country, device])
   @@index([clientSiteId, date])
   @@index([clientSiteId, page, date])
+}
+
+model AiCrawlerDaily {
+  id               String           @id() @default(uuid())
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime?        @updatedAt()
+  deletedAt        DateTime?
+  clientSiteId     String
+  clientSite       ClientSite       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  date             DateTime         @db.Date()
+  bot              String
+  kind             AiCrawlerKind
+  surface          AiCrawlerSurface
+  path             String
+  requestCount     Int              @default(0)
+  successCount     Int              @default(0)
+  errorCount       Int              @default(0)
+  rateLimitedCount Int              @default(0)
+  firstSeenAt      DateTime
+  lastSeenAt       DateTime
+
+  @@unique([clientSiteId, date, bot, path])
+  @@index([clientSiteId, date])
+  @@index([clientSiteId, kind, date])
+}
+
+model AiReferralVisit {
+  id           String            @id() @default(uuid())
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime?         @updatedAt()
+  deletedAt    DateTime?
+  clientSiteId String
+  clientSite   ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  articleId    String
+  article      Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  channel      AiReferralChannel
+  sessionId    String
+  referrerHost String
+  visitedOn    DateTime          @db.Date()
+
+  @@unique([articleId, sessionId, visitedOn, channel])
+  @@index([clientSiteId, visitedOn])
+  @@index([clientSiteId, channel, visitedOn])
+}
+
+model AiVisibilityPrompt {
+  id            String                    @id() @default(uuid())
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime?                 @updatedAt()
+  deletedAt     DateTime?
+  clientSiteId  String
+  clientSite    ClientSite                @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  text          String
+  language      Language
+  country       String                    @default("")
+  intent        AiPromptIntent            @default(OTHER)
+  source        AiPromptSource            @default(MANUAL)
+  active        Boolean                   @default(true)
+  lastRunAt     DateTime?
+  runs          AiVisibilityRun[]
+  opportunities AiVisibilityOpportunity[]
+
+  @@unique([clientSiteId, text, language, country])
+  @@index([clientSiteId, active, lastRunAt])
+}
+
+model AiVisibilityRun {
+  id             String                @id() @default(uuid())
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime?             @updatedAt()
+  deletedAt      DateTime?
+  clientSiteId   String
+  clientSite     ClientSite            @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  promptId       String
+  prompt         AiVisibilityPrompt    @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  provider       AiVisibilityProvider
+  model          String
+  status         AiVisibilityRunStatus @default(RUNNING)
+  executedAt     DateTime              @default(now())
+  searchedWeb    Boolean               @default(false)
+  brandMentioned Boolean               @default(false)
+  responseText   String?
+  error          String?
+  citationCount  Int                   @default(0)
+  usage          Json?
+  citations      AiCitation[]
+
+  @@index([clientSiteId, executedAt])
+  @@index([promptId, executedAt])
+}
+
+model AiCitation {
+  id            String          @id() @default(uuid())
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime?       @updatedAt()
+  deletedAt     DateTime?
+  clientSiteId  String
+  clientSite    ClientSite      @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  runId         String
+  run           AiVisibilityRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  articleId     String?
+  article       Article?        @relation(fields: [articleId], references: [id], onDelete: SetNull)
+  url           String
+  normalizedUrl String
+  domain        String
+  title         String?
+  owned         Boolean         @default(false)
+  position      Int
+
+  @@unique([runId, normalizedUrl])
+  @@index([clientSiteId, owned, createdAt])
+  @@index([articleId, createdAt])
+}
+
+model AiVisibilityOpportunity {
+  id           String              @id() @default(uuid())
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime?           @updatedAt()
+  deletedAt    DateTime?
+  clientSiteId String
+  clientSite   ClientSite          @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+  promptId     String
+  prompt       AiVisibilityPrompt  @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  articleId    String?
+  article      Article?            @relation(fields: [articleId], references: [id], onDelete: SetNull)
+  kind         AiOpportunityKind
+  status       AiOpportunityStatus @default(OPEN)
+  reason       String
+  citedDomains String[]
+  sampleSize   Int
+  ownedHits    Int
+  externalHits Int
+  firstSeenAt  DateTime
+  lastSeenAt   DateTime
+
+  @@unique([clientSiteId, promptId])
+  @@index([clientSiteId, status, lastSeenAt])
 }
 
 model Notification {

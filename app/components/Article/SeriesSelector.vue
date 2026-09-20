@@ -36,15 +36,26 @@
           </div>
         </div>
 
-        <UButton
-          color="error"
-          variant="ghost"
-          type="button"
-          square
-          icon="mdi:close"
-          :title="$t('common.actions.delete')"
-          @click="modelValue = null"
-        />
+        <div class="flex shrink-0 items-center gap-1">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            type="button"
+            square
+            icon="mdi:pencil-outline"
+            :title="$t('common.actions.edit')"
+            @click="openEdit"
+          />
+          <UButton
+            color="error"
+            variant="ghost"
+            type="button"
+            square
+            icon="mdi:close"
+            :title="$t('series.removeArticle')"
+            @click="modelValue = null"
+          />
+        </div>
       </div>
     </UCard>
 
@@ -80,6 +91,37 @@
         </div>
       </template>
     </UModal>
+
+    <UModal v-model:open="editModal" :title="$t('series.editTitle')">
+      <template #body>
+        <div class="flex flex-col gap-4 py-2">
+          <UFormField :label="$t('series.nameLabel')">
+            <UInput
+              v-model="editedSeriesName"
+              class="w-full"
+              :placeholder="$t('series.namePlaceholder')"
+              autofocus
+              @keyup.enter="saveSeries"
+            />
+          </UFormField>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex w-full items-center gap-2">
+          <UButton color="error" variant="ghost" :loading="deleting" @click="deleteSeries">
+            {{ $t('common.actions.delete') }}
+          </UButton>
+          <div class="flex-1" />
+          <UButton color="neutral" variant="ghost" @click="editModal = false">
+            {{ $t('common.actions.cancel') }}
+          </UButton>
+          <UButton color="primary" :loading="saving" :disabled="!editedSeriesName.trim()" @click="saveSeries">
+            {{ $t('common.actions.save') }}
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -97,6 +139,12 @@ const { data: series, refresh } = await useLazyFetch<any[]>('/api/series', {
 
 const createModal = shallowRef(false)
 const newSeriesName = shallowRef('')
+const editModal = shallowRef(false)
+const editedSeriesName = shallowRef('')
+const saving = shallowRef(false)
+const deleting = shallowRef(false)
+const toast = useToast()
+const confirm = useConfirm()
 
 const seriesItems = computed(() =>
   series.value.map((s) => ({
@@ -132,7 +180,58 @@ const createAndSelect = async () => {
     createModal.value = false
     newSeriesName.value = ''
   } catch {
-    useToast().add({ color: 'error', title: $t('series.createFailed') })
+    toast.add({ color: 'error', title: $t('series.createFailed') })
+  }
+}
+
+const openEdit = () => {
+  if (!modelValue.value) return
+  editedSeriesName.value = modelValue.value.name
+  editModal.value = true
+}
+
+const saveSeries = async () => {
+  if (!modelValue.value?.id || !editedSeriesName.value.trim() || saving.value) return
+  saving.value = true
+  try {
+    const updated = await $fetch(`/api/series/${modelValue.value.id}`, {
+      method: 'PATCH',
+      body: { name: editedSeriesName.value.trim() },
+    })
+    modelValue.value = { ...modelValue.value, ...updated }
+    await refresh()
+    editModal.value = false
+    toast.add({ color: 'success', title: $t('common.messages.saveSuccess') })
+  } catch {
+    toast.add({ color: 'error', title: $t('common.messages.saveFailed') })
+  } finally {
+    saving.value = false
+  }
+}
+
+const deleteSeries = async () => {
+  if (!modelValue.value?.id || deleting.value) return
+  const accepted = await confirm({
+    title: $t('series.deleteTitle'),
+    message: $t('series.deleteDescription'),
+    icon: 'mdi:playlist-remove',
+    confirmText: $t('common.actions.delete'),
+    cancelText: $t('common.actions.cancel'),
+    variant: 'danger',
+  })
+  if (!accepted) return
+
+  deleting.value = true
+  try {
+    await $fetch(`/api/series/${modelValue.value.id}`, { method: 'DELETE' })
+    modelValue.value = null
+    editModal.value = false
+    await refresh()
+    toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
+  } catch {
+    toast.add({ color: 'error', title: $t('common.messages.deleteFailed') })
+  } finally {
+    deleting.value = false
   }
 }
 </script>

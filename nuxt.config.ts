@@ -126,6 +126,7 @@ export default defineNuxtConfig({
           '30 2 * * *': ['search-console-autopilot'],
           '*/5 * * * *': ['translate-pending', 'token-wallet-maintenance'],
           '0 4 * * *': ['gam-sync'],
+          '15 4 * * *': ['grant-annual-article-credits'],
           '0 5 * * 1': ['ai-visibility-monitor'],
         }
       : undefined,

@@ -7,6 +7,8 @@ export type ImageIntent = 'photo' | 'stock' | 'generate'
 
 export interface StockImage {
   url: string
+  width?: number
+  height?: number
   /** The library's own description of the picture. Caption fallback, never a replacement for it. */
   alt?: string
   credit: ImageCredit

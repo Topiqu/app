@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
 
   // Credit changes require an audited wallet adjustment, never a settings save.
   if ('tokenLimit' in body || 'tokenRemaining' in body)
-    throw createError({ statusCode: 400, message: 'Use audited wallet adjustments to change credit' })
+    throw createError({ statusCode: 400, message: 'Use audited wallet adjustments to change article allowances' })
 
   if (scalarBody.description !== undefined)
     data.description = scalarBody.description ? sanitizeHtml(scalarBody.description) : null
@@ -99,7 +99,7 @@ export default defineEventHandler(async (event) => {
   const currentAiUser = clientSite.users[0]
   const hasAiPayload = aiUserPayload && Object.values(aiUserPayload).some((v) => v !== '')
 
-  // AI identity and writing preferences are configuration, not token consumption. Keeping them
+  // AI identity and writing preferences are configuration, not article consumption. Keeping them
   // editable on Basic lets the client prepare the workspace before activating AI generation.
   if (hasAiPayload) {
     // `avatarUrl` is deliberately absent: it belongs to `ai-avatar.post`/`.delete`, which write it

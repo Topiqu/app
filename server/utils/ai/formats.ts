@@ -222,10 +222,10 @@ const moduleRules = (selected: readonly ArticleModule[]) => {
   const has = (module: ArticleModule) => selected.includes(module)
   return [
     has('table')
-      ? 'This article may use an HTML table, but only if readers compare the same facts across rows.'
+      ? 'The author explicitly requested an HTML table. Include one useful table comparing the same facts across rows.'
       : 'This article must NOT contain an HTML table.',
     has('poll')
-      ? 'This article may use one reader poll where a genuine choice or disagreement remains.'
+      ? 'The author explicitly requested a reader poll. Include exactly one concise poll with 2-5 meaningful options.'
       : 'This article must NOT contain a reader poll.',
     has('images')
       ? 'This article must contain 1-4 useful images in the body, each represented by a numbered image slot and matching image instruction.'

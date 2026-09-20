@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const { user } = await requireDb(event, { minRole: 'admin' })
+  const { user } = await requireDb(event, { minRole: 'superadmin' })
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'Missing tenant' })
   if (user.role !== 'superadmin') await requireTenantMember(event, id)

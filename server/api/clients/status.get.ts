@@ -13,8 +13,6 @@ export default defineEventHandler(async (event) => {
       domain: true,
       domainVerified: true,
       plan: true,
-      tokenRemaining: true,
-      totalUsage: true,
       createdAt: true,
       trialStartedAt: true,
       trialEndsAt: true,
@@ -45,11 +43,11 @@ export default defineEventHandler(async (event) => {
     ...status
   } = clientSite
 
-  const wallet = await getTokenWallet(user.clientSiteId)
+  const articleWallet = await getArticleCreditWallet(user.clientSiteId)
   return {
     ...status,
-    tokenRemaining: wallet.available,
-    wallet,
+    articlesRemaining: articleWallet.available,
+    articleWallet,
     aiUser: users[0] ?? null,
     hasActiveSubscription: !!stripeSubscriptionId,
     trial: {

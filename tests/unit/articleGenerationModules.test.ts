@@ -35,6 +35,10 @@ const mountPanel = () => {
 }
 
 describe('article generation module selection', () => {
+  it('enables labelled AI fallback by default', () => {
+    expect(defaultArticleGenerationOptions().allowGeneratedImages).toBe(true)
+  })
+
   it('adds and removes content and media independently, keeping the modules array', async () => {
     const { wrapper, options } = mountPanel()
     const answer = wrapper.get<HTMLInputElement>('input[value="answer"]')
@@ -52,11 +56,9 @@ describe('article generation module selection', () => {
     wrapper.unmount()
   })
 
-  it('explains unavailable modules and preserves format restrictions', () => {
+  it('hides unavailable modules instead of filling the form with disabled controls', () => {
     const { wrapper } = mountPanel()
-    const faq = wrapper.get<HTMLInputElement>('input[value="faq"]')
-    expect(faq.element.disabled).toBe(true)
-    expect(faq.element.closest('label')?.textContent).toContain('articles.editor.ai.moduleUnavailable')
+    expect(wrapper.find<HTMLInputElement>('input[value="faq"]').exists()).toBe(false)
     expect(wrapper.get<HTMLInputElement>('input[value="poll"]').element.disabled).toBe(false)
     wrapper.unmount()
   })
