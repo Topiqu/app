@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # base (https://hub.docker.com/r/oven/bun/tags)
-FROM oven/bun:1.3.14-slim AS base
+FROM oven/bun:1.4.2-slim AS base
 
 WORKDIR /usr/src/app
 
