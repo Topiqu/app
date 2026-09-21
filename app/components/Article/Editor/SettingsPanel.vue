@@ -1,6 +1,15 @@
 <template>
   <div class="flex flex-col gap-6" data-article-settings-panel>
-    <section class="flex flex-col gap-3">
+    <ArticleEditorOptimization
+      :state="optimizationState"
+      :result="optimizationResult"
+      @retry="$emit('retryOptimization')"
+      @navigate="$emit('navigateOptimization', $event)"
+    />
+
+    <USeparator />
+
+    <section ref="imageSection" class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
         <UIcon size="16" name="mdi:image-outline" />
         {{ $t('common.labels.image') }}
@@ -17,7 +26,7 @@
 
     <USeparator />
 
-    <section class="flex flex-col gap-3">
+    <section ref="sourcesSection" class="flex flex-col gap-3">
       <ArticleSources v-model="sources" />
     </section>
 
@@ -417,6 +426,7 @@
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
+import type { ArticleOptimizationResult, OptimizationTargetKind } from '~~/shared/types/articleOptimization'
 
 import {
   ARTICLE_GENERATION_FORMATS,
@@ -430,6 +440,7 @@ import {
   type ArticleGenerationResult,
 } from '~~/shared/utils/articleGeneration'
 
+import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'
 import type {
   GenerationPhase,
   GenerationResearchResult,
@@ -451,7 +462,18 @@ const props = defineProps<{
   aiReservedArticles?: number | null
   aiLastResult?: ArticleGenerationResult | null
   aiWritingStage: GenerationWritingStage
+  optimizationState: ArticleOptimizationState
+  optimizationResult: ArticleOptimizationResult | null
 }>()
+
+const imageSection = useTemplateRef<HTMLElement>('imageSection')
+const sourcesSection = useTemplateRef<HTMLElement>('sourcesSection')
+const focusOptimizationTarget = (kind: OptimizationTargetKind) => {
+  const element = kind === 'featured-image' ? imageSection.value : kind === 'sources' ? sourcesSection.value : null
+  element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  return element
+}
+defineExpose({ focusOptimizationTarget })
 
 const selectedSeries = defineModel<unknown>('selectedSeries')
 const customPrompt = defineModel<string>('customPrompt', { required: true })
@@ -610,5 +632,7 @@ defineEmits<{
   addTag: [id: string]
   removeTag: [id: string]
   quickRelease: [kind: 'now' | 'inHour' | 'tomorrow' | 'clear']
+  retryOptimization: []
+  navigateOptimization: [target: import('~~/shared/types/articleOptimization').OptimizationTarget]
 }>()
 </script>

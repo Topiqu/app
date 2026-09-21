@@ -208,28 +208,37 @@
       <div
         class="min-w-0 flex flex-col gap-6 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-10rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
       >
-        <UFormField :label="$t('common.labels.articleTitle')">
-          <UInput
-            v-model="titleModel"
-            :placeholder="$t('common.labels.articleTitle')"
-            class="w-full"
-            @input="updateSlug"
-          />
-        </UFormField>
-        <UFormField :label="$t('common.labels.articleExcerpt')">
-          <UTextarea
-            :modelValue="excerptModel ?? undefined"
-            :placeholder="$t('common.labels.articleExcerpt')"
-            class="w-full"
-            autoresize
-            @update:modelValue="excerptModel = $event || null"
-          />
-        </UFormField>
+        <div ref="titleTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
+          <UFormField :label="$t('common.labels.articleTitle')">
+            <UInput
+              v-model="titleModel"
+              :placeholder="$t('common.labels.articleTitle')"
+              class="w-full"
+              @input="updateSlug"
+            />
+          </UFormField>
+        </div>
+        <div ref="excerptTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
+          <UFormField :label="$t('common.labels.articleExcerpt')">
+            <UTextarea
+              :modelValue="excerptModel ?? undefined"
+              :placeholder="$t('common.labels.articleExcerpt')"
+              class="w-full"
+              autoresize
+              @update:modelValue="excerptModel = $event || null"
+            />
+          </UFormField>
+        </div>
 
         <ArticleSummary :answer="editedArticle.answer" :takeaways="editedArticle.keyTakeaways ?? []" />
 
-        <div class="mt-4 min-w-0 max-w-full">
-          <TiptapEditor v-model="bodyModel" :edit="bodyEditable && !aiGenerating" class="min-h-[500px]" />
+        <div ref="contentTarget" class="mt-4 min-w-0 max-w-full">
+          <TiptapEditor
+            ref="tiptapEditor"
+            v-model="bodyModel"
+            :edit="bodyEditable && !aiGenerating"
+            class="min-h-[500px]"
+          />
 
           <ArticleFaq :entries="readFaq(editedArticle.faq)" />
 
@@ -261,6 +270,7 @@
             />
           </div>
           <ArticleEditorSettingsPanel
+            ref="desktopSettingsPanel"
             v-model:selectedSeries="selectedSeries"
             v-model:customPrompt="customPrompt"
             v-model:aiOptions="aiOptions"
@@ -281,12 +291,16 @@
             :aiReservedArticles="aiReservedArticles"
             :aiLastResult="aiLastResult"
             :aiWritingStage="aiWritingStage"
+            :optimizationState="optimizationState"
+            :optimizationResult="optimizationResult"
             @upload="handleUpload"
             @generate="generateAIContent"
             @stop="stopGeneration"
             @addTag="addTag"
             @removeTag="removeTag"
             @quickRelease="setReleaseQuick"
+            @retryOptimization="retryOptimization"
+            @navigateOptimization="navigateOptimization"
           />
         </div>
         <UButton
@@ -347,6 +361,7 @@
     <USlideover v-model:open="sidebarOpen" :title="$t('articles.editor.settingsTitle')" class="lg:hidden">
       <template #body>
         <ArticleEditorSettingsPanel
+          ref="mobileSettingsPanel"
           v-model:selectedSeries="selectedSeries"
           v-model:customPrompt="customPrompt"
           v-model:aiOptions="aiOptions"
@@ -367,12 +382,16 @@
           :aiReservedArticles="aiReservedArticles"
           :aiLastResult="aiLastResult"
           :aiWritingStage="aiWritingStage"
+          :optimizationState="optimizationState"
+          :optimizationResult="optimizationResult"
           @upload="handleUpload"
           @generate="generateAIContent"
           @stop="stopGeneration"
           @addTag="addTag"
           @removeTag="removeTag"
           @quickRelease="setReleaseQuick"
+          @retryOptimization="retryOptimization"
+          @navigateOptimization="navigateOptimization"
         />
       </template>
     </USlideover>
@@ -398,6 +417,7 @@
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
+import type { OptimizationTarget, OptimizationTargetKind } from '~~/shared/types/articleOptimization'
 
 import slugify from 'slugify'
 import { readFaq } from '~~/shared/utils/articleFaq'
@@ -650,6 +670,59 @@ const sourcesModel = computed<string[]>({
     editedArticle.value.sources = value
   },
 })
+
+const optimizationInput = computed(() => ({
+  title: titleModel.value ?? '',
+  excerpt: excerptModel.value ?? null,
+  content: bodyModel.value ?? '',
+  imageUrl: editedArticle.value.imageUrl ?? null,
+  sources: sourcesModel.value,
+  tenantDomain: clientStatus.value?.domain ?? null,
+}))
+const {
+  state: optimizationState,
+  result: optimizationResult,
+  retry: retryOptimization,
+} = useArticleOptimization(optimizationInput)
+const titleTarget = useTemplateRef<HTMLElement>('titleTarget')
+const excerptTarget = useTemplateRef<HTMLElement>('excerptTarget')
+const contentTarget = useTemplateRef<HTMLElement>('contentTarget')
+const tiptapEditor = useTemplateRef<{ focusBlock: (index?: number) => boolean }>('tiptapEditor')
+const desktopSettingsPanel = useTemplateRef<{
+  focusOptimizationTarget: (kind: OptimizationTargetKind) => HTMLElement | null
+}>('desktopSettingsPanel')
+const mobileSettingsPanel = useTemplateRef<{
+  focusOptimizationTarget: (kind: OptimizationTargetKind) => HTMLElement | null
+}>('mobileSettingsPanel')
+let highlightTimer: ReturnType<typeof setTimeout> | undefined
+const highlight = (element: HTMLElement | null) => {
+  if (!element) return
+  element.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-default')
+  if (highlightTimer) clearTimeout(highlightTimer)
+  highlightTimer = setTimeout(
+    () => element.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-default'),
+    1500,
+  )
+}
+const navigateOptimization = async (target: OptimizationTarget) => {
+  const wasMobile = sidebarOpen.value
+  if (wasMobile) {
+    sidebarOpen.value = false
+    await nextTick()
+  }
+  let element: HTMLElement | null = null
+  if (target.kind === 'title') element = titleTarget.value
+  else if (target.kind === 'excerpt') element = excerptTarget.value
+  else if (target.kind === 'content') {
+    element = contentTarget.value
+    tiptapEditor.value?.focusBlock(target.blockIndex)
+  } else {
+    const panel = wasMobile ? mobileSettingsPanel.value : desktopSettingsPanel.value
+    element = panel?.focusOptimizationTarget(target.kind) ?? null
+  }
+  element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  highlight(element)
+}
 
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 const saveConfirmed = shallowRef(false)
