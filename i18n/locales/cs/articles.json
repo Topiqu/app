@@ -560,6 +560,73 @@
         "noDraftsFound": "Žádné koncepty nenalezeny",
         "untitled": "Návrh bez názvu #{0}"
       },
+      "optimization": {
+        "title": "Optimalizace článku",
+        "score": "Celkové skóre",
+        "analyzing": "Analyzuji článek…",
+        "stale": "Čeká na přepočet",
+        "insufficientData": "Nedostatek dat",
+        "emptyTitle": "Začněte psát",
+        "emptyDescription": "Po přidání titulku nebo obsahu se zobrazí doporučení.",
+        "errorTitle": "Analýza se nezdařila",
+        "errorDescription": "Místní analýzu se nepodařilo dokončit.",
+        "retry": "Zkusit znovu",
+        "goTo": "Přejít na místo",
+        "passedChecks": "Splněné kontroly ({count})",
+        "categories": {
+          "seo": "SEO",
+          "ai-visibility": "AI viditelnost",
+          "readability": "Čitelnost",
+          "trust": "Důvěryhodnost"
+        },
+        "counts": {
+          "issues": "Chyby: {count}",
+          "recommendations": "Doporučení: {count}",
+          "passed": "Splněno: {count}"
+        },
+        "checks": {
+          "title-exists": { "title": "title-exists", "description": "Zkontrolujte a upravte tuto část článku." },
+          "title-length": { "title": "title-length", "description": "Zkontrolujte a upravte tuto část článku." },
+          "excerpt-exists": { "title": "excerpt-exists", "description": "Zkontrolujte a upravte tuto část článku." },
+          "excerpt-length": { "title": "excerpt-length", "description": "Zkontrolujte a upravte tuto část článku." },
+          "single-h1": { "title": "single-h1", "description": "Zkontrolujte a upravte tuto část článku." },
+          "heading-hierarchy": {
+            "title": "heading-hierarchy",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "internal-link": { "title": "internal-link", "description": "Zkontrolujte a upravte tuto část článku." },
+          "external-link": { "title": "external-link", "description": "Zkontrolujte a upravte tuto část článku." },
+          "featured-image": { "title": "featured-image", "description": "Zkontrolujte a upravte tuto část článku." },
+          "image-alt": { "title": "image-alt", "description": "Zkontrolujte a upravte tuto část článku." },
+          "paragraph-length": {
+            "title": "paragraph-length",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "sentence-length": { "title": "sentence-length", "description": "Zkontrolujte a upravte tuto část článku." },
+          "section-length": { "title": "section-length", "description": "Zkontrolujte a upravte tuto část článku." },
+          "long-article-structure": {
+            "title": "long-article-structure",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "topic-introduction": {
+            "title": "topic-introduction",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "descriptive-sections": {
+            "title": "descriptive-sections",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "heading-quality": { "title": "heading-quality", "description": "Zkontrolujte a upravte tuto část článku." },
+          "multiple-blocks": { "title": "multiple-blocks", "description": "Zkontrolujte a upravte tuto část článku." },
+          "sources-exist": { "title": "sources-exist", "description": "Zkontrolujte a upravte tuto část článku." },
+          "sources-valid": { "title": "sources-valid", "description": "Zkontrolujte a upravte tuto část článku." },
+          "external-links-safe": {
+            "title": "external-links-safe",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "source-diversity": { "title": "source-diversity", "description": "Zkontrolujte a upravte tuto část článku." }
+        }
+      },
       "releaseDateNote": "Slouží k nastavení data a času publikace článku. Nechte prázdné pro manuální vydání.",
       "createSuccess": "Článek úspěšně vytvořen",
       "createFailed": "Vytvoření článku selhalo",

@@ -560,6 +560,97 @@
         "noDraftsFound": "No drafts found",
         "untitled": "Untitled draft #{0}"
       },
+      "optimization": {
+        "title": "Article optimization",
+        "score": "Overall score",
+        "analyzing": "Analyzing article…",
+        "stale": "Waiting to recalculate",
+        "insufficientData": "Insufficient data",
+        "emptyTitle": "Start writing",
+        "emptyDescription": "Recommendations appear after you add a title or content.",
+        "errorTitle": "Analysis failed",
+        "errorDescription": "The local analysis could not be completed.",
+        "retry": "Try again",
+        "goTo": "Go to field",
+        "passedChecks": "Passed checks ({count})",
+        "categories": {
+          "seo": "SEO",
+          "ai-visibility": "AI visibility",
+          "readability": "Readability",
+          "trust": "Trust"
+        },
+        "counts": {
+          "issues": "Issues: {count}",
+          "recommendations": "Recommendations: {count}",
+          "passed": "Passed: {count}"
+        },
+        "checks": {
+          "title-exists": { "title": "title-exists", "description": "Review and improve this part of the article." },
+          "title-length": { "title": "title-length", "description": "Review and improve this part of the article." },
+          "excerpt-exists": {
+            "title": "excerpt-exists",
+            "description": "Review and improve this part of the article."
+          },
+          "excerpt-length": {
+            "title": "excerpt-length",
+            "description": "Review and improve this part of the article."
+          },
+          "single-h1": { "title": "single-h1", "description": "Review and improve this part of the article." },
+          "heading-hierarchy": {
+            "title": "heading-hierarchy",
+            "description": "Review and improve this part of the article."
+          },
+          "internal-link": { "title": "internal-link", "description": "Review and improve this part of the article." },
+          "external-link": { "title": "external-link", "description": "Review and improve this part of the article." },
+          "featured-image": {
+            "title": "featured-image",
+            "description": "Review and improve this part of the article."
+          },
+          "image-alt": { "title": "image-alt", "description": "Review and improve this part of the article." },
+          "paragraph-length": {
+            "title": "paragraph-length",
+            "description": "Review and improve this part of the article."
+          },
+          "sentence-length": {
+            "title": "sentence-length",
+            "description": "Review and improve this part of the article."
+          },
+          "section-length": {
+            "title": "section-length",
+            "description": "Review and improve this part of the article."
+          },
+          "long-article-structure": {
+            "title": "long-article-structure",
+            "description": "Review and improve this part of the article."
+          },
+          "topic-introduction": {
+            "title": "topic-introduction",
+            "description": "Review and improve this part of the article."
+          },
+          "descriptive-sections": {
+            "title": "descriptive-sections",
+            "description": "Review and improve this part of the article."
+          },
+          "heading-quality": {
+            "title": "heading-quality",
+            "description": "Review and improve this part of the article."
+          },
+          "multiple-blocks": {
+            "title": "multiple-blocks",
+            "description": "Review and improve this part of the article."
+          },
+          "sources-exist": { "title": "sources-exist", "description": "Review and improve this part of the article." },
+          "sources-valid": { "title": "sources-valid", "description": "Review and improve this part of the article." },
+          "external-links-safe": {
+            "title": "external-links-safe",
+            "description": "Review and improve this part of the article."
+          },
+          "source-diversity": {
+            "title": "source-diversity",
+            "description": "Review and improve this part of the article."
+          }
+        }
+      },
       "releaseDateNote": "Used to set the article's publication date and time. Leave empty for manual release.",
       "createSuccess": "Article created successfully",
       "createFailed": "Failed to create article",
