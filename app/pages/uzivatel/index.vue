@@ -168,7 +168,11 @@
             </div>
           </Panel>
 
-          <Panel id="2fa-section" :title="$t('profile.twoFactorAuth')">
+          <Panel
+            id="2fa-section"
+            :title="$t('profile.twoFactorAuth')"
+            :description="$t('profile.twoFactorDescription')"
+          >
             <UserQR
               :enabled="is2FAEnabled"
               :otpauthUrl="otpauthUrl"
