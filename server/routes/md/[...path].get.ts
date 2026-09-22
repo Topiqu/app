@@ -1,4 +1,4 @@
-import type { Language } from '@prisma/client'
+import type { Language } from '~~/generated/zenstack/models'
 
 import { readFaq } from '~~/shared/utils/articleFaq'
 import { LOCALIZED_SEGMENTS } from '~~/shared/utils/routes'

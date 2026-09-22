@@ -1,6 +1,7 @@
 import type Stripe from 'stripe'
-import type { ClientPlan } from '@prisma/client'
+import type { ClientPlan } from '~~/generated/zenstack/models'
 
+import { articleCreditsForPlan, nextArticleCreditMonth } from '~~/shared/utils/articleCredits'
 import {
   extractSubscriptionId,
   isSubscribablePlan,
@@ -64,7 +65,7 @@ export default defineEventHandler(async (event) => {
           where: { id: clientSiteId },
           data: {
             ...(derivedPlan ? { plan: derivedPlan as ClientPlan } : {}),
-            ...(paid ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
+            ...(paid ? { firstPaidAt: new Date(), lastPaidAt: new Date() } : {}),
             stripeCustomerId: customerId ?? undefined,
             stripeSubscriptionId: subscriptionId ?? undefined,
             stripePriceId: priceId ?? undefined,
@@ -76,14 +77,14 @@ export default defineEventHandler(async (event) => {
       return { received: true }
     }
 
-    const tokens = Number(session.metadata?.tokens ?? 0)
-    if (Number.isSafeInteger(tokens) && tokens > 0 && session.payment_status === 'paid') {
-      await creditTokens({
+    const articles = Number(session.metadata?.articles ?? 0)
+    if (Number.isSafeInteger(articles) && articles > 0 && session.payment_status === 'paid') {
+      await creditArticleCredits({
         clientSiteId,
-        amount: tokens,
+        amount: articles,
         source: 'PURCHASE',
         idempotencyKey: `stripe:checkout:${session.id}`,
-        reason: 'Token purchase',
+        reason: 'Article pack purchase',
       })
     }
     return { received: true }
@@ -114,7 +115,7 @@ export default defineEventHandler(async (event) => {
           data: {
             plan: derivedPlan as ClientPlan,
             stripePriceId: currentPriceId ?? undefined,
-            ...(trialEnded ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
+            ...(trialEnded ? { firstPaidAt: new Date(), lastPaidAt: new Date() } : {}),
           },
         })
 
@@ -133,7 +134,7 @@ export default defineEventHandler(async (event) => {
     return { received: true }
   }
 
-  if (stripeEvent.type === 'invoice.payment_succeeded') {
+  if (stripeEvent.type === 'invoice.paid' || stripeEvent.type === 'invoice.payment_succeeded') {
     const invoice = stripeEvent.data.object as Stripe.Invoice
     const subscriptionId = extractSubscriptionId(invoice)
     if (!subscriptionId) return { received: true }
@@ -142,9 +143,49 @@ export default defineEventHandler(async (event) => {
     const clientSiteId = subscription.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
 
-    await prisma.clientSite.update({
-      where: { id: clientSiteId },
-      data: { lastPaidAt: new Date(), lastInvoicedAt: new Date() },
+    const price = subscription.items.data[0]?.price
+    const derivedPlan =
+      planFromPriceId(price?.id) ??
+      (isSubscribablePlan(subscription.metadata?.plan) ? subscription.metadata.plan : null)
+    const amount = articleCreditsForPlan(derivedPlan)
+    const linePeriod = invoice.lines.data[0]?.period
+    const periodStart = linePeriod ? new Date(linePeriod.start * 1000) : new Date()
+    const invoicePeriodEnd = linePeriod ? new Date(linePeriod.end * 1000) : new Date(Date.now() + 31 * 86400000)
+    const annual = price?.recurring?.interval === 'year'
+    const periodEnd = annual ? nextArticleCreditMonth(periodStart) : invoicePeriodEnd
+
+    await serializableTransaction(async (tx) => {
+      await tx.clientSite.update({
+        where: { id: clientSiteId },
+        data: {
+          lastPaidAt: new Date(),
+          lastInvoicedAt: new Date(),
+          ...(annual ? { billingPlan: 'ANNUAL' } : { billingPlan: 'MONTHLY' }),
+        },
+      })
+      if (derivedPlan && amount > 0) {
+        // A mid-period PRO → PREMIUM invoice should add only the 10-article difference, not
+        // another complete allowance. Downgrades never claw back articles already granted.
+        const activePlanGrants = await tx.articleCreditGrant.aggregate({
+          where: { clientSiteId, source: 'PLAN', expiresAt: { gt: periodStart } },
+          _sum: { amount: true },
+        })
+        const grantAmount = Math.max(0, amount - (activePlanGrants._sum.amount ?? 0))
+        if (grantAmount > 0)
+          await creditArticleCredits(
+            {
+              clientSiteId,
+              amount: grantAmount,
+              source: 'PLAN',
+              idempotencyKey: `stripe:invoice:${invoice.id}`,
+              reason: `${derivedPlan} included articles`,
+              periodStart,
+              periodEnd,
+              expiresAt: periodEnd,
+            },
+            tx,
+          )
+      }
     })
   }
 

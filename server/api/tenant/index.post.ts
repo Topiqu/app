@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { randomBytes } from 'node:crypto'
-import { ThemeSchema } from '~~/shared/zod/enums/Theme.schema'
+import { ThemeSchema } from '~~/shared/siteSchemas'
 import {
   domainVerificationDefaults,
   isManagedDomain,
@@ -18,8 +18,6 @@ const schema = z.object({
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
   selectedPlan: z.enum(['BASIC', 'PRO', 'PREMIUM']).default('BASIC'),
   language: z.enum(['cs', 'en']),
-  // ThemeSchema is generated against zod/v3, so composing it into a v4 object infers `unknown`; its
-  // option list is the part worth sharing anyway.
   theme: z.enum(ThemeSchema.options).default('indigo'),
 })
 
@@ -128,10 +126,10 @@ export default defineEventHandler(async (event) => {
 
       return created
     })
-  } catch (error: any) {
-    if (error?.code === 'P2002') {
-      const target = String(error?.meta?.target ?? '')
-      const code = target.includes('name')
+  } catch (error: unknown) {
+    if (isUniqueViolation(error)) {
+      const detail = databaseErrorMessage(error)
+      const code = detail.includes('ClientSite_name_key') || detail.includes('(name)')
         ? 'NAME_TAKEN'
         : body.domainType === 'CUSTOM'
           ? 'DOMAIN_TAKEN'

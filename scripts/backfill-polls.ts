@@ -1,10 +1,9 @@
-import { PrismaClient } from '@prisma/client'
-
 import { syncArticlePolls } from '../server/utils/articlePolls'
+import { createDatabaseClient } from '../server/utils/database'
 
 const APPLY = process.env.APPLY === '1'
 
-const prisma = new PrismaClient()
+const prisma = createDatabaseClient()
 
 const main = async () => {
   const articles = await prisma.article.findMany({

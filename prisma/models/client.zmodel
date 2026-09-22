@@ -1,5 +1,6 @@
 import "./base"
 import "./tokenWallet"
+import "./articleCreditWallet"
 import "./article"
 import "./user"
 import "./comment"
@@ -7,6 +8,7 @@ import "./linkedin"
 import "./log"
 import "./ads"
 import "./searchConsole"
+import "./visibility"
 
 enum GenerationFrequency {
     NONE
@@ -67,7 +69,7 @@ model Social {
     @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
 }
 
-model ClientSite extends Base {
+model ClientSite with Base {
     name                 String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
     domain               String              @unique @length(1, 253, "Doména musí mít 1–253 znaků")
     domainVerified       Boolean             @default(false)
@@ -90,8 +92,10 @@ model ClientSite extends Base {
     generationFrequency  GenerationFrequency @default(NONE)
     tokenRemaining       Int?                @default(0)
     tokenWallet          TokenWallet?
+    articleCreditWallet  ArticleCreditWallet?
     totalUsage           Int?                @default(0)
     autoRelease          Boolean             @default(false)
+    aiSeriesEnabled      Boolean             @default(false)
     keywords             Json?
     audience             String?
     lastGeneratedAt      DateTime?
@@ -143,6 +147,12 @@ model ClientSite extends Base {
     adEarnings           AdEarning[]
     searchConsoleConnection SearchConsoleConnection?
     searchConsoleMetrics SearchConsoleMetric[]
+    aiCrawlerDays       AiCrawlerDaily[]
+    aiReferralVisits    AiReferralVisit[]
+    aiVisibilityPrompts AiVisibilityPrompt[]
+    aiVisibilityRuns    AiVisibilityRun[]
+    aiCitations         AiCitation[]
+    aiOpportunities     AiVisibilityOpportunity[]
     tenantMemberships    TenantMembership[]
     tenantInvitations    TenantInvitation[]
     activeSessions       Session[] @relation("SessionActiveTenant")
@@ -154,7 +164,7 @@ model ClientSite extends Base {
     @@index([trialEndsAt, trialAcknowledgedAt])
 }
 
-model Feature extends Base {
+model Feature with Base {
     code           FeatureCodes    @unique
     name           String
     priceMonthly   Int
@@ -167,7 +177,7 @@ model Feature extends Base {
     @@allow('all', auth().role == 'superadmin')
 }
 
-model ClientFeature extends Base {
+model ClientFeature with Base {
     clientSiteId       String
     featureId          String
     feature            Feature    @relation(fields: [featureId], references: [id], onDelete: Cascade)

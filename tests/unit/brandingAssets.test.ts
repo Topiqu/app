@@ -49,7 +49,8 @@ describe('publication brand assets', () => {
     const home = source('app/pages/index.vue')
     const preview = source('app/components/Form/Client/BrandingPreview.vue')
 
-    const logoMedia = (code: string) => code.match(/<AppMedia\s+[\s\S]*?:src="(?:clientSite\?\.logoUrl|logoUrl)"[\s\S]*?\/>/)?.[0]
+    const logoMedia = (code: string) =>
+      code.match(/<AppMedia\s+[\s\S]*?:src="(?:clientSite\?\.logoUrl|logoUrl)"[\s\S]*?\/>/)?.[0]
 
     expect(header).toContain('aspectRatio="16 / 5"')
     expect(header).toContain(':width="128"')

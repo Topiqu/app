@@ -1,4 +1,4 @@
-import type { SharePlatform } from '@prisma/client'
+import type { SharePlatform } from '~~/generated/zenstack/models'
 
 import { writingSavings } from '~~/shared/utils/savings'
 

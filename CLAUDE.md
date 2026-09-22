@@ -18,7 +18,7 @@
 - **State Management:** Pinia (`@pinia/nuxt`)
 - **i18n:** `@nuxtjs/i18n`
 - **Animations/3D:** GSAP, Three.js
-- **Database/ORM:** ZenStack v2.22
+- **Database/ORM:** ZenStack ORM v3.9 (PostgreSQL dialect)
 
 ## Documentation & Learning
 

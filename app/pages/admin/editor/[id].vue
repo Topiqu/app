@@ -208,28 +208,37 @@
       <div
         class="min-w-0 flex flex-col gap-6 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-10rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
       >
-        <UFormField :label="$t('common.labels.articleTitle')">
-          <UInput
-            v-model="titleModel"
-            :placeholder="$t('common.labels.articleTitle')"
-            class="w-full"
-            @input="updateSlug"
-          />
-        </UFormField>
-        <UFormField :label="$t('common.labels.articleExcerpt')">
-          <UTextarea
-            :modelValue="excerptModel ?? undefined"
-            :placeholder="$t('common.labels.articleExcerpt')"
-            class="w-full"
-            autoresize
-            @update:modelValue="excerptModel = $event || null"
-          />
-        </UFormField>
+        <div ref="titleTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
+          <UFormField :label="$t('common.labels.articleTitle')">
+            <UInput
+              v-model="titleModel"
+              :placeholder="$t('common.labels.articleTitle')"
+              class="w-full"
+              @input="updateSlug"
+            />
+          </UFormField>
+        </div>
+        <div ref="excerptTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
+          <UFormField :label="$t('common.labels.articleExcerpt')">
+            <UTextarea
+              :modelValue="excerptModel ?? undefined"
+              :placeholder="$t('common.labels.articleExcerpt')"
+              class="w-full"
+              autoresize
+              @update:modelValue="excerptModel = $event || null"
+            />
+          </UFormField>
+        </div>
 
         <ArticleSummary :answer="editedArticle.answer" :takeaways="editedArticle.keyTakeaways ?? []" />
 
-        <div class="mt-4 min-w-0 max-w-full">
-          <TiptapEditor v-model="bodyModel" :edit="bodyEditable && !aiGenerating" class="min-h-[500px]" />
+        <div ref="contentTarget" class="mt-4 min-w-0 max-w-full">
+          <TiptapEditor
+            ref="tiptapEditor"
+            v-model="bodyModel"
+            :edit="bodyEditable && !aiGenerating"
+            class="min-h-[500px]"
+          />
 
           <ArticleFaq :entries="readFaq(editedArticle.faq)" />
 
@@ -261,6 +270,7 @@
             />
           </div>
           <ArticleEditorSettingsPanel
+            ref="desktopSettingsPanel"
             v-model:selectedSeries="selectedSeries"
             v-model:customPrompt="customPrompt"
             v-model:aiOptions="aiOptions"
@@ -278,15 +288,26 @@
             :aiWordCount="aiWordCount"
             :aiResearch="aiResearch"
             :aiMedia="aiMedia"
-            :aiReservedTokens="aiReservedTokens"
+            :aiReservedArticles="aiReservedArticles"
             :aiLastResult="aiLastResult"
             :aiWritingStage="aiWritingStage"
+            :optimizationState="optimizationState"
+            :optimizationResult="optimizationResult"
+            :factCheckState="factCheckState"
+            :factCheckResult="factCheckResult"
+            :factCheckCanRun="factCheckCanRun"
+            :factCheckErrorKind="factCheckErrorKind"
             @upload="handleUpload"
             @generate="generateAIContent"
             @stop="stopGeneration"
             @addTag="addTag"
             @removeTag="removeTag"
             @quickRelease="setReleaseQuick"
+            @retryOptimization="retryOptimization"
+            @navigateOptimization="navigateOptimization"
+            @runFactCheck="runFactCheck"
+            @navigateFactCheck="navigateFactCheck"
+            @navigateFactCheckSources="navigateFactCheckSources"
           />
         </div>
         <UButton
@@ -347,6 +368,7 @@
     <USlideover v-model:open="sidebarOpen" :title="$t('articles.editor.settingsTitle')" class="lg:hidden">
       <template #body>
         <ArticleEditorSettingsPanel
+          ref="mobileSettingsPanel"
           v-model:selectedSeries="selectedSeries"
           v-model:customPrompt="customPrompt"
           v-model:aiOptions="aiOptions"
@@ -364,15 +386,26 @@
           :aiWordCount="aiWordCount"
           :aiResearch="aiResearch"
           :aiMedia="aiMedia"
-          :aiReservedTokens="aiReservedTokens"
+          :aiReservedArticles="aiReservedArticles"
           :aiLastResult="aiLastResult"
           :aiWritingStage="aiWritingStage"
+          :optimizationState="optimizationState"
+          :optimizationResult="optimizationResult"
+          :factCheckState="factCheckState"
+          :factCheckResult="factCheckResult"
+          :factCheckCanRun="factCheckCanRun"
+          :factCheckErrorKind="factCheckErrorKind"
           @upload="handleUpload"
           @generate="generateAIContent"
           @stop="stopGeneration"
           @addTag="addTag"
           @removeTag="removeTag"
           @quickRelease="setReleaseQuick"
+          @retryOptimization="retryOptimization"
+          @navigateOptimization="navigateOptimization"
+          @runFactCheck="runFactCheck"
+          @navigateFactCheck="navigateFactCheck"
+          @navigateFactCheckSources="navigateFactCheckSources"
         />
       </template>
     </USlideover>
@@ -398,6 +431,7 @@
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
+import type { OptimizationTarget, OptimizationTargetKind } from '~~/shared/types/articleOptimization'
 
 import slugify from 'slugify'
 import { readFaq } from '~~/shared/utils/articleFaq'
@@ -466,12 +500,12 @@ const newLanguageDrafts = reactive<Record<Language, ReturnType<typeof translatio
 const selectedSeries = shallowRef<any>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
-const customPrompt = shallowRef('')
+const customPrompt = shallowRef(typeof route.query.prompt === 'string' ? route.query.prompt.slice(0, 5000) : '')
 const aiOptions = ref(defaultArticleGenerationOptions())
 const aiPhase = shallowRef<GenerationPhase>('research')
 const aiResearch = shallowRef<GenerationResearchResult | null>(null)
 const aiMedia = shallowRef<ArticleMediaProgress | null>(null)
-const aiReservedTokens = shallowRef<number | null>(null)
+const aiReservedArticles = shallowRef<number | null>(null)
 const aiLastResult = shallowRef<ArticleGenerationResult | null>(null)
 const aiWritingStage = shallowRef<GenerationWritingStage>('starting')
 const aiStartedAt = shallowRef(0)
@@ -651,6 +685,75 @@ const sourcesModel = computed<string[]>({
   },
 })
 
+const optimizationInput = computed(() => ({
+  title: titleModel.value ?? '',
+  excerpt: excerptModel.value ?? null,
+  content: bodyModel.value ?? '',
+  imageUrl: editedArticle.value.imageUrl ?? null,
+  sources: sourcesModel.value,
+  tenantDomain: clientStatus.value?.domain ?? null,
+}))
+const {
+  state: optimizationState,
+  result: optimizationResult,
+  retry: retryOptimization,
+} = useArticleOptimization(optimizationInput)
+const factCheckInput = computed(() => ({
+  title: titleModel.value ?? '',
+  excerpt: excerptModel.value ?? null,
+  content: bodyModel.value ?? '',
+  sources: sourcesModel.value,
+  language: (isNew ? newArticleLanguage.value : tr.isSource ? primaryLanguage : tr.activeLang) as Language,
+}))
+const {
+  state: factCheckState,
+  result: factCheckResult,
+  errorKind: factCheckErrorKind,
+  canRun: factCheckCanRun,
+  run: runFactCheck,
+} = useArticleFactCheck(factCheckInput)
+const titleTarget = useTemplateRef<HTMLElement>('titleTarget')
+const excerptTarget = useTemplateRef<HTMLElement>('excerptTarget')
+const contentTarget = useTemplateRef<HTMLElement>('contentTarget')
+const tiptapEditor = useTemplateRef<{ focusBlock: (index?: number) => boolean }>('tiptapEditor')
+const desktopSettingsPanel = useTemplateRef<{
+  focusOptimizationTarget: (kind: OptimizationTargetKind) => HTMLElement | null
+}>('desktopSettingsPanel')
+const mobileSettingsPanel = useTemplateRef<{
+  focusOptimizationTarget: (kind: OptimizationTargetKind) => HTMLElement | null
+}>('mobileSettingsPanel')
+let highlightTimer: ReturnType<typeof setTimeout> | undefined
+const highlight = (element: HTMLElement | null) => {
+  if (!element) return
+  element.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-default')
+  if (highlightTimer) clearTimeout(highlightTimer)
+  highlightTimer = setTimeout(
+    () => element.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-default'),
+    1500,
+  )
+}
+const navigateOptimization = async (target: OptimizationTarget) => {
+  const wasMobile = sidebarOpen.value
+  if (wasMobile) {
+    sidebarOpen.value = false
+    await nextTick()
+  }
+  let element: HTMLElement | null = null
+  if (target.kind === 'title') element = titleTarget.value
+  else if (target.kind === 'excerpt') element = excerptTarget.value
+  else if (target.kind === 'content') {
+    element = contentTarget.value
+    tiptapEditor.value?.focusBlock(target.blockIndex)
+  } else {
+    const panel = wasMobile ? mobileSettingsPanel.value : desktopSettingsPanel.value
+    element = panel?.focusOptimizationTarget(target.kind) ?? null
+  }
+  element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  highlight(element)
+}
+const navigateFactCheck = (blockIndex: number) => navigateOptimization({ kind: 'content', blockIndex })
+const navigateFactCheckSources = () => navigateOptimization({ kind: 'sources' })
+
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 const saveConfirmed = shallowRef(false)
 const { start: clearSaveConfirmed } = useTimeoutFn(() => (saveConfirmed.value = false), 1400, { immediate: false })
@@ -740,7 +843,7 @@ const aiGenerating = shallowRef(false)
 // Expanded while there is nothing to lose, or on the `?ai=1` deep link. Generation rewrites the
 // whole article, so a permanently open composer serves no mid-article iteration — it just pushed
 // the title below the fold on every visit.
-const aiOpen = shallowRef(isBlank.value || route.query.ai === '1')
+const aiOpen = shallowRef(isBlank.value || route.query.ai === '1' || !!customPrompt.value)
 
 const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
 
@@ -752,6 +855,7 @@ const handleUpload = (file: { url: string; optimizedUrl: string }) => {
 }
 
 const generateAIContent = async () => {
+  const reservedBefore = clientStatus.value?.articleWallet.reserved ?? 0
   let missingModules: ArticleGenerationModule[] = []
   let billing: ArticleGenerationBilling | null = null
   let finalReceived = false
@@ -773,7 +877,7 @@ const generateAIContent = async () => {
   aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
   aiResearch.value = null
   aiMedia.value = null
-  aiReservedTokens.value = null
+  aiReservedArticles.value = null
   aiWritingStage.value = 'starting'
   aiStartedAt.value = Date.now()
   aiLastActivityAt.value = aiStartedAt.value
@@ -801,12 +905,26 @@ const generateAIContent = async () => {
       onReview: (review) => (reviewApproved = review.approved),
       onBilling: (result) => {
         billing = result
-        if (clientStatus.value) {
-          clientStatus.value.tokenRemaining = result.tokenRemaining
-          clientStatus.value.totalUsage = (clientStatus.value.totalUsage ?? 0) + result.clientTokensUsed
-        }
+        const reserved = Math.max(
+          reservedBefore,
+          (clientStatus.value?.articleWallet.reserved ?? 0) - (aiReservedArticles.value ?? 0),
+        )
+        patchClientSiteArticleWallet({
+          available: result.articlesRemaining,
+          reserved,
+          balance: result.articlesRemaining + reserved,
+        })
       },
-      onReservation: (credits) => (aiReservedTokens.value = credits),
+      onReservation: (articles) => {
+        aiReservedArticles.value = articles
+        const wallet = clientStatus.value?.articleWallet
+        if (wallet)
+          patchClientSiteArticleWallet({
+            available: Math.max(0, wallet.available - articles),
+            reserved: wallet.reserved + articles,
+            balance: wallet.balance,
+          })
+      },
       onWritingStage: (stage) => (aiWritingStage.value = stage),
       onActivity: () => (aiLastActivityAt.value = Date.now()),
       onImage: ({ slot, html }) => {
@@ -854,8 +972,6 @@ const generateAIContent = async () => {
       wordCount: aiWordCount.value,
       mediaFound,
       mediaTotal,
-      tokenUsage: (billing as ArticleGenerationBilling | null)?.clientTokensUsed ?? null,
-      tokenRemaining: (billing as ArticleGenerationBilling | null)?.tokenRemaining ?? null,
       missingModules,
       reviewApproved,
     }
@@ -888,8 +1004,6 @@ const generateAIContent = async () => {
       wordCount: aiWordCount.value,
       mediaFound,
       mediaTotal,
-      tokenUsage: (billing as ArticleGenerationBilling | null)?.clientTokensUsed ?? null,
-      tokenRemaining: (billing as ArticleGenerationBilling | null)?.tokenRemaining ?? null,
       missingModules: finalReceived ? missingModules : aiOptions.value.modules,
       reviewApproved,
     }
@@ -902,7 +1016,8 @@ const generateAIContent = async () => {
     if (!finalReceived && streamedContent)
       editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
     aiGenerating.value = false
-    await refreshClientSiteStatus().catch(() => undefined)
+    if (billing) await refreshClientSiteStatus().catch(() => undefined)
+    else await refreshClientSiteStatusAfterStop(reservedBefore).catch(() => undefined)
   }
 }
 

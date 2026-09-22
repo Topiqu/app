@@ -80,11 +80,13 @@ export default defineEventHandler(async (event) => {
         stripeSubscriptionId: clientSite.stripeSubscriptionId,
       }
     : {}
+  const articleWallet = hasTenantScope(membership, 'AI_USE') ? await getArticleCreditWallet(id) : null
   const ai = hasTenantScope(membership, 'AI_USE')
     ? {
-        tokenRemaining: clientSite.tokenRemaining,
-        totalUsage: clientSite.totalUsage,
+        articlesRemaining: articleWallet?.available ?? 0,
+        articleWallet,
         autoRelease: clientSite.autoRelease,
+        aiSeriesEnabled: clientSite.aiSeriesEnabled,
         aiToneOfVoice: clientSite.aiToneOfVoice,
         aiControversyLevel: clientSite.aiControversyLevel,
         translationMode: clientSite.translationMode,

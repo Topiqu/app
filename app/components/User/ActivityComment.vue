@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Comment as _Comment } from '@prisma/client'
+import type { Comment as _Comment } from '~~/generated/zenstack/models'
 
 import { formatDate } from '~~/shared/utils'
 

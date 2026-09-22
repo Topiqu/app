@@ -1,15 +1,16 @@
 import type { H3Event } from 'h3'
-import type { Prisma, TokenOperation } from '@prisma/client'
+import type { JsonValue } from '@zenstackhq/orm'
+import type { TokenOperation } from '~~/generated/zenstack/models'
 
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
 
-import type appPrisma from './prisma'
+import type { DatabaseTransaction } from './database'
 
 import { TOKEN_RATIO } from './tokenRatio'
 import { TOKEN_PRICE_VERSION, validateCreditAmount, walletSettlement } from '../../shared/utils/tokenWallet'
 
-type Tx = Parameters<Parameters<typeof appPrisma.$transaction>[0]>[0]
+type Tx = DatabaseTransaction
 type Allocation = { id: string; amount: number }[]
 const walletContext = new AsyncLocalStorage<{
   clientSiteId: string
@@ -17,7 +18,7 @@ const walletContext = new AsyncLocalStorage<{
   budget: number
   ratio: number
   actual: number
-  metadata: Prisma.InputJsonValue
+  metadata: JsonValue
 }>()
 export const currentTokenOperation = () => walletContext.getStore()
 export async function commitTokenUsage() {
@@ -72,7 +73,7 @@ export async function runReservedTokens<T>(operation: TokenOperation, work: () =
 }
 
 /** Stage usage; only commit when the enclosing workflow has produced its result. */
-export async function recordTokenUsage(clientSiteId: string, actual: number, metadata: Prisma.InputJsonValue) {
+export async function recordTokenUsage(clientSiteId: string, actual: number, metadata: JsonValue) {
   const context = walletContext.getStore()
   if (!context || context.clientSiteId !== clientSiteId) throw new Error('Token usage requires a reservation')
   if (!Number.isSafeInteger(actual) || actual < 0) throw new Error('Invalid usage')
@@ -222,12 +223,32 @@ export async function reserveTokens(
     const wallet = await lockWallet(tx, clientSiteId)
     const previous = await tx.tokenOperation.findUnique({ where: { idempotencyKey: key } })
     if (previous) throw createError({ statusCode: 409, message: 'Operation already submitted' })
-    if (wallet.balance - wallet.reserved < amount)
-      throw createError({
-        statusCode: 402,
-        message: 'Insufficient credit',
-        data: { required: amount, available: wallet.balance - wallet.reserved },
+    // Provider tokens are an internal cost ledger. Customer authorization is handled by article
+    // credits and plan entitlements, so internal metering must never surface as a hidden paywall.
+    const available = wallet.balance - wallet.reserved
+    if (available < amount) {
+      const capacity = amount - available
+      const grant = await tx.tokenCreditGrant.create({
+        data: {
+          clientSiteId,
+          source: 'INTERNAL_CAPACITY',
+          amount: capacity,
+          remaining: capacity,
+          idempotencyKey: `capacity:${key}`,
+        },
       })
+      await tx.tokenWallet.update({ where: { id: clientSiteId }, data: { balance: { increment: capacity } } })
+      await tx.tokenLedgerEntry.create({
+        data: {
+          clientSiteId,
+          grantId: grant.id,
+          kind: 'INTERNAL_CAPACITY',
+          amount: capacity,
+          reason: 'Internal AI usage capacity',
+          idempotencyKey: `capacity-ledger:${key}`,
+        },
+      })
+    }
     const grants = await tx.tokenCreditGrant.findMany({
       where: { clientSiteId, remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
       orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }, { id: 'asc' }],
@@ -311,7 +332,7 @@ export async function settleTokens(
   clientSiteId: string,
   operationId: string,
   actual: number,
-  metadata: Prisma.InputJsonValue = {},
+  metadata: JsonValue = {},
   status = 'COMPLETED',
   transaction?: Tx,
 ) {

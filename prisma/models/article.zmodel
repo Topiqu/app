@@ -4,6 +4,7 @@ import "./user"
 import "./comment"
 import "./notification"
 import "./poll"
+import "./visibility"
 
 enum ArticleStatus {
     draft
@@ -46,7 +47,7 @@ enum SharePlatform {
     OTHER
 }
 
-model ArticleDraft extends Base, Ownable {
+model ArticleDraft with Base, Ownable {
     title        String
     excerpt      String?
     content      String
@@ -56,7 +57,7 @@ model ArticleDraft extends Base, Ownable {
     @@allow('all', auth().id == userId || auth().role == 'admin')
     @@index([userId, updatedAt])
 }
-model Article extends Base, Ownable {
+model Article with Base, Ownable {
     slug             String            @length(1, 100, "Slug musí mít 1–100 znaků")
     title            String            @length(1, 255, "Titulek musí mít 1–255 znaků")
     excerpt          String?           @length(0, 500, "Perex může mít max. 500 znaků")
@@ -88,6 +89,9 @@ model Article extends Base, Ownable {
     shares           ArticleShare[]
     viewEvents       ArticleView[]
     feedbacks        ArticleFeedback[]
+    aiReferralVisits AiReferralVisit[]
+    aiCitations      AiCitation[]
+    aiOpportunities  AiVisibilityOpportunity[]
     pollResults      PollResult[]
     polls            Poll[]
     notifications    Notification[]    @relation("ArticleNotifications")
@@ -112,7 +116,7 @@ model Article extends Base, Ownable {
     @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])
 }
 
-model ArticleTranslation extends Base {
+model ArticleTranslation with Base {
     articleId    String
     article      Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
     clientSiteId String
@@ -138,11 +142,12 @@ model ArticleTranslation extends Base {
     @@index([clientSiteId, status, language])
 }
 
-model ArticleSeries extends Base {
+model ArticleSeries with Base {
     name         String     @length(1, 255, "Název série musí mít 1–255 znaků")
     slug         String     @length(1, 100, "Slug série musí mít 1–100 znaků")
     description  String?    @length(0, 500)
     imageUrl     String?    @length(0, 255)
+    createdByAi  Boolean    @default(false)
 
     clientSiteId String
     clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
@@ -159,7 +164,7 @@ model ArticleSeries extends Base {
 /// cannot be backfilled. `sessionId` is required precisely so the unique index bites: a tuple
 /// with a NULL in it is distinct from every other in Postgres, which is why `ArticleShare`'s
 /// index catches nothing.
-model ArticleView extends Base {
+model ArticleView with Base {
     articleId    String
     article      Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
     clientSiteId String
@@ -173,7 +178,7 @@ model ArticleView extends Base {
     @@allow('read', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
 }
 
-model ArticleShare extends Base {
+model ArticleShare with Base {
     articleId String
     article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
     platform  SharePlatform
@@ -186,7 +191,7 @@ model ArticleShare extends Base {
     @@allow('delete', auth().role == 'admin')
 }
 
-model Tag extends Base {
+model Tag with Base {
     slug         String       @length(1, 64, "Slug tagu musí mít 1–64 znaků")
     name         String       @length(1, 64, "Název tagu musí mít 1–64 znaků")
     clientSiteId String?
@@ -206,7 +211,7 @@ model ArticleTag {
     @@allow('all', auth().role == 'admin')
 }
 
-model ArticleFeedback extends Base {
+model ArticleFeedback with Base {
     articleId String
     article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
@@ -223,7 +228,7 @@ model ArticleFeedback extends Base {
     @@allow('create, read', true)
     @@allow('update', auth().id == userId)
 }
-model ArticleReaction extends Base {
+model ArticleReaction with Base {
     articleId String
     article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
     userId    String?

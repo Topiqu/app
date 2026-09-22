@@ -13,13 +13,7 @@
           :ui="{ base: 'w-full min-w-0', content: 'min-w-48' }"
         />
       </UFormField>
-      <UIcon
-        v-if="pending"
-        name="mdi:cloud-sync-outline"
-        size="16"
-        class="ml-2 text-primary"
-        aria-hidden="true"
-      />
+      <UIcon v-if="pending" name="mdi:cloud-sync-outline" size="16" class="ml-2 text-primary" aria-hidden="true" />
       <UIcon
         v-else-if="
           props.row.original.releaseAt && new Date(props.row.original.releaseAt).getTime() - offset > Date.now()
@@ -34,7 +28,7 @@
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
-import type { ArticleStatus } from '@zenstackhq/runtime/models'
+import type { ArticleStatus } from '~~/generated/zenstack/models'
 
 import { format } from 'date-fns'
 

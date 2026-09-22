@@ -1,6 +1,27 @@
 <template>
   <div class="flex flex-col gap-6" data-article-settings-panel>
-    <section class="flex flex-col gap-3">
+    <ArticleEditorOptimization
+      :state="optimizationState"
+      :result="optimizationResult"
+      @retry="$emit('retryOptimization')"
+      @navigate="$emit('navigateOptimization', $event)"
+    />
+
+    <USeparator />
+
+    <ArticleEditorFactCheck
+      :state="factCheckState"
+      :result="factCheckResult"
+      :canRun="factCheckCanRun"
+      :errorKind="factCheckErrorKind"
+      @run="$emit('runFactCheck')"
+      @navigate="$emit('navigateFactCheck', $event)"
+      @navigateSources="$emit('navigateFactCheckSources')"
+    />
+
+    <USeparator />
+
+    <section ref="imageSection" class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
         <UIcon size="16" name="mdi:image-outline" />
         {{ $t('common.labels.image') }}
@@ -17,7 +38,7 @@
 
     <USeparator />
 
-    <section class="flex flex-col gap-3">
+    <section ref="sourcesSection" class="flex flex-col gap-3">
       <ArticleSources v-model="sources" />
     </section>
 
@@ -50,12 +71,13 @@
             <div v-if="!aiGenerating" class="flex flex-col gap-5 p-4">
               <div
                 v-if="aiLastResult"
-                class="overflow-hidden rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 via-default to-success/10 shadow-sm"
+                class="overflow-hidden rounded-lg border bg-elevated/40"
+                :class="resultTone"
                 aria-live="polite"
               >
-                <div class="flex items-start gap-3 border-b border-primary/15 px-4 py-4">
-                  <span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-                    <UIcon :name="resultIcon" size="22" />
+                <div class="flex items-start gap-3 px-4 py-3.5">
+                  <span class="mt-0.5 grid size-8 shrink-0 place-items-center text-current">
+                    <UIcon :name="resultIcon" size="20" />
                   </span>
                   <div class="min-w-0">
                     <p class="font-semibold text-highlighted">
@@ -64,8 +86,12 @@
                     <p class="mt-1 text-xs leading-5 text-muted">{{ resultDescription }}</p>
                   </div>
                 </div>
-                <dl class="grid grid-cols-2 gap-px bg-default/60 sm:grid-cols-3">
-                  <div v-for="metric in resultMetrics" :key="metric.label" class="bg-default/80 px-3 py-3">
+                <dl class="grid grid-cols-2 border-t border-default/70">
+                  <div
+                    v-for="metric in resultMetrics"
+                    :key="metric.label"
+                    class="px-4 py-2.5 even:border-l even:border-default/70"
+                  >
                     <dt class="text-[11px] uppercase tracking-wide text-muted">{{ metric.label }}</dt>
                     <dd class="mt-1 text-sm font-semibold text-highlighted">{{ metric.value }}</dd>
                   </div>
@@ -212,6 +238,7 @@
                     </label>
                   </div>
                   <UCheckbox
+                    v-if="aiOptions.modules.includes('images')"
                     v-model="aiOptions.allowGeneratedImages"
                     :aria-label="$t('articles.editor.ai.allowGeneratedImages')"
                     :label="$t('articles.editor.ai.allowGeneratedImages')"
@@ -232,16 +259,15 @@
                 <UButton block size="lg" :disabled="!customPrompt.trim()" @click="$emit('generate')">
                   {{ $t('articles.editor.ai.generateButton') }}
                 </UButton>
-                <div class="text-sm leading-5 text-muted">
-                  <p class="font-medium text-highlighted">{{ $t('articles.editor.ai.reservationLabel') }}</p>
-                  <p class="mt-1">{{ $t('articles.editor.ai.reservationSummary') }}</p>
-                  <details class="mt-2">
+                <div class="text-xs leading-5 text-muted">
+                  <details>
                     <summary
-                      class="w-fit cursor-pointer rounded text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary"
+                      class="w-fit cursor-pointer rounded underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary"
                     >
-                      {{ $t('articles.editor.ai.billingDetails') }}
+                      {{ $t('articles.editor.ai.reservationLabel') }}
                     </summary>
-                    <p class="mt-2">{{ $t('articles.editor.ai.billingExplanation') }}</p>
+                    <p class="mt-1">{{ $t('articles.editor.ai.reservationSummary') }}</p>
+                    <p class="mt-1">{{ $t('articles.editor.ai.billingExplanation') }}</p>
                   </details>
                 </div>
               </div>
@@ -272,8 +298,8 @@
                     <p v-else-if="aiPhase === 'writing' && aiWordCount" class="mt-1 text-xs text-muted">
                       {{ $t('articles.editor.ai.wordsWritten', { count: aiWordCount }) }}
                     </p>
-                    <p v-if="aiReservedTokens" class="mt-2 text-[11px] tabular-nums text-muted">
-                      {{ $t('articles.editor.ai.reservedDuringRun', { count: aiReservedTokens.toLocaleString() }) }}
+                    <p v-if="aiReservedArticles" class="mt-2 text-[11px] tabular-nums text-muted">
+                      {{ $t('articles.editor.ai.reservedDuringRun', { count: aiReservedArticles.toLocaleString() }) }}
                     </p>
                   </div>
                 </div>
@@ -412,6 +438,8 @@
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
+import type { ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
+import type { ArticleOptimizationResult, OptimizationTargetKind } from '~~/shared/types/articleOptimization'
 
 import {
   ARTICLE_GENERATION_FORMATS,
@@ -425,6 +453,8 @@ import {
   type ArticleGenerationResult,
 } from '~~/shared/utils/articleGeneration'
 
+import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'
+import type { ArticleFactCheckErrorKind, ArticleFactCheckState } from '~/composables/useArticleFactCheck'
 import type {
   GenerationPhase,
   GenerationResearchResult,
@@ -443,10 +473,25 @@ const props = defineProps<{
   aiWordCount: number
   aiResearch?: GenerationResearchResult | null
   aiMedia?: ArticleMediaProgress | null
-  aiReservedTokens?: number | null
+  aiReservedArticles?: number | null
   aiLastResult?: ArticleGenerationResult | null
   aiWritingStage: GenerationWritingStage
+  optimizationState: ArticleOptimizationState
+  optimizationResult: ArticleOptimizationResult | null
+  factCheckState: ArticleFactCheckState
+  factCheckResult: ArticleFactCheckResult | null
+  factCheckCanRun: boolean
+  factCheckErrorKind: ArticleFactCheckErrorKind
 }>()
+
+const imageSection = useTemplateRef<HTMLElement>('imageSection')
+const sourcesSection = useTemplateRef<HTMLElement>('sourcesSection')
+const focusOptimizationTarget = (kind: OptimizationTargetKind) => {
+  const element = kind === 'featured-image' ? imageSection.value : kind === 'sources' ? sourcesSection.value : null
+  element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  return element
+}
+defineExpose({ focusOptimizationTarget })
 
 const selectedSeries = defineModel<unknown>('selectedSeries')
 const customPrompt = defineModel<string>('customPrompt', { required: true })
@@ -485,11 +530,13 @@ const formatItems = computed(() =>
 )
 const depthItems = computed(() => depths.map((value) => ({ value, label: t(`articles.editor.ai.depth.${value}`) })))
 const moduleItems = computed(() =>
-  modules.map((value) => ({
-    value,
-    label: t(`articles.editor.ai.module.${value}`),
-    disabled: !allowedModules.value.includes(value),
-  })),
+  modules
+    .filter((value) => allowedModules.value.includes(value))
+    .map((value) => ({
+      value,
+      label: t(`articles.editor.ai.module.${value}`),
+      disabled: false,
+    })),
 )
 const contentModuleItems = computed(() =>
   moduleItems.value.filter((item) => !['images', 'youtube'].includes(item.value)),
@@ -562,6 +609,13 @@ const resultIcon = computed(() =>
       ? 'mdi:alert-circle-outline'
       : 'mdi:progress-alert',
 )
+const resultTone = computed(() =>
+  props.aiLastResult?.status === 'completed'
+    ? 'border-success/30 text-success'
+    : props.aiLastResult?.status === 'failed'
+      ? 'border-error/30 text-error'
+      : 'border-warning/30 text-warning',
+)
 const resultDescription = computed(() => {
   const result = props.aiLastResult
   if (!result) return ''
@@ -569,7 +623,7 @@ const resultDescription = computed(() => {
     ? t('articles.editor.ai.result.descriptionPartial', { count: result.missingModules.length })
     : result.reviewApproved === false
       ? t('articles.editor.ai.result.descriptionReview')
-    : t('articles.editor.ai.result.descriptionComplete')
+      : t('articles.editor.ai.result.descriptionComplete')
 })
 const resultMetrics = computed(() => {
   const result = props.aiLastResult
@@ -579,14 +633,6 @@ const resultMetrics = computed(() => {
     { label: t('articles.editor.ai.result.sources'), value: result.sourceCount.toLocaleString() },
     { label: t('articles.editor.ai.result.media'), value: `${result.mediaFound}/${result.mediaTotal}` },
     { label: t('articles.editor.ai.result.time'), value: `${result.durationSeconds} s` },
-    {
-      label: t('articles.editor.ai.result.tokens'),
-      value: result.tokenUsage == null ? '—' : result.tokenUsage.toLocaleString(),
-    },
-    {
-      label: t('articles.editor.ai.result.balance'),
-      value: result.tokenRemaining == null ? '—' : result.tokenRemaining.toLocaleString(),
-    },
   ]
 })
 const moduleLabel = (module: ArticleGenerationModule) => t(`articles.editor.ai.module.${module}`)
@@ -604,5 +650,10 @@ defineEmits<{
   addTag: [id: string]
   removeTag: [id: string]
   quickRelease: [kind: 'now' | 'inHour' | 'tomorrow' | 'clear']
+  retryOptimization: []
+  navigateOptimization: [target: import('~~/shared/types/articleOptimization').OptimizationTarget]
+  runFactCheck: []
+  navigateFactCheck: [blockIndex: number]
+  navigateFactCheckSources: []
 }>()
 </script>

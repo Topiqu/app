@@ -1,4 +1,4 @@
-import { getTokenPack } from '~~/shared/utils/tokenPacks'
+import { getArticlePack } from '~~/shared/utils/articlePacks'
 
 export default defineEventHandler(async (event) => {
   const session = (await getServerSession(event))?.user
@@ -23,22 +23,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
   }
 
-  // Price and token amount come from the server-side catalog, never from the client.
-  const tokenPack = getTokenPack(pack)
-  if (!tokenPack) {
-    throw createError({ statusCode: 400, message: 'Unknown token pack' })
+  const site = await prisma.clientSite.findUnique({ where: { id: clientSiteId }, select: { plan: true } })
+  if (!site || !hasAiPlan(site.plan)) {
+    throw createError({ statusCode: 403, message: 'Article packs require an active AI plan' })
+  }
+
+  // Price and article count come from the server-side catalog, never from the client.
+  const articlePack = getArticlePack(pack)
+  if (!articlePack) {
+    throw createError({ statusCode: 400, message: 'Unknown article pack' })
   }
 
   const stripe = useStripe()
   const stripeSession = await stripe.checkout.sessions.create({
     mode: 'payment',
-    payment_method_types: ['card'],
     line_items: [
       {
         price_data: {
           currency: 'usd',
-          product_data: { name: tokenPack.name },
-          unit_amount: Math.round(tokenPack.priceUsd * 100),
+          product_data: { name: articlePack.name },
+          unit_amount: Math.round(articlePack.priceUsd * 100),
         },
         quantity: 1,
       },
@@ -46,7 +50,7 @@ export default defineEventHandler(async (event) => {
     success_url: `${origin}/settings?tab=billing`,
     cancel_url: `${origin}/settings?tab=billing`,
     client_reference_id: clientSiteId,
-    metadata: { tokens: tokenPack.tokens.toString(), clientSiteId },
+    metadata: { articles: articlePack.articles.toString(), packId: articlePack.id, clientSiteId },
   })
   return { url: stripeSession.url }
 })

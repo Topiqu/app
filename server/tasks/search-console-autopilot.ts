@@ -4,7 +4,6 @@ import { getSearchTrends } from '../utils/searchConsole/opportunities'
 import { selectSeoAutopilotCandidate } from '../utils/searchConsole/autopilot'
 import { generateContentRefresh, generateCtrOptimization } from '../utils/ai/seoAutopilot'
 
-const MIN_TOKENS = 2500
 const RUN_COOLDOWN_HOURS = 20
 const ACTION_COOLDOWN_DAYS = 30
 
@@ -24,7 +23,6 @@ export default defineMonitoredTask({
         OR: [{ autopilotLastRunAt: null }, { autopilotLastRunAt: { lte: dueBefore } }],
         clientSite: {
           plan: { in: ['PREMIUM', 'CUSTOM'] },
-          tokenRemaining: { gt: MIN_TOKENS },
           AND: [activeFeatureFilter('SEARCH_CONSOLE'), activeFeatureFilter('AI')],
         },
       },

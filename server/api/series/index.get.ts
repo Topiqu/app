@@ -18,6 +18,8 @@ export default defineEventHandler(async (event) => {
       id: true,
       name: true,
       slug: true,
+      description: true,
+      createdByAi: true,
       articles: {
         select: { id: true },
         orderBy: { seriesOrder: 'asc' },
@@ -30,6 +32,8 @@ export default defineEventHandler(async (event) => {
     id: s.id,
     name: s.name,
     slug: s.slug,
+    description: s.description,
+    createdByAi: s.createdByAi,
     articles: s.articles,
   }))
 })

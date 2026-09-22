@@ -6,33 +6,33 @@
       "retry": "Try again"
     },
     "wallet": {
-      "title": "Credit",
-      "available": "Available",
-      "unit": "credits",
-      "bonusExpiry": "Bonus credit expires in 30 days. Regular credit adjustments do not expire.",
-      "generationReservation": "Each generation holds a budget based on its research and selected components. Only actual usage is charged; the rest is released.",
-      "neverExpires": "Credit never expires.",
-      "explanation": "Credit is not a monthly allowance. Unused credit rolls over, purchased credit never expires, and changing plan does not reset it.",
-      "reserved": "Held by running tasks",
-      "reservedHint": "When a task finishes we charge actual usage and release the rest back to you.",
+      "title": "Articles",
+      "available": "Articles remaining",
+      "unit": "articles",
+      "bonusExpiry": "Bonus articles may expire; purchased articles do not.",
+      "generationReservation": "Each generation temporarily holds 1 article. It is charged on success and returned after an error or cancellation.",
+      "neverExpires": "Plan articles are valid for their period. Purchased articles do not expire.",
+      "explanation": "Your plan adds articles each month. Purchased articles never expire and are used after plan articles.",
+      "reserved": "Held by running generations",
+      "reservedHint": "Each concurrent generation holds exactly 1 article. Failed runs return it.",
       "periodUsage": "Used in {period}",
-      "expires": "Promotional credit expires",
-      "lowBalance": "Credit is running low. We check that it covers the reservation before starting a task.",
-      "topup": "Add credit",
-      "history": "Credit history",
-      "empty": "No credit movements yet.",
-      "initial": "Initial credit",
-      "adjustment": "Credit adjustment",
+      "expires": "Valid until",
+      "lowBalance": "Only one article remains. Buy more or wait for your plan's monthly refresh.",
+      "topup": "Buy more articles",
+      "history": "Article history",
+      "empty": "No article movements yet.",
+      "initial": "Initial article allowance",
+      "adjustment": "Article allowance adjustment",
       "reason": "Required reason",
-      "amount": "Credit amount",
+      "amount": "Number of articles",
       "operation": "Original operation ID (for refunds)",
       "apply": "Apply adjustment",
       "kinds": {
-        "CREDIT": "Credit added",
+        "CREDIT": "Articles added",
         "DEBIT": "Usage",
         "RELEASE": "Reservation released",
-        "EXPIRY": "Expired credit",
-        "REFUND": "Refund",
+        "EXPIRY": "Articles expired",
+        "REFUND": "Articles returned",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Manual debit"
       }
@@ -632,8 +632,8 @@
         "monthly": "– Monthly billing",
         "intervalMonthly": "Monthly",
         "intervalAnnual": "Annual",
-        "tokenBalance": "Token balance / capacity",
-        "buyTokens": "Buy tokens",
+        "tokenBalance": "Articles remaining",
+        "buyTokens": "Buy more articles",
         "manage": "Manage subscription & invoices",
         "openPortal": "Manage billing",
         "invoicesTitle": "Invoices and payments",
@@ -760,6 +760,10 @@
           "WEEKLY": "One new draft every seven days for a slower publishing rhythm."
         }
       },
+      "aiSeries": {
+        "title": "Automatic series",
+        "description": "AI can group related scheduled articles into series and add relevant follow-ups. Fixed limits keep the publication varied."
+      },
       "aiDisclosure": {
         "title": "Label AI-assisted content",
         "desc": "Publicly shows the level of AI involvement in an article and labels AI-generated images."
@@ -790,7 +794,7 @@
           "label": "Target languages",
           "empty": "No other languages available for your primary language."
         },
-        "tokenWarning": "Automatic translation consumes tokens for every published article, per target language — just like AI generation."
+        "tokenWarning": "Automatic translation creates a separate version of every published article for each target language."
       },
       "aiAuthor": {
         "title": "AI Author Settings",
@@ -1030,16 +1034,14 @@
       "accepted": "Invitation accepted",
       "declined": "Invitation declined"
     },
-    "tokens": {
-      "pack10k": "Credit pack 10k",
-      "pack25k": "Credit pack 25k",
-      "pack50k": "Credit pack 50k",
-      "pack75k": "Credit pack 75k",
+    "articlePacks": {
+      "pack5": "5 extra articles",
+      "pack10": "10 extra articles",
+      "pack25": "25 extra articles",
       "bestValue": "Best value",
-      "mostTokens": "Most credit",
       "valueBonus": "+{0}% extra",
-      "tokens": "credits",
-      "articlesEstimate": "≈ {count} articles",
+      "articles": "articles",
+      "neverExpires": "Never expires",
       "upgradeToPremium": "Upgrade to PREMIUM"
     }
   },

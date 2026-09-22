@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SocialPlatform } from '@prisma/client'
+import type { SocialPlatform } from '~~/generated/zenstack/models'
 
 const props = defineProps<{ clientSiteId: string }>()
 

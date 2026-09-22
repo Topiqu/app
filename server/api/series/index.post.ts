@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
   }
 
-  const body = await readBody<{ name: string; slug?: string }>(event)
+  const body = await readBody<{ name: string; slug?: string; description?: string }>(event)
 
   if (!body.name?.trim()) {
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
@@ -33,12 +33,15 @@ export default defineEventHandler(async (event) => {
     data: {
       name: body.name.trim(),
       slug,
+      description: body.description?.trim() || null,
       clientSiteId,
     },
     select: {
       id: true,
       name: true,
       slug: true,
+      description: true,
+      createdByAi: true,
       articles: { select: { id: true } },
     },
   })

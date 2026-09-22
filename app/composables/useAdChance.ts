@@ -1,4 +1,4 @@
-import type { ClientPlan } from '@prisma/client'
+import type { ClientPlan } from '~~/generated/zenstack/models'
 
 export interface AdTargeting {
   client_id: string

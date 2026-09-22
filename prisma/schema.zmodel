@@ -10,24 +10,14 @@ import "./models/log"
 import "./models/ads"
 import "./models/searchConsole"
 import "./models/tokenWallet"
-
-generator client {
-    provider = "prisma-client-js"
-}
+import "./models/articleCreditWallet"
+import "./models/visibility"
 
 datasource db {
     provider  = "postgresql"
     url       = env("DATABASE_URL")
 }
 
-plugin prisma {
-    provider = '@core/prisma'
-    output   = './schema.prisma'
-}
-
-plugin zod {
-    provider  = "@core/zod"
-    output    = "../shared/zod"
-    modelOnly = true
-    compile   = false
+plugin policy {
+    provider = "@zenstackhq/plugin-policy"
 }

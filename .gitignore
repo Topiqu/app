@@ -6,6 +6,7 @@
 .cache
 dist
 shared/zod
+generated/zenstack
 
 # Playwright generated artifacts and local visual baselines
 test-results

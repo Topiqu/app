@@ -120,7 +120,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { UserRole } from '@prisma/client'
+import type { UserRole } from '~~/generated/zenstack/models'
 
 import { formatDate } from '~~/shared/utils'
 

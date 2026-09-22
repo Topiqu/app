@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DraftStatus } from '@prisma/client'
+import type { DraftStatus } from '~~/generated/zenstack/models'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 

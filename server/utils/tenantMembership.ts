@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import type { TenantScope } from '@prisma/client'
+import type { TenantScope } from '~~/generated/zenstack/models'
 
 export const TENANT_SCOPES = [
   'ARTICLE_WRITE',

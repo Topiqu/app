@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
       options: z
         .object({
           format: z.enum(ARTICLE_GENERATION_FORMATS),
-          allowGeneratedImages: z.boolean().default(false),
+          allowGeneratedImages: z.boolean().default(true),
           modules: z.array(z.enum(ARTICLE_GENERATION_MODULES)).max(ARTICLE_GENERATION_MODULES.length),
           research: z.object({
             enabled: z.boolean(),
@@ -59,6 +59,7 @@ export default defineEventHandler(async (event) => {
     format: options?.format ?? null,
     modules: options?.modules ?? [],
     researchDepth: options?.research.enabled ? options.research.depth : null,
+    allowGeneratedImages: options?.allowGeneratedImages !== false,
   })
 
   const client = await prisma.clientSite.findUnique({
@@ -102,16 +103,24 @@ export default defineEventHandler(async (event) => {
     format: options?.format ?? null,
     modules: options?.modules ?? [],
     researchDepth: options?.research.enabled ? options.research.depth : null,
+    allowGeneratedImages: options?.allowGeneratedImages !== false,
     models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') },
   }
 
   const generationOptions = options ?? defaultArticleGenerationOptions()
-  const reservation = await reserveTokens(
-    clientSiteId,
-    articleGenerationReservation(generationOptions, TOKEN_RATIO),
-    'MANUAL_GENERATION',
-    attemptId,
-  )
+  const articleReservation = await reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE', attemptId, runConfig)
+  let reservation
+  try {
+    reservation = await reserveTokens(
+      clientSiteId,
+      articleGenerationReservation(generationOptions, TOKEN_RATIO),
+      'MANUAL_GENERATION',
+      attemptId,
+    )
+  } catch (error) {
+    await settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'token_metering' })
+    throw error
+  }
   const stream = new ReadableStream({
     async start(controller) {
       return runReservedTokens(reservation, async () => {
@@ -121,7 +130,7 @@ export default defineEventHandler(async (event) => {
         const heartbeat = setInterval(() => send(controller, { type: 'heartbeat' }), 5_000)
 
         try {
-          send(controller, { type: 'reservation', credits: reservation.reserved })
+          send(controller, { type: 'reservation', articles: 1 })
           send(controller, {
             type: 'phase',
             phase: options?.research.enabled === false ? 'writing' : 'research',
@@ -143,7 +152,7 @@ export default defineEventHandler(async (event) => {
             fallbackWithoutResearch: options?.research.fallbackWithoutResearch,
             format: options?.format,
             modules: options?.modules,
-            allowGeneratedImages: options?.allowGeneratedImages === true,
+            allowGeneratedImages: options?.allowGeneratedImages !== false,
           })
           const { result, finalize, researchTokens, research } = generation
           send(controller, { type: 'research', ...research })
@@ -231,32 +240,40 @@ export default defineEventHandler(async (event) => {
             client.humanWordsPerHour,
           )
 
-          // Handed over before billing. Exact usage only exists after generation; accounting records
-          // it and clamps the spendable balance at zero if this final call exceeded the remainder.
+          const apiTokens = (usage.totalTokens || 0) + researchTokens + generation.editorialTokens
+          try {
+            await consumeClientTokens(
+              clientSiteId,
+              apiTokens,
+              'MANUAL_GENERATION_COMPLETED',
+              {
+                attemptId,
+                title: finalized.title,
+                usage,
+                researchTokens,
+                editorialTokens: generation.editorialTokens,
+                editorialReview: generation.editorialReview,
+                metrics,
+                aiInvolvement: 'ASSIST',
+                createdAt: new Date(),
+                ...runConfig,
+              },
+              event,
+              user.id,
+            )
+            await commitTokenUsage()
+          } catch (meteringError) {
+            // Provider usage is internal cost telemetry. A metering outage must not turn a completed,
+            // customer-authorized article into a failed run or release its article reservation.
+            await reportCaughtError('Article cost metering failed', meteringError, { attemptId, clientSiteId })
+          }
+          const articleWallet = await settleArticleCredit(articleReservation, true, {
+            ...runConfig,
+            title: finalized.title,
+            apiTokens,
+          })
           send(controller, { type: 'final', article: { ...finalized, metrics, aiInvolvement: 'ASSIST' } })
-
-          const billing = await consumeClientTokens(
-            clientSiteId,
-            (usage.totalTokens || 0) + researchTokens + generation.editorialTokens,
-            'MANUAL_GENERATION_COMPLETED',
-            {
-              attemptId,
-              title: finalized.title,
-              usage,
-              researchTokens,
-              editorialTokens: generation.editorialTokens,
-              editorialReview: generation.editorialReview,
-              metrics,
-              aiInvolvement: 'ASSIST',
-              createdAt: new Date(),
-              ...runConfig,
-            },
-            event,
-            user.id,
-          )
-          const settled = await commitTokenUsage()
-          billing.tokenRemaining = settled.available
-          send(controller, { type: 'billing', ...billing })
+          send(controller, { type: 'billing', articlesCharged: 1, articlesRemaining: articleWallet.available })
         } catch (error: any) {
           if (abortController.signal.aborted && !timedOutStage) {
             // Stopped mid-generation: bill best-effort for the partial usage we actually spent.
@@ -324,6 +341,10 @@ export default defineEventHandler(async (event) => {
                 : error?.message || t('articles.editor.aiContentFailed'),
             })
           }
+          await settleArticleCredit(articleReservation, false, {
+            ...runConfig,
+            stage: timedOutStage ?? (generation ? (textDone ? 'finalization' : 'writing') : 'research'),
+          })
         } finally {
           clearInterval(heartbeat)
           if (writerWaitTimer) clearTimeout(writerWaitTimer)
@@ -334,6 +355,7 @@ export default defineEventHandler(async (event) => {
           }
         }
       }).catch((error) => {
+        settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'stream' }).catch(() => undefined)
         send(controller, { type: 'error', message: error.message })
         try {
           controller.close()

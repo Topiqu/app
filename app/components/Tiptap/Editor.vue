@@ -190,4 +190,19 @@ const editor = useTiptapInstance({
 })
 
 const uploadImage = useTiptapImageUpload(editor, promptAlt)
+
+const focusBlock = (blockIndex?: number) => {
+  const instance = editor.value
+  if (!instance) return false
+  const nodes: { pos: number }[] = []
+  instance.state.doc.forEach((_node, offset) => nodes.push({ pos: offset + 1 }))
+  const target = typeof blockIndex === 'number' ? nodes[blockIndex] : undefined
+  instance
+    .chain()
+    .focus(target?.pos ?? 'start')
+    .run()
+  return Boolean(target)
+}
+
+defineExpose({ focusBlock })
 </script>

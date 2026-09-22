@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import { expiredTrialWhere } from '../../../server/utils/trialDowngrade'
+import { TRIAL_ARTICLE_CREDITS } from '../../../shared/utils/articleCredits'
 import { TRIAL_PLAN, needsTrialDowngrade } from '../../../shared/utils/trial'
 
 const NOW = new Date('2026-08-09T05:00:00Z')
@@ -46,6 +47,10 @@ const matchesWhere = (candidate: Row, now: Date) => {
 }
 
 describe('expiredTrialWhere', () => {
+  it('starts a trial with five complete AI articles', () => {
+    expect(TRIAL_ARTICLE_CREDITS).toBe(5)
+  })
+
   it('backfills trial provenance only from an issued trial credit grant', () => {
     const migration = readFileSync('prisma/migrations/20260913150000_explicit_trial_lifecycle/migration.sql', 'utf8')
 

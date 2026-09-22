@@ -8,7 +8,7 @@ enum AdPayoutStatus {
     VOID
 }
 
-model AdEarning extends Base {
+model AdEarning with Base {
     clientSiteId  String
     clientSite    ClientSite     @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     periodStart   DateTime

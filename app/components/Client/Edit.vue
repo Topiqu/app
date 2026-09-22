@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ClientSite } from '@zenstackhq/runtime/models'
+import type { ClientSite } from '~~/generated/zenstack/models'
 
 const props = defineProps<{ client: ClientSite }>()
 

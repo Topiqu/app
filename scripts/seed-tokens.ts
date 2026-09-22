@@ -1,7 +1,7 @@
 import { createError } from 'h3'
-import { PrismaClient } from '@prisma/client'
 
 import { creditTokens } from '../server/utils/tokenWallet'
+import { createDatabaseClient } from '../server/utils/database'
 
 const AMOUNT = Number(process.env.SEED_TOKENS ?? 50000)
 const url = process.env.DATABASE_URL ?? ''
@@ -13,7 +13,7 @@ if (!['localhost', '127.0.0.1'].includes(host) && process.env.SEED_FORCE !== '1'
   process.exit(1)
 }
 
-const prisma = new PrismaClient()
+const prisma = createDatabaseClient()
 Object.assign(globalThis, { prisma, createError })
 
 const sites = await prisma.clientSite.findMany({

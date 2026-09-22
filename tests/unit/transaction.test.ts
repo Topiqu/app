@@ -3,10 +3,10 @@ import { describe, expect, it, vi } from 'vitest'
 import { isRetryableTransactionError, withTransactionRetry } from '../../server/utils/transaction'
 
 describe('transaction retry', () => {
-  it('retries P2034 conflicts and returns the replayed result', async () => {
+  it('retries PostgreSQL serialization conflicts and returns the replayed result', async () => {
     const operation = vi
       .fn<() => Promise<string>>()
-      .mockRejectedValueOnce({ code: 'P2034' })
+      .mockRejectedValueOnce({ dbErrorCode: '40001' })
       .mockResolvedValue('committed')
 
     await expect(withTransactionRetry(operation)).resolves.toBe('committed')
@@ -14,7 +14,7 @@ describe('transaction retry', () => {
   })
 
   it('stops after two retries', async () => {
-    const conflict = { code: 'P2034' }
+    const conflict = { dbErrorCode: '40P01' }
     const operation = vi.fn<() => Promise<never>>().mockRejectedValue(conflict)
 
     await expect(withTransactionRetry(operation)).rejects.toBe(conflict)
@@ -22,7 +22,7 @@ describe('transaction retry', () => {
   })
 
   it('does not retry unrelated failures', async () => {
-    const failure = { code: 'P2002' }
+    const failure = { dbErrorCode: '23505' }
     const operation = vi.fn<() => Promise<never>>().mockRejectedValue(failure)
 
     expect(isRetryableTransactionError(failure)).toBe(false)

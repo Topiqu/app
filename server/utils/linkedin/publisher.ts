@@ -1,4 +1,4 @@
-import type { DraftStatus } from '@prisma/client'
+import type { DraftStatus } from '~~/generated/zenstack/models'
 
 import prisma from '../prisma'
 import { createPost } from './api'
@@ -20,7 +20,9 @@ export async function executePublish(draftId: string, fromStatuses: DraftStatus[
   try {
     const draft = await prisma.draftPost.findUniqueOrThrow({
       where: { id: draftId },
-      include: { task: { include: { company: true } } },
+      include: {
+        task: { include: { company: { omit: { accessToken: false, refreshToken: false } } } },
+      },
     })
 
     const { company } = draft.task
@@ -47,7 +49,9 @@ export function publishApprovedDraft(draftId: string) {
 export async function publishDecisionAndExecute(draftId: string) {
   const draft = await prisma.draftPost.findUnique({
     where: { id: draftId },
-    include: { task: { include: { company: true } } },
+    include: {
+      task: { include: { company: { omit: { accessToken: false, refreshToken: false } } } },
+    },
   })
 
   if (!draft) throw new Error(`Draft ${draftId} not found`)

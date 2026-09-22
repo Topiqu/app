@@ -25,6 +25,7 @@ const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
     gtagId: 'G-123',
     gamNetworkCode: '456',
     autoRelease: true,
+    aiSeriesEnabled: true,
     translationMode: 'AUTO',
     translationLanguages: ['en'],
     allowGtag: true,
@@ -37,6 +38,7 @@ describe('buildClientSettingsForm', () => {
     expect(form.language).toBe('en')
     expect(form.theme).toBe('blue')
     expect(form.translationMode).toBe('OFF')
+    expect(form.aiSeriesEnabled).toBe(false)
     expect(form.linkedinMode).toBe('HitL')
     expect(form.linkedinCompanyType).toBe('pages')
     expect(form.keywords).toEqual([])
@@ -65,6 +67,7 @@ describe('buildClientSettingsForm', () => {
       gtagId: 'G-123',
       gamNetworkCode: '456',
       autoRelease: true,
+      aiSeriesEnabled: true,
       translationMode: 'AUTO',
       translationLanguages: ['en'],
       allowGtag: true,

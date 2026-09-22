@@ -20,9 +20,7 @@
     </div>
     <p v-if="kind === 'BONUS'" class="text-xs text-muted">{{ $t('common.wallet.bonusExpiry') }}</p>
     <UFormField :label="$t('common.wallet.adjustment')"><USelect v-model="kind" :items="kinds" /></UFormField>
-    <UFormField :label="$t('common.wallet.amount')"
-      ><UInputNumber v-model="amount" :min="1" :max="10000000"
-    /></UFormField>
+    <UFormField :label="$t('common.wallet.amount')"><UInputNumber v-model="amount" :min="1" :max="10000" /></UFormField>
     <UFormField :label="$t('common.wallet.reason')"><UTextarea v-model="reason" :maxlength="500" /></UFormField>
     <UFormField v-if="kind === 'REFUND'" :label="$t('common.wallet.operation')"
       ><UInput v-model="operationId"
@@ -38,12 +36,12 @@
 <script setup lang="ts">
 const props = defineProps<{ clientSiteId: string }>()
 const { data: walletResponse, refresh: refreshWallet } = await useFetch(
-  () => `/api/clients/${props.clientSiteId}/wallet`,
+  () => `/api/clients/${props.clientSiteId}/article-wallet`,
 )
 const { t } = useI18n()
 const toast = useToast()
 const kind = ref<'CREDIT' | 'BONUS' | 'DEBIT' | 'REFUND'>('CREDIT')
-const amount = ref(1000)
+const amount = ref(1)
 const reason = ref('')
 const operationId = ref('')
 const pending = ref(false)

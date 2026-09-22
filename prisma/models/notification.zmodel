@@ -10,7 +10,7 @@ enum NotificationType {
     SYSTEM
 }
 
-model Notification extends Base, Ownable {
+model Notification with Base, Ownable {
     message   String           @length(1, 255, "Zpráva notifikace musí mít 1–255 znaků")
     isRead    Boolean          @default(false)
     type      NotificationType

@@ -141,7 +141,7 @@
       "owner": {
         "badge": "Tuto stránku vidíte jen vy",
         "title": "Blog je připravený na první článek",
-        "message": "Návštěvníkům se ukáže tato stránka a vyhledávačům říkáme, aby ji neindexovaly, dokud nevyjde první článek. Můžete ho napsat sami, nebo si ho nechat vygenerovat, pokud váš tarif a zůstatek tokenů podporují AI.",
+        "message": "Návštěvníkům se ukáže tato stránka a vyhledávačům říkáme, aby ji neindexovaly, dokud nevyjde první článek. Můžete ho napsat sami, nebo si ho nechat vygenerovat, pokud máte v tarifu alespoň jeden článek.",
         "writeCta": "Napsat první článek",
         "aiCta": "Vygenerovat AI",
         "adminCta": "Přejít do administrace",
@@ -263,10 +263,10 @@
       "currentPlan": "Současný plán",
       "roughlyEstimated": "Přibližně {0} článků",
       "userDataError": "Chyba při načítání uživatelských dat",
-      "remainingTokens": "Zbývající tokeny",
-      "balanceIncludesExtras": "Zůstatek zahrnuje dokoupené nebo zachované tokeny z dřívějšího tarifu a může být vyšší než aktuální příděl plánu.",
-      "totalConsumed": "Celkem spotřebováno: {0} tokenů",
-      "buyTokens": "Koupit tokeny",
+      "remainingTokens": "Zbývající články",
+      "balanceIncludesExtras": "Zůstatek zahrnuje články z tarifu i dokoupené články.",
+      "totalConsumed": "Celkem vytvořeno: {0} článků",
+      "buyTokens": "Dokoupit články",
       "upgradeToPremium": "Povýšit na PREMIUM",
       "recentActions": "Poslední akce",
       "ga4Connected": "GA4 připojeno",
@@ -278,8 +278,8 @@
       "articlePublished": "Článek publikován",
       "articleSavedAsDraft": "Článek uložen jako koncept",
       "insightGenerated": "Insight vytvořen",
-      "lowTokensWarning": "Málo tokenů!",
-      "lowTokensHint": "Zbývá méně než {percent} % tokenů. Dokupte si balíček, ať nepřijdete o generování.",
+      "lowTokensWarning": "Zbývá poslední článek",
+      "lowTokensHint": "Dokupte si další články, nebo počkejte na měsíční obnovení tarifu.",
       "insightSkipped": "Insight přeskočen"
     },
     "dateFormats": {
@@ -431,7 +431,7 @@
         "waitingImages": "Příprava obrázku může trvat až 45 s. Pokud jej služba nedodá, článek se dokončí bez něj.",
         "researchTarget": "Hledané téma: {topic}",
         "researchMethod": "Hledám aktuální primární zdroje a ověřuji tvrzení ze zadání.",
-        "reservedDuringRun": "Dočasně blokováno: {count} kreditů",
+        "reservedDuringRun": "Dočasně blokováno: {count} článek",
         "writerIdleError": "Generování bylo zastaveno: autor 30 sekund neposlal žádná data.",
         "writerDeadlineError": "Generování bylo zastaveno po dosažení 90sekundového limitu psaní.",
         "researchSources": "Výzkum dokončen, nalezeno zdrojů: {count}",
@@ -489,7 +489,7 @@
           "partial": "Článek je hotový s upozorněním",
           "stopped": "Generování bylo zastaveno",
           "failed": "Generování selhalo",
-          "descriptionComplete": "Všechny vybrané části byly vloženy a stav tokenů je aktuální.",
+          "descriptionComplete": "Všechny vybrané části byly vloženy a článek byl odečten ze zůstatku.",
           "descriptionPartial": "{count} vybraných částí se nepodařilo vložit. Výsledek zůstává v editoru k úpravě.",
           "descriptionReview": "Kompletní výsledek zůstává v editoru, protože automatická redakční kontrola stále našla problém.",
           "reviewWarning": "Redakční kontrola stále doporučuje ruční ověření před publikací.",
@@ -542,10 +542,10 @@
         "youtubeHint": "Video se vloží pouze tehdy, když rešerše najde ověřený odkaz na YouTube.",
         "outputSummary": "{format} · {research}",
         "noModules": "Bez doplňkových bloků",
-        "reservationLabel": "Kredit pro generování",
-        "reservationSummary": "Každý běh blokuje vlastní rozpočet podle hloubky rešerše a vybraných součástí. Souběžné běhy jsou možné, pokud zbývá dost kreditu; účtuje se jen skutečná spotřeba.",
+        "reservationLabel": "Jak se články odečítají",
+        "reservationSummary": "Každé generování dočasně zablokuje 1 článek. Dva souběžné běhy proto vyžadují alespoň 2 zbývající články.",
         "billingDetails": "Podrobnosti účtování",
-        "billingExplanation": "Nevyužité kredity se uvolní. Neúspěšné generování je zdarma. Při zastavení se účtuje již provedená práce.",
+        "billingExplanation": "Článek se odečte až po úspěšném dokončení. Při chybě nebo zastavení se rezervace vrátí.",
         "moduleUnavailable": "Pro tento formát není dostupné",
         "reviewFailed": "Článek neprošel redakční kontrolou ani po opravě.",
         "reviewWarning": "Článek byl vygenerován; před publikací jej prosím zkontrolujte",
@@ -559,6 +559,116 @@
         "continueDraftPrompt": "Pokračovat v úpravě konceptu z {0}?",
         "noDraftsFound": "Žádné koncepty nenalezeny",
         "untitled": "Návrh bez názvu #{0}"
+      },
+      "factCheck": {
+        "title": "Kontrola faktů",
+        "description": "Porovná ověřitelná tvrzení v aktuální verzi článku s obsahem přidaných zdrojů.",
+        "run": "Zkontrolovat tvrzení",
+        "runAgain": "Zkontrolovat znovu",
+        "running": "Načítám zdroje a porovnávám tvrzení…",
+        "stale": "Článek nebo zdroje se změnily",
+        "notEnoughContent": "Nejprve přidejte alespoň krátký obsah článku.",
+        "errorTitle": "Kontrolu se nepodařilo dokončit",
+        "error": {
+          "invalid-request": "Aktuální článek se nepodařilo připravit ke kontrole. Obnovte editor a zkuste to znovu.",
+          "not-configured": "AI služba není v tomto prostředí nakonfigurovaná. Správce musí nastavit OPENAI_API_KEY.",
+          "not-in-plan": "Kontrola faktů není dostupná pro váš tarif nebo k ní nemáte oprávnění.",
+          "rate-limited": "Proběhlo příliš mnoho kontrol. Chvíli počkejte a zkuste to znovu.",
+          "service-unavailable": "AI služba je dočasně nedostupná. Zkuste kontrolu spustit později.",
+          "unknown": "Kontrolu se nepodařilo dokončit. Zkuste ji spustit znovu."
+        },
+        "claimsFound": "nalezených faktických tvrzení",
+        "supported": "Podložená",
+        "problematic": "K prověření",
+        "sourceIssues": "Problémy se zdroji",
+        "noClaimsTitle": "Žádná vhodná tvrzení",
+        "noClaimsDescription": "V textu nebyla nalezena důležitá ověřitelná tvrzení. Neznamená to potvrzení správnosti článku.",
+        "highImportance": "Důležité",
+        "supportedClaims": "Podložená tvrzení ({count})",
+        "sourceNumber": "Zdroj {number}",
+        "goToClaim": "Přejít na tvrzení",
+        "disclaimer": "Výsledek hodnotí oporu v přidaných zdrojích, nikoli absolutní pravdivost. Před publikací ověřte důležitá tvrzení i ručně.",
+        "verdict": {
+          "supported": "Podloženo zdrojem",
+          "partial": "Částečně podloženo",
+          "unsupported": "Bez opory ve zdrojích",
+          "contradicted": "V rozporu se zdrojem",
+          "unverifiable": "Nelze spolehlivě ověřit"
+        },
+        "sourceStatus": {
+          "duplicate": "Tento zdroj je v seznamu vícekrát.",
+          "invalid": "Adresa zdroje není platná nebo není bezpečně dostupná přes HTTPS.",
+          "unreachable": "Obsah zdroje se nepodařilo načíst.",
+          "unsupported-content": "Obsah zdroje nelze přečíst jako webový text.",
+          "ready": "Zdroj byl načten."
+        }
+      },
+      "optimization": {
+        "title": "Optimalizace článku",
+        "score": "Celkové skóre",
+        "analyzing": "Analyzuji článek…",
+        "stale": "Čeká na přepočet",
+        "insufficientData": "Nedostatek dat",
+        "emptyTitle": "Začněte psát",
+        "emptyDescription": "Po přidání titulku nebo obsahu se zobrazí doporučení.",
+        "errorTitle": "Analýza se nezdařila",
+        "errorDescription": "Místní analýzu se nepodařilo dokončit.",
+        "retry": "Zkusit znovu",
+        "goTo": "Přejít na místo",
+        "passedChecks": "Splněné kontroly ({count})",
+        "categories": {
+          "seo": "SEO",
+          "ai-visibility": "AI viditelnost",
+          "readability": "Čitelnost",
+          "trust": "Důvěryhodnost"
+        },
+        "counts": {
+          "issues": "Chyby: {count}",
+          "recommendations": "Doporučení: {count}",
+          "passed": "Splněno: {count}"
+        },
+        "checks": {
+          "title-exists": { "title": "title-exists", "description": "Zkontrolujte a upravte tuto část článku." },
+          "title-length": { "title": "title-length", "description": "Zkontrolujte a upravte tuto část článku." },
+          "excerpt-exists": { "title": "excerpt-exists", "description": "Zkontrolujte a upravte tuto část článku." },
+          "excerpt-length": { "title": "excerpt-length", "description": "Zkontrolujte a upravte tuto část článku." },
+          "single-h1": { "title": "single-h1", "description": "Zkontrolujte a upravte tuto část článku." },
+          "heading-hierarchy": {
+            "title": "heading-hierarchy",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "internal-link": { "title": "internal-link", "description": "Zkontrolujte a upravte tuto část článku." },
+          "external-link": { "title": "external-link", "description": "Zkontrolujte a upravte tuto část článku." },
+          "featured-image": { "title": "featured-image", "description": "Zkontrolujte a upravte tuto část článku." },
+          "image-alt": { "title": "image-alt", "description": "Zkontrolujte a upravte tuto část článku." },
+          "paragraph-length": {
+            "title": "paragraph-length",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "sentence-length": { "title": "sentence-length", "description": "Zkontrolujte a upravte tuto část článku." },
+          "section-length": { "title": "section-length", "description": "Zkontrolujte a upravte tuto část článku." },
+          "long-article-structure": {
+            "title": "long-article-structure",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "topic-introduction": {
+            "title": "topic-introduction",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "descriptive-sections": {
+            "title": "descriptive-sections",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "heading-quality": { "title": "heading-quality", "description": "Zkontrolujte a upravte tuto část článku." },
+          "multiple-blocks": { "title": "multiple-blocks", "description": "Zkontrolujte a upravte tuto část článku." },
+          "sources-exist": { "title": "sources-exist", "description": "Zkontrolujte a upravte tuto část článku." },
+          "sources-valid": { "title": "sources-valid", "description": "Zkontrolujte a upravte tuto část článku." },
+          "external-links-safe": {
+            "title": "external-links-safe",
+            "description": "Zkontrolujte a upravte tuto část článku."
+          },
+          "source-diversity": { "title": "source-diversity", "description": "Zkontrolujte a upravte tuto část článku." }
+        }
       },
       "releaseDateNote": "Slouží k nastavení data a času publikace článku. Nechte prázdné pro manuální vydání.",
       "createSuccess": "Článek úspěšně vytvořen",

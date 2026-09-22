@@ -1,7 +1,8 @@
-import type { Prisma, SocialPlatform } from '@prisma/client'
+import type { SocialPlatform } from '~~/generated/zenstack/models'
+import type { ClientSiteUpdateArgs } from '~~/generated/zenstack/input'
 
 import { randomBytes } from 'crypto'
-import { models } from '~~/shared/zod'
+import { models } from '~~/shared/databaseSchemas'
 import { domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 import {
   PRIVILEGED_CLIENT_SITE_FIELDS,
@@ -85,7 +86,7 @@ export default defineEventHandler(async (event) => {
 
   // Credit changes require an audited wallet adjustment, never a settings save.
   if ('tokenLimit' in body || 'tokenRemaining' in body)
-    throw createError({ statusCode: 400, message: 'Use audited wallet adjustments to change credit' })
+    throw createError({ statusCode: 400, message: 'Use audited wallet adjustments to change article allowances' })
 
   if (scalarBody.description !== undefined)
     data.description = scalarBody.description ? sanitizeHtml(scalarBody.description) : null
@@ -99,7 +100,7 @@ export default defineEventHandler(async (event) => {
   const currentAiUser = clientSite.users[0]
   const hasAiPayload = aiUserPayload && Object.values(aiUserPayload).some((v) => v !== '')
 
-  // AI identity and writing preferences are configuration, not token consumption. Keeping them
+  // AI identity and writing preferences are configuration, not article consumption. Keeping them
   // editable on Basic lets the client prepare the workspace before activating AI generation.
   if (hasAiPayload) {
     // `avatarUrl` is deliberately absent: it belongs to `ai-avatar.post`/`.delete`, which write it
@@ -167,7 +168,7 @@ export default defineEventHandler(async (event) => {
   // LinkedIn too. There is nothing to set a publish mode on until they do — the row is created by
   // the OAuth callback, which is the only place a real `linkedinOrgId` comes from. This used to
   // fabricate one with `linkedinOrgId: 'placeholder'`, which the unique index let exactly one
-  // tenant get away with; everyone else's settings save died on P2002.
+  // tenant get away with; everyone else's settings save died on a unique-key violation.
   if (linkedinMode !== undefined) {
     // Personal is the only connectable type, but a tenant may still carry an older 'pages' row —
     // hence no `type` filter, so its publish mode stays editable.
@@ -197,7 +198,7 @@ export default defineEventHandler(async (event) => {
     where: { id },
     data,
     include: { socials: true, users: { where: { role: 'ai' as const }, take: 1 } },
-  } satisfies Prisma.ClientSiteUpdateArgs
+  } satisfies ClientSiteUpdateArgs
 
   // A plan column without matching ClientFeature rows is not a valid committed state. Keep the
   // superadmin plan write and entitlement synchronization behind the same tenant-row lock.

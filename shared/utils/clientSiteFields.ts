@@ -1,4 +1,4 @@
-import type { ClientSite, SocialPlatform } from '@prisma/client'
+import type { ClientSite, SocialPlatform } from '~~/generated/zenstack/models'
 
 export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan'] as const
 
@@ -17,6 +17,7 @@ export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'faviconUrl',
   'typographyPreset',
   'autoRelease',
+  'aiSeriesEnabled',
   'gtagId',
   'allowGtag',
   'gamNetworkCode',

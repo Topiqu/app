@@ -47,7 +47,6 @@ export default defineEventHandler(async (event) => {
   const stripe = useStripe()
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
-    payment_method_types: ['card'],
     line_items: [{ price, quantity: 1 }],
     success_url: `${origin}/settings?tab=billing`,
     cancel_url: `${origin}/settings?tab=billing`,

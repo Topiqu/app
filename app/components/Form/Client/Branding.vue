@@ -180,9 +180,9 @@
 </template>
 
 <script setup lang="ts">
-import type { SocialPlatform } from '@prisma/client'
+import type { SocialPlatform } from '~~/generated/zenstack/models'
 
-import { ThemeSchema } from '~~/shared/zod/enums'
+import { ThemeSchema } from '~~/shared/siteSchemas'
 
 import { type ThemeKey, themeColors } from '~/composables/theme'
 

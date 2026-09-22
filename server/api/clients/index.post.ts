@@ -15,10 +15,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   if (!isValidDomain(body.domain)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
-  const initialCredit = body.initialCredit ?? 0
-  if (!Number.isSafeInteger(initialCredit) || initialCredit < 0 || initialCredit > 10000000)
-    throw createError({ statusCode: 400, message: 'Invalid initial credit' })
-  if (initialCredit > 0 && !body.aiUser?.name)
+  const initialArticles = body.initialArticles ?? 0
+  if (!Number.isSafeInteger(initialArticles) || initialArticles < 0 || initialArticles > 10000)
+    throw createError({ statusCode: 400, message: 'Invalid initial article allowance' })
+  if (initialArticles > 0 && !body.aiUser?.name)
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const [existingUser, existingSubdomain] = await Promise.all([
@@ -52,19 +52,18 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    if (initialCredit > 0)
-      await creditTokens(
+    if (initialArticles > 0)
+      await creditArticleCredits(
         {
           clientSiteId: clientSite.id,
-          amount: initialCredit,
+          amount: initialArticles,
           source: 'ADMIN',
-          actorId: session.id,
           idempotencyKey: `initial:${clientSite.id}`,
-          reason: 'Initial credit assigned by administrator',
+          reason: 'Initial articles assigned by administrator',
         },
         tx,
       )
-    if (initialCredit > 0 && body.aiUser?.name) {
+    if (initialArticles > 0 && body.aiUser?.name) {
       await tx.user.create({
         data: {
           username: body.aiUser.name,

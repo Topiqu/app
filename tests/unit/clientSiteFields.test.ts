@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client'
 import { describe, expect, it } from 'vitest'
+import { schema } from '~~/generated/zenstack/schema'
 import {
   CLIENT_SITE_SECRET_FIELDS,
   PRIVILEGED_CLIENT_SITE_FIELDS,
@@ -32,6 +32,7 @@ describe('client site field partition', () => {
     for (const field of ['name', 'theme', 'description', 'tagline', 'faviconUrl', 'typographyPreset', 'gtagId']) {
       expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).toContain(field)
     }
+    expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).toContain('aiSeriesEnabled')
   })
 
   it('builds a zod pick mask from a field list', () => {
@@ -47,8 +48,8 @@ describe('client site field partition', () => {
 })
 
 describe('public client site read projection', () => {
-  const model = Prisma.dmmf.datamodel.models.find((m) => m.name === 'ClientSite')!
-  const scalars = model.fields.filter((f) => f.kind !== 'object').map((f) => f.name)
+  const fields = Object.values(schema.models.ClientSite.fields) as Array<{ name: string; relation?: unknown }>
+  const scalars = fields.filter((field) => !field.relation).map((field) => field.name)
 
   it('publishes the complete brand kit', () => {
     for (const field of ['tagline', 'faviconUrl', 'typographyPreset']) {

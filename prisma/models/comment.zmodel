@@ -15,7 +15,7 @@ enum SentimentStatus {
     ERROR
 }
 
-model Comment extends Base, Ownable {
+model Comment with Base, Ownable {
     content         String            @length(1, 1000, "Komentář musí mít 1–1000 znaků")
     gifUrl          String?           @length(0, 350, "URL GIFu musí mít max. 350 znaků")
     articleId       String
@@ -34,7 +34,7 @@ model Comment extends Base, Ownable {
     @@index([sentimentStatus])
 }
 
-model CommentReaction extends Ownable {
+model CommentReaction with Ownable {
     commentId String
     type      ReactionType
     comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
@@ -45,7 +45,7 @@ model CommentReaction extends Ownable {
     @@allow('read', true)
 }
 
-model Emoji extends Base {
+model Emoji with Base {
     shortcode      String          @length(1, 50, "Shortcode musí mít 1–50 znaků")
     imageUrl       String          @length(1, 255, "URL obrázku musí mít 1–255 znaků")
     clientSiteId   String
@@ -56,7 +56,7 @@ model Emoji extends Base {
     @@allow('create, update, delete', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
 }
 
-model EmojiReaction extends Ownable {
+model EmojiReaction with Ownable {
     commentId String
     emojiId   String
     comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)

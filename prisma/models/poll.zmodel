@@ -1,7 +1,7 @@
 import "./base"
 import "./article"
 
-model PollResult extends Base {
+model PollResult with Base {
     articleId String
     article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
     pollId    String
@@ -19,7 +19,7 @@ model PollResult extends Base {
     @@index([articleId])
 }
 
-model Poll extends Base {
+model Poll with Base {
     articleId String
     article   Article      @relation(fields: [articleId], references: [id], onDelete: Cascade)
     question  String       @length(1, 500, "Otázka může mít max. 500 znaků")
@@ -31,7 +31,7 @@ model Poll extends Base {
     @@index([articleId])
 }
 
-model PollOption extends Base {
+model PollOption with Base {
     pollId  String
     poll    Poll         @relation(fields: [pollId], references: [id], onDelete: Cascade)
     label   String       @length(1, 255, "Možnost musí mít 1–255 znaků")

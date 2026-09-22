@@ -95,7 +95,7 @@
             {{ $t('common.preferences.billing.tokenBalance') }}
           </span>
           <span class="tabular-nums text-neutral-500 dark:text-neutral-400">
-            {{ (client.tokenRemaining ?? 0).toLocaleString() }}
+            {{ (client.articlesRemaining ?? 0).toLocaleString(locale) }}
           </span>
         </div>
         <p class="text-xs text-muted">{{ $t('common.wallet.explanation') }}</p>
@@ -107,7 +107,7 @@
         </span>
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <button
-            v-for="pack in tokenPacks"
+            v-for="pack in articlePacks"
             :key="pack.id"
             type="button"
             class="group relative min-w-0 rounded-[var(--ui-radius)] border p-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
@@ -118,7 +118,7 @@
             "
             :disabled="pendingAction !== null"
             :aria-label="`${pack.name}, ${pack.price}`"
-            @click="buyTokens(pack.id)"
+            @click="buyArticles(pack.id)"
           >
             <span class="flex min-h-6 items-start justify-between gap-2">
               <UIcon
@@ -128,17 +128,17 @@
               />
               <span class="flex flex-wrap justify-end gap-1">
                 <UBadge v-if="pack.valueBonus" color="success" variant="soft" size="xs">
-                  {{ $t('common.tokens.valueBonus', [pack.valueBonus]) }}
+                  {{ $t('common.articlePacks.valueBonus', [pack.valueBonus]) }}
                 </UBadge>
                 <UBadge v-if="pack.featured" color="primary" variant="soft" size="xs">
-                  {{ $t('common.tokens.mostTokens') }}
+                  {{ $t('common.articlePacks.bestValue') }}
                 </UBadge>
               </span>
             </span>
             <span class="mt-3 block text-xl font-bold tabular-nums text-highlighted">
-              {{ pack.tokens.toLocaleString(locale) }}
+              {{ pack.articles.toLocaleString(locale) }}
             </span>
-            <span class="block text-xs text-muted">{{ $t('common.tokens.tokens') }}</span>
+            <span class="block text-xs text-muted">{{ $t('common.articlePacks.articles') }}</span>
             <span class="mt-3 block border-t border-default pt-2 text-sm font-semibold text-highlighted">
               {{ pack.price }}
             </span>
@@ -331,7 +331,7 @@ import { getUpgradeTarget } from '~~/shared/utils/plans'
 
 import type { ClientSite } from '~/utils/buildClientSettingsForm'
 
-import { buildTokenPackViews } from '~/utils/tokenPackPresentation'
+import { buildArticlePackViews } from '~/utils/articlePackPresentation'
 
 const { client, rate } = defineProps<{
   client: ClientSite | null
@@ -341,8 +341,7 @@ const { client, rate } = defineProps<{
 const toast = useAppToast()
 const { locale, tm, rt, t } = useI18n()
 const { formatTime } = useTime()
-
-const tokenPacks = computed(() => buildTokenPackViews(t, locale.value))
+const articlePacks = computed(() => buildArticlePackViews(t, locale.value))
 const pendingAction = ref<string | null>(null)
 const checkoutInterval = ref<'month' | 'year'>(client?.billingPlan === 'ANNUAL' ? 'year' : 'month')
 
@@ -410,7 +409,7 @@ const redirectTo = async (url: string, action: string, body: Record<string, unkn
   }
 }
 
-const buyTokens = (pack: string) => redirectTo('/api/stripe/checkout', `pack-${pack}`, { pack })
+const buyArticles = (pack: string) => redirectTo('/api/stripe/checkout', `pack-${pack}`, { pack })
 const openPortal = () => redirectTo('/api/stripe/portal', 'portal', {})
 const upgrade = () => {
   if (!upgradeTarget.value) return

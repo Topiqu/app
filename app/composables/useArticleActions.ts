@@ -1,5 +1,5 @@
 import type { MaybeRefOrGetter } from 'vue'
-import type { SharePlatform } from '@prisma/client'
+import type { SharePlatform } from '~~/generated/zenstack/models'
 
 export function useArticleActions(
   dataRef: MaybeRefOrGetter<any>,

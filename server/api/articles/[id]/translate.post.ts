@@ -1,9 +1,7 @@
 import { z } from 'zod'
-import { type ClientPlan, Language } from '@prisma/client'
+import { type ClientPlan, Language } from '~~/generated/zenstack/models'
 
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
-const MIN_TRANSLATION_TOKENS = 500
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const id = getRouterParam(event, 'id')
@@ -21,7 +19,7 @@ export default defineEventHandler(async (event) => {
 
   const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId },
-    select: { plan: true, language: true, tokenRemaining: true },
+    select: { plan: true, language: true },
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
 
@@ -31,9 +29,6 @@ export default defineEventHandler(async (event) => {
   const sourceLang = clientSite.language
   const targetLang = language ?? (sourceLang === Language.cs ? Language.en : Language.cs)
   if (targetLang === sourceLang) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-
-  if (!clientSite.tokenRemaining || clientSite.tokenRemaining < MIN_TRANSLATION_TOKENS)
-    throw createError({ statusCode: 402, message: 'Insufficient tokens' })
 
   const article = await db.article.findUnique({
     where: { id },
@@ -83,7 +78,7 @@ export default defineEventHandler(async (event) => {
           status: 'READY',
           source: 'AI',
           model: aiModelId('translation'),
-          usage,
+          usage: toDatabaseJson(usage),
           error: null,
           translatedAt: new Date(),
         },
@@ -98,7 +93,7 @@ export default defineEventHandler(async (event) => {
           status: 'READY',
           source: 'AI',
           model: aiModelId('translation'),
-          usage,
+          usage: toDatabaseJson(usage),
           error: null,
           translatedAt: new Date(),
         },

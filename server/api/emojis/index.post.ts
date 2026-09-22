@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
     await deleteFromCdn(key, 'uploads/').catch((cleanupError) =>
       console.error('Emoji create rollback failed:', cleanupError),
     )
-    if (error?.code === 'P2002') throw createError({ statusCode: 409, message: t('emoji.duplicateShortcode')! })
+    if (isUniqueViolation(error)) throw createError({ statusCode: 409, message: t('emoji.duplicateShortcode')! })
     throw error
   }
 })

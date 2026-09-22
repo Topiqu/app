@@ -89,7 +89,7 @@ const localePath = useLocalePath()
 const config = useRuntimeConfig()
 const { data: status } = await useClientSiteStatus()
 const canGenerateAi = computed(
-  () => hasAiPlan(status.value?.plan ?? site?.plan) && Number(status.value?.tokenRemaining ?? 0) > 0,
+  () => hasAiPlan(status.value?.plan ?? site?.plan) && Number(status.value?.articlesRemaining ?? 0) > 0,
 )
 
 const stepMeta: Record<EmptySetupStepId, { icon: string; to: () => RouteLocationRaw }> = {

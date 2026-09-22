@@ -6,6 +6,7 @@ import { topicSchema } from '../../../server/utils/ai/topic'
 import { articleSchema } from '../../../server/utils/ai/article'
 import { insightSchema } from '../../../server/utils/ai/insight'
 import { translationSchema } from '../../../server/utils/ai/translate'
+import { articleSeriesDecisionSchema } from '../../../server/utils/ai/articleSeries'
 
 type JsonSchemaNode = {
   type?: string
@@ -54,6 +55,7 @@ describe('OpenAI strict structured-output compatibility', () => {
     ['translationSchema', translationSchema],
     ['insightSchema', insightSchema],
     ['topicSchema', topicSchema],
+    ['articleSeriesDecisionSchema', articleSeriesDecisionSchema],
   ])('%s converts to a strict-safe JSON schema', (_name, schema) => {
     const jsonSchema = zodSchema(schema).jsonSchema as JsonSchemaNode
 

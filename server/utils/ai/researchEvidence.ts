@@ -34,7 +34,8 @@ export const researchEvidence = (text: string, sources: readonly RetrievedSource
   const lines = text.split('\n').filter((line) => {
     const references = extractResearchUrls(line)
     const statement = line.replace(/https?:\/\/[^\s)\]}>,]+/g, '').replace(/[^\p{L}\p{N}]/gu, '')
-    return statement.length > 15 && references.length > 0 && references.every((url) => urls.has(url))
+    const officialMedia = /^\s*OFFICIAL MEDIA:\s*\S+/i.test(line)
+    return (statement.length > 15 || officialMedia) && references.length > 0 && references.every((url) => urls.has(url))
   })
   const brief = lines.join('\n').trim()
   const used = new Set(extractResearchUrls(brief))

@@ -101,6 +101,11 @@ export default defineNuxtConfig({
     },
     turnstile: { secretKey: process.env.TURNSTILE_SECRET_KEY || '' },
     openAi: { apiKey: process.env.OPENAI_API_KEY },
+    anthropic: { apiKey: process.env.ANTHROPIC_API_KEY || '' },
+    xai: { apiKey: process.env.XAI_API_KEY || '' },
+    googleGenerativeAi: { apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || '' },
+    metaModel: { apiKey: process.env.META_MODEL_API_KEY || process.env.MODEL_API_KEY || '' },
+    mistral: { apiKey: process.env.MISTRAL_API_KEY || '' },
     auth: { secret: process.env.AUTH_SECRET },
     email: {
       from: process.env.EMAIL_FROM || `"TOPIQU BLOG" <${process.env.NUXT_MAIL_USER}>`,
@@ -126,12 +131,14 @@ export default defineNuxtConfig({
           '30 2 * * *': ['search-console-autopilot'],
           '*/5 * * * *': ['translate-pending', 'token-wallet-maintenance'],
           '0 4 * * *': ['gam-sync'],
+          '15 4 * * *': ['grant-annual-article-credits'],
+          '0 5 * * 1': ['ai-visibility-monitor'],
         }
       : undefined,
     preset: 'bun',
     imports: {
       presets: [{ from: '#auth', imports: ['getServerSession'] }],
-      dirs: ['shared/zod/models', 'server/utils', '#auth'],
+      dirs: ['server/utils', '#auth'],
     },
     externals: {
       inline: [
@@ -152,16 +159,11 @@ export default defineNuxtConfig({
   },
 
   imports: {
-    dirs: ['shared/zod/models', 'utils', '#auth', 'server/shared/consts'],
+    dirs: ['utils', '#auth', 'server/shared/consts'],
   },
   vite: {
     optimizeDeps: {
       include: ['@fingerprintjs/fingerprintjs', 'chart.js', 'fast-deep-equal', 'vue-chartjs', 'vue-qrcode-reader'],
-    },
-    resolve: {
-      alias: {
-        '.prisma/client/index-browser': './node_modules/@prisma/client/index-browser.js',
-      },
     },
   },
 
@@ -450,6 +452,7 @@ export default defineNuxtConfig({
           'en/legal.json',
           'en/admin.json',
           'en/domainVerification.json',
+          'en/visibility.json',
           'master_en.json',
         ],
       },
@@ -471,6 +474,7 @@ export default defineNuxtConfig({
           'cs/legal.json',
           'cs/admin.json',
           'cs/domainVerification.json',
+          'cs/visibility.json',
           'master_cs.json',
         ],
       },

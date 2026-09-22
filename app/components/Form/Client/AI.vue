@@ -200,6 +200,26 @@
             />
           </UFormField>
         </div>
+        <div class="flex items-start gap-4 p-5 sm:p-6">
+          <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-muted">
+            <UIcon name="mdi:playlist-plus" class="size-5" />
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-semibold text-highlighted">
+              {{ $t('common.preferences.aiSeries.title') }}
+            </div>
+            <div class="mt-1 text-sm leading-5 text-muted">
+              {{ $t('common.preferences.aiSeries.description') }}
+            </div>
+          </div>
+
+          <USwitch
+            :modelValue="aiSeriesEnabled"
+            :aria-label="$t('common.preferences.aiSeries.title')"
+            @update:modelValue="(value) => emit('update:aiSeriesEnabled', value as boolean)"
+          />
+        </div>
       </div>
     </section>
 
@@ -308,6 +328,7 @@ const props = defineProps<{
   sentimentEnabled: boolean
   articleCronsEnabled: boolean
   autoRelease: boolean
+  aiSeriesEnabled: boolean
   generationFrequency: 'DAILY' | 'WEEKLY' | 'NONE'
   canEnableAi: boolean
   canEnableSentiment: boolean
@@ -334,6 +355,7 @@ const emit = defineEmits<{
   'update:aiControversyLevel': [string | null]
   'update:avatarUrl': [string]
   'update:autoRelease': [boolean]
+  'update:aiSeriesEnabled': [boolean]
   'update:generationFrequency': ['DAILY' | 'WEEKLY']
   'update:translationMode': ['OFF' | 'MANUAL' | 'AUTO' | 'HYBRID']
   'update:translationLanguages': [string[]]

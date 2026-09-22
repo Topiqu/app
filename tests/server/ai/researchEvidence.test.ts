@@ -49,6 +49,13 @@ describe('research evidence', () => {
     expect(researchEvidence(`Sources:\n- ${url}`, [{ sourceType: 'url', url }]).brief).toBeNull()
   })
 
+  it('retains a short official-media owner only when the provider retrieved its page', () => {
+    const url = 'https://ea.com/games/example/media'
+    const line = `OFFICIAL MEDIA: EA — ${url}`
+    expect(researchEvidence(line, [{ sourceType: 'url', url }])).toEqual({ brief: line, urls: [url] })
+    expect(researchEvidence(line, [])).toEqual({ brief: null, urls: [] })
+  })
+
   it('removes fabricated writer citations and duplicates', () => {
     const url = 'https://publisher.test/interview'
     expect(filterResearchSources([url, url, 'https://publisher.test/guessed'], `Confirmed: ${url}`)).toEqual([url])

@@ -22,7 +22,7 @@ export const ARTICLE_PROSE_CLASS = [
  * which also avoids relying on Tailwind to discover descendant variants inside this TS constant.
  */
 export const ARTICLE_TABLE_CLASS = [
-  'article-table not-prose my-8 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900',
+  'article-table not-prose my-8 overflow-x-auto rounded-(--topiqu-surface-radius) border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900',
 ].join(' ')
 
 /**

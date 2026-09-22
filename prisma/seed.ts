@@ -1,7 +1,8 @@
 import argon from 'argon2'
-import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+import { createDatabaseClient } from '../server/utils/database'
+
+const prisma = createDatabaseClient()
 
 const TEST_PASSWORD = 'test1234'
 

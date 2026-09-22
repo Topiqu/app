@@ -1,5 +1,5 @@
 import type { RequestInternal } from 'next-auth'
-import type { User } from '@zenstackhq/runtime/models'
+import type { User } from '~~/generated/zenstack/models'
 
 import { UAParser } from 'ua-parser-js'
 

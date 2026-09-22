@@ -1,4 +1,4 @@
-import type { Language, TranslationMode } from '@prisma/client'
+import type { Language, TranslationMode } from '~~/generated/zenstack/models'
 
 const ALL_LANGUAGES: Language[] = ['cs', 'en']
 

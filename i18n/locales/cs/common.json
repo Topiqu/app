@@ -6,33 +6,33 @@
       "retry": "Zkusit znovu"
     },
     "wallet": {
-      "title": "Kredit",
-      "available": "K dispozici",
-      "unit": "kreditů",
-      "bonusExpiry": "Bonusový kredit expiruje za 30 dní. Běžné připsání kreditu neexpiruje.",
-      "generationReservation": "Každé generování blokuje rozpočet podle rešerše a vybraných součástí. Účtuje se jen skutečná spotřeba; zbytek se uvolní.",
-      "neverExpires": "Kredit neexpiruje.",
-      "explanation": "Kredit není měsíční limit. Nevyčerpaný zůstává, dokoupený neexpiruje a změna tarifu ho nenuluje.",
-      "reserved": "Blokováno běžícími úlohami",
-      "reservedHint": "Po dokončení úlohy strhneme skutečnou spotřebu a zbytek vrátíme zpět.",
+      "title": "Články",
+      "available": "Zbývající články",
+      "unit": "článků",
+      "bonusExpiry": "Bonusové články mohou mít datum platnosti; dokoupené články neexpirují.",
+      "generationReservation": "Každé generování dočasně zablokuje 1 článek. Po úspěšném dokončení se odečte; při chybě nebo přerušení se vrátí.",
+      "neverExpires": "Články z tarifu platí pro dané období. Dokoupené články neexpirují.",
+      "explanation": "Tarif přidává články každý měsíc. Dokoupené články neexpirují a spotřebují se až po článcích z tarifu.",
+      "reserved": "Blokováno běžícím generováním",
+      "reservedHint": "Každé souběžné generování blokuje právě 1 článek. Při neúspěchu se vrátí.",
       "periodUsage": "Spotřeba za {period}",
-      "expires": "Propagační kredit vyprší",
-      "lowBalance": "Kredit dochází. Před spuštěním úlohy ověříme, zda pokryje její rezervaci.",
-      "topup": "Dobít kredit",
-      "history": "Historie kreditu",
-      "empty": "Zatím žádné pohyby kreditu.",
-      "initial": "Počáteční kredit",
-      "adjustment": "Úprava kreditu",
+      "expires": "Platnost do",
+      "lowBalance": "Zbývá poslední článek. Další můžete dokoupit nebo počkat na měsíční obnovení tarifu.",
+      "topup": "Dokoupit články",
+      "history": "Historie článků",
+      "empty": "Zatím žádné pohyby článků.",
+      "initial": "Počáteční počet článků",
+      "adjustment": "Úprava počtu článků",
       "reason": "Povinný důvod",
-      "amount": "Počet kreditů",
+      "amount": "Počet článků",
       "operation": "ID původní operace (pro vrácení)",
       "apply": "Provést úpravu",
       "kinds": {
-        "CREDIT": "Připsání kreditu",
+        "CREDIT": "Připsání článků",
         "DEBIT": "Spotřeba",
         "RELEASE": "Uvolnění rezervace",
         "EXPIRY": "Expirace",
-        "REFUND": "Vrácení kreditu",
+        "REFUND": "Vrácení článků",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Ruční odečet"
       }
@@ -632,8 +632,8 @@
         "monthly": "– Měsíční platba",
         "intervalMonthly": "Měsíčně",
         "intervalAnnual": "Ročně",
-        "tokenBalance": "Zůstatek / kapacita tokenů",
-        "buyTokens": "Dokoupit tokeny",
+        "tokenBalance": "Zbývající články",
+        "buyTokens": "Dokoupit články",
         "manage": "Spravovat předplatné a faktury",
         "openPortal": "Spravovat fakturaci",
         "invoicesTitle": "Faktury a platby",
@@ -760,6 +760,10 @@
           "WEEKLY": "Jeden nový koncept za sedm dní. Vhodné pro pomalejší publikační rytmus."
         }
       },
+      "aiSeries": {
+        "title": "Automatické série",
+        "description": "AI může při plánovaném generování spojovat související články do sérií a doplňovat další relevantní díly. Rozmanitost obsahu hlídají pevné limity."
+      },
       "aiDisclosure": {
         "title": "Označovat obsah vytvořený s AI",
         "desc": "Veřejně zobrazí míru zapojení AI u článku a označí obrázky vygenerované AI."
@@ -790,7 +794,7 @@
           "label": "Cílové jazyky",
           "empty": "Pro váš primární jazyk nejsou k dispozici žádné další jazyky."
         },
-        "tokenWarning": "Automatický překlad spotřebovává tokeny za každý publikovaný článek a cílový jazyk – stejně jako generování AI."
+        "tokenWarning": "Automatický překlad vytvoří samostatnou jazykovou verzi každého publikovaného článku pro každý cílový jazyk."
       },
       "aiAuthor": {
         "title": "Nastavení AI autora",
@@ -1030,16 +1034,14 @@
       "accepted": "Pozvánka přijata",
       "declined": "Pozvánka odmítnuta"
     },
-    "tokens": {
-      "pack10k": "Balíček 10k kreditů",
-      "pack25k": "Balíček 25k kreditů",
-      "pack50k": "Balíček 50k kreditů",
-      "pack75k": "Balíček 75k kreditů",
+    "articlePacks": {
+      "pack5": "5 článků navíc",
+      "pack10": "10 článků navíc",
+      "pack25": "25 článků navíc",
       "bestValue": "Nejvýhodnější",
-      "mostTokens": "Nejvíce kreditů",
       "valueBonus": "+{0} % navíc",
-      "tokens": "kreditů",
-      "articlesEstimate": "≈ {count} článků",
+      "articles": "článků",
+      "neverExpires": "Bez expirace",
       "upgradeToPremium": "Povýšit na PREMIUM"
     }
   },

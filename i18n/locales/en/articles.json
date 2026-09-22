@@ -263,10 +263,10 @@
       "currentPlan": "Current plan",
       "roughlyEstimated": "Roughly {0} articles",
       "userDataError": "Error loading user data",
-      "remainingTokens": "Remaining tokens",
-      "balanceIncludesExtras": "The balance includes purchased or retained tokens from an earlier plan and may be higher than the current plan allowance.",
-      "totalConsumed": "Total consumed: {0} tokens",
-      "buyTokens": "Buy tokens",
+      "remainingTokens": "Articles remaining",
+      "balanceIncludesExtras": "The balance includes plan articles and any additional articles you purchased.",
+      "totalConsumed": "Total created: {0} articles",
+      "buyTokens": "Buy more articles",
       "upgradeToPremium": "Upgrade to PREMIUM",
       "recentActions": "Recent actions",
       "ga4Connected": "GA4 connected",
@@ -278,8 +278,8 @@
       "articlePublished": "Article published",
       "articleSavedAsDraft": "Article saved as draft",
       "insightGenerated": "Insight generated",
-      "lowTokensWarning": "Low on tokens!",
-      "lowTokensHint": "Less than {percent} % tokens remaining. Top up your package to keep generating.",
+      "lowTokensWarning": "One article remaining",
+      "lowTokensHint": "Buy more articles or wait for your plan's monthly refresh.",
       "insightSkipped": "Insight skipped"
     },
     "dateFormats": {
@@ -431,7 +431,7 @@
         "waitingImages": "Preparing an image can take up to 45s. If the service does not return one, the article will finish without it.",
         "researchTarget": "Searching for: {topic}",
         "researchMethod": "Looking for current primary sources and checking the claims in the assignment.",
-        "reservedDuringRun": "Temporarily held: {count} credits",
+        "reservedDuringRun": "Temporarily held: {count} article",
         "writerIdleError": "Generation stopped because the writer sent no data for 30 seconds.",
         "writerDeadlineError": "Generation stopped after reaching the 90-second writing limit.",
         "researchSources": "Research complete, sources found: {count}",
@@ -489,7 +489,7 @@
           "partial": "Article completed with a warning",
           "stopped": "Generation was stopped",
           "failed": "Generation failed",
-          "descriptionComplete": "All selected components were inserted and the token balance is current.",
+          "descriptionComplete": "All selected components were inserted and one article was deducted from your balance.",
           "descriptionPartial": "{count} selected components could not be inserted. The result remains in the editor for review.",
           "descriptionReview": "The complete result remains in the editor because the automated editorial review still found an issue.",
           "reviewWarning": "Editorial review still recommends a manual check before publishing.",
@@ -542,10 +542,10 @@
         "youtubeHint": "A video is embedded only if research finds a verified YouTube URL.",
         "outputSummary": "{format} · {research}",
         "noModules": "No additional components",
-        "reservationLabel": "Generation credit",
-        "reservationSummary": "Each run holds its own budget based on research depth and selected components. Parallel runs are possible when enough credit remains; only actual usage is charged.",
+        "reservationLabel": "How articles are charged",
+        "reservationSummary": "Each generation temporarily holds 1 article. Two concurrent runs therefore require at least 2 remaining articles.",
         "billingDetails": "Billing details",
-        "billingExplanation": "Unused credit is released. Failed generation is free. Stopping charges for work already performed.",
+        "billingExplanation": "The article is deducted only after successful completion. An error or cancellation returns the held article.",
         "moduleUnavailable": "Unavailable for this format",
         "reviewFailed": "The article did not pass editorial review after revision.",
         "reviewWarning": "Article generated; please review it before publishing",
@@ -559,6 +559,140 @@
         "continueDraftPrompt": "Continue editing draft from {0}?",
         "noDraftsFound": "No drafts found",
         "untitled": "Untitled draft #{0}"
+      },
+      "factCheck": {
+        "title": "Fact-check",
+        "description": "Compares verifiable claims in the current article with the content of its added sources.",
+        "run": "Check claims",
+        "runAgain": "Check again",
+        "running": "Loading sources and comparing claims…",
+        "stale": "The article or sources changed",
+        "notEnoughContent": "Add at least a short article body first.",
+        "errorTitle": "The check could not be completed",
+        "error": {
+          "invalid-request": "The current article could not be prepared for checking. Reload the editor and try again.",
+          "not-configured": "The AI service is not configured in this environment. An administrator must set OPENAI_API_KEY.",
+          "not-in-plan": "Fact-checking is not available for your plan or you do not have permission to use it.",
+          "rate-limited": "Too many checks were requested. Wait a moment and try again.",
+          "service-unavailable": "The AI service is temporarily unavailable. Try running the check later.",
+          "unknown": "The check could not be completed. Try running it again."
+        },
+        "claimsFound": "factual claims found",
+        "supported": "Supported",
+        "problematic": "Needs review",
+        "sourceIssues": "Source issues",
+        "noClaimsTitle": "No suitable claims found",
+        "noClaimsDescription": "No important verifiable claims were found. This does not confirm that the article is accurate.",
+        "highImportance": "Important",
+        "supportedClaims": "Supported claims ({count})",
+        "sourceNumber": "Source {number}",
+        "goToClaim": "Go to claim",
+        "disclaimer": "This result measures support in the added sources, not absolute truth. Verify important claims manually before publishing.",
+        "verdict": {
+          "supported": "Supported by source",
+          "partial": "Partially supported",
+          "unsupported": "No support in sources",
+          "contradicted": "Contradicted by source",
+          "unverifiable": "Cannot be reliably checked"
+        },
+        "sourceStatus": {
+          "duplicate": "This source appears more than once.",
+          "invalid": "The source address is invalid or cannot be accessed safely over HTTPS.",
+          "unreachable": "The source content could not be loaded.",
+          "unsupported-content": "The source cannot be read as web text.",
+          "ready": "The source was loaded."
+        }
+      },
+      "optimization": {
+        "title": "Article optimization",
+        "score": "Overall score",
+        "analyzing": "Analyzing article…",
+        "stale": "Waiting to recalculate",
+        "insufficientData": "Insufficient data",
+        "emptyTitle": "Start writing",
+        "emptyDescription": "Recommendations appear after you add a title or content.",
+        "errorTitle": "Analysis failed",
+        "errorDescription": "The local analysis could not be completed.",
+        "retry": "Try again",
+        "goTo": "Go to field",
+        "passedChecks": "Passed checks ({count})",
+        "categories": {
+          "seo": "SEO",
+          "ai-visibility": "AI visibility",
+          "readability": "Readability",
+          "trust": "Trust"
+        },
+        "counts": {
+          "issues": "Issues: {count}",
+          "recommendations": "Recommendations: {count}",
+          "passed": "Passed: {count}"
+        },
+        "checks": {
+          "title-exists": { "title": "title-exists", "description": "Review and improve this part of the article." },
+          "title-length": { "title": "title-length", "description": "Review and improve this part of the article." },
+          "excerpt-exists": {
+            "title": "excerpt-exists",
+            "description": "Review and improve this part of the article."
+          },
+          "excerpt-length": {
+            "title": "excerpt-length",
+            "description": "Review and improve this part of the article."
+          },
+          "single-h1": { "title": "single-h1", "description": "Review and improve this part of the article." },
+          "heading-hierarchy": {
+            "title": "heading-hierarchy",
+            "description": "Review and improve this part of the article."
+          },
+          "internal-link": { "title": "internal-link", "description": "Review and improve this part of the article." },
+          "external-link": { "title": "external-link", "description": "Review and improve this part of the article." },
+          "featured-image": {
+            "title": "featured-image",
+            "description": "Review and improve this part of the article."
+          },
+          "image-alt": { "title": "image-alt", "description": "Review and improve this part of the article." },
+          "paragraph-length": {
+            "title": "paragraph-length",
+            "description": "Review and improve this part of the article."
+          },
+          "sentence-length": {
+            "title": "sentence-length",
+            "description": "Review and improve this part of the article."
+          },
+          "section-length": {
+            "title": "section-length",
+            "description": "Review and improve this part of the article."
+          },
+          "long-article-structure": {
+            "title": "long-article-structure",
+            "description": "Review and improve this part of the article."
+          },
+          "topic-introduction": {
+            "title": "topic-introduction",
+            "description": "Review and improve this part of the article."
+          },
+          "descriptive-sections": {
+            "title": "descriptive-sections",
+            "description": "Review and improve this part of the article."
+          },
+          "heading-quality": {
+            "title": "heading-quality",
+            "description": "Review and improve this part of the article."
+          },
+          "multiple-blocks": {
+            "title": "multiple-blocks",
+            "description": "Review and improve this part of the article."
+          },
+          "sources-exist": { "title": "sources-exist", "description": "Review and improve this part of the article." },
+          "sources-valid": { "title": "sources-valid", "description": "Review and improve this part of the article." },
+          "external-links-safe": {
+            "title": "external-links-safe",
+            "description": "Review and improve this part of the article."
+          },
+          "source-diversity": {
+            "title": "source-diversity",
+            "description": "Review and improve this part of the article."
+          }
+        }
       },
       "releaseDateNote": "Used to set the article's publication date and time. Leave empty for manual release.",
       "createSuccess": "Article created successfully",

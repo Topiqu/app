@@ -1,9 +1,9 @@
 // @vitest-environment node
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
-import { PrismaClient } from '@prisma/client'
 import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest'
 
+import { createDatabaseClient } from '../../server/utils/database'
 import {
   creditTokens,
   reserveTokens,
@@ -17,7 +17,7 @@ import {
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
-const db = enabled ? new PrismaClient({ datasourceUrl: url }) : null
+const db = enabled ? createDatabaseClient(url) : null
 describe.skipIf(!enabled)('wallet on PostgreSQL', () => {
   beforeAll(() => {
     vi.stubGlobal('prisma', db)

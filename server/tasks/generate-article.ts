@@ -10,6 +10,14 @@ import {
   searchOpportunitySignal,
   searchTrendSignal,
 } from '~~/server/utils/searchConsole/opportunities'
+import {
+  applyArticleSeriesDecision,
+  chooseArticleSeries,
+  loadAiSeriesContext,
+  type ArticleSeriesDecision,
+} from '~~/server/utils/ai/articleSeries'
+
+import type { DatabaseTransaction } from '../utils/database'
 
 interface GlobalThis {
   eventStreams?: Map<string, Set<EventStream>>
@@ -39,10 +47,18 @@ const generateUniqueSlug = async (ctx: any, title: string, clientSiteId: string)
   return `${base}-${max + 1}`
 }
 
-const MIN_TOKENS = 7000
+const CRON_ARTICLE_RESERVATION = articleGenerationReservation(
+  {
+    format: 'news',
+    modules: ['youtube'],
+    research: { enabled: true, depth: 'standard', fallbackWithoutResearch: true },
+  },
+  TOKEN_RATIO,
+)
 
 /** Why each scheduled site was left out of this run — `not_due` is the only benign answer. */
 const skippedSites = async (pickedIds: string[]) => {
+  const now = new Date()
   const scheduled = await prisma.clientSite.findMany({
     where: {
       id: { notIn: pickedIds },
@@ -51,9 +67,17 @@ const skippedSites = async (pickedIds: string[]) => {
     select: {
       id: true,
       name: true,
-      tokenRemaining: true,
       lastGeneratedAt: true,
       generationFrequency: true,
+      articleCreditWallet: {
+        select: {
+          reserved: true,
+          grants: {
+            where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+            select: { remaining: true },
+          },
+        },
+      },
       features: { where: { isActive: true, feature: { code: 'ARTICLE_CRONS' } }, select: { id: true } },
     },
   })
@@ -63,142 +87,146 @@ const skippedSites = async (pickedIds: string[]) => {
     name: site.name,
     lastGeneratedAt: site.lastGeneratedAt?.toISOString() ?? null,
     generationFrequency: site.generationFrequency,
-    tokenRemaining: site.tokenRemaining,
+    articlesRemaining: site.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0,
     reason: !site.features.length
       ? 'feature_inactive'
       : site.generationFrequency === 'NONE'
         ? 'frequency_disabled'
-        : (site.tokenRemaining ?? 0) <= MIN_TOKENS
-          ? 'insufficient_tokens'
+        : (site.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) < 1
+          ? 'insufficient_articles'
           : 'not_due',
   }))
 }
 
 const processClient = async (client: any) =>
-  withTokenReservation(client.id, 10000, 'GENERATE_ARTICLE', async () => {
-    const clientSiteId = client.id
-    const defaultLang = client.language
+  withArticleCreditReservation(
+    client.id,
+    'SCHEDULED_ARTICLE',
+    () =>
+      withTokenReservation(client.id, CRON_ARTICLE_RESERVATION, 'GENERATE_ARTICLE', async () => {
+        const clientSiteId = client.id
+        const defaultLang = client.language
 
-    let searchSignals: string[] = []
-    try {
-      const opportunities =
-        client.searchConsoleConnection?.propertyUrl && client.features?.length
-          ? await getSearchOpportunities(clientSiteId, 28, 15)
-          : []
-      const [publishedSlugs, translatedSlugs] = await Promise.all([
-        prisma.article.findMany({
-          where: { clientSiteId, status: 'published' },
-          select: { id: true, slug: true },
-        }),
-        prisma.articleTranslation.findMany({
-          where: { clientSiteId, status: 'PUBLISHED', slug: { not: null } },
-          select: { articleId: true, slug: true },
-        }),
-      ])
-      const articleIdBySlug = new Map(publishedSlugs.map((article) => [article.slug, article.id]))
-      for (const translation of translatedSlugs) {
-        if (translation.slug) articleIdBySlug.set(translation.slug, translation.articleId)
-      }
-      const trends = client.searchConsoleConnection?.autopilotEnabled ? await getSearchTrends(clientSiteId) : []
-      const existingArticleQueries = new Set(
-        [...opportunities.map((opportunity) => opportunity.reason), ...trends]
-          .filter((row) => isExistingArticleOpportunity(row.page, articleIdBySlug))
-          .map((row) => row.query.trim().toLocaleLowerCase())
-          .filter(Boolean),
-      )
-      const risingSignals = client.searchConsoleConnection?.autopilotEnabled
-        ? trends
-            .filter(
-              (trend) =>
-                trend.impressions >= 200 &&
-                (trend.impressionGrowth ?? 0) >= 0.5 &&
-                !existingArticleQueries.has(trend.query.trim().toLocaleLowerCase()),
-            )
-            .sort((a, b) => b.impressions - a.impressions)
+        let searchSignals: string[] = []
+        try {
+          const opportunities =
+            client.searchConsoleConnection?.propertyUrl && client.features?.length
+              ? await getSearchOpportunities(clientSiteId, 28, 15)
+              : []
+          const [publishedSlugs, translatedSlugs] = await Promise.all([
+            prisma.article.findMany({
+              where: { clientSiteId, status: 'published' },
+              select: { id: true, slug: true },
+            }),
+            prisma.articleTranslation.findMany({
+              where: { clientSiteId, status: 'PUBLISHED', slug: { not: null } },
+              select: { articleId: true, slug: true },
+            }),
+          ])
+          const articleIdBySlug = new Map(publishedSlugs.map((article) => [article.slug, article.id]))
+          for (const translation of translatedSlugs) {
+            if (translation.slug) articleIdBySlug.set(translation.slug, translation.articleId)
+          }
+          const trends = client.searchConsoleConnection?.autopilotEnabled ? await getSearchTrends(clientSiteId) : []
+          const existingArticleQueries = new Set(
+            [...opportunities.map((opportunity) => opportunity.reason), ...trends]
+              .filter((row) => isExistingArticleOpportunity(row.page, articleIdBySlug))
+              .map((row) => row.query.trim().toLocaleLowerCase())
+              .filter(Boolean),
+          )
+          const risingSignals = client.searchConsoleConnection?.autopilotEnabled
+            ? trends
+                .filter(
+                  (trend) =>
+                    trend.impressions >= 200 &&
+                    (trend.impressionGrowth ?? 0) >= 0.5 &&
+                    !existingArticleQueries.has(trend.query.trim().toLocaleLowerCase()),
+                )
+                .sort((a, b) => b.impressions - a.impressions)
+                .slice(0, 5)
+                .map(searchTrendSignal)
+            : []
+          const seenQueries = new Set<string>()
+          const opportunitySignals = opportunities
+            .filter((opportunity) => {
+              const key = opportunity.reason.query.trim().toLocaleLowerCase()
+              // If any result for this query is already an article, the SEO autopilot may refresh it.
+              // Feeding a homepage/tag-page row for that same query to the picker would still create
+              // cannibalisation, so the exclusion is query-wide rather than URL-local.
+              if (!key || seenQueries.has(key) || existingArticleQueries.has(key)) return false
+              seenQueries.add(key)
+              return true
+            })
             .slice(0, 5)
-            .map(searchTrendSignal)
-        : []
-      const seenQueries = new Set<string>()
-      const opportunitySignals = opportunities
-        .filter((opportunity) => {
-          const key = opportunity.reason.query.trim().toLocaleLowerCase()
-          // If any result for this query is already an article, the SEO autopilot may refresh it.
-          // Feeding a homepage/tag-page row for that same query to the picker would still create
-          // cannibalisation, so the exclusion is query-wide rather than URL-local.
-          if (!key || seenQueries.has(key) || existingArticleQueries.has(key)) return false
-          seenQueries.add(key)
-          return true
+            .map(searchOpportunitySignal)
+          searchSignals = [...risingSignals, ...opportunitySignals].slice(0, 5)
+        } catch (err) {
+          // Search Console is enrichment, never a prerequisite for scheduled generation.
+          await logAction({
+            action: 'CRON_TOPIC_SEARCH_SIGNALS_FAILED',
+            clientSiteId,
+            metadata: { error: (err as any).message },
+          })
+        }
+
+        const recentStructures = client.articles.slice(0, 12).map((article: any) => {
+          const content = article.content ?? ''
+          const modules = [
+            article.answer ? 'answer' : null,
+            article.keyTakeaways?.length ? 'takeaways' : null,
+            Array.isArray(article.faq) && article.faq.length ? 'faq' : null,
+            article.polls?.length ? 'poll' : null,
+            /<table\b/i.test(content) ? 'table' : null,
+            /<img\b/i.test(content) ? 'images' : null,
+            /data-youtube-video/i.test(content) ? 'youtube' : null,
+          ].filter(Boolean)
+          return `${article.format || 'unclassified'} / ${article.structureVariant || 'unclassified'} / ${modules.join('+') || 'no optional modules'}`
         })
-        .slice(0, 5)
-        .map(searchOpportunitySignal)
-      searchSignals = [...risingSignals, ...opportunitySignals].slice(0, 5)
-    } catch (err) {
-      // Search Console is enrichment, never a prerequisite for scheduled generation.
-      await logAction({
-        action: 'CRON_TOPIC_SEARCH_SIGNALS_FAILED',
-        clientSiteId,
-        metadata: { error: (err as any).message },
-      })
-    }
 
-    const recentStructures = client.articles.slice(0, 12).map((article: any) => {
-      const content = article.content ?? ''
-      const modules = [
-        article.answer ? 'answer' : null,
-        article.keyTakeaways?.length ? 'takeaways' : null,
-        Array.isArray(article.faq) && article.faq.length ? 'faq' : null,
-        article.polls?.length ? 'poll' : null,
-        /<table\b/i.test(content) ? 'table' : null,
-        /<img\b/i.test(content) ? 'images' : null,
-        /data-youtube-video/i.test(content) ? 'youtube' : null,
-      ].filter(Boolean)
-      return `${article.format || 'unclassified'} / ${article.structureVariant || 'unclassified'} / ${modules.join('+') || 'no optional modules'}`
-    })
+        const topicInput = {
+          focus: client.focus,
+          audience: client.audience,
+          keywords: client.keywords,
+          language: defaultLang,
+          recentExcerpts: client.articles.map((a: any) => a.excerpt).filter(Boolean),
+          // Newest first — the picker's rule is about the last few, so the order carries meaning.
+          recentFormats: client.articles.map((a: any) => a.format).filter(Boolean),
+          recentStructures,
+          suggestion: client.communityInsight?.suggestion,
+          searchSignals,
+        }
 
-    const topicInput = {
-      focus: client.focus,
-      audience: client.audience,
-      keywords: client.keywords,
-      language: defaultLang,
-      recentExcerpts: client.articles.map((a: any) => a.excerpt).filter(Boolean),
-      // Newest first — the picker's rule is about the last few, so the order carries meaning.
-      recentFormats: client.articles.map((a: any) => a.format).filter(Boolean),
-      recentStructures,
-      suggestion: client.communityInsight?.suggestion,
-      searchSignals,
-    }
+        // Topic first, then the article. The writer used to receive the whole selection template as its
+        // prompt, which meant the research step searched the template instead of a subject — and ran
+        // before any subject existed. Picking here also lets the model say whether the topic actually
+        // needs live facts, so evergreen pieces skip the web-search call entirely.
+        let topic: ArticleTopic | null = null
+        let topicTokens = 0
+        try {
+          const picked = await pickArticleTopic(topicInput)
+          topic = picked.topic
+          topicTokens = picked.usage.totalTokens ?? 0
+        } catch (err) {
+          await logAction({
+            action: 'CRON_TOPIC_SELECTION_FAILED',
+            clientSiteId,
+            metadata: { error: (err as any).message },
+          })
+        }
 
-    // Topic first, then the article. The writer used to receive the whole selection template as its
-    // prompt, which meant the research step searched the template instead of a subject — and ran
-    // before any subject existed. Picking here also lets the model say whether the topic actually
-    // needs live facts, so evergreen pieces skip the web-search call entirely.
-    let topic: ArticleTopic | null = null
-    let topicTokens = 0
-    try {
-      const picked = await pickArticleTopic(topicInput)
-      topic = picked.topic
-      topicTokens = picked.usage.totalTokens ?? 0
-    } catch (err) {
-      await logAction({
-        action: 'CRON_TOPIC_SELECTION_FAILED',
-        clientSiteId,
-        metadata: { error: (err as any).message },
-      })
-    }
+        const cronFormat = topic?.format ?? 'news'
+        const cronModules = topic ? selectedModulesFor(topic.format, topic.modules) : selectedModulesFor(cronFormat)
 
-    const cronFormat = topic?.format ?? 'news'
-    const cronModules = topic ? selectedModulesFor(topic.format, topic.modules) : selectedModulesFor(cronFormat)
-
-    // If selection failed we fall back to the previous behaviour — the writer picks the topic
-    // itself from the same rules — rather than skipping the client's run entirely.
-    const topicBlock = topic
-      ? `## TOPIC
+        // If selection failed we fall back to the previous behaviour — the writer picks the topic
+        // itself from the same rules — rather than skipping the client's run entirely.
+        const topicBlock = topic
+          ? `## TOPIC
   Topic: ${topic.topic}
   Angle: ${topic.angle}
   Format: ${topic.format}
   Structure: ${topic.variant}
   Optional modules: ${cronModules.join(', ')}`
-      : `## TOPIC RULES
+          : `## TOPIC RULES
   - Do NOT create an article that is semantically similar to previous ones.
   - Similarity = same topic, argument, or thesis, not wording.
   - Past article summaries (avoid these topics):
@@ -208,7 +236,7 @@ const processClient = async (client: any) =>
   ${topicInput.suggestion || 'none'}
   If relevant AND non-duplicate, prefer it as topic.`
 
-    const prompt = `
+        const prompt = `
   Generate a blog article for the client.
 
   Audience: ${client.audience || 'general'}
@@ -230,271 +258,320 @@ const processClient = async (client: any) =>
   Respond ONLY in valid JSON (schema required).
   `.trim()
 
-    let generated: any, usage: any
-    try {
-      // Never `undefined` here: that would research the prompt, and the prompt is a template.
-      ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt, {
-        research: topic ? researchRequest(topic) : false,
-        format: cronFormat,
-        variant: topic?.variant,
-        modules: cronModules,
-        editorialReview: true,
-      }))
-    } catch (err) {
-      await logAction({
-        action: 'CRON_GENERATE_ARTICLE_FAILED',
-        clientSiteId,
-        metadata: { error: (err as any).message, topic: topic?.topic },
-      })
-      return { clientSiteId, status: 'failed', stage: 'generation', error: (err as any).message }
-    }
-
-    const tokens =
-      (usage.totalTokens ?? 0) + topicTokens + (generated.researchTokens ?? 0) + (generated.editorialTokens ?? 0)
-    if (tokens <= 0) return { clientSiteId, status: 'failed', stage: 'usage', error: 'zero_token_usage' }
-
-    try {
-      await consumeClientTokens(clientSiteId, tokens, 'CRON_ARTICLE_TOKEN_USAGE', {
-        usage,
-        topicTokens,
-        researchTokens: generated.researchTokens ?? 0,
-        editorialTokens: generated.editorialTokens ?? 0,
-        title: generated.title,
-        tags: generated.tags,
-      })
-    } catch (err: any) {
-      await logAction({
-        action: 'CRON_GENERATE_ARTICLE_INSUFFICIENT_TOKENS',
-        clientSiteId,
-        metadata: { required: tokens, error: err.message },
-      })
-      return { clientSiteId, status: 'failed', stage: 'billing', error: err.message }
-    }
-
-    const metrics = calculateArticleMetrics(generated.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
-
-    const researchRequired = cronFormat === 'news' || topic?.needsResearch === true
-    const researchApproved =
-      !researchRequired || (generated.research?.status === 'completed' && generated.research?.sourceCount > 0)
-    const qualityApproved = generated.editorialReview?.approved === true && researchApproved
-    const status = client.autoRelease && qualityApproved ? 'published' : 'draft'
-
-    const article = await prisma.$transaction(async (ctx: any) => {
-      const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
-
-      const article = await ctx.article.create({
-        select: {
-          id: true,
-          title: true,
-          content: true,
-          userId: true,
-          user: { select: { username: true, language: true, role: true } },
-        },
-        data: {
-          title: generated.title,
-          excerpt: generated.perex,
-          slug,
-          userId: client.users[0]?.id || 'system',
-          content: sanitizeHtml(stampHeadingIds(generated.content)),
-          // Empty means the format carries no answer — `applyFormat` blanks it. Stored as NULL so
-          // the column reads the same as a human article that never had one.
-          answer: generated.answer || null,
-          keyTakeaways: generated.keyTakeaways,
-          faq: generated.faq,
-          format: cronFormat,
-          structureVariant: topic?.variant ?? null,
-          clientSiteId,
-          status,
-          aiInvolvement: 'FULL',
-          // The streaming path carries these through `applyAiFinal`; the cron writes the row itself
-          // and dropped them, so every cron article shipped with a NULL `sources` column.
-          sources: linkableSources(generated.sources),
-          // Same omission, and it silently wasted the work: `finalizeArticle` already fetched or
-          // generated the cover before this row was written, so the cost was paid either way.
-          imageUrl: generated.articleImageUrl || null,
-          imageCredit: generated.articleImageCredit ?? undefined,
-          totalWords: metrics.totalWords,
-          savedAmount: metrics.savedAmount,
-          savedTimeMinutes: metrics.savedTimeMinutes,
-        },
-      })
-
-      await ctx.articleTag.createMany({
-        data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),
-        skipDuplicates: true,
-      })
-
-      return article
-    })
-
-    const contentWithPolls = await syncArticlePolls(
-      prisma as unknown as Parameters<typeof syncArticlePolls>[0],
-      article.id,
-      article.content,
-    )
-    if (contentWithPolls !== article.content) {
-      await prisma.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
-    }
-
-    const deliveredModules: Record<ArticleModule, boolean> = {
-      answer: Boolean(generated.answer),
-      takeaways: Boolean(generated.keyTakeaways?.length),
-      faq: Boolean(generated.faq?.length),
-      poll: /data-poll-id/i.test(contentWithPolls),
-      table: /<table\b/i.test(contentWithPolls),
-      images: /<img\b/i.test(contentWithPolls),
-      youtube: /data-youtube-video/i.test(contentWithPolls),
-    }
-    const missingModules = cronModules.filter((module) => !deliveredModules[module])
-
-    // One compact, useful generation event. Token accounting has its own non-UI audit action; the
-    // old implementation used the same action twice and exposed duplicate "Article generated" rows.
-    await logAction({
-      action: 'CRON_GENERATE_ARTICLE',
-      clientSiteId,
-      metadata: {
-        articleId: article.id,
-        title: article.title,
-        format: cronFormat,
-        variant: topic?.variant ?? null,
-        requestedModules: cronModules,
-        deliveredModules: cronModules.filter((module) => deliveredModules[module]),
-        missingModules,
-        media: {
-          cover: Boolean(generated.articleImageUrl),
-          bodyImages: (contentWithPolls.match(/<img\b/gi) ?? []).length,
-          polls: (contentWithPolls.match(/data-poll-id/gi) ?? []).length,
-          youtubeVideos: (contentWithPolls.match(/data-youtube-video/gi) ?? []).length,
-        },
-        sources: generated.sources?.length ?? 0,
-        tokens,
-        researched: topic ? researchRequest(topic) !== false : false,
-        editorialReview: generated.editorialReview,
-        researchApproved,
-      },
-    })
-
-    await prisma.clientSite.update({
-      where: { id: clientSiteId },
-      data: { lastGeneratedAt: new Date() },
-    })
-
-    if (status === 'published') {
-      await syncArticleTranslationQueue(prisma, article.id, clientSiteId)
-      await invalidateFeed(clientSiteId)
-
-      await logAction({
-        action: 'CRON_ARTICLE_PUBLISHED',
-        userId: article.userId,
-        clientSiteId,
-        metadata: { articleId: article.id, title: article.title, autoReleased: client.autoRelease },
-      })
-
-      const sendNotifications = async () => {
-        if (article.user?.role !== 'ai') {
-          const translate = await getServerTranslator(article.user?.language || 'cs')
-          const authorMessage = translate('common.notifications.articlePublished', [article.title])
-
-          const authorNotif = await prisma.notification.create({
-            data: {
-              message: authorMessage!,
-              userId: article.userId,
-              articleId: article.id,
-              type: 'ARTICLE_PUBLISHED',
-            },
+        let generated: any, usage: any
+        try {
+          // Never `undefined` here: that would research the prompt, and the prompt is a template.
+          ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt, {
+            research: topic ? researchRequest(topic) : false,
+            format: cronFormat,
+            variant: topic?.variant,
+            modules: cronModules,
+            editorialReview: true,
+          }))
+        } catch (err) {
+          await logAction({
+            action: 'CRON_GENERATE_ARTICLE_FAILED',
+            clientSiteId,
+            metadata: { error: (err as any).message, topic: topic?.topic },
           })
+          return { clientSiteId, status: 'failed', stage: 'generation', error: (err as any).message }
+        }
 
-          const authorStreamKey = `notifications:${authorNotif.userId}`
-          const authorStreams = globalThis.eventStreams?.get(authorStreamKey)
-          if (authorStreams) {
-            authorStreams.forEach((s) => s.push(JSON.stringify({ ...authorNotif, count: 1 })))
+        let seriesDecision: ArticleSeriesDecision = {
+          action: 'none',
+          seriesId: null,
+          name: null,
+          description: null,
+          relatedArticleIds: [],
+        }
+        let seriesTokens = 0
+        if (client.aiSeriesEnabled) {
+          try {
+            // The runtime client carries extensions, but the delegates used by this read-only helper
+            // are the same transaction-safe Prisma delegates.
+            const seriesContext = await loadAiSeriesContext(prisma as unknown as DatabaseTransaction, clientSiteId)
+            const selected = await chooseArticleSeries(
+              seriesContext,
+              { title: generated.title, excerpt: generated.perex },
+              defaultLang,
+            )
+            seriesDecision = selected.decision
+            seriesTokens = selected.usage.totalTokens ?? 0
+          } catch (err) {
+            // Series organization is optional metadata. A classifier outage must never discard an
+            // otherwise finished article or consume the customer's reserved article without output.
+            await reportCaughtError('Scheduled article series classification failed', err, {
+              clientSiteId,
+              title: generated.title,
+            })
           }
         }
 
-        const followers = await prisma.follow.findMany({
-          where: {
-            followedId: article.userId,
-            follower: { allowNotifs: true },
-          },
-          select: {
-            followerId: true,
-            follower: { select: { language: true } },
-          },
-        })
+        const tokens =
+          (usage.totalTokens ?? 0) +
+          topicTokens +
+          seriesTokens +
+          (generated.researchTokens ?? 0) +
+          (generated.editorialTokens ?? 0)
 
-        if (followers.length === 0) return
+        try {
+          await consumeClientTokens(clientSiteId, tokens, 'CRON_ARTICLE_TOKEN_USAGE', {
+            usage,
+            topicTokens,
+            seriesTokens,
+            researchTokens: generated.researchTokens ?? 0,
+            editorialTokens: generated.editorialTokens ?? 0,
+            title: generated.title,
+            tags: generated.tags,
+          })
+        } catch (err: any) {
+          // Usage is internal cost telemetry. The customer's article reservation is the only
+          // entitlement check, so a telemetry failure must not discard a completed generation.
+          await reportCaughtError('Scheduled article cost metering failed', err, { clientSiteId, tokens })
+        }
 
-        const uniqueLangs = [...new Set(followers.map((f) => f.follower.language || 'cs'))]
-        const username = article.user?.username ?? 'Autor'
+        const metrics = calculateArticleMetrics(generated.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
 
-        const langTranslations = await Promise.all(
-          uniqueLangs.map(async (lang) => {
-            const translate = await getServerTranslator(lang)
-            const message = translate('common.notifications.newArticleFromFollowed', [username, article.title])!
-            return { lang, message }
-          }),
-        )
+        const researchRequired = cronFormat === 'news' || topic?.needsResearch === true
+        const researchApproved =
+          !researchRequired || (generated.research?.status === 'completed' && generated.research?.sourceCount > 0)
+        const qualityApproved = generated.editorialReview?.approved === true && researchApproved
+        const status = client.autoRelease && qualityApproved ? 'published' : 'draft'
 
-        const langToMessage = Object.fromEntries(langTranslations.map((t) => [t.lang, t.message]))
+        const { article, appliedSeries } = await prisma.$transaction(async (ctx: any) => {
+          const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
+          const appliedSeries = await applyArticleSeriesDecision(ctx, clientSiteId, seriesDecision)
 
-        const notifications = followers.map((f) => ({
-          message: langToMessage[f.follower.language || 'cs']!,
-          userId: f.followerId,
-          articleId: article.id,
-          type: 'ARTICLE_PUBLISHED' as const,
-        }))
+          const article = await ctx.article.create({
+            select: {
+              id: true,
+              title: true,
+              content: true,
+              userId: true,
+              user: { select: { username: true, language: true, role: true } },
+            },
+            data: {
+              title: generated.title,
+              excerpt: generated.perex,
+              slug,
+              userId: client.users[0]?.id || 'system',
+              content: sanitizeHtml(stampHeadingIds(generated.content)),
+              // Empty means the format carries no answer — `applyFormat` blanks it. Stored as NULL so
+              // the column reads the same as a human article that never had one.
+              answer: generated.answer || null,
+              keyTakeaways: generated.keyTakeaways,
+              faq: generated.faq,
+              format: cronFormat,
+              structureVariant: topic?.variant ?? null,
+              clientSiteId,
+              status,
+              aiInvolvement: 'FULL',
+              articleSeriesId: appliedSeries.seriesId,
+              seriesOrder: appliedSeries.seriesOrder,
+              // The streaming path carries these through `applyAiFinal`; the cron writes the row itself
+              // and dropped them, so every cron article shipped with a NULL `sources` column.
+              sources: linkableSources(generated.sources),
+              // Same omission, and it silently wasted the work: `finalizeArticle` already fetched or
+              // generated the cover before this row was written, so the cost was paid either way.
+              imageUrl: generated.articleImageUrl || null,
+              imageCredit: generated.articleImageCredit ?? undefined,
+              totalWords: metrics.totalWords,
+              savedAmount: metrics.savedAmount,
+              savedTimeMinutes: metrics.savedTimeMinutes,
+            },
+          })
 
-        const BATCH_SIZE = 100
-
-        for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
-          const batch = notifications.slice(i, i + BATCH_SIZE)
-
-          await prisma.notification.createMany({
-            data: batch,
+          await ctx.articleTag.createMany({
+            data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),
             skipDuplicates: true,
           })
 
-          batch.forEach((n) => {
-            const key = `notifications:${n.userId}`
-            const streams = globalThis.eventStreams?.get(key)
-            if (streams) {
-              streams.forEach((s) => s.push(JSON.stringify({ ...n, count: 1 })))
+          return { article, appliedSeries }
+        })
+
+        // Creating a series can retroactively group an already published standalone article. Its
+        // public navigation changes even when the new article is held as a draft.
+        if (appliedSeries.touchedPublishedArticle) await invalidateFeed(clientSiteId)
+
+        const contentWithPolls = await syncArticlePolls(
+          prisma as unknown as Parameters<typeof syncArticlePolls>[0],
+          article.id,
+          article.content,
+        )
+        if (contentWithPolls !== article.content) {
+          await prisma.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
+        }
+
+        const deliveredModules: Record<ArticleModule, boolean> = {
+          answer: Boolean(generated.answer),
+          takeaways: Boolean(generated.keyTakeaways?.length),
+          faq: Boolean(generated.faq?.length),
+          poll: /data-poll-id/i.test(contentWithPolls),
+          table: /<table\b/i.test(contentWithPolls),
+          images: /<img\b/i.test(contentWithPolls),
+          youtube: /data-youtube-video/i.test(contentWithPolls),
+        }
+        const missingModules = cronModules.filter((module) => !deliveredModules[module])
+
+        // One compact, useful generation event. Token accounting has its own non-UI audit action; the
+        // old implementation used the same action twice and exposed duplicate "Article generated" rows.
+        await logAction({
+          action: 'CRON_GENERATE_ARTICLE',
+          clientSiteId,
+          metadata: {
+            articleId: article.id,
+            title: article.title,
+            format: cronFormat,
+            variant: topic?.variant ?? null,
+            requestedModules: cronModules,
+            deliveredModules: cronModules.filter((module) => deliveredModules[module]),
+            missingModules,
+            media: {
+              cover: Boolean(generated.articleImageUrl),
+              bodyImages: (contentWithPolls.match(/<img\b/gi) ?? []).length,
+              polls: (contentWithPolls.match(/data-poll-id/gi) ?? []).length,
+              youtubeVideos: (contentWithPolls.match(/data-youtube-video/gi) ?? []).length,
+            },
+            sources: generated.sources?.length ?? 0,
+            tokens,
+            researched: topic ? researchRequest(topic) !== false : false,
+            editorialReview: generated.editorialReview,
+            researchApproved,
+            series: {
+              action: appliedSeries.action,
+              seriesId: appliedSeries.seriesId,
+              name: appliedSeries.name,
+            },
+          },
+        })
+
+        await prisma.clientSite.update({
+          where: { id: clientSiteId },
+          data: { lastGeneratedAt: new Date() },
+        })
+
+        if (status === 'published') {
+          await syncArticleTranslationQueue(prisma, article.id, clientSiteId)
+          await invalidateFeed(clientSiteId)
+
+          await logAction({
+            action: 'CRON_ARTICLE_PUBLISHED',
+            userId: article.userId,
+            clientSiteId,
+            metadata: { articleId: article.id, title: article.title, autoReleased: client.autoRelease },
+          })
+
+          const sendNotifications = async () => {
+            if (article.user?.role !== 'ai') {
+              const translate = await getServerTranslator(article.user?.language || 'cs')
+              const authorMessage = translate('common.notifications.articlePublished', [article.title])
+
+              const authorNotif = await prisma.notification.create({
+                data: {
+                  message: authorMessage!,
+                  userId: article.userId,
+                  articleId: article.id,
+                  type: 'ARTICLE_PUBLISHED',
+                },
+              })
+
+              const authorStreamKey = `notifications:${authorNotif.userId}`
+              const authorStreams = globalThis.eventStreams?.get(authorStreamKey)
+              if (authorStreams) {
+                authorStreams.forEach((s) => s.push(JSON.stringify({ ...authorNotif, count: 1 })))
+              }
             }
+
+            const followers = await prisma.follow.findMany({
+              where: {
+                followedId: article.userId,
+                follower: { allowNotifs: true },
+              },
+              select: {
+                followerId: true,
+                follower: { select: { language: true } },
+              },
+            })
+
+            if (followers.length === 0) return
+
+            const uniqueLangs = [...new Set(followers.map((f) => f.follower.language || 'cs'))]
+            const username = article.user?.username ?? 'Autor'
+
+            const langTranslations = await Promise.all(
+              uniqueLangs.map(async (lang) => {
+                const translate = await getServerTranslator(lang)
+                const message = translate('common.notifications.newArticleFromFollowed', [username, article.title])!
+                return { lang, message }
+              }),
+            )
+
+            const langToMessage = Object.fromEntries(langTranslations.map((t) => [t.lang, t.message]))
+
+            const notifications = followers.map((f) => ({
+              message: langToMessage[f.follower.language || 'cs']!,
+              userId: f.followerId,
+              articleId: article.id,
+              type: 'ARTICLE_PUBLISHED' as const,
+            }))
+
+            const BATCH_SIZE = 100
+
+            for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
+              const batch = notifications.slice(i, i + BATCH_SIZE)
+
+              await prisma.notification.createMany({
+                data: batch,
+                skipDuplicates: true,
+              })
+
+              batch.forEach((n) => {
+                const key = `notifications:${n.userId}`
+                const streams = globalThis.eventStreams?.get(key)
+                if (streams) {
+                  streams.forEach((s) => s.push(JSON.stringify({ ...n, count: 1 })))
+                }
+              })
+            }
+          }
+
+          sendNotifications().catch((err) => {
+            console.error('[generate-article] Notification error:', err)
+          })
+        } else {
+          await logAction({
+            action: 'CRON_ARTICLE_SAVED_AS_DRAFT',
+            userId: article.userId,
+            clientSiteId,
+            metadata: {
+              articleId: article.id,
+              title: article.title,
+              heldFromAutoRelease: client.autoRelease && !qualityApproved,
+              editorialReview: generated.editorialReview,
+              researchApproved,
+            },
           })
         }
-      }
 
-      sendNotifications().catch((err) => {
-        console.error('[generate-article] Notification error:', err)
-      })
-    } else {
-      await logAction({
-        action: 'CRON_ARTICLE_SAVED_AS_DRAFT',
-        userId: article.userId,
-        clientSiteId,
-        metadata: {
+        return {
+          clientSiteId,
+          status,
           articleId: article.id,
           title: article.title,
-          heldFromAutoRelease: client.autoRelease && !qualityApproved,
-          editorialReview: generated.editorialReview,
+          format: cronFormat,
+          requestedModules: cronModules,
+          missingModules,
+          cover: Boolean(generated.articleImageUrl),
+          qualityApproved,
           researchApproved,
-        },
-      })
-    }
-
-    return {
-      clientSiteId,
-      status,
-      articleId: article.id,
-      title: article.title,
-      format: cronFormat,
-      requestedModules: cronModules,
-      missingModules,
-      cover: Boolean(generated.articleImageUrl),
-      qualityApproved,
-      researchApproved,
-    }
-  })
+          series: {
+            action: appliedSeries.action,
+            seriesId: appliedSeries.seriesId,
+          },
+        }
+      }),
+    { shouldCharge: (result) => result?.status !== 'failed' },
+  )
 
 export default defineMonitoredTask({
   meta: {
@@ -504,12 +581,13 @@ export default defineMonitoredTask({
   async run() {
     const now = new Date()
 
-    const clients = await prisma.clientSite.findMany({
+    const candidates = await prisma.clientSite.findMany({
       select: {
         id: true,
         humanHourlyRateUsd: true,
         humanWordsPerHour: true,
         autoRelease: true,
+        aiSeriesEnabled: true,
         audience: true,
         keywords: true,
         focus: true,
@@ -517,6 +595,15 @@ export default defineMonitoredTask({
         generationFrequency: true,
         communityInsight: true,
         lastGeneratedAt: true,
+        articleCreditWallet: {
+          select: {
+            reserved: true,
+            grants: {
+              where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+              select: { remaining: true },
+            },
+          },
+        },
         searchConsoleConnection: { select: { propertyUrl: true, autopilotEnabled: true } },
         features: {
           where: { isActive: true, feature: { code: 'SEARCH_CONSOLE' } },
@@ -540,7 +627,6 @@ export default defineMonitoredTask({
         users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
       },
       where: {
-        tokenRemaining: { gt: MIN_TOKENS },
         generationFrequency: { in: ['DAILY', 'WEEKLY'] },
         ...activeFeatureFilter('ARTICLE_CRONS'),
         OR: [
@@ -556,6 +642,9 @@ export default defineMonitoredTask({
         ],
       },
     })
+    const clients = candidates.filter(
+      (client) => (client.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) >= 1,
+    )
 
     // The `where` above drops a client without leaving a trace, so a site that stopped generating
     // looks exactly like a site with nothing due. Name the reason instead of guessing it later.
@@ -572,7 +661,7 @@ export default defineMonitoredTask({
         metadata: {
           reason: site.reason,
           generationFrequency: site.generationFrequency,
-          tokenRemaining: site.tokenRemaining,
+          articlesRemaining: site.articlesRemaining,
         },
       })
     }

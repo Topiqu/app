@@ -362,7 +362,7 @@
 <script setup lang="ts">
 import type { BillingInterval, PlanPrice, PlanPricing, SubscribablePlan } from '~~/shared/types/planPricing'
 
-import { ThemeSchema } from '~~/shared/zod/enums/Theme.schema'
+import { ThemeSchema } from '~~/shared/siteSchemas'
 
 import { themeColors, type ThemeKey } from '~/composables/theme'
 

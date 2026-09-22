@@ -1,5 +1,5 @@
-import type { ThemeSchema, LanguageSchema } from '~~/shared/zod/enums'
-import type { SocialPlatform, ClientSite as _ClientSite } from '@prisma/client'
+import type { ThemeSchema, LanguageSchema } from '~~/shared/siteSchemas'
+import type { SocialPlatform, ClientSite as _ClientSite } from '~~/generated/zenstack/models'
 
 export interface ClientSite extends Omit<
   _ClientSite,
@@ -21,6 +21,8 @@ export interface ClientSite extends Omit<
   aiUser: { username: string; bio: string; avatarUrl: string } | null
   aiToneOfVoice: string | null
   aiControversyLevel: string | null
+  articlesRemaining?: number
+  articleWallet?: { balance: number; reserved: number; available: number } | null
 }
 
 export interface ClientSettingsForm {
@@ -43,6 +45,7 @@ export interface ClientSettingsForm {
   gamNetworkCode: string
   apiKey: string
   autoRelease: boolean
+  aiSeriesEnabled: boolean
   generationFrequency: 'DAILY' | 'WEEKLY' | 'NONE'
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
@@ -73,6 +76,7 @@ const emptyForm = (): ClientSettingsForm => ({
   gamNetworkCode: '',
   apiKey: '',
   autoRelease: false,
+  aiSeriesEnabled: false,
   generationFrequency: 'NONE',
   translationMode: 'OFF',
   translationLanguages: [],
@@ -123,6 +127,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     gtagId: client.gtagId ?? '',
     gamNetworkCode: client.gamNetworkCode ?? '',
     autoRelease: client.autoRelease ?? false,
+    aiSeriesEnabled: client.aiSeriesEnabled ?? false,
     generationFrequency: client.generationFrequency ?? 'NONE',
     translationMode: client.translationMode ?? 'OFF',
     translationLanguages: client.translationLanguages ?? [],

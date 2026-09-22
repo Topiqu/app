@@ -202,13 +202,13 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 
 // Bar-end values, so a low-contrast fill never carries the number on its own. Inline rather
 // than chartjs-plugin-datalabels — a dozen lines beats a dependency.
-const valueLabels = computed<Plugin[]>(() =>
+const valueLabels = computed<Plugin<'bar'>[]>(() =>
   chartType.value === 'pie'
     ? []
     : [
         {
           id: 'valueLabels',
-          afterDatasetsDraw(chart: Chart) {
+          afterDatasetsDraw(chart: Chart<'bar'>) {
             const { ctx } = chart
             ctx.save()
             ctx.fillStyle = ink.value.muted

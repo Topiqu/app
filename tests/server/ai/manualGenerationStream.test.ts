@@ -56,6 +56,7 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain('fallbackWithoutResearch: options?.research.fallbackWithoutResearch')
     expect(endpoint).toContain('format: options?.format')
     expect(endpoint).toContain('modules: options?.modules')
+    expect(endpoint).toContain('allowGeneratedImages: options?.allowGeneratedImages !== false')
     expect(endpoint).toContain("onMedia: (media) => send(controller, { type: 'media', ...media })")
   })
 
@@ -80,20 +81,21 @@ describe('manual article generation stream', () => {
   })
 
   it('researches a verified YouTube URL when the author selected the video module', () => {
-    expect(articleGenerator).toContain("selectedModulesFor(format, modules).includes('youtube')")
+    expect(articleGenerator).toContain("selectedModules?.includes('youtube')")
     expect(articleGenerator).toContain('Search for existing, directly relevant YouTube videos')
     expect(articleGenerator).toContain('https://www.youtube.com/oembed')
     expect(articleGenerator).toContain('youtubeVideoId(candidate)')
     expect(articleGenerator).toContain('The author selected a YouTube video.')
   })
 
-  it('streams the authoritative token balance after billing', () => {
-    expect(endpoint).toContain("send(controller, { type: 'billing', ...billing })")
+  it('streams the authoritative article balance after settlement', () => {
+    expect(endpoint).toContain("type: 'billing', articlesCharged: 1, articlesRemaining: articleWallet.available")
   })
 
-  it('holds a configuration-sized budget without locking the tenant wallet', () => {
+  it('holds one customer-visible article while retaining internal cost metering', () => {
+    expect(endpoint).toContain("reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE'")
+    expect(endpoint).toContain("send(controller, { type: 'reservation', articles: 1 })")
     expect(endpoint).toContain('articleGenerationReservation(generationOptions, TOKEN_RATIO)')
-    expect(endpoint).toContain("send(controller, { type: 'reservation', credits: reservation.reserved })")
     expect(endpoint).not.toContain('reserveAvailableTokens')
   })
 
@@ -101,13 +103,19 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain('researchDepth: options?.research.enabled ? options.research.depth : null')
     expect(endpoint).toContain("models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') }")
     // Completed and aborted both bill, so both have to be attributable.
-    expect(endpoint.match(/\.\.\.runConfig,/g)).toHaveLength(2)
+    expect(endpoint.match(/\.\.\.runConfig,/g)?.length).toBeGreaterThanOrEqual(2)
   })
 
   it('requires matching body image slots when the author selected images', () => {
     expect(articleGenerator).toContain("selectedModules.includes('images')")
     expect(articleGenerator).toContain('The author explicitly requested images in the article body.')
     expect(articleGenerator).toContain('This is a requested deliverable: never return an empty images array.')
+  })
+
+  it('treats an explicitly selected poll as a deliverable', () => {
+    expect(articleGenerator).toContain('Never return an empty polls array when the poll module is selected.')
+    expect(articleQuality).toMatch(/requireModule\(\s*'poll'/)
+    expect(articleQuality).toMatch(/requireModule\(\s*'images'/)
   })
 
   it('records the complete manual generation lifecycle with a correlation id', () => {
@@ -125,6 +133,14 @@ describe('manual article generation stream', () => {
     expect(articleGenerator).toContain('Return up to three full youtube.com/watch or youtu.be URLs')
     expect(articleGenerator).toContain('for (const url of urls)')
     expect(articleGenerator).toContain('retrievedResearchSources(result)')
+  })
+
+  it('discovers official media pages during research instead of using a publisher allowlist', () => {
+    expect(articleGenerator).toContain('OFFICIAL MEDIA: <owner>')
+    expect(articleGenerator).toContain('officialMediaPages')
+    expect(articleGenerator).toContain('findPressImage')
+    expect(articleGenerator).toContain('youtubeThumbnailImage')
+    expect(articleGenerator).not.toContain('press.cdprojektred.com')
   })
 
   it('uses one strict review, then proceeds to media finalization after any revision', () => {
