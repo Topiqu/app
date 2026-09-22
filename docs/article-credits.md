@@ -7,7 +7,7 @@ The current policy is versioned as `2026-09-articles-v1`:
 - Trial: 5 articles, valid until the trial ends.
 - PRO: 20 articles per month.
 - PREMIUM: 30 articles per month.
-- Add-ons: 5 / 10 / 25 articles; purchased articles do not expire.
+- Add-ons: 5 / 12 / 25 articles; purchased articles do not expire.
 
 Plan articles expire at the end of their monthly allowance period and are consumed before non-expiring purchases. Annual subscriptions are billed annually but receive a new monthly grant from the `grant-annual-article-credits` task. The Stripe invoice webhook creates the first grant and monthly invoices create subsequent grants. A mid-period upgrade grants only the difference to the new plan allowance; a downgrade does not claw back articles already granted.
 
