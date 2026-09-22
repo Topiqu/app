@@ -53,30 +53,18 @@
       <div class="flex min-h-0 min-w-0 flex-col gap-5 sm:gap-4">
         <div class="flex min-w-0 shrink-0 flex-col gap-5 sm:gap-3">
           <section>
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <h3 class="text-xs font-medium uppercase tracking-wider text-muted">
-                  {{ $t('common.wallet.available') }}
-                </h3>
-                <p class="mt-1 flex flex-wrap items-baseline gap-x-1.5">
-                  <span
-                    class="text-3xl font-bold leading-none tracking-tight tabular-nums"
-                    :class="isLowArticles ? 'text-error' : 'text-highlighted'"
-                    >{{ articlesRemaining.toLocaleString(locale) }}</span
-                  >
-                  <span class="text-sm text-muted">{{ $t('common.wallet.unit') }}</span>
-                </p>
-              </div>
-              <UTooltip :text="$t('common.wallet.neverExpires')">
-                <UButton
-                  square
-                  size="xs"
-                  color="neutral"
-                  variant="ghost"
-                  icon="mdi:information-outline"
-                  :aria-label="$t('common.wallet.neverExpires')"
-                />
-              </UTooltip>
+            <div class="min-w-0">
+              <h3 class="text-xs font-medium uppercase tracking-wider text-muted">
+                {{ $t('common.wallet.available') }}
+              </h3>
+              <p class="mt-1 flex flex-wrap items-baseline gap-x-1.5">
+                <span
+                  class="text-3xl font-bold leading-none tracking-tight tabular-nums"
+                  :class="isLowArticles ? 'text-error' : 'text-highlighted'"
+                  >{{ articlesRemaining.toLocaleString(locale) }}</span
+                >
+                <span class="text-sm text-muted">{{ $t('common.wallet.unit', articlesRemaining) }}</span>
+              </p>
             </div>
 
             <dl v-if="wallet" class="mt-3 grid gap-1.5 border-t border-default pt-3 text-sm">
@@ -103,51 +91,66 @@
             </dl>
           </section>
 
-          <UAlert
-            v-if="isLowArticles"
-            color="error"
-            variant="soft"
-            icon="mdi:alert"
-            :title="$t('articles.userMenu.lowTokensWarning')"
-            :description="$t('common.wallet.lowBalance')"
-          />
-
-          <USeparator :label="$t('common.wallet.topup')" />
-          <div class="grid grid-cols-1 gap-2 min-[22rem]:grid-cols-2">
-            <button
-              v-for="pack in articlePacks"
-              :key="pack.id"
-              type="button"
-              class="relative min-w-0 rounded-[var(--topiqu-surface-radius)] border p-3 text-left transition disabled:cursor-wait disabled:opacity-60 sm:p-2.5"
-              :class="
-                pack.featured
-                  ? 'border-primary bg-primary/10 hover:bg-primary/15'
-                  : 'border-default bg-elevated hover:border-primary/40'
-              "
-              :disabled="checkoutPack !== null"
-              @click="buyArticles(pack.id)"
+          <section aria-labelledby="article-packs-title">
+            <div class="mb-4">
+              <h3 id="article-packs-title" class="text-lg font-semibold tracking-tight text-highlighted">
+                {{ $t('common.articlePacks.title') }}
+              </h3>
+              <p class="mt-1.5 max-w-lg text-sm leading-relaxed text-muted">
+                {{ $t('common.articlePacks.purchaseHint') }}
+              </p>
+            </div>
+            <div
+              class="divide-y divide-default overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-default"
             >
-              <span class="flex items-center justify-between gap-1">
-                <UIcon
-                  :name="checkoutPack === pack.id ? 'mdi:loading' : pack.icon"
-                  class="size-5 text-primary"
-                  :class="checkoutPack === pack.id ? 'animate-spin' : ''"
-                />
-                <UBadge v-if="pack.valueBonus" color="success" variant="soft" size="xs">
-                  +{{ pack.valueBonus }}%
-                </UBadge>
-              </span>
-              <span class="mt-1.5 block truncate text-sm font-semibold text-highlighted">{{ pack.name }}</span>
-              <span class="mt-1 block text-lg font-bold tabular-nums text-highlighted">
-                {{ pack.articles.toLocaleString(locale) }}
-              </span>
-              <span class="block text-xs text-muted">{{ $t('common.articlePacks.articles') }}</span>
-              <span class="mt-1.5 flex items-end justify-between gap-2 border-t border-default pt-1.5">
-                <span class="min-w-0 break-words text-xs text-muted">{{ $t('common.articlePacks.neverExpires') }}</span>
-                <strong class="shrink-0 text-sm text-highlighted">{{ pack.price }}</strong>
-              </span>
-            </button>
-          </div>
+              <article
+                v-for="pack in articlePacks"
+                :key="pack.id"
+                class="relative flex min-h-24 flex-col justify-center gap-3 px-4 py-4 min-[24rem]:flex-row min-[24rem]:items-center min-[24rem]:justify-between"
+                :class="
+                  pack.featured
+                    ? 'bg-primary/8 before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-primary'
+                    : ''
+                "
+              >
+                <div class="min-w-0">
+                  <div class="flex items-baseline gap-2">
+                    <strong class="text-3xl font-bold leading-none tracking-tight tabular-nums text-highlighted">
+                      {{ pack.articles.toLocaleString(locale) }}
+                    </strong>
+                    <span class="text-sm font-medium text-toned">{{ articleUnit(pack.articles) }}</span>
+                  </div>
+                  <p v-if="pack.volumeDiscount" class="mt-1.5 text-xs text-muted">
+                    <strong v-if="pack.featured" class="font-semibold text-primary">
+                      {{ $t('common.articlePacks.bestValue') }} ·
+                    </strong>
+                    {{ $t('common.articlePacks.volumeDiscount', { discount: pack.volumeDiscount }) }}
+                  </p>
+                </div>
+
+                <div class="flex shrink-0 items-center justify-between gap-3 min-[24rem]:justify-end">
+                  <div class="text-left min-[24rem]:text-right">
+                    <strong class="block text-xl font-bold leading-tight tabular-nums text-highlighted">
+                      {{ pack.price }}
+                    </strong>
+                    <span class="block text-xs text-muted">{{ $t('common.articlePacks.taxExclusive') }}</span>
+                  </div>
+                  <UButton
+                    :color="pack.featured ? 'primary' : 'neutral'"
+                    :variant="pack.featured ? 'solid' : 'soft'"
+                    icon="mdi:cart-outline"
+                    size="sm"
+                    :loading="checkoutPack === pack.id"
+                    :disabled="checkoutPack !== null"
+                    :aria-label="$t('common.articlePacks.buyPack', { count: pack.articles })"
+                    @click="buyArticles(pack.id)"
+                  >
+                    {{ $t('common.articlePacks.buy') }}
+                  </UButton>
+                </div>
+              </article>
+            </div>
+          </section>
           <div class="grid grid-cols-1 gap-2">
             <UButton
               v-if="site?.plan === 'BASIC'"
@@ -255,16 +258,6 @@
           >
             {{ $t('common.pagination.next') }}
           </UButton>
-
-          <div
-            class="mt-auto flex shrink-0 items-start gap-2 rounded-[var(--ui-radius)] bg-info/10 px-3 py-2 text-sm text-info"
-          >
-            <UIcon name="mdi:lightbulb-outline" class="mt-0.5 size-4 shrink-0" />
-            <p class="min-w-0">
-              <strong class="font-semibold">{{ $t('articles.userMenu.tip') }}:</strong>
-              {{ $t('articles.userMenu.adjustPreferences') }}
-            </p>
-          </div>
         </div>
       </div>
     </template>
@@ -364,6 +357,7 @@ const loadMore = async () => {
 }
 
 const articlesRemaining = computed(() => status.value?.articlesRemaining ?? 0)
+const articleUnit = (count: number) => t('common.articlePacks.articles', count)
 const isLowArticles = computed(() => articlesRemaining.value <= 1)
 // Summary numbers come from the status payload, which is already loaded — the paginated
 // /wallet fetch is deliberately not the source, it would render zeros until it resolves.

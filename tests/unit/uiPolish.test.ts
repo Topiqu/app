@@ -43,7 +43,8 @@ describe('dashboard UI polish contracts', () => {
     expect(clientVersion).toContain('<USlideover')
     expect(clientVersion).toContain('side="right"')
     expect(clientVersion).toContain('min-h-0 overflow-y-auto overscroll-contain')
-    expect(clientVersion).toContain('grid-cols-1 gap-2 min-[22rem]:grid-cols-2')
+    expect(clientVersion).toContain('divide-y divide-default')
+    expect(clientVersion).toContain('min-h-24 flex-col')
     expect(clientVersion).toContain('data-consent-settings')
     expect(source('app/components/ConsentSettingsButton.vue')).toContain(
       'bottom-action-bar fixed right-6 bottom-4 z-overlay',

@@ -8,7 +8,7 @@
     "wallet": {
       "title": "Articles",
       "available": "Articles remaining",
-      "unit": "articles",
+      "unit": "article | articles",
       "bonusExpiry": "Bonus articles may expire; purchased articles do not.",
       "generationReservation": "Each generation temporarily holds 1 article. It is charged on success and returned after an error or cancellation.",
       "neverExpires": "Plan articles are valid for their period. Purchased articles do not expire.",
@@ -17,7 +17,6 @@
       "reservedHint": "Each concurrent generation holds exactly 1 article. Failed runs return it.",
       "periodUsage": "Used in {period}",
       "expires": "Valid until",
-      "lowBalance": "Only one article remains. Buy more or wait for your plan's monthly refresh.",
       "topup": "Buy more articles",
       "history": "Article history",
       "empty": "No article movements yet.",
@@ -1035,12 +1034,17 @@
       "declined": "Invitation declined"
     },
     "articlePacks": {
-      "pack5": "5 extra articles",
-      "pack10": "10 extra articles",
-      "pack25": "25 extra articles",
+      "title": "Expand your publishing capacity",
+      "pack5": "5 articles",
+      "pack12": "12 articles",
+      "pack25": "25 articles",
       "bestValue": "Best value",
-      "valueBonus": "+{0}% extra",
-      "articles": "articles",
+      "volumeDiscount": "{discount}% volume discount",
+      "articles": "article | articles",
+      "taxExclusive": "excl. VAT",
+      "buy": "Buy",
+      "buyPack": "Buy a {count}-article pack",
+      "purchaseHint": "Add articles whenever you need them. They are available immediately and never expire.",
       "neverExpires": "Never expires",
       "upgradeToPremium": "Upgrade to PREMIUM"
     }

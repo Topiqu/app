@@ -8,7 +8,7 @@
     "wallet": {
       "title": "Články",
       "available": "Zbývající články",
-      "unit": "článků",
+      "unit": "článků | článek | články | článků",
       "bonusExpiry": "Bonusové články mohou mít datum platnosti; dokoupené články neexpirují.",
       "generationReservation": "Každé generování dočasně zablokuje 1 článek. Po úspěšném dokončení se odečte; při chybě nebo přerušení se vrátí.",
       "neverExpires": "Články z tarifu platí pro dané období. Dokoupené články neexpirují.",
@@ -17,7 +17,6 @@
       "reservedHint": "Každé souběžné generování blokuje právě 1 článek. Při neúspěchu se vrátí.",
       "periodUsage": "Spotřeba za {period}",
       "expires": "Platnost do",
-      "lowBalance": "Zbývá poslední článek. Další můžete dokoupit nebo počkat na měsíční obnovení tarifu.",
       "topup": "Dokoupit články",
       "history": "Historie článků",
       "empty": "Zatím žádné pohyby článků.",
@@ -1035,12 +1034,17 @@
       "declined": "Pozvánka odmítnuta"
     },
     "articlePacks": {
-      "pack5": "5 článků navíc",
-      "pack10": "10 článků navíc",
-      "pack25": "25 článků navíc",
+      "title": "Rozšiřte publikační kapacitu",
+      "pack5": "5 článků",
+      "pack12": "12 článků",
+      "pack25": "25 článků",
       "bestValue": "Nejvýhodnější",
-      "valueBonus": "+{0} % navíc",
-      "articles": "článků",
+      "volumeDiscount": "{discount} % množstevní sleva",
+      "articles": "článků | článek | články | článků",
+      "taxExclusive": "bez DPH",
+      "buy": "Koupit",
+      "buyPack": "Koupit balíček s {count} články",
+      "purchaseHint": "Doplňte si články podle potřeby. Připíšeme je ihned a neexpirují.",
       "neverExpires": "Bez expirace",
       "upgradeToPremium": "Povýšit na PREMIUM"
     }
