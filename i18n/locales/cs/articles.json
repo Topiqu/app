@@ -560,6 +560,49 @@
         "noDraftsFound": "Žádné koncepty nenalezeny",
         "untitled": "Návrh bez názvu #{0}"
       },
+      "factCheck": {
+        "title": "Kontrola faktů",
+        "description": "Porovná ověřitelná tvrzení v aktuální verzi článku s obsahem přidaných zdrojů.",
+        "run": "Zkontrolovat tvrzení",
+        "runAgain": "Zkontrolovat znovu",
+        "running": "Načítám zdroje a porovnávám tvrzení…",
+        "stale": "Článek nebo zdroje se změnily",
+        "notEnoughContent": "Nejprve přidejte alespoň krátký obsah článku.",
+        "errorTitle": "Kontrolu se nepodařilo dokončit",
+        "error": {
+          "invalid-request": "Aktuální článek se nepodařilo připravit ke kontrole. Obnovte editor a zkuste to znovu.",
+          "not-configured": "AI služba není v tomto prostředí nakonfigurovaná. Správce musí nastavit OPENAI_API_KEY.",
+          "not-in-plan": "Kontrola faktů není dostupná pro váš tarif nebo k ní nemáte oprávnění.",
+          "rate-limited": "Proběhlo příliš mnoho kontrol. Chvíli počkejte a zkuste to znovu.",
+          "service-unavailable": "AI služba je dočasně nedostupná. Zkuste kontrolu spustit později.",
+          "unknown": "Kontrolu se nepodařilo dokončit. Zkuste ji spustit znovu."
+        },
+        "claimsFound": "nalezených faktických tvrzení",
+        "supported": "Podložená",
+        "problematic": "K prověření",
+        "sourceIssues": "Problémy se zdroji",
+        "noClaimsTitle": "Žádná vhodná tvrzení",
+        "noClaimsDescription": "V textu nebyla nalezena důležitá ověřitelná tvrzení. Neznamená to potvrzení správnosti článku.",
+        "highImportance": "Důležité",
+        "supportedClaims": "Podložená tvrzení ({count})",
+        "sourceNumber": "Zdroj {number}",
+        "goToClaim": "Přejít na tvrzení",
+        "disclaimer": "Výsledek hodnotí oporu v přidaných zdrojích, nikoli absolutní pravdivost. Před publikací ověřte důležitá tvrzení i ručně.",
+        "verdict": {
+          "supported": "Podloženo zdrojem",
+          "partial": "Částečně podloženo",
+          "unsupported": "Bez opory ve zdrojích",
+          "contradicted": "V rozporu se zdrojem",
+          "unverifiable": "Nelze spolehlivě ověřit"
+        },
+        "sourceStatus": {
+          "duplicate": "Tento zdroj je v seznamu vícekrát.",
+          "invalid": "Adresa zdroje není platná nebo není bezpečně dostupná přes HTTPS.",
+          "unreachable": "Obsah zdroje se nepodařilo načíst.",
+          "unsupported-content": "Obsah zdroje nelze přečíst jako webový text.",
+          "ready": "Zdroj byl načten."
+        }
+      },
       "optimization": {
         "title": "Optimalizace článku",
         "score": "Celkové skóre",

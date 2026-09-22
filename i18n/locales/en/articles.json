@@ -560,6 +560,49 @@
         "noDraftsFound": "No drafts found",
         "untitled": "Untitled draft #{0}"
       },
+      "factCheck": {
+        "title": "Fact-check",
+        "description": "Compares verifiable claims in the current article with the content of its added sources.",
+        "run": "Check claims",
+        "runAgain": "Check again",
+        "running": "Loading sources and comparing claims…",
+        "stale": "The article or sources changed",
+        "notEnoughContent": "Add at least a short article body first.",
+        "errorTitle": "The check could not be completed",
+        "error": {
+          "invalid-request": "The current article could not be prepared for checking. Reload the editor and try again.",
+          "not-configured": "The AI service is not configured in this environment. An administrator must set OPENAI_API_KEY.",
+          "not-in-plan": "Fact-checking is not available for your plan or you do not have permission to use it.",
+          "rate-limited": "Too many checks were requested. Wait a moment and try again.",
+          "service-unavailable": "The AI service is temporarily unavailable. Try running the check later.",
+          "unknown": "The check could not be completed. Try running it again."
+        },
+        "claimsFound": "factual claims found",
+        "supported": "Supported",
+        "problematic": "Needs review",
+        "sourceIssues": "Source issues",
+        "noClaimsTitle": "No suitable claims found",
+        "noClaimsDescription": "No important verifiable claims were found. This does not confirm that the article is accurate.",
+        "highImportance": "Important",
+        "supportedClaims": "Supported claims ({count})",
+        "sourceNumber": "Source {number}",
+        "goToClaim": "Go to claim",
+        "disclaimer": "This result measures support in the added sources, not absolute truth. Verify important claims manually before publishing.",
+        "verdict": {
+          "supported": "Supported by source",
+          "partial": "Partially supported",
+          "unsupported": "No support in sources",
+          "contradicted": "Contradicted by source",
+          "unverifiable": "Cannot be reliably checked"
+        },
+        "sourceStatus": {
+          "duplicate": "This source appears more than once.",
+          "invalid": "The source address is invalid or cannot be accessed safely over HTTPS.",
+          "unreachable": "The source content could not be loaded.",
+          "unsupported-content": "The source cannot be read as web text.",
+          "ready": "The source was loaded."
+        }
+      },
       "optimization": {
         "title": "Article optimization",
         "score": "Overall score",

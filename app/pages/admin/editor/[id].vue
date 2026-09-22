@@ -293,6 +293,10 @@
             :aiWritingStage="aiWritingStage"
             :optimizationState="optimizationState"
             :optimizationResult="optimizationResult"
+            :factCheckState="factCheckState"
+            :factCheckResult="factCheckResult"
+            :factCheckCanRun="factCheckCanRun"
+            :factCheckErrorKind="factCheckErrorKind"
             @upload="handleUpload"
             @generate="generateAIContent"
             @stop="stopGeneration"
@@ -301,6 +305,9 @@
             @quickRelease="setReleaseQuick"
             @retryOptimization="retryOptimization"
             @navigateOptimization="navigateOptimization"
+            @runFactCheck="runFactCheck"
+            @navigateFactCheck="navigateFactCheck"
+            @navigateFactCheckSources="navigateFactCheckSources"
           />
         </div>
         <UButton
@@ -384,6 +391,10 @@
           :aiWritingStage="aiWritingStage"
           :optimizationState="optimizationState"
           :optimizationResult="optimizationResult"
+          :factCheckState="factCheckState"
+          :factCheckResult="factCheckResult"
+          :factCheckCanRun="factCheckCanRun"
+          :factCheckErrorKind="factCheckErrorKind"
           @upload="handleUpload"
           @generate="generateAIContent"
           @stop="stopGeneration"
@@ -392,6 +403,9 @@
           @quickRelease="setReleaseQuick"
           @retryOptimization="retryOptimization"
           @navigateOptimization="navigateOptimization"
+          @runFactCheck="runFactCheck"
+          @navigateFactCheck="navigateFactCheck"
+          @navigateFactCheckSources="navigateFactCheckSources"
         />
       </template>
     </USlideover>
@@ -684,6 +698,20 @@ const {
   result: optimizationResult,
   retry: retryOptimization,
 } = useArticleOptimization(optimizationInput)
+const factCheckInput = computed(() => ({
+  title: titleModel.value ?? '',
+  excerpt: excerptModel.value ?? null,
+  content: bodyModel.value ?? '',
+  sources: sourcesModel.value,
+  language: (isNew ? newArticleLanguage.value : tr.isSource ? primaryLanguage : tr.activeLang) as Language,
+}))
+const {
+  state: factCheckState,
+  result: factCheckResult,
+  errorKind: factCheckErrorKind,
+  canRun: factCheckCanRun,
+  run: runFactCheck,
+} = useArticleFactCheck(factCheckInput)
 const titleTarget = useTemplateRef<HTMLElement>('titleTarget')
 const excerptTarget = useTemplateRef<HTMLElement>('excerptTarget')
 const contentTarget = useTemplateRef<HTMLElement>('contentTarget')
@@ -723,6 +751,8 @@ const navigateOptimization = async (target: OptimizationTarget) => {
   element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   highlight(element)
 }
+const navigateFactCheck = (blockIndex: number) => navigateOptimization({ kind: 'content', blockIndex })
+const navigateFactCheckSources = () => navigateOptimization({ kind: 'sources' })
 
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 const saveConfirmed = shallowRef(false)

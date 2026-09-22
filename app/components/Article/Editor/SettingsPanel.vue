@@ -9,6 +9,18 @@
 
     <USeparator />
 
+    <ArticleEditorFactCheck
+      :state="factCheckState"
+      :result="factCheckResult"
+      :canRun="factCheckCanRun"
+      :errorKind="factCheckErrorKind"
+      @run="$emit('runFactCheck')"
+      @navigate="$emit('navigateFactCheck', $event)"
+      @navigateSources="$emit('navigateFactCheckSources')"
+    />
+
+    <USeparator />
+
     <section ref="imageSection" class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
         <UIcon size="16" name="mdi:image-outline" />
@@ -426,6 +438,7 @@
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
+import type { ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
 import type { ArticleOptimizationResult, OptimizationTargetKind } from '~~/shared/types/articleOptimization'
 
 import {
@@ -441,6 +454,7 @@ import {
 } from '~~/shared/utils/articleGeneration'
 
 import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'
+import type { ArticleFactCheckErrorKind, ArticleFactCheckState } from '~/composables/useArticleFactCheck'
 import type {
   GenerationPhase,
   GenerationResearchResult,
@@ -464,6 +478,10 @@ const props = defineProps<{
   aiWritingStage: GenerationWritingStage
   optimizationState: ArticleOptimizationState
   optimizationResult: ArticleOptimizationResult | null
+  factCheckState: ArticleFactCheckState
+  factCheckResult: ArticleFactCheckResult | null
+  factCheckCanRun: boolean
+  factCheckErrorKind: ArticleFactCheckErrorKind
 }>()
 
 const imageSection = useTemplateRef<HTMLElement>('imageSection')
@@ -634,5 +652,8 @@ defineEmits<{
   quickRelease: [kind: 'now' | 'inHour' | 'tomorrow' | 'clear']
   retryOptimization: []
   navigateOptimization: [target: import('~~/shared/types/articleOptimization').OptimizationTarget]
+  runFactCheck: []
+  navigateFactCheck: [blockIndex: number]
+  navigateFactCheckSources: []
 }>()
 </script>
