@@ -11,6 +11,7 @@ export const AI_MODELS = {
   sentiment: { provider: 'openai', id: 'gpt-5.6-luna' },
   communityInsight: { provider: 'openai', id: 'gpt-5.6-luna' },
   visibility: { provider: 'openai', id: 'gpt-5.6-luna' },
+  factCheck: { provider: 'openai', id: 'gpt-5.6-luna' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export const AI_IMAGE_MODELS = {
