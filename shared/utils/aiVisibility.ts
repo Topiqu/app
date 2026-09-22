@@ -102,12 +102,13 @@ const stem = (word: string) => {
 
 const words = (value: string) =>
   new Set(
-    (value
-      .normalize('NFKD')
-      .replace(/\p{Diacritic}/gu, '')
-      .toLocaleLowerCase()
-      .match(/[\p{L}\p{N}]{3,}/gu) ?? [])
-      .map(stem),
+    (
+      value
+        .normalize('NFKD')
+        .replace(/\p{Diacritic}/gu, '')
+        .toLocaleLowerCase()
+        .match(/[\p{L}\p{N}]{3,}/gu) ?? []
+    ).map(stem),
   )
 
 export const closestArticle = <T extends { title: string; excerpt?: string | null }>(prompt: string, articles: T[]) => {
