@@ -243,7 +243,13 @@
       "createFailed": "Vytvoření štítku selhalo",
       "updateSuccess": "Štítek úspěšně aktualizován",
       "updateFailed": "Aktualizace štítku selhala",
-      "noTagsSelected": "Žádné štítky nevybrány"
+      "noTagsSelected": "Žádné štítky nevybrány",
+      "selected": "Vybrané štítky",
+      "selectedEmpty": "Článek zatím nemá žádné štítky.",
+      "addExisting": "Přidat existující štítek…",
+      "createNew": "Vytvořit nový štítek",
+      "newTagName": "Název nového štítku",
+      "removeNamed": "Odebrat štítek {name}"
     },
     "statusCell": {
       "scheduledTooltip": "Naplánováno na: {0}"
@@ -615,12 +621,33 @@
         "errorDescription": "Místní analýzu se nepodařilo dokončit.",
         "retry": "Zkusit znovu",
         "goTo": "Přejít na místo",
+        "goToCheck": "Přejít na kontrolu: {check}",
         "passedChecks": "Splněné kontroly ({count})",
+        "attentionTitle": "Co upravit",
+        "methodologyTitle": "Jak se skóre počítá",
+        "methodologyDescription": "Každá kontrola má váhu podle důležitosti. Splněná kontrola získá všechny body, doporučení polovinu a chyba žádný bod. Celkové skóre je průměr vyhodnocených kategorií.",
+        "methodologySeoCaps": "SEO skóre se navíc omezuje, pokud článek nemá dostatek textu či titulek nebo obsahuje další H1 či chybnou hierarchii nadpisů.",
+        "scoreBands": {
+          "excellent": "Výborné",
+          "good": "Dobré",
+          "fair": "Chce doladit",
+          "poor": "Vyžaduje úpravy"
+        },
+        "statusLabels": {
+          "error": "Nutno opravit",
+          "warning": "Doporučení"
+        },
         "categories": {
           "seo": "SEO",
           "ai-visibility": "AI viditelnost",
           "readability": "Čitelnost",
           "trust": "Důvěryhodnost"
+        },
+        "categoryDescriptions": {
+          "seo": "Titulek, perex, nadpisy, odkazy a obrázky.",
+          "ai-visibility": "Jasné téma, popisné nadpisy a struktura vhodná pro odpovědi AI.",
+          "readability": "Délka vět, odstavců a sekcí i členění delšího textu.",
+          "trust": "Přítomnost, platnost a pestrost zdrojů a bezpečnost odkazů."
         },
         "counts": {
           "issues": "Chyby: {count}",
@@ -628,46 +655,91 @@
           "passed": "Splněno: {count}"
         },
         "checks": {
-          "title-exists": { "title": "title-exists", "description": "Zkontrolujte a upravte tuto část článku." },
-          "title-length": { "title": "title-length", "description": "Zkontrolujte a upravte tuto část článku." },
-          "excerpt-exists": { "title": "excerpt-exists", "description": "Zkontrolujte a upravte tuto část článku." },
-          "excerpt-length": { "title": "excerpt-length", "description": "Zkontrolujte a upravte tuto část článku." },
-          "single-h1": { "title": "single-h1", "description": "Zkontrolujte a upravte tuto část článku." },
+          "title-exists": { "title": "Chybí titulek", "description": "Doplňte výstižný titulek článku." },
+          "title-length": {
+            "title": "Délka titulku",
+            "description": "Titulek má {current} znaků. Doporučený rozsah je 30 až 65 znaků, aby se dobře zobrazil ve výsledcích vyhledávání."
+          },
+          "excerpt-exists": {
+            "title": "Chybí perex",
+            "description": "Doplňte krátké shrnutí, které čtenáři řekne, co v článku najde."
+          },
+          "excerpt-length": {
+            "title": "Délka perexu",
+            "description": "Perex má {current} znaků. Doporučený rozsah je 70 až 160 znaků."
+          },
+          "single-h1": {
+            "title": "Více hlavních nadpisů",
+            "description": "H1 vytváří titulek automaticky. V textu proto používejte nadpisy H2 a nižší."
+          },
           "heading-hierarchy": {
-            "title": "heading-hierarchy",
-            "description": "Zkontrolujte a upravte tuto část článku."
+            "title": "Hierarchie nadpisů",
+            "description": "Začněte nadpisem H2 a nepřeskakujte úrovně, například z H2 rovnou na H4."
           },
-          "internal-link": { "title": "internal-link", "description": "Zkontrolujte a upravte tuto část článku." },
-          "external-link": { "title": "external-link", "description": "Zkontrolujte a upravte tuto část článku." },
-          "featured-image": { "title": "featured-image", "description": "Zkontrolujte a upravte tuto část článku." },
-          "image-alt": { "title": "image-alt", "description": "Zkontrolujte a upravte tuto část článku." },
+          "internal-link": {
+            "title": "Chybí interní odkaz",
+            "description": "Propojte článek alespoň s jedním souvisejícím obsahem na vašem webu."
+          },
+          "external-link": {
+            "title": "Chybí externí odkaz",
+            "description": "Přidejte důvěryhodný externí odkaz do textu článku nebo do seznamu zdrojů."
+          },
+          "featured-image": {
+            "title": "Chybí úvodní obrázek",
+            "description": "Vyberte hlavní obrázek článku pro výpisy a sdílení na sociálních sítích."
+          },
+          "image-alt": {
+            "title": "Obrázek bez alternativního textu",
+            "description": "Doplňte k obrázku stručný popis pro čtečky obrazovky a vyhledávače."
+          },
           "paragraph-length": {
-            "title": "paragraph-length",
-            "description": "Zkontrolujte a upravte tuto část článku."
+            "title": "Příliš dlouhý odstavec",
+            "description": "Rozdělte odstavec delší než 120 slov na kratší části."
           },
-          "sentence-length": { "title": "sentence-length", "description": "Zkontrolujte a upravte tuto část článku." },
-          "section-length": { "title": "section-length", "description": "Zkontrolujte a upravte tuto část článku." },
+          "sentence-length": {
+            "title": "Příliš mnoho dlouhých vět",
+            "description": "Zkraťte věty delší než 35 slov. Dlouhá by neměla být více než každá desátá věta."
+          },
+          "section-length": {
+            "title": "Příliš dlouhá sekce",
+            "description": "Rozdělte sekci delší než 300 slov pomocí výstižného mezititulku."
+          },
           "long-article-structure": {
-            "title": "long-article-structure",
-            "description": "Zkontrolujte a upravte tuto část článku."
+            "title": "Slabé členění delšího článku",
+            "description": "U textu nad 250 slov použijte alespoň dva odstavce a dva nadpisy."
           },
           "topic-introduction": {
-            "title": "topic-introduction",
-            "description": "Zkontrolujte a upravte tuto část článku."
+            "title": "Téma není jasné z úvodu",
+            "description": "V prvních 120 slovech pojmenujte hlavní téma a použijte důležité výrazy z titulku."
           },
           "descriptive-sections": {
-            "title": "descriptive-sections",
-            "description": "Zkontrolujte a upravte tuto část článku."
+            "title": "Chybí popisné sekce",
+            "description": "Delší článek rozdělte alespoň dvěma nadpisy H2 nebo nižší úrovně."
           },
-          "heading-quality": { "title": "heading-quality", "description": "Zkontrolujte a upravte tuto část článku." },
-          "multiple-blocks": { "title": "multiple-blocks", "description": "Zkontrolujte a upravte tuto část článku." },
-          "sources-exist": { "title": "sources-exist", "description": "Zkontrolujte a upravte tuto část článku." },
-          "sources-valid": { "title": "sources-valid", "description": "Zkontrolujte a upravte tuto část článku." },
+          "heading-quality": {
+            "title": "Obecný nebo prázdný nadpis",
+            "description": "Nahraďte nadpis typu „Úvod“ či „Shrnutí“ konkrétním názvem, který popisuje obsah sekce."
+          },
+          "multiple-blocks": {
+            "title": "Text není členěný",
+            "description": "Rozdělte obsah do více odstavců, nadpisů nebo dalších obsahových bloků."
+          },
+          "sources-exist": {
+            "title": "Chybí zdroje",
+            "description": "Přidejte zdroje, ze kterých článek čerpá, aby bylo možné informace ověřit."
+          },
+          "sources-valid": {
+            "title": "Neplatný odkaz na zdroj",
+            "description": "Zdroj č. {number} nemá úplnou platnou webovou adresu. Prázdný řádek pro přidání dalšího zdroje se nehodnotí."
+          },
           "external-links-safe": {
-            "title": "external-links-safe",
-            "description": "Zkontrolujte a upravte tuto část článku."
+            "title": "Nebezpečný nebo neplatný odkaz",
+            "description": "Opravte odkaz s nepodporovanou adresou. Povolené jsou běžné webové odkazy HTTP a HTTPS."
           },
-          "source-diversity": { "title": "source-diversity", "description": "Zkontrolujte a upravte tuto část článku." }
+          "source-diversity": {
+            "title": "Málo různorodé zdroje",
+            "description": "U článku nad 800 slov použijte zdroje alespoň ze dvou různých webů."
+          }
         }
       },
       "releaseDateNote": "Slouží k nastavení data a času publikace článku. Nechte prázdné pro manuální vydání.",

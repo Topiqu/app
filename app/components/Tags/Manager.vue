@@ -1,52 +1,79 @@
 <template>
-  <div class="flex flex-col gap-6">
-    <UFormField :label="$t('articles.tags.selectExistingTag')">
+  <div class="flex flex-col gap-3">
+    <div>
+      <div class="mb-2 flex items-center justify-between gap-3">
+        <p class="text-xs font-medium text-muted">{{ $t('articles.tags.selected') }}</p>
+        <span v-if="tagBuffer.length" class="text-xs tabular-nums text-muted">{{ tagBuffer.length }}</span>
+      </div>
+
+      <div v-if="tagBuffer.length" class="flex flex-wrap gap-1.5" :aria-label="$t('articles.tags.selected')">
+        <span
+          v-for="tag in tagBuffer"
+          :key="tag.id"
+          class="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md border border-default bg-elevated/60 py-1 pl-2.5 pr-1 text-sm text-highlighted"
+        >
+          <span class="max-w-64 truncate" :title="tag.name">{{ tag.name }}</span>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            class="tag-destructive-control min-h-7 min-w-7 p-1"
+            icon="mdi:close"
+            size="xs"
+            square
+            :aria-label="$t('articles.tags.removeNamed', { name: tag.name })"
+            :title="$t('articles.tags.removeNamed', { name: tag.name })"
+            @click="remove(tag.id)"
+          />
+        </span>
+      </div>
+      <p v-else class="text-xs leading-5 text-muted">{{ $t('articles.tags.selectedEmpty') }}</p>
+    </div>
+
+    <UFormField :label="$t('articles.tags.addExisting')" :ui="{ label: 'sr-only' }">
       <USelectMenu
         v-model="selectedTagId"
         :items="availableTags"
         valueKey="id"
         labelKey="name"
-        :placeholder="$t('articles.tags.selectExistingTag')"
+        icon="mdi:tag-plus-outline"
+        :placeholder="$t('articles.tags.addExisting')"
         class="w-full"
         @update:modelValue="addExisting"
       />
     </UFormField>
 
-    <UFormField :label="$t('articles.tags.addCustomTagPlaceholder')">
-      <div class="flex gap-2">
-        <UInput
-          v-model="newTagName"
-          :placeholder="$t('articles.tags.addCustomTagPlaceholder')"
-          class="flex-1"
-          @keyup.enter="createNew"
-        />
-        <UButton color="primary" variant="solid" :disabled="!newTagName" @click="createNew">
-          {{ $t('articles.tags.addButton') }}
-        </UButton>
-      </div>
-    </UFormField>
-
-    <div v-if="tagBuffer.length" class="flex flex-wrap gap-2">
-      <div
-        v-for="t in tagBuffer"
-        :key="t.id"
-        class="flex min-w-0 max-w-full items-center rounded-[var(--ui-radius)] border border-default bg-elevated pl-3"
-      >
-        <span class="max-w-64 truncate text-sm font-medium" :title="t.name">{{ t.name }}</span>
-        <UButton
-          color="neutral"
-          variant="ghost"
-          class="tag-destructive-control"
-          icon="mdi:close"
-          size="sm"
-          square
-          :aria-label="$t('common.actions.deleteTag')"
-          :title="$t('common.actions.deleteTag')"
-          @click="remove(t.id)"
-        />
-      </div>
-    </div>
-    <UEmpty v-else icon="mdi:tag-off-outline" :title="$t('articles.tags.noTagsFound')" />
+    <UCollapsible v-model:open="createOpen">
+      <UButton
+        color="neutral"
+        variant="link"
+        size="sm"
+        class="px-0"
+        icon="mdi:plus"
+        :trailingIcon="createOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"
+        :label="$t('articles.tags.createNew')"
+      />
+      <template #content>
+        <UFormField :label="$t('articles.tags.newTagName')" class="mt-2" :ui="{ label: 'sr-only' }">
+          <div class="flex gap-2">
+            <UInput
+              v-model="newTagName"
+              :placeholder="$t('articles.tags.newTagName')"
+              class="min-w-0 flex-1"
+              @keyup.enter="createNew"
+            />
+            <UButton
+              color="primary"
+              variant="soft"
+              icon="mdi:plus"
+              :loading="creating"
+              :disabled="!newTagName.trim()"
+              :aria-label="$t('articles.tags.createNew')"
+              @click="createNew"
+            />
+          </div>
+        </UFormField>
+      </template>
+    </UCollapsible>
   </div>
 </template>
 
@@ -69,6 +96,7 @@ const emit = defineEmits<{
 type TagOption = { id: string; name: string }
 type ArticleTagRow = { tagId: string; tag: { id: string; name: string } }
 
+const { t } = useI18n()
 const toast = useAppToast()
 const requestFetch = useRequestFetch()
 const { invalidateTags } = useCacheInvalidation()
@@ -87,10 +115,10 @@ const { data: articleTags } = useQuery({
 })
 
 const tagOptions = computed(() => allTags.value ?? [])
-
 const selectedTagId = shallowRef('')
 const newTagName = shallowRef('')
-
+const createOpen = shallowRef(false)
+const creating = shallowRef(false)
 const tagBuffer = shallowReactive<{ id: string; name: string }[]>([])
 
 watch(
@@ -99,32 +127,30 @@ watch(
     if (!props.article?.id) return
     const rows = newVal ?? []
     tagBuffer.length = 0
-    rows.forEach((t) => tagBuffer.push({ id: t.tagId, name: t.tag.name }))
+    rows.forEach((tag) => tagBuffer.push({ id: tag.tagId, name: tag.tag.name }))
   },
   { immediate: true },
 )
 
 watch(
-  () => props.initialTags,
-  (newIds) => {
-    if (!props.article?.id && newIds && tagOptions.value.length) {
-      const tagsToAdd = tagOptions.value.filter((t) => newIds.includes(t.id))
-      tagsToAdd.forEach((t) => {
-        if (!tagBuffer.some((b) => b.id === t.id)) {
-          tagBuffer.push({ id: t.id, name: t.name })
-        }
+  [() => props.initialTags, tagOptions],
+  ([newIds]) => {
+    if (!props.article?.id && newIds?.length) {
+      const tagsToAdd = tagOptions.value.filter((tag) => newIds.includes(tag.id))
+      tagsToAdd.forEach((tag) => {
+        if (!tagBuffer.some((buffered) => buffered.id === tag.id)) tagBuffer.push({ id: tag.id, name: tag.name })
       })
     }
   },
-  { deep: true },
+  { deep: true, immediate: true },
 )
 
-const availableTags = computed(() => tagOptions.value.filter((t) => !tagBuffer.some((b) => b.id === t.id)))
+const availableTags = computed(() => tagOptions.value.filter((tag) => !tagBuffer.some((item) => item.id === tag.id)))
 
 const addExisting = () => {
   if (!selectedTagId.value) return
-  const tag = tagOptions.value.find((t) => t.id === selectedTagId.value)
-  if (tag && !tagBuffer.some((b) => b.id === tag.id)) {
+  const tag = tagOptions.value.find((item) => item.id === selectedTagId.value)
+  if (tag && !tagBuffer.some((item) => item.id === tag.id)) {
     tagBuffer.push({ id: tag.id, name: tag.name })
     emit('add:tag', tag.id)
   }
@@ -132,27 +158,42 @@ const addExisting = () => {
 }
 
 const createNew = async () => {
-  if (!newTagName.value.trim()) return
-  const slug = slugify(newTagName.value, { lower: true, strict: true, trim: true })
+  const name = newTagName.value.trim()
+  if (!name || creating.value) return
+
+  const existing = tagOptions.value.find((tag) => tag.name.toLocaleLowerCase() === name.toLocaleLowerCase())
+  if (existing) {
+    if (!tagBuffer.some((tag) => tag.id === existing.id)) {
+      tagBuffer.push({ id: existing.id, name: existing.name })
+      emit('add:tag', existing.id)
+    }
+    newTagName.value = ''
+    createOpen.value = false
+    return
+  }
+
+  creating.value = true
   try {
-    const { id, name } = await $fetch('/api/tags', {
+    const { id, name: createdName } = await $fetch('/api/tags', {
       method: 'POST',
-      body: { name: newTagName.value.trim(), slug },
+      body: { name, slug: slugify(name, { lower: true, strict: true, trim: true }) },
     })
-    tagBuffer.push({ id, name })
+    tagBuffer.push({ id, name: createdName })
     emit('create:tag', id)
     newTagName.value = ''
+    createOpen.value = false
     await invalidateTags()
-  } catch (e: any) {
-    toast.add({ color: 'error', title: $t('articles.tags.createFailed') + e.data?.message })
+  } catch (error: any) {
+    toast.add({ color: 'error', title: t('articles.tags.createFailed') + (error.data?.message ?? '') })
+  } finally {
+    creating.value = false
   }
 }
 
 const remove = (id: string) => {
-  const index = tagBuffer.findIndex((t) => t.id === id)
-  if (index !== -1) {
-    tagBuffer.splice(index, 1)
-    emit('delete:tag', id)
-  }
+  const index = tagBuffer.findIndex((tag) => tag.id === id)
+  if (index === -1) return
+  tagBuffer.splice(index, 1)
+  emit('delete:tag', id)
 }
 </script>

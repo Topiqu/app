@@ -1,14 +1,5 @@
 <template>
   <div class="flex flex-col gap-6" data-article-settings-panel>
-    <ArticleEditorOptimization
-      :state="optimizationState"
-      :result="optimizationResult"
-      @retry="$emit('retryOptimization')"
-      @navigate="$emit('navigateOptimization', $event)"
-    />
-
-    <USeparator />
-
     <ArticleEditorFactCheck
       :state="factCheckState"
       :result="factCheckResult"
@@ -433,6 +424,15 @@
         </UButton>
       </div>
     </section>
+
+    <USeparator />
+
+    <ArticleEditorOptimization
+      :state="optimizationState"
+      :result="optimizationResult"
+      @retry="$emit('retryOptimization')"
+      @navigate="$emit('navigateOptimization', $event)"
+    />
   </div>
 </template>
 

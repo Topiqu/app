@@ -188,6 +188,7 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
     category: OptimizationCategory,
     status: OptimizationStatus,
     target: OptimizationTarget,
+    meta?: Record<string, string | number>,
   ): OptimizationCheck => ({
     id,
     category,
@@ -195,6 +196,7 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
     target,
     weight: optimizationScoringConfig.weights[id],
     source: 'local',
+    meta,
   })
   const dependent = (status: OptimizationStatus) => (hasCore ? status : 'not-applicable')
   const firstBadParagraph = paragraphs.find(({ node }) => words(node.textContent ?? '').length > 120)
@@ -219,9 +221,14 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
   const significantTitleWords = words(title.toLowerCase()).filter((word) => word.length >= 4)
   const intro = words(text).slice(0, 120).join(' ').toLowerCase()
   const topicHits = significantTitleWords.filter((word) => intro.includes(word)).length
-  const invalidSource = input.sources.findIndex((source) => !validHttpUrl(source))
+  const sourceEntries = input.sources
+    .map((source, index) => ({ source: source.trim(), index }))
+    .filter(({ source }) => Boolean(source))
+  const invalidSource = sourceEntries.find(({ source }) => !validHttpUrl(source))
+  const validSources = sourceEntries.filter(({ source }) => validHttpUrl(source))
+  const sourceLinkKinds = validSources.map(({ source }) => classifyArticleUrl(source, input.tenantDomain))
   const sourceDomains = new Set(
-    input.sources.filter(validHttpUrl).map((source) => new URL(source).hostname.replace(/^www\./, '')),
+    validSources.map(({ source }) => new URL(source).hostname.replace(/^www\./, '')),
   )
   const images = [...doc.querySelectorAll<HTMLImageElement>('img')]
   const badImage = images.find((image) => !image.getAttribute('alt')?.trim())
@@ -233,6 +240,7 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
       'seo',
       !title ? 'not-applicable' : title.length >= 30 && title.length <= 65 ? 'passed' : 'warning',
       { kind: 'title' },
+      { current: title.length },
     ),
     check('excerpt-exists', 'seo', excerpt ? 'passed' : 'error', { kind: 'excerpt' }),
     check(
@@ -240,6 +248,7 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
       'seo',
       !excerpt ? 'not-applicable' : excerpt.length >= 70 && excerpt.length <= 160 ? 'passed' : 'warning',
       { kind: 'excerpt' },
+      { current: excerpt.length },
     ),
     check('single-h1', 'seo', !title ? 'not-applicable' : doc.querySelector('h1') ? 'error' : 'passed', {
       kind: 'content',
@@ -252,9 +261,12 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
     check('internal-link', 'seo', dependent(linkKinds.includes('internal') ? 'passed' : 'warning'), {
       kind: 'content',
     }),
-    check('external-link', 'seo', dependent(linkKinds.includes('external') ? 'passed' : 'warning'), {
-      kind: 'content',
-    }),
+    check(
+      'external-link',
+      'seo',
+      dependent(linkKinds.includes('external') || sourceLinkKinds.includes('external') ? 'passed' : 'warning'),
+      { kind: 'sources' },
+    ),
     check('featured-image', 'seo', input.imageUrl?.trim() ? 'passed' : 'warning', { kind: 'featured-image' }),
     check('image-alt', 'seo', !images.length ? 'not-applicable' : badImage ? 'error' : 'passed', {
       kind: 'content',
@@ -308,12 +320,13 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
       kind: 'content',
       blockIndex: 0,
     }),
-    check('sources-exist', 'trust', input.sources.length ? 'passed' : 'warning', { kind: 'sources' }),
+    check('sources-exist', 'trust', sourceEntries.length ? 'passed' : 'warning', { kind: 'sources' }),
     check(
       'sources-valid',
       'trust',
-      !input.sources.length ? 'not-applicable' : invalidSource >= 0 ? 'error' : 'passed',
-      { kind: 'sources', blockIndex: invalidSource },
+      !sourceEntries.length ? 'not-applicable' : invalidSource ? 'error' : 'passed',
+      { kind: 'sources', blockIndex: invalidSource?.index },
+      invalidSource ? { number: invalidSource.index + 1 } : undefined,
     ),
     check(
       'external-links-safe',

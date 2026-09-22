@@ -243,7 +243,13 @@
       "createFailed": "Failed to create tag",
       "updateSuccess": "Tag updated successfully",
       "updateFailed": "Failed to update tag",
-      "noTagsSelected": "No tags selected"
+      "noTagsSelected": "No tags selected",
+      "selected": "Selected tags",
+      "selectedEmpty": "This article has no tags yet.",
+      "addExisting": "Add an existing tag…",
+      "createNew": "Create a new tag",
+      "newTagName": "New tag name",
+      "removeNamed": "Remove tag {name}"
     },
     "statusCell": {
       "scheduledTooltip": "Scheduled for: {0}"
@@ -615,12 +621,33 @@
         "errorDescription": "The local analysis could not be completed.",
         "retry": "Try again",
         "goTo": "Go to field",
+        "goToCheck": "Go to check: {check}",
         "passedChecks": "Passed checks ({count})",
+        "attentionTitle": "What to improve",
+        "methodologyTitle": "How scoring works",
+        "methodologyDescription": "Each check is weighted by importance. A passed check earns full credit, a recommendation earns half, and an error earns none. The overall score is the average of the evaluated categories.",
+        "methodologySeoCaps": "The SEO score is also capped when the article lacks enough text or a title, or contains an extra H1 or a broken heading hierarchy.",
+        "scoreBands": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "fair": "Needs polish",
+          "poor": "Needs work"
+        },
+        "statusLabels": {
+          "error": "Fix required",
+          "warning": "Recommendation"
+        },
         "categories": {
           "seo": "SEO",
           "ai-visibility": "AI visibility",
           "readability": "Readability",
           "trust": "Trust"
+        },
+        "categoryDescriptions": {
+          "seo": "Title, excerpt, headings, links, and images.",
+          "ai-visibility": "A clear topic, descriptive headings, and an answer-friendly structure.",
+          "readability": "Sentence, paragraph, and section length and long-form structure.",
+          "trust": "Source presence, validity and diversity, plus link safety."
         },
         "counts": {
           "issues": "Issues: {count}",
@@ -628,69 +655,93 @@
           "passed": "Passed: {count}"
         },
         "checks": {
-          "title-exists": { "title": "title-exists", "description": "Review and improve this part of the article." },
-          "title-length": { "title": "title-length", "description": "Review and improve this part of the article." },
+          "title-exists": {
+            "title": "Missing title",
+            "description": "Add a clear, descriptive title for the article."
+          },
+          "title-length": {
+            "title": "Title length",
+            "description": "The title is {current} characters long. The recommended range is 30 to 65 characters for search results."
+          },
           "excerpt-exists": {
-            "title": "excerpt-exists",
-            "description": "Review and improve this part of the article."
+            "title": "Missing excerpt",
+            "description": "Add a short summary that tells readers what they will find in the article."
           },
           "excerpt-length": {
-            "title": "excerpt-length",
-            "description": "Review and improve this part of the article."
+            "title": "Excerpt length",
+            "description": "The excerpt is {current} characters long. The recommended range is 70 to 160 characters."
           },
-          "single-h1": { "title": "single-h1", "description": "Review and improve this part of the article." },
+          "single-h1": {
+            "title": "Multiple main headings",
+            "description": "The title provides the H1 automatically. Use H2 and lower headings in the article body."
+          },
           "heading-hierarchy": {
-            "title": "heading-hierarchy",
-            "description": "Review and improve this part of the article."
+            "title": "Heading hierarchy",
+            "description": "Start with H2 and do not skip levels, such as jumping directly from H2 to H4."
           },
-          "internal-link": { "title": "internal-link", "description": "Review and improve this part of the article." },
-          "external-link": { "title": "external-link", "description": "Review and improve this part of the article." },
+          "internal-link": {
+            "title": "Missing internal link",
+            "description": "Connect the article to at least one relevant page on your site."
+          },
+          "external-link": {
+            "title": "Missing external link",
+            "description": "Add a reputable external link to the article body or the source list."
+          },
           "featured-image": {
-            "title": "featured-image",
-            "description": "Review and improve this part of the article."
+            "title": "Missing featured image",
+            "description": "Choose a main image for article listings and social sharing."
           },
-          "image-alt": { "title": "image-alt", "description": "Review and improve this part of the article." },
+          "image-alt": {
+            "title": "Image missing alternative text",
+            "description": "Add a concise image description for screen readers and search engines."
+          },
           "paragraph-length": {
-            "title": "paragraph-length",
-            "description": "Review and improve this part of the article."
+            "title": "Paragraph is too long",
+            "description": "Split paragraphs longer than 120 words into shorter sections."
           },
           "sentence-length": {
-            "title": "sentence-length",
-            "description": "Review and improve this part of the article."
+            "title": "Too many long sentences",
+            "description": "Shorten sentences over 35 words. No more than one in ten sentences should be this long."
           },
           "section-length": {
-            "title": "section-length",
-            "description": "Review and improve this part of the article."
+            "title": "Section is too long",
+            "description": "Break up sections longer than 300 words with a descriptive subheading."
           },
           "long-article-structure": {
-            "title": "long-article-structure",
-            "description": "Review and improve this part of the article."
+            "title": "Weak long-form structure",
+            "description": "For articles over 250 words, use at least two paragraphs and two headings."
           },
           "topic-introduction": {
-            "title": "topic-introduction",
-            "description": "Review and improve this part of the article."
+            "title": "Topic is unclear in the introduction",
+            "description": "Name the main topic in the first 120 words and include the important terms from the title."
           },
           "descriptive-sections": {
-            "title": "descriptive-sections",
-            "description": "Review and improve this part of the article."
+            "title": "Missing descriptive sections",
+            "description": "Break longer articles into sections with at least two H2 or lower headings."
           },
           "heading-quality": {
-            "title": "heading-quality",
-            "description": "Review and improve this part of the article."
+            "title": "Generic or empty heading",
+            "description": "Replace headings such as “Introduction” or “Summary” with wording that describes the section."
           },
           "multiple-blocks": {
-            "title": "multiple-blocks",
-            "description": "Review and improve this part of the article."
+            "title": "Content is not structured",
+            "description": "Split the content into multiple paragraphs, headings, or other content blocks."
           },
-          "sources-exist": { "title": "sources-exist", "description": "Review and improve this part of the article." },
-          "sources-valid": { "title": "sources-valid", "description": "Review and improve this part of the article." },
+          "sources-exist": {
+            "title": "Missing sources",
+            "description": "Add the sources used by the article so readers can verify its information."
+          },
+          "sources-valid": {
+            "title": "Invalid source link",
+            "description": "Source {number} does not contain a complete, valid web address. The empty row for adding another source is ignored."
+          },
           "external-links-safe": {
-            "title": "external-links-safe",
-            "description": "Review and improve this part of the article."
+            "title": "Unsafe or invalid link",
+            "description": "Fix links with unsupported addresses. Standard HTTP and HTTPS web links are allowed."
           },
           "source-diversity": {
-            "title": "source-diversity",
-            "description": "Review and improve this part of the article."
+            "title": "Limited source diversity",
+            "description": "For articles over 800 words, cite sources from at least two different websites."
           }
         }
       },
