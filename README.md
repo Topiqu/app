@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://topiqu.com" target="_blank">
-    <img align="center" src="https://skillicons.dev/icons?i=nuxt,vue,vite,ts,bun,sass,prisma,postgres,docker,aws,stripe" /><br/><br/>
+    <img align="center" src="https://skillicons.dev/icons?i=nuxt,vue,vite,ts,bun,sass,postgres,docker,aws,stripe" /><br/><br/>
     <span>Topiqu AI Blog</span>
   </a>
 </h1>
@@ -41,8 +41,8 @@ A modern full-stack TypeScript blogging platform. Topiqu pairs a rich Tiptap-bas
 | **Language**     | TypeScript (strict)                                                                      |
 | **Styling**      | [UnoCSS](https://unocss.dev) + SCSS                                                      |
 | **i18n**         | [`@nuxtjs/i18n`](https://i18n.nuxtjs.org) — `en`, `cs`                                   |
-| **Auth**         | [`@sidebase/nuxt-auth`](https://auth.sidebase.io) + Prisma adapter                       |
-| **ORM / Schema** | [Prisma 6](https://www.prisma.io) + [ZenStack v2](https://zenstack.dev) (access policy)  |
+| **Auth**         | [`@sidebase/nuxt-auth`](https://auth.sidebase.io)                                        |
+| **ORM / Schema** | [ZenStack ORM v3](https://zenstack.dev) (PostgreSQL dialect + access policy)             |
 | **Database**     | PostgreSQL (via Docker Compose)                                                          |
 | **Editor**       | [Tiptap 3](https://tiptap.dev) with custom extensions                                    |
 | **AI**           | [Vercel AI SDK](https://sdk.vercel.ai) + [`@ai-sdk/xai`](https://x.ai) (Grok)            |
@@ -57,8 +57,9 @@ A modern full-stack TypeScript blogging platform. Topiqu pairs a rich Tiptap-bas
 ```
 app/         Nuxt app layer (pages, components, composables, stores, layouts)
 server/      Nitro server (API routes, scheduled tasks, utils)
-shared/      Cross-cutting code (zod schemas, utils) shared by app & server
-prisma/      ZenStack source (schema.zmodel), generated Prisma schema, migrations
+shared/      Cross-cutting code (runtime Zod schemas, utils) shared by app & server
+prisma/      ZenStack source (schema.zmodel) and SQL migrations
+generated/   Ignored ZenStack client types and schema metadata
 extensions/  Custom Tiptap editor extensions
 emails/      MJML email templates
 scripts/     Dev-only verification scripts (ai:smoke, db:seed-tokens)
@@ -81,8 +82,8 @@ See [`MAP.md`](./MAP.md) for the complete architecture reference — it is the s
 
 ```bash
 bun install            # installs deps + runs `nuxt prepare`
-bun zenstack:generate  # generates Prisma schema from schema.zmodel
-bun prisma:deploy      # applies migrations to the DB
+bun zenstack:generate  # generates the ZenStack client schema and types
+bun db:migrate:deploy  # applies migrations to the DB
 bun dev                # spins up Postgres via docker, starts Nuxt dev server
 ```
 
@@ -106,16 +107,16 @@ bun db:seed-tokens  # top a local ClientSite up to 50k tokens so the generate-ar
 **Build**
 
 ```bash
-bun run build   # server build (zenstack generate + prisma deploy + nuxt build)
-bun build:docker # container build (skips prisma deploy — see Dockerfile)
+bun run build    # server build (ZenStack generate + Nuxt build)
+bun build:docker # container build (migrations run separately during release)
 bun generate    # static site generation
 bun preview     # preview production build
 ```
 
 ## 🧪 Testing
 
-Run `bun zenstack:generate` first on a fresh checkout — part of the suite imports the generated
-`shared/zod` models, and those tests fail to load without it. No database is required.
+Run `bun zenstack:generate` first on a fresh checkout — the app imports the generated ZenStack
+schema and types. Most tests need no database; PostgreSQL integration tests use `TEST_DATABASE_URL`.
 
 ```bash
 bun test           # run vitest once
