@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     })
     return prompt
   } catch (error: any) {
-    if (error?.code === 'P2002') throw createError({ statusCode: 409, message: 'Prompt already exists' })
+    if (isUniqueViolation(error)) throw createError({ statusCode: 409, message: 'Prompt already exists' })
     throw error
   }
 })

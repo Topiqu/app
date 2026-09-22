@@ -6,6 +6,7 @@ export default defineMonitoredTask({
   meta: { name: 'search-console-sync', description: 'Sync finalized performance for Search Console-enabled tenants' },
   async run() {
     const connections = await prisma.searchConsoleConnection.findMany({
+      omit: { encryptedRefreshToken: false },
       where: {
         status: { in: ['CONNECTED', 'ERROR'] },
         propertyUrl: { not: null },

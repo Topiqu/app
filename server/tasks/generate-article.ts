@@ -1,5 +1,4 @@
 import type { EventStream } from 'h3'
-import type { Prisma } from '@prisma/client'
 
 import slugify from 'slugify'
 import { linkableSources } from '~~/shared/utils/articleSources'
@@ -17,6 +16,8 @@ import {
   loadAiSeriesContext,
   type ArticleSeriesDecision,
 } from '~~/server/utils/ai/articleSeries'
+
+import type { DatabaseTransaction } from '../utils/database'
 
 interface GlobalThis {
   eventStreams?: Map<string, Set<EventStream>>
@@ -288,7 +289,7 @@ const processClient = async (client: any) =>
           try {
             // The runtime client carries extensions, but the delegates used by this read-only helper
             // are the same transaction-safe Prisma delegates.
-            const seriesContext = await loadAiSeriesContext(prisma as unknown as Prisma.TransactionClient, clientSiteId)
+            const seriesContext = await loadAiSeriesContext(prisma as unknown as DatabaseTransaction, clientSiteId)
             const selected = await chooseArticleSeries(
               seriesContext,
               { title: generated.title, excerpt: generated.perex },

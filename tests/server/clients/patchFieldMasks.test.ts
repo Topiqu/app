@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { models } from '../../../shared/zod'
+import { models } from '../../../shared/databaseSchemas'
 import {
   PRIVILEGED_CLIENT_SITE_FIELDS,
   TENANT_EDITABLE_CLIENT_SITE_FIELDS,

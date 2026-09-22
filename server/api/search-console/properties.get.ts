@@ -5,7 +5,10 @@ export default defineEventHandler(async (event) => {
   if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', user.clientSiteId)
   if (!(await hasActiveFeature(prisma, user.clientSiteId!, 'SEARCH_CONSOLE')))
     throw createError({ statusCode: 403, message: 'Search Console intelligence requires PREMIUM' })
-  const connection = await prisma.searchConsoleConnection.findUnique({ where: { clientSiteId: user.clientSiteId! } })
+  const connection = await prisma.searchConsoleConnection.findUnique({
+    where: { clientSiteId: user.clientSiteId! },
+    omit: { encryptedRefreshToken: false },
+  })
   if (!connection) throw createError({ statusCode: 404, message: 'Search Console is not connected' })
   const accessToken = await refreshSearchConsoleAccess(decryptSearchConsoleToken(connection.encryptedRefreshToken))
   return listSearchConsoleSites(accessToken)

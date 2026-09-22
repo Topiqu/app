@@ -29,7 +29,7 @@ enum ApprovalDecision {
     REJECT
 }
 
-model LinkedinCompany extends Base {
+model LinkedinCompany with Base {
     name           String
     linkedinOrgId  String        @unique
     type           String        @default("personal")
@@ -50,7 +50,7 @@ model LinkedinCompany extends Base {
     @@allow('read', auth().clientSiteId == clientSiteId)
 }
 
-model BrandProfile extends Base {
+model BrandProfile with Base {
     companyId String          @unique
     company   LinkedinCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
     tone      String?
@@ -63,7 +63,7 @@ model BrandProfile extends Base {
     @@allow('read', auth().clientSiteId == company.clientSiteId)
 }
 
-model ContentTask extends Base {
+model ContentTask with Base {
     companyId String
     company   LinkedinCompany   @relation(fields: [companyId], references: [id], onDelete: Cascade)
     topic     String
@@ -76,7 +76,7 @@ model ContentTask extends Base {
     @@allow('read', auth().clientSiteId == company.clientSiteId)
 }
 
-model DraftPost extends Base {
+model DraftPost with Base {
     taskId      String
     task        ContentTask    @relation(fields: [taskId], references: [id], onDelete: Cascade)
     text        String
@@ -91,7 +91,7 @@ model DraftPost extends Base {
     @@allow('read', auth().clientSiteId == task.company.clientSiteId)
 }
 
-model Approval extends Base {
+model Approval with Base {
     draftId    String
     draft      DraftPost        @relation(fields: [draftId], references: [id], onDelete: Cascade)
     reviewerId String
@@ -104,7 +104,7 @@ model Approval extends Base {
     @@allow('read', auth().clientSiteId == draft.task.company.clientSiteId)
 }
 
-model PublishedPost extends Base {
+model PublishedPost with Base {
     draftId        String       @unique
     draft          DraftPost    @relation(fields: [draftId], references: [id], onDelete: Cascade)
     linkedinPostId String       @unique
@@ -116,7 +116,7 @@ model PublishedPost extends Base {
     @@allow('read', auth().clientSiteId == draft.task.company.clientSiteId)
 }
 
-model PostMetric extends Base {
+model PostMetric with Base {
     publishedPostId String
     publishedPost   PublishedPost @relation(fields: [publishedPostId], references: [id], onDelete: Cascade)
     impressions     Int           @default(0)

@@ -1,5 +1,5 @@
-import type { ThemeSchema, LanguageSchema } from '~~/shared/zod/enums'
-import type { SocialPlatform, ClientSite as _ClientSite } from '@prisma/client'
+import type { ThemeSchema, LanguageSchema } from '~~/shared/siteSchemas'
+import type { SocialPlatform, ClientSite as _ClientSite } from '~~/generated/zenstack/models'
 
 export interface ClientSite extends Omit<
   _ClientSite,

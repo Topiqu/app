@@ -1,5 +1,5 @@
 import type Stripe from 'stripe'
-import type { ClientPlan } from '@prisma/client'
+import type { ClientPlan } from '~~/generated/zenstack/models'
 
 import { articleCreditsForPlan, nextArticleCreditMonth } from '~~/shared/utils/articleCredits'
 import {
@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
           where: { id: clientSiteId },
           data: {
             ...(derivedPlan ? { plan: derivedPlan as ClientPlan } : {}),
-            ...(paid ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
+            ...(paid ? { firstPaidAt: new Date(), lastPaidAt: new Date() } : {}),
             stripeCustomerId: customerId ?? undefined,
             stripeSubscriptionId: subscriptionId ?? undefined,
             stripePriceId: priceId ?? undefined,
@@ -115,7 +115,7 @@ export default defineEventHandler(async (event) => {
           data: {
             plan: derivedPlan as ClientPlan,
             stripePriceId: currentPriceId ?? undefined,
-            ...(trialEnded ? { firstPaidAt: { set: new Date() }, lastPaidAt: new Date() } : {}),
+            ...(trialEnded ? { firstPaidAt: new Date(), lastPaidAt: new Date() } : {}),
           },
         })
 

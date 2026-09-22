@@ -1,5 +1,5 @@
 import type { ArticleWithDetails } from '~~/types/article'
-import type { ArticleDraft } from '@zenstackhq/runtime/models'
+import type { ArticleDraft } from '~~/generated/zenstack/models'
 
 import slugify from 'slugify'
 import equal from 'fast-deep-equal'

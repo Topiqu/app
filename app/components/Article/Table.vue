@@ -281,7 +281,7 @@
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
-import type { ArticleStatus } from '@zenstackhq/runtime/models'
+import type { ArticleStatus } from '~~/generated/zenstack/models'
 
 import type { LanguageLink } from '~/components/Article/LanguageLinks.vue'
 

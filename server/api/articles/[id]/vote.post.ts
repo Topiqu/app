@@ -1,5 +1,3 @@
-import { Prisma } from '@prisma/client'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -26,7 +24,7 @@ export default defineEventHandler(async (event) => {
       data: { articleId: id, pollId, optionId, userId: user?.id || null, sessionId },
     })
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+    if (isUniqueViolation(e)) {
       throw createError({ statusCode: 409, message: t('common.errors.alreadyVoted')! })
     }
     throw e

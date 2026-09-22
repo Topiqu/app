@@ -1,4 +1,4 @@
-import type { Language } from '@prisma/client'
+import type { Language } from '~~/generated/zenstack/models'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { ArticleMediaProgress, ResearchDepth } from '~~/shared/utils/articleGeneration'
 

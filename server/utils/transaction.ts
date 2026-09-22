@@ -1,11 +1,15 @@
-import type appPrisma from './prisma'
+import { TransactionIsolationLevel } from '@zenstackhq/orm'
 
-type Tx = Parameters<Parameters<typeof appPrisma.$transaction>[0]>[0]
+import type { DatabaseTransaction } from './database'
+
+import { databaseErrorCode } from './databaseError'
+
+type Tx = DatabaseTransaction
 
 const RETRY_DELAYS_MS = [20, 50] as const
 
 export const isRetryableTransactionError = (error: unknown): boolean =>
-  typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2034'
+  ['40001', '40P01'].includes(databaseErrorCode(error) ?? '')
 
 export const withTransactionRetry = async <T>(operation: () => Promise<T>): Promise<T> => {
   for (let attempt = 0; ; attempt++) {
@@ -21,6 +25,6 @@ export const withTransactionRetry = async <T>(operation: () => Promise<T>): Prom
 }
 
 /** Serializable plan/feature writes are short and idempotent, so a database-selected
- * deadlock victim can safely replay instead of leaking a transient P2034 to the user. */
+ * conflict victim can safely replay instead of leaking a transient PostgreSQL error. */
 export const serializableTransaction = <T>(work: (tx: Tx) => Promise<T>): Promise<T> =>
-  withTransactionRetry(() => prisma.$transaction(work, { isolationLevel: 'Serializable' }))
+  withTransactionRetry(() => prisma.$transaction(work, { isolationLevel: TransactionIsolationLevel.Serializable }))

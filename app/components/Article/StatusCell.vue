@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
-import type { ArticleStatus } from '@zenstackhq/runtime/models'
+import type { ArticleStatus } from '~~/generated/zenstack/models'
 
 import { format } from 'date-fns'
 

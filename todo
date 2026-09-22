@@ -46,7 +46,6 @@ optional:
   - 🛑 @sidebase/nuxt-auth 1.2.0 -> 1.3.1 — pulls @auth/core 0.41.3, fixes critical auth bypass GHSA-7rqj-j65f-68wh (exact-pinned, bun update won't do it)
   - 🟡 @pinia/nuxt 0.11.3 -> 1.0.1
   - 🟢 ua-parser-js -> 2.0.10
-  - 🔰 @prisma/client 6 -> 7 — NO
   - 🛑 more color variety
   - 🟡 background shapes/patterns
   - 🟡 fonts

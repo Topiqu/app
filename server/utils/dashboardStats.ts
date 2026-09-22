@@ -1,4 +1,4 @@
-import type { AIInvolvement } from '@prisma/client'
+import type { AIInvolvement } from '~~/generated/zenstack/models'
 
 export const VIEW_TREND_DAYS = 30
 

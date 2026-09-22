@@ -42,6 +42,11 @@ enum AiPromptSource {
 
 enum AiVisibilityProvider {
     OPENAI
+    ANTHROPIC
+    XAI
+    GOOGLE
+    META
+    MISTRAL
 }
 
 enum AiVisibilityRunStatus {
@@ -61,7 +66,7 @@ enum AiOpportunityStatus {
     RESOLVED
 }
 
-model AiCrawlerDaily extends Base {
+model AiCrawlerDaily with Base {
     clientSiteId    String
     clientSite      ClientSite       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     date            DateTime         @db.Date
@@ -82,7 +87,7 @@ model AiCrawlerDaily extends Base {
     @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
 }
 
-model AiReferralVisit extends Base {
+model AiReferralVisit with Base {
     clientSiteId String
     clientSite   ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     articleId    String
@@ -98,7 +103,7 @@ model AiReferralVisit extends Base {
     @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
 }
 
-model AiVisibilityPrompt extends Base {
+model AiVisibilityPrompt with Base {
     clientSiteId     String
     clientSite       ClientSite              @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     text             String                  @length(3, 1000)
@@ -117,7 +122,7 @@ model AiVisibilityPrompt extends Base {
     @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
 }
 
-model AiVisibilityRun extends Base {
+model AiVisibilityRun with Base {
     clientSiteId   String
     clientSite     ClientSite             @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     promptId       String
@@ -136,10 +141,11 @@ model AiVisibilityRun extends Base {
 
     @@index([clientSiteId, executedAt])
     @@index([promptId, executedAt])
+    @@index([promptId, provider, executedAt])
     @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
 }
 
-model AiCitation extends Base {
+model AiCitation with Base {
     clientSiteId String
     clientSite   ClientSite       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     runId        String
@@ -159,7 +165,7 @@ model AiCitation extends Base {
     @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
 }
 
-model AiVisibilityOpportunity extends Base {
+model AiVisibilityOpportunity with Base {
     clientSiteId  String
     clientSite    ClientSite             @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     promptId      String

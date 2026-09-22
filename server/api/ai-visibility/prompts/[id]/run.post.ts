@@ -15,12 +15,19 @@ export default defineEventHandler(async (event) => {
 
   const result = await withTokenReservation(
     prompt.clientSiteId,
-    2500,
+    VISIBILITY_TOKEN_BUDGET,
     'AI_VISIBILITY',
     () => runVisibilityPrompt(prompt.id, user.id),
     tokenRequestKey(event, prompt.clientSiteId, 'AI_VISIBILITY'),
   )
   if (result.status === 'failed') throw createError({ statusCode: 502, message: result.error })
-  if (result.status === 'skipped') throw createError({ statusCode: 409, message: 'Prompt is inactive or already running' })
+  if (result.status === 'skipped')
+    throw createError({
+      statusCode: result.reason === 'no_configured_providers' ? 503 : 409,
+      message:
+        result.reason === 'no_configured_providers'
+          ? 'No AI visibility provider is configured'
+          : 'Prompt is inactive or already running',
+    })
   return result
 })

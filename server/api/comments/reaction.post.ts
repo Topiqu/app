@@ -1,4 +1,4 @@
-import { CommentReactionSchema } from '~~/shared/zod/models/CommentReaction.schema'
+import { CommentReactionSchema } from '~~/shared/databaseSchemas'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

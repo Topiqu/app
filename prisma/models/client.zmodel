@@ -69,7 +69,7 @@ model Social {
     @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
 }
 
-model ClientSite extends Base {
+model ClientSite with Base {
     name                 String              @unique @length(1, 255, "Název klienta musí mít 1–255 znaků")
     domain               String              @unique @length(1, 253, "Doména musí mít 1–253 znaků")
     domainVerified       Boolean             @default(false)
@@ -164,7 +164,7 @@ model ClientSite extends Base {
     @@index([trialEndsAt, trialAcknowledgedAt])
 }
 
-model Feature extends Base {
+model Feature with Base {
     code           FeatureCodes    @unique
     name           String
     priceMonthly   Int
@@ -177,7 +177,7 @@ model Feature extends Base {
     @@allow('all', auth().role == 'superadmin')
 }
 
-model ClientFeature extends Base {
+model ClientFeature with Base {
     clientSiteId       String
     featureId          String
     feature            Feature    @relation(fields: [featureId], references: [id], onDelete: Cascade)

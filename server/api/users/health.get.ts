@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
+    omit: { password: false, totpSecret: false },
     include: {
       sessions: { where: { revoked: false }, orderBy: { lastUsedAt: 'desc' } },
       bans: { where: { expiresAt: { gt: new Date() } } },

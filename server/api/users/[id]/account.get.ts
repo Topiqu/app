@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const userData = await prisma.user.findUnique({
     where: { id },
+    omit: { password: false, totpSecret: false },
     include: {
       comments: {
         where: { deletedAt: null, parentId: null },

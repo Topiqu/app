@@ -1,4 +1,4 @@
-import type { ClientPlan } from '@zenstackhq/runtime/models'
+import type { ClientPlan } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
 import { generateObject } from 'ai'

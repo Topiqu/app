@@ -30,7 +30,7 @@ describe('custom emoji creation', () => {
 
   it('rolls the exact CDN object back when the database insert fails', () => {
     expect(create).toMatch(/catch[\s\S]*deleteFromCdn\(key, 'uploads\/'\)/)
-    expect(create).toContain("error?.code === 'P2002'")
+    expect(create).toContain('isUniqueViolation(error)')
   })
 })
 

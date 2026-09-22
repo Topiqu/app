@@ -180,7 +180,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '@zenstackhq/runtime/models'
+import type { User } from '~~/generated/zenstack/models'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
 import { readFaq } from '~~/shared/utils/articleFaq'

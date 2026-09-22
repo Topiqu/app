@@ -1,4 +1,4 @@
-import type { SharePlatform } from '@prisma/client'
+import type { SharePlatform } from '~~/generated/zenstack/models'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

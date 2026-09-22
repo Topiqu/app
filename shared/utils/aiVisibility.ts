@@ -1,4 +1,4 @@
-import type { AiCrawlerKind, AiCrawlerSurface, AiPromptIntent, AiReferralChannel } from '@prisma/client'
+import type { AiCrawlerKind, AiCrawlerSurface, AiPromptIntent, AiReferralChannel } from '~~/generated/zenstack/models'
 
 import { toHostname } from './domain'
 

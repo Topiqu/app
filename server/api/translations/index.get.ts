@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { TranslationStatus } from '@prisma/client'
+import { TranslationStatus } from '~~/generated/zenstack/models'
 
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { minRole: 'admin', clientSite: true })

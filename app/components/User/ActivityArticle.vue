@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Article as _Article } from '@prisma/client'
+import type { Article as _Article } from '~~/generated/zenstack/models'
 
 export type ActivityArticle = Pick<_Article, 'id' | 'slug' | 'title' | 'content' | 'excerpt' | 'imageUrl' | 'views'> & {
   authorUsername: string

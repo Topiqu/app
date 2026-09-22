@@ -237,8 +237,8 @@
 </template>
 
 <script setup lang="ts">
-import type { ClientSite } from '@zenstackhq/runtime/models'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { ClientSite } from '~~/generated/zenstack/models'
 
 const { t, locale } = useI18n()
 const { invalidateClients } = useCacheInvalidation()

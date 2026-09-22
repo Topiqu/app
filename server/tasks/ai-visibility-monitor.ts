@@ -1,6 +1,6 @@
 import { subDays } from 'date-fns'
 
-const CONCURRENCY = 3
+const CONCURRENCY = 2
 
 export default defineMonitoredTask({
   meta: { name: 'ai-visibility-monitor', description: 'Weekly sampled AI citation monitoring' },
@@ -21,7 +21,9 @@ export default defineMonitoredTask({
       const chunk = prompts.slice(offset, offset + CONCURRENCY)
       const settled = await Promise.allSettled(
         chunk.map((prompt) =>
-          withTokenReservation(prompt.clientSiteId, 2500, 'AI_VISIBILITY', () => runVisibilityPrompt(prompt.id)),
+          withTokenReservation(prompt.clientSiteId, VISIBILITY_TOKEN_BUDGET, 'AI_VISIBILITY', () =>
+            runVisibilityPrompt(prompt.id),
+          ),
         ),
       )
       for (const result of settled) {

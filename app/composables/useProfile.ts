@@ -1,4 +1,4 @@
-import type { User, Session as _Session } from '@prisma/client'
+import type { User, Session as _Session } from '~~/generated/zenstack/models'
 
 export type Session = Omit<_Session, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastUsedAt'> & {
   lastUsedAt?: string

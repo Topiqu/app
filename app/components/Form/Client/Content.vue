@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { LanguageSchema } from '~~/shared/zod/enums'
+import { LanguageSchema } from '~~/shared/siteSchemas'
 
 import { addKeywords } from '~/utils/keywords'
 

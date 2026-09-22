@@ -1,11 +1,10 @@
-import { generateText } from 'ai'
 import { toHostname } from '~~/shared/utils/domain'
 import { closestArticle, isOwnedDomain, mentionsBrand, normalizeCitationUrl } from '~~/shared/utils/aiVisibility'
 
-import { aiModelId } from './modelRegistry'
-import { aiModel, aiWebSearchTool } from './models'
+import { configuredVisibilityProviderRuns, runVisibilityProvider } from './visibilityProviderRunner'
 
 const SAMPLE_SIZE = 6
+export const VISIBILITY_TOKEN_BUDGET = 15_000
 
 const citationRows = (
   sources: readonly { sourceType: string; url?: string; title?: string }[],
@@ -111,6 +110,9 @@ const syncOpportunity = async (promptId: string, clientSiteId: string) => {
 }
 
 export const runVisibilityPrompt = async (promptId: string, actorId?: string) => {
+  const providers = configuredVisibilityProviderRuns()
+  if (!providers.length) return { status: 'skipped' as const, reason: 'no_configured_providers' as const }
+
   const claimed = await prisma.$transaction(async (tx) => {
     const locks = await tx.$queryRaw<Array<{ locked: boolean }>>`
       SELECT pg_try_advisory_xact_lock(hashtext(${promptId})) AS locked
@@ -132,110 +134,147 @@ export const runVisibilityPrompt = async (promptId: string, actorId?: string) =>
       select: { id: true },
     })
     if (running) return null
-    const run = await tx.aiVisibilityRun.create({
-      data: {
-        promptId,
-        clientSiteId: prompt.clientSiteId,
-        provider: 'OPENAI',
-        model: aiModelId('visibility'),
-      },
-      select: { id: true },
-    })
+    const runs = await Promise.all(
+      providers.map(async (provider) => {
+        const run = await tx.aiVisibilityRun.create({
+          data: { promptId, clientSiteId: prompt.clientSiteId, provider: provider.provider, model: provider.model },
+          select: { id: true },
+        })
+        return { ...provider, runId: run.id }
+      }),
+    )
     await tx.aiVisibilityPrompt.update({ where: { id: promptId }, data: { lastRunAt: new Date() } })
-    return { prompt, runId: run.id }
+    return { prompt, runs }
   })
 
   if (!claimed) return { status: 'skipped' as const, reason: 'inactive_or_running' }
-  const { prompt, runId } = claimed
+  const { prompt, runs } = claimed
+  const articles = await prisma.article.findMany({
+    where: { clientSiteId: prompt.clientSiteId, status: 'published' },
+    select: { id: true, slug: true, translations: { select: { slug: true }, where: { status: 'PUBLISHED' } } },
+  })
+  const aliases = [prompt.clientSite.name, toHostname(prompt.clientSite.domain).split('.')[0] ?? '']
 
-  try {
-    const result = await generateText({
-      model: aiModel('visibility'),
-      system:
-        'Answer the user query naturally and impartially as an AI search assistant. Use live web search. Do not favor or suppress any named brand or domain. Cite the sources that support the answer.',
-      prompt: prompt.text,
-      maxOutputTokens: 1400,
-      toolChoice: 'required',
-      tools: { web_search: aiWebSearchTool('medium') as never },
-      abortSignal: AbortSignal.timeout(60_000),
-      providerOptions: { openai: { reasoningEffort: 'low' } },
-    })
-
-    const rows = citationRows(result.sources as never, prompt.clientSite.domain)
-    const articles = await prisma.article.findMany({
-      where: { clientSiteId: prompt.clientSiteId, status: 'published' },
-      select: { id: true, slug: true, translations: { select: { slug: true }, where: { status: 'PUBLISHED' } } },
-    })
-    const aliases = [prompt.clientSite.name, toHostname(prompt.clientSite.domain).split('.')[0] ?? '']
-    const searchedWeb = result.toolResults.some((tool) => tool.toolName === 'web_search')
-
-    await prisma.$transaction(async (tx) => {
-      await tx.aiVisibilityRun.update({
-        where: { id: runId },
-        data: {
-          status: 'SUCCEEDED',
-          searchedWeb,
-          brandMentioned: mentionsBrand(result.text, aliases),
-          responseText: result.text,
-          citationCount: rows.length,
-          usage: JSON.parse(JSON.stringify(result.usage ?? {})),
-        },
-      })
-      if (rows.length)
-        await tx.aiCitation.createMany({
-          data: rows.map((citation) => ({
-            ...citation,
-            clientSiteId: prompt.clientSiteId,
-            runId,
-            articleId: citedArticle(citation, articles),
-          })),
-          skipDuplicates: true,
+  const outcomes = await Promise.all(
+    runs.map(async ({ runId, ...provider }) => {
+      try {
+        const result = await runVisibilityProvider(provider, prompt.text)
+        const rows = citationRows(result.sources, prompt.clientSite.domain)
+        await prisma.$transaction(async (tx) => {
+          await tx.aiVisibilityRun.update({
+            where: { id: runId },
+            data: {
+              status: 'SUCCEEDED',
+              searchedWeb: result.searchedWeb,
+              brandMentioned: mentionsBrand(result.text, aliases),
+              responseText: result.text,
+              citationCount: rows.length,
+              usage: toDatabaseJson(result.usage),
+            },
+          })
+          if (rows.length)
+            await tx.aiCitation.createMany({
+              data: rows.map((citation) => ({
+                ...citation,
+                clientSiteId: prompt.clientSiteId,
+                runId,
+                articleId: citedArticle(citation, articles),
+              })),
+              skipDuplicates: true,
+            })
         })
-    })
+        await logger.info('ai visibility provider completed', {
+          source: 'ai-visibility',
+          clientSiteId: prompt.clientSiteId,
+          promptId,
+          runId,
+          provider: result.provider,
+          model: result.model,
+          citations: rows.length,
+          ownedCitations: rows.filter((row) => row.owned).length,
+          searchedWeb: result.searchedWeb,
+        })
+        return {
+          status: 'succeeded' as const,
+          runId,
+          provider: result.provider,
+          model: result.model,
+          citations: rows.length,
+          searchedWeb: result.searchedWeb,
+          totalTokens: result.totalTokens,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message.slice(0, 1000) : String(error).slice(0, 1000)
+        await prisma.aiVisibilityRun.update({ where: { id: runId }, data: { status: 'FAILED', error: message } })
+        await logger.error('ai visibility provider failed', {
+          source: 'ai-visibility',
+          clientSiteId: prompt.clientSiteId,
+          promptId,
+          runId,
+          provider: provider.provider,
+          model: provider.model,
+          error: message,
+        })
+        await logAction({
+          action: 'AI_VISIBILITY_FAILED',
+          userId: actorId,
+          clientSiteId: prompt.clientSiteId,
+          metadata: { promptId, runId, provider: provider.provider, model: provider.model, error: message },
+        }).catch(() => undefined)
+        return { status: 'failed' as const, runId, provider: provider.provider, model: provider.model, error: message }
+      }
+    }),
+  )
 
-    await consumeClientTokens(
-      prompt.clientSiteId,
-      result.usage.totalTokens ?? 0,
-      'AI_VISIBILITY_CHECKED',
-      { promptId, runId, citations: rows.length, searchedWeb, model: aiModelId('visibility') },
-      undefined,
-      actorId,
-    )
-    await syncOpportunity(promptId, prompt.clientSiteId).catch((error) =>
-      logger.error('ai visibility opportunity sync failed', {
-        source: 'ai-visibility',
-        clientSiteId: prompt.clientSiteId,
-        promptId,
-        runId,
-        error: error instanceof Error ? error.message : String(error),
-      }),
-    )
-    await logger.info('ai visibility prompt completed', {
-      source: 'ai-visibility',
-      clientSiteId: prompt.clientSiteId,
+  const succeeded = outcomes.filter((outcome) => outcome.status === 'succeeded')
+  if (!succeeded.length) {
+    return {
+      status: 'failed' as const,
+      runId: outcomes[0]?.runId,
+      runIds: outcomes.map((outcome) => outcome.runId),
+      error: outcomes.map((outcome) => ('error' in outcome ? `${outcome.provider}: ${outcome.error}` : '')).join('; '),
+      providers: outcomes,
+    }
+  }
+
+  await consumeClientTokens(
+    prompt.clientSiteId,
+    succeeded.reduce((sum, outcome) => sum + outcome.totalTokens, 0),
+    'AI_VISIBILITY_CHECKED',
+    {
       promptId,
-      runId,
-      citations: rows.length,
-      ownedCitations: rows.filter((row) => row.owned).length,
-      searchedWeb,
-    })
-    return { status: 'succeeded' as const, runId }
-  } catch (error) {
-    const message = error instanceof Error ? error.message.slice(0, 1000) : String(error).slice(0, 1000)
-    await prisma.aiVisibilityRun.update({ where: { id: runId }, data: { status: 'FAILED', error: message } })
-    await logger.error('ai visibility prompt failed', {
+      runIds: outcomes.map((outcome) => outcome.runId),
+      providers: outcomes.map((outcome) => ({
+        provider: outcome.provider,
+        model: outcome.model,
+        status: outcome.status,
+        ...('citations' in outcome ? { citations: outcome.citations, searchedWeb: outcome.searchedWeb } : {}),
+      })),
+    },
+    undefined,
+    actorId,
+  )
+  await syncOpportunity(promptId, prompt.clientSite.id).catch((error) =>
+    logger.error('ai visibility opportunity sync failed', {
       source: 'ai-visibility',
-      clientSiteId: prompt.clientSiteId,
+      clientSiteId: prompt.clientSite.id,
       promptId,
-      runId,
-      error: message,
-    })
-    await logAction({
-      action: 'AI_VISIBILITY_FAILED',
-      userId: actorId,
-      clientSiteId: prompt.clientSiteId,
-      metadata: { promptId, runId, error: message, model: aiModelId('visibility') },
-    }).catch(() => undefined)
-    return { status: 'failed' as const, runId, error: message }
+      runIds: outcomes.map((outcome) => outcome.runId),
+      error: error instanceof Error ? error.message : String(error),
+    }),
+  )
+  await logger.info('ai visibility prompt completed', {
+    source: 'ai-visibility',
+    clientSiteId: prompt.clientSite.id,
+    promptId,
+    succeeded: succeeded.length,
+    failed: outcomes.length - succeeded.length,
+    providers: outcomes.map((outcome) => outcome.provider),
+  })
+  return {
+    status: 'succeeded' as const,
+    runId: succeeded[0]!.runId,
+    runIds: outcomes.map((outcome) => outcome.runId),
+    providers: outcomes,
   }
 }

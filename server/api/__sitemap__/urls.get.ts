@@ -1,5 +1,5 @@
-import type { Language } from '@prisma/client'
 import type { SitemapUrl } from '#sitemap/types'
+import type { Language } from '~~/generated/zenstack/models'
 
 import { hasSeoPlan } from '~~/shared/utils/seo'
 import { articlePath, authorPath, homePath, tagPath } from '~~/shared/utils/routes'

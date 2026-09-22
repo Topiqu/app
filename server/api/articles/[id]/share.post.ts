@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
     return { success: true, shared: updated.shared, counted: true }
   } catch (e) {
     // A concurrent request for the same identity already banked the count.
-    if ((e as { code?: string }).code !== 'P2002') throw e
+    if (!isUniqueViolation(e)) throw e
     const fresh = await prisma.article.findUnique({ where: { id }, select: { shared: true } })
 
     return { success: true, shared: fresh?.shared ?? article.shared, counted: false }

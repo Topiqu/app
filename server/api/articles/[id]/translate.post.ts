@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { type ClientPlan, Language } from '@prisma/client'
+import { type ClientPlan, Language } from '~~/generated/zenstack/models'
 
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 export default defineEventHandler(async (event) => {
@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
           status: 'READY',
           source: 'AI',
           model: aiModelId('translation'),
-          usage,
+          usage: toDatabaseJson(usage),
           error: null,
           translatedAt: new Date(),
         },
@@ -93,7 +93,7 @@ export default defineEventHandler(async (event) => {
           status: 'READY',
           source: 'AI',
           model: aiModelId('translation'),
-          usage,
+          usage: toDatabaseJson(usage),
           error: null,
           translatedAt: new Date(),
         },

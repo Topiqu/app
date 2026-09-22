@@ -95,7 +95,7 @@
   </UModal>
 </template>
 <script setup lang="ts">
-import type { ArticleDraft } from '@zenstackhq/runtime/models'
+import type { ArticleDraft } from '~~/generated/zenstack/models'
 
 import { format } from 'date-fns'
 import { enUS, cs } from 'date-fns/locale'

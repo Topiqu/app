@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import slugify from 'slugify'
-import { Language } from '@prisma/client'
+import { Language } from '~~/generated/zenstack/models'
 
 const BodySchema = z.object({
   language: z.nativeEnum(Language),

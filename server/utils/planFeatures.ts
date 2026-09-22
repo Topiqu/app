@@ -1,4 +1,4 @@
-import type { BillingPlans, ClientPlan } from '@prisma/client'
+import type { BillingPlans, ClientPlan } from '~~/generated/zenstack/models'
 
 export type FeatureCode = 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS' | 'SEARCH_CONSOLE'
 

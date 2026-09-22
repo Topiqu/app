@@ -1,5 +1,5 @@
-import { ArticleStatus, type NotificationType } from '@prisma/client'
-import { ArticleUpdateSchema } from '~~/shared/zod/models/Article.schema'
+import { ArticleUpdateSchema } from '~~/shared/databaseSchemas'
+import { ArticleStatus, type NotificationType } from '~~/generated/zenstack/models'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

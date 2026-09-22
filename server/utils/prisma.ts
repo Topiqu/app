@@ -1,7 +1,8 @@
 import argon from 'argon2'
-import { PrismaClient } from '@prisma/client'
+import { definePlugin } from '@zenstackhq/orm'
 
-const basePrisma = new PrismaClient()
+import { createDatabaseClient } from './database'
+import { schema } from '../../generated/zenstack/schema'
 
 const calculateBasicMetrics = (content: string) => {
   const words = content.trim().split(/\s+/).filter(Boolean).length
@@ -11,55 +12,60 @@ const calculateBasicMetrics = (content: string) => {
   }
 }
 
-const prismaClientSingleton = () => {
-  return basePrisma.$extends({
-    query: {
-      article: {
-        async create({ args, query }) {
-          if (typeof args.data.content === 'string') {
-            const metrics = calculateBasicMetrics(args.data.content)
-            args.data.totalWords = metrics.totalWords
-            args.data.readingTime = metrics.readingTime
-          }
-          return query(args)
-        },
-        async update({ args, query }) {
-          const contentData = args.data.content
-          const content =
-            typeof contentData === 'object' && contentData && 'set' in contentData ? contentData.set : contentData
+const appMutationPlugin = definePlugin(schema, {
+  id: 'app-mutations',
+  async onQuery({ model, operation, args, proceed }) {
+    const data = args?.data
+    if (!data || typeof data !== 'object') return proceed(args)
 
-          if (typeof content === 'string') {
-            const metrics = calculateBasicMetrics(content)
-            if (typeof args.data.totalWords === 'undefined') args.data.totalWords = metrics.totalWords
-            if (typeof args.data.readingTime === 'undefined') args.data.readingTime = metrics.readingTime
-          }
-          return query(args)
-        },
-      },
-      user: {
-        async create({ args, query }) {
-          if (typeof args.data.password === 'string') {
-            args.data.password = await argon.hash(args.data.password)
-          }
-          return query(args)
-        },
-        async update({ args, query }) {
-          if ('password' in args.data) {
-            const pwd = args.data.password
-            const value = typeof pwd === 'object' && pwd && 'set' in pwd ? pwd.set : pwd
-            if (typeof value === 'string' && value.length > 0) {
-              const hashed = await argon.hash(value)
-              args.data.password = typeof pwd === 'object' && pwd && 'set' in pwd ? { set: hashed } : hashed
-            } else {
-              delete args.data.password
-            }
-          }
-          return query(args)
-        },
-      },
-    },
-  })
-}
+    if (model === 'Article' && (operation === 'create' || operation === 'update')) {
+      const articleData = data as Record<string, unknown>
+      const contentData = articleData.content
+      const content =
+        typeof contentData === 'object' && contentData && 'set' in contentData
+          ? (contentData as { set?: unknown }).set
+          : contentData
+
+      if (typeof content === 'string') {
+        const metrics = calculateBasicMetrics(content)
+        if (operation === 'create' || typeof articleData.totalWords === 'undefined') {
+          articleData.totalWords = metrics.totalWords
+        }
+        if (operation === 'create' || typeof articleData.readingTime === 'undefined') {
+          articleData.readingTime = metrics.readingTime
+        }
+      }
+    }
+
+    if (model === 'User' && operation === 'create') {
+      const userData = data as Record<string, unknown>
+      if (typeof userData.password === 'string') userData.password = await argon.hash(userData.password)
+    }
+
+    if (model === 'User' && operation === 'update') {
+      const userData = data as Record<string, unknown>
+      if ('password' in userData) {
+        const passwordData = userData.password
+        const password =
+          typeof passwordData === 'object' && passwordData && 'set' in passwordData
+            ? (passwordData as { set?: unknown }).set
+            : passwordData
+
+        if (typeof password === 'string' && password.length > 0) {
+          const hashed = await argon.hash(password)
+          userData.password =
+            typeof passwordData === 'object' && passwordData && 'set' in passwordData ? { set: hashed } : hashed
+        } else {
+          delete userData.password
+        }
+      }
+    }
+
+    return proceed(args)
+  },
+})
+
+const prismaClientSingleton = () => createDatabaseClient().$use(appMutationPlugin)
 
 declare const globalThis: {
   prismaGlobal: ReturnType<typeof prismaClientSingleton>

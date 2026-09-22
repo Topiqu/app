@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ArticleStatus } from '@zenstackhq/runtime/models'
+import type { ArticleStatus } from '~~/generated/zenstack/models'
 
 const { status } = defineProps<{ status: ArticleStatus | string }>()
 

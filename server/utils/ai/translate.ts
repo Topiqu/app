@@ -1,4 +1,4 @@
-import type { Language } from '@prisma/client'
+import type { Language } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
 import slugify from 'slugify'

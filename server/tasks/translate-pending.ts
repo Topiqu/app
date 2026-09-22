@@ -1,4 +1,4 @@
-import type { ClientPlan } from '@prisma/client'
+import type { ClientPlan } from '~~/generated/zenstack/models'
 
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 const BATCH_SIZE = 10
@@ -115,7 +115,7 @@ export default defineMonitoredTask({
               status: finalStatus,
               source: 'AI',
               model: aiModelId('translation'),
-              usage,
+              usage: toDatabaseJson(usage),
               error: null,
               translatedAt: new Date(),
             },

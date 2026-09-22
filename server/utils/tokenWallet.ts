@@ -1,15 +1,16 @@
 import type { H3Event } from 'h3'
-import type { Prisma, TokenOperation } from '@prisma/client'
+import type { JsonValue } from '@zenstackhq/orm'
+import type { TokenOperation } from '~~/generated/zenstack/models'
 
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
 
-import type appPrisma from './prisma'
+import type { DatabaseTransaction } from './database'
 
 import { TOKEN_RATIO } from './tokenRatio'
 import { TOKEN_PRICE_VERSION, validateCreditAmount, walletSettlement } from '../../shared/utils/tokenWallet'
 
-type Tx = Parameters<Parameters<typeof appPrisma.$transaction>[0]>[0]
+type Tx = DatabaseTransaction
 type Allocation = { id: string; amount: number }[]
 const walletContext = new AsyncLocalStorage<{
   clientSiteId: string
@@ -17,7 +18,7 @@ const walletContext = new AsyncLocalStorage<{
   budget: number
   ratio: number
   actual: number
-  metadata: Prisma.InputJsonValue
+  metadata: JsonValue
 }>()
 export const currentTokenOperation = () => walletContext.getStore()
 export async function commitTokenUsage() {
@@ -72,7 +73,7 @@ export async function runReservedTokens<T>(operation: TokenOperation, work: () =
 }
 
 /** Stage usage; only commit when the enclosing workflow has produced its result. */
-export async function recordTokenUsage(clientSiteId: string, actual: number, metadata: Prisma.InputJsonValue) {
+export async function recordTokenUsage(clientSiteId: string, actual: number, metadata: JsonValue) {
   const context = walletContext.getStore()
   if (!context || context.clientSiteId !== clientSiteId) throw new Error('Token usage requires a reservation')
   if (!Number.isSafeInteger(actual) || actual < 0) throw new Error('Invalid usage')
@@ -331,7 +332,7 @@ export async function settleTokens(
   clientSiteId: string,
   operationId: string,
   actual: number,
-  metadata: Prisma.InputJsonValue = {},
+  metadata: JsonValue = {},
   status = 'COMPLETED',
   transaction?: Tx,
 ) {

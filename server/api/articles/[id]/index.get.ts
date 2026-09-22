@@ -1,4 +1,4 @@
-import type { Language } from '@prisma/client'
+import type { Language } from '~~/generated/zenstack/models'
 
 /** Explicit because the row also carries `prompt` and the tenant's savings figures. */
 const PUBLIC_FIELDS = {

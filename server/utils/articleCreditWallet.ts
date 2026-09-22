@@ -1,11 +1,12 @@
-import type { ArticleCreditOperation, Prisma } from '@prisma/client'
+import type { JsonValue } from '@zenstackhq/orm'
+import type { ArticleCreditOperation } from '~~/generated/zenstack/models'
 
 import { randomUUID } from 'node:crypto'
 import { ARTICLE_CREDIT_POLICY_VERSION } from '~~/shared/utils/articleCredits'
 
-import type appPrisma from './prisma'
+import type { DatabaseTransaction } from './database'
 
-type Tx = Parameters<Parameters<typeof appPrisma.$transaction>[0]>[0]
+type Tx = DatabaseTransaction
 type Allocation = { id: string; amount: number }[]
 
 const validateAmount = (amount: number) => {
@@ -227,7 +228,7 @@ export async function reserveArticleCredit(
   clientSiteId: string,
   action: 'MANUAL_ARTICLE' | 'SCHEDULED_ARTICLE',
   key: string = randomUUID(),
-  metadata: Prisma.InputJsonValue = {},
+  metadata: JsonValue = {},
 ) {
   return prisma.$transaction(async (tx) => {
     const wallet = await lockWallet(tx, clientSiteId)
@@ -273,7 +274,7 @@ export async function reserveArticleCredit(
 export async function settleArticleCredit(
   operation: Pick<ArticleCreditOperation, 'id' | 'clientSiteId'>,
   charge: boolean,
-  metadata: Prisma.InputJsonValue = {},
+  metadata: JsonValue = {},
 ) {
   return prisma.$transaction(async (tx) => {
     await lockWallet(tx, operation.clientSiteId)
@@ -342,7 +343,7 @@ export async function withArticleCreditReservation<T>(
   work: (operation: ArticleCreditOperation) => Promise<T>,
   options: {
     key?: string
-    metadata?: Prisma.InputJsonValue
+    metadata?: JsonValue
     shouldCharge?: (result: T) => boolean
   } = {},
 ) {

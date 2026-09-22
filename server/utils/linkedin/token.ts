@@ -1,11 +1,15 @@
-import type { LinkedinCompany } from '@prisma/client'
-
 import prisma from '../prisma'
 import { refreshAccessToken } from './api'
 
 const EXPIRY_BUFFER_MS = 5 * 60 * 1000
 
-type TokenBearingCompany = Pick<LinkedinCompany, 'id' | 'type' | 'accessToken' | 'refreshToken' | 'tokenExpiresAt'>
+type TokenBearingCompany = {
+  id: string
+  type: string
+  accessToken: string | null
+  refreshToken: string | null
+  tokenExpiresAt: Date | null
+}
 
 function getCredentials(type: string) {
   if (type === 'pages') {

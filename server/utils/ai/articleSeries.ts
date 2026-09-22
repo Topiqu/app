@@ -1,8 +1,8 @@
-import type { Prisma } from '@prisma/client'
-
 import { z } from 'zod'
 import slugify from 'slugify'
 import { generateObject } from 'ai'
+
+import type { DatabaseTransaction } from '../database'
 
 export const AI_SERIES_RECENT_WINDOW = 10
 export const AI_SERIES_COOLDOWN = 2
@@ -31,7 +31,7 @@ export const articleSeriesDecisionSchema = z
 
 export type ArticleSeriesDecision = z.infer<typeof articleSeriesDecisionSchema>
 
-type SeriesDb = Pick<Prisma.TransactionClient, 'article' | 'articleSeries' | 'clientSite'>
+type SeriesDb = Pick<DatabaseTransaction, 'article' | 'articleSeries' | 'clientSite'>
 
 export type AiSeriesCandidate = {
   id: string

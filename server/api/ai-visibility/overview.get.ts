@@ -142,6 +142,7 @@ export default defineEventHandler(async (event) => {
       ).map(([channel, visits]) => ({ channel, visits })),
     },
     visibility: {
+      providers: visibilityProviderStatuses(),
       successfulRuns: successfulRuns.length,
       citedRuns: citedRuns.length,
       ownedRuns: ownedRuns.length,

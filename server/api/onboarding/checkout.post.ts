@@ -133,7 +133,7 @@ export default defineEventHandler(async (event) => {
     clientSiteId = result.id
   } catch (error: any) {
     console.error('Account creation error:', error)
-    if (error.code === 'P2002') {
+    if (isUniqueViolation(error)) {
       throw createError({
         statusCode: 400,
         message: t('common.errors.alreadyExists') || 'Username, email or domain already exists.',

@@ -1,4 +1,4 @@
-import type { AdPayoutStatus, ClientPlan } from '@prisma/client'
+import type { AdPayoutStatus, ClientPlan } from '~~/generated/zenstack/models'
 
 export const CLIENT_SHARE: Record<ClientPlan, number> = {
   BASIC: 0,
