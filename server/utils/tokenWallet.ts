@@ -223,32 +223,8 @@ export async function reserveTokens(
     const wallet = await lockWallet(tx, clientSiteId)
     const previous = await tx.tokenOperation.findUnique({ where: { idempotencyKey: key } })
     if (previous) throw createError({ statusCode: 409, message: 'Operation already submitted' })
-    // Provider tokens are an internal cost ledger. Customer authorization is handled by article
-    // credits and plan entitlements, so internal metering must never surface as a hidden paywall.
     const available = wallet.balance - wallet.reserved
-    if (available < amount) {
-      const capacity = amount - available
-      const grant = await tx.tokenCreditGrant.create({
-        data: {
-          clientSiteId,
-          source: 'INTERNAL_CAPACITY',
-          amount: capacity,
-          remaining: capacity,
-          idempotencyKey: `capacity:${key}`,
-        },
-      })
-      await tx.tokenWallet.update({ where: { id: clientSiteId }, data: { balance: { increment: capacity } } })
-      await tx.tokenLedgerEntry.create({
-        data: {
-          clientSiteId,
-          grantId: grant.id,
-          kind: 'INTERNAL_CAPACITY',
-          amount: capacity,
-          reason: 'Internal AI usage capacity',
-          idempotencyKey: `capacity-ledger:${key}`,
-        },
-      })
-    }
+    if (available < amount) throw createError({ statusCode: 402, message: 'Insufficient token balance' })
     const grants = await tx.tokenCreditGrant.findMany({
       where: { clientSiteId, remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
       orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }, { id: 'asc' }],
