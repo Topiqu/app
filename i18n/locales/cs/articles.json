@@ -265,7 +265,7 @@
       "noBio": "Žádné bio",
       "companyLogoAlt": "Logo společnosti",
       "adminIn": "Administrátor v: {0}",
-      "noClientAssigned": "Nepřiřazen",
+      "noClientAssigned": "Není vybrán blog",
       "currentPlan": "Současný plán",
       "roughlyEstimated": "Přibližně {0} článků",
       "userDataError": "Chyba při načítání uživatelských dat",

@@ -265,7 +265,7 @@
       "noBio": "No bio",
       "companyLogoAlt": "Company logo",
       "adminIn": "Administrator in: {0}",
-      "noClientAssigned": "Not assigned",
+      "noClientAssigned": "No blog selected",
       "currentPlan": "Current plan",
       "roughlyEstimated": "Roughly {0} articles",
       "userDataError": "Error loading user data",
