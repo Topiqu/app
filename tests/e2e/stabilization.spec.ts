@@ -131,6 +131,16 @@ test.describe('authenticated GIF picker', () => {
     await page.goto('http://localhost:4173/cs/clanky/jak-postavit-udrzitelnou-redakci')
     const trigger = page.getByRole('button', { name: /Add GIF|Přidat GIF/i })
     await expect(trigger).toBeVisible({ timeout: 15_000 })
+    const [textareaBox, triggerBox] = await Promise.all([
+      page.locator('#comment').boundingBox(),
+      trigger.boundingBox(),
+    ])
+    expect(textareaBox).not.toBeNull()
+    expect(triggerBox).not.toBeNull()
+    expect(triggerBox!.x).toBeGreaterThanOrEqual(textareaBox!.x)
+    expect(triggerBox!.y).toBeGreaterThanOrEqual(textareaBox!.y)
+    expect(triggerBox!.x + triggerBox!.width).toBeLessThanOrEqual(textareaBox!.x + textareaBox!.width + 1)
+    expect(triggerBox!.y + triggerBox!.height).toBeLessThanOrEqual(textareaBox!.y + textareaBox!.height + 1)
     expect(requests).toBe(0)
 
     await trigger.click()

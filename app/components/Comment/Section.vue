@@ -22,17 +22,15 @@
                 id="comment"
                 v-model="newComment"
                 :maxlength="maxLength"
-                class="min-h-[100px] w-full"
-                :ui="{ base: 'pr-14', leading: 'items-center self-stretch' }"
+                class="w-full"
+                :ui="{ base: 'min-h-[100px] pe-14', leading: 'items-center self-stretch', trailing: 'items-start' }"
                 :placeholder="$t('articles.comments.commentPlaceholder')"
                 required
                 :disabled="isSubmitting"
               >
                 <template #leading><UIcon name="mdi:comment-outline" size="20" class="text-muted" /></template>
+                <template #trailing><GifSelector @select="handleGifSelect" /></template>
               </UTextarea>
-              <div class="absolute right-2 top-2 z-10">
-                <GifSelector @select="handleGifSelect" />
-              </div>
               <div class="mt-1 flex justify-between text-xs text-muted">
                 <span>{{ characterCount }} / {{ maxLength }}</span>
                 <UBadge v-if="characterCount >= maxLength" color="error" variant="soft" size="sm">
