@@ -5,6 +5,7 @@
       <li
         v-for="(source, index) in sources"
         :key="index"
+        :ref="(element) => setSourceRow(element, index)"
         class="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-start gap-2"
       >
         <span class="flex size-8 items-center justify-center text-sm font-bold tabular-nums text-muted">
@@ -57,11 +58,26 @@
 </template>
 
 <script setup lang="ts">
+import type { ComponentPublicInstance } from 'vue'
+
 import { sourceFaviconUrl } from '~/utils/sourcePresentation'
 
 const sources = defineModel<string[]>({ required: true })
 
 defineProps<{ compact?: boolean }>()
+
+const sourceRows = new Map<number, HTMLElement>()
+const setSourceRow = (element: Element | ComponentPublicInstance | null, index: number) => {
+  if (element instanceof HTMLElement) sourceRows.set(index, element)
+  else sourceRows.delete(index)
+}
+const focusSource = (index?: number) => {
+  const row = sourceRows.get(index ?? -1)
+  row?.querySelector<HTMLInputElement>('input')?.focus()
+  row?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  return row ?? null
+}
+defineExpose({ focusSource })
 
 const extractDomain = (url: string) => {
   try {

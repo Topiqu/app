@@ -140,6 +140,25 @@
 
     <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
 
+    <UAlert
+      v-if="isNew && recoverableGeneration"
+      class="mb-6"
+      color="warning"
+      variant="soft"
+      icon="mdi:history"
+      :title="$t('articles.editor.ai.recoveryTitle')"
+      :description="$t('articles.editor.ai.recoveryDescription')"
+    >
+      <template #actions>
+        <UButton size="sm" color="warning" @click="restoreGeneration">{{
+          $t('articles.editor.ai.restoreGeneration')
+        }}</UButton>
+        <UButton size="sm" color="neutral" variant="ghost" @click="dismissGeneration">{{
+          $t('articles.editor.ai.dismissGeneration')
+        }}</UButton>
+      </template>
+    </UAlert>
+
     <div
       v-if="!isNew && tr.enabled && !tr.isSource"
       class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end"
@@ -304,6 +323,8 @@
             :factCheckResult="factCheckResult"
             :factCheckCanRun="factCheckCanRun"
             :factCheckErrorKind="factCheckErrorKind"
+            :mediaRightsState="mediaRightsState"
+            :mediaRightsResult="mediaRightsResult"
             @upload="handleUpload"
             @generate="generateAIContent"
             @stop="stopGeneration"
@@ -315,6 +336,9 @@
             @runFactCheck="runFactCheck"
             @navigateFactCheck="navigateFactCheck"
             @navigateFactCheckSources="navigateFactCheckSources"
+            @navigateMedia="navigateMedia"
+            @attachMedia="attachMedia"
+            @refreshMediaRights="refreshMediaRights"
           />
         </div>
         <UButton
@@ -402,6 +426,8 @@
           :factCheckResult="factCheckResult"
           :factCheckCanRun="factCheckCanRun"
           :factCheckErrorKind="factCheckErrorKind"
+          :mediaRightsState="mediaRightsState"
+          :mediaRightsResult="mediaRightsResult"
           @upload="handleUpload"
           @generate="generateAIContent"
           @stop="stopGeneration"
@@ -413,6 +439,9 @@
           @runFactCheck="runFactCheck"
           @navigateFactCheck="navigateFactCheck"
           @navigateFactCheckSources="navigateFactCheckSources"
+          @navigateMedia="navigateMedia"
+          @attachMedia="attachMedia"
+          @refreshMediaRights="refreshMediaRights"
         />
       </template>
     </USlideover>
@@ -433,15 +462,58 @@
         </div>
       </template>
     </UModal>
+
+    <UModal
+      v-model:open="mediaPublishReviewOpen"
+      :title="$t('articles.editor.mediaRights.publishTitle')"
+      :description="
+        $t('articles.editor.mediaRights.publishDescription', {
+          count: pendingMediaReport?.counts.needsAttention ?? 0,
+        })
+      "
+    >
+      <template #body>
+        <ul class="space-y-2">
+          <li
+            v-for="item in pendingMediaReport?.items.filter((entry) => entry.state === 'needs-attention')"
+            :key="item.key"
+            class="flex items-start gap-3 rounded-lg border border-warning/30 bg-warning/5 p-3"
+          >
+            <AppMedia :src="item.url" alt="" containerClass="size-14 shrink-0 rounded-md" aspectRatio="1 / 1" />
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium text-highlighted">
+                {{ item.asset?.originalFilename || item.url }}
+              </p>
+              <p class="mt-1 text-xs leading-5 text-muted">
+                {{ item.issues.map((issue) => $t(`articles.editor.mediaRights.issue.${issue.code}`)).join(' · ') }}
+              </p>
+            </div>
+          </li>
+        </ul>
+        <p class="mt-4 text-xs leading-5 text-muted">{{ $t('articles.editor.mediaRights.publishDisclaimer') }}</p>
+      </template>
+      <template #footer>
+        <div class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <UButton color="neutral" variant="ghost" @click="openMediaRightsPanel">{{
+            $t('articles.editor.mediaRights.fixMedia')
+          }}</UButton>
+          <UButton color="warning" :loading="submitting" @click="confirmMediaRightsPublish">{{
+            $t('articles.editor.mediaRights.publishAnyway')
+          }}</UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
-import type { OptimizationTarget, OptimizationTargetKind } from '~~/shared/types/articleOptimization'
+import type { OptimizationTarget } from '~~/shared/types/articleOptimization'
+import type { MediaRightsItem, MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
 
 import slugify from 'slugify'
 import { readFaq } from '~~/shared/utils/articleFaq'
+import { setImageMediaId } from '~~/shared/utils/mediaRights'
 import { translationDraft } from '~~/shared/utils/articleTranslations'
 import {
   type ArticleGenerationBilling,
@@ -476,8 +548,27 @@ const sidebarOpen = shallowRef(false)
 const settingsExpanded = useLocalStorage('topiqu-editor-settings-expanded', true)
 const discardConfirmOpen = shallowRef(false)
 const submitting = shallowRef(false)
+const mediaPublishReviewOpen = shallowRef(false)
+const pendingMediaReport = shallowRef<MediaRightsReport | null>(null)
+const pendingMediaTarget = shallowRef<'draft' | 'published'>('published')
 
 const article = shallowRef<ArticleWithDetails | undefined>(undefined)
+type RecoverableGeneration = {
+  id: string
+  recoverableSnapshot: {
+    title?: string
+    perex?: string
+    content?: string
+    sources?: string[]
+    articleImageUrl?: string
+    articleImageCredit?: unknown
+    articleCoverMediaId?: string
+  }
+}
+const { data: recoverableGeneration } = await useLazyFetch<RecoverableGeneration | null>(
+  '/api/articles/generations/recoverable',
+  { server: false, immediate: isNew, default: () => null },
+)
 
 const init = (): ArticleWithDetails =>
   ({
@@ -487,6 +578,7 @@ const init = (): ArticleWithDetails =>
     slug: '',
     imageUrl: '',
     imageCredit: null,
+    coverMediaId: null,
     status: 'draft',
     releaseAt: null,
     sources: [],
@@ -514,6 +606,8 @@ const aiResearch = shallowRef<GenerationResearchResult | null>(null)
 const aiMedia = shallowRef<ArticleMediaProgress | null>(null)
 const aiReservedArticles = shallowRef<number | null>(null)
 const aiLastResult = shallowRef<ArticleGenerationResult | null>(null)
+const aiGenerating = shallowRef(false)
+const activeGenerationSessionId = shallowRef<string | null>(null)
 const aiWritingStage = shallowRef<GenerationWritingStage>('starting')
 const aiStartedAt = shallowRef(0)
 const aiLastActivityAt = shallowRef(0)
@@ -534,17 +628,15 @@ const serializeSourceState = () =>
 const sourceBaseline = shallowRef(serializeSourceState())
 
 const { idle } = useIdle(5 * 60 * 1000)
-const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDraft } = await useArticleDrafts(
-  editedArticle,
-  idle,
-  {
+const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDraft, saveDraftNow } =
+  await useArticleDrafts(editedArticle, idle, {
     enabled: isNew,
+    paused: aiGenerating,
     onDraftLoaded: () => {
       selectedSeries.value = null
       articleTags.value = []
     },
-  },
-)
+  })
 
 if (!isNew) {
   try {
@@ -719,15 +811,25 @@ const {
   canRun: factCheckCanRun,
   run: runFactCheck,
 } = useArticleFactCheck(factCheckInput)
+const mediaRightsInput = computed(() => ({
+  imageUrl: editedArticle.value.imageUrl ?? null,
+  coverMediaId: editedArticle.value.coverMediaId ?? null,
+  content: bodyModel.value ?? '',
+}))
+const {
+  state: mediaRightsState,
+  result: mediaRightsResult,
+  refresh: refreshMediaRights,
+} = useMediaRights(mediaRightsInput)
 const titleTarget = useTemplateRef<HTMLElement>('titleTarget')
 const excerptTarget = useTemplateRef<HTMLElement>('excerptTarget')
 const contentTarget = useTemplateRef<HTMLElement>('contentTarget')
 const tiptapEditor = useTemplateRef<{ focusBlock: (index?: number) => boolean }>('tiptapEditor')
 const desktopSettingsPanel = useTemplateRef<{
-  focusOptimizationTarget: (kind: OptimizationTargetKind) => HTMLElement | null
+  focusOptimizationTarget: (target: OptimizationTarget) => HTMLElement | null
 }>('desktopSettingsPanel')
 const mobileSettingsPanel = useTemplateRef<{
-  focusOptimizationTarget: (kind: OptimizationTargetKind) => HTMLElement | null
+  focusOptimizationTarget: (target: OptimizationTarget) => HTMLElement | null
 }>('mobileSettingsPanel')
 let highlightTimer: ReturnType<typeof setTimeout> | undefined
 const highlight = (element: HTMLElement | null) => {
@@ -753,13 +855,22 @@ const navigateOptimization = async (target: OptimizationTarget) => {
     tiptapEditor.value?.focusBlock(target.blockIndex)
   } else {
     const panel = wasMobile ? mobileSettingsPanel.value : desktopSettingsPanel.value
-    element = panel?.focusOptimizationTarget(target.kind) ?? null
+    element = panel?.focusOptimizationTarget(target) ?? null
   }
   element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   highlight(element)
 }
 const navigateFactCheck = (blockIndex: number) => navigateOptimization({ kind: 'content', blockIndex })
 const navigateFactCheckSources = () => navigateOptimization({ kind: 'sources' })
+const navigateMedia = (item: MediaRightsItem) =>
+  navigateOptimization(
+    item.placement === 'cover' ? { kind: 'featured-image' } : { kind: 'content', blockIndex: item.blockIndex },
+  )
+const attachMedia = (item: MediaRightsItem, mediaId: string) => {
+  if (item.placement === 'cover') editedArticle.value.coverMediaId = mediaId
+  else bodyModel.value = setImageMediaId(bodyModel.value ?? '', item.url, mediaId)
+  void refreshMediaRights()
+}
 
 const autosaveVisible = computed(() => isNew && (saving.value || lastSavedAt.value !== null))
 const saveConfirmed = shallowRef(false)
@@ -846,7 +957,6 @@ onKeyStroke('Escape', () => {
   if (previewing.value) previewing.value = false
 })
 
-const aiGenerating = shallowRef(false)
 // Expanded while there is nothing to lose, or on the `?ai=1` deep link. Generation rewrites the
 // whole article, so a permanently open composer serves no mid-article iteration — it just pushed
 // the title below the fold on every visit.
@@ -854,11 +964,35 @@ const aiOpen = shallowRef(isBlank.value || route.query.ai === '1' || !!customPro
 
 const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
 
-const handleUpload = (file: { url: string; optimizedUrl: string }) => {
+const handleUpload = (file: { url: string; optimizedUrl: string; mediaAsset?: { id: string } }) => {
   editedArticle.value.imageUrl = file.url
   // The author's own picture inherits neither the previous cover's AI label nor its attribution.
   editedArticle.value.imageCredit = null
+  editedArticle.value.coverMediaId = file.mediaAsset?.id ?? null
   optimizedImageUrl.value = file.optimizedUrl
+}
+
+const resolveGenerationSession = async (id: string, action: 'restore' | 'dismiss') => {
+  await $fetch(`/api/articles/generations/${id}`, { method: 'PATCH', body: { action } })
+  recoverableGeneration.value = null
+}
+const restoreGeneration = async () => {
+  const recovery = recoverableGeneration.value
+  if (!recovery) return
+  const snapshot = recovery.recoverableSnapshot
+  Object.assign(editedArticle.value, {
+    title: snapshot.title ?? editedArticle.value.title,
+    excerpt: snapshot.perex ?? editedArticle.value.excerpt,
+    content: snapshot.content ?? editedArticle.value.content,
+    sources: snapshot.sources ?? editedArticle.value.sources,
+    imageUrl: snapshot.articleImageUrl ?? editedArticle.value.imageUrl,
+    imageCredit: snapshot.articleImageCredit ?? editedArticle.value.imageCredit,
+    coverMediaId: snapshot.articleCoverMediaId ?? editedArticle.value.coverMediaId,
+  })
+  if (await saveDraftNow()) await resolveGenerationSession(recovery.id, 'restore')
+}
+const dismissGeneration = async () => {
+  if (recoverableGeneration.value) await resolveGenerationSession(recoverableGeneration.value.id, 'dismiss')
 }
 
 const generateAIContent = async () => {
@@ -891,9 +1025,11 @@ const generateAIContent = async () => {
   aiLastResult.value = null
   try {
     const outcome = await streamGenerate(customPrompt.value, aiOptions.value, {
+      onSession: (id) => (activeGenerationSessionId.value = id),
       onPartial: (partial) => {
         if (partial.title != null) editedArticle.value.title = partial.title
         if (partial.perex != null) editedArticle.value.excerpt = partial.perex
+        if (partial.sources != null) editedArticle.value.sources = partial.sources
         if (partial.content != null) {
           streamedContent = partial.content
           presentStreamedContent()
@@ -903,6 +1039,7 @@ const generateAIContent = async () => {
       onResearch: (research) => {
         aiResearch.value = research
         sourceCount = research.sourceCount
+        editedArticle.value.sources = research.sources
       },
       onMedia: (media) => {
         aiMedia.value = media
@@ -957,6 +1094,7 @@ const generateAIContent = async () => {
           content: article.content,
           imageUrl: article.articleImageUrl,
           imageCredit: article.articleImageCredit ?? null,
+          coverMediaId: article.articleCoverMediaId ?? null,
           sources: article.sources ?? [],
           answer: article.answer || null,
           keyTakeaways: article.keyTakeaways ?? [],
@@ -1023,12 +1161,15 @@ const generateAIContent = async () => {
     if (!finalReceived && streamedContent)
       editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
     aiGenerating.value = false
+    const recoverySaved = isNew ? await saveDraftNow() : true
+    if (recoverySaved && activeGenerationSessionId.value)
+      await resolveGenerationSession(activeGenerationSessionId.value, 'restore').catch(() => undefined)
     if (billing) await refreshClientSiteStatus().catch(() => undefined)
     else await refreshClientSiteStatusAfterStop(reservedBefore).catch(() => undefined)
   }
 }
 
-const submit = async (targetStatus: 'draft' | 'published') => {
+const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: MediaRightsReview) => {
   if (submitting.value) return
   if (isNew) {
     newLanguageDrafts[newArticleLanguage.value] = {
@@ -1046,21 +1187,33 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   const effectiveStatus = schedulesForLater ? 'draft' : targetStatus
 
   const payload = {
-    ...editedArticle.value,
-    ...(sourceDraft
-      ? {
-          title: sourceDraft.title,
-          excerpt: sourceDraft.excerpt,
-          content: sourceDraft.content,
-          slug: slugify(sourceDraft.title, { lower: true, strict: true, trim: true }),
-        }
-      : {}),
+    title: sourceDraft?.title ?? editedArticle.value.title,
+    excerpt: sourceDraft?.excerpt ?? editedArticle.value.excerpt,
+    content: sourceDraft?.content ?? editedArticle.value.content,
+    slug: sourceDraft
+      ? slugify(sourceDraft.title, { lower: true, strict: true, trim: true })
+      : editedArticle.value.slug,
     status: targetStatus,
     imageUrl: editedArticle.value.imageUrl,
+    imageCredit: editedArticle.value.imageCredit,
+    coverMediaId: editedArticle.value.coverMediaId,
+    aiInvolvement: editedArticle.value.aiInvolvement,
+    readingTime: editedArticle.value.readingTime,
+    totalWords: editedArticle.value.totalWords,
+    savedAmount: editedArticle.value.savedAmount,
+    savedTimeMinutes: editedArticle.value.savedTimeMinutes,
+    allowedComments: editedArticle.value.allowedComments,
+    answer: editedArticle.value.answer,
+    keyTakeaways: editedArticle.value.keyTakeaways,
+    faq: editedArticle.value.faq,
+    format: editedArticle.value.format,
+    structureVariant: editedArticle.value.structureVariant,
+    prompt: editedArticle.value.prompt,
     articleSeriesId: selectedSeries.value?.id || null,
-    tags: articleTags.value,
+    ...(isNew ? { tags: articleTags.value } : {}),
     releaseAt,
     sources: (editedArticle.value.sources ?? []).map((source) => source.trim()).filter(Boolean),
+    ...(mediaRightsReview ? { mediaRightsReview } : {}),
   }
 
   submitting.value = true
@@ -1096,6 +1249,10 @@ const submit = async (targetStatus: 'draft' | 'published') => {
         method: 'PATCH',
         body: payload,
       })
+      await $fetch(`/api/articles/${article.value!.id}/tags`, {
+        method: 'PUT',
+        body: { tagIds: articleTags.value },
+      })
       toast.add({ color: 'success', title: 'Article updated' })
       await invalidateArticles()
       // Stay in the document. Re-baseline the two fields `hasChanges` compares, or leaving would
@@ -1110,6 +1267,13 @@ const submit = async (targetStatus: 'draft' | 'published') => {
       sourceBaseline.value = serializeSourceState()
     }
   } catch (e: any) {
+    const responseData = e?.data?.data ?? e?.data ?? e?.response?._data?.data ?? e?.response?._data
+    if (responseData?.code === 'MEDIA_RIGHTS_REVIEW_REQUIRED' && responseData.report) {
+      pendingMediaReport.value = responseData.report
+      pendingMediaTarget.value = targetStatus
+      mediaPublishReviewOpen.value = true
+      return
+    }
     toast.add({
       color: 'error',
       title: e.data?.message || 'Error saving article',
@@ -1117,6 +1281,18 @@ const submit = async (targetStatus: 'draft' | 'published') => {
   } finally {
     submitting.value = false
   }
+}
+
+const openMediaRightsPanel = () => {
+  mediaPublishReviewOpen.value = false
+  settingsExpanded.value = true
+  if (window.matchMedia('(max-width: 1023px)').matches) sidebarOpen.value = true
+}
+const confirmMediaRightsPublish = async () => {
+  const fingerprint = pendingMediaReport.value?.fingerprint
+  if (!fingerprint) return
+  mediaPublishReviewOpen.value = false
+  await submit(pendingMediaTarget.value, { fingerprint, acknowledged: true })
 }
 
 const hasChanges = computed(() => {

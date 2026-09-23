@@ -12,6 +12,16 @@
 
     <USeparator />
 
+    <ArticleEditorMediaRights
+      :state="mediaRightsState"
+      :result="mediaRightsResult"
+      @navigate="$emit('navigateMedia', $event)"
+      @attach="(item, mediaId) => $emit('attachMedia', item, mediaId)"
+      @updated="$emit('refreshMediaRights')"
+    />
+
+    <USeparator />
+
     <section ref="imageSection" class="flex flex-col gap-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-highlighted">
         <UIcon size="16" name="mdi:image-outline" />
@@ -30,7 +40,7 @@
     <USeparator />
 
     <section ref="sourcesSection" class="flex flex-col gap-3">
-      <ArticleSources v-model="sources" />
+      <ArticleSources ref="sourcesEditor" v-model="sources" />
     </section>
 
     <USeparator />
@@ -439,7 +449,8 @@
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
-import type { ArticleOptimizationResult, OptimizationTargetKind } from '~~/shared/types/articleOptimization'
+import type { MediaRightsItem, MediaRightsReport } from '~~/shared/types/mediaRights'
+import type { ArticleOptimizationResult, OptimizationTarget } from '~~/shared/types/articleOptimization'
 
 import {
   ARTICLE_GENERATION_FORMATS,
@@ -453,6 +464,7 @@ import {
   type ArticleGenerationResult,
 } from '~~/shared/utils/articleGeneration'
 
+import type { MediaRightsState } from '~/composables/useMediaRights'
 import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'
 import type { ArticleFactCheckErrorKind, ArticleFactCheckState } from '~/composables/useArticleFactCheck'
 import type {
@@ -482,12 +494,20 @@ const props = defineProps<{
   factCheckResult: ArticleFactCheckResult | null
   factCheckCanRun: boolean
   factCheckErrorKind: ArticleFactCheckErrorKind
+  mediaRightsState: MediaRightsState
+  mediaRightsResult: MediaRightsReport | null
 }>()
 
 const imageSection = useTemplateRef<HTMLElement>('imageSection')
 const sourcesSection = useTemplateRef<HTMLElement>('sourcesSection')
-const focusOptimizationTarget = (kind: OptimizationTargetKind) => {
-  const element = kind === 'featured-image' ? imageSection.value : kind === 'sources' ? sourcesSection.value : null
+const sourcesEditor = useTemplateRef<{ focusSource: (index?: number) => HTMLElement | null }>('sourcesEditor')
+const focusOptimizationTarget = (target: OptimizationTarget) => {
+  const element =
+    target.kind === 'featured-image'
+      ? imageSection.value
+      : target.kind === 'sources'
+        ? (sourcesEditor.value?.focusSource(target.blockIndex) ?? sourcesSection.value)
+        : null
   element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   return element
 }
@@ -644,7 +664,7 @@ const selectFormat = (format: ArticleGenerationFormat) => {
 }
 
 defineEmits<{
-  upload: [file: { url: string; optimizedUrl: string }]
+  upload: [file: { url: string; optimizedUrl: string; mediaAsset?: { id: string } }]
   generate: []
   stop: []
   addTag: [id: string]
@@ -655,5 +675,8 @@ defineEmits<{
   runFactCheck: []
   navigateFactCheck: [blockIndex: number]
   navigateFactCheckSources: []
+  navigateMedia: [item: MediaRightsItem]
+  attachMedia: [item: MediaRightsItem, mediaId: string]
+  refreshMediaRights: []
 }>()
 </script>
