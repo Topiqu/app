@@ -55,6 +55,7 @@
       :height="675"
       containerClass="w-full rounded-lg"
     />
+    <ArticleImageCredit :cover="imageCredit" />
   </div>
 </template>
 

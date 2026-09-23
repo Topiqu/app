@@ -1,4 +1,5 @@
-import { randomUUID } from 'node:crypto'
+import sharp from 'sharp'
+import { createHash, randomUUID } from 'node:crypto'
 import { analyzeImage } from '~~/server/utils/imageAnalysis'
 
 const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'webp', 'gif']
@@ -77,12 +78,49 @@ export default defineEventHandler(async (event) => {
       'original-name': file.filename ? encodeURIComponent(file.filename) : 'unknown',
     })
 
+    let mediaAsset
+    if (uploadType === 'article-image' && user.clientSiteId) {
+      const metadata = await sharp(file.data)
+        .metadata()
+        .catch(() => null)
+      const xmp = metadata?.xmpAsString ?? ''
+      const copyright =
+        metadata?.comments?.find((item) => /copyright|rights/i.test(item.keyword))?.text ??
+        xmp.match(/<(?:dc:rights|photoshop:Copyright)[^>]*>(?:<[^>]+>)*([^<]+)/i)?.[1]
+      const author =
+        metadata?.comments?.find((item) => /author|artist|creator/i.test(item.keyword))?.text ??
+        xmp.match(/<(?:dc:creator|photoshop:Credit)[^>]*>(?:<[^>]+>)*([^<]+)/i)?.[1]
+      mediaAsset = await prisma.mediaAsset.create({
+        data: {
+          clientSiteId: user.clientSiteId,
+          createdById: user.id,
+          url,
+          storageKey: `uploads/${filename}`,
+          originalFilename: file.filename,
+          mimeType: file.type,
+          contentHash: createHash('sha256').update(file.data).digest('hex'),
+          width: metadata?.autoOrient?.width ?? metadata?.width,
+          height: metadata?.autoOrient?.height ?? metadata?.height,
+          metadataSignals: JSON.parse(
+            JSON.stringify({
+              author: author?.trim() || undefined,
+              copyright: copyright?.trim() || undefined,
+              hasExif: Boolean(metadata?.exif),
+              hasIptc: Boolean(metadata?.iptc),
+              hasXmp: Boolean(metadata?.xmp),
+            }),
+          ),
+        },
+      })
+    }
+
     return {
       success: true,
       url,
       optimizedUrl: `${config.public.cdnUrl}/optimized/${optimizedFilename}`,
       filename,
       tags: detectedTagsString.split(',').filter(Boolean),
+      mediaAsset,
     }
   } catch (error) {
     console.error('S3 Upload Error:', error)

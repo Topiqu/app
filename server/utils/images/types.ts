@@ -22,6 +22,7 @@ export interface ImageProvider {
 /** A resolved image, ready to be rendered into the body. */
 export interface ArticleImage {
   url: string
+  mediaId?: string
   kind: ImageKind
   width?: number
   height?: number

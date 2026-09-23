@@ -58,9 +58,10 @@ export const buildImageHtml = (image: ArticleImage, caption: string, labels: Cap
   // search keyword there is worse for a screen reader than saying nothing.
   const alt = escapeHtml(trimmed || image.alt?.trim() || '')
   const dimensions = image.width && image.height ? ` width="${image.width}" height="${image.height}"` : ''
+  const mediaId = image.mediaId ? ` data-media-id="${escapeHtml(image.mediaId)}"` : ''
 
   return (
-    `<p style="text-align: center;"><img src="${escapeHtml(image.url)}" alt="${alt}" data-article-lightbox="true"${dimensions} />` +
+    `<p style="text-align: center;"><img src="${escapeHtml(image.url)}" alt="${alt}" data-article-lightbox="true"${mediaId}${dimensions} />` +
     (line ? `<br><small style="color: gray;">${line}</small>` : '') +
     `</p>`
   )

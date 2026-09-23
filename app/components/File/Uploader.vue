@@ -74,7 +74,9 @@
 </template>
 
 <script setup lang="ts">
-const emit = defineEmits<{ (e: 'upload', payload: { url: string; optimizedUrl: string }): void }>()
+const emit = defineEmits<{
+  (e: 'upload', payload: { url: string; optimizedUrl: string; mediaAsset?: { id: string } }): void
+}>()
 const props = defineProps<{
   imageUrl?: string | null
   type?: 'client-logo' | 'client-favicon' | 'user-avatar' | 'article-image' | 'emoji'
@@ -223,8 +225,12 @@ const handleFile = async (file: File) => {
   )
 
   try {
-    const { url, optimizedUrl } = await $fetch('/api/upload', { method: 'POST', body: formData })
-    emit('upload', { url, optimizedUrl })
+    const { url, optimizedUrl, mediaAsset } = await $fetch<{
+      url: string
+      optimizedUrl: string
+      mediaAsset: { id: string }
+    }>('/api/upload', { method: 'POST', body: formData })
+    emit('upload', { url, optimizedUrl, mediaAsset })
   } catch (e: any) {
     toast.add({
       color: 'error',

@@ -15,26 +15,67 @@ export default defineMonitoredTask({
           title: true,
           userId: true,
           clientSiteId: true,
+          imageUrl: true,
+          coverMediaId: true,
+          content: true,
+          clientSite: { select: { language: true } },
+          mediaRightsSnapshots: { orderBy: { createdAt: 'desc' }, take: 1, select: { fingerprint: true } },
           user: { select: { username: true, language: true } },
         },
       })
       if (!articles.length) return { result: { count: 0, timestamp: now.toISOString() }, published: [] }
       // console.log(articles)
 
-      const articleIds = articles.map((a) => a.id)
+      const publishable = []
+      const held = []
+      for (const article of articles) {
+        const report = await evaluateMediaRights(ctx as typeof prisma, article.clientSiteId, article)
+        const approval = article.mediaRightsSnapshots[0]
+        if (approval && approval.fingerprint !== report.fingerprint) {
+          await ctx.article.update({ where: { id: article.id }, data: { releaseAt: null } })
+          const translate = await getServerTranslator(article.user?.language || 'en')
+          await ctx.notification.create({
+            data: {
+              message:
+                translate('articles.editor.mediaRights.scheduleChanged') ||
+                'Scheduled publication was paused because its media rights information changed.',
+              userId: article.userId,
+              articleId: article.id,
+              type: 'ARTICLE_PUBLISHED',
+            },
+          })
+          held.push(article)
+        } else publishable.push({ ...article, mediaReport: report, legacySchedule: !approval })
+      }
+
+      const articleIds = publishable.map((a) => a.id)
       const update = await ctx.article.updateMany({
         where: { id: { in: articleIds }, status: 'draft' },
         data: { status: 'published', releaseAt: null },
       })
 
-      for (const a of articles) touched.add(a.clientSiteId)
+      for (const a of publishable) touched.add(a.clientSiteId)
 
-      for (const a of articles) {
+      for (const a of publishable) {
         await syncArticleTranslationQueue(ctx, a.id, a.clientSiteId)
+        if (a.legacySchedule) {
+          await ctx.mediaRightsPublicationSnapshot.create({
+            data: {
+              articleId: a.id,
+              clientSiteId: a.clientSiteId,
+              language: a.clientSite.language,
+              fingerprint: a.mediaReport.fingerprint,
+              items: JSON.parse(JSON.stringify(mediaRightsSnapshotItems(a.mediaReport))),
+              issueCount: a.mediaReport.counts.needsAttention,
+              overrideConfirmed: false,
+              legacySchedule: true,
+            },
+          })
+        }
       }
 
       await Promise.all(
-        articles.map(async (a) => {
+        publishable.map(async (a) => {
           const translate = await getServerTranslator(a.user?.language || 'en')
           return ctx.notification.create({
             data: {
@@ -48,7 +89,7 @@ export default defineMonitoredTask({
       )
 
       const notifications = []
-      for (const a of articles) {
+      for (const a of publishable) {
         const followers = await ctx.follow.findMany({
           where: { followedId: a.userId, follower: { allowNotifs: true } },
           select: { followerId: true, follower: { select: { language: true } } },
@@ -72,7 +113,10 @@ export default defineMonitoredTask({
         await ctx.notification.createMany({ data: batch, skipDuplicates: true })
       }
 
-      return { result: { count: update.count, timestamp: now.toISOString() }, published: articles }
+      return {
+        result: { count: update.count, held: held.length, timestamp: now.toISOString() },
+        published: publishable,
+      }
     })
 
     // The global audit-chain lock must not hold this transaction's Article locks while it waits.
