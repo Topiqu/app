@@ -180,6 +180,22 @@
                       <p class="mt-1 text-xs leading-5 text-muted">
                         {{ $t(`articles.editor.optimization.checks.${item.id}.description`, item.meta ?? {}) }}
                       </p>
+                      <p
+                        v-if="diagnostic(item)"
+                        class="mt-1.5 truncate rounded-md bg-elevated px-2 py-1 font-mono text-[11px] text-highlighted"
+                        :title="diagnostic(item)"
+                      >
+                        {{ diagnostic(item) }}
+                      </p>
+                      <p class="mt-1.5 flex items-start gap-1.5 text-xs leading-5 text-toned">
+                        <UIcon name="mdi:tools" class="mt-0.5 size-3.5 shrink-0 text-primary" />
+                        <span>
+                          <strong class="font-medium text-highlighted"
+                            >{{ $t('articles.editor.optimization.howToFix') }}:</strong
+                          >
+                          {{ $t(`articles.editor.optimization.checks.${item.id}.recommendation`) }}
+                        </span>
+                      </p>
                     </div>
                     <UButton
                       color="neutral"
@@ -226,12 +242,17 @@
 </template>
 
 <script setup lang="ts">
-import type { ArticleOptimizationResult, OptimizationTarget } from '~~/shared/types/articleOptimization'
+import type {
+  ArticleOptimizationResult,
+  OptimizationCheck,
+  OptimizationTarget,
+} from '~~/shared/types/articleOptimization'
 
 import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'
 
 const props = defineProps<{ state: ArticleOptimizationState; result: ArticleOptimizationResult | null }>()
 defineEmits<{ retry: []; navigate: [target: OptimizationTarget] }>()
+const { t } = useI18n()
 
 const open = shallowRef(true)
 const passedOpen = shallowRef(false)
@@ -241,6 +262,17 @@ const issues = computed(() =>
     .sort((a, b) => (a.status === b.status ? 0 : a.status === 'error' ? -1 : 1)),
 )
 const passed = computed(() => (props.result?.checks ?? []).filter((item) => item.status === 'passed'))
+
+const diagnostic = (item: OptimizationCheck) => {
+  if (item.id === 'sources-valid' && item.details?.itemNumber && item.details.value)
+    return t('articles.editor.optimization.checks.sources-valid.diagnostic', {
+      number: item.details.itemNumber,
+      value: item.details.value,
+    })
+  if (item.target.kind === 'content' && item.target.blockIndex !== undefined)
+    return t('articles.editor.optimization.contentBlockDiagnostic', { number: item.target.blockIndex + 1 })
+  return ''
+}
 
 const scoreBand = (score: number) => (score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 50 ? 'fair' : 'poor')
 const scoreColor = (score: number) => (score >= 75 ? 'success' : score >= 50 ? 'warning' : 'error')

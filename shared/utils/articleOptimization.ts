@@ -189,6 +189,7 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
     status: OptimizationStatus,
     target: OptimizationTarget,
     meta?: Record<string, string | number>,
+    details?: OptimizationCheck['details'],
   ): OptimizationCheck => ({
     id,
     category,
@@ -197,6 +198,7 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
     weight: optimizationScoringConfig.weights[id],
     source: 'local',
     meta,
+    details,
   })
   const dependent = (status: OptimizationStatus) => (hasCore ? status : 'not-applicable')
   const firstBadParagraph = paragraphs.find(({ node }) => words(node.textContent ?? '').length > 120)
@@ -327,6 +329,7 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
       !sourceEntries.length ? 'not-applicable' : invalidSource ? 'error' : 'passed',
       { kind: 'sources', blockIndex: invalidSource?.index },
       invalidSource ? { number: invalidSource.index + 1 } : undefined,
+      invalidSource ? { itemNumber: invalidSource.index + 1, value: invalidSource.source } : undefined,
     ),
     check(
       'external-links-safe',

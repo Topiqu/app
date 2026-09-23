@@ -59,6 +59,16 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
         allowBase64: true,
         HTMLAttributes: { class: 'max-w-full h-auto rounded' },
       }).extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            mediaId: {
+              default: null,
+              parseHTML: (element) => element.getAttribute('data-media-id'),
+              renderHTML: (attributes) => (attributes.mediaId ? { 'data-media-id': attributes.mediaId } : {}),
+            },
+          }
+        },
         addNodeView() {
           return VueNodeViewRenderer(TiptapImage)
         },
