@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest'
 const endpoint = readFileSync(resolve(process.cwd(), 'server/api/articles/generate/index.post.ts'), 'utf8')
 const articleGenerator = readFileSync(resolve(process.cwd(), 'server/utils/ai/article.ts'), 'utf8')
 const articleQuality = readFileSync(resolve(process.cwd(), 'server/utils/ai/articleQuality.ts'), 'utf8')
+const editor = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
+const drafts = readFileSync(resolve(process.cwd(), 'app/composables/useArticleDrafts.ts'), 'utf8')
+const recovery = readFileSync(resolve(process.cwd(), 'server/utils/articleGenerationRecovery.ts'), 'utf8')
 
 describe('manual article generation stream', () => {
   it('leaves transport close events alone and aborts only when the stream reader cancels', () => {
@@ -49,7 +52,7 @@ describe('manual article generation stream', () => {
 
   it('streams truthful phases and passes the selected editorial plan to the generator', () => {
     expect(endpoint).toContain("phase: options?.research.enabled === false ? 'writing' : 'research'")
-    expect(endpoint).toContain("send(controller, { type: 'research', ...research })")
+    expect(endpoint).toContain("send(controller, { type: 'research', ...research, sources: researchSources })")
     expect(endpoint).toContain("send(controller, { type: 'phase', phase: 'writing' })")
     expect(endpoint).toContain("send(controller, { type: 'phase', phase: 'images' })")
     expect(endpoint).toContain('researchDepth: options?.research.depth')
@@ -58,6 +61,27 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain('modules: options?.modules')
     expect(endpoint).toContain('allowGeneratedImages: options?.allowGeneratedImages !== false')
     expect(endpoint).toContain("onMedia: (media) => send(controller, { type: 'media', ...media })")
+  })
+
+  it('keeps researched and partially generated sources when the author stops early', () => {
+    expect(articleGenerator).toContain('researchSources: researchResult.sources')
+    expect(endpoint).toContain("type: 'research', ...research, sources: researchSources")
+    expect(editor).toContain('editedArticle.value.sources = research.sources')
+    expect(editor).toContain('if (partial.sources != null) editedArticle.value.sources = partial.sources')
+  })
+
+  it('pauses autosave while generation mutates the editor and saves once afterward', () => {
+    expect(drafts).toContain('if (!force && (idle.value || options.paused?.value)) return false')
+    expect(editor).toContain('paused: aiGenerating')
+    expect(editor).toMatch(/aiGenerating\.value = false\s+const recoverySaved = isNew \? await saveDraftNow\(\) : true/)
+  })
+
+  it('couples interrupted billing to a durable useful recovery checkpoint', () => {
+    expect(endpoint).toContain('hasUsefulGenerationSnapshot(recoverySnapshot)')
+    expect(endpoint.indexOf("checkpointGeneration(recoverySession!.id, 'final'")).toBeLessThan(
+      endpoint.indexOf('settleArticleCredit(articleReservation, chargeInterrupted'),
+    )
+    expect(recovery).toContain('billing and recovery are inseparable')
   })
 
   it('keeps media finalization observable and cancellable', () => {
@@ -110,6 +134,13 @@ describe('manual article generation stream', () => {
     expect(articleGenerator).toContain("selectedModules.includes('images')")
     expect(articleGenerator).toContain('The author explicitly requested images in the article body.')
     expect(articleGenerator).toContain('This is a requested deliverable: never return an empty images array.')
+  })
+
+  it('uses the same constraints for generation and deterministic optimization', () => {
+    expect(articleGenerator).toContain('articleGenerationOptimizationInstructions(domain)')
+    expect(articleGenerator).toContain('.min(optimizationCriteria.titleCharacters.minimum)')
+    expect(articleGenerator).toContain('.max(optimizationCriteria.excerptCharacters.maximum)')
+    expect(articleGenerator).toContain('buildImageHtml(registered, img.caption, labels)')
   })
 
   it('treats an explicitly selected poll as a deliverable', () => {

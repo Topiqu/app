@@ -69,7 +69,8 @@ describe('generate-article cron row', () => {
     expect(task).toContain('generated.editorialReview?.approved === true')
     expect(task).toContain("generated.research?.status === 'completed'")
     expect(task).toContain('generated.research?.sourceCount > 0')
-    expect(task).toMatch(/client\.autoRelease && qualityApproved \? 'published' : 'draft'/)
+    expect(task).toMatch(/client\.autoRelease && qualityApproved && mediaApproved \? 'published' : 'draft'/)
+    expect(task).toContain('mediaReport.counts.needsAttention === 0')
     expect(task).toContain('heldFromAutoRelease')
   })
 

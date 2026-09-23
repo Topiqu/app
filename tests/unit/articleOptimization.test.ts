@@ -6,6 +6,7 @@ import type { OptimizationCheck } from '../../shared/types/articleOptimization'
 
 import {
   analyzeArticleOptimization,
+  articleGenerationOptimizationInstructions,
   classifyArticleUrl,
   getContentEvaluationState,
   optimizationRuleIds,
@@ -41,6 +42,16 @@ describe('article optimization', () => {
       expect(checks[id]?.description.length).toBeGreaterThan(20)
       expect(checks[id]?.description).not.toMatch(/Review and improve|Zkontrolujte a upravte/)
     }
+  })
+
+  it('shares exact optimization requirements with article generation', () => {
+    const instructions = articleGenerationOptimizationInstructions('news.test')
+
+    expect(instructions).toContain('30-65 characters')
+    expect(instructions).toContain('70-160 characters')
+    expect(instructions).toContain('at or below 120 words')
+    expect(instructions).toContain('https://news.test')
+    expect(instructions).toContain('Never invent a URL')
   })
 
   it('treats a blank article as dependency-safe', () => {
@@ -121,9 +132,20 @@ describe('article optimization', () => {
   })
 
   it('validates sources and excludes image checks without inline images', () => {
-    const result = analyzeArticleOptimization(input({ sources: ['notaurl'] }))
+    const result = analyzeArticleOptimization(input({ sources: ['https://valid.test/source', 'notaurl', ''] }))
     expect(find(result, 'sources-valid').status).toBe('error')
+    expect(find(result, 'sources-valid')).toMatchObject({
+      target: { kind: 'sources', blockIndex: 1 },
+      details: { itemNumber: 2, value: 'notaurl' },
+    })
     expect(find(result, 'image-alt').status).toBe('not-applicable')
+  })
+
+  it('ignores the empty source input reserved for adding another source', () => {
+    const result = analyzeArticleOptimization(input({ sources: ['https://valid.test/source', ''] }))
+
+    expect(find(result, 'sources-exist').status).toBe('passed')
+    expect(find(result, 'sources-valid').status).toBe('passed')
   })
 
   it('classifies relative, tenant and external URLs', () => {
