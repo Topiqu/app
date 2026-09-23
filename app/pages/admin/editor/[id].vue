@@ -66,6 +66,17 @@
         </div>
 
         <UButton
+          v-if="isNew && drafts?.length"
+          icon="mdi:file-document-outline"
+          color="neutral"
+          variant="soft"
+          class="shrink-0"
+          @click="draftsOpen = true"
+        >
+          {{ $t('articles.editor.drafts.loadDrafts') }}
+        </UButton>
+
+        <UButton
           v-if="livePath"
           :to="livePath"
           target="_blank"
@@ -117,6 +128,15 @@
         </UButton>
       </div>
     </div>
+
+    <UAlert
+      v-if="successMessage"
+      class="mb-4"
+      color="success"
+      variant="soft"
+      icon="mdi:check-circle"
+      :title="successMessage"
+    />
 
     <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
 
@@ -241,19 +261,6 @@
           />
 
           <ArticleFaq :entries="readFaq(editedArticle.faq)" />
-
-          <div v-if="!article && drafts?.length" class="flex items-center gap-2 mt-4">
-            <UButton size="sm" icon="mdi:file-document-outline" @click="draftsOpen = true">
-              {{ $t('articles.editor.drafts.loadDrafts') }}
-            </UButton>
-            <UAlert
-              v-if="successMessage"
-              color="success"
-              variant="soft"
-              icon="mdi:check-circle"
-              :title="successMessage"
-            />
-          </div>
         </div>
       </div>
       <aside class="sticky top-20 hidden self-start lg:block">
