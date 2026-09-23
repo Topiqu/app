@@ -1,65 +1,81 @@
 <template>
   <node-view-wrapper
-    class="relative group flex flex-col gap-5 p-7 rounded-[1.25rem] border border-gray-200 bg-white shadow-[0_6px_18px_rgba(0,0,0,0.06)] transition-colors duration-250 max-w-[40rem] dark:border-gray-700 dark:bg-slate-900"
+    class="not-prose group relative my-6 flex w-full max-w-full flex-col gap-4 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 shadow-sm transition-colors sm:p-5"
     contenteditable="false"
   >
-    <UButton
-      square
-      size="sm"
-      color="neutral"
-      variant="ghost"
-      icon="i-mdi-close"
-      class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity !text-gray-400 hover:!text-red-500 hover:!bg-red-50 border-none shadow-none"
-      :title="$t('common.delete')"
-      @click.stop.prevent="deleteNode"
-      @mousedown.stop.prevent
-    />
-
-    <UInput
-      v-model="localQuestion"
-      :placeholder="$t('articles.poll.questionPlaceholder')"
-      size="xl"
-      class="w-full pr-8"
-      :ui="{ base: 'text-lg font-bold' }"
-      @input="syncQuestion"
-      @click.stop
-      @mousedown.stop
-      @focus.stop
-    />
-
-    <div
-      v-for="(opt, i) in localOptions"
-      :key="i"
-      class="flex items-center gap-3 border border-transparent rounded-xl px-4 py-3 bg-gray-50 transition-all duration-250 hover:border-gray-300 hover:shadow-sm dark:bg-slate-800 dark:border-slate-700"
-    >
+    <div class="flex min-w-0 items-center gap-3">
+      <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <UIcon name="i-mdi-poll" class="size-5" />
+      </span>
       <UInput
-        v-model="opt.label"
-        :placeholder="$t('articles.poll.optionPlaceholder')"
+        v-model="localQuestion"
+        :placeholder="$t('articles.poll.questionPlaceholder')"
+        size="xl"
         class="min-w-0 flex-1"
-        @input="syncOptions"
+        :ui="{ base: 'font-semibold text-highlighted' }"
+        @input="syncQuestion"
         @click.stop
         @mousedown.stop
         @focus.stop
       />
-
       <UButton
-        v-if="localOptions.length > 1"
         square
         size="sm"
         color="error"
         variant="ghost"
         icon="i-mdi-trash-can-outline"
-        class="!p-1.5 !w-8 !h-8 !text-red-500 hover:!bg-red-50 hover:scale-105 border-none shadow-none !bg-transparent"
-        @click.stop.prevent="rm(i)"
+        class="shrink-0 opacity-70 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        :aria-label="$t('common.delete')"
+        :title="$t('common.delete')"
+        @click.stop.prevent="deleteNode"
         @mousedown.stop.prevent
       />
     </div>
 
+    <div class="space-y-2">
+      <div
+        v-for="(opt, i) in localOptions"
+        :key="i"
+        class="flex items-center gap-2 rounded-lg border border-default bg-elevated/40 p-2 transition-colors hover:border-primary/40 hover:bg-elevated"
+      >
+        <span
+          class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold tabular-nums text-primary"
+        >
+          {{ i + 1 }}
+        </span>
+        <UInput
+          v-model="opt.label"
+          :placeholder="$t('articles.poll.optionPlaceholder')"
+          variant="none"
+          class="min-w-0 flex-1"
+          :ui="{ base: 'bg-transparent text-highlighted' }"
+          @input="syncOptions"
+          @click.stop
+          @mousedown.stop
+          @focus.stop
+        />
+
+        <UButton
+          v-if="localOptions.length > 1"
+          square
+          size="sm"
+          color="error"
+          variant="ghost"
+          icon="i-mdi-close"
+          class="shrink-0"
+          :aria-label="$t('common.delete')"
+          :title="$t('common.delete')"
+          @click.stop.prevent="rm(i)"
+          @mousedown.stop.prevent
+        />
+      </div>
+    </div>
+
     <UButton
-      color="neutral"
+      color="primary"
       variant="soft"
       icon="i-mdi-plus"
-      class="w-full !border-2 !border-dashed !border-gray-300 !text-gray-500 hover:!border-blue-500 hover:!text-blue-600 hover:!bg-blue-50/50 dark:!border-gray-600 dark:!text-gray-400 dark:hover:!border-blue-500 dark:hover:!text-blue-400 dark:hover:!bg-blue-900/20 shadow-none justify-center"
+      class="w-full justify-center rounded-lg border border-dashed border-default shadow-none hover:border-primary/50"
       @click.stop.prevent="add"
       @mousedown.stop.prevent
     >
