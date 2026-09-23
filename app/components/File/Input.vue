@@ -1,5 +1,5 @@
 <template>
-  <UFormField :label="$t('common.actions.clickToUpload')" :ui="{ label: 'sr-only' }">
+  <UFormField :label="$t('common.actions.clickToUpload')" :ui="{ label: 'sr-only', container: 'mt-0' }">
     <UFileUpload
       v-model="file"
       accept="image/*"
