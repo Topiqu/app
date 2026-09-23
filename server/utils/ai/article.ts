@@ -673,7 +673,10 @@ export const finalizeArticle = async (
       const registered = await registerMedia(resolved)
       const image = {
         slot: idx + 1,
-        html: buildImageHtml(registered, img.caption, labels),
+        // A requested caption describes the desired asset, not the asset that was actually
+        // retrieved or generated. Publishing it as observed fact (or alt text) would turn an
+        // image-search instruction into a hallucinated claim. Provider metadata remains safe.
+        html: buildImageHtml(registered, '', labels),
         resolved: registered,
       }
       mediaFound += 1

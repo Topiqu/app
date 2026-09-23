@@ -140,7 +140,7 @@ describe('manual article generation stream', () => {
     expect(articleGenerator).toContain('articleGenerationOptimizationInstructions(domain)')
     expect(articleGenerator).toContain('.min(optimizationCriteria.titleCharacters.minimum)')
     expect(articleGenerator).toContain('.max(optimizationCriteria.excerptCharacters.maximum)')
-    expect(articleGenerator).toContain('buildImageHtml(registered, img.caption, labels)')
+    expect(articleGenerator).toContain("buildImageHtml(registered, '', labels)")
   })
 
   it('treats an explicitly selected poll as a deliverable', () => {
