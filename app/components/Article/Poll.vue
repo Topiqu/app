@@ -1,10 +1,10 @@
 <template>
-  <UCard
-    class="not-prose my-8 overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default shadow-sm"
+  <div
+    class="not-prose my-8 overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default p-5 shadow-sm sm:p-6"
   >
     <div class="mb-4 flex items-start gap-3">
       <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-        <UIcon name="i-mdi-poll" class="size-5" />
+        <UIcon name="mdi:poll" class="size-5" />
       </span>
       <div role="heading" aria-level="4" class="min-w-0 pt-1 text-lg font-semibold text-highlighted">
         {{ poll.question }}
@@ -16,7 +16,7 @@
         :variant="selectedOption === opt.id ? 'soft' : 'ghost'"
         :icon="selectedOption === opt.id ? 'mdi:check-circle' : 'mdi:circle-outline'"
         :disabled="hasVoted || voting"
-        class="min-h-11 w-full justify-start rounded-lg border border-default bg-elevated/40 px-3 text-left transition-colors hover:border-primary/40 hover:bg-elevated"
+        class="min-h-11 w-full"
         :aria-pressed="selectedOption === opt.id"
         @click="vote(opt.id)"
       >
@@ -37,10 +37,10 @@
       />
     </div>
     <div v-if="hasVoted" class="mt-4 flex items-center gap-1.5 text-sm text-muted" aria-live="polite">
-      <UIcon name="i-mdi-account-group-outline" class="size-4" />
+      <UIcon name="mdi:account-group-outline" class="size-4" />
       {{ `${getTotalVotes} ${$t('articles.votes').toLowerCase()}` }}
     </div>
-  </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">
