@@ -5,6 +5,8 @@ import "./comment"
 import "./notification"
 import "./linkedin"
 import "./log"
+import "./media"
+import "./generation"
 
 model User with Base {
     username                      String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
@@ -42,6 +44,10 @@ model User with Base {
     bans                          UserBan[]         @relation("BannedUser")
     bansIssued                    UserBan[]         @relation("BannedBy")
     logs                          Log[]             @relation("LogToUser")
+    mediaAssets                   MediaAsset[]      @relation("MediaAssetCreator")
+    mediaRightsConfirmations      MediaAsset[]      @relation("MediaRightsConfirmer")
+    mediaPublicationConfirmations MediaRightsPublicationSnapshot[] @relation("MediaPublicationConfirmer")
+    articleGenerationSessions     ArticleGenerationSession[]
     approvals                     Approval[]
     tenantMemberships             TenantMembership[]
     tenantInvitations             TenantInvitation[] @relation("InvitationSender")

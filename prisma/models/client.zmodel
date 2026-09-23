@@ -9,6 +9,8 @@ import "./log"
 import "./ads"
 import "./searchConsole"
 import "./visibility"
+import "./media"
+import "./generation"
 
 enum GenerationFrequency {
     NONE
@@ -95,6 +97,9 @@ model ClientSite with Base {
     articleCreditWallet  ArticleCreditWallet?
     totalUsage           Int?                @default(0)
     autoRelease          Boolean             @default(false)
+    mediaAssets          MediaAsset[]
+    mediaRightsSnapshots MediaRightsPublicationSnapshot[]
+    articleGenerationSessions ArticleGenerationSession[]
     aiSeriesEnabled      Boolean             @default(false)
     keywords             Json?
     audience             String?

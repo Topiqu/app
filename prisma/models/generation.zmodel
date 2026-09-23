@@ -1,0 +1,43 @@
+import "./base"
+import "./client"
+import "./user"
+
+enum ArticleGenerationSessionStatus {
+    RESERVED
+    RESEARCHING
+    WRITING
+    FINALIZING
+    COMPLETED
+    INTERRUPTED
+    FAILED
+    RESTORED
+    DISMISSED
+}
+
+/// A paid generation is deliberately separate from ArticleDraft: the draft is the author's
+/// document, while this row is the durable receipt and recovery point for provider work. Never
+/// charge an interrupted run unless its recoverableSnapshot contains something useful.
+model ArticleGenerationSession with Base {
+    attemptId           String                         @unique
+    clientSiteId        String
+    clientSite          ClientSite                     @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    userId              String
+    user                User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    articleOperationId  String                         @unique
+    status              ArticleGenerationSessionStatus @default(RESERVED)
+    prompt              String
+    options             Json
+    recoverableSnapshot Json?
+    checkpoints         Json
+    paidWorkStartedAt   DateTime?
+    usefulResultAt      DateTime?
+    lastCheckpointAt    DateTime?
+    completedAt         DateTime?
+    charged             Boolean                        @default(false)
+    failureReason       String?
+    restoredAt          DateTime?
+    dismissedAt         DateTime?
+    @@index([userId, clientSiteId, createdAt])
+    @@index([clientSiteId, status, updatedAt])
+    @@deny('all', true)
+}
