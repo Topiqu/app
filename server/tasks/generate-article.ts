@@ -336,7 +336,13 @@ const processClient = async (client: any) =>
         const researchApproved =
           !researchRequired || (generated.research?.status === 'completed' && generated.research?.sourceCount > 0)
         const qualityApproved = generated.editorialReview?.approved === true && researchApproved
-        const status = client.autoRelease && qualityApproved ? 'published' : 'draft'
+        const mediaReport = await evaluateMediaRights(prisma, clientSiteId, {
+          imageUrl: generated.articleImageUrl,
+          coverMediaId: generated.articleCoverMediaId,
+          content: generated.content,
+        })
+        const mediaApproved = mediaReport.counts.needsAttention === 0
+        const status = client.autoRelease && qualityApproved && mediaApproved ? 'published' : 'draft'
 
         const { article, appliedSeries } = await prisma.$transaction(async (ctx: any) => {
           const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
@@ -375,6 +381,7 @@ const processClient = async (client: any) =>
               // generated the cover before this row was written, so the cost was paid either way.
               imageUrl: generated.articleImageUrl || null,
               imageCredit: generated.articleImageCredit ?? undefined,
+              coverMediaId: generated.articleCoverMediaId ?? undefined,
               totalWords: metrics.totalWords,
               savedAmount: metrics.savedAmount,
               savedTimeMinutes: metrics.savedTimeMinutes,
@@ -385,6 +392,19 @@ const processClient = async (client: any) =>
             data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),
             skipDuplicates: true,
           })
+
+          if (status === 'published') {
+            await ctx.mediaRightsPublicationSnapshot.create({
+              data: {
+                articleId: article.id,
+                clientSiteId,
+                language: defaultLang,
+                fingerprint: mediaReport.fingerprint,
+                items: JSON.parse(JSON.stringify(mediaRightsSnapshotItems(mediaReport))),
+                issueCount: 0,
+              },
+            })
+          }
 
           return { article, appliedSeries }
         })
@@ -437,6 +457,7 @@ const processClient = async (client: any) =>
             researched: topic ? researchRequest(topic) !== false : false,
             editorialReview: generated.editorialReview,
             researchApproved,
+            mediaApproved,
             series: {
               action: appliedSeries.action,
               seriesId: appliedSeries.seriesId,

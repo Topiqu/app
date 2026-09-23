@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const { user } = await requireTenantScope(event, 'ARTICLE_WRITE')
 
-  const { title, excerpt, content, imageUrl } = await readBody(event)
+  const { title, excerpt, content, imageUrl, coverMediaId } = await readBody(event)
 
   if (!title && !content && content !== '<p></p>' && !excerpt)
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
       excerpt: excerpt || null,
       content: content || '',
       imageUrl: imageUrl || null,
+      coverMediaId: coverMediaId || null,
       userId: user.id,
       clientSiteId: user.clientSiteId,
     },
@@ -27,6 +28,7 @@ export default defineEventHandler(async (event) => {
       excerpt: true,
       content: true,
       imageUrl: true,
+      coverMediaId: true,
       createdAt: true,
       updatedAt: true,
     },
