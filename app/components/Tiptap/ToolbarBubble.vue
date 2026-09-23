@@ -1,6 +1,10 @@
 <template>
   <BubbleMenu
     :editor="editor"
+    pluginKey="textBubbleMenu"
+    :shouldShow="shouldShow"
+    :appendTo="getBubbleContainer"
+    :updateDelay="0"
     :options="{ placement: 'top', size: { padding: { top: 8, right: 12, bottom: 8, left: 12 } } }"
     class="z-popover"
   >
@@ -46,6 +50,7 @@
 
 <script setup lang="ts">
 import type { Editor, ChainedCommands } from '@tiptap/vue-3'
+import type { BubbleMenuPluginProps } from '@tiptap/extension-bubble-menu'
 
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 
@@ -53,6 +58,14 @@ const { editor } = defineProps<{ editor: Editor }>()
 const emit = defineEmits<{ (e: 'openLink', url?: string): void }>()
 
 const sk = useTiptapShortcuts()
+
+const shouldShow: NonNullable<BubbleMenuPluginProps['shouldShow']> = ({ editor, state, from, to }) =>
+  editor.isEditable &&
+  !state.selection.empty &&
+  Boolean(state.doc.textBetween(from, to).length) &&
+  !editor.isActive('table')
+
+const getBubbleContainer = () => editor.view.dom.parentElement?.parentElement ?? document.body
 
 const run = (fn: (c: ChainedCommands) => ChainedCommands) => {
   fn(editor.chain().focus()).run()

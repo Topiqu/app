@@ -355,6 +355,7 @@
         "fontFamily": "Písmo",
         "fontDefault": "Výchozí",
         "textColor": "Barva textu",
+        "cellColor": "Barva buněk",
         "paragraph": "Odstavec",
         "heading": "Nadpis {level}",
         "bulletList": "Odrážkový seznam",

@@ -355,6 +355,7 @@
         "fontFamily": "Font family",
         "fontDefault": "Default",
         "textColor": "Text color",
+        "cellColor": "Cell color",
         "paragraph": "Paragraph",
         "heading": "Heading {level}",
         "bulletList": "Bullet list",

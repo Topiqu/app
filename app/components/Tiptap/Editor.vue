@@ -19,6 +19,7 @@
         />
 
         <TiptapToolbarBubble :editor @openLink="(url) => openLink({ type: 'link', url })" />
+        <TiptapToolbarTableBubble v-if="edit" :editor />
 
         <EditorContent
           :editor
@@ -143,8 +144,10 @@ const insertPoll = () =>
 
 const focusEditor = () => editor.value?.chain().focus().run()
 
-const handleEditorClick = () => {
-  if (!edit.value) edit.value = true
+const handleEditorClick = async () => {
+  if (edit.value) return
+  edit.value = true
+  await nextTick()
   focusEditor()
 }
 

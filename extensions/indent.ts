@@ -88,6 +88,8 @@ export const Indent = Extension.create({
   addKeyboardShortcuts() {
     return {
       Tab: () => {
+        if (this.editor.isActive('table')) return false
+
         if (this.editor.isActive('listItem')) {
           return this.editor.commands.sinkListItem('listItem')
         }
@@ -101,6 +103,8 @@ export const Indent = Extension.create({
         return true
       },
       'Shift-Tab': () => {
+        if (this.editor.isActive('table')) return false
+
         if (this.editor.isActive('listItem')) {
           return this.editor.commands.liftListItem('listItem')
         }
