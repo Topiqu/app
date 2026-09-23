@@ -243,13 +243,7 @@
       "createFailed": "Vytvoření štítku selhalo",
       "updateSuccess": "Štítek úspěšně aktualizován",
       "updateFailed": "Aktualizace štítku selhala",
-      "noTagsSelected": "Žádné štítky nevybrány",
-      "selected": "Vybrané štítky",
-      "selectedEmpty": "Článek zatím nemá žádné štítky.",
-      "addExisting": "Přidat existující štítek…",
-      "createNew": "Vytvořit nový štítek",
-      "newTagName": "Název nového štítku",
-      "removeNamed": "Odebrat štítek {name}"
+      "noTagsSelected": "Žádné štítky nevybrány"
     },
     "statusCell": {
       "scheduledTooltip": "Naplánováno na: {0}"
@@ -265,7 +259,7 @@
       "noBio": "Žádné bio",
       "companyLogoAlt": "Logo společnosti",
       "adminIn": "Administrátor v: {0}",
-      "noClientAssigned": "Není vybrán blog",
+      "noClientAssigned": "Nepřiřazen",
       "currentPlan": "Současný plán",
       "roughlyEstimated": "Přibližně {0} článků",
       "userDataError": "Chyba při načítání uživatelských dat",
@@ -355,7 +349,6 @@
         "fontFamily": "Písmo",
         "fontDefault": "Výchozí",
         "textColor": "Barva textu",
-        "cellColor": "Barva buněk",
         "paragraph": "Odstavec",
         "heading": "Nadpis {level}",
         "bulletList": "Odrážkový seznam",
@@ -509,6 +502,10 @@
           "balance": "Zůstatek"
         },
         "aiContentStopped": "Generování zastaveno",
+        "recoveryTitle": "Lze obnovit nedokončený AI článek",
+        "recoveryDescription": "Topiqu bezpečně uložil poslední použitelný výsledek přerušeného generování.",
+        "restoreGeneration": "Obnovit výsledek",
+        "dismissGeneration": "Skrýt",
         "enhance": "Vylepšit zadání",
         "enhanceUndo": "Vrátit původní",
         "enhanceFailed": "Vylepšení zadání se nepovedlo",
@@ -610,6 +607,57 @@
           "ready": "Zdroj byl načten."
         }
       },
+      "mediaRights": {
+        "title": "Práva k médiím",
+        "description": "Eviduje původ obrázků v článku a informace o oprávnění k jejich použití.",
+        "error": "Kontrolu práv k médiím se nepodařilo provést.",
+        "empty": "Článek neobsahuje žádné obrázky.",
+        "recordedCount": "Původ evidován: {count}",
+        "attentionCount": "Vyžaduje pozornost: {count}",
+        "cover": "Titulní obrázek",
+        "body": "Obrázek v článku",
+        "state": {
+          "recorded": "Původ a práva evidovány",
+          "needs-attention": "Práva nebyla ověřena"
+        },
+        "issue": {
+          "missing-origin": "U média chybí informace o původu.",
+          "permission-unconfirmed": "Oprávnění k použití média nebylo potvrzeno.",
+          "missing-source": "Chybí URL původního zdroje.",
+          "missing-license": "Chybí informace o licenci.",
+          "missing-author": "Chybí informace o autorovi.",
+          "missing-attribution": "Chybí požadovaná atribuce.",
+          "hotlinked": "Obrázek se načítá přímo z externího webu.",
+          "duplicate-media": "Toto médium je v článku použito vícekrát.",
+          "unsafe-url": "Adresa média nepoužívá podporovanou bezpečnou URL.",
+          "copyright-metadata": "Soubor obsahuje copyright údaj; před publikací jej zkontrolujte."
+        },
+        "disclaimer": "Evidovaný původ ani označení AI nejsou právní garancí. Topiqu upozorňuje na chybějící informace, které má autor prověřit.",
+        "editTitle": "Původ a práva média",
+        "origin": "Původ",
+        "sourceUrl": "URL původního zdroje",
+        "author": "Autor nebo tvůrce",
+        "license": "Licence",
+        "attribution": "Požadovaná atribuce",
+        "confirmRights": "Potvrzuji, že mám oprávnění toto médium použít",
+        "origins": {
+          "UNKNOWN": "Neznámý / nejsem si jistý",
+          "OWN": "Můj vlastní obsah",
+          "TOPIQU_AI": "Vytvořeno pomocí Topiqu AI",
+          "EXTERNAL_AI": "Vytvořeno jiným AI nástrojem",
+          "LICENSED_STOCK": "Licencovaný nebo stock obsah",
+          "CREATIVE_COMMONS": "Creative Commons",
+          "PUBLIC_DOMAIN": "Volné dílo / public domain",
+          "EXTERNAL": "Z jiného webu",
+          "OTHER": "Jiný původ"
+        },
+        "publishTitle": "Před publikací zkontrolujte práva k médiím",
+        "publishDescription": "U {count} médií nejsou informace o právech úplné.",
+        "publishDisclaimer": "Potvrzení zaznamená vaše rozhodnutí článek publikovat. Nejde o právní ověření ze strany Topiqu.",
+        "fixMedia": "Zkontrolovat média",
+        "publishAnyway": "Potvrzuji oprávnění a publikuji",
+        "scheduleChanged": "Naplánovaná publikace byla pozastavena, protože se změnila média nebo údaje o právech. Před novým naplánováním je zkontrolujte."
+      },
       "optimization": {
         "title": "Optimalizace článku",
         "score": "Celkové skóre",
@@ -623,32 +671,14 @@
         "retry": "Zkusit znovu",
         "goTo": "Přejít na místo",
         "goToCheck": "Přejít na kontrolu: {check}",
+        "howToFix": "Jak opravit",
+        "contentBlockDiagnostic": "Blok obsahu {number}",
         "passedChecks": "Splněné kontroly ({count})",
-        "attentionTitle": "Co upravit",
-        "methodologyTitle": "Jak se skóre počítá",
-        "methodologyDescription": "Každá kontrola má váhu podle důležitosti. Splněná kontrola získá všechny body, doporučení polovinu a chyba žádný bod. Celkové skóre je průměr vyhodnocených kategorií.",
-        "methodologySeoCaps": "SEO skóre se navíc omezuje, pokud článek nemá dostatek textu či titulek nebo obsahuje další H1 či chybnou hierarchii nadpisů.",
-        "scoreBands": {
-          "excellent": "Výborné",
-          "good": "Dobré",
-          "fair": "Chce doladit",
-          "poor": "Vyžaduje úpravy"
-        },
-        "statusLabels": {
-          "error": "Nutno opravit",
-          "warning": "Doporučení"
-        },
         "categories": {
           "seo": "SEO",
           "ai-visibility": "AI viditelnost",
           "readability": "Čitelnost",
           "trust": "Důvěryhodnost"
-        },
-        "categoryDescriptions": {
-          "seo": "Titulek, perex, nadpisy, odkazy a obrázky.",
-          "ai-visibility": "Jasné téma, popisné nadpisy a struktura vhodná pro odpovědi AI.",
-          "readability": "Délka vět, odstavců a sekcí i členění delšího textu.",
-          "trust": "Přítomnost, platnost a pestrost zdrojů a bezpečnost odkazů."
         },
         "counts": {
           "issues": "Chyby: {count}",
@@ -656,90 +686,116 @@
           "passed": "Splněno: {count}"
         },
         "checks": {
-          "title-exists": { "title": "Chybí titulek", "description": "Doplňte výstižný titulek článku." },
+          "title-exists": {
+            "title": "Článku chybí titulek",
+            "description": "Bez titulku nelze téma článku správně zobrazit ve vyhledávání ani čtenářům.",
+            "recommendation": "Doplňte výstižný titulek, který jasně pojmenuje hlavní téma článku."
+          },
           "title-length": {
-            "title": "Délka titulku",
-            "description": "Titulek má {current} znaků. Doporučený rozsah je 30 až 65 znaků, aby se dobře zobrazil ve výsledcích vyhledávání."
+            "title": "Titulek nemá doporučenou délku",
+            "description": "Příliš krátký titulek je málo konkrétní a příliš dlouhý se může ve výsledcích vyhledávání zkrátit.",
+            "recommendation": "Upravte titulek na 30 až 65 znaků a zachovejte v něm hlavní téma."
           },
           "excerpt-exists": {
-            "title": "Chybí perex",
-            "description": "Doplňte krátké shrnutí, které čtenáři řekne, co v článku najde."
+            "title": "Článku chybí perex",
+            "description": "Topiqu používá perex jako meta description ve výsledcích vyhledávání.",
+            "recommendation": "Doplňte stručné shrnutí, které vysvětlí přínos článku a motivuje ke čtení."
           },
           "excerpt-length": {
-            "title": "Délka perexu",
-            "description": "Perex má {current} znaků. Doporučený rozsah je 70 až 160 znaků."
+            "title": "Perex nemá doporučenou délku",
+            "description": "Krátký perex nepopíše obsah dostatečně a dlouhý se může ve vyhledávání zkrátit.",
+            "recommendation": "Upravte perex na 70 až 160 znaků."
           },
           "single-h1": {
-            "title": "Více hlavních nadpisů",
-            "description": "H1 vytváří titulek automaticky. V textu proto používejte nadpisy H2 a nižší."
+            "title": "Obsah obsahuje další hlavní nadpis",
+            "description": "Titulek stránky už slouží jako H1. Další H1 v textu vytváří nejasnou strukturu stránky.",
+            "recommendation": "Změňte H1 uvnitř článku na H2 nebo nižší úroveň."
           },
           "heading-hierarchy": {
-            "title": "Hierarchie nadpisů",
-            "description": "Začněte nadpisem H2 a nepřeskakujte úrovně, například z H2 rovnou na H4."
+            "title": "Nadpisy mají nesprávnou hierarchii",
+            "description": "Obsah nezačíná nadpisem H2 nebo některý nadpis přeskakuje úroveň.",
+            "recommendation": "Začněte na H2 a pokračujte bez skoků, například H2, H3 a zpět na H2."
           },
           "internal-link": {
             "title": "Chybí interní odkaz",
-            "description": "Propojte článek alespoň s jedním souvisejícím obsahem na vašem webu."
+            "description": "Článek neodkazuje na žádnou další stránku stejného webu.",
+            "recommendation": "Propojte vhodnou část textu se souvisejícím článkem nebo stránkou vašeho webu."
           },
           "external-link": {
             "title": "Chybí externí odkaz",
-            "description": "Přidejte důvěryhodný externí odkaz do textu článku nebo do seznamu zdrojů."
+            "description": "V obsahu není odkaz na nezávislý externí zdroj nebo doplňující materiál.",
+            "recommendation": "Přidejte odkaz na důvěryhodný relevantní zdroj, pokud jej pro dané tvrzení máte."
           },
           "featured-image": {
-            "title": "Chybí úvodní obrázek",
-            "description": "Vyberte hlavní obrázek článku pro výpisy a sdílení na sociálních sítích."
+            "title": "Chybí hlavní obrázek",
+            "description": "Článek nemá obrázek pro výpisy, sdílení a úvod stránky.",
+            "recommendation": "Nahrajte nebo vyberte relevantní hlavní obrázek článku."
           },
           "image-alt": {
-            "title": "Obrázek bez alternativního textu",
-            "description": "Doplňte k obrázku stručný popis pro čtečky obrazovky a vyhledávače."
+            "title": "Obrázku chybí alternativní text",
+            "description": "Nejméně jeden obrázek v obsahu nemá popis pro čtečky obrazovky a vyhledávače.",
+            "recommendation": "Doplňte stručný alt text popisující význam obrázku v kontextu článku."
           },
           "paragraph-length": {
-            "title": "Příliš dlouhý odstavec",
-            "description": "Rozdělte odstavec delší než 120 slov na kratší části."
+            "title": "Odstavec je příliš dlouhý",
+            "description": "Nejméně jeden odstavec přesahuje 120 slov a hůře se čte na obrazovce.",
+            "recommendation": "Rozdělte dlouhý odstavec na kratší myšlenkové celky."
           },
           "sentence-length": {
-            "title": "Příliš mnoho dlouhých vět",
-            "description": "Zkraťte věty delší než 35 slov. Dlouhá by neměla být více než každá desátá věta."
+            "title": "Text obsahuje příliš mnoho dlouhých vět",
+            "description": "Více než 10 % vět přesahuje 35 slov, což snižuje srozumitelnost textu.",
+            "recommendation": "Rozdělte nejsložitější věty a ponechte v každé jednu hlavní myšlenku."
           },
           "section-length": {
-            "title": "Příliš dlouhá sekce",
-            "description": "Rozdělte sekci delší než 300 slov pomocí výstižného mezititulku."
+            "title": "Sekce je příliš dlouhá",
+            "description": "Souvislý úsek bez mezititulku přesahuje 300 slov.",
+            "recommendation": "Rozdělte úsek popisným nadpisem H2 nebo H3."
           },
           "long-article-structure": {
-            "title": "Slabé členění delšího článku",
-            "description": "U textu nad 250 slov použijte alespoň dva odstavce a dva nadpisy."
+            "title": "Delší článek potřebuje lepší členění",
+            "description": "Článek nad 250 slov nemá alespoň dva odstavce a dva mezititulky.",
+            "recommendation": "Rozdělte obsah do nejméně dvou tematických sekcí s vlastními nadpisy."
           },
           "topic-introduction": {
-            "title": "Téma není jasné z úvodu",
-            "description": "V prvních 120 slovech pojmenujte hlavní téma a použijte důležité výrazy z titulku."
+            "title": "Úvod neuvádí hlavní téma",
+            "description": "Prvních 120 slov neobsahuje alespoň polovinu významných slov z titulku.",
+            "recommendation": "Pojmenujte hlavní téma a přínos článku přímo v úvodních odstavcích."
           },
           "descriptive-sections": {
-            "title": "Chybí popisné sekce",
-            "description": "Delší článek rozdělte alespoň dvěma nadpisy H2 nebo nižší úrovně."
+            "title": "Chybí popisné mezititulky",
+            "description": "Delší článek nemá alespoň dva nadpisy, podle kterých lze rychle pochopit jeho strukturu.",
+            "recommendation": "Přidejte nejméně dva konkrétní mezititulky vystihující obsah následujících sekcí."
           },
           "heading-quality": {
-            "title": "Obecný nebo prázdný nadpis",
-            "description": "Nahraďte nadpis typu „Úvod“ či „Shrnutí“ konkrétním názvem, který popisuje obsah sekce."
+            "title": "Nadpis je příliš obecný",
+            "description": "Některý nadpis je prázdný nebo používá pouze obecné slovo, například Úvod či Shrnutí.",
+            "recommendation": "Nahraďte obecný nadpis konkrétní informací, kterou se čtenář v sekci dozví."
           },
           "multiple-blocks": {
-            "title": "Text není členěný",
-            "description": "Rozdělte obsah do více odstavců, nadpisů nebo dalších obsahových bloků."
+            "title": "Obsah tvoří jediný blok",
+            "description": "Článek není rozdělen na samostatné obsahové bloky a obtížně se skenuje.",
+            "recommendation": "Rozdělte text do více odstavců, případně přidejte vhodné mezititulky."
           },
           "sources-exist": {
-            "title": "Chybí zdroje",
-            "description": "Přidejte zdroje, ze kterých článek čerpá, aby bylo možné informace ověřit."
+            "title": "Článek nemá evidovaný zdroj",
+            "description": "V seznamu zdrojů není žádný odkaz podporující faktická tvrzení článku.",
+            "recommendation": "Přidejte alespoň jeden důvěryhodný zdroj použitý při tvorbě článku."
           },
           "sources-valid": {
-            "title": "Neplatný odkaz na zdroj",
-            "description": "Zdroj č. {number} nemá úplnou platnou webovou adresu. Prázdný řádek pro přidání dalšího zdroje se nehodnotí."
+            "title": "Některý zdroj má neplatnou adresu",
+            "description": "Nejméně jedna položka ve zdrojích není úplná webová adresa začínající http:// nebo https://.",
+            "recommendation": "V seznamu zdrojů opravte neúplnou adresu, nebo neplatnou položku odstraňte.",
+            "diagnostic": "Zdroj {number}: {value}"
           },
           "external-links-safe": {
-            "title": "Nebezpečný nebo neplatný odkaz",
-            "description": "Opravte odkaz s nepodporovanou adresou. Povolené jsou běžné webové odkazy HTTP a HTTPS."
+            "title": "Obsahuje neplatný nebo nebezpečný odkaz",
+            "description": "Nejméně jeden externí odkaz nemá platnou HTTP(S) adresu nebo používá nepovolený protokol.",
+            "recommendation": "Opravte cílovou adresu odkazu na platné https:// URL, nebo odkaz odstraňte."
           },
           "source-diversity": {
-            "title": "Málo různorodé zdroje",
-            "description": "U článku nad 800 slov použijte zdroje alespoň ze dvou různých webů."
+            "title": "Dlouhý článek spoléhá na jediný web",
+            "description": "Článek od 800 slov používá méně než dvě unikátní zdrojové domény.",
+            "recommendation": "Doplňte relevantní zdroj z další nezávislé domény."
           }
         }
       },
