@@ -16,7 +16,7 @@
           <UButton
             color="neutral"
             variant="ghost"
-            class="tag-destructive-control min-h-7 min-w-7 p-1"
+            class="tag-destructive-control"
             icon="mdi:close"
             size="xs"
             square
@@ -47,7 +47,6 @@
         color="neutral"
         variant="link"
         size="sm"
-        class="px-0"
         icon="mdi:plus"
         :trailingIcon="createOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"
         :label="$t('articles.tags.createNew')"

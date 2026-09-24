@@ -243,7 +243,13 @@
       "createFailed": "Vytvoření štítku selhalo",
       "updateSuccess": "Štítek úspěšně aktualizován",
       "updateFailed": "Aktualizace štítku selhala",
-      "noTagsSelected": "Žádné štítky nevybrány"
+      "noTagsSelected": "Žádné štítky nevybrány",
+      "selected": "Vybrané štítky",
+      "removeNamed": "Odebrat {name}",
+      "selectedEmpty": "Zatím nejsou vybrané žádné štítky.",
+      "addExisting": "Přidat existující štítek",
+      "createNew": "Vytvořit nový štítek",
+      "newTagName": "Název nového štítku"
     },
     "statusCell": {
       "scheduledTooltip": "Naplánováno na: {0}"

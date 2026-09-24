@@ -243,7 +243,13 @@
       "createFailed": "Failed to create tag",
       "updateSuccess": "Tag updated successfully",
       "updateFailed": "Failed to update tag",
-      "noTagsSelected": "No tags selected"
+      "noTagsSelected": "No tags selected",
+      "selected": "Selected tags",
+      "removeNamed": "Remove {name}",
+      "selectedEmpty": "No tags selected yet.",
+      "addExisting": "Add an existing tag",
+      "createNew": "Create a new tag",
+      "newTagName": "New tag name"
     },
     "statusCell": {
       "scheduledTooltip": "Scheduled for: {0}"
