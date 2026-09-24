@@ -39,7 +39,10 @@
       reset
       class="mt-3 min-w-0"
       :ui="{
-        base: 'min-h-24 min-w-0 rounded-lg border-default bg-elevated/30 px-3 py-3 transition-colors data-[dragging=true]:border-primary data-[dragging=true]:bg-primary/10',
+        base: [
+          'min-h-24 min-w-0 px-3 py-3 transition-colors data-[dragging=true]:border-primary data-[dragging=true]:bg-primary/10',
+          !busy && clientId && 'cursor-pointer hover:border-primary hover:bg-primary/5',
+        ],
         wrapper: 'min-w-0',
         label: 'max-w-full [overflow-wrap:anywhere]',
         description: 'max-w-full [overflow-wrap:anywhere]',
