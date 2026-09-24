@@ -192,7 +192,7 @@ const { logoUrl, description, tagline, faviconUrl, typographyPreset, socials, na
     description: string
     tagline: string
     faviconUrl: string
-    typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM'
+    typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM' | 'MAGAZINE' | 'CUSTOM'
     socials: { platform: SocialPlatform; url: string }[]
     name: string
     domain: string
@@ -204,7 +204,7 @@ const emit = defineEmits<{
   'update:description': [value: string]
   'update:tagline': [value: string]
   'update:faviconUrl': [url: { url: string; optimizedUrl: string }]
-  'update:typographyPreset': [preset: 'MODERN' | 'EDITORIAL' | 'SYSTEM']
+  'update:typographyPreset': [preset: 'MODERN' | 'EDITORIAL' | 'SYSTEM' | 'MAGAZINE' | 'CUSTOM']
   'update:socials': [socials: { platform: SocialPlatform; url: string }[]]
   'update:currentTheme': [theme: string]
 }>()

@@ -57,7 +57,7 @@ const { logoUrl, name, tagline, description, currentTheme, typographyPreset } = 
   tagline: string
   description: string
   currentTheme: string
-  typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM'
+  typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM' | 'MAGAZINE' | 'CUSTOM'
 }>()
 
 const previewStyle = computed(() => tenantThemeStyle(currentTheme, typographyPreset))

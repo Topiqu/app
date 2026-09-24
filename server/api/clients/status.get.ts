@@ -22,6 +22,10 @@ export default defineEventHandler(async (event) => {
       audience: true,
       theme: true,
       typographyPreset: true,
+      accentColor: true,
+      brandGradient: true,
+      headingFontUrl: true,
+      bodyFontUrl: true,
       discloseAiContent: true,
       stripeSubscriptionId: true,
       users: {
