@@ -501,9 +501,16 @@ main {
 .editor-table .ProseMirror .tableWrapper {
   margin-block: 1.5rem;
   max-width: 100%;
+  /* overflow-x alone computes overflow-y to auto, so the resize handle spawned a vertical scrollbar. */
   overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--ui-border);
   border-radius: var(--topiqu-surface-radius);
+}
+
+/* Fixed layout makes the table honour dragged column widths instead of redistributing them. */
+.editor-table .ProseMirror table {
+  table-layout: fixed;
 }
 
 .editor-table .ProseMirror th,
@@ -535,11 +542,16 @@ main {
   position: absolute;
   top: 0;
   right: -1px;
-  bottom: -1px;
+  bottom: 0;
   z-index: 2;
   width: 3px;
   pointer-events: none;
   background: var(--ui-primary);
+}
+
+/* The last column has no right border, so -1px would overflow the wrapper. */
+.editor-table .ProseMirror tr > :last-child .column-resize-handle {
+  right: 0;
 }
 
 .tippy-box {

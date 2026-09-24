@@ -85,7 +85,8 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
         allowFullscreen: true,
         ccLanguage: 'cs',
       }),
-      Table.configure({ resizable: true }),
+      // Matches the 7rem cell min-width in main.css, so dragging cannot go below what CSS renders.
+      Table.configure({ resizable: true, cellMinWidth: 112 }),
       TableRow,
       ColoredTableHeader,
       ColoredTableCell,
