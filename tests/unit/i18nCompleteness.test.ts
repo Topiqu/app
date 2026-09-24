@@ -71,4 +71,23 @@ describe('locale completeness', () => {
       }
     }
   })
+
+  it.each(['cs', 'en'] as const)('translates every tenant scope in %s', (locale) => {
+    const common = readJson(join(localeRoot, locale, 'common.json')).common as Messages
+    const scopes = (common.members as Messages).scopes as Messages
+    expect(Object.keys(scopes)).toEqual([
+      'ARTICLE_WRITE',
+      'ARTICLE_WRITE_OTHERS',
+      'ARTICLE_PUBLISH',
+      'MEMBER_CONTROL',
+      'TENANT_SETTINGS',
+      'INTEGRATION_CONTROL',
+      'BILLING_CHANGE',
+      'API_KEY_CONTROL',
+      'AI_USE',
+      'ANALYTICS_READ',
+      'CONTENT_MODERATE',
+    ])
+    expect(Object.values(scopes).every((label) => typeof label === 'string' && label.length > 3)).toBe(true)
+  })
 })
