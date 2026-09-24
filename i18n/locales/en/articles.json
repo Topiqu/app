@@ -442,6 +442,7 @@
         "writerDeadlineError": "Generation stopped after reaching the 90-second writing limit.",
         "researchSources": "Research complete, sources found: {count}",
         "researchSourceBadge": "Sources: {count}",
+        "knowledgeUsed": "Knowledge: {count}",
         "researchStatus": {
           "fallback": "No sources",
           "skipped": "Skipped"
@@ -502,6 +503,7 @@
           "missing": "Missing:",
           "words": "Words",
           "sources": "Sources",
+          "knowledge": "Knowledge",
           "media": "Media",
           "time": "Time",
           "tokens": "Usage",

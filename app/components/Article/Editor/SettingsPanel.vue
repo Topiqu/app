@@ -615,11 +615,18 @@ const waitingMessage = computed(() => {
   if (props.aiPhase === 'images') return t('articles.editor.ai.waitingImages')
   return t('articles.editor.ai.waitingResearch')
 })
+const knowledgeLabel = computed(() =>
+  props.aiResearch?.knowledgeSourceCount
+    ? t('articles.editor.ai.knowledgeUsed', { count: props.aiResearch.knowledgeSourceCount })
+    : null,
+)
 const phaseDoneLabel = (phase: GenerationPhase) => {
   if (phase !== 'research' || !props.aiResearch) return t('articles.editor.ai.done')
-  if (props.aiResearch.status === 'completed')
-    return t('articles.editor.ai.researchSourceBadge', { count: props.aiResearch.sourceCount })
-  return t(`articles.editor.ai.researchStatus.${props.aiResearch.status}`)
+  const research =
+    props.aiResearch.status === 'completed'
+      ? t('articles.editor.ai.researchSourceBadge', { count: props.aiResearch.sourceCount })
+      : t(`articles.editor.ai.researchStatus.${props.aiResearch.status}`)
+  return knowledgeLabel.value ? `${research} · ${knowledgeLabel.value}` : research
 }
 const planSummary = computed(() =>
   t('articles.editor.ai.outputSummary', {
@@ -659,6 +666,9 @@ const resultMetrics = computed(() => {
   return [
     { label: t('articles.editor.ai.result.words'), value: result.wordCount.toLocaleString() },
     { label: t('articles.editor.ai.result.sources'), value: result.sourceCount.toLocaleString() },
+    ...(props.aiResearch?.knowledgeSourceCount
+      ? [{ label: t('articles.editor.ai.result.knowledge'), value: props.aiResearch.knowledgeSourceCount.toLocaleString() }]
+      : []),
     { label: t('articles.editor.ai.result.media'), value: `${result.mediaFound}/${result.mediaTotal}` },
     { label: t('articles.editor.ai.result.time'), value: `${result.durationSeconds} s` },
   ]

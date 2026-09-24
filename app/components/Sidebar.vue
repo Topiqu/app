@@ -142,6 +142,11 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
       icon: 'mdi:image-multiple-outline',
       to: localePath({ name: 'admin-media' }),
     },
+    {
+      label: $t('common.navigation.knowledge'),
+      icon: 'mdi:book-open-page-variant-outline',
+      to: localePath({ name: 'admin-knowledge' }),
+    },
     { label: $t('common.navigation.settings'), icon: 'mdi:cog', to: localePath({ name: 'settings' }) },
     publication,
   ]
