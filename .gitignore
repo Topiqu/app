@@ -34,3 +34,5 @@ logs
 .vercel
 .aider*
 CONVENTIONS.md
+# Playwright CLI output (may contain credentials)
+.playwright-cli/
