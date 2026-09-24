@@ -188,6 +188,7 @@ describe('Nuxt UI template contract', () => {
     const allowlist = new Set([
       // These bundled brand assets are served directly, without an image transformation request.
       'app/components/AppLogo.vue',
+      'app/components/AppWordmark.vue',
       'app/components/Header.vue',
       'app/components/Sidebar.vue',
       'app/components/AppMedia.vue',

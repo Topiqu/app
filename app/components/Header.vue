@@ -27,16 +27,7 @@
         :aria-hidden="articleState.showHeader && !!articleHeader"
         :tabindex="articleState.showHeader && articleHeader ? -1 : undefined"
       >
-        <img
-          v-if="!isPublicationSurface"
-          src="/logo.png"
-          alt="Topiqu"
-          width="628"
-          height="237"
-          loading="eager"
-          fetchpriority="high"
-          class="h-12 w-auto max-w-36 rounded-md object-contain"
-        />
+        <AppWordmark v-if="!isPublicationSurface" class="h-12 max-w-36 rounded-md" />
         <AppMedia
           v-else
           :src="logoSrc"
