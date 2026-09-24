@@ -5,7 +5,7 @@
         color="neutral"
         variant="ghost"
         type="button"
-        class="group w-full rounded-md px-2 py-2"
+        class="group w-full"
         :ui="{ trailingIcon: 'ms-auto' }"
         icon="mdi:gauge"
         :trailingIcon="open ? 'mdi:chevron-up' : 'mdi:chevron-down'"
@@ -69,11 +69,7 @@
                 v-if="state === 'stale' || state === 'analyzing'"
                 class="inline-flex items-center gap-1 text-xs text-warning"
               >
-                <UIcon
-                  name="mdi:sync"
-                  class="size-3.5"
-                  :class="{ 'animate-spin motion-reduce:animate-none': state === 'analyzing' }"
-                />
+                <UIcon name="mdi:sync" class="size-3.5" />
                 {{ $t(`articles.editor.optimization.${state}`) }}
               </span>
             </div>
@@ -219,7 +215,7 @@
                 color="neutral"
                 variant="ghost"
                 size="sm"
-                class="w-full px-0"
+                class="w-full"
                 :ui="{ trailingIcon: 'ms-auto' }"
                 icon="mdi:check-circle-outline"
                 :trailingIcon="passedOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"

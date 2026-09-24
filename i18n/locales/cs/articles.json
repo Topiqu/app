@@ -674,6 +674,10 @@
         "howToFix": "Jak opravit",
         "contentBlockDiagnostic": "Blok obsahu {number}",
         "passedChecks": "Splněné kontroly ({count})",
+        "attentionTitle": "Co upravit",
+        "methodologyTitle": "Jak se skóre počítá",
+        "methodologyDescription": "Každá kontrola má váhu podle důležitosti. Splněná kontrola získá všechny body, doporučení polovinu a chyba žádný bod. Celkové skóre je průměr vyhodnocených kategorií.",
+        "methodologySeoCaps": "SEO skóre se navíc omezuje, pokud článek nemá dostatek textu či titulek nebo obsahuje další H1 či chybnou hierarchii nadpisů.",
         "categories": {
           "seo": "SEO",
           "ai-visibility": "AI viditelnost",

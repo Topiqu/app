@@ -674,6 +674,10 @@
         "howToFix": "How to fix",
         "contentBlockDiagnostic": "Content block {number}",
         "passedChecks": "Passed checks ({count})",
+        "attentionTitle": "What to improve",
+        "methodologyTitle": "How scoring works",
+        "methodologyDescription": "Each check is weighted by importance. A passed check earns full credit, a recommendation earns half, and an error earns none. The overall score is the average of the evaluated categories.",
+        "methodologySeoCaps": "The SEO score is also capped when the article lacks enough text or a title, or contains an extra H1 or a broken heading hierarchy.",
         "categories": {
           "seo": "SEO",
           "ai-visibility": "AI visibility",

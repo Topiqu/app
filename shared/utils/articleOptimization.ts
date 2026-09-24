@@ -40,6 +40,22 @@ type RuleId = (typeof optimizationRuleIds)[number]
 
 export const optimizationScoringConfig = {
   substantialContent: { minimumProseWords: 120 },
+  criteria: {
+    titleCharacters: { minimum: 30, maximum: 65 },
+    excerptCharacters: { minimum: 70, maximum: 160 },
+    maximumParagraphWords: 120,
+    maximumSentenceWords: 35,
+    maximumLongSentenceRatio: 0.1,
+    maximumSectionWords: 300,
+    structuredArticleMinimumWords: 250,
+    minimumParagraphsForLongArticle: 2,
+    minimumHeadingsForLongArticle: 2,
+    topicIntroductionWords: 120,
+    significantTitleWordMinimumLength: 4,
+    minimumTopicWordCoverage: 0.5,
+    sourceDiversityMinimumWords: 800,
+    minimumSourceDomains: 2,
+  },
   weights: {
     'title-exists': 2,
     'title-length': 1,
@@ -71,6 +87,24 @@ export const optimizationScoringConfig = {
     invalidHeadingHierarchy: 70,
   },
 } as const
+
+export const articleGenerationOptimizationInstructions = (tenantDomain?: string | null) => {
+  const { criteria } = optimizationScoringConfig
+  const internalDestination = tenantDomain?.trim() ? `https://${tenantDomain.trim().replace(/^https?:\/\//, '')}` : '/'
+
+  return `
+Article optimization requirements (apply them while drafting; never mention this checklist in the article):
+- Write a title of ${criteria.titleCharacters.minimum}-${criteria.titleCharacters.maximum} characters and a perex/meta description of ${criteria.excerptCharacters.minimum}-${criteria.excerptCharacters.maximum} characters.
+- The body must contain meaningful prose and start with h2. Never put an h1 in the body. Use h2 and h3 in order without skipping heading levels.
+- Use at least ${criteria.minimumHeadingsForLongArticle} descriptive section headings for articles longer than ${criteria.structuredArticleMinimumWords} words. Do not use a one-word generic heading such as Introduction, Summary, Conclusion, Úvod, Shrnutí or Závěr.
+- Naturally repeat at least half of the meaningful words from the title within the first ${criteria.topicIntroductionWords} body words.
+- Keep every paragraph at or below ${criteria.maximumParagraphWords} words, every uninterrupted section at or below ${criteria.maximumSectionWords} words, and at least 90% of sentences at or below ${criteria.maximumSentenceWords} words.
+- Include one contextually useful internal link to ${internalDestination}. Use a relative href when possible.
+- When live research supplied sources, link at least one supported statement to the most relevant source URL exactly as supplied. Never invent a URL merely to satisfy this requirement.
+- Every body image must have a concise, meaningful alt description derived from its caption.
+- Before returning JSON, silently check these requirements and correct avoidable failures. Optimize for clarity and accuracy first; do not add filler, unsafe links or unsupported claims merely to improve a score.
+`.trim()
+}
 
 const words = (text: string) => text.trim().match(/[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu) ?? []
 
@@ -229,9 +263,7 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
   const invalidSource = sourceEntries.find(({ source }) => !validHttpUrl(source))
   const validSources = sourceEntries.filter(({ source }) => validHttpUrl(source))
   const sourceLinkKinds = validSources.map(({ source }) => classifyArticleUrl(source, input.tenantDomain))
-  const sourceDomains = new Set(
-    validSources.map(({ source }) => new URL(source).hostname.replace(/^www\./, '')),
-  )
+  const sourceDomains = new Set(validSources.map(({ source }) => new URL(source).hostname.replace(/^www\./, '')))
   const images = [...doc.querySelectorAll<HTMLImageElement>('img')]
   const badImage = images.find((image) => !image.getAttribute('alt')?.trim())
   const imageBlock = badImage ? blocks.findIndex((node) => node === badImage || node.contains(badImage)) : -1
