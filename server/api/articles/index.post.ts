@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
   else if (body.status === 'published') body.releaseAt = null
 
   if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
 
   const requiresPublicationReview = body.status === 'published' || Boolean(body.releaseAt)
   const mediaReport = requiresPublicationReview
@@ -99,13 +100,22 @@ export default defineEventHandler(async (event) => {
     await db.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
   }
 
+  const site = await prisma.clientSite.findUnique({ where: { id: user.clientSiteId! }, select: { language: true } })
+  await syncArticleMediaUsages(prisma, {
+    clientSiteId: user.clientSiteId!,
+    articleId: article.id,
+    language: site?.language ?? 'en',
+    imageUrl: article.imageUrl,
+    coverMediaId: article.coverMediaId,
+    content: contentWithPolls,
+  })
+
   if (article.status === 'published') {
     await syncArticleTranslationQueue(db, article.id, user.clientSiteId)
     await invalidateFeed(user.clientSiteId)
   }
 
   if (mediaReport) {
-    const site = await prisma.clientSite.findUnique({ where: { id: user.clientSiteId! }, select: { language: true } })
     await createMediaRightsSnapshot(prisma, {
       articleId: article.id,
       clientSiteId: user.clientSiteId!,

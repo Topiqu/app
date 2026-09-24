@@ -62,5 +62,13 @@ export default defineEventHandler(async (event) => {
     },
   })
 
+  await syncArticleMediaUsages(prisma, {
+    clientSiteId: user.clientSiteId!,
+    articleId,
+    articleTranslationId: translation.id,
+    language: translation.language,
+    content: translation.content,
+  })
+
   return { translation }
 })

@@ -67,6 +67,14 @@ export default defineEventHandler(async (event) => {
     },
   })
 
+  await syncArticleMediaUsages(prisma, {
+    clientSiteId: user.clientSiteId!,
+    articleId: translation.articleId,
+    articleTranslationId: updated.id,
+    language: updated.language,
+    content: updated.content,
+  })
+
   await logAction({
     action: body.status === 'PUBLISHED' ? 'TRANSLATION_PUBLISHED' : 'TRANSLATION_UPDATED',
     userId: user.id,

@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
 
   if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (body.coverMediaId !== undefined) await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
 
   const currentDate = new Date()
   const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59)
@@ -126,6 +127,20 @@ export default defineEventHandler(async (event) => {
       await db.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
     }
   }
+
+  const usageArticle = await prisma.article.findFirst({
+    where: { id: article.id, clientSiteId: user.clientSiteId! },
+    select: { imageUrl: true, coverMediaId: true, content: true, clientSite: { select: { language: true } } },
+  })
+  if (usageArticle)
+    await syncArticleMediaUsages(prisma, {
+      clientSiteId: user.clientSiteId!,
+      articleId: article.id,
+      language: usageArticle.clientSite.language,
+      imageUrl: usageArticle.imageUrl,
+      coverMediaId: usageArticle.coverMediaId,
+      content: usageArticle.content,
+    })
 
   if (article.status === ArticleStatus.published) {
     await syncArticleTranslationQueue(db, article.id, user.clientSiteId, { contentChanged: 'content' in data })
