@@ -569,25 +569,31 @@ export const finalizeArticle = async (
   }
 
   const acceptImage = createImageSelection()
-  const registerMedia = async (image: ArticleImage) => {
+  const registerMedia = async (image: ArticleImage, searchHint?: string) => {
     if (!clientSiteId) return image
     const credit = image.credit
     const creativeCommons = Boolean(credit?.license?.toUpperCase().startsWith('CC'))
     const origin = image.kind === 'ai' ? 'TOPIQU_AI' : creativeCommons ? 'CREATIVE_COMMONS' : 'EXTERNAL'
-    const asset = await prisma.mediaAsset.create({
-      data: {
-        clientSiteId,
-        url: image.url,
-        origin,
-        sourceUrl: credit?.sourceUrl,
-        author: credit?.author,
-        license: credit?.license,
-        licenseUrl: credit?.licenseUrl,
-        attribution: credit ? [credit.author, credit.license, credit.source].filter(Boolean).join(' · ') : null,
-        attributionRequired: creativeCommons,
-        width: image.width,
-        height: image.height,
-      },
+    const asset = await registerMediaAsset({
+      clientSiteId,
+      url: image.url,
+      deliveryUrl: image.url,
+      storageKey: image.storageKey,
+      name: searchHint,
+      defaultAltText: image.alt,
+      mimeType: image.mimeType,
+      sizeBytes: image.sizeBytes,
+      contentHash: image.contentHash,
+      origin,
+      sourceUrl: credit?.sourceUrl,
+      author: credit?.author,
+      license: credit?.license,
+      licenseUrl: credit?.licenseUrl,
+      attribution: credit ? [credit.author, credit.license, credit.source].filter(Boolean).join(' · ') : null,
+      attributionRequired: creativeCommons,
+      width: image.width,
+      height: image.height,
+      metadataSignals: image.kind === 'ai' && searchHint ? { generationPrompt: searchHint } : undefined,
     })
     return { ...image, mediaId: asset.id }
   }
@@ -623,6 +629,7 @@ export const finalizeArticle = async (
       articleImageCredit = hit ? { kind: hit.kind, credit: hit.image.credit } : { kind: 'ai' }
       const registered = await registerMedia(
         hit ? { ...hit.image, kind: hit.kind } : { ...generated!, kind: 'ai' as const },
+        object.coverImage.query,
       )
       articleCoverMediaId = registered.mediaId ?? null
       if (generated) acceptImage({ url: articleImageUrl })
@@ -670,7 +677,7 @@ export const finalizeArticle = async (
         return null
       }
 
-      const registered = await registerMedia(resolved)
+      const registered = await registerMedia(resolved, img.query)
       const image = {
         slot: idx + 1,
         // A requested caption describes the desired asset, not the asset that was actually

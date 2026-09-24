@@ -5,8 +5,13 @@ const InputSchema = z.object({ url: z.string().url().max(2048) }).refine((body) 
 export default defineEventHandler(async (event) => {
   const { user } = await requireTenantScope(event, 'ARTICLE_WRITE')
   const { url } = await readValidatedBody(event, InputSchema.parse)
-  const asset = await prisma.mediaAsset.create({
-    data: { clientSiteId: user.clientSiteId!, createdById: user.id, url, sourceUrl: url, origin: 'UNKNOWN' },
+  const asset = await registerMediaAsset({
+    clientSiteId: user.clientSiteId!,
+    createdById: user.id,
+    url,
+    deliveryUrl: url,
+    sourceUrl: url,
+    origin: 'UNKNOWN',
   })
   return { asset }
 })

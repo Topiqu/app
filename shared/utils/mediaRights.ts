@@ -37,6 +37,7 @@ export const extractArticleMedia = (article: ArticleMediaInput): ArticleMediaOcc
         key: `body:${blockIndex}:${imageIndex}:${url}`,
         placement: 'body',
         url,
+        ...(attr(tag, 'alt').trim() ? { alt: attr(tag, 'alt').trim() } : {}),
         mediaId: attr(tag, 'data-media-id').trim() || undefined,
         blockIndex,
       })
@@ -89,8 +90,11 @@ export const mediaRightsIssues = (occurrence: ArticleMediaOccurrence, asset: Med
 
 export const buildMediaRightsItems = (article: ArticleMediaInput, assets: MediaAssetRecord[]): MediaRightsItem[] => {
   const byId = new Map(assets.map((asset) => [asset.id, asset]))
+  const byUrl = new Map(
+    assets.flatMap((asset) => [asset.url, asset.deliveryUrl].filter(Boolean).map((url) => [url!, asset])),
+  )
   const items: MediaRightsItem[] = extractArticleMedia(article).map((occurrence) => {
-    const asset = occurrence.mediaId ? (byId.get(occurrence.mediaId) ?? null) : null
+    const asset = (occurrence.mediaId ? byId.get(occurrence.mediaId) : undefined) ?? byUrl.get(occurrence.url) ?? null
     const issues = mediaRightsIssues(occurrence, asset)
     return {
       ...occurrence,

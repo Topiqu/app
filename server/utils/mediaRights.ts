@@ -26,30 +26,52 @@ export const evaluateMediaRights = async (
   input: ArticleMediaInput,
 ): Promise<MediaRightsReport> => {
   const ids = [...new Set(extractArticleMedia(input).flatMap((item) => (item.mediaId ? [item.mediaId] : [])))]
-  const assets = ids.length
-    ? await db.mediaAsset.findMany({
-        where: { id: { in: ids }, clientSiteId, deletedAt: null },
-        select: {
-          id: true,
-          url: true,
-          origin: true,
-          sourceUrl: true,
-          author: true,
-          license: true,
-          licenseUrl: true,
-          attribution: true,
-          attributionRequired: true,
-          rightsConfirmedAt: true,
-          rightsConfirmedById: true,
-          originalFilename: true,
-          mimeType: true,
-          width: true,
-          height: true,
-          contentHash: true,
-          metadataSignals: true,
-        },
-      })
-    : []
+  const urls = [
+    ...new Set(
+      extractArticleMedia(input)
+        .map((item) => item.url)
+        .filter(Boolean),
+    ),
+  ]
+  const assets =
+    ids.length || urls.length
+      ? await db.mediaAsset.findMany({
+          where: {
+            clientSiteId,
+            deletedAt: null,
+            OR: [
+              ...(ids.length ? [{ id: { in: ids } }] : []),
+              ...(urls.length ? [{ url: { in: urls } }, { deliveryUrl: { in: urls } }] : []),
+            ],
+          },
+          select: {
+            id: true,
+            url: true,
+            deliveryUrl: true,
+            name: true,
+            defaultAltText: true,
+            origin: true,
+            sourceUrl: true,
+            author: true,
+            license: true,
+            licenseUrl: true,
+            attribution: true,
+            attributionRequired: true,
+            rightsConfirmedAt: true,
+            rightsConfirmedById: true,
+            originalFilename: true,
+            mimeType: true,
+            sizeBytes: true,
+            width: true,
+            height: true,
+            contentHash: true,
+            metadataSignals: true,
+            machineTags: true,
+            createdAt: true,
+            archivedAt: true,
+          },
+        })
+      : []
   const items = buildMediaRightsItems(input, assets as MediaAssetRecord[])
   const fingerprint = createHash('sha256')
     .update(

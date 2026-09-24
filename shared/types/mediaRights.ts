@@ -26,6 +26,9 @@ export type MediaRightsIssueCode =
 export interface MediaAssetRecord {
   id: string
   url: string
+  deliveryUrl?: string | null
+  name?: string | null
+  defaultAltText?: string | null
   origin: MediaOrigin
   sourceUrl?: string | null
   author?: string | null
@@ -37,10 +40,14 @@ export interface MediaAssetRecord {
   rightsConfirmedById?: string | null
   originalFilename?: string | null
   mimeType?: string | null
+  sizeBytes?: number | null
   width?: number | null
   height?: number | null
   contentHash?: string | null
   metadataSignals?: unknown
+  machineTags?: string[]
+  createdAt?: string | Date
+  archivedAt?: string | Date | null
 }
 
 export interface ArticleMediaInput {
@@ -53,6 +60,7 @@ export interface ArticleMediaOccurrence {
   key: string
   placement: 'cover' | 'body'
   url: string
+  alt?: string
   mediaId?: string
   blockIndex?: number
 }
