@@ -132,6 +132,7 @@ export default defineNuxtConfig({
           '*/5 * * * *': ['translate-pending', 'token-wallet-maintenance'],
           '0 4 * * *': ['gam-sync'],
           '15 4 * * *': ['grant-annual-article-credits'],
+          '30 4 * * *': ['media-gc'],
           '0 5 * * 1': ['ai-visibility-monitor'],
         }
       : undefined,
@@ -453,6 +454,7 @@ export default defineNuxtConfig({
           'en/admin.json',
           'en/domainVerification.json',
           'en/visibility.json',
+          'en/media.json',
           'master_en.json',
         ],
       },
@@ -475,6 +477,7 @@ export default defineNuxtConfig({
           'cs/admin.json',
           'cs/domainVerification.json',
           'cs/visibility.json',
+          'cs/media.json',
           'master_cs.json',
         ],
       },

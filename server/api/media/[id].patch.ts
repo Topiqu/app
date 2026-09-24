@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { MEDIA_ORIGINS } from '~~/shared/types/mediaRights'
 
 const InputSchema = z.object({
+  name: z.string().trim().max(255).nullable().optional(),
+  defaultAltText: z.string().trim().max(500).nullable().optional(),
   origin: z.enum(MEDIA_ORIGINS),
   sourceUrl: z.string().url().max(2048).nullable().optional(),
   author: z.string().max(255).nullable().optional(),
@@ -46,6 +48,14 @@ export default defineEventHandler(async (event) => {
           : current.rightsConfirmedById,
     attributionRequired:
       body.attributionRequired ?? (body.origin === 'CREATIVE_COMMONS' ? true : current.attributionRequired),
+    searchText: mediaSearchText({
+      name: body.name === undefined ? current.name : body.name,
+      defaultAltText: body.defaultAltText === undefined ? current.defaultAltText : body.defaultAltText,
+      originalFilename: current.originalFilename,
+      author: body.author === undefined ? current.author : body.author,
+      license: body.license === undefined ? current.license : body.license,
+      machineTags: current.machineTags,
+    }),
   }
   delete data.confirmRights
   const asset = await prisma.mediaAsset.update({ where: { id }, data })
