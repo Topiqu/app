@@ -116,7 +116,8 @@ export const useArticleScrollContext = (content: Ref<HTMLElement | null>, hero: 
 
   onMounted(async () => {
     await nextTick()
-    scrollContainer.value = content.value?.closest<HTMLElement>('.topiqu-dashboard-scroll') ?? null
+    scrollContainer.value =
+      content.value?.closest<HTMLElement>('[data-article-scroller], .topiqu-dashboard-scroll') ?? null
     collectHeadings()
     update()
   })

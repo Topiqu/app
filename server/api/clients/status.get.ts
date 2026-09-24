@@ -20,6 +20,9 @@ export default defineEventHandler(async (event) => {
       firstPaidAt: true,
       focus: true,
       audience: true,
+      theme: true,
+      typographyPreset: true,
+      discloseAiContent: true,
       stripeSubscriptionId: true,
       users: {
         where: { role: 'ai' },

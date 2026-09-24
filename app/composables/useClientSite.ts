@@ -24,6 +24,9 @@ export interface ClientSiteStatus {
   }
   focus: string | null
   audience: string | null
+  theme: PublicClientSite['theme']
+  typographyPreset: PublicClientSite['typographyPreset']
+  discloseAiContent: boolean
   aiUser: { username: string; avatarUrl: string | null } | null
   hasActiveSubscription: boolean
 }
