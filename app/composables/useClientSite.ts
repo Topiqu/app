@@ -26,6 +26,10 @@ export interface ClientSiteStatus {
   audience: string | null
   theme: PublicClientSite['theme']
   typographyPreset: PublicClientSite['typographyPreset']
+  accentColor: PublicClientSite['accentColor']
+  brandGradient: PublicClientSite['brandGradient']
+  headingFontUrl: PublicClientSite['headingFontUrl']
+  bodyFontUrl: PublicClientSite['bodyFontUrl']
   discloseAiContent: boolean
   aiUser: { username: string; avatarUrl: string | null } | null
   hasActiveSubscription: boolean

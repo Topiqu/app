@@ -29,7 +29,7 @@ import { consentLauncherFor } from '~~/shared/utils/consent'
 import { brandTitle, toAbsoluteUrl } from '~~/shared/utils/seo'
 import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
 
-import { resolveTenantTheme, themeColors } from '~/composables/theme'
+import { resolveBrandAccent } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
 const route = useRoute()
@@ -63,7 +63,9 @@ if (clientSite) {
   adChance.assign(clientSite.id, clientSite.plan)
 }
 
-const computedThemeColor = computed(() => themeColors[resolveTenantTheme(clientSite?.theme)])
+const computedThemeColor = computed(() =>
+  resolveBrandAccent(liveClientSite.value?.theme, liveClientSite.value?.accentColor),
+)
 
 useSeoMeta({
   title: () => clientSite?.name || 'Topiqu',

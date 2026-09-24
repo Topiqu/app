@@ -53,7 +53,15 @@ const { data: allTags } = useQuery({
 })
 
 const themeStyle = computed(() =>
-  clientStatus.value ? tenantThemeStyle(clientStatus.value.theme, clientStatus.value.typographyPreset) : undefined,
+  clientStatus.value
+    ? tenantThemeStyle(clientStatus.value.theme, clientStatus.value.typographyPreset, {
+        accentColor: clientStatus.value.accentColor,
+        brandGradient: clientStatus.value.brandGradient,
+        plan: clientStatus.value.plan,
+        headingFontUrl: clientStatus.value.headingFontUrl,
+        bodyFontUrl: clientStatus.value.bodyFontUrl,
+      })
+    : undefined,
 )
 const discloseAi = computed(() => clientStatus.value?.discloseAiContent ?? false)
 const aiDisclosure = computed(() =>

@@ -80,6 +80,37 @@
   );
 }
 
+.publication-surface :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--topiqu-heading-font, var(--topiqu-publication-font));
+}
+
+.publication-surface [data-editorial-hero] {
+  isolation: isolate;
+}
+
+.publication-surface [data-editorial-hero]::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -1rem;
+  border-radius: var(--topiqu-surface-radius);
+  background-image: var(--topiqu-brand-gradient, none);
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.publication-surface [data-editorial-hero]::after {
+  content: '';
+  position: absolute;
+  top: -1rem;
+  right: -1rem;
+  left: -1rem;
+  height: 0.375rem;
+  border-radius: var(--topiqu-surface-radius) var(--topiqu-surface-radius) 0 0;
+  background-image: var(--topiqu-brand-gradient, none);
+  pointer-events: none;
+}
+
 /* Editorial fallbacks stay bounded and intentional when remote media fails. */
 .article-content figure {
   margin-block: 2.25rem;
