@@ -86,43 +86,12 @@
       </template>
     </UCollapsible>
 
-    <UModal v-model:open="editorOpen" :title="$t('articles.editor.mediaRights.editTitle')">
-      <template #body>
-        <div class="space-y-4">
-          <UFormField :label="$t('articles.editor.mediaRights.origin')">
-            <USelect v-model="form.origin" :items="originItems" class="w-full" />
-          </UFormField>
-          <UFormField v-if="needsSource" :label="$t('articles.editor.mediaRights.sourceUrl')">
-            <UInput v-model="form.sourceUrl" type="url" class="w-full" />
-          </UFormField>
-          <UFormField v-if="needsDetails" :label="$t('articles.editor.mediaRights.author')">
-            <UInput v-model="form.author" class="w-full" />
-          </UFormField>
-          <UFormField v-if="needsDetails" :label="$t('articles.editor.mediaRights.license')">
-            <UInput v-model="form.license" class="w-full" />
-          </UFormField>
-          <UFormField v-if="needsDetails" :label="$t('articles.editor.mediaRights.attribution')">
-            <UTextarea v-model="form.attribution" class="w-full" autoresize />
-          </UFormField>
-          <UFormField v-if="form.origin !== 'UNKNOWN' && form.origin !== 'TOPIQU_AI'">
-            <USwitch v-model="form.confirmRights" :label="$t('articles.editor.mediaRights.confirmRights')" />
-          </UFormField>
-        </div>
-      </template>
-      <template #footer>
-        <div class="flex w-full justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="editorOpen = false">{{
-            $t('common.actions.cancel')
-          }}</UButton>
-          <UButton :loading="saving" @click="save">{{ $t('common.actions.save') }}</UButton>
-        </div>
-      </template>
-    </UModal>
+    <MediaDetail :id="active?.asset?.id" v-model:open="editorOpen" @updated="$emit('updated')" />
   </section>
 </template>
 
 <script setup lang="ts">
-import type { MediaOrigin, MediaRightsItem, MediaRightsReport } from '~~/shared/types/mediaRights'
+import type { MediaRightsItem, MediaRightsReport } from '~~/shared/types/mediaRights'
 
 import type { MediaRightsState } from '~/composables/useMediaRights'
 
@@ -132,31 +101,9 @@ const emit = defineEmits<{
   attach: [item: MediaRightsItem, mediaId: string]
   updated: []
 }>()
-const { t } = useI18n()
 const open = shallowRef(false)
 const editorOpen = shallowRef(false)
-const saving = shallowRef(false)
 const active = shallowRef<MediaRightsItem | null>(null)
-const form = reactive({
-  origin: 'UNKNOWN' as MediaOrigin,
-  sourceUrl: '',
-  author: '',
-  license: '',
-  attribution: '',
-  confirmRights: false,
-})
-const originItems = computed(() =>
-  MEDIA_ORIGINS.filter((value) => value !== 'TOPIQU_AI' || active.value?.asset?.origin === 'TOPIQU_AI').map(
-    (value) => ({
-      value,
-      label: t(`articles.editor.mediaRights.origins.${value}`),
-    }),
-  ),
-)
-const needsSource = computed(() =>
-  ['LICENSED_STOCK', 'CREATIVE_COMMONS', 'PUBLIC_DOMAIN', 'EXTERNAL'].includes(form.origin),
-)
-const needsDetails = computed(() => ['LICENSED_STOCK', 'CREATIVE_COMMONS', 'PUBLIC_DOMAIN'].includes(form.origin))
 
 const edit = async (item: MediaRightsItem) => {
   active.value = item
@@ -173,37 +120,7 @@ const edit = async (item: MediaRightsItem) => {
     }
   }
   if (!asset) return
-  Object.assign(form, {
-    origin: asset.origin,
-    sourceUrl: asset.sourceUrl ?? '',
-    author: asset.author ?? '',
-    license: asset.license ?? '',
-    attribution: asset.attribution ?? '',
-    confirmRights: Boolean(asset.rightsConfirmedAt),
-  })
+  if (!item.mediaId) emit('attach', item, asset.id)
   editorOpen.value = true
-}
-const save = async () => {
-  const id = active.value?.asset?.id
-  if (!id) return
-  saving.value = true
-  try {
-    await $fetch(`/api/media/${id}`, {
-      method: 'PATCH',
-      body: {
-        origin: form.origin,
-        sourceUrl: form.sourceUrl || null,
-        author: form.author || null,
-        license: form.license || null,
-        attribution: form.attribution || null,
-        attributionRequired: form.origin === 'CREATIVE_COMMONS' || Boolean(form.attribution),
-        confirmRights: form.confirmRights,
-      },
-    })
-    editorOpen.value = false
-    emit('updated')
-  } finally {
-    saving.value = false
-  }
 }
 </script>

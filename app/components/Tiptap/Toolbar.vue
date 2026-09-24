@@ -82,6 +82,14 @@
           @click="emit('openLink', { type: 'image' })"
         />
         <UButton
+          icon="mdi:image-multiple-outline"
+          color="neutral"
+          variant="ghost"
+          :title="$t('media.choose')"
+          :aria-label="$t('media.choose')"
+          @click="emit('openMedia')"
+        />
+        <UButton
           icon="mdi:link"
           color="neutral"
           variant="ghost"
@@ -183,7 +191,7 @@ const { editor, limit } = defineProps<{ editor: Editor; limit: number }>()
 const emit = defineEmits<{
   (e: 'openLink', payload: { type: 'link' | 'image' | 'youtube'; url?: string }): void
   (e: 'uploadFile', files: FileList | null): void
-  (e: 'insertPoll' | 'focusEditor'): void
+  (e: 'insertPoll' | 'focusEditor' | 'openMedia'): void
 }>()
 
 const sk = useTiptapShortcuts()

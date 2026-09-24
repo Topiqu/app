@@ -35,6 +35,10 @@
         :maxHeight="2160"
         @upload="$emit('upload', $event)"
       />
+      <UButton color="neutral" variant="soft" icon="mdi:image-multiple-outline" @click="mediaPickerOpen = true">
+        {{ $t('media.choose') }}
+      </UButton>
+      <MediaPicker v-model:open="mediaPickerOpen" mode="cover" @select="selectCoverMedia" />
     </section>
 
     <USeparator />
@@ -499,6 +503,10 @@ const props = defineProps<{
 }>()
 
 const imageSection = useTemplateRef<HTMLElement>('imageSection')
+const mediaPickerOpen = shallowRef(false)
+const selectCoverMedia = (asset: import('~~/shared/types/mediaLibrary').MediaPickerSelection) => {
+  emit('upload', { url: asset.url, optimizedUrl: asset.deliveryUrl || asset.url, mediaAsset: { id: asset.id } })
+}
 const sourcesSection = useTemplateRef<HTMLElement>('sourcesSection')
 const sourcesEditor = useTemplateRef<{ focusSource: (index?: number) => HTMLElement | null }>('sourcesEditor')
 const focusOptimizationTarget = (target: OptimizationTarget) => {
@@ -663,7 +671,7 @@ const selectFormat = (format: ArticleGenerationFormat) => {
   )
 }
 
-defineEmits<{
+const emit = defineEmits<{
   upload: [file: { url: string; optimizedUrl: string; mediaAsset?: { id: string } }]
   generate: []
   stop: []

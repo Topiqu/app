@@ -137,6 +137,11 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
       icon: 'mdi:pencil',
       to: localePath({ name: 'admin-editor-id', params: { id: 'new' } }),
     },
+    {
+      label: $t('common.navigation.media'),
+      icon: 'mdi:image-multiple-outline',
+      to: localePath({ name: 'admin-media' }),
+    },
     { label: $t('common.navigation.settings'), icon: 'mdi:cog', to: localePath({ name: 'settings' }) },
     publication,
   ]

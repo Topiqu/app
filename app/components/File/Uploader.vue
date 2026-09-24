@@ -76,6 +76,7 @@
 <script setup lang="ts">
 const emit = defineEmits<{
   (e: 'upload', payload: { url: string; optimizedUrl: string; mediaAsset?: { id: string } }): void
+  (e: 'processing', value: boolean): void
 }>()
 const props = defineProps<{
   imageUrl?: string | null
@@ -213,6 +214,7 @@ const handleFile = async (file: File) => {
 
   const c = constraints.value
   isProcessing.value = true
+  emit('processing', true)
   previewUrl.value = objectUrl
 
   const formData = new FormData()
@@ -244,6 +246,7 @@ const handleFile = async (file: File) => {
     URL.revokeObjectURL(objectUrl)
   } finally {
     isProcessing.value = false
+    emit('processing', false)
   }
 }
 
@@ -256,4 +259,5 @@ const onPaste = (e: ClipboardEvent) => {
 }
 
 const onFileSelected = (file: File | null | undefined) => file && handleFile(file)
+defineExpose({ openPicker, handleFile })
 </script>
