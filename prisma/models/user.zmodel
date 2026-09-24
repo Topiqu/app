@@ -6,6 +6,7 @@ import "./notification"
 import "./linkedin"
 import "./log"
 import "./media"
+import "./knowledge"
 import "./generation"
 
 model User with Base {
@@ -48,6 +49,7 @@ model User with Base {
     mediaRightsConfirmations      MediaAsset[]      @relation("MediaRightsConfirmer")
     mediaPublicationConfirmations MediaRightsPublicationSnapshot[] @relation("MediaPublicationConfirmer")
     articleGenerationSessions     ArticleGenerationSession[]
+    knowledgeSources              KnowledgeSource[] @relation("KnowledgeSourceCreator")
     approvals                     Approval[]
     tenantMemberships             TenantMembership[]
     tenantInvitations             TenantInvitation[] @relation("InvitationSender")

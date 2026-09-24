@@ -1,0 +1,138 @@
+{
+  "sources": [
+    {
+      "title": "Why customers switch",
+      "content": "# Why customers switch\nOur customers most often move away from a manual WordPress workflow, because editorial approvals take 2–3 hours every week. Agencies cite missed publishing slots as the second reason."
+    },
+    {
+      "title": "Pricing",
+      "content": "# Topiqu pricing\nThe Pro plan costs 49 USD per month and includes scheduled AI articles, translations into one extra language and the media library. Premium costs 99 USD and adds Search Console autopilot."
+    },
+    {
+      "title": "Positioning vs Jasper",
+      "content": "# Topiqu compared with Jasper\nJasper is a general AI writing assistant. Topiqu runs the whole publication: it researches, writes, reviews facts, publishes on a schedule and hosts the blog. Approved claim: Topiqu verifies every article against live web sources before publishing."
+    },
+    {
+      "title": "Case study Pixbo",
+      "content": "# Pixbo case study\nPixbo, a gaming news site, grew organic traffic by 180 % in six months after switching to scheduled Topiqu articles with official game screenshots from Steam."
+    },
+    {
+      "title": "Překlady",
+      "content": "# Automatické překlady\nTopiqu překládá publikované články do dalších jazyků. Režim HYBRID nechá překlad čekat na schválení redaktorem, režim AUTO ho publikuje hned a správně nastaví hreflang."
+    },
+    {
+      "title": "Security",
+      "content": "# Security and data\nCustomer data is stored in the EU. Tenant isolation is enforced by row-level access policies, and every article change is written to a tamper-evident audit log."
+    },
+    {
+      "title": "Office rules",
+      "content": "# Office rules\nDogs are welcome in the Prague office on Fridays. Parking is available in the courtyard; please register your car at reception."
+    },
+    {
+      "title": "Holiday policy",
+      "content": "# Holiday policy\nEmployees get 25 days of paid leave. Requests go through the HR portal at least two weeks in advance."
+    }
+  ],
+  "cases": [
+    {
+      "topic": "How to speed up editorial approvals in content operations",
+      "expect": [
+        "Why customers switch"
+      ],
+      "allow": [
+        "Positioning vs Jasper"
+      ]
+    },
+    {
+      "topic": "Topiqu vs Jasper: which AI writer should a publisher choose",
+      "expect": [
+        "Positioning vs Jasper"
+      ],
+      "allow": [
+        "Pricing",
+        "Case study Pixbo",
+        "Překlady",
+        "Security",
+        "Why customers switch"
+      ]
+    },
+    {
+      "topic": "How much does an AI blog platform cost per month",
+      "expect": [
+        "Pricing"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Case study: growing organic traffic for a gaming news website",
+      "expect": [
+        "Case study Pixbo"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Jak funguje automatický překlad článků a hreflang",
+      "expect": [
+        "Překlady"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Multilingual blogging: translating articles for new markets",
+      "expect": [
+        "Překlady"
+      ],
+      "allow": [
+        "Pricing"
+      ]
+    },
+    {
+      "topic": "Is AI-generated content safe for GDPR and data residency in the EU",
+      "expect": [
+        "Security"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Why agencies abandon WordPress for automated publishing",
+      "expect": [
+        "Why customers switch"
+      ],
+      "allow": [
+        "Positioning vs Jasper"
+      ]
+    },
+    {
+      "topic": "Fact-checking AI articles before they go live",
+      "expect": [
+        "Positioning vs Jasper"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Best hiking trails in the Alps",
+      "expect": [],
+      "allow": []
+    },
+    {
+      "topic": "How to bake sourdough bread at home",
+      "expect": [],
+      "allow": []
+    },
+    {
+      "topic": "Nejlepší recepty na vánoční cukroví",
+      "expect": [],
+      "allow": []
+    },
+    {
+      "topic": "Champions League final preview",
+      "expect": [],
+      "allow": []
+    },
+    {
+      "topic": "Remote work productivity tips",
+      "expect": [],
+      "allow": []
+    }
+  ]
+}

@@ -129,10 +129,11 @@ export default defineNuxtConfig({
           '0 3 * * *': ['community-insights'],
           '0 2 * * *': ['search-console-sync'],
           '30 2 * * *': ['search-console-autopilot'],
-          '*/5 * * * *': ['translate-pending', 'token-wallet-maintenance'],
+          '*/5 * * * *': ['translate-pending', 'token-wallet-maintenance', 'knowledge-index'],
           '0 4 * * *': ['gam-sync'],
           '15 4 * * *': ['grant-annual-article-credits'],
           '30 4 * * *': ['media-gc'],
+          '45 3 * * *': ['knowledge-refresh'],
           '0 5 * * 1': ['ai-visibility-monitor'],
         }
       : undefined,

@@ -58,6 +58,7 @@ describe('article media finalization', () => {
           .fn()
           .mockResolvedValue({ tokenRemaining: 10000, language: 'en', plan, features: [{ isActive }] }),
       },
+      knowledgeSource: { findFirst: vi.fn().mockResolvedValue(null) },
     })
     vi.stubGlobal('currentTokenOperation', () => null)
     vi.stubGlobal('aiModel', () => 'test-model')

@@ -6,6 +6,7 @@ import "./user"
 import "./comment"
 import "./linkedin"
 import "./log"
+import "./knowledge"
 import "./ads"
 import "./searchConsole"
 import "./visibility"
@@ -107,6 +108,7 @@ model ClientSite with Base {
     articleMediaUsages   ArticleMediaUsage[]
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]
     articleGenerationSessions ArticleGenerationSession[]
+    knowledgeSources     KnowledgeSource[]
     aiSeriesEnabled      Boolean             @default(false)
     keywords             Json?
     audience             String?

@@ -30,6 +30,7 @@ beforeEach(() => {
   vi.mocked(generateObject).mockReset()
   vi.stubGlobal('prisma', {
     clientSite: { findFirstOrThrow: vi.fn().mockResolvedValue({ tokenRemaining: 10000, language: 'en' }) },
+    knowledgeSource: { findFirst: vi.fn().mockResolvedValue(null) },
   })
   vi.stubGlobal('currentTokenOperation', () => null)
   vi.stubGlobal('aiModel', () => 'test-model')
