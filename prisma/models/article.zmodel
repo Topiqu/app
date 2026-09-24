@@ -102,6 +102,7 @@ model Article with Base, Ownable {
     notifications    Notification[]    @relation("ArticleNotifications")
     translations     ArticleTranslation[]
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]
+    mediaUsages      ArticleMediaUsage[]
     sources          String[]
     /// Direct answer to the article's question, 40–60 words, rendered above the body. Answer
     /// engines quote this span; the perex is a hook and reads as one.
@@ -141,6 +142,7 @@ model ArticleTranslation with Base {
     usage        Json?
     error        String?           @length(0, 1000)
     translatedAt DateTime?
+    mediaUsages  ArticleMediaUsage[]
     @@unique([articleId, language])
     @@unique([slug, clientSiteId, language])
     @@allow('read', status == 'PUBLISHED' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))

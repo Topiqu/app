@@ -98,6 +98,7 @@ model ClientSite with Base {
     totalUsage           Int?                @default(0)
     autoRelease          Boolean             @default(false)
     mediaAssets          MediaAsset[]
+    articleMediaUsages   ArticleMediaUsage[]
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]
     articleGenerationSessions ArticleGenerationSession[]
     aiSeriesEnabled      Boolean             @default(false)
