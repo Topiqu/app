@@ -190,7 +190,9 @@
                   : 'border-transparent hover:border-neutral-300 dark:hover:border-neutral-600'
               "
               :style="{ backgroundColor: themeColors[theme] }"
-              :aria-label="$t('common.actions.selectTheme', { theme })"
+              :aria-label="
+                $t('common.actions.selectTheme', { theme: $t(`common.preferences.branding.colors.${theme}`) })
+              "
               :aria-pressed="form.theme === theme"
               @click="form.theme = theme"
             >

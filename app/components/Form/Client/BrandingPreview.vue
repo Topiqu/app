@@ -1,64 +1,126 @@
 <template>
-  <div
-    data-publication-preview
-    class="publication-surface rounded-(--topiqu-surface-radius) border border-default bg-default p-4"
-    :style="previewStyle"
-  >
-    <div class="grid gap-4 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-      <div class="flex min-w-0 flex-col items-center justify-center py-3 text-center">
-        <AppMedia
-          :src="logoUrl"
-          :fallbackText="name"
-          :fallbackBorder="false"
-          :alt="name"
-          aspectRatio="1 / 1"
-          fit="contain"
-          sizes="128px"
-          :width="256"
-          containerClass="aspect-square w-full max-w-28 rounded-[var(--ui-radius)] bg-transparent"
-        />
-        <h3 v-if="!logoUrl" class="sr-only">{{ name }}</h3>
-        <p
-          v-if="tagline"
-          class="mt-3 max-w-[24ch] border-b-2 border-[var(--topiqu-tenant-accent)] px-2 pb-2 text-sm font-semibold leading-snug text-highlighted"
+  <div class="space-y-3">
+    <div class="flex items-center justify-between gap-3">
+      <span class="text-sm font-semibold text-highlighted">{{ $t('common.preferences.branding.livePreview') }}</span>
+      <UButton
+        type="button"
+        size="xs"
+        color="neutral"
+        variant="soft"
+        :icon="darkPreview ? 'mdi:weather-sunny' : 'mdi:weather-night'"
+        @click="darkPreview = !darkPreview"
+      >
+        {{
+          darkPreview ? $t('common.preferences.branding.lightPreview') : $t('common.preferences.branding.darkPreview')
+        }}
+      </UButton>
+    </div>
+    <div
+      data-publication-preview
+      class="publication-surface overflow-hidden rounded-(--topiqu-surface-radius) border border-default shadow-sm"
+      :style="previewStyle"
+    >
+      <div
+        class="h-2"
+        :style="{ background: activeGradient ? gradientCss(activeGradient) : accent }"
+        aria-hidden="true"
+      />
+      <div class="p-5">
+        <header
+          class="flex items-center gap-3 border-b pb-4"
+          :style="{ borderColor: darkPreview ? '#374151' : '#e5e7eb' }"
         >
-          {{ tagline }}
-        </p>
-        <p v-if="description" class="mt-2 line-clamp-2 text-xs leading-5 text-muted">{{ description }}</p>
-        <span
-          class="publication-primary-cta mt-3 inline-flex rounded-[var(--ui-radius)] px-3 py-2 text-xs font-semibold"
-        >
-          {{ $t('articles.home.latestStory') }}
-        </span>
-      </div>
-
-      <div class="overflow-hidden rounded-[var(--ui-radius)] border border-default bg-default">
-        <div class="grid min-h-28 place-items-center bg-elevated text-muted">
-          <UIcon name="mdi:image-outline" size="28" />
-        </div>
-        <div class="space-y-2 p-3">
-          <div class="flex gap-1.5">
-            <span class="h-5 w-12 rounded-full bg-primary/10" />
-            <span class="h-5 w-8 rounded-full bg-primary/10" />
+          <AppMedia
+            :src="logoUrl"
+            :fallbackText="name"
+            :fallbackBorder="false"
+            :alt="name"
+            aspectRatio="16 / 5"
+            fit="contain"
+            sizes="96px"
+            :width="256"
+            containerClass="h-10 w-24 shrink-0 bg-transparent"
+          />
+          <div class="min-w-0">
+            <p class="truncate text-sm font-bold">{{ name }}</p>
+            <p v-if="tagline" class="line-clamp-1 text-xs opacity-70">{{ tagline }}</p>
           </div>
-          <div class="h-3 w-full rounded bg-muted" />
-          <div class="h-3 w-4/5 rounded bg-muted" />
-          <div class="h-2 w-3/5 rounded bg-elevated" />
-        </div>
+        </header>
+        <article class="pt-5">
+          <p
+            class="mb-2 text-xs font-semibold uppercase tracking-wider"
+            :style="{
+              color: darkPreview ? baseStyle['--topiqu-tenant-accent-dark'] : baseStyle['--topiqu-tenant-accent-light'],
+            }"
+          >
+            {{ $t('common.preferences.branding.sampleCategory') }}
+          </p>
+          <h3
+            class="text-2xl font-bold leading-tight tracking-tight"
+            :style="{ fontFamily: baseStyle['--topiqu-heading-font'] }"
+          >
+            {{ $t('common.preferences.branding.sampleTitle') }}
+          </h3>
+          <p class="mt-3 text-sm leading-relaxed opacity-75">
+            {{ description || $t('common.preferences.branding.sampleExcerpt') }}
+          </p>
+          <p class="mt-3 text-sm leading-relaxed">
+            {{ $t('common.preferences.branding.sampleBody') }}
+          </p>
+          <span
+            class="publication-primary-cta mt-5 inline-flex rounded-[var(--ui-radius)] px-4 py-2 text-xs font-semibold"
+          >
+            {{ $t('articles.home.latestStory') }}
+          </span>
+        </article>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const { logoUrl, name, tagline, description, currentTheme, typographyPreset } = defineProps<{
+import type { BrandGradient } from '~~/shared/utils/publicationBranding'
+
+import { gradientCss, hasAdvancedBranding, parseBrandGradient } from '~~/shared/utils/publicationBranding'
+
+import { resolveBrandAccent, tenantThemeStyle, type PublicationTypography } from '~/composables/theme'
+
+const props = defineProps<{
   logoUrl: string
   name: string
   tagline: string
   description: string
   currentTheme: string
-  typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM' | 'MAGAZINE' | 'CUSTOM'
+  typographyPreset: PublicationTypography
+  accentColor: string
+  brandGradient: BrandGradient | null
+  headingFontUrl: string
+  bodyFontUrl: string
+  plan: string
 }>()
 
-const previewStyle = computed(() => tenantThemeStyle(currentTheme, typographyPreset))
+const darkPreview = shallowRef(false)
+const baseStyle = computed(() =>
+  tenantThemeStyle(props.currentTheme, props.typographyPreset, {
+    accentColor: props.accentColor,
+    brandGradient: props.brandGradient,
+    plan: props.plan,
+    headingFontUrl: props.headingFontUrl,
+    bodyFontUrl: props.bodyFontUrl,
+  }),
+)
+const activeGradient = computed(() =>
+  hasAdvancedBranding(props.plan) ? parseBrandGradient(props.brandGradient) : null,
+)
+const accent = computed(() => resolveBrandAccent(props.currentTheme, props.accentColor))
+const previewStyle = computed(() => ({
+  ...baseStyle.value,
+  backgroundColor: darkPreview.value ? '#111827' : '#ffffff',
+  color: darkPreview.value ? '#f8fafc' : '#111827',
+  '--topiqu-cta-bg': darkPreview.value ? baseStyle.value['--topiqu-cta-dark-bg'] : baseStyle.value['--topiqu-cta-bg'],
+  '--topiqu-cta-hover': darkPreview.value
+    ? baseStyle.value['--topiqu-cta-dark-hover']
+    : baseStyle.value['--topiqu-cta-hover'],
+  '--topiqu-cta-fg': darkPreview.value ? baseStyle.value['--topiqu-cta-dark-fg'] : baseStyle.value['--topiqu-cta-fg'],
+}))
 </script>
