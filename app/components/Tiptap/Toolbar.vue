@@ -228,7 +228,8 @@ const headingValue = computed({
 
 const textColor = computed({
   get: () => editor.getAttributes('textStyle').color || '',
-  set: (v: string) => run((c) => (v ? c.setColor(v) : c.unsetColor())),
+  // No focus(): moving focus into the editor dismisses the open picker popover.
+  set: (v: string) => (v ? editor.chain().setColor(v) : editor.chain().unsetColor()).run(),
 })
 
 const toggleBlockquote = () => {

@@ -79,7 +79,10 @@ const onDraftChange = (value: string | undefined) => {
 }
 
 const onPointerDown = (event: PointerEvent) => {
-  if (event.target instanceof Element && event.target.closest('[data-slot="picker"]')) dragging = true
+  if (!(event.target instanceof Element && event.target.closest('[data-slot="picker"]'))) return
+  // Stops text selection and focus shifts while dragging across the color area.
+  event.preventDefault()
+  dragging = true
 }
 
 const onPointerUp = async () => {

@@ -44,7 +44,9 @@ describe('Tiptap color picker', () => {
 
     const picker = wrapper.getComponent(ColorInputStub)
     const pickerElement = picker.element
-    await wrapper.get('[data-slot="selector"]').trigger('pointerdown')
+    const pointerdown = new Event('pointerdown', { bubbles: true, cancelable: true })
+    wrapper.get('[data-slot="selector"]').element.dispatchEvent(pointerdown)
+    expect(pointerdown.defaultPrevented).toBe(true)
     picker.vm.$emit('update:modelValue', '#224466')
     picker.vm.$emit('update:modelValue', '#4488cc')
     await nextTick()
