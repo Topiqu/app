@@ -53,6 +53,10 @@ export default defineMonitoredTask({
         where: { id: { in: articleIds }, status: 'draft' },
         data: { status: 'published', releaseAt: null },
       })
+      await ctx.article.updateMany({
+        where: { id: { in: articleIds }, status: 'published', publishedAt: null },
+        data: { publishedAt: now },
+      })
 
       for (const a of publishable) touched.add(a.clientSiteId)
 

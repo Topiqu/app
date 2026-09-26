@@ -68,6 +68,7 @@ export default defineEventHandler(async (event) => {
       imageUrl: body.imageUrl,
       imageCredit: body.imageCredit === null ? DbNull : body.imageCredit,
       status: body.status,
+      publishedAt: body.status === 'published' ? new Date() : null,
       aiInvolvement: body.aiInvolvement,
       readingTime: body.readingTime,
       totalWords: body.totalWords,

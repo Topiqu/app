@@ -29,6 +29,8 @@ export default defineEventHandler(async (event) => {
     where: { id },
     select: {
       status: true,
+      publishedAt: true,
+      aiInvolvement: true,
       releaseAt: true,
       articleSeriesId: true,
       seriesOrder: true,
@@ -111,6 +113,12 @@ export default defineEventHandler(async (event) => {
     data.releaseAt = body.releaseAt ? new Date(body.releaseAt) : null
   }
   if (body.content) data.content = sanitizeHtml(content || '')
+  if (previousArticle.status !== ArticleStatus.published && body.status === ArticleStatus.published) {
+    data.publishedAt = previousArticle.publishedAt ?? currentDate
+  }
+  if (previousArticle.aiInvolvement === 'FULL' && data.content && data.content !== previousArticle.content) {
+    data.aiInvolvement = 'ASSIST'
+  }
 
   const article = await db.article.update({
     where: { id },
