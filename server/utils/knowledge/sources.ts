@@ -50,7 +50,7 @@ export const limitKnowledgeRequests = async (event: H3Event, clientSiteId: strin
   throw createError({ statusCode: 429, message: t('common.errors.tooManyRequests') || 'Too many requests' })
 }
 
-export const knowledgeUsage = async (clientSiteId: string) => {
+const knowledgeUsage = async (clientSiteId: string) => {
   const [row] = await prisma.$queryRaw<{ sources: number; characters: number }[]>`
     SELECT count(*)::int AS sources, COALESCE(sum(length("content")), 0)::int AS characters
     FROM "KnowledgeSource" WHERE "clientSiteId" = ${clientSiteId} AND "deletedAt" IS NULL`
