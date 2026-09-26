@@ -519,6 +519,8 @@ const buildArticleConfig = async (
       depth: researchDepth,
       knowledgeSourceCount: knowledge?.used.length ?? 0,
       knowledgeSources: (knowledge?.used ?? []).map(({ sourceId, title }) => ({ id: sourceId, title })),
+      knowledgeShortlisted: knowledge?.shortlist?.length ?? 0,
+      knowledgeSelected: knowledge?.used.reduce((sum, entry) => sum + entry.chunkIds.length, 0) ?? 0,
     },
     config: {
       model: aiModel('articleWriter'),
@@ -847,6 +849,7 @@ export const streamArticle = async (
     researchDepth?: ResearchDepth
     fallbackWithoutResearch?: boolean
     allowGeneratedImages?: boolean
+    useKnowledge?: boolean
     format?: ArticleFormat
     modules?: readonly ArticleModule[]
   } = {},
@@ -863,7 +866,7 @@ export const streamArticle = async (
     research,
     allowGeneratedImages,
     officialMediaPages,
-  } = await buildArticleConfig(clientSiteId, prompt, { ...opts, knowledgeQuery: prompt })
+  } = await buildArticleConfig(clientSiteId, prompt, { ...opts, knowledgeQuery: opts.useKnowledge === false ? null : prompt })
   let groundingBrief = citationAllowlist
   const result = streamObject({ ...config, abortSignal: opts.abortSignal })
 

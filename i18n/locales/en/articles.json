@@ -564,7 +564,9 @@
         "reviewFailed": "The article did not pass editorial review after revision.",
         "reviewWarning": "Article generated; please review it before publishing",
         "allowGeneratedImages": "Allow AI illustrations as a last resort",
-        "generatedImagesFallback": "Only when no suitable existing image is found. Also applies to the cover image."
+        "generatedImagesFallback": "Only when no suitable existing image is found. Also applies to the cover image.",
+        "useKnowledge": "Use knowledge",
+        "useKnowledgeDescription": "AI picks relevant passages from your Knowledge."
       },
       "drafts": {
         "loadDrafts": "Load Drafts",

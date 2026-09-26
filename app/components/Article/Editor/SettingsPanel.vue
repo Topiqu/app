@@ -190,6 +190,18 @@
                 </div>
               </div>
 
+              <div class="border-t border-default pt-5">
+                <!-- Options saved before this switch existed lack the field; they meant "use it". -->
+                <USwitch
+                  :modelValue="aiOptions.useKnowledge !== false"
+                  :aria-label="$t('articles.editor.ai.useKnowledge')"
+                  :label="$t('articles.editor.ai.useKnowledge')"
+                  :description="$t('articles.editor.ai.useKnowledgeDescription')"
+                  :ui="{ root: 'flex-row-reverse justify-between', wrapper: 'ms-0 me-3' }"
+                  @update:modelValue="aiOptions.useKnowledge = $event"
+                />
+              </div>
+
               <div class="flex flex-col gap-4 border-t border-default pt-5">
                 <fieldset>
                   <legend class="mb-3 text-sm font-medium text-highlighted">

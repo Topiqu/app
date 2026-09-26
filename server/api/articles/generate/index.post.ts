@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
         .object({
           format: z.enum(ARTICLE_GENERATION_FORMATS),
           allowGeneratedImages: z.boolean().default(true),
+          useKnowledge: z.boolean().default(true),
           modules: z.array(z.enum(ARTICLE_GENERATION_MODULES)).max(ARTICLE_GENERATION_MODULES.length),
           research: z.object({
             enabled: z.boolean(),
@@ -60,6 +61,7 @@ export default defineEventHandler(async (event) => {
     modules: options?.modules ?? [],
     researchDepth: options?.research.enabled ? options.research.depth : null,
     allowGeneratedImages: options?.allowGeneratedImages !== false,
+    useKnowledge: options?.useKnowledge !== false,
   })
 
   const client = await prisma.clientSite.findUnique({
@@ -107,6 +109,7 @@ export default defineEventHandler(async (event) => {
     modules: options?.modules ?? [],
     researchDepth: options?.research.enabled ? options.research.depth : null,
     allowGeneratedImages: options?.allowGeneratedImages !== false,
+    useKnowledge: options?.useKnowledge !== false,
     models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') },
   }
 
@@ -165,6 +168,7 @@ export default defineEventHandler(async (event) => {
             format: options?.format,
             modules: options?.modules,
             allowGeneratedImages: options?.allowGeneratedImages !== false,
+            useKnowledge: options?.useKnowledge !== false,
           })
           const { result, finalize, researchTokens, research, researchSources, knowledge } = generation
           recoverySnapshot.sources = researchSources

@@ -466,6 +466,7 @@ const processClient = async (client: any) =>
             tokens,
             researched: topic ? researchRequest(topic) !== false : false,
             knowledge: generated.knowledge ?? [],
+            knowledgeShortlisted: generated.research?.knowledgeShortlisted ?? 0,
             editorialReview: generated.editorialReview,
             researchApproved,
             mediaApproved,

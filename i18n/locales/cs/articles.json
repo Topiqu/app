@@ -564,7 +564,9 @@
         "reviewFailed": "Článek neprošel redakční kontrolou ani po opravě.",
         "reviewWarning": "Článek byl vygenerován; před publikací jej prosím zkontrolujte",
         "allowGeneratedImages": "Povolit AI ilustrace jako poslední možnost",
-        "generatedImagesFallback": "Pouze pokud nenajdeme vhodný existující obrázek. Platí i pro titulní obrázek."
+        "generatedImagesFallback": "Pouze pokud nenajdeme vhodný existující obrázek. Platí i pro titulní obrázek.",
+        "useKnowledge": "Použít znalosti",
+        "useKnowledgeDescription": "AI vybere relevantní podklady z vašich Znalostí."
       },
       "drafts": {
         "loadDrafts": "Načíst koncepty",
