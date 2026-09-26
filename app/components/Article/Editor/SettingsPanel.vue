@@ -101,6 +101,23 @@
                     <dd class="mt-1 text-sm font-semibold text-highlighted">{{ metric.value }}</dd>
                   </div>
                 </dl>
+                <div v-if="aiResearch?.knowledgeSources?.length" class="border-t border-default/70 px-4 py-3">
+                  <p class="text-[11px] uppercase tracking-wide text-muted">
+                    {{ $t('articles.editor.ai.result.knowledgeSources') }}
+                  </p>
+                  <ul class="mt-1.5 space-y-1">
+                    <li v-for="source in aiResearch.knowledgeSources" :key="source.id">
+                      <NuxtLink
+                        :to="localePath({ name: 'admin-knowledge', query: { source: source.id } })"
+                        target="_blank"
+                        class="inline-flex items-center gap-1.5 text-sm text-highlighted hover:underline"
+                      >
+                        <UIcon name="mdi:book-open-page-variant-outline" size="14" class="text-muted" aria-hidden="true" />
+                        {{ source.title }}
+                      </NuxtLink>
+                    </li>
+                  </ul>
+                </div>
                 <div
                   v-if="aiLastResult.missingModules.length"
                   class="border-t border-warning/20 px-4 py-3 text-xs text-warning"
@@ -538,6 +555,7 @@ const phaseIcons: Record<GenerationPhase, string> = {
   images: 'mdi:image-multiple-outline',
 }
 const { t } = useI18n()
+const localePath = useLocalePath()
 const researchDepthName = useId()
 
 const activeHeading = computed(() => props.aiAuthorName || t('articles.editor.ai.neutralWorking'))

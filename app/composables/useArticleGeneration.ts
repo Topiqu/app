@@ -20,6 +20,7 @@ export interface GenerationResearchResult {
   sourceCount: number
   depth: ResearchDepth
   knowledgeSourceCount?: number
+  knowledgeSources?: { id: string; title: string }[]
   sources: string[]
 }
 

@@ -518,6 +518,7 @@ const buildArticleConfig = async (
       sourceCount: researchResult.sourceCount,
       depth: researchDepth,
       knowledgeSourceCount: knowledge?.used.length ?? 0,
+      knowledgeSources: (knowledge?.used ?? []).map(({ sourceId, title }) => ({ id: sourceId, title })),
     },
     config: {
       model: aiModel('articleWriter'),

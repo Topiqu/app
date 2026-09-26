@@ -505,6 +505,7 @@
           "words": "Slova",
           "sources": "Zdroje",
           "knowledge": "Znalosti",
+          "knowledgeSources": "Použité znalosti",
           "media": "Média",
           "time": "Čas",
           "tokens": "Spotřeba",

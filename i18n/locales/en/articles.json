@@ -505,6 +505,7 @@
           "words": "Words",
           "sources": "Sources",
           "knowledge": "Knowledge",
+          "knowledgeSources": "Knowledge used",
           "media": "Media",
           "time": "Time",
           "tokens": "Usage",

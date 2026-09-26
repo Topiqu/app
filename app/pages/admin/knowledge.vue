@@ -141,6 +141,9 @@ const openEdit = (id: string) => {
   editId.value = id
   editOpen.value = true
 }
+// The editor links a used source here as `?source=<id>`; the detail endpoint scopes it to the tenant.
+const linkedSource = useRoute().query.source
+if (typeof linkedSource === 'string') openEdit(linkedSource)
 
 // Indexing runs server-side; poll only while something is still in flight.
 const indexing = computed(() => sources.value.some((source) => ['PENDING', 'PROCESSING'].includes(source.status)))

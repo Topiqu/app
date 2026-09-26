@@ -2,9 +2,12 @@
 import { createI18n } from 'vue-i18n'
 import { describe, expect, it } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 
 import SettingsPanel from '../../app/components/Article/Editor/SettingsPanel.vue'
 import { articleGenerationReservation, defaultArticleGenerationOptions } from '../../shared/utils/articleGeneration'
+
+mockNuxtImport('useLocalePath', () => () => (route: unknown) => route)
 
 const mountPanel = () => {
   const options = defaultArticleGenerationOptions()
