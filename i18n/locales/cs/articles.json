@@ -1,6 +1,7 @@
 {
   "articles": {
     "comments": {
+      "unit": "0 komentářů | {count} komentář | {count} komentáře | {count} komentářů",
       "addGif": "Přidat GIF",
       "clearGifCategory": "Zrušit výběr kategorie GIF",
       "gifCategories": "Kategorie",

@@ -1,6 +1,7 @@
 {
   "articles": {
     "comments": {
+      "unit": "no comments | {count} comment | {count} comments",
       "addGif": "Add GIF",
       "clearGifCategory": "Clear GIF category",
       "gifCategories": "Categories",
