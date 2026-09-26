@@ -96,10 +96,10 @@
           <div v-if="heroTags.length" class="flex flex-wrap gap-2">
             <UBadge v-for="tag in heroTags" :key="tag.id" color="primary" variant="soft">{{ tag.name }}</UBadge>
           </div>
-          <h2 class="text-2xl font-black leading-tight tracking-tight text-highlighted sm:text-3xl">
+          <h2 class="text-balance text-2xl font-black leading-tight tracking-tight text-highlighted sm:text-3xl">
             {{ heroArticle.title }}
           </h2>
-          <p v-if="heroExcerpt" class="text-sm leading-6 text-muted">{{ heroExcerpt }}</p>
+          <p v-if="heroExcerpt" class="text-pretty text-sm leading-6 text-muted">{{ heroExcerpt }}</p>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
             <span>{{ formatDate(heroArticle.publishedAt || heroArticle.createdAt, locale) }}</span>
             <span v-if="heroArticle.readingTime">{{ $t('articles.readingTime', [heroArticle.readingTime]) }}</span>
@@ -341,7 +341,6 @@ interface HomeArticle {
   id: string
   slug: string
   title: string
-  content?: string | null
   excerpt: string | null
   imageUrl: string | null
   createdAt: string
@@ -533,9 +532,7 @@ const heroTags = computed(() =>
     .filter((tag) => tag.name)
     .slice(0, 2),
 )
-const heroExcerpt = computed(() =>
-  (heroArticle.value?.excerpt || heroArticle.value?.content || '').replace(/<[^>]+>/g, '').trim(),
-)
+const heroExcerpt = computed(() => heroArticle.value?.excerpt ?? '')
 const hasHeroRail = computed(() => Boolean(tags.value[0] || feat.value?.totalArticles))
 
 const hasContent = computed(() => allArticles.value.length > 0)

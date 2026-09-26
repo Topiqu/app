@@ -14,7 +14,7 @@ describe('homepage feed presentation', () => {
   ])('gives %s cards the current viewer reaction', (_name, endpoint) => {
     expect(endpoint).toContain("where: user?.id ? { userId: user.id } : { id: '' }")
     expect(endpoint).toContain('likedByUser: reactions.length > 0')
-    expect(endpoint).toContain('({ reactions, ...article })')
+    expect(endpoint).toContain('({ reactions, content, ...article })')
   })
 
   // The viewer-scoped reaction above is only safe because the shared cache is never reached with a
