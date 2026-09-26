@@ -31,6 +31,18 @@
     {
       "title": "Holiday policy",
       "content": "# Holiday policy\nEmployees get 25 days of paid leave. Requests go through the HR portal at least two weeks in advance."
+    },
+    {
+      "title": "Legacy plan codes",
+      "content": "# Legacy plan codes\nThe legacy plan GRWPLS was retired in March 2026. Customers on GRWPLS moved to Premium at their old price until the end of their billing year."
+    },
+    {
+      "title": "Rechnungsstellung",
+      "content": "# Rechnungsstellung\nRechnungen werden monatlich per SEPA-Lastschrift eingezogen. Die Rechnungsadresse mit Straße, Postleitzahl und Ort lässt sich jederzeit im Konto ändern."
+    },
+    {
+      "title": "Wsparcie",
+      "content": "# Wsparcie klienta\nZespół wsparcia Topiqu odpowiada w ciągu 4 godzin w dni robocze, także na czacie po polsku. Zgłoszenie złożysz przyciskiem „Pomoc” w panelu."
     }
   ],
   "cases": [
@@ -110,6 +122,38 @@
       "allow": []
     },
     {
+      "topic": "What happened to customers on the GRWPLS plan",
+      "expect": [
+        "Legacy plan codes"
+      ],
+      "allow": [
+        "Pricing"
+      ]
+    },
+    {
+      "topic": "Rechnungsadresse und Strasse im Konto ändern",
+      "expect": [
+        "Rechnungsstellung"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Jak szybko odpowiada wsparcie klienta i jak złożyć zgłoszenie",
+      "expect": [
+        "Wsparcie"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Kolik stojí tarif Pro měsíčně",
+      "expect": [
+        "Pricing"
+      ],
+      "allow": [
+        "Legacy plan codes"
+      ]
+    },
+    {
       "topic": "Best hiking trails in the Alps",
       "expect": [],
       "allow": []
@@ -133,6 +177,57 @@
       "topic": "Remote work productivity tips",
       "expect": [],
       "allow": []
+    },
+    {
+      "topic": "How small newsrooms publish more without hiring more editors",
+      "expect": [
+        "Case study Pixbo"
+      ],
+      "allow": [
+        "Why customers switch",
+        "Positioning vs Jasper"
+      ],
+      "indirect": true
+    },
+    {
+      "topic": "Reaching international readers with a company blog",
+      "expect": [
+        "Překlady"
+      ],
+      "allow": [
+        "Pricing"
+      ],
+      "indirect": true
+    },
+    {
+      "topic": "Is it risky to let AI publish articles without a human checking them?",
+      "expect": [
+        "Positioning vs Jasper"
+      ],
+      "allow": [
+        "Překlady",
+        "Security"
+      ],
+      "indirect": true
+    },
+    {
+      "topic": "Choosing SaaS vendors under European privacy rules",
+      "expect": [
+        "Security"
+      ],
+      "allow": [],
+      "indirect": true
+    },
+    {
+      "topic": "Why editorial calendars slip and how teams fix it",
+      "expect": [
+        "Why customers switch"
+      ],
+      "allow": [
+        "Positioning vs Jasper",
+        "Case study Pixbo"
+      ],
+      "indirect": true
     }
   ]
 }
