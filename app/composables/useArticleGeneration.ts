@@ -19,6 +19,7 @@ export interface GenerationResearchResult {
   status: 'completed' | 'fallback' | 'skipped'
   sourceCount: number
   depth: ResearchDepth
+  knowledgeSourceCount?: number
   sources: string[]
 }
 

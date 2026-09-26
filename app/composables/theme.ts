@@ -1,3 +1,12 @@
+import {
+  accessibleAccent,
+  gradientCss,
+  hasAdvancedBranding,
+  hostedFontUrl,
+  normalizeAccentColor,
+  parseBrandGradient,
+} from '~~/shared/utils/publicationBranding'
+
 export const themeColors = {
   blue: '#2563eb',
   green: '#16a34a',
@@ -17,7 +26,7 @@ export const themeColors = {
 } as const
 
 export type ThemeKey = keyof typeof themeColors
-export type PublicationTypography = 'MODERN' | 'EDITORIAL' | 'SYSTEM'
+export type PublicationTypography = 'MODERN' | 'EDITORIAL' | 'SYSTEM' | 'MAGAZINE' | 'CUSTOM'
 export const DEFAULT_TENANT_THEME: ThemeKey = 'indigo'
 
 // Explicit values keep the public CTA independent from Tailwind's generated palette.
@@ -46,19 +55,54 @@ export const resolveTenantTheme = (value: unknown): ThemeKey => {
 }
 
 export const resolveTypographyPreset = (value: unknown): PublicationTypography =>
-  value === 'EDITORIAL' || value === 'SYSTEM' ? value : 'MODERN'
+  value === 'EDITORIAL' || value === 'SYSTEM' || value === 'MAGAZINE' || value === 'CUSTOM' ? value : 'MODERN'
 
-export const typographyFontFamily = (value: unknown) => {
+export const typographyFonts = (value: unknown, headingFontUrl?: string | null, bodyFontUrl?: string | null) => {
   const preset = resolveTypographyPreset(value)
-  if (preset === 'EDITORIAL') return '"Source Serif 4 Variable", Georgia, serif'
-  if (preset === 'SYSTEM') return 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-  return '"Manrope Variable", ui-sans-serif, system-ui, sans-serif'
+  const modern = '"Manrope Variable", ui-sans-serif, system-ui, sans-serif'
+  const editorial = '"Source Serif 4 Variable", Georgia, serif'
+  const system = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+  if (preset === 'EDITORIAL') return { heading: editorial, body: editorial }
+  if (preset === 'SYSTEM') return { heading: system, body: system }
+  if (preset === 'MAGAZINE') return { heading: editorial, body: modern }
+  if (preset === 'CUSTOM')
+    return {
+      heading: headingFontUrl ? '"Topiqu Custom Heading", ' + modern : modern,
+      body: bodyFontUrl ? '"Topiqu Custom Body", ' + modern : modern,
+    }
+  return { heading: modern, body: modern }
 }
 
-export const tenantThemeStyle = (value: unknown, typography?: unknown) => {
+export const typographyFontFamily = (value: unknown) => typographyFonts(value).body
+
+export const resolveBrandAccent = (theme: unknown, customColor?: unknown) =>
+  normalizeAccentColor(customColor) ?? themeColors[resolveTenantTheme(theme)]
+
+export type TenantBrandOptions = {
+  accentColor?: unknown
+  brandGradient?: unknown
+  plan?: unknown
+  headingFontUrl?: string | null
+  bodyFontUrl?: string | null
+}
+
+export const tenantThemeStyle = (value: unknown, typography?: unknown, options: TenantBrandOptions = {}) => {
   const key = resolveTenantTheme(value)
-  const [background, hover] = tenantCtaPalette[key].light
-  const [darkBackground, darkHover] = tenantCtaPalette[key].dark
+  const customColor = normalizeAccentColor(options.accentColor)
+  const [background, hover] = customColor
+    ? [accessibleAccent(customColor, '#ffffff'), accessibleAccent(customColor, '#ffffff', 5.5)]
+    : tenantCtaPalette[key].light
+  const [darkBackground, darkHover] = customColor
+    ? [accessibleAccent(customColor, '#0f172a'), accessibleAccent(customColor, '#0f172a', 5.5)]
+    : tenantCtaPalette[key].dark
+  const advanced = hasAdvancedBranding(options.plan)
+  const preset = advanced
+    ? resolveTypographyPreset(typography)
+    : resolveTypographyPreset(typography) === 'CUSTOM'
+      ? 'MODERN'
+      : typography
+  const fonts = typographyFonts(preset, advanced ? options.headingFontUrl : null, advanced ? options.bodyFontUrl : null)
+  const gradient = advanced ? parseBrandGradient(options.brandGradient) : null
   return {
     '--topiqu-tenant-accent-light': background,
     '--topiqu-tenant-accent-dark': darkBackground,
@@ -71,6 +115,27 @@ export const tenantThemeStyle = (value: unknown, typography?: unknown) => {
     '--topiqu-cta-dark-hover': darkHover,
     '--topiqu-cta-dark-fg': '#0f172a',
     '--topiqu-cta-dark-focus': '#f8fafc',
-    '--topiqu-publication-font': typographyFontFamily(typography),
+    '--topiqu-publication-font': fonts.body,
+    '--topiqu-heading-font': fonts.heading,
+    '--topiqu-brand-gradient': gradient ? gradientCss(gradient) : 'none',
   }
+}
+
+export const tenantFontFaceCss = (
+  clientSiteId: string,
+  cdnUrl: string,
+  typography: unknown,
+  options: TenantBrandOptions,
+) => {
+  if (!hasAdvancedBranding(options.plan) || resolveTypographyPreset(typography) !== 'CUSTOM') return ''
+  const headingUrl = hostedFontUrl(options.headingFontUrl, cdnUrl, clientSiteId)
+  const bodyUrl = hostedFontUrl(options.bodyFontUrl, cdnUrl, clientSiteId)
+  return [
+    headingUrl &&
+      `@font-face{font-family:"Topiqu Custom Heading";src:url("${headingUrl}") format("woff2");font-style:normal;font-weight:100 900;font-display:swap}`,
+    bodyUrl &&
+      `@font-face{font-family:"Topiqu Custom Body";src:url("${bodyUrl}") format("woff2");font-style:normal;font-weight:100 900;font-display:swap}`,
+  ]
+    .filter(Boolean)
+    .join('\n')
 }

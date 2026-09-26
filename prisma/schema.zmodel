@@ -14,6 +14,7 @@ import "./models/articleCreditWallet"
 import "./models/visibility"
 import "./models/media"
 import "./models/generation"
+import "./models/knowledge"
 
 datasource db {
     provider  = "postgresql"

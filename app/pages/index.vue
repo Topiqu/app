@@ -67,7 +67,7 @@
 
       <article
         v-if="heroArticle?.slug"
-        class="editorial-enter group relative flex min-h-[28rem] flex-col overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default md:col-span-1 lg:grid lg:h-[72dvh] lg:max-h-[46rem] lg:min-h-[32rem] lg:grid-rows-2 lg:self-center"
+        class="editorial-enter group relative flex min-h-[28rem] flex-col overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default md:col-span-1 lg:grid lg:min-h-[72dvh] lg:grid-rows-[minmax(14rem,1fr)_auto] lg:self-center"
         :class="hasHeroRail ? 'lg:col-span-5' : 'lg:col-span-7'"
         style="--enter-order: 1"
       >
@@ -96,10 +96,10 @@
           <div v-if="heroTags.length" class="flex flex-wrap gap-2">
             <UBadge v-for="tag in heroTags" :key="tag.id" color="primary" variant="soft">{{ tag.name }}</UBadge>
           </div>
-          <h2 class="line-clamp-3 text-2xl font-black leading-tight tracking-tight text-highlighted sm:text-3xl">
+          <h2 class="text-2xl font-black leading-tight tracking-tight text-highlighted sm:text-3xl">
             {{ heroArticle.title }}
           </h2>
-          <p v-if="heroExcerpt" class="line-clamp-2 text-sm leading-6 text-muted">{{ heroExcerpt }}</p>
+          <p v-if="heroExcerpt" class="text-sm leading-6 text-muted">{{ heroExcerpt }}</p>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
             <span>{{ formatDate(heroArticle.publishedAt || heroArticle.createdAt, locale) }}</span>
             <span v-if="heroArticle.readingTime">{{ $t('articles.readingTime', [heroArticle.readingTime]) }}</span>

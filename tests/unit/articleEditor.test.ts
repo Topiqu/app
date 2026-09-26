@@ -18,16 +18,13 @@ import {
 } from '../../shared/utils/articleEditor'
 
 const editorSource = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
-const previewSource = readFileSync(resolve(process.cwd(), 'app/components/Article/Editor/Preview.vue'), 'utf8')
 const clientSiteSource = readFileSync(resolve(process.cwd(), 'app/composables/useClientSite.ts'), 'utf8')
 
 describe('generated article modules', () => {
-  it('renders extraction fields in both the editor canvas and its preview', () => {
+  it('renders extraction fields in the editor canvas', () => {
     expect(editorSource).toContain(':answer="editedArticle.answer"')
     expect(editorSource).toContain(':takeaways="editedArticle.keyTakeaways ?? []"')
     expect(editorSource).toContain(':entries="readFaq(editedArticle.faq)"')
-    expect(previewSource).toContain('<ArticleSummary :answer="answer" :takeaways="takeaways" />')
-    expect(previewSource).toContain('<ArticleFaq :entries="readFaq(faq)" />')
     expect(editorSource).toContain('else if (missingModules.length)')
     expect(editorSource).toContain("t('articles.editor.aiModulesUnavailable')")
     expect(editorSource).toContain('t(`articles.editor.ai.module.${module}`)')

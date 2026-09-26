@@ -37,7 +37,7 @@
 <script setup lang="ts">
 const { data: auth } = useAuth()
 const route = useRoute()
-const clientSite = await useClientSite()
+const clientSite = await useLiveClientSite()
 const isSidebarOpen = shallowRef<boolean>(false)
 const tagsOpen = useState('dashboard-tags-open', () => false)
 const statsOpen = useState('dashboard-stats-open', () => false)
@@ -48,11 +48,30 @@ const showDashboard = computed(() =>
   canRenderDashboardShell(shell.value, auth.value?.user.role, route.meta.dashboardSidebar),
 )
 const isPublicationSurface = computed(() => {
-  return Boolean(clientSite && shell.value === 'publication')
+  return Boolean(clientSite.value && shell.value === 'publication')
 })
 const publicationStyle = computed(() => {
   if (!isPublicationSurface.value) return undefined
-  return tenantThemeStyle(clientSite?.theme, clientSite?.typographyPreset)
+  return tenantThemeStyle(clientSite.value?.theme, clientSite.value?.typographyPreset, {
+    accentColor: clientSite.value?.accentColor,
+    brandGradient: clientSite.value?.brandGradient,
+    plan: clientSite.value?.plan,
+    headingFontUrl: clientSite.value?.headingFontUrl,
+    bodyFontUrl: clientSite.value?.bodyFontUrl,
+  })
+})
+
+const cdnUrl = useRuntimeConfig().public.cdnUrl
+useHead(() => {
+  const site = clientSite.value
+  const css = site
+    ? tenantFontFaceCss(site.id, cdnUrl, site.typographyPreset, {
+        plan: site.plan,
+        headingFontUrl: site.headingFontUrl,
+        bodyFontUrl: site.bodyFontUrl,
+      })
+    : ''
+  return { style: css ? [{ key: 'publication-custom-fonts', innerHTML: css }] : [] }
 })
 
 // The desktop collapsed state is persisted by UDashboardGroup. The drawer is transient

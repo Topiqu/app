@@ -1,65 +1,28 @@
 <template>
-  <article class="custom-ui flex flex-col gap-8">
-    <ArticleHeaderHero
-      :title="title || $t('common.labels.articleTitle')"
-      :author="author"
-      :followerCount="0"
-      :isFollowing="false"
-      :showFollowButton="false"
-      :excerpt="excerpt"
-      :imageUrl="imageUrl"
-      :series="series"
-    />
-
-    <div v-if="tagNames.length" class="flex flex-wrap gap-2.5">
-      <span
-        v-for="name in tagNames"
-        :key="name"
-        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-sm font-medium text-gray-700! bg-white dark:text-gray-200! dark:bg-gray-800 border-gray-200 dark:border-gray-600"
-      >
-        <UIcon name="mdi:tag" class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />{{ name }}
-      </span>
-    </div>
-
-    <ArticleSummary :answer="answer" :takeaways="takeaways" />
-
-    <div v-if="hasBody" :class="ARTICLE_PROSE_CLASS">
-      <ArticleParsed :blocks="previewBlocks" :articleId="articleId ?? ''" />
-    </div>
-    <p v-else class="text-sm text-gray-500 dark:text-gray-400">
-      {{ $t('articles.editor.preview.empty') }}
-    </p>
-
-    <ArticleFaq :entries="readFaq(faq)" />
-
-    <div v-if="filledSources.length" class="pt-6 border-t border-gray-200 dark:border-gray-700">
-      <h2 class="flex items-center gap-2 text-lg font-medium text-gray-700 dark:text-gray-300">
-        <UIcon name="mdi:book-open-page-variant" class="w-5 h-5 text-blue-500 dark:text-blue-400" aria-hidden="true" />
-        {{ $t('articles.columns.sources') }}
-      </h2>
-      <ArticleSourceList :sources="filledSources" class="mt-4" />
-    </div>
-  </article>
+  <div
+    data-article-scroller
+    class="publication-surface h-full overflow-y-auto bg-default px-4 py-8 sm:px-6 lg:px-8"
+    :style="themeStyle"
+    @click.capture="blockNavigation"
+  >
+    <ArticleView :article :aiDisclosure :discloseAi>
+      <template #empty>
+        <p class="text-sm text-muted">{{ $t('articles.editor.preview.empty') }}</p>
+      </template>
+    </ArticleView>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { readFaq } from '~~/shared/utils/articleFaq'
-import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
+import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
-/**
- * Composes the real published-article components rather than restyling their output, so the
- * preview cannot drift from `pages/clanky/[slug].vue`. Polls are inert here: a poll only gets
- * its `data-poll-id` from `syncArticlePolls` on save, and `ArticleParsed` already degrades an
- * unstamped block to raw HTML instead of rendering a widget whose votes would go nowhere.
- */
-const {
-  content,
-  answer,
-  takeaways = [],
-  faq,
-  tags = [],
-  sources = [],
-} = defineProps<{
+import { readFaq } from '~~/shared/utils/articleFaq'
+
+import type { ClientSiteStatus } from '~/composables/useClientSite'
+
+// Polls are inert here: a poll only gets its `data-poll-id` from `syncArticlePolls` on save, and
+// `ArticleParsed` degrades an unstamped block to raw HTML.
+const props = defineProps<{
   title?: string | null
   excerpt?: string | null
   answer?: string | null
@@ -67,21 +30,20 @@ const {
   faq?: unknown
   content?: string | null
   imageUrl?: string | null
+  imageCredit?: CoverCredit | null
   articleId?: string
+  author?: { username: string; avatarUrl?: string | null } | null
+  aiInvolvement?: string | null
   tags?: string[]
   sources?: string[]
   series?: { name: string; current: number; total: number } | null
 }>()
 
+const { t } = useI18n()
 const { data: session } = useAuth()
 const requestFetch = useRequestFetch()
-
-// The session carries `name`; `Hero.vue` labels it `username` because that is what the public
-// payload calls the same field.
-const author = computed(() => ({
-  username: session.value?.user?.name ?? '',
-  avatarUrl: session.value?.user?.avatarUrl ?? null,
-}))
+// The editor lives on the platform host, where `useClientSite()` resolves no tenant.
+const { data: clientStatus } = useNuxtData<ClientSiteStatus | null>('clientsite-status')
 
 // Same key as the tag picker, so the preview costs no extra request.
 const { data: allTags } = useQuery({
@@ -90,10 +52,48 @@ const { data: allTags } = useQuery({
   placeholderData: () => [],
 })
 
-const tagNames = computed(() => (allTags.value ?? []).filter((tag) => tags.includes(tag.id)).map((tag) => tag.name))
-const filledSources = computed(() => sources.filter((source) => source.trim()))
-const hasBody = computed(() => !!content && content !== '<p></p>')
+const themeStyle = computed(() =>
+  clientStatus.value
+    ? tenantThemeStyle(clientStatus.value.theme, clientStatus.value.typographyPreset, {
+        accentColor: clientStatus.value.accentColor,
+        brandGradient: clientStatus.value.brandGradient,
+        plan: clientStatus.value.plan,
+        headingFontUrl: clientStatus.value.headingFontUrl,
+        bodyFontUrl: clientStatus.value.bodyFontUrl,
+      })
+    : undefined,
+)
+const discloseAi = computed(() => clientStatus.value?.discloseAiContent ?? false)
+const aiDisclosure = computed(() =>
+  discloseAi.value && props.aiInvolvement && props.aiInvolvement !== 'NONE' ? props.aiInvolvement : null,
+)
 
-// Unsaved content never reached the API, so the preview splits it with the same shared builder.
-const previewBlocks = computed(() => parseArticleBlocks(content).blocks)
+const article = computed(() => ({
+  id: props.articleId ?? '',
+  title: props.title || t('common.labels.articleTitle'),
+  excerpt: props.excerpt,
+  imageUrl: props.imageUrl,
+  imageCredit: props.imageCredit ?? null,
+  // A new article has no author yet; saving assigns the signed-in user.
+  author: props.author ?? {
+    username: session.value?.user?.name ?? '',
+    avatarUrl: session.value?.user?.avatarUrl ?? null,
+  },
+  series: props.series,
+  tags: (allTags.value ?? []).filter((tag) => props.tags?.includes(tag.id)),
+  answer: props.answer,
+  takeaways: props.takeaways ?? [],
+  // Unsaved content never reached the API, so it is split with the same shared builder.
+  blocks: props.content && props.content !== '<p></p>' ? parseArticleBlocks(props.content).blocks : [],
+  faq: readFaq(props.faq),
+  sources: props.sources ?? [],
+}))
+
+// Every link here points at the live site; following one would leave the editor mid-edit.
+const blockNavigation = (event: MouseEvent) => {
+  const link = (event.target as Element | null)?.closest('a[href]')
+  if (!link || link.getAttribute('href')?.startsWith('#') || link.getAttribute('target') === '_blank') return
+  event.preventDefault()
+  event.stopPropagation()
+}
 </script>

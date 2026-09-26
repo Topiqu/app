@@ -264,6 +264,7 @@ const processClient = async (client: any) =>
           // Never `undefined` here: that would research the prompt, and the prompt is a template.
           ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt, {
             research: topic ? researchRequest(topic) : false,
+            knowledgeQuery: topic?.topic ?? null,
             format: cronFormat,
             variant: topic?.variant,
             modules: cronModules,
@@ -464,6 +465,7 @@ const processClient = async (client: any) =>
             sources: generated.sources?.length ?? 0,
             tokens,
             researched: topic ? researchRequest(topic) !== false : false,
+            knowledge: generated.knowledge ?? [],
             editorialReview: generated.editorialReview,
             researchApproved,
             mediaApproved,

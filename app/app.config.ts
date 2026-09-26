@@ -237,11 +237,20 @@ export default defineAppConfig({
     },
     modal: {
       slots: {
-        content:
-          'flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-2xl flex-col rounded-(--topiqu-surface-radius) max-sm:inset-0 max-sm:size-full max-sm:max-h-none max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none',
+        content: 'flex flex-col',
         header: 'shrink-0',
         body: 'min-h-0 flex-1 overflow-y-auto',
         footer: 'shrink-0',
+      },
+      // Sizing lives on the non-fullscreen variant: as a slot class it also capped `fullscreen`
+      // modals, which only add `inset-0`, into a 2xl panel pinned to the top-left corner.
+      variants: {
+        fullscreen: {
+          false: {
+            content:
+              'max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-2xl rounded-(--topiqu-surface-radius) max-sm:inset-0 max-sm:size-full max-sm:max-h-none max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none',
+          },
+        },
       },
     },
     slideover: {

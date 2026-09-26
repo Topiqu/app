@@ -442,6 +442,7 @@
         "writerDeadlineError": "Generování bylo zastaveno po dosažení 90sekundového limitu psaní.",
         "researchSources": "Výzkum dokončen, nalezeno zdrojů: {count}",
         "researchSourceBadge": "Zdrojů: {count}",
+        "knowledgeUsed": "Znalosti: {count}",
         "researchStatus": {
           "fallback": "Bez zdrojů",
           "skipped": "Přeskočeno"
@@ -502,6 +503,7 @@
           "missing": "Chybí:",
           "words": "Slova",
           "sources": "Zdroje",
+          "knowledge": "Znalosti",
           "media": "Média",
           "time": "Čas",
           "tokens": "Spotřeba",

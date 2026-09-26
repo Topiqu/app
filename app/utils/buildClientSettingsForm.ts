@@ -1,6 +1,8 @@
 import type { ThemeSchema, LanguageSchema } from '~~/shared/siteSchemas'
 import type { SocialPlatform, ClientSite as _ClientSite } from '~~/generated/zenstack/models'
 
+import { parseBrandGradient, type BrandGradient } from '~~/shared/utils/publicationBranding'
+
 export interface ClientSite extends Omit<
   _ClientSite,
   'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'lastTokenRefilled'
@@ -30,12 +32,16 @@ export interface ClientSettingsForm {
   audience: string
   language: (typeof LanguageSchema.options)[number]
   theme: (typeof ThemeSchema.options)[number]
+  accentColor: string
+  brandGradient: BrandGradient | null
   keywords: string[]
   description: string
   tagline: string
   logoUrl: string
   faviconUrl: string
-  typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM'
+  typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM' | 'MAGAZINE' | 'CUSTOM'
+  headingFontUrl: string
+  bodyFontUrl: string
   optimizedUrl: string
   socials: { platform: SocialPlatform; url: string }[]
   aiUser: { username: string; bio: string; avatarUrl: string; optimizedAvatarUrl: string }
@@ -61,12 +67,16 @@ const emptyForm = (): ClientSettingsForm => ({
   audience: '',
   language: 'en',
   theme: 'blue',
+  accentColor: '',
+  brandGradient: null,
   keywords: [],
   description: '',
   tagline: '',
   logoUrl: '',
   faviconUrl: '',
   typographyPreset: 'MODERN',
+  headingFontUrl: '',
+  bodyFontUrl: '',
   optimizedUrl: '',
   socials: [],
   aiUser: { username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' },
@@ -108,11 +118,15 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     audience: client.audience ?? '',
     language: client.language,
     theme: client.theme,
+    accentColor: client.accentColor ?? '',
+    brandGradient: parseBrandGradient(client.brandGradient),
     description: client.description ?? '',
     tagline: client.tagline ?? '',
     logoUrl: client.logoUrl ?? '',
     faviconUrl: client.faviconUrl ?? '',
     typographyPreset: client.typographyPreset ?? 'MODERN',
+    headingFontUrl: client.headingFontUrl ?? '',
+    bodyFontUrl: client.bodyFontUrl ?? '',
     keywords: client.keywords ?? [],
     socials: client.socials ?? [],
     apiKey: client.apiKey ?? '',

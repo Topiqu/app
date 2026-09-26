@@ -80,6 +80,37 @@
   );
 }
 
+.publication-surface :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--topiqu-heading-font, var(--topiqu-publication-font));
+}
+
+.publication-surface [data-editorial-hero] {
+  isolation: isolate;
+}
+
+.publication-surface [data-editorial-hero]::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -1rem;
+  border-radius: var(--topiqu-surface-radius);
+  background-image: var(--topiqu-brand-gradient, none);
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.publication-surface [data-editorial-hero]::after {
+  content: '';
+  position: absolute;
+  top: -1rem;
+  right: -1rem;
+  left: -1rem;
+  height: 0.375rem;
+  border-radius: var(--topiqu-surface-radius) var(--topiqu-surface-radius) 0 0;
+  background-image: var(--topiqu-brand-gradient, none);
+  pointer-events: none;
+}
+
 /* Editorial fallbacks stay bounded and intentional when remote media fails. */
 .article-content figure {
   margin-block: 2.25rem;
@@ -363,6 +394,21 @@ main {
   margin-block: 2.5rem;
 }
 
+/* No vertical padding: the wrapping `<p>` already carries a prose margin. */
+.article-content p img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  object-fit: contain;
+  cursor: zoom-in;
+}
+
+.article-content small {
+  color: #4b5563 !important;
+}
+
 .editorial-enter {
   animation: editorial-enter 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(var(--enter-order, 0) * 70ms);
@@ -501,9 +547,16 @@ main {
 .editor-table .ProseMirror .tableWrapper {
   margin-block: 1.5rem;
   max-width: 100%;
+  /* overflow-x alone computes overflow-y to auto, so the resize handle spawned a vertical scrollbar. */
   overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--ui-border);
   border-radius: var(--topiqu-surface-radius);
+}
+
+/* Fixed layout makes the table honour dragged column widths instead of redistributing them. */
+.editor-table .ProseMirror table {
+  table-layout: fixed;
 }
 
 .editor-table .ProseMirror th,
@@ -535,11 +588,16 @@ main {
   position: absolute;
   top: 0;
   right: -1px;
-  bottom: -1px;
+  bottom: 0;
   z-index: 2;
   width: 3px;
   pointer-events: none;
   background: var(--ui-primary);
+}
+
+/* The last column has no right border, so -1px would overflow the wrapper. */
+.editor-table .ProseMirror tr > :last-child .column-resize-handle {
+  right: 0;
 }
 
 .tippy-box {

@@ -17,7 +17,10 @@ const metadataContent = ($: cheerio.CheerioAPI, selectors: string[]) => {
   }
 }
 
-export const extractReadableSource = (html: string) => {
+export const extractReadableSource = (
+  html: string,
+  { headings = false, maxCharacters = FACT_CHECK_LIMITS.maxSourceCharacters as number } = {},
+) => {
   const $ = cheerio.load(html)
   const title = metadataContent($, ['meta[property="og:title"]', 'meta[name="twitter:title"]', 'title'])
   const publishedAt = metadataContent($, [
@@ -35,10 +38,13 @@ export const extractReadableSource = (html: string) => {
   const content = root
     .find('h1, h2, h3, h4, p, li, blockquote, td, th')
     .toArray()
-    .map((node) => $(node).text().replace(/\s+/g, ' ').trim())
-    .filter((text, index, all) => text.length >= 20 && all.indexOf(text) === index)
+    .map((node) => {
+      const text = $(node).text().replace(/\s+/g, ' ').trim()
+      return headings && /^h[1-4]$/.test(node.tagName) && text ? `${'#'.repeat(Number(node.tagName[1]))} ${text}` : text
+    })
+    .filter((text, index, all) => (text.length >= 20 || (headings && /^#{1,4} /.test(text))) && all.indexOf(text) === index)
     .join('\n')
-    .slice(0, FACT_CHECK_LIMITS.maxSourceCharacters)
+    .slice(0, maxCharacters)
   return { title, publishedAt, content }
 }
 

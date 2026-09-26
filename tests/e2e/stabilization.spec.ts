@@ -172,6 +172,33 @@ test.describe('authenticated GIF picker', () => {
 test.describe('admin stabilization', () => {
   test.use({ storageState: join(authDir, 'admin.json') })
 
+  test('typography samples fit their cards and Pro-only fonts collapse to an upgrade link', async ({ page }) => {
+    await preparePage(page)
+    await page.goto('/cs/settings?tab=branding')
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+
+    // The seeded tenant is BASIC: no disabled upload zones, one link to billing instead.
+    const editor = page.locator('[data-typography-editor]')
+    await expect(editor.locator('[data-typography-preset]')).toHaveCount(4)
+    await expect(editor.locator('[data-font-upload-slot]')).toHaveCount(0)
+    await expect(editor.getByRole('link', { name: 'Odemknout v Pro' })).toHaveAttribute('href', /tab=billing/)
+
+    const geometry = await editor.evaluate((element) => {
+      const editorRight = element.getBoundingClientRect().right
+      return [...element.querySelectorAll<HTMLElement>('[data-typography-preset]')].map((card) => ({
+        cardRight: card.getBoundingClientRect().right,
+        contentRight: Math.max(...[...card.children].map((child) => child.getBoundingClientRect().right)),
+        editorRight,
+        overflow: card.scrollWidth - card.clientWidth,
+      }))
+    })
+    for (const card of geometry) {
+      expect(card.cardRight).toBeLessThanOrEqual(card.editorRight + 1)
+      expect(card.contentRight).toBeLessThanOrEqual(card.cardRight + 1)
+      expect(card.overflow).toBeLessThanOrEqual(1)
+    }
+  })
+
   test('existing article opens by id and can be saved', async ({ page }) => {
     test.skip(
       test.info().project.name !== 'desktop-light-en',

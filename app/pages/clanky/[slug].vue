@@ -1,7 +1,18 @@
 <template>
-  <div v-if="data" class="min-h-[100dvh] px-4 py-8 sm:px-6 lg:px-8">
-    <div class="mx-auto grid max-w-[var(--topiqu-article-width)] gap-10 lg:grid-cols-[minmax(0,1fr)_15rem]">
-      <div class="flex min-w-0 flex-col gap-8 pt-4">
+  <div v-if="data && article" class="min-h-[100dvh] px-4 py-8 sm:px-6 lg:px-8">
+    <ArticleView
+      :article
+      :aiDisclosure="showsAiDisclosure ? data.aiInvolvement : null"
+      :discloseAi="clientSite?.discloseAiContent ?? false"
+      :follow="{
+        count: data.followerCount || 0,
+        following: isFollowing,
+        visible: !!session?.user && session.user.id !== data.user.id,
+        pending: followPending,
+      }"
+      @follow="toggleFollow"
+    >
+      <template #top>
         <nav v-if="breadcrumbs?.length" :aria-label="$t('common.breadcrumbs')" class="w-full">
           <ol class="flex min-w-0 flex-nowrap items-center gap-2 overflow-hidden text-sm text-muted">
             <li
@@ -20,50 +31,14 @@
             </li>
           </ol>
         </nav>
+      </template>
 
-        <div ref="hero">
-          <ArticleHeaderHero
-            :title="data.title"
-            :author="data.user"
-            :followerCount="data.followerCount || 0"
-            :isFollowing="isFollowing"
-            :showFollowButton="!!session?.user && session.user.id !== data.user.id"
-            :followPending="followPending"
-            :excerpt="data.excerpt"
-            :imageUrl="data.imageUrl"
-            :imageCredit="imageCredit"
-            :series="data.series && data.series.name ? (data.series as any) : undefined"
-            @follow="toggleFollow"
-          />
-        </div>
+      <!-- Only renders with a real published translation, so a language here never falls back. -->
+      <template v-if="hasTranslations" #languages>
+        <ArticleLanguageLinks :links="alternates" :current="data.language" />
+      </template>
 
-        <div v-if="hasTranslations || showsAiDisclosure" class="flex flex-wrap items-center gap-2">
-          <!-- Only renders with a real published translation, so a language here never falls back. -->
-          <ArticleLanguageLinks v-if="hasTranslations" :links="alternates" :current="data.language" />
-          <span
-            v-if="showsAiDisclosure"
-            class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-          >
-            <UIcon name="mdi:robot-outline" class="size-4" />
-            {{ $t(`articles.aiDisclosure.${data.aiInvolvement}`) }}
-          </span>
-        </div>
-
-        <div v-if="hasTags" class="flex flex-wrap gap-2.5">
-          <NuxtLink
-            v-for="t in data.tags"
-            :key="t.tag.slug"
-            :to="localePath({ name: 'stitky-slug', params: { slug: t.tag.name } })"
-            class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            <UBadge color="neutral" variant="soft" size="lg" icon="mdi:tag">
-              {{ t.tag.name }}
-            </UBadge>
-          </NuxtLink>
-        </div>
-
-        <ArticleSummary :answer="data.answer" :takeaways="data.keyTakeaways ?? []" />
-
+      <template #actions>
         <ArticleActionsBar
           :article="data"
           :isAdmin="canManageArticle(session?.user, data)"
@@ -111,18 +86,9 @@
             @click="share('LINKEDIN')"
           />
         </div>
+      </template>
 
-        <article ref="content" class="article-content mx-auto w-full" :class="ARTICLE_PROSE_CLASS">
-          <ArticleParsed
-            :blocks="data.blocks"
-            :articleId="data.id"
-            :discloseAi="clientSite?.discloseAiContent ?? false"
-          />
-        </article>
-
-        <ArticleFaq :entries="faqEntries" />
-
-        <ArticleSeries v-if="data.series && data.series.name" :series="data.series as any" />
+      <template #footer>
         <div
           class="mt-8 flex flex-col items-start justify-between gap-4 border-t border-default pt-8 sm:flex-row sm:items-center"
         >
@@ -131,50 +97,38 @@
           </div>
           <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
         </div>
+      </template>
 
-        <LazyArticleLightbox :sourceRef="content" />
+      <template #related>
         <LazyArticleRelated :articles="relatedArticles ?? []" :pending="pending" />
+      </template>
 
-        <UCollapsible v-if="data.sources?.length" v-model:open="isOpen" class="mt-10 w-full">
-          <UButton
-            color="neutral"
-            variant="soft"
-            icon="mdi:book-open-page-variant"
-            :trailingIcon="isOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"
-            :label="`${$t('articles.columns.sources')} (${data.sources.length})`"
-            class="w-full"
-          />
-          <template #content>
-            <ArticleSourceList :sources="data.sources" class="mt-3" />
-          </template>
-        </UCollapsible>
-
+      <template #comments>
         <LazyCommentSection
           :articleId="data.id"
           :commCount="data.commentCount || 0"
           :allowComments="data.allowedComments"
         />
-      </div>
-      <ArticleTOC>
-        <template #sidebar>
-          <AdSlot
-            v-if="showArticleAds"
-            :key="`article-sidebar-${data.id}`"
-            adUnitPath="/article/sidebar"
-            slotId="article-sidebar-ad"
-            :sizes="[
-              [160, 600],
-              [120, 600],
-            ]"
-            :sizeMapping="articleSidebarMapping"
-            :targeting="{ article_id: data.id, placement: 'sidebar' }"
-            width="160px"
-            height="600px"
-            showLabel
-          />
-        </template>
-      </ArticleTOC>
-    </div>
+      </template>
+
+      <template #sidebar>
+        <AdSlot
+          v-if="showArticleAds"
+          :key="`article-sidebar-${data.id}`"
+          adUnitPath="/article/sidebar"
+          slotId="article-sidebar-ad"
+          :sizes="[
+            [160, 600],
+            [120, 600],
+          ]"
+          :sizeMapping="articleSidebarMapping"
+          :targeting="{ article_id: data.id, placement: 'sidebar' }"
+          width="160px"
+          height="600px"
+          showLabel
+        />
+      </template>
+    </ArticleView>
   </div>
   <Status v-else-if="status" :status="status" :message="status === 'error' ? `${error?.message}` : ''" />
 </template>
@@ -187,7 +141,6 @@ import { readFaq } from '~~/shared/utils/articleFaq'
 import { tenantGamEnabled } from '~~/shared/utils/advertising'
 import { canManageArticle } from '~~/shared/utils/articleEditor'
 import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
-import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
 
 import type { GamSizeMapping } from '~/composables/useGam'
 
@@ -197,7 +150,6 @@ const route = useRoute()
 const toast = useToast()
 const localePath = useLocalePath()
 const canonicalOrigin = useCanonicalOrigin()
-const isOpen = shallowRef(true)
 
 const { data: session } = useAuth()
 const clientSite = await useClientSite()
@@ -272,7 +224,6 @@ useArticleSeo(data, clientSite, canonicalUrl, alternateLinks)
 const ogImageOptions = computed(() => ({
   backgroundImage: data.value?.imageUrl,
 }))
-const imageCredit = computed(() => (data.value?.imageCredit as CoverCredit | null) ?? null)
 
 defineOgImage('TopiquArticle', ogImageOptions.value)
 
@@ -359,8 +310,25 @@ watch([articleLiked, articleLikes], ([liked, likes]) => {
   data.value.likes = likes
 })
 
-const faqEntries = computed(() => readFaq(data.value?.faq))
-const hasTags = computed(() => !!data.value?.tags?.length)
+const article = computed(() => {
+  if (!data.value) return null
+  const { id, title, excerpt, imageUrl, user, series, tags, answer, keyTakeaways, blocks, faq, sources } = data.value
+  return {
+    id,
+    title,
+    excerpt,
+    imageUrl,
+    imageCredit: (data.value.imageCredit as CoverCredit | null) ?? null,
+    author: user,
+    series,
+    tags: tags.map(({ tag }: { tag: { name: string } }) => ({ name: tag.name })),
+    answer,
+    takeaways: keyTakeaways ?? [],
+    blocks,
+    faq: readFaq(faq),
+    sources: sources ?? [],
+  }
+})
 const showsAiDisclosure = computed(() => !!clientSite?.discloseAiContent && data.value?.aiInvolvement !== 'NONE')
 const requestUrl = useRequestURL()
 const fullUrl = computed(() => new URL(route.fullPath, requestUrl.origin).href)
@@ -373,9 +341,6 @@ const breadcrumbs = computed(() => [
   { label: data.value?.title || '', to: route.fullPath },
 ])
 
-const content = useTemplateRef<HTMLElement>('content')
-const hero = useTemplateRef<HTMLElement>('hero')
-useArticleScrollContext(content, hero)
 const articleHeader = useArticleHeaderContext()
 const articleLikeBus = useArticleLikeBus()
 
@@ -401,12 +366,6 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-.hide-ai-disclosure :deep([data-ai-disclosure]) {
-  display: none;
-}
-</style>
-
 <style>
 .fade-slide-enter-active,
 .fade-slide-leave-active {
@@ -421,20 +380,6 @@ onUnmounted(() => {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-10px);
-}
-/* No vertical padding: the wrapping `<p>` already carries a prose margin, and this stacked a third
-   spacing on top of it. */
-.article-content p img {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.75rem;
-  object-fit: contain;
-  cursor: zoom-in;
-}
-.article-content small {
-  color: #4b5563 !important;
 }
 ::-webkit-scrollbar {
   width: 8px;

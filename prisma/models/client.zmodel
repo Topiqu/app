@@ -6,6 +6,7 @@ import "./user"
 import "./comment"
 import "./linkedin"
 import "./log"
+import "./knowledge"
 import "./ads"
 import "./searchConsole"
 import "./visibility"
@@ -59,6 +60,8 @@ enum PublicationTypography {
     MODERN
     EDITORIAL
     SYSTEM
+    MAGAZINE
+    CUSTOM
 }
 
 model Social {
@@ -91,6 +94,10 @@ model ClientSite with Base {
     logoUrl              String?             @length(0, 255, "URL loga musí mít max. 255 znaků")
     faviconUrl           String?             @length(0, 255, "URL faviconu musí mít max. 255 znaků")
     typographyPreset     PublicationTypography @default(MODERN)
+    accentColor          String?             @length(7, 7)
+    brandGradient        Json?
+    headingFontUrl       String?             @length(0, 255)
+    bodyFontUrl          String?             @length(0, 255)
     generationFrequency  GenerationFrequency @default(NONE)
     tokenRemaining       Int?                @default(0)
     tokenWallet          TokenWallet?
@@ -101,6 +108,7 @@ model ClientSite with Base {
     articleMediaUsages   ArticleMediaUsage[]
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]
     articleGenerationSessions ArticleGenerationSession[]
+    knowledgeSources     KnowledgeSource[]
     aiSeriesEnabled      Boolean             @default(false)
     keywords             Json?
     audience             String?

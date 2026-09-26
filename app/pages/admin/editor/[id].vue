@@ -378,9 +378,14 @@
       @close="draftsOpen = false"
     />
 
-    <UModal v-model:open="previewing" :title="$t('articles.editor.preview.title')">
+    <UModal
+      v-model:open="previewing"
+      fullscreen
+      :title="$t('articles.editor.preview.title')"
+      :ui="{ body: 'p-0 sm:p-0 overflow-hidden' }"
+    >
       <template #body>
-        <ArticleEditorPreview
+        <LazyArticleEditorPreview
           :articleId="editedArticle.id"
           :title="titleModel"
           :excerpt="excerptModel"
@@ -389,6 +394,9 @@
           :faq="editedArticle.faq"
           :content="bodyModel"
           :imageUrl="editedArticle.imageUrl"
+          :imageCredit="previewImageCredit"
+          :author="previewAuthor"
+          :aiInvolvement="editedArticle.aiInvolvement"
           :tags="articleTags"
           :sources="editedArticle.sources"
           :series="previewSeries"
@@ -508,6 +516,7 @@
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
+import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { OptimizationTarget } from '~~/shared/types/articleOptimization'
 import type { MediaRightsItem, MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
 
@@ -940,22 +949,20 @@ const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
     .slice(0, 16) as any
 }
 
-// `Hero.vue` wants the part number, which only the selected series knows. A new article lands
-// after the ones already in the series, so its own position is one past the end.
+// `Hero.vue` wants the part number, which only the selected series knows. An article not yet in
+// the series lands one past the end.
 const previewSeries = computed(() => {
   const series = selectedSeries.value
   if (!series?.name) return null
-  const total = (series.articles?.length ?? 0) + 1
+  const ids: string[] = (series.articles ?? []).map((article: { id: string }) => article.id)
+  const index = ids.indexOf(editedArticle.value.id)
+  if (index >= 0) return { name: series.name, current: index + 1, total: ids.length }
 
-  return { name: series.name, current: total, total }
+  return { name: series.name, current: ids.length + 1, total: ids.length + 1 }
 })
 
-// Escape leaves the preview, the way Escape leaves any mode. No chord to enter it: Ctrl+Shift+P
-// is Firefox's private window and Ctrl+Alt+P is AltGr on a Czech layout, so the header button
-// is the only affordance that works everywhere.
-onKeyStroke('Escape', () => {
-  if (previewing.value) previewing.value = false
-})
+const previewAuthor = computed(() => editedArticle.value.user ?? null)
+const previewImageCredit = computed(() => (editedArticle.value.imageCredit as CoverCredit | null) ?? null)
 
 // Expanded while there is nothing to lose, or on the `?ai=1` deep link. Generation rewrites the
 // whole article, so a permanently open composer serves no mid-article iteration — it just pushed

@@ -1,7 +1,7 @@
-import type { AiImageTask, AiProvider, AiTask } from './modelRegistry'
+import type { AiEmbeddingTask, AiImageTask, AiProvider, AiTask } from './modelRegistry'
 
 import openAi from './openai'
-import { AI_IMAGE_MODELS, AI_MODELS } from './modelRegistry'
+import { AI_EMBEDDING_MODELS, AI_IMAGE_MODELS, AI_MODELS } from './modelRegistry'
 
 const TEXT_PROVIDERS: Record<AiProvider, (id: string) => ReturnType<typeof openAi>> = {
   openai: (id) => openAi(id),
@@ -21,6 +21,16 @@ export const aiImageModel = (task: AiImageTask) => {
   const { provider, id } = AI_IMAGE_MODELS[task]
 
   return IMAGE_PROVIDERS[provider](id)
+}
+
+const EMBEDDING_PROVIDERS: Record<AiProvider, (id: string) => ReturnType<typeof openAi.embedding>> = {
+  openai: (id) => openAi.embedding(id),
+}
+
+export const aiEmbeddingModel = (task: AiEmbeddingTask) => {
+  const { provider, id } = AI_EMBEDDING_MODELS[task]
+
+  return EMBEDDING_PROVIDERS[provider](id)
 }
 
 export const aiWebSearchTool = (searchContextSize: 'low' | 'medium' | 'high' = 'high') =>

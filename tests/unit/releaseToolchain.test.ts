@@ -33,4 +33,15 @@ describe('release toolchain', () => {
 
     expect(missingSql).toEqual([])
   })
+
+  it('keeps every TipTap package on one exact version', () => {
+    const packageJson = JSON.parse(read('package.json')) as { dependencies: Record<string, string> }
+    const versions = new Set(
+      Object.entries(packageJson.dependencies)
+        .filter(([name]) => name.startsWith('@tiptap/'))
+        .map(([, version]) => version),
+    )
+    expect(versions.size).toBe(1)
+    expect([...versions][0]).toMatch(/^\d+\.\d+\.\d+$/)
+  })
 })

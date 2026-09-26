@@ -166,12 +166,12 @@ export default defineEventHandler(async (event) => {
             modules: options?.modules,
             allowGeneratedImages: options?.allowGeneratedImages !== false,
           })
-          const { result, finalize, researchTokens, research, researchSources } = generation
+          const { result, finalize, researchTokens, research, researchSources, knowledge } = generation
           recoverySnapshot.sources = researchSources
           await checkpointGeneration(recoverySession!.id, 'research', recoverySnapshot)
           send(controller, { type: 'research', ...research, sources: researchSources })
           send(controller, { type: 'phase', phase: 'writing' })
-          await auditAttempt('MANUAL_GENERATION_WRITER_STARTED', { researchTokens, research })
+          await auditAttempt('MANUAL_GENERATION_WRITER_STARTED', { researchTokens, research, knowledge })
 
           const writerStartedAt = Date.now()
           let lastWriterDataAt = writerStartedAt

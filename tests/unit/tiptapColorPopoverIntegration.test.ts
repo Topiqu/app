@@ -7,6 +7,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 
+import { ColoredTableCell } from '../../extensions/tableCellColor'
 import TableBubble from '../../app/components/Tiptap/ToolbarTableBubble.vue'
 
 vi.setConfig({ hookTimeout: 120_000, testTimeout: 30_000 })
@@ -62,6 +63,38 @@ describe('table cell color popover', () => {
     await settle()
     expect(document.querySelector('[data-slot="selector"]')).not.toBeNull()
     window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    await settle()
+    expect(document.querySelector('[data-slot="selector"]')).not.toBeNull()
+    wrapper.unmount()
+  })
+
+  it('applies the cell color without pulling focus back into the editor', async () => {
+    const outer = document.createElement('div')
+    const canvas = document.createElement('div')
+    outer.append(canvas)
+    document.body.append(outer)
+    const editor = new Editor({
+      element: canvas,
+      content: '<table><tbody><tr><td><p>Cell</p></td></tr></tbody></table>',
+      extensions: [StarterKit, Table, TableRow, TableHeader, ColoredTableCell],
+    })
+    editors.push(editor)
+    const focus = vi.spyOn(editor.view, 'focus')
+
+    const wrapper = await mountSuspended(TableBubble, {
+      props: { editor },
+      attachTo: document.body,
+      global: { mocks: { $t: (key: string) => key } },
+    })
+    editor.commands.setTextSelection(3)
+    await settle()
+    focus.mockClear()
+
+    wrapper.getComponent({ name: 'TiptapColorPicker' }).vm.$emit('update:modelValue', '#112233')
+    await settle()
+
+    expect(editor.getAttributes('tableCell').backgroundColor).toBe('#112233')
+    expect(focus).not.toHaveBeenCalled()
     wrapper.unmount()
   })
 })

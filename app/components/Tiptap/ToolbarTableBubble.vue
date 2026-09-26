@@ -64,6 +64,7 @@ const run = (fn: (c: ChainedCommands) => ChainedCommands) => {
 const cellColor = computed({
   get: () =>
     editor.getAttributes('tableCell').backgroundColor || editor.getAttributes('tableHeader').backgroundColor || '',
-  set: (value: string) => run((c) => c.setCellAttribute('backgroundColor', value || null)),
+  // No focus(): moving focus into the editor dismisses the open picker popover.
+  set: (value: string) => editor.chain().setCellAttribute('backgroundColor', value || null).run(),
 })
 </script>
