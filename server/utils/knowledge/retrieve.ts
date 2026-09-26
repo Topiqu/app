@@ -3,6 +3,7 @@ import { embed, generateObject } from 'ai'
 import { isKnowledgeStale, knowledgeAsOf, KNOWLEDGE_STALE_MONTHS } from '~~/shared/utils/knowledge'
 
 import { toPgVector } from './indexing'
+import { aiEmbeddingModelId } from '../ai/modelRegistry'
 
 const CANDIDATES = 40
 const SHORTLIST = 15
@@ -10,6 +11,14 @@ const PER_SOURCE = 3
 const MAX_SELECTED = 8
 // text-embedding-3-small scores unrelated text around 0.05–0.2; below this nothing is worth a model call.
 const MIN_SIMILARITY = 0.2
+// A plan name or product code can sit far from the topic in vector space yet be exactly what it
+// names; the top lexical hits skip the floor and the model gate judges them instead.
+const LEXICAL_EXEMPT = 5
+// Term frequency stands in for stopword lists, which no fixed set of languages could cover: a term
+// in more than this share of the tenant's chunks carries no signal. Small corpora are too coarse
+// to judge, so there every term counts.
+const COMMON_SHARE = 0.3
+const SMALL_CORPUS = 50
 
 export type KnowledgeCandidate = {
   id: string
@@ -22,10 +31,12 @@ export type KnowledgeCandidate = {
   fetchedAt: Date | null
   content: string
   similarity: number
+  /** Position in the full-text branch; null when only the vector branch found it. */
+  lexicalRank: number | null
   score: number
 }
 
-export type KnowledgeUsage = { sourceId: string; version: number; chunkIds: string[] }
+export type KnowledgeUsage = { sourceId: string; title: string; version: number; chunkIds: string[] }
 
 export type KnowledgeBrief = {
   brief: string | null
@@ -38,14 +49,16 @@ export type KnowledgeBrief = {
 
 const EMPTY: KnowledgeBrief = { brief: null, publicUrls: [], used: [], tokens: 0 }
 
-/** Letters/digits only, accents folded like `knowledge_unaccent`: the result is safe to join into a tsquery. */
+/**
+ * Words only, left unfolded: `searchKnowledge` folds them with the index's own `knowledge_unaccent`,
+ * because Unicode decomposition misses what unaccent rewrites (ł → l, ß → ss).
+ */
 export const knowledgeSearchTerms = (query: string) => [
   ...new Set(
     query
-      .normalize('NFD')
-      .replace(/\p{M}/gu, '')
+      .normalize('NFC')
       .toLowerCase()
-      .match(/[\p{L}\p{N}]{3,}/gu) ?? [],
+      .match(/[\p{L}\p{M}\p{N}]{3,}/gu) ?? [],
   ),
 ]
 
@@ -56,7 +69,6 @@ export const knowledgeSearchTerms = (query: string) => [
  */
 export const searchKnowledge = (clientSiteId: string, embedding: readonly number[], terms: readonly string[]) => {
   const vector = toPgVector(embedding)
-  const tsQuery = terms.slice(0, 24).join(' | ')
   return prisma.$queryRaw<KnowledgeCandidate[]>`
     WITH eligible AS (
       SELECT c."id", c."sourceId", c."version", c."content", c."embedding", c."searchVector",
@@ -68,6 +80,7 @@ export const searchKnowledge = (clientSiteId: string, embedding: readonly number
         AND s."status" = 'INDEXED'
         AND s."useInArticles"
         AND s."deletedAt" IS NULL
+        AND s."embeddingModel" = ${aiEmbeddingModelId('knowledge')}
     ),
     semantic AS (
       SELECT "id", row_number() OVER (ORDER BY "embedding" <=> ${vector}::vector) AS rank
@@ -75,15 +88,35 @@ export const searchKnowledge = (clientSiteId: string, embedding: readonly number
       ORDER BY "embedding" <=> ${vector}::vector
       LIMIT ${CANDIDATES}
     ),
+    lexemes AS (
+      SELECT DISTINCT v.lexeme
+      FROM unnest(${terms.slice(0, 24)}::text[]) AS t(term),
+           unnest(to_tsvector('simple', public.knowledge_unaccent(t.term))) AS v
+    ),
+    frequency AS (
+      SELECT l.lexeme, (SELECT count(*) FROM eligible WHERE "searchVector" @@ quote_literal(l.lexeme)::tsquery) AS df
+      FROM lexemes l
+    ),
+    kept AS (
+      SELECT f.lexeme FROM frequency f, (SELECT count(*) AS n FROM eligible) corpus
+      WHERE corpus.n <= ${SMALL_CORPUS}::int OR f.df <= corpus.n * ${COMMON_SHARE}::float8
+      UNION
+      -- The rarest term always stays, so a query of common words keeps a lexical branch.
+      (SELECT lexeme FROM frequency ORDER BY df, lexeme LIMIT 1)
+    ),
+    query AS (
+      SELECT string_agg(quote_literal(lexeme), ' | ')::tsquery AS q FROM kept
+    ),
     lexical AS (
-      SELECT "id", row_number() OVER (ORDER BY ts_rank_cd("searchVector", q) DESC) AS rank
-      FROM eligible, to_tsquery('simple', ${tsQuery}) q
-      WHERE "searchVector" @@ q
-      ORDER BY ts_rank_cd("searchVector", q) DESC
+      SELECT e."id", row_number() OVER (ORDER BY ts_rank_cd(e."searchVector", query.q) DESC) AS rank
+      FROM eligible e, query
+      WHERE e."searchVector" @@ query.q
+      ORDER BY ts_rank_cd(e."searchVector", query.q) DESC
       LIMIT ${CANDIDATES}
     )
     SELECT e."id", e."sourceId", e."version", e."title", e."publicUrl", e."indexedAt", e."validAsOf", e."fetchedAt", e."content",
            (1 - (e."embedding" <=> ${vector}::vector))::float8 AS similarity,
+           l.rank::int AS "lexicalRank",
            (COALESCE(1.0 / (60 + s.rank), 0) + COALESCE(1.0 / (60 + l.rank), 0))::float8 AS score
     FROM eligible e
     LEFT JOIN semantic s ON s."id" = e."id"
@@ -98,7 +131,8 @@ export const shortlistKnowledge = (candidates: readonly KnowledgeCandidate[]) =>
   const perSource = new Map<string, number>()
   return candidates
     .filter((candidate) => {
-      if (candidate.similarity < MIN_SIMILARITY) return false
+      const exactHit = candidate.lexicalRank !== null && candidate.lexicalRank <= LEXICAL_EXEMPT
+      if (candidate.similarity < MIN_SIMILARITY && !exactHit) return false
       const count = perSource.get(candidate.sourceId) ?? 0
       perSource.set(candidate.sourceId, count + 1)
       return count < PER_SOURCE
@@ -122,7 +156,7 @@ export const formatKnowledgeBrief = (selected: readonly KnowledgeCandidate[], no
 export const knowledgeUsage = (selected: readonly KnowledgeCandidate[]): KnowledgeUsage[] => {
   const bySource = new Map<string, KnowledgeUsage>()
   for (const chunk of selected) {
-    const usage = bySource.get(chunk.sourceId) ?? { sourceId: chunk.sourceId, version: chunk.version, chunkIds: [] }
+    const usage = bySource.get(chunk.sourceId) ?? { sourceId: chunk.sourceId, title: chunk.title, version: chunk.version, chunkIds: [] }
     usage.chunkIds.push(chunk.id)
     bySource.set(chunk.sourceId, usage)
   }

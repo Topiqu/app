@@ -4,8 +4,9 @@ import { embed, embedMany, generateObject } from 'ai'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createDatabaseClient } from '../../../server/utils/database'
-import { indexKnowledgeSource } from '../../../server/utils/knowledge/indexing'
-import { retrieveKnowledge, searchKnowledge } from '../../../server/utils/knowledge/retrieve'
+import { aiEmbeddingModelId } from '../../../server/utils/ai/modelRegistry'
+import { indexKnowledgeSource, toPgVector } from '../../../server/utils/knowledge/indexing'
+import { knowledgeSearchTerms, retrieveKnowledge, searchKnowledge } from '../../../server/utils/knowledge/retrieve'
 
 vi.mock('ai', () => ({ embed: vi.fn(), embedMany: vi.fn(), generateObject: vi.fn() }))
 
@@ -29,6 +30,31 @@ const indexedSource = async (clientSiteId: string, content: string, vector: numb
   await indexKnowledgeSource(source.id)
   return source.id
 }
+
+/** An indexed source with one chunk per entry, written directly so a corpus of hundreds stays fast. */
+const chunkedSource = async (clientSiteId: string, chunks: string[], embeddingModel = aiEmbeddingModelId('knowledge')) => {
+  const source = await db!.knowledgeSource.create({
+    data: {
+      clientSiteId,
+      kind: 'NOTE',
+      title: 'Corpus',
+      content: chunks.join('\n'),
+      contentHash: randomUUID().replace(/-/g, '').padEnd(64, '0'),
+      status: 'INDEXED',
+      embeddingModel,
+    },
+  })
+  await db!.$executeRaw`
+    INSERT INTO "KnowledgeChunk" ("id", "sourceId", "clientSiteId", "version", "ordinal", "content", "embedding")
+    SELECT gen_random_uuid()::text, ${source.id}, ${clientSiteId}, 1, t.ordinal, t.content, ${toPgVector(axis(1))}::vector
+    FROM unnest(${chunks.map((_, index) => index)}::int[], ${chunks}::text[]) AS t(ordinal, content)`
+  return source.id
+}
+
+const lexicalHits = async (clientSiteId: string, query: string) =>
+  (await searchKnowledge(clientSiteId, axis(0), knowledgeSearchTerms(query)))
+    .filter((candidate) => candidate.lexicalRank !== null)
+    .map((candidate) => candidate.content)
 
 describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
   beforeAll(() => {
@@ -82,6 +108,62 @@ describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
     const result = await retrieveKnowledge(site, 'pricing')
     expect(result.brief).toContain('Pricing starts at 29 USD')
     expect(result.brief).not.toMatch(/Disabled source|Old wording|Office dog/)
+  })
+
+  it('keeps an exact full-text match whose embedding is unrelated', async () => {
+    const site = await tenant()
+    await indexedSource(site, 'The Growthplus plan includes forty articles a month.', axis(1))
+    await indexedSource(site, 'Office dog policy and parking rules for the Prague office.', axis(2))
+
+    const result = await retrieveKnowledge(site, 'Growthplus')
+    expect(result.brief).toContain('Growthplus plan')
+    expect(result.brief).not.toContain('Office dog')
+  })
+
+  it('folds query terms exactly like the index, whichever side carries the accent', async () => {
+    const site = await tenant()
+    await chunkedSource(site, ['Cena planu Pro to 199 złotych miesięcznie.', 'Lieferung in jede Strasse innerhalb von 48 Stunden.'])
+
+    expect(await lexicalHits(site, 'zlotych')).toEqual([expect.stringContaining('złotych')])
+    expect(await lexicalHits(site, 'złotych')).toEqual([expect.stringContaining('złotych')])
+    expect(await lexicalHits(site, 'Straße')).toEqual([expect.stringContaining('Strasse')])
+  })
+
+  it('drops terms most of the corpus shares, keeping the rare one', async () => {
+    const site = await tenant()
+    await chunkedSource(site, [
+      ...Array.from({ length: 60 }, (_, index) => `Topiqu blog note number ${index} about publishing.`),
+      'Topiqu retired the legacy plan GRWPLS on its blog in March.',
+    ])
+
+    const hits = await lexicalHits(site, 'Topiqu GRWPLS')
+    expect(hits).toEqual([expect.stringContaining('GRWPLS')])
+  })
+
+  it('keeps the rarest term when every term is common', async () => {
+    const site = await tenant()
+    await chunkedSource(site, [
+      ...Array.from({ length: 40 }, (_, index) => `Topiqu blog note ${index}.`),
+      ...Array.from({ length: 30 }, (_, index) => `Topiqu changelog entry ${index}.`),
+    ])
+
+    const hits = await lexicalHits(site, 'Topiqu changelog')
+    expect(hits.length).toBeGreaterThan(0)
+    expect(hits.every((content) => content.includes('changelog'))).toBe(true)
+  })
+
+  it('filters nothing in a small corpus, where shares are too coarse', async () => {
+    const site = await tenant()
+    await chunkedSource(site, Array.from({ length: 10 }, (_, index) => `Topiqu note ${index}.`))
+
+    expect(await lexicalHits(site, 'Topiqu')).toHaveLength(10)
+  })
+
+  it('never compares vectors from a different embedding model', async () => {
+    const site = await tenant()
+    await chunkedSource(site, ['Pricing written by a retired embedding model.'], 'retired-embedding-model')
+
+    expect(await searchKnowledge(site, axis(1), ['pricing'])).toEqual([])
   })
 
   it('counts real usage but not playground queries', async () => {

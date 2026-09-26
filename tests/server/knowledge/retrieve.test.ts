@@ -21,18 +21,20 @@ const candidate = (overrides: Partial<KnowledgeCandidate>): KnowledgeCandidate =
   fetchedAt: null,
   content: 'Content',
   similarity: 0.5,
+  lexicalRank: null,
   score: 0.03,
   ...overrides,
 })
 
 describe('knowledge retrieval', () => {
-  it('builds tsquery-safe, accent-folded search terms', () => {
+  it('keeps words and drops tsquery syntax, leaving accent folding to the database', () => {
     expect(knowledgeSearchTerms('Topiqu vs. Jasper: ceník & "schvalování"; a | b')).toEqual([
       'topiqu',
       'jasper',
-      'cenik',
-      'schvalovani',
+      'ceník',
+      'schvalování',
     ])
+    expect(knowledgeSearchTerms('Straße złoty ΑΘΗΝΑ')).toEqual(['straße', 'złoty', 'αθηνα'])
   })
 
   it('drops weak matches and caps each source at three excerpts', () => {
@@ -42,6 +44,15 @@ describe('knowledge retrieval', () => {
       candidate({ id: 'weak', sourceId: 'c', similarity: 0.1 }),
     ])
     expect(shortlist.map((chunk) => chunk.id)).toEqual(['a0', 'a1', 'a2', 'b0'])
+  })
+
+  it('keeps a top full-text hit the vector branch scores as unrelated', () => {
+    const shortlist = shortlistKnowledge([
+      candidate({ id: 'code', sourceId: 'a', similarity: 0.08, lexicalRank: 1 }),
+      candidate({ id: 'deep', sourceId: 'b', similarity: 0.08, lexicalRank: 6 }),
+      candidate({ id: 'noise', sourceId: 'c', similarity: 0.08 }),
+    ])
+    expect(shortlist.map((chunk) => chunk.id)).toEqual(['code'])
   })
 
   it('never gives an internal entry a URL, so it cannot pass the citation allowlist', () => {
@@ -85,8 +96,8 @@ describe('knowledge retrieval', () => {
         candidate({ id: '3', sourceId: 'a', version: 2 }),
       ]),
     ).toEqual([
-      { sourceId: 'a', version: 2, chunkIds: ['1', '3'] },
-      { sourceId: 'b', version: 1, chunkIds: ['2'] },
+      { sourceId: 'a', title: 'Source', version: 2, chunkIds: ['1', '3'] },
+      { sourceId: 'b', title: 'Source', version: 1, chunkIds: ['2'] },
     ])
   })
 })
