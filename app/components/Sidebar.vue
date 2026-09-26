@@ -145,6 +145,7 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
     {
       label: $t('common.navigation.knowledge'),
       icon: 'mdi:book-open-page-variant-outline',
+      badge: $t('knowledge.beta'),
       to: localePath({ name: 'admin-knowledge' }),
     },
     { label: $t('common.navigation.settings'), icon: 'mdi:cog', to: localePath({ name: 'settings' }) },

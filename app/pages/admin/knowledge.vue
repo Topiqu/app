@@ -2,7 +2,10 @@
   <div class="mx-auto flex min-h-0 w-full max-w-screen-lg flex-1 flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
     <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-highlighted">{{ $t('knowledge.title') }}</h1>
+        <h1 class="flex items-center gap-2 text-2xl font-bold text-highlighted">
+          {{ $t('knowledge.title') }}
+          <UBadge color="primary" variant="subtle" size="sm">{{ $t('knowledge.beta') }}</UBadge>
+        </h1>
         <p class="mt-1 text-sm text-muted">{{ $t('knowledge.description') }}</p>
         <p v-if="limits" class="mt-1 text-xs text-muted">
           {{

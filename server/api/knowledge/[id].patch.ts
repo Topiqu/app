@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
 import { normalizeKnowledgeText } from '~~/server/utils/knowledge/extract'
+import { KNOWLEDGE_CONSENT_VERSION, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
 import {
   assertCitableUrl,
   hashKnowledge,
@@ -15,6 +15,7 @@ const InputSchema = z.object({
   publicUrl: z.string().trim().url().max(2048).nullable().optional(),
   text: z.string().trim().min(1).max(KNOWLEDGE_LIMITS.maxNoteCharacters).optional(),
   validAsOf: z.iso.date().nullable().optional(),
+  confirmed: z.literal(true).optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -33,6 +34,9 @@ export default defineEventHandler(async (event) => {
 
   const content = body.text === undefined ? undefined : normalizeKnowledgeText(body.text)
   const contentChanged = content !== undefined && hashKnowledge(content) !== current.contentHash
+  // New text is new content: it needs the same confirmation as adding a source.
+  if (contentChanged && !body.confirmed)
+    throw createError({ statusCode: 400, statusMessage: 'Confirmation required', data: { code: 'KNOWLEDGE_CONSENT' } })
   const source = await db.knowledgeSource.update({
     where: { id: current.id },
     data: {
@@ -62,6 +66,7 @@ export default defineEventHandler(async (event) => {
       sourceId: current.id,
       changedFields: Object.keys(body),
       contentChanged,
+      ...(contentChanged ? { consent: { version: KNOWLEDGE_CONSENT_VERSION, confirmedAt: new Date().toISOString() } } : {}),
       previousPublicUrl: current.publicUrl,
       publicUrl: source.publicUrl,
     },

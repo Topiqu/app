@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
+import { KNOWLEDGE_CONSENT_VERSION, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
 import {
   extractKnowledgeFile,
   extractKnowledgeUrl,
@@ -47,6 +47,10 @@ export default defineEventHandler(async (event) => {
     const part = parts.find((entry) => entry.name === name && !entry.filename)
     return part ? part.data.toString('utf8') : undefined
   }
+  // Checked before any fetch or parse: the user confirms that everything added may reach a published
+  // article and is processed by the AI provider. The audit row below is the record of it.
+  if (text('confirmed') !== 'true')
+    throw createError({ statusCode: 400, statusMessage: 'Confirmation required', data: { code: 'KNOWLEDGE_CONSENT' } })
   const fieldNames = ['kind', 'title', 'text', 'url', 'useInArticles', 'isPublic', 'publicUrl', 'validAsOf']
   const raw = Object.fromEntries(fieldNames.map((name) => [name, text(name) || undefined]))
   const fields = FieldsSchema.safeParse(raw)
@@ -123,7 +127,14 @@ export default defineEventHandler(async (event) => {
     userId: user.id,
     clientSiteId,
     ip: getIp(event),
-    metadata: { sourceId: source.id, kind: source.kind, useInArticles, public: Boolean(publicUrl), characters: extracted.content.length },
+    metadata: {
+      sourceId: source.id,
+      kind: source.kind,
+      useInArticles,
+      public: Boolean(publicUrl),
+      characters: extracted.content.length,
+      consent: { version: KNOWLEDGE_CONSENT_VERSION, confirmedAt: new Date().toISOString() },
+    },
   })
   kickKnowledgeIndex(source.id)
   setResponseStatus(event, 201)

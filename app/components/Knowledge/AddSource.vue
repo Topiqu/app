@@ -65,12 +65,6 @@
         </UFormField>
 
         <USwitch
-          v-model="form.useInArticles"
-          :label="$t('knowledge.useInArticles')"
-          :aria-label="$t('knowledge.useInArticles')"
-          :description="$t('knowledge.useInArticlesHint')"
-        />
-        <USwitch
           v-model="form.isPublic"
           :label="$t('knowledge.public')"
           :aria-label="$t('knowledge.public')"
@@ -83,12 +77,28 @@
         >
           <UInput v-model="form.publicUrl" type="url" class="w-full" placeholder="https://" required />
         </UFormField>
+
+        <UAlert
+          color="neutral"
+          variant="subtle"
+          icon="mdi:information-outline"
+          :title="$t('knowledge.consent.title')"
+          :description="`${$t(form.isPublic ? 'knowledge.consent.usePublic' : 'knowledge.consent.useInternal')} ${$t('knowledge.consent.processing')}`"
+        />
+        <UFormField name="confirmed">
+          <UCheckbox v-model="form.confirmed" required :label="$t('knowledge.consent.confirm')" />
+        </UFormField>
       </form>
     </template>
     <template #footer>
       <div class="flex w-full justify-end gap-2">
         <UButton color="neutral" variant="ghost" @click="open = false">{{ $t('knowledge.cancel') }}</UButton>
-        <UButton type="submit" form="knowledge-add" :loading="saving" :disabled="kind === 'FILE' && !file">
+        <UButton
+          type="submit"
+          form="knowledge-add"
+          :loading="saving"
+          :disabled="!form.confirmed || (kind === 'FILE' && !file)"
+        >
           {{ submitLabel }}
         </UButton>
       </div>
@@ -114,7 +124,7 @@ type Discovery = { urls: string[]; found: number; existing: number; quotaLeft: n
 const discovered = shallowRef<Discovery | null>(null)
 const file = shallowRef<File | null>(null)
 const saving = shallowRef(false)
-const blank = () => ({ title: '', text: '', url: '', publicUrl: '', validAsOf: '', useInArticles: true, isPublic: false })
+const blank = () => ({ title: '', text: '', url: '', publicUrl: '', validAsOf: '', isPublic: false, confirmed: false })
 const today = new Date().toISOString().slice(0, 10)
 const form = reactive(blank())
 const maxSize = `${KNOWLEDGE_LIMITS.maxFileBytes / 1024 / 1024} MB`
@@ -158,8 +168,8 @@ const pageForm = (url: string) => {
   const body = new FormData()
   body.set('kind', 'URL')
   body.set('url', url)
-  body.set('useInArticles', String(form.useInArticles))
   body.set('isPublic', String(form.isPublic))
+  body.set('confirmed', String(form.confirmed))
   if (form.validAsOf) body.set('validAsOf', form.validAsOf)
   return body
 }
@@ -209,8 +219,8 @@ const submit = async () => {
   }
   const body = new FormData()
   body.set('kind', kind.value)
-  body.set('useInArticles', String(form.useInArticles))
   body.set('isPublic', String(form.isPublic))
+  body.set('confirmed', String(form.confirmed))
   if (form.title.trim()) body.set('title', form.title.trim())
   if (form.validAsOf) body.set('validAsOf', form.validAsOf)
   if (kind.value === 'NOTE') body.set('text', form.text)

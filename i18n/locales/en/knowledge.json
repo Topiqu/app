@@ -12,9 +12,8 @@
     "emptyDescription": "Add product facts, pricing, case studies or approved comparisons so generated articles get your own details right.",
     "chunks": "no passages | {n} passage | {n} passages",
     "failed": "Indexing failed. Try again or replace the source.",
-    "useInArticles": "Use in articles",
-    "useInArticlesFor": "Use {title} in articles",
-    "useInArticlesHint": "AI may use this content, so it can appear in published articles. Leave off anything confidential.",
+    "useInArticles": "Use when writing",
+    "useInArticlesFor": "Use {title} when writing",
     "public": "Public source",
     "publicHint": "Articles may cite and link this source. Leave off for internal material, which is never linked.",
     "actions": "Actions for {title}",
@@ -97,6 +96,14 @@
       "cappedByQuota": "Your knowledge base has room for {count} more sources.",
       "discover": "Find pages",
       "import": "Import {count} pages"
+    },
+    "beta": "Beta",
+    "consent": {
+      "title": "How AI will use this source",
+      "useInternal": "AI may use the facts and figures in this source in your published articles, without linking to it.",
+      "usePublic": "AI may use the facts and figures in this source in your published articles and may link to it as a source.",
+      "processing": "The content is processed by an external AI provider (OpenAI) when it is added, whenever it changes and when articles are written. We keep only the extracted text, until you delete the source.",
+      "confirm": "I confirm this source contains no confidential information, trade secrets or personal data that must not appear in a public article."
     }
   }
 }

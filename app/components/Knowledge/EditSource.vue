@@ -13,6 +13,9 @@
           <UFormField v-if="isNote" :label="$t('knowledge.fields.note')" required>
             <UTextarea v-model="form.text" class="w-full" :rows="8" autoresize :maxrows="16" required />
           </UFormField>
+          <UFormField v-if="textChanged" name="confirmed">
+            <UCheckbox v-model="confirmed" required :label="$t('knowledge.consent.confirm')" />
+          </UFormField>
           <UFormField :label="$t('knowledge.fields.validAsOf')" :hint="$t('knowledge.fields.validAsOfHint')">
             <UInput v-model="form.validAsOf" type="date" class="w-full" :max="today" />
           </UFormField>
@@ -41,7 +44,7 @@
     <template #footer>
       <div class="flex w-full justify-end gap-2">
         <UButton color="neutral" variant="ghost" @click="open = false">{{ $t('knowledge.cancel') }}</UButton>
-        <UButton type="submit" form="knowledge-edit" :loading="saving" :disabled="loading">
+        <UButton type="submit" form="knowledge-edit" :loading="saving" :disabled="loading || (textChanged && !confirmed)">
           {{ $t('knowledge.save') }}
         </UButton>
       </div>
@@ -68,6 +71,10 @@ type Detail = {
 }
 const chunks = shallowRef<Chunk[]>([])
 const form = reactive({ title: '', text: '', publicUrl: '', validAsOf: '' })
+const loadedText = shallowRef('')
+const confirmed = shallowRef(false)
+// Changed note text is new content, so it needs the same confirmation as adding a source.
+const textChanged = computed(() => isNote.value && form.text.trim() !== loadedText.value.trim())
 
 watch([open, () => props.id], async ([value, id]) => {
   if (!value || !id) return
@@ -75,6 +82,8 @@ watch([open, () => props.id], async ([value, id]) => {
   try {
     const { source, chunks: preview } = await $fetch<Detail>(`/api/knowledge/${id}`)
     isNote.value = source.kind === 'NOTE'
+    loadedText.value = source.content ?? ''
+    confirmed.value = false
     chunks.value = preview
     Object.assign(form, {
       title: source.title,
@@ -99,7 +108,7 @@ const save = async () => {
         title: form.title.trim(),
         publicUrl: form.publicUrl.trim() || null,
         validAsOf: form.validAsOf || null,
-        ...(isNote.value ? { text: form.text } : {}),
+        ...(textChanged.value ? { text: form.text, confirmed: true } : {}),
       },
     })
     toast.success({ message: t('knowledge.saved') })

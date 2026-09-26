@@ -19,6 +19,12 @@ export const KNOWLEDGE_PLAN_QUOTAS: Record<string, KnowledgeQuota> = {
 export const knowledgeQuota = (plan?: string | null): KnowledgeQuota =>
   KNOWLEDGE_PLAN_QUOTAS[plan ?? ''] ?? KNOWLEDGE_PLAN_QUOTAS.BASIC!
 
+/**
+ * Bump when the wording of the "may be published" confirmation changes, so the audit log shows
+ * which text each source was added under.
+ */
+export const KNOWLEDGE_CONSENT_VERSION = 1
+
 /** How long a URL source may go without being fetched again. */
 export const KNOWLEDGE_REFRESH_DAYS = 7
 
