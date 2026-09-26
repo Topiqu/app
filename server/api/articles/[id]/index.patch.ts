@@ -1,3 +1,4 @@
+import { DbNull } from '@zenstackhq/orm'
 import { ArticleUpdateSchema } from '~~/shared/databaseSchemas'
 import { ArticleStatus, type NotificationType } from '~~/generated/zenstack/models'
 
@@ -9,19 +10,35 @@ export default defineEventHandler(async (event) => {
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const db = await getEnhancedPrisma(user)
-  const body = await readValidatedBody(event, ArticleUpdateSchema.parse)
+  const rawBody = await readBody(event)
+  const mediaRightsReview = rawBody.mediaRightsReview
+  delete rawBody.mediaRightsReview
+  if (rawBody.imageCredit === null) rawBody.imageCredit = DbNull
+  const body = ArticleUpdateSchema.parse(rawBody)
 
   if (body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
 
   if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (body.coverMediaId !== undefined) await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
 
   const currentDate = new Date()
   const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59)
 
   const previousArticle = await db.article.findUnique({
     where: { id },
-    select: { status: true, releaseAt: true, articleSeriesId: true, seriesOrder: true, userId: true },
+    select: {
+      status: true,
+      publishedAt: true,
+      aiInvolvement: true,
+      releaseAt: true,
+      articleSeriesId: true,
+      seriesOrder: true,
+      userId: true,
+      imageUrl: true,
+      coverMediaId: true,
+      content: true,
+    },
   })
 
   if (!previousArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
@@ -29,6 +46,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
   if ((body.status === ArticleStatus.published || body.releaseAt) && !hasTenantScope(membership, 'ARTICLE_PUBLISH'))
     throw createError({ statusCode: 403, message: 'Missing tenant scope: ARTICLE_PUBLISH' })
+
+  const requiresPublicationReview =
+    body.status === ArticleStatus.published ||
+    Boolean(body.releaseAt) ||
+    previousArticle.status === ArticleStatus.published
+  const mediaReport = requiresPublicationReview
+    ? await requireMediaRightsReview(
+        prisma,
+        user.clientSiteId!,
+        {
+          imageUrl: body.imageUrl === undefined ? previousArticle.imageUrl : body.imageUrl,
+          coverMediaId: body.coverMediaId === undefined ? previousArticle.coverMediaId : body.coverMediaId,
+          content: body.content === undefined ? previousArticle.content : body.content,
+        },
+        mediaRightsReview,
+      )
+    : null
 
   if (previousArticle.status === ArticleStatus.published) {
     delete body.releaseAt
@@ -64,7 +98,12 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const content = body.content ? stampHeadingIds(body.content) : body.content
+  const attributedContent = body.content ? await applyMediaAttributions(user.clientSiteId!, body.content) : body.content
+  const content = attributedContent ? stampHeadingIds(attributedContent) : attributedContent
+  if (body.coverMediaId !== undefined) {
+    const mediaCoverCredit = await coverCreditFromMedia(user.clientSiteId!, body.coverMediaId)
+    if (mediaCoverCredit) body.imageCredit = JSON.parse(JSON.stringify(mediaCoverCredit))
+  }
 
   const data: any = {
     ...body,
@@ -74,6 +113,12 @@ export default defineEventHandler(async (event) => {
     data.releaseAt = body.releaseAt ? new Date(body.releaseAt) : null
   }
   if (body.content) data.content = sanitizeHtml(content || '')
+  if (previousArticle.status !== ArticleStatus.published && body.status === ArticleStatus.published) {
+    data.publishedAt = previousArticle.publishedAt ?? currentDate
+  }
+  if (previousArticle.aiInvolvement === 'FULL' && data.content && data.content !== previousArticle.content) {
+    data.aiInvolvement = 'ASSIST'
+  }
 
   const article = await db.article.update({
     where: { id },
@@ -91,8 +136,33 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  const usageArticle = await prisma.article.findFirst({
+    where: { id: article.id, clientSiteId: user.clientSiteId! },
+    select: { imageUrl: true, coverMediaId: true, content: true, clientSite: { select: { language: true } } },
+  })
+  if (usageArticle)
+    await syncArticleMediaUsages(prisma, {
+      clientSiteId: user.clientSiteId!,
+      articleId: article.id,
+      language: usageArticle.clientSite.language,
+      imageUrl: usageArticle.imageUrl,
+      coverMediaId: usageArticle.coverMediaId,
+      content: usageArticle.content,
+    })
+
   if (article.status === ArticleStatus.published) {
     await syncArticleTranslationQueue(db, article.id, user.clientSiteId, { contentChanged: 'content' in data })
+  }
+
+  if (mediaReport) {
+    const site = await prisma.clientSite.findUnique({ where: { id: user.clientSiteId! }, select: { language: true } })
+    await createMediaRightsSnapshot(prisma, {
+      articleId: article.id,
+      clientSiteId: user.clientSiteId!,
+      language: site?.language ?? 'en',
+      report: mediaReport,
+      confirmedById: user.id,
+    })
   }
 
   // Covers publishing, unpublishing and edits to an already-live article. A

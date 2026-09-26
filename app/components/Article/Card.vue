@@ -144,6 +144,7 @@
 import type { ArticleCardData, ArticleCardLayout, ArticleCardVariant } from '~~/shared/types/article'
 
 import { formatDate } from '~~/shared/utils'
+import { articleExcerpt } from '~~/shared/utils/articleBlocks'
 
 const {
   article,
@@ -175,7 +176,7 @@ const {
   }),
 )
 const shares = computed(() => article._count?.shares ?? article.shares ?? 0)
-const plainExcerpt = computed(() => (article.excerpt || article.content || '').replace(/<[^>]+>/g, '').trim())
+const plainExcerpt = computed(() => articleExcerpt(article.excerpt, article.content))
 const normalizedTags = computed(() =>
   (article.tags ?? [])
     .map((item, index) => ({

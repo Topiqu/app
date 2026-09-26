@@ -37,6 +37,8 @@ export const sanitizeHtml = (dirty: string) => {
       'data-youtube-video',
       'data-ai-disclosure',
       'data-article-lightbox',
+      'data-media-id',
+      'data-media-attribution',
       'alt',
       'title',
       'colwidth',

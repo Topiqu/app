@@ -47,9 +47,19 @@ export const generateImage = async (
     (filenameSuffix ? '-' + filenameSuffix : ``) +
     `.${optimized.extension}`
 
-  const url = await putToCdn(`${outputDir}/${filename}`, optimized.data, optimized.contentType, undefined, {
+  const storageKey = `${outputDir}/${filename}`
+  const url = await putToCdn(storageKey, optimized.data, optimized.contentType, undefined, {
     cacheControl: IMMUTABLE_IMAGE_CACHE_CONTROL,
   })
 
-  return { ...output, url, width: optimized.width, height: optimized.height }
+  return {
+    ...output,
+    url,
+    storageKey,
+    mimeType: optimized.contentType,
+    sizeBytes: optimized.data.byteLength,
+    contentHash: hashMedia(optimized.data),
+    width: optimized.width,
+    height: optimized.height,
+  }
 }

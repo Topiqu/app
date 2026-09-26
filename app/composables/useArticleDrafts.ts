@@ -15,6 +15,7 @@ export const useArticleDrafts = async (
      * both call sites got it wrong when it was implicit.
      */
     enabled: boolean
+    paused?: Readonly<Ref<boolean>>
     onDraftLoaded?: () => void
   },
 ) => {
@@ -38,15 +39,15 @@ export const useArticleDrafts = async (
     immediate: enabled,
   })
 
-  const saveDraft = useDebounceFn(async () => {
-    if (idle.value) return
+  const persistDraft = async (force = false) => {
+    if (!force && (idle.value || options.paused?.value)) return false
 
     if (
       !editedArticle.value.title &&
       !editedArticle.value.excerpt &&
       (!editedArticle.value.content || editedArticle.value.content === '<p></p>')
     ) {
-      return
+      return false
     }
 
     const currentData = {
@@ -60,7 +61,7 @@ export const useArticleDrafts = async (
         equal({ title: draft.title, excerpt: draft.excerpt || '', content: draft.content }, currentData),
       )
     ) {
-      return
+      return true
     }
 
     saving.value = true
@@ -79,12 +80,15 @@ export const useArticleDrafts = async (
       successMessage.value = t('common.messages.draftSaved')
       await refresh()
       clearSuccessLater()
+      return true
     } catch {
       toast.add({ color: 'error', title: t('common.messages.draftSaveFailed') })
+      return false
     } finally {
       saving.value = false
     }
-  }, 8000)
+  }
+  const saveDraft = useDebounceFn(() => persistDraft(), 8000)
 
   const loadDraft = (draft: ArticleDraft) => {
     Object.assign(editedArticle.value, {
@@ -92,6 +96,7 @@ export const useArticleDrafts = async (
       excerpt: draft.excerpt || '',
       content: draft.content,
       imageUrl: draft.imageUrl || '',
+      coverMediaId: draft.coverMediaId || null,
       slug: slugify(draft.title ?? '', { lower: true, strict: true, trim: true }),
       sources: [],
       savedAmount: 0,
@@ -121,6 +126,7 @@ export const useArticleDrafts = async (
     successMessage,
     lastSavedAt,
     saving,
+    saveDraftNow: () => persistDraft(true),
     loadDraft,
     refreshDrafts: refresh,
   }

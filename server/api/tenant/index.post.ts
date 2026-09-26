@@ -129,11 +129,12 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if (isUniqueViolation(error)) {
       const detail = databaseErrorMessage(error)
-      const code = detail.includes('ClientSite_name_key') || detail.includes('(name)')
-        ? 'NAME_TAKEN'
-        : body.domainType === 'CUSTOM'
-          ? 'DOMAIN_TAKEN'
-          : 'SUBDOMAIN_TAKEN'
+      const code =
+        detail.includes('ClientSite_name_key') || detail.includes('(name)')
+          ? 'NAME_TAKEN'
+          : body.domainType === 'CUSTOM'
+            ? 'DOMAIN_TAKEN'
+            : 'SUBDOMAIN_TAKEN'
       throw createError({ statusCode: 409, message: 'Blog already exists', data: { code } })
     }
     throw error

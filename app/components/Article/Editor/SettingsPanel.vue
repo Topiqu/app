@@ -1,14 +1,5 @@
 <template>
   <div class="flex flex-col gap-6" data-article-settings-panel>
-    <ArticleEditorOptimization
-      :state="optimizationState"
-      :result="optimizationResult"
-      @retry="$emit('retryOptimization')"
-      @navigate="$emit('navigateOptimization', $event)"
-    />
-
-    <USeparator />
-
     <ArticleEditorFactCheck
       :state="factCheckState"
       :result="factCheckResult"
@@ -17,6 +8,16 @@
       @run="$emit('runFactCheck')"
       @navigate="$emit('navigateFactCheck', $event)"
       @navigateSources="$emit('navigateFactCheckSources')"
+    />
+
+    <USeparator />
+
+    <ArticleEditorMediaRights
+      :state="mediaRightsState"
+      :result="mediaRightsResult"
+      @navigate="$emit('navigateMedia', $event)"
+      @attach="(item, mediaId) => $emit('attachMedia', item, mediaId)"
+      @updated="$emit('refreshMediaRights')"
     />
 
     <USeparator />
@@ -34,12 +35,16 @@
         :maxHeight="2160"
         @upload="$emit('upload', $event)"
       />
+      <UButton color="neutral" variant="soft" icon="mdi:image-multiple-outline" @click="mediaPickerOpen = true">
+        {{ $t('media.choose') }}
+      </UButton>
+      <MediaPicker v-model:open="mediaPickerOpen" mode="cover" @select="selectCoverMedia" />
     </section>
 
     <USeparator />
 
     <section ref="sourcesSection" class="flex flex-col gap-3">
-      <ArticleSources v-model="sources" />
+      <ArticleSources ref="sourcesEditor" v-model="sources" />
     </section>
 
     <USeparator />
@@ -96,6 +101,23 @@
                     <dd class="mt-1 text-sm font-semibold text-highlighted">{{ metric.value }}</dd>
                   </div>
                 </dl>
+                <div v-if="aiResearch?.knowledgeSources?.length" class="border-t border-default/70 px-4 py-3">
+                  <p class="text-[11px] uppercase tracking-wide text-muted">
+                    {{ $t('articles.editor.ai.result.knowledgeSources') }}
+                  </p>
+                  <ul class="mt-1.5 space-y-1">
+                    <li v-for="source in aiResearch.knowledgeSources" :key="source.id">
+                      <NuxtLink
+                        :to="localePath({ name: 'admin-knowledge', query: { source: source.id } })"
+                        target="_blank"
+                        class="inline-flex items-center gap-1.5 text-sm text-highlighted hover:underline"
+                      >
+                        <UIcon name="mdi:book-open-page-variant-outline" size="14" class="text-muted" aria-hidden="true" />
+                        {{ source.title }}
+                      </NuxtLink>
+                    </li>
+                  </ul>
+                </div>
                 <div
                   v-if="aiLastResult.missingModules.length"
                   class="border-t border-warning/20 px-4 py-3 text-xs text-warning"
@@ -166,6 +188,18 @@
                     <USelect v-model="researchFallback" :items="fallbackItems" class="w-full" />
                   </UFormField>
                 </div>
+              </div>
+
+              <div class="border-t border-default pt-5">
+                <!-- Options saved before this switch existed lack the field; they meant "use it". -->
+                <USwitch
+                  :modelValue="aiOptions.useKnowledge !== false"
+                  :aria-label="$t('articles.editor.ai.useKnowledge')"
+                  :label="$t('articles.editor.ai.useKnowledge')"
+                  :description="$t('articles.editor.ai.useKnowledgeDescription')"
+                  :ui="{ root: 'flex-row-reverse justify-between', wrapper: 'ms-0 me-3' }"
+                  @update:modelValue="aiOptions.useKnowledge = $event"
+                />
               </div>
 
               <div class="flex flex-col gap-4 border-t border-default pt-5">
@@ -433,13 +467,23 @@
         </UButton>
       </div>
     </section>
+
+    <USeparator />
+
+    <ArticleEditorOptimization
+      :state="optimizationState"
+      :result="optimizationResult"
+      @retry="$emit('retryOptimization')"
+      @navigate="$emit('navigateOptimization', $event)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
-import type { ArticleOptimizationResult, OptimizationTargetKind } from '~~/shared/types/articleOptimization'
+import type { MediaRightsItem, MediaRightsReport } from '~~/shared/types/mediaRights'
+import type { ArticleOptimizationResult, OptimizationTarget } from '~~/shared/types/articleOptimization'
 
 import {
   ARTICLE_GENERATION_FORMATS,
@@ -453,6 +497,7 @@ import {
   type ArticleGenerationResult,
 } from '~~/shared/utils/articleGeneration'
 
+import type { MediaRightsState } from '~/composables/useMediaRights'
 import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'
 import type { ArticleFactCheckErrorKind, ArticleFactCheckState } from '~/composables/useArticleFactCheck'
 import type {
@@ -482,12 +527,24 @@ const props = defineProps<{
   factCheckResult: ArticleFactCheckResult | null
   factCheckCanRun: boolean
   factCheckErrorKind: ArticleFactCheckErrorKind
+  mediaRightsState: MediaRightsState
+  mediaRightsResult: MediaRightsReport | null
 }>()
 
 const imageSection = useTemplateRef<HTMLElement>('imageSection')
+const mediaPickerOpen = shallowRef(false)
+const selectCoverMedia = (asset: import('~~/shared/types/mediaLibrary').MediaPickerSelection) => {
+  emit('upload', { url: asset.url, optimizedUrl: asset.deliveryUrl || asset.url, mediaAsset: { id: asset.id } })
+}
 const sourcesSection = useTemplateRef<HTMLElement>('sourcesSection')
-const focusOptimizationTarget = (kind: OptimizationTargetKind) => {
-  const element = kind === 'featured-image' ? imageSection.value : kind === 'sources' ? sourcesSection.value : null
+const sourcesEditor = useTemplateRef<{ focusSource: (index?: number) => HTMLElement | null }>('sourcesEditor')
+const focusOptimizationTarget = (target: OptimizationTarget) => {
+  const element =
+    target.kind === 'featured-image'
+      ? imageSection.value
+      : target.kind === 'sources'
+        ? (sourcesEditor.value?.focusSource(target.blockIndex) ?? sourcesSection.value)
+        : null
   element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   return element
 }
@@ -510,6 +567,7 @@ const phaseIcons: Record<GenerationPhase, string> = {
   images: 'mdi:image-multiple-outline',
 }
 const { t } = useI18n()
+const localePath = useLocalePath()
 const researchDepthName = useId()
 
 const activeHeading = computed(() => props.aiAuthorName || t('articles.editor.ai.neutralWorking'))
@@ -587,11 +645,18 @@ const waitingMessage = computed(() => {
   if (props.aiPhase === 'images') return t('articles.editor.ai.waitingImages')
   return t('articles.editor.ai.waitingResearch')
 })
+const knowledgeLabel = computed(() =>
+  props.aiResearch?.knowledgeSourceCount
+    ? t('articles.editor.ai.knowledgeUsed', { count: props.aiResearch.knowledgeSourceCount })
+    : null,
+)
 const phaseDoneLabel = (phase: GenerationPhase) => {
   if (phase !== 'research' || !props.aiResearch) return t('articles.editor.ai.done')
-  if (props.aiResearch.status === 'completed')
-    return t('articles.editor.ai.researchSourceBadge', { count: props.aiResearch.sourceCount })
-  return t(`articles.editor.ai.researchStatus.${props.aiResearch.status}`)
+  const research =
+    props.aiResearch.status === 'completed'
+      ? t('articles.editor.ai.researchSourceBadge', { count: props.aiResearch.sourceCount })
+      : t(`articles.editor.ai.researchStatus.${props.aiResearch.status}`)
+  return knowledgeLabel.value ? `${research} · ${knowledgeLabel.value}` : research
 }
 const planSummary = computed(() =>
   t('articles.editor.ai.outputSummary', {
@@ -631,6 +696,9 @@ const resultMetrics = computed(() => {
   return [
     { label: t('articles.editor.ai.result.words'), value: result.wordCount.toLocaleString() },
     { label: t('articles.editor.ai.result.sources'), value: result.sourceCount.toLocaleString() },
+    ...(props.aiResearch?.knowledgeSourceCount
+      ? [{ label: t('articles.editor.ai.result.knowledge'), value: props.aiResearch.knowledgeSourceCount.toLocaleString() }]
+      : []),
     { label: t('articles.editor.ai.result.media'), value: `${result.mediaFound}/${result.mediaTotal}` },
     { label: t('articles.editor.ai.result.time'), value: `${result.durationSeconds} s` },
   ]
@@ -643,8 +711,8 @@ const selectFormat = (format: ArticleGenerationFormat) => {
   )
 }
 
-defineEmits<{
-  upload: [file: { url: string; optimizedUrl: string }]
+const emit = defineEmits<{
+  upload: [file: { url: string; optimizedUrl: string; mediaAsset?: { id: string } }]
   generate: []
   stop: []
   addTag: [id: string]
@@ -655,5 +723,8 @@ defineEmits<{
   runFactCheck: []
   navigateFactCheck: [blockIndex: number]
   navigateFactCheckSources: []
+  navigateMedia: [item: MediaRightsItem]
+  attachMedia: [item: MediaRightsItem, mediaId: string]
+  refreshMediaRights: []
 }>()
 </script>

@@ -5,6 +5,7 @@ import "./comment"
 import "./notification"
 import "./poll"
 import "./visibility"
+import "./media"
 
 enum ArticleStatus {
     draft
@@ -52,6 +53,8 @@ model ArticleDraft with Base, Ownable {
     excerpt      String?
     content      String
     imageUrl     String?
+    coverMediaId String?
+    coverMedia   MediaAsset? @relation("ArticleDraftCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
     clientSiteId String
     clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     @@allow('all', auth().id == userId || auth().role == 'admin')
@@ -67,6 +70,8 @@ model Article with Base, Ownable {
     /// attribution. Body images carry theirs inside `content`; the cover is a bare URL, so
     /// without this there is nowhere to disclose a generated hero or credit a licensed one.
     imageCredit      Json?
+    coverMediaId     String?
+    coverMedia       MediaAsset? @relation("ArticleCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
     status           ArticleStatus     @default(draft)
     clientSiteId     String
     clientSite       ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
@@ -96,6 +101,8 @@ model Article with Base, Ownable {
     polls            Poll[]
     notifications    Notification[]    @relation("ArticleNotifications")
     translations     ArticleTranslation[]
+    mediaRightsSnapshots MediaRightsPublicationSnapshot[]
+    mediaUsages      ArticleMediaUsage[]
     sources          String[]
     /// Direct answer to the article's question, 40–60 words, rendered above the body. Answer
     /// engines quote this span; the perex is a hook and reads as one.
@@ -135,6 +142,7 @@ model ArticleTranslation with Base {
     usage        Json?
     error        String?           @length(0, 1000)
     translatedAt DateTime?
+    mediaUsages  ArticleMediaUsage[]
     @@unique([articleId, language])
     @@unique([slug, clientSiteId, language])
     @@allow('read', status == 'PUBLISHED' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))

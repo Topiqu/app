@@ -1,0 +1,74 @@
+import "./base"
+import "./client"
+import "./user"
+
+enum KnowledgeSourceKind {
+    NOTE
+    FILE
+    URL
+}
+
+enum KnowledgeSourceStatus {
+    PENDING
+    PROCESSING
+    INDEXED
+    FAILED
+}
+
+/// `content` is the extracted text and the only copy of it: uploaded files are never stored, so
+/// there is no private object behind a public CDN bucket. `publicUrl` alone makes a source citable.
+model KnowledgeSource with Base {
+    clientSiteId     String
+    clientSite       ClientSite            @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    createdById      String?
+    createdBy        User?                 @relation("KnowledgeSourceCreator", fields: [createdById], references: [id], onDelete: SetNull)
+    kind             KnowledgeSourceKind
+    title            String                @length(1, 200)
+    status           KnowledgeSourceStatus @default(PENDING)
+    useInArticles    Boolean               @default(true)
+    publicUrl        String?               @length(0, 2048)
+    sourceUrl        String?               @length(0, 2048)
+    originalFilename String?               @length(0, 255)
+    mimeType         String?               @length(0, 100)
+    sizeBytes        Int?
+    content          String
+    contentHash      String                @length(64, 64)
+    version          Int                   @default(1)
+    embeddingModel   String?
+    chunkCount       Int                   @default(0)
+    attempts         Int                   @default(0)
+    error            String?               @length(0, 500)
+    indexedAt        DateTime?
+    /// When the content was true; staleness review reads this, falling back to fetchedAt, then indexedAt.
+    validAsOf        DateTime?
+    fetchedAt        DateTime?
+    usageCount       Int                   @default(0)
+    lastUsedAt       DateTime?
+    chunks           KnowledgeChunk[]
+
+    @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('all', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@index([clientSiteId, createdAt])
+    @@index([clientSiteId, contentHash])
+    @@index([status, updatedAt])
+    @@index([kind, fetchedAt])
+}
+
+/// Written and searched only by `server/utils/knowledge/*` through raw SQL (pgvector); the policy
+/// denies every ORM path so a route can never list another tenant's chunks by accident.
+model KnowledgeChunk {
+    id           String                  @id @default(uuid())
+    createdAt    DateTime                @default(now())
+    sourceId     String
+    source       KnowledgeSource         @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+    clientSiteId String
+    version      Int
+    ordinal      Int
+    content      String
+    embedding    Unsupported("vector(1536)")?
+    searchVector Unsupported("tsvector")?
+
+    @@deny('all', true)
+    @@index([clientSiteId])
+    @@index([sourceId, version])
+}

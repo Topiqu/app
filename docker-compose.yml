@@ -1,6 +1,7 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    # Same major version and Debian base as production; pgvector ships in the image.
+    image: pgvector/pgvector:pg18-trixie
     container_name: rasg-blog-db
     restart: unless-stopped
     environment:
@@ -10,7 +11,8 @@ services:
     ports:
       - '${PG_HOST_PORT:-5432}:5432'
     volumes:
-      - rasg-blog-db:/var/lib/postgresql/data
+      # PG 18 images keep PGDATA under a versioned subdirectory, so the volume mounts one level up.
+      - rasg-blog-db-18:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d rasg-blog']
       interval: 5s
@@ -18,4 +20,4 @@ services:
       retries: 10
 
 volumes:
-  rasg-blog-db:
+  rasg-blog-db-18:

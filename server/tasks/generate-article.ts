@@ -3,6 +3,7 @@ import type { EventStream } from 'h3'
 import slugify from 'slugify'
 import { linkableSources } from '~~/shared/utils/articleSources'
 import { consumeClientTokens } from '~~/server/utils/consumeTokens'
+import { countGeneratedWords, type ValueEvent } from '~~/shared/utils/valueMetrics'
 import { isExistingArticleOpportunity } from '~~/server/utils/searchConsole/autopilot'
 import {
   getSearchOpportunities,
@@ -263,6 +264,7 @@ const processClient = async (client: any) =>
           // Never `undefined` here: that would research the prompt, and the prompt is a template.
           ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt, {
             research: topic ? researchRequest(topic) : false,
+            knowledgeQuery: topic ? `${topic.topic}\nAngle: ${topic.angle}` : null,
             format: cronFormat,
             variant: topic?.variant,
             modules: cronModules,
@@ -331,12 +333,25 @@ const processClient = async (client: any) =>
         }
 
         const metrics = calculateArticleMetrics(generated.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
+        const generatedWordCount = countGeneratedWords(generated.content)
+        const valueEvent: ValueEvent = {
+          activity: 'writing',
+          outcome: 'completed',
+          quantity: generatedWordCount,
+          unit: 'words',
+        }
 
         const researchRequired = cronFormat === 'news' || topic?.needsResearch === true
         const researchApproved =
           !researchRequired || (generated.research?.status === 'completed' && generated.research?.sourceCount > 0)
         const qualityApproved = generated.editorialReview?.approved === true && researchApproved
-        const status = client.autoRelease && qualityApproved ? 'published' : 'draft'
+        const mediaReport = await evaluateMediaRights(prisma, clientSiteId, {
+          imageUrl: generated.articleImageUrl,
+          coverMediaId: generated.articleCoverMediaId,
+          content: generated.content,
+        })
+        const mediaApproved = mediaReport.counts.needsAttention === 0
+        const status = client.autoRelease && qualityApproved && mediaApproved ? 'published' : 'draft'
 
         const { article, appliedSeries } = await prisma.$transaction(async (ctx: any) => {
           const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
@@ -365,6 +380,7 @@ const processClient = async (client: any) =>
               structureVariant: topic?.variant ?? null,
               clientSiteId,
               status,
+              publishedAt: status === 'published' ? new Date() : null,
               aiInvolvement: 'FULL',
               articleSeriesId: appliedSeries.seriesId,
               seriesOrder: appliedSeries.seriesOrder,
@@ -375,6 +391,7 @@ const processClient = async (client: any) =>
               // generated the cover before this row was written, so the cost was paid either way.
               imageUrl: generated.articleImageUrl || null,
               imageCredit: generated.articleImageCredit ?? undefined,
+              coverMediaId: generated.articleCoverMediaId ?? undefined,
               totalWords: metrics.totalWords,
               savedAmount: metrics.savedAmount,
               savedTimeMinutes: metrics.savedTimeMinutes,
@@ -385,6 +402,19 @@ const processClient = async (client: any) =>
             data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),
             skipDuplicates: true,
           })
+
+          if (status === 'published') {
+            await ctx.mediaRightsPublicationSnapshot.create({
+              data: {
+                articleId: article.id,
+                clientSiteId,
+                language: defaultLang,
+                fingerprint: mediaReport.fingerprint,
+                items: JSON.parse(JSON.stringify(mediaRightsSnapshotItems(mediaReport))),
+                issueCount: 0,
+              },
+            })
+          }
 
           return { article, appliedSeries }
         })
@@ -435,8 +465,11 @@ const processClient = async (client: any) =>
             sources: generated.sources?.length ?? 0,
             tokens,
             researched: topic ? researchRequest(topic) !== false : false,
+            knowledge: generated.knowledge ?? [],
+            knowledgeShortlisted: generated.research?.knowledgeShortlisted ?? 0,
             editorialReview: generated.editorialReview,
             researchApproved,
+            mediaApproved,
             series: {
               action: appliedSeries.action,
               seriesId: appliedSeries.seriesId,
@@ -458,7 +491,14 @@ const processClient = async (client: any) =>
             action: 'CRON_ARTICLE_PUBLISHED',
             userId: article.userId,
             clientSiteId,
-            metadata: { articleId: article.id, title: article.title, autoReleased: client.autoRelease },
+            idempotencyKey: `cron-generation:${article.id}`,
+            metadata: {
+              articleId: article.id,
+              title: article.title,
+              autoReleased: client.autoRelease,
+              generatedWordCount,
+              valueEvent,
+            },
           })
 
           const sendNotifications = async () => {
@@ -543,9 +583,12 @@ const processClient = async (client: any) =>
             action: 'CRON_ARTICLE_SAVED_AS_DRAFT',
             userId: article.userId,
             clientSiteId,
+            idempotencyKey: `cron-generation:${article.id}`,
             metadata: {
               articleId: article.id,
               title: article.title,
+              generatedWordCount,
+              valueEvent,
               heldFromAutoRelease: client.autoRelease && !qualityApproved,
               editorialReview: generated.editorialReview,
               researchApproved,

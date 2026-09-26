@@ -118,7 +118,9 @@ describe('tenant boundary wiring', () => {
     expect(createDialog).toContain("$fetch('/api/tenant'")
     expect(createDialog).toContain("$fetch<{ url: string | null }>('/api/stripe/subscribe'")
     expect(createDialog).toContain("{ id: 'review', label: $t('common.tenant.steps.review') }")
-    expect(createDialog).toContain("$t('common.actions.selectTheme', { theme })")
+    expect(createDialog).toContain(
+      "$t('common.actions.selectTheme', { theme: $t(`common.preferences.branding.colors.${theme}`) })",
+    )
     expect(source('app/components/Sidebar.vue')).toContain('<TenantSwitcher')
   })
 
@@ -170,6 +172,24 @@ describe('tenant boundary wiring', () => {
     expect(create).toContain("body.aiInvolvement === 'FULL'")
     expect(create).toContain("role: 'ai'")
     expect(create).toContain('userId: aiAuthor?.id ?? user.id')
+  })
+
+  it('creates articles from an explicit field list and normalizes an empty image credit', () => {
+    const create = source('server/api/articles/index.post.ts')
+    expect(create).not.toContain('...body,')
+    expect(create).toContain('body.imageCredit === null ? DbNull : body.imageCredit')
+    expect(create).toContain('clientSiteId: user.clientSiteId')
+    expect(create).toContain('userId: aiAuthor?.id ?? user.id')
+  })
+
+  it('sends only writable article fields when updating an existing article', () => {
+    const editor = source('app/pages/admin/editor/[id].vue')
+    const payload = editor.slice(editor.indexOf('const payload = {'), editor.indexOf('submitting.value = true'))
+    expect(payload).not.toContain('...editedArticle.value')
+    expect(payload).toContain('title: sourceDraft?.title ?? editedArticle.value.title')
+    expect(payload).toContain('...(isNew ? { tags: articleTags.value } : {})')
+    expect(editor).toContain("method: 'PUT'")
+    expect(editor).toContain('body: { tagIds: articleTags.value }')
   })
 })
 

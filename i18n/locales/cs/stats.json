@@ -10,20 +10,49 @@
       "title": "Zobrazení"
     },
     "savedTime": {
-      "basis": "{time} práce · {words}"
+      "basis": "{time} práce · {words}",
+      "title": "Odhadovaný ušetřený čas",
+      "method": "Jak se odhad počítá",
+      "tooltip": "Odhad vychází pouze z dokončeného AI psaní: počet vytvořených slov ÷ {speed} slov za hodinu. Skutečná úspora se může lišit. Peněžní odhad používá sazbu {rate} za hodinu. Rešerši ani obrázky zatím nezapočítáváme."
     },
     "savedAmount": {
-      "title": "Ušetřené náklady"
+      "title": "Odhadovaná úspora nákladů",
+      "estimate": "Odhadovaná hodnota času {amount}",
+      "method": "Jak se odhad počítá",
+      "legacyTooltip": "Historický odhad vychází ze slov v článcích aktuálně označených jako celé vytvořené AI. Není to záznam skutečného generování a může se překrývat s novějšími záznamy, proto se k nim nepřičítá. Výpočet používá {speed} slov a {rate} za hodinu."
+    },
+    "value": {
+      "words": "AI vytvořená slova",
+      "wordsCreated": "{count} doložených AI slov",
+      "legacyWordCount": "≈{count} slov v AI článcích",
+      "legacyEstimate": "Historický odhad · {articles}",
+      "legacyArticleCount": "0 AI článků | {count} AI článek | {count} AI články | {count} AI článků",
+      "legacyWords": "{articles} · přibližně {words} slov",
+      "seeAllTime": "Historický odhad najdete v pohledu Celá doba",
+      "noCompletedWriting": "Zatím žádné dokončené AI psaní"
+    },
+    "range": { "label": "Časové období statistik", "last30Days": "30 dní", "allTime": "Celá doba" },
+    "coverage": {
+      "partial": "Neúplná historie · první doložený záznam {date}",
+      "unavailable": "Starší aktivita nebyla zaznamenána"
+    },
+    "duration": {
+      "lessThanMinute": "<1 min",
+      "compact": { "minutes": "{count} min", "hours": "{count} h", "days": "{count} d" },
+      "minutes": "0 minut | {count} minuta | {count} minuty | {count} minut",
+      "hours": "0 hodin | {count} hodina | {count} hodiny | {count} hodin",
+      "days": "0 dní | {count} den | {count} dny | {count} dní"
     },
     "savings": {
       "words": "0 slov | {count} slovo | {count} slova | {count} slov",
       "timeBasis": "{words} ÷ {speed} slov/h",
       "amountBasis": "{time} × {rate}/h",
-      "tooltip": "Počítáme jen články, které celé napsala AI. Jakmile do některého ručně sáhnete, ze statistiky vypadne. Sazba {rate}/h je pod mediánem trhu a v tempu {speed} slov/h je započítaná i rešerše a korektura. Jedná se o odhad, konkrétní sazby copywriterů se mohou lišit."
+      "tooltip": "Odhad vychází z dokončeného AI psaní a aktuální sazby {rate}/h při tempu {speed} slov/h. Ruční úpravy a další uložení hodnotu znovu nenavyšují."
     },
-    "articleCount": "Počet článků",
+    "articleCount": "Publikované články",
     "sentiment": {
       "title": "Vaše komunita",
+      "current": "Aktuální souhrn",
       "toxicity": "{value} toxicita"
     },
     "totalShares": {
@@ -42,7 +71,7 @@
       "likes": "0 lajků | {count} lajk | {count} lajky | {count} lajků"
     },
     "topCommentedArticle": {},
-    "followerCount": "Počet sledujících",
+    "followerCount": "Sledující nyní",
     "engagementRate": {
       "title": "Míra zapojení",
       "tooltip": "Míra zapojení ukazuje, jak aktivně čtenáři interagují s vašimi články. Počítá se jako podíl všech interakcí (lajky, komentáře, sdílení a hlasy v anketách) ke všem zobrazením napříč blogem. Vyšší hodnota znamená větší zapojení čtenářů."
@@ -62,7 +91,9 @@
       "day": "Den",
       "platform": "Platforma",
       "viewsByDay": "Zobrazení za posledních {days} dní",
-      "trackingSince": "Měřeno od {date} — starší zobrazení se nezaznamenávala."
+      "trackingSince": "Měřeno od {date} — starší zobrazení se nezaznamenávala.",
+      "viewsByMonth": "Zobrazení po měsících",
+      "month": "Měsíc"
     },
     "platforms": {
       "TWITTER": "X / Twitter",
@@ -84,7 +115,9 @@
     "aiInvolvement": {
       "FULL": "Celé AI",
       "ASSIST": "AI + úpravy",
-      "NONE": "Ručně"
+      "NONE": "Ručně",
+      "note": "Starší úpravy nemusí být zachycené",
+      "inventoryNote": "Včetně konceptů · starší úpravy nemusí být zachycené"
     },
     "viewsUnit": "0 zobrazení | {count} zobrazení | {count} zobrazení | {count} zobrazení"
   }

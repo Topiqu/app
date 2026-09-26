@@ -119,7 +119,7 @@
           "icon": "mdi:robot-outline",
           "iconColor": "text-cyan-500",
           "title": "5. Zpracování pomocí AI",
-          "content": "Když použijete funkci generování, překladu, vylepšení nebo analýzy, odešle se příslušný text poskytovateli AI (OpenAI), který vytvoří výsledek.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Využíváme API poskytovatele za podmínek, podle nichž se vstupy a výstupy <strong>nepoužívají k trénování jeho modelů</strong>.</li><li>Do promptů prosím nevkládejte osobní údaje třetích osob, přihlašovací údaje ani důvěrné materiály. Co se odešle, určujete vy.</li><li>Výsledný obsah ukládáme do vašeho pracovního prostoru spolu s interním čítačem technické spotřeby pro provozní a nákladovou kontrolu. Samostatnou kopii promptů nad rámec vykreslení vašich konceptů neuchováváme.</li><li>Žádná AI funkce nečiní rozhodnutí s právními účinky vůči vaší osobě. Automatické režimy publikování vykonávají vámi nastavené pokyny a lze je kdykoli přepnout na ruční kontrolu.</li></ul>"
+          "content": "Když použijete funkci generování, překladu, vylepšení nebo analýzy, odešle se příslušný text poskytovateli AI (OpenAI), který vytvoří výsledek.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Využíváme API poskytovatele za podmínek, podle nichž se vstupy a výstupy <strong>nepoužívají k trénování jeho modelů</strong>.</li><li>Do promptů prosím nevkládejte osobní údaje třetích osob, přihlašovací údaje ani důvěrné materiály. Co se odešle, určujete vy.</li><li>Výsledný obsah ukládáme do vašeho pracovního prostoru spolu s interním čítačem technické spotřeby pro provozní a nákladovou kontrolu. Samostatnou kopii promptů nad rámec vykreslení vašich konceptů neuchováváme.</li><li>Žádná AI funkce nečiní rozhodnutí s právními účinky vůči vaší osobě. Automatické režimy publikování vykonávají vámi nastavené pokyny a lze je kdykoli přepnout na ruční kontrolu.</li><li><strong>Znalosti (beta).</strong> Text, který přidáte do Znalostí — poznámky, extrahovaný text nahraných dokumentů a stažené webové stránky — odesíláme poskytovateli OpenAI při přidání a při každé změně, abychom vytvořili vyhledávací index, a relevantní pasáže znovu při psaní článku. Ukládáme pouze extrahovaný text a jeho index, nahraný soubor ne. Webové stránky stahujeme znovu zhruba jednou týdně. Obojí uchováváme do smazání zdroje. Cokoli ve Znalostech se může objevit ve vašich publikovaných článcích, proto tam nevkládejte důvěrné materiály ani osobní údaje.</li></ul>"
         },
         {
           "icon": "mdi:cookie",
@@ -163,7 +163,8 @@
           "title": "12. Změny těchto zásad",
           "content": "Tyto zásady můžeme aktualizovat. Aktuální verze je vždy na této adrese s datem poslední revize v záhlaví.<br><br>O podstatných změnách — nový účel, nová kategorie údajů nebo nový zpracovatel ve třetí zemi — vás informujeme e-mailem nebo v aplikaci v přiměřeném předstihu. Vyžaduje-li změna souhlas, vyžádáme si jej před nabytím účinnosti.<br><br>Dotazy: <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a>"
         }
-      ]
+      ],
+      "updatedAt": "26. 9. 2026"
     }
   }
 }

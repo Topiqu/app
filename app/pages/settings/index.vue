@@ -33,14 +33,22 @@
             v-model:description="form.description"
             v-model:tagline="form.tagline"
             v-model:typographyPreset="form.typographyPreset"
+            v-model:accentColor="form.accentColor"
+            v-model:brandGradient="form.brandGradient"
             v-model:socials="form.socials"
             v-model:currentTheme="form.theme"
+            :headingFontUrl="form.headingFontUrl"
+            :bodyFontUrl="form.bodyFontUrl"
+            :clientId="clientId ?? ''"
+            :plan="client?.plan ?? 'BASIC'"
             :logoUrl="form.logoUrl"
             :faviconUrl="form.faviconUrl"
             :name="client?.name ?? ''"
             :domain="client?.domain ?? ''"
             @update:logoUrl="((form.logoUrl = $event.url), (form.optimizedUrl = $event.optimizedUrl))"
             @update:faviconUrl="form.faviconUrl = $event.url"
+            @update:headingFontUrl="onFontStored('headingFontUrl', $event)"
+            @update:bodyFontUrl="onFontStored('bodyFontUrl', $event)"
           />
         </section>
 
@@ -207,6 +215,12 @@ const rate = await useCurrencyRate(client.value?.currency ?? 'EUR')
 const form = ref(buildClientSettingsForm(client.value))
 const pristine = ref(buildClientSettingsForm(client.value))
 const isDirty = computed(() => !equal(form.value, pristine.value))
+
+const onFontStored = async (field: 'headingFontUrl' | 'bodyFontUrl', url: string) => {
+  form.value[field] = url
+  pristine.value[field] = url
+  await refreshClientSite()
+}
 
 useSeoMeta({ title: () => `${client.value?.name ?? ''} - ${$t('common.preferences.title')}` })
 

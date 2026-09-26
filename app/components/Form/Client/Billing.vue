@@ -101,48 +101,65 @@
         <p class="text-xs text-muted">{{ $t('common.wallet.explanation') }}</p>
       </div>
 
-      <div class="space-y-2">
-        <span class="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-          {{ $t('common.preferences.billing.buyTokens') }}
-        </span>
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <button
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-lg font-semibold tracking-tight text-highlighted">
+            {{ $t('common.articlePacks.title') }}
+          </h3>
+          <p class="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">
+            {{ $t('common.articlePacks.purchaseHint') }}
+          </p>
+        </div>
+        <div
+          class="divide-y divide-default overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-default"
+        >
+          <article
             v-for="pack in articlePacks"
             :key="pack.id"
-            type="button"
-            class="group relative min-w-0 rounded-[var(--ui-radius)] border p-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
+            class="relative flex min-h-24 flex-col justify-center gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
             :class="
               pack.featured
-                ? 'border-primary bg-primary/5 shadow-sm hover:bg-primary/10'
-                : 'border-default bg-elevated hover:border-primary/40 hover:bg-muted'
+                ? 'bg-primary/8 before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-primary'
+                : ''
             "
-            :disabled="pendingAction !== null"
-            :aria-label="`${pack.name}, ${pack.price}`"
-            @click="buyArticles(pack.id)"
           >
-            <span class="flex min-h-6 items-start justify-between gap-2">
-              <UIcon
-                :name="pendingAction === `pack-${pack.id}` ? 'mdi:loading' : pack.icon"
-                class="size-5 text-warning"
-                :class="pendingAction === `pack-${pack.id}` ? 'animate-spin' : ''"
-              />
-              <span class="flex flex-wrap justify-end gap-1">
-                <UBadge v-if="pack.valueBonus" color="success" variant="soft" size="xs">
-                  {{ $t('common.articlePacks.valueBonus', [pack.valueBonus]) }}
-                </UBadge>
-                <UBadge v-if="pack.featured" color="primary" variant="soft" size="xs">
-                  {{ $t('common.articlePacks.bestValue') }}
-                </UBadge>
-              </span>
-            </span>
-            <span class="mt-3 block text-xl font-bold tabular-nums text-highlighted">
-              {{ pack.articles.toLocaleString(locale) }}
-            </span>
-            <span class="block text-xs text-muted">{{ $t('common.articlePacks.articles') }}</span>
-            <span class="mt-3 block border-t border-default pt-2 text-sm font-semibold text-highlighted">
-              {{ pack.price }}
-            </span>
-          </button>
+            <div class="min-w-0">
+              <div class="flex items-baseline gap-2">
+                <strong class="text-3xl font-bold leading-none tracking-tight tabular-nums text-highlighted">
+                  {{ pack.articles.toLocaleString(locale) }}
+                </strong>
+                <span class="text-sm font-medium text-toned">{{
+                  $t('common.articlePacks.articles', pack.articles)
+                }}</span>
+              </div>
+              <p v-if="pack.volumeDiscount" class="mt-1.5 text-xs text-muted">
+                <strong v-if="pack.featured" class="font-semibold text-primary">
+                  {{ $t('common.articlePacks.bestValue') }} ·
+                </strong>
+                {{ $t('common.articlePacks.volumeDiscount', { discount: pack.volumeDiscount }) }}
+              </p>
+            </div>
+
+            <div class="flex shrink-0 items-center justify-between gap-4 sm:justify-end">
+              <div class="text-left sm:text-right">
+                <strong class="block text-xl font-bold leading-tight tabular-nums text-highlighted">
+                  {{ pack.price }}
+                </strong>
+                <span class="block text-xs text-muted">{{ $t('common.articlePacks.taxExclusive') }}</span>
+              </div>
+              <UButton
+                :color="pack.featured ? 'primary' : 'neutral'"
+                :variant="pack.featured ? 'solid' : 'soft'"
+                icon="mdi:cart-outline"
+                :loading="pendingAction === 'pack-' + pack.id"
+                :disabled="pendingAction !== null"
+                :aria-label="$t('common.articlePacks.buyPack', { count: pack.articles })"
+                @click="buyArticles(pack.id)"
+              >
+                {{ $t('common.articlePacks.buy') }}
+              </UButton>
+            </div>
+          </article>
         </div>
       </div>
 

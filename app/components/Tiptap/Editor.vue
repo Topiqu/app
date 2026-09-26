@@ -15,10 +15,12 @@
           @openLink="openLink"
           @insertPoll="insertPoll"
           @uploadFile="uploadImage"
+          @openMedia="mediaPickerOpen = true"
           @focusEditor="focusEditor"
         />
 
         <TiptapToolbarBubble :editor @openLink="(url) => openLink({ type: 'link', url })" />
+        <TiptapToolbarTableBubble v-if="edit" :editor />
 
         <EditorContent
           :editor
@@ -39,6 +41,7 @@
       />
 
       <TiptapAltModal v-model:open="altModal.show" :defaultAlt="altModal.defaultAlt" @submit="onAltSubmit" />
+      <MediaPicker v-model:open="mediaPickerOpen" mode="body" @select="insertLibraryMedia" />
     </template>
     <div v-else v-html="content || fallback || $t('articles.editor.noContent')" />
   </div>
@@ -69,6 +72,7 @@ const linkModal = shallowReactive({
 })
 
 const altModal = shallowReactive({ show: false, defaultAlt: '' })
+const mediaPickerOpen = shallowRef(false)
 let altResolver: ((alt: string) => void) | null = null
 
 const promptAlt = (defaultAlt: string) =>
@@ -143,8 +147,10 @@ const insertPoll = () =>
 
 const focusEditor = () => editor.value?.chain().focus().run()
 
-const handleEditorClick = () => {
-  if (!edit.value) edit.value = true
+const handleEditorClick = async () => {
+  if (edit.value) return
+  edit.value = true
+  await nextTick()
   focusEditor()
 }
 
@@ -190,6 +196,20 @@ const editor = useTiptapInstance({
 })
 
 const uploadImage = useTiptapImageUpload(editor, promptAlt)
+
+const insertLibraryMedia = (asset: import('~~/shared/types/mediaLibrary').MediaPickerSelection, alt: string) => {
+  editor.value
+    ?.chain()
+    .focus()
+    .setImage({
+      src: asset.deliveryUrl || asset.url,
+      alt,
+      mediaId: asset.id,
+      width: asset.width,
+      height: asset.height,
+    } as any)
+    .run()
+}
 
 const focusBlock = (blockIndex?: number) => {
   const instance = editor.value

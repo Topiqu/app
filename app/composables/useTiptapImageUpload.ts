@@ -11,7 +11,6 @@ export function useTiptapImageUpload(
   editor: Ref<Editor | undefined>,
   promptAlt: (defaultAlt: string) => Promise<string>,
 ) {
-  const config = useRuntimeConfig()
   const toast = useToast()
 
   return async function uploadImage(input: FileList | File[] | null) {
@@ -23,18 +22,22 @@ export function useTiptapImageUpload(
     const fileExt = file.name.split('.').pop() || 'jpg'
     const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
     const generatedFilename = `content-${uniqueId}.${fileExt}`
-    const optimizedFilename = generatedFilename.replace(/\.[^/.]+$/, '.webp')
-    const predictedUrl = `${config.public.cdnUrl}/optimized/${optimizedFilename}`
-
-    editor.value?.commands.setImage({ src: predictedUrl, alt })
-    editor.value?.chain().focus().run()
 
     const form = new FormData()
     form.append('file', file)
     form.append('customFilename', generatedFilename)
+    form.append('type', 'article-image')
 
     try {
-      const { success } = await $fetch('/api/upload', { method: 'POST', body: form })
+      const { success, optimizedUrl, mediaAsset } = await $fetch<{
+        success: boolean
+        optimizedUrl: string
+        mediaAsset: { id: string }
+      }>('/api/upload', { method: 'POST', body: form })
+      if (success) {
+        editor.value?.commands.setImage({ src: optimizedUrl, alt, mediaId: mediaAsset.id } as any)
+        editor.value?.chain().focus().run()
+      }
       if (!success) toast.add({ color: 'error', title: $t('articles.editor.uploadFailed') })
     } catch (e: any) {
       toast.add({ color: 'error', title: e?.data?.message || e?.message || $t('articles.editor.uploadFailed') })

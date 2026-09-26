@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
         .object({
           format: z.enum(ARTICLE_GENERATION_FORMATS),
           allowGeneratedImages: z.boolean().default(true),
+          useKnowledge: z.boolean().default(true),
           modules: z.array(z.enum(ARTICLE_GENERATION_MODULES)).max(ARTICLE_GENERATION_MODULES.length),
           research: z.object({
             enabled: z.boolean(),
@@ -60,6 +61,7 @@ export default defineEventHandler(async (event) => {
     modules: options?.modules ?? [],
     researchDepth: options?.research.enabled ? options.research.depth : null,
     allowGeneratedImages: options?.allowGeneratedImages !== false,
+    useKnowledge: options?.useKnowledge !== false,
   })
 
   const client = await prisma.clientSite.findUnique({
@@ -82,6 +84,9 @@ export default defineEventHandler(async (event) => {
   const abortController = new AbortController()
   let textDone = false
   let generation: Awaited<ReturnType<typeof streamArticle>> | undefined
+  let recoverySession: Awaited<ReturnType<typeof createGenerationSession>> | undefined
+  let recoverySnapshot: GenerationSnapshot = {}
+  let lastRecoveryCheckpointAt = 0
   let writerWaitTimer: ReturnType<typeof setTimeout> | undefined
   let timedOutStage: 'writer_idle' | 'writer_deadline' | null = null
 
@@ -104,6 +109,7 @@ export default defineEventHandler(async (event) => {
     modules: options?.modules ?? [],
     researchDepth: options?.research.enabled ? options.research.depth : null,
     allowGeneratedImages: options?.allowGeneratedImages !== false,
+    useKnowledge: options?.useKnowledge !== false,
     models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') },
   }
 
@@ -111,6 +117,14 @@ export default defineEventHandler(async (event) => {
   const articleReservation = await reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE', attemptId, runConfig)
   let reservation
   try {
+    recoverySession = await createGenerationSession({
+      attemptId,
+      clientSiteId,
+      userId: user.id,
+      articleOperationId: articleReservation.id,
+      prompt,
+      options: generationOptions,
+    })
     reservation = await reserveTokens(
       clientSiteId,
       articleGenerationReservation(generationOptions, TOKEN_RATIO),
@@ -131,6 +145,7 @@ export default defineEventHandler(async (event) => {
 
         try {
           send(controller, { type: 'reservation', articles: 1 })
+          send(controller, { type: 'session', id: recoverySession!.id })
           send(controller, {
             type: 'phase',
             phase: options?.research.enabled === false ? 'writing' : 'research',
@@ -153,11 +168,14 @@ export default defineEventHandler(async (event) => {
             format: options?.format,
             modules: options?.modules,
             allowGeneratedImages: options?.allowGeneratedImages !== false,
+            useKnowledge: options?.useKnowledge !== false,
           })
-          const { result, finalize, researchTokens, research } = generation
-          send(controller, { type: 'research', ...research })
+          const { result, finalize, researchTokens, research, researchSources, knowledge } = generation
+          recoverySnapshot.sources = researchSources
+          await checkpointGeneration(recoverySession!.id, 'research', recoverySnapshot)
+          send(controller, { type: 'research', ...research, sources: researchSources })
           send(controller, { type: 'phase', phase: 'writing' })
-          await auditAttempt('MANUAL_GENERATION_WRITER_STARTED', { researchTokens, research })
+          await auditAttempt('MANUAL_GENERATION_WRITER_STARTED', { researchTokens, research, knowledge })
 
           const writerStartedAt = Date.now()
           let lastWriterDataAt = writerStartedAt
@@ -195,8 +213,20 @@ export default defineEventHandler(async (event) => {
             lastWriterDataAt = Date.now()
             if (part.type === 'object') {
               const partial = part.object
+              const sources = partial.sources?.filter((source): source is string => typeof source === 'string')
+              recoverySnapshot = {
+                ...recoverySnapshot,
+                ...(partial.title !== undefined ? { title: partial.title } : {}),
+                ...(partial.perex !== undefined ? { perex: partial.perex } : {}),
+                ...(partial.content !== undefined ? { content: partial.content } : {}),
+                ...(sources ? { sources } : {}),
+              }
               writingStage = partial.content ? 'body' : partial.perex ? 'intro' : partial.title ? 'title' : writingStage
               send(controller, { type: 'partial', object: partial, writingStage })
+              if (Date.now() - lastRecoveryCheckpointAt >= 10_000) {
+                await checkpointGeneration(recoverySession!.id, 'writing', recoverySnapshot)
+                lastRecoveryCheckpointAt = Date.now()
+              }
             }
 
             // Structured output can produce real JSON deltas before enough of a field exists for a
@@ -212,6 +242,8 @@ export default defineEventHandler(async (event) => {
 
           send(controller, { type: 'activity', phase: 'writing', writingStage: 'review' })
           const object = await generation.review(await result.object)
+          recoverySnapshot = { ...recoverySnapshot, ...object }
+          await checkpointGeneration(recoverySession!.id, 'review', recoverySnapshot)
           send(controller, { type: 'review', review: generation.editorialReview })
           send(controller, { type: 'partial', object, writingStage: 'review' })
           const usage = await result.usage
@@ -267,10 +299,17 @@ export default defineEventHandler(async (event) => {
             // customer-authorized article into a failed run or release its article reservation.
             await reportCaughtError('Article cost metering failed', meteringError, { attemptId, clientSiteId })
           }
+          recoverySnapshot = { ...recoverySnapshot, ...finalized }
+          await checkpointGeneration(recoverySession!.id, 'final', recoverySnapshot)
           const articleWallet = await settleArticleCredit(articleReservation, true, {
             ...runConfig,
             title: finalized.title,
             apiTokens,
+          })
+          await finishGenerationSession({
+            sessionId: recoverySession!.id,
+            status: 'COMPLETED',
+            charged: true,
           })
           send(controller, { type: 'final', article: { ...finalized, metrics, aiInvolvement: 'ASSIST' } })
           send(controller, { type: 'billing', articlesCharged: 1, articlesRemaining: articleWallet.available })
@@ -280,10 +319,10 @@ export default defineEventHandler(async (event) => {
             // Research is included because it completes before the first token streams, so Stop
             // never gets it back.
             const usage = await generation?.result.usage.catch(() => null)
-            if (
-              (usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0) + (generation?.editorialTokens ?? 0) >
-              0
-            ) {
+            const hasProviderUsage =
+              (usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0) + (generation?.editorialTokens ?? 0) > 0
+            const chargeInterrupted = hasProviderUsage && hasUsefulGenerationSnapshot(recoverySnapshot)
+            if (hasProviderUsage) {
               try {
                 await consumeClientTokens(
                   clientSiteId,
@@ -315,6 +354,21 @@ export default defineEventHandler(async (event) => {
                 apiTokens: 0,
               })
             }
+            // Billing and recovery are one invariant: interrupted provider work is charged only
+            // when the same request has already persisted something the author can restore.
+            await checkpointGeneration(recoverySession!.id, 'final', recoverySnapshot)
+            await settleArticleCredit(articleReservation, chargeInterrupted, {
+              ...runConfig,
+              stage: textDone ? 'finalization' : 'writing',
+              interrupted: true,
+              recoverable: chargeInterrupted,
+            })
+            await finishGenerationSession({
+              sessionId: recoverySession!.id,
+              status: 'INTERRUPTED',
+              charged: chargeInterrupted,
+              failureReason: 'Generation was interrupted by the client connection.',
+            })
           } else {
             // The response is already a 200 with a half-written body, so this can never reach Nitro's
             // `error` hook and Sentry never sees a caught throw — without this the author got a
@@ -340,11 +394,19 @@ export default defineEventHandler(async (event) => {
                   : t('articles.editor.ai.writerDeadlineError')
                 : error?.message || t('articles.editor.aiContentFailed'),
             })
+            await finishGenerationSession({
+              sessionId: recoverySession!.id,
+              status: 'FAILED',
+              charged: false,
+              snapshot: recoverySnapshot,
+              failureReason: error?.message || String(error),
+            })
           }
-          await settleArticleCredit(articleReservation, false, {
-            ...runConfig,
-            stage: timedOutStage ?? (generation ? (textDone ? 'finalization' : 'writing') : 'research'),
-          })
+          if (!abortController.signal.aborted || timedOutStage)
+            await settleArticleCredit(articleReservation, false, {
+              ...runConfig,
+              stage: timedOutStage ?? (generation ? (textDone ? 'finalization' : 'writing') : 'research'),
+            })
         } finally {
           clearInterval(heartbeat)
           if (writerWaitTimer) clearTimeout(writerWaitTimer)

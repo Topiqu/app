@@ -1,3 +1,7 @@
+<template>
+  <slot />
+</template>
+
 <script setup lang="ts">
 const props = defineProps<{ enabled: boolean }>()
 const publisherId = String(useRuntimeConfig().public.adsensePublisherId || '').trim()

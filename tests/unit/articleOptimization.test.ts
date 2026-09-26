@@ -1,11 +1,15 @@
+import { join } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import type { OptimizationCheck } from '../../shared/types/articleOptimization'
 
 import {
   analyzeArticleOptimization,
+  articleGenerationOptimizationInstructions,
   classifyArticleUrl,
   getContentEvaluationState,
+  optimizationRuleIds,
   scoreOptimizationChecks,
   splitSentences,
 } from '../../shared/utils/articleOptimization'
@@ -24,6 +28,32 @@ const find = (result: ReturnType<typeof analyzeArticleOptimization>, id: string)
   result.checks.find((check) => check.id === id)!
 
 describe('article optimization', () => {
+  it.each(['cs', 'en'] as const)('uses human-readable guidance for every check in %s', (locale) => {
+    const messages = JSON.parse(readFileSync(join(process.cwd(), `i18n/locales/${locale}/articles.json`), 'utf8'))
+    const checks = messages.articles.editor.optimization.checks as Record<
+      string,
+      { title: string; description: string }
+    >
+
+    expect(Object.keys(checks)).toEqual([...optimizationRuleIds])
+    for (const id of optimizationRuleIds) {
+      expect(checks[id]?.title).not.toBe(id)
+      expect(checks[id]?.title.length).toBeGreaterThan(3)
+      expect(checks[id]?.description.length).toBeGreaterThan(20)
+      expect(checks[id]?.description).not.toMatch(/Review and improve|Zkontrolujte a upravte/)
+    }
+  })
+
+  it('shares exact optimization requirements with article generation', () => {
+    const instructions = articleGenerationOptimizationInstructions('news.test')
+
+    expect(instructions).toContain('30-65 characters')
+    expect(instructions).toContain('70-160 characters')
+    expect(instructions).toContain('at or below 120 words')
+    expect(instructions).toContain('https://news.test')
+    expect(instructions).toContain('Never invent a URL')
+  })
+
   it('treats a blank article as dependency-safe', () => {
     const result = analyzeArticleOptimization(input({ title: '', excerpt: '', content: '', imageUrl: '', sources: [] }))
     expect(find(result, 'title-exists').status).toBe('error')
@@ -102,9 +132,20 @@ describe('article optimization', () => {
   })
 
   it('validates sources and excludes image checks without inline images', () => {
-    const result = analyzeArticleOptimization(input({ sources: ['notaurl'] }))
+    const result = analyzeArticleOptimization(input({ sources: ['https://valid.test/source', 'notaurl', ''] }))
     expect(find(result, 'sources-valid').status).toBe('error')
+    expect(find(result, 'sources-valid')).toMatchObject({
+      target: { kind: 'sources', blockIndex: 1 },
+      details: { itemNumber: 2, value: 'notaurl' },
+    })
     expect(find(result, 'image-alt').status).toBe('not-applicable')
+  })
+
+  it('ignores the empty source input reserved for adding another source', () => {
+    const result = analyzeArticleOptimization(input({ sources: ['https://valid.test/source', ''] }))
+
+    expect(find(result, 'sources-exist').status).toBe('passed')
+    expect(find(result, 'sources-valid').status).toBe('passed')
   })
 
   it('classifies relative, tenant and external URLs', () => {

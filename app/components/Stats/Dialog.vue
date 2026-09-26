@@ -17,21 +17,32 @@
     <template #header="{ close }">
       <div class="flex w-full min-w-0 items-center justify-between gap-3">
         <h2 class="truncate text-lg font-semibold text-highlighted">{{ $t('stats.title') }}</h2>
-        <UButton
-          icon="mdi:close"
-          color="neutral"
-          variant="ghost"
-          square
-          :aria-label="$t('common.close')"
-          @click="close"
-        />
+        <div class="flex items-center gap-2">
+          <USelect
+            v-model="range"
+            :items="rangeItems"
+            valueKey="value"
+            labelKey="label"
+            :aria-label="$t('stats.range.label')"
+            class="w-28 sm:w-36"
+            size="sm"
+          />
+          <UButton
+            icon="mdi:close"
+            color="neutral"
+            variant="ghost"
+            square
+            :aria-label="$t('common.close')"
+            @click="close"
+          />
+        </div>
       </div>
     </template>
 
     <template #body>
       <div v-if="pending" class="space-y-8" :aria-label="$t('stats.loading')" aria-busy="true">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          <div v-for="i in 3" :key="i" class="space-y-2">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-4">
+          <div v-for="i in 4" :key="i" class="space-y-2">
             <div class="h-3 w-16 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
             <div class="h-9 w-24 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
           </div>
@@ -55,7 +66,10 @@
         <UButton icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</UButton>
       </div>
 
-      <div v-else-if="stats.articleCount === 0" class="flex flex-col items-center gap-3 py-12 text-center">
+      <div
+        v-else-if="stats.articleCount === 0 && stats.value.generatedWords === 0"
+        class="flex flex-col items-center gap-3 py-12 text-center"
+      >
         <UIcon name="mdi:book-off-outline" class="size-10 text-neutral-300 dark:text-neutral-600" />
         <p class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{{ $t('stats.noArticles.title') }}</p>
         <p class="text-sm text-neutral-500 dark:text-neutral-400">{{ $t('stats.noArticles.description') }}</p>
@@ -82,11 +96,11 @@
           </UButton>
         </div>
 
-        <!-- The payload: three numbers the whole modal exists to deliver. -->
+        <!-- Performance and completed work share one concise summary. -->
         <section
-          class="grid grid-cols-1 gap-6 rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated/40 p-5 sm:grid-cols-3 sm:divide-x sm:divide-default lg:col-span-2"
+          class="grid grid-cols-2 gap-x-4 gap-y-6 rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated/40 p-5 lg:col-span-2 lg:grid-cols-4 lg:divide-x lg:divide-default"
         >
-          <div class="sm:pr-6">
+          <div class="lg:pr-5">
             <p class="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
               {{ $t('stats.totalViews.title') }}
             </p>
@@ -95,12 +109,12 @@
             >
               {{ formatCount(stats.totalViews) }}
             </p>
-            <p v-if="stats.publishedCount > 0" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+            <p v-if="stats.totalViews > 0" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               {{ $t('stats.averageViews', { count: formatDecimal(stats.averageViews) }) }}
             </p>
           </div>
 
-          <div class="sm:px-6">
+          <div class="lg:px-5">
             <p class="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
               {{ $t('stats.articleCount') }}
             </p>
@@ -112,24 +126,78 @@
             <p v-if="stats.draftCount > 0" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               {{ plural('stats.draftCount', stats.draftCount) }}
             </p>
+            <p
+              v-if="stats.publishedCoverage.partialHistory && range === '30d'"
+              class="mt-1 text-xs text-neutral-500 dark:text-neutral-400"
+            >
+              {{
+                stats.publishedCoverage.trackedSince
+                  ? $t('stats.coverage.partial', { date: formatDate(stats.publishedCoverage.trackedSince) })
+                  : $t('stats.coverage.unavailable')
+              }}
+            </p>
           </div>
 
-          <div class="sm:pl-6">
+          <div class="lg:px-5">
             <p
               class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
             >
               {{ $t('stats.savedAmount.title') }}
-              <span v-tippy="{ content: savingsTooltip, theme: 'light', placement: 'top' }" class="inline-flex">
+              <span
+                v-tippy="{ content: savingsTooltip, theme: 'light', placement: 'top' }"
+                class="inline-flex"
+                tabindex="0"
+                :aria-label="$t('stats.savedAmount.method')"
+              >
                 <UIcon name="mdi:help-circle-outline" class="size-3.5 cursor-help" />
               </span>
             </p>
-            <p
-              class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-emerald-600 sm:text-4xl dark:text-emerald-400"
-            >
-              {{ formatMoney(stats.savings.amountUsd) }}
+            <p class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-primary sm:text-4xl">
+              {{ headlineValue ? `~${formatMoney(headlineValue.estimatedAmountUsd)}` : '—' }}
             </p>
-            <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-              {{ $t('stats.savedTime.basis', { time: formatDuration(stats.savings.minutes), words: wordCount }) }}
+            <p v-if="usingLegacyEstimate" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              {{
+                $t('stats.value.legacyEstimate', {
+                  articles: plural('stats.value.legacyArticleCount', stats.value.legacyEstimate.articleCount),
+                })
+              }}
+            </p>
+            <p v-else-if="!headlineValue" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              {{
+                range === '30d' && stats.value.legacyEstimate.generatedWords > 0
+                  ? $t('stats.value.seeAllTime')
+                  : $t('stats.value.noCompletedWriting')
+              }}
+            </p>
+          </div>
+          <div class="lg:pl-5">
+            <p
+              class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+            >
+              {{ $t('stats.savedTime.title') }}
+            </p>
+            <p
+              class="mt-1 whitespace-nowrap text-3xl font-semibold tracking-tight tabular-nums text-neutral-900 sm:text-4xl lg:text-3xl xl:text-4xl dark:text-neutral-50"
+            >
+              {{
+                headlineValue
+                  ? `~${headlineValue.estimatedMinutes > 0 ? formatDuration(headlineValue.estimatedMinutes) : $t('stats.duration.lessThanMinute')}`
+                  : '—'
+              }}
+            </p>
+            <p v-if="headlineValue" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              {{
+                $t(usingLegacyEstimate ? 'stats.value.legacyWordCount' : 'stats.value.wordsCreated', {
+                  count: formatCount(headlineValue.generatedWords),
+                })
+              }}
+            </p>
+            <p v-else-if="stats.value.partialHistory" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              {{
+                stats.value.trackedSince
+                  ? $t('stats.coverage.partial', { date: formatDate(stats.value.trackedSince) })
+                  : $t('stats.coverage.unavailable')
+              }}
             </p>
           </div>
         </section>
@@ -249,7 +317,8 @@
             class="flex flex-col rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5"
           >
             <StatsSectionHeading :title="$t('stats.sections.authorship')" />
-            <!-- The savings figure above only counts FULL articles; this is why it is what it is. -->
+            <p class="mt-2 text-xs text-muted">{{ $t('stats.aiInvolvement.inventoryNote') }}</p>
+            <!-- Current article classification includes drafts; legacy words are deliberately not added to documented work. -->
             <div class="mt-3 lg:flex lg:flex-1 lg:flex-col lg:justify-center">
               <div class="flex h-2 overflow-hidden rounded-full bg-neutral-900/[0.06] dark:bg-white/10">
                 <span class="bg-emerald-500/80" :style="{ width: `${aiShare.full * 100}%` }" />
@@ -273,6 +342,17 @@
                   </dd>
                 </div>
               </dl>
+              <div
+                v-if="stats.value.legacyEstimate.articleCount > 0"
+                class="mt-4 border-t border-default pt-3 text-xs text-muted"
+              >
+                {{
+                  $t('stats.value.legacyWords', {
+                    articles: plural('stats.value.legacyArticleCount', stats.value.legacyEstimate.articleCount),
+                    words: formatCount(stats.value.legacyEstimate.generatedWords),
+                  })
+                }}
+              </div>
             </div>
           </section>
 
@@ -280,7 +360,7 @@
             v-if="insight"
             class="rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5 lg:col-span-2"
           >
-            <StatsSectionHeading :title="$t('stats.sentiment.title')" />
+            <StatsSectionHeading :title="$t('stats.sentiment.title')" :note="$t('stats.sentiment.current')" />
             <div
               class="mt-3 rounded-(--topiqu-surface-radius) border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40"
             >
@@ -307,9 +387,13 @@
           <div class="min-w-0">
             <LazyCharts
               kind="trend"
-              :title="$t('stats.charts.viewsByDay', { days: viewsChart.labels.length })"
+              :title="
+                range === 'all'
+                  ? $t('stats.charts.viewsByMonth')
+                  : $t('stats.charts.viewsByDay', { days: viewsChart.labels.length })
+              "
               :label="$t('stats.totalViews.title')"
-              :categoryHeading="$t('stats.charts.day')"
+              :categoryHeading="range === 'all' ? $t('stats.charts.month') : $t('stats.charts.day')"
               :labels="viewsChart.labels"
               :values="viewsChart.values"
             />
@@ -360,6 +444,7 @@
 import type { InternalApi } from 'nitropack/types'
 
 import { directive as vTippy } from 'vue-tippy'
+import { selectWritingEstimate } from '~~/shared/utils/valueMetrics'
 import { DEFAULT_HOURLY_RATE_USD, DEFAULT_WORDS_PER_HOUR } from '~~/shared/utils/savings'
 
 type DashboardStats = InternalApi['/api/stats/dashboard']['default']
@@ -381,6 +466,11 @@ const fxRate = await useCurrencyRate(currency)
 
 const isBasicPlan = computed(() => authData.value?.user.plan === 'BASIC')
 const showAllTags = shallowRef(false)
+const range = shallowRef<'30d' | 'all'>('all')
+const rangeItems = computed(() => [
+  { value: '30d', label: t('stats.range.last30Days') },
+  { value: 'all', label: t('stats.range.allTime') },
+])
 
 const {
   data: dashboard,
@@ -389,8 +479,8 @@ const {
   error,
   refetch,
 } = useQuery({
-  key: () => queryKeys.stats.dashboard,
-  query: () => requestFetch<DashboardStats>('/api/stats/dashboard'),
+  key: () => [...queryKeys.stats.dashboard, range.value],
+  query: () => requestFetch<DashboardStats>('/api/stats/dashboard', { query: { range: range.value } }),
   enabled: () => !!open.value,
 })
 
@@ -422,6 +512,7 @@ const dateFormat = computed(
     }),
 )
 const dayLabel = computed(() => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'numeric' }))
+const monthLabel = computed(() => new Intl.DateTimeFormat(locale.value, { month: 'short', year: 'numeric' }))
 
 const formatCount = (value: number) => countFormat.value.format(value)
 
@@ -434,12 +525,18 @@ const formatPercent = (value: number) => percentFormat.value.format(value)
 const formatDate = (iso: string) => dateFormat.value.format(new Date(`${iso}T00:00:00Z`))
 
 const formatDuration = (totalMinutes: number) => {
-  if (!totalMinutes) return '0m'
+  const compact = (unit: 'days' | 'hours' | 'minutes', count: number) =>
+    t(`stats.duration.compact.${unit}`, { count: formatCount(count) })
+  if (!totalMinutes) return compact('minutes', 0)
+  const days = Math.floor(totalMinutes / 1440)
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
-
-  if (hours === 0) return `${minutes}m`
-  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+  if (days > 0) {
+    const remainingHours = hours % 24
+    return [compact('days', days), remainingHours ? compact('hours', remainingHours) : ''].filter(Boolean).join(' ')
+  }
+  if (hours === 0) return compact('minutes', minutes)
+  return [compact('hours', hours), minutes ? compact('minutes', minutes) : ''].filter(Boolean).join(' ')
 }
 
 // Savings arrive in USD (the platform's money base) and are converted for display, the same
@@ -477,6 +574,27 @@ const stats = computed(() => ({
     hourlyRateUsd: DEFAULT_HOURLY_RATE_USD,
     wordsPerHour: DEFAULT_WORDS_PER_HOUR,
   },
+  value: dashboard.value?.value ?? {
+    generatedWords: 0,
+    estimatedMinutes: 0,
+    estimatedAmountUsd: 0,
+    hourlyRateUsd: DEFAULT_HOURLY_RATE_USD,
+    wordsPerHour: DEFAULT_WORDS_PER_HOUR,
+    breakdown: [],
+    legacyEstimate: {
+      generatedWords: 0,
+      estimatedMinutes: 0,
+      estimatedAmountUsd: 0,
+      hourlyRateUsd: DEFAULT_HOURLY_RATE_USD,
+      wordsPerHour: DEFAULT_WORDS_PER_HOUR,
+      breakdown: [],
+      articleCount: 0,
+    },
+    trackedSince: null,
+    partialHistory: false,
+    activityCoverage: { writing: null },
+  },
+  publishedCoverage: dashboard.value?.publishedCoverage ?? { trackedSince: null, partialHistory: false },
   totalShares: dashboard.value?.totalShares || 0,
   sharesDistribution: dashboard.value?.sharesDistribution || {
     TWITTER: 0,
@@ -494,6 +612,13 @@ const stats = computed(() => ({
   topAuthor: dashboard.value?.topAuthor ?? null,
   trackingSince: dashboard.value?.trackingSince ?? null,
 }))
+
+// A historical article total is only a fallback, never added to receipt-backed work.
+const writingEstimate = computed(() =>
+  selectWritingEstimate(stats.value.value, stats.value.value.legacyEstimate, range.value === 'all'),
+)
+const usingLegacyEstimate = computed(() => writingEstimate.value.basis === 'legacy')
+const headlineValue = computed(() => writingEstimate.value.value)
 
 const hasContentHighlights = computed(
   () => !!(stats.value.topArticle || stats.value.topLikedArticle || stats.value.topCommentedArticle),
@@ -532,15 +657,10 @@ const aiShare = computed(() => {
   }
 })
 
-const wordCount = computed(() => {
-  const count = stats.value.savings.words
-  return plural('stats.savings.words', count)
-})
-
 const savingsTooltip = computed(() =>
-  t('stats.savings.tooltip', {
-    speed: stats.value.savings.wordsPerHour,
-    rate: formatMoney(stats.value.savings.hourlyRateUsd),
+  t(usingLegacyEstimate.value ? 'stats.savedAmount.legacyTooltip' : 'stats.savedTime.tooltip', {
+    speed: formatCount(stats.value.value.wordsPerHour),
+    rate: formatMoney(stats.value.value.hourlyRateUsd),
   }),
 )
 
@@ -548,7 +668,9 @@ const viewsChart = computed(() => {
   const history = dashboard.value?.viewsHistory ?? []
 
   return {
-    labels: history.map((v) => dayLabel.value.format(new Date(`${v.date}T00:00:00Z`))),
+    labels: history.map((v) =>
+      (range.value === 'all' ? monthLabel.value : dayLabel.value).format(new Date(`${v.date}T00:00:00Z`)),
+    ),
     values: history.map((v) => v.views),
   }
 })

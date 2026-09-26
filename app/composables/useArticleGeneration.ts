@@ -9,6 +9,7 @@ interface PartialArticle {
   title?: string
   perex?: string
   content?: string
+  sources?: string[]
 }
 
 export type GenerationPhase = 'research' | 'writing' | 'images'
@@ -18,9 +19,13 @@ export interface GenerationResearchResult {
   status: 'completed' | 'fallback' | 'skipped'
   sourceCount: number
   depth: ResearchDepth
+  knowledgeSourceCount?: number
+  knowledgeSources?: { id: string; title: string }[]
+  sources: string[]
 }
 
 interface StreamHandlers {
+  onSession?: (id: string) => void
   onPartial?: (partial: PartialArticle) => void
   onPhase?: (phase: GenerationPhase) => void
   onResearch?: (result: GenerationResearchResult) => void
@@ -102,6 +107,8 @@ export const useArticleGeneration = () => {
         if (msg.type === 'reservation') {
           handlers.onReservation?.(msg.articles)
           handlers.onActivity?.()
+        } else if (msg.type === 'session') {
+          handlers.onSession?.(msg.id)
         } else if (msg.type === 'phase') {
           handlers.onPhase?.(msg.phase)
           handlers.onActivity?.()

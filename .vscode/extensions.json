@@ -1,5 +1,3 @@
 {
-  "recommendations": [
-    "zenstack.zenstack-v3"
-  ]
+  "recommendations": ["zenstack.zenstack-v3"]
 }

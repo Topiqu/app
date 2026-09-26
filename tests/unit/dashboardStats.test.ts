@@ -4,6 +4,7 @@ import {
   VIEW_TREND_DAYS,
   engagementRate,
   fillDailySeries,
+  fillMonthlySeries,
   involvementCounts,
   lastDays,
   topThreeShare,
@@ -15,6 +16,24 @@ const article = (
 ) => ({
   views,
   _count: { reactions: 0, comments: 0, pollResults: 0, shares: 0, ...counts },
+})
+
+describe('fillMonthlySeries', () => {
+  it('keeps months without tracked views visible', () => {
+    expect(
+      fillMonthlySeries(
+        [
+          { date: new Date('2026-07-01T00:00:00Z'), views: 2 },
+          { date: new Date('2026-09-01T00:00:00Z'), views: 5 },
+        ],
+        new Date('2026-09-24T00:00:00Z'),
+      ),
+    ).toEqual([
+      { date: '2026-07-01', views: 2 },
+      { date: '2026-08-01', views: 0 },
+      { date: '2026-09-01', views: 5 },
+    ])
+  })
 })
 
 describe('lastDays', () => {

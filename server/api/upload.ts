@@ -1,3 +1,4 @@
+import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
 import { analyzeImage } from '~~/server/utils/imageAnalysis'
 
@@ -65,6 +66,38 @@ export default defineEventHandler(async (event) => {
   const tags = await analyzeImage(file.data)
   const detectedTagsString = tags.join(',')
 
+  const contentHash = hashMedia(file.data)
+  if (uploadType === 'article-image' && user.clientSiteId) {
+    await requireTenantScope(event, 'ARTICLE_WRITE', user.clientSiteId)
+    const existing = await prisma.mediaAsset.findFirst({
+      where: { clientSiteId: user.clientSiteId, contentHash, purgedAt: null },
+      orderBy: { createdAt: 'asc' },
+    })
+    if (existing) {
+      const mediaAsset = await registerMediaAsset({
+        clientSiteId: user.clientSiteId,
+        createdById: user.id,
+        url: existing.url,
+        deliveryUrl: existing.deliveryUrl,
+        contentHash,
+        name: file.filename?.replace(/\.[^/.]+$/, '') ?? null,
+        originalFilename: file.filename,
+        mimeType: file.type,
+        sizeBytes: file.data.length,
+        machineTags: tags,
+      })
+      return {
+        success: true,
+        url: mediaAsset.url,
+        optimizedUrl: mediaAsset.deliveryUrl || mediaAsset.url,
+        filename: mediaAsset.originalFilename || file.filename,
+        tags: mediaAsset.machineTags,
+        mediaAsset,
+        reused: true,
+      }
+    }
+  }
+
   const customFilename = files.find((part) => part.name === 'customFilename')?.data.toString()
   const filename = customFilename
     ? sanitizeFilename(customFilename)
@@ -77,12 +110,49 @@ export default defineEventHandler(async (event) => {
       'original-name': file.filename ? encodeURIComponent(file.filename) : 'unknown',
     })
 
+    let mediaAsset
+    if (uploadType === 'article-image' && user.clientSiteId) {
+      const metadata = await sharp(file.data)
+        .metadata()
+        .catch(() => null)
+      const xmp = metadata?.xmpAsString ?? ''
+      const copyright =
+        metadata?.comments?.find((item) => /copyright|rights/i.test(item.keyword))?.text ??
+        xmp.match(/<(?:dc:rights|photoshop:Copyright)[^>]*>(?:<[^>]+>)*([^<]+)/i)?.[1]
+      const author =
+        metadata?.comments?.find((item) => /author|artist|creator/i.test(item.keyword))?.text ??
+        xmp.match(/<(?:dc:creator|photoshop:Credit)[^>]*>(?:<[^>]+>)*([^<]+)/i)?.[1]
+      mediaAsset = await registerMediaAsset({
+        clientSiteId: user.clientSiteId,
+        createdById: user.id,
+        url,
+        deliveryUrl: `${config.public.cdnUrl}/optimized/${optimizedFilename}`,
+        storageKey: `uploads/${filename}`,
+        name: file.filename?.replace(/\.[^/.]+$/, '') ?? null,
+        originalFilename: file.filename,
+        mimeType: file.type,
+        sizeBytes: file.data.length,
+        contentHash,
+        width: metadata?.autoOrient?.width ?? metadata?.width,
+        height: metadata?.autoOrient?.height ?? metadata?.height,
+        machineTags: tags,
+        metadataSignals: {
+          author: author?.trim() || undefined,
+          copyright: copyright?.trim() || undefined,
+          hasExif: Boolean(metadata?.exif),
+          hasIptc: Boolean(metadata?.iptc),
+          hasXmp: Boolean(metadata?.xmp),
+        },
+      })
+    }
+
     return {
       success: true,
       url,
       optimizedUrl: `${config.public.cdnUrl}/optimized/${optimizedFilename}`,
       filename,
       tags: detectedTagsString.split(',').filter(Boolean),
+      mediaAsset,
     }
   } catch (error) {
     console.error('S3 Upload Error:', error)

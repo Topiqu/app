@@ -62,3 +62,17 @@ export const fillDailySeries = (rows: { date: Date; views: number | bigint }[], 
   const byDay = new Map(rows.map((row) => [row.date.toISOString().slice(0, 10), Number(row.views) || 0]))
   return lastDays(days, now).map((date) => ({ date, views: byDay.get(date) ?? 0 }))
 }
+
+/** All-time charts use calendar months and keep quiet months visible. */
+export const fillMonthlySeries = (rows: { date: Date; views: number | bigint }[], now = new Date()) => {
+  if (!rows.length) return []
+  const byMonth = new Map(rows.map((row) => [row.date.toISOString().slice(0, 7), Number(row.views) || 0]))
+  const first = new Date(`${rows[0]!.date.toISOString().slice(0, 7)}-01T00:00:00.000Z`)
+  const last = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+  const result: { date: string; views: number }[] = []
+  for (const month = first; month <= last; month.setUTCMonth(month.getUTCMonth() + 1)) {
+    const date = month.toISOString().slice(0, 10)
+    result.push({ date, views: byMonth.get(date.slice(0, 7)) ?? 0 })
+  }
+  return result
+}

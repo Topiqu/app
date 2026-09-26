@@ -95,6 +95,14 @@ describe('tenant branding stays current after a save', () => {
     expect(header).toContain('logoSrc = computed(() => clientSite.value?.logoUrl || null)')
     expect(settings).toContain('refreshClientSite()')
   })
+
+  it('updates the publication theme and custom font styles from the live tenant entry', () => {
+    const layout = source('app/layouts/default.vue')
+    expect(layout).toContain('const clientSite = await useLiveClientSite()')
+    expect(layout).toContain('tenantThemeStyle(clientSite.value?.theme')
+    expect(layout).toContain('useHead(() => {')
+    expect(layout).toContain('tenantFontFaceCss(site.id')
+  })
 })
 
 describe('tagline in publication metadata', () => {

@@ -1,0 +1,233 @@
+{
+  "sources": [
+    {
+      "title": "Why customers switch",
+      "content": "# Why customers switch\nOur customers most often move away from a manual WordPress workflow, because editorial approvals take 2–3 hours every week. Agencies cite missed publishing slots as the second reason."
+    },
+    {
+      "title": "Pricing",
+      "content": "# Topiqu pricing\nThe Pro plan costs 49 USD per month and includes scheduled AI articles, translations into one extra language and the media library. Premium costs 99 USD and adds Search Console autopilot."
+    },
+    {
+      "title": "Positioning vs Jasper",
+      "content": "# Topiqu compared with Jasper\nJasper is a general AI writing assistant. Topiqu runs the whole publication: it researches, writes, reviews facts, publishes on a schedule and hosts the blog. Approved claim: Topiqu verifies every article against live web sources before publishing."
+    },
+    {
+      "title": "Case study Pixbo",
+      "content": "# Pixbo case study\nPixbo, a gaming news site, grew organic traffic by 180 % in six months after switching to scheduled Topiqu articles with official game screenshots from Steam."
+    },
+    {
+      "title": "Překlady",
+      "content": "# Automatické překlady\nTopiqu překládá publikované články do dalších jazyků. Režim HYBRID nechá překlad čekat na schválení redaktorem, režim AUTO ho publikuje hned a správně nastaví hreflang."
+    },
+    {
+      "title": "Security",
+      "content": "# Security and data\nCustomer data is stored in the EU. Tenant isolation is enforced by row-level access policies, and every article change is written to a tamper-evident audit log."
+    },
+    {
+      "title": "Office rules",
+      "content": "# Office rules\nDogs are welcome in the Prague office on Fridays. Parking is available in the courtyard; please register your car at reception."
+    },
+    {
+      "title": "Holiday policy",
+      "content": "# Holiday policy\nEmployees get 25 days of paid leave. Requests go through the HR portal at least two weeks in advance."
+    },
+    {
+      "title": "Legacy plan codes",
+      "content": "# Legacy plan codes\nThe legacy plan GRWPLS was retired in March 2026. Customers on GRWPLS moved to Premium at their old price until the end of their billing year."
+    },
+    {
+      "title": "Rechnungsstellung",
+      "content": "# Rechnungsstellung\nRechnungen werden monatlich per SEPA-Lastschrift eingezogen. Die Rechnungsadresse mit Straße, Postleitzahl und Ort lässt sich jederzeit im Konto ändern."
+    },
+    {
+      "title": "Wsparcie",
+      "content": "# Wsparcie klienta\nZespół wsparcia Topiqu odpowiada w ciągu 4 godzin w dni robocze, także na czacie po polsku. Zgłoszenie złożysz przyciskiem „Pomoc” w panelu."
+    }
+  ],
+  "cases": [
+    {
+      "topic": "How to speed up editorial approvals in content operations",
+      "expect": [
+        "Why customers switch"
+      ],
+      "allow": [
+        "Positioning vs Jasper"
+      ]
+    },
+    {
+      "topic": "Topiqu vs Jasper: which AI writer should a publisher choose",
+      "expect": [
+        "Positioning vs Jasper"
+      ],
+      "allow": [
+        "Pricing",
+        "Case study Pixbo",
+        "Překlady",
+        "Security",
+        "Why customers switch"
+      ]
+    },
+    {
+      "topic": "How much does an AI blog platform cost per month",
+      "expect": [
+        "Pricing"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Case study: growing organic traffic for a gaming news website",
+      "expect": [
+        "Case study Pixbo"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Jak funguje automatický překlad článků a hreflang",
+      "expect": [
+        "Překlady"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Multilingual blogging: translating articles for new markets",
+      "expect": [
+        "Překlady"
+      ],
+      "allow": [
+        "Pricing"
+      ]
+    },
+    {
+      "topic": "Is AI-generated content safe for GDPR and data residency in the EU",
+      "expect": [
+        "Security"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Why agencies abandon WordPress for automated publishing",
+      "expect": [
+        "Why customers switch"
+      ],
+      "allow": [
+        "Positioning vs Jasper"
+      ]
+    },
+    {
+      "topic": "Fact-checking AI articles before they go live",
+      "expect": [
+        "Positioning vs Jasper"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "What happened to customers on the GRWPLS plan",
+      "expect": [
+        "Legacy plan codes"
+      ],
+      "allow": [
+        "Pricing"
+      ]
+    },
+    {
+      "topic": "Rechnungsadresse und Strasse im Konto ändern",
+      "expect": [
+        "Rechnungsstellung"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Jak szybko odpowiada wsparcie klienta i jak złożyć zgłoszenie",
+      "expect": [
+        "Wsparcie"
+      ],
+      "allow": []
+    },
+    {
+      "topic": "Kolik stojí tarif Pro měsíčně",
+      "expect": [
+        "Pricing"
+      ],
+      "allow": [
+        "Legacy plan codes"
+      ]
+    },
+    {
+      "topic": "Best hiking trails in the Alps",
+      "expect": [],
+      "allow": []
+    },
+    {
+      "topic": "How to bake sourdough bread at home",
+      "expect": [],
+      "allow": []
+    },
+    {
+      "topic": "Nejlepší recepty na vánoční cukroví",
+      "expect": [],
+      "allow": []
+    },
+    {
+      "topic": "Champions League final preview",
+      "expect": [],
+      "allow": []
+    },
+    {
+      "topic": "Remote work productivity tips",
+      "expect": [],
+      "allow": []
+    },
+    {
+      "topic": "How small newsrooms publish more without hiring more editors",
+      "expect": [
+        "Case study Pixbo"
+      ],
+      "allow": [
+        "Why customers switch",
+        "Positioning vs Jasper"
+      ],
+      "indirect": true
+    },
+    {
+      "topic": "Reaching international readers with a company blog",
+      "expect": [
+        "Překlady"
+      ],
+      "allow": [
+        "Pricing"
+      ],
+      "indirect": true
+    },
+    {
+      "topic": "Is it risky to let AI publish articles without a human checking them?",
+      "expect": [
+        "Positioning vs Jasper"
+      ],
+      "allow": [
+        "Překlady",
+        "Security"
+      ],
+      "indirect": true
+    },
+    {
+      "topic": "Choosing SaaS vendors under European privacy rules",
+      "expect": [
+        "Security"
+      ],
+      "allow": [],
+      "indirect": true
+    },
+    {
+      "topic": "Why editorial calendars slip and how teams fix it",
+      "expect": [
+        "Why customers switch"
+      ],
+      "allow": [
+        "Positioning vs Jasper",
+        "Case study Pixbo"
+      ],
+      "indirect": true
+    }
+  ]
+}

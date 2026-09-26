@@ -9,6 +9,9 @@ declare module '@tiptap/core' {
   }
 }
 
+// NBSPs survive whitespace collapsing in published HTML, unlike a tab or plain spaces.
+const TAB = '\u00A0'.repeat(4)
+
 export const Indent = Extension.create({
   name: 'indent',
 
@@ -88,21 +91,30 @@ export const Indent = Extension.create({
   addKeyboardShortcuts() {
     return {
       Tab: () => {
+        if (this.editor.isActive('table')) return false
+
         if (this.editor.isActive('listItem')) {
           return this.editor.commands.sinkListItem('listItem')
         }
 
-        const executed = this.editor.commands.indent()
-
-        if (!executed) {
-          this.editor.commands.insertContent('\u00A0\u00A0\u00A0\u00A0')
+        const { empty, $from } = this.editor.state.selection
+        if ((empty && $from.parentOffset > 0) || !this.editor.commands.indent()) {
+          this.editor.commands.insertContent(TAB)
         }
 
         return true
       },
       'Shift-Tab': () => {
+        if (this.editor.isActive('table')) return false
+
         if (this.editor.isActive('listItem')) {
           return this.editor.commands.liftListItem('listItem')
+        }
+
+        const { empty, $from, from } = this.editor.state.selection
+        const offset = $from.parentOffset
+        if (empty && offset >= TAB.length && $from.parent.textBetween(offset - TAB.length, offset) === TAB) {
+          return this.editor.commands.deleteRange({ from: from - TAB.length, to: from })
         }
         return this.editor.commands.outdent()
       },

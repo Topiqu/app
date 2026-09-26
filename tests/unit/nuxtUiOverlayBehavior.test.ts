@@ -51,6 +51,16 @@ const ModalHarness = defineComponent({
   `,
 })
 
+const FullscreenModalHarness = defineComponent({
+  components: { UButton, UModal },
+  template: `
+    <UModal fullscreen title="Preview">
+      <UButton label="Open preview" />
+      <template #body><p>Article</p></template>
+    </UModal>
+  `,
+})
+
 enableAutoUnmount(afterEach)
 
 describe('real Nuxt UI overlay and keyboard behavior', () => {
@@ -122,6 +132,17 @@ describe('real Nuxt UI overlay and keyboard behavior', () => {
     expect(dialog.getAttribute('aria-labelledby')).toBeTruthy()
     expect(dialog.className).toContain('max-h-[calc(100dvh-2rem)]')
     expect(dialog.querySelector('[data-slot="body"]')?.className).toContain('overflow-y-auto')
+  })
+
+  it('lets a fullscreen modal fill the viewport instead of the dialog size cap', async () => {
+    const wrapper = await mountSuspended(FullscreenModalHarness, { attachTo: document.body })
+    await wrapper.get('button').trigger('click')
+    await waitForOverlay()
+
+    const classes = (document.querySelector('[role="dialog"]') as HTMLElement).className.split(/\s+/)
+    expect(classes).toContain('inset-0')
+    expect(classes).not.toContain('max-w-2xl')
+    expect(classes).not.toContain('w-[calc(100vw-2rem)]')
   })
 
   it('traps focus and returns it to the modal trigger after Escape', async () => {

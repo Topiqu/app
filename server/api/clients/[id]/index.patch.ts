@@ -1,9 +1,12 @@
 import type { SocialPlatform } from '~~/generated/zenstack/models'
 import type { ClientSiteUpdateArgs } from '~~/generated/zenstack/input'
 
+import equal from 'fast-deep-equal'
 import { randomBytes } from 'crypto'
+import { DbNull } from '@zenstackhq/orm'
 import { models } from '~~/shared/databaseSchemas'
 import { domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
+import { hasAdvancedBranding, normalizeAccentColor, parseBrandGradient } from '~~/shared/utils/publicationBranding'
 import {
   PRIVILEGED_CLIENT_SITE_FIELDS,
   TENANT_EDITABLE_CLIENT_SITE_FIELDS,
@@ -49,6 +52,8 @@ export default defineEventHandler(async (event) => {
     linkedinMode,
     linkedinBrandProfile,
     linkedinCompanyType: _linkedinCompanyType,
+    accentColor,
+    brandGradient,
     ...scalarBody
   } = body
 
@@ -81,6 +86,31 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: parsed.error.message })
   }
   const data: any = { ...parsed.data }
+  if (accentColor !== undefined) {
+    const parsedColor = accentColor === null || accentColor === '' ? null : normalizeAccentColor(accentColor)
+    if (parsedColor === null && accentColor !== null && accentColor !== '')
+      throw createError({ statusCode: 400, statusMessage: 'Invalid brand color' })
+    data.accentColor = parsedColor
+  }
+  if (brandGradient !== undefined) {
+    const nextGradient = brandGradient === null ? null : parseBrandGradient(brandGradient)
+    if (nextGradient === null && brandGradient !== null)
+      throw createError({ statusCode: 400, statusMessage: 'Invalid brand gradient' })
+    if (
+      nextGradient &&
+      !hasAdvancedBranding(data.plan ?? clientSite.plan) &&
+      !equal(nextGradient, parseBrandGradient(clientSite.brandGradient))
+    )
+      throw createError({ statusCode: 403, statusMessage: 'Brand gradients require Pro or higher' })
+    // A bare null is rejected for a nullable Json column; ZenStack needs the DbNull sentinel.
+    data.brandGradient = nextGradient ?? DbNull
+  }
+  if (
+    data.typographyPreset === 'CUSTOM' &&
+    !hasAdvancedBranding(data.plan ?? clientSite.plan) &&
+    clientSite.typographyPreset !== 'CUSTOM'
+  )
+    throw createError({ statusCode: 403, statusMessage: 'Custom fonts require Pro or higher' })
   const domainChanged = typeof data.domain === 'string' && data.domain !== clientSite.domain
   if (domainChanged) Object.assign(data, domainVerificationDefaults(data.domain, randomBytes(24).toString('base64url')))
 

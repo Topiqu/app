@@ -1,3 +1,5 @@
+import { articleExcerpt } from '~~/shared/utils/articleBlocks'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -54,8 +56,10 @@ export default defineEventHandler(async (event) => {
       locale,
       primaryLanguage: clientSite.language,
     })
-    const cards = localized.map(({ reactions, ...article }) => ({
+    const cards = localized.map(({ reactions, content, ...article }) => ({
       ...article,
+      // Cards only need the perex; the body stays out of the SSR payload and the Redis entry.
+      excerpt: articleExcerpt(article.excerpt, content),
       likedByUser: reactions.length > 0,
     }))
     const [featured, ...recommended] = cards

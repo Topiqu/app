@@ -13,6 +13,7 @@ const PUBLIC_FIELDS = {
   content: true,
   imageUrl: true,
   imageCredit: true,
+  coverMediaId: true,
   status: true,
   clientSiteId: true,
   views: true,

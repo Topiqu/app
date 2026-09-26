@@ -4,6 +4,7 @@ import {
   buildEditorialReviewPrompt,
   buildRevisionPrompt,
   editorialReviewSchema,
+  verdictLines,
 } from '../../../server/utils/ai/articleQuality'
 
 const draft = {
@@ -45,5 +46,21 @@ describe('article copy desk', () => {
         issues: [{ code: 'vibes', note: 'This is bad.' }],
       }).success,
     ).toBe(false)
+  })
+})
+
+describe('verification audit', () => {
+  it('keeps every verdict, including those without a web URL, and drops the chatter', () => {
+    const text = [
+      'I checked the draft against live sources.',
+      '- **SUPPORTED** — Pro costs 49 USD — first-party knowledge — 2026-09',
+      '1. UNSUPPORTED MATERIAL — "Ciri returns" — no source confirms it',
+      'CONTRADICTED — release in 2025 — delayed to 2027 — https://example.com/news',
+      'NOT VERIFIED — minor detail',
+      'Overall the draft needs two fixes.',
+    ].join('\n')
+    expect(verdictLines(text)?.split('\n')).toHaveLength(4)
+    expect(verdictLines(text)).toContain('Pro costs 49 USD')
+    expect(verdictLines('No verdicts here.')).toBeNull()
   })
 })

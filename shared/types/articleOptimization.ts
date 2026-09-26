@@ -17,6 +17,8 @@ export interface OptimizationCheck {
   source: OptimizationSource
   weight: number
   target: OptimizationTarget
+  meta?: Record<string, string | number>
+  details?: { itemNumber?: number; value?: string }
 }
 
 export interface OptimizationCategoryScore {

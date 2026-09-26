@@ -1,5 +1,5 @@
 <template>
-  <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_28rem]">
+  <div class="grid min-w-0 items-start gap-8 xl:grid-cols-[minmax(0,1fr)_28rem]">
     <div class="flex min-w-0 flex-col gap-8">
       <h2 data-branding-section="identity" class="text-lg font-semibold text-highlighted">
         {{ $t('common.preferences.branding.identity') }}
@@ -45,68 +45,52 @@
       <h2 data-branding-section="visual-style" class="text-lg font-semibold text-highlighted">
         {{ $t('common.preferences.branding.visualStyle') }}
       </h2>
-      <UFormField :label="$t('common.preferences.theme.label')">
-        <UPopover :content="{ align: 'start' }">
-          <UButton
-            color="neutral"
-            variant="outline"
-            trailingIcon="mdi:chevron-down"
-            :label="localTheme"
-            :style="{ borderInlineStart: `2rem solid ${currentThemeColor}` }"
-          />
-          <template #content>
-            <div class="grid grid-cols-5 gap-2 p-3" :aria-label="$t('common.preferences.theme.label')">
-              <UButton
-                v-for="theme in themes"
-                :key="theme"
-                square
-                color="neutral"
-                :variant="localTheme === theme ? 'outline' : 'ghost'"
-                :style="{ backgroundColor: themeColors[theme] }"
-                :aria-label="theme"
-                :title="theme"
-                @click="localTheme = theme"
-              />
-            </div>
-          </template>
-        </UPopover>
-      </UFormField>
+      <section class="min-w-0 space-y-5 rounded-(--topiqu-surface-radius) border border-default p-4 sm:p-5" aria-labelledby="brand-color-heading">
+        <h3 id="brand-color-heading" class="text-base font-semibold text-highlighted">
+          {{ $t('common.preferences.branding.brandColor') }}
+        </h3>
+        <FormClientBrandColorEditor
+          :theme="currentTheme"
+          :accentColor
+          :brandGradient
+          :logoUrl
+          :clientId
+          :plan
+          @update:theme="emit('update:currentTheme', $event)"
+          @update:accentColor="emit('update:accentColor', $event)"
+          @update:brandGradient="emit('update:brandGradient', $event)"
+        />
+      </section>
 
-      <UFormField :label="$t('common.preferences.branding.typography')">
-        <div class="grid gap-3 sm:grid-cols-3">
-          <div
-            v-for="preset in typographyPresets"
-            :key="preset.value"
-            class="rounded-(--topiqu-surface-radius) border"
-            :class="typographyPreset === preset.value ? 'border-primary bg-primary/5' : 'border-default bg-default'"
-            :style="{ fontFamily: preset.font }"
-          >
-            <UButton
-              type="button"
-              color="neutral"
-              variant="ghost"
-              block
-              :aria-label="preset.label"
-              :aria-pressed="typographyPreset === preset.value"
-              @click="emit('update:typographyPreset', preset.value)"
-            >
-              <span
-                ><strong class="block">{{ preset.label }}</strong
-                ><span class="text-xs text-muted">Aa Bb Cc</span></span
-              >
-            </UButton>
-          </div>
-        </div>
-      </UFormField>
+      <section class="min-w-0 space-y-5 rounded-(--topiqu-surface-radius) border border-default p-4 sm:p-5" aria-labelledby="brand-typography-heading">
+        <h3 id="brand-typography-heading" class="text-base font-semibold text-highlighted">
+          {{ $t('common.preferences.branding.typography') }}
+        </h3>
+        <FormClientBrandTypographyEditor
+          :preset="typographyPreset"
+          :headingFontUrl
+          :bodyFontUrl
+          :clientId
+          :plan
+          @update:preset="emit('update:typographyPreset', $event)"
+          @update:headingFontUrl="emit('update:headingFontUrl', $event)"
+          @update:bodyFontUrl="emit('update:bodyFontUrl', $event)"
+        />
+      </section>
 
-      <div class="lg:hidden">
+      <div class="xl:hidden">
         <FormClientBrandingPreview
-          :logoUrl="logoUrl"
-          :name="name"
+          :logoUrl
+          :name
           :tagline="localTagline"
           :description="localDescription"
-          :currentTheme="localTheme"
-          :typographyPreset="typographyPreset"
+          :currentTheme
+          :typographyPreset
+          :accentColor
+          :brandGradient
+          :headingFontUrl
+          :bodyFontUrl
+          :plan
         />
       </div>
 
@@ -166,14 +150,19 @@
       </div>
     </div>
 
-    <aside data-publication-preview class="sticky top-24 hidden lg:block">
+    <aside data-publication-preview class="sticky top-24 hidden xl:block">
       <FormClientBrandingPreview
-        :logoUrl="logoUrl"
-        :name="name"
+        :logoUrl
+        :name
         :tagline="localTagline"
         :description="localDescription"
-        :currentTheme="localTheme"
-        :typographyPreset="typographyPreset"
+        :currentTheme
+        :typographyPreset
+        :accentColor
+        :brandGradient
+        :headingFontUrl
+        :bodyFontUrl
+        :plan
       />
     </aside>
   </div>
@@ -181,35 +170,57 @@
 
 <script setup lang="ts">
 import type { SocialPlatform } from '~~/generated/zenstack/models'
+import type { BrandGradient } from '~~/shared/utils/publicationBranding'
 
-import { ThemeSchema } from '~~/shared/siteSchemas'
+import type { PublicationTypography, ThemeKey } from '~/composables/theme'
 
-import { type ThemeKey, themeColors } from '~/composables/theme'
-
-const { logoUrl, description, tagline, faviconUrl, typographyPreset, socials, name, domain, currentTheme } =
-  defineProps<{
-    logoUrl: string
-    description: string
-    tagline: string
-    faviconUrl: string
-    typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM'
-    socials: { platform: SocialPlatform; url: string }[]
-    name: string
-    domain: string
-    currentTheme: string
-  }>()
+const {
+  logoUrl,
+  description,
+  tagline,
+  faviconUrl,
+  typographyPreset,
+  socials,
+  name,
+  domain,
+  currentTheme,
+  accentColor,
+  brandGradient,
+  headingFontUrl,
+  bodyFontUrl,
+  clientId,
+  plan,
+} = defineProps<{
+  logoUrl: string
+  description: string
+  tagline: string
+  faviconUrl: string
+  typographyPreset: PublicationTypography
+  accentColor: string
+  brandGradient: BrandGradient | null
+  headingFontUrl: string
+  bodyFontUrl: string
+  clientId: string
+  plan: string
+  socials: { platform: SocialPlatform; url: string }[]
+  name: string
+  domain: string
+  currentTheme: ThemeKey
+}>()
 
 const emit = defineEmits<{
   'update:logoUrl': [url: { url: string; optimizedUrl: string }]
   'update:description': [value: string]
   'update:tagline': [value: string]
   'update:faviconUrl': [url: { url: string; optimizedUrl: string }]
-  'update:typographyPreset': [preset: 'MODERN' | 'EDITORIAL' | 'SYSTEM']
+  'update:typographyPreset': [preset: PublicationTypography]
+  'update:accentColor': [color: string]
+  'update:brandGradient': [gradient: BrandGradient | null]
+  'update:headingFontUrl': [url: string]
+  'update:bodyFontUrl': [url: string]
   'update:socials': [socials: { platform: SocialPlatform; url: string }[]]
-  'update:currentTheme': [theme: string]
+  'update:currentTheme': [theme: ThemeKey]
 }>()
-
-const themes = ThemeSchema.options
 
 const localDescription = computed({
   get: () => description,
@@ -219,28 +230,6 @@ const localTagline = computed({
   get: () => tagline,
   set: (value) => emit('update:tagline', value),
 })
-const typographyPresets = computed(() => [
-  {
-    value: 'MODERN' as const,
-    label: $t('common.preferences.branding.modern'),
-    font: '"Manrope Variable", sans-serif',
-  },
-  {
-    value: 'EDITORIAL' as const,
-    label: $t('common.preferences.branding.editorial'),
-    font: '"Source Serif 4 Variable", serif',
-  },
-  {
-    value: 'SYSTEM' as const,
-    label: $t('common.preferences.branding.system'),
-    font: 'system-ui, sans-serif',
-  },
-])
-const localTheme = computed({
-  get: () => currentTheme,
-  set: (value: string) => emit('update:currentTheme', value),
-})
-const currentThemeColor = computed(() => themeColors[localTheme.value as ThemeKey] || themeColors.indigo)
 
 const localSocials = computed({
   get: () => socials,

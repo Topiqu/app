@@ -29,6 +29,7 @@ ENV DATABASE_URL=${DATABASE_URL}
 
 ENV NODE_ENV=production
 ENV NITRO_PRESET=bun
+RUN bun release
 RUN bun --bun run build
 
 # release

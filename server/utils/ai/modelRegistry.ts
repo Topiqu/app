@@ -12,14 +12,21 @@ export const AI_MODELS = {
   communityInsight: { provider: 'openai', id: 'gpt-5.6-luna' },
   visibility: { provider: 'openai', id: 'gpt-5.6-luna' },
   factCheck: { provider: 'openai', id: 'gpt-5.6-luna' },
+  knowledgeSelect: { provider: 'openai', id: 'gpt-5.6-luna' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export const AI_IMAGE_MODELS = {
   articleImage: { provider: 'openai', id: 'gpt-image-2' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
+// `dimensions` is baked into the `vector(1536)` column: another size needs a migration and a reindex.
+export const AI_EMBEDDING_MODELS = {
+  knowledge: { provider: 'openai', id: 'text-embedding-3-small', dimensions: 1536 },
+} as const satisfies Record<string, { provider: AiProvider; id: string; dimensions: number }>
+
 export type AiTask = keyof typeof AI_MODELS
 export type AiImageTask = keyof typeof AI_IMAGE_MODELS
+export type AiEmbeddingTask = keyof typeof AI_EMBEDDING_MODELS
 
 export const aiModelId = (task: AiTask): string => AI_MODELS[task].id
 
@@ -28,3 +35,5 @@ export const aiModelProvider = (task: AiTask): AiProvider => AI_MODELS[task].pro
 export const aiImageModelId = (task: AiImageTask): string => AI_IMAGE_MODELS[task].id
 
 export const aiImageModelProvider = (task: AiImageTask): AiProvider => AI_IMAGE_MODELS[task].provider
+
+export const aiEmbeddingModelId = (task: AiEmbeddingTask): string => AI_EMBEDDING_MODELS[task].id

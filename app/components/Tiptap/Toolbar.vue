@@ -4,7 +4,7 @@
     data-editor-toolbar
   >
     <div
-      class="grid min-w-0 max-w-full grid-flow-col grid-rows-2 justify-start gap-2 overflow-x-auto overscroll-x-contain sm:flex sm:items-center"
+      class="grid min-w-0 max-w-full grid-flow-col grid-rows-2 items-center justify-start justify-items-start gap-2 overflow-x-auto overscroll-x-contain sm:flex"
       role="toolbar"
       :aria-label="$t('articles.editor.title')"
     >
@@ -80,6 +80,14 @@
           :title="$t('articles.editor.toolbar.insertImage')"
           :aria-label="$t('articles.editor.toolbar.insertImage')"
           @click="emit('openLink', { type: 'image' })"
+        />
+        <UButton
+          icon="mdi:image-multiple-outline"
+          color="neutral"
+          variant="ghost"
+          :title="$t('media.choose')"
+          :aria-label="$t('media.choose')"
+          @click="emit('openMedia')"
         />
         <UButton
           icon="mdi:link"
@@ -159,27 +167,14 @@
         />
       </UFieldGroup>
 
-      <UPopover>
-        <UButton
-          icon="mdi:table-edit"
-          color="neutral"
-          variant="ghost"
-          :aria-label="$t('articles.editor.toolbar.table')"
-        />
-        <template #content>
-          <div class="grid gap-1 p-2">
-            <UButton
-              v-for="command in tableCommands"
-              :key="command.key"
-              :icon="`i-${command.icon}`"
-              color="neutral"
-              variant="ghost"
-              :label="$t(`articles.editor.toolbar.${command.key}`)"
-              @click="run(command.run)"
-            />
-          </div>
-        </template>
-      </UPopover>
+      <UButton
+        icon="mdi:table-plus"
+        color="neutral"
+        variant="ghost"
+        :title="$t('articles.editor.toolbar.insertTable')"
+        :aria-label="$t('articles.editor.toolbar.insertTable')"
+        @click="run((c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }))"
+      />
 
       <TiptapColorPicker v-model="textColor" />
       <TiptapCharacterCount :editor :limit class="shrink-0 sm:ml-auto" />
@@ -196,25 +191,11 @@ const { editor, limit } = defineProps<{ editor: Editor; limit: number }>()
 const emit = defineEmits<{
   (e: 'openLink', payload: { type: 'link' | 'image' | 'youtube'; url?: string }): void
   (e: 'uploadFile', files: FileList | null): void
-  (e: 'insertPoll' | 'focusEditor'): void
+  (e: 'insertPoll' | 'focusEditor' | 'openMedia'): void
 }>()
 
 const sk = useTiptapShortcuts()
 const alignments = ['left', 'center', 'right', 'justify'] as const
-
-const tableCommands = [
-  {
-    key: 'insertTable',
-    icon: 'mdi-table-plus',
-    run: (c: ChainedCommands) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }),
-  },
-  { key: 'addColumnAfter', icon: 'mdi-table-column-plus-after', run: (c: ChainedCommands) => c.addColumnAfter() },
-  { key: 'deleteColumn', icon: 'mdi-table-column-remove', run: (c: ChainedCommands) => c.deleteColumn() },
-  { key: 'addRowAfter', icon: 'mdi-table-row-plus-after', run: (c: ChainedCommands) => c.addRowAfter() },
-  { key: 'deleteRow', icon: 'mdi-table-row-remove', run: (c: ChainedCommands) => c.deleteRow() },
-  { key: 'toggleHeaderRow', icon: 'mdi-table-headers-eye', run: (c: ChainedCommands) => c.toggleHeaderRow() },
-  { key: 'deleteTable', icon: 'mdi-table-remove', run: (c: ChainedCommands) => c.deleteTable() },
-] as const
 
 const run = (fn: (c: ChainedCommands) => ChainedCommands) => {
   fn(editor.chain().focus()).run()
@@ -247,7 +228,8 @@ const headingValue = computed({
 
 const textColor = computed({
   get: () => editor.getAttributes('textStyle').color || '',
-  set: (v: string) => run((c) => (v ? c.setColor(v) : c.unsetColor())),
+  // No focus(): moving focus into the editor dismisses the open picker popover.
+  set: (v: string) => (v ? editor.chain().setColor(v) : editor.chain().unsetColor()).run(),
 })
 
 const toggleBlockquote = () => {

@@ -5,6 +5,7 @@ export interface ArticleEditorSourceState {
   slug?: string | null
   imageUrl?: string | null
   imageCredit?: unknown
+  coverMediaId?: string | null
   status?: string | null
   releaseAt?: Date | string | null
   sources?: string[] | null
@@ -27,6 +28,7 @@ export const articleEditorSnapshot = (article: ArticleEditorSourceState, tags: s
     slug: article.slug ?? '',
     imageUrl: article.imageUrl ?? null,
     imageCredit: article.imageCredit ?? null,
+    coverMediaId: article.coverMediaId ?? null,
     status: article.status ?? null,
     releaseAt: article.releaseAt instanceof Date ? article.releaseAt.toISOString() : (article.releaseAt ?? null),
     // The sources editor mounts with one blank input for convenience. The API strips blank rows

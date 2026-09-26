@@ -25,7 +25,11 @@ export async function analyzeImage(image: Uint8Array) {
     const result = await client.send(
       new DetectLabelsCommand({ Image: { Bytes: image }, MaxLabels: 10, MinConfidence: 80 }),
     )
-    return result.Labels?.map((label) => label.Name?.replace(/[^a-zA-Z0-9]/g, '')).filter(Boolean) || []
+    return (
+      result.Labels?.map((label) => label.Name?.replace(/[^a-zA-Z0-9]/g, '')).filter((tag): tag is string =>
+        Boolean(tag),
+      ) || []
+    )
   } catch (error) {
     console.warn('Rekognition labeling failed:', error)
     return []

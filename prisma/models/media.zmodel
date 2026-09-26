@@ -1,0 +1,108 @@
+import "./base"
+import "./article"
+import "./client"
+import "./user"
+
+enum MediaOrigin {
+    UNKNOWN
+    OWN
+    TOPIQU_AI
+    EXTERNAL_AI
+    LICENSED_STOCK
+    CREATIVE_COMMONS
+    PUBLIC_DOMAIN
+    EXTERNAL
+    OTHER
+}
+
+enum MediaUsagePlacement {
+    COVER
+    BODY
+}
+
+model MediaAsset with Base {
+    clientSiteId       String
+    clientSite         ClientSite  @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    createdById        String?
+    createdBy          User?       @relation("MediaAssetCreator", fields: [createdById], references: [id], onDelete: SetNull)
+    url                String      @length(1, 2048)
+    deliveryUrl        String?     @length(0, 2048)
+    storageKey         String?     @length(0, 512)
+    name               String?     @length(0, 255)
+    defaultAltText     String?     @length(0, 500)
+    originalFilename   String?     @length(0, 255)
+    mimeType           String?     @length(0, 100)
+    sizeBytes          Int?
+    contentHash        String?     @length(0, 64)
+    width              Int?
+    height             Int?
+    machineTags        String[]    @default([])
+    searchText         String      @default("") @length(0, 5000)
+    origin             MediaOrigin @default(UNKNOWN)
+    sourceUrl          String?     @length(0, 2048)
+    author             String?     @length(0, 255)
+    license            String?     @length(0, 255)
+    licenseUrl         String?     @length(0, 2048)
+    attribution        String?     @length(0, 1000)
+    attributionRequired Boolean    @default(false)
+    rightsConfirmedAt  DateTime?
+    rightsConfirmedById String?
+    rightsConfirmedBy  User?       @relation("MediaRightsConfirmer", fields: [rightsConfirmedById], references: [id], onDelete: SetNull)
+    metadataSignals    Json?
+    archivedAt         DateTime?
+    purgeAfter         DateTime?
+    purgedAt           DateTime?
+    coverArticles      Article[]   @relation("ArticleCoverMedia")
+    coverDrafts        ArticleDraft[] @relation("ArticleDraftCoverMedia")
+    articleUsages      ArticleMediaUsage[]
+
+    @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('all', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@index([clientSiteId, contentHash])
+    @@index([clientSiteId, url])
+    @@index([clientSiteId, archivedAt, createdAt])
+    @@index([clientSiteId, origin, createdAt])
+}
+
+/// Rebuildable lookup index. Article HTML and coverMediaId remain the source of truth; this table
+/// makes library usage/detail queries cheap without making editor saves depend on a fragile parser.
+model ArticleMediaUsage with Base {
+    clientSiteId       String
+    clientSite         ClientSite          @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    mediaAssetId       String
+    mediaAsset         MediaAsset          @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+    articleId          String
+    article            Article             @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    articleTranslationId String?
+    articleTranslation ArticleTranslation? @relation(fields: [articleTranslationId], references: [id], onDelete: Cascade)
+    language           Language
+    placement          MediaUsagePlacement
+    occurrenceCount    Int                 @default(1)
+
+    @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('all', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@unique([mediaAssetId, articleId, language, placement])
+    @@index([clientSiteId, articleId])
+    @@index([mediaAssetId, articleId])
+}
+
+model MediaRightsPublicationSnapshot with Base {
+    articleId          String
+    article            Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    clientSiteId       String
+    clientSite         ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    language           Language
+    fingerprint        String     @length(64, 64)
+    items              Json
+    issueCount         Int
+    overrideConfirmed  Boolean    @default(false)
+    legacySchedule     Boolean    @default(false)
+    confirmedById      String?
+    confirmedBy        User?      @relation("MediaPublicationConfirmer", fields: [confirmedById], references: [id], onDelete: SetNull)
+    publishedAt        DateTime   @default(now())
+
+    @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@deny('update,delete', true)
+    @@allow('create', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
+    @@index([articleId, publishedAt])
+}

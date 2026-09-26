@@ -7,7 +7,7 @@ describe('getArticlePack', () => {
   it('returns the pack for a known id with server-side price and article count', () => {
     const pack = getArticlePack('25')
     expect(pack).toEqual(ARTICLE_PACKS['25'])
-    expect(pack?.priceUsd).toBe(29.99)
+    expect(pack?.priceUsd).toBe(22.49)
     expect(pack?.articles).toBe(25)
   })
 

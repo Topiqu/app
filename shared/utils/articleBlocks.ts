@@ -125,3 +125,17 @@ export const articleText = (blocks: ArticleBlock[]) =>
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+
+const ENTITIES: Record<string, string> = { nbsp: ' ', lt: '<', gt: '>', quot: '"', '#39': "'", amp: '&' }
+
+/** The author's perex in full; the body fallback is cut at a word so a missing perex never renders the whole article. */
+export const articleExcerpt = (excerpt?: string | null, content?: string | null, max = 240) => {
+  const text = (excerpt?.trim() || content || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&(nbsp|lt|gt|quot|#39|amp);/g, (_, name: string) => ENTITIES[name]!)
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (excerpt?.trim() || text.length <= max) return text
+  const space = text.lastIndexOf(' ', max)
+  return `${text.slice(0, space > max * 0.6 ? space : max).replace(/[\s,.;:–—-]+$/, '')}…`
+}

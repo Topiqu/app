@@ -1,13 +1,22 @@
 <template>
-  <UCard class="not-prose my-8">
-    <h4 class="mb-4 text-lg font-semibold text-highlighted">{{ poll.question }}</h4>
-    <div v-for="opt in poll.options" :key="opt.id" class="mb-3 space-y-1.5">
+  <div
+    class="not-prose my-8 overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default p-5 shadow-sm sm:p-6"
+  >
+    <div class="mb-4 flex items-start gap-3">
+      <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <UIcon name="mdi:poll" class="size-5" />
+      </span>
+      <div role="heading" aria-level="4" class="min-w-0 pt-1 text-lg font-semibold text-highlighted">
+        {{ poll.question }}
+      </div>
+    </div>
+    <div v-for="opt in poll.options" :key="opt.id" class="mb-2.5 space-y-1.5 last:mb-0">
       <UButton
         :color="selectedOption === opt.id ? 'primary' : 'neutral'"
         :variant="selectedOption === opt.id ? 'soft' : 'ghost'"
         :icon="selectedOption === opt.id ? 'mdi:check-circle' : 'mdi:circle-outline'"
         :disabled="hasVoted || voting"
-        class="w-full"
+        class="min-h-11 w-full"
         :aria-pressed="selectedOption === opt.id"
         @click="vote(opt.id)"
       >
@@ -27,10 +36,11 @@
         size="sm"
       />
     </div>
-    <div v-if="hasVoted" class="mt-4 text-sm text-muted">
-      ({{ `${getTotalVotes} ${$t('articles.votes').toLowerCase()}` }})
+    <div v-if="hasVoted" class="mt-4 flex items-center gap-1.5 text-sm text-muted" aria-live="polite">
+      <UIcon name="mdi:account-group-outline" class="size-4" />
+      {{ `${getTotalVotes} ${$t('articles.votes').toLowerCase()}` }}
     </div>
-  </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">

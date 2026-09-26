@@ -102,7 +102,7 @@ export default defineMonitoredTask({
           const slug = await dedupeTranslationSlug(prisma, baseSlug, row.clientSiteId, row.language, row.article.id)
           const finalStatus = row.clientSite.translationMode === 'AUTO' ? 'PUBLISHED' : 'READY'
 
-          await prisma.articleTranslation.update({
+          const updatedTranslation = await prisma.articleTranslation.update({
             where: { id },
             data: {
               slug,
@@ -119,6 +119,14 @@ export default defineMonitoredTask({
               error: null,
               translatedAt: new Date(),
             },
+          })
+
+          await syncArticleMediaUsages(prisma, {
+            clientSiteId: row.clientSiteId,
+            articleId: row.article.id,
+            articleTranslationId: updatedTranslation.id,
+            language: row.language,
+            content: updatedTranslation.content,
           })
 
           logAction({

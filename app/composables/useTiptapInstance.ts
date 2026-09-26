@@ -14,11 +14,11 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import { Typography } from '@tiptap/extension-typography'
 import { Blockquote } from '@tiptap/extension-blockquote'
 import { Dropcursor } from '@tiptap/extension-dropcursor'
+import { Table, TableRow } from '@tiptap/extension-table'
 import { FontFamily } from '@tiptap/extension-font-family'
 import { useEditor, VueNodeViewRenderer } from '@tiptap/vue-3'
-import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import { CharacterCount } from '@tiptap/extension-character-count'
-import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
+import { ColoredTableCell, ColoredTableHeader } from '~~/extensions/tableCellColor'
 // eslint-disable-next-line
 import Poll from '~~/extensions/poll'
 
@@ -59,6 +59,16 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
         allowBase64: true,
         HTMLAttributes: { class: 'max-w-full h-auto rounded' },
       }).extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            mediaId: {
+              default: null,
+              parseHTML: (element) => element.getAttribute('data-media-id'),
+              renderHTML: (attributes) => (attributes.mediaId ? { 'data-media-id': attributes.mediaId } : {}),
+            },
+          }
+        },
         addNodeView() {
           return VueNodeViewRenderer(TiptapImage)
         },
@@ -75,21 +85,16 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
         allowFullscreen: true,
         ccLanguage: 'cs',
       }),
-      Table.configure({ resizable: true }),
+      // Matches the 7rem cell min-width in main.css, so dragging cannot go below what CSS renders.
+      Table.configure({ resizable: true, cellMinWidth: 112 }),
       TableRow,
-      TableHeader,
-      TableCell,
+      ColoredTableHeader,
+      ColoredTableCell,
       Poll,
       Indent,
       TextStyle,
       Color.configure({ types: ['textStyle'] }),
       FontFamily.configure({ types: ['textStyle'] }),
-      BubbleMenuExtension.configure({
-        shouldShow: ({ editor, state }) =>
-          state.selection.from !== state.selection.to &&
-          !editor.isActive('tableCell') &&
-          !editor.isActive('tableHeader'),
-      }),
       SlashCommand.configure({ suggestion: opts.slashCommand }),
     ],
     editable: opts.edit.value,
