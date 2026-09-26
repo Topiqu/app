@@ -142,8 +142,8 @@
                 <div class="flex flex-wrap items-center gap-2">
                   <p class="font-medium leading-6 text-highlighted">{{ prompt.text }}</p>
                   <UBadge color="neutral" variant="outline">{{ prompt.language.toUpperCase() }}</UBadge>
-                  <UBadge v-if="!prompt.active" color="warning" variant="subtle">{{
-                    $t('visibility.prompts.pause')
+                  <UBadge v-if="!prompt.active" color="warning" variant="subtle" icon="mdi:pause">{{
+                    $t('visibility.prompts.paused')
                   }}</UBadge>
                 </div>
                 <p class="mt-1 text-xs text-muted">{{ plural('visibility.prompts.runs', prompt._count.runs) }}</p>
@@ -158,7 +158,13 @@
                 >
                   {{ $t('visibility.prompts.run') }}
                 </UButton>
-                <UButton size="sm" color="neutral" variant="soft" @click="togglePrompt(prompt.id, !prompt.active)">
+                <UButton
+                  size="sm"
+                  color="neutral"
+                  variant="soft"
+                  :icon="prompt.active ? 'mdi:pause' : 'mdi:play'"
+                  @click="togglePrompt(prompt.id, !prompt.active)"
+                >
                   {{ $t(prompt.active ? 'visibility.prompts.pause' : 'visibility.prompts.resume') }}
                 </UButton>
                 <UButton
@@ -188,16 +194,18 @@
                     :class="
                       run.status === 'FAILED'
                         ? 'bg-error'
-                        : run.citations.some((citation) => citation.owned)
-                          ? 'bg-success'
-                          : 'bg-warning'
+                        : run.status === 'RUNNING'
+                          ? 'bg-info'
+                          : run.citations.some((citation) => citation.owned)
+                            ? 'bg-success'
+                            : 'bg-warning'
                     "
                   />
                   <span class="min-w-0 flex-1">
                     <span class="line-clamp-2 text-sm font-medium text-highlighted">{{ run.prompt.text }}</span>
                     <span class="mt-1 block text-xs text-muted">
-                      <NuxtTime :datetime="run.executedAt" relative /> ·
-                      {{ $t('visibility.runs.sampled', { provider: run.provider }) }}
+                      {{ runOutcome(run) }} · <NuxtTime :datetime="run.executedAt" relative /> ·
+                      {{ $t('visibility.runs.sampled', { provider: $t(`visibility.providers.${run.provider}`) }) }}
                     </span>
                   </span>
                   <UIcon name="mdi:chevron-down" class="mt-1 size-4 shrink-0 text-muted" />
@@ -205,7 +213,12 @@
                 <template #content>
                   <div class="space-y-4 border-t border-default bg-elevated/35 px-5 py-4">
                     <p v-if="run.error" class="text-sm text-error">{{ run.error }}</p>
-                    <p v-else class="whitespace-pre-wrap text-sm leading-6 text-muted">{{ run.responseText }}</p>
+                    <div v-else-if="run.responseText">
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+                        {{ $t('visibility.runs.response') }}
+                      </p>
+                      <StatsAnswerMarkdown :text="run.responseText" class="max-h-96 overflow-y-auto pr-2" />
+                    </div>
                     <div v-if="run.citations.length">
                       <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                         {{ $t('visibility.runs.citations') }}
@@ -308,6 +321,7 @@ useSeoMeta({ title: () => $t('visibility.title') })
 type Overview = InternalApi['/api/ai-visibility/overview']['get']
 type Opportunity = Overview['opportunities'][number]
 type CrawlerRow = Overview['crawlers']['byBot'][number]
+type Run = Overview['visibility']['recentRuns'][number]
 
 const { locale, t } = useI18n()
 const localePath = useLocalePath()
@@ -337,6 +351,10 @@ const {
 
 const number = (value: number) => numberFormat.value.format(value)
 const plural = (key: string, count: number) => t(key, { count: number(count) }, { plural: count })
+const runOutcome = (run: Run) => {
+  if (run.status !== 'SUCCEEDED') return t(`visibility.status.${run.status}`)
+  return t(run.citations.some((citation) => citation.owned) ? 'visibility.runs.cited' : 'visibility.runs.notCited')
+}
 const metrics = computed(() => [
   {
     label: t('visibility.metrics.fetches'),

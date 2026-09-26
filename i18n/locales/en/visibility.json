@@ -41,8 +41,9 @@
       "suggest": "Suggest from project",
       "placeholder": "What question should AI search answer?",
       "run": "Check now",
-      "pause": "Pause",
-      "resume": "Resume",
+      "pause": "Pause monitoring",
+      "resume": "Resume monitoring",
+      "paused": "Paused",
       "remove": "Remove",
       "runs": "No checks | {count} check | {count} checks",
       "created": "Prompt added.",
@@ -78,6 +79,14 @@
       "COPILOT": "Copilot",
       "CLAUDE": "Claude",
       "OTHER_AI": "Other AI"
+    },
+    "providers": {
+      "OPENAI": "OpenAI",
+      "ANTHROPIC": "Anthropic",
+      "GOOGLE": "Google Gemini",
+      "XAI": "xAI Grok",
+      "META": "Meta",
+      "MISTRAL": "Mistral"
     },
     "status": {
       "SUCCEEDED": "Completed",

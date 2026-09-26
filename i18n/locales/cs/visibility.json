@@ -41,8 +41,9 @@
       "suggest": "Navrhnout z projektu",
       "placeholder": "Na jakou otázku má AI vyhledávání odpovědět?",
       "run": "Ověřit teď",
-      "pause": "Pozastavit",
-      "resume": "Obnovit",
+      "pause": "Pozastavit sledování",
+      "resume": "Obnovit sledování",
+      "paused": "Pozastaveno",
       "remove": "Odstranit",
       "runs": "Žádná měření | {count} měření | {count} měření",
       "created": "Prompt byl přidán.",
@@ -78,6 +79,14 @@
       "COPILOT": "Copilot",
       "CLAUDE": "Claude",
       "OTHER_AI": "Jiná AI"
+    },
+    "providers": {
+      "OPENAI": "OpenAI",
+      "ANTHROPIC": "Anthropic",
+      "GOOGLE": "Google Gemini",
+      "XAI": "xAI Grok",
+      "META": "Meta",
+      "MISTRAL": "Mistral"
     },
     "status": {
       "SUCCEEDED": "Dokončeno",

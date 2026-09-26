@@ -36,7 +36,7 @@ export type VisibilityProviderConfig = {
 }
 
 const SYSTEM_PROMPT =
-  'Answer the user query naturally and impartially as an AI search assistant. Search the live web before answering. Do not favor or suppress any named brand or domain. Cite the sources that support the answer.'
+  'Answer the user query naturally and impartially as an AI search assistant. Search the live web before answering. Do not favor or suppress any named brand or domain. Cite the sources that support the answer. Keep it under 250 words, as an AI search answer would be.'
 
 const MODELS = {
   ANTHROPIC: 'claude-sonnet-5',
