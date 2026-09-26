@@ -153,6 +153,7 @@ defineEmits<(e: 'update:activeTab', value: 'likedArticles' | 'comments') => void
 const localePath = useLocalePath()
 const toast = useAppToast()
 const { copy } = useClipboard({ legacy: true })
+const trackShare = useArticleShare()
 const deleteDialog = useTemplateRef<{
   ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'>
 }>('deleteDialog')
@@ -293,6 +294,7 @@ async function shareArticle(article: ActivityArticle) {
   const url = `${window.location.origin}${localePath({ name: 'clanky-slug', params: { slug: article.slug } })}`
   await copy(url)
   toast.success({ message: $t('common.actions.copySuccess') })
+  await trackShare(article.id, 'OTHER')
 }
 
 async function confirmDelete(commentId: string) {

@@ -84,7 +84,7 @@
       <slot name="comments" />
     </div>
 
-    <ArticleTOC>
+    <ArticleTOC @share="emit('share', $event)">
       <template v-if="$slots.sidebar" #sidebar>
         <slot name="sidebar" />
       </template>
@@ -96,6 +96,7 @@
 import type { FaqEntry } from '~~/shared/utils/articleFaq'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
+import type { SharePlatform } from '~~/generated/zenstack/models'
 
 import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
 
@@ -131,7 +132,7 @@ const { article, discloseAi = false } = defineProps<{
   follow?: { count: number; following: boolean; visible: boolean; pending: boolean }
 }>()
 
-const emit = defineEmits<{ follow: [] }>()
+const emit = defineEmits<{ follow: []; share: [platform: SharePlatform] }>()
 
 const localePath = useLocalePath()
 const sourcesOpen = shallowRef(true)

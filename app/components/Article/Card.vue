@@ -188,17 +188,19 @@ const normalizedTags = computed(() =>
 const tagLimit = computed(() => (variant === 'compact' ? 2 : 3))
 const visibleTags = computed(() => normalizedTags.value.slice(0, tagLimit.value))
 const toast = useToast()
+const trackShare = useArticleShare()
 
 const shareArticle = async () => {
   const url = new URL(articlePath.value, window.location.origin).href
   try {
     if (navigator.share) await navigator.share({ title: article.title, url })
     else await navigator.clipboard.writeText(url)
-    await $fetch(`/api/articles/${article.id}/share`, { method: 'POST', body: { platform: 'OTHER' } })
   } catch (error) {
     if ((error as DOMException)?.name !== 'AbortError') {
       toast.add({ color: 'error', title: $t('common.messages.operationFailed') })
     }
+    return
   }
+  await trackShare(article.id, 'OTHER')
 }
 </script>

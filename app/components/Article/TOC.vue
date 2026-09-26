@@ -131,6 +131,8 @@
 </template>
 
 <script setup lang="ts">
+import type { SharePlatform } from '~~/generated/zenstack/models'
+
 const state = useArticleScrollState()
 const { data: auth } = useAuth()
 const hasDashboardChrome = computed(() => ['admin', 'superadmin'].includes(auth.value?.user?.role || ''))
@@ -147,14 +149,19 @@ const goToMobileHeading = (id: string) => {
   goToHeading(id)
   isMobileOpen.value = false
 }
+// Tracking lives in the page: the editor preview renders this too and must not count shares.
+const emit = defineEmits<{ share: [platform: SharePlatform] }>()
 const pageUrl = () => window.location.href
 const copyPageLink = async () => {
   await navigator.clipboard.writeText(pageUrl())
+  toast.add({ color: 'success', title: $t('common.actions.copySuccess') })
+  emit('share', 'OTHER')
 }
 const sharePage = async () => {
   try {
-    if (navigator.share) await navigator.share({ title: document.title, url: pageUrl() })
-    else await copyPageLink()
+    if (!navigator.share) return await copyPageLink()
+    await navigator.share({ title: document.title, url: pageUrl() })
+    emit('share', 'OTHER')
   } catch (error) {
     if ((error as DOMException)?.name !== 'AbortError') {
       toast.add({ color: 'error', title: $t('common.messages.operationFailed') })
@@ -169,5 +176,6 @@ const shareTo = (network: 'twitter' | 'linkedin') => {
       ? `https://twitter.com/intent/tweet?url=${url}&text=${title}`
       : `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
   window.open(target, '_blank', 'noopener,noreferrer,width=720,height=640')
+  emit('share', network === 'twitter' ? 'TWITTER' : 'LINKEDIN')
 }
 </script>

@@ -496,6 +496,7 @@ const {
   }),
 )
 const toast = useToast()
+const trackShare = useArticleShare()
 
 const shareHeroArticle = async () => {
   const article = heroArticle.value
@@ -504,15 +505,13 @@ const shareHeroArticle = async () => {
   try {
     if (navigator.share) await navigator.share({ title: article.title, url })
     else await navigator.clipboard.writeText(url)
-    await $fetch(`/api/articles/${article.id}/share`, {
-      method: 'POST',
-      body: { platform: 'OTHER' },
-    })
   } catch (error) {
     if ((error as DOMException)?.name !== 'AbortError') {
       toast.add({ color: 'error', title: $t('common.messages.operationFailed') })
     }
+    return
   }
+  await trackShare(article.id, 'OTHER')
 }
 const primaryCtaArticle = computed(() => latestArticle.value || featured.value)
 const primaryCtaTo = computed(() =>

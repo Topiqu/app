@@ -11,6 +11,7 @@
         pending: followPending,
       }"
       @follow="toggleFollow"
+      @share="share"
     >
       <template #top>
         <nav v-if="breadcrumbs?.length" :aria-label="$t('common.breadcrumbs')" class="w-full">
@@ -227,9 +228,9 @@ const ogImageOptions = computed(() => ({
 
 defineOgImage('TopiquArticle', ogImageOptions.value)
 
-const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
+const { trackView } = useArticleTracking(computed(() => data.value?.id))
 
-const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh, getVisitorId)
+const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh)
 
 const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
 const followPending = shallowRef(false)
