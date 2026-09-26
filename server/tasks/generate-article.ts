@@ -3,6 +3,7 @@ import type { EventStream } from 'h3'
 import slugify from 'slugify'
 import { linkableSources } from '~~/shared/utils/articleSources'
 import { consumeClientTokens } from '~~/server/utils/consumeTokens'
+import { countGeneratedWords, type ValueEvent } from '~~/shared/utils/valueMetrics'
 import { isExistingArticleOpportunity } from '~~/server/utils/searchConsole/autopilot'
 import {
   getSearchOpportunities,
@@ -331,6 +332,13 @@ const processClient = async (client: any) =>
         }
 
         const metrics = calculateArticleMetrics(generated.content, client.humanHourlyRateUsd, client.humanWordsPerHour)
+        const generatedWordCount = countGeneratedWords(generated.content)
+        const valueEvent: ValueEvent = {
+          activity: 'writing',
+          outcome: 'completed',
+          quantity: generatedWordCount,
+          unit: 'words',
+        }
 
         const researchRequired = cronFormat === 'news' || topic?.needsResearch === true
         const researchApproved =
@@ -371,6 +379,7 @@ const processClient = async (client: any) =>
               structureVariant: topic?.variant ?? null,
               clientSiteId,
               status,
+              publishedAt: status === 'published' ? new Date() : null,
               aiInvolvement: 'FULL',
               articleSeriesId: appliedSeries.seriesId,
               seriesOrder: appliedSeries.seriesOrder,
@@ -479,7 +488,14 @@ const processClient = async (client: any) =>
             action: 'CRON_ARTICLE_PUBLISHED',
             userId: article.userId,
             clientSiteId,
-            metadata: { articleId: article.id, title: article.title, autoReleased: client.autoRelease },
+            idempotencyKey: `cron-generation:${article.id}`,
+            metadata: {
+              articleId: article.id,
+              title: article.title,
+              autoReleased: client.autoRelease,
+              generatedWordCount,
+              valueEvent,
+            },
           })
 
           const sendNotifications = async () => {
@@ -564,9 +580,12 @@ const processClient = async (client: any) =>
             action: 'CRON_ARTICLE_SAVED_AS_DRAFT',
             userId: article.userId,
             clientSiteId,
+            idempotencyKey: `cron-generation:${article.id}`,
             metadata: {
               articleId: article.id,
               title: article.title,
+              generatedWordCount,
+              valueEvent,
               heldFromAutoRelease: client.autoRelease && !qualityApproved,
               editorialReview: generated.editorialReview,
               researchApproved,

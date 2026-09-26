@@ -22,6 +22,7 @@ export async function logAction(params: {
   userId?: string
   clientSiteId?: string | null
   metadata?: Record<string, any>
+  idempotencyKey?: string
   ip?: string
   tx?: any
 }) {
@@ -29,6 +30,11 @@ export async function logAction(params: {
 
   const write = async (db: any) => {
     await db.$executeRaw`SELECT pg_advisory_xact_lock(${LOG_LOCK_KEY}::bigint)`
+
+    if (rest.idempotencyKey) {
+      const existing = await db.log.findUnique({ where: { idempotencyKey: rest.idempotencyKey } })
+      if (existing) return { entry: existing, created: false }
+    }
 
     let userId = rest.userId
     if (!userId) {
@@ -60,6 +66,7 @@ export async function logAction(params: {
       userId,
       clientSiteId: rest.clientSiteId ?? null,
       metadata: rest.metadata ?? {},
+      idempotencyKey: rest.idempotencyKey ?? null,
       ip: rest.ip ?? null,
       ts: new Date(),
       previousHash: prev?.hash ?? 'GENESIS',
@@ -68,18 +75,19 @@ export async function logAction(params: {
     const raw = JSON.stringify(canonicalize({ ...data, ts: data.ts.getTime() }))
     const hash = crypto.createHmac('sha256', LOG_HMAC_SECRET).update(raw).digest('hex')
 
-    return db.log.create({ data: { ...data, hash } })
+    return { entry: await db.log.create({ data: { ...data, hash } }), created: true }
   }
 
-  const entry = tx ? await write(tx) : await prisma.$transaction(write)
+  const { entry, created } = tx ? await write(tx) : await prisma.$transaction(write)
 
-  await logger.info(`audit:${rest.action}`, {
-    source: 'audit',
-    action: rest.action,
-    userId: entry.userId,
-    clientSiteId: rest.clientSiteId ?? null,
-    metadata: rest.metadata ?? {},
-  })
+  if (created)
+    await logger.info(`audit:${rest.action}`, {
+      source: 'audit',
+      action: rest.action,
+      userId: entry.userId,
+      clientSiteId: rest.clientSiteId ?? null,
+      metadata: rest.metadata ?? {},
+    })
 
   return entry
 }

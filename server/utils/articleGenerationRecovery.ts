@@ -1,5 +1,7 @@
 import type { JsonValue } from '@zenstackhq/orm'
 
+import { generatedWordsFromSnapshot } from '~~/shared/utils/valueMetrics'
+
 import { toDatabaseJson } from './databaseJson'
 
 export type GenerationSnapshot = {
@@ -79,12 +81,23 @@ export async function finishGenerationSession(input: {
   failureReason?: string
 }) {
   if (input.snapshot) await checkpointGeneration(input.sessionId, 'final', input.snapshot)
+  const snapshot =
+    input.status === 'COMPLETED'
+      ? (input.snapshot ??
+        (
+          await prisma.articleGenerationSession.findUnique({
+            where: { id: input.sessionId },
+            select: { recoverableSnapshot: true },
+          })
+        )?.recoverableSnapshot)
+      : null
   await prisma.articleGenerationSession.update({
     where: { id: input.sessionId },
     data: {
       status: input.status,
       charged: input.charged,
       completedAt: new Date(),
+      generatedWordCount: input.status === 'COMPLETED' ? generatedWordsFromSnapshot(snapshot) : null,
       failureReason: input.failureReason?.slice(0, 1000),
     },
   })
