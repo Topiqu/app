@@ -2,6 +2,8 @@ export const KNOWLEDGE_LIMITS = {
   maxFileBytes: 10 * 1024 * 1024,
   maxSourceCharacters: 400_000,
   maxNoteCharacters: 50_000,
+  // Each page is one `POST /api/knowledge`, which is rate limited at 60 an hour per tenant.
+  maxSitemapPages: 50,
 } as const
 
 type KnowledgeQuota = { maxSources: number; maxCharacters: number }
