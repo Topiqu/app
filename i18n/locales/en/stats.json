@@ -10,20 +10,49 @@
       "title": "Total Views"
     },
     "savedTime": {
-      "basis": "{time} of work · {words}"
+      "basis": "{time} of work · {words}",
+      "title": "Estimated time saved",
+      "method": "How the estimate is calculated",
+      "tooltip": "Estimated from completed AI writing only: generated words ÷ {speed} words per hour. Actual time saved may vary. The money estimate uses {rate} per hour. Research and images are not counted yet."
     },
     "savedAmount": {
-      "title": "Money Saved"
+      "title": "Estimated money saved",
+      "estimate": "Estimated time value {amount}",
+      "method": "How the estimate is calculated",
+      "legacyTooltip": "This historical estimate uses the words in articles currently marked fully AI-written. It is not a record of actual generation and may overlap with newer records, so the two are not added together. Calculated at {speed} words and {rate} per hour."
+    },
+    "value": {
+      "words": "AI-generated words",
+      "wordsCreated": "{count} documented AI words",
+      "legacyWordCount": "≈{count} words in AI articles",
+      "legacyEstimate": "Historical · {articles}",
+      "legacyArticleCount": "No AI articles | {count} AI article | {count} AI articles",
+      "legacyWords": "{articles} · approximately {words} words",
+      "seeAllTime": "See the historical estimate under All time",
+      "noCompletedWriting": "No completed AI writing yet"
+    },
+    "range": { "label": "Statistics time range", "last30Days": "30 days", "allTime": "All time" },
+    "coverage": {
+      "partial": "Incomplete history · earliest verified record {date}",
+      "unavailable": "Earlier activity was not recorded"
+    },
+    "duration": {
+      "lessThanMinute": "<1 min",
+      "compact": { "minutes": "{count}m", "hours": "{count}h", "days": "{count}d" },
+      "minutes": "no minutes | {count} minute | {count} minutes",
+      "hours": "no hours | {count} hour | {count} hours",
+      "days": "no days | {count} day | {count} days"
     },
     "savings": {
       "words": "No words yet | {count} word | {count} words",
       "timeBasis": "{words} ÷ {speed} words/h",
       "amountBasis": "{time} × {rate}/h",
-      "tooltip": "We only count articles the AI wrote end to end. Edit one by hand and it drops out of the stats. The {rate}/h rate sits below the market median, and {speed} words/h leaves room for research and a proofread. This is an estimate; actual copywriter rates vary."
+      "tooltip": "Estimated from completed AI writing using the current rate of {rate}/h and {speed} words/h. Manual edits and subsequent saves do not add to the total."
     },
-    "articleCount": "Total articles",
+    "articleCount": "Published articles",
     "sentiment": {
       "title": "Your community",
+      "current": "Current summary",
       "toxicity": "{value} toxicity"
     },
     "totalShares": {
@@ -42,7 +71,7 @@
       "likes": "no likes | {count} like | {count} likes"
     },
     "topCommentedArticle": {},
-    "followerCount": "Follower Count",
+    "followerCount": "Current followers",
     "engagementRate": {
       "title": "Engagement Rate",
       "tooltip": "Engagement shows how actively readers interact with your articles. It is all interactions (likes, comments, shares and poll votes) divided by all views across the blog. A higher value means more engaged readers."
@@ -62,7 +91,9 @@
       "day": "Day",
       "platform": "Platform",
       "viewsByDay": "Views over the last {days} days",
-      "trackingSince": "Tracked since {date} — earlier views were not recorded."
+      "trackingSince": "Tracked since {date} — earlier views were not recorded.",
+      "viewsByMonth": "Monthly views",
+      "month": "Month"
     },
     "platforms": {
       "TWITTER": "X / Twitter",
@@ -84,7 +115,9 @@
     "aiInvolvement": {
       "FULL": "Fully AI",
       "ASSIST": "AI + edits",
-      "NONE": "By hand"
+      "NONE": "By hand",
+      "note": "Older edits may not be recorded",
+      "inventoryNote": "Includes drafts · older edits may be missing"
     },
     "viewsUnit": "no views | {count} view | {count} views"
   }
