@@ -538,6 +538,10 @@ export default defineNuxtConfig({
     },
   },
 
+  // Off: it bakes `public/favicon.ico` (with `sizes`) into every page's head, and browsers prefer
+  // that over a tenant's custom favicon. `app.vue` owns the icon links per tenant.
+  seo: { metaDataFiles: false },
+
   // Platform fallback; `server/plugins/siteConfig.ts` swaps in the tenant's own per request.
   // `defaultLocale` must agree with `i18n.defaultLocale` or the two disagree on `x-default`.
   site: {
