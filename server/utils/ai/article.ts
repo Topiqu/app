@@ -779,9 +779,10 @@ export const generateArticle = async (
   const first = await generateObject(config)
   let object = first.object
   let editorialTokens = 0
-  let editorialReview: (EditorialReview & { revised: boolean }) | null = null
+  let editorialReview: (EditorialReview & { revised: boolean; verification?: string[] }) | null = null
 
   if (opts?.editorialReview) {
+    const verification: string[] = []
     try {
       const context = {
         prompt,
@@ -795,7 +796,8 @@ export const generateArticle = async (
       if (initial.verificationBrief)
         groundingBrief = [groundingBrief, initial.verificationBrief].filter(Boolean).join('\n')
       editorialTokens += initial.usage.totalTokens ?? 0
-      editorialReview = { ...initial.review, revised: false }
+      if (initial.verdicts) verification.push(initial.verdicts)
+      editorialReview = { ...initial.review, revised: false, verification }
 
       if (!initial.review.approved) {
         const revision = await generateObject({
@@ -813,7 +815,8 @@ export const generateArticle = async (
         if (checked.verificationBrief)
           groundingBrief = [groundingBrief, checked.verificationBrief].filter(Boolean).join('\n')
         editorialTokens += checked.usage.totalTokens ?? 0
-        editorialReview = { ...checked.review, revised: true }
+        if (checked.verdicts) verification.push(checked.verdicts)
+        editorialReview = { ...checked.review, revised: true, verification }
       }
     } catch (error) {
       await reportCaughtError('Article editorial review failed', error, { clientSiteId })
@@ -883,6 +886,7 @@ export const streamArticle = async (
         revised: boolean
         checkedAfterRevision: boolean
         resolvedIssues?: EditorialReview['issues']
+        verification?: string[]
       })
     | null = null
   const review = async (draft: ArticleObject) => {
@@ -899,7 +903,8 @@ export const streamArticle = async (
     const first = await reviewArticle(draft, context)
     if (first.verificationBrief) groundingBrief = [groundingBrief, first.verificationBrief].filter(Boolean).join('\n')
     editorialTokens += first.usage.totalTokens ?? 0
-    editorialReview = { ...first.review, revised: false, checkedAfterRevision: true }
+    const verification = first.verdicts ? [first.verdicts] : []
+    editorialReview = { ...first.review, revised: false, checkedAfterRevision: true, verification }
     if (first.review.approved) return draft
     try {
       const revision = await generateObject({
@@ -921,6 +926,7 @@ export const streamArticle = async (
         revised: true,
         checkedAfterRevision: false,
         resolvedIssues: first.review.issues,
+        verification,
       }
       return revision.object
     } catch (error) {
