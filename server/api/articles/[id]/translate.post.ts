@@ -27,15 +27,11 @@ export default defineEventHandler(async (event) => {
   if (!TRANSLATION_PLANS.includes(clientSite.plan) || !(await hasActiveFeature(db, user.clientSiteId, 'AI')))
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
-  const sourceLang = clientSite.language
-  const targetLang = language ?? LANGUAGE_OPTIONS.find((candidate) => candidate !== sourceLang)
-  if (!targetLang) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-  if (targetLang === sourceLang) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-
   const article = await db.article.findUnique({
     where: { id },
     select: {
       id: true,
+      language: true,
       title: true,
       excerpt: true,
       content: true,
@@ -46,6 +42,11 @@ export default defineEventHandler(async (event) => {
     },
   })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+
+  const sourceLang = article.language
+  const targetLang = language ?? LANGUAGE_OPTIONS.find((candidate) => candidate !== sourceLang)
+  if (!targetLang || targetLang === sourceLang)
+    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   return withTokenReservation(
     user.clientSiteId,

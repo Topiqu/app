@@ -198,7 +198,7 @@ const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/$
   })),
 })
 
-const primaryLocale = computed(() => clientSite?.language ?? 'en')
+const primaryLocale = computed(() => data.value?.primaryLanguage ?? clientSite?.language ?? 'en')
 
 // Real alternates only exist once translations are PUBLISHED (source + each translation).
 const alternates = computed<{ language: Language; slug: string }[]>(() => data.value?.alternates ?? [])

@@ -8,6 +8,7 @@ const PUBLIC_FIELDS = {
   publishedAt: true,
   userId: true,
   slug: true,
+  language: true,
   title: true,
   excerpt: true,
   content: true,
@@ -73,25 +74,25 @@ export default defineEventHandler(async (event) => {
   if (!clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   const isAdmin = hasArticleAdminAccess(user, clientSiteId)
 
-  const clientSite = await prisma.clientSite.findUnique({
-    where: { id: clientSiteId },
-    select: { language: true },
-  })
-  const primaryLanguage = clientSite?.language ?? 'en'
   const select = articleSelect(isAdmin, { userId: user?.id, sessionId })
 
-  // Locale-scoped resolution: the primary language renders the source Article; any other
-  // locale renders its ArticleTranslation. Because each locale looks in exactly one place,
-  // a translated slug can never collide with a different article's source slug.
-  const wantsTranslation = !!locale && locale !== primaryLanguage
-
   let article: any
-  let language: Language = primaryLanguage
+  let language: Language = 'en'
+  let primaryLanguage: Language = 'en'
   let translationStatus: string | null = null
   let baseSlug = slug
   let resolvedAsTranslation = false
 
-  if (wantsTranslation) {
+  // Source slugs win in their own language; a translation may share its slug with a source
+  // article in another language. An admin id lookup still resolves the source directly.
+  const sourceAtLocale = locale
+    ? await prisma.article.findFirst({
+        where: { clientSiteId, language: locale, OR: isAdmin ? [{ slug }, { id: slug }] : [{ slug }] },
+        select,
+      })
+    : null
+
+  if (locale && !sourceAtLocale) {
     const translation = await prisma.articleTranslation.findUnique({
       where: { slug_clientSiteId_language: { slug, clientSiteId, language: locale } },
       select: {
@@ -128,6 +129,7 @@ export default defineEventHandler(async (event) => {
         faq: translation!.faq ?? translation!.article.faq,
       }
       language = locale!
+      primaryLanguage = translation!.article.language
       translationStatus = translation!.status
       resolvedAsTranslation = true
     }
@@ -136,19 +138,22 @@ export default defineEventHandler(async (event) => {
   if (!resolvedAsTranslation) {
     // Source content — and the fallback for a not-yet-translated locale (legacy i18n alias):
     // the body stays in the primary language and SEO collapses to the primary-language URL.
-    article = isAdmin
-      ? await prisma.article.findFirst({
-          where: { clientSiteId, OR: [{ slug }, { id: slug }] },
-          select,
-        })
-      : await prisma.article.findUnique({
-          where: { slug_clientSiteId: { slug, clientSiteId } },
-          select,
-        })
+    article =
+      sourceAtLocale ??
+      (isAdmin
+        ? await prisma.article.findFirst({
+            where: { clientSiteId, OR: [{ slug }, { id: slug }] },
+            select,
+          })
+        : await prisma.article.findUnique({
+            where: { slug_clientSiteId: { slug, clientSiteId } },
+            select,
+          }))
     if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
     if (article.status !== 'published' && !isAdmin)
       throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
     baseSlug = article.slug
+    primaryLanguage = article.language
     language = primaryLanguage
   }
 
@@ -176,6 +181,7 @@ export default defineEventHandler(async (event) => {
         title: true,
         excerpt: true,
         slug: true,
+        language: true,
         imageUrl: true,
         seriesOrder: true,
         status: true,
@@ -204,6 +210,7 @@ export default defineEventHandler(async (event) => {
     ...rest,
     sourceSlug: baseSlug,
     language,
+    primaryLanguage,
     translationStatus,
     alternates,
     // Only place that sees the resolved translation, so the split belongs here.

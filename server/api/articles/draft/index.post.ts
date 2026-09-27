@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { LanguageSchema } from '~~/shared/siteSchemas'
 
 const DraftBody = z.object({
   id: z.uuid().optional(),
@@ -7,13 +8,17 @@ const DraftBody = z.object({
   content: z.string().optional(),
   imageUrl: z.string().nullable().optional(),
   coverMediaId: z.uuid().nullable().optional(),
+  language: LanguageSchema.optional(),
 })
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const { user } = await requireTenantScope(event, 'ARTICLE_WRITE')
 
-  const { id, title, excerpt, content, imageUrl, coverMediaId } = await readValidatedBody(event, DraftBody.parse)
+  const { id, title, excerpt, content, imageUrl, coverMediaId, language } = await readValidatedBody(
+    event,
+    DraftBody.parse,
+  )
 
   if (!title && !content && content !== '<p></p>' && !excerpt)
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
@@ -30,6 +35,7 @@ export default defineEventHandler(async (event) => {
     content: content || '',
     imageUrl: imageUrl || null,
     coverMediaId: coverMediaId || null,
+    language: language ?? null,
   }
   const select = {
     id: true,
@@ -38,6 +44,7 @@ export default defineEventHandler(async (event) => {
     content: true,
     imageUrl: true,
     coverMediaId: true,
+    language: true,
     createdAt: true,
     updatedAt: true,
   } as const

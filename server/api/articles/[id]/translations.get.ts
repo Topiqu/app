@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 
   const article = await db.article.findFirst({
     where: { id, clientSiteId: user.clientSiteId! },
-    select: { id: true },
+    select: { id: true, language: true },
   })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
 
-  const targetLanguages = resolveTargetLanguages(clientSite)
+  const targetLanguages = resolveTargetLanguages(clientSite, article.language)
 
   const translations = await db.articleTranslation.findMany({
     where: { articleId: id, clientSiteId: user.clientSiteId! },

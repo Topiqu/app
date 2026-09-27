@@ -9,5 +9,5 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!article) throw createError({ statusCode: 404, message: 'Article not found' })
-  return { data: flattenExternalArticle(article, clientSite.language) }
+  return { data: flattenExternalArticle(article, article.language) }
 })

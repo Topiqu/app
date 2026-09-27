@@ -35,7 +35,7 @@
                       }}</ULink>
                       <ULink
                         v-if="n.article?.slug"
-                        :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } })"
+                        :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } }, n.article.language)"
                         class="mt-1 block line-clamp-2 break-words text-sm leading-5 text-muted hover:text-primary"
                       >
                         {{ n.article.title }}
@@ -44,7 +44,7 @@
                     <div class="flex items-start gap-1">
                       <ULink
                         v-if="n.type === 'LIKE' && n.article?.imageUrl && n.article.slug"
-                        :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } })"
+                        :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } }, n.article.language)"
                         class="shrink-0 rounded-[var(--ui-radius)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                         :aria-label="n.article.title"
                       >
@@ -108,6 +108,8 @@
 </template>
 
 <script lang="ts" setup>
+import type { Language } from '~~/shared/utils/language'
+
 import { formatDate } from '~~/shared/utils'
 
 type Notif = {
@@ -117,7 +119,7 @@ type Notif = {
   isRead: boolean
   createdAt: string
   articleId: string | null
-  article?: { slug: string; title: string; imageUrl: string | null } | null
+  article?: { slug: string; language: Language; title: string; imageUrl: string | null } | null
   count: number
   link?: string | null
 }

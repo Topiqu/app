@@ -111,4 +111,16 @@ describe('overlayTranslations', () => {
 
     expect(overlayTranslations(feed, [])).toBe(feed)
   })
+
+  it('marks the overlaid card with the translation language for its public link', () => {
+    const source = article({ language: 'cs' })
+    const result = overlayTranslation(
+      source,
+      { articleId: 'a1', slug: 'english-article', title: 'English article', excerpt: null },
+      'en',
+    )
+
+    expect(result.language).toBe('en')
+    expect(source.language).toBe('cs')
+  })
 })

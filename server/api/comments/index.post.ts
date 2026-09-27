@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
       allowedComments: true,
       userId: true,
       slug: true,
+      language: true,
       title: true,
       clientSite: { select: { domain: true, language: true } },
     },
@@ -40,7 +41,7 @@ export default defineEventHandler(async (event) => {
   const protocol = import.meta.dev ? 'http' : 'https'
   const host = import.meta.dev ? 'localhost:3000' : `${article.clientSite.domain}`
 
-  const articleUrl = `${protocol}://${host}${articlePath(article.clientSite.language, article.slug)}`
+  const articleUrl = `${protocol}://${host}${articlePath(article.language, article.slug)}`
   const commentUrl = (id: string) => `${articleUrl}#comment-${id}`
   const replyUrl = articleUrl
   const logoUrl = 'https://cdn.topiqu.com/app-logo.png'

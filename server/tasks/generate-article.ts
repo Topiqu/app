@@ -366,6 +366,7 @@ const processClient = async (client: any) =>
               user: { select: { username: true, language: true, role: true } },
             },
             data: {
+              language: client.language,
               title: generated.title,
               excerpt: generated.perex,
               slug,

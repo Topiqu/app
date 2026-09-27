@@ -1,4 +1,4 @@
-import type { SharePlatform } from '~~/generated/zenstack/models'
+import type { Language, SharePlatform } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
 import { completedWritingValue, generatedWordsFromSnapshot } from '~~/shared/utils/valueMetrics'
@@ -110,11 +110,11 @@ export default defineEventHandler(async (event) => {
     isAllTime
       ? db.article.findFirst({
           where: { clientSiteId, status: 'published' },
-          select: { id: true, slug: true, title: true, views: true },
+          select: { id: true, slug: true, language: true, title: true, views: true },
           orderBy: { views: 'desc' },
         })
-      : db.$queryRaw<{ id: string; slug: string; title: string; views: number }[]>`
-          SELECT a."id", a."slug", a."title", COUNT(*)::int AS views
+      : db.$queryRaw<{ id: string; slug: string; language: Language; title: string; views: number }[]>`
+          SELECT a."id", a."slug", a."language", a."title", COUNT(*)::int AS views
           FROM "ArticleView" v JOIN "Article" a ON a."id" = v."articleId"
           WHERE v."clientSiteId" = ${clientSiteId} AND v."viewedOn" >= ${trendStart}::date
             AND a."status" = 'published'
@@ -133,14 +133,14 @@ export default defineEventHandler(async (event) => {
     isAllTime
       ? db.article.findFirst({
           where: { clientSiteId: user.clientSiteId, status: 'published' },
-          select: { id: true, slug: true, title: true, _count: { select: { comments: true } } },
+          select: { id: true, slug: true, language: true, title: true, _count: { select: { comments: true } } },
           orderBy: { comments: { _count: 'desc' } },
         })
       : Promise.resolve(null),
     isAllTime
       ? db.article.findFirst({
           where: { clientSiteId: user.clientSiteId, status: 'published' },
-          select: { id: true, slug: true, title: true, _count: { select: { reactions: true } } },
+          select: { id: true, slug: true, language: true, title: true, _count: { select: { reactions: true } } },
           orderBy: { reactions: { _count: 'desc' } },
         })
       : Promise.resolve(null),
@@ -176,16 +176,16 @@ export default defineEventHandler(async (event) => {
         ]),
     isAllTime
       ? Promise.resolve(null)
-      : db.$queryRaw<{ id: string; slug: string; title: string; comments: number }[]>`
-      SELECT a."id", a."slug", a."title", COUNT(c."id")::int AS comments
+      : db.$queryRaw<{ id: string; slug: string; language: Language; title: string; comments: number }[]>`
+      SELECT a."id", a."slug", a."language", a."title", COUNT(c."id")::int AS comments
       FROM "Comment" c JOIN "Article" a ON a."id" = c."articleId"
       WHERE a."clientSiteId" = ${clientSiteId} AND a."status" = 'published' AND c."createdAt" >= ${periodStart}
       GROUP BY a."id" ORDER BY comments DESC LIMIT 1
     `.then((rows) => rows[0] ?? null),
     isAllTime
       ? Promise.resolve(null)
-      : db.$queryRaw<{ id: string; slug: string; title: string; likes: number }[]>`
-      SELECT a."id", a."slug", a."title", COUNT(r."id")::int AS likes
+      : db.$queryRaw<{ id: string; slug: string; language: Language; title: string; likes: number }[]>`
+      SELECT a."id", a."slug", a."language", a."title", COUNT(r."id")::int AS likes
       FROM "ArticleReaction" r JOIN "Article" a ON a."id" = r."articleId"
       WHERE a."clientSiteId" = ${clientSiteId} AND a."status" = 'published' AND r."createdAt" >= ${periodStart}
       GROUP BY a."id" ORDER BY likes DESC LIMIT 1
@@ -321,6 +321,7 @@ export default defineEventHandler(async (event) => {
       ? {
           id: topCommented.id,
           slug: topCommented.slug,
+          language: topCommented.language,
           title: topCommented.title,
           comments: topCommented._count.comments,
         }
@@ -331,6 +332,7 @@ export default defineEventHandler(async (event) => {
       ? {
           id: topLiked.id,
           slug: topLiked.slug,
+          language: topLiked.language,
           title: topLiked.title,
           likes: topLiked._count.reactions,
         }

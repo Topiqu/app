@@ -110,7 +110,10 @@
           </UButton>
         </template>
         <template #imageUrl-cell="{ row }">
-          <NuxtLink :to="articleUrl(row.original.slug)" class="block focus-visible:outline-offset-2">
+          <NuxtLink
+            :to="articleUrl(row.original.slug, row.original.language)"
+            class="block focus-visible:outline-offset-2"
+          >
             <AppMedia
               :src="row.original.imageUrl"
               :alt="row.original.title"
@@ -122,7 +125,7 @@
         </template>
         <template #title-cell="{ row }">
           <NuxtLink
-            :to="articleUrl(row.original.slug)"
+            :to="articleUrl(row.original.slug, row.original.language)"
             class="block min-w-0 max-w-full truncate"
             :title="row.original.title"
             :class="row.original.status === 'archived' ? 'text-muted line-through' : 'font-medium'"
@@ -136,7 +139,7 @@
         <template #languages-cell="{ row }">
           <ArticleLanguageLinks
             :links="languageLinks(row.original)"
-            :current="primaryLanguage"
+            :current="sourceLanguage(row.original)"
             target="editor"
             :articleRef="row.original.slug"
           />
@@ -146,7 +149,7 @@
           <div class="flex justify-end gap-1">
             <UTooltip :text="$t('articles.openArticle')">
               <UButton
-                :to="articleUrl(row.original.slug)"
+                :to="articleUrl(row.original.slug, row.original.language)"
                 icon="mdi:eye-outline"
                 color="neutral"
                 variant="ghost"
@@ -184,7 +187,7 @@
     <div v-else-if="rows.length" class="space-y-3 sm:hidden" :aria-busy="pendingStatusIds.size > 0">
       <UCard v-for="article in rows" :key="article.id">
         <div class="flex gap-3">
-          <NuxtLink :to="articleUrl(article.slug)" class="block shrink-0">
+          <NuxtLink :to="articleUrl(article.slug, article.language)" class="block shrink-0">
             <AppMedia
               :src="article.imageUrl"
               :alt="article.title"
@@ -195,7 +198,7 @@
           </NuxtLink>
           <div class="min-w-0 flex-1 space-y-2">
             <NuxtLink
-              :to="articleUrl(article.slug)"
+              :to="articleUrl(article.slug, article.language)"
               class="line-clamp-2 font-semibold"
               :class="article.status === 'archived' ? 'line-through text-muted' : ''"
             >
@@ -208,7 +211,7 @@
             />
             <ArticleLanguageLinks
               :links="languageLinks(article)"
-              :current="primaryLanguage"
+              :current="sourceLanguage(article)"
               target="editor"
               :articleRef="article.slug"
             />
@@ -216,7 +219,7 @@
           </div>
           <div class="flex flex-col gap-1">
             <UButton
-              :to="articleUrl(article.slug)"
+              :to="articleUrl(article.slug, article.language)"
               icon="mdi:eye-outline"
               color="neutral"
               variant="ghost"
@@ -294,13 +297,17 @@ const toast = useToast()
 const { invalidateArticleLists, invalidateArticlesAndStats } = useCacheInvalidation()
 const confirm = useConfirm()
 const localePath = useLocalePath()
-const articleUrl = (slug: string) =>
-  publicationUrl(clientSite.value, localePath({ name: 'clanky-slug', params: { slug } }, clientSite.value?.language))
+const { data: clientSite } = await useClientSiteStatus()
+const sourceLanguage = (article: ArticleWithDetails): Language => article.language ?? clientSite.value?.language ?? 'en'
+const articleUrl = (slug: string, language?: Language) =>
+  publicationUrl(
+    clientSite.value,
+    localePath({ name: 'clanky-slug', params: { slug } }, language ?? clientSite.value?.language),
+  )
 const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
-const { data: clientSite } = await useClientSiteStatus()
-const primaryLanguage = clientSite.value?.language ?? 'en'
-const targetLanguages = LANGUAGE_OPTIONS.filter((language) => language !== primaryLanguage)
+const targetLanguages = (article: ArticleWithDetails) =>
+  LANGUAGE_OPTIONS.filter((language) => language !== sourceLanguage(article))
 const translatingArticleId = shallowRef<string | null>(null)
 const listOrigin = useTemplateRef<HTMLElement>('listOrigin')
 
@@ -336,7 +343,7 @@ const openEditor = (slug: string) => router.push(localePath({ name: 'admin-edito
  * empty placeholder for each unused language would just add noise to every row.
  */
 const languageLinks = (article: ArticleWithDetails): LanguageLink[] => [
-  { language: primaryLanguage as LanguageLink['language'], slug: article.slug },
+  { language: sourceLanguage(article), slug: article.slug },
   ...(article.translations ?? []).map((tr) => ({
     language: tr.language as LanguageLink['language'],
     slug: tr.slug ?? article.slug,
@@ -598,7 +605,7 @@ const exportItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
 ]
 
 const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
-  targetLanguages.map((language) => ({
+  targetLanguages(article).map((language) => ({
     label: `${
       hasTargetTranslation(article, language)
         ? $t('articles.translations.actions.retranslate')
@@ -630,7 +637,7 @@ const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] =
 ]
 
 const mobileActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
-  targetLanguages.map((language) => ({
+  targetLanguages(article).map((language) => ({
     label: `${
       hasTargetTranslation(article, language)
         ? $t('articles.translations.actions.retranslate')

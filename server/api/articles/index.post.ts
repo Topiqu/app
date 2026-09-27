@@ -1,4 +1,5 @@
 import { DbNull } from '@zenstackhq/orm'
+import { LanguageSchema } from '~~/shared/siteSchemas'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -74,11 +75,15 @@ export default defineEventHandler(async (event) => {
     : undefined
 
   const site = await prisma.clientSite.findUnique({ where: { id: user.clientSiteId! }, select: { language: true } })
+  const parsedLanguage = LanguageSchema.safeParse(body.language ?? site?.language ?? 'en')
+  if (!parsedLanguage.success) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  const language = parsedLanguage.data
   const { article, contentWithPolls } = await db
     .$transaction(async (tx) => {
       const created = await tx.article.create({
         data: {
           slug: body.slug,
+          language,
           title: body.title,
           excerpt: body.excerpt,
           content: sanitizeHtml(contentWithIds),
@@ -130,7 +135,7 @@ export default defineEventHandler(async (event) => {
   await syncArticleMediaUsages(prisma, {
     clientSiteId: user.clientSiteId!,
     articleId: article.id,
-    language: site?.language ?? 'en',
+    language,
     imageUrl: article.imageUrl,
     coverMediaId: article.coverMediaId,
     content: contentWithPolls,
@@ -145,7 +150,7 @@ export default defineEventHandler(async (event) => {
     await createMediaRightsSnapshot(prisma, {
       articleId: article.id,
       clientSiteId: user.clientSiteId!,
-      language: site?.language ?? 'en',
+      language,
       report: mediaReport,
       confirmedById: user.id,
     })

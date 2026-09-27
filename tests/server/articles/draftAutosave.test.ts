@@ -36,6 +36,12 @@ describe('article draft autosave', () => {
     expect(updateMany).not.toHaveBeenCalled()
   })
 
+  it('records the active source language with the recovery draft', async () => {
+    const { run, create } = await setup({ title: 'Český článek', content: '<p>Obsah</p>', language: 'cs' })
+    await run()
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ language: 'cs' }) }))
+  })
+
   it('updates only the owner’s existing draft instead of making another copy', async () => {
     const { run, create, updateMany } = await setup({
       id: '00000000-0000-4000-8000-000000000001',

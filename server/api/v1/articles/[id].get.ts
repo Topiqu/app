@@ -11,5 +11,5 @@ export default defineEventHandler(async (event) => {
   if (!article) throw createError({ statusCode: 404, message: 'Article not found' })
 
   setResponseHeader(event, 'X-API-Version', '1')
-  return { data: serializeExternalArticleV1(article, clientSite.language) }
+  return { data: serializeExternalArticleV1(article, article.language) }
 })

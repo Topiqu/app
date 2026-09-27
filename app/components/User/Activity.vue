@@ -292,7 +292,7 @@ async function unlikeArticle(articleId: string) {
 }
 
 async function shareArticle(article: ActivityArticle) {
-  const url = `${window.location.origin}${localePath({ name: 'clanky-slug', params: { slug: article.slug } })}`
+  const url = `${window.location.origin}${localePath({ name: 'clanky-slug', params: { slug: article.slug } }, article.language)}`
   await copy(url)
   toast.add({ color: 'success', title: $t('common.actions.copySuccess') })
   await trackShare(article.id, 'OTHER')

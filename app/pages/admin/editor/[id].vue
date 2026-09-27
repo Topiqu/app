@@ -656,7 +656,9 @@ const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDr
   await useArticleDrafts(editedArticle, idle, {
     enabled: isNew,
     paused: aiGenerating,
-    onDraftLoaded: () => {
+    language: newArticleLanguage,
+    onDraftLoaded: (draft) => {
+      if (draft.language) newArticleLanguage.value = draft.language
       selectedSeries.value = null
       articleTags.value = []
     },
@@ -694,13 +696,15 @@ if (!isNew) {
 // the source, anything else edits that translation through the same fields.
 // Product routes intentionally have no public-domain client-site payload. The detail contract
 // carries the resolved source language, so editor tabs remain correct in the persistent shell.
-const primaryLanguage = (article.value?.language ?? clientSite.value?.language ?? 'en') as Language
+const primaryLanguage = computed<Language>(() =>
+  isNew ? newArticleLanguage.value : ((article.value?.language ?? clientSite.value?.language ?? 'en') as Language),
+)
 
 // `?lang=` lets the admin table deep-link straight to a language. The primary language is the
 // source tab, which the composable represents as an empty string. Seeded at construction rather
 // than assigned afterwards, so nothing can reconcile it away before the payload lands.
 const requestedLang = route.query.lang as string | undefined
-const initialLang = !isNew && requestedLang && requestedLang !== primaryLanguage ? requestedLang : ''
+const initialLang = !isNew && requestedLang && requestedLang !== primaryLanguage.value ? requestedLang : ''
 
 const tr = reactive(useArticleTranslations(article.value?.id, initialLang))
 const discardTranslationOpen = shallowRef(false)
@@ -726,7 +730,7 @@ const activeLanguageModel = computed({
   },
 })
 const editorTargetLanguages = computed(() =>
-  isNew ? LANGUAGE_OPTIONS.filter((language) => language !== primaryLanguage) : tr.targetLanguages,
+  isNew ? LANGUAGE_OPTIONS.filter((language) => language !== primaryLanguage.value) : tr.targetLanguages,
 )
 const editorLanguageModel = computed({
   get: () => (isNew ? newArticleLanguage.value : activeLanguageModel.value),
@@ -750,7 +754,7 @@ const editorLanguageModel = computed({
 /** Public URL of whichever language is on screen — only once it has a slug to point at. */
 const livePath = computed(() => {
   if (isNew || !activeSlug.value) return ''
-  const language = (tr.isSource ? primaryLanguage : tr.activeLang) as Language
+  const language = (tr.isSource ? primaryLanguage.value : tr.activeLang) as Language
   return publicationUrl(
     clientStatus.value,
     localePath({ name: 'clanky-slug', params: { slug: activeSlug.value } }, language),
@@ -827,7 +831,7 @@ const factCheckInput = computed(() => ({
   excerpt: excerptModel.value ?? null,
   content: bodyModel.value ?? '',
   sources: sourcesModel.value,
-  language: (isNew ? newArticleLanguage.value : tr.isSource ? primaryLanguage : tr.activeLang) as Language,
+  language: (isNew ? newArticleLanguage.value : tr.isSource ? primaryLanguage.value : tr.activeLang) as Language,
 }))
 const {
   state: factCheckState,
@@ -1049,7 +1053,7 @@ const generateAIContent = async () => {
   try {
     const outcome = await streamGenerate(
       customPrompt.value,
-      { ...aiOptions.value, language: isNew ? newArticleLanguage.value : primaryLanguage },
+      { ...aiOptions.value, language: primaryLanguage.value },
       {
         onSession: (id) => (activeGenerationSessionId.value = id),
         onPartial: (partial) => {
@@ -1206,7 +1210,7 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
       content: editedArticle.value.content ?? '',
     }
   }
-  const sourceDraft = isNew ? newLanguageDrafts[primaryLanguage] : null
+  const sourceDraft = isNew ? newLanguageDrafts[primaryLanguage.value] : null
   if (!(sourceDraft?.title ?? editedArticle.value.title))
     return toast.add({ color: 'error', title: 'Title is required' })
 
@@ -1216,6 +1220,7 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
 
   const payload = {
     title: sourceDraft?.title ?? editedArticle.value.title,
+    ...(isNew ? { language: primaryLanguage.value } : {}),
     excerpt: sourceDraft?.excerpt ?? editedArticle.value.excerpt,
     content: sourceDraft?.content ?? editedArticle.value.content,
     slug: sourceDraft
@@ -1253,7 +1258,7 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
       })
       const translationResults = await Promise.allSettled(
         (Object.entries(newLanguageDrafts) as [Language, ReturnType<typeof translationDraft>][])
-          .filter(([language, draft]) => language !== primaryLanguage && draft.title && draft.content)
+          .filter(([language, draft]) => language !== primaryLanguage.value && draft.title && draft.content)
           .map(([language, draft]) =>
             $fetch(`/api/articles/${created.id}/translations`, {
               method: 'POST',

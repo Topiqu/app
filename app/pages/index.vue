@@ -72,7 +72,7 @@
         style="--enter-order: 1"
       >
         <NuxtLink
-          :to="localePath({ name: 'clanky-slug', params: { slug: heroArticle.slug } })"
+          :to="localePath({ name: 'clanky-slug', params: { slug: heroArticle.slug } }, heroArticle.language)"
           class="absolute inset-0 z-10"
           :aria-label="heroArticle.title"
         />
@@ -330,6 +330,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Language } from '~~/shared/utils/language'
 import type { PollOptionData } from '~~/shared/utils/polls'
 
 import { formatDate } from '~~/shared/utils'
@@ -340,6 +341,7 @@ definePageMeta({ shell: 'publication' })
 interface HomeArticle {
   id: string
   slug: string
+  language?: Language
   title: string
   excerpt: string | null
   imageUrl: string | null
@@ -482,7 +484,9 @@ const latestArticle = computed(
 )
 const heroArticle = computed(() => featured.value || latestArticle.value)
 const heroArticlePath = computed(() =>
-  heroArticle.value?.slug ? localePath({ name: 'clanky-slug', params: { slug: heroArticle.value.slug } }) : '#',
+  heroArticle.value?.slug
+    ? localePath({ name: 'clanky-slug', params: { slug: heroArticle.value.slug } }, heroArticle.value.language)
+    : '#',
 )
 const {
   liked: heroLiked,
@@ -516,10 +520,10 @@ const shareHeroArticle = async () => {
 const primaryCtaArticle = computed(() => latestArticle.value || featured.value)
 const primaryCtaTo = computed(() =>
   primaryCtaArticle.value?.slug
-    ? localePath({
-        name: 'clanky-slug',
-        params: { slug: primaryCtaArticle.value.slug },
-      })
+    ? localePath(
+        { name: 'clanky-slug', params: { slug: primaryCtaArticle.value.slug } },
+        primaryCtaArticle.value.language,
+      )
     : '#articles',
 )
 const heroTags = computed(() =>

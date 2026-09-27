@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
 
   const article = await resolveArticleBySlug<{
     title: string
+    language: Language
     excerpt: string | null
     content: string
     publishedAt: Date | null
@@ -31,9 +32,10 @@ export default defineEventHandler(async (event) => {
     tags: { tag: { name: string } }[]
   }>(
     prisma,
-    { slug, clientSiteId: tenant.id, locale: language, primaryLanguage: tenant.language },
+    { slug, clientSiteId: tenant.id, locale: language },
     {
       title: true,
+      language: true,
       excerpt: true,
       content: true,
       status: true,

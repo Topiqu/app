@@ -22,11 +22,14 @@ export const localizeArticles = async <T extends LocalizableArticle>(
   opts: { clientSiteId: string; locale?: Language | string; primaryLanguage: Language | string },
 ): Promise<T[]> => {
   const { clientSiteId, locale, primaryLanguage } = opts
-  if (!locale || locale === primaryLanguage || !articles.length) return articles
+  if (!locale || !articles.length || articles.every((article) => (article.language ?? primaryLanguage) === locale))
+    return articles
 
   const overlays = await db.articleTranslation.findMany({
     where: {
-      articleId: { in: articles.map((article) => article.id) },
+      articleId: {
+        in: articles.filter((article) => (article.language ?? primaryLanguage) !== locale).map((article) => article.id),
+      },
       clientSiteId,
       language: locale,
       status: 'PUBLISHED',
@@ -34,5 +37,5 @@ export const localizeArticles = async <T extends LocalizableArticle>(
     select: { articleId: true, slug: true, title: true, excerpt: true },
   })
 
-  return overlayTranslations(articles, overlays)
+  return overlayTranslations(articles, overlays, locale)
 }

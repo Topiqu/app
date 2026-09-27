@@ -63,6 +63,14 @@ describe('article creation tags', () => {
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ tags: undefined }) }))
   })
 
+  it('persists a Czech source language on an English-first site', async () => {
+    const { run, create, body } = await setup('FULL')
+    Object.assign(body, { language: 'cs' })
+
+    await expect(run()).rejects.toThrow('stop after tag validation')
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ language: 'cs' }) }))
+  })
+
   it('rejects a manually supplied foreign or missing tag before article creation', async () => {
     const { run, create } = await setup('NONE')
     await expect(run()).rejects.toMatchObject({ statusCode: 400 })

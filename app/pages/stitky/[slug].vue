@@ -22,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Language } from '~~/shared/utils/language'
 import type { ArticleCardData } from '~~/shared/types/article'
 
 import slugify from 'slugify'
@@ -105,10 +106,10 @@ if (hasSeoPlan.value && tag.value?.id) {
       description: $t('seo.tags.description', { name: tagName.value }),
     }),
     defineItemList({
-      itemListElement: tag.value.articles.map((item: { slug: string }, index: number) => ({
+      itemListElement: tag.value.articles.map((item: { slug: string; language?: Language }, index: number) => ({
         '@type': 'ListItem',
         position: index + 1,
-        url: `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: item.slug } })}`,
+        url: `${canonicalOrigin}${localePath({ name: 'clanky-slug', params: { slug: item.slug } }, item.language)}`,
       })),
     }),
   ])

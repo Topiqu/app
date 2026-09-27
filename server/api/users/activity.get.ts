@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
         select: {
           id: true,
           slug: true,
+          language: true,
           title: true,
           content: true,
           excerpt: true,
@@ -44,14 +45,26 @@ export default defineEventHandler(async (event) => {
     orderBy: sortField === 'likes' ? { reactions: { _count: sortOrder } } : { createdAt: sortOrder },
     include: {
       article: {
-        select: { slug: true, title: true, views: true, tags: { select: { tag: { select: { name: true } } } } },
+        select: {
+          slug: true,
+          language: true,
+          title: true,
+          views: true,
+          tags: { select: { tag: { select: { name: true } } } },
+        },
       },
       user: { select: { username: true, avatarUrl: true } },
       reactions: { select: { type: true } },
       replies: {
         include: {
           article: {
-            select: { slug: true, title: true, views: true, tags: { select: { tag: { select: { name: true } } } } },
+            select: {
+              slug: true,
+              language: true,
+              title: true,
+              views: true,
+              tags: { select: { tag: { select: { name: true } } } },
+            },
           },
           user: { select: { username: true, avatarUrl: true } },
           reactions: { select: { type: true } },
@@ -64,6 +77,7 @@ export default defineEventHandler(async (event) => {
     likedArticles: likedArticles.map((r) => ({
       id: r.article.id,
       slug: r.article.slug,
+      language: r.article.language,
       title: r.article.title,
       content: r.article.content,
       excerpt: r.article.excerpt || '',
@@ -79,6 +93,7 @@ export default defineEventHandler(async (event) => {
       id: c.id,
       content: c.content,
       articleSlug: c.article?.slug || '',
+      articleLanguage: c.article?.language,
       articleTitle: c.article?.title || '',
       authorUsername: c.user?.username || 'Anonym',
       userId: c.userId,
@@ -92,6 +107,7 @@ export default defineEventHandler(async (event) => {
         id: reply.id,
         content: reply.content,
         articleSlug: reply.article?.slug || '',
+        articleLanguage: reply.article?.language,
         articleTitle: reply.article?.title || '',
         authorUsername: reply.user?.username || 'Anonym',
         userId: reply.userId,

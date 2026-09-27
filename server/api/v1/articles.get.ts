@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'X-API-Version', '1')
 
   return {
-    data: articles.map((article) => serializeExternalArticleV1(article, clientSite.language)),
+    data: articles.map((article) => serializeExternalArticleV1(article, article.language)),
     meta: {
       total,
       page: Math.floor(skip / take) + 1,

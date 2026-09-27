@@ -3,6 +3,7 @@ export interface LocalizableArticle {
   slug: string
   title: string
   excerpt: string | null
+  language?: string
 }
 
 /** The subset of a PUBLISHED `ArticleTranslation` a listing card needs. */
@@ -18,10 +19,20 @@ export interface TranslationOverlay {
  * title the card would show localized text pointing at the primary-language URL. Excerpt is
  * allowed to fall back — a missing perex degrades the card, a missing slug breaks it.
  */
-export const overlayTranslation = <T extends LocalizableArticle>(article: T, overlay?: TranslationOverlay): T => {
+export const overlayTranslation = <T extends LocalizableArticle>(
+  article: T,
+  overlay?: TranslationOverlay,
+  language?: string,
+): T => {
   if (!overlay?.slug || !overlay.title) return article
 
-  return { ...article, slug: overlay.slug, title: overlay.title, excerpt: overlay.excerpt ?? article.excerpt }
+  return {
+    ...article,
+    slug: overlay.slug,
+    title: overlay.title,
+    excerpt: overlay.excerpt ?? article.excerpt,
+    ...(language ? { language } : {}),
+  }
 }
 
 export interface ArticleAlternate {
@@ -48,10 +59,11 @@ export const localeRedirectSlug = (
 export const overlayTranslations = <T extends LocalizableArticle>(
   articles: T[],
   overlays: TranslationOverlay[],
+  language?: string,
 ): T[] => {
   if (!overlays.length) return articles
 
   const byArticle = new Map(overlays.map((row) => [row.articleId, row]))
 
-  return articles.map((article) => overlayTranslation(article, byArticle.get(article.id)))
+  return articles.map((article) => overlayTranslation(article, byArticle.get(article.id), language))
 }

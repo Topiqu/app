@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Language } from '~~/shared/utils/language'
 import type { FaqEntry } from '~~/shared/utils/articleFaq'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
@@ -100,7 +101,13 @@ import type { SharePlatform } from '~~/generated/zenstack/models'
 
 import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
 
-type SeriesLink = { slug: string; title: string; excerpt?: string | null; imageUrl?: string | null }
+type SeriesLink = {
+  slug: string
+  language?: Language
+  title: string
+  excerpt?: string | null
+  imageUrl?: string | null
+}
 
 // The published page and the editor preview both render through this, so the two cannot drift.
 // Engagement (follow, likes, comments, ads) stays in the page and comes in through slots.
@@ -118,7 +125,14 @@ const { article, discloseAi = false } = defineProps<{
       total: number
       prev?: SeriesLink | null
       next?: SeriesLink | null
-      articles?: { id: string; title: string; slug: string; seriesOrder: number; imageUrl?: string | null }[]
+      articles?: {
+        id: string
+        title: string
+        slug: string
+        language?: Language
+        seriesOrder: number
+        imageUrl?: string | null
+      }[]
     } | null
     tags: { name: string }[]
     answer?: string | null

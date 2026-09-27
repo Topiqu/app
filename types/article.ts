@@ -1,3 +1,4 @@
+import type { Language } from '../shared/utils/language'
 import type { Article as _Article, ArticleStatus, AIInvolvement } from '../generated/zenstack/models'
 //
 export type ArticleBase = _Article & {
@@ -17,7 +18,7 @@ export type ArticleWithDetails = {
   id: string
   slug: string
   sourceSlug?: string
-  language?: string
+  language?: Language
   title: string
   content: string | null
   imageUrl: string | null

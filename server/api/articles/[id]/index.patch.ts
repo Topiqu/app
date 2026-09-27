@@ -38,10 +38,14 @@ export default defineEventHandler(async (event) => {
       imageUrl: true,
       coverMediaId: true,
       content: true,
+      language: true,
     },
   })
 
   if (!previousArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  if (body.language !== undefined && body.language !== previousArticle.language)
+    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  delete body.language
   if (previousArticle.userId !== user.id && !hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS'))
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
   if ((body.status === ArticleStatus.published || body.releaseAt) && !hasTenantScope(membership, 'ARTICLE_PUBLISH'))
@@ -138,13 +142,13 @@ export default defineEventHandler(async (event) => {
 
   const usageArticle = await prisma.article.findFirst({
     where: { id: article.id, clientSiteId: user.clientSiteId! },
-    select: { imageUrl: true, coverMediaId: true, content: true, clientSite: { select: { language: true } } },
+    select: { imageUrl: true, coverMediaId: true, content: true, language: true },
   })
   if (usageArticle)
     await syncArticleMediaUsages(prisma, {
       clientSiteId: user.clientSiteId!,
       articleId: article.id,
-      language: usageArticle.clientSite.language,
+      language: usageArticle.language,
       imageUrl: usageArticle.imageUrl,
       coverMediaId: usageArticle.coverMediaId,
       content: usageArticle.content,
@@ -155,11 +159,10 @@ export default defineEventHandler(async (event) => {
   }
 
   if (mediaReport) {
-    const site = await prisma.clientSite.findUnique({ where: { id: user.clientSiteId! }, select: { language: true } })
     await createMediaRightsSnapshot(prisma, {
       articleId: article.id,
       clientSiteId: user.clientSiteId!,
-      language: site?.language ?? 'en',
+      language: article.language,
       report: mediaReport,
       confirmedById: user.id,
     })

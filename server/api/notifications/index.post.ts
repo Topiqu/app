@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
         select: {
           clientSiteId: true,
           slug: true,
+          language: true,
           title: true,
           userId: true,
           clientSite: { select: { domain: true, language: true } },
@@ -33,7 +34,7 @@ export default defineEventHandler(async (event) => {
   if (!moderators.length) throw createError({ statusCode: 404, message: t('common.errors.adminNotFound')! })
 
   const origin = import.meta.dev ? 'http://localhost:3000' : `https://${comment.article.clientSite.domain}`
-  const url = `${origin}${articlePath(comment.article.clientSite.language, comment.article.slug)}#comment-${comment.id}`
+  const url = `${origin}${articlePath(comment.article.language, comment.article.slug)}#comment-${comment.id}`
   const message = t('common.notifications.userReportedComment', {
     user: user.name || 'Anonymous',
     article: comment.article.title,

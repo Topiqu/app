@@ -30,6 +30,7 @@ describe('resolveTargetLanguages', () => {
 
   it('honours an explicit config', () => {
     expect(resolveTargetLanguages({ language: 'cs', translationLanguages: ['en'] })).toEqual(['en'])
+    expect(resolveTargetLanguages({ language: 'en', translationLanguages: ['cs'] }, 'cs')).toEqual(['en'])
   })
 
   it('never targets the site’s own primary language', () => {

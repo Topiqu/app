@@ -18,6 +18,7 @@ export default defineSitemapEventHandler(async (event) => {
     orderBy: { publishedAt: 'desc' },
     select: {
       slug: true,
+      language: true,
       updatedAt: true,
       publishedAt: true,
       createdAt: true,
@@ -37,7 +38,7 @@ export default defineSitemapEventHandler(async (event) => {
 
   for (const article of articles) {
     const languages: { language: Language; slug: string; updatedAt: Date | null }[] = [
-      { language: primary, slug: article.slug, updatedAt: article.updatedAt },
+      { language: article.language, slug: article.slug, updatedAt: article.updatedAt },
       ...article.translations.map((tr) => ({
         language: tr.language as Language,
         slug: tr.slug!,
@@ -45,13 +46,15 @@ export default defineSitemapEventHandler(async (event) => {
       })),
     ]
 
-    // A single-language article gets no alternates — the other locale just 302s back.
+    // A single-language article has one canonical URL and no hreflang alternates.
     const alternatives: Alternative[] =
       languages.length > 1
         ? languages.map((entry) => ({ hreflang: entry.language, href: articlePath(entry.language, entry.slug) }))
         : []
 
-    const xDefault = alternatives.length ? [{ hreflang: 'x-default', href: articlePath(primary, article.slug) }] : []
+    const xDefault = alternatives.length
+      ? [{ hreflang: 'x-default', href: articlePath(article.language, article.slug) }]
+      : []
 
     for (const entry of languages) {
       urls.push({

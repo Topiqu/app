@@ -211,21 +211,36 @@
                 icon="mdi:trophy-outline"
                 :label="stats.topArticle.title"
                 :value="plural('stats.viewsUnit', stats.topArticle.views)"
-                :to="localePath({ name: 'clanky-slug', params: { slug: stats.topArticle.slug } })"
+                :to="
+                  localePath(
+                    { name: 'clanky-slug', params: { slug: stats.topArticle.slug } },
+                    stats.topArticle.language,
+                  )
+                "
               />
               <StatsRow
                 v-if="stats.topLikedArticle"
                 icon="mdi:heart-outline"
                 :label="stats.topLikedArticle.title"
                 :value="plural('stats.topLikedArticle.likes', stats.topLikedArticle.likes)"
-                :to="localePath({ name: 'clanky-slug', params: { slug: stats.topLikedArticle.slug } })"
+                :to="
+                  localePath(
+                    { name: 'clanky-slug', params: { slug: stats.topLikedArticle.slug } },
+                    stats.topLikedArticle.language,
+                  )
+                "
               />
               <StatsRow
                 v-if="stats.topCommentedArticle"
                 icon="mdi:comment-outline"
                 :label="stats.topCommentedArticle.title"
                 :value="plural('articles.comments.unit', stats.topCommentedArticle.comments)"
-                :to="localePath({ name: 'clanky-slug', params: { slug: stats.topCommentedArticle.slug } })"
+                :to="
+                  localePath(
+                    { name: 'clanky-slug', params: { slug: stats.topCommentedArticle.slug } },
+                    stats.topCommentedArticle.language,
+                  )
+                "
               />
               <p v-if="!hasContentHighlights" class="py-2 text-sm text-neutral-500 dark:text-neutral-400">
                 {{ $t('stats.topArticle.noViews') }}

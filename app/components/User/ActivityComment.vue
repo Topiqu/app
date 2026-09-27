@@ -18,7 +18,10 @@
     </p>
 
     <NuxtLink
-      :to="localePath({ name: 'clanky-slug', params: { slug: comment.articleSlug } }) + `#comment-${comment.id}`"
+      :to="
+        localePath({ name: 'clanky-slug', params: { slug: comment.articleSlug } }, comment.articleLanguage) +
+        `#comment-${comment.id}`
+      "
       class="mt-2 inline-flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-neutral-100"
     >
       <UIcon name="mdi:file-document-outline" class="size-3.5 shrink-0" />
@@ -65,12 +68,14 @@
 </template>
 
 <script setup lang="ts">
+import type { Language } from '~~/shared/utils/language'
 import type { Comment as _Comment } from '~~/generated/zenstack/models'
 
 import { formatDate } from '~~/shared/utils'
 
 export type ActivityComment = Pick<_Comment, 'id' | 'content' | 'userId' | 'parentId'> & {
   articleSlug: string
+  articleLanguage?: Language
   articleTitle: string
   authorUsername: string
   authorPfp?: string | null

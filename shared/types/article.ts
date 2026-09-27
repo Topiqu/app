@@ -1,6 +1,9 @@
+import type { Language } from '../utils/language'
+
 export type ArticleCardData = {
   id: string
   slug: string
+  language?: Language
   title: string
   imageUrl: string | null
   excerpt?: string | null

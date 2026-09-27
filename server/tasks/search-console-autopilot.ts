@@ -39,6 +39,7 @@ export default defineMonitoredTask({
               select: {
                 id: true,
                 slug: true,
+                language: true,
                 title: true,
                 excerpt: true,
                 content: true,
@@ -113,10 +114,7 @@ export default defineMonitoredTask({
 
         await withTokenReservation(connection.clientSiteId, 5000, 'SEO_AUTOPILOT', async () => {
           if (candidate.action === 'CTR_OPTIMIZATION') {
-            const generated = await generateCtrOptimization(
-              { ...article, language: connection.clientSite.language },
-              signal,
-            )
+            const generated = await generateCtrOptimization(article, signal)
             if (!generated.tokens) return
             await consumeClientTokens(connection.clientSiteId, generated.tokens, 'SEO_AUTOPILOT_CTR_TOKENS', {
               usage: generated.usage,
@@ -142,10 +140,7 @@ export default defineMonitoredTask({
               },
             })
           } else {
-            const generated = await generateContentRefresh(
-              { ...article, language: connection.clientSite.language },
-              signal,
-            )
+            const generated = await generateContentRefresh(article, signal)
             if (!generated.tokens) return
             const addition = sanitizeHtml(
               `<section data-topiqu-seo-refresh="true"><h2>${generated.result.heading}</h2>${generated.result.contentHtml}</section>`,

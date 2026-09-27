@@ -24,7 +24,7 @@
             <UPageCard
               v-for="art in series.articles"
               :key="art.id"
-              :to="localePath({ name: 'clanky-slug', params: { slug: art.slug } })"
+              :to="localePath({ name: 'clanky-slug', params: { slug: art.slug } }, art.language)"
               :title="art.title"
               variant="subtle"
               :ui="{ wrapper: 'flex-row items-center gap-3', leading: 'mb-0' }"
@@ -53,7 +53,7 @@
     <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
       <UPageCard
         v-if="series.prev"
-        :to="localePath({ name: 'clanky-slug', params: { slug: series.prev.slug } })"
+        :to="localePath({ name: 'clanky-slug', params: { slug: series.prev.slug } }, series.prev.language)"
         :title="series.prev.title"
         icon="mdi:arrow-left"
         variant="subtle"
@@ -77,7 +77,7 @@
       <div v-else class="hidden md:block" />
       <UPageCard
         v-if="series.next"
-        :to="localePath({ name: 'clanky-slug', params: { slug: series.next.slug } })"
+        :to="localePath({ name: 'clanky-slug', params: { slug: series.next.slug } }, series.next.language)"
         :title="series.next.title"
         icon="mdi:arrow-right"
         variant="outline"
@@ -103,17 +103,32 @@
 </template>
 
 <script setup lang="ts">
+import type { Language } from '~~/shared/utils/language'
+
 const props = defineProps<{
   series: {
     name: string
     current: number
     total: number
-    prev?: { slug: string; title: string; excerpt?: string | null; imageUrl?: string | null } | null
-    next?: { slug: string; title: string; excerpt?: string | null; imageUrl?: string | null } | null
+    prev?: {
+      slug: string
+      language?: Language
+      title: string
+      excerpt?: string | null
+      imageUrl?: string | null
+    } | null
+    next?: {
+      slug: string
+      language?: Language
+      title: string
+      excerpt?: string | null
+      imageUrl?: string | null
+    } | null
     articles?: Array<{
       id: string
       title: string
       slug: string
+      language?: Language
       seriesOrder: number
       imageUrl?: string | null
     }>

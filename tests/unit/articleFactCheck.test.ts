@@ -35,7 +35,7 @@ describe('article fact-check helpers', () => {
 
   it('uses the primary language instead of the source-tab sentinel', () => {
     const editor = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
-    expect(editor).toContain('isNew ? newArticleLanguage.value : tr.isSource ? primaryLanguage : tr.activeLang')
+    expect(editor).toContain('isNew ? newArticleLanguage.value : tr.isSource ? primaryLanguage.value : tr.activeLang')
     expect(editor).not.toContain('language: editorLanguageModel.value as Language')
   })
 

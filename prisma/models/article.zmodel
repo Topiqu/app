@@ -49,6 +49,7 @@ enum SharePlatform {
 }
 
 model ArticleDraft with Base, Ownable {
+    language     Language?
     title        String
     excerpt      String?
     content      String
@@ -61,6 +62,7 @@ model ArticleDraft with Base, Ownable {
     @@index([userId, updatedAt])
 }
 model Article with Base, Ownable {
+    language         Language
     slug             String            @length(1, 100, "Slug musí mít 1–100 znaků")
     title            String            @length(1, 255, "Titulek musí mít 1–255 znaků")
     excerpt          String?           @length(0, 500, "Perex může mít max. 500 znaků")

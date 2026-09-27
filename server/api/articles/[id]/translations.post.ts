@@ -19,14 +19,14 @@ export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, BodySchema.parse)
   const article = await db.article.findFirst({
     where: { id: articleId, clientSiteId: user.clientSiteId! },
-    select: { id: true },
+    select: { id: true, language: true },
   })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
   const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId! },
     select: { language: true },
   })
-  if (!clientSite || clientSite.language === body.language)
+  if (!clientSite || article.language === body.language)
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const slug = await dedupeTranslationSlug(

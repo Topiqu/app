@@ -4,15 +4,21 @@ import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 
 const ALL_LANGUAGES: readonly Language[] = LANGUAGE_OPTIONS
 
-export const resolveTargetLanguages = (clientSite: {
-  language: Language
-  translationLanguages: Language[]
-}): Language[] => {
+export const resolveTargetLanguages = (
+  clientSite: {
+    language: Language
+    translationLanguages: Language[]
+  },
+  sourceLanguage: Language = clientSite.language,
+): Language[] => {
   const configured = clientSite.translationLanguages.length ? clientSite.translationLanguages : ALL_LANGUAGES
-  return configured.filter((language) => language !== clientSite.language)
+  return [...new Set([...configured, clientSite.language])].filter((language) => language !== sourceLanguage)
 }
 
 type QueueDb = {
+  article?: {
+    findUnique: (args: any) => Promise<{ language: Language } | null>
+  }
   clientSite: {
     findUnique: (args: any) => Promise<{
       language: Language
@@ -57,7 +63,8 @@ export const syncArticleTranslationQueue = async (
   if (!clientSite.features?.length) return
   if (clientSite.translationMode !== 'AUTO' && clientSite.translationMode !== 'HYBRID') return
 
-  const targets = resolveTargetLanguages(clientSite)
+  const article = await db.article?.findUnique({ where: { id: articleId }, select: { language: true } })
+  const targets = resolveTargetLanguages(clientSite, article?.language ?? clientSite.language)
   if (!targets.length) return
 
   const existing = await db.articleTranslation.findMany({ where: { articleId }, select: { language: true } })

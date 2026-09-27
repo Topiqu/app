@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
         id: true,
         title: true,
         slug: true,
+        language: true,
         excerpt: true,
         content: true,
         imageUrl: true,

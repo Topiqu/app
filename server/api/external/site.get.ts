@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const clientSite = await requireExternalClient(event)
 
-  const [socials, translatedLanguages, articleCount] = await prisma.$transaction([
+  const [socials, translatedLanguages, sourceLanguages, articleCount] = await prisma.$transaction([
     prisma.social.findMany({
       where: { clientSiteId: clientSite.id },
       select: { platform: true, url: true },
@@ -12,6 +12,11 @@ export default defineEventHandler(async (event) => {
       distinct: ['language'],
       select: { language: true },
       orderBy: { language: 'asc' },
+    }),
+    prisma.article.findMany({
+      where: { clientSiteId: clientSite.id, status: 'published' },
+      distinct: ['language'],
+      select: { language: true },
     }),
     prisma.article.count({ where: { clientSiteId: clientSite.id, status: 'published' } }),
   ])
@@ -26,8 +31,11 @@ export default defineEventHandler(async (event) => {
       theme: clientSite.theme,
       primaryLanguage: clientSite.language,
       availableLanguages: [
-        clientSite.language,
-        ...translatedLanguages.map(({ language }) => language).filter((language) => language !== clientSite.language),
+        ...new Set([
+          clientSite.language,
+          ...sourceLanguages.map(({ language }) => language),
+          ...translatedLanguages.map(({ language }) => language),
+        ]),
       ],
       socials,
       articleCount,

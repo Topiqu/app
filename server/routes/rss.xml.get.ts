@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
     take: 50,
     select: {
       slug: true,
+      language: true,
       title: true,
       excerpt: true,
       publishedAt: true,
@@ -30,7 +31,7 @@ export default defineEventHandler(async (event) => {
   })
 
   const items = articles.map((article) => {
-    const url = `${origin}${articlePath(tenant.language, article.slug)}`
+    const url = `${origin}${articlePath(article.language, article.slug)}`
     return [
       '    <item>',
       `      <title>${xml(article.title)}</title>`,

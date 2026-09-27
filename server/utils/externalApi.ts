@@ -4,6 +4,7 @@ export const externalArticleSelect = {
   id: true,
   title: true,
   slug: true,
+  language: true,
   excerpt: true,
   content: true,
   imageUrl: true,
@@ -62,7 +63,7 @@ export const flattenExternalArticle = <
   const { tags, translations, ...rest } = article
   return {
     ...rest,
-    language: primaryLanguage,
+    language: 'language' in rest ? rest.language : primaryLanguage,
     tags: tags.map(({ tag }) => tag),
     availableTranslations: translations,
   }

@@ -64,7 +64,7 @@ describe('manual article generation stream', () => {
   })
 
   it('uses the selected editor language for the generated article', () => {
-    expect(editor).toContain('language: isNew ? newArticleLanguage.value : primaryLanguage')
+    expect(editor).toContain('language: primaryLanguage.value')
     expect(endpoint).toContain('language: options?.language')
     expect(articleGenerator).toContain('const articleLanguage = requestedLanguage ?? language')
     expect(articleGenerator).toContain('LANGUAGE_NAMES[articleLanguage]')

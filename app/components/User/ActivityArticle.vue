@@ -27,7 +27,10 @@
 <script setup lang="ts">
 import type { Article as _Article } from '~~/generated/zenstack/models'
 
-export type ActivityArticle = Pick<_Article, 'id' | 'slug' | 'title' | 'content' | 'excerpt' | 'imageUrl' | 'views'> & {
+export type ActivityArticle = Pick<
+  _Article,
+  'id' | 'slug' | 'language' | 'title' | 'content' | 'excerpt' | 'imageUrl' | 'views'
+> & {
   authorUsername: string
   authorPfp?: string | null
   tags: string[]

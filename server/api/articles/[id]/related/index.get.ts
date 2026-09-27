@@ -21,10 +21,10 @@ export default defineEventHandler(async (event) => {
   const primaryLanguage = clientSite.language
   const isAdmin = user?.role === 'admin'
 
-  const current = await resolveArticleBySlug<{ id: string; tags: { tagId: string }[] }>(
+  const current = await resolveArticleBySlug<{ id: string; language: Language; tags: { tagId: string }[] }>(
     prisma,
-    { slug, clientSiteId, locale, primaryLanguage, isAdmin },
-    { id: true, tags: { select: { tagId: true } } },
+    { slug, clientSiteId, locale, isAdmin },
+    { id: true, language: true, tags: { select: { tagId: true } } },
   )
 
   if (!current) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })

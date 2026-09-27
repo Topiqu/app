@@ -157,7 +157,9 @@ const {
 }>()
 const localePath = useLocalePath()
 const { locale } = useI18n()
-const articlePath = computed(() => localePath({ name: 'clanky-slug', params: { slug: article.slug } }))
+const articlePath = computed(() =>
+  localePath({ name: 'clanky-slug', params: { slug: article.slug } }, article.language),
+)
 const authorName = computed(() => article.author?.name || article.user?.username || '')
 const authorId = computed(() => article.author?.id || article.user?.id || '')
 const authorAvatar = computed(() => article.author?.avatarUrl || article.user?.avatarUrl || null)

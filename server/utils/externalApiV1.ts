@@ -2,6 +2,7 @@ const externalArticleV1Select = {
   id: true,
   title: true,
   slug: true,
+  language: true,
   excerpt: true,
   content: true,
   imageUrl: true,
@@ -47,7 +48,7 @@ export const serializeExternalArticleV1 = <T extends ExternalArticleV1>(article:
 
   return {
     ...rest,
-    language: primaryLanguage,
+    language: 'language' in rest ? rest.language : primaryLanguage,
     createdAt: createdAt.toISOString(),
     updatedAt: (updatedAt ?? createdAt).toISOString(),
     publishedAt: publishedAt?.toISOString() ?? null,

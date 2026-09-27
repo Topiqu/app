@@ -1,5 +1,5 @@
 import type { ArticleWithDetails } from '~~/types/article'
-import type { ArticleDraft } from '~~/generated/zenstack/models'
+import type { ArticleDraft, Language } from '~~/generated/zenstack/models'
 
 import slugify from 'slugify'
 import equal from 'fast-deep-equal'
@@ -11,7 +11,8 @@ export const useArticleDrafts = async (
     /** Recovery drafts belong to an article that has not been created yet. */
     enabled: boolean
     paused?: Readonly<Ref<boolean>>
-    onDraftLoaded?: () => void
+    language: Readonly<Ref<Language>>
+    onDraftLoaded?: (draft: ArticleDraft) => void
   },
 ) => {
   const { t } = useI18n()
@@ -52,6 +53,7 @@ export const useArticleDrafts = async (
       content: editedArticle.value.content,
       imageUrl: editedArticle.value.imageUrl || null,
       coverMediaId: editedArticle.value.coverMediaId || null,
+      language: options.language.value,
     }
 
     const matchingDraft = drafts.value?.find(
@@ -64,6 +66,7 @@ export const useArticleDrafts = async (
             content: draft.content,
             imageUrl: draft.imageUrl || null,
             coverMediaId: draft.coverMediaId || null,
+            language: draft.language,
           },
           currentData,
         ),
@@ -111,6 +114,7 @@ export const useArticleDrafts = async (
 
   const loadDraft = (draft: ArticleDraft) => {
     draftId.value = draft.id
+    options.onDraftLoaded?.(draft)
     Object.assign(editedArticle.value, {
       title: draft.title,
       excerpt: draft.excerpt || '',
@@ -123,8 +127,6 @@ export const useArticleDrafts = async (
       savedTimeMinutes: 0,
       aiInvolvement: 'NONE',
     })
-
-    options.onDraftLoaded?.()
   }
 
   if (enabled) {
@@ -134,6 +136,7 @@ export const useArticleDrafts = async (
         () => editedArticle.value.excerpt,
         () => editedArticle.value.content,
         () => editedArticle.value.imageUrl,
+        () => options.language.value,
       ],
       saveDraft,
     )
