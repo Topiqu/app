@@ -240,6 +240,8 @@
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ClientSite } from '~~/generated/zenstack/models'
 
+import { languageTag } from '~~/shared/utils/language'
+
 const { t, locale } = useI18n()
 const { invalidateClients } = useCacheInvalidation()
 const requestFetch = useRequestFetch()
@@ -376,8 +378,7 @@ const sortIcon = (field: string) =>
       : 'mdi:arrow-down'
     : 'mdi:unfold-more-horizontal'
 
-const formatCreatedAt = (value: Date | string) =>
-  new Date(value).toLocaleString(locale.value === 'cs' ? 'cs-CZ' : 'en-US')
+const formatCreatedAt = (value: Date | string) => new Date(value).toLocaleString(languageTag(locale.value))
 
 watch([debouncedFilter, debouncedDomain, planFilter, statusFilter, dateFrom, dateTo, sortField, sortOrder], () => {
   page.value = 1

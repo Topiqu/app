@@ -79,10 +79,24 @@ describe('AI model registry', () => {
   })
 
   it('keeps editorial work on GPT-5.6 Luna and routes routine tasks to GPT-6 Luna', () => {
-    for (const task of ['topicSelection', 'articleResearch', 'articleWriter', 'articleEditor', 'linkedinPost', 'factCheck'] as const) {
+    for (const task of [
+      'topicSelection',
+      'articleResearch',
+      'articleWriter',
+      'articleEditor',
+      'linkedinPost',
+      'factCheck',
+    ] as const) {
       expect(aiModelId(task), task).toBe('gpt-5.6-luna')
     }
-    for (const task of ['translation', 'promptEnhance', 'sentiment', 'communityInsight', 'visibility', 'knowledgeSelect'] as const) {
+    for (const task of [
+      'translation',
+      'promptEnhance',
+      'sentiment',
+      'communityInsight',
+      'visibility',
+      'knowledgeSelect',
+    ] as const) {
       expect(aiModelId(task), task).toBe('gpt-6-luna')
     }
   })

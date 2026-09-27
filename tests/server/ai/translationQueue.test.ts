@@ -23,8 +23,9 @@ const makeDb = (
 
 describe('resolveTargetLanguages', () => {
   it('treats an empty config as "every supported language", not "none"', () => {
-    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: [] })).toEqual(['en'])
-    expect(resolveTargetLanguages({ language: 'en', translationLanguages: [] })).toEqual(['cs'])
+    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: [] })).toEqual(['en', 'de', 'fr'])
+    expect(resolveTargetLanguages({ language: 'en', translationLanguages: [] })).toEqual(['cs', 'de', 'fr'])
+    expect(resolveTargetLanguages({ language: 'de', translationLanguages: [] })).toEqual(['en', 'cs', 'fr'])
   })
 
   it('honours an explicit config', () => {
@@ -57,7 +58,13 @@ describe('syncArticleTranslationQueue', () => {
     const db = makeDb({ language: 'cs', translationMode: 'AUTO', translationLanguages: [] })
     await syncArticleTranslationQueue(db as any, 'a1', 'cs1')
     expect(db.articleTranslation.createMany).toHaveBeenCalledWith({
-      data: [{ articleId: 'a1', clientSiteId: 'cs1', language: 'en', status: 'PENDING', source: 'AI' }],
+      data: ['en', 'de', 'fr'].map((language) => ({
+        articleId: 'a1',
+        clientSiteId: 'cs1',
+        language,
+        status: 'PENDING',
+        source: 'AI',
+      })),
       skipDuplicates: true,
     })
   })
@@ -72,7 +79,7 @@ describe('syncArticleTranslationQueue', () => {
     const db = makeDb({ language: 'cs', translationMode: 'HYBRID', translationLanguages: [] }, [{ language: 'en' }])
     await syncArticleTranslationQueue(db as any, 'a1', 'cs1', { contentChanged: true })
     expect(db.articleTranslation.updateMany).toHaveBeenCalledWith({
-      where: { articleId: 'a1', language: { in: ['en'] }, status: { in: ['READY', 'PUBLISHED'] } },
+      where: { articleId: 'a1', language: { in: ['en', 'de', 'fr'] }, status: { in: ['READY', 'PUBLISHED'] } },
       data: { status: 'STALE' },
     })
   })

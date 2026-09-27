@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { isLanguage } from '~~/shared/utils/language'
 
 import { signOAuthState } from '../../utils/linkedin/oauthState'
 import { getLinkedInRedirectUri } from '../../utils/linkedin/redirectUri'
@@ -34,11 +35,12 @@ export default defineEventHandler(async (event) => {
 
   const redirectUri = getLinkedInRedirectUri()
 
+  const localeCookie = getCookie(event, 'i18n_lang')
   const state = signOAuthState({
     nonce: randomUUID(),
     clientSiteId,
     appType: 'personal',
-    locale: getCookie(event, 'i18n_lang') === 'cs' ? 'cs' : 'en',
+    locale: isLanguage(localeCookie) ? localeCookie : 'en',
   })
 
   setOAuthState(event, 'linkedin_oauth_state', state, 300)

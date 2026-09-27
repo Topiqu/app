@@ -77,7 +77,10 @@
         :aria-label="color"
         @click="emit('update:accentColor', color)"
       >
-        <span class="size-5 rounded-full ring-1 ring-black/10 ring-inset dark:ring-white/15" :style="{ backgroundColor: color }" />
+        <span
+          class="size-5 rounded-full ring-1 ring-black/10 ring-inset dark:ring-white/15"
+          :style="{ backgroundColor: color }"
+        />
       </UButton>
     </div>
 

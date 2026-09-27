@@ -1,0 +1,170 @@
+{
+  "legal": {
+    "lastUpdated": "Zuletzt aktualisiert: {date}",
+    "updatedAt": "10. August 2026",
+    "placeholderNote": "Die Postanschrift wird bewusst nicht aufgeführt — stattdessen ist ARES verlinkt; die Anschrift wird auf Anfrage mitgeteilt.",
+    "tos": {
+      "title": "Nutzungsbedingungen",
+      "description": "Bedingungen für die Nutzung der Topiqu-Plattform, Abonnements und KI-generierter Inhalte.",
+      "sections": [
+        {
+          "icon": "mdi:office-building",
+          "iconColor": "text-blue-500",
+          "title": "1. Anbieter und Geltungsbereich",
+          "content": "Der Dienst Topiqu („Dienst“) wird von <strong>Vojtěch Benjamín Tomaník</strong> betrieben, einem im tschechischen Gewerberegister eingetragenen Einzelunternehmer mit der Unternehmensnummer (IČO) <strong>24088765</strong> („wir“, „uns“, „Anbieter“).<br><br>Der eingetragene Geschäftssitz und der Tätigkeitsbereich sind im tschechischen Unternehmensregister ARES öffentlich und stets aktuell abrufbar: <a href='https://ares.gov.cz/ekonomicke-subjekty?ico=24088765' target='_blank' rel='noopener noreferrer' class='text-blue-600 dark:text-blue-400 underline'>ares.gov.cz</a>. Auf Anfrage an die unten genannte E-Mail-Adresse teilen wir dir auch die Postanschrift mit.<br><br>Kontakt: <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a><br><br>Diese Bedingungen regeln den Vertrag zwischen dem Anbieter und dir als Nutzer („du“, „Nutzer“) über die Nutzung des Dienstes, einschließlich der Website, des Editors, der KI-gestützten Inhaltserstellung, der Veröffentlichung auf verbundenen Social-Media-Konten und aller kostenpflichtigen Tarife. Mit der Erstellung eines Kontos erklärst du dich mit diesen Bedingungen und unserer <a href='/de/datenschutz' class='text-blue-600 dark:text-blue-400 underline'>Datenschutzerklärung</a> einverstanden.<br><br>Wenn du den Dienst geschäftlich nutzt (im Rahmen deiner gewerblichen oder beruflichen Tätigkeit), gelten die verbraucherspezifischen Bestimmungen der Abschnitte 5 und 13 nicht für dich."
+        },
+        {
+          "icon": "mdi:account-key",
+          "iconColor": "text-indigo-500",
+          "title": "2. Konto und Registrierung",
+          "content": "Um den Dienst zu nutzen, musst du ein Konto erstellen und eine gültige E-Mail-Adresse angeben. Du musst mindestens 16 Jahre alt sein oder die Zustimmung deiner Erziehungsberechtigten haben.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Du bist dafür verantwortlich, deine Zugangsdaten vertraulich zu behandeln und für alle Aktivitäten unter deinem Konto.</li><li>Du musst richtige Angaben machen und sie aktuell halten.</li><li>Wir empfehlen, die vom Dienst unterstützte Zwei-Faktor-Authentifizierung zu aktivieren.</li><li>Konten sind persönlich. Du darfst im Rahmen deines Tarifs weitere Nutzer in deinen Arbeitsbereich einladen, aber gemeinsame Zugangsdaten sind nicht erlaubt.</li></ul><br>Wenn du einen unbefugten Zugriff vermutest, informiere uns unverzüglich unter <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a>."
+        },
+        {
+          "icon": "mdi:credit-card-outline",
+          "iconColor": "text-emerald-500",
+          "title": "3. Tarife, Preise und Zahlung",
+          "content": "Der Dienst wird kostenlos und in kostenpflichtigen Tarifen (derzeit <strong>PRO</strong> und <strong>PREMIUM</strong>) angeboten, mit monatlicher oder jährlicher Abrechnung. Für kostenpflichtige Tarife können zusätzlich einmalige Artikelpakete gekauft werden. Eine erfolgreiche KI-Generierung verbraucht einen Artikel.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Es gelten die bei der Bestellung angezeigten Preise. Soweit Mehrwertsteuer anfällt, ist sie im angegebenen Preis enthalten.</li><li>Zahlungen werden von <strong>Stripe Payments Europe, Ltd.</strong> verarbeitet. Wir speichern deine vollständigen Kartendaten nicht.</li><li>Abonnements <strong>verlängern sich automatisch</strong> um denselben Zeitraum, bis sie gekündigt werden. Du kannst jederzeit in deinen Kontoeinstellungen kündigen; die Kündigung wird zum Ende des laufenden Abrechnungszeitraums wirksam.</li><li>Im Tarif enthaltene Artikel sind für den jeweiligen monatlichen Zeitraum gültig. Gekaufte Artikel verfallen nicht; nach ihrer Verwendung ist eine Erstattung ausgeschlossen.</li><li>Wenn eine Zahlung fehlschlägt, können wir den Zugang zu kostenpflichtigen Funktionen nach vorheriger Benachrichtigung aussetzen.</li></ul><br>Wir können Preise mit angemessener Vorankündigung an deine registrierte E-Mail-Adresse ändern. Änderungen gelten ab dem nächsten Abrechnungszeitraum. Wenn du nicht einverstanden bist, kannst du vorher kündigen."
+        },
+        {
+          "icon": "mdi:keyboard-return",
+          "iconColor": "text-amber-500",
+          "title": "4. Widerrufsrecht (Verbraucher)",
+          "content": "Wenn du Verbraucher in der EU bist, kannst du innerhalb von <strong>14 Tagen</strong> nach Vertragsschluss ohne Angabe von Gründen vom Vertrag zurücktreten, indem du uns unter <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a> benachrichtigst.<br><br><strong>Wichtig:</strong> Der Dienst besteht aus sofort bereitgestellten digitalen Inhalten. Wenn du beim Checkout das Kästchen ankreuzt, verlangst du ausdrücklich, dass die Leistung während der Widerrufsfrist beginnt, und bestätigst, dass <strong>du dadurch dein Widerrufsrecht verlierst</strong>, sobald der Dienst vollständig erbracht wurde, gemäß § 1837 des tschechischen Bürgerlichen Gesetzbuchs.<br><br>Hat die Leistung bereits begonnen, ist bei deinem Widerruf aber noch nicht abgeschlossen, schuldest du uns einen anteiligen Betrag für die bereits erbrachte Leistung. Erstattungen erfolgen innerhalb von 14 Tagen über dasselbe Zahlungsmittel."
+        },
+        {
+          "icon": "mdi:file-document-edit",
+          "iconColor": "text-purple-500",
+          "title": "5. Deine Inhalte",
+          "content": "Du behältst <strong>sämtliche Eigentumsrechte</strong> an Artikeln, Bildern und anderen Materialien, die du über den Dienst hochlädst oder erstellst („deine Inhalte“). Wir beanspruchen daran keine Eigentumsrechte.<br><br>Du räumst uns eine nicht ausschließliche, weltweite, gebührenfreie Lizenz ein, deine Inhalte zu hosten, zu speichern, zu vervielfältigen, anzupassen und zu übermitteln, <strong>ausschließlich soweit dies für den Betrieb des Dienstes erforderlich ist</strong> — beispielsweise um deine Website darzustellen, Übersetzungen zu erstellen, von dir angeforderte KI-Vorschläge zu erzeugen und auf von dir verbundenen Social-Media-Konten zu veröffentlichen. Diese Lizenz endet, wenn du den Inhalt oder dein Konto löschst; ausgenommen sind Sicherungskopien, die nach dem in unserer Datenschutzerklärung beschriebenen Zeitplan verfallen.<br><br>Du versicherst, dass du über die erforderlichen Rechte an deinen Inhalten verfügst und keine Rechte Dritter verletzt."
+        },
+        {
+          "icon": "mdi:robot-outline",
+          "iconColor": "text-cyan-500",
+          "title": "6. KI-generierte Inhalte",
+          "content": "Der Dienst nutzt große Sprachmodelle von Drittanbietern, um Texte zu erstellen, zu übersetzen, zu verbessern und zu analysieren sowie Bilder vorzuschlagen. Du steuerst diese Generierung; das Ergebnis gilt als dein Inhalt.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>KI-Ergebnisse können falsch sein.</strong> Sie können sachliche Fehler, erfundene Quellenangaben, veraltete Informationen oder Verzerrungen enthalten. Du allein bist dafür verantwortlich, alle Inhalte vor der Veröffentlichung zu prüfen und einem Faktencheck zu unterziehen.</li><li><strong>Keine Gewähr für Originalität oder Exklusivität.</strong> Ähnliche Anweisungen können für andere Nutzer ähnliche Ergebnisse erzeugen. Wir gewährleisten nicht, dass KI-Ergebnisse originell sind, keine Rechte verletzen oder urheberrechtlich geschützt werden können.</li><li><strong>Du bist der Herausgeber.</strong> Die Verantwortung für veröffentlichte Inhalte — einschließlich Verleumdung, Verletzung geistiger Eigentumsrechte und Einhaltung gesetzlicher Vorgaben wie der Kennzeichnung von Werbung — liegt bei dir.</li><li>Auch automatische Veröffentlichungsmodi werden unter deinem Konto und auf deine Anweisung ausgeführt. Wähle den Prüfmodus, mit dem du dich wohlfühlst.</li></ul><br>Die KI-Funktionen dürfen nicht zur Erstellung rechtswidriger Inhalte, als Fakten dargestellter Desinformation oder von Inhalten verwendet werden, die sich als eine echte Person ausgeben."
+        },
+        {
+          "icon": "mdi:share-variant",
+          "iconColor": "text-sky-500",
+          "title": "7. Verbundene Social-Media-Konten",
+          "content": "Du kannst ein persönliches LinkedIn-Profil oder eine Unternehmensseite verbinden, damit der Dienst in deinem Namen veröffentlicht und Interaktionsstatistiken für die von ihm erstellten Beiträge abruft.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Du musst über die erforderlichen Rechte zur Veröffentlichung auf dem verbundenen Konto verfügen. Bei einer Unternehmensseite musst du ein berechtigter Administrator der Seite sein.</li><li>Für deine Nutzung von LinkedIn gelten weiterhin die Bedingungen von LinkedIn. Diese Bedingungen setzen sie nicht außer Kraft.</li><li>Du kannst die Verbindung jederzeit in deinen Einstellungen trennen und unseren Zugriff unabhängig davon in den Einstellungen deines LinkedIn-Kontos widerrufen. Beim Trennen werden die gespeicherten Zugriffstoken gelöscht.</li><li>Für Änderungen, Ausfälle, Nutzungsbegrenzungen oder Kontomaßnahmen der Drittplattform sind wir nicht verantwortlich.</li></ul>"
+        },
+        {
+          "icon": "mdi:cancel",
+          "iconColor": "text-red-500",
+          "title": "8. Zulässige Nutzung",
+          "content": "Du darfst den Dienst nicht verwenden, um:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>rechtswidrige, rechtsverletzende, verleumderische oder irreführende Inhalte zu veröffentlichen;</li><li>diskriminierende, belästigende oder Minderjährige sexuell ausbeutende Inhalte zu veröffentlichen;</li><li>Spam zu versenden oder auf verbundenen Plattformen koordiniertes unauthentisches Verhalten zu betreiben;</li><li>Tarifgrenzen, Nutzungslimits oder die Erfassung der Dienstnutzung zu umgehen;</li><li>den Dienst auszukundschaften, zu scannen oder anzugreifen oder auf Daten anderer Mandanten zuzugreifen;</li><li>den Dienst ohne unsere schriftliche Zustimmung auszulesen oder den Zugang weiterzuverkaufen;</li><li>Schadsoftware hochzuladen oder über den Dienst zu verbreiten.</li></ul><br>Wir können Konten sperren oder kündigen, die gegen diesen Abschnitt verstoßen. Ist der Verstoß nicht schwerwiegend und kann er behoben werden, benachrichtigen wir dich normalerweise zuerst und geben dir Gelegenheit zur Abhilfe."
+        },
+        {
+          "icon": "mdi:server-network",
+          "iconColor": "text-teal-500",
+          "title": "9. Verfügbarkeit und Änderungen",
+          "content": "Wir streben eine hohe Verfügbarkeit an, stellen den Dienst jedoch <strong>ohne garantierte Verfügbarkeitszusage</strong> bereit, sofern wir mit dir keine gesonderte schriftliche Service-Level-Vereinbarung geschlossen haben.<br><br>Wir können Funktionen ändern, hinzufügen oder einstellen. Wenn eine Änderung den Funktionsumfang eines kostenpflichtigen Tarifs wesentlich verringert, informieren wir dich mit angemessenem Vorlauf. Du kannst dann kündigen und erhältst eine anteilige Erstattung für den nicht genutzten vorausbezahlten Zeitraum.<br><br>Geplante Wartungsarbeiten kündigen wir nach Möglichkeit im Voraus an. Ausfälle von Drittanbietern (Zahlungsanbieter, KI-Anbieter, soziale Plattformen) liegen außerhalb unserer Kontrolle."
+        },
+        {
+          "icon": "mdi:scale-balance",
+          "iconColor": "text-orange-500",
+          "title": "10. Haftung",
+          "content": "Diese Bedingungen beschränken keine Haftung, die gesetzlich nicht beschränkt werden darf — insbesondere nicht die Haftung für vorsätzlich oder grob fahrlässig verursachte Schäden oder für Verletzungen natürlicher Rechte einer Person.<br><br>Vorbehaltlich dessen gilt:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Wir haften nicht für mittelbare Schäden oder Folgeschäden, entgangenen Gewinn, entgangene Einnahmen oder einen Verlust an geschäftlichem Ansehen.</li><li>Wir haften nicht für Schäden aus KI-Ergebnissen, die du ohne Prüfung veröffentlicht hast, aus Inhalten, zu deren Veröffentlichung du nicht berechtigt warst, oder aus Maßnahmen einer Drittplattform gegen dich.</li><li>Bei geschäftlichen Nutzern ist unsere Gesamthaftung für einen Zeitraum von jeweils 12 Monaten auf die Gebühren begrenzt, die du uns in diesem Zeitraum gezahlt hast.</li></ul><br>Du bist dafür verantwortlich, eigene Kopien geschäftskritischer Inhalte aufzubewahren. Dafür stehen Exportfunktionen zur Verfügung."
+        },
+        {
+          "icon": "mdi:door-open",
+          "iconColor": "text-rose-500",
+          "title": "11. Laufzeit und Beendigung",
+          "content": "Du kannst den Vertrag jederzeit beenden, indem du dein Abonnement kündigst und dein Konto in den Einstellungen löschst.<br><br>Wir können diesen Vertrag mit angemessener Frist kündigen oder sofort bei einem schwerwiegenden Verstoß gegen Abschnitt 8, bei Nichtzahlung nach einer Mahnung oder wenn das Gesetz dies verlangt.<br><br>Mit der Beendigung erlischt dein Recht zur Nutzung des Dienstes. Exportiere deine Inhalte, bevor du dein Konto löschst — nach der Löschung werden die Daten nach dem in unserer <a href='/de/datenschutz' class='text-blue-600 dark:text-blue-400 underline'>Datenschutzerklärung</a> beschriebenen Zeitplan entfernt und können nicht wiederhergestellt werden. Wenn wir ohne wichtigen Grund kündigen, erstatten wir den ungenutzten vorausbezahlten Zeitraum anteilig."
+        },
+        {
+          "icon": "mdi:gavel",
+          "iconColor": "text-slate-500",
+          "title": "12. Anwendbares Recht und Streitigkeiten",
+          "content": "Für diese Bedingungen gilt das Recht der Tschechischen Republik unter Ausschluss seiner Kollisionsnormen. Verbraucher verlieren durch diese Rechtswahl nicht den Schutz zwingender Vorschriften des Rechts ihres gewöhnlichen Aufenthaltslandes.<br><br>Die Gerichte der Tschechischen Republik sind zuständig. Verbraucher können auch vor den Gerichten ihres Wohnsitzlandes klagen und dürfen nur dort verklagt werden.<br><br><strong>Außergerichtliche Streitbeilegung:</strong> Verbraucher können sich an die tschechische Handelsaufsichtsbehörde (Česká obchodní inspekce), Štěpánská 796/44, 110 00 Prag 1, <a href='https://www.coi.cz' target='_blank' rel='noopener noreferrer' class='text-blue-600 dark:text-blue-400 underline'>www.coi.cz</a>, wenden. Wir sind stets bereit, Beschwerden zunächst direkt zu klären — schreibe an <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a>."
+        },
+        {
+          "icon": "mdi:update",
+          "iconColor": "text-gray-500",
+          "title": "13. Änderungen dieser Bedingungen",
+          "content": "Wir können diese Bedingungen aktualisieren. Über wesentliche Änderungen informieren wir dich per E-Mail und in der Anwendung mit angemessenem Vorlauf, bevor sie wirksam werden.<br><br>Wenn du eine Änderung nicht akzeptierst, kannst du vor ihrem Inkrafttreten kündigen und erhältst eine anteilige Erstattung eines ungenutzten vorausbezahlten Zeitraums. Wenn du den Dienst nach dem Wirksamkeitsdatum weiter nutzt, gilt dies als Zustimmung.<br><br>Sollte eine Bestimmung unwirksam sein, bleiben die übrigen Bestimmungen in Kraft."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "description": "Wie Topiqu personenbezogene Daten erhebt, verwendet, weitergibt und speichert, einschließlich Daten aus verbundenen LinkedIn-Konten.",
+      "sections": [
+        {
+          "icon": "mdi:office-building",
+          "iconColor": "text-indigo-500",
+          "title": "1. Wer wir sind",
+          "content": "Verantwortlicher für deine personenbezogenen Daten ist <strong>Vojtěch Benjamín Tomaník</strong>, ein im tschechischen Gewerberegister eingetragener Einzelunternehmer mit der Unternehmensnummer (IČO) <strong>24088765</strong>, Tschechische Republik. Der eingetragene Geschäftssitz ist im Register ARES öffentlich abrufbar: <a href='https://ares.gov.cz/ekonomicke-subjekty?ico=24088765' target='_blank' rel='noopener noreferrer' class='text-indigo-600 dark:text-indigo-400 underline'>ares.gov.cz</a>. Auf Anfrage teilen wir ihn dir auch direkt mit.<br><br>Kontakt für Datenschutzfragen: <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a><br><br>Wir haben keinen Datenschutzbeauftragten bestellt. Dazu sind wir nicht verpflichtet: Unsere Verarbeitung umfasst keine umfangreiche systematische Überwachung von Personen, und wir verarbeiten besondere Kategorien personenbezogener Daten nicht als Kerntätigkeit. Unter der oben genannten Adresse erreichst du immer einen Menschen.<br><br>Diese Erklärung gilt für die Topiqu-Website, den Einrichtungsprozess und die Topiqu-Anwendung einschließlich aller Mandanten-Websites, die du damit betreibst."
+        },
+        {
+          "icon": "mdi:database-search",
+          "iconColor": "text-sky-500",
+          "title": "2. Welche Daten wir erheben",
+          "content": "Wir erheben nur Daten, die für den Betrieb des Dienstes nötig sind:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Kontodaten</strong> — Benutzername, E-Mail-Adresse, Passwort (ausschließlich als nicht umkehrbarer Hash gespeichert, niemals im Klartext), optionale Biografie und Avatar, Sprach- und Designeinstellungen sowie Benachrichtigungseinstellungen.</li><li><strong>Authentifizierungsdaten</strong> — E-Mail-Bestätigungscodes und, wenn du sie aktivierst, ein geheimer Schlüssel für die Zwei-Faktor-Authentifizierung.</li><li><strong>Sitzungs- und Sicherheitsdaten</strong> — IP-Adresse, User-Agent, Gerät, Betriebssystem, Browser und aus der IP abgeleiteter ungefährer Standort (Stadt, Region, Land). Damit kannst du auf der Seite „Aktive Sitzungen“ unbekannte Anmeldungen erkennen und widerrufen.</li><li><strong>Prüfprotokoll</strong> — sicherheitsrelevante Aktionen mit Zeitstempel, deiner Benutzer-ID und IP-Adresse in einer manipulationssicheren Hash-Kette.</li><li><strong>Inhalte</strong> — Artikel, Entwürfe, Übersetzungen, Kommentare, Reaktionen, Umfragen und hochgeladene Medien.</li><li><strong>Abrechnungsdaten</strong> — Tarif, Abrechnungszeitraum, Transaktionskennungen und Rechnungen. Kartendaten verarbeitet Stripe; sie gelangen nie auf unsere Server.</li><li><strong>Daten verbundener Konten</strong> — siehe Abschnitt 4.</li><li><strong>Daten aus der Ersteinrichtung</strong> — Website-Name, gewünschte Domain, Benutzername und E-Mail-Adresse, die du vor der Kontoerstellung eingibst.</li></ul><br>Wir verkaufen personenbezogene Daten <strong>nicht</strong> und erstellen keine Werbeprofile aus deinen Inhalten."
+        },
+        {
+          "icon": "mdi:scale-balance",
+          "iconColor": "text-emerald-500",
+          "title": "3. Zwecke und Rechtsgrundlagen der Verarbeitung",
+          "content": "Gemäß Artikel 6 Absatz 1 DSGVO:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Vertragserfüllung</strong> (Art. 6 Abs. 1 lit. b) — Erstellung und Betrieb deines Kontos, Hosting und Veröffentlichung deiner Inhalte, von dir angeforderte KI-Generierung, Veröffentlichung auf verbundenen Konten und Abrechnung.</li><li><strong>Berechtigte Interessen</strong> (Art. 6 Abs. 1 lit. f) — Sicherheit und Verfügbarkeit des Dienstes, Verhinderung von Missbrauch und Betrug, Fehlerdiagnose und Verteidigung rechtlicher Ansprüche. Wir haben diese Interessen gegen deine Rechte abgewogen; du kannst jederzeit Widerspruch einlegen (Abschnitt 9).</li><li><strong>Einwilligung</strong> (Art. 6 Abs. 1 lit. a) — Analyse- und Werbe-Cookies sowie Marketing-E-Mails. Du kannst deine Einwilligung jederzeit widerrufen, ohne dass dies die bisherige Verarbeitung berührt.</li><li><strong>Rechtliche Verpflichtung</strong> (Art. 6 Abs. 1 lit. c) — Aufbewahrung von Buchhaltungs- und Steuerunterlagen.</li></ul>"
+        },
+        {
+          "icon": "mdi:linkedin",
+          "iconColor": "text-blue-600",
+          "title": "4. LinkedIn-Integration",
+          "content": "Wenn du ein persönliches LinkedIn-Profil oder eine Unternehmensseite verbindest, verarbeiten wir die folgenden Daten <strong>ausschließlich, um in deinem Namen zu veröffentlichen und dir die Ergebnisse mitzuteilen</strong>:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Deine LinkedIn-Kennung (URN)</strong> — die Mitglieder-URN für ein persönliches Profil oder die Organisations-URN für eine Unternehmensseite. Sie wird für die Veröffentlichungs-API benötigt und ist die einzige Profilkennung, die wir speichern.</li><li><strong>Zugriffs- und Aktualisierungstoken</strong> sowie ihre Ablaufzeiten. Sie werden verschlüsselt gespeichert und nicht im Browser offengelegt.</li><li><strong>Beiträge, die wir für dich veröffentlichen</strong>, und die Gesamtzahlen der Reaktionen und Kommentare darauf. Wir rufen nicht ab und speichern nicht, wer reagiert oder kommentiert hat.</li></ul><br>Wir fordern nur die Berechtigungen an, die für die Veröffentlichung in deinem Namen und das Lesen von Statistiken zu unseren Beiträgen erforderlich sind. LinkedIn zeigt dir vor der Zustimmung den genauen Umfang an.<br><br><strong>Aufbewahrung.</strong> Wir speichern LinkedIn-Daten nur innerhalb der Grenzen der LinkedIn-API-Nutzungsbedingungen. Interaktionsdaten werden auf Gesamtzahlen reduziert und die Rohdaten verworfen. Token und URN bleiben nur gespeichert, solange die Verbindung aktiv ist, da sie die Veröffentlichung ermöglichen.<br><br><strong>Wir lesen niemals</strong> deinen LinkedIn-Posteingang, deine Kontakte oder deinen Feed; wir importieren keine Kontakte und nutzen LinkedIn-Daten weder zum Training von KI-Modellen noch für Werbung.<br><br><strong>So widerrufst du den Zugriff.</strong> Trenne das Konto in den Topiqu-Einstellungen — dadurch werden Token und URN gelöscht. Du kannst unseren Zugriff außerdem jederzeit unabhängig davon in den Datenschutzeinstellungen deines LinkedIn-Kontos widerrufen."
+        },
+        {
+          "icon": "mdi:robot-outline",
+          "iconColor": "text-cyan-500",
+          "title": "5. KI-Verarbeitung",
+          "content": "Wenn du eine Funktion zur Generierung, Übersetzung, Verbesserung oder Analyse verwendest, wird der dafür relevante Text an unseren KI-Anbieter (OpenAI) übermittelt, um das Ergebnis zu erzeugen.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Wir nutzen die API des Anbieters zu Bedingungen, nach denen Ein- und Ausgaben der API <strong>nicht zum Training seiner Modelle verwendet werden</strong>.</li><li>Bitte füge keine personenbezogenen Daten Dritter, Zugangsdaten oder vertrauliche Materialien in KI-Anweisungen ein. Du bestimmst, was übermittelt wird.</li><li>Wir speichern die erzeugten Inhalte in deinem Arbeitsbereich und einen internen technischen Nutzungszähler für den Betrieb und die Kostenkontrolle. Eine gesonderte Kopie der Anweisungen bewahren wir über das für die Darstellung deiner Entwürfe Erforderliche hinaus nicht auf.</li><li>Keine KI-Funktion trifft eine Entscheidung mit rechtlicher Wirkung für dich. Automatische Veröffentlichungsmodi führen deine eigenen konfigurierten Anweisungen aus und können jederzeit auf manuelle Freigabe umgestellt werden.</li><li><strong>Wissensbasis (Beta).</strong> Text, den du zur Wissensbasis hinzufügst — Notizen, extrahierter Text hochgeladener Dokumente und abgerufener Webseiten — wird beim Hinzufügen und bei jeder Änderung an OpenAI gesendet, um einen Suchindex aufzubauen. Relevante Abschnitte werden beim Schreiben eines Artikels erneut übermittelt. Wir speichern nur den extrahierten Text und seinen Index, nicht die hochgeladene Datei. Webseiten werden ungefähr einmal pro Woche erneut abgerufen. Beides wird gespeichert, bis du die Quelle löschst. Alles in der Wissensbasis kann in deinen veröffentlichten Artikeln verwendet werden; füge deshalb keine vertraulichen Materialien oder personenbezogenen Daten hinzu.</li></ul>"
+        },
+        {
+          "icon": "mdi:cookie",
+          "iconColor": "text-amber-500",
+          "title": "6. Cookies und Analysen",
+          "content": "<strong>Technisch notwendige Cookies</strong> sorgen für Sicherheit und den grundlegenden Betrieb der Website und können nicht deaktiviert werden.<br><br><strong>Analyse-Cookies</strong> helfen, die Nutzung der Website auszuwerten. <strong>Marketing-Cookies</strong> werden verwendet, um Werbung anzuzeigen und zu messen, wo Werbung aktiv ist. Analyse- und Marketingdienste werden ohne deine Einwilligung nicht geladen.<br><br>Du kannst deine Auswahl jederzeit über die Schaltfläche <em>Cookie-Einstellungen</em> auf der Website oder in ihrer Fußzeile ändern."
+        },
+        {
+          "icon": "mdi:share-variant",
+          "iconColor": "text-orange-500",
+          "title": "7. An wen wir Daten weitergeben",
+          "content": "Wir verkaufen deine Daten nicht und geben sie nur an die folgenden Auftragsverarbeiter weiter, die jeweils durch eine Vereinbarung zur Auftragsverarbeitung gemäß Artikel 28 DSGVO gebunden sind:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Stripe</strong> — Zahlungsabwicklung und Rechnungsstellung (IE / US)</li><li><strong>OpenAI</strong> — KI-Generierung, Übersetzung und Analyse (US)</li><li><strong>LinkedIn</strong> — Veröffentlichung auf von dir verbundenen Konten (IE / US)</li><li><strong>Amazon Web Services</strong> — Speicherung hochgeladener Medien und Versand transaktionaler E-Mails; Region Frankfurt (EU)</li><li><strong>Cloudflare</strong> — CDN, Bot-Schutz und Netzwerksicherheit (US)</li><li><strong>Sentry</strong> — Fehlerüberwachung und Diagnose (US)</li><li><strong>Google</strong> — Analysen und Werbung, <em>nur mit deiner Einwilligung</em> (US)</li></ul><br>Wir können Daten außerdem offenlegen, wenn das Gesetz dies verlangt oder wenn dies zur Geltendmachung oder Verteidigung rechtlicher Ansprüche nötig ist. Bei behördlichen Anfragen geben wir nur die gesetzlich erforderlichen Daten heraus und informieren dich, soweit dies zulässig ist.<br><br><strong>Übermittlungen außerhalb des EWR.</strong> Einige Auftragsverarbeiter haben ihren Sitz in den Vereinigten Staaten. Diese Übermittlungen stützen sich auf die Standardvertragsklauseln der EU und gegebenenfalls auf den Datenschutzrahmen EU–USA."
+        },
+        {
+          "icon": "mdi:timer-sand",
+          "iconColor": "text-violet-500",
+          "title": "8. Speicherdauer",
+          "content": "Wir speichern Daten nur so lange, wie es für den Zweck ihrer Erhebung erforderlich ist. Dabei gelten folgende Kriterien:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Konto und Inhalte</strong> — während der Lebensdauer des Kontos; nach seiner Löschung werden sie unverzüglich entfernt.</li><li><strong>Sicherungskopien</strong> — werden fortlaufend erstellt und überschrieben, sodass gelöschte Inhalte mit der nächsten Rotation verschwinden.</li><li><strong>Sitzungs- und Sicherheitsdaten</strong> — so lange, wie dies zum Schutz der Konten und zur Untersuchung von Missbrauch nötig ist.</li><li><strong>Daten verbundener Konten</strong> — nur solange die Verbindung aktiv ist; bei Trennung werden sie entfernt.</li><li><strong>Bestätigungscodes</strong> — werden nach ihrer Verwendung oder ihrem Ablauf gelöscht.</li><li><strong>Buchhaltungs- und Steuerunterlagen</strong> — für die gesetzlich vorgeschriebene Dauer.</li><li><strong>Analysedaten</strong> — für den im jeweiligen Dienst eingestellten Zeitraum und nur mit deiner Einwilligung.</li></ul>"
+        },
+        {
+          "icon": "mdi:account-check",
+          "iconColor": "text-green-500",
+          "title": "9. Deine Rechte",
+          "content": "Nach der DSGVO hast du das Recht auf:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Auskunft</strong> — eine Kopie der Daten zu erhalten, die wir über dich gespeichert haben (Art. 15)</li><li><strong>Berichtigung</strong> — unrichtige Daten zu korrigieren (Art. 16)</li><li><strong>Löschung</strong> — deine Daten löschen zu lassen (Art. 17)</li><li><strong>Einschränkung</strong> — die Verarbeitung deiner Daten zu begrenzen (Art. 18)</li><li><strong>Datenübertragbarkeit</strong> — deine Daten in einem maschinenlesbaren Format zu erhalten oder an einen anderen Anbieter übermitteln zu lassen (Art. 20)</li><li><strong>Widerspruch</strong> — einer Verarbeitung auf Grundlage berechtigter Interessen zu widersprechen (Art. 21)</li><li><strong>Widerruf der Einwilligung</strong> — jederzeit, ohne Einfluss auf die bisherige Verarbeitung (Art. 7 Abs. 3)</li></ul><br>Die meisten Rechte kannst du selbst ausüben: Auf deiner Profilseite kannst du deine Daten bearbeiten oder exportieren und dein Konto löschen. Andernfalls schreibe an <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a>. Wir antworten innerhalb eines Monats; die Anfrage ist kostenlos, sofern sie nicht offensichtlich unbegründet oder exzessiv ist.<br><br><strong>Beschwerderecht.</strong> Du kannst dich bei der tschechischen Datenschutzbehörde — Úřad pro ochranu osobních údajů, Pplk. Sochora 27, 170 00 Prag 7, <a href='https://www.uoou.cz' target='_blank' rel='noopener noreferrer' class='text-indigo-600 dark:text-indigo-400 underline'>www.uoou.cz</a> — oder bei der Aufsichtsbehörde deines Wohnsitzlandes beschweren."
+        },
+        {
+          "icon": "mdi:lock",
+          "iconColor": "text-emerald-500",
+          "title": "10. Sicherheit",
+          "content": "Wir setzen technische und organisatorische Maßnahmen ein, die der Verarbeitung angemessen sind — Verschlüsselung bei der Übertragung und im Ruhezustand für sensible Daten, Speicherung von Passwörtern ausschließlich als nicht umkehrbarer Hash, optionale Zwei-Faktor-Authentifizierung, Trennung der Daten jedes Kunden und Zugriffskontrollen.<br><br>Kein System ist vollkommen sicher. Tritt eine Verletzung des Datenschutzes auf, die voraussichtlich ein hohes Risiko für deine Rechte mit sich bringt, informieren wir dich unverzüglich."
+        },
+        {
+          "icon": "mdi:account-child",
+          "iconColor": "text-pink-500",
+          "title": "11. Kinder",
+          "content": "Der Dienst richtet sich nicht an Kinder unter 16 Jahren, und wir erheben ihre personenbezogenen Daten nicht wissentlich. Wenn du glaubst, dass ein Kind uns Daten übermittelt hat, kontaktiere <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a>; wir werden sie löschen."
+        },
+        {
+          "icon": "mdi:update",
+          "iconColor": "text-gray-500",
+          "title": "12. Änderungen dieser Erklärung",
+          "content": "Wir können diese Erklärung aktualisieren. Die aktuelle Fassung ist stets unter dieser Adresse abrufbar; das Datum der letzten Änderung steht oben.<br><br>Über wesentliche Änderungen — einen neuen Zweck, eine neue Datenkategorie oder einen neuen Auftragsverarbeiter in einem Drittland — informieren wir dich mit angemessenem Vorlauf per E-Mail oder in der Anwendung. Wenn die Änderung eine Einwilligung erfordert, holen wir sie ein, bevor die Änderung wirksam wird.<br><br>Fragen: <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a>"
+        }
+      ],
+      "updatedAt": "26. September 2026"
+    }
+  }
+}

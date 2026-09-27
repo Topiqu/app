@@ -1,4 +1,5 @@
 import { verifyOAuthState } from '../../utils/linkedin/oauthState'
+import type { Language } from '~~/shared/utils/language'
 import { getAccessToken, getPersonalUrn, getPagesUrn } from '../../utils/linkedin/api'
 
 export default defineEventHandler(async (event) => {
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
   // This handler runs on APP_URL's host, settings live on the tenant's own domain, and `strategy: 'prefix'`
   // leaves no unprefixed route — so a relative `/settings` redirect lands on a 404 of the wrong site.
-  const settingsUrl = async (clientSiteId: string | undefined, outcome: string, locale: 'cs' | 'en' = 'en') => {
+  const settingsUrl = async (clientSiteId: string | undefined, outcome: string, locale: Language = 'en') => {
     const site = clientSiteId
       ? await db.clientSite.findUnique({ where: { id: clientSiteId }, select: { domain: true } })
       : null

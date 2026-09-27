@@ -6,7 +6,12 @@ const cnbRates = defineCachedFunction(
   { name: 'cnb-rates', maxAge: 60 * 60 * 6, swr: true },
 )
 
-const querySchema = z.object({ target: z.string().regex(/^[A-Za-z]{3}$/).default('USD') })
+const querySchema = z.object({
+  target: z
+    .string()
+    .regex(/^[A-Za-z]{3}$/)
+    .default('USD'),
+})
 
 export default defineEventHandler(async (event) => {
   const { target } = await getValidatedQuery(event, querySchema.parse)

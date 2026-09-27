@@ -45,7 +45,10 @@
       <h2 data-branding-section="visual-style" class="text-lg font-semibold text-highlighted">
         {{ $t('common.preferences.branding.visualStyle') }}
       </h2>
-      <section class="min-w-0 space-y-5 rounded-(--topiqu-surface-radius) border border-default p-4 sm:p-5" aria-labelledby="brand-color-heading">
+      <section
+        class="min-w-0 space-y-5 rounded-(--topiqu-surface-radius) border border-default p-4 sm:p-5"
+        aria-labelledby="brand-color-heading"
+      >
         <h3 id="brand-color-heading" class="text-base font-semibold text-highlighted">
           {{ $t('common.preferences.branding.brandColor') }}
         </h3>
@@ -62,7 +65,10 @@
         />
       </section>
 
-      <section class="min-w-0 space-y-5 rounded-(--topiqu-surface-radius) border border-default p-4 sm:p-5" aria-labelledby="brand-typography-heading">
+      <section
+        class="min-w-0 space-y-5 rounded-(--topiqu-surface-radius) border border-default p-4 sm:p-5"
+        aria-labelledby="brand-typography-heading"
+      >
         <h3 id="brand-typography-heading" class="text-base font-semibold text-highlighted">
           {{ $t('common.preferences.branding.typography') }}
         </h3>

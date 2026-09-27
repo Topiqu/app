@@ -1,4 +1,5 @@
 import { CommentCreateSchema } from '~~/shared/databaseSchemas'
+import { articlePath } from '~~/shared/utils/routes'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       slug: true,
       title: true,
-      clientSite: { select: { domain: true } },
+      clientSite: { select: { domain: true, language: true } },
     },
   })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
@@ -39,8 +40,9 @@ export default defineEventHandler(async (event) => {
   const protocol = import.meta.dev ? 'http' : 'https'
   const host = import.meta.dev ? 'localhost:3000' : `${article.clientSite.domain}`
 
-  const commentUrl = (id: string) => `${protocol}://${host}/clanky/${article.slug}#comment-${id}`
-  const replyUrl = `${protocol}://${host}/clanky/${article.slug}/reply`
+  const articleUrl = `${protocol}://${host}${articlePath(article.clientSite.language, article.slug)}`
+  const commentUrl = (id: string) => `${articleUrl}#comment-${id}`
+  const replyUrl = articleUrl
   const logoUrl = 'https://cdn.topiqu.com/app-logo.png'
 
   let content = body.content
@@ -48,7 +50,10 @@ export default defineEventHandler(async (event) => {
   if (body.parentId) {
     const parent = await prisma.comment.findUnique({
       where: { id: body.parentId },
-      select: { user: { select: { id: true, language: true, username: true, email: true, allowEmail: true } }, content: true },
+      select: {
+        user: { select: { id: true, language: true, username: true, email: true, allowEmail: true } },
+        content: true,
+      },
     })
     if (!parent) throw createError({ statusCode: 404, message: t('common.errors.missing')! })
     content = `@${parent.user.username} ${content}`
@@ -57,6 +62,7 @@ export default defineEventHandler(async (event) => {
       await sendEmail({
         event,
         to: parent.user.email,
+        lang: parent.user.language,
         template: 'commentReply',
         data: {
           userName: user.name,

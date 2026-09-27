@@ -7,6 +7,6 @@ export default defineEventHandler(async (event) => {
     where: { tokenHash: invitationTokenHash(decodeURIComponent(match[1])) },
     select: { clientSite: { select: { language: true } } },
   })
-  const locale = invitation?.clientSite.language === 'cs' ? 'cs' : 'en'
+  const locale = invitation?.clientSite.language ?? 'en'
   return sendRedirect(event, `/${locale}${url.pathname}${url.search}`, 302)
 })

@@ -112,7 +112,12 @@
                         target="_blank"
                         class="inline-flex items-center gap-1.5 text-sm text-highlighted hover:underline"
                       >
-                        <UIcon name="mdi:book-open-page-variant-outline" size="14" class="text-muted" aria-hidden="true" />
+                        <UIcon
+                          name="mdi:book-open-page-variant-outline"
+                          size="14"
+                          class="text-muted"
+                          aria-hidden="true"
+                        />
                         {{ source.title }}
                       </NuxtLink>
                     </li>
@@ -692,7 +697,12 @@ const resultMetrics = computed(() => {
     { label: t('articles.editor.ai.result.words'), value: result.wordCount.toLocaleString() },
     { label: t('articles.editor.ai.result.sources'), value: result.sourceCount.toLocaleString() },
     ...(props.aiResearch?.knowledgeSourceCount
-      ? [{ label: t('articles.editor.ai.result.knowledge'), value: props.aiResearch.knowledgeSourceCount.toLocaleString() }]
+      ? [
+          {
+            label: t('articles.editor.ai.result.knowledge'),
+            value: props.aiResearch.knowledgeSourceCount.toLocaleString(),
+          },
+        ]
       : []),
     { label: t('articles.editor.ai.result.media'), value: `${result.mediaFound}/${result.mediaTotal}` },
     { label: t('articles.editor.ai.result.time'), value: `${result.durationSeconds} s` },

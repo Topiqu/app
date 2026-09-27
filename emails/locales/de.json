@@ -1,0 +1,62 @@
+{
+  "newComment": {
+    "subject": "Neuer Kommentar zu deinem Artikel",
+    "greeting": "Hallo,",
+    "intro": "<b>{userName}</b> hat deinen Artikel „<i>{articleTitle}</i>“ kommentiert: „<i>{commentContent}</i>“",
+    "button": "Kommentar ansehen",
+    "unsubscribe": { "text": "Du möchtest keine Benachrichtigungen mehr erhalten?", "link": "Abmelden" }
+  },
+  "commentReply": {
+    "subject": "Neue Antwort auf deinen Kommentar",
+    "greeting": "Hallo <b>{parentUsername}</b>,",
+    "intro": "<b>{userName}</b> hat geantwortet: „<i>{commentContent}</i>“",
+    "parent": "Dein Kommentar: „<i>{parentContent}</i>“",
+    "button": "Antwort ansehen",
+    "unsubscribe": { "text": "Du möchtest keine Benachrichtigungen mehr erhalten?", "link": "Abmelden" }
+  },
+  "deleteComment": {
+    "subject": "Dein Kommentar wurde entfernt",
+    "greeting": "Hallo {userName},",
+    "intro": "Dein Kommentar „<i>{commentContent}</i>“ wurde entfernt.",
+    "reason": "Grund: {deleteReason}",
+    "unsubscribe": { "text": "Du möchtest keine Benachrichtigungen mehr erhalten?", "link": "Abmelden" }
+  },
+  "verificationCode": {
+    "subject": "Bestätigungscode für {userName}",
+    "greeting": "Hallo {userName},",
+    "intro": "Um {actionType} abzuschließen, verwende bitte diesen Bestätigungscode:",
+    "expiration": "Dieser Code ist 24 Stunden gültig. Falls du ihn nicht angefordert hast, kannst du diese E-Mail ignorieren.",
+    "actions": { "signup": "die Kontoerstellung", "emailVerification": "die Bestätigung deiner E-Mail-Adresse" }
+  },
+  "tenantInvitation": {
+    "subject": "Einladung zu {tenantName}",
+    "greeting": "Du wurdest eingeladen",
+    "intro": "{inviterName} hat dich eingeladen, <b>{tenantName}</b> beizutreten.",
+    "followers": "Follower",
+    "website": "Website",
+    "community": "Werde Teil des Teams hinter dieser Publikation und gestalte mit, was ihre Leser lesen.",
+    "access": "Gewährte Berechtigungen: {scopeCount}. Du kannst sie vor der Annahme prüfen.",
+    "button": "Einladung ansehen",
+    "expiration": "Diese Einladung läuft in {expirationDays} Tagen ab."
+  },
+  "tenantMemberRemoved": {
+    "subject": "Dein Zugriff auf {tenantName} wurde entfernt",
+    "greeting": "Zugriff auf {tenantName} entfernt",
+    "intro": "Du hast keinen Zugriff mehr auf diese Publikation und ihre Verwaltung.",
+    "removedByLabel": "Entfernt von",
+    "removedAtLabel": "Datum und Uhrzeit",
+    "removedBy": "Entfernt von: {removedBy}",
+    "removedAt": "Entfernt am: {removedAt}",
+    "otherTenants": "Dein Topiqu-Konto und dein Zugriff auf andere Publikationen sind davon nicht betroffen.",
+    "contact": "Falls du glaubst, dass dies ein Fehler ist, kontaktiere den Inhaber der Publikation unter {ownerEmail}. Für einen erneuten Zugriff ist eine neue Einladung erforderlich."
+  },
+  "userBan": {
+    "subject": "Dein Konto wurde gesperrt",
+    "greeting": "Hallo {userName},",
+    "intro_with_reason_permanent": "Dein Konto wurde auf der Subdomain <b>{clientSiteId}</b> aus folgendem Grund gesperrt: {reason}. Die Sperre ist dauerhaft.",
+    "intro_with_reason_temporary": "Dein Konto wurde auf der Subdomain <b>{clientSiteId}</b> aus folgendem Grund gesperrt: {reason}. Die Sperre gilt bis {banDuration}.",
+    "intro_no_reason": "Dein Konto wurde auf der Subdomain <b>{clientSiteId}</b> gesperrt.",
+    "reason": "{reason}",
+    "unsubscribe": { "text": "Du möchtest keine Benachrichtigungen mehr erhalten?", "link": "Abmelden" }
+  }
+}

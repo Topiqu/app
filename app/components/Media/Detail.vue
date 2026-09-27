@@ -233,7 +233,10 @@ const scheduleDelete = async () => {
     open.value = false
     emit('removed')
   } catch (cause: any) {
-    toast.add({ color: 'error', title: cause?.data?.data?.code === 'MEDIA_IN_USE' ? t('media.inUseError') : cause?.data?.message })
+    toast.add({
+      color: 'error',
+      title: cause?.data?.data?.code === 'MEDIA_IN_USE' ? t('media.inUseError') : cause?.data?.message,
+    })
   }
 }
 </script>

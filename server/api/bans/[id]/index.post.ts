@@ -1,3 +1,5 @@
+import { isLanguage, languageTag } from '~~/shared/utils/language'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -71,14 +73,13 @@ export default defineEventHandler(async (event) => {
   }
 
   if (comment.user.email && comment.user.allowEmail) {
-    const lang = (getCookie(event, 'i18n_lang') || 'en') as 'cs' | 'en'
+    const cookie = getCookie(event, 'i18n_lang')
+    const lang = isLanguage(cookie) ? cookie : 'en'
     const banDuration = expiresAt
-      ? new Date(expiresAt).toLocaleString(lang === 'cs' ? 'cs-CZ' : 'en-US')
-      : lang === 'cs'
-        ? 'trvale'
-        : 'permanently'
+      ? new Date(expiresAt).toLocaleString(languageTag(lang))
+      : { cs: 'trvale', en: 'permanently', de: 'dauerhaft', fr: 'définitivement' }[lang]
     const introKey = reason
-      ? banDuration === (lang === 'cs' ? 'trvale' : 'permanently')
+      ? !expiresAt
         ? 'intro_with_reason_permanent'
         : 'intro_with_reason_temporary'
       : 'intro_no_reason'

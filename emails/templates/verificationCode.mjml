@@ -85,7 +85,6 @@
           <mj-text css-class="meta" padding="0">{t:verificationCode.expiration}</mj-text>
         </mj-column>
       </mj-section>
-
     </mj-wrapper>
   </mj-body>
 </mjml>

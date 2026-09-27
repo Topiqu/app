@@ -1,6 +1,8 @@
 import type { Language, TranslationMode } from '~~/generated/zenstack/models'
 
-const ALL_LANGUAGES: Language[] = ['cs', 'en']
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+
+const ALL_LANGUAGES: readonly Language[] = LANGUAGE_OPTIONS
 
 export const resolveTargetLanguages = (clientSite: {
   language: Language

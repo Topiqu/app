@@ -1,0 +1,103 @@
+{
+  "visibility": {
+    "title": "Visibilité dans l’IA",
+    "description": "Découvrez si les recherches par IA vous citent et vous apportent des lecteurs.",
+    "about": "Comment nous mesurons ces données",
+    "methodology": "Les visites des robots IA et les lecteurs provenant de services d’IA constituent un trafic réel vers votre site. Les applications sans référent ne peuvent pas être comptabilisées : ces chiffres sont donc un minimum. Les citations sont mesurées sur un échantillon récurrent de vos questions suivies, pas sur toutes les conversations privées avec une IA.",
+    "window": "{days} derniers jours",
+    "metrics": {
+      "coverage": "Cité dans les réponses IA",
+      "coverageNote": "{owned} réponses sur {total}",
+      "referrals": "Visites provenant de l’IA",
+      "referralsNote": "Articles : {count}",
+      "fetches": "Visites de robots IA",
+      "fetchesNote": "Pages : {count}"
+    },
+    "emptyValue": "Pas encore mesuré",
+    "onboarding": {
+      "title": "Découvrez si l’IA vous cite",
+      "description": "Ajoutez les questions que vos lecteurs posent à ChatGPT, Gemini ou Claude. Nous les vérifions régulièrement et indiquons si les réponses renvoient vers votre publication.",
+      "note": "Les visites de robots IA et les lecteurs provenant de l’IA apparaîtront ici automatiquement dès leur enregistrement."
+    },
+    "upgrade": {
+      "description": "Les vérifications de citations sont incluses dans les offres Premium et Custom.",
+      "cta": "Voir les offres"
+    },
+    "prompts": {
+      "title": "Questions suivies",
+      "description": "Chaque semaine, nous interrogeons les moteurs de recherche IA et enregistrons leurs réponses et leurs sources.",
+      "questionLabel": "Question pour la recherche IA",
+      "languageLabel": "Langue",
+      "add": "Ajouter une question",
+      "suggest": "Suggérer des questions",
+      "placeholder": "À quelle question la recherche IA doit-elle répondre ?",
+      "run": "Vérifier maintenant",
+      "pause": "Suspendre le suivi",
+      "resume": "Reprendre le suivi",
+      "paused": "En pause",
+      "remove": "Supprimer",
+      "actions": "Autres actions",
+      "created": "Question ajoutée.",
+      "suggested": "{count} questions ajoutées."
+    },
+    "outcome": {
+      "UNCHECKED": "Pas encore vérifié",
+      "RUNNING": "Vérification en cours",
+      "FAILED": "Échec de la vérification",
+      "CITED": "Cité par {cited} moteurs IA sur {checked}",
+      "NOT_CITED": "Cité par aucun des {checked} moteurs IA"
+    },
+    "runs": {
+      "CITED": "Cité",
+      "NOT_CITED": "Non cité",
+      "RUNNING": "En cours",
+      "FAILED": "Échec",
+      "citations": "Sources citées",
+      "response": "Réponse"
+    },
+    "opportunities": {
+      "title": "Là où l’IA vous ignore",
+      "description": "Questions pour lesquelles l’IA cite d’autres sites au lieu du vôtre.",
+      "update": "Améliorer l’article",
+      "create": "Créer un article",
+      "dismiss": "Ignorer",
+      "evidence": "Votre site : {owned}/{samples} · autres sources : {external}/{samples}",
+      "domains": "Sources citées : {domains}"
+    },
+    "traffic": {
+      "title": "Trafic provenant de l’IA",
+      "referrals": "Lecteurs provenant de l’IA",
+      "crawlers": "Robots IA",
+      "empty": "Aucune visite provenant de l’IA n’a encore été enregistrée.",
+      "none": "Aucune pour le moment"
+    },
+    "crawlers": {
+      "kinds": {
+        "ANSWER_ENGINE": "Recherche IA",
+        "TRAINING": "Entraînement",
+        "SEARCH": "Moteur de recherche"
+      }
+    },
+    "channels": {
+      "CHATGPT": "ChatGPT",
+      "PERPLEXITY": "Perplexity",
+      "GEMINI": "Gemini",
+      "COPILOT": "Copilot",
+      "CLAUDE": "Claude",
+      "OTHER_AI": "Autre IA"
+    },
+    "providers": {
+      "OPENAI": "OpenAI",
+      "ANTHROPIC": "Anthropic",
+      "GOOGLE": "Google Gemini",
+      "XAI": "xAI Grok",
+      "META": "Meta",
+      "MISTRAL": "Mistral"
+    },
+    "messages": {
+      "runStarted": "Vérification des citations terminée.",
+      "saved": "Modifications enregistrées.",
+      "failed": "Impossible de mettre à jour la visibilité dans l’IA."
+    }
+  }
+}

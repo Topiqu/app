@@ -1,0 +1,23 @@
+{
+  "series": {
+    "label": "Série",
+    "placeholder": "Sélectionner ou créer une série...",
+    "part": "Partie {count}",
+    "createTitle": "Créer une série",
+    "nameLabel": "Nom de la série",
+    "namePlaceholder": "Par ex. Introduction à Vue 3...",
+    "createNew": "Créer une série...",
+    "createFailed": "Impossible de créer la série",
+    "editTitle": "Modifier la série",
+    "removeArticle": "Retirer l’article de la série",
+    "deleteTitle": "Supprimer cette série ?",
+    "deleteDescription": "Les articles seront conservés et simplement retirés de la série.",
+    "continueReading": "Poursuivre la série",
+    "previous": "Précédent",
+    "next": "Partie suivante",
+    "nextPart": "Partie suivante",
+    "current": "Lecture en cours",
+    "showList": "Afficher toute la série",
+    "hideList": "Masquer la liste des séries"
+  }
+}

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 
 import { createDatabaseClient } from '../server/utils/database'
 import { extractArticleMedia } from '../shared/utils/mediaRights'
+import type { Language } from '../shared/utils/language'
 
 const APPLY = process.env.APPLY === '1'
 const prisma = createDatabaseClient()
@@ -119,7 +120,7 @@ const main = async () => {
 
     const indexArticle = async (
       articleId: string,
-      language: 'cs' | 'en',
+      language: Language,
       input: { imageUrl?: string | null; coverMediaId?: string | null; content?: string | null },
       articleTranslationId?: string,
     ) => {

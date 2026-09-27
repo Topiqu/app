@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+import { authPath } from '~~/shared/utils/routes'
 import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
@@ -15,7 +17,7 @@ const schema = z.object({
   domain: z.string().min(1).max(253),
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
   theme: z.string().optional(),
-  language: z.enum(['cs', 'en']),
+  language: z.enum(LANGUAGE_OPTIONS),
   username: z.string().min(3).max(50),
   email: z.email(),
   password: z.string().min(8).max(124),
@@ -147,7 +149,7 @@ export default defineEventHandler(async (event) => {
 
   const reqUrl = getRequestURL(event)
   const originUrl = process.env.APP_URL || `${reqUrl.protocol}//${fullSubdomain}`
-  const dashboardUrl = `${originUrl}/${body.language}/autorizace?created=true&token=${loginToken}`
+  const dashboardUrl = `${originUrl}${authPath(body.language)}?created=true&token=${loginToken}`
 
   if (!body.selectedPlan) {
     return { url: dashboardUrl }
@@ -184,7 +186,7 @@ export default defineEventHandler(async (event) => {
         metadata: { plan: body.selectedPlan, clientSiteId },
       },
       metadata: { plan: body.selectedPlan, clientSiteId },
-      success_url: `${originUrl}/${body.language}/autorizace?created=true&token=${loginToken}&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${dashboardUrl}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: dashboardUrl,
     })
 

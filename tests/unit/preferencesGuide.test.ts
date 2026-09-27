@@ -32,7 +32,7 @@ enableAutoUnmount(afterEach)
 
 describe('content preferences guide', () => {
   // The component builds these paths at runtime, so the static sweep in i18nCompleteness cannot see them.
-  it.each(['cs', 'en'])('resolves every dynamically built message key in %s', (locale) => {
+  it.each(['cs', 'en', 'de', 'fr'])('resolves every dynamically built message key in %s', (locale) => {
     const { guide, ...fields } = preferences(locale)
 
     expect(Object.keys(guide.flow)).toEqual(['brief', 'topic', 'article', 'publish'])

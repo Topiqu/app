@@ -44,7 +44,12 @@
     <template #footer>
       <div class="flex w-full justify-end gap-2">
         <UButton color="neutral" variant="ghost" @click="open = false">{{ $t('knowledge.cancel') }}</UButton>
-        <UButton type="submit" form="knowledge-edit" :loading="saving" :disabled="loading || (textChanged && !confirmed)">
+        <UButton
+          type="submit"
+          form="knowledge-edit"
+          :loading="saving"
+          :disabled="loading || (textChanged && !confirmed)"
+        >
           {{ $t('knowledge.save') }}
         </UButton>
       </div>

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { randomBytes } from 'node:crypto'
-import { ThemeSchema } from '~~/shared/siteSchemas'
+import { LanguageSchema, ThemeSchema } from '~~/shared/siteSchemas'
+import type { Language } from '~~/shared/utils/language'
 import {
   domainVerificationDefaults,
   isManagedDomain,
@@ -17,7 +18,7 @@ const schema = z.object({
   domain: z.string().trim().toLowerCase().optional(),
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
   selectedPlan: z.enum(['BASIC', 'PRO', 'PREMIUM']).default('BASIC'),
-  language: z.enum(['cs', 'en']),
+  language: LanguageSchema,
   theme: z.enum(ThemeSchema.options).default('indigo'),
 })
 
@@ -88,7 +89,7 @@ export default defineEventHandler(async (event) => {
   if (nameConflict)
     throw createError({ statusCode: 409, message: 'Blog name already exists', data: { code: 'NAME_TAKEN' } })
 
-  let site: { id: string; name: string; domain: string; language: 'cs' | 'en' }
+  let site: { id: string; name: string; domain: string; language: Language }
   try {
     site = await prisma.$transaction(async (tx) => {
       const created = await tx.clientSite.create({

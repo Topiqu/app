@@ -1,0 +1,35 @@
+{
+  "admin": {
+    "title": "Übersicht",
+    "trial": {
+      "continueFreeSuccess": "Ihr Tarif wurde auf Kostenlos umgestellt."
+    },
+    "upgrade": {
+      "cta": "Auf {plan} upgraden",
+      "loading": "Kasse wird geöffnet…",
+      "error": "Die Kasse konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.",
+      "toPro": {
+        "title": "Mit dem PRO-Tarif Ihren Blog ausbauen",
+        "description": "KI-Generierung, geplante Veröffentlichungen, erweitertes SEO und eine eigene Domain.",
+        "features": [
+          "20 KI-Artikel pro Monat mit optionalen Zusatzpaketen",
+          "Erweiterte SEO-Optimierung",
+          "Import vorhandener Artikel",
+          "Eigene Domain"
+        ]
+      },
+      "toPremium": {
+        "title": "Maximale Leistung mit dem PREMIUM-Tarif",
+        "description": "Alles aus PRO plus Stimmungsanalyse, Search Console und bevorzugte Indexierung.",
+        "features": [
+          "30 KI-Artikel pro Monat mit optionalen Zusatzpaketen",
+          "KI-Stimmungsanalyse und automatische Bilder",
+          "Bevorzugte Indexierung und Quellensuche",
+          "Eigene Emojis und Branding",
+          "Bevorzugter Support rund um die Uhr",
+          "Search-Console-Analysen"
+        ]
+      }
+    }
+  }
+}

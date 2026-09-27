@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit'
 import { join } from 'node:path'
+import { languageTag } from '~~/shared/utils/language'
 
 const PAGE = { width: 595.28, height: 841.89, left: 48, right: 48, top: 44, bottom: 56 }
 const CONTENT_WIDTH = PAGE.width - PAGE.left - PAGE.right
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
   if (!userDb?.username || !userDb.email || !userDb.id)
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   ;({ translate: t } = await useServerI18n(event, { locale: userDb.language || 'en' }))
-  const locale = userDb.language === 'cs' ? 'cs-CZ' : 'en-US'
+  const locale = languageTag(userDb.language)
   const bans = await db.userBan.findMany({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } })
   const date = (value: Date) => new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(value)
   const dateTime = (value: Date) =>

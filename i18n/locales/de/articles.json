@@ -1,0 +1,862 @@
+{
+  "articles": {
+    "comments": {
+      "unit": "keine Kommentare | {count} Kommentar | {count} Kommentare",
+      "addGif": "GIF hinzufügen",
+      "clearGifCategory": "GIF-Kategorie zurücksetzen",
+      "gifCategories": "Kategorien",
+      "gifResults": "GIF-Ergebnisse",
+      "trendingGifs": "Beliebte GIFs",
+      "title": "Kommentare",
+      "yourComment": "Dein Kommentar",
+      "commentPlaceholder": "Schreibe deinen Kommentar...",
+      "characterLimitReached": "Zeichenlimit erreicht!",
+      "replyingTo": "Antwort an: {0}",
+      "submitReply": "Antwort senden",
+      "reply": "Antworten",
+      "addComment": "Kommentar hinzufügen",
+      "commentsDisabled": "Kommentare sind für diesen Artikel nicht erlaubt",
+      "errorLoadingComments": "Kommentare konnten nicht geladen werden: {0}",
+      "commentAdded": "Kommentar hinzugefügt",
+      "replySubmitted": "Antwort gesendet",
+      "reactionFailed": "Reaktion konnte nicht hinzugefügt werden",
+      "reportComment": "Kommentar melden",
+      "deleteComment": "Löschen",
+      "deleteCommentAdmin": "Löschen (Admin)",
+      "deletedComment": "[Dieser Kommentar wurde gelöscht]",
+      "bannedUserComment": "[Kommentar eines gesperrten Benutzers]",
+      "bannedUser": "Gesperrter Benutzer",
+      "banUser": "Benutzer sperren",
+      "unbanUser": "Benutzersperre aufheben",
+      "banReason": "Sperrgrund: {0}",
+      "banExpires": "bis {0}",
+      "deleteModalTitle": "Kommentar löschen",
+      "deleteReasonPlaceholder": "Grund für die Löschung...",
+      "banModalTitle": "Benutzer sperren",
+      "banReasonPlaceholder": "Sperrgrund...",
+      "banReasonPrompt": "Gib den Sperrgrund ein (er wird dem Benutzer mitgeteilt):",
+      "banExpirationLabel": "Ende der Sperre (optional):",
+      "banSuccess": "Benutzer gesperrt",
+      "banFailed": "Sperren fehlgeschlagen",
+      "unbanSuccess": "Benutzersperre aufgehoben",
+      "unbanFailed": "Aufheben der Sperre fehlgeschlagen",
+      "commentsEnabled": "sind aktiviert",
+      "commentsDisabledSuccess": "sind deaktiviert",
+      "toggleSuccess": "Kommentare {0}",
+      "likedByPublication": "Gefällt {0}",
+      "reportCommentConfirm": "Möchtest du diesen Kommentar wirklich melden?",
+      "noComments": "Keine Kommentare",
+      "noMoreComments": "Keine weiteren Kommentare",
+      "commentsAction": "Du hast noch keinen Kommentar geschrieben",
+      "addReaction": "Reaktion hinzufügen",
+      "removeGif": "GIF entfernen"
+    },
+    "title": "Artikel",
+    "addArticle": "Artikel hinzufügen",
+    "updateArticle": "Artikel aktualisieren",
+    "saveAsDraft": "Als Entwurf speichern",
+    "createAndPublish": "Erstellen und veröffentlichen",
+    "publishNow": "Veröffentlichen",
+    "schedule": "Planen",
+    "saveChanges": "Änderungen speichern",
+    "releaseQuick": {
+      "now": "Jetzt",
+      "inHour": "In 1 Stunde",
+      "tomorrow": "Morgen früh",
+      "clear": "Löschen"
+    },
+    "articlesCount": "Noch keine Artikel | {count} Artikel | {count} Artikel",
+    "translations": {
+      "title": "Übersetzungen",
+      "languageTabs": "Artikelsprache",
+      "sourceTab": "Ausgangssprache",
+      "unsaved": "Nicht gespeicherte Änderungen",
+      "awaitingReview": "nichts zu prüfen | {count} wartet auf Prüfung | {count} warten auf Prüfung",
+      "status": {
+        "MISSING": "Nicht übersetzt",
+        "PENDING": "In Warteschlange",
+        "TRANSLATING": "Wird übersetzt",
+        "READY": "Wartet auf Prüfung",
+        "PUBLISHED": "Veröffentlicht",
+        "FAILED": "Fehlgeschlagen",
+        "STALE": "Quelle geändert"
+      },
+      "source": {
+        "AI": "Maschinell übersetzt",
+        "HUMAN": "Von einem Menschen bearbeitet"
+      },
+      "empty": {
+        "MISSING": "Für diesen Artikel gibt es noch keine Übersetzung in diese Sprache.",
+        "PENDING": "Zur Übersetzung vorgemerkt — die geplante Aufgabe übernimmt sie in Kürze.",
+        "TRANSLATING": "Übersetzung läuft.",
+        "FAILED": "Der letzte Übersetzungsversuch ist fehlgeschlagen. Versuche es erneut.",
+        "STALE": "Der Ausgangsartikel wurde geändert; diese Übersetzung wird neu erstellt.",
+        "READY": "Diese Übersetzung hat noch keinen Text.",
+        "PUBLISHED": "Diese Übersetzung hat noch keinen Text."
+      },
+      "fields": {
+        "title": "Titel",
+        "excerpt": "Auszug",
+        "content": "Inhalt"
+      },
+      "actions": {
+        "approve": "Freigeben und veröffentlichen",
+        "translate": "Jetzt übersetzen",
+        "retranslate": "Erneut übersetzen",
+        "discard": "Verwerfen"
+      },
+      "discardTitle": "Diese Übersetzung verwerfen?",
+      "discardMessage": "Der übersetzte Text wird gelöscht. Der Artikel selbst bleibt unverändert und kann später erneut übersetzt werden.",
+      "messages": {
+        "published": "Übersetzung veröffentlicht",
+        "translated": "Übersetzung erstellt",
+        "discarded": "Übersetzung verworfen"
+      },
+      "reviewQueue": {
+        "title": "Keine Übersetzung zur Prüfung | {count} Übersetzung zur Prüfung | {count} Übersetzungen zur Prüfung",
+        "desc": "Im Hybridmodus werden maschinelle Übersetzungen zurückgehalten, bis du sie freigibst. Öffne den Artikel, um sie zu prüfen und zu veröffentlichen."
+      },
+      "viewLive": "Veröffentlichte Seite ansehen"
+    },
+    "explore": "Artikel entdecken",
+    "openArticle": "Artikel öffnen",
+    "votes": "Stimmen",
+    "searchPlaceholder": "Artikel suchen...",
+    "latestArticle": "Neuester Artikel:",
+    "home": {
+      "publication": "Unabhängige Publikation",
+      "latestStory": "Neuester Beitrag",
+      "browseArticles": "Artikel durchstöbern",
+      "exploreTopics": "Themen entdecken",
+      "recommended": "Empfehlungen"
+    },
+    "readingTime": "{0} Min. Lesezeit",
+    "noResults": {
+      "imageAlt": "Trauriger Topík",
+      "message": "Oh nein, ich fühle mich nutzlos..."
+    },
+    "empty": {
+      "badge": "Demnächst",
+      "title": "Hier ist noch nichts",
+      "message": "Der erste Artikel ist unterwegs. Schau bald wieder vorbei.",
+      "owner": {
+        "badge": "Nur für dich sichtbar",
+        "title": "Dein Blog ist bereit für den ersten Artikel",
+        "message": "Besucher landen auf dieser Seite. Suchmaschinen werden angewiesen, sie erst nach der Veröffentlichung des ersten Artikels zu indexieren. Schreibe ihn selbst oder lass ihn generieren.",
+        "writeCta": "Ersten Artikel schreiben",
+        "aiCta": "Mit KI generieren",
+        "adminCta": "Zur Verwaltung",
+        "checklistTitle": "Checkliste zum Start",
+        "progress": "{done} von {total} erledigt",
+        "locked": "In einem höheren Tarif verfügbar",
+        "steps": {
+          "article": {
+            "title": "Ersten Artikel veröffentlichen",
+            "description": "Alles andere im Blog baut darauf auf."
+          },
+          "branding": {
+            "title": "Markenauftritt vervollständigen",
+            "description": "Füge ein Logo und eine kurze Blogbeschreibung hinzu."
+          },
+          "voice": {
+            "title": "Schreibstil und Zielgruppe festlegen",
+            "description": "Sag der KI, für wen sie schreibt und worum es in deinem Blog geht."
+          },
+          "domain": {
+            "title": "Domain bestätigen",
+            "description": "Verknüpfe deine Domain mit dem Blog und bestätige den DNS-Eintrag."
+          }
+        }
+      }
+    },
+    "exportTitle": "Artikelexport",
+    "export": {
+      "label": "Exportieren",
+      "title": {
+        "json": "Als JSON exportieren",
+        "csv": "Als CSV exportieren",
+        "pdf": "Als PDF exportieren"
+      },
+      "warning": {
+        "title": {
+          "json": "JSON-Export",
+          "csv": "CSV-Export",
+          "pdf": "PDF-Export"
+        },
+        "message": {
+          "json": "Du bist dabei, {count} Artikel in eine JSON-Datei zu exportieren.",
+          "csv": "Du bist dabei, {count} Artikel in eine CSV-Datei zu exportieren.",
+          "pdf": "Du bist dabei, {count} Artikel in ein PDF-Dokument zu exportieren."
+        },
+        "note": {
+          "json": "JSON-Dateien können groß sein, werden aber schnell geladen.",
+          "csv": "CSV eignet sich gut für Tabellen, kann aber umfangreich sein.",
+          "pdf": "Die PDF-Erstellung kann wegen der Bilder etwas dauern."
+        }
+      }
+    },
+    "columns": {
+      "title": "Titel",
+      "content": "Inhalt",
+      "imageUrl": "Bild",
+      "sources": "Quellen",
+      "status": "Status",
+      "date": "Datum",
+      "actions": "Aktionen",
+      "createdAt": "Erstellt am",
+      "languages": "Sprachen"
+    },
+    "messages": {
+      "archivedCannotEdit": "Archivierte Artikel können nicht bearbeitet werden",
+      "statusChangeFailed": "Status konnte nicht geändert werden",
+      "deleteSuccess": "Artikel gelöscht",
+      "deleteFailed": "Artikel konnte nicht gelöscht werden"
+    },
+    "sources": {
+      "add": "Quelle hinzufügen",
+      "placeholder": "Quellenlink (https://...)",
+      "imageUrl": "Bildlink (https://...)",
+      "youtube": "YouTube-Videolink (https://...)",
+      "invalid": "Gib eine vollständige URL mit https:// ein"
+    },
+    "status": {
+      "published": "Veröffentlicht",
+      "draft": "Entwurf",
+      "archived": "Archiviert"
+    },
+    "tags": {
+      "emptyName": "Gib einen Tag-Namen ein.",
+      "duplicate": "Ein Tag mit diesem Namen existiert bereits.",
+      "title": "Artikel-Tags",
+      "addCustomTagPlaceholder": "Eigenen Tag hinzufügen",
+      "selectExistingTag": "Vorhandenen Tag auswählen",
+      "addButton": "Hinzufügen",
+      "closeButton": "Schließen",
+      "addTagSuccess": "Tag hinzugefügt",
+      "removeTagSuccess": "Tag entfernt",
+      "operationFailed": "Vorgang fehlgeschlagen",
+      "addCustomTagFailed": "Eigener Tag konnte nicht hinzugefügt werden",
+      "manageTags": "Tags verwalten",
+      "searchPlaceholder": "Tags suchen...",
+      "noTagsFound": "Keine Tags gefunden",
+      "deleteConfirmText": "Der Tag „{0}“ wird gelöscht.",
+      "createSuccess": "Tag erfolgreich erstellt",
+      "createFailed": "Tag konnte nicht erstellt werden",
+      "updateSuccess": "Tag erfolgreich aktualisiert",
+      "updateFailed": "Tag konnte nicht aktualisiert werden",
+      "noTagsSelected": "Keine Tags ausgewählt",
+      "selected": "Ausgewählte Tags",
+      "removeNamed": "{name} entfernen",
+      "selectedEmpty": "Noch keine Tags ausgewählt.",
+      "addExisting": "Vorhandenen Tag hinzufügen",
+      "createNew": "Neuen Tag erstellen",
+      "newTagName": "Name des neuen Tags"
+    },
+    "statusCell": {
+      "scheduledTooltip": "Geplant für: {0}"
+    },
+    "tableOfContents": {
+      "title": "Inhalt",
+      "noContent": "Kein Inhalt zum Anzeigen"
+    },
+    "relatedArticles": {
+      "title": "Ähnliche Artikel"
+    },
+    "userMenu": {
+      "noBio": "Keine Biografie",
+      "companyLogoAlt": "Firmenlogo",
+      "adminIn": "Administrator in: {0}",
+      "noClientAssigned": "Nicht zugewiesen",
+      "currentPlan": "Aktueller Tarif",
+      "roughlyEstimated": "Ungefähr {0} Artikel",
+      "userDataError": "Fehler beim Laden der Benutzerdaten",
+      "remainingTokens": "Verbleibende Artikel",
+      "balanceIncludesExtras": "Das Kontingent umfasst Tarifartikel und zusätzlich gekaufte Artikel.",
+      "totalConsumed": "Insgesamt erstellt: {0} Artikel",
+      "buyTokens": "Weitere Artikel kaufen",
+      "upgradeToPremium": "Zu PREMIUM wechseln",
+      "recentActions": "Letzte Aktionen",
+      "ga4Connected": "GA4 verbunden",
+      "gamConnected": "GAM verbunden",
+      "tip": "Tipp",
+      "adjustPreferences": "Passe deine Einstellungen an, um bessere KI-Ergebnisse zu erhalten",
+      "articleGenerated": "Artikel generiert",
+      "generationFailed": "Generierung fehlgeschlagen",
+      "articlePublished": "Artikel veröffentlicht",
+      "articleSavedAsDraft": "Artikel als Entwurf gespeichert",
+      "insightGenerated": "Erkenntnis erstellt",
+      "lowTokensWarning": "Ein Artikel verbleibt",
+      "lowTokensHint": "Kaufe weitere Artikel oder warte auf die monatliche Erneuerung deines Tarifs.",
+      "insightSkipped": "Erkenntnis übersprungen"
+    },
+    "dateFormats": {
+      "justNow": "Gerade eben",
+      "minutesAgo": "vor {0} Minuten",
+      "hoursAgo": "vor {0} Stunden",
+      "yesterday": "Gestern, {0}",
+      "daysAgo": "vor {0} Tagen",
+      "weekAgo": "Vor einer Woche",
+      "thisYear": "d. MMM, HH:mm",
+      "otherYear": "d. MMM yyyy, HH:mm"
+    },
+    "articleCard": {
+      "imageAlt": "Artikelvorschau",
+      "commentsAndLikesTooltip": "Kommentare und Likes",
+      "noAuthor": "Nicht angegeben",
+      "author": "Artikelautor"
+    },
+    "poll": {
+      "defaultQuestion": "Frage eingeben",
+      "defaultOption": "Option 1",
+      "option": "Option {index}",
+      "questionPlaceholder": "Frage eingeben",
+      "optionPlaceholder": "Option",
+      "hpTitle": "Aktuelle Umfrage",
+      "noPolls": "Keine Umfrage",
+      "addOption": "Option hinzufügen",
+      "yourVote": "Deine Stimme"
+    },
+    "activity": {
+      "tabs": {
+        "likedArticles": "Artikel mit „Gefällt mir“",
+        "comments": "Meine Kommentare"
+      }
+    },
+    "workflowDrafts": {
+      "title": "Inhaltsentwürfe",
+      "topic": "Thema",
+      "company": "Unternehmen",
+      "score": "Bewertung",
+      "flags": "Hinweise",
+      "approve": "Freigeben",
+      "reject": "Ablehnen",
+      "publish": "Jetzt veröffentlichen",
+      "empty": "Keine Entwürfe mit dem ausgewählten Status gefunden.",
+      "rejectTitle": "Entwurf ablehnen",
+      "rejectDescription": "Erkläre, warum dieser Entwurf abgelehnt wird.",
+      "rejectReason": "Grund für die Ablehnung",
+      "approvalFailed": "Freigabe fehlgeschlagen",
+      "rejectionFailed": "Ablehnung fehlgeschlagen",
+      "publishTitle": "Entwurf jetzt veröffentlichen?",
+      "publishDescription": "Dieser Entwurf wird sofort veröffentlicht.",
+      "publishSuccess": "Veröffentlichungsanfrage gesendet",
+      "publishFailed": "Veröffentlichung fehlgeschlagen",
+      "status": {
+        "ALL": "Alle",
+        "DRAFT": "Entwurf",
+        "AWAITING_APPROVAL": "Wartet auf Freigabe",
+        "APPROVED": "Freigegeben",
+        "REJECTED": "Abgelehnt",
+        "PUBLISHED": "Veröffentlicht"
+      }
+    },
+    "editor": {
+      "toolbar": {
+        "more": "Weitere Optionen",
+        "fontFamily": "Schriftfamilie",
+        "fontDefault": "Standard",
+        "textColor": "Textfarbe",
+        "paragraph": "Absatz",
+        "heading": "Überschrift {level}",
+        "bulletList": "Aufzählung",
+        "numberedList": "Nummerierte Liste",
+        "blockquote": "Zitatblock",
+        "removeBlockquote": "Zitatblock entfernen",
+        "insertImage": "Bild aus URL einfügen",
+        "insertYoutube": "YouTube-Video einfügen",
+        "insertPoll": "Umfrage einfügen",
+        "insertTable": "Tabelle einfügen",
+        "table": "Tabellenaktionen",
+        "addColumnAfter": "Spalte hinzufügen",
+        "deleteColumn": "Spalte löschen",
+        "addRowAfter": "Zeile hinzufügen",
+        "deleteRow": "Zeile löschen",
+        "toggleHeaderRow": "Kopfzeile umschalten",
+        "deleteTable": "Tabelle löschen",
+        "alignLeft": "Linksbündig",
+        "alignCenter": "Zentriert",
+        "alignRight": "Rechtsbündig",
+        "alignJustify": "Blocksatz",
+        "indent": "Einzug vergrößern",
+        "outdent": "Einzug verkleinern",
+        "horizontalRule": "Trennlinie",
+        "undo": "Rückgängig",
+        "redo": "Wiederholen",
+        "clearFormatting": "Formatierung entfernen",
+        "bold": "Fett",
+        "italic": "Kursiv",
+        "underline": "Unterstrichen",
+        "strikethrough": "Durchgestrichen",
+        "link": "Link hinzufügen",
+        "removeLink": "Link entfernen",
+        "removeColor": "Farbe entfernen",
+        "characters": "Zeichen",
+        "words": "Wörter"
+      },
+      "altModal": {
+        "title": "Bildbeschreibung",
+        "placeholder": "Beschreibe das Bild für Screenreader (optional)"
+      },
+      "uploadFailed": "Bild konnte nicht hochgeladen werden",
+      "noContent": "Kein Inhalt verfügbar",
+      "dropZone": "Bild hier ablegen",
+      "title": "Artikel bearbeiten",
+      "settingsTitle": "Artikeleinstellungen",
+      "modes": {
+        "manual": "Manuell schreiben",
+        "import": "JSON importieren",
+        "ai": "KI-Generierung"
+      },
+      "preview": {
+        "title": "Artikelvorschau",
+        "toggle": "Artikelvorschau anzeigen",
+        "empty": "Dieser Artikel hat noch keinen Inhalt — wechsle zurück zum Schreiben."
+      },
+      "ai": {
+        "customPromptPlaceholder": "Gib eine Anweisung für die KI-Artikelerstellung ein...",
+        "notAvailable": "KI-Generierung ist nicht verfügbar.",
+        "learnMore": "Mehr erfahren",
+        "generateButton": "Artikel erstellen",
+        "stopButton": "Stopp",
+        "generating": "Artikel wird generiert",
+        "neutralAuthor": "Neuen Artikel vorbereiten",
+        "neutralWorking": "Ein neuer Artikel wird vorbereitet",
+        "planDescription": "Lege das Ergebnis vor dem Start fest. Du siehst genau, was verwendet wird.",
+        "outputLabel": "Textart",
+        "researchLabel": "Thema im Web überprüfen",
+        "researchDescription": "Aktuelle Quellen finden und prüfen.",
+        "depthLabel": "Recherchetiefe",
+        "researchFallback": "Ohne Quellen fortfahren",
+        "researchOff": "ohne Recherche",
+        "modulesLabel": "Artikelbausteine",
+        "modulesDescription": "Die ausgewählten Bausteine werden erstellt. Ein Video wird nur eingebettet, wenn die Recherche eine bestätigte YouTube-URL findet.",
+        "planSummary": "{format} · {research} · {modules} ausgewählte Bausteine",
+        "done": "Fertig",
+        "elapsed": "Vergangen: {seconds} s",
+        "waitingWriting": "Seit {seconds} s hat der Autor keinen weiteren Text gesendet. Nach 30 s ohne Daten wird das Schreiben automatisch beendet.",
+        "waitingResearch": "Die Quellenprüfung dauert länger als üblich. Der Vorgang läuft noch und kann sicher gestoppt werden.",
+        "waitingImages": "Die Vorbereitung eines Bildes kann bis zu 45 s dauern. Falls der Dienst kein Bild liefert, wird der Artikel ohne Bild abgeschlossen.",
+        "researchTarget": "Suche nach: {topic}",
+        "researchMethod": "Aktuelle Primärquellen werden gesucht und die Aussagen im Auftrag geprüft.",
+        "reservedDuringRun": "Vorübergehend reserviert: {count} Artikel",
+        "writerIdleError": "Die Generierung wurde gestoppt, weil der Autor 30 Sekunden lang keine Daten gesendet hat.",
+        "writerDeadlineError": "Die Generierung wurde nach Erreichen des 90-Sekunden-Limits für das Schreiben gestoppt.",
+        "researchSources": "Recherche abgeschlossen, gefundene Quellen: {count}",
+        "researchSourceBadge": "Quellen: {count}",
+        "knowledgeUsed": "Wissensbasis: {count}",
+        "researchStatus": {
+          "fallback": "Keine Quellen",
+          "skipped": "Übersprungen"
+        },
+        "wordsWritten": "Der Entwurf enthält derzeit ungefähr {count} Wörter.",
+        "output": {
+          "news": "Nachrichtenbericht",
+          "analysis": "Analyse",
+          "guide": "Anleitung",
+          "comparison": "Vergleich",
+          "opinion": "Meinungsartikel",
+          "story": "Geschichte"
+        },
+        "outputDescription": {
+          "news": "Was geschehen ist und wen es betrifft.",
+          "analysis": "Hintergrund, Belege und Folgen.",
+          "guide": "Eine praktische Schritt-für-Schritt-Anleitung.",
+          "comparison": "Optionen nach denselben Kriterien bewertet.",
+          "opinion": "Ein klarer Standpunkt mit Argumenten.",
+          "story": "Ein Fall im Kontext erzählt."
+        },
+        "writingStage": {
+          "starting": "Artikelstruktur wird vorbereitet…",
+          "title": "Die Überschrift ist fertig; die Einleitung wird vorbereitet…",
+          "intro": "Die Einleitung ist fertig; der Haupttext wird geschrieben…",
+          "body": "Der Artikeltext wird schrittweise ergänzt…",
+          "review": "Fakten und Konsistenz werden geprüft…"
+        },
+        "depth": {
+          "quick": "Schnell",
+          "standard": "Standard",
+          "deep": "Ausführlich"
+        },
+        "module": {
+          "answer": "Direkte Antwort",
+          "takeaways": "Wichtigste Erkenntnisse",
+          "faq": "FAQ",
+          "poll": "Leserumfrage",
+          "table": "Vergleichstabelle",
+          "images": "Bilder im Artikel",
+          "youtube": "YouTube-Video"
+        },
+        "phaseResearch": "Fakten werden geprüft und Quellen gesucht…",
+        "phaseWriting": "Wird geschrieben…",
+        "phaseImages": "Bilder und eingebettete Inhalte werden vorbereitet…",
+        "mediaCover": "Titelbild wird vorbereitet…",
+        "mediaProgress": "Artikelbilder werden vorbereitet ({completed} von {total}); gefunden: {found}.",
+        "mediaComplete": "Bilder sind bereit. Verwendet: {count}.",
+        "result": {
+          "completed": "Generierung abgeschlossen",
+          "partial": "Artikel mit Warnung fertiggestellt",
+          "stopped": "Generierung wurde gestoppt",
+          "failed": "Generierung fehlgeschlagen",
+          "descriptionComplete": "Alle ausgewählten Bausteine wurden eingefügt und ein Artikel wurde von deinem Kontingent abgezogen.",
+          "descriptionPartial": "{count} ausgewählte Bausteine konnten nicht eingefügt werden. Das Ergebnis bleibt zur Prüfung im Editor.",
+          "descriptionReview": "Das vollständige Ergebnis bleibt im Editor, weil die automatische redaktionelle Prüfung noch ein Problem festgestellt hat.",
+          "reviewWarning": "Die redaktionelle Prüfung empfiehlt weiterhin eine manuelle Kontrolle vor der Veröffentlichung.",
+          "missing": "Fehlt:",
+          "words": "Wörter",
+          "sources": "Quellen",
+          "knowledge": "Wissensbasis",
+          "knowledgeSources": "Verwendetes Wissen",
+          "media": "Medien",
+          "time": "Zeit",
+          "tokens": "Verbrauch",
+          "balance": "Kontingent"
+        },
+        "aiContentStopped": "Generierung gestoppt",
+        "recoveryTitle": "Ein unvollständiger KI-Artikel kann wiederhergestellt werden",
+        "recoveryDescription": "Topiqu hat das letzte verwendbare Ergebnis einer unterbrochenen Generierung sicher gespeichert.",
+        "restoreGeneration": "Ergebnis wiederherstellen",
+        "dismissGeneration": "Verwerfen",
+        "enhance": "Anweisung verbessern",
+        "enhanceUndo": "Rückgängig",
+        "enhanceFailed": "Die Anweisung konnte nicht verbessert werden",
+        "topicLabel": "Artikelthema",
+        "topicPlaceholder": "Worum soll es im Artikel gehen? Ergänze Perspektive, Zielgruppe oder wichtige Punkte…",
+        "step": {
+          "research": "Recherche und Quellen",
+          "writing": "Artikeltext",
+          "images": "Bilder und eingebettete Inhalte"
+        },
+        "formats": {
+          "howto": {
+            "label": "Anleitung",
+            "template": "Schreibe eine praktische Schritt-für-Schritt-Anleitung über:"
+          },
+          "news": {
+            "label": "Nachrichten",
+            "template": "Schreibe einen Nachrichtenbericht über:"
+          },
+          "listicle": {
+            "label": "Listenartikel",
+            "template": "Schreibe einen Artikel als Liste über:"
+          },
+          "opinion": {
+            "label": "Meinungsartikel",
+            "template": "Schreibe einen Meinungsartikel mit Argumenten über:"
+          },
+          "deepDive": {
+            "label": "Vertiefende Analyse",
+            "template": "Schreibe eine ausführliche Analyse über:"
+          }
+        },
+        "createTitle": "Artikel erstellen",
+        "noSourcesLabel": "Wenn keine Quellen gefunden werden",
+        "noSourcesStop": "Generierung stoppen",
+        "selectedCount": "{count} ausgewählt",
+        "mediaLabel": "Medien",
+        "youtubeHint": "Ein Video wird nur eingebettet, wenn die Recherche eine bestätigte YouTube-URL findet.",
+        "outputSummary": "{format} · {research}",
+        "noModules": "Keine zusätzlichen Bausteine",
+        "reservationLabel": "So werden Artikel berechnet",
+        "reservationSummary": "Jede Generierung reserviert vorübergehend 1 Artikel. Für zwei gleichzeitig laufende Vorgänge müssen daher mindestens 2 Artikel übrig sein.",
+        "billingDetails": "Abrechnungsdetails",
+        "billingExplanation": "Der Artikel wird erst nach erfolgreichem Abschluss abgezogen. Bei einem Fehler oder Abbruch wird der reservierte Artikel zurückgegeben.",
+        "moduleUnavailable": "Für dieses Format nicht verfügbar",
+        "reviewFailed": "Der Artikel hat die redaktionelle Prüfung auch nach der Überarbeitung nicht bestanden.",
+        "reviewWarning": "Artikel erstellt; bitte vor der Veröffentlichung prüfen",
+        "allowGeneratedImages": "KI-Illustrationen als letzte Möglichkeit erlauben",
+        "generatedImagesFallback": "Nur wenn kein passendes vorhandenes Bild gefunden wird. Gilt auch für das Titelbild.",
+        "useKnowledge": "Wissensbasis verwenden",
+        "useKnowledgeDescription": "Die KI wählt passende Textabschnitte aus deiner Wissensbasis."
+      },
+      "drafts": {
+        "loadDrafts": "Entwürfe laden",
+        "selectDraftTitle": "Entwurf auswählen",
+        "selectDraftPlaceholder": "Entwurf auswählen",
+        "continueDraftPrompt": "Entwurf vom {0} weiter bearbeiten?",
+        "noDraftsFound": "Keine Entwürfe gefunden",
+        "untitled": "Entwurf ohne Titel #{0}"
+      },
+      "factCheck": {
+        "title": "Faktenprüfung",
+        "description": "Vergleicht überprüfbare Aussagen im aktuellen Artikel mit dem Inhalt der hinzugefügten Quellen.",
+        "run": "Aussagen prüfen",
+        "runAgain": "Erneut prüfen",
+        "running": "Quellen werden geladen und Aussagen verglichen…",
+        "stale": "Artikel oder Quellen wurden geändert",
+        "notEnoughContent": "Füge zuerst wenigstens einen kurzen Artikeltext hinzu.",
+        "errorTitle": "Die Prüfung konnte nicht abgeschlossen werden",
+        "error": {
+          "invalid-request": "Der aktuelle Artikel konnte nicht für die Prüfung vorbereitet werden. Lade den Editor neu und versuche es erneut.",
+          "not-configured": "Der KI-Dienst ist in dieser Umgebung nicht konfiguriert. Ein Administrator muss OPENAI_API_KEY festlegen.",
+          "not-in-plan": "Die Faktenprüfung ist in deinem Tarif nicht verfügbar oder du darfst sie nicht verwenden.",
+          "rate-limited": "Es wurden zu viele Prüfungen angefordert. Warte einen Moment und versuche es erneut.",
+          "service-unavailable": "Der KI-Dienst ist vorübergehend nicht verfügbar. Versuche die Prüfung später erneut.",
+          "unknown": "Die Prüfung konnte nicht abgeschlossen werden. Versuche es erneut."
+        },
+        "claimsFound": "gefundene Tatsachenbehauptungen",
+        "supported": "Belegt",
+        "problematic": "Muss geprüft werden",
+        "sourceIssues": "Probleme mit Quellen",
+        "noClaimsTitle": "Keine geeigneten Aussagen gefunden",
+        "noClaimsDescription": "Es wurden keine wichtigen überprüfbaren Aussagen gefunden. Das bestätigt nicht, dass der Artikel korrekt ist.",
+        "highImportance": "Wichtig",
+        "supportedClaims": "Belegte Aussagen ({count})",
+        "sourceNumber": "Quelle {number}",
+        "goToClaim": "Zur Aussage springen",
+        "disclaimer": "Dieses Ergebnis bewertet, ob die hinzugefügten Quellen die Aussagen stützen, nicht deren absolute Wahrheit. Prüfe wichtige Aussagen vor der Veröffentlichung selbst.",
+        "verdict": {
+          "supported": "Durch Quelle belegt",
+          "partial": "Teilweise belegt",
+          "unsupported": "In Quellen nicht belegt",
+          "contradicted": "Widerspricht der Quelle",
+          "unverifiable": "Nicht zuverlässig überprüfbar"
+        },
+        "sourceStatus": {
+          "duplicate": "Diese Quelle kommt mehrfach vor.",
+          "invalid": "Die Quellenadresse ist ungültig oder über HTTPS nicht sicher erreichbar.",
+          "unreachable": "Der Inhalt der Quelle konnte nicht geladen werden.",
+          "unsupported-content": "Die Quelle kann nicht als Webtext gelesen werden.",
+          "ready": "Die Quelle wurde geladen."
+        }
+      },
+      "mediaRights": {
+        "title": "Bildrechte",
+        "description": "Erfasst die Herkunft der Artikelbilder und die bekannten Nutzungsrechte.",
+        "error": "Die Bildrechte konnten nicht geprüft werden.",
+        "empty": "Dieser Artikel enthält keine Bilder.",
+        "recordedCount": "Herkunft erfasst: {count}",
+        "attentionCount": "Prüfung nötig: {count}",
+        "cover": "Titelbild",
+        "body": "Artikelbild",
+        "state": {
+          "recorded": "Herkunft und Rechte erfasst",
+          "needs-attention": "Rechte nicht bestätigt"
+        },
+        "issue": {
+          "missing-origin": "Die Herkunft des Mediums fehlt.",
+          "permission-unconfirmed": "Die Erlaubnis zur Nutzung dieses Mediums wurde nicht bestätigt.",
+          "missing-source": "Die URL der Originalquelle fehlt.",
+          "missing-license": "Lizenzangaben fehlen.",
+          "missing-author": "Angaben zum Urheber fehlen.",
+          "missing-attribution": "Die erforderliche Namensnennung fehlt.",
+          "hotlinked": "Dieses Bild wird von einer externen Website geladen.",
+          "duplicate-media": "Dieses Medium wird im Artikel mehrfach verwendet.",
+          "unsafe-url": "Die Medienadresse verwendet keine unterstützte sichere URL.",
+          "copyright-metadata": "Die Datei enthält einen Urheberrechtshinweis; prüfe ihn vor der Veröffentlichung."
+        },
+        "disclaimer": "Eine erfasste Herkunft oder eine KI-Kennzeichnung ist keine rechtliche Garantie. Topiqu weist auf fehlende Angaben hin, die der Autor prüfen sollte.",
+        "editTitle": "Herkunft und Rechte des Mediums",
+        "origin": "Herkunft",
+        "sourceUrl": "URL der Originalquelle",
+        "author": "Urheber oder Ersteller",
+        "license": "Lizenz",
+        "attribution": "Erforderliche Namensnennung",
+        "confirmRights": "Ich bestätige, dass ich zur Nutzung dieses Mediums berechtigt bin",
+        "origins": {
+          "UNKNOWN": "Unbekannt / unsicher",
+          "OWN": "Eigener Inhalt",
+          "TOPIQU_AI": "Von Topiqu-KI generiert",
+          "EXTERNAL_AI": "Von einem anderen KI-Werkzeug generiert",
+          "LICENSED_STOCK": "Lizenziertes oder Stock-Material",
+          "CREATIVE_COMMONS": "Creative Commons",
+          "PUBLIC_DOMAIN": "Gemeinfrei",
+          "EXTERNAL": "Von einer anderen Website",
+          "OTHER": "Sonstiges"
+        },
+        "publishTitle": "Bildrechte vor der Veröffentlichung prüfen",
+        "publishDescription": "Die Rechteangaben sind für {count} Medien unvollständig.",
+        "publishDisclaimer": "Diese Bestätigung dokumentiert deine Entscheidung zur Veröffentlichung. Sie ist keine rechtliche Prüfung durch Topiqu.",
+        "fixMedia": "Medien prüfen",
+        "publishAnyway": "Ich bestätige die Berechtigung und veröffentliche",
+        "scheduleChanged": "Die geplante Veröffentlichung wurde angehalten, weil sich Medien oder Rechteangaben geändert haben. Prüfe sie, bevor du erneut planst."
+      },
+      "optimization": {
+        "title": "Artikeloptimierung",
+        "score": "Gesamtbewertung",
+        "analyzing": "Artikel wird analysiert…",
+        "stale": "Neuberechnung steht aus",
+        "insufficientData": "Unzureichende Daten",
+        "emptyTitle": "Beginne zu schreiben",
+        "emptyDescription": "Empfehlungen erscheinen, sobald du einen Titel oder Inhalt hinzufügst.",
+        "errorTitle": "Analyse fehlgeschlagen",
+        "errorDescription": "Die lokale Analyse konnte nicht abgeschlossen werden.",
+        "retry": "Erneut versuchen",
+        "goTo": "Zum Feld springen",
+        "goToCheck": "Zur Prüfung springen: {check}",
+        "howToFix": "So behebst du es",
+        "contentBlockDiagnostic": "Inhaltsblock {number}",
+        "passedChecks": "Bestandene Prüfungen ({count})",
+        "attentionTitle": "Verbesserungsmöglichkeiten",
+        "methodologyTitle": "So funktioniert die Bewertung",
+        "methodologyDescription": "Jede Prüfung wird nach ihrer Bedeutung gewichtet. Eine bestandene Prüfung erhält die volle Punktzahl, eine Empfehlung die Hälfte und ein Fehler keine. Die Gesamtbewertung ist der Durchschnitt der bewerteten Kategorien.",
+        "methodologySeoCaps": "Die SEO-Bewertung wird außerdem begrenzt, wenn dem Artikel genügend Text oder ein Titel fehlt oder wenn er ein zusätzliches H1 oder eine fehlerhafte Überschriftenhierarchie enthält.",
+        "categories": {
+          "seo": "SEO",
+          "ai-visibility": "Sichtbarkeit für KI",
+          "readability": "Lesbarkeit",
+          "trust": "Vertrauenswürdigkeit"
+        },
+        "counts": {
+          "issues": "Probleme: {count}",
+          "recommendations": "Empfehlungen: {count}",
+          "passed": "Bestanden: {count}"
+        },
+        "scoreBands": {
+          "excellent": "Ausgezeichnet",
+          "good": "Gut",
+          "fair": "Verbesserungsbedarf",
+          "poor": "Schwach"
+        },
+        "categoryDescriptions": {
+          "seo": "Titel, Auszug, Überschriften, Links und Bilder für Suchmaschinen.",
+          "ai-visibility": "Eine klare Einleitung und beschreibende Abschnitte, die KI-Assistenten zitieren können.",
+          "readability": "Länge von Sätzen, Absätzen und Abschnitten.",
+          "trust": "Gültige, vielfältige Quellen und sichere externe Links."
+        },
+        "statusLabels": {
+          "error": "Problem",
+          "warning": "Empfehlung"
+        },
+        "checks": {
+          "title-exists": {
+            "title": "Der Artikel hat keinen Titel",
+            "description": "Ohne Titel können Suchmaschinen und Leser das Thema des Artikels nicht eindeutig erkennen.",
+            "recommendation": "Füge einen konkreten Titel hinzu, der das Hauptthema des Artikels klar benennt."
+          },
+          "title-length": {
+            "title": "Die Titellänge liegt außerhalb des empfohlenen Bereichs",
+            "description": "Ein kurzer Titel kann ungenau sein; ein langer Titel kann in Suchergebnissen abgeschnitten werden.",
+            "recommendation": "Halte den Titel zwischen 30 und 65 Zeichen lang, ohne das Hauptthema zu verlieren."
+          },
+          "excerpt-exists": {
+            "title": "Der Artikel hat keinen Auszug",
+            "description": "Topiqu verwendet den Auszug als Meta-Beschreibung in Suchergebnissen.",
+            "recommendation": "Füge eine knappe Zusammenfassung hinzu, die den Nutzen des Artikels erklärt und zum Lesen anregt."
+          },
+          "excerpt-length": {
+            "title": "Die Länge des Auszugs liegt außerhalb des empfohlenen Bereichs",
+            "description": "Ein kurzer Auszug bietet zu wenig Kontext; ein langer kann in Suchergebnissen abgeschnitten werden.",
+            "recommendation": "Halte den Auszug zwischen 70 und 160 Zeichen lang."
+          },
+          "single-h1": {
+            "title": "Der Artikeltext enthält eine weitere Hauptüberschrift",
+            "description": "Der Seitentitel dient bereits als H1. Ein weiteres H1 im Text macht die Dokumentstruktur unklar.",
+            "recommendation": "Ändere jedes H1 im Artikeltext in H2 oder eine niedrigere Ebene."
+          },
+          "heading-hierarchy": {
+            "title": "Die Überschriftenhierarchie ist ungültig",
+            "description": "Der Text beginnt nicht mit H2 oder eine Überschrift überspringt eine Ebene.",
+            "recommendation": "Beginne mit H2 und fahre ohne Sprünge fort, zum Beispiel H2, H3 und dann wieder H2."
+          },
+          "internal-link": {
+            "title": "Der Artikel enthält keinen internen Link",
+            "description": "Der Text verweist auf keine weitere Seite derselben Website.",
+            "recommendation": "Verlinke eine passende Textstelle mit einem verwandten Artikel oder einer Seite deiner Website."
+          },
+          "external-link": {
+            "title": "Der Artikel enthält keinen externen Link",
+            "description": "Der Text verweist auf keine unabhängige Quelle oder hilfreiches ergänzendes Material.",
+            "recommendation": "Füge einen Link zu einer vertrauenswürdigen relevanten Quelle hinzu, wenn sie eine Aussage belegt."
+          },
+          "featured-image": {
+            "title": "Der Artikel hat kein Titelbild",
+            "description": "Dem Artikel fehlt ein Bild für Listenansichten, Vorschauen beim Teilen und den Seitenanfang.",
+            "recommendation": "Lade ein passendes Titelbild hoch oder wähle eines aus."
+          },
+          "image-alt": {
+            "title": "Einem Bild fehlt Alternativtext",
+            "description": "Mindestens ein Bild im Artikeltext hat keine Beschreibung für Screenreader und Suchmaschinen.",
+            "recommendation": "Füge einen knappen Alternativtext hinzu, der die Bedeutung des Bildes im Artikel beschreibt."
+          },
+          "paragraph-length": {
+            "title": "Ein Absatz ist zu lang",
+            "description": "Mindestens ein Absatz überschreitet 120 Wörter und ist auf einem Bildschirm schwerer zu lesen.",
+            "recommendation": "Teile den langen Absatz in kürzere Abschnitte auf, die jeweils einen Gedanken behandeln."
+          },
+          "sentence-length": {
+            "title": "Der Artikel enthält zu viele lange Sätze",
+            "description": "Mehr als 10 % der Sätze haben über 35 Wörter, was die Lesbarkeit verringert.",
+            "recommendation": "Teile die kompliziertesten Sätze auf und konzentriere dich jeweils auf einen Hauptgedanken."
+          },
+          "section-length": {
+            "title": "Ein Abschnitt ist zu lang",
+            "description": "Ein durchgehender Abschnitt ohne Zwischenüberschrift hat mehr als 300 Wörter.",
+            "recommendation": "Teile den Abschnitt mit einer aussagekräftigen H2- oder H3-Überschrift auf."
+          },
+          "long-article-structure": {
+            "title": "Der lange Artikel braucht eine klarere Struktur",
+            "description": "Ein Artikel mit über 250 Wörtern enthält nicht mindestens zwei Absätze und zwei Abschnittsüberschriften.",
+            "recommendation": "Gliedere den Inhalt in mindestens zwei Themenabschnitte mit eigenen Überschriften."
+          },
+          "topic-introduction": {
+            "title": "Die Einleitung führt nicht ins Thema ein",
+            "description": "In den ersten 120 Wörtern steht weniger als die Hälfte der aussagekräftigen Wörter aus dem Titel.",
+            "recommendation": "Nenne das Hauptthema und den Nutzen des Artikels gleich in den ersten Absätzen."
+          },
+          "descriptive-sections": {
+            "title": "Aussagekräftige Abschnittsüberschriften fehlen",
+            "description": "Der längere Artikel hat weniger als zwei Überschriften, die Lesern seine Struktur erklären.",
+            "recommendation": "Füge mindestens zwei konkrete Überschriften hinzu, die den Inhalt der folgenden Abschnitte beschreiben."
+          },
+          "heading-quality": {
+            "title": "Eine Überschrift ist zu allgemein",
+            "description": "Eine Überschrift ist leer oder verwendet nur eine allgemeine Bezeichnung wie Einleitung, Zusammenfassung oder Fazit.",
+            "recommendation": "Ersetze die allgemeine Bezeichnung durch einen konkreten Punkt, den Leser in diesem Abschnitt erfahren."
+          },
+          "multiple-blocks": {
+            "title": "Der Inhalt ist ein einziger Block",
+            "description": "Der Artikel ist nicht in getrennte Inhaltsblöcke gegliedert und lässt sich schwer überfliegen.",
+            "recommendation": "Teile den Text in mehrere Absätze und füge bei Bedarf passende Abschnittsüberschriften hinzu."
+          },
+          "sources-exist": {
+            "title": "Der Artikel hat keine erfasste Quelle",
+            "description": "Die Quellenliste enthält keinen Link, der die Tatsachenbehauptungen des Artikels stützt.",
+            "recommendation": "Füge mindestens eine vertrauenswürdige Quelle hinzu, die für den Artikel verwendet wurde."
+          },
+          "sources-valid": {
+            "title": "Eine Quelle hat eine ungültige Adresse",
+            "description": "Mindestens eine Quelle ist keine vollständige Webadresse, die mit http:// oder https:// beginnt.",
+            "recommendation": "Korrigiere die unvollständige Adresse in der Quellenliste oder entferne den ungültigen Eintrag.",
+            "diagnostic": "Quelle {number}: {value}"
+          },
+          "external-links-safe": {
+            "title": "Der Text enthält einen ungültigen oder unsicheren Link",
+            "description": "Mindestens ein externer Link hat keine gültige HTTP(S)-Adresse oder verwendet ein unzulässiges Protokoll.",
+            "recommendation": "Ändere das Ziel in eine gültige https://-URL oder entferne den Link."
+          },
+          "source-diversity": {
+            "title": "Der lange Artikel stützt sich auf nur eine Website",
+            "description": "Ein Artikel mit mindestens 800 Wörtern verwendet weniger als zwei unterschiedliche Quelldomains.",
+            "recommendation": "Füge eine relevante Quelle von einer anderen unabhängigen Domain hinzu."
+          }
+        }
+      },
+      "releaseDateNote": "Legt Datum und Uhrzeit der Veröffentlichung fest. Für eine manuelle Veröffentlichung leer lassen.",
+      "createSuccess": "Artikel erfolgreich erstellt",
+      "createFailed": "Artikel konnte nicht erstellt werden",
+      "aiContentGenerated": "KI-Inhalt erfolgreich generiert",
+      "aiImagesUnavailable": "Der Artikel ist fertig, aber die ausgewählten Bilder konnten nicht beschafft werden",
+      "aiModulesUnavailable": "Der Artikel ist fertig, aber einige ausgewählte Bausteine waren nicht verfügbar",
+      "aiContentFailed": "KI-Inhalt konnte nicht generiert werden",
+      "loadFailed": "Artikel konnte nicht geladen werden",
+      "metaBar": "Artikelmetadaten",
+      "addTag": "Tag hinzufügen",
+      "searchTags": "Tag suchen oder erstellen…",
+      "createTag": "„{name}“ erstellen",
+      "publishImmediately": "Sofort"
+    },
+    "image": {
+      "illustration": "Illustrationsbild",
+      "ai": "Illustrationsbild (KI)",
+      "photoBy": "Foto: {author}"
+    },
+    "aiDisclosure": {
+      "ASSIST": "Mit KI-Unterstützung erstellt",
+      "FULL": "Von KI erstellt"
+    },
+    "authorsArticles": "Artikel dieses Autors",
+    "tagsArticles": "Artikel mit dem Tag „{name}“",
+    "keyTakeaways": "Das Wichtigste auf einen Blick",
+    "faq": "Häufig gestellte Fragen"
+  }
+}

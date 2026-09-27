@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { type ClientPlan, Language } from '~~/generated/zenstack/models'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 export default defineEventHandler(async (event) => {
@@ -27,7 +28,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const sourceLang = clientSite.language
-  const targetLang = language ?? (sourceLang === Language.cs ? Language.en : Language.cs)
+  const targetLang = language ?? LANGUAGE_OPTIONS.find((candidate) => candidate !== sourceLang)
+  if (!targetLang) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   if (targetLang === sourceLang) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const article = await db.article.findUnique({

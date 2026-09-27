@@ -1,10 +1,11 @@
 import type { TrialState } from '~~/shared/utils/trial'
+import type { Language } from '~~/shared/utils/language'
 import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
 export interface ClientSiteStatus {
   id: string
   name: string
-  language: 'cs' | 'en'
+  language: Language
   domain: string
   domainVerified: boolean
   plan: string

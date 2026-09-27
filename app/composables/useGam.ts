@@ -59,7 +59,13 @@ export const useGamAds = (site: GamSite | null) => {
 
     window.googletag.cmd.push(() => {
       const tag = window.googletag
-      if (tag.pubads().getSlots().some((s) => s.getSlotElementId() === slotId)) return tag.display(slotId)
+      if (
+        tag
+          .pubads()
+          .getSlots()
+          .some((s) => s.getSlotElementId() === slotId)
+      )
+        return tag.display(slotId)
 
       const slot = tag.defineSlot(`/${site!.gamNetworkCode}/${adUnitPath.replace(/^\//, '')}`, sizes, slotId)
       if (!slot) return

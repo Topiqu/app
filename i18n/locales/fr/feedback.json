@@ -1,0 +1,13 @@
+{
+  "feedback": {
+    "question": "Cet article vous a-t-il été utile ?",
+    "subtitle": "Votre avis nous aide à améliorer les contenus pour tous.",
+    "placeholder": "Que pouvons-nous améliorer ? (facultatif)",
+    "thankYou": "Merci pour votre avis !",
+    "recorded": "Votre avis nous aide à améliorer nos contenus.",
+    "change": "Modifier mon avis",
+    "thanks_short": "Merci !",
+    "helpful": "Oui, cet article m’a été utile",
+    "notHelpful": "Non, cet article ne m’a pas été utile"
+  }
+}

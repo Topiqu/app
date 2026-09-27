@@ -48,110 +48,68 @@
   "cases": [
     {
       "topic": "How to speed up editorial approvals in content operations",
-      "expect": [
-        "Why customers switch"
-      ],
-      "allow": [
-        "Positioning vs Jasper"
-      ]
+      "expect": ["Why customers switch"],
+      "allow": ["Positioning vs Jasper"]
     },
     {
       "topic": "Topiqu vs Jasper: which AI writer should a publisher choose",
-      "expect": [
-        "Positioning vs Jasper"
-      ],
-      "allow": [
-        "Pricing",
-        "Case study Pixbo",
-        "Překlady",
-        "Security",
-        "Why customers switch"
-      ]
+      "expect": ["Positioning vs Jasper"],
+      "allow": ["Pricing", "Case study Pixbo", "Překlady", "Security", "Why customers switch"]
     },
     {
       "topic": "How much does an AI blog platform cost per month",
-      "expect": [
-        "Pricing"
-      ],
+      "expect": ["Pricing"],
       "allow": []
     },
     {
       "topic": "Case study: growing organic traffic for a gaming news website",
-      "expect": [
-        "Case study Pixbo"
-      ],
+      "expect": ["Case study Pixbo"],
       "allow": []
     },
     {
       "topic": "Jak funguje automatický překlad článků a hreflang",
-      "expect": [
-        "Překlady"
-      ],
+      "expect": ["Překlady"],
       "allow": []
     },
     {
       "topic": "Multilingual blogging: translating articles for new markets",
-      "expect": [
-        "Překlady"
-      ],
-      "allow": [
-        "Pricing"
-      ]
+      "expect": ["Překlady"],
+      "allow": ["Pricing"]
     },
     {
       "topic": "Is AI-generated content safe for GDPR and data residency in the EU",
-      "expect": [
-        "Security"
-      ],
+      "expect": ["Security"],
       "allow": []
     },
     {
       "topic": "Why agencies abandon WordPress for automated publishing",
-      "expect": [
-        "Why customers switch"
-      ],
-      "allow": [
-        "Positioning vs Jasper"
-      ]
+      "expect": ["Why customers switch"],
+      "allow": ["Positioning vs Jasper"]
     },
     {
       "topic": "Fact-checking AI articles before they go live",
-      "expect": [
-        "Positioning vs Jasper"
-      ],
+      "expect": ["Positioning vs Jasper"],
       "allow": []
     },
     {
       "topic": "What happened to customers on the GRWPLS plan",
-      "expect": [
-        "Legacy plan codes"
-      ],
-      "allow": [
-        "Pricing"
-      ]
+      "expect": ["Legacy plan codes"],
+      "allow": ["Pricing"]
     },
     {
       "topic": "Rechnungsadresse und Strasse im Konto ändern",
-      "expect": [
-        "Rechnungsstellung"
-      ],
+      "expect": ["Rechnungsstellung"],
       "allow": []
     },
     {
       "topic": "Jak szybko odpowiada wsparcie klienta i jak złożyć zgłoszenie",
-      "expect": [
-        "Wsparcie"
-      ],
+      "expect": ["Wsparcie"],
       "allow": []
     },
     {
       "topic": "Kolik stojí tarif Pro měsíčně",
-      "expect": [
-        "Pricing"
-      ],
-      "allow": [
-        "Legacy plan codes"
-      ]
+      "expect": ["Pricing"],
+      "allow": ["Legacy plan codes"]
     },
     {
       "topic": "Best hiking trails in the Alps",
@@ -180,53 +138,32 @@
     },
     {
       "topic": "How small newsrooms publish more without hiring more editors",
-      "expect": [
-        "Case study Pixbo"
-      ],
-      "allow": [
-        "Why customers switch",
-        "Positioning vs Jasper"
-      ],
+      "expect": ["Case study Pixbo"],
+      "allow": ["Why customers switch", "Positioning vs Jasper"],
       "indirect": true
     },
     {
       "topic": "Reaching international readers with a company blog",
-      "expect": [
-        "Překlady"
-      ],
-      "allow": [
-        "Pricing"
-      ],
+      "expect": ["Překlady"],
+      "allow": ["Pricing"],
       "indirect": true
     },
     {
       "topic": "Is it risky to let AI publish articles without a human checking them?",
-      "expect": [
-        "Positioning vs Jasper"
-      ],
-      "allow": [
-        "Překlady",
-        "Security"
-      ],
+      "expect": ["Positioning vs Jasper"],
+      "allow": ["Překlady", "Security"],
       "indirect": true
     },
     {
       "topic": "Choosing SaaS vendors under European privacy rules",
-      "expect": [
-        "Security"
-      ],
+      "expect": ["Security"],
       "allow": [],
       "indirect": true
     },
     {
       "topic": "Why editorial calendars slip and how teams fix it",
-      "expect": [
-        "Why customers switch"
-      ],
-      "allow": [
-        "Positioning vs Jasper",
-        "Case study Pixbo"
-      ],
+      "expect": ["Why customers switch"],
+      "allow": ["Positioning vs Jasper", "Case study Pixbo"],
       "indirect": true
     }
   ]

@@ -118,6 +118,7 @@
 
 <script setup lang="ts">
 import { LanguageSchema } from '~~/shared/siteSchemas'
+import { isLanguage, type Language } from '~~/shared/utils/language'
 
 import { addKeywords } from '~/utils/keywords'
 
@@ -150,8 +151,8 @@ const audience = computed({
   set: (v) => emit('update:audience', v),
 })
 
-const language = computed<'cs' | 'en'>({
-  get: () => (props.language === 'cs' ? 'cs' : 'en'),
+const language = computed<Language>({
+  get: () => (isLanguage(props.language) ? props.language : 'en'),
   set: (v) => emit('update:language', v),
 })
 

@@ -524,6 +524,7 @@ import slugify from 'slugify'
 import { readFaq } from '~~/shared/utils/articleFaq'
 import { setImageMediaId } from '~~/shared/utils/mediaRights'
 import { translationDraft } from '~~/shared/utils/articleTranslations'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import {
   type ArticleGenerationBilling,
   type ArticleGenerationModule,
@@ -604,6 +605,8 @@ const newArticleLanguage = shallowRef<Language>((clientSite.value?.language as L
 const newLanguageDrafts = reactive<Record<Language, ReturnType<typeof translationDraft>>>({
   cs: translationDraft(),
   en: translationDraft(),
+  de: translationDraft(),
+  fr: translationDraft(),
 })
 const selectedSeries = shallowRef<any>(null)
 const articleTags = shallowRef<string[]>([])
@@ -711,7 +714,7 @@ const activeLanguageModel = computed({
   },
 })
 const editorTargetLanguages = computed(() =>
-  isNew ? (['cs', 'en'] as Language[]).filter((language) => language !== primaryLanguage) : tr.targetLanguages,
+  isNew ? LANGUAGE_OPTIONS.filter((language) => language !== primaryLanguage) : tr.targetLanguages,
 )
 const editorLanguageModel = computed({
   get: () => (isNew ? newArticleLanguage.value : activeLanguageModel.value),

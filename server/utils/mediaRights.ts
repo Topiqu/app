@@ -8,6 +8,7 @@ import type {
 import * as cheerio from 'cheerio'
 import { createHash } from 'node:crypto'
 import { buildMediaRightsItems, extractArticleMedia, mediaRightsCounts } from '~~/shared/utils/mediaRights'
+import type { Language } from '~~/shared/utils/language'
 
 import { escapeHtml } from './sanitize'
 
@@ -129,7 +130,7 @@ export const createMediaRightsSnapshot = async (
   input: {
     articleId: string
     clientSiteId: string
-    language: 'cs' | 'en'
+    language: Language
     report: MediaRightsReport
     confirmedById?: string | null
     legacySchedule?: boolean

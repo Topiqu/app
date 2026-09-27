@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import type { Language, Theme } from '../generated/zenstack/models'
 
-export const LANGUAGE_OPTIONS = ['en', 'cs'] as const satisfies readonly Language[]
+export const LANGUAGE_OPTIONS = ['en', 'cs', 'de', 'fr'] as const satisfies readonly Language[]
 export const THEME_OPTIONS = [
   'blue',
   'green',

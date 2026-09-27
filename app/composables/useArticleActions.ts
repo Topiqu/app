@@ -1,10 +1,7 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { SharePlatform } from '~~/generated/zenstack/models'
 
-export function useArticleActions(
-  dataRef: MaybeRefOrGetter<any>,
-  refreshContext: () => Promise<void>,
-) {
+export function useArticleActions(dataRef: MaybeRefOrGetter<any>, refreshContext: () => Promise<void>) {
   const { t } = useI18n()
   const toast = useToast()
   const clipboard = useClipboard()

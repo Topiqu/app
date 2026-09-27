@@ -66,7 +66,9 @@ export default defineEventHandler(async (event) => {
       sourceId: current.id,
       changedFields: Object.keys(body),
       contentChanged,
-      ...(contentChanged ? { consent: { version: KNOWLEDGE_CONSENT_VERSION, confirmedAt: new Date().toISOString() } } : {}),
+      ...(contentChanged
+        ? { consent: { version: KNOWLEDGE_CONSENT_VERSION, confirmedAt: new Date().toISOString() } }
+        : {}),
       previousPublicUrl: current.publicUrl,
       publicUrl: source.publicUrl,
     },

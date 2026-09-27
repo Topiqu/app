@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { chunkKnowledge } from '../../../server/utils/knowledge/chunk'
 
-const paragraph = (seed: string, length: number) =>
-  `${seed} `.repeat(Math.ceil(length / (seed.length + 1))).trim()
+const paragraph = (seed: string, length: number) => `${seed} `.repeat(Math.ceil(length / (seed.length + 1))).trim()
 
 describe('chunkKnowledge', () => {
   it('prefixes every chunk with the source title and heading path', () => {

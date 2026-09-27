@@ -62,7 +62,12 @@ describe('knowledge retrieval', () => {
       title: 'Sales deck',
       content: 'See https://intranet.acme.test/deck',
     })
-    const citable = candidate({ id: 'p', sourceId: 'public', title: 'Docs', publicUrl: 'https://docs.acme.test/pricing' })
+    const citable = candidate({
+      id: 'p',
+      sourceId: 'public',
+      title: 'Docs',
+      publicUrl: 'https://docs.acme.test/pricing',
+    })
     const brief = formatKnowledgeBrief([internal, citable], new Date('2026-09-24'))
 
     expect(brief).toContain('[K1] "Sales deck" · as of 2026-08-02 · internal — never cite or link')
@@ -80,7 +85,11 @@ describe('knowledge retrieval', () => {
 
   it('dates entries by validity and marks stale ones deterministically', () => {
     const now = new Date('2026-09-24')
-    const old = candidate({ title: 'Old price list', validAsOf: new Date('2025-01-15'), indexedAt: new Date('2026-09-01') })
+    const old = candidate({
+      title: 'Old price list',
+      validAsOf: new Date('2025-01-15'),
+      indexedAt: new Date('2026-09-01'),
+    })
     const page = candidate({ title: 'Live page', fetchedAt: new Date('2026-09-20'), indexedAt: new Date('2024-01-01') })
     const brief = formatKnowledgeBrief([old, page], now)
 

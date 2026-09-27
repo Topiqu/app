@@ -315,7 +315,10 @@
 </template>
 
 <script setup lang="ts">
-const { t } = useI18n()
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+import { languageTag } from '~~/shared/utils/language'
+
+const { t, locale } = useI18n()
 
 const props = defineProps<{
   clientId: string
@@ -363,7 +366,7 @@ const emit = defineEmits<{
   'toggle:feature': [{ code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }]
 }>()
 
-const SUPPORTED_LANGUAGES = ['cs', 'en']
+const SUPPORTED_LANGUAGES = LANGUAGE_OPTIONS
 
 const translationMode = computed({
   get: () => props.translationMode,
@@ -509,7 +512,7 @@ const featurePrice = (code: string) => {
 
   const price = props.billingPlan === 'ANNUAL' ? monthlyUsd * 12 * 0.8 : monthlyUsd
 
-  return new Intl.NumberFormat(props.currency === 'CZK' ? 'cs-CZ' : undefined, {
+  return new Intl.NumberFormat(languageTag(locale.value), {
     style: 'currency',
     currency: props.currency,
     currencyDisplay: 'narrowSymbol',

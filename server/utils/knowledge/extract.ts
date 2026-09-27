@@ -67,7 +67,12 @@ const extractPdf = async (bytes: Uint8Array) => {
     const pdf = await getDocumentProxy(new Uint8Array(bytes))
     const [{ text }, meta] = await Promise.all([extractText(pdf, { mergePages: true }), getMeta(pdf)])
     const info = meta.info as { Title?: string; ModDate?: string; CreationDate?: string } | undefined
-    return finish(info?.Title, text, MIME.pdf, parseDocumentDate(info?.ModDate) ?? parseDocumentDate(info?.CreationDate))
+    return finish(
+      info?.Title,
+      text,
+      MIME.pdf,
+      parseDocumentDate(info?.ModDate) ?? parseDocumentDate(info?.CreationDate),
+    )
   } catch (error) {
     if (error instanceof KnowledgeExtractError) throw error
     throw new KnowledgeExtractError('unsupported')

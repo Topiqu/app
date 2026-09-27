@@ -9,7 +9,11 @@
         {{ $t(state === 'done' ? 'common.unsubscribe.doneTitle' : 'common.unsubscribe.title') }}
       </h1>
       <p class="mt-3 text-muted" role="status">
-        {{ $t(`common.unsubscribe.${!valid ? 'invalid' : state === 'done' ? 'done' : state === 'error' ? 'error' : 'intro'}`) }}
+        {{
+          $t(
+            `common.unsubscribe.${!valid ? 'invalid' : state === 'done' ? 'done' : state === 'error' ? 'error' : 'intro'}`,
+          )
+        }}
       </p>
       <div class="mt-7 flex flex-wrap justify-center gap-3">
         <UButton v-if="valid && state !== 'done'" :loading="state === 'pending'" @click="unsubscribe">

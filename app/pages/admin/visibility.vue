@@ -368,6 +368,8 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import type { InternalApi } from 'nitropack/types'
 
 import { promptOutcome, runOutcome } from '~~/shared/utils/aiVisibility'
+import { isLanguage, type Language } from '~~/shared/utils/language'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 useSeoMeta({ title: () => $t('visibility.title') })
@@ -390,7 +392,7 @@ const percentFormat = computed(
   () => new Intl.NumberFormat(locale.value, { style: 'percent', maximumFractionDigits: 0 }),
 )
 const newPrompt = shallowRef('')
-const newLanguage = shallowRef<'cs' | 'en'>(locale.value === 'cs' ? 'cs' : 'en')
+const newLanguage = shallowRef<Language>(isLanguage(locale.value) ? locale.value : 'en')
 const showForm = shallowRef(false)
 const adding = shallowRef(false)
 const suggesting = shallowRef(false)
@@ -447,10 +449,12 @@ const metrics = computed(() => [
     note: t('visibility.metrics.fetchesNote', { count: number(data.value?.crawlers.uniquePages ?? 0) }),
   },
 ])
-const languageItems = computed(() => [
-  { label: t('languages.cs'), value: 'cs' },
-  { label: t('languages.en'), value: 'en' },
-])
+const languageItems = computed(() =>
+  LANGUAGE_OPTIONS.map((language) => ({
+    label: t(`languages.${language}`),
+    value: language,
+  })),
+)
 const openOpportunities = computed(() => data.value?.opportunities.filter((item) => item.status === 'OPEN') ?? [])
 
 const mutate = async (work: () => Promise<unknown>, success?: string) => {

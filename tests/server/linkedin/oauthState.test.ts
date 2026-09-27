@@ -38,9 +38,11 @@ describe('oauthState — sign & verify', () => {
 
   // The locale becomes a path segment in the callback redirect, so it is whitelisted on the way out
   // even though the payload is signed.
-  it('normalises the locale to cs or en', () => {
-    const cs = signOAuthState({ nonce: 'n1', clientSiteId: 'site-1', appType: 'personal', locale: 'cs' })
-    expect(verifyOAuthState(cs)?.locale).toBe('cs')
+  it('accepts supported locales and rejects unsafe path segments', () => {
+    for (const locale of ['cs', 'en', 'de', 'fr'] as const) {
+      const state = signOAuthState({ nonce: 'n1', clientSiteId: 'site-1', appType: 'personal', locale })
+      expect(verifyOAuthState(state)?.locale).toBe(locale)
+    }
 
     const junk = signOAuthState({
       nonce: 'n1',

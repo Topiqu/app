@@ -120,7 +120,11 @@ import { isKnowledgeStale, knowledgeAsOf } from '~~/shared/utils/knowledge'
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 useSeoMeta({ title: () => $t('knowledge.title') })
 
-const KIND_ICONS = { NOTE: 'mdi:note-text-outline', FILE: 'mdi:file-document-outline', URL: 'mdi:link-variant' } as const
+const KIND_ICONS = {
+  NOTE: 'mdi:note-text-outline',
+  FILE: 'mdi:file-document-outline',
+  URL: 'mdi:link-variant',
+} as const
 const STATUS_COLORS = { PENDING: 'neutral', PROCESSING: 'warning', INDEXED: 'success', FAILED: 'error' } as const
 
 const { t, locale } = useI18n()
@@ -168,7 +172,13 @@ const toggleUse = (id: string, useInArticles: boolean) =>
   run(() => $fetch<unknown>(`/api/knowledge/${id}`, { method: 'PATCH', body: { useInArticles } }))
 
 const remove = async (source: Source) => {
-  if (!(await confirm({ title: t('knowledge.deleteTitle'), message: t('knowledge.deleteDescription'), variant: 'danger' })))
+  if (
+    !(await confirm({
+      title: t('knowledge.deleteTitle'),
+      message: t('knowledge.deleteDescription'),
+      variant: 'danger',
+    }))
+  )
     return
   await run(() => $fetch<unknown>(`/api/knowledge/${source.id}`, { method: 'DELETE' }), t('knowledge.deleted'))
 }
@@ -194,6 +204,13 @@ const actions = (source: Source): DropdownMenuItem[][] => [
       ? [{ label: t('knowledge.openPublic'), icon: 'mdi:open-in-new', to: source.publicUrl, target: '_blank' }]
       : []),
   ],
-  [{ label: t('knowledge.delete'), icon: 'mdi:delete-outline', color: 'error' as const, onSelect: () => remove(source) }],
+  [
+    {
+      label: t('knowledge.delete'),
+      icon: 'mdi:delete-outline',
+      color: 'error' as const,
+      onSelect: () => remove(source),
+    },
+  ],
 ]
 </script>

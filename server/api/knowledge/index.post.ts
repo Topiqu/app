@@ -22,7 +22,11 @@ const flag = z.enum(['true', 'false']).transform((value) => value === 'true')
 const FieldsSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('NOTE'), title: z.string().trim().min(1).max(200), text: z.string().trim().min(1) }),
   z.object({ kind: z.literal('FILE'), title: z.string().trim().max(200).optional() }),
-  z.object({ kind: z.literal('URL'), title: z.string().trim().max(200).optional(), url: z.string().trim().url().max(2048) }),
+  z.object({
+    kind: z.literal('URL'),
+    title: z.string().trim().max(200).optional(),
+    url: z.string().trim().url().max(2048),
+  }),
 ])
 
 const OptionsSchema = z.object({
@@ -55,7 +59,8 @@ export default defineEventHandler(async (event) => {
   const raw = Object.fromEntries(fieldNames.map((name) => [name, text(name) || undefined]))
   const fields = FieldsSchema.safeParse(raw)
   const options = OptionsSchema.safeParse(raw)
-  if (!fields.success || !options.success) throw createError({ statusCode: 400, statusMessage: 'Invalid knowledge source' })
+  if (!fields.success || !options.success)
+    throw createError({ statusCode: 400, statusMessage: 'Invalid knowledge source' })
   const input = fields.data
 
   let extracted: ExtractedKnowledge
@@ -101,7 +106,11 @@ export default defineEventHandler(async (event) => {
     select: { id: true },
   })
   if (duplicate)
-    throw createError({ statusCode: 409, statusMessage: 'This content is already in knowledge', data: { code: 'KNOWLEDGE_DUPLICATE', id: duplicate.id } })
+    throw createError({
+      statusCode: 409,
+      statusMessage: 'This content is already in knowledge',
+      data: { code: 'KNOWLEDGE_DUPLICATE', id: duplicate.id },
+    })
 
   const source = await db.knowledgeSource.create({
     data: {

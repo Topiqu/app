@@ -1,6 +1,8 @@
 import type { AiCrawlerKind, AiCrawlerSurface, AiPromptIntent, AiReferralChannel } from '~~/generated/zenstack/models'
 
 import { toHostname } from './domain'
+import { isLanguage } from './language'
+import { LOCALIZED_SEGMENTS } from './routes'
 
 const TRACKING_PARAMS = new Set([
   'fbclid',
@@ -23,8 +25,11 @@ export const crawlerSurface = (path: string): AiCrawlerSurface => {
   if (path === '/llms.txt') return 'LLMS'
   if (path === '/rss.xml') return 'RSS'
   if (path.startsWith('/md/')) return 'MARKDOWN'
-  if (/^\/(?:cs|en)\/(?:clanky|articles)\//.test(path)) return 'ARTICLE'
-  if (/^\/(?:cs|en)\/?$/.test(path)) return 'HOMEPAGE'
+  const [, language, segment, slug] = path.split('/')
+  if (isLanguage(language)) {
+    if (segment === LOCALIZED_SEGMENTS.article[language] && slug) return 'ARTICLE'
+    if (!segment) return 'HOMEPAGE'
+  }
   return 'OTHER'
 }
 
@@ -79,11 +84,18 @@ export const promptIntent = (text: string): AiPromptIntent => {
     .normalize('NFKD')
     .replace(/\p{Diacritic}/gu, '')
     .toLocaleLowerCase()
-  if (/\b(vs\.?|versus|compare|comparison|alternativa|alternativy|srovnani|srovnat|oproti|nejlepsi|best)\b/.test(value))
+  if (
+    /\b(vs\.?|versus|compare|comparison|alternativa|alternativy|srovnani|srovnat|oproti|nejlepsi|best|beste|besten|vergleich|vergleichen|comparaison|comparer|meilleur|meilleure)\b/.test(
+      value,
+    )
+  )
     return 'COMPARISON'
-  if (/\b(how|jak|navod|postup)\b/.test(value)) return 'HOW_TO'
-  if (/\b(problem|issue|fix|reseni|vyresit|proc nefunguje)\b/.test(value)) return 'PROBLEM'
-  if (/\b(what|which|who|co je|ktery|kdo)\b/.test(value)) return 'DISCOVERY'
+  if (/\b(how|jak|navod|postup|wie|anleitung|comment|tutoriel)\b/.test(value)) return 'HOW_TO'
+  if (
+    /\b(problem|issue|fix|reseni|vyresit|proc nefunguje|fehler|beheben|losung|probleme|erreur|resoudre)\b/.test(value)
+  )
+    return 'PROBLEM'
+  if (/\b(what|which|who|co je|ktery|kdo|was|welche|wer|quoi|qui|quel|quelle)\b/.test(value)) return 'DISCOVERY'
   return 'OTHER'
 }
 

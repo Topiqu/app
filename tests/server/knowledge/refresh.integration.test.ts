@@ -19,7 +19,9 @@ const now = new Date('2026-09-24T03:45:00Z')
 
 const urlSource = async (fetchedAt: Date, content = 'Pricing page: Pro costs 49 USD per month.') => {
   const clientSiteId = randomUUID()
-  await db!.clientSite.create({ data: { id: clientSiteId, name: `refresh-${clientSiteId}`, domain: `${clientSiteId}.test` } })
+  await db!.clientSite.create({
+    data: { id: clientSiteId, name: `refresh-${clientSiteId}`, domain: `${clientSiteId}.test` },
+  })
   return db!.knowledgeSource.create({
     data: {
       clientSiteId,
@@ -56,7 +58,12 @@ describe.skipIf(!enabled)('knowledge refresh on PostgreSQL', () => {
     const source = await urlSource(new Date('2026-09-01'))
     vi.mocked(extractKnowledgeUrl).mockImplementation(async (target) =>
       target === source.sourceUrl
-        ? { title: 'Pricing', content: 'Pricing page: Pro now costs 59 USD per month.', mimeType: 'text/html', validAsOf: new Date('2026-09-10') }
+        ? {
+            title: 'Pricing',
+            content: 'Pricing page: Pro now costs 59 USD per month.',
+            mimeType: 'text/html',
+            validAsOf: new Date('2026-09-10'),
+          }
         : { title: null, content: 'unchanged elsewhere', mimeType: 'text/html', validAsOf: null },
     )
     await refreshKnowledgeSources(now)
@@ -92,6 +99,8 @@ describe.skipIf(!enabled)('knowledge refresh on PostgreSQL', () => {
     const source = await urlSource(new Date('2026-09-23'))
     await db!.knowledgeSource.update({ where: { id: source.id }, data: { embeddingModel: 'text-embedding-ada-002' } })
     await refreshKnowledgeSources(now)
-    expect(await db!.knowledgeSource.findUniqueOrThrow({ where: { id: source.id } })).toMatchObject({ status: 'PENDING' })
+    expect(await db!.knowledgeSource.findUniqueOrThrow({ where: { id: source.id } })).toMatchObject({
+      status: 'PENDING',
+    })
   })
 })

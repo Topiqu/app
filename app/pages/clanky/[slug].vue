@@ -142,6 +142,7 @@ import { readFaq } from '~~/shared/utils/articleFaq'
 import { tenantGamEnabled } from '~~/shared/utils/advertising'
 import { canManageArticle } from '~~/shared/utils/articleEditor'
 import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
+import type { Language } from '~~/shared/utils/language'
 
 import type { GamSizeMapping } from '~/composables/useGam'
 
@@ -200,7 +201,7 @@ const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/$
 const primaryLocale = computed(() => clientSite?.language ?? 'en')
 
 // Real alternates only exist once translations are PUBLISHED (source + each translation).
-const alternates = computed<{ language: 'cs' | 'en'; slug: string }[]>(() => data.value?.alternates ?? [])
+const alternates = computed<{ language: Language; slug: string }[]>(() => data.value?.alternates ?? [])
 const hasTranslations = computed(() => alternates.value.length >= 2)
 
 const alternateLinks = computed(() =>

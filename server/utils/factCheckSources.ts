@@ -42,7 +42,9 @@ export const extractReadableSource = (
       const text = $(node).text().replace(/\s+/g, ' ').trim()
       return headings && /^h[1-4]$/.test(node.tagName) && text ? `${'#'.repeat(Number(node.tagName[1]))} ${text}` : text
     })
-    .filter((text, index, all) => (text.length >= 20 || (headings && /^#{1,4} /.test(text))) && all.indexOf(text) === index)
+    .filter(
+      (text, index, all) => (text.length >= 20 || (headings && /^#{1,4} /.test(text))) && all.indexOf(text) === index,
+    )
     .join('\n')
     .slice(0, maxCharacters)
   return { title, publishedAt, content }

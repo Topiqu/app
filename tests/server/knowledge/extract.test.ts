@@ -73,7 +73,10 @@ describe('document dates', () => {
   })
 
   it('takes the validity date from PDF metadata', async () => {
-    const result = await extractKnowledgeFile(await pdf('Pricing valid for the current quarter only, per our policy.'), 's.pdf')
+    const result = await extractKnowledgeFile(
+      await pdf('Pricing valid for the current quarter only, per our policy.'),
+      's.pdf',
+    )
     expect(result.validAsOf).toBeInstanceOf(Date)
   })
 })

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 
 const ROOT = resolve(__dirname, '../..')
-const LOCALES = ['en', 'cs'] as const
+const LOCALES = ['en', 'cs', 'de', 'fr'] as const
 
 /** `useServerI18n` merges every locale file into one object, so each file's own root is part of the key. */
 const loadMessages = (locale: string) => {

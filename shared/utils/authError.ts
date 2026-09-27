@@ -1,3 +1,6 @@
+import { authPath } from './routes'
+import { isLanguage } from './language'
+
 export function authErrorKey(error: unknown): string | undefined {
   if (!error) return undefined
   if (error === 'oauth_local_account_unverified' || error === 'email_not_verified')
@@ -7,7 +10,8 @@ export function authErrorKey(error: unknown): string | undefined {
 }
 
 export function authErrorRedirect(error: unknown, locale: unknown): string {
-  const path = locale === 'cs' ? '/cs/autorizace' : '/en/auth'
+  const language = isLanguage(locale) ? locale : 'en'
+  const path = authPath(language)
   if (!error) return path
   const safe =
     error === 'oauth_local_account_unverified' || error === 'oauth_email_unverified' || error === 'email_not_verified'

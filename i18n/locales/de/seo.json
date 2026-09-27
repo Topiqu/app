@@ -1,0 +1,18 @@
+{
+  "seo": {
+    "default": {
+      "title": "Topiqu {'|'} B2B-Content-Infrastruktur",
+      "description": "Automatisierte Plattform für Content-Management und Monetarisierung. Nutzen Sie KI, erweiterte Analysen und hohe Leistung für Ihr Wachstum.",
+      "keywords": "Topiqu, Blog-Plattform, KI-Inhalte, Monetarisierung, SaaS-Infrastruktur",
+      "author": "Topiqu Inc."
+    },
+    "tags": {
+      "title": "Thema: {name} {'|'} Topiqu",
+      "description": "Entdecken Sie aktuelle Artikel und Einblicke zum Thema {name}."
+    },
+    "author": {
+      "title": "{name} – Autorenprofil {'|'} Topiqu",
+      "description": "Lesen Sie alle Fachartikel und Beiträge von {name}."
+    }
+  }
+}

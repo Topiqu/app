@@ -376,7 +376,14 @@ const buildArticleConfig = async (
   const imagesRequested = selectedModules?.includes('images') ?? false
   const [researchResult, knowledge] = await Promise.all([
     searchOn && researchQuery
-      ? researchTopic(researchQuery, researchDepth, fallbackWithoutResearch, abortSignal, youtubeRequested, imagesRequested)
+      ? researchTopic(
+          researchQuery,
+          researchDepth,
+          fallbackWithoutResearch,
+          abortSignal,
+          youtubeRequested,
+          imagesRequested,
+        )
       : { brief: null, tokens: 0, sourceCount: 0, sources: [], officialMediaPages: [], status: 'skipped' as const },
     knowledgeQuery ? retrieveKnowledge(clientSiteId, knowledgeQuery, { abortSignal }) : null,
   ])
@@ -775,8 +782,7 @@ export const generateArticle = async (
     research,
     allowGeneratedImages,
     officialMediaPages,
-  } =
-    await buildArticleConfig(clientSiteId, prompt, opts)
+  } = await buildArticleConfig(clientSiteId, prompt, opts)
   let groundingBrief = citationAllowlist
   const first = await generateObject(config)
   let object = first.object
@@ -866,7 +872,10 @@ export const streamArticle = async (
     research,
     allowGeneratedImages,
     officialMediaPages,
-  } = await buildArticleConfig(clientSiteId, prompt, { ...opts, knowledgeQuery: opts.useKnowledge === false ? null : prompt })
+  } = await buildArticleConfig(clientSiteId, prompt, {
+    ...opts,
+    knowledgeQuery: opts.useKnowledge === false ? null : prompt,
+  })
   let groundingBrief = citationAllowlist
   const result = streamObject({ ...config, abortSignal: opts.abortSignal })
 

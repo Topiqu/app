@@ -1,0 +1,105 @@
+{
+  "stats": {
+    "title": "Blogstatistiken",
+    "loading": "Daten werden geladen...",
+    "noArticles": {
+      "title": "Der Blog enthält noch keine Artikel",
+      "description": "Statistiken sind verfügbar, sobald der erste Artikel hinzugefügt wurde"
+    },
+    "totalViews": { "title": "Aufrufe insgesamt" },
+    "savedTime": {
+      "basis": "{time} Arbeit · {words}",
+      "title": "Geschätzte Zeitersparnis",
+      "method": "So wird die Schätzung berechnet",
+      "tooltip": "Geschätzt anhand abgeschlossener KI-Texte: generierte Wörter ÷ {speed} Wörter pro Stunde. Die tatsächliche Zeitersparnis kann abweichen. Die Geldschätzung verwendet {rate} pro Stunde. Recherche und Bilder sind noch nicht berücksichtigt."
+    },
+    "savedAmount": {
+      "title": "Geschätzte Geldersparnis",
+      "estimate": "Geschätzter Zeitwert {amount}",
+      "method": "So wird die Schätzung berechnet",
+      "legacyTooltip": "Diese historische Schätzung basiert auf den Wörtern in Artikeln, die derzeit als vollständig KI-generiert gekennzeichnet sind. Sie dokumentiert keine tatsächliche Generierung und kann sich mit neueren Aufzeichnungen überschneiden. Deshalb werden beide Werte nicht addiert. Berechnet mit {speed} Wörtern und {rate} pro Stunde."
+    },
+    "value": {
+      "words": "KI-generierte Wörter",
+      "wordsCreated": "{count} dokumentierte KI-Wörter",
+      "legacyWordCount": "≈{count} Wörter in KI-Artikeln",
+      "legacyEstimate": "Historisch · {articles}",
+      "legacyArticleCount": "Keine KI-Artikel | {count} KI-Artikel | {count} KI-Artikel",
+      "legacyWords": "{articles} · ungefähr {words} Wörter",
+      "seeAllTime": "Historische Schätzung unter Gesamter Zeitraum ansehen",
+      "noCompletedWriting": "Noch keine abgeschlossenen KI-Texte"
+    },
+    "range": { "label": "Zeitraum der Statistiken", "last30Days": "30 Tage", "allTime": "Gesamter Zeitraum" },
+    "coverage": {
+      "partial": "Unvollständiger Verlauf · frühester bestätigter Eintrag {date}",
+      "unavailable": "Frühere Aktivitäten wurden nicht erfasst"
+    },
+    "duration": {
+      "lessThanMinute": "<1 Min.",
+      "compact": { "minutes": "{count} Min.", "hours": "{count} Std.", "days": "{count} Tg." },
+      "minutes": "keine Minuten | {count} Minute | {count} Minuten",
+      "hours": "keine Stunden | {count} Stunde | {count} Stunden",
+      "days": "keine Tage | {count} Tag | {count} Tage"
+    },
+    "savings": {
+      "words": "Noch keine Wörter | {count} Wort | {count} Wörter",
+      "timeBasis": "{words} ÷ {speed} Wörter/Std.",
+      "amountBasis": "{time} × {rate}/Std.",
+      "tooltip": "Geschätzt anhand abgeschlossener KI-Texte mit dem aktuellen Satz von {rate}/Std. und {speed} Wörtern/Std. Manuelle Bearbeitungen und spätere Speichervorgänge erhöhen den Gesamtwert nicht."
+    },
+    "articleCount": "Veröffentlichte Artikel",
+    "sentiment": { "title": "Deine Community", "current": "Aktuelle Übersicht", "toxicity": "{value} Toxizität" },
+    "totalShares": { "title": "Geteilte Inhalte insgesamt" },
+    "topArticle": { "pluralTitle": "Meistgelesene Artikel", "noViews": "Noch kein Artikel wurde gelesen" },
+    "topTag": { "title": "Beliebtester Tag", "noTags": "Noch keine Tags verwendet", "showAll": "Alle anzeigen" },
+    "topLikedArticle": { "likes": "keine Likes | {count} Like | {count} Likes" },
+    "topCommentedArticle": {},
+    "followerCount": "Aktuelle Follower",
+    "engagementRate": {
+      "title": "Interaktionsrate",
+      "tooltip": "Die Interaktionsrate zeigt, wie aktiv Leser mit deinen Artikeln interagieren. Sie entspricht allen Interaktionen (Likes, Kommentare, geteilte Inhalte und Umfrage-Stimmen) geteilt durch alle Aufrufe des Blogs. Ein höherer Wert bedeutet aktivere Leser."
+    },
+    "topAuthor": { "title": "Aktivster Autor" },
+    "upgradePrompt": {
+      "title": "Premium-Statistiken freischalten",
+      "description": "Erhalte mit erweiterten Diagrammen, Analysen geteilter Inhalte, Interaktionsraten und beliebten Tags tiefere Einblicke in die Leistung deines Blogs. Wechsle zu PRO oder PREMIUM und schöpfe dein Potenzial aus!",
+      "button": "Tarife ansehen"
+    },
+    "charts": {
+      "shareDistribution": "Geteilte Inhalte nach Plattform",
+      "toggleType": "Diagrammtyp wechseln",
+      "showTable": "Als Tabelle anzeigen",
+      "day": "Tag",
+      "platform": "Plattform",
+      "viewsByDay": "Aufrufe in den letzten {days} Tagen",
+      "trackingSince": "Erfasst seit {date} — frühere Aufrufe wurden nicht aufgezeichnet.",
+      "viewsByMonth": "Monatliche Aufrufe",
+      "month": "Monat"
+    },
+    "platforms": {
+      "TWITTER": "X / Twitter",
+      "LINKEDIN": "LinkedIn",
+      "FACEBOOK": "Facebook",
+      "EMAIL": "E-Mail",
+      "OTHER": "Andere"
+    },
+    "updatedAt": "Aktualisiert am",
+    "averageViews": "Ø {count} pro Artikel",
+    "draftCount": "+ 0 Entwürfe | + {count} Entwurf | + {count} Entwürfe",
+    "articlesWritten": "keine Artikel | {count} Artikel | {count} Artikel",
+    "concentration": "Top 3 Artikel = {share} der Aufrufe",
+    "sections": {
+      "content": "Erfolgreichste Inhalte",
+      "audience": "Leserschaft",
+      "authorship": "Wie sie entstanden sind"
+    },
+    "aiInvolvement": {
+      "FULL": "Vollständig mit KI",
+      "ASSIST": "KI + Bearbeitung",
+      "NONE": "Von Hand",
+      "note": "Ältere Bearbeitungen wurden möglicherweise nicht erfasst",
+      "inventoryNote": "Enthält Entwürfe · ältere Bearbeitungen können fehlen"
+    },
+    "viewsUnit": "keine Aufrufe | {count} Aufruf | {count} Aufrufe"
+  }
+}

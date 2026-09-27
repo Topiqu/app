@@ -28,7 +28,7 @@ const find = (result: ReturnType<typeof analyzeArticleOptimization>, id: string)
   result.checks.find((check) => check.id === id)!
 
 describe('article optimization', () => {
-  it.each(['cs', 'en'] as const)('uses human-readable guidance for every check in %s', (locale) => {
+  it.each(['cs', 'en', 'de', 'fr'] as const)('uses human-readable guidance for every check in %s', (locale) => {
     const messages = JSON.parse(readFileSync(join(process.cwd(), `i18n/locales/${locale}/articles.json`), 'utf8'))
     const checks = messages.articles.editor.optimization.checks as Record<
       string,

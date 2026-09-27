@@ -16,7 +16,11 @@ describe('AI visibility signals', () => {
     expect(crawlerSurface('/llms.txt')).toBe('LLMS')
     expect(crawlerSurface('/md/cs/clanky/test.md')).toBe('MARKDOWN')
     expect(crawlerSurface('/en/articles/test')).toBe('ARTICLE')
+    expect(crawlerSurface('/de/artikel/beispiel')).toBe('ARTICLE')
+    expect(crawlerSurface('/fr/articles/exemple')).toBe('ARTICLE')
     expect(crawlerSurface('/en')).toBe('HOMEPAGE')
+    expect(crawlerSurface('/de')).toBe('HOMEPAGE')
+    expect(crawlerSurface('/fr/')).toBe('HOMEPAGE')
     expect(crawlerSurface('/api/anything')).toBe('OTHER')
   })
 
@@ -37,6 +41,8 @@ describe('AI visibility signals', () => {
 
   it('classifies prompt intent and finds only a meaningful article match', () => {
     expect(promptIntent('Jak vybrat nejlepší AI CMS?')).toBe('COMPARISON')
+    expect(promptIntent('Wie vergleichen wir diese Angebote?')).toBe('COMPARISON')
+    expect(promptIntent('Comment résoudre ce problème ?')).toBe('HOW_TO')
     expect(
       closestArticle('Jak automatizovat firemní blog', [
         { title: 'Automatizace firemního blogu' },

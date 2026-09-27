@@ -102,7 +102,9 @@ export const verdictLines = (text: string) =>
   text
     .split('\n')
     .filter((line) =>
-      /^\s*(?:[-*\d.)]+\s*)?(?:SUPPORTED|CONTRADICTED|UNSUPPORTED MATERIAL|NOT VERIFIED)\b/i.test(line.replaceAll('**', '')),
+      /^\s*(?:[-*\d.)]+\s*)?(?:SUPPORTED|CONTRADICTED|UNSUPPORTED MATERIAL|NOT VERIFIED)\b/i.test(
+        line.replaceAll('**', ''),
+      ),
     )
     .join('\n')
     .slice(0, 8_000) || null
