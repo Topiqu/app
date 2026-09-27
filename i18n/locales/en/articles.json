@@ -142,18 +142,18 @@
       "owner": {
         "badge": "Only you can see this",
         "title": "Your blog is ready for its first article",
-        "message": "Visitors land on this page and search engines are told not to index it until the first article goes out. Write it yourself, or have it generated for you.",
+        "message": "Visitors currently see a \"coming soon\" page. Once you publish the first article, the blog opens to them.",
+        "aiCta": "Generate the first article",
         "writeCta": "Write the first article",
-        "aiCta": "Generate with AI",
+        "writeSelfCta": "Write it yourself",
+        "previewCta": "View as a visitor",
+        "previewing": "This is how visitors see the blog right now.",
+        "previewBack": "Back to your overview",
         "adminCta": "Go to admin",
-        "checklistTitle": "Launch checklist",
+        "checklistTitle": "Finish setting up the blog",
         "progress": "{done} of {total} done",
-        "locked": "Available on a higher plan",
+        "address": "Blog address",
         "steps": {
-          "article": {
-            "title": "Publish the first article",
-            "description": "Everything else on the blog builds on it."
-          },
           "branding": {
             "title": "Finish the branding",
             "description": "Add a logo and a short description of the blog."
@@ -163,8 +163,8 @@
             "description": "Tell the AI who it writes for and what the blog is about."
           },
           "domain": {
-            "title": "Verify the domain",
-            "description": "Point your domain at the blog and confirm the DNS record."
+            "title": "Finish verifying the domain",
+            "description": "Point {domain} at the blog and confirm the DNS record."
           }
         }
       }

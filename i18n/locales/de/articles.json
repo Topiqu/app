@@ -142,18 +142,18 @@
       "owner": {
         "badge": "Nur für dich sichtbar",
         "title": "Dein Blog ist bereit für den ersten Artikel",
-        "message": "Besucher landen auf dieser Seite. Suchmaschinen werden angewiesen, sie erst nach der Veröffentlichung des ersten Artikels zu indexieren. Schreibe ihn selbst oder lass ihn generieren.",
+        "message": "Besucher sehen gerade eine „Demnächst“-Seite. Sobald du den ersten Artikel veröffentlichst, ist der Blog für sie offen.",
+        "aiCta": "Ersten Artikel generieren",
         "writeCta": "Ersten Artikel schreiben",
-        "aiCta": "Mit KI generieren",
+        "writeSelfCta": "Selbst schreiben",
+        "previewCta": "Als Besucher ansehen",
+        "previewing": "So sehen Besucher deinen Blog gerade.",
+        "previewBack": "Zurück zu deiner Übersicht",
         "adminCta": "Zur Verwaltung",
-        "checklistTitle": "Checkliste zum Start",
+        "checklistTitle": "Blog fertig einrichten",
         "progress": "{done} von {total} erledigt",
-        "locked": "In einem höheren Tarif verfügbar",
+        "address": "Blogadresse",
         "steps": {
-          "article": {
-            "title": "Ersten Artikel veröffentlichen",
-            "description": "Alles andere im Blog baut darauf auf."
-          },
           "branding": {
             "title": "Markenauftritt vervollständigen",
             "description": "Füge ein Logo und eine kurze Blogbeschreibung hinzu."
@@ -163,8 +163,8 @@
             "description": "Sag der KI, für wen sie schreibt und worum es in deinem Blog geht."
           },
           "domain": {
-            "title": "Domain bestätigen",
-            "description": "Verknüpfe deine Domain mit dem Blog und bestätige den DNS-Eintrag."
+            "title": "Domainbestätigung abschließen",
+            "description": "Verknüpfe {domain} mit dem Blog und bestätige den DNS-Eintrag."
           }
         }
       }

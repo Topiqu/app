@@ -142,18 +142,18 @@
       "owner": {
         "badge": "Tuto stránku vidíte jen vy",
         "title": "Blog je připravený na první článek",
-        "message": "Návštěvníkům se ukáže tato stránka a vyhledávačům říkáme, aby ji neindexovaly, dokud nevyjde první článek. Můžete ho napsat sami, nebo si ho nechat vygenerovat, pokud máte v tarifu alespoň jeden článek.",
+        "message": "Návštěvníci zatím vidí stránku „Už se to chystá“. Jakmile vydáte první článek, blog se jim otevře.",
+        "aiCta": "Vygenerovat první článek",
         "writeCta": "Napsat první článek",
-        "aiCta": "Vygenerovat AI",
+        "writeSelfCta": "Napsat sám",
+        "previewCta": "Zobrazit jako návštěvník",
+        "previewing": "Takhle blog teď vidí návštěvníci.",
+        "previewBack": "Zpět na přehled pro vás",
         "adminCta": "Přejít do administrace",
-        "checklistTitle": "Než blog spustíte",
+        "checklistTitle": "Dokončete nastavení blogu",
         "progress": "Hotovo {done} ze {total}",
-        "locked": "Dostupné ve vyšším tarifu",
+        "address": "Adresa blogu",
         "steps": {
-          "article": {
-            "title": "Vydat první článek",
-            "description": "Všechno ostatní na blogu na něm staví."
-          },
           "branding": {
             "title": "Dodělat vzhled",
             "description": "Přidejte logo a krátký popis blogu."
@@ -163,8 +163,8 @@
             "description": "Nastavte, pro koho má AI psát a o čem blog je."
           },
           "domain": {
-            "title": "Ověřit doménu",
-            "description": "Nasměrujte doménu na blog a potvrďte DNS záznam."
+            "title": "Dokončit ověření domény",
+            "description": "Nasměrujte {domain} na blog a potvrďte DNS záznam."
           }
         }
       }

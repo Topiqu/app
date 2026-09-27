@@ -142,18 +142,18 @@
       "owner": {
         "badge": "Visible uniquement par vous",
         "title": "Votre blog est prêt pour son premier article",
-        "message": "Les visiteurs arrivent sur cette page. Les moteurs de recherche sont priés de ne pas l'indexer avant la publication du premier article. Rédigez-le vous-même ou faites-le générer.",
+        "message": "Les visiteurs voient pour l'instant une page « Bientôt ». Dès que vous publiez le premier article, le blog leur est ouvert.",
+        "aiCta": "Générer le premier article",
         "writeCta": "Rédiger le premier article",
-        "aiCta": "Générer avec l'IA",
+        "writeSelfCta": "Le rédiger moi-même",
+        "previewCta": "Voir en tant que visiteur",
+        "previewing": "Voici ce que les visiteurs voient actuellement.",
+        "previewBack": "Retour à votre aperçu",
         "adminCta": "Accéder à l'administration",
-        "checklistTitle": "Liste de lancement",
+        "checklistTitle": "Terminer la configuration du blog",
         "progress": "{done} sur {total} terminés",
-        "locked": "Disponible avec une offre supérieure",
+        "address": "Adresse du blog",
         "steps": {
-          "article": {
-            "title": "Publier le premier article",
-            "description": "Tout le reste du blog en dépend."
-          },
           "branding": {
             "title": "Finaliser l'identité visuelle",
             "description": "Ajoutez un logo et une courte description du blog."
@@ -163,8 +163,8 @@
             "description": "Indiquez à l'IA à qui elle s'adresse et de quoi parle le blog."
           },
           "domain": {
-            "title": "Vérifier le domaine",
-            "description": "Pointez votre domaine vers le blog et confirmez l'enregistrement DNS."
+            "title": "Terminer la vérification du domaine",
+            "description": "Pointez {domain} vers le blog et confirmez l'enregistrement DNS."
           }
         }
       }

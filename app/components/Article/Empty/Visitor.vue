@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import type { EmptySiteInfo } from '~~/shared/utils/emptySite'
+import type { SiteSetupInfo } from '~~/shared/utils/siteSetup'
 
-defineProps<{ site?: EmptySiteInfo | null }>()
+defineProps<{ site?: SiteSetupInfo | null }>()
 </script>

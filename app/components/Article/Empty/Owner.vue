@@ -17,106 +17,45 @@
     </div>
 
     <div class="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
-      <UButton
-        :to="localePath({ name: 'admin-editor-id', params: { id: 'new' } })"
-        icon="mdi:pencil-plus-outline"
-        size="lg"
-      >
-        {{ $t('articles.empty.owner.writeCta') }}
+      <UButton v-if="canGenerateAi" :to="editorLink({ ai: '1' })" icon="mdi:auto-fix" size="lg">
+        {{ $t('articles.empty.owner.aiCta') }}
       </UButton>
       <UButton
-        v-if="canGenerateAi"
-        :to="localePath({ name: 'admin-editor-id', params: { id: 'new' }, query: { ai: '1' } })"
-        color="neutral"
-        variant="outline"
-        icon="mdi:file-document-outline"
+        :to="editorLink()"
+        icon="mdi:pencil-plus-outline"
         size="lg"
+        :color="canGenerateAi ? 'neutral' : 'primary'"
+        :variant="canGenerateAi ? 'outline' : 'solid'"
       >
-        {{ $t('articles.empty.owner.aiCta') }}
+        {{ $t(canGenerateAi ? 'articles.empty.owner.writeSelfCta' : 'articles.empty.owner.writeCta') }}
       </UButton>
     </div>
 
-    <UCard class="w-full text-left">
-      <header class="flex items-center justify-between gap-4">
-        <h2 class="text-sm font-semibold uppercase tracking-wider text-muted">
-          {{ $t('articles.empty.owner.checklistTitle') }}
-        </h2>
-        <span class="text-xs font-semibold tabular-nums text-muted">
-          {{ $t('articles.empty.owner.progress', progress) }}
-        </span>
-      </header>
+    <ArticleEmptyChecklist class="w-full text-left" />
 
-      <UProgress class="mt-4" :modelValue="progress.percent" :aria-label="$t('articles.empty.owner.checklistTitle')" />
-
-      <ul class="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
-        <li v-for="step in rows" :key="step.id">
-          <UPageCard
-            v-if="!step.locked"
-            :to="step.to"
-            variant="ghost"
-            :title="$t(`articles.empty.owner.steps.${step.id}.title`)"
-            :description="$t(`articles.empty.owner.steps.${step.id}.description`)"
-            :icon="step.done ? 'mdi:check-circle' : step.icon"
-          />
-          <UAlert
-            v-else
-            color="neutral"
-            variant="subtle"
-            icon="mdi:lock-outline"
-            :title="$t(`articles.empty.owner.steps.${step.id}.title`)"
-            :description="$t('articles.empty.owner.locked')"
-          />
-        </li>
-      </ul>
-    </UCard>
-
-    <UButton :to="localePath({ name: 'admin' })" color="neutral" variant="link" trailingIcon="mdi:arrow-right">
-      {{ $t('articles.empty.owner.adminCta') }}
-    </UButton>
+    <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+      <UButton :to="{ query: { preview: 'visitor' } }" color="neutral" variant="link" icon="mdi:eye-outline">
+        {{ $t('articles.empty.owner.previewCta') }}
+      </UButton>
+      <UButton :to="localePath({ name: 'admin' })" color="neutral" variant="link" trailingIcon="mdi:arrow-right">
+        {{ $t('articles.empty.owner.adminCta') }}
+      </UButton>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { RouteLocationRaw } from 'vue-router'
-import type { EmptySetupStepId, EmptySiteInfo } from '~~/shared/utils/emptySite'
+import type { SiteSetupInfo } from '~~/shared/utils/siteSetup'
 
 import { hasAiPlan } from '~~/shared/utils/plans'
-import { buildEmptySetupSteps, emptySetupProgress } from '~~/shared/utils/emptySite'
 
-const { site } = defineProps<{ site?: EmptySiteInfo | null }>()
+const { site } = defineProps<{ site?: SiteSetupInfo | null }>()
 
 const localePath = useLocalePath()
-const config = useRuntimeConfig()
 const { data: status } = await useClientSiteStatus()
 const canGenerateAi = computed(
   () => hasAiPlan(status.value?.plan ?? site?.plan) && Number(status.value?.articlesRemaining ?? 0) > 0,
 )
-
-const stepMeta: Record<EmptySetupStepId, { icon: string; to: () => RouteLocationRaw }> = {
-  article: {
-    icon: 'mdi:file-document-edit-outline',
-    to: () => localePath({ name: 'admin-editor-id', params: { id: 'new' } }),
-  },
-  branding: {
-    icon: 'mdi:palette-outline',
-    to: () => localePath({ name: 'settings', query: { tab: 'branding' } }),
-  },
-  voice: {
-    icon: 'mdi:robot-outline',
-    to: () => localePath({ name: 'settings', query: { tab: 'content' } }),
-  },
-  domain: {
-    icon: 'mdi:web-check',
-    to: () => localePath({ name: 'admin' }),
-  },
-}
-
-const steps = computed(() =>
-  buildEmptySetupSteps(
-    { ...site, focus: status.value?.focus, audience: status.value?.audience },
-    String(config.public.baseDomain || 'topiqu.com'),
-  ),
-)
-const progress = computed(() => emptySetupProgress(steps.value))
-const rows = computed(() => steps.value.map((step) => ({ ...step, ...stepMeta[step.id], to: stepMeta[step.id].to() })))
+const editorLink = (query?: Record<string, string>) =>
+  localePath({ name: 'admin-editor-id', params: { id: 'new' }, query })
 </script>
