@@ -30,7 +30,7 @@ model Comment with Base, Ownable {
 
     @@allow('read', true)
     @@allow('create', auth() != null)
-    @@allow('update,delete', auth().id == userId || auth().role == 'admin')
+    @@allow('update,delete', auth().id == userId || (auth().role == 'admin' && article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
     @@index([sentimentStatus])
 }
 
@@ -41,7 +41,7 @@ model CommentReaction with Ownable {
     @@id([userId, commentId])
     @@allow('create', auth().id != null)
     @@allow('update', auth().id == userId)
-    @@allow('delete', auth().id == userId || auth().role == 'admin')
+    @@allow('delete', auth().id == userId || (auth().role == 'admin' && comment.article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
     @@allow('read', true)
 }
 
@@ -63,6 +63,6 @@ model EmojiReaction with Ownable {
     emoji     Emoji   @relation(fields: [emojiId], references: [id], onDelete: Cascade)
     @@id([userId, commentId, emojiId])
     @@allow('create', auth().id != null)
-    @@allow('delete', auth().id == userId || auth().role == 'admin')
+    @@allow('delete', auth().id == userId || (auth().role == 'admin' && comment.article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
     @@allow('read', true)
 }

@@ -57,7 +57,7 @@ model ArticleDraft with Base, Ownable {
     coverMedia   MediaAsset? @relation("ArticleDraftCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
     clientSiteId String
     clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
-    @@allow('all', auth().id == userId || auth().role == 'admin')
+    @@allow('all', auth().id == userId || (auth().role == 'admin' && clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
     @@index([userId, updatedAt])
 }
 model Article with Base, Ownable {
@@ -196,7 +196,7 @@ model ArticleShare with Base {
     @@unique([articleId, platform, userId, sessionId])
     @@allow('create', true)
     @@allow('read', true)
-    @@allow('delete', auth().role == 'admin')
+    @@allow('delete', (auth().role == 'admin' && article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
 }
 
 model Tag with Base {
@@ -206,7 +206,7 @@ model Tag with Base {
     clientSite   ClientSite?  @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     articles     ArticleTag[]
     @@allow('read', true)
-    @@allow('all', auth().role == 'admin')
+    @@allow('all', (auth().role == 'admin' && clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
 }
 
 model ArticleTag {
@@ -216,7 +216,7 @@ model ArticleTag {
     tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
     @@id([articleId, tagId])
     @@allow('read', true)
-    @@allow('all', auth().role == 'admin')
+    @@allow('all', (auth().role == 'admin' && article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
 }
 
 model ArticleFeedback with Base {
@@ -245,5 +245,5 @@ model ArticleReaction with Base {
     @@unique([articleId, userId, sessionId])
     @@allow('create', true)
     @@allow('read', true)
-    @@allow('delete', auth().id == userId || auth().role == 'admin')
+    @@allow('delete', auth().id == userId || (auth().role == 'admin' && article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
 }

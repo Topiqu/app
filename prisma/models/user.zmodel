@@ -55,8 +55,10 @@ model User with Base {
     tenantInvitations             TenantInvitation[] @relation("InvitationSender")
     @@allow('read', true)
     @@allow('create', true)
-    @@allow('update', auth().id == id || auth().role == 'superadmin')
-    @@allow('all', auth().role == 'admin' || auth().role == 'superadmin')
+    @@allow('update', auth().id == id)
+    // The publication's AI persona is site configuration, edited by that site's admins.
+    @@allow('update', auth().role == 'admin' && role == 'ai' && clientSiteId == auth().clientSiteId)
+    @@allow('all', auth().role == 'superadmin')
     @@index([username, email, role, language, allowNotifs])
 }
 
@@ -120,7 +122,7 @@ model Follow {
     createdAt  DateTime @default(now())
     @@id([followerId, followedId])
     @@allow('create', auth().id == followerId)
-    @@allow('delete', auth().id == followerId || auth().role == 'admin')
+    @@allow('delete', auth().id == followerId || auth().role == 'superadmin')
     @@allow('read', true)
 }
 
