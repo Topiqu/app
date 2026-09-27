@@ -43,8 +43,10 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
   // and recognising that echo saves a second full-document `getHTML()` per keystroke burst —
   // the watcher below otherwise serialises the whole article just to compare it with itself.
   let lastEmitted: string | null = null
+  let contentVersion = 0
 
-  const debouncedChange = useDebounceFn((html: string) => {
+  const debouncedChange = useDebounceFn((html: string, version: number) => {
+    if (version !== contentVersion) return
     lastEmitted = html
     opts.onChange(html)
   }, 200)
@@ -118,14 +120,16 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
         return true
       },
     },
-    onUpdate: ({ editor }) => debouncedChange(editor.getHTML()),
+    onUpdate: ({ editor }) => debouncedChange(editor.getHTML(), contentVersion),
   })
 
   watch(opts.content, (v) => {
     // Anything the parent transforms on the way through (sanitising, AI streaming, loading a
-    // draft) differs from what we emitted and still takes the full compare below.
+    // draft) differs from what we emitted and still takes the full compare below. Loading a
+    // translation must not emit an edit event: Tiptap may normalize its HTML while parsing it.
     if (v === lastEmitted) return
-    if (editor.value?.getHTML() !== v) editor.value?.commands.setContent(v ?? '<p></p>')
+    contentVersion++
+    if (editor.value?.getHTML() !== v) editor.value?.commands.setContent(v ?? '<p></p>', { emitUpdate: false })
   })
   watchEffect(() => editor.value?.setEditable(opts.edit.value))
   onBeforeUnmount(() => editor.value?.destroy())
