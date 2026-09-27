@@ -2,7 +2,7 @@ import { generateText } from 'ai'
 
 /**
  * Expands a terse article topic into a fuller brief. Returns `usage` because every other AI
- * call on this platform is billed through `consumeClientTokens` and this one must be too.
+ * call on this platform is logged through `recordAiUsage` and this one must be too.
  */
 export const enhancePrompt = async (prompt: string) => {
   const { text, usage } = await generateText({

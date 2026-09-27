@@ -68,7 +68,6 @@ export default defineEventHandler(async (event) => {
           // The trial is a real plan, not a UI state — `firstPaidAt` stays null as the paid
           // marker, and `trial-expiry` drops a card-less tenant back to BASIC after TRIAL_DAYS.
           plan: TRIAL_PLAN,
-          tokenRemaining: 0,
           trialStartedAt,
           trialEndsAt,
           firstPaidAt: null,

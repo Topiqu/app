@@ -17,8 +17,6 @@ describe('client site field partition', () => {
     }
     expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).toContain('gamNetworkCode')
     expect(PRIVILEGED_CLIENT_SITE_FIELDS).not.toContain('gamNetworkCode')
-    expect(PRIVILEGED_CLIENT_SITE_FIELDS).not.toContain('tokenLimit')
-    expect(TENANT_EDITABLE_CLIENT_SITE_FIELDS).not.toContain('tokenRemaining')
   })
 
   it('never lets a field sit in both sets', () => {
@@ -64,8 +62,6 @@ describe('public client site read projection', () => {
       'stripeCustomerId',
       'stripeSubscriptionId',
       'stripePriceId',
-      'tokenRemaining',
-      'totalUsage',
       'monthlyPayment',
       'annualPayment',
       'communityInsight',

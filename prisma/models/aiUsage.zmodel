@@ -1,0 +1,15 @@
+import "./client"
+
+/// Provider usage per AI call. Internal cost telemetry, never a customer entitlement.
+model AiUsage {
+    id           String     @id @default(uuid())
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    action       String
+    tokens       Int
+    metadata     Json
+    createdAt    DateTime   @default(now())
+    @@index([clientSiteId, createdAt])
+    @@index([action, createdAt])
+    @@deny('all', true)
+}

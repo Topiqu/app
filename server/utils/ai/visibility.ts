@@ -4,7 +4,6 @@ import { closestArticle, isOwnedDomain, mentionsBrand, normalizeCitationUrl } fr
 import { configuredVisibilityProviderRuns, runVisibilityProvider } from './visibilityProviderRunner'
 
 const SAMPLE_SIZE = 6
-export const VISIBILITY_TOKEN_BUDGET = 15_000
 
 const citationRows = (
   sources: readonly { sourceType: string; url?: string; title?: string }[],
@@ -237,7 +236,7 @@ export const runVisibilityPrompt = async (promptId: string, actorId?: string) =>
     }
   }
 
-  await consumeClientTokens(
+  await recordAiUsage(
     prompt.clientSiteId,
     succeeded.reduce((sum, outcome) => sum + outcome.totalTokens, 0),
     'AI_VISIBILITY_CHECKED',

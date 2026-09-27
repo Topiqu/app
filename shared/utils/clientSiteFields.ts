@@ -64,8 +64,6 @@ export const CLIENT_SITE_SECRET_FIELDS = [
   'stripeCustomerId',
   'stripeSubscriptionId',
   'stripePriceId',
-  'tokenRemaining',
-  'totalUsage',
   'monthlyPayment',
   'annualPayment',
   'billingPlan',

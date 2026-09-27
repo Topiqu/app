@@ -54,13 +54,10 @@ describe('article media finalization', () => {
   ])('enforces site and request permissions before synthesis: %j', async ({ plan, isActive, requested }) => {
     vi.stubGlobal('prisma', {
       clientSite: {
-        findFirstOrThrow: vi
-          .fn()
-          .mockResolvedValue({ tokenRemaining: 10000, language: 'en', plan, features: [{ isActive }] }),
+        findFirstOrThrow: vi.fn().mockResolvedValue({ language: 'en', plan, features: [{ isActive }] }),
       },
       knowledgeSource: { findFirst: vi.fn().mockResolvedValue(null) },
     })
-    vi.stubGlobal('currentTokenOperation', () => null)
     vi.stubGlobal('aiModel', () => 'test-model')
     vi.mocked(findStockImage).mockResolvedValue(null)
     const generation = await streamArticle('site', 'Game design', { research: false, allowGeneratedImages: requested })

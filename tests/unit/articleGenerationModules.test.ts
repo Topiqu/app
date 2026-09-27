@@ -5,7 +5,7 @@ import { shallowMount } from '@vue/test-utils'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 
 import SettingsPanel from '../../app/components/Article/Editor/SettingsPanel.vue'
-import { articleGenerationReservation, defaultArticleGenerationOptions } from '../../shared/utils/articleGeneration'
+import { defaultArticleGenerationOptions } from '../../shared/utils/articleGeneration'
 
 mockNuxtImport('useLocalePath', () => () => (route: unknown) => route)
 
@@ -64,21 +64,5 @@ describe('article generation module selection', () => {
     expect(wrapper.find<HTMLInputElement>('input[value="faq"]').exists()).toBe(false)
     expect(wrapper.get<HTMLInputElement>('input[value="poll"]').element.disabled).toBe(false)
     wrapper.unmount()
-  })
-})
-
-describe('article generation reservation', () => {
-  it('sizes each run independently by research depth, video work and the configured ratio', () => {
-    const options = defaultArticleGenerationOptions()
-    expect(articleGenerationReservation(options)).toBe(40_000)
-
-    options.modules.push('youtube')
-    expect(articleGenerationReservation(options)).toBe(40_500)
-
-    options.research.depth = 'deep'
-    expect(articleGenerationReservation(options, 2)).toBe(87_000)
-
-    options.research.enabled = false
-    expect(articleGenerationReservation(options)).toBe(24_500)
   })
 })

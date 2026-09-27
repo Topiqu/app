@@ -21,9 +21,7 @@ A successful generation settles the reservation as one debit. Errors and user ca
 
 ## Internal token metering
 
-Provider tokens remain an internal cost and observability metric. `TokenWallet`, `TOKEN_RATIO`, and per-operation token reservations are not an entitlement and are never exposed as customer balance. If internal capacity is lower than a provider risk reservation, the cost meter creates internal capacity rather than rejecting customer-authorized work. A metering failure is reported for operations but does not convert a completed article into a failed customer run.
-
-The current risk reservations (24k–43.5k for manual generation and 40.5k for scheduled generation) remain useful for cost attribution and anomaly detection. They do not determine whether the customer may start; the article reservation does.
+Provider tokens are an internal cost metric: `recordAiUsage` appends one `AiUsage` row per AI call. There is no token balance or reservation, so metering can never reject customer-authorized work, and a logging failure is reported without failing the run.
 
 ## Stripe and administration
 
@@ -33,4 +31,4 @@ Superadmins can add, bonus, debit, or return whole articles with a required reas
 
 ## Deployment
 
-There are no paying customers to migrate. Deploy the `20260919143000_article_credits` migration, regenerate Prisma/ZenStack clients, and deploy the application and scheduler together. Legacy token tables and `ClientSite.tokenRemaining` stay temporarily for internal cost telemetry only and can be removed in a later schema cleanup after operational dashboards no longer depend on them.
+There are no paying customers to migrate. Deploy the `20260919143000_article_credits` migration, regenerate Prisma/ZenStack clients, and deploy the application and scheduler together. The token wallet tables were dropped by `20260927190000_ai_usage`, which copies completed usage into `AiUsage`; deploy it with workers stopped.

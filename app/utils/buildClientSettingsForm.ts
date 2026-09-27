@@ -3,14 +3,10 @@ import type { SocialPlatform, ClientSite as _ClientSite } from '~~/generated/zen
 
 import { parseBrandGradient, type BrandGradient } from '~~/shared/utils/publicationBranding'
 
-export interface ClientSite extends Omit<
-  _ClientSite,
-  'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'lastTokenRefilled'
-> {
+export interface ClientSite extends Omit<_ClientSite, 'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt'> {
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT' | null
   nextBillingAt: string | null
   lastGeneratedAt: string | null
-  lastTokenRefilled: string | null
   activeFeatures: string[] | null
   keywords: string[] | null
   allowedFeatures: {

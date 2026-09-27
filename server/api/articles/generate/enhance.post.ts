@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { consumeClientTokens } from '~~/server/utils/consumeTokens'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -21,17 +20,7 @@ export default defineEventHandler(async (event) => {
     }).parse,
   )
 
-  return withTokenReservation(
-    user.clientSiteId,
-    1000,
-    'ENHANCE_PROMPT',
-    async () => {
-      const { text, usage } = await enhancePrompt(prompt)
-
-      await consumeClientTokens(user.clientSiteId, usage.totalTokens ?? 0, 'ENHANCE_PROMPT', { usage }, event)
-
-      return { prompt: text }
-    },
-    tokenRequestKey(event, user.clientSiteId, 'ENHANCE_PROMPT'),
-  )
+  const { text, usage } = await enhancePrompt(prompt)
+  await recordAiUsage(user.clientSiteId, usage.totalTokens ?? 0, 'ENHANCE_PROMPT', { usage }, event)
+  return { prompt: text }
 })

@@ -202,8 +202,8 @@ export const translationSchema = z.object({
 
 /**
  * Translates an article into `targetLang` via `aiModel('translation')`, preserving structure and poll/
- * embed integrity (ids never reach the model). Pure of billing — the caller charges
- * tokens from the returned `usage` via `consumeClientTokens`.
+ * embed integrity (ids never reach the model). The caller logs the returned `usage`
+ * via `recordAiUsage`.
  */
 export const generateTranslation = async (article: TranslatableArticle, targetLang: Language) => {
   const targetName = LANGUAGE_NAMES[targetLang]

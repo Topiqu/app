@@ -1,10 +1,10 @@
 import { z } from 'zod'
+import { randomUUID } from 'node:crypto'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import {
   ARTICLE_GENERATION_FORMATS,
   ARTICLE_GENERATION_MODULES,
   RESEARCH_DEPTHS,
-  articleGenerationReservation,
   defaultArticleGenerationOptions,
 } from '~~/shared/utils/articleGeneration'
 
@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
   )
 
   const clientSiteId = user.clientSiteId
-  const attemptId = tokenRequestKey(event, clientSiteId, 'MANUAL_GENERATION')
+  const attemptId = randomUUID()
   const auditAttempt = async (action: string, metadata: Record<string, unknown> = {}) => {
     try {
       await logAction({
@@ -118,7 +118,6 @@ export default defineEventHandler(async (event) => {
 
   const generationOptions = options ?? defaultArticleGenerationOptions()
   const articleReservation = await reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE', attemptId, runConfig)
-  let reservation
   try {
     recoverySession = await createGenerationSession({
       attemptId,
@@ -128,19 +127,13 @@ export default defineEventHandler(async (event) => {
       prompt,
       options: generationOptions,
     })
-    reservation = await reserveTokens(
-      clientSiteId,
-      articleGenerationReservation(generationOptions, TOKEN_RATIO),
-      'MANUAL_GENERATION',
-      attemptId,
-    )
   } catch (error) {
-    await settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'token_metering' })
+    await settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'session' })
     throw error
   }
   const stream = new ReadableStream({
     async start(controller) {
-      return runReservedTokens(reservation, async () => {
+      try {
         // Bun closes an HTTP connection after 10 seconds without bytes by default. Research and the
         // writer's time-to-first-token can both exceed that, so keep the response active below both
         // Bun's idle timeout and Cloudflare's proxy timeout while useful work is still running.
@@ -277,32 +270,25 @@ export default defineEventHandler(async (event) => {
           )
 
           const apiTokens = (usage.totalTokens || 0) + researchTokens + generation.editorialTokens
-          try {
-            await consumeClientTokens(
-              clientSiteId,
-              apiTokens,
-              'MANUAL_GENERATION_COMPLETED',
-              {
-                attemptId,
-                title: finalized.title,
-                usage,
-                researchTokens,
-                editorialTokens: generation.editorialTokens,
-                editorialReview: generation.editorialReview,
-                metrics,
-                aiInvolvement: 'ASSIST',
-                createdAt: new Date(),
-                ...runConfig,
-              },
-              event,
-              user.id,
-            )
-            await commitTokenUsage()
-          } catch (meteringError) {
-            // Provider usage is internal cost telemetry. A metering outage must not turn a completed,
-            // customer-authorized article into a failed run or release its article reservation.
-            await reportCaughtError('Article cost metering failed', meteringError, { attemptId, clientSiteId })
-          }
+          await recordAiUsage(
+            clientSiteId,
+            apiTokens,
+            'MANUAL_GENERATION_COMPLETED',
+            {
+              attemptId,
+              title: finalized.title,
+              usage,
+              researchTokens,
+              editorialTokens: generation.editorialTokens,
+              editorialReview: generation.editorialReview,
+              metrics,
+              aiInvolvement: 'ASSIST',
+              createdAt: new Date(),
+              ...runConfig,
+            },
+            event,
+            user.id,
+          )
           recoverySnapshot = { ...recoverySnapshot, ...finalized }
           await checkpointGeneration(recoverySession!.id, 'final', recoverySnapshot)
           const articleWallet = await settleArticleCredit(articleReservation, true, {
@@ -319,7 +305,7 @@ export default defineEventHandler(async (event) => {
           send(controller, { type: 'billing', articlesCharged: 1, articlesRemaining: articleWallet.available })
         } catch (error: any) {
           if (abortController.signal.aborted && !timedOutStage) {
-            // Stopped mid-generation: bill best-effort for the partial usage we actually spent.
+            // Stopped mid-generation: log the partial usage we actually spent.
             // Research is included because it completes before the first token streams, so Stop
             // never gets it back.
             const usage = await generation?.result.usage.catch(() => null)
@@ -327,31 +313,20 @@ export default defineEventHandler(async (event) => {
               (usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0) + (generation?.editorialTokens ?? 0) > 0
             const chargeInterrupted = hasProviderUsage && hasUsefulGenerationSnapshot(recoverySnapshot)
             if (hasProviderUsage) {
-              try {
-                await consumeClientTokens(
-                  clientSiteId,
-                  (usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0) + (generation?.editorialTokens ?? 0),
-                  'MANUAL_GENERATION_ABORTED',
-                  {
-                    attemptId,
-                    usage,
-                    researchTokens: generation?.researchTokens ?? 0,
-                    stage: textDone ? 'finalization' : 'writing',
-                    ...runConfig,
-                  },
-                  event,
-                  user.id,
-                )
-              } catch (billingError) {
-                await auditAttempt('MANUAL_GENERATION_ABORTED', {
-                  stage: textDone ? 'finalization' : 'writing',
-                  billingError: billingError instanceof Error ? billingError.message : String(billingError),
-                })
-                await reportCaughtError('Aborted article generation billing failed', billingError, {
+              await recordAiUsage(
+                clientSiteId,
+                (usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0) + (generation?.editorialTokens ?? 0),
+                'MANUAL_GENERATION_ABORTED',
+                {
                   attemptId,
-                  clientSiteId,
-                })
-              }
+                  usage,
+                  researchTokens: generation?.researchTokens ?? 0,
+                  stage: textDone ? 'finalization' : 'writing',
+                  ...runConfig,
+                },
+                event,
+                user.id,
+              )
             } else {
               await auditAttempt('MANUAL_GENERATION_ABORTED', {
                 stage: textDone ? 'finalization' : 'writing',
@@ -420,7 +395,7 @@ export default defineEventHandler(async (event) => {
             // already closed by the client
           }
         }
-      }).catch((error) => {
+      } catch (error: any) {
         settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'stream' }).catch(() => undefined)
         send(controller, { type: 'error', message: error.message })
         try {
@@ -428,7 +403,7 @@ export default defineEventHandler(async (event) => {
         } catch {
           /* already closed */
         }
-      })
+      }
     },
     async cancel(reason) {
       abortController.abort()

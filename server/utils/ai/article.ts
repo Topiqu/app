@@ -150,9 +150,6 @@ const RESEARCH_CONFIG = {
   { maxOutputTokens: number; timeoutMs: number; searchContextSize: 'low' | 'medium' | 'high' }
 >
 
-/** Minimum balance to start an article at all, before research is considered. */
-const ARTICLE_TOKEN_FLOOR = 1500
-
 const researchYoutube = async (prompt: string, abortSignal?: AbortSignal) => {
   const signal = abortSignal ? AbortSignal.any([abortSignal, AbortSignal.timeout(25_000)]) : AbortSignal.timeout(25_000)
 
@@ -310,7 +307,6 @@ const buildArticleConfig = async (
   } = {},
 ) => {
   const {
-    tokenRemaining: unreservedTokens,
     focus,
     keywords,
     audience,
@@ -324,7 +320,6 @@ const buildArticleConfig = async (
     features,
   } = await prisma.clientSite.findFirstOrThrow({
     select: {
-      tokenRemaining: true,
       plan: true,
       features: { where: { feature: { code: 'AI' } }, select: { isActive: true } },
       language: true,
@@ -340,15 +335,6 @@ const buildArticleConfig = async (
     where: { id: clientSiteId },
   })
   const articleLanguage = requestedLanguage ?? language
-
-  const tokenRemaining = currentTokenOperation()?.budget ?? unreservedTokens
-  if (!tokenRemaining || tokenRemaining < ARTICLE_TOKEN_FLOOR)
-    throw createError({
-      statusCode: 403,
-      statusMessage: `Insufficient tokens (minimum ${ARTICLE_TOKEN_FLOOR} required)`,
-    })
-
-  const maxOutputTokens = Math.min(tokenRemaining, 8000)
 
   const getControversyPrompt = (level: string | null) => {
     switch (level) {
@@ -367,19 +353,13 @@ const buildArticleConfig = async (
 
   const controversyPrompt = getControversyPrompt(aiControversyLevel)
 
-  // Research used to be a PREMIUM / large-CUSTOM perk, which made an empty `sources` array the
-  // guaranteed outcome everywhere else — with no brief the model is told to return one. Open to
-  // every AI plan now. The enclosing operation's internal cost budget decides whether research
-  // fits; customer authorization is the separate one-article reservation.
-  const researchBudget = RESEARCH_CONFIG[researchDepth].maxOutputTokens
-  const searchOn = tokenRemaining >= ARTICLE_TOKEN_FLOOR + researchBudget
   const researchQuery = researchOption === undefined ? prompt : researchOption ? researchOption.query : null
   const knowledgeQuery = knowledgeQueryOption === undefined ? researchQuery : knowledgeQueryOption
   const selectedModules = format ? selectedModulesFor(format, modules) : null
   const youtubeRequested = selectedModules?.includes('youtube') ?? false
   const imagesRequested = selectedModules?.includes('images') ?? false
   const [researchResult, knowledge] = await Promise.all([
-    searchOn && researchQuery
+    researchQuery
       ? researchTopic(
           researchQuery,
           researchDepth,
@@ -536,7 +516,7 @@ const buildArticleConfig = async (
     config: {
       model: aiModel('articleWriter'),
       providerOptions: { openai: { reasoningEffort: 'medium' } },
-      maxOutputTokens,
+      maxOutputTokens: 8000,
       instructions,
       prompt,
       schema: articleSchema,

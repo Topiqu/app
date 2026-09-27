@@ -1,5 +1,5 @@
 import "./base"
-import "./tokenWallet"
+import "./aiUsage"
 import "./articleCreditWallet"
 import "./article"
 import "./user"
@@ -99,10 +99,7 @@ model ClientSite with Base {
     headingFontUrl       String?             @length(0, 255)
     bodyFontUrl          String?             @length(0, 255)
     generationFrequency  GenerationFrequency @default(NONE)
-    tokenRemaining       Int?                @default(0)
-    tokenWallet          TokenWallet?
     articleCreditWallet  ArticleCreditWallet?
-    totalUsage           Int?                @default(0)
     autoRelease          Boolean             @default(false)
     mediaAssets          MediaAsset[]
     articleMediaUsages   ArticleMediaUsage[]
@@ -139,7 +136,6 @@ model ClientSite with Base {
     stripePriceId        String?
     currency             String?             @default('USD')
     lastPaidAt           DateTime?           @default(now())
-    lastTokenRefilled    DateTime?           @default(now())
     language             Language            @default(en)
     theme                Theme               @default(blue)
     translationMode      TranslationMode     @default(OFF)
@@ -167,6 +163,7 @@ model ClientSite with Base {
     aiVisibilityRuns    AiVisibilityRun[]
     aiCitations         AiCitation[]
     aiOpportunities     AiVisibilityOpportunity[]
+    aiUsages            AiUsage[]
     tenantMemberships    TenantMembership[]
     tenantInvitations    TenantInvitation[]
     activeSessions       Session[] @relation("SessionActiveTenant")

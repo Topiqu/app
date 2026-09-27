@@ -40,7 +40,6 @@ export default defineEventHandler(async (event) => {
         ...domainVerificationDefaults(body.domain, randomBytes(24).toString('base64url')),
         plan: body.plan,
         generationFrequency: body.generationFrequency,
-        tokenRemaining: 0,
         focus: body.focus || '',
         keywords:
           Array.isArray(body.keywords) && body.keywords.every((k: any) => typeof k === 'string') && body.keywords.length

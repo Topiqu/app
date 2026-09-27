@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { runArticleFactCheck } from '~~/server/utils/ai/factCheck'
-import { consumeClientTokens } from '~~/server/utils/consumeTokens'
 import { FACT_CHECK_LIMITS } from '~~/shared/utils/articleFactCheck'
 import { inspectFactCheckSources } from '~~/server/utils/factCheckSources'
 
@@ -35,29 +34,21 @@ export default defineEventHandler(async (event) => {
   const sources = input.sources.map((source) => source.trim()).filter(Boolean)
   const inspected = await inspectFactCheckSources(sources)
 
-  return withTokenReservation(
+  let checked: Awaited<ReturnType<typeof runArticleFactCheck>>
+  try {
+    checked = await runArticleFactCheck({ ...input, sources }, inspected)
+  } catch (error) {
+    console.error('Article fact-check provider failed', error)
+    throw createError({ statusCode: 503, message: 'AI service is temporarily unavailable' })
+  }
+  const { result, usage } = checked
+  await recordAiUsage(
     user.clientSiteId,
-    40_000,
+    usage.totalTokens ?? 0,
     'ARTICLE_FACT_CHECK',
-    async () => {
-      let checked: Awaited<ReturnType<typeof runArticleFactCheck>>
-      try {
-        checked = await runArticleFactCheck({ ...input, sources }, inspected)
-      } catch (error) {
-        console.error('Article fact-check provider failed', error)
-        throw createError({ statusCode: 503, message: 'AI service is temporarily unavailable' })
-      }
-      const { result, usage } = checked
-      await consumeClientTokens(
-        user.clientSiteId,
-        usage.totalTokens ?? 0,
-        'ARTICLE_FACT_CHECK',
-        { claimCount: result.counts.total, sourceCount: sources.length, usage },
-        event,
-        user.id,
-      )
-      return result
-    },
-    tokenRequestKey(event, user.clientSiteId, 'ARTICLE_FACT_CHECK'),
+    { claimCount: result.counts.total, sourceCount: sources.length, usage },
+    event,
+    user.id,
   )
+  return result
 })

@@ -1,5 +1,3 @@
-import { consumeClientTokens } from '~~/server/utils/consumeTokens'
-
 export default defineMonitoredTask({
   meta: {
     name: 'sentiment-analysis',
@@ -31,20 +29,18 @@ export default defineMonitoredTask({
     }
 
     const results = await Promise.allSettled(
-      comments.map(async (c) =>
-        withTokenReservation(c.article.clientSite.id, 500, 'SENTIMENT_ANALYSIS', async () => {
-          const { object, usage } = await detectSentiment(c.content, c.article.clientSite.plan)
-          await prisma.comment.update({
-            where: { id: c.id },
-            data: { sentiment: object, sentimentStatus: 'PROCESSED' },
-          })
-          await consumeClientTokens(c.article.clientSite.id, usage.totalTokens ?? 0, 'SENTIMENT_ANALYSIS', {
-            usage,
-            commentId: c.id,
-          })
-          return { object, usage, clientSiteId: c.article.clientSite.id }
-        }),
-      ),
+      comments.map(async (c) => {
+        const { object, usage } = await detectSentiment(c.content, c.article.clientSite.plan)
+        await prisma.comment.update({
+          where: { id: c.id },
+          data: { sentiment: object, sentimentStatus: 'PROCESSED' },
+        })
+        await recordAiUsage(c.article.clientSite.id, usage.totalTokens ?? 0, 'SENTIMENT_ANALYSIS', {
+          usage,
+          commentId: c.id,
+        })
+        return { object, usage, clientSiteId: c.article.clientSite.id }
+      }),
     )
 
     const updates = results.map((r, i) => {

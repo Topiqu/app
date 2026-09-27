@@ -114,10 +114,6 @@ export default defineEventHandler(async (event) => {
   const domainChanged = typeof data.domain === 'string' && data.domain !== clientSite.domain
   if (domainChanged) Object.assign(data, domainVerificationDefaults(data.domain, randomBytes(24).toString('base64url')))
 
-  // Credit changes require an audited wallet adjustment, never a settings save.
-  if ('tokenLimit' in body || 'tokenRemaining' in body)
-    throw createError({ statusCode: 400, message: 'Use audited wallet adjustments to change article allowances' })
-
   if (scalarBody.description !== undefined)
     data.description = scalarBody.description ? sanitizeHtml(scalarBody.description) : null
   if (scalarBody.deletedAt !== undefined) {

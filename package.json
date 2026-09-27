@@ -34,7 +34,6 @@
     "seo:check": "bun run scripts/seo-check.ts",
     "openapi:generate": "bun run scripts/generate-openapi.ts",
     "openapi:check": "bun run scripts/generate-openapi.ts --check",
-    "db:seed-tokens": "bun run scripts/seed-tokens.ts",
     "media:backfill": "bun run scripts/backfill-media-library.ts",
     "stats:backfill-generations": "bun run scripts/backfill-generation-word-counts.ts"
   },

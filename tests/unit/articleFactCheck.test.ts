@@ -24,12 +24,13 @@ const claim = (overrides: Partial<FactCheckClaim> = {}): FactCheckClaim => ({
 })
 
 describe('article fact-check helpers', () => {
-  it('uses the standard AI entitlement and token-ledger flow', () => {
+  it('uses the standard AI entitlement and usage logging', () => {
     const endpoint = readFileSync(resolve(process.cwd(), 'server/api/articles/fact-check.post.ts'), 'utf8')
     expect(endpoint).toContain("requireTenantScope(event, 'AI_USE'")
     expect(endpoint).toContain('requireAiPlan(')
-    expect(endpoint).toContain("withTokenReservation(\n    user.clientSiteId,\n    40_000,\n    'ARTICLE_FACT_CHECK'")
-    expect(endpoint).toContain('consumeClientTokens(\n        user.clientSiteId')
+    expect(endpoint).toContain(
+      "recordAiUsage(\n    user.clientSiteId,\n    usage.totalTokens ?? 0,\n    'ARTICLE_FACT_CHECK'",
+    )
     expect(endpoint).toContain("'ARTICLE_FACT_CHECK'")
   })
 

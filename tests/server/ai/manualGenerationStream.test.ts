@@ -125,11 +125,11 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain("type: 'billing', articlesCharged: 1, articlesRemaining: articleWallet.available")
   })
 
-  it('holds one customer-visible article while retaining internal cost metering', () => {
+  it('holds one customer-visible article and logs provider usage separately', () => {
     expect(endpoint).toContain("reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE'")
     expect(endpoint).toContain("send(controller, { type: 'reservation', articles: 1 })")
-    expect(endpoint).toContain('articleGenerationReservation(generationOptions, TOKEN_RATIO)')
-    expect(endpoint).not.toContain('reserveAvailableTokens')
+    expect(endpoint).toContain("'MANUAL_GENERATION_COMPLETED'")
+    expect(endpoint).not.toContain('reserveTokens')
   })
 
   it('stamps every billed run with the options and models that drove its cost', () => {

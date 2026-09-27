@@ -13,13 +13,7 @@ export default defineEventHandler(async (event) => {
   if (!['PREMIUM', 'CUSTOM'].includes(prompt.clientSite.plan))
     throw createError({ statusCode: 403, message: 'AI visibility monitoring requires Premium' })
 
-  const result = await withTokenReservation(
-    prompt.clientSiteId,
-    VISIBILITY_TOKEN_BUDGET,
-    'AI_VISIBILITY',
-    () => runVisibilityPrompt(prompt.id, user.id),
-    tokenRequestKey(event, prompt.clientSiteId, 'AI_VISIBILITY'),
-  )
+  const result = await runVisibilityPrompt(prompt.id, user.id)
   if (result.status === 'failed') throw createError({ statusCode: 502, message: result.error })
   if (result.status === 'skipped')
     throw createError({

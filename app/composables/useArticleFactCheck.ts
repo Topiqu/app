@@ -51,7 +51,6 @@ export const useArticleFactCheck = (input: MaybeRefOrGetter<ArticleFactCheckInpu
     try {
       result.value = await $fetch<ArticleFactCheckResult>('/api/articles/fact-check', {
         method: 'POST',
-        headers: { 'idempotency-key': crypto.randomUUID() },
         body: current,
       })
       analyzedSnapshot = runSnapshot

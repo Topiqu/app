@@ -27,8 +27,8 @@ describe('AI visibility monitoring contracts', () => {
     expect(runner).toContain('Visibility check timed out before completion')
   })
 
-  it('records usage under a reservation and logs both success and failure', () => {
-    expect(runner).toContain('consumeClientTokens(')
+  it('logs usage and both success and failure', () => {
+    expect(runner).toContain('recordAiUsage(')
     expect(runner).toContain("'AI_VISIBILITY_CHECKED'")
     expect(runner).toContain("logger.info('ai visibility prompt completed'")
     expect(runner).toContain("logger.error('ai visibility provider failed'")

@@ -48,78 +48,70 @@ export default defineEventHandler(async (event) => {
   if (!targetLang || targetLang === sourceLang)
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
-  return withTokenReservation(
+  const { usage, slug: baseSlug, ...translated } = await generateTranslation(article, targetLang)
+
+  await recordAiUsage(
     user.clientSiteId,
-    5000,
+    usage.totalTokens || 0,
     'TRANSLATE_ARTICLE',
-    async () => {
-      const { usage, slug: baseSlug, ...translated } = await generateTranslation(article, targetLang)
-
-      await consumeClientTokens(
-        user.clientSiteId,
-        usage.totalTokens || 0,
-        'TRANSLATE_ARTICLE',
-        { articleId: article.id, targetLang, usage },
-        event,
-      )
-
-      const slug = await dedupeTranslationSlug(db, baseSlug, user.clientSiteId, targetLang, article.id)
-
-      const translation = await db.articleTranslation.upsert({
-        where: { articleId_language: { articleId: article.id, language: targetLang } },
-        create: {
-          articleId: article.id,
-          clientSiteId: user.clientSiteId,
-          language: targetLang,
-          slug,
-          title: translated.title,
-          excerpt: translated.excerpt,
-          content: sanitizeHtml(translated.content),
-          answer: translated.answer,
-          keyTakeaways: translated.keyTakeaways,
-          faq: translated.faq,
-          status: 'READY',
-          source: 'AI',
-          model: aiModelId('translation'),
-          usage: toDatabaseJson(usage),
-          error: null,
-          translatedAt: new Date(),
-        },
-        update: {
-          slug,
-          title: translated.title,
-          excerpt: translated.excerpt,
-          content: sanitizeHtml(translated.content),
-          answer: translated.answer,
-          keyTakeaways: translated.keyTakeaways,
-          faq: translated.faq,
-          status: 'READY',
-          source: 'AI',
-          model: aiModelId('translation'),
-          usage: toDatabaseJson(usage),
-          error: null,
-          translatedAt: new Date(),
-        },
-      })
-
-      await syncArticleMediaUsages(prisma, {
-        clientSiteId: user.clientSiteId,
-        articleId: article.id,
-        articleTranslationId: translation.id,
-        language: translation.language,
-        content: translation.content,
-      })
-
-      await logAction({
-        action: 'TRANSLATE_ARTICLE',
-        userId: user.id,
-        clientSiteId: user.clientSiteId,
-        ip: getIp(event),
-        metadata: { articleId: article.id, translationId: translation.id, targetLang },
-      })
-
-      return { translation }
-    },
-    tokenRequestKey(event, user.clientSiteId, 'TRANSLATE_ARTICLE'),
+    { articleId: article.id, targetLang, usage },
+    event,
   )
+
+  const slug = await dedupeTranslationSlug(db, baseSlug, user.clientSiteId, targetLang, article.id)
+
+  const translation = await db.articleTranslation.upsert({
+    where: { articleId_language: { articleId: article.id, language: targetLang } },
+    create: {
+      articleId: article.id,
+      clientSiteId: user.clientSiteId,
+      language: targetLang,
+      slug,
+      title: translated.title,
+      excerpt: translated.excerpt,
+      content: sanitizeHtml(translated.content),
+      answer: translated.answer,
+      keyTakeaways: translated.keyTakeaways,
+      faq: translated.faq,
+      status: 'READY',
+      source: 'AI',
+      model: aiModelId('translation'),
+      usage: toDatabaseJson(usage),
+      error: null,
+      translatedAt: new Date(),
+    },
+    update: {
+      slug,
+      title: translated.title,
+      excerpt: translated.excerpt,
+      content: sanitizeHtml(translated.content),
+      answer: translated.answer,
+      keyTakeaways: translated.keyTakeaways,
+      faq: translated.faq,
+      status: 'READY',
+      source: 'AI',
+      model: aiModelId('translation'),
+      usage: toDatabaseJson(usage),
+      error: null,
+      translatedAt: new Date(),
+    },
+  })
+
+  await syncArticleMediaUsages(prisma, {
+    clientSiteId: user.clientSiteId,
+    articleId: article.id,
+    articleTranslationId: translation.id,
+    language: translation.language,
+    content: translation.content,
+  })
+
+  await logAction({
+    action: 'TRANSLATE_ARTICLE',
+    userId: user.id,
+    clientSiteId: user.clientSiteId,
+    ip: getIp(event),
+    metadata: { articleId: article.id, translationId: translation.id, targetLang },
+  })
+
+  return { translation }
 })

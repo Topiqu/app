@@ -88,65 +88,63 @@ export default defineMonitoredTask({
       }
 
       try {
-        await withTokenReservation(row.clientSiteId, 5000, 'TRANSLATE_ARTICLE', async () => {
-          const { usage, slug: baseSlug, ...translated } = await generateTranslation(row.article, row.language)
+        const { usage, slug: baseSlug, ...translated } = await generateTranslation(row.article, row.language)
 
-          await consumeClientTokens(row.clientSiteId, usage.totalTokens || 0, 'TRANSLATE_ARTICLE', {
+        await recordAiUsage(row.clientSiteId, usage.totalTokens || 0, 'TRANSLATE_ARTICLE', {
+          articleId: row.article.id,
+          translationId: row.id,
+          targetLang: row.language,
+          usage,
+          auto: true,
+        })
+
+        const slug = await dedupeTranslationSlug(prisma, baseSlug, row.clientSiteId, row.language, row.article.id)
+        const finalStatus = row.clientSite.translationMode === 'AUTO' ? 'PUBLISHED' : 'READY'
+
+        const updatedTranslation = await prisma.articleTranslation.update({
+          where: { id },
+          data: {
+            slug,
+            title: translated.title,
+            excerpt: translated.excerpt,
+            content: sanitizeHtml(translated.content),
+            answer: translated.answer,
+            keyTakeaways: translated.keyTakeaways,
+            faq: translated.faq,
+            status: finalStatus,
+            source: 'AI',
+            model: aiModelId('translation'),
+            usage: toDatabaseJson(usage),
+            error: null,
+            translatedAt: new Date(),
+          },
+        })
+
+        await syncArticleMediaUsages(prisma, {
+          clientSiteId: row.clientSiteId,
+          articleId: row.article.id,
+          articleTranslationId: updatedTranslation.id,
+          language: row.language,
+          content: updatedTranslation.content,
+        })
+
+        logAction({
+          action: 'TRANSLATE_ARTICLE',
+          clientSiteId: row.clientSiteId,
+          metadata: {
             articleId: row.article.id,
             translationId: row.id,
             targetLang: row.language,
+            status: finalStatus,
             usage,
-            auto: true,
-          })
-
-          const slug = await dedupeTranslationSlug(prisma, baseSlug, row.clientSiteId, row.language, row.article.id)
-          const finalStatus = row.clientSite.translationMode === 'AUTO' ? 'PUBLISHED' : 'READY'
-
-          const updatedTranslation = await prisma.articleTranslation.update({
-            where: { id },
-            data: {
-              slug,
-              title: translated.title,
-              excerpt: translated.excerpt,
-              content: sanitizeHtml(translated.content),
-              answer: translated.answer,
-              keyTakeaways: translated.keyTakeaways,
-              faq: translated.faq,
-              status: finalStatus,
-              source: 'AI',
-              model: aiModelId('translation'),
-              usage: toDatabaseJson(usage),
-              error: null,
-              translatedAt: new Date(),
-            },
-          })
-
-          await syncArticleMediaUsages(prisma, {
-            clientSiteId: row.clientSiteId,
-            articleId: row.article.id,
-            articleTranslationId: updatedTranslation.id,
-            language: row.language,
-            content: updatedTranslation.content,
-          })
-
-          logAction({
-            action: 'TRANSLATE_ARTICLE',
-            clientSiteId: row.clientSiteId,
-            metadata: {
-              articleId: row.article.id,
-              translationId: row.id,
-              targetLang: row.language,
-              status: finalStatus,
-              usage,
-            },
-          })
-          processed++
+          },
         })
+        processed++
       } catch (e: any) {
         await prisma.articleTranslation.update({
           where: { id },
           data: {
-            status: e?.statusCode === 402 ? 'PENDING' : 'FAILED',
+            status: 'FAILED',
             error: (e?.message || 'unknown').slice(0, 1000),
           },
         })

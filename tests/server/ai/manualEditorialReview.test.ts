@@ -29,10 +29,9 @@ const response = (object: unknown, totalTokens: number) => ({ object, usage: { t
 beforeEach(() => {
   vi.mocked(generateObject).mockReset()
   vi.stubGlobal('prisma', {
-    clientSite: { findFirstOrThrow: vi.fn().mockResolvedValue({ tokenRemaining: 10000, language: 'en' }) },
+    clientSite: { findFirstOrThrow: vi.fn().mockResolvedValue({ language: 'en' }) },
     knowledgeSource: { findFirst: vi.fn().mockResolvedValue(null) },
   })
-  vi.stubGlobal('currentTokenOperation', () => null)
   vi.stubGlobal('aiModel', () => 'test-model')
   vi.stubGlobal('getServerTranslator', async () => () => 'Review failed')
 })

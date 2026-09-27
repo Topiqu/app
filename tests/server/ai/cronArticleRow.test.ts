@@ -48,18 +48,15 @@ describe('generate-article cron row', () => {
   })
 
   it('never turns missing internal token telemetry into a failed customer article', () => {
-    expect(task).toContain("reportCaughtError('Scheduled article cost metering failed'")
+    expect(task).toContain("await recordAiUsage(clientSiteId, tokens, 'CRON_ARTICLE_TOKEN_USAGE'")
     expect(task).not.toContain('zero_token_usage')
     expect(task).not.toContain('CRON_GENERATE_ARTICLE_INSUFFICIENT_TOKENS')
   })
 
-  it('reserves one article and retains the full internal cost budget', () => {
+  it('reserves one article and nothing else', () => {
     expect(task).toContain('withArticleCreditReservation(')
     expect(task).toContain("'SCHEDULED_ARTICLE'")
-    expect(task).toContain('const CRON_ARTICLE_RESERVATION = articleGenerationReservation(')
-    expect(task).toContain("modules: ['youtube']")
-    expect(task).toContain("research: { enabled: true, depth: 'standard'")
-    expect(task).toContain("withTokenReservation(client.id, CRON_ARTICLE_RESERVATION, 'GENERATE_ARTICLE'")
+    expect(task).not.toContain('withTokenReservation')
     expect(task).toContain("'insufficient_articles'")
   })
 
