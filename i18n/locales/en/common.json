@@ -1080,6 +1080,16 @@
         "taken": "This subdomain is already taken."
       }
     },
+    "unsubscribe": {
+      "title": "Unsubscribe from email notifications",
+      "intro": "Once you confirm, we will stop emailing you about comments, replies and moderation. Sign-in and security emails will still arrive.",
+      "confirm": "Unsubscribe",
+      "doneTitle": "Unsubscribed",
+      "done": "Email notifications are off. You can turn them back on in your account settings at any time.",
+      "error": "We could not unsubscribe you. Try again, or turn emails off in your account settings.",
+      "invalid": "This link is not valid. You can turn email notifications off in your account settings.",
+      "settings": "Notification settings"
+    },
     "invitation": {
       "title": "Join {tenant}",
       "by": "Invited by {inviter}. {followers} followers.",

@@ -28,10 +28,6 @@
     "actions": {
       "signup": "vytvoření účtu",
       "emailVerification": "ověření e-mailu"
-    },
-    "unsubscribe": {
-      "text": "Nechcete dostávat notifikace?",
-      "link": "Odhlásit se"
     }
   },
   "deleteComment": {

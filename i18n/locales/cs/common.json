@@ -1080,6 +1080,16 @@
         "taken": "Tato subdoména už je obsazená."
       }
     },
+    "unsubscribe": {
+      "title": "Odhlásit e-mailová oznámení",
+      "intro": "Po potvrzení vám přestaneme posílat e-maily o komentářích, odpovědích a moderaci. Přihlašovací a bezpečnostní e-maily chodit dál budou.",
+      "confirm": "Odhlásit e-maily",
+      "doneTitle": "Odhlášeno",
+      "done": "E-mailová oznámení jsme vypnuli. Kdykoli je zapnete zpět v nastavení účtu.",
+      "error": "Odhlášení se nepodařilo. Zkuste to znovu, nebo e-maily vypněte v nastavení účtu.",
+      "invalid": "Tento odkaz je neplatný. E-mailová oznámení můžete vypnout v nastavení účtu.",
+      "settings": "Nastavení oznámení"
+    },
     "invitation": {
       "title": "Připojit se k {tenant}",
       "by": "Pozval vás {inviter}. {followers} sledujících.",

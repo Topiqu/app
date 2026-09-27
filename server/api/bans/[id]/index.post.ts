@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       content: true,
       article: { select: { clientSiteId: true } },
-      user: { select: { email: true, username: true, allowEmail: true } },
+      user: { select: { id: true, language: true, email: true, username: true, allowEmail: true } },
     },
   })
   if (!comment) throw createError({ statusCode: 404, message: t('common.errors.commentNotFound')! })
@@ -95,7 +95,7 @@ export default defineEventHandler(async (event) => {
         banDuration,
         introKey,
         logoUrl: 'https://cdn.topiqu.com/app-logo.png',
-        unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${comment.user.email}`,
+        unsubscribeUrl: unsubscribeUrl(comment.user),
       },
     })
   }

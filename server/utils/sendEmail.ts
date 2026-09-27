@@ -153,7 +153,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
     .filter((value) => value && !value.startsWith(`${template}.`))
   if (template === 'verificationCode') textParts.splice(2, 0, data.verificationCode || '')
   if (data.commentUrl) textParts.push(data.commentUrl)
-  textParts.push(`${translate(`${template}.unsubscribe.text`, enrichedData)} ${data.unsubscribeUrl || ''}`)
+  if (data.unsubscribeUrl) textParts.push(`${translate(`${template}.unsubscribe.text`, enrichedData)} ${data.unsubscribeUrl}`)
   const textBody = textParts
     .join('\n\n')
     .replace(/<[^>]+>/g, '')

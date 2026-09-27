@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       content: true,
       articleId: true,
-      user: { select: { email: true, username: true, allowEmail: true } },
+      user: { select: { id: true, language: true, email: true, username: true, allowEmail: true } },
       article: { select: { clientSiteId: true } },
     },
   })
@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
         commentContent: comment.content.slice(0, 50) + (comment.content.length > 50 ? '...' : ''),
         deleteReason,
         logoUrl: 'https://cdn.topiqu.com/app-logo.png',
-        unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${comment.user.email}`,
+        unsubscribeUrl: unsubscribeUrl(comment.user),
       },
     })
   }
