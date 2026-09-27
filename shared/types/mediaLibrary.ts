@@ -1,4 +1,5 @@
 import type { MediaOrigin } from './mediaRights'
+import type { Language } from '../utils/language'
 
 export interface MediaLibraryAsset {
   id: string
@@ -31,7 +32,7 @@ export interface MediaLibraryUsage {
   title: string
   slug: string
   status: 'draft' | 'published' | 'archived'
-  language: 'cs' | 'en'
+  language: Language
   placements: Array<'COVER' | 'BODY'>
   occurrenceCount: number
 }

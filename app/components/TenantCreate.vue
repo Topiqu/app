@@ -141,23 +141,7 @@
                 :aria-pressed="form.language === language.value"
                 @click="form.language = language.value"
               >
-                <svg
-                  v-if="language.value === 'cs'"
-                  viewBox="0 0 36 24"
-                  class="h-6 w-9 shrink-0 rounded shadow-sm"
-                  aria-hidden="true"
-                >
-                  <path fill="#fff" d="M0 0h36v12H0z" />
-                  <path fill="#d7141a" d="M0 12h36v12H0z" />
-                  <path fill="#11457e" d="m0 0 15 12L0 24z" />
-                </svg>
-                <svg v-else viewBox="0 0 60 36" class="h-6 w-9 shrink-0 rounded shadow-sm" aria-hidden="true">
-                  <path fill="#012169" d="M0 0h60v36H0z" />
-                  <path stroke="#fff" stroke-width="7" d="m0 0 60 36m0-36L0 36" />
-                  <path stroke="#c8102e" stroke-width="3" d="m0 0 60 36m0-36L0 36" />
-                  <path stroke="#fff" stroke-width="12" d="M30 0v36M0 18h60" />
-                  <path stroke="#c8102e" stroke-width="7" d="M30 0v36M0 18h60" />
-                </svg>
+                <UIcon :name="language.icon" class="h-6 w-9 shrink-0 rounded shadow-sm" aria-hidden="true" />
                 <span>
                   <span class="block text-sm font-semibold">{{ language.label }}</span>
                   <span class="block text-xs text-muted">{{ language.code }}</span>
@@ -365,8 +349,8 @@
 import type { BillingInterval, PlanPrice, PlanPricing, SubscribablePlan } from '~~/shared/types/planPricing'
 
 import { ThemeSchema } from '~~/shared/siteSchemas'
-
-import { themeColors, type ThemeKey } from '~/composables/theme'
+import { themeColors, type ThemeKey } from '~~/shared/utils/tenantTheme'
+import { isLanguage, locales, type Language } from '~~/shared/utils/language'
 
 type Availability = 'idle' | 'checking' | 'available' | 'unavailable'
 type DomainReason = 'empty' | 'tooShort' | 'invalid' | 'reserved' | 'taken'
@@ -385,7 +369,7 @@ const form = reactive({
   name: '',
   subdomain: '',
   customDomain: '',
-  language: (locale.value === 'cs' ? 'cs' : 'en') as 'cs' | 'en',
+  language: (isLanguage(locale.value) ? locale.value : 'en') as Language,
   theme: 'indigo' as ThemeKey,
   plan: 'BASIC' as SelectedPlan,
   interval: 'month' as BillingInterval,
@@ -403,10 +387,13 @@ const steps = computed(() => [
   { id: 'review', label: $t('common.tenant.steps.review') },
 ])
 
-const languageOptions = computed(() => [
-  { label: $t('languages.cs'), code: 'CS', value: 'cs' as const },
-  { label: $t('languages.en'), code: 'EN', value: 'en' as const },
-])
+const languageOptions = computed(() =>
+  locales.map((language) => ({
+    ...language,
+    label: $t(`languages.${language.value}`),
+    code: language.value.toUpperCase(),
+  })),
+)
 
 const domainTypeOptions = computed(() => [
   {
@@ -584,7 +571,7 @@ watch(open, (value) => {
   form.name = ''
   form.subdomain = ''
   form.customDomain = ''
-  form.language = locale.value === 'cs' ? 'cs' : 'en'
+  form.language = isLanguage(locale.value) ? locale.value : 'en'
   form.theme = 'indigo'
   form.plan = 'BASIC'
   form.interval = 'month'

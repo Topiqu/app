@@ -5,14 +5,10 @@ import slugify from 'slugify'
 import * as cheerio from 'cheerio'
 import { generateObject } from 'ai'
 import { readFaq } from '~~/shared/utils/articleFaq'
+import { LANGUAGE_NAMES } from '~~/shared/utils/language'
 import { normalizePollOptions } from '~~/shared/utils/polls'
 
 import { escapeHtml } from '../sanitize'
-
-const LANGUAGE_NAMES: Record<Language, string> = {
-  cs: 'Czech',
-  en: 'English',
-}
 
 const verbatimToken = (i: number) => `[[BLK_${i}]]`
 const pollToken = (i: number) => `[[POLLBLK_${i}]]`

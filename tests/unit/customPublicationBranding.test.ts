@@ -2,7 +2,7 @@ import sharp from 'sharp'
 import { describe, expect, it } from 'vitest'
 
 import { suggestBrandColors } from '../../server/utils/brandPalette'
-import { resolveBrandAccent, tenantFontFaceCss, tenantThemeStyle } from '../../app/composables/theme'
+import { resolveBrandAccent, tenantFontFaceCss, tenantThemeStyle } from '../../shared/utils/tenantTheme'
 import {
   contrastRatio,
   hasAdvancedBranding,

@@ -14,6 +14,8 @@ export default defineEventHandler(async (event) => {
 
   const tag = await db.tag.findUnique({ where: { id } })
   if (!tag) throw createError({ statusCode: 404, message: t('common.errors.tagNotFound')! })
+  if (user.role !== 'superadmin' && tag.clientSiteId !== user.clientSiteId)
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const data: any = {}
   if (name !== undefined) data.name = name

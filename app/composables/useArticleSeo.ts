@@ -2,6 +2,7 @@ import type { MaybeRefOrGetter } from 'vue'
 
 import { hasSeoPlan } from '~~/shared/utils/seo'
 import { readFaq } from '~~/shared/utils/articleFaq'
+import { articleExcerpt } from '~~/shared/utils/articleBlocks'
 
 type ArticleAuthor = { id: string; username: string | null; avatarUrl: string | null; bio: string | null }
 
@@ -41,8 +42,9 @@ export function useArticleSeo(
 
   const seoEnabled = computed(() => hasSeoPlan(site.value?.plan))
 
-  const description = computed(
-    () => article.value?.excerpt?.slice(0, 160) || article.value?.content?.replace(/<[^>]+>/g, '').slice(0, 160) || '',
+  // Both go in as the body so the perex is also cut at a word and entity-decoded.
+  const description = computed(() =>
+    articleExcerpt(null, article.value?.excerpt?.trim() || article.value?.content, 160),
   )
 
   const authorName = computed(() => article.value?.user?.username || site.value?.name || '')

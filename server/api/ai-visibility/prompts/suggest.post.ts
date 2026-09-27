@@ -17,18 +17,29 @@ export default defineEventHandler(async (event) => {
   })
   const focus = site.focus?.trim()
   const audience = site.audience?.trim()
-  const generated =
-    site.language === 'cs'
-      ? [
-          focus && `Jak vybrat nejlepší řešení pro ${focus}?`,
-          focus && `Jaké jsou nejlepší alternativy pro ${focus}?`,
-          focus && audience && `Co by měla cílová skupina ${audience} vědět o ${focus}?`,
-        ]
-      : [
-          focus && `How do you choose the best solution for ${focus}?`,
-          focus && `What are the best alternatives for ${focus}?`,
-          focus && audience && `What should ${audience} know about ${focus}?`,
-        ]
+  const generatedByLanguage = {
+    cs: [
+      focus && `Jak vybrat nejlepší řešení pro ${focus}?`,
+      focus && `Jaké jsou nejlepší alternativy pro ${focus}?`,
+      focus && audience && `Co by měla cílová skupina ${audience} vědět o ${focus}?`,
+    ],
+    en: [
+      focus && `How do you choose the best solution for ${focus}?`,
+      focus && `What are the best alternatives for ${focus}?`,
+      focus && audience && `What should ${audience} know about ${focus}?`,
+    ],
+    de: [
+      focus && `Wie wählt man die beste Lösung für ${focus}?`,
+      focus && `Was sind die besten Alternativen für ${focus}?`,
+      focus && audience && `Was sollte ${audience} über ${focus} wissen?`,
+    ],
+    fr: [
+      focus && `Comment choisir la meilleure solution pour ${focus} ?`,
+      focus && `Quelles sont les meilleures alternatives pour ${focus} ?`,
+      focus && audience && `Que devrait savoir ${audience} sur ${focus} ?`,
+    ],
+  }
+  const generated = generatedByLanguage[site.language]
   const suggestions = [...new Set([...generated.filter(Boolean), ...metrics.map((row) => row.query.trim())])].slice(
     0,
     8,

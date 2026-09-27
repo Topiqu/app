@@ -38,10 +38,6 @@
     "actions": {
       "signup": "account creation",
       "emailVerification": "email verification"
-    },
-    "unsubscribe": {
-      "text": "Don't want to receive notifications?",
-      "link": "Unsubscribe"
     }
   },
   "tenantInvitation": {

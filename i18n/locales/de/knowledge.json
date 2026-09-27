@@ -1,0 +1,122 @@
+{
+  "knowledge": {
+    "title": "Wissensbasis",
+    "description": "Deine eigenen Fakten, Preise und Positionierung. Topiqu wählt beim Schreiben eines Artikels automatisch die passenden Informationen aus.",
+    "add": "Quelle hinzufügen",
+    "addTitle": "Quelle hinzufügen",
+    "addDescription": "Füge eine Notiz, ein Dokument oder eine Webseite hinzu. Sobald die Quelle indexiert ist, kann sie verwendet werden.",
+    "editTitle": "Wissensquelle bearbeiten",
+    "loadError": "Die Wissensbasis konnte nicht geladen werden.",
+    "actionError": "Die Änderung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "empty": "Noch keine Wissensquellen",
+    "emptyDescription": "Füge Produktfakten, Preise, Fallstudien oder freigegebene Vergleiche hinzu, damit generierte Artikel deine Angaben korrekt wiedergeben.",
+    "chunks": "keine Textabschnitte | {n} Textabschnitt | {n} Textabschnitte",
+    "failed": "Indexierung fehlgeschlagen. Versuche es erneut oder ersetze die Quelle.",
+    "useInArticles": "Beim Schreiben verwenden",
+    "useInArticlesFor": "{title} beim Schreiben verwenden",
+    "public": "Öffentliche Quelle",
+    "citation": {
+      "legend": "Wie sollen Artikel diese Quelle verwenden?",
+      "INTERNAL": {
+        "label": "Nur als Hintergrundwissen",
+        "description": "Die KI entnimmt der Quelle Fakten, verlinkt sie aber nicht. Verwende diese Option für interne Unterlagen."
+      },
+      "PUBLIC": { "label": "Zitierbare Quelle", "description": "Artikel dürfen diese Quelle verlinken." }
+    },
+    "details": { "titleAndDate": "Titel und Gültigkeitsdatum", "date": "Gültigkeitsdatum" },
+    "actions": "Aktionen für {title}",
+    "edit": "Bearbeiten",
+    "refresh": "Erneut abrufen",
+    "retry": "Indexierung wiederholen",
+    "openPublic": "Öffentliche Quelle öffnen",
+    "delete": "Löschen",
+    "deleteTitle": "Diese Quelle löschen?",
+    "deleteDescription": "Ihr Text und Index werden dauerhaft entfernt. Bereits erstellte Artikel bleiben unverändert.",
+    "deleted": "Quelle gelöscht",
+    "added": "Quelle hinzugefügt. Die Indexierung hat begonnen.",
+    "saved": "Quelle gespeichert",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "kinds": { "NOTE": "Notiz", "FILE": "Dokument", "URL": "Webseite", "SITEMAP": "Seiten einer Website" },
+    "addKinds": { "NOTE": "Text", "FILE": "Dokument", "URL": "Web" },
+    "web": {
+      "scope": "Was soll hinzugefügt werden?",
+      "page": "Nur diese Seite",
+      "site": "Weitere Seiten dieser Website finden",
+      "siteHint": "Wir zeigen dir die gefundenen Seiten, bevor du sie hinzufügst. Du kannst bis zu {count} gleichzeitig hinzufügen."
+    },
+    "status": {
+      "PENDING": "Wartet",
+      "PROCESSING": "Wird indexiert",
+      "INDEXED": "Indexiert",
+      "FAILED": "Fehlgeschlagen"
+    },
+    "fields": {
+      "title": "Titel",
+      "optional": "Optional",
+      "note": "Notiz",
+      "content": "Inhalt",
+      "noteHint": "Markdown-Überschriften helfen dabei, lange Notizen aufzuteilen.",
+      "file": "PDF-, DOCX-, TXT- oder MD-Datei auswählen",
+      "fileHint": "Bis zu {size}. Eingescannte PDFs ohne Textebene werden nicht unterstützt.",
+      "url": "Seitenadresse",
+      "urlHint": "Nur öffentliche HTTPS-Seiten.",
+      "publicUrl": "Öffentliche URL für Quellenangaben",
+      "publicUrlHint": "Leer lassen, damit die Quelle intern bleibt.",
+      "validAsOf": "Gültig ab",
+      "validAsOfHint": "Zeitpunkt, zu dem dieser Inhalt zutraf. Zeitabhängige Aussagen, die älter als 12 Monate sind, werden zur Prüfung markiert.",
+      "validAsOfAddHint": "Optional. Wird nach Möglichkeit aus dem Datum des Dokuments oder der Seite übernommen.",
+      "sitemap": "Sitemap oder Website-Adresse",
+      "sitemapHint": "Importiert bis zu {count} Seiten derselben Website, die noch nicht in deiner Wissensbasis stehen."
+    },
+    "errors": {
+      "unsupported": "Dieser Dateityp oder diese Seite konnte nicht gelesen werden.",
+      "empty": "Kein lesbarer Text gefunden. Eingescannte Dokumente benötigen eine Textebene.",
+      "tooLarge": "Die Quelle ist zu groß.",
+      "unreachable": "Die Seite konnte nicht abgerufen werden.",
+      "duplicate": "Dieser Inhalt ist bereits in deiner Wissensbasis.",
+      "quota": "Deine Wissensbasis ist voll. Lösche eine Quelle, bevor du eine weitere hinzufügst.",
+      "sitemapEmpty": "Auf dieser Website wurden keine neuen Seiten zum Hinzufügen gefunden."
+    },
+    "quota": "{sources} von {maxSources} Quellen · {characters} von {maxCharacters} Zeichen",
+    "stale": "Möglicherweise veraltet",
+    "asOf": "Gültig ab",
+    "usage": "noch nicht verwendet | einmal verwendet, zuletzt | {n}-mal verwendet, zuletzt",
+    "unused": "Noch in keinem Artikel verwendet",
+    "refreshFailed": "Die letzte automatische Aktualisierung ist fehlgeschlagen; die vorige Version bleibt in Verwendung.",
+    "passages": "Indexierte Textabschnitte ({count})",
+    "passagesHint": "Genau diese Textabschnitte können dem Autor aus dieser Quelle bereitgestellt werden, jeweils einzeln.",
+    "playground": {
+      "title": "Thema ausprobieren",
+      "description": "Sieh nach, welche Informationen Topiqu für einen Artikel zu diesem Thema bereitstellen würde. Es wird kein Text generiert.",
+      "placeholder": "z. B. Freigaben von Inhalten beschleunigen",
+      "topic": "Artikelthema",
+      "run": "Ausprobieren",
+      "selected": "Keine Quelle würde verwendet | 1 Quelle würde verwendet | {n} Quellen würden verwendet",
+      "none": "Zu diesem Thema sind keine passenden Informationen vorhanden. Der Autor würde keine erhalten.",
+      "used": "Verwendet",
+      "skipped": "Nicht relevant"
+    },
+    "sitemapProgress": "Seite {done} von {total} wird importiert",
+    "sitemapImported": "{added} Seiten importiert, {skipped} übersprungen. Die Indexierung hat begonnen.",
+    "sitemap": {
+      "found": "Gefundene Seiten",
+      "existing": "Bereits in der Wissensbasis",
+      "offered": "Zum Import angeboten",
+      "cappedByBatch": "Pro Import können höchstens {count} Seiten hinzugefügt werden. Starte ihn für die übrigen Seiten erneut.",
+      "cappedByQuota": "In deiner Wissensbasis ist noch Platz für {count} Quellen.",
+      "discover": "Seiten finden",
+      "import": "{count} Seiten importieren"
+    },
+    "beta": "Beta",
+    "consent": {
+      "label": "Ich bestätige, dass die Quelle keine vertraulichen oder personenbezogenen Daten enthält",
+      "scope": "Vertraulich sind Geschäftsgeheimnisse und alle anderen Informationen, die nicht in einem öffentlichen Artikel erscheinen dürfen.",
+      "title": "So verwendet die KI diese Quelle",
+      "useInternal": "Die KI darf Fakten und Zahlen aus dieser Quelle in veröffentlichten Artikeln verwenden, ohne sie zu verlinken.",
+      "usePublic": "Die KI darf Fakten und Zahlen aus dieser Quelle in veröffentlichten Artikeln verwenden und sie als Quelle verlinken.",
+      "processing": "Der Inhalt wird beim Hinzufügen, bei Änderungen und beim Schreiben von Artikeln durch einen externen KI-Anbieter (OpenAI) verarbeitet. Wir speichern nur den extrahierten Text, bis du die Quelle löschst.",
+      "confirm": "Ich bestätige, dass diese Quelle keine vertraulichen Informationen, Geschäftsgeheimnisse oder personenbezogenen Daten enthält, die nicht in einem öffentlichen Artikel erscheinen dürfen."
+    }
+  }
+}

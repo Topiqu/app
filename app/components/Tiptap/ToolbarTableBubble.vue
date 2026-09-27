@@ -65,6 +65,10 @@ const cellColor = computed({
   get: () =>
     editor.getAttributes('tableCell').backgroundColor || editor.getAttributes('tableHeader').backgroundColor || '',
   // No focus(): moving focus into the editor dismisses the open picker popover.
-  set: (value: string) => editor.chain().setCellAttribute('backgroundColor', value || null).run(),
+  set: (value: string) =>
+    editor
+      .chain()
+      .setCellAttribute('backgroundColor', value || null)
+      .run(),
 })
 </script>

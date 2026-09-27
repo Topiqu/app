@@ -1,0 +1,23 @@
+{
+  "series": {
+    "label": "Serie",
+    "placeholder": "Serie auswählen oder erstellen...",
+    "part": "Teil {count}",
+    "createTitle": "Neue Serie erstellen",
+    "nameLabel": "Name der Serie",
+    "namePlaceholder": "z. B. Einführung in Vue 3...",
+    "createNew": "Neue Serie erstellen...",
+    "createFailed": "Serie konnte nicht erstellt werden",
+    "editTitle": "Serie bearbeiten",
+    "removeArticle": "Artikel aus der Serie entfernen",
+    "deleteTitle": "Diese Serie löschen?",
+    "deleteDescription": "Die Artikel bleiben erhalten und werden nur aus der Serie entfernt.",
+    "continueReading": "Serie weiterlesen",
+    "previous": "Zurück",
+    "next": "Nächster Teil",
+    "nextPart": "Nächster Teil",
+    "current": "Wird gerade gelesen",
+    "showList": "Gesamte Serie anzeigen",
+    "hideList": "Serienliste ausblenden"
+  }
+}

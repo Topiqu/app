@@ -1,0 +1,14 @@
+{
+  "domainVerification": {
+    "title": "Domain-Verifizierung ausstehend",
+    "description": "Richten Sie die beiden folgenden DNS-Einträge für Ihre Domain {domain} ein.",
+    "degraded": "Wiederholte Verifizierungsversuche sind fehlgeschlagen. Korrigieren Sie die DNS-Einträge innerhalb von 7 Tagen, sonst wird die Domain getrennt.",
+    "ownership": "Eigentumsnachweis",
+    "routing": "Website-Routing",
+    "result": "Eigentum: {ownership} · Routing: {routing}",
+    "verifyBtn": "DNS überprüfen",
+    "success": "Domain erfolgreich verifiziert!",
+    "notFound": "Die DNS-Einträge sind noch nicht korrekt eingerichtet oder noch nicht verbreitet.",
+    "error": "Bei der Verifizierung ist ein Fehler aufgetreten."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "feedback": {
+    "question": "War dieser Artikel hilfreich?",
+    "subtitle": "Ihr Feedback hilft uns, Inhalte für andere zu verbessern.",
+    "placeholder": "Was können wir verbessern? (optional)",
+    "thankYou": "Vielen Dank für Ihr Feedback!",
+    "recorded": "Ihre Meinung hilft uns, die Inhalte zu verbessern.",
+    "change": "Antwort ändern",
+    "thanks_short": "Danke!",
+    "helpful": "Ja, dieser Artikel war hilfreich",
+    "notHelpful": "Nein, dieser Artikel war nicht hilfreich"
+  }
+}

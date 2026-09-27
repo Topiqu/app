@@ -1,3 +1,5 @@
+import { languageTag } from './language'
+
 export const TOPIQU_TIME_ZONE = 'Europe/Prague'
 
 export const TIME_PRESETS = {
@@ -31,8 +33,9 @@ const part = (parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTyp
 
 /** Stable SSR/client article timestamp with the legacy punctuation kept intact. */
 export const formatArticleDate = (date: string | Date, locale: string) => {
-  const english = locale === 'en' || locale.toLowerCase().startsWith('en-')
-  const parts = new Intl.DateTimeFormat(english ? 'en-US' : 'cs-CZ', {
+  const language = locale.slice(0, 2)
+  const english = language === 'en'
+  const parts = new Intl.DateTimeFormat(languageTag(language), {
     day: 'numeric',
     month: english ? 'short' : 'long',
     year: 'numeric',
@@ -46,5 +49,8 @@ export const formatArticleDate = (date: string | Date, locale: string) => {
   const year = part(parts, 'year')
   const time = `${part(parts, 'hour')}:${part(parts, 'minute')}`
 
-  return english ? `${month} ${day}, ${year}, ${time}` : `${day}. ${month} ${year}, ${time}`
+  if (english) return `${month} ${day}, ${year}, ${time}`
+  if (language === 'de') return `${day}. ${month} ${year}, ${time}`
+  if (language === 'fr') return `${day} ${month} ${year}, ${time}`
+  return `${day}. ${month} ${year}, ${time}`
 }

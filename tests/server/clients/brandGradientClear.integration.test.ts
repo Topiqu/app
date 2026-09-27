@@ -26,9 +26,9 @@ describe.skipIf(!enabled)('clearing ClientSite.brandGradient', () => {
       },
     })
 
-    await expect(
-      db!.clientSite.update({ where: { id }, data: { brandGradient: null as never } }),
-    ).rejects.toThrow(/brandGradient/)
+    await expect(db!.clientSite.update({ where: { id }, data: { brandGradient: null as never } })).rejects.toThrow(
+      /brandGradient/,
+    )
     await db!.clientSite.update({ where: { id }, data: { brandGradient: DbNull } })
 
     const row = await db!.clientSite.findUnique({ where: { id }, select: { brandGradient: true } })

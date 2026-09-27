@@ -28,5 +28,17 @@ export default defineI18nConfig(() => ({
         currencyDisplay: 'narrowSymbol',
       },
     },
+    de: {
+      currency: {
+        style: 'currency',
+        currencyDisplay: 'narrowSymbol',
+      },
+    },
+    fr: {
+      currency: {
+        style: 'currency',
+        currencyDisplay: 'narrowSymbol',
+      },
+    },
   },
 }))

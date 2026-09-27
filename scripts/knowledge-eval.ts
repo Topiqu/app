@@ -44,7 +44,13 @@ const titles = new Map<string, string>()
 try {
   for (const { title, content } of fixture.sources) {
     const source = await db.knowledgeSource.create({
-      data: { clientSiteId: site, kind: 'NOTE', title, content, contentHash: randomUUID().replace(/-/g, '').padEnd(64, '0') },
+      data: {
+        clientSiteId: site,
+        kind: 'NOTE',
+        title,
+        content,
+        contentHash: randomUUID().replace(/-/g, '').padEnd(64, '0'),
+      },
     })
     if (!(await indexKnowledgeSource(source.id))) throw new Error(`Indexing failed for ${title}`)
     titles.set(source.id, title)
@@ -89,7 +95,9 @@ try {
       negatives += 1
       if (!got.length) abstained += 1
     }
-    const ok = expect.every((title) => got.includes(title)) && got.every((title) => expect.includes(title) || allow.includes(title))
+    const ok =
+      expect.every((title) => got.includes(title)) &&
+      got.every((title) => expect.includes(title) || allow.includes(title))
     console.log(`${ok ? 'OK  ' : 'MISS'} ${topic}\n     expected ${JSON.stringify(expect)} got ${JSON.stringify(got)}`)
   }
 
@@ -99,13 +107,22 @@ try {
     abstention: negatives ? abstained / negatives : 1,
   }
   const retrieval = RECALL_AT.map((k) => `recall@${k}: ${(recallAt[k] / positives).toFixed(2)}`)
-  console.log(`\nretrieval, before the gate: ${retrieval.join(' · ')} · MRR: ${(reciprocalRanks / positives).toFixed(2)}`)
+  console.log(
+    `\nretrieval, before the gate: ${retrieval.join(' · ')} · MRR: ${(reciprocalRanks / positives).toFixed(2)}`,
+  )
   if (indirect.cases)
     console.log(
       `indirect relevance (not gated): in top 10 ${indirect.retrieved}/${indirect.cases} · selected ${indirect.selected}/${indirect.cases}`,
     )
-  console.log('\n' + Object.entries(scores).map(([name, value]) => `${name}: ${value.toFixed(2)} (floor ${FLOORS[name as keyof typeof FLOORS]})`).join('\n'))
-  process.exitCode = Object.entries(scores).every(([name, value]) => value >= FLOORS[name as keyof typeof FLOORS]) ? 0 : 1
+  console.log(
+    '\n' +
+      Object.entries(scores)
+        .map(([name, value]) => `${name}: ${value.toFixed(2)} (floor ${FLOORS[name as keyof typeof FLOORS]})`)
+        .join('\n'),
+  )
+  process.exitCode = Object.entries(scores).every(([name, value]) => value >= FLOORS[name as keyof typeof FLOORS])
+    ? 0
+    : 1
 } finally {
   await db.clientSite.delete({ where: { id: site } })
   await db.$disconnect()

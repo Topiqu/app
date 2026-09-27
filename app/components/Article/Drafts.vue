@@ -98,7 +98,7 @@
 import type { ArticleDraft } from '~~/generated/zenstack/models'
 
 import { format } from 'date-fns'
-import { enUS, cs } from 'date-fns/locale'
+import { enUS, cs, de, fr } from 'date-fns/locale'
 
 const props = defineProps<{
   drafts: ArticleDraft[]
@@ -113,8 +113,15 @@ const emit = defineEmits<{
 const { t, locale } = useI18n()
 const isOpen = defineModel<boolean>('open', { default: false })
 const toast = useToast()
-const dateLocale = computed(() => (locale.value === 'en' ? enUS : cs))
-const dateFormat = computed(() => (locale.value === 'en' ? 'MMM d, yyyy HH:mm' : 'd. MMMM yyyy HH:mm'))
+const dateLocales = { en: enUS, cs, de, fr }
+const dateLocale = computed(() => dateLocales[locale.value as keyof typeof dateLocales] ?? enUS)
+const dateFormats = {
+  en: 'MMM d, yyyy HH:mm',
+  cs: 'd. MMMM yyyy HH:mm',
+  de: 'd. MMMM yyyy HH:mm',
+  fr: 'd MMMM yyyy HH:mm',
+}
+const dateFormat = computed(() => dateFormats[locale.value as keyof typeof dateFormats] ?? dateFormats.en)
 const searchQuery = shallowRef('')
 const sortOption = shallowRef<'newest' | 'oldest' | 'alphabetical'>('newest')
 

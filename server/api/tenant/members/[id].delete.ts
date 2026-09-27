@@ -1,3 +1,5 @@
+import { languageTag } from '~~/shared/utils/language'
+
 export default defineEventHandler(async (event) => {
   const { user: actor, membership } = await requireTenantScope(event, 'MEMBER_CONTROL')
   const id = getRouterParam(event, 'id')!
@@ -51,7 +53,7 @@ export default defineEventHandler(async (event) => {
   })
   if (user?.email) {
     try {
-      const locale = user.language === 'cs' ? 'cs-CZ' : 'en-US'
+      const locale = languageTag(user.language)
       await sendEmail({
         event,
         to: user.email,

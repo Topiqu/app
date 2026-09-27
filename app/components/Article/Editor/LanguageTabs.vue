@@ -3,6 +3,7 @@
     <UButton
       type="button"
       size="sm"
+      :disabled="disabled"
       color="neutral"
       variant="ghost"
       icon="mdi:translate"
@@ -25,11 +26,13 @@ const {
   targetLanguages,
   byLanguage,
   sourceValue = '',
+  disabled = false,
 } = defineProps<{
   primaryLanguage: string
   targetLanguages: string[]
   byLanguage: Record<string, ArticleTranslationRow | undefined>
   sourceValue?: string
+  disabled?: boolean
 }>()
 
 const { t } = useI18n()
@@ -49,6 +52,7 @@ const menuItems = computed(() =>
   tabs.value.map((tab) => ({
     label: tab.hint,
     icon: tab.lang === modelValue.value ? 'mdi:check' : 'mdi:translate',
+    disabled,
     onSelect: () => {
       modelValue.value = tab.lang
     },

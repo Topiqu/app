@@ -367,7 +367,7 @@ const createClient = async () => {
     Object.assign(newClient.value, initClient())
     keywordsInput.value = ''
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || t('master.clientCreate.messages.createFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, t('master.clientCreate.messages.createFailed')) })
   } finally {
     creating.value = false
   }

@@ -1,0 +1,19 @@
+{
+  "themes": {
+    "blue": "Bleu",
+    "green": "Vert",
+    "red": "Rouge",
+    "purple": "Violet",
+    "orange": "Orange",
+    "teal": "Turquoise",
+    "yellow": "Jaune",
+    "pink": "Rose",
+    "indigo": "Indigo",
+    "gray": "Gris",
+    "lime": "Vert citron",
+    "sky": "Bleu ciel",
+    "amber": "Ambre",
+    "cyan": "Cyan",
+    "violet": "Violet"
+  }
+}

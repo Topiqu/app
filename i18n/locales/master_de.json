@@ -1,0 +1,208 @@
+{
+  "master": {
+    "title": "Verwaltung",
+    "userEdit": {
+      "title": "Benutzer bearbeiten",
+      "passwordPlaceholder": "Neues Passwort (leer lassen, um das bisherige zu behalten)",
+      "role": "Rolle",
+      "roles": { "admin": "Administrator", "reader": "Leser", "ai": "KI-Autor" },
+      "validation": "Gib einen Benutzernamen und eine E-Mail-Adresse ein.",
+      "success": "Benutzer aktualisiert.",
+      "error": "Der Benutzer konnte nicht aktualisiert werden."
+    },
+    "clientTable": {
+      "title": "Kundenseiten",
+      "description": "Publikationen, Tarife, Zugriffe und Mandanteneinstellungen verwalten.",
+      "search": "Kunden suchen...",
+      "headers": {
+        "name": "Name",
+        "domain": "Domain",
+        "status": "Status",
+        "plan": "Tarif",
+        "users": "Benutzer",
+        "createdAt": "Erstellt am",
+        "actions": "Aktionen"
+      },
+      "status": { "active": "Aktiv", "deactivated": "Deaktiviert" },
+      "actions": { "deleteDeactivate": "Löschen/Deaktivieren", "activate": "Aktivieren" },
+      "deleteDialog": {
+        "title": "Was möchtest du mit dem Kunden „{name}“ tun?",
+        "text": "Wähle, ob du den Kunden deaktivieren oder dauerhaft löschen möchtest.",
+        "confirm": "Dauerhaft löschen",
+        "deny": "Deaktivieren",
+        "cancel": "Abbrechen"
+      },
+      "activateDialog": {
+        "title": "Kunden aktivieren?",
+        "text": "Der Kunde wird aktiviert.",
+        "confirm": "Ja, aktivieren",
+        "cancel": "Nein"
+      },
+      "messages": {
+        "permanentlyDeleted": "Kunde dauerhaft gelöscht",
+        "deleteFailed": "Löschen fehlgeschlagen",
+        "deactivated": "Kunde deaktiviert",
+        "deactivateFailed": "Deaktivieren fehlgeschlagen",
+        "activated": "Kunde aktiviert",
+        "activateFailed": "Aktivieren fehlgeschlagen"
+      }
+    },
+    "clientUsers": {
+      "title": "Benutzer des Kunden",
+      "empty": "Keine Benutzer gefunden",
+      "headers": { "username": "Benutzername", "email": "E-Mail", "role": "Rolle", "actions": "Aktionen" },
+      "status": { "active": "Aktiv", "blocked": "Gesperrt" },
+      "blockDialog": {
+        "title": "Benutzer sperren?",
+        "text": "Dieser Benutzer wird gesperrt.",
+        "confirm": "Ja, sperren",
+        "cancel": "Nein"
+      },
+      "messages": {
+        "blocked": "Benutzer gesperrt",
+        "blockFailed": "Sperren fehlgeschlagen",
+        "restored": "Benutzer wiederhergestellt",
+        "restoreFailed": "Wiederherstellung fehlgeschlagen"
+      },
+      "actions": { "close": "Schließen" }
+    },
+    "clientEdit": {
+      "title": "Kunden bearbeiten",
+      "fields": {
+        "name": { "label": "Kundenname", "placeholder": "Kundenname" },
+        "domain": { "label": "Domain", "placeholder": "Domain" },
+        "description": { "label": "Beschreibung", "placeholder": "Kundenbeschreibung (max. 255 Zeichen)" },
+        "logo": { "label": "Kundenlogo" },
+        "audience": { "label": "Zielgruppe", "placeholder": "Zielgruppe (z. B. junge Fachkräfte)" },
+        "focus": {
+          "label": "Unternehmensschwerpunkt",
+          "placeholder": "Unternehmensschwerpunkt (z. B. Technologie, Marketing)"
+        },
+        "keywords": {
+          "label": "Schlüsselwörter",
+          "placeholder": "Schlüsselwörter (durch Kommas getrennt, z. B. SEO, Marketing, Technik)",
+          "count": "Wörter: {0}"
+        },
+        "plan": { "label": "Tarif" },
+        "generationFrequency": {
+          "label": "Generierungshäufigkeit",
+          "options": { "NONE": "Keine", "DAILY": "Täglich", "WEEKLY": "Wöchentlich" }
+        },
+        "tokenLimit": { "label": "Token-Kapazität", "placeholder": "Maximal zugewiesene Kapazität" }
+      },
+      "actions": { "close": "Schließen", "save": "Änderungen speichern" },
+      "messages": {
+        "success": "Kunde erfolgreich aktualisiert.",
+        "invalidResponse": "Ungültige Serverantwort",
+        "updateFailed": "Kunde konnte nicht aktualisiert werden"
+      }
+    },
+    "clientCreate": {
+      "title": "Kundenverwaltung",
+      "sections": {
+        "basic": "Grunddaten",
+        "seo": "Zielgruppe und SEO",
+        "admin": "Administratorkonto",
+        "subscription": "Abonnement und KI-Limits"
+      },
+      "fields": {
+        "name": { "label": "Kundenname", "placeholder": "Kundenname" },
+        "domainType": { "label": "Domaintyp", "options": { "SUBDOMAIN": "Subdomain", "CUSTOM": "Eigene Domain" } },
+        "subdomain": { "label": "Subdomain" },
+        "customDomain": { "label": "Eigene Domain" },
+        "description": { "label": "Beschreibung", "placeholder": "Kundenbeschreibung (max. 255 Zeichen)" },
+        "logo": { "label": "Kundenlogo" },
+        "audience": { "label": "Zielgruppe", "placeholder": "Zielgruppe (z. B. junge Fachkräfte)" },
+        "adminEmail": { "label": "Administrator-E-Mail", "placeholder": "Administrator-E-Mail" },
+        "adminUsername": { "label": "Administrator-Benutzername", "placeholder": "Administrator-Benutzername" },
+        "adminPassword": {
+          "label": "Administrator-Passwort",
+          "placeholder": "Passwort (leer lassen, um es automatisch zu erstellen)"
+        },
+        "plan": { "label": "Tarif" },
+        "generationFrequency": { "label": "Generierungshäufigkeit" },
+        "tokenLimit": { "label": "Token-Kapazität", "placeholder": "Maximal zugewiesene Kapazität" },
+        "focus": {
+          "label": "Unternehmensschwerpunkt",
+          "placeholder": "Unternehmensschwerpunkt (z. B. Technologie, Marketing)"
+        },
+        "keywords": {
+          "label": "Schlüsselwörter",
+          "placeholder": "Schlüsselwörter (durch Kommas getrennt)",
+          "count": "Wörter: {0}"
+        }
+      },
+      "aiSettings": {
+        "title": "Einstellungen für den KI-Autor",
+        "name": { "label": "KI-Name", "placeholder": "Hier eingeben..." },
+        "avatar": { "label": "KI-Avatar" },
+        "bio": { "label": "KI-Biografie", "placeholder": "Beschreibung des KI-Autors (max. 300 Zeichen)" }
+      },
+      "actions": { "close": "Schließen", "submit": "Kunden hinzufügen" },
+      "messages": {
+        "success": "Kunde erfolgreich hinzugefügt",
+        "createFailed": "Kunde konnte nicht hinzugefügt werden",
+        "copyPassword": "Passwort kopieren",
+        "passwordCopied": "Passwort in die Zwischenablage kopiert",
+        "clientCreatedTitle": "Kunde erstellt",
+        "clientCreatedHtml1": "Kunde wurde erfolgreich hinzugefügt.",
+        "clientCreatedHtml2": "Generiertes Administrator-Passwort:",
+        "clientCreatedHtml3": "Speichere dieses Passwort oder sende es an den Administrator.",
+        "ok": "OK"
+      }
+    },
+    "userCreate": {
+      "title": "Benutzer hinzufügen",
+      "assignNew": "Neuen Autor einem Kunden zuweisen",
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "createBtn": "Erstellen",
+      "addExisting": "Vorhandenen Benutzer hinzufügen",
+      "searchPlaceholder": "Nach Name oder E-Mail suchen...",
+      "loading": "Wird geladen...",
+      "notAvailable": "Nicht verfügbar",
+      "userLabel": "Benutzer: ",
+      "emailLabel": "E-Mail: ",
+      "roleLabel": "Rolle: ",
+      "noUsers": "Keine Benutzer gefunden.",
+      "close": "Schließen",
+      "messages": {
+        "created": "Benutzer erstellt",
+        "createFailed": "Erstellung fehlgeschlagen",
+        "assigned": "Benutzer dem Kunden zugewiesen",
+        "assignFailed": "Zuweisung fehlgeschlagen"
+      }
+    },
+    "userList": {
+      "title": "Benutzerliste",
+      "searchPlaceholder": "Nach Name oder E-Mail suchen...",
+      "loading": "Wird geladen...",
+      "loadingMore": "Weitere werden geladen...",
+      "noUsers": "Keine Benutzer gefunden.",
+      "notAvailable": "Nicht verfügbar",
+      "labels": {
+        "user": "Benutzer",
+        "email": "E-Mail",
+        "role": "Rolle",
+        "clientSite": "Kunde",
+        "comments": "Kommentare",
+        "bio": "Biografie"
+      },
+      "blockDialog": {
+        "title": "Benutzer sperren?",
+        "text": "Dieser Benutzer wird gesperrt.",
+        "confirm": "Ja, sperren",
+        "cancel": "Nein"
+      },
+      "messages": {
+        "blocked": "Benutzer gesperrt",
+        "blockFailed": "Sperren fehlgeschlagen",
+        "restored": "Benutzer wiederhergestellt",
+        "restoreFailed": "Wiederherstellung fehlgeschlagen",
+        "fetchFailed": "Benutzer konnten nicht geladen werden"
+      },
+      "actions": { "close": "Schließen" }
+    }
+  }
+}

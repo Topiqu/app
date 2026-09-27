@@ -41,5 +41,8 @@ export default defineEventHandler(async (event) => {
     metadata: { sourceId: source.id, changed },
   })
   kickKnowledgeIndex(source.id)
-  return { source: await db.knowledgeSource.findUniqueOrThrow({ where: { id: source.id }, select: KNOWLEDGE_SOURCE_VIEW }), changed }
+  return {
+    source: await db.knowledgeSource.findUniqueOrThrow({ where: { id: source.id }, select: KNOWLEDGE_SOURCE_VIEW }),
+    changed,
+  }
 })

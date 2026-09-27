@@ -91,7 +91,7 @@ const NAMES_SHOWN = 2
 const tags = defineModel<string[]>({ default: () => [] })
 
 const { t } = useI18n()
-const toast = useAppToast()
+const toast = useToast()
 const requestFetch = useRequestFetch()
 const { invalidateTags } = useCacheInvalidation()
 const listId = useId()
@@ -163,7 +163,7 @@ const createTag = async () => {
     await invalidateTags()
     toggle(id)
   } catch (e: any) {
-    toast.error({ message: t('articles.tags.createFailed') + (e.data?.message ?? '') })
+    toast.add({ color: 'error', title: t('articles.tags.createFailed') + (e.data?.message ?? '') })
   } finally {
     creating.value = false
   }

@@ -27,7 +27,6 @@ export default defineEventHandler(async (event) => {
       actionType: t('common.auth.resetPassword')!,
       logoUrl: 'https://cdn.topiqu.com/app-logo.png',
       // verificationUrl: `${useRuntimeConfig().public.baseUrl}/verify?code=${code}`,
-      unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${user.email}`,
     },
   })
 

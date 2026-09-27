@@ -1,0 +1,120 @@
+{
+  "knowledge": {
+    "title": "Base de connaissances",
+    "description": "Vos propres faits, tarifs et positionnement. Topiqu sélectionne automatiquement les informations pertinentes lorsqu'il rédige un article.",
+    "add": "Ajouter une source",
+    "addTitle": "Ajouter une source",
+    "addDescription": "Ajoutez une note, un document ou une page web. La source est utilisable dès qu'elle est indexée.",
+    "editTitle": "Modifier une source de connaissances",
+    "loadError": "Impossible de charger la base de connaissances.",
+    "actionError": "Impossible d'enregistrer la modification. Veuillez réessayer.",
+    "empty": "Aucune source pour le moment",
+    "emptyDescription": "Ajoutez des faits sur vos produits, des tarifs, des études de cas ou des comparaisons approuvées pour que les articles générés reflètent fidèlement vos informations.",
+    "chunks": "aucun passage | {n} passage | {n} passages",
+    "failed": "L'indexation a échoué. Réessayez ou remplacez la source.",
+    "useInArticles": "Utiliser lors de la rédaction",
+    "useInArticlesFor": "Utiliser {title} lors de la rédaction",
+    "public": "Source publique",
+    "citation": {
+      "legend": "Comment les articles doivent-ils utiliser cette source ?",
+      "INTERNAL": {
+        "label": "Contexte uniquement",
+        "description": "L'IA en tire des faits sans jamais créer de lien vers elle. Choisissez cette option pour les documents internes."
+      },
+      "PUBLIC": {
+        "label": "Source pouvant être citée",
+        "description": "Les articles peuvent créer un lien vers cette source."
+      }
+    },
+    "details": { "titleAndDate": "Titre et date de validité", "date": "Date de validité" },
+    "actions": "Actions pour {title}",
+    "edit": "Modifier",
+    "refresh": "Récupérer à nouveau",
+    "retry": "Relancer l'indexation",
+    "openPublic": "Ouvrir la source publique",
+    "delete": "Supprimer",
+    "deleteTitle": "Supprimer cette source ?",
+    "deleteDescription": "Son texte et son index seront définitivement supprimés. Les articles qui l'ont déjà utilisée resteront inchangés.",
+    "deleted": "Source supprimée",
+    "added": "Source ajoutée. L'indexation a commencé.",
+    "saved": "Source enregistrée",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "kinds": { "NOTE": "Note", "FILE": "Document", "URL": "Page web", "SITEMAP": "Pages d'un site web" },
+    "addKinds": { "NOTE": "Texte", "FILE": "Document", "URL": "Web" },
+    "web": {
+      "scope": "Éléments à ajouter",
+      "page": "Cette page uniquement",
+      "site": "Trouver d'autres pages de ce site",
+      "siteHint": "Nous afficherons les pages trouvées avant leur ajout. Vous pouvez en ajouter jusqu'à {count} à la fois."
+    },
+    "status": { "PENDING": "En attente", "PROCESSING": "Indexation en cours", "INDEXED": "Indexée", "FAILED": "Échec" },
+    "fields": {
+      "title": "Titre",
+      "optional": "Facultatif",
+      "note": "Note",
+      "content": "Contenu",
+      "noteHint": "Les titres Markdown aident à découper les longues notes.",
+      "file": "Choisissez un fichier PDF, DOCX, TXT ou MD",
+      "fileHint": "Jusqu'à {size}. Les PDF numérisés sans couche de texte ne sont pas pris en charge.",
+      "url": "Adresse de la page",
+      "urlHint": "Pages HTTPS publiques uniquement.",
+      "publicUrl": "URL publique pour les citations",
+      "publicUrlHint": "Laissez vide pour garder la source en interne.",
+      "validAsOf": "Valable au",
+      "validAsOfHint": "Date à laquelle ce contenu était exact. Les affirmations sensibles au temps datant de plus de 12 mois sont signalées pour vérification.",
+      "validAsOfAddHint": "Facultatif. Renseigné à partir de la date du document ou de la page lorsqu'elle est disponible.",
+      "sitemap": "Sitemap ou adresse du site",
+      "sitemapHint": "Importe jusqu'à {count} pages du même site qui ne figurent pas encore dans votre base de connaissances."
+    },
+    "errors": {
+      "unsupported": "Impossible de lire ce type de fichier ou cette page.",
+      "empty": "Aucun texte lisible trouvé. Les documents numérisés nécessitent une couche de texte.",
+      "tooLarge": "La source est trop volumineuse.",
+      "unreachable": "Impossible de récupérer la page.",
+      "duplicate": "Ce contenu figure déjà dans votre base de connaissances.",
+      "quota": "Votre base de connaissances est pleine. Supprimez une source pour en ajouter une autre.",
+      "sitemapEmpty": "Nous n'avons trouvé aucune nouvelle page à ajouter sur ce site."
+    },
+    "quota": "{sources} sources sur {maxSources} · {characters} caractères sur {maxCharacters}",
+    "stale": "Peut-être obsolète",
+    "asOf": "Valable au",
+    "usage": "jamais utilisée | utilisée une fois, dernière fois | utilisée {n} fois, dernière fois",
+    "unused": "Pas encore utilisée dans les articles",
+    "refreshFailed": "La dernière actualisation automatique a échoué ; la version précédente est toujours utilisée.",
+    "passages": "Passages indexés ({count})",
+    "passagesHint": "Voici exactement les passages que le rédacteur peut recevoir de cette source, un à la fois.",
+    "playground": {
+      "title": "Essayer un sujet",
+      "description": "Découvrez quelles informations Topiqu transmettrait au rédacteur pour un article sur ce sujet. Aucun contenu n'est généré.",
+      "placeholder": "p. ex. accélérer la validation des contenus",
+      "topic": "Sujet de l'article",
+      "run": "Essayer",
+      "selected": "Aucune source ne serait utilisée | 1 source serait utilisée | {n} sources seraient utilisées",
+      "none": "Aucune information n'est pertinente pour ce sujet ; le rédacteur n'en recevrait donc pas.",
+      "used": "Utilisée",
+      "skipped": "Non pertinente"
+    },
+    "sitemapProgress": "Importation de la page {done} sur {total}",
+    "sitemapImported": "{added} pages importées, {skipped} ignorées. L'indexation a commencé.",
+    "sitemap": {
+      "found": "Pages trouvées",
+      "existing": "Déjà dans la base de connaissances",
+      "offered": "Proposées à l'importation",
+      "cappedByBatch": "Une importation ajoute au maximum {count} pages. Relancez-la pour les autres.",
+      "cappedByQuota": "Votre base de connaissances peut encore accueillir {count} sources.",
+      "discover": "Trouver des pages",
+      "import": "Importer {count} pages"
+    },
+    "beta": "Bêta",
+    "consent": {
+      "label": "Je confirme que la source ne contient aucune donnée confidentielle ou personnelle",
+      "scope": "Les informations confidentielles comprennent les secrets commerciaux et tout ce qui ne doit pas figurer dans un article public.",
+      "title": "Comment l'IA utilisera cette source",
+      "useInternal": "L'IA peut utiliser les faits et chiffres de cette source dans vos articles publiés, sans créer de lien vers elle.",
+      "usePublic": "L'IA peut utiliser les faits et chiffres de cette source dans vos articles publiés et créer un lien vers elle comme source.",
+      "processing": "Le contenu est traité par un fournisseur d'IA externe (OpenAI) lors de son ajout, de chaque modification et de la rédaction des articles. Nous ne conservons que le texte extrait, jusqu'à ce que vous supprimiez la source.",
+      "confirm": "Je confirme que cette source ne contient aucune information confidentielle, aucun secret commercial ni aucune donnée personnelle qui ne doivent pas apparaître dans un article public."
+    }
+  }
+}

@@ -4,6 +4,7 @@ import type { ArticleFactCheckInput, ArticleFactCheckResult } from '~~/shared/ty
 import { z } from 'zod'
 import * as cheerio from 'cheerio'
 import { generateText, Output } from 'ai'
+import { LANGUAGE_NAMES } from '~~/shared/utils/language'
 import { FACT_CHECK_LIMITS, factCheckCounts } from '~~/shared/utils/articleFactCheck'
 
 import { aiModel } from './models'
@@ -73,7 +74,7 @@ Verdicts have narrow meanings:
 - contradicted: a supplied source directly conflicts with the claim.
 - unverifiable: the statement looks factual but cannot responsibly be checked from this material or by this method. Do not use it merely because support is absent.
 
-Every supported, partial, or contradicted verdict must cite at least one supplied sourceIndex and a short evidence excerpt. Never invent evidence, URLs, or source indexes. Explain partial/contradicted/unsupported verdicts precisely. Consider publication dates only for genuinely time-sensitive claims; age alone does not make a source bad. Write explanations in ${input.language === 'cs' ? 'Czech' : 'English'}. Do not claim truth or certainty beyond the supplied sources.`,
+Every supported, partial, or contradicted verdict must cite at least one supplied sourceIndex and a short evidence excerpt. Never invent evidence, URLs, or source indexes. Explain partial/contradicted/unsupported verdicts precisely. Consider publication dates only for genuinely time-sensitive claims; age alone does not make a source bad. Write explanations in ${LANGUAGE_NAMES[input.language]}. Do not claim truth or certainty beyond the supplied sources.`,
     prompt: JSON.stringify({
       title: input.title,
       excerpt: input.excerpt,

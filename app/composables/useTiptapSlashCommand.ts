@@ -11,66 +11,36 @@ export interface SlashCommandHandlers {
 }
 
 export function useTiptapSlashCommand(handlers: SlashCommandHandlers) {
+  const { t } = useI18n()
+  // `run` receives the chain with the typed "/query" already deleted.
+  const item = (key: string, icon: string, run: (chain: any) => unknown, params = {}) => ({
+    title: t(`articles.editor.toolbar.${key}`, params),
+    icon,
+    run,
+  })
+  const heading = (level: 1 | 2 | 3) =>
+    item('heading', `mdi:format-header-${level}`, (chain) => chain.setNode('heading', { level }).run(), { level })
+  const prompt = (key: string, icon: string, open: () => void) => item(key, icon, (chain) => (chain.run(), open()))
+
+  const items = () => [
+    heading(1),
+    heading(2),
+    heading(3),
+    item('bulletList', 'mdi:format-list-bulleted', (chain) => chain.toggleBulletList().run()),
+    item('numberedList', 'mdi:format-list-numbered', (chain) => chain.toggleOrderedList().run()),
+    item('blockquote', 'mdi:format-quote-open', (chain) => chain.setBlockquote().run()),
+    prompt('insertImage', 'mdi:image', handlers.openImagePrompt),
+    prompt('insertYoutube', 'mdi:youtube', handlers.openYoutubePrompt),
+    prompt('insertPoll', 'mdi:poll', handlers.insertPoll),
+  ]
+
   const getItems = ({ query }: { query: string }) =>
-    [
-      {
-        title: 'Heading 1',
-        icon: 'mdi:format-header-1',
-        command: ({ editor, range }: any) =>
-          editor.chain().focus().deleteRange(range).setNode('heading', { level: 1 }).run(),
-      },
-      {
-        title: 'Heading 2',
-        icon: 'mdi:format-header-2',
-        command: ({ editor, range }: any) =>
-          editor.chain().focus().deleteRange(range).setNode('heading', { level: 2 }).run(),
-      },
-      {
-        title: 'Heading 3',
-        icon: 'mdi:format-header-3',
-        command: ({ editor, range }: any) =>
-          editor.chain().focus().deleteRange(range).setNode('heading', { level: 3 }).run(),
-      },
-      {
-        title: 'Bullet List',
-        icon: 'mdi:format-list-bulleted',
-        command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).toggleBulletList().run(),
-      },
-      {
-        title: 'Numbered List',
-        icon: 'mdi:format-list-numbered',
-        command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
-      },
-      {
-        title: 'Quote',
-        icon: 'mdi:format-quote-open',
-        command: ({ editor, range }: any) => editor.chain().focus().deleteRange(range).setBlockquote().run(),
-      },
-      {
-        title: 'Image',
-        icon: 'mdi:image',
-        command: ({ editor, range }: any) => {
-          editor.chain().focus().deleteRange(range).run()
-          handlers.openImagePrompt()
-        },
-      },
-      {
-        title: 'YouTube',
-        icon: 'mdi:youtube',
-        command: ({ editor, range }: any) => {
-          editor.chain().focus().deleteRange(range).run()
-          handlers.openYoutubePrompt()
-        },
-      },
-      {
-        title: 'Poll',
-        icon: 'mdi:poll',
-        command: ({ editor, range }: any) => {
-          editor.chain().focus().deleteRange(range).run()
-          handlers.insertPoll()
-        },
-      },
-    ].filter((item) => item.title.toLowerCase().includes(query.toLowerCase()))
+    items()
+      .filter(({ title }) => title.toLocaleLowerCase().includes(query.toLocaleLowerCase()))
+      .map(({ run, ...rest }) => ({
+        ...rest,
+        command: ({ editor, range }: any) => run(editor.chain().focus().deleteRange(range)),
+      }))
 
   const render = () => {
     let component: any, popup: any

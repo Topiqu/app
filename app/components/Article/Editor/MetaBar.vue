@@ -25,7 +25,7 @@
         <template #trigger>{{ releaseLabel }}</template>
 
         <div class="flex flex-col gap-2 w-60">
-          <AppFormField v-model="releaseAtInput" type="datetime-local" />
+          <AppDateInput v-model="releaseAtInput" time />
           <div class="flex flex-wrap gap-1.5">
             <ArticleEditorChip v-for="kind in QUICK_KINDS" :key="kind" @click="setQuick(kind)">
               {{ $t(`articles.releaseQuick.${kind}`) }}

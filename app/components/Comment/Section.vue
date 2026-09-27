@@ -91,13 +91,14 @@
       icon="mdi:alert-circle"
       :title="$t('articles.comments.errorLoadingComments', { 0: error.message })"
     />
-    <div v-else-if="filteredComments.length" class="w-full max-w-full space-y-6">
+    <div v-else-if="comments.length" class="w-full max-w-full space-y-6">
       <Comment
-        v-for="comment in filteredComments"
+        v-for="comment in comments"
         :key="comment.id"
         :comment="comment"
         :depth="1"
         :isReplying="!!replyingTo"
+        :publication
         :class="optimisticCommentIds.has(comment.id) ? 'opacity-60' : ''"
         :aria-busy="optimisticCommentIds.has(comment.id) || deletingCommentIds.has(comment.id)"
         @reply="handleReply"
@@ -126,6 +127,7 @@ const toast = useToast(),
   { data: session } = useAuth()
 const confirm = useConfirm()
 const localePath = useLocalePath()
+const publication = await useClientSite()
 const props = defineProps<{
   articleId: string
   commCount: number
@@ -174,18 +176,15 @@ const {
   error,
   refresh,
 } = await useFetch<{ comments: CommentWithReplies[]; hasMore: boolean }>(`/api/comments/${props.articleId}`, {
-  query: { page, limit },
+  query: { page, limit, sort },
   default: () => ({ comments: [], hasMore: true }),
   watch: false,
 })
 
-const filteredComments = computed(() => {
-  const [f, o] = sort.value.split(':')
-  return [...comments.value].sort((a, b) => {
-    const av = f === 'createdAt' ? new Date(a.createdAt).getTime() : a.likes || 0,
-      bv = f === 'createdAt' ? new Date(b.createdAt).getTime() : b.likes || 0
-    return o === 'asc' ? av - bv : bv - av
-  })
+// The server orders every page, so a sort switch restarts from the first page instead of reordering what is loaded.
+watch(sort, () => {
+  page.value = 1
+  refresh()
 })
 
 watch(
@@ -267,23 +266,16 @@ const submitComment = async () => {
     user: {
       username: currentUser?.username ?? currentUser?.name ?? '',
       avatarUrl: currentUser?.avatarUrl,
-      createdAt: new Date().toISOString(),
-      commentsCount: 0,
-      likesCount: 0,
-      dislikesCount: 0,
-      followers: 0,
-      following: 0,
-      role: currentUser?.role ?? 'user',
       isBanned: false,
     },
-    article: { clientSiteId: currentUser?.clientSiteId ?? '', userId: '' },
+    article: { clientSiteId: currentUser?.clientSiteId ?? '' },
     likes: 0,
     dislikes: 0,
     replies: [],
     userReaction: null,
     emojiReactions: [],
     depth: draft.parent ? (draft.parent.depth ?? 0) + 1 : 0,
-    isLikedByAuthor: false,
+    publicationLikes: 0,
   }
 
   isSubmitting.value = true
@@ -338,7 +330,7 @@ const submitComment = async () => {
     optimisticStatus.reverted()
     toast.add({
       color: 'error',
-      title: e.data?.message || $t('common.messages.operationFailed'),
+      title: fetchErrorMessage(e, $t('common.messages.operationFailed')),
     })
   } finally {
     const nextOptimistic = new Set(optimisticCommentIds.value)

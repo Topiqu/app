@@ -53,7 +53,7 @@ async function sendVerificationCode() {
     isVerificationCodeSent.value = true
     toast.add({ color: 'success', title: response.message })
   } catch (err: any) {
-    toast.add({ color: 'error', title: err.data?.message || $t('common.auth.verifyFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(err, $t('common.auth.verifyFailed')) })
   } finally {
     isLoading.value = false
   }
@@ -71,7 +71,7 @@ async function verifyEmail() {
     verificationCode.value = ''
     toast.add({ color: 'success', title: $t('common.auth.verifySuccess') })
   } catch (err: any) {
-    toast.add({ color: 'error', title: err.data?.message || $t('common.auth.verifyFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(err, $t('common.auth.verifyFailed')) })
   } finally {
     isLoading.value = false
   }

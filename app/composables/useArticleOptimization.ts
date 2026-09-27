@@ -1,6 +1,7 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { ArticleOptimizationInput, ArticleOptimizationResult } from '~~/shared/types/articleOptimization'
 
+import { htmlToText } from '~~/shared/utils/articleBlocks'
 import { analyzeArticleOptimization } from '~~/shared/utils/articleOptimization'
 
 export type ArticleOptimizationState = 'loading' | 'empty' | 'stale' | 'analyzing' | 'complete' | 'error'
@@ -14,10 +15,7 @@ export const useArticleOptimization = (input: MaybeRefOrGetter<ArticleOptimizati
   const analyze = () => {
     if (!mounted) return
     const current = toValue(input)
-    if (
-      !current.title.trim() &&
-      !new DOMParser().parseFromString(current.content || '', 'text/html').body.textContent?.trim()
-    ) {
+    if (!current.title.trim() && !htmlToText(current.content)) {
       result.value = null
       state.value = 'empty'
       return

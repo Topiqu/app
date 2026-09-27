@@ -287,7 +287,7 @@ async function saveAsset() {
     emit('upload', { url: result.url, optimizedUrl: result.optimizedUrl })
     open.value = false
   } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.message || $t('common.avatar.uploadError')
+    errorMessage.value = fetchErrorMessage(error, error?.message || $t('common.avatar.uploadError'))
   } finally {
     busy.value = false
   }

@@ -1,6 +1,8 @@
 import type { ArticleWithDetails } from '~~/types/article'
 
 export function useExport() {
+  const { locale } = useI18n()
+
   const downloadFile = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -64,7 +66,7 @@ export function useExport() {
       a.title,
       a.slug,
       a.status,
-      new Date(a.createdAt).toLocaleString('cs-CZ'),
+      new Date(a.createdAt).toLocaleString(locale.value),
       a.imageUrl || '',
       stripHtml(a.content).slice(0, 150),
     ])

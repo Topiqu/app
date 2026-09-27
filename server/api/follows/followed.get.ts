@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     where: { followerId: user.id },
     include: {
       followed: {
-        select: { id: true, username: true, email: true, role: true, avatarUrl: true, bio: true },
+        select: { id: true, username: true, role: true, avatarUrl: true, bio: true },
       },
     },
   })

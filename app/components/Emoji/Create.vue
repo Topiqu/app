@@ -290,7 +290,7 @@ const editingId = shallowRef('')
 const editingShortcode = shallowRef('')
 const ACCEPTED_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
 
-const toast = useAppToast()
+const toast = useToast()
 const open = defineModel<boolean>()
 const dialog = useTemplateRef<{
   ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'>
@@ -366,13 +366,14 @@ const uniqueShortcode = (filename: string) => {
 const addFiles = (files: File[]) => {
   for (const file of files) {
     if (!ACCEPTED_TYPES.has(file.type)) {
-      toast.error({
-        message: $t('emoji.unsupportedFile', { name: file.name }),
+      toast.add({
+        color: 'error',
+        title: $t('emoji.unsupportedFile', { name: file.name }),
       })
       continue
     }
     if (file.size > MAX_SOURCE_BYTES) {
-      toast.error({ message: $t('emoji.fileTooLarge', { name: file.name }) })
+      toast.add({ color: 'error', title: $t('emoji.fileTooLarge', { name: file.name }) })
       continue
     }
     const item = {
@@ -448,7 +449,7 @@ const submitQueue = async () => {
       removeQueued(item)
     } catch (requestError: any) {
       failed = true
-      item.errorMessage = requestError.data?.message || requestError.data?.statusMessage || $t('emoji.createFailed')
+      item.errorMessage = fetchErrorMessage(requestError, requestError.data?.statusMessage || $t('emoji.createFailed'))
     } finally {
       optimisticEmojis.value = optimisticEmojis.value.filter((emoji) => emoji.id !== optimisticId)
     }
@@ -459,8 +460,9 @@ const submitQueue = async () => {
   else optimisticStatus.saved()
   if (createdNames.length) {
     await refresh()
-    toast.success({
-      message:
+    toast.add({
+      color: 'success',
+      title:
         createdNames.length === 1
           ? $t('emoji.createSuccess', [createdNames[0]])
           : $t('emoji.createManySuccess', { count: createdNames.length }),
@@ -488,14 +490,15 @@ const confirmDelete = async (emoji: EmojiRecord) => {
       method: 'DELETE',
     })
     optimisticStatus.saved()
-    toast.success({ message: $t('emoji.deleteSuccess') })
+    toast.add({ color: 'success', title: $t('emoji.deleteSuccess') })
   } catch (requestError: any) {
     const restored = [...(emojis.value || [])]
     restored.splice(Math.max(0, previousIndex), 0, emoji)
     emojis.value = restored
     optimisticStatus.reverted()
-    toast.error({
-      message: requestError.data?.message || $t('emoji.deleteFailed'),
+    toast.add({
+      color: 'error',
+      title: fetchErrorMessage(requestError, $t('emoji.deleteFailed')),
     })
   } finally {
     deletingIds.delete(emoji.id)
@@ -529,7 +532,7 @@ const saveEmoji = async (emoji: EmojiRecord) => {
     editingId.value = emoji.id
     editingShortcode.value = shortcode
     optimisticStatus.reverted()
-    toast.error({ message: requestError.data?.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(requestError, $t('common.messages.operationFailed')) })
   }
 }
 

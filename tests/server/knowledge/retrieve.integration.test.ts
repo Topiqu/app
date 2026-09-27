@@ -24,7 +24,14 @@ const tenant = async () => {
 
 const indexedSource = async (clientSiteId: string, content: string, vector: number[], extra: object = {}) => {
   const source = await db!.knowledgeSource.create({
-    data: { clientSiteId, kind: 'NOTE', title: 'Note', content, contentHash: randomUUID().replace(/-/g, '').padEnd(64, '0'), ...extra },
+    data: {
+      clientSiteId,
+      kind: 'NOTE',
+      title: 'Note',
+      content,
+      contentHash: randomUUID().replace(/-/g, '').padEnd(64, '0'),
+      ...extra,
+    },
   })
   vi.mocked(embedMany).mockResolvedValueOnce({ embeddings: [vector], usage: { tokens: 5 } } as never)
   await indexKnowledgeSource(source.id)
@@ -32,7 +39,11 @@ const indexedSource = async (clientSiteId: string, content: string, vector: numb
 }
 
 /** An indexed source with one chunk per entry, written directly so a corpus of hundreds stays fast. */
-const chunkedSource = async (clientSiteId: string, chunks: string[], embeddingModel = aiEmbeddingModelId('knowledge')) => {
+const chunkedSource = async (
+  clientSiteId: string,
+  chunks: string[],
+  embeddingModel = aiEmbeddingModelId('knowledge'),
+) => {
   const source = await db!.knowledgeSource.create({
     data: {
       clientSiteId,
@@ -122,7 +133,10 @@ describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
 
   it('folds query terms exactly like the index, whichever side carries the accent', async () => {
     const site = await tenant()
-    await chunkedSource(site, ['Cena planu Pro to 199 złotych miesięcznie.', 'Lieferung in jede Strasse innerhalb von 48 Stunden.'])
+    await chunkedSource(site, [
+      'Cena planu Pro to 199 złotych miesięcznie.',
+      'Lieferung in jede Strasse innerhalb von 48 Stunden.',
+    ])
 
     expect(await lexicalHits(site, 'zlotych')).toEqual([expect.stringContaining('złotych')])
     expect(await lexicalHits(site, 'złotych')).toEqual([expect.stringContaining('złotych')])
@@ -154,7 +168,10 @@ describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
 
   it('filters nothing in a small corpus, where shares are too coarse', async () => {
     const site = await tenant()
-    await chunkedSource(site, Array.from({ length: 10 }, (_, index) => `Topiqu note ${index}.`))
+    await chunkedSource(
+      site,
+      Array.from({ length: 10 }, (_, index) => `Topiqu note ${index}.`),
+    )
 
     expect(await lexicalHits(site, 'Topiqu')).toHaveLength(10)
   })
@@ -171,10 +188,15 @@ describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
     const id = await indexedSource(site, 'Approval workflows take two hours a week for most customers.', axis(0))
 
     await retrieveKnowledge(site, 'approvals', { track: false })
-    expect(await db!.knowledgeSource.findUnique({ where: { id }, select: { usageCount: true } })).toEqual({ usageCount: 0 })
+    expect(await db!.knowledgeSource.findUnique({ where: { id }, select: { usageCount: true } })).toEqual({
+      usageCount: 0,
+    })
 
     await retrieveKnowledge(site, 'approvals')
-    const tracked = await db!.knowledgeSource.findUnique({ where: { id }, select: { usageCount: true, lastUsedAt: true } })
+    const tracked = await db!.knowledgeSource.findUnique({
+      where: { id },
+      select: { usageCount: true, lastUsedAt: true },
+    })
     expect(tracked?.usageCount).toBe(1)
     expect(tracked?.lastUsedAt).toBeInstanceOf(Date)
   })

@@ -174,10 +174,11 @@ describe('tenant boundary wiring', () => {
     expect(create).toContain('userId: aiAuthor?.id ?? user.id')
   })
 
-  it('creates articles from an explicit field list and normalizes an empty image credit', () => {
+  it('creates articles from an explicit field list and writes cover credit after insertion', () => {
     const create = source('server/api/articles/index.post.ts')
     expect(create).not.toContain('...body,')
-    expect(create).toContain('body.imageCredit === null ? DbNull : body.imageCredit')
+    expect(create).toContain('imageCredit: DbNull')
+    expect(create).toContain('data: { imageCredit: body.imageCredit }')
     expect(create).toContain('clientSiteId: user.clientSiteId')
     expect(create).toContain('userId: aiAuthor?.id ?? user.id')
   })

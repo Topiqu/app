@@ -102,7 +102,7 @@ const articleLikeBus = useArticleLikeBus()
 const isArticleRoute = computed(() => String(route.name || '').includes('clanky-slug'))
 
 const shell = computed(() => resolvePageShell(route.meta.shell))
-const showDashboard = computed(() => canRenderDashboardShell(shell.value, auth.value?.user.role))
+const showDashboard = computed(() => canRenderDashboardShell(auth.value?.user.role))
 const isPublicationSurface = computed(() => Boolean(clientSite.value && shell.value === 'publication'))
 const logoSrc = computed(() => clientSite.value?.logoUrl || null)
 </script>

@@ -156,7 +156,12 @@ export const formatKnowledgeBrief = (selected: readonly KnowledgeCandidate[], no
 export const knowledgeUsage = (selected: readonly KnowledgeCandidate[]): KnowledgeUsage[] => {
   const bySource = new Map<string, KnowledgeUsage>()
   for (const chunk of selected) {
-    const usage = bySource.get(chunk.sourceId) ?? { sourceId: chunk.sourceId, title: chunk.title, version: chunk.version, chunkIds: [] }
+    const usage = bySource.get(chunk.sourceId) ?? {
+      sourceId: chunk.sourceId,
+      title: chunk.title,
+      version: chunk.version,
+      chunkIds: [],
+    }
     usage.chunkIds.push(chunk.id)
     bySource.set(chunk.sourceId, usage)
   }
@@ -174,7 +179,9 @@ const selectRelevant = async (topic: string, shortlist: readonly KnowledgeCandid
     schema: selectionSchema,
     maxOutputTokens: 600,
     providerOptions: { openai: { reasoningEffort: 'low' } },
-    abortSignal: abortSignal ? AbortSignal.any([abortSignal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000),
+    abortSignal: abortSignal
+      ? AbortSignal.any([abortSignal, AbortSignal.timeout(20_000)])
+      : AbortSignal.timeout(20_000),
     instructions: `You choose which of the publisher's own knowledge excerpts a writer should see for one article.
 Select only excerpts that would materially inform an article on the topic: facts, figures, product capabilities, pricing, positioning, customer evidence or approved comparisons that bear on this topic. Return an empty list when nothing is clearly relevant; loosely related background is not relevant.
 Every excerpt comes from the same publisher, so being about the publisher or its product is never a reason on its own. For each excerpt ask: would a careful writer quote or paraphrase this specific fact in this specific article? Prefer the fewest excerpts that cover the topic. A comparison or buying-decision article may use pricing and capabilities; a how-to or trend article needs only the excerpts about that exact subject.
@@ -207,7 +214,9 @@ export const retrieveKnowledge = async (
     const { embedding, usage } = await embed({
       model: aiEmbeddingModel('knowledge'),
       value: topic,
-      abortSignal: abortSignal ? AbortSignal.any([abortSignal, AbortSignal.timeout(10_000)]) : AbortSignal.timeout(10_000),
+      abortSignal: abortSignal
+        ? AbortSignal.any([abortSignal, AbortSignal.timeout(10_000)])
+        : AbortSignal.timeout(10_000),
     })
     const shortlist = shortlistKnowledge(await searchKnowledge(clientSiteId, embedding, knowledgeSearchTerms(topic)))
     if (!shortlist.length) return { ...EMPTY, tokens: usage.tokens }

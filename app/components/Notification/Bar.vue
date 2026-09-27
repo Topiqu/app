@@ -171,7 +171,7 @@ const poll = async () => {
     if (fresh.length) {
       data.value = [...fresh, ...data.value]
       for (const n of fresh)
-        useAppToast().add({
+        useToast().add({
           color: 'success',
           title: $t('common.notifications.newNotification', { message: n.message }),
         })
@@ -213,7 +213,7 @@ watch(
 
 watch(error, (e) => {
   if (e)
-    useAppToast().add({
+    useToast().add({
       color: 'error',
       title: $t('common.notifications.loadFailed', { message: e.message || $t('common.error') }),
     })
@@ -293,10 +293,10 @@ const del = async (id: string) => {
     )
     unreadCount.value += removedUnread
     optimisticStatus.reverted()
-    useAppToast().add({
+    useToast().add({
       color: 'error',
       title: $t('common.notifications.deleteFailed', {
-        message: e.data?.message || $t('common.error'),
+        message: fetchErrorMessage(e, $t('common.error')),
       }),
     })
   } finally {

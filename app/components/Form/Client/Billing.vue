@@ -344,6 +344,7 @@
 import type { PlanPrice, PlanPricing } from '~~/shared/types/planPricing'
 import type { BillingInvoice, BillingInvoiceStatus } from '~~/shared/types/billing'
 
+import { languageTag } from '~~/shared/utils/language'
 import { getUpgradeTarget } from '~~/shared/utils/plans'
 
 import type { ClientSite } from '~/utils/buildClientSettingsForm'
@@ -355,7 +356,7 @@ const { client, rate } = defineProps<{
   rate: number
 }>()
 
-const toast = useAppToast()
+const toast = useToast()
 const { locale, tm, rt, t } = useI18n()
 const { formatTime } = useTime()
 const articlePacks = computed(() => buildArticlePackViews(t, locale.value))
@@ -421,7 +422,7 @@ const redirectTo = async (url: string, action: string, body: Record<string, unkn
     if (res.url) window.location.href = res.url
     else throw new Error('no url')
   } catch {
-    toast.error({ message: $t('common.preferences.billing.actionFailed') })
+    toast.add({ color: 'error', title: $t('common.preferences.billing.actionFailed') })
     pendingAction.value = null
   }
 }
@@ -489,7 +490,7 @@ const formatSavings = computed(() => {
 
   const savingsUsd = Math.round(client.monthlyPayment * 12 * 0.2)
 
-  return new Intl.NumberFormat(client.language === 'cs' ? 'cs-CZ' : 'en-US', {
+  return new Intl.NumberFormat(languageTag(client.language), {
     style: 'currency',
     currency: client.currency ?? 'USD',
     currencyDisplay: 'narrowSymbol',
@@ -507,7 +508,7 @@ const formatPrice = (type: 'monthly' | 'annual') => {
     amountUsd = Math.round(amountUsd * 0.8)
   }
 
-  return new Intl.NumberFormat(client?.language === 'cs' ? 'cs-CZ' : 'en-US', {
+  return new Intl.NumberFormat(languageTag(client?.language), {
     style: 'currency',
     currency: client?.currency ?? 'USD',
     currencyDisplay: 'narrowSymbol',

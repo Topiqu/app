@@ -92,7 +92,7 @@ const saveEdit = async () => {
     toast.add({ color: 'success', title: t('master.userEdit.success') })
     open.value = false
   } catch (error: any) {
-    toast.add({ color: 'error', title: error?.data?.message || t('master.userEdit.error') })
+    toast.add({ color: 'error', title: fetchErrorMessage(error, t('master.userEdit.error')) })
   }
 }
 

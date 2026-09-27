@@ -1,0 +1,208 @@
+{
+  "master": {
+    "title": "Administration",
+    "userEdit": {
+      "title": "Modifier l'utilisateur",
+      "passwordPlaceholder": "Nouveau mot de passe (laissez vide pour conserver l'actuel)",
+      "role": "Rôle",
+      "roles": { "admin": "Administrateur", "reader": "Lecteur", "ai": "Auteur IA" },
+      "validation": "Saisissez un nom d'utilisateur et une adresse e-mail.",
+      "success": "Utilisateur mis à jour.",
+      "error": "Impossible de mettre à jour l'utilisateur."
+    },
+    "clientTable": {
+      "title": "Sites clients",
+      "description": "Gérez les publications, les offres, les accès et les paramètres des espaces.",
+      "search": "Rechercher des clients...",
+      "headers": {
+        "name": "Nom",
+        "domain": "Domaine",
+        "status": "Statut",
+        "plan": "Offre",
+        "users": "Utilisateurs",
+        "createdAt": "Créé le",
+        "actions": "Actions"
+      },
+      "status": { "active": "Actif", "deactivated": "Désactivé" },
+      "actions": { "deleteDeactivate": "Supprimer/Désactiver", "activate": "Activer" },
+      "deleteDialog": {
+        "title": "Que souhaitez-vous faire du client « {name} » ?",
+        "text": "Choisissez de désactiver ou de supprimer définitivement le client.",
+        "confirm": "Supprimer définitivement",
+        "deny": "Désactiver",
+        "cancel": "Annuler"
+      },
+      "activateDialog": {
+        "title": "Activer le client ?",
+        "text": "Le client sera activé.",
+        "confirm": "Oui, activer",
+        "cancel": "Non"
+      },
+      "messages": {
+        "permanentlyDeleted": "Client supprimé définitivement",
+        "deleteFailed": "Échec de la suppression",
+        "deactivated": "Client désactivé",
+        "deactivateFailed": "Échec de la désactivation",
+        "activated": "Client activé",
+        "activateFailed": "Échec de l'activation"
+      }
+    },
+    "clientUsers": {
+      "title": "Utilisateurs du client",
+      "empty": "Aucun utilisateur trouvé",
+      "headers": { "username": "Nom d'utilisateur", "email": "E-mail", "role": "Rôle", "actions": "Actions" },
+      "status": { "active": "Actif", "blocked": "Bloqué" },
+      "blockDialog": {
+        "title": "Bloquer l'utilisateur ?",
+        "text": "Cet utilisateur sera bloqué.",
+        "confirm": "Oui, bloquer",
+        "cancel": "Non"
+      },
+      "messages": {
+        "blocked": "Utilisateur bloqué",
+        "blockFailed": "Échec du blocage",
+        "restored": "Utilisateur rétabli",
+        "restoreFailed": "Échec du rétablissement"
+      },
+      "actions": { "close": "Fermer" }
+    },
+    "clientEdit": {
+      "title": "Modifier le client",
+      "fields": {
+        "name": { "label": "Nom du client", "placeholder": "Nom du client" },
+        "domain": { "label": "Domaine", "placeholder": "Domaine" },
+        "description": { "label": "Description", "placeholder": "Description du client (255 caractères max.)" },
+        "logo": { "label": "Logo du client" },
+        "audience": { "label": "Public cible", "placeholder": "Public cible (p. ex. jeunes professionnels)" },
+        "focus": { "label": "Domaine d'activité", "placeholder": "Domaine d'activité (p. ex. technologie, marketing)" },
+        "keywords": {
+          "label": "Mots-clés",
+          "placeholder": "Mots-clés (séparés par des virgules, p. ex. SEO, marketing, technologie)",
+          "count": "Mots : {0}"
+        },
+        "plan": { "label": "Offre" },
+        "generationFrequency": {
+          "label": "Fréquence de génération",
+          "options": { "NONE": "Aucune", "DAILY": "Quotidienne", "WEEKLY": "Hebdomadaire" }
+        },
+        "tokenLimit": { "label": "Capacité en tokens", "placeholder": "Capacité maximale allouée" }
+      },
+      "actions": { "close": "Fermer", "save": "Enregistrer les modifications" },
+      "messages": {
+        "success": "Client mis à jour.",
+        "invalidResponse": "Réponse du serveur invalide",
+        "updateFailed": "Impossible de mettre à jour le client"
+      }
+    },
+    "clientCreate": {
+      "title": "Gestion des clients",
+      "sections": {
+        "basic": "Informations de base",
+        "seo": "Ciblage et SEO",
+        "admin": "Compte administrateur",
+        "subscription": "Abonnement et limites IA"
+      },
+      "fields": {
+        "name": { "label": "Nom du client", "placeholder": "Nom du client" },
+        "domainType": {
+          "label": "Type de domaine",
+          "options": { "SUBDOMAIN": "Sous-domaine", "CUSTOM": "Domaine personnalisé" }
+        },
+        "subdomain": { "label": "Sous-domaine" },
+        "customDomain": { "label": "Domaine personnalisé" },
+        "description": { "label": "Description", "placeholder": "Description du client (255 caractères max.)" },
+        "logo": { "label": "Logo du client" },
+        "audience": { "label": "Public cible", "placeholder": "Public cible (p. ex. jeunes professionnels)" },
+        "adminEmail": { "label": "E-mail de l'administrateur", "placeholder": "E-mail de l'administrateur" },
+        "adminUsername": {
+          "label": "Nom d'utilisateur de l'administrateur",
+          "placeholder": "Nom d'utilisateur de l'administrateur"
+        },
+        "adminPassword": {
+          "label": "Mot de passe de l'administrateur",
+          "placeholder": "Mot de passe (laisser vide pour générer automatiquement)"
+        },
+        "plan": { "label": "Offre" },
+        "generationFrequency": { "label": "Fréquence de génération" },
+        "tokenLimit": { "label": "Capacité en tokens", "placeholder": "Capacité maximale allouée" },
+        "focus": { "label": "Domaine d'activité", "placeholder": "Domaine d'activité (p. ex. technologie, marketing)" },
+        "keywords": {
+          "label": "Mots-clés",
+          "placeholder": "Mots-clés (séparés par des virgules)",
+          "count": "Mots : {0}"
+        }
+      },
+      "aiSettings": {
+        "title": "Paramètres de l'auteur IA",
+        "name": { "label": "Nom de l'IA", "placeholder": "Saisissez ici..." },
+        "avatar": { "label": "Avatar de l'IA" },
+        "bio": { "label": "Biographie de l'IA", "placeholder": "Description de l'auteur IA (300 caractères max.)" }
+      },
+      "actions": { "close": "Fermer", "submit": "Ajouter le client" },
+      "messages": {
+        "success": "Client ajouté",
+        "createFailed": "Impossible d'ajouter le client",
+        "copyPassword": "Copier le mot de passe",
+        "passwordCopied": "Mot de passe copié dans le presse-papiers",
+        "clientCreatedTitle": "Client créé",
+        "clientCreatedHtml1": "Le client a été ajouté.",
+        "clientCreatedHtml2": "Mot de passe généré pour l'administrateur :",
+        "clientCreatedHtml3": "Enregistrez ce mot de passe ou envoyez-le à l'administrateur.",
+        "ok": "OK"
+      }
+    },
+    "userCreate": {
+      "title": "Ajouter un utilisateur",
+      "assignNew": "Associer un nouvel auteur au client",
+      "username": "Nom d'utilisateur",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "createBtn": "Créer",
+      "addExisting": "Ajouter un utilisateur existant",
+      "searchPlaceholder": "Rechercher par nom ou e-mail...",
+      "loading": "Chargement...",
+      "notAvailable": "Non disponible",
+      "userLabel": "Utilisateur : ",
+      "emailLabel": "E-mail : ",
+      "roleLabel": "Rôle : ",
+      "noUsers": "Aucun utilisateur trouvé.",
+      "close": "Fermer",
+      "messages": {
+        "created": "Utilisateur créé",
+        "createFailed": "Échec de la création",
+        "assigned": "Utilisateur associé au client",
+        "assignFailed": "Échec de l'association"
+      }
+    },
+    "userList": {
+      "title": "Liste des utilisateurs",
+      "searchPlaceholder": "Rechercher par nom ou e-mail...",
+      "loading": "Chargement...",
+      "loadingMore": "Chargement de la suite...",
+      "noUsers": "Aucun utilisateur trouvé.",
+      "notAvailable": "Non disponible",
+      "labels": {
+        "user": "Utilisateur",
+        "email": "E-mail",
+        "role": "Rôle",
+        "clientSite": "Client",
+        "comments": "Commentaires",
+        "bio": "Biographie"
+      },
+      "blockDialog": {
+        "title": "Bloquer l'utilisateur ?",
+        "text": "Cet utilisateur sera bloqué.",
+        "confirm": "Oui, bloquer",
+        "cancel": "Non"
+      },
+      "messages": {
+        "blocked": "Utilisateur bloqué",
+        "blockFailed": "Échec du blocage",
+        "restored": "Utilisateur rétabli",
+        "restoreFailed": "Échec du rétablissement",
+        "fetchFailed": "Impossible de charger les utilisateurs"
+      },
+      "actions": { "close": "Fermer" }
+    }
+  }
+}

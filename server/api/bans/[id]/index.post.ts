@@ -1,3 +1,5 @@
+import { isLanguage, languageTag } from '~~/shared/utils/language'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -18,7 +20,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       content: true,
       article: { select: { clientSiteId: true } },
-      user: { select: { email: true, username: true, allowEmail: true } },
+      user: { select: { id: true, language: true, email: true, username: true, allowEmail: true } },
     },
   })
   if (!comment) throw createError({ statusCode: 404, message: t('common.errors.commentNotFound')! })
@@ -71,14 +73,13 @@ export default defineEventHandler(async (event) => {
   }
 
   if (comment.user.email && comment.user.allowEmail) {
-    const lang = (getCookie(event, 'i18n_lang') || 'en') as 'cs' | 'en'
+    const cookie = getCookie(event, 'i18n_lang')
+    const lang = isLanguage(cookie) ? cookie : 'en'
     const banDuration = expiresAt
-      ? new Date(expiresAt).toLocaleString(lang === 'cs' ? 'cs-CZ' : 'en-US')
-      : lang === 'cs'
-        ? 'trvale'
-        : 'permanently'
+      ? new Date(expiresAt).toLocaleString(languageTag(lang))
+      : { cs: 'trvale', en: 'permanently', de: 'dauerhaft', fr: 'définitivement' }[lang]
     const introKey = reason
-      ? banDuration === (lang === 'cs' ? 'trvale' : 'permanently')
+      ? !expiresAt
         ? 'intro_with_reason_permanent'
         : 'intro_with_reason_temporary'
       : 'intro_no_reason'
@@ -95,7 +96,7 @@ export default defineEventHandler(async (event) => {
         banDuration,
         introKey,
         logoUrl: 'https://cdn.topiqu.com/app-logo.png',
-        unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${comment.user.email}`,
+        unsubscribeUrl: unsubscribeUrl(comment.user),
       },
     })
   }

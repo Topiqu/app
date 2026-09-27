@@ -64,7 +64,7 @@ const {
   scopes: string[]
 }>(`/api/invitations/${token}`)
 const busy = shallowRef(false)
-const toast = useAppToast()
+const toast = useToast()
 const loggedIn = computed(() => status.value === 'authenticated')
 const errorMessage = computed(() => {
   const code = (error.value?.data as { data?: { code?: string } } | undefined)?.data?.code
@@ -80,16 +80,17 @@ const respond = async (action: 'accept' | 'decline') => {
     })
     if (result.accepted) {
       await getSession()
-      toast.success({ message: $t('common.invitation.accepted') })
+      toast.add({ color: 'success', title: $t('common.invitation.accepted') })
       await navigateTo(localePath({ name: 'admin' }))
     } else {
-      toast.success({ message: $t('common.invitation.declined') })
+      toast.add({ color: 'success', title: $t('common.invitation.declined') })
       await navigateTo('/')
     }
   } catch (cause: any) {
     const code = cause?.data?.data?.code
-    toast.error({
-      message: code ? $t(`common.invitation.errors.${code}`) : $t('common.messages.operationFailed'),
+    toast.add({
+      color: 'error',
+      title: code ? $t(`common.invitation.errors.${code}`) : $t('common.messages.operationFailed'),
     })
   } finally {
     busy.value = false

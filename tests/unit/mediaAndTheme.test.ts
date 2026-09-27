@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import AppMedia from '../../app/components/AppMedia.vue'
 import ThemeToggle from '../../app/components/ThemeToggle.vue'
-import { resolveTenantTheme, tenantThemeStyle } from '../../app/composables/theme'
+import { resolveTenantTheme, tenantThemeStyle } from '../../shared/utils/tenantTheme'
 
 afterEach(() => vi.useRealTimers())
 

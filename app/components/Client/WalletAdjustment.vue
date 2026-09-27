@@ -78,7 +78,7 @@ async function submit() {
     await refreshWallet()
     toast.add({ color: 'success', title: t('common.wallet.adjustment') })
   } catch (error: any) {
-    toast.add({ color: 'error', title: error?.data?.message || t('common.messages.loadFailedTitle') })
+    toast.add({ color: 'error', title: fetchErrorMessage(error, t('common.messages.loadFailedTitle')) })
   } finally {
     pending.value = false
   }

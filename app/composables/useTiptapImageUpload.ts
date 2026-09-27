@@ -40,7 +40,7 @@ export function useTiptapImageUpload(
       }
       if (!success) toast.add({ color: 'error', title: $t('articles.editor.uploadFailed') })
     } catch (e: any) {
-      toast.add({ color: 'error', title: e?.data?.message || e?.message || $t('articles.editor.uploadFailed') })
+      toast.add({ color: 'error', title: fetchErrorMessage(e, e?.message || $t('articles.editor.uploadFailed')) })
     }
   }
 }

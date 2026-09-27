@@ -120,11 +120,15 @@ import { isKnowledgeStale, knowledgeAsOf } from '~~/shared/utils/knowledge'
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 useSeoMeta({ title: () => $t('knowledge.title') })
 
-const KIND_ICONS = { NOTE: 'mdi:note-text-outline', FILE: 'mdi:file-document-outline', URL: 'mdi:link-variant' } as const
+const KIND_ICONS = {
+  NOTE: 'mdi:note-text-outline',
+  FILE: 'mdi:file-document-outline',
+  URL: 'mdi:link-variant',
+} as const
 const STATUS_COLORS = { PENDING: 'neutral', PROCESSING: 'warning', INDEXED: 'success', FAILED: 'error' } as const
 
 const { t, locale } = useI18n()
-const toast = useAppToast()
+const toast = useToast()
 const confirm = useConfirm()
 const { data, status, error, refresh } = await useLazyFetch('/api/knowledge')
 const sources = computed(() => data.value?.sources ?? [])
@@ -156,9 +160,9 @@ watch(indexing, (active) => (active ? resume() : pause()), { immediate: true })
 const run = async (request: () => Promise<unknown>, success?: string) => {
   try {
     await request()
-    if (success) toast.success({ message: success })
+    if (success) toast.add({ color: 'success', title: success })
   } catch (cause: any) {
-    toast.error({ message: cause?.data?.message || t('knowledge.actionError') })
+    toast.add({ color: 'error', title: fetchErrorMessage(cause, t('knowledge.actionError')) })
   } finally {
     await refresh()
   }
@@ -168,7 +172,13 @@ const toggleUse = (id: string, useInArticles: boolean) =>
   run(() => $fetch<unknown>(`/api/knowledge/${id}`, { method: 'PATCH', body: { useInArticles } }))
 
 const remove = async (source: Source) => {
-  if (!(await confirm({ title: t('knowledge.deleteTitle'), message: t('knowledge.deleteDescription'), variant: 'danger' })))
+  if (
+    !(await confirm({
+      title: t('knowledge.deleteTitle'),
+      message: t('knowledge.deleteDescription'),
+      variant: 'danger',
+    }))
+  )
     return
   await run(() => $fetch<unknown>(`/api/knowledge/${source.id}`, { method: 'DELETE' }), t('knowledge.deleted'))
 }
@@ -194,6 +204,13 @@ const actions = (source: Source): DropdownMenuItem[][] => [
       ? [{ label: t('knowledge.openPublic'), icon: 'mdi:open-in-new', to: source.publicUrl, target: '_blank' }]
       : []),
   ],
-  [{ label: t('knowledge.delete'), icon: 'mdi:delete-outline', color: 'error' as const, onSelect: () => remove(source) }],
+  [
+    {
+      label: t('knowledge.delete'),
+      icon: 'mdi:delete-outline',
+      color: 'error' as const,
+      onSelect: () => remove(source),
+    },
+  ],
 ]
 </script>

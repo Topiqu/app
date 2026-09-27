@@ -31,13 +31,13 @@ describe('manual article generation stream', () => {
   })
 
   it('bounds research, writer inactivity, and total writing time', () => {
-    expect(articleGenerator).toContain('standard: { maxOutputTokens: 3600, timeoutMs: 65_000')
+    expect(articleGenerator).toContain('standard: { maxOutputTokens: 5000, timeoutMs: 90_000')
     expect(articleGenerator).toContain('AbortSignal.timeout(researchConfig.timeoutMs)')
     expect(articleGenerator).toContain('abortSignal: researchSignal')
     expect(endpoint).toContain("'MANUAL_GENERATION_RESEARCH_STARTED'")
     expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_WRITER_STARTED'")
-    expect(endpoint).toContain('30_000 - (now - lastWriterDataAt)')
-    expect(endpoint).toContain('90_000 - (now - writerStartedAt)')
+    expect(endpoint).toContain('45_000 - (now - lastWriterDataAt)')
+    expect(endpoint).toContain('120_000 - (now - writerStartedAt)')
     expect(endpoint).toContain('const next = await Promise.race([')
     expect(endpoint).toContain('writerIterator.next()')
     expect(endpoint).toContain('reject(new Error(timeoutStage))')
@@ -63,6 +63,13 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain("onMedia: (media) => send(controller, { type: 'media', ...media })")
   })
 
+  it('uses the selected editor language for the generated article', () => {
+    expect(editor).toContain('language: isNew ? newArticleLanguage.value : primaryLanguage')
+    expect(endpoint).toContain('language: options?.language')
+    expect(articleGenerator).toContain('const articleLanguage = requestedLanguage ?? language')
+    expect(articleGenerator).toContain('LANGUAGE_NAMES[articleLanguage]')
+  })
+
   it('keeps researched and partially generated sources when the author stops early', () => {
     expect(articleGenerator).toContain('researchSources: researchResult.sources')
     expect(endpoint).toContain("type: 'research', ...research, sources: researchSources")
@@ -73,7 +80,9 @@ describe('manual article generation stream', () => {
   it('pauses autosave while generation mutates the editor and saves once afterward', () => {
     expect(drafts).toContain('if (!force && (idle.value || options.paused?.value)) return false')
     expect(editor).toContain('paused: aiGenerating')
-    expect(editor).toMatch(/aiGenerating\.value = false\s+const recoverySaved = isNew \? await saveDraftNow\(\) : true/)
+    expect(editor).toMatch(
+      /aiGenerating\.value = false\s+retryOptimization\(\)\s+const recoverySaved = isNew \? await saveDraftNow\(\) : true/,
+    )
   })
 
   it('couples interrupted billing to a durable useful recovery checkpoint', () => {

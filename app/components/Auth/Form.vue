@@ -266,7 +266,7 @@ const submit = async () => {
       }
     }
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('common.messages.operationFailed')) })
   } finally {
     submitting.value = false
   }
@@ -352,7 +352,7 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
     theme.mode = user.theme
     form.value = init
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('common.messages.operationFailed')) })
   }
 }
 </script>

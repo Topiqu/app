@@ -38,8 +38,8 @@
         <UFormField :label="$t('common.labels.status')"
           ><USelect v-model="statusFilter" :items="statusItems"
         /></UFormField>
-        <UFormField :label="$t('common.labels.dateFrom')"><UInput v-model="dateFrom" type="date" /></UFormField>
-        <UFormField :label="$t('common.labels.dateTo')"><UInput v-model="dateTo" type="date" /></UFormField>
+        <UFormField :label="$t('common.labels.dateFrom')"><AppDateInput v-model="dateFrom" /></UFormField>
+        <UFormField :label="$t('common.labels.dateTo')"><AppDateInput v-model="dateTo" /></UFormField>
         <UFormField :label="$t('common.labels.sortBy')"><USelect v-model="sortField" :items="sortItems" /></UFormField>
         <UFormField :label="$t('common.labels.order')"><USelect v-model="sortOrder" :items="orderItems" /></UFormField>
         <div class="flex items-end">
@@ -240,6 +240,8 @@
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ClientSite } from '~~/generated/zenstack/models'
 
+import { languageTag } from '~~/shared/utils/language'
+
 const { t, locale } = useI18n()
 const { invalidateClients } = useCacheInvalidation()
 const requestFetch = useRequestFetch()
@@ -376,8 +378,7 @@ const sortIcon = (field: string) =>
       : 'mdi:arrow-down'
     : 'mdi:unfold-more-horizontal'
 
-const formatCreatedAt = (value: Date | string) =>
-  new Date(value).toLocaleString(locale.value === 'cs' ? 'cs-CZ' : 'en-US')
+const formatCreatedAt = (value: Date | string) => new Date(value).toLocaleString(languageTag(locale.value))
 
 watch([debouncedFilter, debouncedDomain, planFilter, statusFilter, dateFrom, dateTo, sortField, sortOrder], () => {
   page.value = 1
@@ -441,7 +442,7 @@ const performDelete = async (mode: 'hard' | 'soft') => {
   } catch (error: any) {
     toast.add({
       color: 'error',
-      title: error.data?.message || t('master.clientTable.messages.deleteFailed'),
+      title: fetchErrorMessage(error, t('master.clientTable.messages.deleteFailed')),
     })
   } finally {
     deleteTarget.value = null
@@ -471,7 +472,7 @@ const restore = async (id: string) => {
   } catch (error: any) {
     toast.add({
       color: 'error',
-      title: error.data?.message || t('master.clientTable.messages.activateFailed'),
+      title: fetchErrorMessage(error, t('master.clientTable.messages.activateFailed')),
     })
   } finally {
     await invalidateClients()

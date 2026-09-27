@@ -1,0 +1,109 @@
+{
+  "stats": {
+    "title": "Statistiques du blog",
+    "loading": "Chargement des données...",
+    "noArticles": {
+      "title": "Le blog ne contient pas encore d'articles",
+      "description": "Les statistiques seront disponibles après l'ajout du premier article"
+    },
+    "totalViews": { "title": "Vues totales" },
+    "savedTime": {
+      "basis": "{time} de travail · {words}",
+      "title": "Temps gagné estimé",
+      "method": "Comment l'estimation est calculée",
+      "tooltip": "Estimation fondée uniquement sur les textes rédigés par IA et terminés : mots générés ÷ {speed} mots par heure. Le temps réellement gagné peut varier. L'estimation financière utilise {rate} par heure. La recherche et les images ne sont pas encore prises en compte."
+    },
+    "savedAmount": {
+      "title": "Économies estimées",
+      "estimate": "Valeur estimée du temps {amount}",
+      "method": "Comment l'estimation est calculée",
+      "legacyTooltip": "Cette estimation historique utilise les mots des articles actuellement marqués comme entièrement rédigés par IA. Elle ne reflète pas les générations réelles et peut recouper des données plus récentes ; les deux valeurs ne sont donc pas additionnées. Calcul effectué avec {speed} mots et {rate} par heure."
+    },
+    "value": {
+      "words": "Mots générés par IA",
+      "wordsCreated": "{count} mots IA documentés",
+      "legacyWordCount": "≈{count} mots dans les articles IA",
+      "legacyEstimate": "Historique · {articles}",
+      "legacyArticleCount": "Aucun article IA | {count} article IA | {count} articles IA",
+      "legacyWords": "{articles} · environ {words} mots",
+      "seeAllTime": "Voir l'estimation historique dans Toute la période",
+      "noCompletedWriting": "Aucun texte IA terminé pour le moment"
+    },
+    "range": { "label": "Période des statistiques", "last30Days": "30 jours", "allTime": "Toute la période" },
+    "coverage": {
+      "partial": "Historique incomplet · premier enregistrement vérifié le {date}",
+      "unavailable": "Les activités antérieures n'ont pas été enregistrées"
+    },
+    "duration": {
+      "lessThanMinute": "<1 min",
+      "compact": { "minutes": "{count} min", "hours": "{count} h", "days": "{count} j" },
+      "minutes": "aucune minute | {count} minute | {count} minutes",
+      "hours": "aucune heure | {count} heure | {count} heures",
+      "days": "aucun jour | {count} jour | {count} jours"
+    },
+    "savings": {
+      "words": "Aucun mot pour le moment | {count} mot | {count} mots",
+      "timeBasis": "{words} ÷ {speed} mots/h",
+      "amountBasis": "{time} × {rate}/h",
+      "tooltip": "Estimation fondée sur les textes IA terminés, au tarif actuel de {rate}/h et à la vitesse de {speed} mots/h. Les modifications manuelles et les enregistrements ultérieurs n'augmentent pas le total."
+    },
+    "articleCount": "Articles publiés",
+    "sentiment": { "title": "Votre communauté", "current": "Résumé actuel", "toxicity": "{value} de toxicité" },
+    "totalShares": { "title": "Partages au total" },
+    "topArticle": { "pluralTitle": "Articles les plus lus", "noViews": "Aucun article n'a encore été lu" },
+    "topTag": {
+      "title": "Tag le plus populaire",
+      "noTags": "Aucun tag utilisé pour le moment",
+      "showAll": "Tout afficher"
+    },
+    "topLikedArticle": { "likes": "aucun J'aime | {count} J'aime | {count} J'aime" },
+    "topCommentedArticle": {},
+    "followerCount": "Abonnés actuels",
+    "engagementRate": {
+      "title": "Taux d'engagement",
+      "tooltip": "Le taux d'engagement montre à quel point les lecteurs interagissent avec vos articles. Il correspond au nombre total d'interactions (J'aime, commentaires, partages et votes aux sondages) divisé par le nombre total de vues du blog. Plus il est élevé, plus les lecteurs participent."
+    },
+    "topAuthor": { "title": "Auteur le plus actif" },
+    "upgradePrompt": {
+      "title": "Débloquez les statistiques Premium",
+      "description": "Découvrez les performances de votre blog grâce à des graphiques avancés, à l'analyse des partages, au taux d'engagement et aux tags populaires. Passez à PRO ou PREMIUM pour développer votre potentiel !",
+      "button": "Découvrir les offres"
+    },
+    "charts": {
+      "shareDistribution": "Répartition des partages par plateforme",
+      "toggleType": "Changer le type de graphique",
+      "showTable": "Afficher sous forme de tableau",
+      "day": "Jour",
+      "platform": "Plateforme",
+      "viewsByDay": "Vues au cours des {days} derniers jours",
+      "trackingSince": "Suivi depuis le {date} — les vues précédentes n'ont pas été enregistrées.",
+      "viewsByMonth": "Vues mensuelles",
+      "month": "Mois"
+    },
+    "platforms": {
+      "TWITTER": "X / Twitter",
+      "LINKEDIN": "LinkedIn",
+      "FACEBOOK": "Facebook",
+      "EMAIL": "E-mail",
+      "OTHER": "Autre"
+    },
+    "updatedAt": "Mis à jour le",
+    "averageViews": "Ø {count} par article",
+    "draftCount": "+ 0 brouillon | + {count} brouillon | + {count} brouillons",
+    "articlesWritten": "aucun article | {count} article | {count} articles",
+    "concentration": "Top 3 des articles = {share} des vues",
+    "sections": {
+      "content": "Contenus les plus performants",
+      "audience": "Audience",
+      "authorship": "Comment ils ont été rédigés"
+    },
+    "aiInvolvement": {
+      "FULL": "Entièrement par IA",
+      "ASSIST": "IA + modifications",
+      "NONE": "À la main",
+      "note": "Les anciennes modifications peuvent ne pas avoir été enregistrées",
+      "inventoryNote": "Comprend les brouillons · certaines anciennes modifications peuvent manquer"
+    },
+    "viewsUnit": "aucune vue | {count} vue | {count} vues"
+  }
+}

@@ -110,9 +110,17 @@ describe('Nuxt UI template contract', () => {
     ])
     const unresolved = [
       ...new Set(
-        sources.flatMap(({ source }) =>
-          [...templateOf(source).matchAll(/<([A-Z][A-Za-z0-9]*)[\s/>]/g)].map((match) => match[1] ?? ''),
-        ),
+        sources.flatMap(({ source }) => {
+          const locallyDefined = new Set([
+            ...[...source.matchAll(/\bimport\s+([A-Z]\w*)\s+from\s+['"]/g)].map((match) => match[1] ?? ''),
+            ...[...source.matchAll(/\bconst\s+\[([^\]]+)\]\s*=\s*createReusableTemplate\(/g)].flatMap((match) =>
+              (match[1] ?? '').split(',').map((name) => name.trim()),
+            ),
+          ])
+          return [...templateOf(source).matchAll(/<([A-Z][A-Za-z0-9]*)[\s/>]/g)]
+            .map((match) => match[1] ?? '')
+            .filter((name) => !locallyDefined.has(name))
+        }),
       ),
     ]
       .filter(
@@ -171,11 +179,14 @@ describe('Nuxt UI template contract', () => {
       .flatMap(({ path, source }) =>
         openingTags(source)
           .filter(({ name }) => controls.has(name))
-          .filter(({ tag, start }) => {
+          .filter(({ name, tag, start }) => {
             const fieldTokens = [...source.slice(0, start).matchAll(/<\/?UFormField\b[^>]*>/g)]
             const lastFieldToken = fieldTokens.at(-1)?.[0] ?? ''
             const inField = lastFieldToken.startsWith('<UFormField') && !lastFieldToken.endsWith('/>')
-            const explicitlyLabelled = /\b(?::?aria-label|:?id)=/.test(tag)
+            const explicitlyLabelled =
+              /\b(?::?aria-label|:?id)=/.test(tag) ||
+              (name === 'UCheckbox' && /\b:?label=/.test(tag)) ||
+              (name === 'URadioGroup' && /\b:?legend=/.test(tag))
             return !inField && !explicitlyLabelled
           })
           .map(({ tag }) => `${path}: ${tag.replace(/\s+/g, ' ')}`),

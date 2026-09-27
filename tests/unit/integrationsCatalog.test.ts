@@ -61,7 +61,7 @@ describe('settings integrations catalog', () => {
   })
 
   it('keeps the Ad Manager card findable by the title+description filter under either name', () => {
-    for (const catalog of [catalogMessages('cs'), catalogMessages('en')]) {
+    for (const catalog of ['cs', 'en', 'de', 'fr'].map(catalogMessages)) {
       expect(catalog.gamDescription).toContain('Google Ad Manager')
       expect(catalog.gamDescription).toContain('GAM')
       expect(catalog.gamBenefitOne).toBeTruthy()

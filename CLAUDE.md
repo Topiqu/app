@@ -37,7 +37,7 @@
 
 ## i18n (Internationalization)
 
-- The platform supports `en` and `cs`.
+- The platform supports `en`, `cs`, `de`, and `fr`.
 - All hardcoded strings in templates **MUST** use translation keys (`$t('key')`). Never leave raw text.
 
 ## Code Style

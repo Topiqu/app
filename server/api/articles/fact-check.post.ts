@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { runArticleFactCheck } from '~~/server/utils/ai/factCheck'
 import { consumeClientTokens } from '~~/server/utils/consumeTokens'
 import { FACT_CHECK_LIMITS } from '~~/shared/utils/articleFactCheck'
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
       excerpt: z.string().max(1_000).nullable(),
       content: z.string().min(1).max(FACT_CHECK_LIMITS.maxArticleCharacters),
       sources: z.array(z.string().max(2_048)).max(FACT_CHECK_LIMITS.maxSources),
-      language: z.enum(['cs', 'en']),
+      language: z.enum(LANGUAGE_OPTIONS),
     }).parse,
   )
   const sources = input.sources.map((source) => source.trim()).filter(Boolean)

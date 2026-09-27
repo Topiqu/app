@@ -1,0 +1,35 @@
+{
+  "admin": {
+    "title": "Tableau de bord",
+    "trial": {
+      "continueFreeSuccess": "Votre offre est passée à Gratuit."
+    },
+    "upgrade": {
+      "cta": "Passer à {plan}",
+      "loading": "Ouverture du paiement…",
+      "error": "Impossible d’ouvrir le paiement. Veuillez réessayer.",
+      "toPro": {
+        "title": "Développez votre blog avec l’offre PRO",
+        "description": "Génération par IA, publication planifiée, SEO avancé et domaine personnalisé.",
+        "features": [
+          "20 articles IA par mois avec des options supplémentaires",
+          "Optimisation SEO avancée",
+          "Importation d’articles existants",
+          "Domaine personnalisé"
+        ]
+      },
+      "toPremium": {
+        "title": "Toute la puissance de l’offre PREMIUM",
+        "description": "Tout ce qui est inclus dans PRO, plus l’analyse des sentiments, Search Console et l’indexation prioritaire.",
+        "features": [
+          "30 articles IA par mois avec des options supplémentaires",
+          "Analyse des sentiments et images automatiques par IA",
+          "Indexation prioritaire et recherche de sources",
+          "Émojis et identité visuelle personnalisés",
+          "Assistance prioritaire 24 h/24, 7 j/7",
+          "Analyses Search Console"
+        ]
+      }
+    }
+  }
+}

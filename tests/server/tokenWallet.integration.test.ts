@@ -47,14 +47,19 @@ describe.skipIf(!enabled)('wallet on PostgreSQL', () => {
     expect(await getTokenWallet(id)).toMatchObject({ available: 1500, reserved: 0, periodUsage: 0 })
     expect(await db!.tokenCreditGrant.count({ where: { clientSiteId: id } })).toBe(2)
   })
-  it('serializes concurrent reservations and rejects overspending before work starts', async () => {
+  it('serializes concurrent reservations and provisions internal capacity before work starts', async () => {
     const id = await tenant()
     const results = await Promise.allSettled([reserveTokens(id, 700, 'test'), reserveTokens(id, 700, 'test')])
-    expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1)
-    expect(await getTokenWallet(id)).toMatchObject({ available: 300, reserved: 700 })
+    expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(2)
+    expect(await getTokenWallet(id)).toMatchObject({ available: 0, reserved: 1400 })
+    expect(
+      await db!.tokenCreditGrant.findMany({ where: { clientSiteId: id, source: 'INTERNAL_CAPACITY' } }),
+    ).toMatchObject([{ amount: 400 }])
     const work = vi.fn()
-    await expect(withTokenReservation(id, 500, 'test', work)).rejects.toMatchObject({ statusCode: 402 })
-    expect(work).not.toHaveBeenCalled()
+    await withTokenReservation(id, 500, 'test', async () => {
+      work()
+    })
+    expect(work).toHaveBeenCalledOnce()
   })
   it('caps provider overruns and makes repeated settlement harmless', async () => {
     const id = await tenant()

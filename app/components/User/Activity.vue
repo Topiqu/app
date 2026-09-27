@@ -151,8 +151,9 @@ const { activeTab } = defineProps<{
 defineEmits<(e: 'update:activeTab', value: 'likedArticles' | 'comments') => void>()
 
 const localePath = useLocalePath()
-const toast = useAppToast()
+const toast = useToast()
 const { copy } = useClipboard({ legacy: true })
+const trackShare = useArticleShare()
 const deleteDialog = useTemplateRef<{
   ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'>
 }>('deleteDialog')
@@ -281,10 +282,11 @@ async function unlikeArticle(articleId: string) {
     await $fetch(`/api/articles/${articleId}/reaction`, { method: 'POST' })
     allArticles.value = allArticles.value.filter((a) => a.id !== articleId)
     await refresh()
-    toast.success({ message: $t('common.messages.successGeneral') })
+    toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
   } catch (e: any) {
-    toast.error({
-      message: e.data?.message || e.message || $t('common.messages.operationFailed'),
+    toast.add({
+      color: 'error',
+      title: fetchErrorMessage(e, e.message || $t('common.messages.operationFailed')),
     })
   }
 }
@@ -292,7 +294,8 @@ async function unlikeArticle(articleId: string) {
 async function shareArticle(article: ActivityArticle) {
   const url = `${window.location.origin}${localePath({ name: 'clanky-slug', params: { slug: article.slug } })}`
   await copy(url)
-  toast.success({ message: $t('common.actions.copySuccess') })
+  toast.add({ color: 'success', title: $t('common.actions.copySuccess') })
+  await trackShare(article.id, 'OTHER')
 }
 
 async function confirmDelete(commentId: string) {
@@ -317,10 +320,11 @@ async function confirmDelete(commentId: string) {
         .map((c) => (c.replies?.length ? { ...c, replies: prune(c.replies) } : c))
     allComments.value = prune(allComments.value)
     await refresh()
-    toast.success({ message: $t('common.messages.deleteSuccess') })
+    toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
   } catch (e: any) {
-    toast.error({
-      message: e.data?.message || e.message || $t('common.messages.operationFailed'),
+    toast.add({
+      color: 'error',
+      title: fetchErrorMessage(e, e.message || $t('common.messages.operationFailed')),
     })
   }
 }

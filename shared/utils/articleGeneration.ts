@@ -1,3 +1,5 @@
+import type { Language } from '~~/generated/zenstack/models'
+
 export const ARTICLE_GENERATION_FORMATS = ['news', 'analysis', 'guide', 'comparison', 'opinion', 'story'] as const
 export type ArticleGenerationFormat = (typeof ARTICLE_GENERATION_FORMATS)[number]
 
@@ -60,6 +62,7 @@ export interface ArticleGenerationResult {
 }
 
 export interface ArticleGenerationOptions {
+  language?: Language
   format: ArticleGenerationFormat
   allowGeneratedImages?: boolean
   useKnowledge?: boolean

@@ -9,18 +9,10 @@ export interface CommentWithReplies {
   articleId: string
   user: {
     username: string
-    email?: string
     avatarUrl?: string
     bio?: string
-    createdAt: string
-    lastLogin?: string
-    commentsCount: number
-    likesCount: number
-    dislikesCount: number
-    followers: number
-    following: number
-    role: string
     isBanned: boolean
+    /** Only sent to the site's moderators. */
     banDetails?: {
       reason?: string
       expiresAt?: string
@@ -28,7 +20,6 @@ export interface CommentWithReplies {
   } | null
   article: {
     clientSiteId: string
-    userId: string
   }
   likes: number
   dislikes: number
@@ -36,5 +27,6 @@ export interface CommentWithReplies {
   userReaction: { type: string } | null
   emojiReactions: { emojiId: string; count: number; emoji: { imageUrl: string; shortcode: string } }[]
   depth: number
-  isLikedByAuthor: boolean
+  /** Likes from members of the publication's team. */
+  publicationLikes: number
 }

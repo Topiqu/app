@@ -17,7 +17,7 @@
             <UCheckbox v-model="confirmed" required :label="$t('knowledge.consent.confirm')" />
           </UFormField>
           <UFormField :label="$t('knowledge.fields.validAsOf')" :hint="$t('knowledge.fields.validAsOfHint')">
-            <UInput v-model="form.validAsOf" type="date" class="w-full" :max="today" />
+            <AppDateInput v-model="form.validAsOf" :max="today" />
           </UFormField>
           <UFormField :label="$t('knowledge.fields.publicUrl')" :hint="$t('knowledge.fields.publicUrlHint')">
             <UInput v-model="form.publicUrl" type="url" class="w-full" placeholder="https://" />
@@ -44,7 +44,12 @@
     <template #footer>
       <div class="flex w-full justify-end gap-2">
         <UButton color="neutral" variant="ghost" @click="open = false">{{ $t('knowledge.cancel') }}</UButton>
-        <UButton type="submit" form="knowledge-edit" :loading="saving" :disabled="loading || (textChanged && !confirmed)">
+        <UButton
+          type="submit"
+          form="knowledge-edit"
+          :loading="saving"
+          :disabled="loading || (textChanged && !confirmed)"
+        >
           {{ $t('knowledge.save') }}
         </UButton>
       </div>
@@ -57,7 +62,7 @@ const props = defineProps<{ id: string | null }>()
 const emit = defineEmits<{ saved: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
-const toast = useAppToast()
+const toast = useToast()
 const passagesId = useId()
 const today = new Date().toISOString().slice(0, 10)
 
@@ -92,7 +97,7 @@ watch([open, () => props.id], async ([value, id]) => {
       validAsOf: source.validAsOf ? String(source.validAsOf).slice(0, 10) : '',
     })
   } catch {
-    toast.error({ message: t('knowledge.loadError') })
+    toast.add({ color: 'error', title: t('knowledge.loadError') })
     open.value = false
   } finally {
     loading.value = false
@@ -111,11 +116,11 @@ const save = async () => {
         ...(textChanged.value ? { text: form.text, confirmed: true } : {}),
       },
     })
-    toast.success({ message: t('knowledge.saved') })
+    toast.add({ color: 'success', title: t('knowledge.saved') })
     open.value = false
     emit('saved')
   } catch (cause: any) {
-    toast.error({ message: cause?.data?.message || t('knowledge.actionError') })
+    toast.add({ color: 'error', title: fetchErrorMessage(cause, t('knowledge.actionError')) })
   } finally {
     saving.value = false
   }
