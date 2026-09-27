@@ -43,7 +43,7 @@
       "commentsEnabled": "are enabled",
       "commentsDisabledSuccess": "are disabled",
       "toggleSuccess": "Comments {0}",
-      "likedByAuthor": "Liked by author ({0})",
+      "likedByPublication": "Liked by {0}",
       "reportCommentConfirm": "Are you sure you want to report this comment?",
       "noComments": "No comments",
       "noMoreComments": "No more comments",

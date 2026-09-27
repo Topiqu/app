@@ -15,23 +15,18 @@ export default defineEventHandler(async (event) => {
   })
   if (!comment) throw createError({ statusCode: 404, message: t('common.errors.commentNotFound')! })
 
-  const where = { commentId: body.commentId, userId: user.id }
+  const where = { userId_commentId: { userId: user.id, commentId: body.commentId } }
+  const existing = await db.commentReaction.findUnique({ where, select: { type: true } })
 
-  const exists = await db.commentReaction.findFirst({ where })
-
-  if (exists) {
-    await db.commentReaction.deleteMany({ where })
+  // Same type toggles off; the other type switches, which the client already shows optimistically.
+  if (existing?.type === body.type) {
+    await db.commentReaction.delete({ where })
     const count = await db.commentReaction.count({ where: { commentId: body.commentId } })
     return { liked: false, likes: count }
   }
 
-  await db.commentReaction.create({
-    data: {
-      commentId: body.commentId,
-      userId: user.id,
-      type: body.type,
-    },
-  })
+  if (existing) await db.commentReaction.update({ where, data: { type: body.type } })
+  else await db.commentReaction.create({ data: { commentId: body.commentId, userId: user.id, type: body.type } })
 
   if (body.type === 'LIKE' && comment.userId && comment.userId !== user.id) {
     await prisma.notification.create({

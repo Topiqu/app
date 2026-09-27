@@ -21,9 +21,10 @@ export interface EmojiReactionEvent {
 
 export function useCommentReactions(
   comment: Ref<CommentWithReplies>,
-  opts: { isAuthor: Ref<boolean>; currentUserId: Ref<string | undefined> },
+  opts: { isSiteAdmin: Ref<boolean>; currentUserId: Ref<string | undefined> },
 ) {
   const toast = useToast()
+  const { t } = useI18n()
   const isPending = shallowRef(false)
   const optimisticStatus = useOptimisticStatus()
 
@@ -32,7 +33,7 @@ export function useCommentReactions(
     dislikes: c.dislikes ?? 0,
     userReaction: c.userReaction as { type: ReactionType } | null,
     emojiReactions: [...(c.emojiReactions ?? [])] as EmojiReactionState[],
-    isLikedByAuthor: c.isLikedByAuthor,
+    publicationLikes: c.publicationLikes,
   })
 
   const state = reactive(snapshot(comment.value))
@@ -42,14 +43,14 @@ export function useCommentReactions(
 
   async function updateReaction(type: ReactionType) {
     if (isPending.value) return
-    const prev = state.userReaction?.type
-    const isOff = prev === type
-    const switching = !!prev && prev !== type
+    const { likes, dislikes, userReaction, publicationLikes } = state
+    const prev = userReaction?.type
+    const next = prev === type ? undefined : type
 
-    if (switching && prev) state[counter[prev]]--
-    state[counter[type]] += isOff ? -1 : 1
-    state.userReaction = isOff ? null : { type }
-    if (opts.isAuthor.value) state.isLikedByAuthor = type === 'LIKE' && !isOff
+    if (prev) state[counter[prev]]--
+    if (next) state[counter[next]]++
+    state.userReaction = next ? { type: next } : null
+    if (opts.isSiteAdmin.value) state.publicationLikes += Number(next === 'LIKE') - Number(prev === 'LIKE')
     isPending.value = true
     optimisticStatus.saving()
 
@@ -57,12 +58,9 @@ export function useCommentReactions(
       await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: comment.value.id, type } })
       optimisticStatus.saved()
     } catch {
-      if (switching && prev) state[counter[prev]]++
-      state[counter[type]] += isOff ? 1 : -1
-      state.userReaction = prev ? { type: prev } : null
-      if (opts.isAuthor.value) state.isLikedByAuthor = state.userReaction?.type === 'LIKE'
+      Object.assign(state, { likes, dislikes, userReaction, publicationLikes })
       optimisticStatus.reverted()
-      toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
+      toast.add({ color: 'error', title: t('articles.comments.reactionFailed') })
     } finally {
       isPending.value = false
     }

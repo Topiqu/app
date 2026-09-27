@@ -43,7 +43,7 @@
       "commentsEnabled": "jsou povoleny",
       "commentsDisabledSuccess": "jsou zakázány",
       "toggleSuccess": "Komentáře {0}",
-      "likedByAuthor": "Líbí se autorovi ({0})",
+      "likedByPublication": "Líbí se redakci {0}",
       "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?",
       "noComments": "Žádné komentáře",
       "noMoreComments": "Žádné další komentáře",

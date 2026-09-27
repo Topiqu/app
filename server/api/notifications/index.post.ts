@@ -20,25 +20,23 @@ export default defineEventHandler(async (event) => {
   })
   if (!comment) throw createError({ statusCode: 404, message: t('common.errors.commentNotFound')! })
 
-  const admin = await prisma.user.findUnique({
-    where: { role: 'admin', id: comment.article.userId, clientSiteId: comment.article.clientSiteId, allowNotifs: true },
-    select: { id: true, email: true, username: true },
-  })
-  if (!admin) throw createError({ statusCode: 404, message: t('common.errors.adminNotFound')! })
+  const moderators = (await commentAudience(comment.article, user.id)).filter((member) => member.allowNotifs)
+  if (!moderators.length) throw createError({ statusCode: 404, message: t('common.errors.adminNotFound')! })
 
   const url = `${import.meta.dev ? 'http://localhost:3000' : 'https://topiqu.com'}/clanky/${comment.article.slug}#comment-${comment.id}`
+  const message = t('common.notifications.userReportedComment', {
+    user: user.name || 'Anonymous',
+    article: comment.article.title,
+  })!
 
-  await prisma.notification.create({
-    data: {
-      message: t('common.notifications.userReportedComment', {
-        user: user.name || 'Anonymous',
-        article: comment.article.title,
-      })!,
+  await prisma.notification.createMany({
+    data: moderators.map((member) => ({
+      message,
       link: url,
-      userId: admin.id,
+      userId: member.id,
       articleId: comment.articleId,
-      type: 'SYSTEM',
-    },
+      type: 'SYSTEM' as const,
+    })),
   })
 
   return { message: t('common.notifications.commentReported')! }
