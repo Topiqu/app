@@ -18,7 +18,7 @@
           icon="mdi:calendar"
           :aria-label="$t('common.actions.pickDate')"
           :disabled
-          class="px-0"
+          :ui="{ base: 'px-0' }"
         />
         <template #content>
           <UCalendar
@@ -26,7 +26,7 @@
             :minValue
             :maxValue
             preventDeselect
-            class="p-2"
+            :ui="{ root: 'p-2' }"
             @update:modelValue="pick($event as DateValue | undefined)"
           />
         </template>
