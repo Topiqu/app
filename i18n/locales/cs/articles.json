@@ -701,6 +701,22 @@
           "recommendations": "Doporučení: {count}",
           "passed": "Splněno: {count}"
         },
+        "scoreBands": {
+          "excellent": "Výborné",
+          "good": "Dobré",
+          "fair": "Chce to práci",
+          "poor": "Slabé"
+        },
+        "categoryDescriptions": {
+          "seo": "Titulek, perex, nadpisy, odkazy a obrázky pro vyhledávače.",
+          "ai-visibility": "Jasný úvod a výstižné sekce, které mohou citovat AI asistenti.",
+          "readability": "Délka vět, odstavců a sekcí.",
+          "trust": "Platné a různorodé zdroje a bezpečné externí odkazy."
+        },
+        "statusLabels": {
+          "error": "Chyba",
+          "warning": "Doporučení"
+        },
         "checks": {
           "title-exists": {
             "title": "Článku chybí titulek",

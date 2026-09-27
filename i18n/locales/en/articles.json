@@ -701,6 +701,22 @@
           "recommendations": "Recommendations: {count}",
           "passed": "Passed: {count}"
         },
+        "scoreBands": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "fair": "Needs work",
+          "poor": "Poor"
+        },
+        "categoryDescriptions": {
+          "seo": "Title, excerpt, headings, links and images for search engines.",
+          "ai-visibility": "A clear introduction and descriptive sections that AI assistants can quote.",
+          "readability": "Length of sentences, paragraphs and sections.",
+          "trust": "Valid, diverse sources and safe external links."
+        },
+        "statusLabels": {
+          "error": "Issue",
+          "warning": "Recommendation"
+        },
         "checks": {
           "title-exists": {
             "title": "The article has no title",
