@@ -69,6 +69,12 @@ describe('locale completeness', () => {
         expect(checks[id].description.length).toBeGreaterThan(20)
         expect(checks[id].recommendation.length).toBeGreaterThan(20)
       }
+      for (const band of ['excellent', 'good', 'fair', 'poor'])
+        expect((optimization.scoreBands as Messages)[band]).toBeTruthy()
+      for (const category of ['seo', 'ai-visibility', 'readability', 'trust'])
+        expect((optimization.categoryDescriptions as Messages)[category]).toBeTruthy()
+      for (const status of ['error', 'warning', 'passed', 'not-applicable'])
+        expect((optimization.statusLabels as Messages)[status]).toBeTruthy()
     }
   })
 

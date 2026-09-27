@@ -291,6 +291,7 @@ const buildArticleConfig = async (
     researchDepth = 'standard',
     fallbackWithoutResearch = true,
     allowGeneratedImages = true,
+    language: requestedLanguage,
     abortSignal,
     knowledgeQuery: knowledgeQueryOption,
   }: {
@@ -303,6 +304,7 @@ const buildArticleConfig = async (
     researchDepth?: ResearchDepth
     fallbackWithoutResearch?: boolean
     allowGeneratedImages?: boolean
+    language?: Language
     abortSignal?: AbortSignal
   } = {},
 ) => {
@@ -336,6 +338,7 @@ const buildArticleConfig = async (
     },
     where: { id: clientSiteId },
   })
+  const articleLanguage = requestedLanguage ?? language
 
   const tokenRemaining = currentTokenOperation()?.budget ?? unreservedTokens
   if (!tokenRemaining || tokenRemaining < ARTICLE_TOKEN_FLOOR)
@@ -376,7 +379,14 @@ const buildArticleConfig = async (
   const imagesRequested = selectedModules?.includes('images') ?? false
   const [researchResult, knowledge] = await Promise.all([
     searchOn && researchQuery
-      ? researchTopic(researchQuery, researchDepth, fallbackWithoutResearch, abortSignal, youtubeRequested, imagesRequested)
+      ? researchTopic(
+          researchQuery,
+          researchDepth,
+          fallbackWithoutResearch,
+          abortSignal,
+          youtubeRequested,
+          imagesRequested,
+        )
       : { brief: null, tokens: 0, sourceCount: 0, sources: [], officialMediaPages: [], status: 'skipped' as const },
     knowledgeQuery ? retrieveKnowledge(clientSiteId, knowledgeQuery, { abortSignal }) : null,
   ])
@@ -445,7 +455,7 @@ const buildArticleConfig = async (
 
       Naturally incorporate keywords if provided.
       ${keywords && `Keywords: ${JSON.stringify(keywords)}`}.
-      Write in the language of the prompt or the company's presentation language.
+      Write the title, perex, answer, takeaways, FAQ, body, and captions entirely in ${articleLanguage === 'cs' ? 'Czech' : 'English'}. The prompt's language and the company's presentation language do not change the selected article language.
       
       Image Rules:
       For the coverImage and each image in the content you MUST pick one of three intents. You are describing what the picture needs to be, not where it comes from — the system picks the library.
@@ -500,7 +510,7 @@ const buildArticleConfig = async (
     `.trim()
 
   return {
-    language,
+    language: articleLanguage,
     allowGeneratedImages: allowGeneratedImages && hasAiPlan(plan) && !features?.some((feature) => !feature.isActive),
     officialMediaPages: researchResult.officialMediaPages,
     researchBrief: brief,
@@ -775,8 +785,7 @@ export const generateArticle = async (
     research,
     allowGeneratedImages,
     officialMediaPages,
-  } =
-    await buildArticleConfig(clientSiteId, prompt, opts)
+  } = await buildArticleConfig(clientSiteId, prompt, opts)
   let groundingBrief = citationAllowlist
   const first = await generateObject(config)
   let object = first.object
@@ -850,6 +859,7 @@ export const streamArticle = async (
     fallbackWithoutResearch?: boolean
     allowGeneratedImages?: boolean
     useKnowledge?: boolean
+    language?: Language
     format?: ArticleFormat
     modules?: readonly ArticleModule[]
   } = {},
@@ -866,12 +876,14 @@ export const streamArticle = async (
     research,
     allowGeneratedImages,
     officialMediaPages,
-  } = await buildArticleConfig(clientSiteId, prompt, { ...opts, knowledgeQuery: opts.useKnowledge === false ? null : prompt })
+  } = await buildArticleConfig(clientSiteId, prompt, {
+    ...opts,
+    knowledgeQuery: opts.useKnowledge === false ? null : prompt,
+  })
   let groundingBrief = citationAllowlist
   const result = streamObject({ ...config, abortSignal: opts.abortSignal })
 
-  // The caption labels follow the site's language, which only this side knows — so the endpoint
-  // keeps handing over just the object and its image callback.
+  // Caption labels follow the requested article language, including a selected translation tab.
   const finalize = (object: ArticleObject, callbacks?: FinalizeCallbacks) =>
     finalizeArticle(
       applyFormat(

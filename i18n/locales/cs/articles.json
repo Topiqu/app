@@ -351,6 +351,10 @@
       }
     },
     "editor": {
+      "slugConflict": "Článek s tímto titulkem už existuje. Změňte titulek nebo otevřete existující článek.",
+      "articlePublished": "Článek publikován",
+      "draftCreated": "Koncept vytvořen",
+      "translationSaveFailedAfterCreate": "Článek je uložený, ale překlad se nepodařilo uložit. Před pokračováním zkontrolujte jeho jazykovou záložku.",
       "toolbar": {
         "more": "Další možnosti",
         "fontFamily": "Písmo",
@@ -695,6 +699,24 @@
           "ai-visibility": "AI viditelnost",
           "readability": "Čitelnost",
           "trust": "Důvěryhodnost"
+        },
+        "categoryDescriptions": {
+          "seo": "Titulek, perex, nadpisy a odkazy pro vyhledávání.",
+          "ai-visibility": "Jasné odpovědi a struktura, které pomáhají najít podstatné informace.",
+          "readability": "Délka odstavců a vět v celém článku.",
+          "trust": "Zdroje a odkazy, které podporují věcná tvrzení."
+        },
+        "scoreBands": {
+          "excellent": "Výborné",
+          "good": "Dobré",
+          "fair": "Vyžaduje úpravy",
+          "poor": "Slabé"
+        },
+        "statusLabels": {
+          "error": "Problém",
+          "warning": "Doporučení",
+          "passed": "Splněno",
+          "not-applicable": "Nevztahuje se"
         },
         "counts": {
           "issues": "Chyby: {count}",

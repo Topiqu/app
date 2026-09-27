@@ -63,6 +63,13 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain("onMedia: (media) => send(controller, { type: 'media', ...media })")
   })
 
+  it('uses the selected editor language for the generated article', () => {
+    expect(editor).toContain('language: isNew ? newArticleLanguage.value : primaryLanguage')
+    expect(endpoint).toContain('language: options?.language')
+    expect(articleGenerator).toContain('const articleLanguage = requestedLanguage ?? language')
+    expect(articleGenerator).toContain("articleLanguage === 'cs' ? 'Czech' : 'English'")
+  })
+
   it('keeps researched and partially generated sources when the author stops early', () => {
     expect(articleGenerator).toContain('researchSources: researchResult.sources')
     expect(endpoint).toContain("type: 'research', ...research, sources: researchSources")
@@ -73,7 +80,9 @@ describe('manual article generation stream', () => {
   it('pauses autosave while generation mutates the editor and saves once afterward', () => {
     expect(drafts).toContain('if (!force && (idle.value || options.paused?.value)) return false')
     expect(editor).toContain('paused: aiGenerating')
-    expect(editor).toMatch(/aiGenerating\.value = false\s+const recoverySaved = isNew \? await saveDraftNow\(\) : true/)
+    expect(editor).toMatch(
+      /aiGenerating\.value = false\s+retryOptimization\(\)\s+const recoverySaved = isNew \? await saveDraftNow\(\) : true/,
+    )
   })
 
   it('couples interrupted billing to a durable useful recovery checkpoint', () => {

@@ -25,6 +25,7 @@ export default defineEventHandler(async (event) => {
       prompt: z.string().nonempty(t('common.errors.missing')!),
       options: z
         .object({
+          language: z.enum(['cs', 'en']).optional(),
           format: z.enum(ARTICLE_GENERATION_FORMATS),
           allowGeneratedImages: z.boolean().default(true),
           useKnowledge: z.boolean().default(true),
@@ -58,6 +59,7 @@ export default defineEventHandler(async (event) => {
   await auditAttempt('MANUAL_GENERATION_STARTED', {
     promptLength: prompt.length,
     format: options?.format ?? null,
+    language: options?.language ?? null,
     modules: options?.modules ?? [],
     researchDepth: options?.research.enabled ? options.research.depth : null,
     allowGeneratedImages: options?.allowGeneratedImages !== false,
@@ -166,6 +168,7 @@ export default defineEventHandler(async (event) => {
             researchDepth: options?.research.depth,
             fallbackWithoutResearch: options?.research.fallbackWithoutResearch,
             format: options?.format,
+            language: options?.language,
             modules: options?.modules,
             allowGeneratedImages: options?.allowGeneratedImages !== false,
             useKnowledge: options?.useKnowledge !== false,

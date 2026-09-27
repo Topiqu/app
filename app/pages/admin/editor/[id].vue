@@ -37,11 +37,17 @@
           </span>
           <span
             v-if="aiGenerating"
-            class="inline-flex items-center gap-1 text-[11px] font-medium text-primary"
-            aria-live="polite"
+            class="inline-flex min-w-0 items-center gap-1 text-[11px] font-medium text-primary"
+            role="status"
           >
-            <UIcon name="mdi:loading" class="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
-            {{ $t('articles.editor.ai.generating') }}
+            <UIcon name="mdi:loading" class="size-3.5 shrink-0 animate-spin motion-reduce:animate-none" />
+            <span class="max-w-48 truncate" aria-live="polite">{{ generationStatus }}</span>
+            <span
+              class="shrink-0 tabular-nums"
+              :aria-label="$t('articles.editor.ai.elapsed', { seconds: aiElapsedSeconds })"
+            >
+              {{ aiElapsedSeconds }}s
+            </span>
           </span>
         </div>
       </div>
@@ -55,6 +61,7 @@
           :targetLanguages="editorTargetLanguages"
           :byLanguage="tr.byLanguage"
           :sourceValue="isNew ? primaryLanguage : ''"
+          :disabled="aiGenerating"
         />
         <div v-if="autosaveVisible" class="hidden md:flex items-center gap-1.5 text-xs text-muted" aria-live="polite">
           <UIcon :name="saveStatusIcon" size="16" class="transition duration-300" :class="saveStatusClass" />
@@ -317,8 +324,8 @@
             :aiReservedArticles="aiReservedArticles"
             :aiLastResult="aiLastResult"
             :aiWritingStage="aiWritingStage"
-            :optimizationState="optimizationState"
-            :optimizationResult="optimizationResult"
+            :optimizationState="aiGenerating ? 'analyzing' : optimizationState"
+            :optimizationResult="aiGenerating ? null : optimizationResult"
             :factCheckState="factCheckState"
             :factCheckResult="factCheckResult"
             :factCheckCanRun="factCheckCanRun"
@@ -428,8 +435,8 @@
           :aiReservedArticles="aiReservedArticles"
           :aiLastResult="aiLastResult"
           :aiWritingStage="aiWritingStage"
-          :optimizationState="optimizationState"
-          :optimizationResult="optimizationResult"
+          :optimizationState="aiGenerating ? 'analyzing' : optimizationState"
+          :optimizationResult="aiGenerating ? null : optimizationResult"
           :factCheckState="factCheckState"
           :factCheckResult="factCheckResult"
           :factCheckCanRun="factCheckCanRun"
@@ -624,6 +631,11 @@ const aiClock = useNow({ interval: 1_000 })
 const aiElapsedSeconds = computed(() =>
   aiStartedAt.value ? Math.max(0, Math.floor((aiClock.value.getTime() - aiStartedAt.value) / 1_000)) : 0,
 )
+const generationStatus = computed(() =>
+  aiPhase.value === 'writing'
+    ? t(`articles.editor.ai.writingStage.${aiWritingStage.value}`)
+    : t(`articles.editor.ai.phase${aiPhase.value[0]!.toUpperCase()}${aiPhase.value.slice(1)}`),
+)
 const aiLastActivitySeconds = computed(() =>
   aiLastActivityAt.value ? Math.max(0, Math.floor((aiClock.value.getTime() - aiLastActivityAt.value) / 1_000)) : 0,
 )
@@ -716,6 +728,7 @@ const editorTargetLanguages = computed(() =>
 const editorLanguageModel = computed({
   get: () => (isNew ? newArticleLanguage.value : activeLanguageModel.value),
   set: (language: string) => {
+    if (aiGenerating.value) return
     if (isNew) {
       newLanguageDrafts[newArticleLanguage.value] = {
         title: editedArticle.value.title ?? '',
@@ -1031,90 +1044,94 @@ const generateAIContent = async () => {
   aiLastActivityAt.value = aiStartedAt.value
   aiLastResult.value = null
   try {
-    const outcome = await streamGenerate(customPrompt.value, aiOptions.value, {
-      onSession: (id) => (activeGenerationSessionId.value = id),
-      onPartial: (partial) => {
-        if (partial.title != null) editedArticle.value.title = partial.title
-        if (partial.perex != null) editedArticle.value.excerpt = partial.perex
-        if (partial.sources != null) editedArticle.value.sources = partial.sources
-        if (partial.content != null) {
-          streamedContent = partial.content
-          presentStreamedContent()
-        }
-      },
-      onPhase: (phase) => (aiPhase.value = phase),
-      onResearch: (research) => {
-        aiResearch.value = research
-        sourceCount = research.sourceCount
-        editedArticle.value.sources = research.sources
-      },
-      onMedia: (media) => {
-        aiMedia.value = media
-        mediaFound = media.found
-        mediaTotal = media.total
-      },
-      onReview: (review) => (reviewApproved = review.approved),
-      onBilling: (result) => {
-        billing = result
-        const reserved = Math.max(
-          reservedBefore,
-          (clientStatus.value?.articleWallet.reserved ?? 0) - (aiReservedArticles.value ?? 0),
-        )
-        patchClientSiteArticleWallet({
-          available: result.articlesRemaining,
-          reserved,
-          balance: result.articlesRemaining + reserved,
-        })
-      },
-      onReservation: (articles) => {
-        aiReservedArticles.value = articles
-        const wallet = clientStatus.value?.articleWallet
-        if (wallet)
+    const outcome = await streamGenerate(
+      customPrompt.value,
+      { ...aiOptions.value, language: isNew ? newArticleLanguage.value : primaryLanguage },
+      {
+        onSession: (id) => (activeGenerationSessionId.value = id),
+        onPartial: (partial) => {
+          if (partial.title != null) editedArticle.value.title = partial.title
+          if (partial.perex != null) editedArticle.value.excerpt = partial.perex
+          if (partial.sources != null) editedArticle.value.sources = partial.sources
+          if (partial.content != null) {
+            streamedContent = partial.content
+            presentStreamedContent()
+          }
+        },
+        onPhase: (phase) => (aiPhase.value = phase),
+        onResearch: (research) => {
+          aiResearch.value = research
+          sourceCount = research.sourceCount
+          editedArticle.value.sources = research.sources
+        },
+        onMedia: (media) => {
+          aiMedia.value = media
+          mediaFound = media.found
+          mediaTotal = media.total
+        },
+        onReview: (review) => (reviewApproved = review.approved),
+        onBilling: (result) => {
+          billing = result
+          const reserved = Math.max(
+            reservedBefore,
+            (clientStatus.value?.articleWallet.reserved ?? 0) - (aiReservedArticles.value ?? 0),
+          )
           patchClientSiteArticleWallet({
-            available: Math.max(0, wallet.available - articles),
-            reserved: wallet.reserved + articles,
-            balance: wallet.balance,
+            available: result.articlesRemaining,
+            reserved,
+            balance: result.articlesRemaining + reserved,
           })
+        },
+        onReservation: (articles) => {
+          aiReservedArticles.value = articles
+          const wallet = clientStatus.value?.articleWallet
+          if (wallet)
+            patchClientSiteArticleWallet({
+              available: Math.max(0, wallet.available - articles),
+              reserved: wallet.reserved + articles,
+              balance: wallet.balance,
+            })
+        },
+        onWritingStage: (stage) => (aiWritingStage.value = stage),
+        onActivity: () => (aiLastActivityAt.value = Date.now()),
+        onImage: ({ slot, html }) => {
+          streamedImages.set(slot, html)
+          presentStreamedContent()
+        },
+        onFinal: (article) => {
+          finalReceived = true
+          const content = article.content ?? ''
+          const delivered: Record<ArticleGenerationModule, boolean> = {
+            answer: Boolean(article.answer),
+            takeaways: Boolean(article.keyTakeaways?.length),
+            faq: Boolean(article.faq?.length),
+            poll: /data-type=["']poll["']/i.test(content),
+            table: /<table\b/i.test(content),
+            images: /<img\b/i.test(content),
+            youtube: /data-youtube-video/i.test(content),
+          }
+          missingModules = aiOptions.value.modules.filter((module) => !delivered[module])
+          Object.assign(editedArticle.value, {
+            title: article.title,
+            excerpt: article.perex,
+            content: article.content,
+            imageUrl: article.articleImageUrl,
+            imageCredit: article.articleImageCredit ?? null,
+            coverMediaId: article.articleCoverMediaId ?? null,
+            sources: article.sources ?? [],
+            answer: article.answer || null,
+            keyTakeaways: article.keyTakeaways ?? [],
+            faq: article.faq ?? [],
+            format: aiOptions.value.format,
+            aiInvolvement: 'FULL',
+            totalWords: article.metrics?.totalWords ?? 0,
+            savedAmount: article.metrics?.savedAmount ?? 0,
+            savedTimeMinutes: article.metrics?.savedTimeMinutes ?? 0,
+          })
+          articleTags.value = Array.isArray(article.tags) ? article.tags : []
+        },
       },
-      onWritingStage: (stage) => (aiWritingStage.value = stage),
-      onActivity: () => (aiLastActivityAt.value = Date.now()),
-      onImage: ({ slot, html }) => {
-        streamedImages.set(slot, html)
-        presentStreamedContent()
-      },
-      onFinal: (article) => {
-        finalReceived = true
-        const content = article.content ?? ''
-        const delivered: Record<ArticleGenerationModule, boolean> = {
-          answer: Boolean(article.answer),
-          takeaways: Boolean(article.keyTakeaways?.length),
-          faq: Boolean(article.faq?.length),
-          poll: /data-type=["']poll["']/i.test(content),
-          table: /<table\b/i.test(content),
-          images: /<img\b/i.test(content),
-          youtube: /data-youtube-video/i.test(content),
-        }
-        missingModules = aiOptions.value.modules.filter((module) => !delivered[module])
-        Object.assign(editedArticle.value, {
-          title: article.title,
-          excerpt: article.perex,
-          content: article.content,
-          imageUrl: article.articleImageUrl,
-          imageCredit: article.articleImageCredit ?? null,
-          coverMediaId: article.articleCoverMediaId ?? null,
-          sources: article.sources ?? [],
-          answer: article.answer || null,
-          keyTakeaways: article.keyTakeaways ?? [],
-          faq: article.faq ?? [],
-          format: aiOptions.value.format,
-          aiInvolvement: 'FULL',
-          totalWords: article.metrics?.totalWords ?? 0,
-          savedAmount: article.metrics?.savedAmount ?? 0,
-          savedTimeMinutes: article.metrics?.savedTimeMinutes ?? 0,
-        })
-        articleTags.value = Array.isArray(article.tags) ? article.tags : []
-      },
-    })
+    )
     const durationSeconds = Math.max(1, Math.round((Date.now() - aiStartedAt.value) / 1_000))
     aiLastResult.value = {
       status:
@@ -1168,6 +1185,7 @@ const generateAIContent = async () => {
     if (!finalReceived && streamedContent)
       editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
     aiGenerating.value = false
+    retryOptimization()
     const recoverySaved = isNew ? await saveDraftNow() : true
     if (recoverySaved && activeGenerationSessionId.value)
       await resolveGenerationSession(activeGenerationSessionId.value, 'restore').catch(() => undefined)
@@ -1230,7 +1248,7 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
         method: 'POST',
         body: payload,
       })
-      await Promise.all(
+      const translationResults = await Promise.allSettled(
         (Object.entries(newLanguageDrafts) as [Language, ReturnType<typeof translationDraft>][])
           .filter(([language, draft]) => language !== primaryLanguage && draft.title && draft.content)
           .map(([language, draft]) =>
@@ -1241,8 +1259,14 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
           ),
       )
       toast.add({
-        color: 'success',
-        title: targetStatus === 'published' ? 'Article published' : 'Draft created',
+        color: translationResults.some((result) => result.status === 'rejected') ? 'warning' : 'success',
+        title: t(
+          translationResults.some((result) => result.status === 'rejected')
+            ? 'articles.editor.translationSaveFailedAfterCreate'
+            : targetStatus === 'published'
+              ? 'articles.editor.articlePublished'
+              : 'articles.editor.draftCreated',
+        ),
       })
       await invalidateArticlesAndStats()
       // The route param is the slug, and changing it remounts the page (Nuxt's default page key

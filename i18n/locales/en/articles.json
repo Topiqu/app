@@ -351,6 +351,10 @@
       }
     },
     "editor": {
+      "slugConflict": "An article with this title already exists. Change the title or open the existing article.",
+      "articlePublished": "Article published",
+      "draftCreated": "Draft created",
+      "translationSaveFailedAfterCreate": "Article saved, but a translation could not be saved. Check its language tab before continuing.",
       "toolbar": {
         "more": "More options",
         "fontFamily": "Font family",
@@ -695,6 +699,24 @@
           "ai-visibility": "AI visibility",
           "readability": "Readability",
           "trust": "Trust"
+        },
+        "categoryDescriptions": {
+          "seo": "Title, summary, headings, and links for search results.",
+          "ai-visibility": "Clear answers and structure that help readers find key facts.",
+          "readability": "Paragraph and sentence length across the article.",
+          "trust": "Sources and links that support factual claims."
+        },
+        "scoreBands": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "fair": "Needs work",
+          "poor": "Poor"
+        },
+        "statusLabels": {
+          "error": "Issue",
+          "warning": "Recommendation",
+          "passed": "Passed",
+          "not-applicable": "Not applicable"
         },
         "counts": {
           "issues": "Issues: {count}",
