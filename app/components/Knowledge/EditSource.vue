@@ -17,7 +17,7 @@
             <UCheckbox v-model="confirmed" required :label="$t('knowledge.consent.confirm')" />
           </UFormField>
           <UFormField :label="$t('knowledge.fields.validAsOf')" :hint="$t('knowledge.fields.validAsOfHint')">
-            <UInput v-model="form.validAsOf" type="date" class="w-full" :max="today" />
+            <AppDateInput v-model="form.validAsOf" :max="today" />
           </UFormField>
           <UFormField :label="$t('knowledge.fields.publicUrl')" :hint="$t('knowledge.fields.publicUrlHint')">
             <UInput v-model="form.publicUrl" type="url" class="w-full" placeholder="https://" />

@@ -38,8 +38,8 @@
         <UFormField :label="$t('common.labels.status')"
           ><USelect v-model="statusFilter" :items="statusItems"
         /></UFormField>
-        <UFormField :label="$t('common.labels.dateFrom')"><UInput v-model="dateFrom" type="date" /></UFormField>
-        <UFormField :label="$t('common.labels.dateTo')"><UInput v-model="dateTo" type="date" /></UFormField>
+        <UFormField :label="$t('common.labels.dateFrom')"><AppDateInput v-model="dateFrom" /></UFormField>
+        <UFormField :label="$t('common.labels.dateTo')"><AppDateInput v-model="dateTo" /></UFormField>
         <UFormField :label="$t('common.labels.sortBy')"><USelect v-model="sortField" :items="sortItems" /></UFormField>
         <UFormField :label="$t('common.labels.order')"><USelect v-model="sortOrder" :items="orderItems" /></UFormField>
         <div class="flex items-end">

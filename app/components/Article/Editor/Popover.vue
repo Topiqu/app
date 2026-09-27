@@ -76,6 +76,7 @@ const closeAndRestore = () => {
   root.value?.querySelector<HTMLElement>('button')?.focus()
 }
 
-onClickOutside(root, () => (open.value = false))
+// Nuxt UI overlays opened from the panel (e.g. the date picker's calendar) are teleported to <body>.
+onClickOutside(root, () => (open.value = false), { ignore: ['[data-reka-popper-content-wrapper]'] })
 onKeyStroke('Escape', closeAndRestore)
 </script>

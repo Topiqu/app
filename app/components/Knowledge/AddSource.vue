@@ -61,7 +61,7 @@
         </template>
 
         <UFormField :label="$t('knowledge.fields.validAsOf')" :hint="$t('knowledge.fields.validAsOfAddHint')">
-          <UInput v-model="form.validAsOf" type="date" class="w-full" :max="today" />
+          <AppDateInput v-model="form.validAsOf" :max="today" />
         </UFormField>
 
         <USwitch

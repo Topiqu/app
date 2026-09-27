@@ -437,12 +437,7 @@
         {{ $t('common.labels.releaseDate') }}
       </h3>
       <UFormField :label="$t('common.labels.releaseDate')" :ui="{ label: 'sr-only' }">
-        <UInput
-          :modelValue="releaseAt ?? undefined"
-          type="datetime-local"
-          class="w-full"
-          @update:modelValue="releaseAt = $event || null"
-        />
+        <AppDateInput :modelValue="releaseAt" time @update:modelValue="releaseAt = $event || null" />
       </UFormField>
       <div class="flex flex-wrap gap-2">
         <UButton

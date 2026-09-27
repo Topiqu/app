@@ -217,11 +217,7 @@
           />
         </UFormField>
         <UFormField class="mt-4" :label="$t('articles.comments.banExpirationLabel')">
-          <UInput
-            :modelValue="banExpiresAt ?? undefined"
-            type="datetime-local"
-            @update:modelValue="banExpiresAt = $event || null"
-          />
+          <AppDateInput :modelValue="banExpiresAt" time @update:modelValue="banExpiresAt = $event || null" />
         </UFormField>
       </template>
       <template #footer>
