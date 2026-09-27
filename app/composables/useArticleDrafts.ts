@@ -8,12 +8,7 @@ export const useArticleDrafts = async (
   editedArticle: Ref<ArticleWithDetails>,
   idle: Ref<boolean>,
   options: {
-    /**
-     * Drafts are the recovery net for an article that does not exist yet. `POST /api/articles/draft`
-     * **creates a row per call**, so leaving this on while editing a saved article buried the
-     * drafts list under one duplicate per autosave tick. Required rather than defaulted, because
-     * both call sites got it wrong when it was implicit.
-     */
+    /** Recovery drafts belong to an article that has not been created yet. */
     enabled: boolean
     paused?: Readonly<Ref<boolean>>
     onDraftLoaded?: () => void
@@ -25,6 +20,7 @@ export const useArticleDrafts = async (
 
   const successMessage = shallowRef('')
   const draftsOpen = shallowRef(false)
+  const draftId = shallowRef<string | null>(null)
   const lastSavedAt = shallowRef<Date | null>(null)
   const saving = shallowRef(false)
   const { start: clearSuccessLater } = useTimeoutFn(() => (successMessage.value = ''), 8000, { immediate: false })
@@ -39,7 +35,7 @@ export const useArticleDrafts = async (
     immediate: enabled,
   })
 
-  const persistDraft = async (force = false) => {
+  const writeDraft = async (force = false) => {
     if (!force && (idle.value || options.paused?.value)) return false
 
     if (
@@ -54,27 +50,39 @@ export const useArticleDrafts = async (
       title: editedArticle.value.title,
       excerpt: editedArticle.value.excerpt || '',
       content: editedArticle.value.content,
+      imageUrl: editedArticle.value.imageUrl || null,
+      coverMediaId: editedArticle.value.coverMediaId || null,
     }
 
-    if (
-      drafts.value?.some((draft) =>
-        equal({ title: draft.title, excerpt: draft.excerpt || '', content: draft.content }, currentData),
-      )
-    ) {
+    const matchingDraft = drafts.value?.find(
+      (draft) =>
+        (!draftId.value || draft.id === draftId.value) &&
+        equal(
+          {
+            title: draft.title,
+            excerpt: draft.excerpt || '',
+            content: draft.content,
+            imageUrl: draft.imageUrl || null,
+            coverMediaId: draft.coverMediaId || null,
+          },
+          currentData,
+        ),
+    )
+    if (matchingDraft) {
+      draftId.value = matchingDraft.id
       return true
     }
 
     saving.value = true
     try {
-      await $fetch('/api/articles/draft', {
+      const { draft } = await $fetch<{ draft: ArticleDraft }>('/api/articles/draft', {
         method: 'POST',
         body: {
-          ...editedArticle.value,
-          savedAmount: editedArticle.value.savedAmount,
-          savedTimeMinutes: editedArticle.value.savedTimeMinutes,
-          aiInvolvement: editedArticle.value.aiInvolvement,
+          id: draftId.value ?? undefined,
+          ...currentData,
         },
       })
+      draftId.value = draft.id
 
       lastSavedAt.value = new Date()
       successMessage.value = t('common.messages.draftSaved')
@@ -88,9 +96,21 @@ export const useArticleDrafts = async (
       saving.value = false
     }
   }
+  let pendingSave: Promise<boolean> | null = null
+  const persistDraft = async (force = false) => {
+    if (pendingSave) await pendingSave
+    const currentSave = writeDraft(force)
+    pendingSave = currentSave
+    try {
+      return await currentSave
+    } finally {
+      if (pendingSave === currentSave) pendingSave = null
+    }
+  }
   const saveDraft = useDebounceFn(() => persistDraft(), 8000)
 
   const loadDraft = (draft: ArticleDraft) => {
+    draftId.value = draft.id
     Object.assign(editedArticle.value, {
       title: draft.title,
       excerpt: draft.excerpt || '',
