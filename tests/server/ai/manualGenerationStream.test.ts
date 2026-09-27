@@ -31,13 +31,13 @@ describe('manual article generation stream', () => {
   })
 
   it('bounds research, writer inactivity, and total writing time', () => {
-    expect(articleGenerator).toContain('standard: { maxOutputTokens: 3600, timeoutMs: 65_000')
+    expect(articleGenerator).toContain('standard: { maxOutputTokens: 5000, timeoutMs: 90_000')
     expect(articleGenerator).toContain('AbortSignal.timeout(researchConfig.timeoutMs)')
     expect(articleGenerator).toContain('abortSignal: researchSignal')
     expect(endpoint).toContain("'MANUAL_GENERATION_RESEARCH_STARTED'")
     expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_WRITER_STARTED'")
-    expect(endpoint).toContain('30_000 - (now - lastWriterDataAt)')
-    expect(endpoint).toContain('90_000 - (now - writerStartedAt)')
+    expect(endpoint).toContain('45_000 - (now - lastWriterDataAt)')
+    expect(endpoint).toContain('120_000 - (now - writerStartedAt)')
     expect(endpoint).toContain('const next = await Promise.race([')
     expect(endpoint).toContain('writerIterator.next()')
     expect(endpoint).toContain('reject(new Error(timeoutStage))')

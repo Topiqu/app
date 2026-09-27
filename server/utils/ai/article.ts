@@ -141,9 +141,9 @@ type ArticleObject = (typeof articleSchema)['_output']
 /** The brief's own output ceiling. Web search bills input and search context on top of it, so this
  *  is a headroom guard for the balance check, never the real cost — that comes back as `usage`. */
 const RESEARCH_CONFIG = {
-  quick: { maxOutputTokens: 1800, timeoutMs: 35_000, searchContextSize: 'low' },
-  standard: { maxOutputTokens: 3600, timeoutMs: 65_000, searchContextSize: 'medium' },
-  deep: { maxOutputTokens: 6000, timeoutMs: 120_000, searchContextSize: 'high' },
+  quick: { maxOutputTokens: 3000, timeoutMs: 50_000, searchContextSize: 'low' },
+  standard: { maxOutputTokens: 5000, timeoutMs: 90_000, searchContextSize: 'medium' },
+  deep: { maxOutputTokens: 8000, timeoutMs: 150_000, searchContextSize: 'high' },
 } as const satisfies Record<
   ResearchDepth,
   { maxOutputTokens: number; timeoutMs: number; searchContextSize: 'low' | 'medium' | 'high' }
@@ -225,7 +225,7 @@ const researchTopic = async (
       `.trim(),
       prompt,
       maxOutputTokens: researchConfig.maxOutputTokens,
-      providerOptions: { openai: { reasoningEffort: depth === 'deep' ? 'medium' : 'low' } },
+      providerOptions: { openai: { reasoningEffort: 'medium' } },
       tools: { web_search: aiWebSearchTool(researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })
@@ -344,7 +344,7 @@ const buildArticleConfig = async (
       statusMessage: `Insufficient tokens (minimum ${ARTICLE_TOKEN_FLOOR} required)`,
     })
 
-  const maxOutputTokens = Math.min(tokenRemaining, 6000)
+  const maxOutputTokens = Math.min(tokenRemaining, 8000)
 
   const getControversyPrompt = (level: string | null) => {
     switch (level) {
@@ -524,7 +524,7 @@ const buildArticleConfig = async (
     },
     config: {
       model: aiModel('articleWriter'),
-      providerOptions: { openai: { reasoningEffort: 'low' } },
+      providerOptions: { openai: { reasoningEffort: 'medium' } },
       maxOutputTokens,
       instructions,
       prompt,
