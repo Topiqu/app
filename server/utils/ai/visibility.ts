@@ -1,5 +1,11 @@
 import { toHostname } from '~~/shared/utils/domain'
-import { closestArticle, isOwnedDomain, mentionsBrand, normalizeCitationUrl } from '~~/shared/utils/aiVisibility'
+import {
+  closestArticle,
+  isOwnedDomain,
+  mentionsBrand,
+  normalizeCitationUrl,
+  rankDomains,
+} from '~~/shared/utils/aiVisibility'
 
 import { configuredVisibilityProviderRuns, runVisibilityProvider } from './visibilityProviderRunner'
 
@@ -62,22 +68,30 @@ const syncOpportunity = async (promptId: string, clientSiteId: string) => {
   }
   if (sampleSize < 2 || externalHits < 2) return
 
-  const [prompt, articles] = await Promise.all([
-    prisma.aiVisibilityPrompt.findUniqueOrThrow({ where: { id: promptId }, select: { text: true } }),
-    prisma.article.findMany({
-      where: { clientSiteId, status: 'published' },
-      select: { id: true, title: true, excerpt: true },
-      take: 250,
-      orderBy: { publishedAt: 'desc' },
+  const [prompt, hidden] = await Promise.all([
+    prisma.aiVisibilityPrompt.findUniqueOrThrow({
+      where: { id: promptId },
+      select: { text: true, article: { select: { id: true, status: true } } },
     }),
+    prisma.aiVisibilityDomain.findMany({ where: { clientSiteId, mark: 'HIDDEN' }, select: { domain: true } }),
   ])
-  const article = closestArticle(prompt.text, articles)
+  const article =
+    prompt.article?.status === 'published'
+      ? prompt.article
+      : closestArticle(
+          prompt.text,
+          await prisma.article.findMany({
+            where: { clientSiteId, status: 'published' },
+            select: { id: true, title: true, excerpt: true },
+            take: 250,
+            orderBy: { publishedAt: 'desc' },
+          }),
+        )
   const now = new Date()
-  const citedDomains = [
-    ...new Set(
-      runs.flatMap((run) => run.citations.filter((citation) => !citation.owned).map((citation) => citation.domain)),
-    ),
-  ].slice(0, 10)
+  const citedDomains = rankDomains(
+    runs.flatMap((run) => run.citations.filter((citation) => !citation.owned).map((citation) => citation.domain)),
+    new Set(hidden.map((row) => row.domain)),
+  ).slice(0, 10)
 
   await prisma.aiVisibilityOpportunity.upsert({
     where: { clientSiteId_promptId: { clientSiteId, promptId } },

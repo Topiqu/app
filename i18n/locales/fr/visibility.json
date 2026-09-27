@@ -16,7 +16,8 @@
     "emptyValue": "Pas encore mesuré",
     "onboarding": {
       "title": "Découvrez si l’IA vous cite",
-      "description": "Ajoutez les questions que vos lecteurs posent à ChatGPT, Gemini ou Claude. Nous les vérifions régulièrement et indiquons si les réponses renvoient vers votre publication.",
+      "description": "Nous construisons les questions que l'on pose à ChatGPT, Gemini ou Claude à partir de vos articles, de vos recherches Google et des questions de vos lecteurs. Chaque semaine, nous les vérifions et montrons si les réponses renvoient vers votre publication.",
+      "pending": "Les premières questions sont prêtes sous 24 heures. Vous pouvez ajouter les vôtres dès maintenant.",
       "note": "Les visites de robots IA et les lecteurs provenant de l’IA apparaîtront ici automatiquement dès leur enregistrement."
     },
     "upgrade": {
@@ -25,11 +26,10 @@
     },
     "prompts": {
       "title": "Questions suivies",
-      "description": "Chaque semaine, nous interrogeons les moteurs de recherche IA et enregistrons leurs réponses et leurs sources.",
+      "description": "Choisies automatiquement et posées chaque semaine aux moteurs de recherche IA. Les questions auxquelles aucune IA ne répond avec une source sont remplacées au bout de trois semaines.",
       "questionLabel": "Question pour la recherche IA",
       "languageLabel": "Langue",
       "add": "Ajouter une question",
-      "suggest": "Suggérer des questions",
       "placeholder": "À quelle question la recherche IA doit-elle répondre ?",
       "run": "Vérifier maintenant",
       "pause": "Suspendre le suivi",
@@ -38,7 +38,13 @@
       "remove": "Supprimer",
       "actions": "Autres actions",
       "created": "Question ajoutée.",
-      "suggested": "{count} questions ajoutées."
+      "sources": {
+        "MANUAL": "Personnelle",
+        "GENERATED": "D'après votre thème",
+        "SEARCH_CONSOLE": "Depuis Google",
+        "ARTICLE": "Depuis un article",
+        "COMMENT": "Des lecteurs"
+      }
     },
     "outcome": {
       "UNCHECKED": "Pas encore vérifié",
@@ -63,6 +69,23 @@
       "dismiss": "Ignorer",
       "evidence": "Votre site : {owned}/{samples} · autres sources : {external}/{samples}",
       "domains": "Sources citées : {domains}"
+    },
+    "domains": {
+      "title": "Qui est cité à votre place",
+      "description": "Part des réponses IA qui citent chaque site. Un concurrent est un site cité pour plusieurs de vos questions.",
+      "you": "Vous",
+      "competitors": "Concurrents",
+      "references": "Sources générales",
+      "referencesHint": "Wikipédia, forums et organismes publics. Un article ne les dépassera pas, mais ils montrent où l'IA puise.",
+      "others": "Autres sites cités",
+      "prompts": "Questions : {count}",
+      "markCompetitor": "Marquer comme concurrent",
+      "unmark": "Retirer le marquage",
+      "hide": "Masquer",
+      "hidden": "Sites masqués",
+      "restore": "Afficher à nouveau {domain}",
+      "marked": "Marqué par vous",
+      "actions": "Actions pour {domain}"
     },
     "traffic": {
       "title": "Trafic provenant de l’IA",

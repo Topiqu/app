@@ -1,4 +1,5 @@
 import { subDays } from 'date-fns'
+import { citedDomains } from '~~/shared/utils/aiVisibility'
 
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { clientSite: true })
@@ -7,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const since = subDays(new Date(), 30)
   since.setUTCHours(0, 0, 0, 0)
 
-  const [crawlerDays, referrals, runs, latestRuns, prompts, opportunities] = await Promise.all([
+  const [crawlerDays, referrals, runs, latestRuns, prompts, opportunities, marks] = await Promise.all([
     db.aiCrawlerDaily.findMany({
       where: { clientSiteId, date: { gte: since } },
       select: {
@@ -30,10 +31,11 @@ export default defineEventHandler(async (event) => {
     db.aiVisibilityRun.findMany({
       where: { clientSiteId, executedAt: { gte: since } },
       select: {
+        promptId: true,
         status: true,
         brandMentioned: true,
         citationCount: true,
-        citations: { where: { owned: true }, select: { normalizedUrl: true } },
+        citations: { select: { normalizedUrl: true, domain: true, owned: true } },
       },
     }),
     // DISTINCT ON needs the distinct columns to lead the ORDER BY.
@@ -66,6 +68,7 @@ export default defineEventHandler(async (event) => {
         source: true,
         active: true,
         lastRunAt: true,
+        article: { select: { id: true, title: true } },
         _count: { select: { runs: true } },
       },
       orderBy: [{ active: 'desc' }, { createdAt: 'asc' }],
@@ -88,6 +91,7 @@ export default defineEventHandler(async (event) => {
       },
       orderBy: [{ status: 'asc' }, { lastSeenAt: 'desc' }],
     }),
+    db.aiVisibilityDomain.findMany({ where: { clientSiteId }, select: { domain: true, mark: true } }),
   ])
 
   const byBot = new Map<string, { bot: string; kind: string; requests: number; pages: Set<string>; lastSeenAt: Date }>()
@@ -106,9 +110,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const successfulRuns = runs.filter((run) => run.status === 'SUCCEEDED')
-  const ownedRuns = successfulRuns.filter((run) => run.citations.length > 0)
+  const ownedRuns = successfulRuns.filter((run) => run.citations.some((citation) => citation.owned))
   const citedRuns = successfulRuns.filter((run) => run.citationCount > 0)
-  const ownedPages = new Set(successfulRuns.flatMap((run) => run.citations.map((citation) => citation.normalizedUrl)))
+  const ownedPages = new Set(
+    successfulRuns.flatMap((run) =>
+      run.citations.filter((citation) => citation.owned).map((citation) => citation.normalizedUrl),
+    ),
+  )
+  const domains = citedDomains(successfulRuns, new Map(marks.map((row) => [row.domain, row.mark])))
   const providers = visibilityProviderStatuses()
   const configured = new Set(providers.filter((provider) => provider.configured).map((provider) => provider.provider))
 
@@ -153,5 +162,11 @@ export default defineEventHandler(async (event) => {
       latestRuns: latestRuns.filter((run) => run.promptId === prompt.id && configured.has(run.provider)),
     })),
     opportunities,
+    domains: {
+      competitors: domains.filter((row) => row.kind === 'COMPETITOR').slice(0, 5),
+      references: domains.filter((row) => row.kind === 'REFERENCE').slice(0, 5),
+      others: domains.filter((row) => row.kind === 'OTHER').slice(0, 5),
+      hidden: marks.filter((row) => row.mark === 'HIDDEN').map((row) => row.domain),
+    },
   }
 })

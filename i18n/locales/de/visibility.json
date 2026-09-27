@@ -16,7 +16,8 @@
     "emptyValue": "Noch nicht gemessen",
     "onboarding": {
       "title": "Finden Sie heraus, ob KI Sie zitiert",
-      "description": "Fügen Sie Fragen hinzu, die Ihre Leser ChatGPT, Gemini oder Claude stellen. Wir prüfen sie regelmäßig und zeigen, ob die Antworten auf Ihre Publikation verlinken.",
+      "description": "Die Fragen, die Menschen ChatGPT, Gemini oder Claude stellen, erstellen wir aus Ihren Artikeln, Ihren Google-Suchanfragen und den Fragen Ihrer Leser. Jede Woche prüfen wir sie und zeigen, ob die Antworten auf Ihre Publikation verweisen.",
+      "pending": "Die ersten Fragen sind innerhalb von 24 Stunden bereit. Eigene Fragen können Sie sofort hinzufügen.",
       "note": "Besuche von KI-Bots und Leser, die über KI zu Ihnen kommen, erscheinen hier automatisch, sobald sie erfasst wurden."
     },
     "upgrade": {
@@ -25,11 +26,10 @@
     },
     "prompts": {
       "title": "Beobachtete Fragen",
-      "description": "Jede Woche fragen wir KI-Suchmaschinen und speichern die Antwort sowie die zitierten Quellen.",
+      "description": "Automatisch ausgewählt und jede Woche an KI-Suchmaschinen gestellt. Fragen, die keine KI mit einer Quelle beantwortet, ersetzen wir nach drei Wochen.",
       "questionLabel": "Frage an die KI-Suche",
       "languageLabel": "Sprache",
       "add": "Frage hinzufügen",
-      "suggest": "Fragen vorschlagen",
       "placeholder": "Welche Frage soll die KI-Suche beantworten?",
       "run": "Jetzt prüfen",
       "pause": "Beobachtung pausieren",
@@ -38,7 +38,13 @@
       "remove": "Entfernen",
       "actions": "Weitere Aktionen",
       "created": "Frage hinzugefügt.",
-      "suggested": "{count} Fragen hinzugefügt."
+      "sources": {
+        "MANUAL": "Eigene",
+        "GENERATED": "Aus Ihrem Thema",
+        "SEARCH_CONSOLE": "Aus Google",
+        "ARTICLE": "Aus einem Artikel",
+        "COMMENT": "Von Lesern"
+      }
     },
     "outcome": {
       "UNCHECKED": "Noch nicht geprüft",
@@ -63,6 +69,23 @@
       "dismiss": "Ausblenden",
       "evidence": "Ihre Website: {owned}/{samples} · andere Quellen: {external}/{samples}",
       "domains": "Zitierte Quellen: {domains}"
+    },
+    "domains": {
+      "title": "Wer statt Ihnen zitiert wird",
+      "description": "Anteil der KI-Antworten, die eine Website zitieren. Als Wettbewerber gilt eine Website, die bei mehreren Ihrer Fragen zitiert wird.",
+      "you": "Sie",
+      "competitors": "Wettbewerber",
+      "references": "Allgemeine Quellen",
+      "referencesHint": "Wikipedia, Foren und Behörden. Mit einem Artikel überholen Sie sie nicht, aber sie zeigen, woraus die KI schöpft.",
+      "others": "Weitere zitierte Websites",
+      "prompts": "Fragen: {count}",
+      "markCompetitor": "Als Wettbewerber markieren",
+      "unmark": "Markierung entfernen",
+      "hide": "Ausblenden",
+      "hidden": "Ausgeblendete Websites",
+      "restore": "{domain} wieder anzeigen",
+      "marked": "Von Ihnen markiert",
+      "actions": "Aktionen für {domain}"
     },
     "traffic": {
       "title": "Traffic über KI",

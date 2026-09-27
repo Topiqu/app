@@ -153,3 +153,95 @@ export const promptOutcome = (runs: readonly OutcomeRun[]) => {
   if (checked) return verdict('NOT_CITED')
   return verdict(outcomes.includes('RUNNING') ? 'RUNNING' : 'FAILED')
 }
+
+/** Round-robin across tenants so one large prompt set cannot starve the rest of a run. */
+export const interleaveByTenant = <T extends { clientSiteId: string }>(prompts: readonly T[]) => {
+  const queues = new Map<string, T[]>()
+  for (const prompt of prompts) {
+    const queue = queues.get(prompt.clientSiteId)
+    if (queue) queue.push(prompt)
+    else queues.set(prompt.clientSiteId, [prompt])
+  }
+  const order: T[] = []
+  for (let round = 0; order.length < prompts.length; round++) {
+    for (const queue of queues.values()) if (queue[round]) order.push(queue[round]!)
+  }
+  return order
+}
+
+// Platforms an engine quotes for any topic. A publisher cannot outrank them with an article, so they
+// are reported as sources rather than competitors.
+const REFERENCE_DOMAINS = [
+  'wikipedia.org',
+  'wikimedia.org',
+  'wikidata.org',
+  'reddit.com',
+  'quora.com',
+  'youtube.com',
+  'youtu.be',
+  'linkedin.com',
+  'medium.com',
+  'facebook.com',
+  'instagram.com',
+  'tiktok.com',
+  'x.com',
+  'twitter.com',
+  'github.com',
+  'stackoverflow.com',
+  'stackexchange.com',
+  'google.com',
+  'openai.com',
+  'chatgpt.com',
+  'anthropic.com',
+  'claude.ai',
+  'x.ai',
+  'grok.com',
+  'meta.com',
+  'mistral.ai',
+  'europa.eu',
+]
+const PUBLIC_SECTOR = /(?:^|\.)(?:gov|edu)(?:\.[a-z]{2})?$|(?:^|\.)(?:gouv\.fr|bund\.de)$/
+
+export const isReferenceDomain = (domain: string) =>
+  PUBLIC_SECTOR.test(domain) || REFERENCE_DOMAINS.some((reference) => isOwnedDomain(domain, reference))
+
+/** Unique domains, most cited first. */
+export const rankDomains = (domains: readonly string[], hidden: ReadonlySet<string> = new Set()) => {
+  const counts = new Map<string, number>()
+  for (const domain of domains) if (!hidden.has(domain)) counts.set(domain, (counts.get(domain) ?? 0) + 1)
+  return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([domain]) => domain)
+}
+
+export type DomainMark = 'COMPETITOR' | 'HIDDEN'
+type CitedRun = { promptId: string; citations: readonly { domain: string; owned: boolean }[] }
+
+/**
+ * A competitor is a domain cited across several of the tenant's questions; one question is noise.
+ * `share` uses the same denominator as the tenant's own citation coverage, so the two compare directly.
+ */
+export const citedDomains = (runs: readonly CitedRun[], marks: ReadonlyMap<string, DomainMark> = new Map()) => {
+  const threshold = Math.max(2, Math.min(3, Math.ceil(new Set(runs.map((run) => run.promptId)).size * 0.2)))
+  const stats = new Map<string, { prompts: Set<string>; runs: number }>()
+  for (const run of runs) {
+    const domains = run.citations.filter((citation) => !citation.owned).map((citation) => citation.domain)
+    for (const domain of new Set(domains)) {
+      const row = stats.get(domain) ?? { prompts: new Set<string>(), runs: 0 }
+      row.prompts.add(run.promptId)
+      row.runs++
+      stats.set(domain, row)
+    }
+  }
+  return [...stats]
+    .filter(([domain]) => marks.get(domain) !== 'HIDDEN')
+    .map(([domain, row]) => {
+      const marked = marks.get(domain) === 'COMPETITOR'
+      const kind: 'COMPETITOR' | 'REFERENCE' | 'OTHER' =
+        marked || (!isReferenceDomain(domain) && row.prompts.size >= threshold)
+          ? 'COMPETITOR'
+          : isReferenceDomain(domain)
+            ? 'REFERENCE'
+            : 'OTHER'
+      return { domain, kind, marked, prompts: row.prompts.size, runs: row.runs, share: row.runs / runs.length }
+    })
+    .sort((a, b) => b.runs - a.runs || a.domain.localeCompare(b.domain))
+}

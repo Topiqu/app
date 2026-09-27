@@ -11,7 +11,7 @@ Citation monitoring runs once per configured provider. A missing key disables on
 | Meta Muse Spark | `META_MODEL_API_KEY`           | Meta Responses search grounding |
 | Mistral         | `MISTRAL_API_KEY`              | Conversations web search        |
 
-Each account needs API billing or credits. Anthropic also requires web search to be enabled for the organization. The keys are server-only Nuxt runtime config and must be set in every environment that executes the weekly Nitro task.
+Each account needs API billing or credits. Anthropic also requires web search to be enabled for the organization. The keys are server-only Nuxt runtime config and must be set in every environment that executes the daily Nitro task.
 
 Adding a key is enough to enable an adapter after an application restart or deployment. Removing it disables new runs without deleting historical results. The visibility overview API reports every provider's model and `configured` state without exposing credentials.
 

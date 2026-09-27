@@ -99,6 +99,7 @@ model Article with Base, Ownable {
     aiReferralVisits AiReferralVisit[]
     aiCitations      AiCitation[]
     aiOpportunities  AiVisibilityOpportunity[]
+    aiPrompts        AiVisibilityPrompt[]
     pollResults      PollResult[]
     polls            Poll[]
     notifications    Notification[]    @relation("ArticleNotifications")

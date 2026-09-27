@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 const runner = readFileSync(resolve(process.cwd(), 'server/utils/ai/visibility.ts'), 'utf8')
 const providers = readFileSync(resolve(process.cwd(), 'server/utils/ai/visibilityProviderRunner.ts'), 'utf8')
 const crawlerPlugin = readFileSync(resolve(process.cwd(), 'server/plugins/crawlerLog.ts'), 'utf8')
+const monitor = readFileSync(resolve(process.cwd(), 'server/tasks/ai-visibility-monitor.ts'), 'utf8')
 const referralEndpoint = readFileSync(resolve(process.cwd(), 'server/api/articles/[id]/view.post.ts'), 'utf8')
 
 describe('AI visibility monitoring contracts', () => {
@@ -44,5 +45,17 @@ describe('AI visibility monitoring contracts', () => {
     expect(referralEndpoint).toContain('aiReferralVisit.upsert')
     expect(referralEndpoint).toContain('aiReferrer(')
     expect(referralEndpoint).not.toContain('aiCitation')
+  })
+
+  it('seeds and retires generated prompts before running every due prompt fairly', () => {
+    expect(monitor.indexOf('retireSilentPrompts()')).toBeLessThan(monitor.indexOf('seedVisibilityPrompts('))
+    expect(monitor.indexOf('seedVisibilityPrompts(')).toBeLessThan(monitor.indexOf('runVisibilityPrompt('))
+    expect(monitor).toContain('interleaveByTenant(due)')
+    expect(monitor).not.toContain('take: 100')
+  })
+
+  it('prefers the article a prompt was generated from and drops hidden domains from opportunities', () => {
+    expect(runner).toContain("prompt.article?.status === 'published'")
+    expect(runner).toContain("mark: 'HIDDEN'")
   })
 })

@@ -134,7 +134,7 @@ export default defineNuxtConfig({
           '15 4 * * *': ['grant-annual-article-credits'],
           '30 4 * * *': ['media-gc'],
           '45 3 * * *': ['knowledge-refresh'],
-          '0 5 * * 1': ['ai-visibility-monitor'],
+          '0 5 * * *': ['ai-visibility-monitor'],
         }
       : undefined,
     preset: 'bun',

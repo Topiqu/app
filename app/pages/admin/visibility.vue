@@ -68,10 +68,8 @@
         <p class="mx-auto mt-2 max-w-xl leading-7 text-muted">{{ $t('visibility.onboarding.description') }}</p>
         <div v-if="canSample" class="mx-auto mt-6 max-w-2xl">
           <ReusePromptForm v-if="showForm" />
-          <div v-else class="flex flex-wrap justify-center gap-2">
-            <UButton icon="mdi:lightbulb-outline" :loading="suggesting" @click="suggestPrompts">
-              {{ $t('visibility.prompts.suggest') }}
-            </UButton>
+          <div v-else class="flex flex-col items-center gap-3">
+            <p class="text-sm text-muted">{{ $t('visibility.onboarding.pending') }}</p>
             <UButton icon="mdi:plus" color="neutral" variant="outline" @click="showForm = true">
               {{ $t('visibility.prompts.add') }}
             </UButton>
@@ -106,20 +104,9 @@
               <h2 class="text-lg font-semibold text-highlighted">{{ $t('visibility.prompts.title') }}</h2>
               <p class="text-sm text-muted">{{ $t('visibility.prompts.description') }}</p>
             </div>
-            <div class="flex flex-wrap gap-2">
-              <UButton
-                icon="mdi:lightbulb-outline"
-                color="neutral"
-                variant="ghost"
-                :loading="suggesting"
-                @click="suggestPrompts"
-              >
-                {{ $t('visibility.prompts.suggest') }}
-              </UButton>
-              <UButton v-if="!showForm" icon="mdi:plus" color="neutral" variant="soft" @click="showForm = true">
-                {{ $t('visibility.prompts.add') }}
-              </UButton>
-            </div>
+            <UButton v-if="!showForm" icon="mdi:plus" color="neutral" variant="soft" @click="showForm = true">
+              {{ $t('visibility.prompts.add') }}
+            </UButton>
           </div>
 
           <div v-if="showForm" class="border-b border-default bg-elevated/40 p-5">
@@ -153,6 +140,9 @@
                       <span class="flex flex-wrap items-center gap-2">
                         <span class="font-medium leading-6 text-highlighted">{{ prompt.text }}</span>
                         <UBadge color="neutral" variant="outline" size="sm">{{ prompt.language.toUpperCase() }}</UBadge>
+                        <UBadge color="neutral" variant="soft" size="sm">
+                          {{ $t(`visibility.prompts.sources.${prompt.source}`) }}
+                        </UBadge>
                         <UBadge v-if="!prompt.active" color="warning" variant="subtle" size="sm" icon="mdi:pause">
                           {{ $t('visibility.prompts.paused') }}
                         </UBadge>
@@ -269,7 +259,7 @@
             </li>
           </ul>
           <p v-else class="px-5 py-10 text-center text-sm text-muted">
-            {{ $t('visibility.onboarding.description') }}
+            {{ $t(canSample ? 'visibility.onboarding.pending' : 'visibility.onboarding.description') }}
           </p>
         </section>
 
@@ -316,6 +306,75 @@
               </div>
             </li>
           </ul>
+        </section>
+
+        <section v-if="hasDomains" class="rounded-(--topiqu-surface-radius) border border-default bg-default">
+          <div class="border-b border-default px-5 py-4">
+            <h2 class="text-lg font-semibold text-highlighted">{{ $t('visibility.domains.title') }}</h2>
+            <p class="text-sm text-muted">{{ $t('visibility.domains.description') }}</p>
+          </div>
+          <div class="grid divide-y divide-default lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+            <div v-for="group in domainGroups" :key="group.key" class="p-5">
+              <h3 class="text-sm font-medium text-muted">{{ $t(`visibility.domains.${group.key}`) }}</h3>
+              <p v-if="group.key === 'references'" class="mt-0.5 text-xs text-muted">
+                {{ $t('visibility.domains.referencesHint') }}
+              </p>
+              <ul class="mt-2 divide-y divide-default">
+                <li v-if="group.key === 'competitors'" class="py-2.5">
+                  <div class="flex items-center justify-between gap-4 text-sm">
+                    <span class="font-semibold text-highlighted">{{ $t('visibility.domains.you') }}</span>
+                    <span class="font-semibold tabular-nums">{{ percent(ownShare) }}</span>
+                  </div>
+                  <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-accented" aria-hidden="true">
+                    <div class="h-full rounded-full bg-success" :style="{ width: percent(ownShare) }" />
+                  </div>
+                </li>
+                <li v-for="row in group.rows" :key="row.domain" class="py-2.5">
+                  <div class="flex items-center gap-2 text-sm">
+                    <span class="min-w-0 flex-1 truncate text-highlighted">{{ row.domain }}</span>
+                    <UIcon
+                      v-if="row.marked"
+                      name="mdi:bookmark"
+                      class="size-4 shrink-0 text-muted"
+                      :aria-label="$t('visibility.domains.marked')"
+                    />
+                    <span class="tabular-nums">{{ percent(row.share) }}</span>
+                    <UDropdownMenu :items="domainActions(row)" :content="{ align: 'end' }">
+                      <UButton
+                        size="xs"
+                        color="neutral"
+                        variant="ghost"
+                        icon="mdi:dots-horizontal"
+                        :aria-label="$t('visibility.domains.actions', { domain: row.domain })"
+                      />
+                    </UDropdownMenu>
+                  </div>
+                  <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-accented" aria-hidden="true">
+                    <div class="h-full rounded-full bg-primary" :style="{ width: percent(row.share) }" />
+                  </div>
+                  <p class="mt-1 text-xs text-muted">{{ $t('visibility.domains.prompts', { count: row.prompts }) }}</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            v-if="data.domains.hidden.length"
+            class="flex flex-wrap items-center gap-2 border-t border-default px-5 py-3"
+          >
+            <span class="text-xs text-muted">{{ $t('visibility.domains.hidden') }}</span>
+            <UButton
+              v-for="domain in data.domains.hidden"
+              :key="domain"
+              size="xs"
+              color="neutral"
+              variant="soft"
+              trailingIcon="mdi:eye-outline"
+              :aria-label="$t('visibility.domains.restore', { domain })"
+              @click="markDomain(domain, null)"
+            >
+              {{ domain }}
+            </UButton>
+          </div>
         </section>
 
         <section class="rounded-(--topiqu-surface-radius) border border-default bg-default">
@@ -390,6 +449,7 @@ useSeoMeta({ title: () => $t('visibility.title') })
 type Overview = InternalApi['/api/ai-visibility/overview']['get']
 type Opportunity = Overview['opportunities'][number]
 type Prompt = Overview['prompts'][number]
+type CitedDomain = Overview['domains']['competitors'][number]
 
 const [DefinePromptForm, ReusePromptForm] = createReusableTemplate()
 const [DefineUpgrade, ReuseUpgrade] = createReusableTemplate()
@@ -408,7 +468,6 @@ const newPrompt = shallowRef('')
 const newLanguage = shallowRef<Language>(isLanguage(locale.value) ? locale.value : 'en')
 const showForm = shallowRef(false)
 const adding = shallowRef(false)
-const suggesting = shallowRef(false)
 const runningPrompt = shallowRef<string | null>(null)
 const canSample = computed(() => ['PREMIUM', 'CUSTOM'].includes(clientStatus.value?.plan ?? ''))
 const billingLink = computed(() => localePath({ name: 'settings', query: { tab: 'billing' } }))
@@ -439,6 +498,7 @@ const tones: Record<string, string> = {
 }
 
 const number = (value: number) => numberFormat.value.format(value)
+const percent = (value: number) => percentFormat.value.format(value)
 const metrics = computed(() => [
   {
     label: t('visibility.metrics.coverage'),
@@ -469,6 +529,13 @@ const languageItems = computed(() =>
   })),
 )
 const openOpportunities = computed(() => data.value?.opportunities.filter((item) => item.status === 'OPEN') ?? [])
+const domainGroups = computed(() =>
+  (['competitors', 'references', 'others'] as const)
+    .map((key) => ({ key, rows: data.value?.domains[key] ?? [] }))
+    .filter((group) => group.rows.length),
+)
+const hasDomains = computed(() => domainGroups.value.length > 0 || !!data.value?.domains.hidden.length)
+const ownShare = computed(() => data.value?.visibility.citationCoverage ?? 0)
 
 const mutate = async (work: () => Promise<unknown>, success?: string) => {
   try {
@@ -500,23 +567,10 @@ const addPrompt = async () => {
   adding.value = false
 }
 
-const suggestPrompts = async () => {
-  suggesting.value = true
-  const result = (await mutate(() => apiFetch('/api/ai-visibility/prompts/suggest', { method: 'POST' }))) as {
-    created: number
-  } | null
-  if (result) toast.add({ color: 'success', title: t('visibility.prompts.suggested', { count: result.created }) })
-  suggesting.value = false
-}
-
 const runPrompt = async (id: string) => {
   runningPrompt.value = id
   await mutate(
-    () =>
-      apiFetch(`/api/ai-visibility/prompts/${id}/run`, {
-        method: 'POST',
-        headers: { 'idempotency-key': crypto.randomUUID() },
-      }),
+    () => apiFetch(`/api/ai-visibility/prompts/${id}/run`, { method: 'POST' }),
     t('visibility.messages.runStarted'),
   )
   runningPrompt.value = null
@@ -536,12 +590,45 @@ const promptActions = (prompt: Prompt): DropdownMenuItem[][] => [
       onSelect: () => togglePrompt(prompt.id, !prompt.active),
     },
   ],
+  // A removed generated question would only be generated again; pausing is what retires it.
+  ...(prompt.source === 'MANUAL'
+    ? [
+        [
+          {
+            label: t('visibility.prompts.remove'),
+            icon: 'mdi:delete-outline',
+            color: 'error' as const,
+            onSelect: () => removePrompt(prompt.id),
+          },
+        ],
+      ]
+    : []),
+]
+const markDomain = (domain: string, mark: 'COMPETITOR' | 'HIDDEN' | null) =>
+  mutate(() => apiFetch('/api/ai-visibility/domains', { method: 'PUT', body: { domain, mark } }))
+const domainActions = (row: CitedDomain): DropdownMenuItem[][] => [
   [
+    ...(row.marked
+      ? [
+          {
+            label: t('visibility.domains.unmark'),
+            icon: 'mdi:bookmark-remove-outline',
+            onSelect: () => markDomain(row.domain, null),
+          },
+        ]
+      : row.kind === 'COMPETITOR'
+        ? []
+        : [
+            {
+              label: t('visibility.domains.markCompetitor'),
+              icon: 'mdi:bookmark-outline',
+              onSelect: () => markDomain(row.domain, 'COMPETITOR'),
+            },
+          ]),
     {
-      label: t('visibility.prompts.remove'),
-      icon: 'mdi:delete-outline',
-      color: 'error',
-      onSelect: () => removePrompt(prompt.id),
+      label: t('visibility.domains.hide'),
+      icon: 'mdi:eye-off-outline',
+      onSelect: () => markDomain(row.domain, 'HIDDEN'),
     },
   ],
 ]

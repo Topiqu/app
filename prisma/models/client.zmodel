@@ -122,6 +122,7 @@ model ClientSite with Base {
     discloseAiContent   Boolean             @default(false)
     communityInsight     Json?
     insightUpdatedAt     DateTime?
+    aiPromptsSeededAt    DateTime?
     billingPlan          BillingPlans        @default(MONTHLY)
     trialStartedAt       DateTime?
     trialEndsAt          DateTime?
@@ -163,6 +164,7 @@ model ClientSite with Base {
     aiVisibilityRuns    AiVisibilityRun[]
     aiCitations         AiCitation[]
     aiOpportunities     AiVisibilityOpportunity[]
+    aiVisibilityDomains AiVisibilityDomain[]
     aiUsages            AiUsage[]
     tenantMemberships    TenantMembership[]
     tenantInvitations    TenantInvitation[]

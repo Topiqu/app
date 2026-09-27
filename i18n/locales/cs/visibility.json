@@ -16,7 +16,8 @@
     "emptyValue": "Zatím neměřeno",
     "onboarding": {
       "title": "Zjistěte, jestli vás AI cituje",
-      "description": "Přidejte otázky, které vaši čtenáři pokládají ChatGPT, Gemini nebo Claude. Pravidelně je ověříme a ukážeme, jestli odpovědi odkazují na vaši publikaci.",
+      "description": "Otázky, které lidé kladou ChatGPT, Gemini nebo Claude, sestavíme z vašich článků, hledání na Googlu a dotazů čtenářů. Každý týden je ověříme a ukážeme, jestli odpovědi odkazují na vaši publikaci.",
+      "pending": "První otázky připravíme do 24 hodin. Vlastní otázku můžete přidat hned.",
       "note": "Návštěvy AI botů a čtenářů z AI se tu objeví samy, jakmile nějaké zaznamenáme."
     },
     "upgrade": {
@@ -25,11 +26,10 @@
     },
     "prompts": {
       "title": "Sledované otázky",
-      "description": "Každý týden je položíme AI vyhledávačům a uložíme odpověď i citované zdroje.",
+      "description": "Vybíráme je automaticky a každý týden je položíme AI vyhledávačům. Otázky, na které AI neodpovídá s žádným zdrojem, po třech týdnech vyměníme.",
       "questionLabel": "Otázka pro AI vyhledávání",
       "languageLabel": "Jazyk",
       "add": "Přidat otázku",
-      "suggest": "Navrhnout otázky",
       "placeholder": "Na jakou otázku má AI vyhledávání odpovědět?",
       "run": "Ověřit teď",
       "pause": "Pozastavit sledování",
@@ -38,7 +38,13 @@
       "remove": "Odstranit",
       "actions": "Další akce",
       "created": "Otázka byla přidána.",
-      "suggested": "Přidáno otázek: {count}."
+      "sources": {
+        "MANUAL": "Vlastní",
+        "GENERATED": "Podle zaměření",
+        "SEARCH_CONSOLE": "Z Googlu",
+        "ARTICLE": "Z článku",
+        "COMMENT": "Od čtenářů"
+      }
     },
     "outcome": {
       "UNCHECKED": "Zatím neověřeno",
@@ -63,6 +69,23 @@
       "dismiss": "Skrýt",
       "evidence": "Váš web: {owned}/{samples} · jiné zdroje: {external}/{samples}",
       "domains": "Citované zdroje: {domains}"
+    },
+    "domains": {
+      "title": "Koho AI cituje místo vás",
+      "description": "Podíl odpovědí AI, které daný web citují. Konkurent je web citovaný u více vašich otázek.",
+      "you": "Vy",
+      "competitors": "Konkurence",
+      "references": "Obecné zdroje",
+      "referencesHint": "Wikipedie, diskuze a úřady. Článkem je nepřetlačíte, ale ukazují, odkud AI čerpá.",
+      "others": "Další citované weby",
+      "prompts": "Otázky: {count}",
+      "markCompetitor": "Označit jako konkurenta",
+      "unmark": "Zrušit označení",
+      "hide": "Skrýt",
+      "hidden": "Skryté weby",
+      "restore": "Znovu zobrazit {domain}",
+      "marked": "Označeno vámi",
+      "actions": "Akce pro {domain}"
     },
     "traffic": {
       "title": "Provoz z AI",

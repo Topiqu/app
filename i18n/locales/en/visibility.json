@@ -16,7 +16,8 @@
     "emptyValue": "Not measured yet",
     "onboarding": {
       "title": "Find out whether AI cites you",
-      "description": "Add the questions your readers ask ChatGPT, Gemini or Claude. We check them regularly and show whether the answers link to your publication.",
+      "description": "We build the questions people ask ChatGPT, Gemini or Claude from your articles, your Google searches and your readers' questions. Every week we check them and show whether the answers link to your publication.",
+      "pending": "The first questions are ready within 24 hours. You can add your own right away.",
       "note": "AI bot visits and readers arriving from AI show up here on their own once we record any."
     },
     "upgrade": {
@@ -25,11 +26,10 @@
     },
     "prompts": {
       "title": "Tracked questions",
-      "description": "Every week we ask AI search engines and store the answer and the cited sources.",
+      "description": "Picked automatically and asked of AI search engines every week. Questions that no engine answers with any source are replaced after three weeks.",
       "questionLabel": "Question for AI search",
       "languageLabel": "Language",
       "add": "Add question",
-      "suggest": "Suggest questions",
       "placeholder": "What question should AI search answer?",
       "run": "Check now",
       "pause": "Pause tracking",
@@ -38,7 +38,13 @@
       "remove": "Remove",
       "actions": "More actions",
       "created": "Question added.",
-      "suggested": "{count} questions added."
+      "sources": {
+        "MANUAL": "Yours",
+        "GENERATED": "From your topic",
+        "SEARCH_CONSOLE": "From Google",
+        "ARTICLE": "From an article",
+        "COMMENT": "From readers"
+      }
     },
     "outcome": {
       "UNCHECKED": "Not checked yet",
@@ -63,6 +69,23 @@
       "dismiss": "Dismiss",
       "evidence": "Your site: {owned}/{samples} · other sources: {external}/{samples}",
       "domains": "Sources being cited: {domains}"
+    },
+    "domains": {
+      "title": "Who gets cited instead of you",
+      "description": "Share of AI answers that cite each site. A competitor is a site cited across several of your questions.",
+      "you": "You",
+      "competitors": "Competitors",
+      "references": "General sources",
+      "referencesHint": "Wikipedia, forums and public bodies. An article will not outrank them, but they show where AI draws from.",
+      "others": "Other cited sites",
+      "prompts": "Questions: {count}",
+      "markCompetitor": "Mark as competitor",
+      "unmark": "Remove mark",
+      "hide": "Hide",
+      "hidden": "Hidden sites",
+      "restore": "Show {domain} again",
+      "marked": "Marked by you",
+      "actions": "Actions for {domain}"
     },
     "traffic": {
       "title": "Traffic from AI",
