@@ -194,7 +194,7 @@
           <UButton
             icon="mdi:check-circle-outline"
             :loading="tr.pending === 'publish'"
-            :disabled="Boolean(tr.pending) || tr.isDirty"
+            :disabled="Boolean(tr.pending)"
             @click="tr.save('PUBLISHED')"
           >
             {{ $t('articles.translations.actions.approve') }}
