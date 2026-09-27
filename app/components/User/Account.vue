@@ -185,7 +185,7 @@ const loadUserData = async () => {
     loadedUserId.value = currentUser.id
   } catch (e: unknown) {
     const error = e as { data?: { message?: string } }
-    toast.add({ color: 'error', title: error.data?.message || $t('articles.userMenu.userDataError') })
+    toast.add({ color: 'error', title: fetchErrorMessage(error, $t('articles.userMenu.userDataError')) })
   }
 }
 

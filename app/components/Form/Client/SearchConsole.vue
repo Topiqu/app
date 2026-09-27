@@ -127,7 +127,7 @@ interface Property {
   siteUrl: string
   permissionLevel: string
 }
-const toast = useAppToast()
+const toast = useToast()
 const { data, pending, refresh } = await useFetch<Status>('/api/search-console/status')
 const properties = shallowRef<Property[]>([])
 const selectedProperty = shallowRef('')
@@ -152,7 +152,7 @@ const saveProperty = async () => {
     method: 'PATCH',
     body: { propertyUrl: selectedProperty.value },
   })
-  toast.success({ message: $t('common.messages.saveSuccess') })
+  toast.add({ color: 'success', title: $t('common.messages.saveSuccess') })
   await refresh()
 }
 const disconnect = async () => {
@@ -166,7 +166,7 @@ const setAutopilot = async (enabled: boolean) => {
       method: 'PATCH',
       body: { enabled },
     })
-    toast.success({ message: $t('common.messages.saveSuccess') })
+    toast.add({ color: 'success', title: $t('common.messages.saveSuccess') })
     await refresh()
   } finally {
     autopilotPending.value = false
@@ -177,7 +177,7 @@ const rollbackLastAction = async () => {
   rollbackPending.value = true
   try {
     await $fetch(`/api/search-console/autopilot/${data.value.lastAction.id}/rollback`, { method: 'POST' })
-    toast.success({ message: $t('common.searchConsole.rollbackSuccess') })
+    toast.add({ color: 'success', title: $t('common.searchConsole.rollbackSuccess') })
     await refresh()
   } finally {
     rollbackPending.value = false

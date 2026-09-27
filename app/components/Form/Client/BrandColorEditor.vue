@@ -196,9 +196,8 @@
 import type { BrandGradient } from '~~/shared/utils/publicationBranding'
 
 import { ThemeSchema } from '~~/shared/siteSchemas'
+import { resolveBrandAccent, themeColors, type ThemeKey } from '~~/shared/utils/tenantTheme'
 import { hasAdvancedBranding, gradientCss, mixBrandColor } from '~~/shared/utils/publicationBranding'
-
-import { resolveBrandAccent, themeColors, type ThemeKey } from '~/composables/theme'
 
 const props = defineProps<{
   theme: ThemeKey

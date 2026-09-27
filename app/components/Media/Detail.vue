@@ -130,7 +130,7 @@ const emit = defineEmits<{ updated: []; removed: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
 const localePath = useLocalePath()
-const toast = useAppToast()
+const toast = useToast()
 const confirm = useConfirm()
 const detail = shallowRef<MediaLibraryDetail | null>(null)
 const loading = shallowRef(false)
@@ -202,7 +202,7 @@ const save = async () => {
         confirmRights: form.confirmRights,
       },
     })
-    toast.success({ message: t('media.saved') })
+    toast.add({ color: 'success', title: t('media.saved') })
     await load()
     emit('updated')
   } finally {
@@ -229,11 +229,11 @@ const scheduleDelete = async () => {
     return
   try {
     await $fetch(`/api/media/${props.id}`, { method: 'DELETE' })
-    toast.success({ message: t('media.deleteScheduled') })
+    toast.add({ color: 'success', title: t('media.deleteScheduled') })
     open.value = false
     emit('removed')
   } catch (cause: any) {
-    toast.error({ message: cause?.data?.data?.code === 'MEDIA_IN_USE' ? t('media.inUseError') : cause?.data?.message })
+    toast.add({ color: 'error', title: cause?.data?.data?.code === 'MEDIA_IN_USE' ? t('media.inUseError') : cause?.data?.message })
   }
 }
 </script>

@@ -167,7 +167,7 @@ const createUser = async () => {
     newUser.value = { username: '', email: '', password: '', role: 'reader' }
     await refresh()
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || t('master.userCreate.messages.createFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, t('master.userCreate.messages.createFailed')) })
   } finally {
     creating.value = false
   }
@@ -188,7 +188,7 @@ const assignToClientSite = async (userId: string | undefined) => {
     emit('create')
     await refresh()
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || t('master.userCreate.messages.assignFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, t('master.userCreate.messages.assignFailed')) })
   } finally {
     assigningUserId.value = null
   }

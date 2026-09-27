@@ -283,7 +283,7 @@ const { saveProfile, changePassword, deactivateAccount } = useProfile()
 const { locale, setLocale } = useI18n()
 const { formatTime } = useTime()
 const { copy, copied } = useClipboard({ legacy: true })
-const toast = useAppToast()
+const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const reducedMotion = usePreferredReducedMotion()
@@ -399,7 +399,7 @@ function revertChanges() {
   Object.assign(profileForm, originalProfile.value)
   draft.clear()
   isDirty.value = false
-  toast.success({ message: $t('common.messages.successGeneral') })
+  toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
 }
 
 function openDialog(type: 'followers' | 'followed') {
@@ -408,7 +408,7 @@ function openDialog(type: 'followers' | 'followed') {
 }
 
 function onTwoFAError(message: string) {
-  if (message) toast.error({ message })
+  if (message) toast.add({ color: 'error', title: message })
 }
 
 async function onAvatarUpload() {
@@ -498,7 +498,7 @@ async function exportToPDF() {
     link.remove()
     URL.revokeObjectURL(url)
   } catch (err: any) {
-    toast.error({ message: err.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: err.message || $t('common.messages.operationFailed') })
   } finally {
     isLoading.value = false
   }

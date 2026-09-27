@@ -462,7 +462,7 @@ const requestFetch = useRequestFetch()
 
 const clientSite = await useClientSite()
 const currency = clientSite?.currency || 'USD'
-const fxRate = await useCurrencyRate(currency)
+const fxRate = useCurrencyRate(currency)
 
 const isBasicPlan = computed(() => authData.value?.user.plan === 'BASIC')
 const showAllTags = shallowRef(false)
@@ -547,7 +547,7 @@ const formatMoney = (usd: number) =>
     currency,
     currencyDisplay: 'narrowSymbol',
     maximumFractionDigits: 0,
-  }).format(usd * fxRate)
+  }).format(usd * fxRate.value)
 
 const insight = computed(() => {
   if (!rawInsight.value) return null

@@ -355,7 +355,7 @@ const { client, rate } = defineProps<{
   rate: number
 }>()
 
-const toast = useAppToast()
+const toast = useToast()
 const { locale, tm, rt, t } = useI18n()
 const { formatTime } = useTime()
 const articlePacks = computed(() => buildArticlePackViews(t, locale.value))
@@ -421,7 +421,7 @@ const redirectTo = async (url: string, action: string, body: Record<string, unkn
     if (res.url) window.location.href = res.url
     else throw new Error('no url')
   } catch {
-    toast.error({ message: $t('common.preferences.billing.actionFailed') })
+    toast.add({ color: 'error', title: $t('common.preferences.billing.actionFailed') })
     pendingAction.value = null
   }
 }

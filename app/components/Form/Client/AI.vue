@@ -400,7 +400,7 @@ const toggleTargetLang = (lang: string) => {
 const showAutoReleaseModal = shallowRef(false)
 const showAiDisableModal = shallowRef(false)
 
-const rate = await useCurrencyRate(props.currency)
+const rate = useCurrencyRate(() => props.currency)
 
 const username = computed({
   get: () => props.username,
@@ -515,6 +515,6 @@ const featurePrice = (code: string) => {
     currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: props.currency === 'CZK' ? 0 : 2,
     maximumFractionDigits: 2,
-  }).format(price * rate)
+  }).format(price * rate.value)
 }
 </script>

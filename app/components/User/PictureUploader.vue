@@ -127,7 +127,7 @@
 </template>
 
 <script lang="ts" setup>
-const toast = useAppToast()
+const toast = useToast()
 const { data: auth, refresh } = useAuth()
 const avatar = defineModel<string | null | undefined>()
 const open = defineModel<boolean>('open', { default: false })
@@ -212,7 +212,7 @@ async function saveAvatar() {
       await refresh()
     }
     emit('upload', response.avatarUrl)
-    toast.success({ message: $t('common.avatar.uploadSuccess') })
+    toast.add({ color: 'success', title: $t('common.avatar.uploadSuccess') })
     reset()
     open.value = false
   } catch (error: any) {
@@ -245,7 +245,7 @@ async function confirmRemove() {
       await refresh()
     }
     emit('upload', null)
-    toast.success({ message: $t('common.avatar.removeSuccess') })
+    toast.add({ color: 'success', title: $t('common.avatar.removeSuccess') })
     reset()
     open.value = false
   } catch (error: any) {

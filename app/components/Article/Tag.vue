@@ -124,7 +124,7 @@ const addTag = async (tagId: string) => {
     toast.add({ color: 'success', title: $t('articles.tags.addTagSuccess') })
   } catch (e: any) {
     optimisticStatus.reverted()
-    toast.add({ color: 'error', title: e.data?.message || $t('articles.tags.operationFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('articles.tags.operationFailed')) })
   } finally {
     optimisticArticleTags.value = optimisticArticleTags.value.filter((row) => row !== optimistic)
     isAdding.value = false
@@ -142,7 +142,7 @@ const removeTag = async (tagId: string) => {
     toast.add({ color: 'success', title: $t('articles.tags.removeTagSuccess') })
   } catch (e: any) {
     optimisticStatus.reverted()
-    toast.add({ color: 'error', title: e.data?.message || $t('articles.tags.operationFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('articles.tags.operationFailed')) })
   } finally {
     const removing = new Set(removingTagIds.value)
     removing.delete(tagId)
@@ -175,7 +175,7 @@ const createAndAddTag = async () => {
     newTag.name = draft.name
     newTag.slug = draft.slug
     optimisticStatus.reverted()
-    toast.add({ color: 'error', title: e.data?.message || $t('articles.tags.addCustomTagFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('articles.tags.addCustomTagFailed')) })
   } finally {
     optimisticArticleTags.value = optimisticArticleTags.value.filter((row) => row !== optimistic)
     isCreating.value = false

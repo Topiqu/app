@@ -441,7 +441,7 @@ const performDelete = async (mode: 'hard' | 'soft') => {
   } catch (error: any) {
     toast.add({
       color: 'error',
-      title: error.data?.message || t('master.clientTable.messages.deleteFailed'),
+      title: fetchErrorMessage(error, t('master.clientTable.messages.deleteFailed')),
     })
   } finally {
     deleteTarget.value = null
@@ -471,7 +471,7 @@ const restore = async (id: string) => {
   } catch (error: any) {
     toast.add({
       color: 'error',
-      title: error.data?.message || t('master.clientTable.messages.activateFailed'),
+      title: fetchErrorMessage(error, t('master.clientTable.messages.activateFailed')),
     })
   } finally {
     await invalidateClients()

@@ -365,8 +365,7 @@
 import type { BillingInterval, PlanPrice, PlanPricing, SubscribablePlan } from '~~/shared/types/planPricing'
 
 import { ThemeSchema } from '~~/shared/siteSchemas'
-
-import { themeColors, type ThemeKey } from '~/composables/theme'
+import { themeColors, type ThemeKey } from '~~/shared/utils/tenantTheme'
 
 type Availability = 'idle' | 'checking' | 'available' | 'unavailable'
 type DomainReason = 'empty' | 'tooShort' | 'invalid' | 'reserved' | 'taken'

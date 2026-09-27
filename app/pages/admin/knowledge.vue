@@ -124,7 +124,7 @@ const KIND_ICONS = { NOTE: 'mdi:note-text-outline', FILE: 'mdi:file-document-out
 const STATUS_COLORS = { PENDING: 'neutral', PROCESSING: 'warning', INDEXED: 'success', FAILED: 'error' } as const
 
 const { t, locale } = useI18n()
-const toast = useAppToast()
+const toast = useToast()
 const confirm = useConfirm()
 const { data, status, error, refresh } = await useLazyFetch('/api/knowledge')
 const sources = computed(() => data.value?.sources ?? [])
@@ -156,9 +156,9 @@ watch(indexing, (active) => (active ? resume() : pause()), { immediate: true })
 const run = async (request: () => Promise<unknown>, success?: string) => {
   try {
     await request()
-    if (success) toast.success({ message: success })
+    if (success) toast.add({ color: 'success', title: success })
   } catch (cause: any) {
-    toast.error({ message: cause?.data?.message || t('knowledge.actionError') })
+    toast.add({ color: 'error', title: fetchErrorMessage(cause, t('knowledge.actionError')) })
   } finally {
     await refresh()
   }

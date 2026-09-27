@@ -327,7 +327,7 @@ const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const requestFetch = useRequestFetch()
 const apiFetch = $fetch as unknown as (url: string, options?: Record<string, unknown>) => Promise<any>
-const toast = useAppToast()
+const toast = useToast()
 const { data: clientStatus } = await useClientSiteStatus()
 const numberFormat = computed(() => new Intl.NumberFormat(locale.value))
 const percentFormat = computed(
@@ -401,10 +401,10 @@ const mutate = async (work: () => Promise<unknown>, success?: string) => {
   try {
     const result = await work()
     await refetch()
-    if (success) toast.success({ message: success })
+    if (success) toast.add({ color: 'success', title: success })
     return result
   } catch (error: any) {
-    toast.error({ message: error?.data?.message || t('visibility.messages.failed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(error, t('visibility.messages.failed')) })
     return null
   }
 }
@@ -429,7 +429,7 @@ const suggestPrompts = async () => {
   const result = (await mutate(() => apiFetch('/api/ai-visibility/prompts/suggest', { method: 'POST' }))) as {
     created: number
   } | null
-  if (result) toast.success({ message: t('visibility.prompts.suggested', { count: result.created }) })
+  if (result) toast.add({ color: 'success', title: t('visibility.prompts.suggested', { count: result.created }) })
   suggesting.value = false
 }
 

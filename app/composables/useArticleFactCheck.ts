@@ -1,9 +1,20 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { ArticleFactCheckInput, ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
 
+import { htmlToText } from '~~/shared/utils/articleBlocks'
+
 export type ArticleFactCheckState = 'idle' | 'running' | 'complete' | 'stale' | 'error'
 export type ArticleFactCheckErrorKind =
   'invalid-request' | 'not-configured' | 'not-in-plan' | 'rate-limited' | 'service-unavailable' | 'unknown'
+
+const ERROR_KINDS: Record<number, ArticleFactCheckErrorKind> = {
+  400: 'invalid-request',
+  403: 'not-in-plan',
+  429: 'rate-limited',
+  502: 'service-unavailable',
+  503: 'service-unavailable',
+  504: 'service-unavailable',
+}
 
 const snapshot = (input: ArticleFactCheckInput) =>
   JSON.stringify({
@@ -21,14 +32,7 @@ export const useArticleFactCheck = (input: MaybeRefOrGetter<ArticleFactCheckInpu
   const errorKind = shallowRef<ArticleFactCheckErrorKind>('unknown')
   let analyzedSnapshot = ''
 
-  const canRun = computed(() => {
-    const current = toValue(input)
-    const text = current.content
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-    return text.length >= 20
-  })
+  const canRun = computed(() => htmlToText(toValue(input).content).length >= 20)
 
   watch(
     () => snapshot(toValue(input)),
@@ -54,31 +58,11 @@ export const useArticleFactCheck = (input: MaybeRefOrGetter<ArticleFactCheckInpu
       state.value = snapshot(toValue(input)) === runSnapshot ? 'complete' : 'stale'
     } catch (error) {
       failure.value = error
-      const fetchError = error as {
-        statusCode?: number
-        status?: number
-        data?: { code?: string; statusCode?: number; data?: { code?: string } }
-        response?: { status?: number; _data?: { code?: string; data?: { code?: string } } }
-      }
-      const status =
-        fetchError.statusCode ?? fetchError.status ?? fetchError.data?.statusCode ?? fetchError.response?.status
-      const code =
-        fetchError.data?.code ??
-        fetchError.data?.data?.code ??
-        fetchError.response?._data?.code ??
-        fetchError.response?._data?.data?.code
+      const { statusCode, data } = error as { statusCode?: number; data?: { data?: { code?: string } } }
       errorKind.value =
-        code === 'AI_NOT_CONFIGURED'
+        data?.data?.code === 'AI_NOT_CONFIGURED'
           ? 'not-configured'
-          : status === 400
-            ? 'invalid-request'
-            : status === 403
-              ? 'not-in-plan'
-              : status === 429
-                ? 'rate-limited'
-                : status === 502 || status === 503 || status === 504
-                  ? 'service-unavailable'
-                  : 'unknown'
+          : (statusCode && ERROR_KINDS[statusCode]) || 'unknown'
       state.value = 'error'
     }
   }

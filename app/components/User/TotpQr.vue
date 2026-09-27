@@ -78,7 +78,7 @@
 <script setup lang="ts">
 const { otpauthUrl } = defineProps<{ otpauthUrl: string }>()
 
-const toast = useAppToast()
+const toast = useToast()
 const { copy } = useClipboard({ legacy: true })
 
 const showQR = shallowRef(false)
@@ -100,9 +100,9 @@ function hideQr() {
 async function copySecret() {
   try {
     await copy(secret.value)
-    toast.success({ message: $t('profile.secretCopied') })
+    toast.add({ color: 'success', title: $t('profile.secretCopied') })
   } catch {
-    toast.error({ message: $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: $t('common.messages.operationFailed') })
   }
 }
 

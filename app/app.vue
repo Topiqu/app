@@ -27,15 +27,13 @@
 import { cs, en } from '@nuxt/ui/locale'
 import { consentLauncherFor } from '~~/shared/utils/consent'
 import { brandTitle, toAbsoluteUrl } from '~~/shared/utils/seo'
+import { resolveBrandAccent } from '~~/shared/utils/tenantTheme'
 import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
-
-import { resolveBrandAccent } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
 const route = useRoute()
 const clientSite = await useClientSite()
 const liveClientSite = await useLiveClientSite()
-const adChance = useAdChance()
 const i18nHead = useLocaleHead()
 const canonicalOrigin = useCanonicalOrigin()
 const { locale } = useI18n()
@@ -58,10 +56,6 @@ const i18nLinks = computed(() =>
 onMounted(() => {
   document.documentElement.dataset.topiquHydrated = 'true'
 })
-
-if (clientSite) {
-  adChance.assign(clientSite.id, clientSite.plan)
-}
 
 const computedThemeColor = computed(() =>
   resolveBrandAccent(liveClientSite.value?.theme, liveClientSite.value?.accentColor),

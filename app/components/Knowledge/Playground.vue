@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 const { t } = useI18n()
-const toast = useAppToast()
+const toast = useToast()
 const headingId = useId()
 const topic = shallowRef('')
 const loading = shallowRef(false)
@@ -57,7 +57,7 @@ const run = async () => {
   try {
     result.value = await $fetch<Result>('/api/knowledge/test', { method: 'POST', body: { topic: topic.value } })
   } catch (cause: any) {
-    toast.error({ message: cause?.data?.message || t('knowledge.actionError') })
+    toast.add({ color: 'error', title: fetchErrorMessage(cause, t('knowledge.actionError')) })
   } finally {
     loading.value = false
   }

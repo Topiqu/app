@@ -53,7 +53,7 @@ export function useArticleActions(
       optimisticStatus.saved()
     } catch (e: unknown) {
       const err = e as { data?: { message?: string } }
-      toast.add({ color: 'error', title: err.data?.message || t('common.messages.operationFailed') })
+      toast.add({ color: 'error', title: fetchErrorMessage(err, t('common.messages.operationFailed')) })
       article.allowedComments = !article.allowedComments
       optimisticStatus.reverted()
     }
@@ -80,7 +80,7 @@ export function useArticleActions(
       article.status = previous
       optimisticStatus.reverted()
       const err = e as { data?: { message?: string } }
-      toast.add({ color: 'error', title: err.data?.message || t('common.messages.statusChangeFailed') })
+      toast.add({ color: 'error', title: fetchErrorMessage(err, t('common.messages.statusChangeFailed')) })
     } finally {
       statusPending.value = false
     }

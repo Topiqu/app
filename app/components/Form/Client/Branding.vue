@@ -169,10 +169,9 @@
 </template>
 
 <script setup lang="ts">
-import type { SocialPlatform } from '~~/generated/zenstack/models'
+import type { ThemeKey } from '~~/shared/utils/tenantTheme'
 import type { BrandGradient } from '~~/shared/utils/publicationBranding'
-
-import type { PublicationTypography, ThemeKey } from '~/composables/theme'
+import type { PublicationTypography, SocialPlatform } from '~~/generated/zenstack/models'
 
 const {
   logoUrl,

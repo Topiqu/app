@@ -112,7 +112,7 @@ import { KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
 const emit = defineEmits<{ created: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
-const toast = useAppToast()
+const toast = useToast()
 
 type Kind = 'NOTE' | 'FILE' | 'URL' | 'SITEMAP'
 const kind = shallowRef<Kind>('NOTE')
@@ -161,7 +161,7 @@ const errorMessage = (cause: any) => {
     ? t('knowledge.errors.duplicate')
     : code === 'KNOWLEDGE_QUOTA'
       ? t('knowledge.errors.quota')
-      : cause?.data?.message || t('knowledge.actionError')
+      : fetchErrorMessage(cause, t('knowledge.actionError'))
 }
 
 const pageForm = (url: string) => {
@@ -195,7 +195,7 @@ const importSitemap = async (urls: string[]) => {
     }
   }
   await Promise.all([worker(), worker()])
-  toast.success({ message: t('knowledge.sitemapImported', { added, skipped: urls.length - added }) })
+  toast.add({ color: 'success', title: t('knowledge.sitemapImported', { added, skipped: urls.length - added }) })
   open.value = false
   emit('created')
 }
@@ -208,10 +208,10 @@ const submit = async () => {
       else {
         const found = await discoverSitemap()
         discovered.value = found
-        if (!found.urls.length) toast.error({ message: t('knowledge.errors.sitemapEmpty') })
+        if (!found.urls.length) toast.add({ color: 'error', title: t('knowledge.errors.sitemapEmpty') })
       }
     } catch (cause: any) {
-      toast.error({ message: errorMessage(cause) })
+      toast.add({ color: 'error', title: errorMessage(cause) })
     } finally {
       saving.value = false
     }
@@ -231,11 +231,11 @@ const submit = async () => {
   saving.value = true
   try {
     await $fetch('/api/knowledge', { method: 'POST', body })
-    toast.success({ message: t('knowledge.added') })
+    toast.add({ color: 'success', title: t('knowledge.added') })
     open.value = false
     emit('created')
   } catch (cause: any) {
-    toast.error({ message: errorMessage(cause) })
+    toast.add({ color: 'error', title: errorMessage(cause) })
   } finally {
     saving.value = false
   }

@@ -80,10 +80,10 @@
 
 <script setup lang="ts">
 import type { BrandGradient } from '~~/shared/utils/publicationBranding'
+import type { PublicationTypography } from '~~/generated/zenstack/models'
 
+import { resolveBrandAccent, tenantThemeStyle } from '~~/shared/utils/tenantTheme'
 import { gradientCss, hasAdvancedBranding, parseBrandGradient } from '~~/shared/utils/publicationBranding'
-
-import { resolveBrandAccent, tenantThemeStyle, type PublicationTypography } from '~/composables/theme'
 
 const props = defineProps<{
   logoUrl: string

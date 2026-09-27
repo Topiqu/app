@@ -543,7 +543,7 @@ definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
-const toast = useAppToast()
+const toast = useToast()
 const confirm = useConfirm()
 const { t } = useI18n()
 const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
@@ -1283,7 +1283,7 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
     }
     toast.add({
       color: 'error',
-      title: e.data?.message || 'Error saving article',
+      title: fetchErrorMessage(e, t('common.messages.saveFailed')),
     })
   } finally {
     submitting.value = false

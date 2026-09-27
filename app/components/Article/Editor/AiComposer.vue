@@ -160,7 +160,7 @@ const { autofocus = false } = defineProps<{ autofocus?: boolean }>()
 const generating = defineModel<boolean>('generating', { default: false })
 
 const { t } = useI18n()
-const toast = useAppToast()
+const toast = useToast()
 const promptId = useId()
 
 const steps: Phase[] = ['writing', 'images']
@@ -226,8 +226,9 @@ const enhance = async () => {
     originalTopic.value = before
     enhancedTopic.value = prompt
   } catch (e: any) {
-    toast.error({
-      message: e.data?.message || t('articles.editor.ai.enhanceFailed'),
+    toast.add({
+      color: 'error',
+      title: fetchErrorMessage(e, t('articles.editor.ai.enhanceFailed')),
     })
   } finally {
     enhancing.value = false
@@ -273,10 +274,10 @@ const generate = async () => {
       },
     })
 
-    if (outcome === 'aborted') toast.info({ message: t('articles.editor.ai.aiContentStopped') })
-    else toast.success({ message: t('articles.editor.aiContentGenerated') })
+    if (outcome === 'aborted') toast.add({ color: 'info', title: t('articles.editor.ai.aiContentStopped') })
+    else toast.add({ color: 'success', title: t('articles.editor.aiContentGenerated') })
   } catch {
-    toast.error({ message: t('articles.editor.aiContentFailed') })
+    toast.add({ color: 'error', title: t('articles.editor.aiContentFailed') })
   } finally {
     pause()
     generating.value = false

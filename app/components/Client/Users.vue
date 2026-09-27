@@ -192,7 +192,7 @@ const del = async (id: string) => {
     toast.add({ color: 'success', title: t('master.clientUsers.messages.blocked') })
     await refresh()
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || t('master.clientUsers.messages.blockFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, t('master.clientUsers.messages.blockFailed')) })
   }
 }
 
@@ -204,7 +204,7 @@ const restore = async (id: string) => {
     await refresh()
     toast.add({ color: 'success', title: t('master.clientUsers.messages.restored') })
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || t('master.clientUsers.messages.restoreFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, t('master.clientUsers.messages.restoreFailed')) })
   }
 }
 </script>

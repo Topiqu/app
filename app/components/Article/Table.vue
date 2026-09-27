@@ -287,7 +287,7 @@ import type { LanguageLink } from '~/components/Article/LanguageLinks.vue'
 
 const router = useRouter()
 const route = useRoute()
-const toast = useAppToast()
+const toast = useToast()
 const { invalidateArticleLists, invalidateArticlesAndStats } = useCacheInvalidation()
 const confirm = useConfirm()
 const localePath = useLocalePath()
@@ -315,10 +315,11 @@ const translateArticle = async (article: ArticleWithDetails) => {
       body: { language: targetLanguage },
     })
     await invalidateArticleLists()
-    toast.success({ message: $t('articles.translations.messages.translated') })
+    toast.add({ color: 'success', title: $t('articles.translations.messages.translated') })
   } catch (e: any) {
-    toast.error({
-      message: e?.data?.message || $t('common.messages.operationFailed'),
+    toast.add({
+      color: 'error',
+      title: fetchErrorMessage(e, $t('common.messages.operationFailed')),
     })
   } finally {
     translatingArticleId.value = null
@@ -535,7 +536,7 @@ const setStatus = async ({ id, status }: { id: string; status: ArticleStatus }) 
     optimisticStatus.reverted()
     toast.add({
       color: 'error',
-      title: error.data?.message || $t('articles.messages.statusChangeFailed'),
+      title: fetchErrorMessage(error, $t('articles.messages.statusChangeFailed')),
     })
   } finally {
     const { [id]: _finished, ...rest } = optimisticStatuses.value
@@ -557,7 +558,7 @@ const { mutate: deleteArticle, isLoading: isDeleting } = useMutation({
   onError: (error: any) =>
     toast.add({
       color: 'error',
-      title: error.data?.message || $t('articles.messages.deleteFailed'),
+      title: fetchErrorMessage(error, $t('articles.messages.deleteFailed')),
     }),
   onSettled: invalidateArticlesAndStats,
 })

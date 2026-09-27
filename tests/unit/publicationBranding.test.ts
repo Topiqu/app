@@ -9,8 +9,8 @@ import {
   tenantCtaPalette,
   tenantThemeStyle,
   themeColors,
-  typographyFontFamily,
-} from '../../app/composables/theme'
+  typographyFonts,
+} from '../../shared/utils/tenantTheme'
 
 const luminance = (hex: string) => {
   const channels = hex
@@ -45,9 +45,9 @@ describe('publication theme tokens', () => {
   })
 
   it('uses one family for all publication copy in each preset', () => {
-    expect(typographyFontFamily('MODERN')).toContain('Manrope Variable')
-    expect(typographyFontFamily('EDITORIAL')).toContain('Source Serif 4 Variable')
-    expect(typographyFontFamily('SYSTEM')).toContain('system-ui')
+    expect(typographyFonts('MODERN').body).toContain('Manrope Variable')
+    expect(typographyFonts('EDITORIAL').body).toContain('Source Serif 4 Variable')
+    expect(typographyFonts('SYSTEM').body).toContain('system-ui')
   })
 })
 

@@ -68,7 +68,7 @@ const emit = defineEmits<{
   (e: 'signOut'): void
 }>()
 
-const toast = useAppToast()
+const toast = useToast()
 
 function deviceIcon(session: { device: string | null; os: string | null }) {
   const device = session.device?.toLowerCase() || ''
@@ -96,9 +96,9 @@ async function revokeSession(sessionId: string) {
       (sessions ?? []).map((s) => (s.id === sessionId ? { ...s, revoked: true } : s)),
     )
     if (sessionId === currentSessionId) emit('signOut')
-    toast.success({ message: $t('profile.sessionRevokedSuccess') })
+    toast.add({ color: 'success', title: $t('profile.sessionRevokedSuccess') })
   } catch (err: any) {
-    toast.error({ message: err.data?.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(err, $t('common.messages.operationFailed')) })
   } finally {
     emit('update:isLoading', false)
   }

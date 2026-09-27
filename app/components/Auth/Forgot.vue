@@ -133,7 +133,7 @@ const forgot = async () => {
     emit('update:mode', 'reset')
     toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent') })
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || $t('common.auth.sendCodeFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('common.auth.sendCodeFailed')) })
   } finally {
     submitting.value = false
   }
@@ -158,7 +158,7 @@ const reset = async () => {
     toast.add({ color: 'success', title: $t('common.auth.resetPasswordSuccess') })
     emit('update:mode', 'login')
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || $t('common.auth.resetPasswordFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('common.auth.resetPasswordFailed')) })
   } finally {
     submitting.value = false
   }

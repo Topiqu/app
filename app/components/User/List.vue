@@ -181,7 +181,7 @@ const del = async (id: string | undefined) => {
     toast.add({ color: 'success', title: t('master.userList.messages.blocked') })
     await refresh()
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || t('master.userList.messages.blockFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, t('master.userList.messages.blockFailed')) })
   }
 }
 
@@ -192,7 +192,7 @@ const restore = async (id: string | undefined) => {
     toast.add({ color: 'success', title: t('master.userList.messages.restored') })
     await refresh()
   } catch (e: any) {
-    toast.add({ color: 'error', title: e.data?.message || t('master.userList.messages.restoreFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, t('master.userList.messages.restoreFailed')) })
   }
 }
 </script>

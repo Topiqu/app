@@ -17,7 +17,6 @@ export const useCacheInvalidation = () => {
     invalidateArticleLists,
     invalidateArticleDetail,
     invalidateTags,
-    invalidateStats,
     invalidateArticlesAndStats,
     invalidateClients,
   }

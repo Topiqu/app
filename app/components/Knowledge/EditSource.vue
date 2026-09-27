@@ -57,7 +57,7 @@ const props = defineProps<{ id: string | null }>()
 const emit = defineEmits<{ saved: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
-const toast = useAppToast()
+const toast = useToast()
 const passagesId = useId()
 const today = new Date().toISOString().slice(0, 10)
 
@@ -92,7 +92,7 @@ watch([open, () => props.id], async ([value, id]) => {
       validAsOf: source.validAsOf ? String(source.validAsOf).slice(0, 10) : '',
     })
   } catch {
-    toast.error({ message: t('knowledge.loadError') })
+    toast.add({ color: 'error', title: t('knowledge.loadError') })
     open.value = false
   } finally {
     loading.value = false
@@ -111,11 +111,11 @@ const save = async () => {
         ...(textChanged.value ? { text: form.text, confirmed: true } : {}),
       },
     })
-    toast.success({ message: t('knowledge.saved') })
+    toast.add({ color: 'success', title: t('knowledge.saved') })
     open.value = false
     emit('saved')
   } catch (cause: any) {
-    toast.error({ message: cause?.data?.message || t('knowledge.actionError') })
+    toast.add({ color: 'error', title: fetchErrorMessage(cause, t('knowledge.actionError')) })
   } finally {
     saving.value = false
   }

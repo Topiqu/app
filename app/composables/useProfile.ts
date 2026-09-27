@@ -25,36 +25,30 @@ export function useProfile() {
   const toast = useToast()
   const { t } = useI18n()
 
-  async function saveProfile(partial: Partial<Profile>) {
-    if (!user.value?.user?.id) throw new Error('User not authenticated')
-    const response = await $fetch(`/api/users/${user.value.user.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: partial,
-    })
-    // The header persists across route changes and reads from the auth session snapshot. Keep the
-    // identity fields in that snapshot aligned with the freshly saved account response.
-    if (response.username) user.value.user.name = response.username
-    if ('avatarUrl' in response) user.value.user.avatarUrl = response.avatarUrl
+  async function patchSelf(body: Record<string, unknown>) {
+    const id = user.value?.user?.id
+    if (!id) throw new Error('User not authenticated')
+    const response = await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'PATCH', body })
     toast.add({ color: 'success', title: t('common.messages.successGeneralTitle') })
     return response
   }
 
-  async function changePassword(oldPassword: string, newPassword: string) {
-    if (!user.value?.user?.id) throw new Error('User not authenticated')
-    await $fetch(`/api/users/${user.value.user.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { password: newPassword, oldPass: oldPassword },
-    })
-    toast.add({ color: 'success', title: t('common.messages.successGeneralTitle') })
+  async function saveProfile(partial: Partial<Profile>) {
+    const response = await patchSelf(partial)
+    // The header persists across route changes and reads from the auth session snapshot. Keep the
+    // identity fields in that snapshot aligned with the freshly saved account response.
+    if (user.value?.user) {
+      if (response.username) user.value.user.name = response.username
+      if ('avatarUrl' in response) user.value.user.avatarUrl = response.avatarUrl
+    }
+    return response
   }
 
+  const changePassword = (oldPassword: string, newPassword: string) =>
+    patchSelf({ password: newPassword, oldPass: oldPassword })
+
   async function deactivateAccount() {
-    if (!user.value?.user?.id) throw new Error('User not authenticated')
-    await $fetch(`/api/users/${user.value.user.id}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { deletedAt: new Date().toISOString() },
-    })
-    toast.add({ color: 'success', title: t('common.messages.successGeneralTitle') })
+    await patchSelf({ deletedAt: new Date().toISOString() })
     await signOut()
   }
 
