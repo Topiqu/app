@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { articlePath, LOCALIZED_SEGMENTS, markdownPath, tagPath } from '../../shared/utils/routes'
+import { articlePath, authPath, LOCALIZED_SEGMENTS, markdownPath, tagPath } from '../../shared/utils/routes'
 
 const config = readFileSync(resolve(process.cwd(), 'nuxt.config.ts'), 'utf8')
 
@@ -22,6 +22,7 @@ describe('localized segments match nuxt.config', () => {
     ['clanky-slug', 'article'],
     ['stitky-slug', 'tag'],
     ['autor-name', 'author'],
+    ['autorizace', 'auth'],
   ] as const)('%s', (routeName, kind) => {
     for (const locale of ['cs', 'en'] as const) {
       const configured = configuredPath(routeName, locale)
@@ -36,6 +37,8 @@ describe('public paths', () => {
     expect(articlePath('cs', 'muj-clanek')).toBe('/cs/clanky/muj-clanek')
     expect(articlePath('en', 'my-post')).toBe('/en/articles/my-post')
     expect(tagPath('cs', 'ai')).toBe('/cs/stitky/ai')
+    expect(authPath('cs')).toBe('/cs/autorizace')
+    expect(authPath('en')).toBe('/en/auth')
   })
 
   it('encodes slugs so a diacritic or a slash cannot break out of the segment', () => {

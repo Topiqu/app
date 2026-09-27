@@ -2,12 +2,13 @@ import type { Language } from '~~/generated/zenstack/models'
 
 /**
  * Mirrors `i18n.pages` in `nuxt.config.ts` — Nitro has no `localePath`, and the sitemap, feed and
- * LLM surfaces all build URLs outside the Vue app. `tests/unit/routes.spec.ts` guards the drift.
+ * LLM surfaces all build URLs outside the Vue app. `tests/unit/routes.test.ts` guards the drift.
  */
 export const LOCALIZED_SEGMENTS = {
   article: { cs: 'clanky', en: 'articles' },
   tag: { cs: 'stitky', en: 'tags' },
   author: { cs: 'autor', en: 'author' },
+  auth: { cs: 'autorizace', en: 'auth' },
 } as const satisfies Record<string, Record<Language, string>>
 
 const path = (kind: keyof typeof LOCALIZED_SEGMENTS, language: Language, value: string) =>
@@ -16,6 +17,7 @@ const path = (kind: keyof typeof LOCALIZED_SEGMENTS, language: Language, value: 
 export const articlePath = (language: Language, slug: string) => path('article', language, slug)
 export const tagPath = (language: Language, slug: string) => path('tag', language, slug)
 export const authorPath = (language: Language, name: string) => path('author', language, name)
+export const authPath = (language: Language) => `/${language}/${LOCALIZED_SEGMENTS.auth[language]}`
 
 /** `strategy: 'prefix'` — even the default locale carries its prefix, so there is no bare `/`. */
 export const homePath = (language: Language) => `/${language}`
