@@ -122,3 +122,22 @@ export const closestArticle = <T extends { title: string; excerpt?: string | nul
   }
   return winner && winner.overlap >= 2 && winner.score >= 0.18 ? winner.article : null
 }
+
+type OutcomeRun = { status: string; citations: readonly { owned: boolean }[] }
+
+export const runOutcome = (run: OutcomeRun) => {
+  if (run.status === 'SUCCEEDED') return run.citations.some((citation) => citation.owned) ? 'CITED' : 'NOT_CITED'
+  return run.status === 'RUNNING' ? 'RUNNING' : 'FAILED'
+}
+
+/** Rolls the latest run of each provider into one verdict; `checked` counts only answers that came back. */
+export const promptOutcome = (runs: readonly OutcomeRun[]) => {
+  const outcomes = runs.map(runOutcome)
+  const cited = outcomes.filter((outcome) => outcome === 'CITED').length
+  const checked = cited + outcomes.filter((outcome) => outcome === 'NOT_CITED').length
+  const verdict = (status: 'UNCHECKED' | 'CITED' | 'NOT_CITED' | 'RUNNING' | 'FAILED') => ({ status, cited, checked })
+  if (!runs.length) return verdict('UNCHECKED')
+  if (cited) return verdict('CITED')
+  if (checked) return verdict('NOT_CITED')
+  return verdict(outcomes.includes('RUNNING') ? 'RUNNING' : 'FAILED')
+}

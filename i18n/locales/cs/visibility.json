@@ -1,76 +1,82 @@
 {
   "visibility": {
     "title": "Viditelnost v AI",
-    "eyebrow": "Objevování a citace",
-    "description": "Sledujte, kdy AI systémy načítají publikaci, přivádějí čtenáře nebo ji citují v monitorovaných odpovědích.",
-    "methodology": "Načtení boty a referral návštěvy jsou pozorovaný provoz. Pokrytí citacemi je opakovaný vzorek sledovaných promptů, ne počet všech soukromých AI konverzací.",
+    "description": "Jestli vás AI vyhledávání cituje a posílá vám čtenáře.",
+    "about": "Jak to měříme",
+    "methodology": "Návštěvy AI botů a čtenářů z AI jsou skutečný provoz na vašem webu. Aplikace, které neposílají referrer, započítat nelze, takže jde o spodní hranici. Citace jsou pravidelný vzorek vašich sledovaných otázek, ne přehled všech soukromých konverzací s AI.",
     "window": "Posledních {days} dní",
     "metrics": {
-      "fetches": "Načtení AI boty",
-      "pages": "Objevené stránky",
-      "referrals": "Potvrzené návštěvy z AI",
-      "coverage": "Vzorkované pokrytí citacemi"
+      "coverage": "Citováno v odpovědích AI",
+      "coverageNote": "{owned} z {total} odpovědí",
+      "referrals": "Návštěvy z AI",
+      "referralsNote": "Články: {count}",
+      "fetches": "Návštěvy AI botů",
+      "fetchesNote": "Stránky: {count}"
     },
     "emptyValue": "Zatím neměřeno",
-    "crawlers": {
-      "title": "Objevování AI systémy",
-      "description": "Požadavky pozorované serverem, oddělené podle answer enginů, trénovacích crawlerů a klasického vyhledávání.",
-      "bot": "Bot",
-      "kind": "Účel",
-      "requests": "Načtení",
-      "pages": "Stránky",
-      "lastSeen": "Naposledy",
-      "empty": "Publikaci zatím nenačetl žádný rozpoznaný AI crawler.",
-      "kinds": {
-        "ANSWER_ENGINE": "Answer engine",
-        "TRAINING": "Trénování",
-        "SEARCH": "Vyhledávání"
-      }
+    "onboarding": {
+      "title": "Zjistěte, jestli vás AI cituje",
+      "description": "Přidejte otázky, které vaši čtenáři pokládají ChatGPT, Gemini nebo Claude. Pravidelně je ověříme a ukážeme, jestli odpovědi odkazují na vaši publikaci.",
+      "note": "Návštěvy AI botů a čtenářů z AI se tu objeví samy, jakmile nějaké zaznamenáme."
     },
-    "referrals": {
-      "title": "Potvrzené příchody z AI",
-      "description": "Návštěvy, které uvedly AI službu jako referrer. Aplikace bez referreru nelze započítat, proto jde o spodní hranici.",
-      "empty": "Zatím nebyla zaznamenána žádná potvrzená návštěva z AI."
+    "upgrade": {
+      "description": "Ověřování citací je součástí tarifů Premium a Custom.",
+      "cta": "Zobrazit tarify"
     },
     "prompts": {
-      "title": "Sledované prompty",
-      "description": "Topiqu pravidelně ověří tyto otázky pomocí živého webového vyhledávání a uloží odpověď i citované URL.",
+      "title": "Sledované otázky",
+      "description": "Každý týden je položíme AI vyhledávačům a uložíme odpověď i citované zdroje.",
       "questionLabel": "Otázka pro AI vyhledávání",
       "languageLabel": "Jazyk",
-      "add": "Přidat prompt",
-      "suggest": "Navrhnout z projektu",
+      "add": "Přidat otázku",
+      "suggest": "Navrhnout otázky",
       "placeholder": "Na jakou otázku má AI vyhledávání odpovědět?",
       "run": "Ověřit teď",
       "pause": "Pozastavit sledování",
       "resume": "Obnovit sledování",
       "paused": "Pozastaveno",
       "remove": "Odstranit",
-      "runs": "Žádná měření | {count} měření | {count} měření",
-      "created": "Prompt byl přidán.",
-      "suggested": "Přidáno promptů: {count}.",
-      "empty": "Přidejte nákupní otázku nebo vytvořte návrhy z focusu a dat Search Console.",
-      "premium": "Kontroly citací jsou dostupné v tarifech Premium a Custom."
+      "actions": "Další akce",
+      "created": "Otázka byla přidána.",
+      "suggested": "Přidáno otázek: {count}."
+    },
+    "outcome": {
+      "UNCHECKED": "Zatím neověřeno",
+      "RUNNING": "Probíhá kontrola",
+      "FAILED": "Kontrola selhala",
+      "CITED": "Citováno v {cited} z {checked} AI",
+      "NOT_CITED": "Necitováno v žádné z {checked} AI"
     },
     "runs": {
-      "title": "Poslední kontroly citací",
-      "sampled": "Vzorek přes {provider}",
-      "cited": "Váš web byl citován",
-      "notCited": "Váš web nebyl citován",
-      "failed": "Kontrola selhala",
+      "CITED": "Citováno",
+      "NOT_CITED": "Necitováno",
+      "RUNNING": "Probíhá",
+      "FAILED": "Selhalo",
       "citations": "Citované zdroje",
-      "response": "Ukázková odpověď",
-      "empty": "Spusťte sledovaný prompt a vytvořte první výchozí měření."
+      "response": "Odpověď"
     },
     "opportunities": {
-      "title": "Příležitosti pro viditelnost",
-      "description": "Jen opakované mezery: jiné zdroje byly citovány alespoň ve dvou vzorcích, zatímco tato publikace chyběla.",
+      "title": "Kde vás AI přehlíží",
+      "description": "Otázky, u kterých AI opakovaně cituje jiné weby a vás ne.",
       "update": "Vylepšit článek",
       "create": "Vytvořit článek",
       "dismiss": "Skrýt",
-      "reopen": "Obnovit",
       "evidence": "Váš web: {owned}/{samples} · jiné zdroje: {external}/{samples}",
-      "domains": "Citované zdroje: {domains}",
-      "empty": "Žádná opakovaná mezera zatím nemá dost důkazů."
+      "domains": "Citované zdroje: {domains}"
+    },
+    "traffic": {
+      "title": "Provoz z AI",
+      "referrals": "Čtenáři z AI",
+      "crawlers": "AI boti",
+      "empty": "Zatím jsme nezaznamenali žádnou návštěvu z AI.",
+      "none": "Zatím žádné"
+    },
+    "crawlers": {
+      "kinds": {
+        "ANSWER_ENGINE": "AI vyhledávání",
+        "TRAINING": "Trénování",
+        "SEARCH": "Vyhledávač"
+      }
     },
     "channels": {
       "CHATGPT": "ChatGPT",
@@ -87,11 +93,6 @@
       "XAI": "xAI Grok",
       "META": "Meta",
       "MISTRAL": "Mistral"
-    },
-    "status": {
-      "SUCCEEDED": "Dokončeno",
-      "FAILED": "Selhalo",
-      "RUNNING": "Probíhá"
     },
     "messages": {
       "runStarted": "Kontrola citací byla dokončena.",
