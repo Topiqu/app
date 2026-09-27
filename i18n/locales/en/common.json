@@ -382,7 +382,8 @@
       "notAvailable": "Not available",
       "likes": "Likes",
       "dislikes": "Dislikes",
-      "comments": "Comments"
+      "comments": "Comments",
+      "language": "Interface language"
     },
     "auth": {
       "login": "Log In",

@@ -382,7 +382,8 @@
       "notAvailable": "Není dostupné",
       "likes": "Líbí se",
       "dislikes": "Nelíbí se",
-      "comments": "Komentáře"
+      "comments": "Komentáře",
+      "language": "Jazyk rozhraní"
     },
     "auth": {
       "login": "Přihlásit se",

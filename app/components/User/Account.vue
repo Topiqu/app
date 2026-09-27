@@ -73,6 +73,8 @@
                 <span v-if="userData.role === 'admin'" class="max-w-28 truncate">{{ clientData?.name }}</span>
               </div>
 
+              <UserLanguageMenu />
+
               <div class="flex items-center gap-2 border-t border-default pt-3">
                 <UButton
                   :to="localePath({ name: 'uzivatel' })"
@@ -113,6 +115,9 @@
           >
             {{ $t('common.auth.register') }}
           </UButton>
+          <div class="mt-2 border-t border-default pt-2">
+            <UserLanguageMenu />
+          </div>
         </div>
       </UCard>
     </template>

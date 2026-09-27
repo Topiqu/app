@@ -5,7 +5,6 @@ export type ProfileTab = 'profile' | 'security' | 'notifications' | 'activity'
 const SECTION_TAB: Record<string, ProfileTab> = {
   'username-section': 'profile',
   'bio-section': 'profile',
-  'language-section': 'profile',
   'id-section': 'profile',
   'registration-section': 'profile',
   'email-section': 'security',

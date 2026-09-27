@@ -380,7 +380,8 @@
       "notAvailable": "Non disponible",
       "likes": "J'aime",
       "dislikes": "Je n'aime pas",
-      "comments": "Commentaires"
+      "comments": "Commentaires",
+      "language": "Langue de l'interface"
     },
     "auth": {
       "login": "Se connecter",
