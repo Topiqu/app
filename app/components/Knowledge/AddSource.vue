@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model:open="open" :title="$t('knowledge.addTitle')" :description="$t('knowledge.addDescription')">
+  <UModal v-model:open="open" :title="$t('knowledge.addTitle')" :ui="{ content: 'sm:max-w-xl' }">
     <template #body>
       <form id="knowledge-add" class="flex flex-col gap-4" @submit.prevent="submit">
         <UTabs v-model="kind" :items="kindTabs" :content="false" class="w-full" />
@@ -8,7 +8,7 @@
           <UFormField :label="$t('knowledge.fields.title')" required>
             <UInput v-model="form.title" class="w-full" maxlength="200" required />
           </UFormField>
-          <UFormField :label="$t('knowledge.fields.note')" :hint="$t('knowledge.fields.noteHint')" required>
+          <UFormField :label="$t('knowledge.fields.content')" required>
             <UTextarea v-model="form.text" class="w-full" :rows="8" autoresize :maxrows="16" required />
           </UFormField>
         </template>
@@ -20,87 +20,72 @@
             :label="$t('knowledge.fields.file')"
             :aria-label="$t('knowledge.fields.file')"
             :description="$t('knowledge.fields.fileHint', { size: maxSize })"
-            :preview="false"
+            layout="list"
+            position="inside"
             class="min-h-36 w-full"
           />
-          <UFormField :label="$t('knowledge.fields.title')" :hint="$t('knowledge.fields.optional')">
-            <UInput v-model="form.title" class="w-full" maxlength="200" />
-          </UFormField>
-        </template>
-        <template v-else-if="kind === 'SITEMAP'">
-          <UFormField
-            :label="$t('knowledge.fields.sitemap')"
-            :hint="$t('knowledge.fields.sitemapHint', { count: KNOWLEDGE_LIMITS.maxSitemapPages })"
-            required
-          >
-            <UInput v-model="form.url" type="url" class="w-full" placeholder="https://" required :disabled="saving" />
-          </UFormField>
-          <div v-if="discovered" class="rounded-md border border-default bg-elevated/40 p-3 text-sm" aria-live="polite">
-            <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
-              <dt class="text-muted">{{ $t('knowledge.sitemap.found') }}</dt>
-              <dd class="text-right font-semibold tabular-nums">{{ discovered.found }}</dd>
-              <dt class="text-muted">{{ $t('knowledge.sitemap.existing') }}</dt>
-              <dd class="text-right font-semibold tabular-nums">{{ discovered.existing }}</dd>
-              <dt class="text-muted">{{ $t('knowledge.sitemap.offered') }}</dt>
-              <dd class="text-right font-semibold tabular-nums text-highlighted">{{ discovered.urls.length }}</dd>
-            </dl>
-            <p v-if="sitemapCapNote" class="mt-2 text-xs text-muted">{{ sitemapCapNote }}</p>
-          </div>
-          <div v-if="progress" class="flex flex-col gap-1.5" aria-live="polite">
-            <UProgress :modelValue="progress.done" :max="progress.total" />
-            <p class="text-xs text-muted">{{ $t('knowledge.sitemapProgress', progress) }}</p>
-          </div>
         </template>
         <template v-else>
-          <UFormField :label="$t('knowledge.fields.url')" :hint="$t('knowledge.fields.urlHint')" required>
-            <UInput v-model="form.url" type="url" class="w-full" placeholder="https://" required />
+          <UFormField :label="$t('knowledge.fields.url')" required>
+            <UInput v-model="form.url" type="url" class="w-full" placeholder="https://" required :disabled="saving" />
           </UFormField>
-          <UFormField :label="$t('knowledge.fields.title')" :hint="$t('knowledge.fields.optional')">
-            <UInput v-model="form.title" class="w-full" maxlength="200" />
-          </UFormField>
+          <URadioGroup
+            v-model="webScope"
+            :legend="$t('knowledge.web.scope')"
+            :items="webScopeItems"
+            :ui="{ legend: 'mb-2 font-medium' }"
+          />
+          <p v-if="webScope === 'SITE'" class="-mt-2 pl-6 text-sm text-muted">
+            {{ $t('knowledge.web.siteHint', { count: KNOWLEDGE_LIMITS.maxSitemapPages }) }}
+          </p>
+          <template v-if="webScope === 'SITE'">
+            <div
+              v-if="discovered"
+              class="rounded-md border border-default bg-elevated/40 p-3 text-sm"
+              aria-live="polite"
+            >
+              <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
+                <dt class="text-muted">{{ $t('knowledge.sitemap.found') }}</dt>
+                <dd class="text-right font-semibold tabular-nums">{{ discovered.found }}</dd>
+                <dt class="text-muted">{{ $t('knowledge.sitemap.existing') }}</dt>
+                <dd class="text-right font-semibold tabular-nums">{{ discovered.existing }}</dd>
+                <dt class="text-muted">{{ $t('knowledge.sitemap.offered') }}</dt>
+                <dd class="text-right font-semibold tabular-nums text-highlighted">{{ discovered.urls.length }}</dd>
+              </dl>
+              <p v-if="sitemapCapNote" class="mt-2 text-xs text-muted">{{ sitemapCapNote }}</p>
+            </div>
+            <div v-if="progress" class="flex flex-col gap-1.5" aria-live="polite">
+              <UProgress :modelValue="progress.done" :max="progress.total" />
+              <p class="text-xs text-muted">{{ $t('knowledge.sitemapProgress', progress) }}</p>
+            </div>
+          </template>
         </template>
 
-        <UFormField :label="$t('knowledge.fields.validAsOf')" :hint="$t('knowledge.fields.validAsOfAddHint')">
-          <AppDateInput v-model="form.validAsOf" :max="today" />
-        </UFormField>
-
-        <USwitch
-          v-model="form.isPublic"
-          :label="$t('knowledge.public')"
-          :aria-label="$t('knowledge.public')"
-          :description="$t('knowledge.publicHint')"
+        <AddSourceSettings
+          v-model:title="form.title"
+          v-model:validAsOf="form.validAsOf"
+          v-model:isPublic="form.isPublic"
+          v-model:publicUrl="form.publicUrl"
+          :kind="kind"
+          :today="today"
+          :showTitle="kind === 'FILE' || (kind === 'URL' && webScope === 'PAGE')"
         />
-        <UFormField
-          v-if="form.isPublic && (kind === 'NOTE' || kind === 'FILE')"
-          :label="$t('knowledge.fields.publicUrl')"
-          required
-        >
-          <UInput v-model="form.publicUrl" type="url" class="w-full" placeholder="https://" required />
-        </UFormField>
-
-        <UAlert
-          color="neutral"
-          variant="subtle"
-          icon="mdi:information-outline"
-          :title="$t('knowledge.consent.title')"
-          :description="`${$t(form.isPublic ? 'knowledge.consent.usePublic' : 'knowledge.consent.useInternal')} ${$t('knowledge.consent.processing')}`"
-        />
-        <UFormField name="confirmed">
-          <UCheckbox v-model="form.confirmed" required :label="$t('knowledge.consent.confirm')" />
-        </UFormField>
       </form>
     </template>
     <template #footer>
-      <div class="flex w-full justify-end gap-2">
-        <UButton color="neutral" variant="ghost" @click="open = false">{{ $t('knowledge.cancel') }}</UButton>
-        <UButton
-          type="submit"
-          form="knowledge-add"
-          :loading="saving"
-          :disabled="!form.confirmed || (kind === 'FILE' && !file)"
-        >
-          {{ submitLabel }}
-        </UButton>
+      <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+        <AddSourceConsent v-model:confirmed="form.confirmed" :isPublic="form.isPublic" class="sm:flex-1" />
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="open = false">{{ $t('knowledge.cancel') }}</UButton>
+          <UButton
+            type="submit"
+            form="knowledge-add"
+            :loading="saving"
+            :disabled="!form.confirmed || (kind === 'FILE' && !file)"
+          >
+            {{ submitLabel }}
+          </UButton>
+        </div>
       </div>
     </template>
   </UModal>
@@ -109,16 +94,24 @@
 <script setup lang="ts">
 import { KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
 
+import AddSourceConsent from './AddSourceConsent.vue'
+import AddSourceSettings from './AddSourceSettings.vue'
+
 const emit = defineEmits<{ created: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
 const toast = useToast()
 
-type Kind = 'NOTE' | 'FILE' | 'URL' | 'SITEMAP'
+type Kind = 'NOTE' | 'FILE' | 'URL'
 const kind = shallowRef<Kind>('NOTE')
+const webScope = shallowRef<'PAGE' | 'SITE'>('PAGE')
 const kindTabs = computed(() =>
-  (['NOTE', 'FILE', 'URL', 'SITEMAP'] as const).map((value) => ({ value, label: t(`knowledge.kinds.${value}`) })),
+  (['NOTE', 'FILE', 'URL'] as const).map((value) => ({ value, label: t(`knowledge.addKinds.${value}`) })),
 )
+const webScopeItems = computed(() => [
+  { value: 'PAGE', label: t('knowledge.web.page') },
+  { value: 'SITE', label: t('knowledge.web.site') },
+])
 const progress = shallowRef<{ done: number; total: number } | null>(null)
 type Discovery = { urls: string[]; found: number; existing: number; quotaLeft: number }
 const discovered = shallowRef<Discovery | null>(null)
@@ -134,10 +127,11 @@ watch(open, (value) => {
   Object.assign(form, blank())
   file.value = null
   kind.value = 'NOTE'
+  webScope.value = 'PAGE'
   progress.value = null
   discovered.value = null
 })
-watch([kind, () => form.url], () => (discovered.value = null))
+watch([kind, webScope, () => form.url], () => (discovered.value = null))
 
 // The offer is capped, so say why it is smaller than the sitemap: otherwise 50 of 392 reads as
 // a 50-page sitemap.
@@ -149,7 +143,7 @@ const sitemapCapNote = computed(() => {
     : t('knowledge.sitemap.cappedByBatch', { count: KNOWLEDGE_LIMITS.maxSitemapPages })
 })
 const submitLabel = computed(() => {
-  if (kind.value !== 'SITEMAP') return t('knowledge.add')
+  if (kind.value !== 'URL' || webScope.value !== 'SITE') return t('knowledge.add')
   return discovered.value?.urls.length
     ? t('knowledge.sitemap.import', { count: discovered.value.urls.length })
     : t('knowledge.sitemap.discover')
@@ -201,7 +195,7 @@ const importSitemap = async (urls: string[]) => {
 }
 
 const submit = async () => {
-  if (kind.value === 'SITEMAP') {
+  if (kind.value === 'URL' && webScope.value === 'SITE') {
     saving.value = true
     try {
       if (discovered.value?.urls.length) await importSitemap(discovered.value.urls)

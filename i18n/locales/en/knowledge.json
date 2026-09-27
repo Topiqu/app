@@ -3,7 +3,7 @@
     "title": "Knowledge",
     "description": "Your own facts, pricing and positioning. Topiqu picks the relevant parts automatically whenever it writes an article.",
     "add": "Add source",
-    "addTitle": "Add a knowledge source",
+    "addTitle": "Add a source",
     "addDescription": "Add a note, a document or a web page. It is ready to use as soon as it shows as indexed.",
     "editTitle": "Edit knowledge source",
     "loadError": "Knowledge could not be loaded.",
@@ -15,7 +15,21 @@
     "useInArticles": "Use when writing",
     "useInArticlesFor": "Use {title} when writing",
     "public": "Public source",
-    "publicHint": "Articles may cite and link this source. Leave off for internal material, which is never linked.",
+    "citation": {
+      "legend": "How should articles use this source?",
+      "INTERNAL": {
+        "label": "Background only",
+        "description": "AI draws facts from it but never links to it. Use this for internal material."
+      },
+      "PUBLIC": {
+        "label": "Citable source",
+        "description": "Articles may link to it as a source."
+      }
+    },
+    "details": {
+      "titleAndDate": "Title and valid-as-of date",
+      "date": "Valid-as-of date"
+    },
     "actions": "Actions for {title}",
     "edit": "Edit",
     "refresh": "Fetch again",
@@ -33,7 +47,18 @@
       "NOTE": "Note",
       "FILE": "Document",
       "URL": "Web page",
-      "SITEMAP": "Sitemap"
+      "SITEMAP": "Pages from a website"
+    },
+    "addKinds": {
+      "NOTE": "Text",
+      "FILE": "Document",
+      "URL": "Web"
+    },
+    "web": {
+      "scope": "What to add",
+      "page": "Just this page",
+      "site": "Find more pages from this website",
+      "siteHint": "We will show the pages found before adding them. You can add up to {count} at a time."
     },
     "status": {
       "PENDING": "Waiting",
@@ -45,6 +70,7 @@
       "title": "Title",
       "optional": "Optional",
       "note": "Note",
+      "content": "Content",
       "noteHint": "Markdown headings help split long notes.",
       "file": "Choose a PDF, DOCX, TXT or MD file",
       "fileHint": "Up to {size}. Scanned PDFs without a text layer are not supported.",
@@ -65,7 +91,7 @@
       "unreachable": "The page could not be fetched.",
       "duplicate": "This content is already in your knowledge.",
       "quota": "Your knowledge base is full. Delete a source to add another.",
-      "sitemapEmpty": "The sitemap has no new pages from this site."
+      "sitemapEmpty": "We could not find any new pages to add from this website."
     },
     "quota": "{sources} of {maxSources} sources · {characters} of {maxCharacters} characters",
     "stale": "Possibly outdated",
@@ -89,7 +115,7 @@
     "sitemapProgress": "Importing page {done} of {total}",
     "sitemapImported": "Imported {added} pages, skipped {skipped}. Indexing has started.",
     "sitemap": {
-      "found": "Pages in the sitemap",
+      "found": "Pages found",
       "existing": "Already in knowledge",
       "offered": "Offered for import",
       "cappedByBatch": "One import adds at most {count} pages. Run it again for the rest.",
@@ -99,6 +125,8 @@
     },
     "beta": "Beta",
     "consent": {
+      "label": "I confirm it contains no confidential or personal data",
+      "scope": "Confidential includes trade secrets and anything else that must not appear in a public article.",
       "title": "How AI will use this source",
       "useInternal": "AI may use the facts and figures in this source in your published articles, without linking to it.",
       "usePublic": "AI may use the facts and figures in this source in your published articles and may link to it as a source.",
