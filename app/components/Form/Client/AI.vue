@@ -315,7 +315,10 @@
 </template>
 
 <script setup lang="ts">
-const { t } = useI18n()
+import { languageTag } from '~~/shared/utils/language'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+
+const { t, locale } = useI18n()
 
 const props = defineProps<{
   clientId: string
@@ -363,7 +366,7 @@ const emit = defineEmits<{
   'toggle:feature': [{ code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }]
 }>()
 
-const SUPPORTED_LANGUAGES = ['cs', 'en']
+const SUPPORTED_LANGUAGES = LANGUAGE_OPTIONS
 
 const translationMode = computed({
   get: () => props.translationMode,
@@ -400,7 +403,7 @@ const toggleTargetLang = (lang: string) => {
 const showAutoReleaseModal = shallowRef(false)
 const showAiDisableModal = shallowRef(false)
 
-const rate = await useCurrencyRate(props.currency)
+const rate = useCurrencyRate(() => props.currency)
 
 const username = computed({
   get: () => props.username,
@@ -509,12 +512,12 @@ const featurePrice = (code: string) => {
 
   const price = props.billingPlan === 'ANNUAL' ? monthlyUsd * 12 * 0.8 : monthlyUsd
 
-  return new Intl.NumberFormat(props.currency === 'CZK' ? 'cs-CZ' : undefined, {
+  return new Intl.NumberFormat(languageTag(locale.value), {
     style: 'currency',
     currency: props.currency,
     currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: props.currency === 'CZK' ? 0 : 2,
     maximumFractionDigits: 2,
-  }).format(price * rate)
+  }).format(price * rate.value)
 }
 </script>

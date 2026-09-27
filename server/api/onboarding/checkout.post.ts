@@ -3,6 +3,7 @@ import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
 import { logAction } from '~~/server/utils/log'
 import { authPath } from '~~/shared/utils/routes'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { saveUserWithLogging } from '~~/server/utils/userLog'
 import { TRIAL_PLAN, TRIAL_DAYS } from '~~/shared/utils/trial'
 import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
@@ -16,7 +17,7 @@ const schema = z.object({
   domain: z.string().min(1).max(253),
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
   theme: z.string().optional(),
-  language: z.enum(['cs', 'en']),
+  language: z.enum(LANGUAGE_OPTIONS),
   username: z.string().min(3).max(50),
   email: z.email(),
   password: z.string().min(8).max(124),

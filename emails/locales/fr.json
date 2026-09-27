@@ -1,0 +1,65 @@
+{
+  "newComment": {
+    "subject": "Nouveau commentaire sur votre article",
+    "greeting": "Bonjour,",
+    "intro": "<b>{userName}</b> a commenté votre article « <i>{articleTitle}</i> » : « <i>{commentContent}</i> »",
+    "button": "Voir le commentaire",
+    "unsubscribe": { "text": "Vous ne souhaitez plus recevoir de notifications ?", "link": "Se désabonner" }
+  },
+  "commentReply": {
+    "subject": "Nouvelle réponse à votre commentaire",
+    "greeting": "Bonjour <b>{parentUsername}</b>,",
+    "intro": "<b>{userName}</b> a répondu : « <i>{commentContent}</i> »",
+    "parent": "Votre commentaire : « <i>{parentContent}</i> »",
+    "button": "Voir la réponse",
+    "unsubscribe": { "text": "Vous ne souhaitez plus recevoir de notifications ?", "link": "Se désabonner" }
+  },
+  "deleteComment": {
+    "subject": "Votre commentaire a été supprimé",
+    "greeting": "Bonjour {userName},",
+    "intro": "Votre commentaire « <i>{commentContent}</i> » a été supprimé.",
+    "reason": "Motif : {deleteReason}",
+    "unsubscribe": { "text": "Vous ne souhaitez plus recevoir de notifications ?", "link": "Se désabonner" }
+  },
+  "verificationCode": {
+    "subject": "Code de vérification pour {userName}",
+    "greeting": "Bonjour {userName},",
+    "intro": "Pour terminer {actionType}, utilisez le code de vérification suivant :",
+    "expiration": "Ce code est valable 24 heures. Si vous ne l'avez pas demandé, vous pouvez ignorer cet e-mail.",
+    "actions": {
+      "signup": "la création de votre compte",
+      "emailVerification": "la vérification de votre adresse e-mail"
+    }
+  },
+  "tenantInvitation": {
+    "subject": "Invitation à rejoindre {tenantName}",
+    "greeting": "Vous avez reçu une invitation",
+    "intro": "{inviterName} vous invite à rejoindre <b>{tenantName}</b>.",
+    "followers": "Abonnés",
+    "website": "Site web",
+    "community": "Rejoignez l'équipe de cette publication et contribuez aux contenus proposés à son public.",
+    "access": "Autorisations accordées : {scopeCount}. Vous pouvez les consulter avant d'accepter.",
+    "button": "Voir l'invitation",
+    "expiration": "Cette invitation expire dans {expirationDays} jours."
+  },
+  "tenantMemberRemoved": {
+    "subject": "Votre accès à {tenantName} a été supprimé",
+    "greeting": "Accès à {tenantName} supprimé",
+    "intro": "Vous n'avez plus accès à cette publication ni à son administration.",
+    "removedByLabel": "Supprimé par",
+    "removedAtLabel": "Date et heure",
+    "removedBy": "Supprimé par : {removedBy}",
+    "removedAt": "Supprimé le : {removedAt}",
+    "otherTenants": "Votre compte Topiqu et vos accès aux autres publications ne sont pas concernés.",
+    "contact": "Si vous pensez qu'il s'agit d'une erreur, contactez le propriétaire de la publication à {ownerEmail}. Une nouvelle invitation est nécessaire pour rétablir l'accès."
+  },
+  "userBan": {
+    "subject": "Votre compte a été suspendu",
+    "greeting": "Bonjour {userName},",
+    "intro_with_reason_permanent": "Votre compte a été suspendu sur le sous-domaine <b>{clientSiteId}</b> pour la raison suivante : {reason}. Cette suspension est permanente.",
+    "intro_with_reason_temporary": "Votre compte a été suspendu sur le sous-domaine <b>{clientSiteId}</b> pour la raison suivante : {reason}. La suspension est en vigueur jusqu'au {banDuration}.",
+    "intro_no_reason": "Votre compte a été suspendu sur le sous-domaine <b>{clientSiteId}</b>.",
+    "reason": "{reason}",
+    "unsubscribe": { "text": "Vous ne souhaitez plus recevoir de notifications ?", "link": "Se désabonner" }
+  }
+}

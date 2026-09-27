@@ -5,11 +5,17 @@ import type { Language } from '~~/generated/zenstack/models'
  * LLM surfaces all build URLs outside the Vue app. `tests/unit/routes.test.ts` guards the drift.
  */
 export const LOCALIZED_SEGMENTS = {
-  article: { cs: 'clanky', en: 'articles' },
-  tag: { cs: 'stitky', en: 'tags' },
-  author: { cs: 'autor', en: 'author' },
-  auth: { cs: 'autorizace', en: 'auth' },
+  article: { cs: 'clanky', en: 'articles', de: 'artikel', fr: 'articles' },
+  tag: { cs: 'stitky', en: 'tags', de: 'schlagwoerter', fr: 'etiquettes' },
+  author: { cs: 'autor', en: 'author', de: 'autor', fr: 'auteur' },
 } as const satisfies Record<string, Record<Language, string>>
+
+export const AUTH_SEGMENTS = {
+  cs: 'autorizace',
+  en: 'auth',
+  de: 'anmeldung',
+  fr: 'connexion',
+} as const satisfies Record<Language, string>
 
 const path = (kind: keyof typeof LOCALIZED_SEGMENTS, language: Language, value: string) =>
   `/${language}/${LOCALIZED_SEGMENTS[kind][language]}/${encodeURIComponent(value)}`
@@ -17,10 +23,9 @@ const path = (kind: keyof typeof LOCALIZED_SEGMENTS, language: Language, value: 
 export const articlePath = (language: Language, slug: string) => path('article', language, slug)
 export const tagPath = (language: Language, slug: string) => path('tag', language, slug)
 export const authorPath = (language: Language, name: string) => path('author', language, name)
-export const authPath = (language: Language) => `/${language}/${LOCALIZED_SEGMENTS.auth[language]}`
-
 /** `strategy: 'prefix'` — even the default locale carries its prefix, so there is no bare `/`. */
 export const homePath = (language: Language) => `/${language}`
+export const authPath = (language: Language) => `/${language}/${AUTH_SEGMENTS[language]}`
 
 /**
  * Markdown variant of an article. Prefixed rather than a bare `<url>.md` because Nitro's file

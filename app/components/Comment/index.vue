@@ -34,10 +34,10 @@
         <UserCard v-if="userCardProps" :user="userCardProps" />
         <UBadge v-else-if="perms.isBanned" color="error" variant="soft">
           {{ $t('articles.comments.bannedUser') }}
-          <span v-if="comment.user?.banDetails?.reason && perms.isAdmin">
+          <span v-if="comment.user?.banDetails?.reason">
             ({{ $t('articles.comments.banReason', [comment.user.banDetails.reason]) }})
           </span>
-          <span v-if="comment.user?.banDetails?.expiresAt && perms.isAdmin">
+          <span v-if="comment.user?.banDetails?.expiresAt">
             {{ $t('articles.comments.banExpires', [new Date(comment.user.banDetails.expiresAt).toLocaleString()]) }}
           </span>
         </UBadge>
@@ -148,12 +148,12 @@
       <div class="flex items-center gap-2 sm:gap-3">
         <LazyEmojiPopover :commentId="comment.id" :articleId="comment.articleId" @reaction="handleEmojiReaction" />
         <UTooltip
-          v-if="state.isLikedByAuthor"
-          :text="$t('articles.comments.likedByAuthor', [authorData?.username || $t('common.user.notAvailable')])"
+          v-if="state.publicationLikes > 0 && publication"
+          :text="$t('articles.comments.likedByPublication', [publication.name])"
         >
           <div class="flex items-center gap-1">
             <UIcon size="20" name="mdi:heart" class="text-error" />
-            <UserPicture :url="authorData?.avatarUrl" size="mn" :name="authorData?.username" />
+            <UserPicture :url="publication.logoUrl" size="mn" :name="publication.name" />
           </div>
         </UTooltip>
       </div>
@@ -165,6 +165,7 @@
         :key="reply.id"
         :comment="reply"
         :isReplying
+        :publication
         :depth="Math.min(depth + 1, 12)"
         @reply="emit('reply', $event)"
         @delete="(c, r) => emit('delete', c, r)"
@@ -217,11 +218,7 @@
           />
         </UFormField>
         <UFormField class="mt-4" :label="$t('articles.comments.banExpirationLabel')">
-          <UInput
-            :modelValue="banExpiresAt ?? undefined"
-            type="datetime-local"
-            @update:modelValue="banExpiresAt = $event || null"
-          />
+          <AppDateInput :modelValue="banExpiresAt" time @update:modelValue="banExpiresAt = $event || null" />
         </UFormField>
       </template>
       <template #footer>
@@ -247,6 +244,7 @@ const props = defineProps<{
   comment: CommentWithReplies
   isReplying: boolean
   depth: number
+  publication: { name: string; logoUrl?: string | null } | null
 }>()
 const emit = defineEmits<{
   (e: 'reply' | 'like' | 'dislike', c: CommentWithReplies): void
@@ -263,8 +261,6 @@ const showBanModal = shallowRef(false)
 const deleteReason = shallowRef('')
 const banReason = shallowRef('')
 const banExpiresAt = shallowRef<string | null>(null)
-
-const { data: authorData } = useAuthorSummary(() => props.comment.article.userId)
 
 const commentRef = computed(() => props.comment)
 const isReplyingRef = computed(() => props.isReplying)
@@ -295,7 +291,7 @@ const {
   updateReaction,
   handleEmojiReaction,
 } = useCommentReactions(commentRef, {
-  isAuthor: toRef(perms, 'isAuthor'),
+  isSiteAdmin: toRef(perms, 'isSiteAdmin'),
   currentUserId: computed(() => perms.user?.id),
 })
 
@@ -342,7 +338,7 @@ const banUser = async () => {
   } catch (e: any) {
     toast.add({
       color: 'error',
-      title: e.data?.message || $t('articles.comments.banFailed'),
+      title: fetchErrorMessage(e, $t('articles.comments.banFailed')),
     })
   }
 }
@@ -358,7 +354,7 @@ const unbanUser = async () => {
   } catch (e: any) {
     toast.add({
       color: 'error',
-      title: e.data?.message || $t('articles.comments.unbanFailed'),
+      title: fetchErrorMessage(e, $t('articles.comments.unbanFailed')),
     })
   }
 }

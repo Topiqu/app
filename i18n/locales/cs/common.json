@@ -278,6 +278,7 @@
       "home": "Domů",
       "notifications": "Oznámení",
       "toggleTheme": "Přepnout barevný motiv",
+      "pickDate": "Vybrat datum",
       "continue": "Pokračovat",
       "send": "Odeslat",
       "cancel": "Zrušit",
@@ -381,7 +382,8 @@
       "notAvailable": "Není dostupné",
       "likes": "Líbí se",
       "dislikes": "Nelíbí se",
-      "comments": "Komentáře"
+      "comments": "Komentáře",
+      "language": "Jazyk rozhraní"
     },
     "auth": {
       "login": "Přihlásit se",
@@ -1078,6 +1080,16 @@
         "reserved": "Tato subdoména je rezervovaná.",
         "taken": "Tato subdoména už je obsazená."
       }
+    },
+    "unsubscribe": {
+      "title": "Odhlásit e-mailová oznámení",
+      "intro": "Po potvrzení vám přestaneme posílat e-maily o komentářích, odpovědích a moderaci. Přihlašovací a bezpečnostní e-maily chodit dál budou.",
+      "confirm": "Odhlásit e-maily",
+      "doneTitle": "Odhlášeno",
+      "done": "E-mailová oznámení jsme vypnuli. Kdykoli je zapnete zpět v nastavení účtu.",
+      "error": "Odhlášení se nepodařilo. Zkuste to znovu, nebo e-maily vypněte v nastavení účtu.",
+      "invalid": "Tento odkaz je neplatný. E-mailová oznámení můžete vypnout v nastavení účtu.",
+      "settings": "Nastavení oznámení"
     },
     "invitation": {
       "title": "Připojit se k {tenant}",

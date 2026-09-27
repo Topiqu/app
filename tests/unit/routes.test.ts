@@ -2,12 +2,20 @@ import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { articlePath, authPath, LOCALIZED_SEGMENTS, markdownPath, tagPath } from '../../shared/utils/routes'
+import { LANGUAGE_OPTIONS } from '../../shared/siteSchemas'
+import {
+  articlePath,
+  authPath,
+  AUTH_SEGMENTS,
+  LOCALIZED_SEGMENTS,
+  markdownPath,
+  tagPath,
+} from '../../shared/utils/routes'
 
 const config = readFileSync(resolve(process.cwd(), 'nuxt.config.ts'), 'utf8')
 
 /** Pulls one locale's path out of an `i18n.pages` entry without executing the config. */
-const configuredPath = (routeName: string, locale: 'cs' | 'en') => {
+const configuredPath = (routeName: string, locale: (typeof LANGUAGE_OPTIONS)[number]) => {
   const block = config.match(new RegExp(`'?${routeName}'?:\\s*\\{([^}]*)\\}`))?.[1]
   return block?.match(new RegExp(`\\b${locale}:\\s*'([^']+)'`))?.[1]
 }
@@ -22,12 +30,19 @@ describe('localized segments match nuxt.config', () => {
     ['clanky-slug', 'article'],
     ['stitky-slug', 'tag'],
     ['autor-name', 'author'],
-    ['autorizace', 'auth'],
   ] as const)('%s', (routeName, kind) => {
-    for (const locale of ['cs', 'en'] as const) {
+    for (const locale of LANGUAGE_OPTIONS) {
       const configured = configuredPath(routeName, locale)
       expect(configured, `${routeName}.${locale} missing from nuxt.config.ts`).toBeDefined()
       expect(configured!.split('/')[1]).toBe(LOCALIZED_SEGMENTS[kind][locale])
+    }
+  })
+
+  it('keeps the sign-in path aligned with nuxt.config', () => {
+    for (const locale of LANGUAGE_OPTIONS) {
+      const configured = configuredPath('autorizace', locale)
+      expect(configured, `autorizace.${locale} missing from nuxt.config.ts`).toBeDefined()
+      expect(configured!.split('/')[1]).toBe(AUTH_SEGMENTS[locale])
     }
   })
 })
@@ -39,6 +54,10 @@ describe('public paths', () => {
     expect(tagPath('cs', 'ai')).toBe('/cs/stitky/ai')
     expect(authPath('cs')).toBe('/cs/autorizace')
     expect(authPath('en')).toBe('/en/auth')
+    expect(articlePath('de', 'neu')).toBe('/de/artikel/neu')
+    expect(articlePath('fr', 'nouveau')).toBe('/fr/articles/nouveau')
+    expect(authPath('de')).toBe('/de/anmeldung')
+    expect(authPath('fr')).toBe('/fr/connexion')
   })
 
   it('encodes slugs so a diacritic or a slash cannot break out of the segment', () => {

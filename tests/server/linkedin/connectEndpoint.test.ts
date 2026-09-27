@@ -54,12 +54,14 @@ describe('GET /api/linkedin/connect', () => {
   // The callback runs on app.topiqu.com and cannot read the tenant's `i18n_lang` cookie, so the locale
   // has to ride along in the signed state or the admin is redirected into the wrong language.
   it('signs the caller locale into the state', async () => {
-    cookies.i18n_lang = 'cs'
-    expect(verifyOAuthState(new URL(await run()).searchParams.get('state')!)?.locale).toBe('cs')
+    for (const locale of ['cs', 'de', 'fr']) {
+      cookies.i18n_lang = locale
+      expect(verifyOAuthState(new URL(await run()).searchParams.get('state')!)?.locale).toBe(locale)
+    }
   })
 
   it('falls back to en for an unknown locale cookie', async () => {
-    cookies.i18n_lang = 'de'
+    cookies.i18n_lang = 'xx'
     expect(verifyOAuthState(new URL(await run()).searchParams.get('state')!)?.locale).toBe('en')
   })
 })

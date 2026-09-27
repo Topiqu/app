@@ -24,23 +24,23 @@
 </template>
 
 <script setup lang="ts">
-import { cs, en } from '@nuxt/ui/locale'
+import { cs, de, en, fr } from '@nuxt/ui/locale'
+import { languageTag } from '~~/shared/utils/language'
 import { consentLauncherFor } from '~~/shared/utils/consent'
 import { brandTitle, toAbsoluteUrl } from '~~/shared/utils/seo'
+import { resolveBrandAccent } from '~~/shared/utils/tenantTheme'
 import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
-
-import { resolveBrandAccent } from '~/composables/theme'
 
 const reqUrl = useRequestURL()
 const route = useRoute()
 const clientSite = await useClientSite()
 const liveClientSite = await useLiveClientSite()
-const adChance = useAdChance()
 const i18nHead = useLocaleHead()
 const canonicalOrigin = useCanonicalOrigin()
 const { locale } = useI18n()
 const { data: auth } = useAuth()
-const uiLocale = computed(() => (locale.value === 'cs' ? cs : en))
+const uiLocales = { cs, de, en, fr }
+const uiLocale = computed(() => uiLocales[locale.value as keyof typeof uiLocales] ?? en)
 const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)
 const { marketingGranted } = useConsent(() => clientSite)
 
@@ -59,10 +59,6 @@ onMounted(() => {
   document.documentElement.dataset.topiquHydrated = 'true'
 })
 
-if (clientSite) {
-  adChance.assign(clientSite.id, clientSite.plan)
-}
-
 const computedThemeColor = computed(() =>
   resolveBrandAccent(liveClientSite.value?.theme, liveClientSite.value?.accentColor),
 )
@@ -73,7 +69,7 @@ useSeoMeta({
   author: () => clientSite?.name || 'Topiqu',
   ogTitle: () => brandTitle(clientSite?.name, clientSite?.tagline) || 'Topiqu',
   ogDescription: () => clientSite?.description || clientSite?.tagline || 'Moderní blogovací platforma',
-  ogLocale: () => (clientSite?.language === 'cs' ? 'cs_CZ' : 'en_US'),
+  ogLocale: () => languageTag(clientSite?.language).replace('-', '_'),
   ogImageWidth: 1200,
   ogImageHeight: 600,
   twitterImageWidth: 1200,

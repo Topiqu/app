@@ -117,24 +117,19 @@ export const buildArticleBlocks = (nodes: ArticleNode[]) => {
   return { blocks, headings }
 }
 
-/** Plain text of the body, for descriptions and the markdown/LLM surfaces. */
-export const articleText = (blocks: ArticleBlock[]) =>
-  blocks
-    .map((block) => (block.type === 'html' ? block.html : block.question))
-    .join(' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-
 const ENTITIES: Record<string, string> = { nbsp: ' ', lt: '<', gt: '>', quot: '"', '#39': "'", amp: '&' }
 
-/** The author's perex in full; the body fallback is cut at a word so a missing perex never renders the whole article. */
-export const articleExcerpt = (excerpt?: string | null, content?: string | null, max = 240) => {
-  const text = (excerpt?.trim() || content || '')
+/** Regex-based so it runs on the server too; decodes only the entities the editor emits. */
+export const htmlToText = (html?: string | null) =>
+  (html || '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&(nbsp|lt|gt|quot|#39|amp);/g, (_, name: string) => ENTITIES[name]!)
     .replace(/\s+/g, ' ')
     .trim()
+
+/** The author's perex in full; the body fallback is cut at a word so a missing perex never renders the whole article. */
+export const articleExcerpt = (excerpt?: string | null, content?: string | null, max = 240) => {
+  const text = htmlToText(excerpt?.trim() || content)
   if (excerpt?.trim() || text.length <= max) return text
   const space = text.lastIndexOf(' ', max)
   return `${text.slice(0, space > max * 0.6 ? space : max).replace(/[\s,.;:–—-]+$/, '')}…`

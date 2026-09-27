@@ -5,11 +5,12 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { optimizationRuleIds } from '../../shared/utils/articleOptimization'
 
 type Messages = Record<string, unknown>
+const locales = ['cs', 'en', 'de', 'fr'] as const
 
 const flatten = (value: Messages, prefix = '', result = new Set<string>()) => {
   for (const [key, child] of Object.entries(value)) {
     const path = prefix ? `${prefix}.${key}` : key
-    if (child && typeof child === 'object' && !Array.isArray(child)) flatten(child as Messages, path, result)
+    if (child && typeof child === 'object') flatten(child as Messages, path, result)
     else result.add(path)
   }
   return result
@@ -17,8 +18,19 @@ const flatten = (value: Messages, prefix = '', result = new Set<string>()) => {
 
 const readJson = (path: string) => JSON.parse(readFileSync(path, 'utf8')) as Messages
 const localeRoot = join(process.cwd(), 'i18n/locales')
+const flattenedStrings = (value: unknown, prefix = '', result = new Map<string, string>()) => {
+  if (typeof value === 'string') result.set(prefix, value)
+  else if (value && typeof value === 'object') {
+    for (const [key, child] of Object.entries(value)) flattenedStrings(child, prefix ? `${prefix}.${key}` : key, result)
+  }
+  return result
+}
 
-const messagesFor = (locale: 'cs' | 'en') => {
+const placeholders = (value: string) => [...value.matchAll(/\{[^{}]+\}/g)].map(([match]) => match).sort()
+const htmlTags = (value: string) =>
+  [...value.matchAll(/<\/?([a-z][\w-]*)\b[^>]*>/gi)].map(([, tag]) => tag?.toLowerCase())
+
+const messagesFor = (locale: (typeof locales)[number]) => {
   const messages = new Set<string>()
   const files = readdirSync(join(localeRoot, locale)).filter((file) => file.endsWith('.json'))
   for (const file of files) flatten(readJson(join(localeRoot, locale, file)), '', messages)
@@ -34,11 +46,31 @@ const vueFiles = (directory: string): string[] =>
 
 describe('locale completeness', () => {
   const english = messagesFor('en')
-  const czech = messagesFor('cs')
 
-  it('keeps Czech and English message keys in sync', () => {
-    expect([...english].filter((key) => !czech.has(key))).toEqual([])
-    expect([...czech].filter((key) => !english.has(key))).toEqual([])
+  it.each(locales)('keeps %s message keys in sync with English', (locale) => {
+    const messages = messagesFor(locale)
+    expect([...english].filter((key) => !messages.has(key))).toEqual([])
+    expect([...messages].filter((key) => !english.has(key))).toEqual([])
+  })
+
+  it.each(['de', 'fr'] as const)('preserves placeholders and HTML in %s', (locale) => {
+    const files = readdirSync(join(localeRoot, 'en')).filter((file) => file.endsWith('.json'))
+    const pairs = files.map((file) => [join(localeRoot, 'en', file), join(localeRoot, locale, file)])
+    pairs.push(
+      [join(localeRoot, 'master_en.json'), join(localeRoot, `master_${locale}.json`)],
+      [join(process.cwd(), 'emails/locales/en.json'), join(process.cwd(), `emails/locales/${locale}.json`)],
+    )
+
+    for (const [sourcePath, translationPath] of pairs) {
+      const source = flattenedStrings(readJson(sourcePath))
+      const translation = flattenedStrings(readJson(translationPath))
+      expect([...translation.keys()]).toEqual([...source.keys()])
+      for (const [key, value] of source) {
+        const translated = translation.get(key) ?? ''
+        expect(placeholders(translated), `${translationPath}: ${key}`).toEqual(placeholders(value))
+        expect(htmlTags(translated), `${translationPath}: ${key}`).toEqual(htmlTags(value))
+      }
+    }
   })
 
   it('resolves every statically referenced translation key', () => {
@@ -54,7 +86,7 @@ describe('locale completeness', () => {
   })
 
   it('explains every article optimization check in actionable language', () => {
-    for (const locale of ['cs', 'en'] as const) {
+    for (const locale of locales) {
       const messages = readJson(join(localeRoot, locale, 'articles.json'))
       const articles = messages.articles as Messages
       const editor = articles.editor as Messages
@@ -78,7 +110,7 @@ describe('locale completeness', () => {
     }
   })
 
-  it.each(['cs', 'en'] as const)('translates every tenant scope in %s', (locale) => {
+  it.each(locales)('translates every tenant scope in %s', (locale) => {
     const common = readJson(join(localeRoot, locale, 'common.json')).common as Messages
     const scopes = (common.members as Messages).scopes as Messages
     expect(Object.keys(scopes)).toEqual([

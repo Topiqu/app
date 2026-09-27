@@ -34,6 +34,8 @@ enum TenantScope {
 enum Language {
     cs
     en
+    de
+    fr
 }
 
 enum Theme {

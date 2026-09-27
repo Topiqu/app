@@ -3,7 +3,7 @@
     "title": "Znalosti",
     "description": "Vaše vlastní fakta, ceny a positioning. Topiqu z nich při psaní každého článku samo vybere to, co se k tématu hodí.",
     "add": "Přidat zdroj",
-    "addTitle": "Přidat zdroj znalostí",
+    "addTitle": "Přidat zdroj",
     "addDescription": "Přidejte poznámku, dokument nebo webovou stránku. Použitelný je, jakmile se zobrazí jako zaindexovaný.",
     "editTitle": "Upravit zdroj znalostí",
     "loadError": "Znalosti se nepodařilo načíst.",
@@ -15,7 +15,21 @@
     "useInArticles": "Používat při psaní",
     "useInArticlesFor": "Používat {title} při psaní",
     "public": "Veřejný zdroj",
-    "publicHint": "Články mohou tento zdroj citovat a odkázat na něj. Interní materiály nechte vypnuté, ty se nikdy neodkazují.",
+    "citation": {
+      "legend": "Jak mají články zdroj používat?",
+      "INTERNAL": {
+        "label": "Jen jako podklad",
+        "description": "AI z něj čerpá fakta, ale nikdy na něj neodkáže. Vhodné pro interní materiály."
+      },
+      "PUBLIC": {
+        "label": "Jako citovatelný zdroj",
+        "description": "Články na něj mohou odkázat jako na zdroj."
+      }
+    },
+    "details": {
+      "titleAndDate": "Název a datum platnosti",
+      "date": "Datum platnosti"
+    },
     "actions": "Akce pro {title}",
     "edit": "Upravit",
     "refresh": "Načíst znovu",
@@ -33,7 +47,18 @@
       "NOTE": "Poznámka",
       "FILE": "Dokument",
       "URL": "Webová stránka",
-      "SITEMAP": "Sitemapa"
+      "SITEMAP": "Stránky z webu"
+    },
+    "addKinds": {
+      "NOTE": "Text",
+      "FILE": "Dokument",
+      "URL": "Web"
+    },
+    "web": {
+      "scope": "Co přidat",
+      "page": "Jen tuto stránku",
+      "site": "Najít další stránky tohoto webu",
+      "siteHint": "Nejdřív ukážeme nalezené stránky. Najednou lze přidat nejvýš {count}."
     },
     "status": {
       "PENDING": "Čeká",
@@ -45,6 +70,7 @@
       "title": "Název",
       "optional": "Nepovinné",
       "note": "Poznámka",
+      "content": "Obsah",
       "noteHint": "Nadpisy v Markdownu pomáhají dlouhou poznámku rozdělit.",
       "file": "Vyberte soubor PDF, DOCX, TXT nebo MD",
       "fileHint": "Nejvýše {size}. Naskenovaná PDF bez textové vrstvy nejsou podporována.",
@@ -65,7 +91,7 @@
       "unreachable": "Stránku se nepodařilo stáhnout.",
       "duplicate": "Tento obsah už ve znalostech máte.",
       "quota": "Znalosti jsou plné. Smažte nějaký zdroj, abyste mohli přidat další.",
-      "sitemapEmpty": "Sitemapa neobsahuje žádné nové stránky z tohoto webu."
+      "sitemapEmpty": "Na tomto webu jsme nenašli žádné nové stránky k přidání."
     },
     "quota": "{sources} z {maxSources} zdrojů · {characters} z {maxCharacters} znaků",
     "stale": "Možná zastaralé",
@@ -89,7 +115,7 @@
     "sitemapProgress": "Importuji stránku {done} z {total}",
     "sitemapImported": "Importováno stránek: {added}, přeskočeno: {skipped}. Indexace začala.",
     "sitemap": {
-      "found": "Stránek v sitemapě",
+      "found": "Nalezených stránek",
       "existing": "Už ve znalostech",
       "offered": "Nabídnuto k importu",
       "cappedByBatch": "Jeden import přidá nejvýš {count} stránek. Pro zbytek ho spusťte znovu.",
@@ -99,6 +125,8 @@
     },
     "beta": "Beta",
     "consent": {
+      "label": "Potvrzuji, že podklad neobsahuje důvěrné ani osobní údaje",
+      "scope": "Za důvěrné považujte i obchodní tajemství a cokoli dalšího, co se nesmí objevit ve veřejném článku.",
       "title": "Jak AI s podkladem naloží",
       "useInternal": "Informace a čísla z podkladu může AI použít jako fakta ve vašich publikovaných článcích, ale na podklad nebude odkazovat.",
       "usePublic": "Informace a čísla z podkladu může AI použít ve vašich publikovaných článcích a může na něj odkazovat jako na zdroj.",

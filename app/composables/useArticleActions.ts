@@ -1,15 +1,11 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { SharePlatform } from '~~/generated/zenstack/models'
 
-export function useArticleActions(
-  dataRef: MaybeRefOrGetter<any>,
-  refreshContext: () => Promise<void>,
-  getVisitorId: () => Promise<string>,
-) {
+export function useArticleActions(dataRef: MaybeRefOrGetter<any>, refreshContext: () => Promise<void>) {
   const { t } = useI18n()
   const toast = useToast()
   const clipboard = useClipboard()
-  const { data: session } = useAuth()
+  const trackShare = useArticleShare()
   const optimisticStatus = useOptimisticStatus()
   const statusPending = shallowRef(false)
 
@@ -17,23 +13,10 @@ export function useArticleActions(
 
   const share = async (platform: SharePlatform) => {
     if (!resolvedData.value?.id) return
-    try {
-      // The server dedupes on this, so an anonymous visitor needs the same fingerprint the
-      // like gate uses; a signed-in user is identified by the session and needs no probe.
-      const visitorId = session.value?.user?.id ? null : await getVisitorId()
-
-      // Take the server's count rather than incrementing locally, so a share that was not
-      // counted (repeat click) can't drift the displayed number away from the row.
-      const res = await $fetch<{ shared: number }>(`/api/articles/${resolvedData.value.id}/share`, {
-        method: 'POST',
-        body: { platform, visitorId },
-      })
-      resolvedData.value.shared = res.shared
-    } catch (e) {
-      // Still non-fatal for the visitor — but silence here is what let a 500 on every share
-      // (an unapplied migration) look like a working button for a whole afternoon.
-      console.warn('share tracking failed', e)
-    }
+    // Take the server's count rather than incrementing locally, so a share that was not
+    // counted (repeat click) can't drift the displayed number away from the row.
+    const shared = await trackShare(resolvedData.value.id, platform)
+    if (shared !== undefined) resolvedData.value.shared = shared
   }
 
   const copyLink = async (url: string) => {
@@ -67,7 +50,7 @@ export function useArticleActions(
       optimisticStatus.saved()
     } catch (e: unknown) {
       const err = e as { data?: { message?: string } }
-      toast.add({ color: 'error', title: err.data?.message || t('common.messages.operationFailed') })
+      toast.add({ color: 'error', title: fetchErrorMessage(err, t('common.messages.operationFailed')) })
       article.allowedComments = !article.allowedComments
       optimisticStatus.reverted()
     }
@@ -94,7 +77,7 @@ export function useArticleActions(
       article.status = previous
       optimisticStatus.reverted()
       const err = e as { data?: { message?: string } }
-      toast.add({ color: 'error', title: err.data?.message || t('common.messages.statusChangeFailed') })
+      toast.add({ color: 'error', title: fetchErrorMessage(err, t('common.messages.statusChangeFailed')) })
     } finally {
       statusPending.value = false
     }

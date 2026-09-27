@@ -1,0 +1,103 @@
+{
+  "visibility": {
+    "title": "KI-Sichtbarkeit",
+    "description": "Ob KI-Suchen Ihre Website zitieren und Ihnen Leser bringen.",
+    "about": "So messen wir das",
+    "methodology": "Zugriffe von KI-Bots und Besuche über KI-Dienste sind tatsächlicher Traffic auf Ihrer Website. Apps ohne Referrer können nicht erfasst werden; der Wert ist daher eine Untergrenze. Zitate werden anhand einer wiederkehrenden Stichprobe Ihrer erfassten Fragen gemessen, nicht anhand aller privaten KI-Unterhaltungen.",
+    "window": "Letzte {days} Tage",
+    "metrics": {
+      "coverage": "In KI-Antworten zitiert",
+      "coverageNote": "{owned} von {total} Antworten",
+      "referrals": "Besuche über KI",
+      "referralsNote": "Artikel: {count}",
+      "fetches": "Besuche von KI-Bots",
+      "fetchesNote": "Seiten: {count}"
+    },
+    "emptyValue": "Noch nicht gemessen",
+    "onboarding": {
+      "title": "Finden Sie heraus, ob KI Sie zitiert",
+      "description": "Fügen Sie Fragen hinzu, die Ihre Leser ChatGPT, Gemini oder Claude stellen. Wir prüfen sie regelmäßig und zeigen, ob die Antworten auf Ihre Publikation verlinken.",
+      "note": "Besuche von KI-Bots und Leser, die über KI zu Ihnen kommen, erscheinen hier automatisch, sobald sie erfasst wurden."
+    },
+    "upgrade": {
+      "description": "Zitatprüfungen gehören zu den Tarifen Premium und Custom.",
+      "cta": "Tarife ansehen"
+    },
+    "prompts": {
+      "title": "Beobachtete Fragen",
+      "description": "Jede Woche fragen wir KI-Suchmaschinen und speichern die Antwort sowie die zitierten Quellen.",
+      "questionLabel": "Frage an die KI-Suche",
+      "languageLabel": "Sprache",
+      "add": "Frage hinzufügen",
+      "suggest": "Fragen vorschlagen",
+      "placeholder": "Welche Frage soll die KI-Suche beantworten?",
+      "run": "Jetzt prüfen",
+      "pause": "Beobachtung pausieren",
+      "resume": "Beobachtung fortsetzen",
+      "paused": "Pausiert",
+      "remove": "Entfernen",
+      "actions": "Weitere Aktionen",
+      "created": "Frage hinzugefügt.",
+      "suggested": "{count} Fragen hinzugefügt."
+    },
+    "outcome": {
+      "UNCHECKED": "Noch nicht geprüft",
+      "RUNNING": "Prüfung läuft",
+      "FAILED": "Prüfung fehlgeschlagen",
+      "CITED": "Von {cited} von {checked} KI-Diensten zitiert",
+      "NOT_CITED": "Von keinem der {checked} KI-Dienste zitiert"
+    },
+    "runs": {
+      "CITED": "Zitiert",
+      "NOT_CITED": "Nicht zitiert",
+      "RUNNING": "Läuft",
+      "FAILED": "Fehlgeschlagen",
+      "citations": "Zitierte Quellen",
+      "response": "Antwort"
+    },
+    "opportunities": {
+      "title": "Wo KI Sie übersieht",
+      "description": "Fragen, bei denen KI weiterhin andere Websites statt Ihrer zitiert.",
+      "update": "Artikel verbessern",
+      "create": "Artikel erstellen",
+      "dismiss": "Ausblenden",
+      "evidence": "Ihre Website: {owned}/{samples} · andere Quellen: {external}/{samples}",
+      "domains": "Zitierte Quellen: {domains}"
+    },
+    "traffic": {
+      "title": "Traffic über KI",
+      "referrals": "Leser über KI",
+      "crawlers": "KI-Bots",
+      "empty": "Noch keine Besuche über KI erfasst.",
+      "none": "Noch keine"
+    },
+    "crawlers": {
+      "kinds": {
+        "ANSWER_ENGINE": "KI-Suche",
+        "TRAINING": "Training",
+        "SEARCH": "Suchmaschine"
+      }
+    },
+    "channels": {
+      "CHATGPT": "ChatGPT",
+      "PERPLEXITY": "Perplexity",
+      "GEMINI": "Gemini",
+      "COPILOT": "Copilot",
+      "CLAUDE": "Claude",
+      "OTHER_AI": "Andere KI"
+    },
+    "providers": {
+      "OPENAI": "OpenAI",
+      "ANTHROPIC": "Anthropic",
+      "GOOGLE": "Google Gemini",
+      "XAI": "xAI Grok",
+      "META": "Meta",
+      "MISTRAL": "Mistral"
+    },
+    "messages": {
+      "runStarted": "Zitatprüfung abgeschlossen.",
+      "saved": "Änderungen gespeichert.",
+      "failed": "Die KI-Sichtbarkeit konnte nicht aktualisiert werden."
+    }
+  }
+}

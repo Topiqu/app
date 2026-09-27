@@ -17,7 +17,6 @@ describe('profileSections', () => {
     ['events-section', 'security'],
     ['username-section', 'profile'],
     ['bio-section', 'profile'],
-    ['language-section', 'profile'],
     ['id-section', 'profile'],
     ['registration-section', 'profile'],
     ['notifications-section', 'notifications'],

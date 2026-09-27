@@ -210,7 +210,7 @@ const { data: features } = await useFetch(`/api/features`, { watch: [clientId] }
 const { data: tenantAccess } = await useFetch<{ role: 'OWNER' | 'MEMBER'; scopes: string[] }>('/api/tenant/access', {
   watch: [clientId],
 })
-const rate = await useCurrencyRate(client.value?.currency ?? 'EUR')
+const rate = useCurrencyRate(() => client.value?.currency ?? 'EUR')
 
 const form = ref(buildClientSettingsForm(client.value))
 const pristine = ref(buildClientSettingsForm(client.value))

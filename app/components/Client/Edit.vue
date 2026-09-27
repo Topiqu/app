@@ -159,7 +159,7 @@ const saveEdit = async () => {
   } catch (error: any) {
     toast.add({
       color: 'error',
-      title: error?.data?.message || error.data?.message || t('master.clientEdit.messages.updateFailed'),
+      title: fetchErrorMessage(error, t('master.clientEdit.messages.updateFailed')),
     })
   }
 }

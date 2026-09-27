@@ -77,7 +77,10 @@
         :aria-label="color"
         @click="emit('update:accentColor', color)"
       >
-        <span class="size-5 rounded-full ring-1 ring-black/10 ring-inset dark:ring-white/15" :style="{ backgroundColor: color }" />
+        <span
+          class="size-5 rounded-full ring-1 ring-black/10 ring-inset dark:ring-white/15"
+          :style="{ backgroundColor: color }"
+        />
       </UButton>
     </div>
 
@@ -196,9 +199,8 @@
 import type { BrandGradient } from '~~/shared/utils/publicationBranding'
 
 import { ThemeSchema } from '~~/shared/siteSchemas'
+import { resolveBrandAccent, themeColors, type ThemeKey } from '~~/shared/utils/tenantTheme'
 import { hasAdvancedBranding, gradientCss, mixBrandColor } from '~~/shared/utils/publicationBranding'
-
-import { resolveBrandAccent, themeColors, type ThemeKey } from '~/composables/theme'
 
 const props = defineProps<{
   theme: ThemeKey

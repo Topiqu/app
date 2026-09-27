@@ -529,6 +529,7 @@ import type { MediaRightsItem, MediaRightsReport, MediaRightsReview } from '~~/s
 
 import slugify from 'slugify'
 import { readFaq } from '~~/shared/utils/articleFaq'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { setImageMediaId } from '~~/shared/utils/mediaRights'
 import { translationDraft } from '~~/shared/utils/articleTranslations'
 import {
@@ -550,7 +551,7 @@ definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
-const toast = useAppToast()
+const toast = useToast()
 const confirm = useConfirm()
 const { t } = useI18n()
 const { invalidateArticles, invalidateArticlesAndStats } = useCacheInvalidation()
@@ -611,6 +612,8 @@ const newArticleLanguage = shallowRef<Language>((clientSite.value?.language as L
 const newLanguageDrafts = reactive<Record<Language, ReturnType<typeof translationDraft>>>({
   cs: translationDraft(),
   en: translationDraft(),
+  de: translationDraft(),
+  fr: translationDraft(),
 })
 const selectedSeries = shallowRef<any>(null)
 const articleTags = shallowRef<string[]>([])
@@ -723,7 +726,7 @@ const activeLanguageModel = computed({
   },
 })
 const editorTargetLanguages = computed(() =>
-  isNew ? (['cs', 'en'] as Language[]).filter((language) => language !== primaryLanguage) : tr.targetLanguages,
+  isNew ? LANGUAGE_OPTIONS.filter((language) => language !== primaryLanguage) : tr.targetLanguages,
 )
 const editorLanguageModel = computed({
   get: () => (isNew ? newArticleLanguage.value : activeLanguageModel.value),
@@ -1307,7 +1310,7 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
     }
     toast.add({
       color: 'error',
-      title: e.data?.message || 'Error saving article',
+      title: fetchErrorMessage(e, t('common.messages.saveFailed')),
     })
   } finally {
     submitting.value = false

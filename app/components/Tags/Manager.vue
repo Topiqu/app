@@ -96,7 +96,7 @@ type TagOption = { id: string; name: string }
 type ArticleTagRow = { tagId: string; tag: { id: string; name: string } }
 
 const { t } = useI18n()
-const toast = useAppToast()
+const toast = useToast()
 const requestFetch = useRequestFetch()
 const { invalidateTags } = useCacheInvalidation()
 

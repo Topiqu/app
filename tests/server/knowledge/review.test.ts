@@ -8,13 +8,17 @@ import { buildEditorialReviewPrompt, reviewArticle } from '../../../server/utils
 vi.mock('ai', () => ({ generateObject: vi.fn(), generateText: vi.fn() }))
 
 const draft = { title: 'Topiqu vs Jasper', perex: 'A comparison.', content: '<p>Approval takes two hours a week.</p>' }
-const knowledgeBrief = '[K1] "Customer research" · updated 2026-08-02 · internal — never cite or link\nApproval takes two hours a week.'
+const knowledgeBrief =
+  '[K1] "Customer research" · updated 2026-08-02 · internal — never cite or link\nApproval takes two hours a week.'
 
 beforeEach(() => {
   vi.resetAllMocks()
   vi.stubGlobal('aiModel', () => 'test-model')
   vi.stubGlobal('aiWebSearchTool', () => ({}))
-  vi.mocked(generateObject).mockResolvedValue({ object: { approved: true, issues: [] }, usage: { totalTokens: 5 } } as never)
+  vi.mocked(generateObject).mockResolvedValue({
+    object: { approved: true, issues: [] },
+    usage: { totalTokens: 5 },
+  } as never)
   vi.mocked(generateText).mockResolvedValue({
     text: 'SUPPORTED Jasper pricing https://jasper.test/pricing',
     sources: [{ sourceType: 'url', url: 'https://jasper.test/pricing' }],

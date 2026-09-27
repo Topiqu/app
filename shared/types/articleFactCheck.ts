@@ -1,3 +1,5 @@
+import type { Language } from '../utils/language'
+
 export type FactCheckVerdict = 'supported' | 'partial' | 'unsupported' | 'contradicted' | 'unverifiable'
 export type FactCheckImportance = 'high' | 'medium' | 'low'
 export type FactCheckSourceStatus = 'ready' | 'duplicate' | 'invalid' | 'unreachable' | 'unsupported-content'
@@ -7,7 +9,7 @@ export interface ArticleFactCheckInput {
   excerpt: string | null
   content: string
   sources: string[]
-  language: 'cs' | 'en'
+  language: Language
 }
 
 export interface FactCheckSource {

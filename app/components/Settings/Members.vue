@@ -271,7 +271,7 @@ const search = shallowRef('')
 const filter = shallowRef<(typeof filters)[number]>('all')
 const page = shallowRef(1)
 const pageSize = 8
-const toast = useAppToast()
+const toast = useToast()
 const { t } = useI18n()
 const confirm = useConfirm()
 const optimisticStatus = useOptimisticStatus()
@@ -315,7 +315,7 @@ const invite = async () => {
     email.value = ''
     showInvite.value = false
     await refresh()
-    toast.success({ message: $t('common.members.sent') })
+    toast.add({ color: 'success', title: $t('common.members.sent') })
   } finally {
     busy.value = false
   }
@@ -339,7 +339,7 @@ const toggle = async (member: Member, scope: Scope) => {
   } catch (error: any) {
     member.scopes = previous
     optimisticStatus.reverted()
-    toast.error({ message: error.data?.message || t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(error, t('common.messages.operationFailed')) })
   } finally {
     const pending = new Set(pendingMemberIds.value)
     pending.delete(member.id)
@@ -369,8 +369,9 @@ const remove = async (member: Member) => {
   try {
     await $fetch(`/api/tenant/members/${member.id}`, { method: 'DELETE' })
     optimisticStatus.saved()
-    toast.success({
-      message: t('common.members.removeSuccess', {
+    toast.add({
+      color: 'success',
+      title: t('common.members.removeSuccess', {
         name: member.user.username,
       }),
     })
@@ -380,8 +381,9 @@ const remove = async (member: Member) => {
     optimisticStatus.reverted()
     await nextTick()
     membersSection.value?.querySelector<HTMLElement>(`[data-member-id="${member.id}"]`)?.focus()
-    toast.error({
-      message: error.data?.message || t('common.members.removeFailed'),
+    toast.add({
+      color: 'error',
+      title: fetchErrorMessage(error, t('common.members.removeFailed')),
     })
   } finally {
     removingId.value = undefined
@@ -401,7 +403,7 @@ const revoke = async (id: string) => {
   } catch (error: any) {
     data.value.invitations.splice(index, 0, invitation)
     optimisticStatus.reverted()
-    toast.error({ message: error.data?.message || t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(error, t('common.messages.operationFailed')) })
   } finally {
     const pending = new Set(revokingIds.value)
     pending.delete(id)
@@ -413,9 +415,9 @@ const resend = async (id: string) => {
   resendingIds.value = new Set([...resendingIds.value, id])
   try {
     await $fetch(`/api/tenant/invitations/${id}/resend`, { method: 'POST' })
-    toast.success({ message: $t('common.members.sent') })
+    toast.add({ color: 'success', title: $t('common.members.sent') })
   } catch (error: any) {
-    toast.error({ message: error.data?.message || t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: fetchErrorMessage(error, t('common.messages.operationFailed')) })
   } finally {
     const pending = new Set(resendingIds.value)
     pending.delete(id)

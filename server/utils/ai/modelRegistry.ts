@@ -6,13 +6,13 @@ export const AI_MODELS = {
   articleWriter: { provider: 'openai', id: 'gpt-5.6-luna' },
   articleEditor: { provider: 'openai', id: 'gpt-5.6-luna' },
   linkedinPost: { provider: 'openai', id: 'gpt-5.6-luna' },
-  translation: { provider: 'openai', id: 'gpt-5.6-luna' },
-  promptEnhance: { provider: 'openai', id: 'gpt-5.6-luna' },
-  sentiment: { provider: 'openai', id: 'gpt-5.6-luna' },
-  communityInsight: { provider: 'openai', id: 'gpt-5.6-luna' },
-  visibility: { provider: 'openai', id: 'gpt-5.6-luna' },
+  translation: { provider: 'openai', id: 'gpt-6-luna' },
+  promptEnhance: { provider: 'openai', id: 'gpt-6-luna' },
+  sentiment: { provider: 'openai', id: 'gpt-6-luna' },
+  communityInsight: { provider: 'openai', id: 'gpt-6-luna' },
+  visibility: { provider: 'openai', id: 'gpt-6-luna' },
   factCheck: { provider: 'openai', id: 'gpt-5.6-luna' },
-  knowledgeSelect: { provider: 'openai', id: 'gpt-5.6-luna' },
+  knowledgeSelect: { provider: 'openai', id: 'gpt-6-luna' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export const AI_IMAGE_MODELS = {

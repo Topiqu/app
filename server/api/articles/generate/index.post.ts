@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import {
   ARTICLE_GENERATION_FORMATS,
   ARTICLE_GENERATION_MODULES,
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
       prompt: z.string().nonempty(t('common.errors.missing')!),
       options: z
         .object({
-          language: z.enum(['cs', 'en']).optional(),
+          language: z.enum(LANGUAGE_OPTIONS).optional(),
           format: z.enum(ARTICLE_GENERATION_FORMATS),
           allowGeneratedImages: z.boolean().default(true),
           useKnowledge: z.boolean().default(true),
@@ -187,8 +188,8 @@ export default defineEventHandler(async (event) => {
           const writerIterator = result.fullStream[Symbol.asyncIterator]()
           for (;;) {
             const now = Date.now()
-            const idleRemaining = Math.max(0, 30_000 - (now - lastWriterDataAt))
-            const deadlineRemaining = Math.max(0, 90_000 - (now - writerStartedAt))
+            const idleRemaining = Math.max(0, 45_000 - (now - lastWriterDataAt))
+            const deadlineRemaining = Math.max(0, 120_000 - (now - writerStartedAt))
             const timeoutStage = idleRemaining <= deadlineRemaining ? 'writer_idle' : 'writer_deadline'
             const timeoutMs = Math.min(idleRemaining, deadlineRemaining)
 

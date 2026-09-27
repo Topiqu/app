@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
+import type { Language } from '../shared/utils/language'
+
 import { createDatabaseClient } from '../server/utils/database'
 import { extractArticleMedia } from '../shared/utils/mediaRights'
 
@@ -119,7 +121,7 @@ const main = async () => {
 
     const indexArticle = async (
       articleId: string,
-      language: 'cs' | 'en',
+      language: Language,
       input: { imageUrl?: string | null; coverMediaId?: string | null; content?: string | null },
       articleTranslationId?: string,
     ) => {

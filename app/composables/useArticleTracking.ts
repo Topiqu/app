@@ -5,17 +5,6 @@ export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
     null,
   )
 
-  let fpPromise: Promise<any> | undefined
-
-  const getVisitorId = async () => {
-    if (!fpPromise) {
-      fpPromise = import('@fingerprintjs/fingerprintjs').then((m) => m.default.load())
-    }
-    const fp = await fpPromise
-    const result = await fp.get()
-    return result.visitorId
-  }
-
   let viewPending = false
 
   const recordView = () => {
@@ -49,5 +38,5 @@ export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
     recordView()
   })
 
-  return { getVisitorId, trackView }
+  return { trackView }
 }

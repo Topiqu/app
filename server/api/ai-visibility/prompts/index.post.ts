@@ -1,9 +1,10 @@
 import { z } from 'zod'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { promptIntent } from '~~/shared/utils/aiVisibility'
 
 const Body = z.object({
   text: z.string().trim().min(3).max(1000),
-  language: z.enum(['cs', 'en']),
+  language: z.enum(LANGUAGE_OPTIONS),
   country: z.string().trim().max(2).default(''),
 })
 

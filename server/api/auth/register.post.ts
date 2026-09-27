@@ -36,7 +36,6 @@ export default defineEventHandler(async (event) => {
       actionType: t('common.auth.register')!,
       // verificationUrl: `${useRuntimeConfig().public.baseUrl}/verify?code=${code}`,
       logoUrl: 'https://cdn.topiqu.com/app-logo.png',
-      unsubscribeUrl: `${useRuntimeConfig().public.baseUrl}/unsubscribe?email=${email}`,
     },
   })
 

@@ -64,7 +64,7 @@ const verify = async () => {
       toast.add({ color: 'error', title: $t('domainVerification.notFound') })
     }
   } catch (error: any) {
-    toast.add({ color: 'error', title: error.data?.message || $t('domainVerification.error') })
+    toast.add({ color: 'error', title: fetchErrorMessage(error, $t('domainVerification.error')) })
   } finally {
     pending.value = false
   }

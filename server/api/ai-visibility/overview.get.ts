@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const since = subDays(new Date(), 30)
   since.setUTCHours(0, 0, 0, 0)
 
-  const [crawlerDays, referrals, runs, prompts, opportunities] = await Promise.all([
+  const [crawlerDays, referrals, runs, latestRuns, prompts, opportunities] = await Promise.all([
     db.aiCrawlerDaily.findMany({
       where: { clientSiteId, date: { gte: since } },
       select: {
@@ -30,33 +30,30 @@ export default defineEventHandler(async (event) => {
     db.aiVisibilityRun.findMany({
       where: { clientSiteId, executedAt: { gte: since } },
       select: {
+        status: true,
+        brandMentioned: true,
+        citationCount: true,
+        citations: { where: { owned: true }, select: { normalizedUrl: true } },
+      },
+    }),
+    // DISTINCT ON needs the distinct columns to lead the ORDER BY.
+    db.aiVisibilityRun.findMany({
+      where: { clientSiteId },
+      distinct: ['promptId', 'provider'],
+      select: {
         id: true,
         promptId: true,
         provider: true,
-        model: true,
         status: true,
         executedAt: true,
-        searchedWeb: true,
-        brandMentioned: true,
         responseText: true,
-        citationCount: true,
         error: true,
         citations: {
-          select: {
-            url: true,
-            normalizedUrl: true,
-            domain: true,
-            title: true,
-            owned: true,
-            articleId: true,
-            position: true,
-          },
+          select: { url: true, normalizedUrl: true, domain: true, title: true, owned: true },
           orderBy: { position: 'asc' },
         },
-        prompt: { select: { text: true, language: true } },
       },
-      orderBy: { executedAt: 'desc' },
-      take: 100,
+      orderBy: [{ promptId: 'asc' }, { provider: 'asc' }, { executedAt: 'desc' }],
     }),
     db.aiVisibilityPrompt.findMany({
       where: { clientSiteId },
@@ -109,13 +106,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const successfulRuns = runs.filter((run) => run.status === 'SUCCEEDED')
-  const ownedRuns = successfulRuns.filter((run) => run.citations.some((citation) => citation.owned))
-  const citedRuns = successfulRuns.filter((run) => run.citations.length > 0)
-  const ownedPages = new Set(
-    successfulRuns.flatMap((run) =>
-      run.citations.filter((citation) => citation.owned).map((citation) => citation.normalizedUrl),
-    ),
-  )
+  const ownedRuns = successfulRuns.filter((run) => run.citations.length > 0)
+  const citedRuns = successfulRuns.filter((run) => run.citationCount > 0)
+  const ownedPages = new Set(successfulRuns.flatMap((run) => run.citations.map((citation) => citation.normalizedUrl)))
+  const providers = visibilityProviderStatuses()
+  const configured = new Set(providers.filter((provider) => provider.configured).map((provider) => provider.provider))
 
   return {
     generatedAt: new Date().toISOString(),
@@ -142,7 +137,7 @@ export default defineEventHandler(async (event) => {
       ).map(([channel, visits]) => ({ channel, visits })),
     },
     visibility: {
-      providers: visibilityProviderStatuses(),
+      providers,
       successfulRuns: successfulRuns.length,
       citedRuns: citedRuns.length,
       ownedRuns: ownedRuns.length,
@@ -151,9 +146,12 @@ export default defineEventHandler(async (event) => {
         ? successfulRuns.filter((run) => run.brandMentioned).length / successfulRuns.length
         : null,
       ownedPages: ownedPages.size,
-      recentRuns: runs.slice(0, 30),
     },
-    prompts,
+    // A removed provider key would otherwise pin its last result to every prompt forever.
+    prompts: prompts.map((prompt) => ({
+      ...prompt,
+      latestRuns: latestRuns.filter((run) => run.promptId === prompt.id && configured.has(run.provider)),
+    })),
     opportunities,
   }
 })

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { isLanguage } from '~~/shared/utils/language'
 
 import { signSearchConsoleState } from '../../utils/searchConsole/oauthState'
 
@@ -17,12 +18,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Search Console intelligence requires PREMIUM' })
   const clientId = searchConsoleClientId()
   if (!clientId) throw createError({ statusCode: 503, message: 'Google Search Console OAuth is not configured' })
+  const localeCookie = getCookie(event, 'i18n_lang')
 
   const state = signSearchConsoleState({
     clientSiteId,
     nonce: randomUUID(),
     exp: Date.now() + 10 * 60_000,
-    locale: getCookie(event, 'i18n_lang') === 'cs' ? 'cs' : 'en',
+    locale: isLanguage(localeCookie) ? localeCookie : 'en',
   })
   setOAuthState(event, 'gsc_oauth_state', state, 600)
   const params = new URLSearchParams({

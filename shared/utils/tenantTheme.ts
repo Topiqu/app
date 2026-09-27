@@ -1,3 +1,5 @@
+import type { PublicationTypography } from '~~/generated/zenstack/models'
+
 import {
   accessibleAccent,
   gradientCss,
@@ -5,7 +7,7 @@ import {
   hostedFontUrl,
   normalizeAccentColor,
   parseBrandGradient,
-} from '~~/shared/utils/publicationBranding'
+} from './publicationBranding'
 
 export const themeColors = {
   blue: '#2563eb',
@@ -26,8 +28,7 @@ export const themeColors = {
 } as const
 
 export type ThemeKey = keyof typeof themeColors
-export type PublicationTypography = 'MODERN' | 'EDITORIAL' | 'SYSTEM' | 'MAGAZINE' | 'CUSTOM'
-export const DEFAULT_TENANT_THEME: ThemeKey = 'indigo'
+const DEFAULT_TENANT_THEME: ThemeKey = 'indigo'
 
 // Explicit values keep the public CTA independent from Tailwind's generated palette.
 // Every foreground/background pair is at least WCAG AA for normal text.
@@ -72,8 +73,6 @@ export const typographyFonts = (value: unknown, headingFontUrl?: string | null, 
     }
   return { heading: modern, body: modern }
 }
-
-export const typographyFontFamily = (value: unknown) => typographyFonts(value).body
 
 export const resolveBrandAccent = (theme: unknown, customColor?: unknown) =>
   normalizeAccentColor(customColor) ?? themeColors[resolveTenantTheme(theme)]

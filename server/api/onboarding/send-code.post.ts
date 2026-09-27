@@ -1,10 +1,11 @@
 import { z } from 'zod'
 import { randomInt } from 'crypto'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { issueChallenge } from '~~/server/utils/onboardingTokens'
 
 const schema = z.object({
   email: z.email(),
-  language: z.enum(['cs', 'en']).optional(),
+  language: z.enum(LANGUAGE_OPTIONS).optional(),
   website: z.string().optional(),
   turnstileToken: z.string().optional(),
 })

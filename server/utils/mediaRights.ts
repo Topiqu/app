@@ -1,3 +1,4 @@
+import type { Language } from '~~/shared/utils/language'
 import type {
   ArticleMediaInput,
   MediaAssetRecord,
@@ -129,7 +130,7 @@ export const createMediaRightsSnapshot = async (
   input: {
     articleId: string
     clientSiteId: string
-    language: 'cs' | 'en'
+    language: Language
     report: MediaRightsReport
     confirmedById?: string | null
     legacySchedule?: boolean

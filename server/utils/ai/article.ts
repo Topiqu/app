@@ -4,6 +4,7 @@ import type { ArticleMediaProgress, ResearchDepth } from '~~/shared/utils/articl
 
 import { z } from 'zod'
 import { hasAiPlan } from '~~/shared/utils/plans'
+import { LANGUAGE_NAMES } from '~~/shared/utils/language'
 import { generateObject, generateText, streamObject } from 'ai'
 import { stripUntrustedIframes, youtubeEmbedUrl, youtubeVideoId } from '~~/shared/utils/youtube'
 import {
@@ -141,9 +142,9 @@ type ArticleObject = (typeof articleSchema)['_output']
 /** The brief's own output ceiling. Web search bills input and search context on top of it, so this
  *  is a headroom guard for the balance check, never the real cost — that comes back as `usage`. */
 const RESEARCH_CONFIG = {
-  quick: { maxOutputTokens: 1800, timeoutMs: 35_000, searchContextSize: 'low' },
-  standard: { maxOutputTokens: 3600, timeoutMs: 65_000, searchContextSize: 'medium' },
-  deep: { maxOutputTokens: 6000, timeoutMs: 120_000, searchContextSize: 'high' },
+  quick: { maxOutputTokens: 3000, timeoutMs: 50_000, searchContextSize: 'low' },
+  standard: { maxOutputTokens: 5000, timeoutMs: 90_000, searchContextSize: 'medium' },
+  deep: { maxOutputTokens: 8000, timeoutMs: 150_000, searchContextSize: 'high' },
 } as const satisfies Record<
   ResearchDepth,
   { maxOutputTokens: number; timeoutMs: number; searchContextSize: 'low' | 'medium' | 'high' }
@@ -225,7 +226,7 @@ const researchTopic = async (
       `.trim(),
       prompt,
       maxOutputTokens: researchConfig.maxOutputTokens,
-      providerOptions: { openai: { reasoningEffort: depth === 'deep' ? 'medium' : 'low' } },
+      providerOptions: { openai: { reasoningEffort: 'medium' } },
       tools: { web_search: aiWebSearchTool(researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })
@@ -347,7 +348,7 @@ const buildArticleConfig = async (
       statusMessage: `Insufficient tokens (minimum ${ARTICLE_TOKEN_FLOOR} required)`,
     })
 
-  const maxOutputTokens = Math.min(tokenRemaining, 6000)
+  const maxOutputTokens = Math.min(tokenRemaining, 8000)
 
   const getControversyPrompt = (level: string | null) => {
     switch (level) {
@@ -455,7 +456,7 @@ const buildArticleConfig = async (
 
       Naturally incorporate keywords if provided.
       ${keywords && `Keywords: ${JSON.stringify(keywords)}`}.
-      Write the title, perex, answer, takeaways, FAQ, body, and captions entirely in ${articleLanguage === 'cs' ? 'Czech' : 'English'}. The prompt's language and the company's presentation language do not change the selected article language.
+      Write the title, perex, answer, takeaways, FAQ, body, and captions entirely in ${LANGUAGE_NAMES[articleLanguage]}. The prompt's language and the company's presentation language do not change the selected article language.
       
       Image Rules:
       For the coverImage and each image in the content you MUST pick one of three intents. You are describing what the picture needs to be, not where it comes from — the system picks the library.
@@ -534,7 +535,7 @@ const buildArticleConfig = async (
     },
     config: {
       model: aiModel('articleWriter'),
-      providerOptions: { openai: { reasoningEffort: 'low' } },
+      providerOptions: { openai: { reasoningEffort: 'medium' } },
       maxOutputTokens,
       instructions,
       prompt,

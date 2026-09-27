@@ -46,7 +46,7 @@ const props = defineProps<{
 
 const loading = shallowRef(true)
 const isEmpty = shallowRef(false)
-const gam = useGamAds()
+const gam = useGamAds(await useClientSite())
 
 const internalSlotId = props.slotId ?? useId()
 

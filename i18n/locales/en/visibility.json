@@ -1,75 +1,82 @@
 {
   "visibility": {
     "title": "AI visibility",
-    "eyebrow": "Discovery and citations",
-    "description": "See when AI systems fetch your publication, send readers, or cite it in monitored answers.",
-    "methodology": "Crawler fetches and referrals are observed traffic. Citation coverage is a recurring sample of monitored prompts, not a count of every private AI conversation.",
+    "description": "Whether AI search cites you and sends you readers.",
+    "about": "How we measure this",
+    "methodology": "AI bot fetches and AI referrals are real traffic to your site. Apps that omit the referrer cannot be counted, so this is a lower bound. Citations are a recurring sample of your tracked questions, not a record of every private AI conversation.",
     "window": "Last {days} days",
     "metrics": {
-      "fetches": "AI bot fetches",
-      "pages": "Pages discovered",
-      "referrals": "Confirmed AI visits",
-      "coverage": "Sampled citation coverage"
+      "coverage": "Cited in AI answers",
+      "coverageNote": "{owned} of {total} answers",
+      "referrals": "Visits from AI",
+      "referralsNote": "Articles: {count}",
+      "fetches": "AI bot visits",
+      "fetchesNote": "Pages: {count}"
     },
-    "emptyValue": "Not measured",
-    "crawlers": {
-      "title": "AI discovery",
-      "description": "Server-observed requests, separated by answer engines, training crawlers, and classic search.",
-      "bot": "Bot",
-      "kind": "Purpose",
-      "requests": "Fetches",
-      "pages": "Pages",
-      "lastSeen": "Last seen",
-      "empty": "No recognised AI crawler has fetched this publication yet.",
-      "kinds": {
-        "ANSWER_ENGINE": "Answer engine",
-        "TRAINING": "Training",
-        "SEARCH": "Search"
-      }
+    "emptyValue": "Not measured yet",
+    "onboarding": {
+      "title": "Find out whether AI cites you",
+      "description": "Add the questions your readers ask ChatGPT, Gemini or Claude. We check them regularly and show whether the answers link to your publication.",
+      "note": "AI bot visits and readers arriving from AI show up here on their own once we record any."
     },
-    "referrals": {
-      "title": "Confirmed AI referrals",
-      "description": "Visits with an AI service as their referrer. Apps that omit referrers cannot be counted, so this is a lower bound.",
-      "empty": "No confirmed AI referral has been recorded yet."
+    "upgrade": {
+      "description": "Citation checks are part of the Premium and Custom plans.",
+      "cta": "See plans"
     },
     "prompts": {
-      "title": "Monitored prompts",
-      "description": "Topiqu checks these questions with live web search and stores the answer and cited URLs.",
+      "title": "Tracked questions",
+      "description": "Every week we ask AI search engines and store the answer and the cited sources.",
       "questionLabel": "Question for AI search",
       "languageLabel": "Language",
-      "add": "Add prompt",
-      "suggest": "Suggest from project",
+      "add": "Add question",
+      "suggest": "Suggest questions",
       "placeholder": "What question should AI search answer?",
       "run": "Check now",
-      "pause": "Pause",
-      "resume": "Resume",
+      "pause": "Pause tracking",
+      "resume": "Resume tracking",
+      "paused": "Paused",
       "remove": "Remove",
-      "runs": "No checks | {count} check | {count} checks",
-      "created": "Prompt added.",
-      "suggested": "{count} prompts added.",
-      "empty": "Add a buyer question or create suggestions from your focus and Search Console data.",
-      "premium": "Citation checks are available on Premium and Custom plans."
+      "actions": "More actions",
+      "created": "Question added.",
+      "suggested": "{count} questions added."
+    },
+    "outcome": {
+      "UNCHECKED": "Not checked yet",
+      "RUNNING": "Check in progress",
+      "FAILED": "Check failed",
+      "CITED": "Cited by {cited} of {checked} AI engines",
+      "NOT_CITED": "Not cited by any of {checked} AI engines"
     },
     "runs": {
-      "title": "Recent citation checks",
-      "sampled": "Sampled via {provider}",
-      "cited": "Your site was cited",
-      "notCited": "Your site was not cited",
-      "failed": "Check failed",
+      "CITED": "Cited",
+      "NOT_CITED": "Not cited",
+      "RUNNING": "Running",
+      "FAILED": "Failed",
       "citations": "Cited sources",
-      "response": "Sample answer",
-      "empty": "Run a monitored prompt to establish the first citation baseline."
+      "response": "Answer"
     },
     "opportunities": {
-      "title": "Visibility opportunities",
-      "description": "Repeated gaps only: other sources were cited in at least two samples while this publication was absent.",
+      "title": "Where AI overlooks you",
+      "description": "Questions where AI keeps citing other sites instead of yours.",
       "update": "Improve article",
       "create": "Create article",
       "dismiss": "Dismiss",
-      "reopen": "Reopen",
       "evidence": "Your site: {owned}/{samples} · other sources: {external}/{samples}",
-      "domains": "Sources being cited: {domains}",
-      "empty": "No repeated visibility gap has enough evidence yet."
+      "domains": "Sources being cited: {domains}"
+    },
+    "traffic": {
+      "title": "Traffic from AI",
+      "referrals": "Readers from AI",
+      "crawlers": "AI bots",
+      "empty": "No visit from AI has been recorded yet.",
+      "none": "None yet"
+    },
+    "crawlers": {
+      "kinds": {
+        "ANSWER_ENGINE": "AI search",
+        "TRAINING": "Training",
+        "SEARCH": "Search engine"
+      }
     },
     "channels": {
       "CHATGPT": "ChatGPT",
@@ -79,10 +86,13 @@
       "CLAUDE": "Claude",
       "OTHER_AI": "Other AI"
     },
-    "status": {
-      "SUCCEEDED": "Completed",
-      "FAILED": "Failed",
-      "RUNNING": "Running"
+    "providers": {
+      "OPENAI": "OpenAI",
+      "ANTHROPIC": "Anthropic",
+      "GOOGLE": "Google Gemini",
+      "XAI": "xAI Grok",
+      "META": "Meta",
+      "MISTRAL": "Mistral"
     },
     "messages": {
       "runStarted": "Citation check completed.",

@@ -43,7 +43,7 @@
       "commentsEnabled": "jsou povoleny",
       "commentsDisabledSuccess": "jsou zakázány",
       "toggleSuccess": "Komentáře {0}",
-      "likedByAuthor": "Líbí se autorovi ({0})",
+      "likedByPublication": "Líbí se redakci {0}",
       "reportCommentConfirm": "Opravdu chcete nahlásit tento komentář?",
       "noComments": "Žádné komentáře",
       "noMoreComments": "Žádné další komentáře",
@@ -700,28 +700,28 @@
           "readability": "Čitelnost",
           "trust": "Důvěryhodnost"
         },
-        "categoryDescriptions": {
-          "seo": "Titulek, perex, nadpisy a odkazy pro vyhledávání.",
-          "ai-visibility": "Jasné odpovědi a struktura, které pomáhají najít podstatné informace.",
-          "readability": "Délka odstavců a vět v celém článku.",
-          "trust": "Zdroje a odkazy, které podporují věcná tvrzení."
-        },
-        "scoreBands": {
-          "excellent": "Výborné",
-          "good": "Dobré",
-          "fair": "Vyžaduje úpravy",
-          "poor": "Slabé"
-        },
-        "statusLabels": {
-          "error": "Problém",
-          "warning": "Doporučení",
-          "passed": "Splněno",
-          "not-applicable": "Nevztahuje se"
-        },
         "counts": {
           "issues": "Chyby: {count}",
           "recommendations": "Doporučení: {count}",
           "passed": "Splněno: {count}"
+        },
+        "scoreBands": {
+          "excellent": "Výborné",
+          "good": "Dobré",
+          "fair": "Chce to práci",
+          "poor": "Slabé"
+        },
+        "categoryDescriptions": {
+          "seo": "Titulek, perex, nadpisy, odkazy a obrázky pro vyhledávače.",
+          "ai-visibility": "Jasný úvod a výstižné sekce, které mohou citovat AI asistenti.",
+          "readability": "Délka vět, odstavců a sekcí.",
+          "trust": "Platné a různorodé zdroje a bezpečné externí odkazy."
+        },
+        "statusLabels": {
+          "error": "Chyba",
+          "warning": "Doporučení",
+          "passed": "Splněno",
+          "not-applicable": "Nevztahuje se"
         },
         "checks": {
           "title-exists": {

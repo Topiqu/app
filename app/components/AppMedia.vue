@@ -7,7 +7,6 @@
       mediaState === 'fallback' && fallbackBorder ? 'border border-dashed border-default bg-elevated' : '',
     ]"
     :style="{ aspectRatio }"
-    :aria-busy="isRetrying || undefined"
     :data-media-state="mediaState"
   >
     <NuxtImg
@@ -39,8 +38,7 @@
       @load="handleMediaLoad"
       @error="handleMediaError"
     />
-    <USkeleton v-if="isRetrying" class="absolute inset-0" />
-    <div v-if="!hasLoaded && !isRetrying" class="absolute inset-0 z-[1] grid place-items-center text-muted">
+    <div v-if="!hasLoaded" class="absolute inset-0 z-[1] grid place-items-center text-muted">
       <span v-if="fallbackText" class="app-media__monogram font-bold text-highlighted" aria-hidden="true">{{
         monogram
       }}</span>
@@ -83,18 +81,16 @@ const {
   containerClass?: string
 }>()
 
-const { currentSrc, isRetrying, usingOriginal, handleError, handleLoad } = useImageRetry(
+const { currentSrc, usingOriginal, handleError, handleLoad } = useImageFallback(
   () => src,
   () => originalSrc,
 )
 const hasLoaded = shallowRef(false)
 const mediaRoot = useTemplateRef<HTMLElement>('mediaRoot')
 const isVisible = useElementVisibility(mediaRoot)
+// The original only shows after the optimized URL failed, so it goes to the browser directly, not through IPX.
 const shouldOptimize = computed(() =>
-  // Nuxt Image treats a query string as part of the IPX source path. Once a
-  // cache-busting retry starts, request the source directly so
-  // `?topiqu_retry=…` remains a query instead of becoming `%3F…` in the path.
-  Boolean(currentSrc.value && !isRetrying.value && !usingOriginal.value && canOptimizeImageUrl(currentSrc.value)),
+  Boolean(currentSrc.value && !usingOriginal.value && canOptimizeImageUrl(currentSrc.value)),
 )
 
 let loadTimeout: ReturnType<typeof setTimeout> | null = null
@@ -119,7 +115,7 @@ watch(currentSrc, () => {
 })
 
 // A lazy image below the fold has not been requested yet, so a wall-clock timer would call it
-// failed before the browser ever fetches it — and `useImageRetry` then blocks that URL for the
+// failed before the browser ever fetches it — and `useImageFallback` then blocks that URL for the
 // rest of the session. Arm the stall guard only once the image is actually on screen.
 watchEffect(() => {
   clearLoadTimeout()
@@ -137,7 +133,7 @@ onMounted(() => {
 onUnmounted(clearLoadTimeout)
 const mediaState = computed(() => {
   if (hasLoaded.value) return 'loaded'
-  if (currentSrc.value || isRetrying.value) return 'loading'
+  if (currentSrc.value) return 'loading'
   return 'fallback'
 })
 const monogram = computed(() => (fallbackText || '').trim().slice(0, 2).toLocaleUpperCase())

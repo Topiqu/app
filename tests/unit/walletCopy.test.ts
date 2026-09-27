@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 type Messages = Record<string, any>
 
-const LOCALES = ['cs', 'en'] as const
+const LOCALES = ['cs', 'en', 'de', 'fr'] as const
 
 const common = (locale: (typeof LOCALES)[number]): Messages =>
   JSON.parse(readFileSync(join(process.cwd(), `i18n/locales/${locale}/common.json`), 'utf8')).common

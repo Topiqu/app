@@ -4,14 +4,6 @@ export interface ArticleHeading {
   text: string
 }
 
-export interface ArticleHeaderContext {
-  articleId: string
-  backTo: string
-  canEdit: boolean
-  liked: boolean
-  title: string
-}
-
 const normalizeHeadingId = (text: string, index: number) => {
   const normalized = text
     .normalize('NFD')
@@ -21,11 +13,6 @@ const normalizeHeadingId = (text: string, index: number) => {
     .replace(/(^-|-$)/g, '')
   return normalized || `heading-${index + 1}`
 }
-
-export const useArticleHeaderContext = () =>
-  useState<ArticleHeaderContext | null>('topiqu-article-header-context', () => null)
-
-export const useArticleLikeBus = () => useEventBus<undefined>('topiqu-article-like')
 
 export const useArticleScrollState = () =>
   useState('topiqu-article-scroll-state', () => ({

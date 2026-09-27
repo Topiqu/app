@@ -11,7 +11,7 @@ model PollResult with Base {
     userId    String?
     sessionId String?
     @@allow('create, read', true)
-    @@allow('delete', auth().role == 'admin')
+    @@allow('delete', (auth().role == 'admin' && article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
     @@unique([pollId, userId])
     @@unique([pollId, sessionId])
     @@index([pollId])

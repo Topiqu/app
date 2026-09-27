@@ -42,8 +42,8 @@
         <UFormField :label="$t('common.labels.status')"
           ><USelect v-model="statusFilter" :items="statusItems"
         /></UFormField>
-        <UFormField :label="$t('common.labels.dateFrom')"><UInput v-model="dateFrom" type="date" /></UFormField>
-        <UFormField :label="$t('common.labels.dateTo')"><UInput v-model="dateTo" type="date" /></UFormField>
+        <UFormField :label="$t('common.labels.dateFrom')"><AppDateInput v-model="dateFrom" /></UFormField>
+        <UFormField :label="$t('common.labels.dateTo')"><AppDateInput v-model="dateTo" /></UFormField>
         <UFormField :label="$t('common.labels.sortBy')"><USelect v-model="sortField" :items="sortItems" /></UFormField>
         <UFormField :label="$t('common.labels.order')"><USelect v-model="sortOrder" :items="orderItems" /></UFormField>
         <div class="flex items-end">
@@ -279,15 +279,18 @@
 </template>
 
 <script setup lang="ts">
+import type { Language } from '~~/shared/utils/language'
 import type { ArticleWithDetails } from '~~/types/article'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ArticleStatus } from '~~/generated/zenstack/models'
+
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 
 import type { LanguageLink } from '~/components/Article/LanguageLinks.vue'
 
 const router = useRouter()
 const route = useRoute()
-const toast = useAppToast()
+const toast = useToast()
 const { invalidateArticleLists, invalidateArticlesAndStats } = useCacheInvalidation()
 const confirm = useConfirm()
 const localePath = useLocalePath()
@@ -297,28 +300,27 @@ const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
 const { data: clientSite } = await useClientSiteStatus()
 const primaryLanguage = clientSite.value?.language ?? 'en'
-// Language currently has two enum values (cs/en), so the table can derive the only possible
-// target from the active tenant status without fetching private settings separately.
-const targetLanguage = primaryLanguage === 'cs' ? 'en' : 'cs'
+const targetLanguages = LANGUAGE_OPTIONS.filter((language) => language !== primaryLanguage)
 const translatingArticleId = shallowRef<string | null>(null)
 const listOrigin = useTemplateRef<HTMLElement>('listOrigin')
 
-const hasTargetTranslation = (article: ArticleWithDetails) =>
-  article.translations?.some((translation) => translation.language === targetLanguage) ?? false
+const hasTargetTranslation = (article: ArticleWithDetails, language: Language) =>
+  article.translations?.some((translation) => translation.language === language) ?? false
 
-const translateArticle = async (article: ArticleWithDetails) => {
+const translateArticle = async (article: ArticleWithDetails, language: Language) => {
   if (translatingArticleId.value) return
   translatingArticleId.value = article.id
   try {
     await $fetch(`/api/articles/${article.id}/translate`, {
       method: 'POST',
-      body: { language: targetLanguage },
+      body: { language },
     })
     await invalidateArticleLists()
-    toast.success({ message: $t('articles.translations.messages.translated') })
+    toast.add({ color: 'success', title: $t('articles.translations.messages.translated') })
   } catch (e: any) {
-    toast.error({
-      message: e?.data?.message || $t('common.messages.operationFailed'),
+    toast.add({
+      color: 'error',
+      title: fetchErrorMessage(e, $t('common.messages.operationFailed')),
     })
   } finally {
     translatingArticleId.value = null
@@ -535,7 +537,7 @@ const setStatus = async ({ id, status }: { id: string; status: ArticleStatus }) 
     optimisticStatus.reverted()
     toast.add({
       color: 'error',
-      title: error.data?.message || $t('articles.messages.statusChangeFailed'),
+      title: fetchErrorMessage(error, $t('articles.messages.statusChangeFailed')),
     })
   } finally {
     const { [id]: _finished, ...rest } = optimisticStatuses.value
@@ -557,7 +559,7 @@ const { mutate: deleteArticle, isLoading: isDeleting } = useMutation({
   onError: (error: any) =>
     toast.add({
       color: 'error',
-      title: error.data?.message || $t('articles.messages.deleteFailed'),
+      title: fetchErrorMessage(error, $t('articles.messages.deleteFailed')),
     }),
   onSettled: invalidateArticlesAndStats,
 })
@@ -596,16 +598,16 @@ const exportItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
 ]
 
 const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
-  [
-    {
-      label: hasTargetTranslation(article)
+  targetLanguages.map((language) => ({
+    label: `${
+      hasTargetTranslation(article, language)
         ? $t('articles.translations.actions.retranslate')
-        : $t('articles.translations.actions.translate'),
-      icon: 'mdi:translate',
-      disabled: translatingArticleId.value === article.id,
-      onSelect: () => translateArticle(article),
-    },
-  ],
+        : $t('articles.translations.actions.translate')
+    } (${$t(`languages.${language}`)})`,
+    icon: 'mdi:translate',
+    disabled: translatingArticleId.value === article.id,
+    onSelect: () => translateArticle(article, language),
+  })),
   [
     {
       label: $t('articles.tags.title'),
@@ -628,16 +630,16 @@ const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] =
 ]
 
 const mobileActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
-  [
-    {
-      label: hasTargetTranslation(article)
+  targetLanguages.map((language) => ({
+    label: `${
+      hasTargetTranslation(article, language)
         ? $t('articles.translations.actions.retranslate')
-        : $t('articles.translations.actions.translate'),
-      icon: 'mdi:translate',
-      disabled: translatingArticleId.value === article.id,
-      onSelect: () => translateArticle(article),
-    },
-  ],
+        : $t('articles.translations.actions.translate')
+    } (${$t(`languages.${language}`)})`,
+    icon: 'mdi:translate',
+    disabled: translatingArticleId.value === article.id,
+    onSelect: () => translateArticle(article, language),
+  })),
   [
     {
       label: $t('common.actions.delete'),

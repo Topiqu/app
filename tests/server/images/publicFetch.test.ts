@@ -57,7 +57,10 @@ describe('official media network guard', () => {
   })
 
   it('revalidates every redirect target before following it', async () => {
-    serve({ status: 302, headers: { location: 'https://cdn.example.org/a.jpg' } }, { status: 200, body: new Uint8Array([1]) })
+    serve(
+      { status: 302, headers: { location: 'https://cdn.example.org/a.jpg' } },
+      { status: 200, body: new Uint8Array([1]) },
+    )
     await expect(fetchPublicUrl('https://press.example.org/asset')).resolves.toMatchObject({ status: 200 })
     expect(lookup).toHaveBeenCalledWith('press.example.org', { all: true })
     expect(lookup).toHaveBeenCalledWith('cdn.example.org', { all: true })

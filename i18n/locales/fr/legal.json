@@ -1,0 +1,170 @@
+{
+  "legal": {
+    "lastUpdated": "Dernière mise à jour : {date}",
+    "updatedAt": "10 août 2026",
+    "placeholderNote": "L'adresse postale est volontairement omise : un lien vers ARES est fourni et l'adresse est communiquée sur demande.",
+    "tos": {
+      "title": "Conditions d'utilisation",
+      "description": "Conditions régissant l'utilisation de la plateforme Topiqu, les abonnements et les contenus générés par IA.",
+      "sections": [
+        {
+          "icon": "mdi:office-building",
+          "iconColor": "text-blue-500",
+          "title": "1. Prestataire et champ d'application",
+          "content": "Le service Topiqu (« Service ») est exploité par <strong>Vojtěch Benjamín Tomaník</strong>, entrepreneur individuel inscrit au registre professionnel tchèque, numéro d'entreprise (IČO) <strong>24088765</strong> (« nous », « notre », « Prestataire »).<br><br>L'établissement enregistré et le champ d'activité sont publiquement accessibles et tenus à jour dans le registre tchèque ARES : <a href='https://ares.gov.cz/ekonomicke-subjekty?ico=24088765' target='_blank' rel='noopener noreferrer' class='text-blue-600 dark:text-blue-400 underline'>ares.gov.cz</a>. Nous vous communiquerons également l'adresse postale sur demande à l'adresse e-mail ci-dessous.<br><br>Contact : <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a><br><br>Les présentes Conditions régissent le contrat entre le Prestataire et vous, en tant qu'utilisateur (« vous », « Utilisateur »), concernant l'utilisation du Service, notamment le site web, l'éditeur, la génération de contenu par IA, la publication sur des comptes sociaux connectés et les offres payantes. En créant un compte, vous acceptez les présentes Conditions et notre <a href='/fr/confidentialite' class='text-blue-600 dark:text-blue-400 underline'>Politique de confidentialité</a>.<br><br>Si vous utilisez le Service à titre professionnel (dans le cadre de votre activité commerciale ou de votre profession), les dispositions réservées aux consommateurs des sections 5 et 13 ne s'appliquent pas à vous."
+        },
+        {
+          "icon": "mdi:account-key",
+          "iconColor": "text-indigo-500",
+          "title": "2. Compte et inscription",
+          "content": "Pour utiliser le Service, vous devez créer un compte et fournir une adresse e-mail valide. Vous devez avoir au moins 16 ans ou disposer du consentement de votre représentant légal.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Vous êtes responsable de la confidentialité de vos identifiants et de toutes les activités effectuées avec votre compte.</li><li>Vous devez fournir des informations exactes et les tenir à jour.</li><li>Nous recommandons d'activer l'authentification à deux facteurs proposée par le Service.</li><li>Les comptes sont personnels. Vous pouvez inviter d'autres utilisateurs dans votre espace de travail dans les limites de votre offre, mais vous ne pouvez pas partager les mêmes identifiants.</li></ul><br>Si vous soupçonnez un accès non autorisé, informez-nous sans délai à <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a>."
+        },
+        {
+          "icon": "mdi:credit-card-outline",
+          "iconColor": "text-emerald-500",
+          "title": "3. Offres, tarifs et paiement",
+          "content": "Le Service comprend une offre gratuite et des offres payantes (actuellement <strong>PRO</strong> et <strong>PREMIUM</strong>), facturées mensuellement ou annuellement. Des packs d'articles ponctuels peuvent compléter les offres payantes. Une génération par IA réussie consomme un article.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Les prix applicables sont ceux affichés au moment de la commande. Ils incluent la TVA lorsque celle-ci s'applique.</li><li>Les paiements sont traités par <strong>Stripe Payments Europe, Ltd.</strong> Nous ne stockons pas l'intégralité de vos données de carte.</li><li>Les abonnements <strong>se renouvellent automatiquement</strong> pour la même durée jusqu'à leur résiliation. Vous pouvez résilier à tout moment dans les paramètres de votre compte ; la résiliation prend effet à la fin de la période de facturation en cours.</li><li>Les articles inclus dans une offre sont valables pour la période mensuelle applicable. Les articles achetés n'expirent pas et ne sont plus remboursables une fois consommés.</li><li>En cas d'échec d'un paiement, nous pouvons suspendre l'accès aux fonctionnalités payantes après vous en avoir informé.</li></ul><br>Nous pouvons modifier les prix en vous prévenant dans un délai raisonnable à votre adresse e-mail enregistrée. Les modifications s'appliquent à partir de votre prochaine période de facturation ; si vous n'êtes pas d'accord, vous pouvez résilier avant son début."
+        },
+        {
+          "icon": "mdi:keyboard-return",
+          "iconColor": "text-amber-500",
+          "title": "4. Droit de rétractation (consommateurs)",
+          "content": "Si vous êtes un consommateur dans l'UE, vous disposez de <strong>14 jours</strong> après la conclusion du contrat pour vous rétracter sans fournir de motif, en nous informant à <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a>.<br><br><strong>Important :</strong> le Service fournit immédiatement du contenu numérique. En cochant la case lors du paiement, vous demandez expressément que l'exécution commence pendant le délai de rétractation et reconnaissez que <strong>vous perdez ainsi votre droit de rétractation</strong> une fois le Service entièrement fourni, conformément à l'article 1837 du Code civil tchèque.<br><br>Si l'exécution a commencé mais n'est pas achevée au moment de votre rétractation, vous nous devez un montant proportionnel à ce qui a été fourni. Les remboursements sont effectués par le même moyen de paiement sous 14 jours."
+        },
+        {
+          "icon": "mdi:file-document-edit",
+          "iconColor": "text-purple-500",
+          "title": "5. Vos contenus",
+          "content": "Vous conservez <strong>tous les droits de propriété</strong> sur les articles, images et autres éléments que vous importez ou créez avec le Service (« Vos contenus »). Nous n'en revendiquons aucune propriété.<br><br>Vous nous accordez une licence non exclusive, mondiale et gratuite pour héberger, stocker, reproduire, adapter et transmettre Vos contenus <strong>uniquement dans la mesure nécessaire au fonctionnement du Service</strong> — par exemple pour afficher votre site, générer des traductions, produire les suggestions IA que vous demandez et publier sur les comptes sociaux que vous avez connectés. Cette licence prend fin lorsque vous supprimez le contenu ou votre compte, à l'exception des sauvegardes, qui expirent selon le calendrier indiqué dans notre Politique de confidentialité.<br><br>Vous garantissez disposer des droits nécessaires sur Vos contenus et ne pas porter atteinte aux droits de tiers."
+        },
+        {
+          "icon": "mdi:robot-outline",
+          "iconColor": "text-cyan-500",
+          "title": "6. Contenus générés par IA",
+          "content": "Le Service utilise de grands modèles de langage tiers pour générer, traduire, améliorer et analyser des textes et suggérer des images. Vous dirigez cette génération ; le résultat est considéré comme faisant partie de Vos contenus.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Les résultats de l'IA peuvent être erronés.</strong> Ils peuvent contenir des erreurs factuelles, des citations inventées, des informations obsolètes ou des biais. Vous êtes seul responsable de la relecture et de la vérification des faits avant toute publication.</li><li><strong>Aucune garantie d'originalité ou d'exclusivité.</strong> Des instructions similaires peuvent produire des résultats similaires pour d'autres utilisateurs. Nous ne garantissons pas que les résultats de l'IA sont originaux, exempts d'atteintes aux droits de tiers ou protégeables par le droit d'auteur.</li><li><strong>Vous êtes l'éditeur.</strong> Vous assumez la responsabilité des contenus publiés, notamment en matière de diffamation, d'atteinte à la propriété intellectuelle et de respect des règles applicables, telles que l'identification de la publicité.</li><li>Les modes de publication automatique fonctionnent également sous votre compte et selon vos instructions. Configurez le mode de relecture qui vous convient.</li></ul><br>Il est interdit d'utiliser les fonctions d'IA pour générer des contenus illicites, de la désinformation présentée comme un fait ou des contenus usurpant l'identité d'une personne réelle."
+        },
+        {
+          "icon": "mdi:share-variant",
+          "iconColor": "text-sky-500",
+          "title": "7. Comptes sociaux connectés",
+          "content": "Vous pouvez connecter un profil LinkedIn personnel ou une page d'entreprise afin que le Service publie en votre nom et consulte les statistiques d'engagement des publications qu'il a créées.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Vous devez disposer des droits nécessaires pour publier sur le compte connecté. Pour une page d'entreprise, vous devez en être un administrateur autorisé.</li><li>Votre utilisation de LinkedIn reste soumise aux propres conditions de LinkedIn. Les présentes Conditions ne les remplacent pas.</li><li>Vous pouvez vous déconnecter à tout moment dans vos paramètres et révoquer séparément notre accès dans les paramètres de votre compte LinkedIn. La déconnexion supprime les jetons d'accès enregistrés.</li><li>Nous ne sommes pas responsables des modifications, pannes, limites d'utilisation ou mesures prises sur les comptes par la plateforme tierce.</li></ul>"
+        },
+        {
+          "icon": "mdi:cancel",
+          "iconColor": "text-red-500",
+          "title": "8. Utilisation acceptable",
+          "content": "Vous ne devez pas utiliser le Service pour :<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>publier des contenus illicites, portant atteinte aux droits de tiers, diffamatoires ou trompeurs ;</li><li>publier des contenus discriminatoires, relevant du harcèlement ou de l'exploitation sexuelle de mineurs ;</li><li>envoyer des courriers indésirables ou adopter un comportement coordonné et inauthentique sur les plateformes connectées ;</li><li>contourner les limites des offres, les limites de débit ou la mesure de l'utilisation du Service ;</li><li>sonder, analyser ou attaquer le Service, ou tenter d'accéder aux données d'autres espaces ;</li><li>extraire les données du Service ou revendre l'accès sans notre accord écrit ;</li><li>importer des logiciels malveillants ou utiliser le Service pour les diffuser.</li></ul><br>Nous pouvons suspendre ou résilier les comptes qui enfreignent cette section. Si l'infraction n'est pas grave et peut être corrigée, nous vous en informerons normalement d'abord et vous donnerons la possibilité d'y remédier."
+        },
+        {
+          "icon": "mdi:server-network",
+          "iconColor": "text-teal-500",
+          "title": "9. Disponibilité et modifications",
+          "content": "Nous visons une forte disponibilité, mais le Service est fourni <strong>sans garantie de disponibilité</strong>, sauf si un accord de niveau de service distinct a été conclu par écrit avec vous.<br><br>Nous pouvons modifier, ajouter ou supprimer des fonctionnalités. Pour les changements qui réduisent sensiblement les fonctionnalités d'une offre payante, nous vous préviendrons dans un délai raisonnable et vous pourrez résilier avec un remboursement proportionnel de la période prépayée non utilisée.<br><br>Les opérations de maintenance planifiées seront annoncées à l'avance lorsque cela sera raisonnablement possible. Les pannes de services tiers (fournisseur de paiement, fournisseur d'IA, plateformes sociales) échappent à notre contrôle."
+        },
+        {
+          "icon": "mdi:scale-balance",
+          "iconColor": "text-orange-500",
+          "title": "10. Responsabilité",
+          "content": "Aucune disposition des présentes Conditions ne limite une responsabilité qui ne peut légalement être limitée — en particulier la responsabilité pour les dommages causés intentionnellement ou par faute lourde, ou pour les atteintes aux droits naturels d'une personne.<br><br>Sous cette réserve :<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Nous ne sommes pas responsables des pertes indirectes ou consécutives, du manque à gagner, de la perte de revenus ou de réputation.</li><li>Nous ne sommes pas responsables des pertes résultant de contenus générés par IA que vous avez publiés sans vérification, de contenus que vous n'étiez pas autorisé à publier ou de mesures prises à votre encontre par une plateforme tierce.</li><li>Pour les utilisateurs professionnels, notre responsabilité totale sur toute période de 12 mois est limitée aux frais que vous nous avez versés pendant cette période.</li></ul><br>Vous êtes responsable de conserver vos propres copies des contenus essentiels à votre activité. Des fonctions d'exportation sont prévues à cet effet."
+        },
+        {
+          "icon": "mdi:door-open",
+          "iconColor": "text-rose-500",
+          "title": "11. Durée et résiliation",
+          "content": "Vous pouvez résilier à tout moment en annulant votre abonnement et en supprimant votre compte dans les paramètres.<br><br>Nous pouvons résilier ce contrat moyennant un préavis raisonnable, ou immédiatement en cas d'infraction grave à la section 8, de non-paiement après rappel ou lorsque la loi l'exige.<br><br>À la résiliation, votre droit d'utiliser le Service prend fin. Exportez vos contenus avant de supprimer votre compte : après la suppression, les données sont effacées selon le calendrier décrit dans notre <a href='/fr/confidentialite' class='text-blue-600 dark:text-blue-400 underline'>Politique de confidentialité</a> et ne peuvent pas être restaurées. Si nous résilions sans motif, nous remboursons au prorata la période prépayée non utilisée."
+        },
+        {
+          "icon": "mdi:gavel",
+          "iconColor": "text-slate-500",
+          "title": "12. Droit applicable et litiges",
+          "content": "Les présentes Conditions sont régies par le droit de la République tchèque, à l'exclusion de ses règles de conflit de lois. Pour les consommateurs, ce choix ne vous prive pas de la protection des dispositions impératives du droit de votre pays de résidence habituelle.<br><br>Les tribunaux de la République tchèque sont compétents. Les consommateurs peuvent également agir, et ne peuvent être poursuivis, que devant les tribunaux de leur pays de résidence.<br><br><strong>Règlement extrajudiciaire :</strong> les consommateurs peuvent saisir l'Inspection tchèque du commerce (Česká obchodní inspekce), Štěpánská 796/44, 110 00 Prague 1, <a href='https://www.coi.cz' target='_blank' rel='noopener noreferrer' class='text-blue-600 dark:text-blue-400 underline'>www.coi.cz</a>. Nous sommes toujours disposés à tenter de résoudre d'abord une réclamation directement : écrivez à <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a>."
+        },
+        {
+          "icon": "mdi:update",
+          "iconColor": "text-gray-500",
+          "title": "13. Modification des présentes Conditions",
+          "content": "Nous pouvons mettre à jour les présentes Conditions. Nous vous informerons par e-mail et dans l'application dans un délai raisonnable avant l'entrée en vigueur d'une modification importante.<br><br>Si vous n'acceptez pas la modification, vous pouvez résilier avant son entrée en vigueur et obtenir un remboursement proportionnel de toute période prépayée non utilisée. Continuer à utiliser le Service après sa date d'effet vaut acceptation.<br><br>Si une disposition est jugée invalide, les autres restent en vigueur."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "description": "Comment Topiqu collecte, utilise, partage et conserve les données personnelles, y compris celles des comptes LinkedIn connectés.",
+      "sections": [
+        {
+          "icon": "mdi:office-building",
+          "iconColor": "text-indigo-500",
+          "title": "1. Qui sommes-nous",
+          "content": "Le responsable du traitement de vos données personnelles est <strong>Vojtěch Benjamín Tomaník</strong>, entrepreneur individuel inscrit au registre professionnel tchèque, numéro d'entreprise (IČO) <strong>24088765</strong>, République tchèque. L'établissement enregistré est publiquement accessible dans le registre ARES : <a href='https://ares.gov.cz/ekonomicke-subjekty?ico=24088765' target='_blank' rel='noopener noreferrer' class='text-indigo-600 dark:text-indigo-400 underline'>ares.gov.cz</a>. Nous vous le communiquerons aussi directement sur demande.<br><br>Contact pour la confidentialité : <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a><br><br>Nous n'avons pas désigné de délégué à la protection des données. Nous n'y sommes pas tenus : nos traitements ne constituent pas une surveillance systématique à grande échelle des personnes et le traitement de catégories particulières de données ne fait pas partie de nos activités principales. Vous pouvez toujours joindre une personne à l'adresse ci-dessus.<br><br>Cette politique couvre le site Topiqu, le processus d'inscription et l'application Topiqu, y compris les sites que vous exploitez avec elle."
+        },
+        {
+          "icon": "mdi:database-search",
+          "iconColor": "text-sky-500",
+          "title": "2. Données que nous collectons",
+          "content": "Nous ne collectons que les données nécessaires au fonctionnement du Service :<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Données du compte</strong> — nom d'utilisateur, adresse e-mail, mot de passe (stocké uniquement sous forme d'empreinte irréversible, jamais en clair), biographie et avatar facultatifs, préférences de langue, de thème et de notification.</li><li><strong>Données d'authentification</strong> — codes de vérification par e-mail et, si vous l'activez, secret de l'authentification à deux facteurs.</li><li><strong>Données de session et de sécurité</strong> — adresse IP, agent utilisateur, appareil, système d'exploitation, navigateur et localisation approximative déduite de l'adresse IP (ville, région, pays). Ces données alimentent l'écran « Sessions actives » pour vous aider à repérer et révoquer les connexions inconnues.</li><li><strong>Journal d'audit</strong> — actions importantes pour la sécurité, avec horodatage, identifiant utilisateur et adresse IP, conservées dans une chaîne d'empreintes détectant les altérations.</li><li><strong>Contenus</strong> — articles, brouillons, traductions, commentaires, réactions, sondages et médias importés.</li><li><strong>Données de facturation</strong> — offre, période de facturation, identifiants de transaction et factures. Stripe traite les données de carte, qui ne passent jamais par nos serveurs.</li><li><strong>Données des comptes connectés</strong> — voir la section 4.</li><li><strong>Données de configuration initiale</strong> — nom du site, domaine demandé, nom d'utilisateur et adresse e-mail saisis avant la création du compte.</li></ul><br>Nous ne vendons <strong>pas</strong> de données personnelles et ne créons pas de profils publicitaires à partir de vos contenus."
+        },
+        {
+          "icon": "mdi:scale-balance",
+          "iconColor": "text-emerald-500",
+          "title": "3. Finalités et bases juridiques du traitement",
+          "content": "Conformément à l'article 6, paragraphe 1, du RGPD :<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Exécution d'un contrat</strong> (art. 6, § 1, b) — création et fonctionnement de votre compte, hébergement et publication de vos contenus, générations par IA que vous demandez, publication sur les comptes connectés et facturation.</li><li><strong>Intérêts légitimes</strong> (art. 6, § 1, f) — sécurité et disponibilité du Service, prévention des abus et de la fraude, diagnostic des erreurs et défense de droits en justice. Nous avons mis ces intérêts en balance avec vos droits ; vous pouvez vous y opposer à tout moment (section 9).</li><li><strong>Consentement</strong> (art. 6, § 1, a) — cookies d'analyse et de publicité ainsi qu'e-mails marketing. Vous pouvez retirer votre consentement à tout moment, sans affecter les traitements antérieurs.</li><li><strong>Obligation légale</strong> (art. 6, § 1, c) — conservation des documents comptables et fiscaux.</li></ul>"
+        },
+        {
+          "icon": "mdi:linkedin",
+          "iconColor": "text-blue-600",
+          "title": "4. Intégration LinkedIn",
+          "content": "Si vous choisissez de connecter un profil LinkedIn personnel ou une page d'entreprise, nous traitons les données suivantes <strong>uniquement pour publier en votre nom et vous communiquer les résultats</strong> :<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Votre identifiant LinkedIn (URN)</strong> — l'URN de membre pour un profil personnel ou l'URN d'organisation pour une page d'entreprise. Il est nécessaire pour utiliser l'API de publication et constitue le seul identifiant de profil que nous conservons.</li><li><strong>Jetons d'accès et de renouvellement</strong> et leurs dates d'expiration, stockés chiffrés et non exposés dans le navigateur.</li><li><strong>Publications créées pour vous</strong> et nombre total de réactions et de commentaires reçus. Nous ne récupérons ni ne stockons l'identité des personnes qui ont réagi ou commenté.</li></ul><br>Nous ne demandons que les autorisations nécessaires pour publier en votre nom et lire les statistiques des publications que nous avons créées. LinkedIn vous présente leur portée exacte avant votre accord.<br><br><strong>Conservation.</strong> Nous conservons les données LinkedIn dans les limites fixées par les conditions d'utilisation de l'API LinkedIn. Les données d'engagement sont réduites à des totaux et les enregistrements bruts sont supprimés. Les jetons et l'URN ne sont conservés que tant que la connexion est active, car ils permettent de publier.<br><br><strong>Nous ne lisons jamais</strong> votre boîte de réception LinkedIn, vos relations ou votre fil ; nous n'importons pas vos contacts et n'utilisons pas les données LinkedIn pour entraîner des modèles d'IA ni pour la publicité.<br><br><strong>Comment révoquer l'accès.</strong> Déconnectez le compte dans les paramètres de Topiqu : les jetons et l'URN seront supprimés. Vous pouvez aussi révoquer notre accès à tout moment et indépendamment dans les paramètres de confidentialité de votre compte LinkedIn."
+        },
+        {
+          "icon": "mdi:robot-outline",
+          "iconColor": "text-cyan-500",
+          "title": "5. Traitement par l'IA",
+          "content": "Lorsque vous utilisez une fonction de génération, traduction, amélioration ou analyse, le texte concerné est transmis à notre fournisseur d'IA (OpenAI) afin de produire le résultat.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Nous utilisons l'API du fournisseur selon des conditions indiquant que les entrées et sorties de l'API <strong>ne servent pas à entraîner ses modèles</strong>.</li><li>Veuillez ne pas inclure de données personnelles de tiers, d'identifiants ou d'informations confidentielles dans les instructions destinées à l'IA. Vous contrôlez ce qui est envoyé.</li><li>Nous conservons les contenus produits dans votre espace de travail et un compteur technique interne d'utilisation à des fins de fonctionnement et de maîtrise des coûts. Nous ne conservons pas de copie séparée des instructions au-delà de ce qui est nécessaire pour afficher vos brouillons.</li><li>Aucune fonction d'IA ne prend de décision produisant des effets juridiques à votre égard. Les modes de publication automatique exécutent vos propres instructions configurées et peuvent être passés en validation manuelle à tout moment.</li><li><strong>Base de connaissances (bêta).</strong> Les textes que vous ajoutez à la base de connaissances — notes, texte extrait des documents importés et pages web récupérées — sont envoyés à OpenAI lors de leur ajout et de chaque modification pour créer un index de recherche. Les passages pertinents sont renvoyés lors de la rédaction d'un article. Nous ne conservons que le texte extrait et son index, pas le fichier importé. Les pages web sont récupérées à nouveau environ une fois par semaine. Les deux sont conservés jusqu'à ce que vous supprimiez la source. Tout élément de la base de connaissances peut être utilisé dans vos articles publiés ; n'y ajoutez donc pas d'informations confidentielles ni de données personnelles.</li></ul>"
+        },
+        {
+          "icon": "mdi:cookie",
+          "iconColor": "text-amber-500",
+          "title": "6. Cookies et analyse d'audience",
+          "content": "Les <strong>cookies techniques</strong> assurent la sécurité et le fonctionnement de base du site ; ils ne peuvent pas être désactivés.<br><br>Les <strong>cookies d'analyse</strong> aident à évaluer l'utilisation du site. Les <strong>cookies marketing</strong> servent à afficher et mesurer les publicités lorsque la publicité est activée. Les services d'analyse et de marketing ne sont pas chargés sans votre consentement.<br><br>Vous pouvez modifier votre choix à tout moment grâce au bouton <em>Paramètres des cookies</em> sur le site ou dans son pied de page."
+        },
+        {
+          "icon": "mdi:share-variant",
+          "iconColor": "text-orange-500",
+          "title": "7. Destinataires de vos données",
+          "content": "Nous ne vendons pas vos données et ne les communiquons qu'aux sous-traitants ci-dessous, chacun lié par un accord de traitement des données conformément à l'article 28 du RGPD :<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Stripe</strong> — traitement des paiements et facturation (IE / US)</li><li><strong>OpenAI</strong> — génération, traduction et analyse par IA (US)</li><li><strong>LinkedIn</strong> — publication sur les comptes que vous connectez (IE / US)</li><li><strong>Amazon Web Services</strong> — stockage des médias importés et envoi d'e-mails transactionnels ; région de Francfort (UE)</li><li><strong>Cloudflare</strong> — CDN, protection contre les robots et sécurité du réseau (US)</li><li><strong>Sentry</strong> — suivi des erreurs et diagnostic (US)</li><li><strong>Google</strong> — analyse d'audience et publicité, <em>uniquement avec votre consentement</em> (US)</li></ul><br>Nous pouvons aussi communiquer des données si la loi l'exige ou pour établir ou défendre des droits en justice. Si nous recevons une demande des autorités, nous ne communiquons que les données légalement requises et vous en informons lorsque cela nous est permis.<br><br><strong>Transferts hors de l'EEE.</strong> Certains sous-traitants sont établis aux États-Unis. Ces transferts reposent sur les clauses contractuelles types de l'UE et, le cas échéant, sur le cadre de protection des données UE–États-Unis."
+        },
+        {
+          "icon": "mdi:timer-sand",
+          "iconColor": "text-violet-500",
+          "title": "8. Durée de conservation",
+          "content": "Nous ne conservons les données que le temps nécessaire à la finalité pour laquelle elles ont été recueillies. Nous appliquons les critères suivants :<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Compte et contenus</strong> — pendant toute la durée de vie du compte ; supprimés sans délai injustifié après sa suppression.</li><li><strong>Sauvegardes</strong> — renouvelées et écrasées régulièrement, de sorte que les contenus supprimés disparaissent à la prochaine rotation.</li><li><strong>Sessions et données de sécurité</strong> — aussi longtemps que nécessaire pour protéger les comptes et enquêter sur les abus.</li><li><strong>Données des comptes connectés</strong> — uniquement tant que la connexion est active ; supprimées lors de la déconnexion.</li><li><strong>Codes de vérification</strong> — supprimés après utilisation ou expiration.</li><li><strong>Documents comptables et fiscaux</strong> — pendant la durée imposée par la loi.</li><li><strong>Données d'analyse</strong> — pendant la durée configurée dans le service concerné et uniquement avec votre consentement.</li></ul>"
+        },
+        {
+          "icon": "mdi:account-check",
+          "iconColor": "text-green-500",
+          "title": "9. Vos droits",
+          "content": "En vertu du RGPD, vous disposez des droits suivants :<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Accès</strong> — obtenir une copie des données que nous détenons à votre sujet (art. 15)</li><li><strong>Rectification</strong> — corriger les données inexactes (art. 16)</li><li><strong>Effacement</strong> — faire supprimer vos données (art. 17)</li><li><strong>Limitation</strong> — limiter leur traitement (art. 18)</li><li><strong>Portabilité</strong> — recevoir vos données dans un format lisible par machine ou les faire transmettre à un autre prestataire (art. 20)</li><li><strong>Opposition</strong> — vous opposer au traitement fondé sur des intérêts légitimes (art. 21)</li><li><strong>Retrait du consentement</strong> — à tout moment, sans affecter les traitements antérieurs (art. 7, § 3)</li></ul><br>Vous pouvez exercer vous-même la plupart de ces droits : la page de votre profil vous permet de modifier ou d'exporter vos données et de supprimer votre compte. Sinon, écrivez à <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a>. Nous répondons sous un mois ; la demande est gratuite, sauf si elle est manifestement infondée ou excessive.<br><br><strong>Droit de réclamation.</strong> Vous pouvez déposer une plainte auprès de l'autorité tchèque de protection des données — Úřad pro ochranu osobních údajů, Pplk. Sochora 27, 170 00 Prague 7, <a href='https://www.uoou.cz' target='_blank' rel='noopener noreferrer' class='text-indigo-600 dark:text-indigo-400 underline'>www.uoou.cz</a> — ou de l'autorité de votre pays de résidence."
+        },
+        {
+          "icon": "mdi:lock",
+          "iconColor": "text-emerald-500",
+          "title": "10. Sécurité",
+          "content": "Nous appliquons des mesures techniques et organisationnelles adaptées au traitement : chiffrement des données sensibles lors de leur transfert et de leur stockage, mots de passe stockés uniquement sous forme d'empreinte irréversible, authentification à deux facteurs facultative, séparation des données de chaque client et contrôle des accès.<br><br>Aucun système n'est parfaitement sûr. En cas de violation susceptible d'entraîner un risque élevé pour vos droits, nous vous informerons sans délai."
+        },
+        {
+          "icon": "mdi:account-child",
+          "iconColor": "text-pink-500",
+          "title": "11. Enfants",
+          "content": "Le Service ne s'adresse pas aux enfants de moins de 16 ans et nous ne collectons pas sciemment leurs données personnelles. Si vous pensez qu'un enfant nous a transmis des données, contactez <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a> et nous les supprimerons."
+        },
+        {
+          "icon": "mdi:update",
+          "iconColor": "text-gray-500",
+          "title": "12. Modification de la présente politique",
+          "content": "Nous pouvons mettre à jour cette politique. La version en vigueur figure toujours à cette adresse, avec la date de dernière révision indiquée en haut.<br><br>En cas de modification importante — nouvelle finalité, nouvelle catégorie de données ou nouveau sous-traitant dans un pays tiers — nous vous préviendrons par e-mail ou dans l'application dans un délai raisonnable. Si la modification exige votre consentement, nous le recueillerons avant son entrée en vigueur.<br><br>Questions : <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a>"
+        }
+      ],
+      "updatedAt": "26 septembre 2026"
+    }
+  }
+}

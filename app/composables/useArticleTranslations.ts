@@ -21,7 +21,7 @@ export interface ArticleTranslationsPayload {
  * `initialLang` seeds the tab (the admin table deep-links with `?lang=`).
  */
 export const useArticleTranslations = (articleId?: string, initialLang = '') => {
-  const toast = useAppToast()
+  const toast = useToast()
   const { t } = useI18n()
   const { invalidateArticleLists } = useCacheInvalidation()
 
@@ -89,9 +89,9 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
       await fn()
       await refresh()
       await invalidateArticleLists()
-      toast.success({ message: t(successKey) })
+      toast.add({ color: 'success', title: t(successKey) })
     } catch (e: any) {
-      toast.error({ message: e?.data?.message || t('common.messages.saveFailed') })
+      toast.add({ color: 'error', title: fetchErrorMessage(e, t('common.messages.saveFailed')) })
     } finally {
       pending.value = null
     }

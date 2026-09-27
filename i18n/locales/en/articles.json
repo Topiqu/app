@@ -43,7 +43,7 @@
       "commentsEnabled": "are enabled",
       "commentsDisabledSuccess": "are disabled",
       "toggleSuccess": "Comments {0}",
-      "likedByAuthor": "Liked by author ({0})",
+      "likedByPublication": "Liked by {0}",
       "reportCommentConfirm": "Are you sure you want to report this comment?",
       "noComments": "No comments",
       "noMoreComments": "No more comments",
@@ -700,11 +700,10 @@
           "readability": "Readability",
           "trust": "Trust"
         },
-        "categoryDescriptions": {
-          "seo": "Title, summary, headings, and links for search results.",
-          "ai-visibility": "Clear answers and structure that help readers find key facts.",
-          "readability": "Paragraph and sentence length across the article.",
-          "trust": "Sources and links that support factual claims."
+        "counts": {
+          "issues": "Issues: {count}",
+          "recommendations": "Recommendations: {count}",
+          "passed": "Passed: {count}"
         },
         "scoreBands": {
           "excellent": "Excellent",
@@ -712,16 +711,17 @@
           "fair": "Needs work",
           "poor": "Poor"
         },
+        "categoryDescriptions": {
+          "seo": "Title, excerpt, headings, links and images for search engines.",
+          "ai-visibility": "A clear introduction and descriptive sections that AI assistants can quote.",
+          "readability": "Length of sentences, paragraphs and sections.",
+          "trust": "Valid, diverse sources and safe external links."
+        },
         "statusLabels": {
           "error": "Issue",
           "warning": "Recommendation",
           "passed": "Passed",
           "not-applicable": "Not applicable"
-        },
-        "counts": {
-          "issues": "Issues: {count}",
-          "recommendations": "Recommendations: {count}",
-          "passed": "Passed: {count}"
         },
         "checks": {
           "title-exists": {

@@ -11,6 +11,7 @@
         pending: followPending,
       }"
       @follow="toggleFollow"
+      @share="share"
     >
       <template #top>
         <nav v-if="breadcrumbs?.length" :aria-label="$t('common.breadcrumbs')" class="w-full">
@@ -135,6 +136,7 @@
 
 <script setup lang="ts">
 import type { User } from '~~/generated/zenstack/models'
+import type { Language } from '~~/shared/utils/language'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
 import { readFaq } from '~~/shared/utils/articleFaq'
@@ -199,7 +201,7 @@ const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/$
 const primaryLocale = computed(() => clientSite?.language ?? 'en')
 
 // Real alternates only exist once translations are PUBLISHED (source + each translation).
-const alternates = computed<{ language: 'cs' | 'en'; slug: string }[]>(() => data.value?.alternates ?? [])
+const alternates = computed<{ language: Language; slug: string }[]>(() => data.value?.alternates ?? [])
 const hasTranslations = computed(() => alternates.value.length >= 2)
 
 const alternateLinks = computed(() =>
@@ -227,9 +229,9 @@ const ogImageOptions = computed(() => ({
 
 defineOgImage('TopiquArticle', ogImageOptions.value)
 
-const { getVisitorId, trackView } = useArticleTracking(computed(() => data.value?.id))
+const { trackView } = useArticleTracking(computed(() => data.value?.id))
 
-const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh, getVisitorId)
+const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh)
 
 const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
 const followPending = shallowRef(false)

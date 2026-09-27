@@ -1,0 +1,14 @@
+{
+  "domainVerification": {
+    "title": "Vérification du domaine en attente",
+    "description": "Configurez les deux enregistrements DNS ci-dessous pour votre domaine personnalisé {domain}.",
+    "degraded": "Les vérifications ont échoué à plusieurs reprises. Corrigez les DNS sous 7 jours, sinon le domaine personnalisé sera déconnecté.",
+    "ownership": "Vérification de propriété",
+    "routing": "Routage du site",
+    "result": "Propriété : {ownership} · Routage : {routing}",
+    "verifyBtn": "Vérifier les DNS",
+    "success": "Domaine vérifié avec succès !",
+    "notFound": "Les enregistrements DNS ne sont pas encore correctement configurés ou propagés.",
+    "error": "Une erreur s’est produite pendant la vérification."
+  }
+}

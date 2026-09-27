@@ -1,11 +1,12 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { isLanguage, type Language } from '~~/shared/utils/language'
 
 interface StatePayload {
   clientSiteId: string
   nonce: string
   exp: number
   /** Carried across the hop: the callback runs on app.topiqu.com, where the tenant's `i18n_lang` cookie is not readable. */
-  locale?: 'cs' | 'en'
+  locale?: Language
 }
 const secret = () => process.env.AUTH_SECRET || process.env.NUXT_AUTH_SECRET || ''
 
@@ -25,5 +26,5 @@ export const verifySearchConsoleState = (value: string | undefined): StatePayloa
   const payload = JSON.parse(Buffer.from(body, 'base64url').toString()) as StatePayload
   if (!payload.clientSiteId || payload.exp <= Date.now()) return null
   // Signed or not, the locale ends up as a path segment — whitelist it.
-  return { ...payload, locale: payload.locale === 'cs' ? 'cs' : 'en' }
+  return { ...payload, locale: isLanguage(payload.locale) ? payload.locale : 'en' }
 }

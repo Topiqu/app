@@ -121,7 +121,7 @@ async function enable2FA() {
     showForm.value = true
     emit('update:enabled', false)
   } catch (err: any) {
-    emit('error', err.data?.message || $t('common.messages.operationFailed'))
+    emit('error', fetchErrorMessage(err, $t('common.messages.operationFailed')))
   } finally {
     isLoading.value = false
   }
@@ -143,7 +143,7 @@ async function verifyTotpCode() {
     emit('update:enabled', true)
     emit('error', '')
   } catch (err: any) {
-    error.value = err.data?.message || $t('common.messages.operationFailed')
+    error.value = fetchErrorMessage(err, $t('common.messages.operationFailed'))
   } finally {
     isLoading.value = false
   }
@@ -171,7 +171,7 @@ async function disable2FA() {
     emit('update:otpauthUrl', '')
     emit('error', '')
   } catch (err: any) {
-    emit('error', err.data?.message || $t('common.messages.operationFailed'))
+    emit('error', fetchErrorMessage(err, $t('common.messages.operationFailed')))
   } finally {
     isLoading.value = false
   }

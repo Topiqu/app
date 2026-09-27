@@ -76,9 +76,10 @@
 </template>
 
 <script setup lang="ts">
-import { hasAdvancedBranding } from '~~/shared/utils/publicationBranding'
+import type { PublicationTypography } from '~~/generated/zenstack/models'
 
-import { tenantFontFaceCss, typographyFonts, type PublicationTypography } from '~/composables/theme'
+import { hasAdvancedBranding } from '~~/shared/utils/publicationBranding'
+import { tenantFontFaceCss, typographyFonts } from '~~/shared/utils/tenantTheme'
 
 const props = defineProps<{
   preset: PublicationTypography

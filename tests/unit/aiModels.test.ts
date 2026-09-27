@@ -75,7 +75,30 @@ describe('AI model registry', () => {
 
   it('keeps the token-heavy translation task on a low-cost tier', () => {
     expect(aiModelProvider('translation')).toBe('openai')
-    expect(aiModelId('translation')).toBe('gpt-5.6-luna')
+    expect(aiModelId('translation')).toBe('gpt-6-luna')
+  })
+
+  it('keeps editorial work on GPT-5.6 Luna and routes routine tasks to GPT-6 Luna', () => {
+    for (const task of [
+      'topicSelection',
+      'articleResearch',
+      'articleWriter',
+      'articleEditor',
+      'linkedinPost',
+      'factCheck',
+    ] as const) {
+      expect(aiModelId(task), task).toBe('gpt-5.6-luna')
+    }
+    for (const task of [
+      'translation',
+      'promptEnhance',
+      'sentiment',
+      'communityInsight',
+      'visibility',
+      'knowledgeSelect',
+    ] as const) {
+      expect(aiModelId(task), task).toBe('gpt-6-luna')
+    }
   })
 })
 

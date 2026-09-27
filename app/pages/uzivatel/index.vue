@@ -51,10 +51,6 @@
                 name="bio"
                 :maxLength="BIO_MAX_LENGTH"
               />
-              <div id="language-section">
-                <AppFormLabel :text="$t('profile.language')" />
-                <LangSwitcher class="w-full mt-1" :language="currentLanguage" @update:language="updateLanguage" />
-              </div>
             </div>
           </Panel>
 
@@ -280,10 +276,10 @@ const localePath = useLocalePath()
 if (!user.value) await navigateTo(localePath({ name: 'autorizace' }))
 
 const { saveProfile, changePassword, deactivateAccount } = useProfile()
-const { locale, setLocale } = useI18n()
+const { locale } = useI18n()
 const { formatTime } = useTime()
 const { copy, copied } = useClipboard({ legacy: true })
-const toast = useAppToast()
+const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const reducedMotion = usePreferredReducedMotion()
@@ -324,13 +320,11 @@ if (userData.value) {
   const loaded = { ...userData.value, handle: toHandle(userData.value.username) }
   Object.assign(profileForm, loaded)
   originalProfile.value = { ...loaded }
-  setLocale(userData.value.language)
 }
 
 useSeoMeta({ title: () => `${profileForm.username ?? ''} — ${$t('profile.title')}` })
 
 const handle = computed(() => toHandle(profileForm.username))
-const currentLanguage = computed(() => profileForm.language || locales[0]!.value)
 const passwordsMatch = computed(
   () => !!passwordForm.newPassword && passwordForm.newPassword === passwordForm.confirmNewPassword,
 )
@@ -399,7 +393,7 @@ function revertChanges() {
   Object.assign(profileForm, originalProfile.value)
   draft.clear()
   isDirty.value = false
-  toast.success({ message: $t('common.messages.successGeneral') })
+  toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
 }
 
 function openDialog(type: 'followers' | 'followed') {
@@ -408,7 +402,7 @@ function openDialog(type: 'followers' | 'followed') {
 }
 
 function onTwoFAError(message: string) {
-  if (message) toast.error({ message })
+  if (message) toast.add({ color: 'error', title: message })
 }
 
 async function onAvatarUpload() {
@@ -437,21 +431,6 @@ async function updateProfile() {
     draft.clear()
     isDirty.value = false
     otpauthUrl.value = userData.value?.otpauthUrl || ''
-  } finally {
-    isLoading.value = false
-  }
-}
-
-async function updateLanguage(newLanguage: Language) {
-  isLoading.value = true
-  try {
-    await saveProfile({ language: newLanguage })
-    setLocale(newLanguage)
-    // Applied immediately rather than via the save bar, so neither copy may fall behind.
-    profileForm.language = newLanguage
-    if (originalProfile.value) originalProfile.value.language = newLanguage
-    isDirty.value = isChanged()
-    await refresh()
   } finally {
     isLoading.value = false
   }
@@ -498,7 +477,7 @@ async function exportToPDF() {
     link.remove()
     URL.revokeObjectURL(url)
   } catch (err: any) {
-    toast.error({ message: err.message || $t('common.messages.operationFailed') })
+    toast.add({ color: 'error', title: err.message || $t('common.messages.operationFailed') })
   } finally {
     isLoading.value = false
   }

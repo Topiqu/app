@@ -84,6 +84,21 @@ export const useArticleGeneration = () => {
         lastPartialAt = Date.now()
       }
 
+      const dispatch = {
+        reservation: (msg: any) => handlers.onReservation?.(msg.articles),
+        phase: (msg: any) => {
+          handlers.onPhase?.(msg.phase)
+          if (msg.attemptId) handlers.onAttempt?.(msg.attemptId)
+        },
+        research: (msg: any) => handlers.onResearch?.(msg),
+        activity: (msg: any) => msg.writingStage && handlers.onWritingStage?.(msg.writingStage),
+        image: (msg: any) => handlers.onImage?.({ slot: msg.slot, html: msg.html }),
+        media: (msg: any) => handlers.onMedia?.(msg),
+        review: (msg: any) => handlers.onReview?.(msg.review),
+        billing: (msg: any) => handlers.onBilling?.(msg),
+        final: (msg: any) => handlers.onFinal(msg.article),
+      }
+
       const consume = (line: string) => {
         const trimmed = line.trim()
         if (!trimmed) return
@@ -104,38 +119,13 @@ export const useArticleGeneration = () => {
         }
 
         flushPartial()
-        if (msg.type === 'reservation') {
-          handlers.onReservation?.(msg.articles)
-          handlers.onActivity?.()
-        } else if (msg.type === 'session') {
-          handlers.onSession?.(msg.id)
-        } else if (msg.type === 'phase') {
-          handlers.onPhase?.(msg.phase)
-          handlers.onActivity?.()
-          if (msg.attemptId) handlers.onAttempt?.(msg.attemptId)
-        } else if (msg.type === 'research') {
-          handlers.onResearch?.(msg)
-          handlers.onActivity?.()
-        } else if (msg.type === 'activity') {
-          if (msg.writingStage) handlers.onWritingStage?.(msg.writingStage)
-          handlers.onActivity?.()
-        } else if (msg.type === 'image') {
-          handlers.onImage?.({ slot: msg.slot, html: msg.html })
-          handlers.onActivity?.()
-        } else if (msg.type === 'media') {
-          handlers.onMedia?.(msg)
-          handlers.onActivity?.()
-        } else if (msg.type === 'review') {
-          handlers.onReview?.(msg.review)
-          handlers.onActivity?.()
-        } else if (msg.type === 'billing') {
-          handlers.onBilling?.(msg)
-          handlers.onActivity?.()
-        } else if (msg.type === 'final') {
-          receivedFinal = true
-          handlers.onFinal(msg.article)
-          handlers.onActivity?.()
-        } else if (msg.type === 'error') throw new Error(msg.message)
+        if (msg.type === 'error') throw new Error(msg.message)
+        if (msg.type === 'session') return handlers.onSession?.(msg.id)
+        const handle = dispatch[msg.type as keyof typeof dispatch]
+        if (!handle) return
+        if (msg.type === 'final') receivedFinal = true
+        handle(msg)
+        handlers.onActivity?.()
       }
 
       for (;;) {
