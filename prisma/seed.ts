@@ -192,9 +192,10 @@ async function main() {
   for (const [index, article] of fixtureArticles.entries()) {
     await prisma.article.upsert({
       where: { id: article.id },
-      update: { ...article, allowedComments: true, status: 'published' },
+      update: { ...article, language: 'cs', allowedComments: true, status: 'published' },
       create: {
         ...article,
+        language: 'cs',
         userId: admin.id,
         clientSiteId: site.id,
         articleSeriesId: series.id,
