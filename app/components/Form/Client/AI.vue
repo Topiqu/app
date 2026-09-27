@@ -51,14 +51,14 @@
               :placeholder="$t('common.preferences.aiAuthor.username.placeholder')"
               type="text"
             />
-            <div class="flex flex-col gap-2">
-              <AppFormLabel :text="$t('common.preferences.aiAuthor.bio.label')" />
-              <AppFormField
-                v-model="bio"
-                :placeholder="$t('common.preferences.aiAuthor.bio.placeholder')"
-                :maxLength="300"
-              />
-            </div>
+            <AppFormField
+              v-model="bio"
+              :label="$t('common.preferences.aiAuthor.bio.label')"
+              :placeholder="$t('common.preferences.aiAuthor.bio.placeholder')"
+              type="textarea"
+              :rows="3"
+              :maxLength="BIO_MAX_LENGTH"
+            />
           </div>
         </div>
 
@@ -317,6 +317,7 @@
 <script setup lang="ts">
 import { languageTag } from '~~/shared/utils/language'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+import { BIO_MAX_LENGTH } from '~~/shared/utils/profile'
 
 const { t, locale } = useI18n()
 

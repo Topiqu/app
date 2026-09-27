@@ -1,11 +1,18 @@
 <template>
   <UFormField :label :description :error :required :name :hint class="w-full">
+    <template v-if="type === 'textarea' && maxLength" #hint>
+      <span class="tabular-nums" :class="stringValue.length >= maxLength * 0.9 ? 'text-warning' : 'text-dimmed'">
+        {{ stringValue.length }}/{{ maxLength }}
+      </span>
+    </template>
     <UTextarea
       v-if="type === 'textarea'"
       :id
       :modelValue="stringValue"
       :placeholder
       :maxlength="maxLength"
+      :rows
+      :name
       :disabled
       autoresize
       class="w-full"
@@ -59,6 +66,7 @@ const props = withDefaults(
     type?: string
     placeholder?: string
     maxLength?: number
+    rows?: number
     min?: string | number
     max?: string | number
     step?: string | number

@@ -49,6 +49,8 @@
                 v-model="profileForm.bio"
                 :label="$t('profile.bio')"
                 name="bio"
+                type="textarea"
+                :rows="3"
                 :maxLength="BIO_MAX_LENGTH"
               />
             </div>
@@ -251,6 +253,7 @@
 
 <script setup lang="ts">
 import { formatDate } from '~~/shared/utils'
+import { BIO_MAX_LENGTH } from '~~/shared/utils/profile'
 
 import type { TabItem } from '~/components/TabNav.vue'
 
@@ -259,8 +262,6 @@ import { useProfile, type Profile } from '~/composables/useProfile'
 import { sectionId, tabForSection, toHandle } from '~/utils/profileSections'
 
 definePageMeta({ shell: 'product' })
-
-const BIO_MAX_LENGTH = 300
 
 const tabs: TabItem[] = [
   { id: 'profile', labelKey: 'profile.tabs.profile', icon: 'mdi:account-outline' },

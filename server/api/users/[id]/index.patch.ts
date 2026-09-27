@@ -2,6 +2,7 @@ import { z } from 'zod'
 import argon from 'argon2'
 import { authenticator } from 'otplib'
 import { LanguageSchema } from '~~/shared/siteSchemas'
+import { BIO_MAX_LENGTH } from '~~/shared/utils/profile'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
     email: z.string().email().optional(),
     password: z.string().min(4).optional(),
     role: z.enum(['reader', 'admin', 'superadmin']).optional(),
-    bio: z.string().nullable().optional(),
+    bio: z.string().max(BIO_MAX_LENGTH).nullable().optional(),
     language: LanguageSchema.optional(),
     allowNotifs: z.boolean().optional(),
     allowEmail: z.boolean().optional(),
