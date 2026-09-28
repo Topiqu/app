@@ -526,7 +526,6 @@
         "reservationSummary": "Jede Generierung reserviert vorübergehend 1 Artikel. Für zwei gleichzeitig laufende Vorgänge müssen daher mindestens 2 Artikel übrig sein.",
         "billingDetails": "Abrechnungsdetails",
         "billingExplanation": "Der Artikel wird erst nach erfolgreichem Abschluss abgezogen. Bei einem Fehler oder Abbruch wird der reservierte Artikel zurückgegeben.",
-        "moduleUnavailable": "Für dieses Format nicht verfügbar",
         "reviewFailed": "Der Artikel hat die redaktionelle Prüfung auch nach der Überarbeitung nicht bestanden.",
         "allowGeneratedImages": "KI-Illustrationen als letzte Möglichkeit erlauben",
         "generatedImagesFallback": "Nur für illustrative Motive ohne passendes vorhandenes Bild, auch beim Titelbild. Dokumentarische Fotos von Personen und Ereignissen werden nicht durch KI ersetzt.",
@@ -630,7 +629,8 @@
             "missing_specifics": "Fehlende Details",
             "broken_structure": "Fehlerhafte Struktur"
           }
-        }
+        },
+        "topicPlaceholderStory": "Erzählen Sie Ihre Geschichte: was geschah, wann, wie lange es dauerte und wie es ausging. Die KI hält sich an Ihre Angaben."
       },
       "drafts": {
         "loadDrafts": "Entwürfe laden",

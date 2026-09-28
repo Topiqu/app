@@ -6,13 +6,15 @@ export type ArticleGenerationFormat = (typeof ARTICLE_GENERATION_FORMATS)[number
 export const ARTICLE_GENERATION_MODULES = ['answer', 'takeaways', 'faq', 'poll', 'table', 'images', 'youtube'] as const
 export type ArticleGenerationModule = (typeof ARTICLE_GENERATION_MODULES)[number]
 
-export const ARTICLE_GENERATION_ALLOWED_MODULES: Record<ArticleGenerationFormat, readonly ArticleGenerationModule[]> = {
-  news: ['answer', 'takeaways', 'poll', 'images', 'youtube'],
-  analysis: ['answer', 'takeaways', 'table', 'images', 'youtube'],
-  guide: ['answer', 'takeaways', 'faq', 'images', 'youtube'],
-  comparison: ['answer', 'takeaways', 'faq', 'poll', 'table', 'images', 'youtube'],
-  opinion: ['poll', 'images', 'youtube'],
-  story: ['images', 'youtube'],
+/** What a format proposes when chosen in the editor; the author can still pick any module.
+ * Mirrors `defaultModules` in `server/utils/ai/formats.ts`. */
+export const ARTICLE_GENERATION_DEFAULT_MODULES: Record<ArticleGenerationFormat, readonly ArticleGenerationModule[]> = {
+  news: ['answer', 'takeaways'],
+  analysis: ['answer', 'takeaways'],
+  guide: ['answer', 'takeaways', 'faq'],
+  comparison: ['answer', 'takeaways', 'faq', 'table'],
+  opinion: ['poll'],
+  story: [],
 }
 
 export const RESEARCH_DEPTHS = ['quick', 'standard', 'deep'] as const

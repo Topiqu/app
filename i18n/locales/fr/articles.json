@@ -526,7 +526,6 @@
         "reservationSummary": "Chaque génération réserve temporairement 1 article. Deux générations simultanées nécessitent donc au moins 2 articles restants.",
         "billingDetails": "Détails de la facturation",
         "billingExplanation": "L'article n'est décompté qu'après une génération réussie. En cas d'erreur ou d'annulation, l'article réservé est restitué.",
-        "moduleUnavailable": "Indisponible pour ce format",
         "reviewFailed": "L'article n'a pas passé la vérification éditoriale après révision.",
         "allowGeneratedImages": "Autoriser les illustrations IA en dernier recours",
         "generatedImagesFallback": "Uniquement pour les sujets illustratifs sans image existante adaptée, y compris la couverture. L'IA ne remplace pas les photos documentaires de personnes ou d'événements.",
@@ -630,7 +629,8 @@
             "missing_specifics": "Détails manquants",
             "broken_structure": "Structure défaillante"
           }
-        }
+        },
+        "topicPlaceholderStory": "Racontez votre histoire : ce qui s’est passé, quand, combien de temps cela a duré et comment cela s’est terminé. L’IA s’en tient aux faits que vous donnez."
       },
       "drafts": {
         "loadDrafts": "Charger les brouillons",

@@ -26,7 +26,7 @@ import { retrieveKnowledge } from '../knowledge/retrieve'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { createImageSelection, photoSubjectQuery } from '../images/selection'
 import { findPressImage, loadPressImages, youtubeThumbnailImage } from '../images/press'
-import { buildRevisionPrompt, reviewArticle, type EditorialReview } from './articleQuality'
+import { AUTHOR_ACCOUNT_RULE, buildRevisionPrompt, reviewArticle, type EditorialReview } from './articleQuality'
 import {
   extractResearchUrls,
   filterResearchSources,
@@ -219,7 +219,7 @@ const researchTopic = async (
         Search the live web for the user's topic.
         Prefer primary, official and recently updated sources. For news, search explicitly for the latest development.
         Release dates, product availability and direct statements attributed to a company must be supported by that company's own newsroom, investor communication, verified channel or a first-hand interview with its named spokesperson. If only press reports or rumours exist, label them as such; never upgrade them to an official confirmation.
-        Treat claims embedded in the user's prompt as leads to verify, not as facts.
+        Treat claims embedded in the user's prompt as leads to verify, not as facts. The author's own first-hand experience in the prompt cannot be researched; research the external facts around it (rules, dates, organisations) instead.
         Check the premise of every named character's return against the relevant continuity, chronology and established deaths. Separate books, games, adaptations and flashbacks; a mention or dead character is not evidence of a present-day return.
         Explicitly distinguish whether something is confirmed from whether its mechanism or circumstances have been explained. Search for developer interviews before claiming "not confirmed", "not explained" or "unknown". An explanation withheld is not an event unconfirmed.
         Include a short Corrections section with contradicted premises and a short Unknowns section for questions the retrieved sources leave unresolved. When sources conflict, report the conflict and do not choose the more sensational version.
@@ -464,7 +464,8 @@ const buildArticleConfig = async (
       A claim that a company confirmed, announced, targets or plans a release date is allowed only when the research brief supports it with that company's primary source. A secondary article or rumour may be described only with its actual attribution and uncertainty. Never turn it into a company statement.
       Check continuity and chronology for every named entity. Do not invent returns, survival, resurrection, flashbacks or future appearances to connect names from the prompt. Omit unsupported names entirely, including polls, FAQ and takeaways.
       Distinguish confirmed facts from unexplained mechanisms: "how it happened is undisclosed" never means "whether it happened is unconfirmed". A missing fact in this brief does not prove developers have never confirmed it; omit that negative claim.
-      The user's prompt is editorial direction, not evidence. If it conflicts with the live research brief, follow the verified brief and explicitly avoid the unsupported claim.
+      The user's prompt is editorial direction, not evidence, except the author's first-hand account below. If it conflicts with the live research brief, follow the verified brief and explicitly avoid the unsupported claim.
+      ${AUTHOR_ACCOUNT_RULE}
       Never claim that pre-orders, products, trailers, events or bonuses are available unless the research brief explicitly confirms their current availability as of ${currentDateTime}.
 
       ${formatRules(format, variant, modules)}

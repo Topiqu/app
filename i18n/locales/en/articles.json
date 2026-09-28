@@ -526,7 +526,6 @@
         "reservationSummary": "Each generation temporarily holds 1 article. Two concurrent runs therefore require at least 2 remaining articles.",
         "billingDetails": "Billing details",
         "billingExplanation": "The article is deducted only after successful completion. An error or cancellation returns the held article.",
-        "moduleUnavailable": "Unavailable for this format",
         "reviewFailed": "The article did not pass editorial review after revision.",
         "allowGeneratedImages": "Allow AI illustrations as a last resort",
         "generatedImagesFallback": "Only for illustrative subjects without a suitable existing image, including the cover. AI does not replace documentary photos of people or events.",
@@ -630,7 +629,8 @@
             "missing_specifics": "Missing specifics",
             "broken_structure": "Broken structure"
           }
-        }
+        },
+        "topicPlaceholderStory": "Tell your story: what happened, when, how long it took and how it ended. The AI keeps to the facts you give."
       },
       "drafts": {
         "loadDrafts": "Load Drafts",

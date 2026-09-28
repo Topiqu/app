@@ -109,10 +109,10 @@ describe('applyFormat', () => {
     expect(guide.videos).toEqual(full.videos)
   })
 
-  it('silently drops modules the format does not allow', () => {
+  it('keeps an explicit selection outside what the picker would choose for the format', () => {
     const story = applyFormat(full, 'story', ['faq', 'youtube'])
 
-    expect(story.faq).toEqual([])
+    expect(story.faq).toEqual(full.faq)
     expect(story.videos).toEqual(full.videos)
     expect(story.images).toEqual([])
     expect(allowedModulesFor('story')).toEqual(['images', 'youtube'])

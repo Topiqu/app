@@ -6,6 +6,7 @@ type VariantSpec = { shape: string; structure: string }
 type FormatSpec = {
   shape: string
   words: [number, number]
+  /** What the automatic topic picker may choose. An author's explicit selection is not limited by it. */
   allowedModules: readonly ArticleModule[]
   /** Backwards-compatible choice for callers without an explicit editorial module selection. */
   defaultModules: readonly ArticleModule[]
@@ -188,11 +189,9 @@ export const isStructureVariantFor = (format: ArticleFormat, variant: string) =>
   variant in ARTICLE_FORMATS[format].variants
 export const allowedModulesFor = (format: ArticleFormat): readonly ArticleModule[] =>
   ARTICLE_FORMATS[format].allowedModules
-export const selectedModulesFor = (format: ArticleFormat, modules?: readonly ArticleModule[]) => {
-  const requested = modules ?? ARTICLE_FORMATS[format].defaultModules
-  const allowed = new Set<ArticleModule>(ARTICLE_FORMATS[format].allowedModules)
-  return [...new Set(requested)].filter((module) => allowed.has(module))
-}
+export const selectedModulesFor = (format: ArticleFormat, modules?: readonly ArticleModule[]) => [
+  ...new Set(modules ?? ARTICLE_FORMATS[format].defaultModules),
+]
 
 /** The picker sees both broad formats and the structures/modules it can deliberately rotate. */
 export const formatMenu = () =>

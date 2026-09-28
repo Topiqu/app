@@ -526,7 +526,6 @@
         "reservationSummary": "Každé generování dočasně zablokuje 1 článek. Dva souběžné běhy proto vyžadují alespoň 2 zbývající články.",
         "billingDetails": "Podrobnosti účtování",
         "billingExplanation": "Článek se odečte až po úspěšném dokončení. Při chybě nebo zastavení se rezervace vrátí.",
-        "moduleUnavailable": "Pro tento formát není dostupné",
         "reviewFailed": "Článek neprošel redakční kontrolou ani po opravě.",
         "allowGeneratedImages": "Povolit AI ilustrace jako poslední možnost",
         "generatedImagesFallback": "Jen pro ilustrační motivy bez vhodného existujícího obrázku, včetně titulního. Dokumentární fotografie osob a událostí AI nenahrazuje.",
@@ -630,7 +629,8 @@
             "missing_specifics": "Chybí konkrétní údaje",
             "broken_structure": "Rozbitá struktura"
           }
-        }
+        },
+        "topicPlaceholderStory": "Popište svůj příběh: co se stalo, kdy, jak dlouho to trvalo a jak to dopadlo. AI se drží faktů, které uvedete."
       },
       "drafts": {
         "loadDrafts": "Načíst koncepty",

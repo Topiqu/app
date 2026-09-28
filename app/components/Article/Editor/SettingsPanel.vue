@@ -75,7 +75,11 @@
               <UFormField :label="$t('articles.editor.ai.topicLabel')">
                 <UTextarea
                   v-model="customPrompt"
-                  :placeholder="$t('articles.editor.ai.topicPlaceholder')"
+                  :placeholder="
+                    aiOptions.format === 'story'
+                      ? $t('articles.editor.ai.topicPlaceholderStory')
+                      : $t('articles.editor.ai.topicPlaceholder')
+                  "
                   :rows="4"
                   class="w-full"
                   autoresize
@@ -155,26 +159,18 @@
                       :key="item.value"
                       class="flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 text-sm"
                       :class="
-                        item.disabled
-                          ? 'cursor-not-allowed border-default bg-elevated text-muted'
-                          : aiOptions.modules.includes(item.value)
-                            ? 'cursor-pointer border-primary/60 bg-primary/10 font-medium text-highlighted'
-                            : 'cursor-pointer border-default text-highlighted hover:border-primary/50 hover:bg-elevated'
+                        aiOptions.modules.includes(item.value)
+                          ? 'cursor-pointer border-primary/60 bg-primary/10 font-medium text-highlighted'
+                          : 'cursor-pointer border-default text-highlighted hover:border-primary/50 hover:bg-elevated'
                       "
                     >
                       <input
                         v-model="aiOptions.modules"
                         type="checkbox"
                         :value="item.value"
-                        :disabled="item.disabled"
                         class="size-4 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                       />
-                      <span
-                        >{{ item.label
-                        }}<span v-if="item.disabled" class="mt-0.5 block text-xs font-normal">{{
-                          $t('articles.editor.ai.moduleUnavailable')
-                        }}</span></span
-                      >
+                      <span>{{ item.label }}</span>
                     </label>
                   </div>
                 </fieldset>
@@ -188,26 +184,18 @@
                       :key="item.value"
                       class="flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 text-sm"
                       :class="
-                        item.disabled
-                          ? 'cursor-not-allowed border-default bg-elevated text-muted'
-                          : aiOptions.modules.includes(item.value)
-                            ? 'cursor-pointer border-primary/60 bg-primary/10 font-medium text-highlighted'
-                            : 'cursor-pointer border-default text-highlighted hover:border-primary/50 hover:bg-elevated'
+                        aiOptions.modules.includes(item.value)
+                          ? 'cursor-pointer border-primary/60 bg-primary/10 font-medium text-highlighted'
+                          : 'cursor-pointer border-default text-highlighted hover:border-primary/50 hover:bg-elevated'
                       "
                     >
                       <input
                         v-model="aiOptions.modules"
                         type="checkbox"
                         :value="item.value"
-                        :disabled="item.disabled"
                         class="size-4 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                       />
-                      <span
-                        >{{ item.label
-                        }}<span v-if="item.disabled" class="mt-0.5 block text-xs font-normal">{{
-                          $t('articles.editor.ai.moduleUnavailable')
-                        }}</span></span
-                      >
+                      <span>{{ item.label }}</span>
                     </label>
                   </div>
                   <UCheckbox
@@ -335,7 +323,7 @@ import type { ArticleOptimizationResult, OptimizationTarget } from '~~/shared/ty
 import {
   ARTICLE_GENERATION_FORMATS,
   ARTICLE_GENERATION_MODULES,
-  ARTICLE_GENERATION_ALLOWED_MODULES,
+  ARTICLE_GENERATION_DEFAULT_MODULES,
   RESEARCH_DEPTHS,
   type ArticleGenerationFormat,
   type ArticleGenerationOptions,
@@ -393,7 +381,6 @@ const depths = RESEARCH_DEPTHS
 const { t } = useI18n()
 const researchDepthName = useId()
 
-const allowedModules = computed(() => ARTICLE_GENERATION_ALLOWED_MODULES[aiOptions.value.format])
 const formatItems = computed(() =>
   formats.map((value) => ({
     value,
@@ -402,19 +389,10 @@ const formatItems = computed(() =>
   })),
 )
 const depthItems = computed(() => depths.map((value) => ({ value, label: t(`articles.editor.ai.depth.${value}`) })))
-const moduleItems = computed(() =>
-  modules
-    .filter((value) => allowedModules.value.includes(value))
-    .map((value) => ({
-      value,
-      label: t(`articles.editor.ai.module.${value}`),
-      disabled: false,
-    })),
-)
-const contentModuleItems = computed(() =>
-  moduleItems.value.filter((item) => !['images', 'youtube'].includes(item.value)),
-)
-const mediaModuleItems = computed(() => moduleItems.value.filter((item) => ['images', 'youtube'].includes(item.value)))
+const moduleItems = computed(() => modules.map((value) => ({ value, label: t(`articles.editor.ai.module.${value}`) })))
+const MEDIA_MODULES: readonly ArticleGenerationModule[] = ['images', 'youtube']
+const contentModuleItems = computed(() => moduleItems.value.filter((item) => !MEDIA_MODULES.includes(item.value)))
+const mediaModuleItems = computed(() => moduleItems.value.filter((item) => MEDIA_MODULES.includes(item.value)))
 const selectedModuleSummary = computed(() =>
   aiOptions.value.modules.length
     ? aiOptions.value.modules.map(moduleLabel).join(' · ')
@@ -440,11 +418,13 @@ const planSummary = computed(() =>
   }),
 )
 const moduleLabel = (module: ArticleGenerationModule) => t(`articles.editor.ai.module.${module}`)
+// A format only proposes its content blocks; media stay as the author set them.
 const selectFormat = (format: ArticleGenerationFormat) => {
   aiOptions.value.format = format
-  aiOptions.value.modules = aiOptions.value.modules.filter((module) =>
-    ARTICLE_GENERATION_ALLOWED_MODULES[format].includes(module),
-  )
+  aiOptions.value.modules = [
+    ...ARTICLE_GENERATION_DEFAULT_MODULES[format],
+    ...aiOptions.value.modules.filter((module) => MEDIA_MODULES.includes(module)),
+  ]
 }
 
 const emit = defineEmits<{
