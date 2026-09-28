@@ -149,9 +149,9 @@ export default defineEventHandler(async (event) => {
             where: { slug_clientSiteId: { slug, clientSiteId } },
             select,
           }))
-    if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
-    if (article.status !== 'published' && !isAdmin)
-      throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+    // 404, not 403: a distinct status would confirm that an unpublished slug exists.
+    if (!article || (article.status !== 'published' && !isAdmin))
+      throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
     baseSlug = article.slug
     primaryLanguage = article.language
     language = primaryLanguage

@@ -191,6 +191,8 @@ const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/
 const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/${slug.value}/related`, {
   lazy: true,
   default: () => [],
+  // Without the article there is no clientSiteId, and the request can only 400.
+  immediate: Boolean(data.value),
   query: computed(() => ({
     limit: 3,
     clientSiteId: data.value?.clientSiteId,

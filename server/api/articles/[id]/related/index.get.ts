@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   const primaryLanguage = clientSite.language
-  const isAdmin = user?.role === 'admin'
+  const isAdmin = hasArticleAdminAccess(user, clientSiteId)
 
   const current = await resolveArticleBySlug<{ id: string; language: Language; tags: { tagId: string }[] }>(
     prisma,

@@ -30,5 +30,11 @@ describe('article viewer tenant access', () => {
     expect(endpoint).toContain('const clientSiteId = requestedClientSiteId || sessionTenantId(user)')
     expect(endpoint).toContain('const isAdmin = hasArticleAdminAccess(user, clientSiteId)')
     expect(endpoint).not.toContain('clientSiteId !== user.clientSiteId')
+    expect(endpoint).not.toContain('statusCode: 403')
+  })
+
+  it('scopes draft visibility of related articles to the viewed tenant', () => {
+    const related = readFileSync(resolve(process.cwd(), 'server/api/articles/[id]/related/index.get.ts'), 'utf8')
+    expect(related).toContain('const isAdmin = hasArticleAdminAccess(user, clientSiteId)')
   })
 })
